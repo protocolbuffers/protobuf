@@ -43,6 +43,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/raw_ptr.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -1452,8 +1453,6 @@ class RepeatedPrimitiveTypeTraits {
                                                      FieldType field_type,
                                                      bool is_packed,
                                                      ExtensionSet* set);
-
-  static const RepeatedFieldType* GetDefaultRepeatedField();
 };
 
 class PROTOBUF_EXPORT RepeatedPrimitiveDefaults {
@@ -1472,17 +1471,11 @@ class PROTOBUF_EXPORT RepeatedPrimitiveDefaults {
 
 #define PROTOBUF_DEFINE_PRIMITIVE_TYPE(TYPE, METHOD)                           \
   template <>                                                                  \
-  inline const RepeatedField<TYPE>*                                            \
-  RepeatedPrimitiveTypeTraits<TYPE>::GetDefaultRepeatedField() {               \
-    return &RepeatedPrimitiveDefaults::default_instance()                      \
-                ->default_repeated_field_##TYPE##_;                            \
-  }                                                                            \
-  template <>                                                                  \
   inline const RepeatedField<TYPE>&                                            \
   RepeatedPrimitiveTypeTraits<TYPE>::GetRepeated(int number,                   \
                                                  const ExtensionSet& set) {    \
     return *reinterpret_cast<const RepeatedField<TYPE>*>(                      \
-        set.GetRawRepeatedField(number, GetDefaultRepeatedField()));           \
+        set.GetRawRepeatedField(number, RawPtr<RepeatedField<TYPE>>().Get())); \
   }                                                                            \
   template <>                                                                  \
   inline const RepeatedField<TYPE>*                                            \
@@ -1586,7 +1579,8 @@ class PROTOBUF_EXPORT RepeatedStringTypeTraits {
   static inline const RepeatedPtrField<std::string>& GetRepeated(
       int number, const ExtensionSet& set) {
     return *reinterpret_cast<const RepeatedPtrField<std::string>*>(
-        set.GetRawRepeatedField(number, GetDefaultRepeatedField()));
+        set.GetRawRepeatedField(number,
+                                RawPtr<RepeatedPtrField<std::string>>().Get()));
   }
 
   static inline RepeatedPtrField<std::string>* MutableRepeated(
@@ -1596,8 +1590,6 @@ class PROTOBUF_EXPORT RepeatedStringTypeTraits {
         set->MutableRawRepeatedField(arena, number, field_type, is_packed,
                                      nullptr));
   }
-
-  static const RepeatedFieldType* GetDefaultRepeatedField();
 
  private:
   static void InitializeDefaultRepeatedFields();
@@ -1673,7 +1665,7 @@ class RepeatedEnumTypeTraits {
     // so we need to do some casting magic. See message.h for similar
     // contortions for non-extension fields.
     return *reinterpret_cast<const RepeatedField<Type>*>(
-        set.GetRawRepeatedField(number, GetDefaultRepeatedField()));
+        set.GetRawRepeatedField(number, RawPtr<RepeatedField<Type>>().Get()));
   }
   static inline const RepeatedField<Type>* GetRepeatedPtr(
       int number, const ExtensionSet& set) {
@@ -1685,17 +1677,6 @@ class RepeatedEnumTypeTraits {
                                                      ExtensionSet* set) {
     return reinterpret_cast<RepeatedField<Type>*>(set->MutableRawRepeatedField(
         arena, number, field_type, is_packed, nullptr));
-  }
-
-  static const RepeatedFieldType* GetDefaultRepeatedField() {
-    // Hack: as noted above, repeated enum fields are internally stored as a
-    // RepeatedField<int>. We need to be able to instantiate global static
-    // objects to return as default (empty) repeated fields on non-existent
-    // extensions. We would not be able to know a-priori all of the enum types
-    // (values of |Type|) to instantiate all of these, so we just re-use
-    // int32_t's default repeated field object.
-    return reinterpret_cast<const RepeatedField<Type>*>(
-        RepeatedPrimitiveTypeTraits<int32_t>::GetDefaultRepeatedField());
   }
 };
 
@@ -1812,7 +1793,8 @@ class RepeatedMessageTypeTraits {
     // presumably a message. google::protobuf::Message goes through similar contortions
     // with a reinterpret_cast<>.
     return *reinterpret_cast<const RepeatedPtrField<Type>*>(
-        set.GetRawRepeatedField(number, GetDefaultRepeatedField()));
+        set.GetRawRepeatedField(number,
+                                RawPtr<RepeatedPtrField<Type>>().Get()));
   }
   static inline RepeatedPtrField<Type>* MutableRepeated(Arena* arena,
                                                         int number,
@@ -1823,16 +1805,7 @@ class RepeatedMessageTypeTraits {
         set->MutableRawRepeatedField(arena, number, field_type, is_packed,
                                      nullptr));
   }
-
-  static const RepeatedFieldType* GetDefaultRepeatedField();
 };
-
-template <typename Type>
-inline const typename RepeatedMessageTypeTraits<Type>::RepeatedFieldType*
-RepeatedMessageTypeTraits<Type>::GetDefaultRepeatedField() {
-  static auto instance = OnShutdownDelete(new RepeatedFieldType);
-  return instance;
-}
 
 // -------------------------------------------------------------------
 // ExtensionIdentifier
