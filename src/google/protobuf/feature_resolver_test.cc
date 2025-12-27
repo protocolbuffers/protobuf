@@ -641,55 +641,150 @@ TEST(FeatureResolverLifetimesTest, DeprecatedFeature) {
                         HasSubstr("Custom feature deprecation warning"))));
 }
 
-TEST(FeatureResolverLifetimesTest, CustomRemovedOptionNotSupported) {
-  MessageOptions option = ParseTextOrDie(R"pb(
+TEST(FeatureResolverLifetimesTest, CustomRemovedOption) {
+  MessageOptions options = ParseTextOrDie(R"pb(
     [proto2_unittest.removed_option]: true
   )pb");
   auto results =
-      FeatureResolver::ValidateFeatureLifetimes(EDITION_2024, option, nullptr);
-  EXPECT_THAT(results.errors, IsEmpty());
+      FeatureResolver::ValidateFeatureLifetimes(EDITION_2024, options, nullptr);
+  EXPECT_THAT(results.errors,
+              ElementsAre(AllOf(HasSubstr("proto2_unittest.removed_option"),
+                                HasSubstr("has been removed in edition 2023"),
+                                HasSubstr("Custom removal warning"))));
   EXPECT_THAT(results.warnings, IsEmpty());
 }
 
-TEST(FeatureResolverLifetimesTest, CustomDeprecatedOptionNotSupported) {
-  MessageOptions option = ParseTextOrDie(R"pb(
+TEST(FeatureResolverLifetimesTest, CustomDeprecatedOption) {
+  MessageOptions options = ParseTextOrDie(R"pb(
     [proto2_unittest.deprecated_option]: true
   )pb");
   auto results =
-      FeatureResolver::ValidateFeatureLifetimes(EDITION_2024, option, nullptr);
+      FeatureResolver::ValidateFeatureLifetimes(EDITION_2024, options, nullptr);
   EXPECT_THAT(results.errors, IsEmpty());
-  EXPECT_THAT(results.warnings, IsEmpty());
+  EXPECT_THAT(
+      results.warnings,
+      ElementsAre(AllOf(HasSubstr("proto2_unittest.deprecated_option"),
+                        HasSubstr("has been deprecated in edition 2023"),
+                        HasSubstr("Custom deprecation warning"))));
 }
 
-TEST(FeatureResolverLifetimesTest, CustomRemovedMessageOptionNotSupported) {
-  MessageOptions option = ParseTextOrDie(R"pb(
+TEST(FeatureResolverLifetimesTest, CustomRemovedMessageOption) {
+  MessageOptions options = ParseTextOrDie(R"pb(
     [proto2_unittest.custom_option] { removed_message_option: "test" }
   )pb");
   auto results =
-      FeatureResolver::ValidateFeatureLifetimes(EDITION_2024, option, nullptr);
-  EXPECT_THAT(results.errors, IsEmpty());
+      FeatureResolver::ValidateFeatureLifetimes(EDITION_2024, options, nullptr);
+  EXPECT_THAT(
+      results.errors,
+      ElementsAre(AllOf(
+          HasSubstr("proto2_unittest.CustomOption.removed_message_option"),
+          HasSubstr("has been removed in edition 2023"),
+          HasSubstr("Custom removal warning"))));
   EXPECT_THAT(results.warnings, IsEmpty());
 }
 
-TEST(FeatureResolverLifetimesTest, CustomDeprecatedMessageOptionNotSupported) {
-  MessageOptions option = ParseTextOrDie(R"pb(
+TEST(FeatureResolverLifetimesTest, CustomDeprecatedMessageOption) {
+  MessageOptions options = ParseTextOrDie(R"pb(
     [proto2_unittest.custom_option] { deprecated_message_option: "test" }
   )pb");
   auto results =
-      FeatureResolver::ValidateFeatureLifetimes(EDITION_2024, option, nullptr);
+      FeatureResolver::ValidateFeatureLifetimes(EDITION_2024, options, nullptr);
   EXPECT_THAT(results.errors, IsEmpty());
-  EXPECT_THAT(results.warnings, IsEmpty());
+  EXPECT_THAT(
+      results.warnings,
+      ElementsAre(AllOf(
+          HasSubstr("proto2_unittest.CustomOption.deprecated_message_option"),
+          HasSubstr("has been deprecated in edition 2023"),
+          HasSubstr("Custom deprecation warning"))));
 }
 
-TEST(FeatureResolverLifetimesTest, CustomNestedMessageOptionNotSupported) {
-  MessageOptions option = ParseTextOrDie(R"pb(
-    [proto2_unittest.CustomOption.Nested.nested_custom_option] {
-      removed_message_option: "test"
+TEST(FeatureResolverLifetimesTest, NestedCustomMessageOption) {
+  MessageOptions options = ParseTextOrDie(R"pb(
+    [proto2_unittest.custom_option] {
+      nested_message { nested_deprecated_message: "test" }
     }
   )pb");
   auto results =
-      FeatureResolver::ValidateFeatureLifetimes(EDITION_2024, option, nullptr);
+      FeatureResolver::ValidateFeatureLifetimes(EDITION_2024, options, nullptr);
   EXPECT_THAT(results.errors, IsEmpty());
+  EXPECT_THAT(
+      results.warnings,
+      ElementsAre(AllOf(
+          HasSubstr("proto2_unittest.NestedMessage.nested_deprecated_message"),
+          HasSubstr("has been deprecated in edition 2023"),
+          HasSubstr("Custom deprecation warning"))));
+}
+
+TEST(FeatureResolverLifetimesTest, NestedExention) {
+  MessageOptions options = ParseTextOrDie(R"pb(
+    [proto2_unittest.custom_option] {
+      [proto2_unittest.custom_nested_option]: "test"
+    }
+  )pb");
+  auto results =
+      FeatureResolver::ValidateFeatureLifetimes(EDITION_2024, options, nullptr);
+  EXPECT_THAT(
+      results.errors,
+      ElementsAre(AllOf(HasSubstr("proto2_unittest.custom_nested_option"),
+                        HasSubstr("has been removed in edition 2023"),
+                        HasSubstr("Custom removal warning"))));
+  EXPECT_THAT(results.warnings, IsEmpty());
+}
+
+TEST(FeatureResolverLifetimesTest, CustomEnumOption) {
+  MessageOptions options = ParseTextOrDie(R"pb(
+    [proto2_unittest.enum_custom_option]: VALUE0
+  )pb");
+  auto results =
+      FeatureResolver::ValidateFeatureLifetimes(EDITION_2024, options, nullptr);
+  EXPECT_THAT(results.errors,
+              ElementsAre(AllOf(HasSubstr("proto2_unittest.VALUE0"),
+                                HasSubstr("has been removed in edition 2023"),
+                                HasSubstr("Custom removal error"))));
+  EXPECT_THAT(results.warnings, IsEmpty());
+}
+
+TEST(FeatureResolverLifetimesTest, RepeatedCustomEnumOption) {
+  MessageOptions options = ParseTextOrDie(R"pb(
+    [proto2_unittest.custom_option] {
+      repeated_enum_custom_option: VALUE1
+      repeated_enum_custom_option: VALUE2
+    }
+  )pb");
+  auto results =
+      FeatureResolver::ValidateFeatureLifetimes(EDITION_2024, options, nullptr);
+  EXPECT_THAT(results.errors,
+              UnorderedElementsAre(
+                  AllOf(HasSubstr("proto2_unittest.VALUE1"),
+                        HasSubstr("has been removed in edition 2023"),
+                        HasSubstr("Custom removal error")),
+                  AllOf(HasSubstr("proto2_unittest.VALUE2"),
+                        HasSubstr("has been removed in edition PROTO3"),
+                        HasSubstr("Custom removal error"))));
+  EXPECT_THAT(results.warnings, IsEmpty());
+}
+
+TEST(FeatureResolverLifetimesTest, RepeatedCustomMessageOption) {
+  MessageOptions options = ParseTextOrDie(R"pb(
+    [proto2_unittest.repeated_option] {
+      repeated_removed_message_option: "test1"
+    }
+    [proto2_unittest.repeated_option] {
+      repeated_removed_message_option: "test2"
+    }
+  )pb");
+  auto results =
+      FeatureResolver::ValidateFeatureLifetimes(EDITION_2024, options, nullptr);
+  EXPECT_THAT(
+      results.errors,
+      UnorderedElementsAre(AllOf(HasSubstr("proto2_unittest.RepeatedOption."
+                                           "repeated_removed_message_option"),
+                                 HasSubstr("has been removed in edition 2023"),
+                                 HasSubstr("Custom removal error")),
+                           AllOf(HasSubstr("proto2_unittest.RepeatedOption."
+                                           "repeated_removed_message_option"),
+                                 HasSubstr("has been removed in edition 2023"),
+                                 HasSubstr("Custom removal error"))));
   EXPECT_THAT(results.warnings, IsEmpty());
 }
 
@@ -828,6 +923,63 @@ TEST(FeatureResolverLifetimesTest, FeatureDynamicPool) {
               ElementsAre(HasSubstr("pb.TestFeatures.future_feature")));
   EXPECT_THAT(results.warnings,
               ElementsAre(HasSubstr("pb.TestFeatures.removed_feature")));
+}
+
+TEST(FeatureResolverLifetimesTest, OptionDynamicPool) {
+  DescriptorPool pool;
+  const FileDescriptor* file_descriptor;
+  {
+    FileDescriptorProto file;
+    FileDescriptorProto::GetDescriptor()->file()->CopyTo(&file);
+    ASSERT_NE(pool.BuildFile(file), nullptr);
+  }
+  {
+    FileDescriptorProto file;
+    ASSERT_TRUE(TextFormat::ParseFromString(
+        R"pb(
+          name: "foo.proto"
+          edition: EDITION_2024
+          package: "proto2_unittest"
+          dependency: "google/protobuf/descriptor.proto"
+          extension {
+            name: "some_option"
+            number: 7739973
+            label: LABEL_OPTIONAL
+            type: TYPE_STRING
+            extendee: ".google.protobuf.FileOptions"
+            options {
+              feature_support {
+                edition_introduced: EDITION_PROTO3
+                edition_deprecated: EDITION_PROTO3
+                deprecation_warning: "warning"
+              }
+            }
+          }
+          options {
+            uninterpreted_option {
+              name { name_part: "some_option" is_extension: true }
+              string_value: "test"
+            }
+          })pb",
+        &file));
+    file_descriptor = pool.BuildFile(file);
+    ASSERT_NE(file_descriptor, nullptr);
+  }
+
+  FileOptions options = file_descriptor->options();
+
+  const Descriptor* option_set =
+      pool.FindMessageTypeByName("google.protobuf.FileOptions");
+  ASSERT_NE(option_set, nullptr);
+
+  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2023,
+                                                           options, option_set);
+  EXPECT_THAT(results.errors, IsEmpty());
+  EXPECT_THAT(
+      results.warnings,
+      ElementsAre(AllOf(HasSubstr("proto2_unittest.some_option"),
+                        HasSubstr("has been deprecated in edition PROTO3"),
+                        HasSubstr("warning"))));
 }
 
 TEST(FeatureResolverLifetimesTest, EmptyValueSupportValid) {
@@ -1443,7 +1595,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsInvalidDefaultsAfterRemoved) {
         feature_support = {
           edition_introduced: EDITION_PROTO2
           edition_removed: EDITION_2023
-          removal_error: "Custom feature removal error"
+          removal_error: "Custom removal error"
         },
         edition_defaults = { edition: EDITION_LEGACY, value: "true" },
         edition_defaults = { edition: EDITION_2024, value: "true" }

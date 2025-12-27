@@ -1648,14 +1648,15 @@ class DescriptorPool::DeferredValidation {
       const FileDescriptor* file = it.first;
 
       for (const auto& info : it.second) {
-        const Descriptor* feature_set_descriptor = nullptr;
-        // TODO: Support custom options
+        const Descriptor* option_descriptor = nullptr;
         if (info.is_feature) {
-          feature_set_descriptor =
-              pool_->FindMessageTypeByName(feature_set_name);
+          option_descriptor = pool_->FindMessageTypeByName(feature_set_name);
+        } else {
+          option_descriptor = pool_->FindMessageTypeByName(
+              info.option_to_validate->GetTypeName());
         }
         auto results = FeatureResolver::ValidateFeatureLifetimes(
-            file->edition(), *info.option_to_validate, feature_set_descriptor);
+            file->edition(), *info.option_to_validate, option_descriptor);
         for (const auto& error : results.errors) {
           has_errors = true;
           if (error_collector_ == nullptr) {
