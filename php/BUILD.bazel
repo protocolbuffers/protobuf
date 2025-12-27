@@ -194,36 +194,6 @@ staleness_test(
 )
 
 ################################################################################
-# Distribution files
-################################################################################
-
-pkg_files(
-    name = "dist_files",
-    srcs = glob([
-        "ext/google/protobuf/**/*",
-        "tests/*.php",
-        "tests/*.sh",
-        "tests/generated_previous/**/*.php",
-        "tests/proto/**/*.proto",
-        "tests/proto_previous/*.proto",
-    ]) + [
-        "BUILD.bazel",
-        "README.md",
-        "REFCOUNTING.md",
-        "composer.json",
-        "generate_descriptor_protos.sh",
-        "generate_test_protos.sh",
-        "release.sh",
-        "src/phpdoc.dist.xml",
-        "tests/valgrind.supp",
-        ":source_files",
-    ],
-    prefix = "php",
-    strip_prefix = strip_prefix.from_pkg(""),
-    visibility = ["//pkg:__pkg__"],
-)
-
-################################################################################
 # PECL .tgz Release
 ################################################################################
 
