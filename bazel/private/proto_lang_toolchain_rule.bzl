@@ -62,9 +62,6 @@ def _rule_impl(ctx):
 proto_lang_toolchain = rule(
     _rule_impl,
     doc = """
-<p>If using Bazel, please load the rule from <a href="https://github.com/bazelbuild/rules_proto">
-https://github.com/bazelbuild/rules_proto</a>.
-
 <p>Specifies how a LANG_proto_library rule (e.g., <code>java_proto_library</code>) should invoke the
 proto-compiler.
 Some LANG_proto_library rules allow specifying which toolchain to use using command-line flags;
