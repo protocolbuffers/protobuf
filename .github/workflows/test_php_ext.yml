@@ -54,8 +54,6 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - version: "8.1"
-            continuous-only: true
           - version: "8.2"
             continuous-only: true
           - version: "8.3"
