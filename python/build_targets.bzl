@@ -200,13 +200,23 @@ def build_targets(name):
                 "google/protobuf/internal/*_test.py",
                 "google/protobuf/internal/test_util.py",
                 "google/protobuf/internal/import_test_package/__init__.py",
+                "google/protobuf/pyext/**/*.py",
             ],
         ) + ["google/protobuf/internal/python_edition_defaults.py"],
     )
 
+    native.filegroup(
+        name = "pyext_src_files",
+        srcs = native.glob(
+            [
+                "google/protobuf/pyext/**/*.py",
+            ],
+        ),
+    )
+
     py_library(
         name = "python_srcs",
-        srcs = [":python_src_files"],
+        srcs = [":python_src_files", ":pyext_src_files"],
         imports = ["python"],
         srcs_version = "PY2AND3",
         visibility = [
