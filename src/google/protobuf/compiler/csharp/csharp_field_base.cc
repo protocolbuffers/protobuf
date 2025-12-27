@@ -12,8 +12,8 @@
 #include <sstream>
 #include <string>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/log/absl_log.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 #include "google/protobuf/compiler/csharp/names.h"
 #include "google/protobuf/descriptor.h"
