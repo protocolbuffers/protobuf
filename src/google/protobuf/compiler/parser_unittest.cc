@@ -13,31 +13,36 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "google/protobuf/testing/file.h"
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "absl/base/macros.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
+#include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
-#include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/tokenizer.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
 #include "google/protobuf/unittest_import_public.pb.h"
-#include "google/protobuf/wire_format.h"
 
 
 // Must be included last.
@@ -232,8 +237,8 @@ TEST_F(ParserTest, WarnIfSyntaxIdentifierOmitted) {
   FileDescriptorProto file;
   CaptureTestStderr();
   EXPECT_TRUE(parser_->Parse(input_.get(), &file));
-  EXPECT_TRUE(GetCapturedTestStderr().find("No edition or syntax specified") !=
-              std::string::npos);
+  EXPECT_TRUE(absl::StrContains(GetCapturedTestStderr(),
+                                "No edition or syntax specified"));
 }
 
 TEST_F(ParserTest, RegressionNestedOpenBraceDoNotStackOverflow) {
@@ -3356,7 +3361,7 @@ TEST_F(ParseDescriptorDebugTest, TestCommentsInDebugString) {
     const std::string debug_string =
         descriptor->DebugStringWithOptions(debug_string_options);
 
-    for (int i = 0; i < ABSL_ARRAYSIZE(expected_comments); ++i) {
+    for (size_t i = 0; i < ABSL_ARRAYSIZE(expected_comments); ++i) {
       std::string::size_type found_pos =
           debug_string.find(expected_comments[i]);
       EXPECT_TRUE(found_pos != std::string::npos)
@@ -3391,9 +3396,9 @@ TEST_F(ParseDescriptorDebugTest, TestMaps) {
   // Make sure the debug string uses map syntax and does not have the auto
   // generated entry.
   std::string debug_string = file->DebugString();
-  EXPECT_TRUE(debug_string.find("map<") != std::string::npos);
-  EXPECT_TRUE(debug_string.find("option map_entry") == std::string::npos);
-  EXPECT_TRUE(debug_string.find("MapEntry") == std::string::npos);
+  EXPECT_TRUE(absl::StrContains(debug_string, "map<"));
+  EXPECT_TRUE(!absl::StrContains(debug_string, "option map_entry"));
+  EXPECT_TRUE(!absl::StrContains(debug_string, "MapEntry"));
 
   // Make sure the descriptor debug string is parsable.
   FileDescriptorProto parsed;
