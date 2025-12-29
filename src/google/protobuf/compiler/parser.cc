@@ -81,6 +81,8 @@ const TypeNameMap& GetUnstableVarintTypeNameTable() {
 
     result["varint32"] = FieldDescriptorProto::TYPE_INT32;
     result["varint64"] = FieldDescriptorProto::TYPE_INT64;
+    result["uvarint32"] = FieldDescriptorProto::TYPE_UINT32;
+    result["uvarint64"] = FieldDescriptorProto::TYPE_UINT64;
     result["zigzag32"] = FieldDescriptorProto::TYPE_SINT32;
     result["zigzag64"] = FieldDescriptorProto::TYPE_SINT64;
 
