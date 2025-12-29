@@ -33,6 +33,7 @@
 #include "conformance/conformance.pb.h"
 #include "conformance_test.h"
 #include "conformance/test_protos/test_messages_edition2023.pb.h"
+#include "conformance/test_protos/test_messages_edition_unstable.pb.h"
 #include "editions/golden/test_messages_proto2_editions.pb.h"
 #include "editions/golden/test_messages_proto3_editions.pb.h"
 #include "google/protobuf/json/json.h"
@@ -51,6 +52,7 @@ using google::protobuf::Descriptor;
 using google::protobuf::FieldDescriptor;
 using google::protobuf::internal::WireFormatLite;
 using google::protobuf::util::NewTypeResolverForDescriptorPool;
+using protobuf_test_messages::edition_unstable::TestAllTypesEditionUnstable;
 using protobuf_test_messages::editions::TestAllTypesEdition2023;
 using protobuf_test_messages::proto2::TestAllTypesProto2;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
@@ -318,6 +320,7 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
     BinaryAndJsonConformanceSuiteImpl<TestAllTypesProto2Editions>(
         this, /*run_proto3_tests=*/false);
     RunDelimitedFieldTests();
+    RunUnstableTests();
   }
 }
 
@@ -372,6 +375,22 @@ void BinaryAndJsonConformanceSuite::RunDelimitedFieldTests() {
       absl::StrCat("ValidDelimitedExtension.NotGroupLike"), REQUIRED,
       group(122, field(1, WireFormatLite::WIRETYPE_VARINT, varint(99))),
       R"pb([protobuf_test_messages.editions.delimited_ext] { c: 99 })pb");
+}
+
+void BinaryAndJsonConformanceSuite::RunUnstableTests() {
+  SetTypeUrl(GetTypeUrl(TestAllTypesEditionUnstable::GetDescriptor()));
+
+  RunValidProtobufTest<TestAllTypesEditionUnstable>(
+      absl::StrCat("ValidInt32"), REQUIRED,
+      field(1, WireFormatLite::WIRETYPE_VARINT, varint(99)),
+      R"pb(optional_int32: 99)pb");
+
+  RunValidProtobufTest<TestAllTypesEditionUnstable>(
+      absl::StrCat("ValidMap.Integer"), REQUIRED,
+      len(8,
+          absl::StrCat(field(1, WireFormatLite::WIRETYPE_VARINT, varint(99)),
+                       field(2, WireFormatLite::WIRETYPE_VARINT, varint(87)))),
+      R"pb(map_int32_int32 { key: 99 value: 87 })pb");
 }
 
 void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
