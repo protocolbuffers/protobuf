@@ -78,7 +78,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *
    * <p>One of the noticeable costs of copying a byte[] into a new array using {@code
    * System.arraycopy} is nullification of a new buffer before the copy. It has been shown the
-   * Hotspot VM is capable to intrisicfy {@code Arrays.copyOfRange} operation to avoid this
+   * Hotspot VM is capable of intrinsic {@code Arrays.copyOfRange} operation to avoid this
    * expensive nullification and provide substantial performance gain. Unfortunately this does not
    * hold on Android runtimes and could make the copy slightly slower due to additional code in the
    * {@code Arrays.copyOfRange}. Thus we provide two different implementation for array copier for
@@ -538,13 +538,12 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @param charsetName encoding to use
    * @return new {@code ByteString}
    * @throws UnsupportedEncodingException if the encoding isn't found
+   * @deprecated Use {@link #copyFrom(String, Charset)} instead.
    */
+  @Deprecated
   public static ByteString copyFrom(String text, String charsetName)
       throws UnsupportedEncodingException {
-    if (text.isEmpty()) {
-      return EMPTY;
-    }
-    return new LiteralByteString(text.getBytes(charsetName));
+    return text.isEmpty() ? EMPTY : new LiteralByteString(text.getBytes(charsetName));
   }
 
   /**
@@ -556,10 +555,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return new {@code ByteString}
    */
   public static ByteString copyFrom(String text, Charset charset) {
-    if (text.isEmpty()) {
-      return EMPTY;
-    }
-    return new LiteralByteString(text.getBytes(charset));
+    return text.isEmpty() ? EMPTY : new LiteralByteString(text.getBytes(charset));
   }
 
   /**
@@ -570,10 +566,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return new {@code ByteString}
    */
   public static ByteString copyFromUtf8(String text) {
-    if (text.isEmpty()) {
-      return EMPTY;
-    }
-    return new LiteralByteString(text.getBytes(Internal.UTF_8));
+    return text.isEmpty() ? EMPTY : new LiteralByteString(text.getBytes(Internal.UTF_8));
   }
 
   // =================================================================
@@ -908,7 +901,9 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @param charsetName encode using this charset
    * @return new string
    * @throws UnsupportedEncodingException if charset isn't recognized
+   * @deprecated Use {@link #toString(Charset)} instead.
    */
+  @Deprecated
   public final String toString(String charsetName) throws UnsupportedEncodingException {
     try {
       return toString(Charset.forName(charsetName));
@@ -927,7 +922,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return new string
    */
   public final String toString(Charset charset) {
-    return size() == 0 ? "" : toStringInternal(charset);
+    return isEmpty() ? "" : toStringInternal(charset);
   }
 
   /**
