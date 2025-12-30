@@ -50,6 +50,7 @@ struct upb_DefPool {
   void* scratch_data;
   size_t scratch_size;
   size_t bytes_loaded;
+  bool disable_closed_enum_checking;
 };
 
 void upb_DefPool_Free(upb_DefPool* s) {
@@ -67,6 +68,7 @@ upb_DefPool* upb_DefPool_New(void) {
 
   s->arena = upb_Arena_New();
   s->bytes_loaded = 0;
+  s->disable_closed_enum_checking = false;
 
   s->scratch_size = 240;
   s->scratch_data = upb_gmalloc(s->scratch_size);
@@ -97,6 +99,15 @@ upb_DefPool* upb_DefPool_New(void) {
 err:
   upb_DefPool_Free(s);
   return NULL;
+}
+
+void upb_DefPool_DisableClosedEnumChecking(upb_DefPool* s) {
+  UPB_ASSERT(upb_strtable_count(&s->files) == 0);
+  s->disable_closed_enum_checking = true;
+}
+
+bool upb_DefPool_ClosedEnumCheckingDisabled(const upb_DefPool* s) {
+  return s->disable_closed_enum_checking;
 }
 
 const UPB_DESC(FeatureSetDefaults) *
