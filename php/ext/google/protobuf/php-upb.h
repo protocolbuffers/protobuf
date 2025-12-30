@@ -1016,6 +1016,7 @@ UPB_INLINE uint8_t _upb_Xsan_NextTag(upb_Xsan *xsan) {
   }
   return xsan->state;
 #else
+  UPB_UNUSED(xsan);
   return 0;
 #endif
 }
@@ -1032,6 +1033,7 @@ UPB_INLINE uint8_t UPB_PRIVATE(_upb_Xsan_GetTag)(const void *addr) {
 #if UPB_HWASAN
   return __hwasan_get_tag_from_pointer(addr);
 #else
+  UPB_UNUSED(addr);
   return 0;
 #endif
 }
@@ -1039,6 +1041,8 @@ UPB_INLINE uint8_t UPB_PRIVATE(_upb_Xsan_GetTag)(const void *addr) {
 UPB_INLINE void UPB_PRIVATE(upb_Xsan_Init)(upb_Xsan *xsan) {
 #if UPB_HWASAN || UPB_TSAN
   xsan->state = 0;
+#else
+  UPB_UNUSED(xsan);
 #endif
 }
 
@@ -1047,6 +1051,9 @@ UPB_INLINE void UPB_PRIVATE(upb_Xsan_MarkInitialized)(void* addr, size_t size) {
   if (size) {
     __msan_unpoison(addr, size);
   }
+#else
+  UPB_UNUSED(addr);
+  UPB_UNUSED(size);
 #endif
 }
 
@@ -1059,6 +1066,9 @@ UPB_INLINE void UPB_PRIVATE(upb_Xsan_PoisonRegion)(const void *addr,
   __asan_poison_memory_region(addr, size);
 #elif UPB_HWASAN
   __hwasan_tag_memory(addr, UPB_HWASAN_POISON_TAG, UPB_ALIGN_MALLOC(size));
+#else
+  UPB_UNUSED(addr);
+  UPB_UNUSED(size);
 #endif
 }
 
@@ -1136,6 +1146,8 @@ UPB_INLINE void UPB_PRIVATE(upb_Xsan_AccessReadOnly)(upb_Xsan *xsan) {
 #if UPB_TSAN
   // For performance we avoid using a volatile variable.
   __asm__ volatile("" ::"r"(xsan->state));
+#else
+  UPB_UNUSED(xsan);
 #endif
 }
 
@@ -1143,6 +1155,8 @@ UPB_INLINE void UPB_PRIVATE(upb_Xsan_AccessReadWrite)(upb_Xsan *xsan) {
 #if UPB_TSAN
   // For performance we avoid using a volatile variable.
   __asm__ volatile("" : "+r"(xsan->state));
+#else
+  UPB_UNUSED(xsan);
 #endif
 }
 
