@@ -623,12 +623,13 @@ static void upb_MtDecoder_AssignHasbits(upb_MtDecoder* d) {
       field->presence = 0;
     }
   }
-  if (last_hasbit > kUpb_Reserved_Hasbits + 63) {
+  if (last_hasbit >= kUpb_Reserved_Hasbits + 63) {
     upb_MdDecoder_ErrorJmp(&d->base, "Too many required fields");
   }
 
   d->table.UPB_PRIVATE(required_count) =
       last_hasbit - (kUpb_Reserved_Hasbits - 1);
+  UPB_ASSERT(d->table.UPB_PRIVATE(required_count) < 64);
 
   // Next assign non-required hasbit fields.
   for (int i = 0; i < n; i++) {
