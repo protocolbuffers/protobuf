@@ -74,7 +74,6 @@ ALL_RUST_SRCS = PROTOBUF_SHARED + [
     "gtest_matchers_impl.rs",
     "protobuf.rs",
     "upb.rs",
-    "utf8.rs",
     # go/keep-sorted end
 ]
 
@@ -97,7 +96,6 @@ rust_library(
     ],
     visibility = [":protobuf_internal"],
     deps = [
-        ":utf8",
         "//rust/upb",
     ],
 )
@@ -144,7 +142,6 @@ rust_library(
     ],
     visibility = [":protobuf_internal"],
     deps = [
-        ":utf8",
         "//rust/cpp_kernel:cpp_api",
     ],
 )
@@ -213,11 +210,6 @@ rust_library(
         ":protobuf_upb",
         "@crate_index//:googletest",
     ],
-)
-
-rust_library(
-    name = "utf8",
-    srcs = ["utf8.rs"],
 )
 
 proto_lang_toolchain(
