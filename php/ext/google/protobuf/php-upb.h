@@ -496,14 +496,6 @@ Error, UINTPTR_MAX is undefined
 
 #undef UPB_FASTTABLE_SUPPORTED
 
-/* Disable proto2 arena behavior (TEMPORARY) **********************************/
-
-#ifdef UPB_DISABLE_CLOSED_ENUM_CHECKING
-#define UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN 1
-#else
-#define UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN 0
-#endif
-
 #if defined(__cplusplus)
 #if defined(__clang__) || UPB_GNUC_MIN(6, 0)
 // https://gcc.gnu.org/gcc-6/changes.html
@@ -14199,6 +14191,20 @@ const upb_FieldDef** upb_DefPool_GetAllExtensions(const upb_DefPool* s,
                                                   const upb_MessageDef* m,
                                                   size_t* count);
 
+// If called, closed enums will be treated as open enums. This is non-standard
+// behavior and will cause conformance tests to fail, but it is more useful
+// behavior overall and can be used in situations where where the
+// non-conformance is acceptable.
+//
+// This function may only be called immediately after upb_DefPool_New().
+// It is an error to call it on an existing def pool or after defs have
+// already been added to the pool.
+//
+// Note: we still require that implicit presence fields have zero as their
+// default value.
+UPB_API void upb_DefPool_DisableClosedEnumChecking(upb_DefPool* s);
+bool upb_DefPool_ClosedEnumCheckingDisabled(const upb_DefPool* s);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
@@ -17276,6 +17282,7 @@ const upb_MiniTableExtension* _upb_FileDef_ExtensionMiniTable(
     const upb_FileDef* f, int i);
 const int32_t* _upb_FileDef_PublicDependencyIndexes(const upb_FileDef* f);
 const int32_t* _upb_FileDef_WeakDependencyIndexes(const upb_FileDef* f);
+bool _upb_FileDef_ClosedEnumCheckingDisabled(const upb_FileDef* f);
 
 // upb_FileDef_Package() returns "" if f->package is NULL, this does not.
 const char* _upb_FileDef_RawPackage(const upb_FileDef* f);
@@ -17998,7 +18005,6 @@ UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
 #undef UPB_MSAN
 #undef UPB_MALLOC_ALIGN
 #undef UPB_TSAN
-#undef UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN
 #undef UPB_DEPRECATED
 #undef UPB_GNUC_MIN
 #undef UPB_DESCRIPTOR_UPB_H_FILENAME

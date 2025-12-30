@@ -497,14 +497,6 @@ Error, UINTPTR_MAX is undefined
 
 #undef UPB_FASTTABLE_SUPPORTED
 
-/* Disable proto2 arena behavior (TEMPORARY) **********************************/
-
-#ifdef UPB_DISABLE_CLOSED_ENUM_CHECKING
-#define UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN 1
-#else
-#define UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN 0
-#endif
-
 #if defined(__cplusplus)
 #if defined(__clang__) || UPB_GNUC_MIN(6, 0)
 // https://gcc.gnu.org/gcc-6/changes.html
@@ -11595,6 +11587,7 @@ struct upb_DefPool {
   void* scratch_data;
   size_t scratch_size;
   size_t bytes_loaded;
+  bool disable_closed_enum_checking;
 };
 
 void upb_DefPool_Free(upb_DefPool* s) {
@@ -11612,6 +11605,7 @@ upb_DefPool* upb_DefPool_New(void) {
 
   s->arena = upb_Arena_New();
   s->bytes_loaded = 0;
+  s->disable_closed_enum_checking = false;
 
   s->scratch_size = 240;
   s->scratch_data = upb_gmalloc(s->scratch_size);
@@ -11642,6 +11636,15 @@ upb_DefPool* upb_DefPool_New(void) {
 err:
   upb_DefPool_Free(s);
   return NULL;
+}
+
+void upb_DefPool_DisableClosedEnumChecking(upb_DefPool* s) {
+  UPB_ASSERT(upb_strtable_count(&s->files) == 0);
+  s->disable_closed_enum_checking = true;
+}
+
+bool upb_DefPool_ClosedEnumCheckingDisabled(const upb_DefPool* s) {
+  return s->disable_closed_enum_checking;
 }
 
 const UPB_DESC(FeatureSetDefaults) *
@@ -12283,7 +12286,7 @@ static bool upb_EnumDef_IsSpecifiedAsClosed(const upb_EnumDef* e) {
 }
 
 bool upb_EnumDef_IsClosed(const upb_EnumDef* e) {
-  if (UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN) return false;
+  if (_upb_FileDef_ClosedEnumCheckingDisabled(e->file)) return false;
   return upb_EnumDef_IsSpecifiedAsClosed(e);
 }
 
@@ -13799,6 +13802,10 @@ const int32_t* _upb_FileDef_PublicDependencyIndexes(const upb_FileDef* f) {
 
 const int32_t* _upb_FileDef_WeakDependencyIndexes(const upb_FileDef* f) {
   return f->weak_deps;
+}
+
+bool _upb_FileDef_ClosedEnumCheckingDisabled(const upb_FileDef* f) {
+  return upb_DefPool_ClosedEnumCheckingDisabled(f->symtab);
 }
 
 int upb_FileDef_TopLevelEnumCount(const upb_FileDef* f) {
@@ -18397,7 +18404,6 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
 #undef UPB_MSAN
 #undef UPB_MALLOC_ALIGN
 #undef UPB_TSAN
-#undef UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN
 #undef UPB_DEPRECATED
 #undef UPB_GNUC_MIN
 #undef UPB_DESCRIPTOR_UPB_H_FILENAME
