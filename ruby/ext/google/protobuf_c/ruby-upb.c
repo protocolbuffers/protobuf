@@ -12088,12 +12088,12 @@ static void set_default_default(upb_DefBuilder* ctx, upb_FieldDef* f,
 static bool _upb_FieldDef_InferLegacyFeatures(
     upb_DefBuilder* ctx, upb_FieldDef* f,
     const UPB_DESC(FieldDescriptorProto*) proto,
-    const UPB_DESC(FieldOptions*) options, upb_Syntax syntax,
+    const UPB_DESC(FieldOptions*) options, google_protobuf_Edition edition,
     UPB_DESC(FeatureSet*) features) {
   bool ret = false;
 
   if (UPB_DESC(FieldDescriptorProto_label)(proto) == kUpb_Label_Required) {
-    if (syntax == kUpb_Syntax_Proto3) {
+    if (edition == google_protobuf_EDITION_PROTO3) {
       _upb_DefBuilder_Errf(ctx, "proto3 fields cannot be required (%s)",
                            f->full_name);
     }
@@ -12137,15 +12137,15 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
 
   UPB_DEF_SET_OPTIONS(f->opts, FieldDescriptorProto, FieldOptions, field_proto);
 
-  upb_Syntax syntax = upb_FileDef_Syntax(f->file);
+  UPB_DESC(Edition) edition = upb_FileDef_Edition(f->file);
   const UPB_DESC(FeatureSet*) unresolved_features =
       UPB_DESC(FieldOptions_features)(f->opts);
   bool implicit = false;
 
-  if (syntax != kUpb_Syntax_Editions) {
+  if (_upb_DefBuilder_IsLegacyEdition(edition)) {
     upb_Message_Clear(UPB_UPCAST(ctx->legacy_features),
                       UPB_DESC_MINITABLE(FeatureSet));
-    if (_upb_FieldDef_InferLegacyFeatures(ctx, f, field_proto, f->opts, syntax,
+    if (_upb_FieldDef_InferLegacyFeatures(ctx, f, field_proto, f->opts, edition,
                                           ctx->legacy_features)) {
       implicit = true;
       unresolved_features = ctx->legacy_features;
@@ -12528,7 +12528,7 @@ static void resolve_default(upb_DefBuilder* ctx, upb_FieldDef* f,
                            f->full_name);
     }
 
-    if (upb_FileDef_Syntax(f->file) == kUpb_Syntax_Proto3) {
+    if (upb_FileDef_Edition(f->file) == google_protobuf_EDITION_PROTO3) {
       _upb_DefBuilder_Errf(ctx,
                            "proto3 fields cannot have explicit defaults (%s)",
                            f->full_name);
@@ -12594,7 +12594,6 @@ struct upb_FileDef {
   int top_lvl_ext_count;
   int service_count;
   int ext_count;  // All exts in the file.
-  upb_Syntax syntax;
 };
 
 UPB_API const char* upb_FileDef_EditionName(int edition) {
@@ -12635,8 +12634,6 @@ UPB_DESC(Edition) upb_FileDef_Edition(const upb_FileDef* f) {
 }
 
 const char* _upb_FileDef_RawPackage(const upb_FileDef* f) { return f->package; }
-
-upb_Syntax upb_FileDef_Syntax(const upb_FileDef* f) { return f->syntax; }
 
 int upb_FileDef_TopLevelMessageCount(const upb_FileDef* f) {
   return f->top_lvl_msg_count;
@@ -12866,27 +12863,30 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
     file->package = NULL;
   }
 
-  // TODO: How should we validate this?
-  file->edition = UPB_DESC(FileDescriptorProto_edition)(file_proto);
+  upb_StringView syntax = UPB_DESC(FileDescriptorProto_syntax)(file_proto);
 
-  if (UPB_DESC(FileDescriptorProto_has_syntax)(file_proto)) {
-    upb_StringView syntax = UPB_DESC(FileDescriptorProto_syntax)(file_proto);
-
+  if (UPB_DESC(FileDescriptorProto_has_edition)(file_proto)) {
+    if (!streql_view(syntax, "editions")) {
+      _upb_DefBuilder_Errf(ctx,
+                           "Setting edition requires that syntax=\"editions\", "
+                           "but syntax is \"" UPB_STRINGVIEW_FORMAT "\"",
+                           UPB_STRINGVIEW_ARGS(syntax));
+    }
+    file->edition = UPB_DESC(FileDescriptorProto_edition)(file_proto);
+  } else if (UPB_DESC(FileDescriptorProto_has_syntax)(file_proto)) {
     if (streql_view(syntax, "proto2")) {
-      file->syntax = kUpb_Syntax_Proto2;
       file->edition = UPB_DESC(EDITION_PROTO2);
     } else if (streql_view(syntax, "proto3")) {
-      file->syntax = kUpb_Syntax_Proto3;
       file->edition = UPB_DESC(EDITION_PROTO3);
     } else if (streql_view(syntax, "editions")) {
-      file->syntax = kUpb_Syntax_Editions;
-      file->edition = UPB_DESC(FileDescriptorProto_edition)(file_proto);
+      _upb_DefBuilder_Errf(
+          ctx, "File has syntax=\"editions\", but no edition is specified");
     } else {
       _upb_DefBuilder_Errf(ctx, "Invalid syntax '" UPB_STRINGVIEW_FORMAT "'",
                            UPB_STRINGVIEW_ARGS(syntax));
     }
   } else {
-    file->syntax = kUpb_Syntax_Proto2;
+    // The legacy default when no edition or syntax is specified is proto2.
     file->edition = UPB_DESC(EDITION_PROTO2);
   }
 
@@ -13008,6 +13008,9 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
 }
 
 
+#include <assert.h>
+#include <stdarg.h>
+#include <stdint.h>
 #include <string.h>
 
 
@@ -13382,8 +13385,8 @@ const UPB_DESC(FeatureSet*)
   assert(parent);
   if (!child) return parent;
 
-  if (child && !is_implicit &&
-      upb_FileDef_Syntax(ctx->file) != kUpb_Syntax_Editions) {
+  if (!is_implicit &&
+      _upb_DefBuilder_IsLegacyEdition(upb_FileDef_Edition(ctx->file))) {
     _upb_DefBuilder_Errf(ctx, "Features can only be specified for editions");
   }
 
@@ -13790,10 +13793,6 @@ const upb_MessageDef* upb_MessageDef_ContainingType(const upb_MessageDef* m) {
 
 const char* upb_MessageDef_Name(const upb_MessageDef* m) {
   return _upb_DefBuilder_FullToShort(m->full_name);
-}
-
-upb_Syntax upb_MessageDef_Syntax(const upb_MessageDef* m) {
-  return upb_FileDef_Syntax(m->file);
 }
 
 const upb_FieldDef* upb_MessageDef_FindFieldByNumber(const upb_MessageDef* m,
@@ -14882,6 +14881,11 @@ upb_ServiceDef* _upb_ServiceDefs_New(upb_DefBuilder* ctx, int n,
 
 #include <inttypes.h>
 #include <math.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 
 
 // Must be last.
@@ -15409,14 +15413,20 @@ static google_protobuf_FileDescriptorProto* filedef_toproto(upb_ToProto_Context*
     }
   }
 
-  if (upb_FileDef_Syntax(f) == kUpb_Syntax_Editions) {
-    google_protobuf_FileDescriptorProto_set_edition(proto, upb_FileDef_Edition(f));
-  }
+  google_protobuf_Edition edition = upb_FileDef_Edition(f);
 
-  if (upb_FileDef_Syntax(f) == kUpb_Syntax_Proto3) {
-    google_protobuf_FileDescriptorProto_set_syntax(proto, strviewdup(ctx, "proto3"));
-  } else if (upb_FileDef_Syntax(f) == kUpb_Syntax_Editions) {
-    google_protobuf_FileDescriptorProto_set_syntax(proto, strviewdup(ctx, "editions"));
+  switch (edition) {
+    case google_protobuf_EDITION_PROTO2:
+      // We could set syntax to "proto2", but C++ omits it completely, which is
+      // equivalent.
+      break;
+    case google_protobuf_EDITION_PROTO3:
+      google_protobuf_FileDescriptorProto_set_syntax(proto, strviewdup(ctx, "proto3"));
+      break;
+    default:
+      google_protobuf_FileDescriptorProto_set_syntax(proto, strviewdup(ctx, "editions"));
+      google_protobuf_FileDescriptorProto_set_edition(proto, edition);
+      break;
   }
 
   size_t n;
