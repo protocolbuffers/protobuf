@@ -158,6 +158,13 @@ UPB_INLINE void _upb_DefBuilder_CheckIdentFull(upb_DefBuilder* ctx,
   if (!good) _upb_DefBuilder_CheckIdentSlow(ctx, name, true);
 }
 
+UPB_INLINE bool _upb_DefBuilder_IsLegacyEdition(google_protobuf_Edition edition) {
+  // Should only be called for a real edition, not a placeholder like
+  // EDITION_LEGACY.
+  UPB_ASSERT(edition >= google_protobuf_EDITION_PROTO2);
+  return edition <= google_protobuf_EDITION_PROTO3;
+}
+
 // Returns true if the returned feature set is new and must be populated.
 bool _upb_DefBuilder_GetOrCreateFeatureSet(upb_DefBuilder* ctx,
                                            const UPB_DESC(FeatureSet*) parent,

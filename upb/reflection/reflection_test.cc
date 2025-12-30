@@ -133,6 +133,102 @@ TEST(ReflectionTest, ImplicitPresenceWithNonZeroDefaultEnum) {
             "with a non-zero default (FooEnum)");
 }
 
+TEST(ReflectionTest, EditionWithoutSyntax) {
+  absl::Status status = LoadDescriptorProto(
+                            R"pb(
+                              edition: EDITION_2023
+                            )pb")
+                            .status();
+  EXPECT_EQ(
+      status.message(),
+      R"(Setting edition requires that syntax="editions", but syntax is "")");
+}
+
+TEST(ReflectionTest, EditionWithWrongSyntax) {
+  absl::Status status = LoadDescriptorProto(
+                            R"pb(
+                              edition: EDITION_2023 syntax: "proto2"
+                            )pb")
+                            .status();
+  EXPECT_EQ(
+      status.message(),
+      R"(Setting edition requires that syntax="editions", but syntax is "proto2")");
+}
+
+TEST(ReflectionTest, SyntaxEditionsWithNoEdition) {
+  absl::Status status = LoadDescriptorProto(
+                            R"pb(
+                              syntax: "editions"
+                            )pb")
+                            .status();
+  EXPECT_EQ(status.message(),
+            R"(File has syntax="editions", but no edition is specified)");
+}
+
+TEST(ReflectionTest, InvalidSyntax) {
+  absl::Status status = LoadDescriptorProto(
+                            R"pb(
+                              syntax: "abc123"
+                            )pb")
+                            .status();
+  EXPECT_EQ(status.message(), R"(Invalid syntax 'abc123')");
+}
+
+TEST(ReflectionTest, ExplicitFeatureOnProto2File) {
+  absl::Status status = LoadDescriptorProto(
+                            R"pb(
+                              syntax: "proto2"
+                              options { features { field_presence: EXPLICIT } }
+                            )pb")
+                            .status();
+  EXPECT_EQ(status.message(), R"(Features can only be specified for editions)");
+}
+
+TEST(ReflectionTest, ExplicitFeatureOnProto2Message) {
+  absl::Status status =
+      LoadDescriptorProto(
+          R"pb(
+            syntax: "proto2"
+            message_type {
+              name: "M"
+              options { features { field_presence: EXPLICIT } }
+            }
+          )pb")
+          .status();
+  EXPECT_EQ(status.message(), R"(Features can only be specified for editions)");
+}
+
+TEST(ReflectionTest, ExplicitFeatureOnProto2Enum) {
+  absl::Status status =
+      LoadDescriptorProto(
+          R"pb(
+            syntax: "proto2"
+            enum_type {
+              name: "E"
+              options { features { field_presence: EXPLICIT } }
+            }
+          )pb")
+          .status();
+  EXPECT_EQ(status.message(), R"(Features can only be specified for editions)");
+}
+
+TEST(ReflectionTest, ExplicitFeatureOnProto2EnumValue) {
+  absl::Status status =
+      LoadDescriptorProto(
+          R"pb(
+            syntax: "proto2"
+            enum_type {
+              name: "E"
+              value {
+                name: "V"
+                options { features { field_presence: EXPLICIT } }
+              }
+            }
+          )pb")
+          .status();
+  EXPECT_EQ(status.message(), R"(Features can only be specified for editions)");
+}
+
 TEST(ReflectionTest, TooManyRequiredFieldsFailGracefully) {
   const auto make_desc = [](int n) {
     std::vector<std::string> fields;
