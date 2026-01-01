@@ -5,6 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <memory>
+
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/map_lite_unittest.pb.h"
@@ -23,7 +25,7 @@ class LiteArenaTest : public testing::Test {
     ArenaOptions options;
     options.start_block_size = 128 * 1024;
     options.max_block_size = 128 * 1024;
-    arena_.reset(new Arena(options));
+    arena_ = std::make_unique<Arena>(options);
     // Trigger the allocation of the first arena block, so that further use of
     // the arena will not require any heap allocations.
     Arena::CreateArray<char>(arena_.get(), 1);
