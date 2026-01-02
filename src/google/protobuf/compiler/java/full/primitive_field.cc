@@ -25,6 +25,7 @@
 #include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
