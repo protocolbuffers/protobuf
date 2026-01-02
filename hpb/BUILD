@@ -157,6 +157,7 @@ cc_library(
         ":multibackend",
         "//hpb/backend:types",
         "//upb/wire",
+        "@abseil-cpp//absl/log",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/status",
@@ -170,6 +171,7 @@ cc_test(
     deps = [
         ":ptr",
         ":status",
+        "//hpb/backend:types",
         "//hpb_generator/tests:test_model_hpb_proto",
         "//upb/wire",
         "@abseil-cpp//absl/status:statusor",
