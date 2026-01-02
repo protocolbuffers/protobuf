@@ -11,6 +11,7 @@ load("@proto_bazel_features//:features.bzl", "bazel_features")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/common:proto_lang_toolchain_info.bzl", "ProtoLangToolchainInfo")
+load("//bazel/flags:flags.bzl", "get_flag_value")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
 def _rule_impl(ctx):
@@ -33,7 +34,7 @@ def _rule_impl(ctx):
         protoc_opts = ctx.toolchains[toolchains.PROTO_TOOLCHAIN].proto.protoc_opts
     else:
         proto_compiler = ctx.attr._proto_compiler.files_to_run
-        protoc_opts = ctx.fragments.proto.experimental_protoc_opts
+        protoc_opts = get_flag_value(ctx, "protocopt")
 
     if ctx.attr.protoc_minimal_do_not_use:
         proto_compiler = ctx.attr.protoc_minimal_do_not_use.files_to_run
@@ -150,6 +151,9 @@ Deprecated. Alias for <code>denylisted_protos</code>. Will be removed in a futur
         "protoc_minimal_do_not_use": attr.label(
             cfg = "exec",
             executable = True,
+        ),
+        "_protocopt": attr.label(
+            default = "//bazel/flags/cc:protocopt",
         ),
     } | ({} if proto_common.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION else {
         "_proto_compiler": attr.label(

@@ -172,6 +172,7 @@ bzl_library(
     deps = [
         ":native_bzl",
         "//bazel/common:proto_lang_toolchain_info_bzl",
+        "//bazel/flags:flags_bzl",
     ],
 )
 
@@ -212,6 +213,7 @@ filegroup(
         "BUILD",
         ":native_bool_flag_bzl",
         "//bazel:for_bazel_tests",
+        "//bazel/flags:flags_bzl",
         "//bazel/private/toolchains:for_bazel_tests",
     ],
     visibility = ["//visibility:public"],
