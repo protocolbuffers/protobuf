@@ -538,7 +538,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @param charsetName encoding to use
    * @return new {@code ByteString}
    * @throws UnsupportedEncodingException if the encoding isn't found
-   * @deprecated Use {@link #copyFrom(String, Charset)} instead.
+   * @deprecated Use either {@link #copyFromUtf8(String)} or {@link #copyFrom(String, Charset)}
+   *     instead.
    */
   @Deprecated
   public static ByteString copyFrom(String text, String charsetName)
@@ -772,8 +773,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @param targetOffset offset within the target buffer
    * @param numberToCopy number of bytes to copy
    * @throws IndexOutOfBoundsException if an offset or size is negative or too large
-   * @deprecated Instead, call {@code byteString.substring(sourceOffset, sourceOffset +
-   *     numberToCopy).copyTo(target, targetOffset)}
+   * @deprecated Use {@code byteString.substring(sourceOffset, sourceOffset +
+   *     numberToCopy).copyTo(target, targetOffset)} instead.
    */
   @Deprecated
   public final void copyTo(byte[] target, int sourceOffset, int targetOffset, int numberToCopy) {
@@ -901,7 +902,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @param charsetName encode using this charset
    * @return new string
    * @throws UnsupportedEncodingException if charset isn't recognized
-   * @deprecated Use {@link #toString(Charset)} instead.
+   * @deprecated Use either {@link #toStringUtf8()} or {@link #toString(Charset)} instead.
    */
   @Deprecated
   public final String toString(String charsetName) throws UnsupportedEncodingException {
