@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "absl/status/status.h"
 #include "google/protobuf/json/internal/lexer.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/util/type_resolver.h"
