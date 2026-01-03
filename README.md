@@ -142,8 +142,10 @@ Documentation
 
 The complete documentation is available at the [Protocol Buffers doc site](https://protobuf.dev).
 
-Support Policy
---------------
+Support Policy and Versioning
+-----------------------------
+
+Starting with the v21.x protoc release, the versioning scheme of the git tags allow nimbler updates to language-specific parts of Protocol Buffers. Each language has its own major version that can be incremented independently of other languages. The minor and patch versions are coupled to the protobuf version. Starting with v32.x those tags also contain a language specifier.
 
 Read about our [version support policy](https://protobuf.dev/version-support/)
 to stay current on support timeframes for the language libraries.
