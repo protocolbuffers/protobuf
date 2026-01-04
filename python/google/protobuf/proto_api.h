@@ -25,6 +25,8 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+
+#include "absl/status/statusor.h"
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
