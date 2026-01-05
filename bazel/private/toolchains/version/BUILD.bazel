@@ -1,0 +1,77 @@
+"""Internal version settings and config settings for semver toolchain matching."""
+
+load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@bazel_skylib//rules:common_settings.bzl", "string_setting")
+load("//bazel/private:prebuilt_tool_integrity.bzl", "RELEASE_MAJOR", "RELEASE_MINOR", "RELEASE_PATCH")
+
+package(default_visibility = ["//bazel/private:__subpackages__"])
+
+# Internal settings (set by transition, not by users directly)
+string_setting(
+    name = "protoc_major",
+    build_setting_default = RELEASE_MAJOR,
+)
+
+string_setting(
+    name = "protoc_minor",
+    build_setting_default = RELEASE_MINOR,
+)
+
+string_setting(
+    name = "protoc_patch",
+    build_setting_default = RELEASE_PATCH,
+)
+
+# Config settings for version component matching
+config_setting(
+    name = "has_major",
+    flag_values = {":protoc_major": RELEASE_MAJOR},
+)
+
+config_setting(
+    name = "has_minor",
+    flag_values = {":protoc_minor": RELEASE_MINOR},
+)
+
+config_setting(
+    name = "has_patch",
+    flag_values = {":protoc_patch": RELEASE_PATCH},
+)
+
+# Combined matching groups
+selects.config_setting_group(
+    name = "match_major",
+    match_all = [":has_major"],
+)
+
+selects.config_setting_group(
+    name = "match_major_minor",
+    match_all = [
+        ":has_major",
+        ":has_minor",
+    ],
+)
+
+selects.config_setting_group(
+    name = "match_exact",
+    match_all = [
+        ":has_major",
+        ":has_minor",
+        ":has_patch",
+    ],
+)
+
+# Semver range: toolchain matches if ANY of these are satisfied
+# This allows a toolchain to be selected when the user requests:
+# - Just the major version (e.g., "33")
+# - Major.minor (e.g., "33.0")
+# - Exact version (e.g., "33.0.0")
+selects.config_setting_group(
+    name = "semver_match",
+    match_any = [
+        ":match_major",
+        ":match_major_minor",
+        ":match_exact",
+    ],
+    visibility = ["//bazel/private/toolchains/prebuilt:__pkg__"],
+)

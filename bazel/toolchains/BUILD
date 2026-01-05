@@ -1,5 +1,5 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_setting")
 
 package(
     default_applicable_licenses = ["//:license"],
@@ -66,4 +66,13 @@ config_setting(
     name = "allow_nonstandard_protoc.flag_set",
     flag_values = {":allow_nonstandard_protoc": "true"},
     visibility = ["//bazel/private/toolchains/prebuilt:__pkg__"],
+)
+
+# User-facing version flag for semver toolchain matching.
+# Users can set this to request a specific protoc version (e.g., "33", "33.0", or "33.0.0").
+# Empty value means use the default RELEASE_VERSION.
+string_setting(
+    name = "protoc_version",
+    build_setting_default = "",
+    visibility = ["//visibility:public"],
 )

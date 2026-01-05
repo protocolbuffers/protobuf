@@ -19,3 +19,17 @@ _TEST_SHAS["protoc-33.0-win64.zip"] = "3742cd49c8b6bd78b6760540367eb0ff62fa70a10
 
 RELEASE_VERSION = _TEST_VERSION
 RELEASED_BINARY_INTEGRITY = _TEST_SHAS
+
+def _parse_version(version):
+    """Parse version string like 'v33.0' or 'v33.0.1' into (major, minor, patch) tuple."""
+    stripped = version.removeprefix("v")
+    parts = stripped.split(".")
+    major = parts[0] if len(parts) > 0 else "0"
+    minor = parts[1] if len(parts) > 1 else "0"
+    patch = parts[2] if len(parts) > 2 else "0"
+    return (major, minor, patch)
+
+_PARSED_VERSION = _parse_version(RELEASE_VERSION)
+RELEASE_MAJOR = _PARSED_VERSION[0]
+RELEASE_MINOR = _PARSED_VERSION[1]
+RELEASE_PATCH = _PARSED_VERSION[2]
