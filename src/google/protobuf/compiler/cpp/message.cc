@@ -52,7 +52,6 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/has_bits.h"
 #include "google/protobuf/io/printer.h"
-#include "google/protobuf/port.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -159,13 +158,9 @@ std::string GenerateConditionMaybeWithProbability(
         (is_batch ? "Batch" : ""), (is_repeated ? "ForRepeated" : ""),
         *has_array_index, mask);
   }
-  // TODO: b/393587858 - Remove the experimental flag once the ablation
-  // experiment is complete.
-  if constexpr (internal::EnableProtoFieldPresenceHints()) {
-    if (probability.has_value()) {
-      return absl::StrFormat("PROTOBUF_EXPECT_TRUE_WITH_PROBABILITY(%s, %.3f)",
-                             condition, *probability);
-    }
+  if (probability.has_value()) {
+    return absl::StrFormat("PROTOBUF_EXPECT_TRUE_WITH_PROBABILITY(%s, %.3f)",
+                           condition, *probability);
   }
   return condition;
 }
