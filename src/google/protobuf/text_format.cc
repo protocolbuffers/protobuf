@@ -130,7 +130,8 @@ std::string StringifyMessage(const Message& message, Option option,
   printer.SetRandomizeDebugString(true);
   printer.SetReportSensitiveFields(reporter);
   std::string result;
-  printer.PrintToString(message, &result);
+  // TODO: Remove this suppression.
+  (void)printer.PrintToString(message, &result);
 
   if (option == Option::kShort) {
     TrimTrailingSpace(result);
@@ -2357,7 +2358,8 @@ void TextFormat::Printer::Print(const Message& message,
     {
       std::string serialized = message.SerializeAsString();
       io::ArrayInputStream input(serialized.data(), serialized.size());
-      unknown_fields.ParseFromZeroCopyStream(&input);
+      // TODO: Remove this suppression.
+      (void)unknown_fields.ParseFromZeroCopyStream(&input);
     }
     PrintUnknownFields(unknown_fields, generator, kUnknownFieldRecursionLimit);
     return;

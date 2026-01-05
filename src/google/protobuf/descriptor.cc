@@ -6243,7 +6243,7 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
   // is only registered lazily and we always parse options into the generated
   // pool.
   if (pool_ != DescriptorPool::internal_generated_pool()) {
-    DescriptorPool::generated_pool();
+    (void)DescriptorPool::generated_pool();
   }
 
   filename_ = proto.name();
@@ -10281,7 +10281,8 @@ bool DescriptorBuilder::OptionInterpreter::SetAggregateOption(
     } else {
       ABSL_CHECK_EQ(option_field->type(), FieldDescriptor::TYPE_GROUP);
       UnknownFieldSet* group = unknown_fields->AddGroup(option_field->number());
-      group->ParseFromString(serial);
+      // TODO: Remove this suppression.
+      (void)group->ParseFromString(serial);
     }
     return true;
   }
