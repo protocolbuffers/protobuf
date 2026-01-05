@@ -1946,6 +1946,7 @@ public final class TextFormat {
        *
        * @throws IllegalArgumentException if a registry is already set.
        */
+      @CanIgnoreReturnValue
       public Builder setTypeRegistry(TypeRegistry typeRegistry) {
         this.typeRegistry = typeRegistry;
         return this;
@@ -1959,6 +1960,7 @@ public final class TextFormat {
        * <p>Use of this parameter is discouraged which may hide some errors (e.g. spelling error on
        * field name).
        */
+      @CanIgnoreReturnValue
       public Builder setAllowUnknownFields(boolean allowUnknownFields) {
         this.allowUnknownFields = allowUnknownFields;
         return this;

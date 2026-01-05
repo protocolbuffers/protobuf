@@ -242,6 +242,7 @@ public class LazyFieldLite {
    * <p>LazyField is not thread-safe for write access. Synchronizations are needed under read/write
    * situations.
    */
+  @CanIgnoreReturnValue
   public MessageLite setValue(MessageLite value) {
     MessageLite originalValue = this.value;
     this.delayedBytes = null;

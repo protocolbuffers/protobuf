@@ -876,6 +876,7 @@ public class TextFormatTest {
     }
   }
 
+  @CanIgnoreReturnValue
   private TestAllTypes assertParseSuccessWithUnknownFields(String text)
       throws TextFormat.ParseException {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
@@ -893,6 +894,7 @@ public class TextFormatTest {
     }
   }
 
+  @CanIgnoreReturnValue
   private TestAllTypes assertParseSuccessWithUnknownExtensions(String text)
       throws TextFormat.ParseException {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();

@@ -158,6 +158,7 @@ public class TextFormatParseInfoTree {
      * @param fieldDescriptor the field
      * @param location source code location information
      */
+    @CanIgnoreReturnValue
     public Builder setLocation(
         final FieldDescriptor fieldDescriptor, TextFormatParseLocation location) {
       List<TextFormatParseLocation> fieldLocations = locationsFromField.get(fieldDescriptor);
