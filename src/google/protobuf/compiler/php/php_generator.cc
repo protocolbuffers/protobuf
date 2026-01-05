@@ -194,11 +194,13 @@ std::string DefaultForField(const FieldDescriptor* field) {
       case FieldDescriptor::CPPTYPE_INT32:
         return absl::StrCat(field->default_value_int32());
       case FieldDescriptor::CPPTYPE_INT64:
-        return "GPBUtil::compatibleInt64(" + absl::StrCat(field->default_value_int64()) + ")";
+        return "GPBUtil::compatibleInt64(" + absl::StrCat(field->default_value_int64())
+          + ", '" + absl::StrCat(field->default_value_int64()) + "')";
       case FieldDescriptor::CPPTYPE_UINT32:
         return absl::StrCat(field->default_value_uint32());
       case FieldDescriptor::CPPTYPE_UINT64:
-      return "GPBUtil::compatibleInt64(" + absl::StrCat(field->default_value_uint64()) + ")";
+        return "GPBUtil::compatibleInt64(" + absl::StrCat(field->default_value_uint64())
+          + ", '" + absl::StrCat(field->default_value_uint64()) + "')";
       case FieldDescriptor::CPPTYPE_FLOAT:
         return absl::StrCat(field->default_value_float());
       case FieldDescriptor::CPPTYPE_DOUBLE:
