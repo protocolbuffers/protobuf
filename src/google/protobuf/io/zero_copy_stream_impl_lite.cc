@@ -319,8 +319,7 @@ bool CopyingOutputStreamAdaptor::Next(void** data, int* size) {
 
 void CopyingOutputStreamAdaptor::BackUp(int count) {
   if (count == 0) {
-    // TODO: Remove this suppression.
-    (void)Flush();
+    Flush();
     return;
   }
   ABSL_CHECK_GE(count, 0);

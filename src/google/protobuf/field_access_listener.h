@@ -14,9 +14,6 @@
 #include "google/protobuf/port.h"
 
 
-// Must be included last.
-#include "google/protobuf/port_def.inc"
-
 namespace google {
 namespace protobuf {
 
@@ -24,7 +21,7 @@ namespace protobuf {
 //
 // See go/statically-dispatched-message-hooks for details.
 template <typename Proto>
-struct PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED NoOpAccessListener {
+struct NoOpAccessListener {
   // Number of fields are provided at compile time for the trackers to be able
   // to have stack allocated bitmaps for the fields. This is useful for
   // performance critical trackers. This is also to avoid cyclic dependencies
@@ -160,7 +157,5 @@ using AccessListener = NoOpAccessListener<T>;
 // All hooks are subject to approval by protobuf-team@.
 
 #endif  // !REPLACE_PROTO_LISTENER_IMPL
-
-#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_FIELD_ACCESS_LISTENER_H__

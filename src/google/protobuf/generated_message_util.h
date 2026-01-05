@@ -79,7 +79,6 @@ PROTOBUF_EXPORT inline void InitProtobufDefaults() {
 }
 
 // This used by proto1
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 PROTOBUF_EXPORT inline const std::string& GetEmptyString() {
   InitProtobufDefaults();
   return GetEmptyStringAlreadyInited();
@@ -94,7 +93,6 @@ union EmptyCord {
 };
 PROTOBUF_EXPORT extern const EmptyCord empty_cord_;
 
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 constexpr const ::absl::Cord& GetEmptyCordAlreadyInited() {
   return empty_cord_.value;
 }
@@ -105,8 +103,7 @@ constexpr const ::absl::Cord& GetEmptyCordAlreadyInited() {
 // IsInitialized() methods.  We want the C++ compiler to inline this or not
 // as it sees fit.
 template <typename Msg>
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool AllAreInitialized(
-    const RepeatedPtrField<Msg>& t) {
+bool AllAreInitialized(const RepeatedPtrField<Msg>& t) {
   for (int i = t.size(); --i >= 0;) {
     if (!t.Get(i).IsInitialized()) return false;
   }
@@ -117,8 +114,7 @@ PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool AllAreInitialized(
 // This version operates on MessageLite to avoid introducing a dependency on the
 // concrete message type.
 template <class T>
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool AllAreInitializedWeak(
-    const RepeatedPtrField<T>& t) {
+bool AllAreInitializedWeak(const RepeatedPtrField<T>& t) {
   for (int i = t.size(); --i >= 0;) {
     if (!reinterpret_cast<const RepeatedPtrFieldBase&>(t)
              .Get<ImplicitWeakTypeHandler<T> >(i)
@@ -129,13 +125,11 @@ PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool AllAreInitializedWeak(
   return true;
 }
 
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline bool IsPresent(const void* base, uint32_t hasbit) {
   const uint32_t* has_bits_array = static_cast<const uint32_t*>(base);
   return (has_bits_array[hasbit / 32] & (1u << (hasbit & 31))) != 0;
 }
 
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline bool IsOneofPresent(const void* base, uint32_t offset, uint32_t tag) {
   const uint32_t* oneof = reinterpret_cast<const uint32_t*>(
       static_cast<const uint8_t*>(base) + offset);

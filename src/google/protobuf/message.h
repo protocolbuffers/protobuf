@@ -850,8 +850,9 @@ class PROTOBUF_EXPORT Reflection final {
                             int index, int value) const;
   // Get a mutable pointer to an element of a repeated field with a message
   // type.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD Message* MutableRepeatedMessage(
-      Message* message, const FieldDescriptor* field, int index) const;
+  Message* MutableRepeatedMessage(Message* message,
+                                  const FieldDescriptor* field,
+                                  int index) const;
 
 
   // Repeated field adders -------------------------------------------
@@ -1697,8 +1698,7 @@ namespace internal {
 // practices, we should only assume extra indirection (or a lack thereof) for
 // the well known, complex types.
 template <typename T>
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SplitFieldHasExtraIndirectionStatic(
-    const FieldDescriptor* field) {
+bool SplitFieldHasExtraIndirectionStatic(const FieldDescriptor* field) {
   if (std::is_base_of<RepeatedFieldBase, T>() ||
       std::is_base_of<RepeatedPtrFieldBase, T>()) {
     ABSL_DCHECK(SplitFieldHasExtraIndirection(field));
@@ -1732,8 +1732,7 @@ template <>
 inline constexpr std::true_type IsRepeatedT<internal::MapFieldBase>{};
 
 template <typename T>
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD constexpr FieldDescriptor::CppType
-GetCppType() {
+constexpr FieldDescriptor::CppType GetCppType() {
   if constexpr (IsRepeatedT<T>) {
     return GetCppType<typename T::value_type>();
   } else {

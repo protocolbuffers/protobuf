@@ -191,7 +191,7 @@ class PROTOBUF_EXPORT CachedSize {
 #ifdef PROTOBUF_BUILTIN_ATOMIC
   constexpr CachedSize(const CachedSize& other) = default;
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD Scalar Get() const noexcept {
+  Scalar Get() const noexcept {
     return __atomic_load_n(&atom_, __ATOMIC_RELAXED);
   }
 
@@ -219,7 +219,7 @@ class PROTOBUF_EXPORT CachedSize {
     return *this;
   }
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD Scalar Get() const noexcept {  //
+  Scalar Get() const noexcept {  //
     return atom_.load(std::memory_order_relaxed);
   }
 
@@ -1220,58 +1220,47 @@ class PROTOBUF_EXPORT MessageLite {
 //
 // Supports all relationals including <=>, and supports hashing via
 // `absl::Hash`.
-class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED TypeId {
+class TypeId {
  public:
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static TypeId Get(
-      const MessageLite& msg) {
+  static TypeId Get(const MessageLite& msg) {
     return TypeId(msg.GetClassData());
   }
 
   template <typename T>
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static TypeId Get() {
+  static TypeId Get() {
     return TypeId(internal::MessageTraits<T>::class_data());
   }
 
   // Name of the message type.
   // Equivalent to `.GetTypeName()` on the message.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::string_view name() const;
+  absl::string_view name() const;
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD friend constexpr bool operator==(
-      TypeId a, TypeId b) {
+  friend constexpr bool operator==(TypeId a, TypeId b) {
     return a.data_ == b.data_;
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD friend constexpr bool operator!=(
-      TypeId a, TypeId b) {
-    return !(a == b);
-  }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD friend constexpr bool operator<(
-      TypeId a, TypeId b) {
+  friend constexpr bool operator!=(TypeId a, TypeId b) { return !(a == b); }
+  friend constexpr bool operator<(TypeId a, TypeId b) {
     return a.data_ < b.data_;
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD friend constexpr bool operator>(
-      TypeId a, TypeId b) {
+  friend constexpr bool operator>(TypeId a, TypeId b) {
     return a.data_ > b.data_;
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD friend constexpr bool operator<=(
-      TypeId a, TypeId b) {
+  friend constexpr bool operator<=(TypeId a, TypeId b) {
     return a.data_ <= b.data_;
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD friend constexpr bool operator>=(
-      TypeId a, TypeId b) {
+  friend constexpr bool operator>=(TypeId a, TypeId b) {
     return a.data_ >= b.data_;
   }
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD friend constexpr auto operator<=>(
-      TypeId a, TypeId b) {
+  friend constexpr auto operator<=>(TypeId a, TypeId b) {
     return a.data_ <=> b.data_;
   }
 #endif
 
   template <typename H>
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD friend H AbslHashValue(H state,
-                                                             TypeId id) {
+  friend H AbslHashValue(H state, TypeId id) {
     return H::combine(std::move(state), id.data_);
   }
 

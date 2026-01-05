@@ -26,7 +26,7 @@ class LiteArenaTest : public testing::Test {
     arena_.reset(new Arena(options));
     // Trigger the allocation of the first arena block, so that further use of
     // the arena will not require any heap allocations.
-    (void)Arena::CreateArray<char>(arena_.get(), 1);
+    Arena::CreateArray<char>(arena_.get(), 1);
   }
 
   std::unique_ptr<Arena> arena_;

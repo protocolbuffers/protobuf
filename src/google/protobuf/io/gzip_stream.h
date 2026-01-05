@@ -33,8 +33,7 @@ namespace protobuf {
 namespace io {
 
 // A ZeroCopyInputStream that reads compressed data through zlib
-class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
-    GzipInputStream final : public ZeroCopyInputStream {
+class PROTOBUF_EXPORT GzipInputStream final : public ZeroCopyInputStream {
  public:
   // Format key for constructor
   enum Format {
@@ -56,20 +55,14 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
   ~GzipInputStream() override;
 
   // Return last error message or NULL if no error.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline const char* ZlibErrorMessage()
-      const {
-    return zcontext_.msg;
-  }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline int ZlibErrorCode() const {
-    return zerror_;
-  }
+  inline const char* ZlibErrorMessage() const { return zcontext_.msg; }
+  inline int ZlibErrorCode() const { return zerror_; }
 
   // implements ZeroCopyInputStream ----------------------------------
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Next(const void** data,
-                                                int* size) override;
+  bool Next(const void** data, int* size) override;
   void BackUp(int count) override;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Skip(int count) override;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount() const override;
+  bool Skip(int count) override;
+  int64_t ByteCount() const override;
 
  private:
   Format format_;
@@ -88,8 +81,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
   void DoNextOutput(const void** data, int* size);
 };
 
-class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
-    GzipOutputStream final : public ZeroCopyOutputStream {
+class PROTOBUF_EXPORT GzipOutputStream final : public ZeroCopyOutputStream {
  public:
   // Format key for constructor
   enum Format {
@@ -130,13 +122,8 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
   ~GzipOutputStream() override;
 
   // Return last error message or NULL if no error.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline const char* ZlibErrorMessage()
-      const {
-    return zcontext_.msg;
-  }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline int ZlibErrorCode() const {
-    return zerror_;
-  }
+  inline const char* ZlibErrorMessage() const { return zcontext_.msg; }
+  inline int ZlibErrorCode() const { return zerror_; }
 
   // Flushes data written so far to zipped data in the underlying stream.
   // It is the caller's responsibility to flush the underlying stream if
@@ -150,19 +137,18 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
   // In the case of a Z_FULL_FLUSH or Z_SYNC_FLUSH, make sure that avail_out
   // is greater than six to avoid repeated flush markers due to
   // avail_out == 0 on return.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Flush();
+  bool Flush();
 
   // Writes out all data and closes the gzip stream.
   // It is the caller's responsibility to close the underlying stream if
   // necessary.
   // Returns true if no error.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Close();
+  bool Close();
 
   // implements ZeroCopyOutputStream ---------------------------------
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Next(void** data,
-                                                int* size) override;
+  bool Next(void** data, int* size) override;
   void BackUp(int count) override;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount() const override;
+  int64_t ByteCount() const override;
 
  private:
   ZeroCopyOutputStream* sub_stream_;

@@ -79,17 +79,11 @@ class MapFieldLite {
   }
 #endif
   // Accessors
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const Map<Key, T>& GetMap() const {
-    return map_;
-  }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD Map<Key, T>* MutableMap() {
-    return &map_;
-  }
+  const Map<Key, T>& GetMap() const { return map_; }
+  Map<Key, T>* MutableMap() { return &map_; }
 
   // Convenient methods for generated message implementation.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int size() const {
-    return static_cast<int>(map_.size());
-  }
+  int size() const { return static_cast<int>(map_.size()); }
   void Clear() { return map_.clear(); }
   void MergeFrom(const MapFieldLite& other) {
     internal::MapMergeFrom(map_, other.map_);
@@ -122,8 +116,7 @@ class MapFieldLite {
 // protobuf compiler from ever having to emit loops in IsInitialized() methods.
 // We want the C++ compiler to inline this or not as it sees fit.
 template <typename Key, typename T>
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool AllAreInitialized(
-    const MapFieldLite<Key, T>& field) {
+bool AllAreInitialized(const MapFieldLite<Key, T>& field) {
   const auto& t = field.GetMap();
   for (typename Map<Key, T>::const_iterator it = t.begin(); it != t.end();
        ++it) {

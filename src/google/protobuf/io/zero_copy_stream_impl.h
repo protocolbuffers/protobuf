@@ -65,16 +65,13 @@ class PROTOBUF_EXPORT FileInputStream final : public ZeroCopyInputStream {
   // errno from that error.  Otherwise, this is zero.  Once an error
   // occurs, the stream is broken and all subsequent operations will
   // fail.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int GetErrno() const {
-    return copying_input_.GetErrno();
-  }
+  int GetErrno() const { return copying_input_.GetErrno(); }
 
   // implements ZeroCopyInputStream ----------------------------------
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Next(const void** data,
-                                                int* size) override;
+  bool Next(const void** data, int* size) override;
   void BackUp(int count) override;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Skip(int count) override;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount() const override;
+  bool Skip(int count) override;
+  int64_t ByteCount() const override;
 
  private:
   class PROTOBUF_EXPORT CopyingFileInputStream final
@@ -149,9 +146,7 @@ class PROTOBUF_EXPORT FileOutputStream final
   // errno from that error.  Otherwise, this is zero.  Once an error
   // occurs, the stream is broken and all subsequent operations will
   // fail.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int GetErrno() const {
-    return copying_output_.GetErrno();
-  }
+  int GetErrno() const { return copying_output_.GetErrno(); }
 
  private:
   class PROTOBUF_EXPORT CopyingFileOutputStream final
@@ -199,11 +194,10 @@ class PROTOBUF_EXPORT IstreamInputStream final : public ZeroCopyInputStream {
   IstreamInputStream& operator=(const IstreamInputStream&) = delete;
 
   // implements ZeroCopyInputStream ----------------------------------
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Next(const void** data,
-                                                int* size) override;
+  bool Next(const void** data, int* size) override;
   void BackUp(int count) override;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Skip(int count) override;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount() const override;
+  bool Skip(int count) override;
+  int64_t ByteCount() const override;
 
  private:
   class PROTOBUF_EXPORT CopyingIstreamInputStream final
@@ -246,10 +240,9 @@ class PROTOBUF_EXPORT OstreamOutputStream final : public ZeroCopyOutputStream {
   ~OstreamOutputStream() override;
 
   // implements ZeroCopyOutputStream ---------------------------------
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Next(void** data,
-                                                int* size) override;
+  bool Next(void** data, int* size) override;
   void BackUp(int count) override;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount() const override;
+  int64_t ByteCount() const override;
 
  private:
   class PROTOBUF_EXPORT CopyingOstreamOutputStream final
@@ -293,11 +286,10 @@ class PROTOBUF_EXPORT ConcatenatingInputStream final
   ~ConcatenatingInputStream() override = default;
 
   // implements ZeroCopyInputStream ----------------------------------
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Next(const void** data,
-                                                int* size) override;
+  bool Next(const void** data, int* size) override;
   void BackUp(int count) override;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Skip(int count) override;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount() const override;
+  bool Skip(int count) override;
+  int64_t ByteCount() const override;
 
 
  private:

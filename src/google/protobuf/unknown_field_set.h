@@ -69,21 +69,19 @@ class PROTOBUF_EXPORT UnknownField {
   };
 
   // The field's field number, as seen on the wire.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline int number() const;
+  inline int number() const;
 
   // The field type.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline Type type() const;
+  inline Type type() const;
 
   // Accessors -------------------------------------------------------
   // Each method works only for UnknownFields of the corresponding type.
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline uint64_t varint() const;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline uint32_t fixed32() const;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline uint64_t fixed64() const;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline absl::string_view
-  length_delimited() const;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline const UnknownFieldSet& group()
-      const;
+  inline uint64_t varint() const;
+  inline uint32_t fixed32() const;
+  inline uint64_t fixed64() const;
+  inline absl::string_view length_delimited() const;
+  inline const UnknownFieldSet& group() const;
 
   inline void set_varint(uint64_t value);
   inline void set_fixed32(uint32_t value);
@@ -95,11 +93,9 @@ class PROTOBUF_EXPORT UnknownField {
   inline void set_length_delimited(const absl::Cord& value);
   inline UnknownFieldSet* mutable_group();
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline size_t GetLengthDelimitedSize()
-      const;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD uint8_t*
-  InternalSerializeLengthDelimitedNoTag(uint8_t* target,
-                                        io::EpsCopyOutputStream* stream) const;
+  inline size_t GetLengthDelimitedSize() const;
+  uint8_t* InternalSerializeLengthDelimitedNoTag(
+      uint8_t* target, io::EpsCopyOutputStream* stream) const;
 
  private:
   friend class UnknownFieldSet;
@@ -151,7 +147,7 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   void ClearAndFreeMemory();
 
   // Is this set empty?
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline bool empty() const;
+  inline bool empty() const;
 
   // Merge the contents of some other UnknownFieldSet with this one.
   void MergeFrom(const UnknownFieldSet& other);
@@ -171,30 +167,26 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   // Computes (an estimate of) the total number of bytes currently used for
   // storing the unknown fields in memory. Does NOT include
   // sizeof(*this) in the calculation.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD size_t SpaceUsedExcludingSelfLong() const;
+  size_t SpaceUsedExcludingSelfLong() const;
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int SpaceUsedExcludingSelf() const {
+  int SpaceUsedExcludingSelf() const {
     return internal::ToIntSize(SpaceUsedExcludingSelfLong());
   }
 
   // Version of SpaceUsed() including sizeof(*this).
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD size_t SpaceUsedLong() const;
+  size_t SpaceUsedLong() const;
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int SpaceUsed() const {
-    return internal::ToIntSize(SpaceUsedLong());
-  }
+  int SpaceUsed() const { return internal::ToIntSize(SpaceUsedLong()); }
 
   // Returns the number of fields present in the UnknownFieldSet.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline int field_count() const;
+  inline int field_count() const;
   // Get a field in the set, where 0 <= index < field_count().  The fields
   // appear in the order in which they were added.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline const UnknownField& field(
-      int index) const;
+  inline const UnknownField& field(int index) const;
   // Get a mutable pointer to a field in the set, where
   // 0 <= index < field_count().  The fields appear in the order in which
   // they were added.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline UnknownField* mutable_field(
-      int index);
+  inline UnknownField* mutable_field(int index);
 
   // Adding fields ---------------------------------------------------
 
@@ -224,16 +216,11 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   // Parsing helpers -------------------------------------------------
   // These work exactly like the similarly-named methods of Message.
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool MergeFromCodedStream(
-      io::CodedInputStream* input);
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool ParseFromCodedStream(
-      io::CodedInputStream* input);
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool ParseFromZeroCopyStream(
-      io::ZeroCopyInputStream* input);
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool ParseFromArray(const void* data,
-                                                          int size);
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline bool ParseFromString(
-      const absl::string_view data) {
+  bool MergeFromCodedStream(io::CodedInputStream* input);
+  bool ParseFromCodedStream(io::CodedInputStream* input);
+  bool ParseFromZeroCopyStream(io::ZeroCopyInputStream* input);
+  bool ParseFromArray(const void* data, int size);
+  inline bool ParseFromString(const absl::string_view data) {
     return ParseFromArray(data.data(), static_cast<int>(data.size()));
   }
 
@@ -241,18 +228,13 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   // the message is a lite or full proto (for legacy reasons, lite and full
   // return different types for MessageType::unknown_fields()).
   template <typename MessageType>
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool MergeFromMessage(
-      const MessageType& message);
+  bool MergeFromMessage(const MessageType& message);
 
   // Serialization.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializeToString(
-      std::string* output) const;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializeToCord(
-      absl::Cord* output) const;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializeToCodedStream(
-      io::CodedOutputStream* output) const;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const UnknownFieldSet&
-  default_instance();
+  bool SerializeToString(std::string* output) const;
+  bool SerializeToCord(absl::Cord* output) const;
+  bool SerializeToCodedStream(io::CodedOutputStream* output) const;
+  static const UnknownFieldSet& default_instance();
 
   UnknownFieldSet(internal::InternalVisibility, Arena* arena)
       : UnknownFieldSet(arena) {}

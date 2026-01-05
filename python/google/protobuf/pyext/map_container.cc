@@ -628,6 +628,7 @@ int MapReflectionFriend::MessageMapSetItem(PyObject* _self, PyObject* key,
   const Reflection* reflection = message->GetReflection();
   std::string map_key_string;
   MapKey map_key;
+  MapValueRef value;
 
   self->version++;
 

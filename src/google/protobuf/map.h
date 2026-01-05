@@ -1198,8 +1198,7 @@ using MapPair = std::pair<const Key, T>;
 // Map's interface is similar to std::unordered_map, except that Map is not
 // designed to play well with exceptions.
 template <typename Key, typename T>
-class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
-    : private internal::KeyMapBase<internal::KeyForBase<Key>> {
+class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   using Base = typename Map::KeyMapBase;
 
   using TS = internal::TransparentSupport<Key>;
@@ -1371,8 +1370,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
 
  public:
   // Iterators
-  class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED const_iterator
-      : private internal::UntypedMapIterator {
+  class const_iterator : private internal::UntypedMapIterator {
     using BaseIt = internal::UntypedMapIterator;
 
    public:
@@ -1387,12 +1385,8 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
     const_iterator& operator=(const const_iterator&) = default;
     explicit const_iterator(BaseIt it) : BaseIt(it) {}
 
-    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD reference operator*() const {
-      return static_cast<Node*>(this->node_)->kv;
-    }
-    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD pointer operator->() const {
-      return &(operator*());
-    }
+    reference operator*() const { return static_cast<Node*>(this->node_)->kv; }
+    pointer operator->() const { return &(operator*()); }
 
     const_iterator& operator++() {
       this->PlusPlus();
@@ -1404,12 +1398,10 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
       return copy;
     }
 
-    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD friend bool operator==(
-        const const_iterator& a, const const_iterator& b) {
+    friend bool operator==(const const_iterator& a, const const_iterator& b) {
       return a.Equals(b);
     }
-    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD friend bool operator!=(
-        const const_iterator& a, const const_iterator& b) {
+    friend bool operator!=(const const_iterator& a, const const_iterator& b) {
       return !a.Equals(b);
     }
 
@@ -1420,8 +1412,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
     friend class internal::TypeDefinedMapFieldBase<Key, T>;
   };
 
-  class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED iterator
-      : private internal::UntypedMapIterator {
+  class iterator : private internal::UntypedMapIterator {
     using BaseIt = internal::UntypedMapIterator;
 
    public:
@@ -1436,12 +1427,8 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
     iterator& operator=(const iterator&) = default;
     explicit iterator(BaseIt it) : BaseIt(it) {}
 
-    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD reference operator*() const {
-      return static_cast<Node*>(this->node_)->kv;
-    }
-    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD pointer operator->() const {
-      return &(operator*());
-    }
+    reference operator*() const { return static_cast<Node*>(this->node_)->kv; }
+    pointer operator->() const { return &(operator*()); }
 
     iterator& operator++() {
       this->PlusPlus();
@@ -1454,17 +1441,14 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
     }
 
     // Allow implicit conversion to const_iterator.
-    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD operator const_iterator()
-        const {  // NOLINT(google-explicit-constructor)
+    operator const_iterator() const {  // NOLINT(google-explicit-constructor)
       return const_iterator(static_cast<const BaseIt&>(*this));
     }
 
-    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD friend bool operator==(
-        const iterator& a, const iterator& b) {
+    friend bool operator==(const iterator& a, const iterator& b) {
       return a.Equals(b);
     }
-    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD friend bool operator!=(
-        const iterator& a, const iterator& b) {
+    friend bool operator!=(const iterator& a, const iterator& b) {
       return !a.Equals(b);
     }
 
@@ -1473,30 +1457,20 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
     friend class Map;
   };
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD iterator begin()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  iterator begin() ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return iterator(Base::begin());
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD iterator end()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return iterator();
-  }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const_iterator
-  begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  iterator end() ABSL_ATTRIBUTE_LIFETIME_BOUND { return iterator(); }
+  const_iterator begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_iterator(Base::begin());
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const_iterator
-  end() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  const_iterator end() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_iterator();
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const_iterator
-  cbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  const_iterator cbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return begin();
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const_iterator
-  cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return end();
-  }
+  const_iterator cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND { return end(); }
 
   using Base::empty;
   using Base::size;
@@ -1515,16 +1489,14 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
   }
 
   template <typename K = key_type>
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const T& at(const key_arg<K>& key) const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  const T& at(const key_arg<K>& key) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     const_iterator it = find(key);
     ABSL_CHECK(it != end()) << "key not found: " << static_cast<Key>(key);
     return it->second;
   }
 
   template <typename K = key_type>
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD T& at(const key_arg<K>& key)
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  T& at(const key_arg<K>& key) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     iterator it = find(key);
     ABSL_CHECK(it != end()) << "key not found: " << static_cast<Key>(key);
     return it->second;
@@ -1532,33 +1504,30 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
 
   // Lookup
   template <typename K = key_type>
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD size_type
-  count(const key_arg<K>& key) const {
+  size_type count(const key_arg<K>& key) const {
     return find(key) == end() ? 0 : 1;
   }
 
   template <typename K = key_type>
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const_iterator
-  find(const key_arg<K>& key) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  const_iterator find(const key_arg<K>& key) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_cast<Map*>(this)->find(key);
   }
   template <typename K = key_type>
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD iterator find(const key_arg<K>& key)
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  iterator find(const key_arg<K>& key) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     auto res = this->FindHelper(TS::ToView(key));
     return iterator(internal::UntypedMapIterator{static_cast<Node*>(res.node),
                                                  this, res.bucket});
   }
 
   template <typename K = key_type>
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool contains(
-      const key_arg<K>& key) const {
+  bool contains(const key_arg<K>& key) const {
     return find(key) != end();
   }
 
   template <typename K = key_type>
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::pair<const_iterator, const_iterator>
-  equal_range(const key_arg<K>& key) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  std::pair<const_iterator, const_iterator> equal_range(
+      const key_arg<K>& key) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     const_iterator it = find(key);
     if (it == end()) {
       return std::pair<const_iterator, const_iterator>(it, it);
@@ -1569,8 +1538,8 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
   }
 
   template <typename K = key_type>
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::pair<iterator, iterator> equal_range(
-      const key_arg<K>& key) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  std::pair<iterator, iterator> equal_range(const key_arg<K>& key)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     iterator it = find(key);
     if (it == end()) {
       return std::pair<iterator, iterator>(it, it);
@@ -1695,19 +1664,15 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
     }
   }
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD hasher hash_function() const {
-    return {};
-  }
+  hasher hash_function() const { return {}; }
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD size_t
-  SpaceUsedExcludingSelfLong() const {
+  size_t SpaceUsedExcludingSelfLong() const {
     if (empty()) return 0;
     return internal::UntypedMapBase::SpaceUsedExcludingSelfLong();
   }
 
 #ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static constexpr size_t
-  InternalGetArenaOffset(internal::InternalVisibility) {
+  static constexpr size_t InternalGetArenaOffset(internal::InternalVisibility) {
     return PROTOBUF_FIELD_OFFSET(Map, arena_);
   }
 #endif

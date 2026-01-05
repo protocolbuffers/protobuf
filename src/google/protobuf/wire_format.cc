@@ -1389,10 +1389,9 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
                 : message_reflection->GetStringReference(message, field,
                                                          &scratch);
         if (strict_utf8_check) {
-          // TODO: Remove this suppression.
-          (void)WireFormatLite::VerifyUtf8String(value.data(), value.length(),
-                                                 WireFormatLite::SERIALIZE,
-                                                 field->full_name());
+          WireFormatLite::VerifyUtf8String(value.data(), value.length(),
+                                           WireFormatLite::SERIALIZE,
+                                           field->full_name());
         } else {
         }
         target = stream->WriteString(field->number(), value, target);

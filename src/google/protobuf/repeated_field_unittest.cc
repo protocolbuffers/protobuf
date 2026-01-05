@@ -1230,7 +1230,7 @@ TEST(RepeatedField, PoisonsMemoryOnAssign) {
 TEST(RepeatedField, Cleanups) {
   Arena arena;
   auto growth = internal::CleanupGrowth(
-      arena, [&] { (void)Arena::Create<RepeatedField<int>>(&arena); });
+      arena, [&] { Arena::Create<RepeatedField<int>>(&arena); });
   EXPECT_THAT(growth.cleanups, testing::IsEmpty());
 
   void* ptr;

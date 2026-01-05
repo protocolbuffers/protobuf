@@ -180,7 +180,7 @@ static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
         printf("Failed to find descriptor.\n");
         exit(1);
       }
-      (void)factory.GetPrototype(d);
+      factory.GetPrototype(d);
     }
   }
   state.SetBytesProcessed(state.iterations() * bytes_per_iter);

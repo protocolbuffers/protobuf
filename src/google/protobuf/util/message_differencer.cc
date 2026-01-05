@@ -55,8 +55,7 @@ std::string PrintShortTextFormat(const google::protobuf::Message& message) {
   printer.SetSingleLineMode(true);
   printer.SetExpandAny(true);
 
-  // TODO: Remove this suppression.
-  (void)printer.PrintToString(message, &debug_string);
+  printer.PrintToString(message, &debug_string);
   // Single line mode currently might have an extra space at the end.
   if (!debug_string.empty() && debug_string[debug_string.size() - 1] == ' ') {
     debug_string.resize(debug_string.size() - 1);

@@ -3929,7 +3929,7 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
 void MaybeInitializeLazyDescriptors(const DescriptorTable* table) {
   if (!IsLazilyInitializedFile(table->filename)) {
     // Ensure the generated pool has been lazily initialized.
-    (void)DescriptorPool::generated_pool();
+    DescriptorPool::generated_pool();
   }
 }
 
@@ -4012,9 +4012,7 @@ void UnknownFieldSetSerializer(const uint8_t* base, uint32_t offset,
   const void* ptr = base + offset;
   const InternalMetadata* metadata = static_cast<const InternalMetadata*>(ptr);
   if (metadata->have_unknown_fields()) {
-    // TODO: Remove this suppression.
-    (void)metadata
-        ->unknown_fields<UnknownFieldSet>(UnknownFieldSet::default_instance)
+    metadata->unknown_fields<UnknownFieldSet>(UnknownFieldSet::default_instance)
         .SerializeToCodedStream(output);
   }
 }

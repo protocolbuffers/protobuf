@@ -394,7 +394,7 @@ TEST_F(UnknownFieldSetTest, MergeFrom) {
   destination.MergeFrom(source);
 
   std::string destination_text;
-  ASSERT_TRUE(TextFormat::PrintToString(destination, &destination_text));
+  TextFormat::PrintToString(destination, &destination_text);
   EXPECT_EQ(
       // Note:  The ordering of fields here depends on the ordering of adds
       //   and merging, above.
@@ -413,10 +413,10 @@ TEST_F(UnknownFieldSetTest, MergeFromMessage) {
   source.mutable_unknown_fields()->AddVarint(2, 3);
   source.mutable_unknown_fields()->AddVarint(3, 4);
 
-  ASSERT_TRUE(destination.mutable_unknown_fields()->MergeFromMessage(source));
+  destination.mutable_unknown_fields()->MergeFromMessage(source);
 
   std::string destination_text;
-  ASSERT_TRUE(TextFormat::PrintToString(destination, &destination_text));
+  TextFormat::PrintToString(destination, &destination_text);
   EXPECT_EQ(
       // Note:  The ordering of fields here depends on the ordering of adds
       //   and merging, above.

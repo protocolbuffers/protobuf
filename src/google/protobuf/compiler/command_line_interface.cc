@@ -844,7 +844,7 @@ void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
                       new_metadata);
   }
   if (is_text_format) {
-    ABSL_CHECK(TextFormat::PrintToString(new_metadata, encoded_data));
+    TextFormat::PrintToString(new_metadata, encoded_data);
   } else {
     ABSL_CHECK(new_metadata.SerializeToString(encoded_data));
   }

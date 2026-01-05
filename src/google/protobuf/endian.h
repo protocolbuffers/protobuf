@@ -23,7 +23,6 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint64_t BSwap64(uint64_t host_int) {
 #if defined(__GNUC__) || ABSL_HAVE_BUILTIN(__builtin_bswap64)
   return __builtin_bswap64(host_int);
@@ -41,7 +40,6 @@ inline uint64_t BSwap64(uint64_t host_int) {
 #endif
 }
 
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint32_t BSwap32(uint32_t host_int) {
 #if defined(__GNUC__) || ABSL_HAVE_BUILTIN(__builtin_bswap32)
   return __builtin_bswap32(host_int);
@@ -55,7 +53,6 @@ inline uint32_t BSwap32(uint32_t host_int) {
 #endif
 }
 
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint16_t BSwap16(uint16_t host_int) {
 #if defined(__GNUC__) || ABSL_HAVE_BUILTIN(__builtin_bswap16)
   return __builtin_bswap16(host_int);
@@ -69,7 +66,6 @@ inline uint16_t BSwap16(uint16_t host_int) {
 
 namespace little_endian {
 
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint16_t FromHost(uint16_t value) {
 #if defined(ABSL_IS_BIG_ENDIAN)
   return BSwap16(value);
@@ -78,7 +74,6 @@ inline uint16_t FromHost(uint16_t value) {
 #endif
 }
 
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint32_t FromHost(uint32_t value) {
 #if defined(ABSL_IS_BIG_ENDIAN)
   return BSwap32(value);
@@ -87,7 +82,6 @@ inline uint32_t FromHost(uint32_t value) {
 #endif
 }
 
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint64_t FromHost(uint64_t value) {
 #if defined(ABSL_IS_BIG_ENDIAN)
   return BSwap64(value);
@@ -96,7 +90,6 @@ inline uint64_t FromHost(uint64_t value) {
 #endif
 }
 
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint16_t ToHost(uint16_t value) {
 #if defined(ABSL_IS_BIG_ENDIAN)
   return BSwap16(value);
@@ -105,7 +98,6 @@ inline uint16_t ToHost(uint16_t value) {
 #endif
 }
 
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint32_t ToHost(uint32_t value) {
 #if defined(ABSL_IS_BIG_ENDIAN)
   return BSwap32(value);
@@ -114,7 +106,6 @@ inline uint32_t ToHost(uint32_t value) {
 #endif
 }
 
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint64_t ToHost(uint64_t value) {
 #if defined(ABSL_IS_BIG_ENDIAN)
   return BSwap64(value);
@@ -127,7 +118,6 @@ inline uint64_t ToHost(uint64_t value) {
 
 namespace big_endian {
 
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint16_t FromHost(uint16_t value) {
 #if defined(ABSL_IS_BIG_ENDIAN)
   return value;
@@ -136,7 +126,6 @@ inline uint16_t FromHost(uint16_t value) {
 #endif
 }
 
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint32_t FromHost(uint32_t value) {
 #if defined(ABSL_IS_BIG_ENDIAN)
   return value;
@@ -145,7 +134,6 @@ inline uint32_t FromHost(uint32_t value) {
 #endif
 }
 
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint64_t FromHost(uint64_t value) {
 #if defined(ABSL_IS_BIG_ENDIAN)
   return value;
@@ -154,7 +142,6 @@ inline uint64_t FromHost(uint64_t value) {
 #endif
 }
 
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint16_t ToHost(uint16_t value) {
 #if defined(ABSL_IS_BIG_ENDIAN)
   return value;
@@ -163,7 +150,6 @@ inline uint16_t ToHost(uint16_t value) {
 #endif
 }
 
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint32_t ToHost(uint32_t value) {
 #if defined(ABSL_IS_BIG_ENDIAN)
   return value;
@@ -172,7 +158,6 @@ inline uint32_t ToHost(uint32_t value) {
 #endif
 }
 
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint64_t ToHost(uint64_t value) {
 #if defined(ABSL_IS_BIG_ENDIAN)
   return value;
