@@ -2,8 +2,8 @@
 
 require_once('test_base.php');
 
-use Default_Value\TestDefaultValue;
-use Default_Value\TestEnum;
+use Default_value\TestDefaultValue;
+use Default_value\TestEnum;
 
 class DefaultValueTest extends TestBase
 {
