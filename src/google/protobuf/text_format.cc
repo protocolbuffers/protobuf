@@ -2706,8 +2706,9 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
                                           const FieldDescriptor* field,
                                           int index,
                                           BaseTextGenerator* generator) const {
-  ABSL_DCHECK(field->is_repeated() || (index == -1))
-      << "Index must be -1 for non-repeated fields";
+  ABSL_DCHECK(field->is_repeated() != (index == -1))
+      << "Index must be -1 for non-repeated fields, and must be non-negative "
+         "for repeated fields.";
 
   const FastFieldValuePrinter* printer = GetFieldPrinter(field);
   if (TryRedactFieldValue(message, field, generator,
