@@ -189,6 +189,37 @@ std::string PhpName(absl::string_view full_name, const Options& options) {
 }
 
 std::string DefaultForField(const FieldDescriptor* field) {
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_FIXED32:
+    case FieldDescriptor::TYPE_FIXED64:
+    case FieldDescriptor::TYPE_SFIXED32:
+    case FieldDescriptor::TYPE_SFIXED64:
+    case FieldDescriptor::TYPE_ENUM:
+      return "0";
+    case FieldDescriptor::TYPE_DOUBLE:
+    case FieldDescriptor::TYPE_FLOAT:
+      return "0.0";
+    case FieldDescriptor::TYPE_BOOL:
+      return "false";
+    case FieldDescriptor::TYPE_STRING:
+    case FieldDescriptor::TYPE_BYTES:
+      return "''";
+    case FieldDescriptor::TYPE_MESSAGE:
+    case FieldDescriptor::TYPE_GROUP:
+      return "null";
+    default:
+      assert(false);
+      return "";
+  }
+}
+
+std::string DefaultForFieldWithPresence(const FieldDescriptor* field) {
   if (field->has_default_value()) {
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_INT32:
@@ -217,16 +248,17 @@ std::string DefaultForField(const FieldDescriptor* field) {
   }
 
   switch (field->type()) {
-    case FieldDescriptor::TYPE_INT32:
     case FieldDescriptor::TYPE_INT64:
-    case FieldDescriptor::TYPE_UINT32:
     case FieldDescriptor::TYPE_UINT64:
-    case FieldDescriptor::TYPE_SINT32:
     case FieldDescriptor::TYPE_SINT64:
-    case FieldDescriptor::TYPE_FIXED32:
     case FieldDescriptor::TYPE_FIXED64:
-    case FieldDescriptor::TYPE_SFIXED32:
     case FieldDescriptor::TYPE_SFIXED64:
+      return "GPBUtil::compatibleInt64(0, '0')";
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_FIXED32:
+    case FieldDescriptor::TYPE_SFIXED32:
     case FieldDescriptor::TYPE_ENUM:
       return "0";
     case FieldDescriptor::TYPE_DOUBLE:
@@ -650,7 +682,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         ": ^default_value^;\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true), "name",
-        field->name(), "default_value", DefaultForField(field),
+        field->name(), "default_value", DefaultForFieldWithPresence(field),
         "deprecation_trigger", deprecation_trigger_with_conditional);
   } else {
     printer->Print(
