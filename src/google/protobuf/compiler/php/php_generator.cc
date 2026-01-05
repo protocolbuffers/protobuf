@@ -189,6 +189,31 @@ std::string PhpName(absl::string_view full_name, const Options& options) {
 }
 
 std::string DefaultForField(const FieldDescriptor* field) {
+  if (field->has_default_value()) {
+    switch (field->cpp_type()) {
+      case FieldDescriptor::CPPTYPE_INT32:
+        return absl::StrCat(field->default_value_int32());
+      case FieldDescriptor::CPPTYPE_INT64:
+        return absl::StrCat(field->default_value_int64());
+      case FieldDescriptor::CPPTYPE_UINT32:
+        return absl::StrCat(field->default_value_uint32());
+      case FieldDescriptor::CPPTYPE_UINT64:
+        return absl::StrCat(field->default_value_uint64());
+      case FieldDescriptor::CPPTYPE_FLOAT:
+        return absl::StrCat(field->default_value_float());
+      case FieldDescriptor::CPPTYPE_DOUBLE:
+        return absl::StrCat(field->default_value_double());
+      case FieldDescriptor::CPPTYPE_BOOL:
+        return field->default_value_bool() ? "true" : "false";
+      case FieldDescriptor::CPPTYPE_ENUM:
+        return absl::StrCat(field->default_value_enum()->number());
+      case FieldDescriptor::CPPTYPE_STRING:
+        return "'" + absl::CEscape(field->default_value_string()) + "'";
+      case FieldDescriptor::CPPTYPE_MESSAGE:
+        return "null";
+    }
+  }
+
   switch (field->type()) {
     case FieldDescriptor::TYPE_INT32:
     case FieldDescriptor::TYPE_INT64:
