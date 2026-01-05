@@ -39,7 +39,6 @@
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
-#include "utf8_validity.h"
 
 
 // Must be included last.
