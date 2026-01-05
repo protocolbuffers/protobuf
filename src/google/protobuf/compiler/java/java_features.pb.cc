@@ -163,13 +163,15 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
     file_level_service_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
 };
 namespace pb {
-const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL JavaFeatures_NestInFileClassFeature_NestInFileClass_descriptor() {
+[[nodiscard]] const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+JavaFeatures_NestInFileClassFeature_NestInFileClass_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[0];
 }
 PROTOBUF_CONSTINIT const uint32_t JavaFeatures_NestInFileClassFeature_NestInFileClass_internal_data_[] = {
     262144u, 0u, };
-const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL JavaFeatures_Utf8Validation_descriptor() {
+[[nodiscard]] const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+JavaFeatures_Utf8Validation_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[1];
 }
