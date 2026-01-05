@@ -148,6 +148,8 @@ struct PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED NoOpAccessListener {
 }  // namespace protobuf
 }  // namespace google
 
+#include "google/protobuf/port_undef.inc"
+
 #ifndef REPLACE_PROTO_LISTENER_IMPL
 namespace google {
 namespace protobuf {
@@ -160,7 +162,5 @@ using AccessListener = NoOpAccessListener<T>;
 // All hooks are subject to approval by protobuf-team@.
 
 #endif  // !REPLACE_PROTO_LISTENER_IMPL
-
-#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_FIELD_ACCESS_LISTENER_H__
