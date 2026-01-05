@@ -70,22 +70,27 @@ PHP_METHOD(Util, checkRepeatedField) {
 }
 
 PHP_METHOD(Util, compatibleInt64) {
-  zend_long val;
-  if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &val) == FAILURE) {
+  zend_long int_val;
+  char *str_val;
+  size_t str_len;
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "ls", &int_val, &str_val, &str_len) == FAILURE) {
     return;
   }
 #if SIZEOF_ZEND_LONG == 8
-  RETURN_LONG(val);
+  RETURN_LONG(int_val);
 #else
-  char buf[21];
-  int len = sprintf(buf, "%" PRId64, val);
-  RETURN_STRINGL(buf, len);
+  RETURN_STRINGL(str_val, str_len);
 #endif
 }
 
 // clang-format off
 ZEND_BEGIN_ARG_INFO_EX(arginfo_checkPrimitive, 0, 0, 1)
   ZEND_ARG_INFO(0, value)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_compatibleInt64, 0, 0, 2)
+  ZEND_ARG_INFO(0, int_val)
+  ZEND_ARG_INFO(0, str_val)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_checkString, 0, 0, 1)
@@ -138,7 +143,7 @@ static zend_function_entry util_methods[] = {
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
   PHP_ME(Util, checkRepeatedField, arginfo_checkRepeatedField,
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(Util, compatibleInt64, arginfo_checkPrimitive,
+  PHP_ME(Util, compatibleInt64, arginfo_compatibleInt64,
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
   ZEND_FE_END
 };
