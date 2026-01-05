@@ -641,4 +641,9 @@ class GPBUtil
                is_a($msg, "Google\Protobuf\StringValue") ||
                is_a($msg, "Google\Protobuf\BytesValue");
     }
+
+    public static function compatibleInt64($int64)
+    {
+        return PHP_INT_SIZE === 4 ? (string) $int64 : (int) $int64;
+    }
 }
