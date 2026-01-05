@@ -12,9 +12,17 @@ class DefaultValueTest extends TestBase
         $message = new TestDefaultValue();
 
         $this->assertSame(1, $message->getOptionalInt32());
-        $this->assertSame(2, $message->getOptionalInt64());
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame('2', $message->getOptionalInt64());
+        } else {
+            $this->assertSame(2, $message->getOptionalInt64());
+        }
         $this->assertSame(3, $message->getOptionalUint32());
-        $this->assertSame(4, $message->getOptionalUint64());
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame('4', $message->getOptionalUint64());
+        } else {
+            $this->assertSame(4, $message->getOptionalUint64());
+        }
         $this->assertSame(5.5, $message->getOptionalFloat());
         $this->assertSame(6.6, $message->getOptionalDouble());
         $this->assertSame(true, $message->getOptionalBool());
