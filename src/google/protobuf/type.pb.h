@@ -129,28 +129,28 @@ inline constexpr Field_Kind Field_Kind_Kind_MIN =
     static_cast<Field_Kind>(0);
 inline constexpr Field_Kind Field_Kind_Kind_MAX =
     static_cast<Field_Kind>(18);
-inline bool Field_Kind_IsValid(int value) {
+[[nodiscard]] inline bool Field_Kind_IsValid(int value) {
   return 0 <= value && value <= 18;
 }
 inline constexpr int Field_Kind_Kind_ARRAYSIZE = 18 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+[[nodiscard]] PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
 Field_Kind_descriptor();
-inline auto ProtobufInternalGetEnumDescriptor(Field_Kind) {
+[[nodiscard]] inline auto ProtobufInternalGetEnumDescriptor(Field_Kind) {
   return Field_Kind_descriptor();
 }
 template <typename T>
-const ::std::string& Field_Kind_Name(T value) {
+[[nodiscard]] const ::std::string& Field_Kind_Name(T value) {
   static_assert(::std::is_same<T, Field_Kind>::value ||
                     ::std::is_integral<T>::value,
                 "Incorrect type passed to Kind_Name().");
   return Field_Kind_Name(static_cast<Field_Kind>(value));
 }
 template <>
-inline const ::std::string& Field_Kind_Name(Field_Kind value) {
+[[nodiscard]] inline const ::std::string& Field_Kind_Name(Field_Kind value) {
   return ::google::protobuf::internal::NameOfDenseEnum<Field_Kind_descriptor, 0, 18>(
       static_cast<int>(value));
 }
-inline bool Field_Kind_Parse(
+[[nodiscard]] inline bool Field_Kind_Parse(
     ::absl::string_view name, Field_Kind* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<Field_Kind>(Field_Kind_descriptor(), name,
                                            value);
@@ -171,28 +171,28 @@ inline constexpr Field_Cardinality Field_Cardinality_Cardinality_MIN =
     static_cast<Field_Cardinality>(0);
 inline constexpr Field_Cardinality Field_Cardinality_Cardinality_MAX =
     static_cast<Field_Cardinality>(3);
-inline bool Field_Cardinality_IsValid(int value) {
+[[nodiscard]] inline bool Field_Cardinality_IsValid(int value) {
   return 0 <= value && value <= 3;
 }
 inline constexpr int Field_Cardinality_Cardinality_ARRAYSIZE = 3 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+[[nodiscard]] PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
 Field_Cardinality_descriptor();
-inline auto ProtobufInternalGetEnumDescriptor(Field_Cardinality) {
+[[nodiscard]] inline auto ProtobufInternalGetEnumDescriptor(Field_Cardinality) {
   return Field_Cardinality_descriptor();
 }
 template <typename T>
-const ::std::string& Field_Cardinality_Name(T value) {
+[[nodiscard]] const ::std::string& Field_Cardinality_Name(T value) {
   static_assert(::std::is_same<T, Field_Cardinality>::value ||
                     ::std::is_integral<T>::value,
                 "Incorrect type passed to Cardinality_Name().");
   return Field_Cardinality_Name(static_cast<Field_Cardinality>(value));
 }
 template <>
-inline const ::std::string& Field_Cardinality_Name(Field_Cardinality value) {
+[[nodiscard]] inline const ::std::string& Field_Cardinality_Name(Field_Cardinality value) {
   return ::google::protobuf::internal::NameOfDenseEnum<Field_Cardinality_descriptor, 0, 3>(
       static_cast<int>(value));
 }
-inline bool Field_Cardinality_Parse(
+[[nodiscard]] inline bool Field_Cardinality_Parse(
     ::absl::string_view name, Field_Cardinality* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<Field_Cardinality>(Field_Cardinality_descriptor(), name,
                                            value);
@@ -212,28 +212,28 @@ inline constexpr Syntax Syntax_MIN =
     static_cast<Syntax>(0);
 inline constexpr Syntax Syntax_MAX =
     static_cast<Syntax>(2);
-inline bool Syntax_IsValid(int value) {
+[[nodiscard]] inline bool Syntax_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
 inline constexpr int Syntax_ARRAYSIZE = 2 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+[[nodiscard]] PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
 Syntax_descriptor();
-inline auto ProtobufInternalGetEnumDescriptor(Syntax) {
+[[nodiscard]] inline auto ProtobufInternalGetEnumDescriptor(Syntax) {
   return Syntax_descriptor();
 }
 template <typename T>
-const ::std::string& Syntax_Name(T value) {
+[[nodiscard]] const ::std::string& Syntax_Name(T value) {
   static_assert(::std::is_same<T, Syntax>::value ||
                     ::std::is_integral<T>::value,
                 "Incorrect type passed to Syntax_Name().");
   return Syntax_Name(static_cast<Syntax>(value));
 }
 template <>
-inline const ::std::string& Syntax_Name(Syntax value) {
+[[nodiscard]] inline const ::std::string& Syntax_Name(Syntax value) {
   return ::google::protobuf::internal::NameOfDenseEnum<Syntax_descriptor, 0, 2>(
       static_cast<int>(value));
 }
-inline bool Syntax_Parse(
+[[nodiscard]] inline bool Syntax_Parse(
     ::absl::string_view name, Syntax* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<Syntax>(Syntax_descriptor(), name,
                                            value);
@@ -244,7 +244,7 @@ inline bool Syntax_Parse(
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Option) */ {
  public:
   inline Option() : Option(nullptr) {}
@@ -277,25 +277,26 @@ class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+  [[nodiscard]] inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
+  mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
     return GetDescriptor();
   }
-  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
+  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
+  GetDescriptor() {
     return default_instance().GetMetadata().descriptor;
   }
-  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
+  [[nodiscard]] static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
-  static const Option& default_instance() {
+  [[nodiscard]] static const Option& default_instance() {
     return *reinterpret_cast<const Option*>(
         &_Option_default_instance_);
   }
@@ -317,7 +318,8 @@ class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Option* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+  [[nodiscard]] Option* PROTOBUF_NONNULL
+  New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<Option>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -330,31 +332,33 @@ class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  bool IsInitialized() const {
+  [[nodiscard]] bool IsInitialized() const {
     return true;
   }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
-  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+  [[nodiscard]] static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+  [[nodiscard]] ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+  [[nodiscard]] ::size_t ByteSizeLong() const final;
+  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
+  [[nodiscard]] int GetCachedSize() const {
+    return _impl_._cached_size_.Get();
+  }
 
   private:
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -381,7 +385,7 @@ class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
  public:
   static constexpr auto InternalGenerateClassData_();
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -459,7 +463,7 @@ class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Option_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Field) */ {
  public:
   inline Field() : Field(nullptr) {}
@@ -492,25 +496,26 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+  [[nodiscard]] inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
+  mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
     return GetDescriptor();
   }
-  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
+  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
+  GetDescriptor() {
     return default_instance().GetMetadata().descriptor;
   }
-  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
+  [[nodiscard]] static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
-  static const Field& default_instance() {
+  [[nodiscard]] static const Field& default_instance() {
     return *reinterpret_cast<const Field*>(
         &_Field_default_instance_);
   }
@@ -532,7 +537,8 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Field* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+  [[nodiscard]] Field* PROTOBUF_NONNULL
+  New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<Field>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -545,31 +551,33 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  bool IsInitialized() const {
+  [[nodiscard]] bool IsInitialized() const {
     return true;
   }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
-  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+  [[nodiscard]] static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+  [[nodiscard]] ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+  [[nodiscard]] ::size_t ByteSizeLong() const final;
+  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
+  [[nodiscard]] int GetCachedSize() const {
+    return _impl_._cached_size_.Get();
+  }
 
   private:
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -596,7 +604,7 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
  public:
   static constexpr auto InternalGenerateClassData_();
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using Kind = Field_Kind;
   static constexpr Kind TYPE_UNKNOWN = Field_Kind_TYPE_UNKNOWN;
@@ -618,7 +626,7 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
   static constexpr Kind TYPE_SFIXED64 = Field_Kind_TYPE_SFIXED64;
   static constexpr Kind TYPE_SINT32 = Field_Kind_TYPE_SINT32;
   static constexpr Kind TYPE_SINT64 = Field_Kind_TYPE_SINT64;
-  static inline bool Kind_IsValid(int value) {
+  [[nodiscard]] static inline bool Kind_IsValid(int value) {
     return Field_Kind_IsValid(value);
   }
   static constexpr Kind Kind_MIN = Field_Kind_Kind_MIN;
@@ -628,10 +636,10 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
     return Field_Kind_descriptor();
   }
   template <typename T>
-  static inline const ::std::string& Kind_Name(T value) {
+  [[nodiscard]] static inline const ::std::string& Kind_Name(T value) {
     return Field_Kind_Name(value);
   }
-  static inline bool Kind_Parse(
+  [[nodiscard]] static inline bool Kind_Parse(
       ::absl::string_view name, Kind* PROTOBUF_NONNULL value) {
     return Field_Kind_Parse(name, value);
   }
@@ -640,7 +648,7 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
   static constexpr Cardinality CARDINALITY_OPTIONAL = Field_Cardinality_CARDINALITY_OPTIONAL;
   static constexpr Cardinality CARDINALITY_REQUIRED = Field_Cardinality_CARDINALITY_REQUIRED;
   static constexpr Cardinality CARDINALITY_REPEATED = Field_Cardinality_CARDINALITY_REPEATED;
-  static inline bool Cardinality_IsValid(int value) {
+  [[nodiscard]] static inline bool Cardinality_IsValid(int value) {
     return Field_Cardinality_IsValid(value);
   }
   static constexpr Cardinality Cardinality_MIN = Field_Cardinality_Cardinality_MIN;
@@ -650,10 +658,10 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
     return Field_Cardinality_descriptor();
   }
   template <typename T>
-  static inline const ::std::string& Cardinality_Name(T value) {
+  [[nodiscard]] static inline const ::std::string& Cardinality_Name(T value) {
     return Field_Cardinality_Name(value);
   }
-  static inline bool Cardinality_Parse(
+  [[nodiscard]] static inline bool Cardinality_Parse(
       ::absl::string_view name, Cardinality* PROTOBUF_NONNULL value) {
     return Field_Cardinality_Parse(name, value);
   }
@@ -848,7 +856,7 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Field_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValue) */ {
  public:
   inline EnumValue() : EnumValue(nullptr) {}
@@ -881,25 +889,26 @@ class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+  [[nodiscard]] inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
+  mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
     return GetDescriptor();
   }
-  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
+  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
+  GetDescriptor() {
     return default_instance().GetMetadata().descriptor;
   }
-  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
+  [[nodiscard]] static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
-  static const EnumValue& default_instance() {
+  [[nodiscard]] static const EnumValue& default_instance() {
     return *reinterpret_cast<const EnumValue*>(
         &_EnumValue_default_instance_);
   }
@@ -921,7 +930,8 @@ class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  EnumValue* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+  [[nodiscard]] EnumValue* PROTOBUF_NONNULL
+  New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<EnumValue>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -934,31 +944,33 @@ class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  bool IsInitialized() const {
+  [[nodiscard]] bool IsInitialized() const {
     return true;
   }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
-  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+  [[nodiscard]] static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+  [[nodiscard]] ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+  [[nodiscard]] ::size_t ByteSizeLong() const final;
+  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
+  [[nodiscard]] int GetCachedSize() const {
+    return _impl_._cached_size_.Get();
+  }
 
   private:
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -985,7 +997,7 @@ class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
  public:
   static constexpr auto InternalGenerateClassData_();
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -1079,7 +1091,7 @@ class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValue_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Type) */ {
  public:
   inline Type() : Type(nullptr) {}
@@ -1112,25 +1124,26 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+  [[nodiscard]] inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
+  mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
     return GetDescriptor();
   }
-  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
+  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
+  GetDescriptor() {
     return default_instance().GetMetadata().descriptor;
   }
-  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
+  [[nodiscard]] static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
-  static const Type& default_instance() {
+  [[nodiscard]] static const Type& default_instance() {
     return *reinterpret_cast<const Type*>(
         &_Type_default_instance_);
   }
@@ -1152,7 +1165,8 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Type* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+  [[nodiscard]] Type* PROTOBUF_NONNULL
+  New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<Type>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -1165,31 +1179,33 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  bool IsInitialized() const {
+  [[nodiscard]] bool IsInitialized() const {
     return true;
   }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
-  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+  [[nodiscard]] static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+  [[nodiscard]] ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+  [[nodiscard]] ::size_t ByteSizeLong() const final;
+  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
+  [[nodiscard]] int GetCachedSize() const {
+    return _impl_._cached_size_.Get();
+  }
 
   private:
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -1216,7 +1232,7 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
  public:
   static constexpr auto InternalGenerateClassData_();
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -1394,7 +1410,7 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Type_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Enum) */ {
  public:
   inline Enum() : Enum(nullptr) {}
@@ -1427,25 +1443,26 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+  [[nodiscard]] inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
+  mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
     return GetDescriptor();
   }
-  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
+  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
+  GetDescriptor() {
     return default_instance().GetMetadata().descriptor;
   }
-  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
+  [[nodiscard]] static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
-  static const Enum& default_instance() {
+  [[nodiscard]] static const Enum& default_instance() {
     return *reinterpret_cast<const Enum*>(
         &_Enum_default_instance_);
   }
@@ -1467,7 +1484,8 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Enum* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+  [[nodiscard]] Enum* PROTOBUF_NONNULL
+  New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<Enum>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -1480,31 +1498,33 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  bool IsInitialized() const {
+  [[nodiscard]] bool IsInitialized() const {
     return true;
   }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
-  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+  [[nodiscard]] static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+  [[nodiscard]] ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+  [[nodiscard]] ::size_t ByteSizeLong() const final;
+  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
+  [[nodiscard]] int GetCachedSize() const {
+    return _impl_._cached_size_.Get();
+  }
 
   private:
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -1531,7 +1551,7 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
  public:
   static constexpr auto InternalGenerateClassData_();
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
