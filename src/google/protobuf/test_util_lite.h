@@ -29,9 +29,11 @@ class TestUtilLite {
   static void SetAllExtensions(unittest::TestAllExtensionsLite* message);
   static void SetPackedVarintFields(unittest::TestPackedTypesLite* message,
                                     bool large_values = true);
+  static void SetPackedBoolField(unittest::TestPackedTypesLite* message);
   static void SetPackedFixedFields(unittest::TestPackedTypesLite* message);
   static void SetPackedFields(unittest::TestPackedTypesLite* message) {
     SetPackedVarintFields(message);
+    SetPackedBoolField(message);
     SetPackedFixedFields(message);
   }
   static void SetPackedExtensions(unittest::TestPackedExtensionsLite* message);

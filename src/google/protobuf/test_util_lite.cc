@@ -621,7 +621,6 @@ void TestUtilLite::SetPackedVarintFields(unittest::TestPackedTypesLite* message,
   message->add_packed_uint64(604 & kMask);
   message->add_packed_sint32(605 & kMask);
   message->add_packed_sint64(606 & kMask);
-  message->add_packed_bool(true);
   message->add_packed_enum(unittest::FOREIGN_LITE_BAR);
   // add a second one of each field
   message->add_packed_int32(701 & kMask);
@@ -630,8 +629,14 @@ void TestUtilLite::SetPackedVarintFields(unittest::TestPackedTypesLite* message,
   message->add_packed_uint64(704 & kMask);
   message->add_packed_sint32(705 & kMask);
   message->add_packed_sint64(706 & kMask);
-  message->add_packed_bool(false);
   message->add_packed_enum(unittest::FOREIGN_LITE_BAZ);
+}
+
+// -------------------------------------------------------------------
+
+void TestUtilLite::SetPackedBoolField(unittest::TestPackedTypesLite* message) {
+  message->add_packed_bool(true);
+  message->add_packed_bool(false);
 }
 
 // -------------------------------------------------------------------
