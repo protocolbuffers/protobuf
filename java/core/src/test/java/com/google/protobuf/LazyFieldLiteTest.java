@@ -129,13 +129,46 @@ public class LazyFieldLiteTest {
   }
 
   @Test
-  public void testMergeBeforeParsing() throws Exception {
+  public void testMergeUnparsedWithDifferentExtensionRegistryInstances() throws Exception {
     TestAllTypes message1 = TestAllTypes.newBuilder().setOptionalInt32(1).build();
     LazyFieldLite field1 = createLazyFieldLiteFromMessage(message1);
     TestAllTypes message2 = TestAllTypes.newBuilder().setOptionalInt64(2).build();
     LazyFieldLite field2 = createLazyFieldLiteFromMessage(message2);
 
     field1.merge(field2);
+
+    TestAllTypes expected =
+        TestAllTypes.newBuilder().setOptionalInt32(1).setOptionalInt64(2).build();
+    assertThat(field1.getValue(TestAllTypes.getDefaultInstance())).isEqualTo(expected);
+  }
+
+  @Test
+  public void testMergeUnparsedWithSameExtensionRegistryInstance() throws Exception {
+    ByteString bytes1 = TestAllTypes.newBuilder().setOptionalInt32(1).build().toByteString();
+    ExtensionRegistryLite registry = TestUtil.getExtensionRegistry();
+    LazyFieldLite field1 = new LazyFieldLite(registry, bytes1);
+    ByteString bytes2 = TestAllTypes.newBuilder().setOptionalInt64(2).build().toByteString();
+    LazyFieldLite field2 = new LazyFieldLite(registry, bytes2);
+
+    field1.merge(field2);
+
+    TestAllTypes expected =
+        TestAllTypes.newBuilder().setOptionalInt32(1).setOptionalInt64(2).build();
+    assertThat(field1.getValue(TestAllTypes.getDefaultInstance())).isEqualTo(expected);
+    assertThat(field1.toByteString()).isEqualTo(bytes1.concat(bytes2));
+  }
+
+  @Test
+  public void testMergeBothBytesAndValueArePresent() throws Exception {
+    LazyFieldLite field1 =
+        createLazyFieldLiteFromMessage(TestAllTypes.newBuilder().setOptionalInt32(1).build());
+    MessageLite unused1 = field1.getValue(TestAllTypes.getDefaultInstance());
+    LazyFieldLite field2 =
+        createLazyFieldLiteFromMessage(TestAllTypes.newBuilder().setOptionalInt64(2).build());
+    MessageLite unused2 = field2.getValue(TestAllTypes.getDefaultInstance());
+
+    field1.merge(field2);
+
     TestAllTypes expected =
         TestAllTypes.newBuilder().setOptionalInt32(1).setOptionalInt64(2).build();
     assertThat(field1.getValue(TestAllTypes.getDefaultInstance())).isEqualTo(expected);

@@ -123,7 +123,7 @@ constexpr bool FieldHasArenaOffset() {
   return !std::is_same_v<T, ArenaRepT>;
 }
 
-// TODO - Some types have a deprecated arena-enabled constructor,
+// TODO(b/174574783) - Some types have a deprecated arena-enabled constructor,
 // as we plan to remove it in favor of using arena offsets, but for now Arena
 // needs to call it. While the arena constructor exists, we will call the
 // `InternalVisibility` override to silence the warning.
@@ -258,8 +258,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   // Allocates an object type T if the arena passed in is not nullptr;
   // otherwise, returns a heap-allocated object.
   template <typename T, typename... Args>
-  PROTOBUF_NDEBUG_INLINE static T* PROTOBUF_NONNULL
-  Create(Arena* PROTOBUF_NULLABLE arena, Args&&... args) {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static T*
+      PROTOBUF_NONNULL
+      Create(Arena* PROTOBUF_NULLABLE arena, Args&&... args) {
     if constexpr (is_arena_constructable<T>::value) {
       using Type = std::remove_const_t<T>;
       // DefaultConstruct/CopyConstruct are optimized for messages, which
@@ -297,7 +298,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   }
 
   // Allocates memory with the specific size and alignment.
-  void* PROTOBUF_NONNULL AllocateAligned(size_t size, size_t align = 8) {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD void* PROTOBUF_NONNULL
+  AllocateAligned(size_t size, size_t align = 8) {
     if (align <= internal::ArenaAlignDefault::align) {
       return Allocate(internal::ArenaAlignDefault::Ceil(size));
     } else {
@@ -318,8 +320,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   // (when compiled as C++11) that T is trivially default-constructible and
   // trivially destructible.
   template <typename T>
-  PROTOBUF_NDEBUG_INLINE static T* PROTOBUF_NONNULL
-  CreateArray(Arena* PROTOBUF_NULLABLE arena, size_t num_elements) {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static T*
+      PROTOBUF_NONNULL
+      CreateArray(Arena* PROTOBUF_NULLABLE arena, size_t num_elements) {
     static_assert(std::is_trivially_default_constructible<T>::value,
                   "CreateArray requires a trivially constructible type");
     static_assert(std::is_trivially_destructible<T>::value,
@@ -343,7 +346,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   // deal. For instance allocated space depends on growth policies. Do not use
   // these in unit tests. Returns the total space allocated by the arena, which
   // is the sum of the sizes of the underlying blocks.
-  uint64_t SpaceAllocated() const { return impl_.SpaceAllocated(); }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD uint64_t SpaceAllocated() const {
+    return impl_.SpaceAllocated();
+  }
   // Returns the total space used by the arena. Similar to SpaceAllocated but
   // does not include free space and block overhead.  This is a best-effort
   // estimate and may inaccurately calculate space used by other threads
@@ -351,7 +356,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   // are due to race conditions, and are bounded but unpredictable.  Stale data
   // can lead to underestimates of the space used, and race conditions can lead
   // to overestimates (up to the current block size).
-  uint64_t SpaceUsed() const { return impl_.SpaceUsed(); }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD uint64_t SpaceUsed() const {
+    return impl_.SpaceUsed();
+  }
 
   // Frees all storage allocated by this arena after calling destructors
   // registered with OwnDestructor() and freeing objects registered with Own().
@@ -494,7 +501,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     static T* PROTOBUF_NONNULL ConstructOnArena(void* PROTOBUF_NONNULL ptr,
                                                 Arena& arena, Args&&... args) {
 #ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-      // TODO - ClangTidy gives warnings for calling the deprecated
+      // TODO(b/174574783) - ClangTidy gives warnings for calling the deprecated
       // constructors here, which leads to log spam. It is correct to invoke
       // these constructors through the Arena class as it will allow us to
       // silently switch to a different constructor once arena pointers are

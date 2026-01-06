@@ -22,6 +22,7 @@
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/io/printer.h"
+#include "google/protobuf/wire_format.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
@@ -79,6 +80,9 @@ void SetMessageVariables(
       absl::StrCat(GenerateClearBit(builderBitIndex), ";");
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(builderBitIndex);
+
+  (*variables)["tag_size"] = absl::StrCat(
+      internal::WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
 }
 
 }  // namespace
@@ -783,8 +787,9 @@ void RepeatedImmutableMessageFieldGenerator::GenerateInterfaceMembers(
 
 void RepeatedImmutableMessageFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
-  printer->Print(variables_, "@SuppressWarnings(\"serial\")\n"
-                             "private java.util.List<$type$> $name$_;\n");
+  printer->Print(variables_,
+                 "@SuppressWarnings(\"serial\")\n"
+                 "private java.util.List<$type$> $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
@@ -1275,12 +1280,17 @@ void RepeatedImmutableMessageFieldGenerator::GenerateSerializationCode(
 
 void RepeatedImmutableMessageFieldGenerator::GenerateSerializedSizeCode(
     io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "for (int i = 0; i < $name$_.size(); i++) {\n"
-      "  size += com.google.protobuf.CodedOutputStream\n"
-      "    .compute$group_or_message$Size($number$, $name$_.get(i));\n"
-      "}\n");
+  printer->Print(variables_,
+                 R"java(
+    {
+      final int count = $name$_.size();
+      for (int i = 0; i < count; i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .compute$group_or_message$SizeNoTag($name$_.get(i));
+      }
+      size += $tag_size$ * count;
+    }
+    )java");
 }
 
 void RepeatedImmutableMessageFieldGenerator::GenerateEqualsCode(

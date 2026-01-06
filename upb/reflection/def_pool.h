@@ -86,6 +86,20 @@ const upb_FieldDef** upb_DefPool_GetAllExtensions(const upb_DefPool* s,
                                                   const upb_MessageDef* m,
                                                   size_t* count);
 
+// If called, closed enums will be treated as open enums. This is non-standard
+// behavior and will cause conformance tests to fail, but it is more useful
+// behavior overall and can be used in situations where where the
+// non-conformance is acceptable.
+//
+// This function may only be called immediately after upb_DefPool_New().
+// It is an error to call it on an existing def pool or after defs have
+// already been added to the pool.
+//
+// Note: we still require that implicit presence fields have zero as their
+// default value.
+UPB_API void upb_DefPool_DisableClosedEnumChecking(upb_DefPool* s);
+bool upb_DefPool_ClosedEnumCheckingDisabled(const upb_DefPool* s);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

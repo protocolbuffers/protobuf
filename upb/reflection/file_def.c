@@ -52,11 +52,10 @@ struct upb_FileDef {
   int top_lvl_ext_count;
   int service_count;
   int ext_count;  // All exts in the file.
-  upb_Syntax syntax;
 };
 
 UPB_API const char* upb_FileDef_EditionName(int edition) {
-  // TODO Synchronize this with descriptor.proto better.
+  // TODO(b/309669951) Synchronize this with descriptor.proto better.
   switch (edition) {
     case UPB_DESC(EDITION_PROTO2):
       return "PROTO2";
@@ -94,8 +93,6 @@ UPB_DESC(Edition) upb_FileDef_Edition(const upb_FileDef* f) {
 
 const char* _upb_FileDef_RawPackage(const upb_FileDef* f) { return f->package; }
 
-upb_Syntax upb_FileDef_Syntax(const upb_FileDef* f) { return f->syntax; }
-
 int upb_FileDef_TopLevelMessageCount(const upb_FileDef* f) {
   return f->top_lvl_msg_count;
 }
@@ -116,6 +113,10 @@ const int32_t* _upb_FileDef_PublicDependencyIndexes(const upb_FileDef* f) {
 
 const int32_t* _upb_FileDef_WeakDependencyIndexes(const upb_FileDef* f) {
   return f->weak_deps;
+}
+
+bool _upb_FileDef_ClosedEnumCheckingDisabled(const upb_FileDef* f) {
+  return upb_DefPool_ClosedEnumCheckingDisabled(f->symtab);
 }
 
 int upb_FileDef_TopLevelEnumCount(const upb_FileDef* f) {
@@ -220,7 +221,7 @@ const UPB_DESC(FeatureSet*)
                          upb_FileDef_EditionName(min));
     return NULL;
   }
-  if (edition > max) {
+  if (edition > max && edition != UPB_DESC(EDITION_UNSTABLE)) {
     _upb_DefBuilder_Errf(ctx,
                          "Edition %s is later than the maximum edition %s "
                          "given in the defaults",
@@ -324,27 +325,30 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
     file->package = NULL;
   }
 
-  // TODO: How should we validate this?
-  file->edition = UPB_DESC(FileDescriptorProto_edition)(file_proto);
+  upb_StringView syntax = UPB_DESC(FileDescriptorProto_syntax)(file_proto);
 
-  if (UPB_DESC(FileDescriptorProto_has_syntax)(file_proto)) {
-    upb_StringView syntax = UPB_DESC(FileDescriptorProto_syntax)(file_proto);
-
+  if (UPB_DESC(FileDescriptorProto_has_edition)(file_proto)) {
+    if (!streql_view(syntax, "editions")) {
+      _upb_DefBuilder_Errf(ctx,
+                           "Setting edition requires that syntax=\"editions\", "
+                           "but syntax is \"" UPB_STRINGVIEW_FORMAT "\"",
+                           UPB_STRINGVIEW_ARGS(syntax));
+    }
+    file->edition = UPB_DESC(FileDescriptorProto_edition)(file_proto);
+  } else if (UPB_DESC(FileDescriptorProto_has_syntax)(file_proto)) {
     if (streql_view(syntax, "proto2")) {
-      file->syntax = kUpb_Syntax_Proto2;
       file->edition = UPB_DESC(EDITION_PROTO2);
     } else if (streql_view(syntax, "proto3")) {
-      file->syntax = kUpb_Syntax_Proto3;
       file->edition = UPB_DESC(EDITION_PROTO3);
     } else if (streql_view(syntax, "editions")) {
-      file->syntax = kUpb_Syntax_Editions;
-      file->edition = UPB_DESC(FileDescriptorProto_edition)(file_proto);
+      _upb_DefBuilder_Errf(
+          ctx, "File has syntax=\"editions\", but no edition is specified");
     } else {
       _upb_DefBuilder_Errf(ctx, "Invalid syntax '" UPB_STRINGVIEW_FORMAT "'",
                            UPB_STRINGVIEW_ARGS(syntax));
     }
   } else {
-    file->syntax = kUpb_Syntax_Proto2;
+    // The legacy default when no edition or syntax is specified is proto2.
     file->edition = UPB_DESC(EDITION_PROTO2);
   }
 

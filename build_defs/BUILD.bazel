@@ -263,10 +263,3 @@ cc_proto_blacklist_test(
         ":wrappers_cc_proto",
     ],
 )
-
-pkg_files(
-    name = "dist_files",
-    srcs = glob(["*"]),
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//pkg:__pkg__"],
-)

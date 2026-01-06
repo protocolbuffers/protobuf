@@ -130,7 +130,8 @@ std::string StringifyMessage(const Message& message, Option option,
   printer.SetRandomizeDebugString(true);
   printer.SetReportSensitiveFields(reporter);
   std::string result;
-  printer.PrintToString(message, &result);
+  // TODO: Remove this suppression.
+  (void)printer.PrintToString(message, &result);
 
   if (option == Option::kShort) {
     TrimTrailingSpace(result);
@@ -1254,7 +1255,7 @@ class TextFormat::Parser::ParserImpl {
   // Consumes Any::type_url value, of form "type.googleapis.com/full.type.Name"
   // or "type.googleprod.com/full.type.Name"
   bool ConsumeAnyTypeUrl(std::string* full_type_name, std::string* prefix) {
-    // TODO Extend Consume() to consume multiple tokens at once, so that
+    // TODO(saito) Extend Consume() to consume multiple tokens at once, so that
     // this code can be written as just DO(Consume(kGoogleApisTypePrefix)).
     DO(ConsumeIdentifier(prefix));
     while (TryConsume(".")) {
@@ -2357,7 +2358,8 @@ void TextFormat::Printer::Print(const Message& message,
     {
       std::string serialized = message.SerializeAsString();
       io::ArrayInputStream input(serialized.data(), serialized.size());
-      unknown_fields.ParseFromZeroCopyStream(&input);
+      // TODO: Remove this suppression.
+      (void)unknown_fields.ParseFromZeroCopyStream(&input);
     }
     PrintUnknownFields(unknown_fields, generator, kUnknownFieldRecursionLimit);
     return;

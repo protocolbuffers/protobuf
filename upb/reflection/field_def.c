@@ -29,6 +29,7 @@
 #include "upb/mini_table/sub.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def_type.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 #include "upb/reflection/internal/def_builder.h"
 #include "upb/reflection/internal/def_pool.h"
 #include "upb/reflection/internal/desc_state.h"
@@ -569,12 +570,12 @@ static void set_default_default(upb_DefBuilder* ctx, upb_FieldDef* f,
 static bool _upb_FieldDef_InferLegacyFeatures(
     upb_DefBuilder* ctx, upb_FieldDef* f,
     const UPB_DESC(FieldDescriptorProto*) proto,
-    const UPB_DESC(FieldOptions*) options, upb_Syntax syntax,
+    const UPB_DESC(FieldOptions*) options, google_protobuf_Edition edition,
     UPB_DESC(FeatureSet*) features) {
   bool ret = false;
 
   if (UPB_DESC(FieldDescriptorProto_label)(proto) == kUpb_Label_Required) {
-    if (syntax == kUpb_Syntax_Proto3) {
+    if (edition == google_protobuf_EDITION_PROTO3) {
       _upb_DefBuilder_Errf(ctx, "proto3 fields cannot be required (%s)",
                            f->full_name);
     }
@@ -618,15 +619,15 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
 
   UPB_DEF_SET_OPTIONS(f->opts, FieldDescriptorProto, FieldOptions, field_proto);
 
-  upb_Syntax syntax = upb_FileDef_Syntax(f->file);
+  UPB_DESC(Edition) edition = upb_FileDef_Edition(f->file);
   const UPB_DESC(FeatureSet*) unresolved_features =
       UPB_DESC(FieldOptions_features)(f->opts);
   bool implicit = false;
 
-  if (syntax != kUpb_Syntax_Editions) {
+  if (_upb_DefBuilder_IsLegacyEdition(edition)) {
     upb_Message_Clear(UPB_UPCAST(ctx->legacy_features),
                       UPB_DESC_MINITABLE(FeatureSet));
-    if (_upb_FieldDef_InferLegacyFeatures(ctx, f, field_proto, f->opts, syntax,
+    if (_upb_FieldDef_InferLegacyFeatures(ctx, f, field_proto, f->opts, edition,
                                           ctx->legacy_features)) {
       implicit = true;
       unresolved_features = ctx->legacy_features;
@@ -1009,7 +1010,7 @@ static void resolve_default(upb_DefBuilder* ctx, upb_FieldDef* f,
                            f->full_name);
     }
 
-    if (upb_FileDef_Syntax(f->file) == kUpb_Syntax_Proto3) {
+    if (upb_FileDef_Edition(f->file) == google_protobuf_EDITION_PROTO3) {
       _upb_DefBuilder_Errf(ctx,
                            "proto3 fields cannot have explicit defaults (%s)",
                            f->full_name);

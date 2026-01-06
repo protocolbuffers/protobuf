@@ -18,6 +18,7 @@
 #include "absl/strings/str_format.h"
 #include "conformance_test.h"
 #include "conformance/test_protos/test_messages_edition2023.pb.h"
+#include "conformance/test_protos/test_messages_edition_unstable.pb.h"
 #include "editions/golden/test_messages_proto2_editions.pb.h"
 #include "editions/golden/test_messages_proto3_editions.pb.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
@@ -143,6 +144,10 @@ TextFormatConformanceTestSuiteImpl<MessageType>::
       // There are no editions-sensitive performance tests.
       return;
     }
+    if (MessageType::GetDescriptor()->name() == "TestAllTypesEditionUnstable") {
+      // There are no editions-sensitive performance tests.
+      return;
+    }
     RunTextFormatPerformanceTests();
   } else {
     if (MessageType::GetDescriptor()->name() == "TestAllTypesProto2") {
@@ -155,7 +160,7 @@ TextFormatConformanceTestSuiteImpl<MessageType>::
     if (MessageType::GetDescriptor()->name() == "TestAllTypesProto3") {
       RunAnyTests();
       RunOpenEnumTests();
-      // TODO Run these over proto2 also.
+      // TODO(b/302593317) Run these over proto2 also.
       RunAllTests();
     }
   }

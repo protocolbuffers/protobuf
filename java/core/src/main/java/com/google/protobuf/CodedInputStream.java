@@ -441,6 +441,7 @@ public abstract class CodedInputStream {
    *
    * @return the old limit.
    */
+  @CanIgnoreReturnValue
   public final int setRecursionLimit(final int limit) {
     if (limit < 0) {
       throw new IllegalArgumentException("Recursion limit cannot be negative: " + limit);
@@ -464,6 +465,7 @@ public abstract class CodedInputStream {
    *
    * @return the old limit.
    */
+  @CanIgnoreReturnValue
   public final int setSizeLimit(final int limit) {
     if (limit < 0) {
       throw new IllegalArgumentException("Size limit cannot be negative: " + limit);
@@ -522,6 +524,7 @@ public abstract class CodedInputStream {
    *
    * @return the old limit.
    */
+  @CanIgnoreReturnValue
   public abstract int pushLimit(int byteLimit) throws InvalidProtocolBufferException;
 
   /**
@@ -1224,6 +1227,7 @@ public abstract class CodedInputStream {
     }
 
     @Override
+    @CanIgnoreReturnValue
     public int pushLimit(int byteLimit) throws InvalidProtocolBufferException {
       if (byteLimit < 0) {
         throw InvalidProtocolBufferException.negativeSize();
@@ -2000,6 +2004,7 @@ public abstract class CodedInputStream {
     }
 
     @Override
+    @CanIgnoreReturnValue
     public int pushLimit(int byteLimit) throws InvalidProtocolBufferException {
       if (byteLimit < 0) {
         throw InvalidProtocolBufferException.negativeSize();

@@ -721,20 +721,3 @@ junit_tests(
         "@protobuf_maven_dev//:org_mockito_mockito_core",
     ],
 )
-
-pkg_files(
-    name = "dist_files",
-    srcs = glob([
-        "src/main/java/com/google/protobuf/*.java",
-        "src/main/resources/google/protobuf/*.proto",
-        "src/test/java/**/*.java",
-        "src/test/proto/**/*.proto",
-    ]) + [
-        "BUILD.bazel",
-        "generate-sources-build.xml",
-        "generate-test-sources-build.xml",
-        "pom_template.xml",
-    ],
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//java:__pkg__"],
-)

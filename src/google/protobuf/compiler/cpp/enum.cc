@@ -61,6 +61,8 @@ absl::flat_hash_map<absl::string_view, std::string> EnumVars(
                               .enum_name_uses_string_view()
                           ? "::absl::string_view"
                           : "const ::std::string&"},
+      // TODO: Enable this everywhere.
+      {"nodiscard", options.opensource_runtime ? "[[nodiscard]]" : ""},
   };
 }
 
@@ -204,16 +206,16 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
 
   if (has_reflection_) {
     p->Emit(R"cc(
-      $dllexport_decl $const $pb$::EnumDescriptor* $nonnull$
+      $nodiscard $$dllexport_decl $const $pb$::EnumDescriptor* $nonnull$
       $Msg_Enum$_descriptor();
       //~ ADL Hook
-      inline auto ProtobufInternalGetEnumDescriptor($Msg_Enum$) {
+      $nodiscard $inline auto ProtobufInternalGetEnumDescriptor($Msg_Enum$) {
         return $Msg_Enum$_descriptor();
       }
     )cc");
   } else {
     p->Emit(R"cc(
-      $return_type$ $Msg_Enum$_Name($Msg_Enum$ value);
+      $nodiscard $$return_type$ $Msg_Enum$_Name($Msg_Enum$ value);
     )cc");
   }
 
@@ -235,7 +237,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
   if (should_cache_ || !has_reflection_) {
     p->Emit({{"static_assert", write_assert}}, R"cc(
       template <typename T>
-      $return_type$ $Msg_Enum$_Name(T value) {
+      $nodiscard $$return_type$ $Msg_Enum$_Name(T value) {
         $static_assert$;
         return $Msg_Enum$_Name(static_cast<$Msg_Enum$>(value));
       }
@@ -247,7 +249,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
       // pointers, so if the enum values are sparse, it's not worth it.
       p->Emit(R"cc(
         template <>
-        inline $return_type$ $Msg_Enum$_Name($Msg_Enum$ value) {
+        $nodiscard $inline $return_type$ $Msg_Enum$_Name($Msg_Enum$ value) {
           return $pbi$::NameOfDenseEnum<$Msg_Enum$_descriptor, $kMin$, $kMax$>(
               static_cast<int>(value));
         }
@@ -256,7 +258,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
   } else {
     p->Emit({{"static_assert", write_assert}}, R"cc(
       template <typename T>
-      $return_type$ $Msg_Enum$_Name(T value) {
+      $nodiscard $$return_type$ $Msg_Enum$_Name(T value) {
         $static_assert$;
         return $pbi$::NameOfEnum($Msg_Enum$_descriptor(), value);
       }
@@ -265,7 +267,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
 
   if (has_reflection_) {
     p->Emit(R"cc(
-      inline bool $Msg_Enum$_Parse(
+      $nodiscard $inline bool $Msg_Enum$_Parse(
           //~
           ::absl::string_view name, $Msg_Enum$* $nonnull$ value) {
         return $pbi$::ParseNamedEnum<$Msg_Enum$>($Msg_Enum$_descriptor(), name,
@@ -274,7 +276,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
     )cc");
   } else {
     p->Emit(R"cc(
-      bool $Msg_Enum$_Parse(
+      $nodiscard $bool $Msg_Enum$_Parse(
           //~
           ::absl::string_view name, $Msg_Enum$* $nonnull$ value);
     )cc");
@@ -328,7 +330,7 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
               .AnnotatedAs(enum_),
       },
       R"cc(
-        static inline bool $Enum$_IsValid(int value) {
+        $nodiscard $static inline bool $Enum$_IsValid(int value) {
           return $Msg_Enum$_IsValid(value);
         }
         static constexpr $Enum_$ $Enum_MIN$ = $Msg_Enum$_$Enum$_MIN;
@@ -356,10 +358,10 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
 
   p->Emit(R"cc(
     template <typename T>
-    static inline $return_type$ $Enum$_Name(T value) {
+    $nodiscard $static inline $return_type$ $Enum$_Name(T value) {
       return $Msg_Enum$_Name(value);
     }
-    static inline bool $Enum$_Parse(
+    $nodiscard $static inline bool $Enum$_Parse(
         //~
         ::absl::string_view name, $Enum_$* $nonnull$ value) {
       return $Msg_Enum$_Parse(name, value);
@@ -381,7 +383,7 @@ void EnumGenerator::GenerateIsValid(io::Printer* p) const {
     p->Emit({{"min", sorted_unique_values_.front()},
              {"max", sorted_unique_values_.back()}},
             R"cc(
-              inline bool $Msg_Enum$_IsValid(int value) {
+              $nodiscard $inline bool $Msg_Enum$_IsValid(int value) {
                 return $min$ <= value && value <= $max$;
               }
             )cc");
@@ -394,7 +396,7 @@ void EnumGenerator::GenerateIsValid(io::Printer* p) const {
     }
     p->Emit({{"bitmap", bitmap}, {"max", sorted_unique_values_.back()}},
             R"cc(
-              inline bool $Msg_Enum$_IsValid(int value) {
+              $nodiscard $inline bool $Msg_Enum$_IsValid(int value) {
                 return 0 <= value && value <= $max$ && (($bitmap$u >> value) & 1) != 0;
               }
             )cc");
@@ -402,7 +404,7 @@ void EnumGenerator::GenerateIsValid(io::Printer* p) const {
     // More complex struct. Use enum data structure for lookup.
     p->Emit(
         R"cc(
-          inline bool $Msg_Enum$_IsValid(int value) {
+          $nodiscard $inline bool $Msg_Enum$_IsValid(int value) {
             return $pbi$::ValidateEnum(value, $Msg_Enum$_internal_data_);
           }
         )cc");
@@ -414,7 +416,8 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
 
   if (has_reflection_) {
     p->Emit({{"idx", idx}}, R"cc(
-      const $pb$::EnumDescriptor* $nonnull$ $Msg_Enum$_descriptor() {
+      $nodiscard $const $pb$::EnumDescriptor* $nonnull$
+      $Msg_Enum$_descriptor() {
         $pbi$::AssignDescriptors(&$desc_table$);
         return $file_level_enum_descriptors$[$idx$];
       }
@@ -546,7 +549,7 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
               $entries_by_number$,
           };
 
-          $return_type$ $Msg_Enum$_Name($Msg_Enum$ value) {
+          $nodiscard $$return_type$ $Msg_Enum$_Name($Msg_Enum$ value) {
             static const bool kDummy = $pbi$::InitializeEnumStrings(
                 $Msg_Enum$_entries, $Msg_Enum$_entries_by_number, $num_unique$,
                 $Msg_Enum$_strings);
@@ -558,7 +561,8 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
             return idx == -1 ? $pbi$::GetEmptyString() : $Msg_Enum$_strings[idx].get();
           }
 
-          bool $Msg_Enum$_Parse(::absl::string_view name, $Msg_Enum$* $nonnull$ value) {
+          $nodiscard $bool $Msg_Enum$_Parse(::absl::string_view name,
+                                            $Msg_Enum$* $nonnull$ value) {
             int int_value;
             bool success = $pbi$::LookUpEnumValue(
                 $Msg_Enum$_entries, $num_declared$, name, &int_value);

@@ -53,6 +53,7 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
   }
 
   @Override
+  @CanIgnoreReturnValue
   public boolean add(E element) {
     ensureIsMutable();
 
@@ -109,6 +110,7 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
   }
 
   @Override
+  @CanIgnoreReturnValue
   public E remove(int index) {
     ensureIsMutable();
     ensureIndexInRange(index);
@@ -124,6 +126,7 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
   }
 
   @Override
+  @CanIgnoreReturnValue
   public E set(int index, E element) {
     ensureIsMutable();
     ensureIndexInRange(index);

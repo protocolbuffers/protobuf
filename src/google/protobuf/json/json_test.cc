@@ -1442,6 +1442,16 @@ TEST_P(JsonTest, UnknownGroupField) {
   EXPECT_EQ(out, "{}");
 }
 
+TEST_P(JsonTest, MalformedLengthDelimitedField) {
+  std::string out;
+  // An unknown length delimited field where the length is larger than
+  // the remaining input.
+  absl::Status s = BinaryToJsonString(resolver_.get(),
+                                      "type.googleapis.com/proto3.TestMessage",
+                                      "\xC2\x3E\x80\x80\x80\x80\x08", &out);
+  ASSERT_THAT(s, StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
 // JSON values get special treatment when it comes to pre-existing values in
 // their repeated fields, when parsing through their dedicated syntax.
 TEST_P(JsonTest, ClearPreExistingRepeatedInJsonValues) {

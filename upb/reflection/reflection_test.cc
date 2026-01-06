@@ -4,10 +4,13 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.upb.h"
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/str_format.h"
+#include "absl/strings/str_join.h"
 #include "upb/base/status.hpp"
 #include "upb/mem/arena.hpp"
 #include "upb/reflection/def.hpp"
@@ -15,6 +18,8 @@
 
 namespace upb_test {
 namespace {
+
+using testing::HasSubstr;
 
 google_protobuf_FileDescriptorProto* ToUpbDescriptorSet(
     const google::protobuf::FileDescriptorProto& proto, upb::Arena& arena) {
@@ -126,6 +131,134 @@ TEST(ReflectionTest, ImplicitPresenceWithNonZeroDefaultEnum) {
   EXPECT_EQ(std::string_view(status.message()),
             "Implicit presence field (FooMessage.f1) cannot use an enum type "
             "with a non-zero default (FooEnum)");
+}
+
+TEST(ReflectionTest, EditionWithoutSyntax) {
+  absl::Status status = LoadDescriptorProto(
+                            R"pb(
+                              edition: EDITION_2023
+                            )pb")
+                            .status();
+  EXPECT_EQ(
+      status.message(),
+      R"(Setting edition requires that syntax="editions", but syntax is "")");
+}
+
+TEST(ReflectionTest, EditionWithWrongSyntax) {
+  absl::Status status = LoadDescriptorProto(
+                            R"pb(
+                              edition: EDITION_2023 syntax: "proto2"
+                            )pb")
+                            .status();
+  EXPECT_EQ(
+      status.message(),
+      R"(Setting edition requires that syntax="editions", but syntax is "proto2")");
+}
+
+TEST(ReflectionTest, SyntaxEditionsWithNoEdition) {
+  absl::Status status = LoadDescriptorProto(
+                            R"pb(
+                              syntax: "editions"
+                            )pb")
+                            .status();
+  EXPECT_EQ(status.message(),
+            R"(File has syntax="editions", but no edition is specified)");
+}
+
+TEST(ReflectionTest, InvalidSyntax) {
+  absl::Status status = LoadDescriptorProto(
+                            R"pb(
+                              syntax: "abc123"
+                            )pb")
+                            .status();
+  EXPECT_EQ(status.message(), R"(Invalid syntax 'abc123')");
+}
+
+TEST(ReflectionTest, ExplicitFeatureOnProto2File) {
+  absl::Status status = LoadDescriptorProto(
+                            R"pb(
+                              syntax: "proto2"
+                              options { features { field_presence: EXPLICIT } }
+                            )pb")
+                            .status();
+  EXPECT_EQ(status.message(), R"(Features can only be specified for editions)");
+}
+
+TEST(ReflectionTest, ExplicitFeatureOnProto2Message) {
+  absl::Status status =
+      LoadDescriptorProto(
+          R"pb(
+            syntax: "proto2"
+            message_type {
+              name: "M"
+              options { features { field_presence: EXPLICIT } }
+            }
+          )pb")
+          .status();
+  EXPECT_EQ(status.message(), R"(Features can only be specified for editions)");
+}
+
+TEST(ReflectionTest, ExplicitFeatureOnProto2Enum) {
+  absl::Status status =
+      LoadDescriptorProto(
+          R"pb(
+            syntax: "proto2"
+            enum_type {
+              name: "E"
+              options { features { field_presence: EXPLICIT } }
+            }
+          )pb")
+          .status();
+  EXPECT_EQ(status.message(), R"(Features can only be specified for editions)");
+}
+
+TEST(ReflectionTest, ExplicitFeatureOnProto2EnumValue) {
+  absl::Status status =
+      LoadDescriptorProto(
+          R"pb(
+            syntax: "proto2"
+            enum_type {
+              name: "E"
+              value {
+                name: "V"
+                options { features { field_presence: EXPLICIT } }
+              }
+            }
+          )pb")
+          .status();
+  EXPECT_EQ(status.message(), R"(Features can only be specified for editions)");
+}
+
+TEST(ReflectionTest, TooManyRequiredFieldsFailGracefully) {
+  const auto make_desc = [](int n) {
+    std::vector<std::string> fields;
+    for (int i = 1; i <= n; ++i) {
+      fields.push_back(absl::StrFormat(R"pb(
+                                         field {
+                                           name: "f%d"
+                                           number: %d
+                                           type: TYPE_INT32
+                                           label: LABEL_REQUIRED
+                                         })pb",
+                                       i, i));
+    }
+    return absl::StrFormat(
+        R"pb(
+          syntax: "proto2"
+          name: "F"
+          message_type { name: "FooMessage" %s }
+        )pb",
+        absl::StrJoin(fields, "\n"));
+  };
+  // 63 required fields is ok.
+  upb::DefPool good = LoadDescriptorProto(make_desc(63)).value();
+  auto m = good.FindMessageByName("FooMessage");
+  auto f = m.FindFieldByNumber(63);
+  EXPECT_STREQ(f.full_name(), "FooMessage.f63");
+
+  // 64 is too much.
+  EXPECT_THAT(LoadDescriptorProto(make_desc(64)).status().message(),
+              HasSubstr("Too many required fields"));
 }
 
 }  // namespace

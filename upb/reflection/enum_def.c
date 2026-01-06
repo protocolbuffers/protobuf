@@ -167,7 +167,7 @@ static bool upb_EnumDef_IsSpecifiedAsClosed(const upb_EnumDef* e) {
 }
 
 bool upb_EnumDef_IsClosed(const upb_EnumDef* e) {
-  if (UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN) return false;
+  if (_upb_FileDef_ClosedEnumCheckingDisabled(e->file)) return false;
   return upb_EnumDef_IsSpecifiedAsClosed(e);
 }
 

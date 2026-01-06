@@ -365,7 +365,7 @@ TEST_F(FindFieldEntryTest, FieldNumberWorksForAllFields) {
   // calculation works for all the fields.
   auto* gen_db = DescriptorPool::internal_generated_database();
   std::vector<std::string> all_file_names;
-  gen_db->FindAllFileNames(&all_file_names);
+  ASSERT_TRUE(gen_db->FindAllFileNames(&all_file_names));
 
   for (const auto& filename : all_file_names) {
     SCOPED_TRACE(filename);

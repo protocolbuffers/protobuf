@@ -266,8 +266,6 @@ enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
 // The maximum byte alignment we support.
 enum { kMaxMessageAlignment = 8 };
 
-inline constexpr bool EnableProtoFieldPresenceHints() { return false; }
-
 inline constexpr bool EnableStableExperiments() {
 #if defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
   return true;
@@ -841,7 +839,8 @@ PROTOBUF_EXPORT extern GlobalEmptyString fixed_address_empty_string;
 enum class BoundsCheckMode { kNoEnforcement, kReturnDefault, kAbort };
 
 PROTOBUF_EXPORT constexpr BoundsCheckMode GetBoundsCheckMode() {
-#if defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_ABORT)
+#if defined(PROTO2_OPENSOURCE) || \
+    defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_ABORT)
   return BoundsCheckMode::kAbort;
 #elif defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_RETURN_DEFAULT)
   return BoundsCheckMode::kReturnDefault;

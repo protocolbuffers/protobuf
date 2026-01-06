@@ -35,7 +35,7 @@ namespace internal {
 // 4. Call Destruct() only if the object is initialized.
 //    After the call, the object becomes uninitialized.
 template <typename T, size_t min_align = 1>
-class ExplicitlyConstructed {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExplicitlyConstructed {
  public:
   void DefaultConstruct() { new (&union_) T(); }
 
@@ -46,8 +46,12 @@ class ExplicitlyConstructed {
 
   void Destruct() { get_mutable()->~T(); }
 
-  constexpr const T& get() const { return reinterpret_cast<const T&>(union_); }
-  T* get_mutable() { return reinterpret_cast<T*>(&union_); }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD constexpr const T& get() const {
+    return reinterpret_cast<const T&>(union_);
+  }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD T* get_mutable() {
+    return reinterpret_cast<T*>(&union_);
+  }
 
  private:
   union AlignedUnion {

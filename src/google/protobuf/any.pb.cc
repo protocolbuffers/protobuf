@@ -117,13 +117,13 @@ namespace google {
 namespace protobuf {
 // ===================================================================
 
-bool Any::GetAnyFieldDescriptors(
+[[nodiscard]] bool Any::GetAnyFieldDescriptors(
     const ::google::protobuf::Message& message,
     const ::google::protobuf::FieldDescriptor** type_url_field,
     const ::google::protobuf::FieldDescriptor** value_field) {
   return ::_pbi::GetAnyFieldDescriptors(message, type_url_field, value_field);
 }
-bool Any::ParseAnyTypeUrl(
+[[nodiscard]] bool Any::ParseAnyTypeUrl(
     ::absl::string_view type_url,
     std::string* PROTOBUF_NONNULL full_type_name) {
   return ::_pbi::ParseAnyTypeUrl(type_url, full_type_name);

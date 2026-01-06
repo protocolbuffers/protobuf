@@ -1527,6 +1527,11 @@ public class JsonFormat {
       Message.Builder contentBuilder =
           DynamicMessage.getDefaultInstance(contentType).newBuilderForType();
       WellKnownTypeParser specialParser = wellKnownTypeParsers.get(contentType.getFullName());
+
+      if (currentDepth >= recursionLimit) {
+        throw new InvalidProtocolBufferException("Hit recursion limit.");
+      }
+      ++currentDepth;
       if (specialParser != null) {
         JsonElement value = object.get("value");
         if (value != null) {
@@ -1535,6 +1540,7 @@ public class JsonFormat {
       } else {
         mergeMessage(json, contentBuilder, true);
       }
+      --currentDepth;
       builder.setField(valueField, contentBuilder.build().toByteString());
     }
 

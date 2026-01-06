@@ -252,7 +252,7 @@ class OverridableDefaultsTest : public ::testing::Test {
   static void SetUpTestSuite() {
     google::protobuf::LinkExtensionReflection(pb::cpp);
     google::protobuf::LinkExtensionReflection(pb::java);
-    DescriptorPool::generated_pool();
+    (void)DescriptorPool::generated_pool();
   }
 };
 

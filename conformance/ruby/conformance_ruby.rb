@@ -14,6 +14,7 @@ $LOAD_PATH.unshift File.join(ENV['PWD'], 'ruby')
 
 require 'conformance/ruby/conformance_pb'
 require 'conformance/ruby/test_messages_edition2023_pb'
+require 'conformance/ruby/test_messages_edition_unstable_pb'
 require 'google/protobuf'
 require 'google/protobuf/test_messages_proto3_pb'
 require 'google/protobuf/test_messages_proto2_pb'

@@ -496,14 +496,6 @@ Error, UINTPTR_MAX is undefined
 
 #undef UPB_FASTTABLE_SUPPORTED
 
-/* Disable proto2 arena behavior (TEMPORARY) **********************************/
-
-#ifdef UPB_DISABLE_CLOSED_ENUM_CHECKING
-#define UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN 1
-#else
-#define UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN 0
-#endif
-
 #if defined(__cplusplus)
 #if defined(__clang__) || UPB_GNUC_MIN(6, 0)
 // https://gcc.gnu.org/gcc-6/changes.html
@@ -644,7 +636,7 @@ Error, UINTPTR_MAX is undefined
 
 // Workaround for https://github.com/llvm/llvm-project/issues/167577 until it's
 // fixed.  Some function must exist for the constructor to work properly.
-// TODO Remove this or gate it on a future version of clang.
+// TODO(b/460538289) Remove this or gate it on a future version of clang.
 #if defined(__clang__) && defined(__arm__)
 #define _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                            \
   __attribute__((used, visibility("hidden"))) void UPB_PRIVATE(unique_name)( \
@@ -1016,6 +1008,7 @@ UPB_INLINE uint8_t _upb_Xsan_NextTag(upb_Xsan *xsan) {
   }
   return xsan->state;
 #else
+  UPB_UNUSED(xsan);
   return 0;
 #endif
 }
@@ -1032,6 +1025,7 @@ UPB_INLINE uint8_t UPB_PRIVATE(_upb_Xsan_GetTag)(const void *addr) {
 #if UPB_HWASAN
   return __hwasan_get_tag_from_pointer(addr);
 #else
+  UPB_UNUSED(addr);
   return 0;
 #endif
 }
@@ -1039,6 +1033,8 @@ UPB_INLINE uint8_t UPB_PRIVATE(_upb_Xsan_GetTag)(const void *addr) {
 UPB_INLINE void UPB_PRIVATE(upb_Xsan_Init)(upb_Xsan *xsan) {
 #if UPB_HWASAN || UPB_TSAN
   xsan->state = 0;
+#else
+  UPB_UNUSED(xsan);
 #endif
 }
 
@@ -1047,6 +1043,9 @@ UPB_INLINE void UPB_PRIVATE(upb_Xsan_MarkInitialized)(void* addr, size_t size) {
   if (size) {
     __msan_unpoison(addr, size);
   }
+#else
+  UPB_UNUSED(addr);
+  UPB_UNUSED(size);
 #endif
 }
 
@@ -1059,6 +1058,9 @@ UPB_INLINE void UPB_PRIVATE(upb_Xsan_PoisonRegion)(const void *addr,
   __asan_poison_memory_region(addr, size);
 #elif UPB_HWASAN
   __hwasan_tag_memory(addr, UPB_HWASAN_POISON_TAG, UPB_ALIGN_MALLOC(size));
+#else
+  UPB_UNUSED(addr);
+  UPB_UNUSED(size);
 #endif
 }
 
@@ -1136,6 +1138,8 @@ UPB_INLINE void UPB_PRIVATE(upb_Xsan_AccessReadOnly)(upb_Xsan *xsan) {
 #if UPB_TSAN
   // For performance we avoid using a volatile variable.
   __asm__ volatile("" ::"r"(xsan->state));
+#else
+  UPB_UNUSED(xsan);
 #endif
 }
 
@@ -1143,6 +1147,8 @@ UPB_INLINE void UPB_PRIVATE(upb_Xsan_AccessReadWrite)(upb_Xsan *xsan) {
 #if UPB_TSAN
   // For performance we avoid using a volatile variable.
   __asm__ volatile("" : "+r"(xsan->state));
+#else
+  UPB_UNUSED(xsan);
 #endif
 }
 
@@ -4463,7 +4469,7 @@ UPB_API_INLINE void upb_Message_SetBaseFieldInt64(struct upb_Message* msg,
 UPB_API_INLINE void upb_Message_SetBaseFieldMessage(struct upb_Message* msg,
                                                     const upb_MiniTableField* f,
                                                     struct upb_Message* value) {
-  // TODO - Re-enable this assertion.
+  // TODO(b/454656912) - Re-enable this assertion.
   // UPB_ASSERT(value);
   UPB_ASSUME(upb_MiniTableField_CType(f) == kUpb_CType_Message);
   UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
@@ -5439,7 +5445,7 @@ inline bool upb_Message_SetMapEntry(upb_Map* map,
 #define UPB_MESSAGE_MAP_GENCODE_UTIL_H_
 
 // This header file is referenced by multiple files. Leave it empty.
-// TODO: b/399481227 - Remove this header file, after all the references are
+// TODO: Remove this header file, after all the references are
 // cleaned up.
 #endif /* UPB_MESSAGE_MAP_GENCODE_UTIL_H_ */
 
@@ -14044,12 +14050,6 @@ UPB_INLINE void google_protobuf_GeneratedCodeInfo_Annotation_set_semantic(google
 
 #endif  // GOOGLE_UPB_UPB_REFLECTION_DESCRIPTOR_BOOTSTRAP_H__
 
-typedef enum {
-  kUpb_Syntax_Proto2 = 2,
-  kUpb_Syntax_Proto3 = 3,
-  kUpb_Syntax_Editions = 99
-} upb_Syntax;
-
 // Forward declarations for circular references.
 typedef struct upb_DefPool upb_DefPool;
 typedef struct upb_EnumDef upb_EnumDef;
@@ -14190,6 +14190,20 @@ UPB_API const upb_ExtensionRegistry* upb_DefPool_ExtensionRegistry(
 const upb_FieldDef** upb_DefPool_GetAllExtensions(const upb_DefPool* s,
                                                   const upb_MessageDef* m,
                                                   size_t* count);
+
+// If called, closed enums will be treated as open enums. This is non-standard
+// behavior and will cause conformance tests to fail, but it is more useful
+// behavior overall and can be used in situations where where the
+// non-conformance is acceptable.
+//
+// This function may only be called immediately after upb_DefPool_New().
+// It is an error to call it on an existing def pool or after defs have
+// already been added to the pool.
+//
+// Note: we still require that implicit presence fields have zero as their
+// default value.
+UPB_API void upb_DefPool_DisableClosedEnumChecking(upb_DefPool* s);
+bool upb_DefPool_ClosedEnumCheckingDisabled(const upb_DefPool* s);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -14412,8 +14426,6 @@ int upb_FileDef_PublicDependencyCount(const upb_FileDef* f);
 const upb_ServiceDef* upb_FileDef_Service(const upb_FileDef* f, int i);
 int upb_FileDef_ServiceCount(const upb_FileDef* f);
 
-UPB_API upb_Syntax upb_FileDef_Syntax(const upb_FileDef* f);
-
 const upb_EnumDef* upb_FileDef_TopLevelEnum(const upb_FileDef* f, int i);
 int upb_FileDef_TopLevelEnumCount(const upb_FileDef* f);
 
@@ -14574,7 +14586,6 @@ const upb_MessageReservedRange* upb_MessageDef_ReservedRange(
     const upb_MessageDef* m, int i);
 int upb_MessageDef_ReservedRangeCount(const upb_MessageDef* m);
 
-UPB_API upb_Syntax upb_MessageDef_Syntax(const upb_MessageDef* m);
 UPB_API upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m);
 UPB_API UPB_DESC(SymbolVisibility)
     upb_MessageDef_Visibility(const upb_MessageDef* m);
@@ -17224,6 +17235,13 @@ UPB_INLINE void _upb_DefBuilder_CheckIdentFull(upb_DefBuilder* ctx,
   if (!good) _upb_DefBuilder_CheckIdentSlow(ctx, name, true);
 }
 
+UPB_INLINE bool _upb_DefBuilder_IsLegacyEdition(google_protobuf_Edition edition) {
+  // Should only be called for a real edition, not a placeholder like
+  // EDITION_LEGACY.
+  UPB_ASSERT(edition >= google_protobuf_EDITION_PROTO2);
+  return edition <= google_protobuf_EDITION_PROTO3;
+}
+
 // Returns true if the returned feature set is new and must be populated.
 bool _upb_DefBuilder_GetOrCreateFeatureSet(upb_DefBuilder* ctx,
                                            const UPB_DESC(FeatureSet*) parent,
@@ -17264,6 +17282,7 @@ const upb_MiniTableExtension* _upb_FileDef_ExtensionMiniTable(
     const upb_FileDef* f, int i);
 const int32_t* _upb_FileDef_PublicDependencyIndexes(const upb_FileDef* f);
 const int32_t* _upb_FileDef_WeakDependencyIndexes(const upb_FileDef* f);
+bool _upb_FileDef_ClosedEnumCheckingDisabled(const upb_FileDef* f);
 
 // upb_FileDef_Package() returns "" if f->package is NULL, this does not.
 const char* _upb_FileDef_RawPackage(const upb_FileDef* f);
@@ -17986,7 +18005,6 @@ UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
 #undef UPB_MSAN
 #undef UPB_MALLOC_ALIGN
 #undef UPB_TSAN
-#undef UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN
 #undef UPB_DEPRECATED
 #undef UPB_GNUC_MIN
 #undef UPB_DESCRIPTOR_UPB_H_FILENAME

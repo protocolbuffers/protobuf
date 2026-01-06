@@ -12,6 +12,7 @@ module Google
       attach_function :add_serialized_file,   :upb_DefPool_AddFile,            [:DefPool, :FileDescriptorProto, Status.by_ref], :FileDef
       attach_function :free_descriptor_pool,  :upb_DefPool_Free,               [:DefPool], :void
       attach_function :create_descriptor_pool,:upb_DefPool_New,                [], :DefPool
+      attach_function :disable_closed_enum_checking, :upb_DefPool_DisableClosedEnumChecking, [:DefPool], :void
       attach_function :get_extension_registry,:upb_DefPool_ExtensionRegistry,  [:DefPool],  :ExtensionRegistry
       attach_function :lookup_enum,           :upb_DefPool_FindEnumByName,     [:DefPool, :string], EnumDescriptor
       attach_function :lookup_extension,      :upb_DefPool_FindExtensionByName,[:DefPool, :string], FieldDescriptor
@@ -29,6 +30,9 @@ module Google
       def initialize
         @descriptor_pool = ::FFI::AutoPointer.new(Google::Protobuf::FFI.create_descriptor_pool, Google::Protobuf::FFI.method(:free_descriptor_pool))
         @descriptor_class_by_def = {}
+
+        # Ruby treats all enums as open.
+        Google::Protobuf::FFI.disable_closed_enum_checking(@descriptor_pool)
 
         # Should always be the last expression of the initializer to avoid
         # leaking references to this object before construction is complete.

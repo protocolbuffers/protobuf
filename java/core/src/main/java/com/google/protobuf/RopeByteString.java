@@ -842,7 +842,7 @@ final class RopeByteString extends ByteString {
      *
      * <p>This method assumes that all error checking has already happened.
      *
-     * <p>Returns the actual number of bytes read or skipped.
+     * @return The actual number of bytes read or skipped.
      */
     private int readSkipInternal(byte[] b, int offset, int length) {
       int bytesRemaining = length;
@@ -896,7 +896,7 @@ final class RopeByteString extends ByteString {
     public synchronized void reset() {
       // Just reinitialize and skip the specified number of bytes.
       initialize();
-      readSkipInternal(null, 0, mark);
+      int unused = readSkipInternal(null, 0, mark);
     }
 
     /** Common initialization code used by both the constructor and reset() */

@@ -1712,7 +1712,40 @@ public class JsonFormatTest {
       parser.merge(input, builder);
       assertWithMessage("Exception is expected.").fail();
     } catch (InvalidProtocolBufferException e) {
-      // Expected.
+      assertThat(e).hasMessageThat().contains("recursion");
+    }
+  }
+
+  @Test
+  public void testRecursionLimitAnyOfAny() throws Exception {
+    String input =
+        "{\n"
+            + "  \"@type\": \"type.googleapis.com/google.protobuf.Any\", \"value\": {\n"
+            + "    \"@type\": \"type.googleapis.com/google.protobuf.Any\", \"value\": {\n"
+            + "      \"@type\": \"type.googleapis.com/google.protobuf.Any\", \"value\": {\n"
+            + "        \"@type\": \"type.googleapis.com/google.protobuf.Any\", \"value\": {\n"
+            + "          \"@type\": \"type.googleapis.com/google.protobuf.Any\"}\n"
+            + "        }\n"
+            + "      }\n"
+            + "    }\n"
+            + "  }\n"
+            + "}\n";
+
+    JsonFormat.TypeRegistry registry =
+        JsonFormat.TypeRegistry.newBuilder().add(Any.getDescriptor()).build();
+
+    JsonFormat.Parser parser = JsonFormat.parser().usingTypeRegistry(registry);
+    Any.Builder builder = Any.newBuilder();
+    parser.merge(input, builder); // Successfully parses with no default recursion limit.
+    Any unused = builder.build();
+
+    parser = JsonFormat.parser().usingTypeRegistry(registry).usingRecursionLimit(3);
+    builder = Any.newBuilder();
+    try {
+      parser.merge(input, builder);
+      assertWithMessage("Exception is expected.").fail();
+    } catch (InvalidProtocolBufferException e) {
+      assertThat(e).hasMessageThat().contains("recursion");
     }
   }
 

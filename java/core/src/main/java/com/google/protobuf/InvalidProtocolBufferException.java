@@ -46,6 +46,7 @@ public class InvalidProtocolBufferException extends IOException {
    *
    * @return this
    */
+  @CanIgnoreReturnValue
   public InvalidProtocolBufferException setUnfinishedMessage(MessageLite unfinishedMessage) {
     this.unfinishedMessage = unfinishedMessage;
     return this;
