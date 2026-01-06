@@ -77,6 +77,7 @@ class Message
         }
         foreach ($this->desc->getField() as $field) {
             $setter = $field->getSetter();
+            $getter = $field->getGetter();
             if ($field->isMap()) {
                 $message_type = $field->getMessageType();
                 $key_field = $message_type->getFieldByNumber(1);
@@ -128,6 +129,16 @@ class Message
                 $oneof = $this->desc->getOneofDecl()[$field->getOneofIndex()];
                 $oneof_name = $oneof->getName();
                 $this->$oneof_name = new OneofField($oneof);
+            } else if (!$field->isRequired() && !$field->isRepeated() &&
+                PHP_INT_SIZE == 4 && $this->$getter() === 0) {
+                switch ($field->getType()) {
+                    case GPBType::INT64:
+                    case GPBType::UINT64:
+                    case GPBType::FIXED64:
+                    case GPBType::SFIXED64:
+                    case GPBType::SINT64:
+                        $this->$setter("0");
+                }
             }
         }
     }
