@@ -392,7 +392,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
             feature_configuration = feature_configuration,
             src = thunk,
             ctx = ctx,
-            attr = attr,
+            attr = ctx.rule.attr,
             cc_toolchain = cc_toolchain,
             cc_infos = [target[CcInfo]] + [dep[CcInfo] for dep in ctx.attr._cpp_thunks_deps] + dep_cc_infos,
         ) for thunk in cc_thunks_gencode])
@@ -493,6 +493,7 @@ def _make_proto_library_aspect(is_upb):
         toolchains = [
             "@rules_rust//rust:toolchain_type",
             "@bazel_tools//tools/cpp:toolchain_type",
+            "@bazel_tools//tools/cpp:cc_runtimes_toolchain_type",
         ],
     )
 
