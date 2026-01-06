@@ -1436,29 +1436,34 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
   // field, than parsing, so count the number of ints first and preallocate.
   // Assume that varint are valid and just count the number of bytes with
   // continuation bit not set. In a valid varint there is only 1 such byte.
-  if (end - ptr >= 16 && out.Capacity() - out.size() < end - ptr) {
-    int old_size = out.size();
-    int count = out.Capacity() - out.size();
-    // We are not guaranteed to have enough space for worst possible case,
-    // do an actual count and reserve.
-    if (count < end - ptr) {
-      count = CountVarintsAssumingLargeArray(ptr, end);
+  if (end - ptr >= 16) {
+    int count = CountVarintsAssumingLargeArray(ptr, end);
+    if (count == end - ptr) {
+      // We have exactly one element per byte, so avoid the costly varint
+      // parsing.
+      out.ReserveWithArena(arena, out.size() + count);
+      T* x = out.AddNAlreadyReserved(count);
+      for (; ptr != end; ++ptr) {
+        *x = conv(static_cast<uint8_t>(*ptr));
+        ++x;
+      }
+    } else {
       // We can overread, so if the last byte has a continuation bit set,
       // we need to account for that.
       if (end[-1] & 0x80) count++;
+      int old_size = out.size();
       out.ReserveWithArena(arena, old_size + count);
+      T* x = out.AddNAlreadyReserved(count);
+      ptr = ReadPackedVarintArray(ptr, end, [&](uint64_t varint) {
+        *x = conv(varint);
+        ++x;
+      });
+      int new_size = x - out.data();
+      ABSL_DCHECK_LE(new_size, old_size + count);
+      // We may have overreserved if the the data are truncated or malformed,
+      // so set the actual size to avoid exposing uninitialized memory.
+      out.Truncate(new_size);
     }
-    T* x = out.AddNAlreadyReserved(count);
-    ptr = ReadPackedVarintArray(ptr, end, [&](uint64_t varint) {
-      *x = conv(varint);
-      x++;
-    });
-    int new_size = x - out.data();
-    ABSL_DCHECK_LE(new_size, old_size + count);
-    // We may have overreserved if there was enough capacity.
-    // Or encountered malformed data, so set the actual size to
-    // avoid exposing uninitialized memory.
-    out.Truncate(new_size);
     return ptr;
   } else {
     return ReadPackedVarintArray(ptr, end, [&](uint64_t varint) {
