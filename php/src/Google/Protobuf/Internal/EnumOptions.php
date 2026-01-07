@@ -37,7 +37,7 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      * and strips underscored from the fields before comparison in proto3 only.
      * The new behavior takes `json_name` into account and applies to proto2 as
      * well.
-     * TODO(b/261750190) Remove this legacy behavior once downstream teams have
+     * TODO Remove this legacy behavior once downstream teams have
      * had time to migrate.
      *
      * Generated from protobuf field <code>optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];</code>
@@ -79,7 +79,7 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      *           and strips underscored from the fields before comparison in proto3 only.
      *           The new behavior takes `json_name` into account and applies to proto2 as
      *           well.
-     *           TODO(b/261750190) Remove this legacy behavior once downstream teams have
+     *           TODO Remove this legacy behavior once downstream teams have
      *           had time to migrate.
      *     @type \Google\Protobuf\Internal\FeatureSet $features
      *           Any features defined in the specific edition.
@@ -180,7 +180,7 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      * and strips underscored from the fields before comparison in proto3 only.
      * The new behavior takes `json_name` into account and applies to proto2 as
      * well.
-     * TODO(b/261750190) Remove this legacy behavior once downstream teams have
+     * TODO Remove this legacy behavior once downstream teams have
      * had time to migrate.
      *
      * Generated from protobuf field <code>optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];</code>
@@ -214,7 +214,7 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      * and strips underscored from the fields before comparison in proto3 only.
      * The new behavior takes `json_name` into account and applies to proto2 as
      * well.
-     * TODO(b/261750190) Remove this legacy behavior once downstream teams have
+     * TODO Remove this legacy behavior once downstream teams have
      * had time to migrate.
      *
      * Generated from protobuf field <code>optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];</code>

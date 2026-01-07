@@ -83,7 +83,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * well.
      * This should only be used as a temporary measure against broken builds due
      * to the change in behavior for JSON field name conflicts.
-     * TODO(b/261750190) This is legacy behavior we plan to remove once downstream
+     * TODO This is legacy behavior we plan to remove once downstream
      * teams have had time to migrate.
      *
      * Generated from protobuf field <code>optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];</code>
@@ -163,7 +163,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      *           well.
      *           This should only be used as a temporary measure against broken builds due
      *           to the change in behavior for JSON field name conflicts.
-     *           TODO(b/261750190) This is legacy behavior we plan to remove once downstream
+     *           TODO This is legacy behavior we plan to remove once downstream
      *           teams have had time to migrate.
      *     @type \Google\Protobuf\Internal\FeatureSet $features
      *           Any features defined in the specific edition.
@@ -402,7 +402,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * well.
      * This should only be used as a temporary measure against broken builds due
      * to the change in behavior for JSON field name conflicts.
-     * TODO(b/261750190) This is legacy behavior we plan to remove once downstream
+     * TODO This is legacy behavior we plan to remove once downstream
      * teams have had time to migrate.
      *
      * Generated from protobuf field <code>optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];</code>
@@ -438,7 +438,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * well.
      * This should only be used as a temporary measure against broken builds due
      * to the change in behavior for JSON field name conflicts.
-     * TODO(b/261750190) This is legacy behavior we plan to remove once downstream
+     * TODO This is legacy behavior we plan to remove once downstream
      * teams have had time to migrate.
      *
      * Generated from protobuf field <code>optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];</code>

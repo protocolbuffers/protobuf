@@ -636,7 +636,7 @@ Error, UINTPTR_MAX is undefined
 
 // Workaround for https://github.com/llvm/llvm-project/issues/167577 until it's
 // fixed.  Some function must exist for the constructor to work properly.
-// TODO(b/460538289) Remove this or gate it on a future version of clang.
+// TODO Remove this or gate it on a future version of clang.
 #if defined(__clang__) && defined(__arm__)
 #define _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                            \
   __attribute__((used, visibility("hidden"))) void UPB_PRIVATE(unique_name)( \
@@ -4469,7 +4469,7 @@ UPB_API_INLINE void upb_Message_SetBaseFieldInt64(struct upb_Message* msg,
 UPB_API_INLINE void upb_Message_SetBaseFieldMessage(struct upb_Message* msg,
                                                     const upb_MiniTableField* f,
                                                     struct upb_Message* value) {
-  // TODO(b/454656912) - Re-enable this assertion.
+  // TODO - Re-enable this assertion.
   // UPB_ASSERT(value);
   UPB_ASSUME(upb_MiniTableField_CType(f) == kUpb_CType_Message);
   UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
@@ -5445,7 +5445,7 @@ inline bool upb_Message_SetMapEntry(upb_Map* map,
 #define UPB_MESSAGE_MAP_GENCODE_UTIL_H_
 
 // This header file is referenced by multiple files. Leave it empty.
-// TODO: Remove this header file, after all the references are
+// TODO: b/399481227 - Remove this header file, after all the references are
 // cleaned up.
 #endif /* UPB_MESSAGE_MAP_GENCODE_UTIL_H_ */
 

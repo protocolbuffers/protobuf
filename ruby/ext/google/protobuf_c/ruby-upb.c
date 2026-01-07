@@ -637,7 +637,7 @@ Error, UINTPTR_MAX is undefined
 
 // Workaround for https://github.com/llvm/llvm-project/issues/167577 until it's
 // fixed.  Some function must exist for the constructor to work properly.
-// TODO(b/460538289) Remove this or gate it on a future version of clang.
+// TODO Remove this or gate it on a future version of clang.
 #if defined(__clang__) && defined(__arm__)
 #define _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                            \
   __attribute__((used, visibility("hidden"))) void UPB_PRIVATE(unique_name)( \
@@ -7333,7 +7333,7 @@ UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(upb_Message* msg,
       }
     }
   }
-  // TODO: Add debug check that the unknown field is an overall
+  // TODO: b/376969853  - Add debug check that the unknown field is an overall
   // valid proto field
   if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, arena)) {
     return false;
@@ -7412,7 +7412,7 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
     memcpy(copy, data[i].data, data[i].size);
     copy += data[i].size;
   }
-  // TODO: Add debug check that the unknown field is an overall
+  // TODO: b/376969853  - Add debug check that the unknown field is an overall
   // valid proto field
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   in->aux_data[in->size++] = upb_TaggedAuxPtr_MakeUnknownData(view);
@@ -7544,7 +7544,7 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
 
   // Extensions.
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  // TODO: use iterator API
+  // TODO: b/376969853 - use iterator API
   uint32_t size = in ? in->size : 0;
   for (size_t i = 0; i < size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
@@ -12600,7 +12600,7 @@ struct upb_FileDef {
 };
 
 UPB_API const char* upb_FileDef_EditionName(int edition) {
-  // TODO(b/309669951) Synchronize this with descriptor.proto better.
+  // TODO Synchronize this with descriptor.proto better.
   switch (edition) {
     case UPB_DESC(EDITION_PROTO2):
       return "PROTO2";
@@ -17627,7 +17627,7 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
   if (e->options & kUpb_EncodeOption_Deterministic) {
     _upb_sortedmap sorted;
     if (!_upb_mapsorter_pushexts(&e->sorter, in, &sorted)) {
-      // TODO: handle alloc failure
+      // TODO: b/378744096 - handle alloc failure
     }
     const upb_Extension* ext;
     while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {

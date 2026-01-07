@@ -12,7 +12,7 @@ use Google\Protobuf\Internal\GPBUtil;
 use Google\Protobuf\RepeatedField;
 
 /**
- * TODO(b/274655146) Enums in C++ gencode (and potentially other languages) are
+ * TODO Enums in C++ gencode (and potentially other languages) are
  * not well scoped.  This means that each of the feature enums below can clash
  * with each other.  The short names we've chosen maximize call-site
  * readability, but leave us very open to this scenario.  A future feature will
