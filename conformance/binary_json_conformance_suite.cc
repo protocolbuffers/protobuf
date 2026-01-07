@@ -2434,6 +2434,12 @@ void BinaryAndJsonConformanceSuiteImpl<
   // Parser reject non-numeric string values.
   ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumeric", REQUIRED,
                             R"({"optionalInt32": "12abc"})");
+  ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumericSpace",
+                            REQUIRED, R"({"optionalInt32": "12 34"})");
+  ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumericComma",
+                            REQUIRED, R"({"optionalInt32": "12,34"})");
+  ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumericUnicode",
+                            REQUIRED, R"({"optionalInt32": "12谷歌34"})");
   ExpectParseFailureForJson("Int32FieldStringValueNonNumeric", REQUIRED,
                             R"({"optionalInt32": "abc"})");
 
@@ -2589,6 +2595,12 @@ void BinaryAndJsonConformanceSuiteImpl<
                             R"({"optionalFloat": "12abc"})");
   ExpectParseFailureForJson("FloatFieldStringValueNonNumeric", REQUIRED,
                             R"({"optionalFloat": "abc"})");
+  ExpectParseFailureForJson("FloatFieldStringValuePartiallyNumericSpace",
+                            REQUIRED, R"({"optionalFloat": "12 34"})");
+  ExpectParseFailureForJson("FloatFieldStringValuePartiallyNumericComma",
+                            REQUIRED, R"({"optionalFloat": "12,34"})");
+  ExpectParseFailureForJson("FloatFieldStringValuePartiallyNumericUnicode",
+                            REQUIRED, R"({"optionalFloat": "12谷歌34"})");
 
   // Double fields.
   RunValidJsonTest("DoubleFieldMinPositiveValue", REQUIRED,
