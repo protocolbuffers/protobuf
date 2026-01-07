@@ -103,6 +103,7 @@ rust_library(
 rust_test(
     name = "protobuf_upb_test",
     crate = ":protobuf_upb",
+    edition = "2021",
     rustc_flags = [
         "--cfg=upb_kernel",
         "--cfg=bzl",
