@@ -7,8 +7,11 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
-#include <climits>
+#include <algorithm>
+#include <cstddef>
 #include <cstdint>
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <limits>
 #include <memory>
@@ -24,8 +27,6 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_lite_unittest.pb.h"
 #include "google/protobuf/map_test_util.h"
@@ -347,19 +348,24 @@ TYPED_TEST(LiteTest, AllLite7) {
 TYPED_TEST(LiteTest, AllLite8) {
   TypeParam data;
 
-  {
-    proto2_unittest::TestPackedTypesLite message, message2;
-    proto2_unittest::TestEmptyMessageLite empty_message;
-    TestUtilLite::ExpectPackedClear(message);
-    TestUtilLite::SetPackedFields(&message);
-    data = SerializeAs<TypeParam>(message);
-    ASSERT_TRUE(ParseFrom(data, empty_message));
-    data = SerializeAs<TypeParam>(empty_message);
-    ASSERT_TRUE(ParseFrom(data, message2));
-    data = message2.SerializeAsString();
-    TestUtilLite::ExpectPackedFieldsSet(message2);
-    message.Clear();
-    TestUtilLite::ExpectPackedClear(message);
+  for (bool large_values : {true, false}) {
+    SCOPED_TRACE(large_values);
+    for (int repetitions : {1, 100}) {
+      SCOPED_TRACE(repetitions);
+
+      proto2_unittest::TestPackedTypesLite message, message2;
+      proto2_unittest::TestEmptyMessageLite empty_message;
+      TestUtilLite::ExpectPackedClear(message);
+      TestUtilLite::SetPackedFields(&message, large_values, repetitions);
+      data = SerializeAs<TypeParam>(message);
+      ASSERT_TRUE(ParseFrom(data, empty_message));
+      data = SerializeAs<TypeParam>(empty_message);
+      ASSERT_TRUE(ParseFrom(data, message2));
+      data = message2.SerializeAsString();
+      TestUtilLite::ExpectPackedFieldsSet(message2, large_values, repetitions);
+      message.Clear();
+      TestUtilLite::ExpectPackedClear(message);
+    }
   }
 }
 
