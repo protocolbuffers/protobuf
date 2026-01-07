@@ -358,7 +358,7 @@ where
     ) where
         K: 'a,
     {
-        //TODO(b/330337282)
+        //TODO
         self.clear();
         for (k, v) in src.into_iter() {
             self.insert(k, v);

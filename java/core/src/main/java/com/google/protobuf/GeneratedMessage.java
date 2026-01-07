@@ -278,7 +278,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
   /**
    * Called by subclasses to parse an unknown field.
    *
-   * <p>TODO(b/248153893) remove this method
+   * <p>TODO remove this method
    *
    * @return {@code true} unless the tag is an end-group tag.
    */
@@ -298,7 +298,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
    * Delegates to parseUnknownField. This method is obsolete, but we must retain it for
    * compatibility with older generated code.
    *
-   * <p>TODO(b/248153893) remove this method
+   * <p>TODO remove this method
    */
   protected boolean parseUnknownFieldProto3(
       CodedInputStream input,
@@ -1201,7 +1201,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     /**
      * For compatibility with older gencode.
      *
-     * <p>TODO(b/346588832) Remove this in the next breaking release.
+     * <p>TODO Remove this in the next breaking release.
      *
      * @deprecated Use {@link newExtensionSerializer()} instead.
      */

@@ -68,7 +68,7 @@ void ExtensionSet::AppendToList(
           if (ext.descriptor == nullptr) {
             const FieldDescriptor* field =
                 pool->FindExtensionByNumber(extendee, number);
-            // TODO(b/467683606) This should be limited to and only reachable by
+            // TODO This should be limited to and only reachable by
             // lite extensions on full messages.
             if (field != nullptr) {
               output->push_back(field);

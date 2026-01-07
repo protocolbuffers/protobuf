@@ -160,7 +160,7 @@ TextFormatConformanceTestSuiteImpl<MessageType>::
     if (MessageType::GetDescriptor()->name() == "TestAllTypesProto3") {
       RunAnyTests();
       RunOpenEnumTests();
-      // TODO(b/302593317) Run these over proto2 also.
+      // TODO Run these over proto2 also.
       RunAllTests();
     }
   }

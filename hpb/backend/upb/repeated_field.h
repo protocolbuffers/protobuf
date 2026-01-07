@@ -94,7 +94,7 @@ class RepeatedFieldProxy
         (upb_Message*)message_value.msg_val, this->arena_);
   }
 
-  // TODO(b:/280069986) : Audit/Finalize based on Iterator Design.
+  // TODO : Audit/Finalize based on Iterator Design.
   // T::Proxy [] operator specialization.
   template <int&... DeductionBarrier, bool b = !kIsConst,
             typename = std::enable_if_t<b>>

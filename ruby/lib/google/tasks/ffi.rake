@@ -24,7 +24,7 @@ end
 # FFI::CompilerTask's constructor walks the filesystem at task definition time
 # to create subtasks for each source file, so files from third_party must be
 # copied into place before the task is defined for it to work correctly.
-# TODO(jatl) Is there a sane way to check for generated protos under lib too?
+# TODO Is there a sane way to check for generated protos under lib too?
 def with_generated_files
   expected_path = FileUtils.pwd.include?('ext') ? 'third_party/utf8_range' : 'ext/google/protobuf_c/third_party/utf8_range'
   if File.directory?(expected_path)

@@ -239,7 +239,7 @@ upb_proto_reflection_library(
 # support swapping out the compiler binary (even though a custom runtime can
 # be passed to proto_lang_toolchain).
 #
-# TODO(b/246826624) We still check in generated pb.h and pb.cc files purely to
+# TODO We still check in generated pb.h and pb.cc files purely to
 # support CMake builds.  These aren't used at all by Bazel and will be removed
 # in the future once CMake can generate them too.
 
@@ -290,7 +290,7 @@ staleness_test(
 
 # This is necessary for our generated cmake configs to pick up the checked in
 # WKT files.
-# TODO(b/246826624) Remove this once we generate WKT code from cmake.
+# TODO Remove this once we generate WKT code from cmake.
 cc_library(
     name = "cmake_wkt_cc_proto",
     srcs = ["wkt/google/protobuf/" + wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
@@ -654,7 +654,7 @@ cc_library(
         "repeated_ptr_field.cc",
         "wire_format_lite.cc",
     ],
-    # TODO(b/355667032) Fix ODR violations across BUILD.bazel files.
+    # TODO Fix ODR violations across BUILD.bazel files.
     hdrs = [
         "any.h",
         "arena.h",

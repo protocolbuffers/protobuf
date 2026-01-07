@@ -3034,7 +3034,7 @@ bool CommandLineInterface::GeneratePluginOutput(
     const std::vector<const FileDescriptor*>& parsed_files,
     const std::string& plugin_name, const std::string& parameter,
     GeneratorContext* generator_context, std::string* error) {
-  // TODO(b/441614741) Remove these special-cases and send json names to all
+  // TODO Remove these special-cases and send json names to all
   // plugins.
   static const auto builtin_plugins = new absl::flat_hash_set<std::string>(
       {"protoc-gen-cpp", "protoc-gen-java", "protoc-gen-mutable_java",

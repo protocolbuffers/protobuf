@@ -3420,7 +3420,7 @@ final class MessageSchema<T> implements Schema<T> {
 
   @SuppressWarnings("ReferenceEquality")
   static UnknownFieldSetLite getMutableUnknownFields(Object message) {
-    // TODO(b/248560713) decide if we're keeping support for Full in schema classes and handle this
+    // TODO decide if we're keeping support for Full in schema classes and handle this
     // better.
     UnknownFieldSetLite unknownFields = ((GeneratedMessageLite) message).unknownFields;
     if (unknownFields == UnknownFieldSetLite.getDefaultInstance()) {
@@ -4314,7 +4314,7 @@ final class MessageSchema<T> implements Schema<T> {
       return;
     }
 
-    // TODO(b/248560713) decide if we're keeping support for Full in schema classes and handle this
+    // TODO decide if we're keeping support for Full in schema classes and handle this
     // better.
     if (message instanceof GeneratedMessageLite) {
       GeneratedMessageLite<?, ?> generatedMessage = ((GeneratedMessageLite<?, ?>) message);
@@ -4690,7 +4690,7 @@ final class MessageSchema<T> implements Schema<T> {
       return false;
     }
 
-    // TODO(b/248560713) decide if we're keeping support for Full in schema classes and handle this
+    // TODO decide if we're keeping support for Full in schema classes and handle this
     // better.
     if (message instanceof GeneratedMessageLite<?, ?>) {
       return ((GeneratedMessageLite<?, ?>) message).isMutable();

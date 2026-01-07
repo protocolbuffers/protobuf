@@ -306,7 +306,7 @@ void RegisterExtensions(Output& output, absl::string_view unique_name) {
   output("UPB_LINKARR_DECLARE(upb_AllExts, const upb_MiniTableExtension);\n");
   output("UPB_CONSTRUCTOR(upb_GeneratedRegistry_Constructor, $0) {\n",
          unique_name);
-  // TODO(b/456317163) Although we define this function as weak and only one
+  // TODO Although we define this function as weak and only one
   // copy will ever exist in any binary, every instance will get registered as a
   // separate constructor call.  To avoid duplicate registrations, we use a
   // static variable to ensure that the function is only executed once.

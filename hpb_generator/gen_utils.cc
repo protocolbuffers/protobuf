@@ -164,7 +164,7 @@ std::string DefaultValue(const FieldDescriptor* field) {
           "\"", EscapeTrigraphs(absl::CEscape(field->default_value_string())),
           "\"");
     default:
-      // TODO: implement rest of scalars
+      // TODO: b/375460289 - implement rest of scalars
       ABSL_LOG(WARNING) << "Unsupported default value type (in-progress): <"
                         << field->cpp_type_name()
                         << "> For field: " << field->full_name();

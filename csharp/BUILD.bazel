@@ -106,7 +106,7 @@ compile_edition_defaults(
     minimum_edition = "PROTO2",
 )
 
-# TODO(b/376829856) Make bazel tests use this output instead of the checked-in one
+# TODO Make bazel tests use this output instead of the checked-in one
 embed_edition_defaults(
     name = "embedded_csharp_edition_defaults_generate",
     defaults = "csharp_edition_defaults",

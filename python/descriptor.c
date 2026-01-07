@@ -167,7 +167,7 @@ static PyObject* PyUpb_DescriptorBase_GetSerializedProto(
   size_t size;
   char* pb;
   upb_EncodeStatus status = upb_Encode(proto, layout, 0, arena, &pb, &size);
-  if (status) goto oom;  // TODO(b/235839510) non-oom errors are possible here
+  if (status) goto oom;  // TODO non-oom errors are possible here
   PyObject* str = PyBytes_FromStringAndSize(pb, size);
   upb_Arena_Free(arena);
   return str;
@@ -1180,7 +1180,7 @@ static PyGetSetDef PyUpb_FieldDescriptor_Getters[] = {
     {"has_default_value", (getter)PyUpb_FieldDescriptor_HasDefaultValue},
     {"is_extension", (getter)PyUpb_FieldDescriptor_GetIsExtension, NULL, "ID"},
     {"is_packed", (getter)PyUpb_FieldDescriptor_GetIsPacked, NULL, "Is Packed"},
-    // TODO(https://github.com/protocolbuffers/protobuf/issues/13760)
+    // TODO
     //{ "id", (getter)GetID, NULL, "ID"},
     {"message_type", (getter)PyUpb_FieldDescriptor_GetMessageType, NULL,
      "Message type"},
@@ -1195,7 +1195,7 @@ static PyGetSetDef PyUpb_FieldDescriptor_Getters[] = {
      "Has Options"},
     {"has_presence", (getter)PyUpb_FieldDescriptor_GetHasPresence, NULL,
      "Has Presence"},
-    // TODO(https://github.com/protocolbuffers/protobuf/issues/13760)
+    // TODO
     //{ "_options",
     //(getter)NULL, (setter)SetOptions, "Options"}, { "_serialized_options",
     //(getter)NULL, (setter)SetSerializedOptions, "Serialized Options"},

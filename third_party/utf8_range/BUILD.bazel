@@ -25,7 +25,7 @@ exports_files([
     "rules_fuzzing.patch",
 ])
 
-# TODO(b/252876197) Remove this once callers have been Bazelified.
+# TODO Remove this once callers have been Bazelified.
 filegroup(
     name = "utf8_range_srcs",
     srcs = [

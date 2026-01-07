@@ -766,7 +766,7 @@ std::string FieldMessageTypeName(const FieldDescriptor* field,
 
 std::string StripProto(absl::string_view filename) {
   /*
-   * TODO(github/georgthegreat) remove this proxy method
+   * TODO remove this proxy method
    * once Google's internal codebase will become ready
    */
   return compiler::StripProto(filename);

@@ -23,7 +23,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
 
-      # TODO(b/327464009) Run this with Bazel once codegen is handled properly.
+      # TODO Run this with Bazel once codegen is handled properly.
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:

@@ -347,7 +347,7 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
     // where people assign root values to child values or vice versa which
     // are not always checked, so we delay this change becoming 'visible'
     // until after we copied the message.
-    // TODO(b/307821081) enforces this as undefined behavior in debug builds.
+    // TODO enforces this as undefined behavior in debug builds.
     p->Emit(R"cc(
       $DCHK$(from.$field_$ != nullptr);
       if (_this->$field_$ == nullptr) {
