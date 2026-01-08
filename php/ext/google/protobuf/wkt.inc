@@ -12,8 +12,8 @@ static void google_protobuf_empty_proto_AddDescriptor();
 static void google_protobuf_field_mask_proto_AddDescriptor();
 static void google_protobuf_source_context_proto_AddDescriptor();
 static void google_protobuf_struct_proto_AddDescriptor();
-static void google_protobuf_type_proto_AddDescriptor();
 static void google_protobuf_timestamp_proto_AddDescriptor();
+static void google_protobuf_type_proto_AddDescriptor();
 static void google_protobuf_wrappers_proto_AddDescriptor();
 /* google/protobuf/any.proto */
 
@@ -140,12 +140,12 @@ static void google_protobuf_Any_ModuleInit() {
 
 zend_class_entry* GPBMetadata_Google_Protobuf_Api_ce;
 
-const char google_protobuf_api_proto_descriptor [751] = {
+const char google_protobuf_api_proto_descriptor [793] = {
 '\n', '\031', 'g', 'o', 'o', 'g', 'l', 'e', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '/', 'a', 'p', 'i', '.', 'p', 'r', 'o', 
 't', 'o', '\022', '\017', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '\032', '$', 'g', 'o', 'o', 'g', 
 'l', 'e', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '/', 's', 'o', 'u', 'r', 'c', 'e', '_', 'c', 'o', 'n', 't', 'e', 'x', 
 't', '.', 'p', 'r', 'o', 't', 'o', '\032', '\032', 'g', 'o', 'o', 'g', 'l', 'e', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '/', 
-'t', 'y', 'p', 'e', '.', 'p', 'r', 'o', 't', 'o', '\"', '\201', '\002', '\n', '\003', 'A', 'p', 'i', '\022', '\014', '\n', '\004', 'n', 'a', 'm', 
+'t', 'y', 'p', 'e', '.', 'p', 'r', 'o', 't', 'o', '\"', '\222', '\002', '\n', '\003', 'A', 'p', 'i', '\022', '\014', '\n', '\004', 'n', 'a', 'm', 
 'e', '\030', '\001', ' ', '\001', '(', '\t', '\022', '(', '\n', '\007', 'm', 'e', 't', 'h', 'o', 'd', 's', '\030', '\002', ' ', '\003', '(', '\013', '2', 
 '\027', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'M', 'e', 't', 'h', 'o', 'd', '\022', 
 '(', '\n', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\030', '\003', ' ', '\003', '(', '\013', '2', '\027', '.', 'g', 'o', 'o', 'g', 'l', 'e', 
@@ -155,23 +155,24 @@ const char google_protobuf_api_proto_descriptor [751] = {
 '.', 'S', 'o', 'u', 'r', 'c', 'e', 'C', 'o', 'n', 't', 'e', 'x', 't', '\022', '&', '\n', '\006', 'm', 'i', 'x', 'i', 'n', 's', '\030', 
 '\006', ' ', '\003', '(', '\013', '2', '\026', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'M', 
 'i', 'x', 'i', 'n', '\022', '\'', '\n', '\006', 's', 'y', 'n', 't', 'a', 'x', '\030', '\007', ' ', '\001', '(', '\016', '2', '\027', '.', 'g', 'o', 
-'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'S', 'y', 'n', 't', 'a', 'x', '\"', '\325', '\001', '\n', '\006', 
-'M', 'e', 't', 'h', 'o', 'd', '\022', '\014', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t', '\022', '\030', '\n', '\020', 'r', 
-'e', 'q', 'u', 'e', 's', 't', '_', 't', 'y', 'p', 'e', '_', 'u', 'r', 'l', '\030', '\002', ' ', '\001', '(', '\t', '\022', '\031', '\n', '\021', 
-'r', 'e', 'q', 'u', 'e', 's', 't', '_', 's', 't', 'r', 'e', 'a', 'm', 'i', 'n', 'g', '\030', '\003', ' ', '\001', '(', '\010', '\022', '\031', 
-'\n', '\021', 'r', 'e', 's', 'p', 'o', 'n', 's', 'e', '_', 't', 'y', 'p', 'e', '_', 'u', 'r', 'l', '\030', '\004', ' ', '\001', '(', '\t', 
-'\022', '\032', '\n', '\022', 'r', 'e', 's', 'p', 'o', 'n', 's', 'e', '_', 's', 't', 'r', 'e', 'a', 'm', 'i', 'n', 'g', '\030', '\005', ' ', 
-'\001', '(', '\010', '\022', '(', '\n', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\030', '\006', ' ', '\003', '(', '\013', '2', '\027', '.', 'g', 'o', 
-'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'O', 'p', 't', 'i', 'o', 'n', '\022', '\'', '\n', '\006', 's', 
-'y', 'n', 't', 'a', 'x', '\030', '\007', ' ', '\001', '(', '\016', '2', '\027', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 
-'o', 'b', 'u', 'f', '.', 'S', 'y', 'n', 't', 'a', 'x', '\"', '#', '\n', '\005', 'M', 'i', 'x', 'i', 'n', '\022', '\014', '\n', '\004', 'n', 
-'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t', '\022', '\014', '\n', '\004', 'r', 'o', 'o', 't', '\030', '\002', ' ', '\001', '(', '\t', 'B', 'v', 
-'\n', '\023', 'c', 'o', 'm', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', 'B', '\010', 'A', 'p', 
-'i', 'P', 'r', 'o', 't', 'o', 'P', '\001', 'Z', ',', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'g', 'o', 'l', 'a', 'n', 'g', '.', 'o', 
-'r', 'g', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '/', 't', 'y', 'p', 'e', 's', '/', 'k', 'n', 'o', 'w', 'n', '/', 'a', 
-'p', 'i', 'p', 'b', '\242', '\002', '\003', 'G', 'P', 'B', '\252', '\002', '\036', 'G', 'o', 'o', 'g', 'l', 'e', '.', 'P', 'r', 'o', 't', 'o', 
-'b', 'u', 'f', '.', 'W', 'e', 'l', 'l', 'K', 'n', 'o', 'w', 'n', 'T', 'y', 'p', 'e', 's', 'b', '\006', 'p', 'r', 'o', 't', 'o', 
-'3', 
+'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'S', 'y', 'n', 't', 'a', 'x', '\022', '\017', '\n', '\007', 'e', 
+'d', 'i', 't', 'i', 'o', 'n', '\030', '\010', ' ', '\001', '(', '\t', '\"', '\356', '\001', '\n', '\006', 'M', 'e', 't', 'h', 'o', 'd', '\022', '\014', 
+'\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t', '\022', '\030', '\n', '\020', 'r', 'e', 'q', 'u', 'e', 's', 't', '_', 't', 
+'y', 'p', 'e', '_', 'u', 'r', 'l', '\030', '\002', ' ', '\001', '(', '\t', '\022', '\031', '\n', '\021', 'r', 'e', 'q', 'u', 'e', 's', 't', '_', 
+'s', 't', 'r', 'e', 'a', 'm', 'i', 'n', 'g', '\030', '\003', ' ', '\001', '(', '\010', '\022', '\031', '\n', '\021', 'r', 'e', 's', 'p', 'o', 'n', 
+'s', 'e', '_', 't', 'y', 'p', 'e', '_', 'u', 'r', 'l', '\030', '\004', ' ', '\001', '(', '\t', '\022', '\032', '\n', '\022', 'r', 'e', 's', 'p', 
+'o', 'n', 's', 'e', '_', 's', 't', 'r', 'e', 'a', 'm', 'i', 'n', 'g', '\030', '\005', ' ', '\001', '(', '\010', '\022', '(', '\n', '\007', 'o', 
+'p', 't', 'i', 'o', 'n', 's', '\030', '\006', ' ', '\003', '(', '\013', '2', '\027', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 
+'t', 'o', 'b', 'u', 'f', '.', 'O', 'p', 't', 'i', 'o', 'n', '\022', '+', '\n', '\006', 's', 'y', 'n', 't', 'a', 'x', '\030', '\007', ' ', 
+'\001', '(', '\016', '2', '\027', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'S', 'y', 'n', 
+'t', 'a', 'x', 'B', '\002', '\030', '\001', '\022', '\023', '\n', '\007', 'e', 'd', 'i', 't', 'i', 'o', 'n', '\030', '\010', ' ', '\001', '(', '\t', 'B', 
+'\002', '\030', '\001', '\"', '#', '\n', '\005', 'M', 'i', 'x', 'i', 'n', '\022', '\014', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', 
+'\t', '\022', '\014', '\n', '\004', 'r', 'o', 'o', 't', '\030', '\002', ' ', '\001', '(', '\t', 'B', 'v', '\n', '\023', 'c', 'o', 'm', '.', 'g', 'o', 
+'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', 'B', '\010', 'A', 'p', 'i', 'P', 'r', 'o', 't', 'o', 'P', '\001', 
+'Z', ',', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'g', 'o', 'l', 'a', 'n', 'g', '.', 'o', 'r', 'g', '/', 'p', 'r', 'o', 't', 'o', 
+'b', 'u', 'f', '/', 't', 'y', 'p', 'e', 's', '/', 'k', 'n', 'o', 'w', 'n', '/', 'a', 'p', 'i', 'p', 'b', '\242', '\002', '\003', 'G', 
+'P', 'B', '\252', '\002', '\036', 'G', 'o', 'o', 'g', 'l', 'e', '.', 'P', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'W', 'e', 'l', 'l', 
+'K', 'n', 'o', 'w', 'n', 'T', 'y', 'p', 'e', 's', 'b', '\006', 'p', 'r', 'o', 't', 'o', '3', 
 };
 
 static void google_protobuf_api_proto_AddDescriptor() {
@@ -319,6 +320,13 @@ static PHP_METHOD(google_protobuf_Api, setSourceContext) {
   RETURN_COPY(getThis());
 }
 
+static PHP_METHOD(google_protobuf_Api, hasSourceContext) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "source_context");
+  RETVAL_BOOL(upb_Message_HasFieldByDef(intern->msg, f));
+}
+
 static PHP_METHOD(google_protobuf_Api, getMixins) {
   Message* intern = (Message*)Z_OBJ_P(getThis());
   const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
@@ -363,6 +371,28 @@ static PHP_METHOD(google_protobuf_Api, setSyntax) {
   RETURN_COPY(getThis());
 }
 
+static PHP_METHOD(google_protobuf_Api, getEdition) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "edition");
+  zval ret;
+  Message_get(intern, f, &ret);
+  RETURN_COPY_VALUE(&ret);
+}
+
+static PHP_METHOD(google_protobuf_Api, setEdition) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "edition");
+  zval *val;
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "z", &val)
+      == FAILURE) {
+    return;
+  }
+  Message_set(intern, f, val);
+  RETURN_COPY(getThis());
+}
+
 static zend_function_entry google_protobuf_Api_phpmethods[] = {
   PHP_ME(google_protobuf_Api, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Api, getName, arginfo_void, ZEND_ACC_PUBLIC)
@@ -375,10 +405,13 @@ static zend_function_entry google_protobuf_Api_phpmethods[] = {
   PHP_ME(google_protobuf_Api, setVersion, arginfo_setter, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Api, getSourceContext, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Api, setSourceContext, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Api, hasSourceContext, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Api, getMixins, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Api, setMixins, arginfo_setter, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Api, getSyntax, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Api, setSyntax, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Api, getEdition, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Api, setEdition, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -557,6 +590,28 @@ static PHP_METHOD(google_protobuf_Method, setSyntax) {
   RETURN_COPY(getThis());
 }
 
+static PHP_METHOD(google_protobuf_Method, getEdition) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "edition");
+  zval ret;
+  Message_get(intern, f, &ret);
+  RETURN_COPY_VALUE(&ret);
+}
+
+static PHP_METHOD(google_protobuf_Method, setEdition) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "edition");
+  zval *val;
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "z", &val)
+      == FAILURE) {
+    return;
+  }
+  Message_set(intern, f, val);
+  RETURN_COPY(getThis());
+}
+
 static zend_function_entry google_protobuf_Method_phpmethods[] = {
   PHP_ME(google_protobuf_Method, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Method, getName, arginfo_void, ZEND_ACC_PUBLIC)
@@ -573,6 +628,8 @@ static zend_function_entry google_protobuf_Method_phpmethods[] = {
   PHP_ME(google_protobuf_Method, setOptions, arginfo_setter, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Method, getSyntax, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Method, setSyntax, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Method, getEdition, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Method, setEdition, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -1183,12 +1240,20 @@ static PHP_METHOD(google_protobuf_Struct_FieldsEntry, setValue) {
   RETURN_COPY(getThis());
 }
 
+static PHP_METHOD(google_protobuf_Struct_FieldsEntry, hasValue) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "value");
+  RETVAL_BOOL(upb_Message_HasFieldByDef(intern->msg, f));
+}
+
 static zend_function_entry google_protobuf_Struct_FieldsEntry_phpmethods[] = {
   PHP_ME(google_protobuf_Struct_FieldsEntry, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Struct_FieldsEntry, getKey, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Struct_FieldsEntry, setKey, arginfo_setter, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Struct_FieldsEntry, getValue, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Struct_FieldsEntry, setValue, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Struct_FieldsEntry, hasValue, arginfo_void, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -1235,6 +1300,13 @@ static PHP_METHOD(google_protobuf_Value, setNullValue) {
   RETURN_COPY(getThis());
 }
 
+static PHP_METHOD(google_protobuf_Value, hasNullValue) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "null_value");
+  RETVAL_BOOL(upb_Message_HasFieldByDef(intern->msg, f));
+}
+
 static PHP_METHOD(google_protobuf_Value, getNumberValue) {
   Message* intern = (Message*)Z_OBJ_P(getThis());
   const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
@@ -1255,6 +1327,13 @@ static PHP_METHOD(google_protobuf_Value, setNumberValue) {
   }
   Message_set(intern, f, val);
   RETURN_COPY(getThis());
+}
+
+static PHP_METHOD(google_protobuf_Value, hasNumberValue) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "number_value");
+  RETVAL_BOOL(upb_Message_HasFieldByDef(intern->msg, f));
 }
 
 static PHP_METHOD(google_protobuf_Value, getStringValue) {
@@ -1279,6 +1358,13 @@ static PHP_METHOD(google_protobuf_Value, setStringValue) {
   RETURN_COPY(getThis());
 }
 
+static PHP_METHOD(google_protobuf_Value, hasStringValue) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "string_value");
+  RETVAL_BOOL(upb_Message_HasFieldByDef(intern->msg, f));
+}
+
 static PHP_METHOD(google_protobuf_Value, getBoolValue) {
   Message* intern = (Message*)Z_OBJ_P(getThis());
   const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
@@ -1299,6 +1385,13 @@ static PHP_METHOD(google_protobuf_Value, setBoolValue) {
   }
   Message_set(intern, f, val);
   RETURN_COPY(getThis());
+}
+
+static PHP_METHOD(google_protobuf_Value, hasBoolValue) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "bool_value");
+  RETVAL_BOOL(upb_Message_HasFieldByDef(intern->msg, f));
 }
 
 static PHP_METHOD(google_protobuf_Value, getStructValue) {
@@ -1323,6 +1416,13 @@ static PHP_METHOD(google_protobuf_Value, setStructValue) {
   RETURN_COPY(getThis());
 }
 
+static PHP_METHOD(google_protobuf_Value, hasStructValue) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "struct_value");
+  RETVAL_BOOL(upb_Message_HasFieldByDef(intern->msg, f));
+}
+
 static PHP_METHOD(google_protobuf_Value, getListValue) {
   Message* intern = (Message*)Z_OBJ_P(getThis());
   const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
@@ -1345,28 +1445,41 @@ static PHP_METHOD(google_protobuf_Value, setListValue) {
   RETURN_COPY(getThis());
 }
 
+static PHP_METHOD(google_protobuf_Value, hasListValue) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "list_value");
+  RETVAL_BOOL(upb_Message_HasFieldByDef(intern->msg, f));
+}
+
 static PHP_METHOD(google_protobuf_Value, getKind) {
   Message* intern = (Message*)Z_OBJ_P(getThis());
   const upb_OneofDef *oneof = upb_MessageDef_FindOneofByName(
       intern->desc->msgdef, "kind");
   const upb_FieldDef *field = 
-      upb_Message_WhichOneof(intern->msg, oneof);
+      upb_Message_WhichOneofByDef(intern->msg, oneof);
   RETURN_STRING(field ? upb_FieldDef_Name(field) : "");
 }
 static zend_function_entry google_protobuf_Value_phpmethods[] = {
   PHP_ME(google_protobuf_Value, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Value, getNullValue, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Value, setNullValue, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, hasNullValue, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Value, getNumberValue, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Value, setNumberValue, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, hasNumberValue, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Value, getStringValue, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Value, setStringValue, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, hasStringValue, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Value, getBoolValue, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Value, setBoolValue, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, hasBoolValue, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Value, getStructValue, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Value, setStructValue, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, hasStructValue, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Value, getListValue, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Value, setListValue, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, hasListValue, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Value, getKind, arginfo_void, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
@@ -1497,16 +1610,137 @@ static void google_protobuf_NullValue_ModuleInit() {
                                    strlen("NULL_VALUE"), 0);
 }
 
+/* google/protobuf/timestamp.proto */
+
+zend_class_entry* GPBMetadata_Google_Protobuf_Timestamp_ce;
+
+const char google_protobuf_timestamp_proto_descriptor [239] = {
+'\n', '\037', 'g', 'o', 'o', 'g', 'l', 'e', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '/', 't', 'i', 'm', 'e', 's', 't', 'a', 
+'m', 'p', '.', 'p', 'r', 'o', 't', 'o', '\022', '\017', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', 
+'\"', '+', '\n', '\t', 'T', 'i', 'm', 'e', 's', 't', 'a', 'm', 'p', '\022', '\017', '\n', '\007', 's', 'e', 'c', 'o', 'n', 'd', 's', '\030', 
+'\001', ' ', '\001', '(', '\003', '\022', '\r', '\n', '\005', 'n', 'a', 'n', 'o', 's', '\030', '\002', ' ', '\001', '(', '\005', 'B', '\205', '\001', '\n', '\023', 
+'c', 'o', 'm', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', 'B', '\016', 'T', 'i', 'm', 'e', 
+'s', 't', 'a', 'm', 'p', 'P', 'r', 'o', 't', 'o', 'P', '\001', 'Z', '2', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'g', 'o', 'l', 'a', 
+'n', 'g', '.', 'o', 'r', 'g', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '/', 't', 'y', 'p', 'e', 's', '/', 'k', 'n', 'o', 
+'w', 'n', '/', 't', 'i', 'm', 'e', 's', 't', 'a', 'm', 'p', 'p', 'b', '\370', '\001', '\001', '\242', '\002', '\003', 'G', 'P', 'B', '\252', '\002', 
+'\036', 'G', 'o', 'o', 'g', 'l', 'e', '.', 'P', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'W', 'e', 'l', 'l', 'K', 'n', 'o', 'w', 
+'n', 'T', 'y', 'p', 'e', 's', 'b', '\006', 'p', 'r', 'o', 't', 'o', '3', 
+};
+
+static void google_protobuf_timestamp_proto_AddDescriptor() {
+  if (DescriptorPool_HasFile("google/protobuf/timestamp.proto")) return;
+  DescriptorPool_AddDescriptor("google/protobuf/timestamp.proto", google_protobuf_timestamp_proto_descriptor,
+                               sizeof(google_protobuf_timestamp_proto_descriptor));
+}
+
+static PHP_METHOD(GPBMetadata_Google_Protobuf_Timestamp, initOnce) {
+  google_protobuf_timestamp_proto_AddDescriptor();
+}
+
+static zend_function_entry GPBMetadata_Google_Protobuf_Timestamp_methods[] = {
+  PHP_ME(GPBMetadata_Google_Protobuf_Timestamp, initOnce, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  ZEND_FE_END
+};
+
+static void GPBMetadata_Google_Protobuf_Timestamp_ModuleInit() {
+  zend_class_entry tmp_ce;
+
+  INIT_CLASS_ENTRY(tmp_ce, "GPBMetadata\\Google\\Protobuf\\Timestamp",
+                   GPBMetadata_Google_Protobuf_Timestamp_methods);
+
+  GPBMetadata_Google_Protobuf_Timestamp_ce = zend_register_internal_class(&tmp_ce);
+}
+
+/* google_protobuf_Timestamp */
+
+zend_class_entry* google_protobuf_Timestamp_ce;
+
+static PHP_METHOD(google_protobuf_Timestamp, __construct) {
+  google_protobuf_timestamp_proto_AddDescriptor();
+  zim_Message___construct(INTERNAL_FUNCTION_PARAM_PASSTHRU);
+}
+
+static PHP_METHOD(google_protobuf_Timestamp, getSeconds) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "seconds");
+  zval ret;
+  Message_get(intern, f, &ret);
+  RETURN_COPY_VALUE(&ret);
+}
+
+static PHP_METHOD(google_protobuf_Timestamp, setSeconds) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "seconds");
+  zval *val;
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "z", &val)
+      == FAILURE) {
+    return;
+  }
+  Message_set(intern, f, val);
+  RETURN_COPY(getThis());
+}
+
+static PHP_METHOD(google_protobuf_Timestamp, getNanos) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "nanos");
+  zval ret;
+  Message_get(intern, f, &ret);
+  RETURN_COPY_VALUE(&ret);
+}
+
+static PHP_METHOD(google_protobuf_Timestamp, setNanos) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "nanos");
+  zval *val;
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "z", &val)
+      == FAILURE) {
+    return;
+  }
+  Message_set(intern, f, val);
+  RETURN_COPY(getThis());
+}
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_timestamp_fromdatetime, 0, 0, 1)
+  ZEND_ARG_INFO(0, datetime)
+ZEND_END_ARG_INFO()
+
+static zend_function_entry google_protobuf_Timestamp_phpmethods[] = {
+  PHP_ME(google_protobuf_Timestamp, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Timestamp, getSeconds, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Timestamp, setSeconds, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Timestamp, getNanos, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Timestamp, setNanos, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Timestamp, fromDateTime, arginfo_timestamp_fromdatetime, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Timestamp, toDateTime, arginfo_void, ZEND_ACC_PUBLIC)
+  ZEND_FE_END
+};
+
+static void google_protobuf_Timestamp_ModuleInit() {
+  zend_class_entry tmp_ce;
+
+  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\Timestamp",
+                   google_protobuf_Timestamp_phpmethods);
+
+  google_protobuf_Timestamp_ce = zend_register_internal_class(&tmp_ce);
+  google_protobuf_Timestamp_ce->ce_flags |= ZEND_ACC_FINAL;
+  google_protobuf_Timestamp_ce->create_object = Message_create;
+  zend_do_inheritance(google_protobuf_Timestamp_ce, message_ce);
+}
+
 /* google/protobuf/type.proto */
 
 zend_class_entry* GPBMetadata_Google_Protobuf_Type_ce;
 
-const char google_protobuf_type_proto_descriptor [1592] = {
+const char google_protobuf_type_proto_descriptor [1647] = {
 '\n', '\032', 'g', 'o', 'o', 'g', 'l', 'e', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '/', 't', 'y', 'p', 'e', '.', 'p', 'r', 
 'o', 't', 'o', '\022', '\017', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '\032', '\031', 'g', 'o', 'o', 
 'g', 'l', 'e', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '/', 'a', 'n', 'y', '.', 'p', 'r', 'o', 't', 'o', '\032', '$', 'g', 
 'o', 'o', 'g', 'l', 'e', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '/', 's', 'o', 'u', 'r', 'c', 'e', '_', 'c', 'o', 'n', 
-'t', 'e', 'x', 't', '.', 'p', 'r', 'o', 't', 'o', '\"', '\327', '\001', '\n', '\004', 'T', 'y', 'p', 'e', '\022', '\014', '\n', '\004', 'n', 'a', 
+'t', 'e', 'x', 't', '.', 'p', 'r', 'o', 't', 'o', '\"', '\350', '\001', '\n', '\004', 'T', 'y', 'p', 'e', '\022', '\014', '\n', '\004', 'n', 'a', 
 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t', '\022', '&', '\n', '\006', 'f', 'i', 'e', 'l', 'd', 's', '\030', '\002', ' ', '\003', '(', '\013', '2', 
 '\026', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i', 'e', 'l', 'd', '\022', '\016', 
 '\n', '\006', 'o', 'n', 'e', 'o', 'f', 's', '\030', '\003', ' ', '\003', '(', '\t', '\022', '(', '\n', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', 
@@ -1515,57 +1749,59 @@ const char google_protobuf_type_proto_descriptor [1592] = {
 '\005', ' ', '\001', '(', '\013', '2', '\036', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'S', 
 'o', 'u', 'r', 'c', 'e', 'C', 'o', 'n', 't', 'e', 'x', 't', '\022', '\'', '\n', '\006', 's', 'y', 'n', 't', 'a', 'x', '\030', '\006', ' ', 
 '\001', '(', '\016', '2', '\027', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'S', 'y', 'n', 
-'t', 'a', 'x', '\"', '\325', '\005', '\n', '\005', 'F', 'i', 'e', 'l', 'd', '\022', ')', '\n', '\004', 'k', 'i', 'n', 'd', '\030', '\001', ' ', '\001', 
-'(', '\016', '2', '\033', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i', 'e', 'l', 
-'d', '.', 'K', 'i', 'n', 'd', '\022', '7', '\n', '\013', 'c', 'a', 'r', 'd', 'i', 'n', 'a', 'l', 'i', 't', 'y', '\030', '\002', ' ', '\001', 
-'(', '\016', '2', '\"', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i', 'e', 'l', 
-'d', '.', 'C', 'a', 'r', 'd', 'i', 'n', 'a', 'l', 'i', 't', 'y', '\022', '\016', '\n', '\006', 'n', 'u', 'm', 'b', 'e', 'r', '\030', '\003', 
-' ', '\001', '(', '\005', '\022', '\014', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\004', ' ', '\001', '(', '\t', '\022', '\020', '\n', '\010', 't', 'y', 'p', 
-'e', '_', 'u', 'r', 'l', '\030', '\006', ' ', '\001', '(', '\t', '\022', '\023', '\n', '\013', 'o', 'n', 'e', 'o', 'f', '_', 'i', 'n', 'd', 'e', 
-'x', '\030', '\007', ' ', '\001', '(', '\005', '\022', '\016', '\n', '\006', 'p', 'a', 'c', 'k', 'e', 'd', '\030', '\010', ' ', '\001', '(', '\010', '\022', '(', 
-'\n', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\030', '\t', ' ', '\003', '(', '\013', '2', '\027', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 
-'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'O', 'p', 't', 'i', 'o', 'n', '\022', '\021', '\n', '\t', 'j', 's', 'o', 'n', '_', 'n', 
-'a', 'm', 'e', '\030', '\n', ' ', '\001', '(', '\t', '\022', '\025', '\n', '\r', 'd', 'e', 'f', 'a', 'u', 'l', 't', '_', 'v', 'a', 'l', 'u', 
-'e', '\030', '\013', ' ', '\001', '(', '\t', '\"', '\310', '\002', '\n', '\004', 'K', 'i', 'n', 'd', '\022', '\020', '\n', '\014', 'T', 'Y', 'P', 'E', '_', 
-'U', 'N', 'K', 'N', 'O', 'W', 'N', '\020', '\000', '\022', '\017', '\n', '\013', 'T', 'Y', 'P', 'E', '_', 'D', 'O', 'U', 'B', 'L', 'E', '\020', 
-'\001', '\022', '\016', '\n', '\n', 'T', 'Y', 'P', 'E', '_', 'F', 'L', 'O', 'A', 'T', '\020', '\002', '\022', '\016', '\n', '\n', 'T', 'Y', 'P', 'E', 
-'_', 'I', 'N', 'T', '6', '4', '\020', '\003', '\022', '\017', '\n', '\013', 'T', 'Y', 'P', 'E', '_', 'U', 'I', 'N', 'T', '6', '4', '\020', '\004', 
-'\022', '\016', '\n', '\n', 'T', 'Y', 'P', 'E', '_', 'I', 'N', 'T', '3', '2', '\020', '\005', '\022', '\020', '\n', '\014', 'T', 'Y', 'P', 'E', '_', 
-'F', 'I', 'X', 'E', 'D', '6', '4', '\020', '\006', '\022', '\020', '\n', '\014', 'T', 'Y', 'P', 'E', '_', 'F', 'I', 'X', 'E', 'D', '3', '2', 
-'\020', '\007', '\022', '\r', '\n', '\t', 'T', 'Y', 'P', 'E', '_', 'B', 'O', 'O', 'L', '\020', '\010', '\022', '\017', '\n', '\013', 'T', 'Y', 'P', 'E', 
-'_', 'S', 'T', 'R', 'I', 'N', 'G', '\020', '\t', '\022', '\016', '\n', '\n', 'T', 'Y', 'P', 'E', '_', 'G', 'R', 'O', 'U', 'P', '\020', '\n', 
-'\022', '\020', '\n', '\014', 'T', 'Y', 'P', 'E', '_', 'M', 'E', 'S', 'S', 'A', 'G', 'E', '\020', '\013', '\022', '\016', '\n', '\n', 'T', 'Y', 'P', 
-'E', '_', 'B', 'Y', 'T', 'E', 'S', '\020', '\014', '\022', '\017', '\n', '\013', 'T', 'Y', 'P', 'E', '_', 'U', 'I', 'N', 'T', '3', '2', '\020', 
-'\r', '\022', '\r', '\n', '\t', 'T', 'Y', 'P', 'E', '_', 'E', 'N', 'U', 'M', '\020', '\016', '\022', '\021', '\n', '\r', 'T', 'Y', 'P', 'E', '_', 
-'S', 'F', 'I', 'X', 'E', 'D', '3', '2', '\020', '\017', '\022', '\021', '\n', '\r', 'T', 'Y', 'P', 'E', '_', 'S', 'F', 'I', 'X', 'E', 'D', 
-'6', '4', '\020', '\020', '\022', '\017', '\n', '\013', 'T', 'Y', 'P', 'E', '_', 'S', 'I', 'N', 'T', '3', '2', '\020', '\021', '\022', '\017', '\n', '\013', 
-'T', 'Y', 'P', 'E', '_', 'S', 'I', 'N', 'T', '6', '4', '\020', '\022', '\"', 't', '\n', '\013', 'C', 'a', 'r', 'd', 'i', 'n', 'a', 'l', 
-'i', 't', 'y', '\022', '\027', '\n', '\023', 'C', 'A', 'R', 'D', 'I', 'N', 'A', 'L', 'I', 'T', 'Y', '_', 'U', 'N', 'K', 'N', 'O', 'W', 
-'N', '\020', '\000', '\022', '\030', '\n', '\024', 'C', 'A', 'R', 'D', 'I', 'N', 'A', 'L', 'I', 'T', 'Y', '_', 'O', 'P', 'T', 'I', 'O', 'N', 
-'A', 'L', '\020', '\001', '\022', '\030', '\n', '\024', 'C', 'A', 'R', 'D', 'I', 'N', 'A', 'L', 'I', 'T', 'Y', '_', 'R', 'E', 'Q', 'U', 'I', 
-'R', 'E', 'D', '\020', '\002', '\022', '\030', '\n', '\024', 'C', 'A', 'R', 'D', 'I', 'N', 'A', 'L', 'I', 'T', 'Y', '_', 'R', 'E', 'P', 'E', 
-'A', 'T', 'E', 'D', '\020', '\003', '\"', '\316', '\001', '\n', '\004', 'E', 'n', 'u', 'm', '\022', '\014', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', 
-' ', '\001', '(', '\t', '\022', '-', '\n', '\t', 'e', 'n', 'u', 'm', 'v', 'a', 'l', 'u', 'e', '\030', '\002', ' ', '\003', '(', '\013', '2', '\032', 
-'.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'E', 'n', 'u', 'm', 'V', 'a', 'l', 'u', 
-'e', '\022', '(', '\n', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\030', '\003', ' ', '\003', '(', '\013', '2', '\027', '.', 'g', 'o', 'o', 'g', 
-'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'O', 'p', 't', 'i', 'o', 'n', '\022', '6', '\n', '\016', 's', 'o', 'u', 
-'r', 'c', 'e', '_', 'c', 'o', 'n', 't', 'e', 'x', 't', '\030', '\004', ' ', '\001', '(', '\013', '2', '\036', '.', 'g', 'o', 'o', 'g', 'l', 
-'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'S', 'o', 'u', 'r', 'c', 'e', 'C', 'o', 'n', 't', 'e', 'x', 't', '\022', 
-'\'', '\n', '\006', 's', 'y', 'n', 't', 'a', 'x', '\030', '\005', ' ', '\001', '(', '\016', '2', '\027', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 
-'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'S', 'y', 'n', 't', 'a', 'x', '\"', 'S', '\n', '\t', 'E', 'n', 'u', 'm', 'V', 'a', 
-'l', 'u', 'e', '\022', '\014', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t', '\022', '\016', '\n', '\006', 'n', 'u', 'm', 'b', 
-'e', 'r', '\030', '\002', ' ', '\001', '(', '\005', '\022', '(', '\n', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\030', '\003', ' ', '\003', '(', '\013', 
-'2', '\027', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'O', 'p', 't', 'i', 'o', 'n', 
-'\"', ';', '\n', '\006', 'O', 'p', 't', 'i', 'o', 'n', '\022', '\014', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t', '\022', 
-'#', '\n', '\005', 'v', 'a', 'l', 'u', 'e', '\030', '\002', ' ', '\001', '(', '\013', '2', '\024', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 
-'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'A', 'n', 'y', '*', '.', '\n', '\006', 'S', 'y', 'n', 't', 'a', 'x', '\022', '\021', '\n', '\r', 
-'S', 'Y', 'N', 'T', 'A', 'X', '_', 'P', 'R', 'O', 'T', 'O', '2', '\020', '\000', '\022', '\021', '\n', '\r', 'S', 'Y', 'N', 'T', 'A', 'X', 
-'_', 'P', 'R', 'O', 'T', 'O', '3', '\020', '\001', 'B', '{', '\n', '\023', 'c', 'o', 'm', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 
-'r', 'o', 't', 'o', 'b', 'u', 'f', 'B', '\t', 'T', 'y', 'p', 'e', 'P', 'r', 'o', 't', 'o', 'P', '\001', 'Z', '-', 'g', 'o', 'o', 
-'g', 'l', 'e', '.', 'g', 'o', 'l', 'a', 'n', 'g', '.', 'o', 'r', 'g', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '/', 't', 
-'y', 'p', 'e', 's', '/', 'k', 'n', 'o', 'w', 'n', '/', 't', 'y', 'p', 'e', 'p', 'b', '\370', '\001', '\001', '\242', '\002', '\003', 'G', 'P', 
-'B', '\252', '\002', '\036', 'G', 'o', 'o', 'g', 'l', 'e', '.', 'P', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'W', 'e', 'l', 'l', 'K', 
-'n', 'o', 'w', 'n', 'T', 'y', 'p', 'e', 's', 'b', '\006', 'p', 'r', 'o', 't', 'o', '3', 
+'t', 'a', 'x', '\022', '\017', '\n', '\007', 'e', 'd', 'i', 't', 'i', 'o', 'n', '\030', '\007', ' ', '\001', '(', '\t', '\"', '\325', '\005', '\n', '\005', 
+'F', 'i', 'e', 'l', 'd', '\022', ')', '\n', '\004', 'k', 'i', 'n', 'd', '\030', '\001', ' ', '\001', '(', '\016', '2', '\033', '.', 'g', 'o', 'o', 
+'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i', 'e', 'l', 'd', '.', 'K', 'i', 'n', 'd', '\022', '7', 
+'\n', '\013', 'c', 'a', 'r', 'd', 'i', 'n', 'a', 'l', 'i', 't', 'y', '\030', '\002', ' ', '\001', '(', '\016', '2', '\"', '.', 'g', 'o', 'o', 
+'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i', 'e', 'l', 'd', '.', 'C', 'a', 'r', 'd', 'i', 'n', 
+'a', 'l', 'i', 't', 'y', '\022', '\016', '\n', '\006', 'n', 'u', 'm', 'b', 'e', 'r', '\030', '\003', ' ', '\001', '(', '\005', '\022', '\014', '\n', '\004', 
+'n', 'a', 'm', 'e', '\030', '\004', ' ', '\001', '(', '\t', '\022', '\020', '\n', '\010', 't', 'y', 'p', 'e', '_', 'u', 'r', 'l', '\030', '\006', ' ', 
+'\001', '(', '\t', '\022', '\023', '\n', '\013', 'o', 'n', 'e', 'o', 'f', '_', 'i', 'n', 'd', 'e', 'x', '\030', '\007', ' ', '\001', '(', '\005', '\022', 
+'\016', '\n', '\006', 'p', 'a', 'c', 'k', 'e', 'd', '\030', '\010', ' ', '\001', '(', '\010', '\022', '(', '\n', '\007', 'o', 'p', 't', 'i', 'o', 'n', 
+'s', '\030', '\t', ' ', '\003', '(', '\013', '2', '\027', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', 
+'.', 'O', 'p', 't', 'i', 'o', 'n', '\022', '\021', '\n', '\t', 'j', 's', 'o', 'n', '_', 'n', 'a', 'm', 'e', '\030', '\n', ' ', '\001', '(', 
+'\t', '\022', '\025', '\n', '\r', 'd', 'e', 'f', 'a', 'u', 'l', 't', '_', 'v', 'a', 'l', 'u', 'e', '\030', '\013', ' ', '\001', '(', '\t', '\"', 
+'\310', '\002', '\n', '\004', 'K', 'i', 'n', 'd', '\022', '\020', '\n', '\014', 'T', 'Y', 'P', 'E', '_', 'U', 'N', 'K', 'N', 'O', 'W', 'N', '\020', 
+'\000', '\022', '\017', '\n', '\013', 'T', 'Y', 'P', 'E', '_', 'D', 'O', 'U', 'B', 'L', 'E', '\020', '\001', '\022', '\016', '\n', '\n', 'T', 'Y', 'P', 
+'E', '_', 'F', 'L', 'O', 'A', 'T', '\020', '\002', '\022', '\016', '\n', '\n', 'T', 'Y', 'P', 'E', '_', 'I', 'N', 'T', '6', '4', '\020', '\003', 
+'\022', '\017', '\n', '\013', 'T', 'Y', 'P', 'E', '_', 'U', 'I', 'N', 'T', '6', '4', '\020', '\004', '\022', '\016', '\n', '\n', 'T', 'Y', 'P', 'E', 
+'_', 'I', 'N', 'T', '3', '2', '\020', '\005', '\022', '\020', '\n', '\014', 'T', 'Y', 'P', 'E', '_', 'F', 'I', 'X', 'E', 'D', '6', '4', '\020', 
+'\006', '\022', '\020', '\n', '\014', 'T', 'Y', 'P', 'E', '_', 'F', 'I', 'X', 'E', 'D', '3', '2', '\020', '\007', '\022', '\r', '\n', '\t', 'T', 'Y', 
+'P', 'E', '_', 'B', 'O', 'O', 'L', '\020', '\010', '\022', '\017', '\n', '\013', 'T', 'Y', 'P', 'E', '_', 'S', 'T', 'R', 'I', 'N', 'G', '\020', 
+'\t', '\022', '\016', '\n', '\n', 'T', 'Y', 'P', 'E', '_', 'G', 'R', 'O', 'U', 'P', '\020', '\n', '\022', '\020', '\n', '\014', 'T', 'Y', 'P', 'E', 
+'_', 'M', 'E', 'S', 'S', 'A', 'G', 'E', '\020', '\013', '\022', '\016', '\n', '\n', 'T', 'Y', 'P', 'E', '_', 'B', 'Y', 'T', 'E', 'S', '\020', 
+'\014', '\022', '\017', '\n', '\013', 'T', 'Y', 'P', 'E', '_', 'U', 'I', 'N', 'T', '3', '2', '\020', '\r', '\022', '\r', '\n', '\t', 'T', 'Y', 'P', 
+'E', '_', 'E', 'N', 'U', 'M', '\020', '\016', '\022', '\021', '\n', '\r', 'T', 'Y', 'P', 'E', '_', 'S', 'F', 'I', 'X', 'E', 'D', '3', '2', 
+'\020', '\017', '\022', '\021', '\n', '\r', 'T', 'Y', 'P', 'E', '_', 'S', 'F', 'I', 'X', 'E', 'D', '6', '4', '\020', '\020', '\022', '\017', '\n', '\013', 
+'T', 'Y', 'P', 'E', '_', 'S', 'I', 'N', 'T', '3', '2', '\020', '\021', '\022', '\017', '\n', '\013', 'T', 'Y', 'P', 'E', '_', 'S', 'I', 'N', 
+'T', '6', '4', '\020', '\022', '\"', 't', '\n', '\013', 'C', 'a', 'r', 'd', 'i', 'n', 'a', 'l', 'i', 't', 'y', '\022', '\027', '\n', '\023', 'C', 
+'A', 'R', 'D', 'I', 'N', 'A', 'L', 'I', 'T', 'Y', '_', 'U', 'N', 'K', 'N', 'O', 'W', 'N', '\020', '\000', '\022', '\030', '\n', '\024', 'C', 
+'A', 'R', 'D', 'I', 'N', 'A', 'L', 'I', 'T', 'Y', '_', 'O', 'P', 'T', 'I', 'O', 'N', 'A', 'L', '\020', '\001', '\022', '\030', '\n', '\024', 
+'C', 'A', 'R', 'D', 'I', 'N', 'A', 'L', 'I', 'T', 'Y', '_', 'R', 'E', 'Q', 'U', 'I', 'R', 'E', 'D', '\020', '\002', '\022', '\030', '\n', 
+'\024', 'C', 'A', 'R', 'D', 'I', 'N', 'A', 'L', 'I', 'T', 'Y', '_', 'R', 'E', 'P', 'E', 'A', 'T', 'E', 'D', '\020', '\003', '\"', '\337', 
+'\001', '\n', '\004', 'E', 'n', 'u', 'm', '\022', '\014', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t', '\022', '-', '\n', '\t', 
+'e', 'n', 'u', 'm', 'v', 'a', 'l', 'u', 'e', '\030', '\002', ' ', '\003', '(', '\013', '2', '\032', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 
+'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'E', 'n', 'u', 'm', 'V', 'a', 'l', 'u', 'e', '\022', '(', '\n', '\007', 'o', 'p', 't', 
+'i', 'o', 'n', 's', '\030', '\003', ' ', '\003', '(', '\013', '2', '\027', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 
+'b', 'u', 'f', '.', 'O', 'p', 't', 'i', 'o', 'n', '\022', '6', '\n', '\016', 's', 'o', 'u', 'r', 'c', 'e', '_', 'c', 'o', 'n', 't', 
+'e', 'x', 't', '\030', '\004', ' ', '\001', '(', '\013', '2', '\036', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 
+'u', 'f', '.', 'S', 'o', 'u', 'r', 'c', 'e', 'C', 'o', 'n', 't', 'e', 'x', 't', '\022', '\'', '\n', '\006', 's', 'y', 'n', 't', 'a', 
+'x', '\030', '\005', ' ', '\001', '(', '\016', '2', '\027', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', 
+'.', 'S', 'y', 'n', 't', 'a', 'x', '\022', '\017', '\n', '\007', 'e', 'd', 'i', 't', 'i', 'o', 'n', '\030', '\006', ' ', '\001', '(', '\t', '\"', 
+'S', '\n', '\t', 'E', 'n', 'u', 'm', 'V', 'a', 'l', 'u', 'e', '\022', '\014', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', 
+'\t', '\022', '\016', '\n', '\006', 'n', 'u', 'm', 'b', 'e', 'r', '\030', '\002', ' ', '\001', '(', '\005', '\022', '(', '\n', '\007', 'o', 'p', 't', 'i', 
+'o', 'n', 's', '\030', '\003', ' ', '\003', '(', '\013', '2', '\027', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 
+'u', 'f', '.', 'O', 'p', 't', 'i', 'o', 'n', '\"', ';', '\n', '\006', 'O', 'p', 't', 'i', 'o', 'n', '\022', '\014', '\n', '\004', 'n', 'a', 
+'m', 'e', '\030', '\001', ' ', '\001', '(', '\t', '\022', '#', '\n', '\005', 'v', 'a', 'l', 'u', 'e', '\030', '\002', ' ', '\001', '(', '\013', '2', '\024', 
+'.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'A', 'n', 'y', '*', 'C', '\n', '\006', 'S', 
+'y', 'n', 't', 'a', 'x', '\022', '\021', '\n', '\r', 'S', 'Y', 'N', 'T', 'A', 'X', '_', 'P', 'R', 'O', 'T', 'O', '2', '\020', '\000', '\022', 
+'\021', '\n', '\r', 'S', 'Y', 'N', 'T', 'A', 'X', '_', 'P', 'R', 'O', 'T', 'O', '3', '\020', '\001', '\022', '\023', '\n', '\017', 'S', 'Y', 'N', 
+'T', 'A', 'X', '_', 'E', 'D', 'I', 'T', 'I', 'O', 'N', 'S', '\020', '\002', 'B', '{', '\n', '\023', 'c', 'o', 'm', '.', 'g', 'o', 'o', 
+'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', 'B', '\t', 'T', 'y', 'p', 'e', 'P', 'r', 'o', 't', 'o', 'P', '\001', 
+'Z', '-', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'g', 'o', 'l', 'a', 'n', 'g', '.', 'o', 'r', 'g', '/', 'p', 'r', 'o', 't', 'o', 
+'b', 'u', 'f', '/', 't', 'y', 'p', 'e', 's', '/', 'k', 'n', 'o', 'w', 'n', '/', 't', 'y', 'p', 'e', 'p', 'b', '\370', '\001', '\001', 
+'\242', '\002', '\003', 'G', 'P', 'B', '\252', '\002', '\036', 'G', 'o', 'o', 'g', 'l', 'e', '.', 'P', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 
+'W', 'e', 'l', 'l', 'K', 'n', 'o', 'w', 'n', 'T', 'y', 'p', 'e', 's', 'b', '\006', 'p', 'r', 'o', 't', 'o', '3', 
 };
 
 static void google_protobuf_type_proto_AddDescriptor() {
@@ -1713,6 +1949,13 @@ static PHP_METHOD(google_protobuf_Type, setSourceContext) {
   RETURN_COPY(getThis());
 }
 
+static PHP_METHOD(google_protobuf_Type, hasSourceContext) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "source_context");
+  RETVAL_BOOL(upb_Message_HasFieldByDef(intern->msg, f));
+}
+
 static PHP_METHOD(google_protobuf_Type, getSyntax) {
   Message* intern = (Message*)Z_OBJ_P(getThis());
   const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
@@ -1735,6 +1978,28 @@ static PHP_METHOD(google_protobuf_Type, setSyntax) {
   RETURN_COPY(getThis());
 }
 
+static PHP_METHOD(google_protobuf_Type, getEdition) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "edition");
+  zval ret;
+  Message_get(intern, f, &ret);
+  RETURN_COPY_VALUE(&ret);
+}
+
+static PHP_METHOD(google_protobuf_Type, setEdition) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "edition");
+  zval *val;
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "z", &val)
+      == FAILURE) {
+    return;
+  }
+  Message_set(intern, f, val);
+  RETURN_COPY(getThis());
+}
+
 static zend_function_entry google_protobuf_Type_phpmethods[] = {
   PHP_ME(google_protobuf_Type, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Type, getName, arginfo_void, ZEND_ACC_PUBLIC)
@@ -1747,8 +2012,11 @@ static zend_function_entry google_protobuf_Type_phpmethods[] = {
   PHP_ME(google_protobuf_Type, setOptions, arginfo_setter, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Type, getSourceContext, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Type, setSourceContext, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Type, hasSourceContext, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Type, getSyntax, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Type, setSyntax, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Type, getEdition, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Type, setEdition, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -2297,6 +2565,13 @@ static PHP_METHOD(google_protobuf_Enum, setSourceContext) {
   RETURN_COPY(getThis());
 }
 
+static PHP_METHOD(google_protobuf_Enum, hasSourceContext) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "source_context");
+  RETVAL_BOOL(upb_Message_HasFieldByDef(intern->msg, f));
+}
+
 static PHP_METHOD(google_protobuf_Enum, getSyntax) {
   Message* intern = (Message*)Z_OBJ_P(getThis());
   const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
@@ -2319,6 +2594,28 @@ static PHP_METHOD(google_protobuf_Enum, setSyntax) {
   RETURN_COPY(getThis());
 }
 
+static PHP_METHOD(google_protobuf_Enum, getEdition) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "edition");
+  zval ret;
+  Message_get(intern, f, &ret);
+  RETURN_COPY_VALUE(&ret);
+}
+
+static PHP_METHOD(google_protobuf_Enum, setEdition) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "edition");
+  zval *val;
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "z", &val)
+      == FAILURE) {
+    return;
+  }
+  Message_set(intern, f, val);
+  RETURN_COPY(getThis());
+}
+
 static zend_function_entry google_protobuf_Enum_phpmethods[] = {
   PHP_ME(google_protobuf_Enum, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Enum, getName, arginfo_void, ZEND_ACC_PUBLIC)
@@ -2329,8 +2626,11 @@ static zend_function_entry google_protobuf_Enum_phpmethods[] = {
   PHP_ME(google_protobuf_Enum, setOptions, arginfo_setter, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Enum, getSourceContext, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Enum, setSourceContext, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Enum, hasSourceContext, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Enum, getSyntax, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Enum, setSyntax, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Enum, getEdition, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Enum, setEdition, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -2497,12 +2797,20 @@ static PHP_METHOD(google_protobuf_Option, setValue) {
   RETURN_COPY(getThis());
 }
 
+static PHP_METHOD(google_protobuf_Option, hasValue) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
+      intern->desc->msgdef, "value");
+  RETVAL_BOOL(upb_Message_HasFieldByDef(intern->msg, f));
+}
+
 static zend_function_entry google_protobuf_Option_phpmethods[] = {
   PHP_ME(google_protobuf_Option, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Option, getName, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Option, setName, arginfo_setter, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Option, getValue, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Option, setValue, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Option, hasValue, arginfo_void, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -2582,127 +2890,8 @@ static void google_protobuf_Syntax_ModuleInit() {
                                    strlen("SYNTAX_PROTO2"), 0);
   zend_declare_class_constant_long(google_protobuf_Syntax_ce, "SYNTAX_PROTO3",
                                    strlen("SYNTAX_PROTO3"), 1);
-}
-
-/* google/protobuf/timestamp.proto */
-
-zend_class_entry* GPBMetadata_Google_Protobuf_Timestamp_ce;
-
-const char google_protobuf_timestamp_proto_descriptor [239] = {
-'\n', '\037', 'g', 'o', 'o', 'g', 'l', 'e', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '/', 't', 'i', 'm', 'e', 's', 't', 'a', 
-'m', 'p', '.', 'p', 'r', 'o', 't', 'o', '\022', '\017', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', 
-'\"', '+', '\n', '\t', 'T', 'i', 'm', 'e', 's', 't', 'a', 'm', 'p', '\022', '\017', '\n', '\007', 's', 'e', 'c', 'o', 'n', 'd', 's', '\030', 
-'\001', ' ', '\001', '(', '\003', '\022', '\r', '\n', '\005', 'n', 'a', 'n', 'o', 's', '\030', '\002', ' ', '\001', '(', '\005', 'B', '\205', '\001', '\n', '\023', 
-'c', 'o', 'm', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', 'B', '\016', 'T', 'i', 'm', 'e', 
-'s', 't', 'a', 'm', 'p', 'P', 'r', 'o', 't', 'o', 'P', '\001', 'Z', '2', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'g', 'o', 'l', 'a', 
-'n', 'g', '.', 'o', 'r', 'g', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '/', 't', 'y', 'p', 'e', 's', '/', 'k', 'n', 'o', 
-'w', 'n', '/', 't', 'i', 'm', 'e', 's', 't', 'a', 'm', 'p', 'p', 'b', '\370', '\001', '\001', '\242', '\002', '\003', 'G', 'P', 'B', '\252', '\002', 
-'\036', 'G', 'o', 'o', 'g', 'l', 'e', '.', 'P', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'W', 'e', 'l', 'l', 'K', 'n', 'o', 'w', 
-'n', 'T', 'y', 'p', 'e', 's', 'b', '\006', 'p', 'r', 'o', 't', 'o', '3', 
-};
-
-static void google_protobuf_timestamp_proto_AddDescriptor() {
-  if (DescriptorPool_HasFile("google/protobuf/timestamp.proto")) return;
-  DescriptorPool_AddDescriptor("google/protobuf/timestamp.proto", google_protobuf_timestamp_proto_descriptor,
-                               sizeof(google_protobuf_timestamp_proto_descriptor));
-}
-
-static PHP_METHOD(GPBMetadata_Google_Protobuf_Timestamp, initOnce) {
-  google_protobuf_timestamp_proto_AddDescriptor();
-}
-
-static zend_function_entry GPBMetadata_Google_Protobuf_Timestamp_methods[] = {
-  PHP_ME(GPBMetadata_Google_Protobuf_Timestamp, initOnce, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-  ZEND_FE_END
-};
-
-static void GPBMetadata_Google_Protobuf_Timestamp_ModuleInit() {
-  zend_class_entry tmp_ce;
-
-  INIT_CLASS_ENTRY(tmp_ce, "GPBMetadata\\Google\\Protobuf\\Timestamp",
-                   GPBMetadata_Google_Protobuf_Timestamp_methods);
-
-  GPBMetadata_Google_Protobuf_Timestamp_ce = zend_register_internal_class(&tmp_ce);
-}
-
-/* google_protobuf_Timestamp */
-
-zend_class_entry* google_protobuf_Timestamp_ce;
-
-static PHP_METHOD(google_protobuf_Timestamp, __construct) {
-  google_protobuf_timestamp_proto_AddDescriptor();
-  zim_Message___construct(INTERNAL_FUNCTION_PARAM_PASSTHRU);
-}
-
-static PHP_METHOD(google_protobuf_Timestamp, getSeconds) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
-  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
-      intern->desc->msgdef, "seconds");
-  zval ret;
-  Message_get(intern, f, &ret);
-  RETURN_COPY_VALUE(&ret);
-}
-
-static PHP_METHOD(google_protobuf_Timestamp, setSeconds) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
-  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
-      intern->desc->msgdef, "seconds");
-  zval *val;
-  if (zend_parse_parameters(ZEND_NUM_ARGS(), "z", &val)
-      == FAILURE) {
-    return;
-  }
-  Message_set(intern, f, val);
-  RETURN_COPY(getThis());
-}
-
-static PHP_METHOD(google_protobuf_Timestamp, getNanos) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
-  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
-      intern->desc->msgdef, "nanos");
-  zval ret;
-  Message_get(intern, f, &ret);
-  RETURN_COPY_VALUE(&ret);
-}
-
-static PHP_METHOD(google_protobuf_Timestamp, setNanos) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
-  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(
-      intern->desc->msgdef, "nanos");
-  zval *val;
-  if (zend_parse_parameters(ZEND_NUM_ARGS(), "z", &val)
-      == FAILURE) {
-    return;
-  }
-  Message_set(intern, f, val);
-  RETURN_COPY(getThis());
-}
-
-ZEND_BEGIN_ARG_INFO_EX(arginfo_timestamp_fromdatetime, 0, 0, 1)
-  ZEND_ARG_INFO(0, datetime)
-ZEND_END_ARG_INFO()
-
-static zend_function_entry google_protobuf_Timestamp_phpmethods[] = {
-  PHP_ME(google_protobuf_Timestamp, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Timestamp, getSeconds, arginfo_void, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Timestamp, setSeconds, arginfo_setter, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Timestamp, getNanos, arginfo_void, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Timestamp, setNanos, arginfo_setter, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Timestamp, fromDateTime, arginfo_timestamp_fromdatetime, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Timestamp, toDateTime, arginfo_void, ZEND_ACC_PUBLIC)
-  ZEND_FE_END
-};
-
-static void google_protobuf_Timestamp_ModuleInit() {
-  zend_class_entry tmp_ce;
-
-  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\Timestamp",
-                   google_protobuf_Timestamp_phpmethods);
-
-  google_protobuf_Timestamp_ce = zend_register_internal_class(&tmp_ce);
-  google_protobuf_Timestamp_ce->ce_flags |= ZEND_ACC_FINAL;
-  google_protobuf_Timestamp_ce->create_object = Message_create;
-  zend_do_inheritance(google_protobuf_Timestamp_ce, message_ce);
+  zend_declare_class_constant_long(google_protobuf_Syntax_ce, "SYNTAX_EDITIONS",
+                                   strlen("SYNTAX_EDITIONS"), 2);
 }
 
 /* google/protobuf/wrappers.proto */
@@ -3226,6 +3415,8 @@ static void WellKnownTypes_ModuleInit() {
   google_protobuf_Value_ModuleInit();
   google_protobuf_ListValue_ModuleInit();
   google_protobuf_NullValue_ModuleInit();
+  GPBMetadata_Google_Protobuf_Timestamp_ModuleInit();
+  google_protobuf_Timestamp_ModuleInit();
   GPBMetadata_Google_Protobuf_Type_ModuleInit();
   google_protobuf_Type_ModuleInit();
   google_protobuf_Field_ModuleInit();
@@ -3235,8 +3426,6 @@ static void WellKnownTypes_ModuleInit() {
   google_protobuf_EnumValue_ModuleInit();
   google_protobuf_Option_ModuleInit();
   google_protobuf_Syntax_ModuleInit();
-  GPBMetadata_Google_Protobuf_Timestamp_ModuleInit();
-  google_protobuf_Timestamp_ModuleInit();
   GPBMetadata_Google_Protobuf_Wrappers_ModuleInit();
   google_protobuf_DoubleValue_ModuleInit();
   google_protobuf_FloatValue_ModuleInit();

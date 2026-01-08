@@ -164,9 +164,6 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bash@v2
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-version: 8.0.1
-          # TODO this shouldn't be necessary, remove it
-          bazel-flags: --xcode_version_config=//.github:host_xcodes_macos15
           command: |
             pushd php
             php -v
@@ -179,6 +176,5 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bazel@v2
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          version: 8.0.1 # Bazel version
           bazel-cache: php_macos15/${{ matrix.version }}
           bazel: test //php:conformance_test --action_env=PATH --test_env=PATH --xcode_version_config=//.github:host_xcodes_macos15
