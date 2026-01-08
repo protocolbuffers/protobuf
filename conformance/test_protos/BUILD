@@ -121,7 +121,7 @@ internal_objc_proto_library(
 
 internal_ruby_proto_library(
    name = "test_messages_edition2023_ruby_proto",
-   srcs = ["test_messages_edition2023.proto"],
+   srcs = [":test_messages_edition2023.proto"],
 )
 
 internal_ruby_proto_library(
