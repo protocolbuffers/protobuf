@@ -183,7 +183,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR JavaFeatures_NestInFileClassFeature(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr JavaFeatures_NestInFileClassFeature(::google::protobuf::internal::ConstantInitialized);
 
   inline JavaFeatures_NestInFileClassFeature(const JavaFeatures_NestInFileClassFeature& from) : JavaFeatures_NestInFileClassFeature(nullptr, from) {}
   inline JavaFeatures_NestInFileClassFeature(JavaFeatures_NestInFileClassFeature&& from) noexcept
@@ -343,7 +343,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR JavaFeatures(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr JavaFeatures(::google::protobuf::internal::ConstantInitialized);
 
   inline JavaFeatures(const JavaFeatures& from) : JavaFeatures(nullptr, from) {}
   inline JavaFeatures(JavaFeatures&& from) noexcept

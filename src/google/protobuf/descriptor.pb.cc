@@ -38,7 +38,7 @@ inline constexpr UninterpretedOption_NamePart::Impl_::Impl_(
         is_extension_{false} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR UninterpretedOption_NamePart::UninterpretedOption_NamePart(::_pbi::ConstantInitialized)
+constexpr UninterpretedOption_NamePart::UninterpretedOption_NamePart(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(UninterpretedOption_NamePart_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -103,7 +103,7 @@ inline constexpr SourceCodeInfo_Location::Impl_::Impl_(
             ::_pbi::ConstantInitialized()) {}
 
 template <typename>
-PROTOBUF_CONSTEXPR SourceCodeInfo_Location::SourceCodeInfo_Location(::_pbi::ConstantInitialized)
+constexpr SourceCodeInfo_Location::SourceCodeInfo_Location(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(SourceCodeInfo_Location_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -149,7 +149,7 @@ inline constexpr GeneratedCodeInfo_Annotation::Impl_::Impl_(
         semantic_{static_cast< ::google::protobuf::GeneratedCodeInfo_Annotation_Semantic >(0)} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::_pbi::ConstantInitialized)
+constexpr GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(GeneratedCodeInfo_Annotation_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -188,7 +188,7 @@ inline constexpr FieldOptions_FeatureSupport::Impl_::Impl_(
         edition_removed_{static_cast< ::google::protobuf::Edition >(0)} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(::_pbi::ConstantInitialized)
+constexpr FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(FieldOptions_FeatureSupport_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -222,7 +222,7 @@ inline constexpr FieldOptions_EditionDefault::Impl_::Impl_(
         edition_{static_cast< ::google::protobuf::Edition >(0)} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR FieldOptions_EditionDefault::FieldOptions_EditionDefault(::_pbi::ConstantInitialized)
+constexpr FieldOptions_EditionDefault::FieldOptions_EditionDefault(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(FieldOptions_EditionDefault_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -246,7 +246,7 @@ struct FieldOptions_EditionDefaultDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptions_EditionDefaultDefaultTypeInternal _FieldOptions_EditionDefault_default_instance_;
 template <typename>
-PROTOBUF_CONSTEXPR FeatureSet_VisibilityFeature::FeatureSet_VisibilityFeature(::_pbi::ConstantInitialized)
+constexpr FeatureSet_VisibilityFeature::FeatureSet_VisibilityFeature(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::internal::ZeroFieldsBase(FeatureSet_VisibilityFeature_class_data_.base()){}
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -283,7 +283,7 @@ inline constexpr FeatureSet::Impl_::Impl_(
         default_symbol_visibility_{static_cast< ::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility >(0)} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR FeatureSet::FeatureSet(::_pbi::ConstantInitialized)
+constexpr FeatureSet::FeatureSet(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(FeatureSet_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -322,7 +322,7 @@ inline constexpr ExtensionRangeOptions_Declaration::Impl_::Impl_(
         repeated_{false} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::_pbi::ConstantInitialized)
+constexpr ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(ExtensionRangeOptions_Declaration_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -354,7 +354,7 @@ inline constexpr EnumDescriptorProto_EnumReservedRange::Impl_::Impl_(
         end_{0} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::_pbi::ConstantInitialized)
+constexpr EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(EnumDescriptorProto_EnumReservedRange_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -386,7 +386,7 @@ inline constexpr DescriptorProto_ReservedRange::Impl_::Impl_(
         end_{0} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::_pbi::ConstantInitialized)
+constexpr DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(DescriptorProto_ReservedRange_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -437,7 +437,7 @@ inline constexpr UninterpretedOption::Impl_::Impl_(
         double_value_{0} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR UninterpretedOption::UninterpretedOption(::_pbi::ConstantInitialized)
+constexpr UninterpretedOption::UninterpretedOption(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(UninterpretedOption_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -476,7 +476,7 @@ inline constexpr SourceCodeInfo::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_CONSTEXPR SourceCodeInfo::SourceCodeInfo(::_pbi::ConstantInitialized)
+constexpr SourceCodeInfo::SourceCodeInfo(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(SourceCodeInfo_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -515,7 +515,7 @@ inline constexpr GeneratedCodeInfo::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_CONSTEXPR GeneratedCodeInfo::GeneratedCodeInfo(::_pbi::ConstantInitialized)
+constexpr GeneratedCodeInfo::GeneratedCodeInfo(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(GeneratedCodeInfo_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -548,7 +548,7 @@ inline constexpr FeatureSetDefaults_FeatureSetEditionDefault::Impl_::Impl_(
         edition_{static_cast< ::google::protobuf::Edition >(0)} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditionDefault(::_pbi::ConstantInitialized)
+constexpr FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditionDefault(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(FeatureSetDefaults_FeatureSetEditionDefault_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -589,7 +589,7 @@ inline constexpr ServiceOptions::Impl_::Impl_(
         deprecated_{false} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR ServiceOptions::ServiceOptions(::_pbi::ConstantInitialized)
+constexpr ServiceOptions::ServiceOptions(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(ServiceOptions_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -629,7 +629,7 @@ inline constexpr OneofOptions::Impl_::Impl_(
         features_{nullptr} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR OneofOptions::OneofOptions(::_pbi::ConstantInitialized)
+constexpr OneofOptions::OneofOptions(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(OneofOptions_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -671,7 +671,7 @@ inline constexpr MethodOptions::Impl_::Impl_(
         idempotency_level_{static_cast< ::google::protobuf::MethodOptions_IdempotencyLevel >(0)} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR MethodOptions::MethodOptions(::_pbi::ConstantInitialized)
+constexpr MethodOptions::MethodOptions(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(MethodOptions_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -716,7 +716,7 @@ inline constexpr MessageOptions::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_CONSTEXPR MessageOptions::MessageOptions(::_pbi::ConstantInitialized)
+constexpr MessageOptions::MessageOptions(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(MessageOptions_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -795,7 +795,7 @@ inline constexpr FileOptions::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_CONSTEXPR FileOptions::FileOptions(::_pbi::ConstantInitialized)
+constexpr FileOptions::FileOptions(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(FileOptions_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -863,7 +863,7 @@ inline constexpr FieldOptions::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_CONSTEXPR FieldOptions::FieldOptions(::_pbi::ConstantInitialized)
+constexpr FieldOptions::FieldOptions(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(FieldOptions_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -904,7 +904,7 @@ inline constexpr FeatureSetDefaults::Impl_::Impl_(
         maximum_edition_{static_cast< ::google::protobuf::Edition >(0)} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR FeatureSetDefaults::FeatureSetDefaults(::_pbi::ConstantInitialized)
+constexpr FeatureSetDefaults::FeatureSetDefaults(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(FeatureSetDefaults_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -954,7 +954,7 @@ inline constexpr ExtensionRangeOptions::Impl_::Impl_(
         verification_{static_cast< ::google::protobuf::ExtensionRangeOptions_VerificationState >(1)} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR ExtensionRangeOptions::ExtensionRangeOptions(::_pbi::ConstantInitialized)
+constexpr ExtensionRangeOptions::ExtensionRangeOptions(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(ExtensionRangeOptions_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -997,7 +997,7 @@ inline constexpr EnumValueOptions::Impl_::Impl_(
         debug_redact_{false} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR EnumValueOptions::EnumValueOptions(::_pbi::ConstantInitialized)
+constexpr EnumValueOptions::EnumValueOptions(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(EnumValueOptions_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1040,7 +1040,7 @@ inline constexpr EnumOptions::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_CONSTEXPR EnumOptions::EnumOptions(::_pbi::ConstantInitialized)
+constexpr EnumOptions::EnumOptions(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(EnumOptions_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1074,7 +1074,7 @@ inline constexpr OneofDescriptorProto::Impl_::Impl_(
         options_{nullptr} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR OneofDescriptorProto::OneofDescriptorProto(::_pbi::ConstantInitialized)
+constexpr OneofDescriptorProto::OneofDescriptorProto(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(OneofDescriptorProto_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1116,7 +1116,7 @@ inline constexpr MethodDescriptorProto::Impl_::Impl_(
         server_streaming_{false} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR MethodDescriptorProto::MethodDescriptorProto(::_pbi::ConstantInitialized)
+constexpr MethodDescriptorProto::MethodDescriptorProto(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(MethodDescriptorProto_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1167,7 +1167,7 @@ inline constexpr FieldDescriptorProto::Impl_::Impl_(
         type_{static_cast< ::google::protobuf::FieldDescriptorProto_Type >(1)} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR FieldDescriptorProto::FieldDescriptorProto(::_pbi::ConstantInitialized)
+constexpr FieldDescriptorProto::FieldDescriptorProto(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(FieldDescriptorProto_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1202,7 +1202,7 @@ inline constexpr EnumValueDescriptorProto::Impl_::Impl_(
         number_{0} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR EnumValueDescriptorProto::EnumValueDescriptorProto(::_pbi::ConstantInitialized)
+constexpr EnumValueDescriptorProto::EnumValueDescriptorProto(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(EnumValueDescriptorProto_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1235,7 +1235,7 @@ inline constexpr DescriptorProto_ExtensionRange::Impl_::Impl_(
         end_{0} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::_pbi::ConstantInitialized)
+constexpr DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(DescriptorProto_ExtensionRange_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1278,7 +1278,7 @@ inline constexpr ServiceDescriptorProto::Impl_::Impl_(
         options_{nullptr} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR ServiceDescriptorProto::ServiceDescriptorProto(::_pbi::ConstantInitialized)
+constexpr ServiceDescriptorProto::ServiceDescriptorProto(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(ServiceDescriptorProto_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1340,7 +1340,7 @@ inline constexpr EnumDescriptorProto::Impl_::Impl_(
         visibility_{static_cast< ::google::protobuf::SymbolVisibility >(0)} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR EnumDescriptorProto::EnumDescriptorProto(::_pbi::ConstantInitialized)
+constexpr EnumDescriptorProto::EnumDescriptorProto(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(EnumDescriptorProto_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1447,7 +1447,7 @@ inline constexpr DescriptorProto::Impl_::Impl_(
         visibility_{static_cast< ::google::protobuf::SymbolVisibility >(0)} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR DescriptorProto::DescriptorProto(::_pbi::ConstantInitialized)
+constexpr DescriptorProto::DescriptorProto(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(DescriptorProto_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1561,7 +1561,7 @@ inline constexpr FileDescriptorProto::Impl_::Impl_(
         edition_{static_cast< ::google::protobuf::Edition >(0)} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR FileDescriptorProto::FileDescriptorProto(::_pbi::ConstantInitialized)
+constexpr FileDescriptorProto::FileDescriptorProto(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(FileDescriptorProto_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1600,7 +1600,7 @@ inline constexpr FileDescriptorSet::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_CONSTEXPR FileDescriptorSet::FileDescriptorSet(::_pbi::ConstantInitialized)
+constexpr FileDescriptorSet::FileDescriptorSet(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(FileDescriptorSet_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE

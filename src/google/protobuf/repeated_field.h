@@ -668,7 +668,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
       internal::SooCapacityElements<Element>();
 
   static constexpr int kInitialSize = 0;
-  static PROTOBUF_CONSTEXPR const size_t kHeapRepHeaderSize = HeapRep::SizeOf();
+  static constexpr const size_t kHeapRepHeaderSize = HeapRep::SizeOf();
 
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
   explicit constexpr RepeatedField(internal::InternalMetadataOffset offset);

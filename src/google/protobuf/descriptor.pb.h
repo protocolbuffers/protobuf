@@ -1091,7 +1091,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR UninterpretedOption_NamePart(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr UninterpretedOption_NamePart(::google::protobuf::internal::ConstantInitialized);
 
   inline UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from) : UninterpretedOption_NamePart(nullptr, from) {}
   inline UninterpretedOption_NamePart(UninterpretedOption_NamePart&& from) noexcept
@@ -1313,7 +1313,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR SourceCodeInfo_Location(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr SourceCodeInfo_Location(::google::protobuf::internal::ConstantInitialized);
 
   inline SourceCodeInfo_Location(const SourceCodeInfo_Location& from) : SourceCodeInfo_Location(nullptr, from) {}
   inline SourceCodeInfo_Location(SourceCodeInfo_Location&& from) noexcept
@@ -1606,7 +1606,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR GeneratedCodeInfo_Annotation(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr GeneratedCodeInfo_Annotation(::google::protobuf::internal::ConstantInitialized);
 
   inline GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from) : GeneratedCodeInfo_Annotation(nullptr, from) {}
   inline GeneratedCodeInfo_Annotation(GeneratedCodeInfo_Annotation&& from) noexcept
@@ -1894,7 +1894,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR FieldOptions_FeatureSupport(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr FieldOptions_FeatureSupport(::google::protobuf::internal::ConstantInitialized);
 
   inline FieldOptions_FeatureSupport(const FieldOptions_FeatureSupport& from) : FieldOptions_FeatureSupport(nullptr, from) {}
   inline FieldOptions_FeatureSupport(FieldOptions_FeatureSupport&& from) noexcept
@@ -2158,7 +2158,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR FieldOptions_EditionDefault(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr FieldOptions_EditionDefault(::google::protobuf::internal::ConstantInitialized);
 
   inline FieldOptions_EditionDefault(const FieldOptions_EditionDefault& from) : FieldOptions_EditionDefault(nullptr, from) {}
   inline FieldOptions_EditionDefault(FieldOptions_EditionDefault&& from) noexcept
@@ -2374,7 +2374,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_Visibili
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR FeatureSet_VisibilityFeature(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr FeatureSet_VisibilityFeature(::google::protobuf::internal::ConstantInitialized);
 
   inline FeatureSet_VisibilityFeature(const FeatureSet_VisibilityFeature& from) : FeatureSet_VisibilityFeature(nullptr, from) {}
   inline FeatureSet_VisibilityFeature(FeatureSet_VisibilityFeature&& from) noexcept
@@ -2535,7 +2535,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR FeatureSet(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr FeatureSet(::google::protobuf::internal::ConstantInitialized);
 
   inline FeatureSet(const FeatureSet& from) : FeatureSet(nullptr, from) {}
   inline FeatureSet(FeatureSet&& from) noexcept
@@ -3176,7 +3176,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR ExtensionRangeOptions_Declaration(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr ExtensionRangeOptions_Declaration(::google::protobuf::internal::ConstantInitialized);
 
   inline ExtensionRangeOptions_Declaration(const ExtensionRangeOptions_Declaration& from) : ExtensionRangeOptions_Declaration(nullptr, from) {}
   inline ExtensionRangeOptions_Declaration(ExtensionRangeOptions_Declaration&& from) noexcept
@@ -3440,7 +3440,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR EnumDescriptorProto_EnumReservedRange(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr EnumDescriptorProto_EnumReservedRange(::google::protobuf::internal::ConstantInitialized);
 
   inline EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& from) : EnumDescriptorProto_EnumReservedRange(nullptr, from) {}
   inline EnumDescriptorProto_EnumReservedRange(EnumDescriptorProto_EnumReservedRange&& from) noexcept
@@ -3652,7 +3652,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Res
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR DescriptorProto_ReservedRange(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr DescriptorProto_ReservedRange(::google::protobuf::internal::ConstantInitialized);
 
   inline DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& from) : DescriptorProto_ReservedRange(nullptr, from) {}
   inline DescriptorProto_ReservedRange(DescriptorProto_ReservedRange&& from) noexcept
@@ -3864,7 +3864,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR UninterpretedOption(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr UninterpretedOption(::google::protobuf::internal::ConstantInitialized);
 
   inline UninterpretedOption(const UninterpretedOption& from) : UninterpretedOption(nullptr, from) {}
   inline UninterpretedOption(UninterpretedOption&& from) noexcept
@@ -4175,7 +4175,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR SourceCodeInfo(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr SourceCodeInfo(::google::protobuf::internal::ConstantInitialized);
 
   inline SourceCodeInfo(const SourceCodeInfo& from) : SourceCodeInfo(nullptr, from) {}
   inline SourceCodeInfo(SourceCodeInfo&& from) noexcept
@@ -4578,7 +4578,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR GeneratedCodeInfo(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr GeneratedCodeInfo(::google::protobuf::internal::ConstantInitialized);
 
   inline GeneratedCodeInfo(const GeneratedCodeInfo& from) : GeneratedCodeInfo(nullptr, from) {}
   inline GeneratedCodeInfo(GeneratedCodeInfo&& from) noexcept
@@ -4785,7 +4785,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::internal::ConstantInitialized);
 
   inline FeatureSetDefaults_FeatureSetEditionDefault(const FeatureSetDefaults_FeatureSetEditionDefault& from) : FeatureSetDefaults_FeatureSetEditionDefault(nullptr, from) {}
   inline FeatureSetDefaults_FeatureSetEditionDefault(FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept
@@ -5024,7 +5024,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR ServiceOptions(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr ServiceOptions(::google::protobuf::internal::ConstantInitialized);
 
   inline ServiceOptions(const ServiceOptions& from) : ServiceOptions(nullptr, from) {}
   inline ServiceOptions(ServiceOptions&& from) noexcept
@@ -5458,7 +5458,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR OneofOptions(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr OneofOptions(::google::protobuf::internal::ConstantInitialized);
 
   inline OneofOptions(const OneofOptions& from) : OneofOptions(nullptr, from) {}
   inline OneofOptions(OneofOptions&& from) noexcept
@@ -5878,7 +5878,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR MethodOptions(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr MethodOptions(::google::protobuf::internal::ConstantInitialized);
 
   inline MethodOptions(const MethodOptions& from) : MethodOptions(nullptr, from) {}
   inline MethodOptions(MethodOptions&& from) noexcept
@@ -6347,7 +6347,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR MessageOptions(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr MessageOptions(::google::protobuf::internal::ConstantInitialized);
 
   inline MessageOptions(const MessageOptions& from) : MessageOptions(nullptr, from) {}
   inline MessageOptions(MessageOptions&& from) noexcept
@@ -6837,7 +6837,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR FileOptions(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr FileOptions(::google::protobuf::internal::ConstantInitialized);
 
   inline FileOptions(const FileOptions& from) : FileOptions(nullptr, from) {}
   inline FileOptions(FileOptions&& from) noexcept
@@ -7594,7 +7594,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR FieldOptions(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr FieldOptions(::google::protobuf::internal::ConstantInitialized);
 
   inline FieldOptions(const FieldOptions& from) : FieldOptions(nullptr, from) {}
   inline FieldOptions(FieldOptions&& from) noexcept
@@ -8295,7 +8295,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR FeatureSetDefaults(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr FeatureSetDefaults(::google::protobuf::internal::ConstantInitialized);
 
   inline FeatureSetDefaults(const FeatureSetDefaults& from) : FeatureSetDefaults(nullptr, from) {}
   inline FeatureSetDefaults(FeatureSetDefaults&& from) noexcept
@@ -8535,7 +8535,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR ExtensionRangeOptions(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr ExtensionRangeOptions(::google::protobuf::internal::ConstantInitialized);
 
   inline ExtensionRangeOptions(const ExtensionRangeOptions& from) : ExtensionRangeOptions(nullptr, from) {}
   inline ExtensionRangeOptions(ExtensionRangeOptions&& from) noexcept
@@ -9012,7 +9012,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR EnumValueOptions(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr EnumValueOptions(::google::protobuf::internal::ConstantInitialized);
 
   inline EnumValueOptions(const EnumValueOptions& from) : EnumValueOptions(nullptr, from) {}
   inline EnumValueOptions(EnumValueOptions&& from) noexcept
@@ -9478,7 +9478,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR EnumOptions(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr EnumOptions(::google::protobuf::internal::ConstantInitialized);
 
   inline EnumOptions(const EnumOptions& from) : EnumOptions(nullptr, from) {}
   inline EnumOptions(EnumOptions&& from) noexcept
@@ -9940,7 +9940,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR OneofDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr OneofDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   inline OneofDescriptorProto(const OneofDescriptorProto& from) : OneofDescriptorProto(nullptr, from) {}
   inline OneofDescriptorProto(OneofDescriptorProto&& from) noexcept
@@ -10166,7 +10166,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR MethodDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr MethodDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   inline MethodDescriptorProto(const MethodDescriptorProto& from) : MethodDescriptorProto(nullptr, from) {}
   inline MethodDescriptorProto(MethodDescriptorProto&& from) noexcept
@@ -10458,7 +10458,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR FieldDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr FieldDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   inline FieldDescriptorProto(const FieldDescriptorProto& from) : FieldDescriptorProto(nullptr, from) {}
   inline FieldDescriptorProto(FieldDescriptorProto&& from) noexcept
@@ -10887,7 +10887,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR EnumValueDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr EnumValueDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   inline EnumValueDescriptorProto(const EnumValueDescriptorProto& from) : EnumValueDescriptorProto(nullptr, from) {}
   inline EnumValueDescriptorProto(EnumValueDescriptorProto&& from) noexcept
@@ -11127,7 +11127,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR DescriptorProto_ExtensionRange(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr DescriptorProto_ExtensionRange(::google::protobuf::internal::ConstantInitialized);
 
   inline DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from) : DescriptorProto_ExtensionRange(nullptr, from) {}
   inline DescriptorProto_ExtensionRange(DescriptorProto_ExtensionRange&& from) noexcept
@@ -11362,7 +11362,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR ServiceDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr ServiceDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   inline ServiceDescriptorProto(const ServiceDescriptorProto& from) : ServiceDescriptorProto(nullptr, from) {}
   inline ServiceDescriptorProto(ServiceDescriptorProto&& from) noexcept
@@ -11610,7 +11610,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR EnumDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr EnumDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   inline EnumDescriptorProto(const EnumDescriptorProto& from) : EnumDescriptorProto(nullptr, from) {}
   inline EnumDescriptorProto(EnumDescriptorProto&& from) noexcept
@@ -11922,7 +11922,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR DescriptorProto(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr DescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   inline DescriptorProto(const DescriptorProto& from) : DescriptorProto(nullptr, from) {}
   inline DescriptorProto(DescriptorProto&& from) noexcept
@@ -12345,7 +12345,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR FileDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr FileDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   inline FileDescriptorProto(const FileDescriptorProto& from) : FileDescriptorProto(nullptr, from) {}
   inline FileDescriptorProto(FileDescriptorProto&& from) noexcept
@@ -12825,7 +12825,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR FileDescriptorSet(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr FileDescriptorSet(::google::protobuf::internal::ConstantInitialized);
 
   inline FileDescriptorSet(const FileDescriptorSet& from) : FileDescriptorSet(nullptr, from) {}
   inline FileDescriptorSet(FileDescriptorSet&& from) noexcept

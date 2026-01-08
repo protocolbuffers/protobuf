@@ -589,7 +589,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
         },
         R"cc(
           struct $type$ {
-            PROTOBUF_CONSTEXPR $type$() : _instance{$default$} {}
+            constexpr $type$() : _instance{$default$} {}
             union {
               $class$ _instance;
             };
@@ -639,7 +639,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
         },
         R"cc(
           struct $type$ {
-            PROTOBUF_CONSTEXPR $type$() : _instance(::_pbi::ConstantInitialized{}) {}
+            constexpr $type$() : _instance(::_pbi::ConstantInitialized{}) {}
             ~$type$() {}
             //~ _instance must be the first member.
             union {
@@ -662,7 +662,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
         },
         R"cc(
           struct $type$ {
-            PROTOBUF_CONSTEXPR $type$() : _instance(::_pbi::ConstantInitialized{}) {}
+            constexpr $type$() : _instance(::_pbi::ConstantInitialized{}) {}
             ~$type$() {}
             union {
               $class$ _instance;

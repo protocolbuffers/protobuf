@@ -420,19 +420,16 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #if defined(_MSC_VER) && !defined(__clang__)
 // MSVC 17 currently seems to raise an error about constant-initialized pointers.
 # if PROTOBUF_MSC_VER_MIN(1930)
-#  define PROTOBUF_CONSTINIT
-#  define PROTOBUF_CONSTEXPR constexpr
+#define PROTOBUF_CONSTINIT
 # endif
 #elif defined(__GNUC__) && !defined(__clang__)
 // GCC doesn't support constinit aggregate initialization of absl::Cord.
 # if PROTOBUF_GNUC_MIN(12, 2)
-#  define PROTOBUF_CONSTINIT
-#  define PROTOBUF_CONSTEXPR constexpr
+#define PROTOBUF_CONSTINIT
 # endif
 #else
 # if defined(__cpp_constinit) && !defined(__CYGWIN__)
-#  define PROTOBUF_CONSTINIT constinit
-#  define PROTOBUF_CONSTEXPR constexpr
+#define PROTOBUF_CONSTINIT constinit
 #  define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
 // Some older Clang versions incorrectly raise an error about
 // constant-initializing weak default instance pointers. Versions 12.0 and
@@ -442,15 +439,13 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
     ABSL_HAVE_CPP_ATTRIBUTE(clang::require_constant_initialization) && \
     ((defined(__APPLE__) && PROTOBUF_CLANG_MIN(13, 0)) ||              \
      (!defined(__APPLE__) && PROTOBUF_CLANG_MIN(12, 0)))
-#  define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
-#  define PROTOBUF_CONSTEXPR constexpr
+#define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
 #  define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
 # endif
 #endif
 
 #ifndef PROTOBUF_CONSTINIT
 #define PROTOBUF_CONSTINIT
-#define PROTOBUF_CONSTEXPR
 #endif
 
 // Some globals with an empty non-trivial destructor are annotated with
