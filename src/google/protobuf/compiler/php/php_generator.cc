@@ -219,6 +219,67 @@ std::string DefaultForField(const FieldDescriptor* field) {
   }
 }
 
+std::string DefaultForFieldWithPresence(const FieldDescriptor* field) {
+  if (field->has_default_value()) {
+    switch (field->cpp_type()) {
+      case FieldDescriptor::CPPTYPE_INT32:
+        return absl::StrCat(field->default_value_int32());
+      case FieldDescriptor::CPPTYPE_INT64:
+        return "GPBUtil::compatibleInt64(" +
+               absl::StrCat(field->default_value_int64()) + ", '" +
+               absl::StrCat(field->default_value_int64()) + "')";
+      case FieldDescriptor::CPPTYPE_UINT32:
+        return absl::StrCat(field->default_value_uint32());
+      case FieldDescriptor::CPPTYPE_UINT64:
+        return "GPBUtil::compatibleInt64(" +
+               absl::StrCat(field->default_value_uint64()) + ", '" +
+               absl::StrCat(field->default_value_uint64()) + "')";
+      case FieldDescriptor::CPPTYPE_FLOAT:
+        return absl::StrCat(field->default_value_float());
+      case FieldDescriptor::CPPTYPE_DOUBLE:
+        return absl::StrCat(field->default_value_double());
+      case FieldDescriptor::CPPTYPE_BOOL:
+        return field->default_value_bool() ? "true" : "false";
+      case FieldDescriptor::CPPTYPE_ENUM:
+        return absl::StrCat(field->default_value_enum()->number());
+      case FieldDescriptor::CPPTYPE_STRING:
+        return "'" + absl::CEscape(field->default_value_string()) + "'";
+      case FieldDescriptor::CPPTYPE_MESSAGE:
+        return "null";
+    }
+  }
+
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_FIXED64:
+    case FieldDescriptor::TYPE_SFIXED64:
+      return "GPBUtil::compatibleInt64(0, '0')";
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_FIXED32:
+    case FieldDescriptor::TYPE_SFIXED32:
+    case FieldDescriptor::TYPE_ENUM:
+      return "0";
+    case FieldDescriptor::TYPE_DOUBLE:
+    case FieldDescriptor::TYPE_FLOAT:
+      return "0.0";
+    case FieldDescriptor::TYPE_BOOL:
+      return "false";
+    case FieldDescriptor::TYPE_STRING:
+    case FieldDescriptor::TYPE_BYTES:
+      return "''";
+    case FieldDescriptor::TYPE_MESSAGE:
+    case FieldDescriptor::TYPE_GROUP:
+      return "null";
+    default:
+      assert(false);
+      return "";
+  }
+}
+
 std::string DeprecatedConditionalForField(const FieldDescriptor* field) {
   if (field->is_repeated()) {
     return absl::StrCat("count($this->", field->name(), ") !== 0");
@@ -623,7 +684,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         ": ^default_value^;\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true), "name",
-        field->name(), "default_value", DefaultForField(field),
+        field->name(), "default_value", DefaultForFieldWithPresence(field),
         "deprecation_trigger", deprecation_trigger_with_conditional);
   } else {
     printer->Print(
