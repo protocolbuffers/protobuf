@@ -104,12 +104,6 @@ struct InternalMetadataResolverOffsetHelper {
 PROTOBUF_EXPORT MessageLite* CloneSlow(Arena* arena, const MessageLite& value);
 PROTOBUF_EXPORT std::string* CloneSlow(Arena* arena, const std::string& value);
 
-enum class BoundsCheckMessageType {
-  kIndex,
-  kGe,
-  kLe,
-};
-
 // A utility function for logging that doesn't need any template types.
 PROTOBUF_EXPORT void LogIndexOutOfBounds(int index, int size);
 
@@ -119,8 +113,7 @@ PROTOBUF_EXPORT void LogIndexOutOfBounds(int index, int size);
 // TODO: Remove preserve_all and add no_return once experiment is
 // complete.
 PROTOBUF_PRESERVE_ALL PROTOBUF_EXPORT void LogIndexOutOfBoundsAndAbort(
-    int64_t index, int64_t size,
-    BoundsCheckMessageType type = BoundsCheckMessageType::kIndex);
+    int64_t index, int64_t size);
 PROTOBUF_EXPORT inline void RuntimeAssertInBounds(int index, int size) {
   if constexpr (GetBoundsCheckMode() == BoundsCheckMode::kAbort) {
     if (ABSL_PREDICT_FALSE(index < 0 || index >= size)) {
@@ -138,23 +131,11 @@ PROTOBUF_EXPORT inline void RuntimeAssertInBoundsLE(int64_t value,
                                                     int64_t limit) {
   if constexpr (GetBoundsCheckMode() == BoundsCheckMode::kAbort) {
     if (ABSL_PREDICT_FALSE(value > limit)) {
-      PROTOBUF_NO_MERGE LogIndexOutOfBoundsAndAbort(
-          value, limit, BoundsCheckMessageType::kLe);
+      PROTOBUF_NO_MERGE LogIndexOutOfBoundsAndAbort(value, limit);
     }
   }
 
   ABSL_DCHECK_LE(value, limit);
-}
-
-PROTOBUF_EXPORT inline void RuntimeAssertInBoundsGE(int64_t value,
-                                                    int64_t limit) {
-  if constexpr (GetBoundsCheckMode() == BoundsCheckMode::kAbort) {
-    if (ABSL_PREDICT_FALSE(value < limit)) {
-      PROTOBUF_NO_MERGE LogIndexOutOfBoundsAndAbort(
-          value, limit, BoundsCheckMessageType::kGe);
-    }
-  }
-  ABSL_DCHECK_GE(value, limit);
 }
 
 // Defined further below.
@@ -1783,9 +1764,9 @@ inline void RepeatedPtrField<Element>::RemoveLast() {
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::DeleteSubrange(int start, int num) {
-  internal::RuntimeAssertInBoundsGE(start, 0);
-  internal::RuntimeAssertInBoundsGE(num, 0);
-  internal::RuntimeAssertInBoundsLE(static_cast<int64_t>(start) + num, size());
+  ABSL_DCHECK_GE(start, 0);
+  ABSL_DCHECK_GE(num, 0);
+  ABSL_DCHECK_LE(start + num, size());
   void** subrange = raw_mutable_data() + start;
   Arena* arena = GetArena();
   for (int i = 0; i < num; ++i) {
