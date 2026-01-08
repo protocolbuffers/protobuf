@@ -13,8 +13,8 @@ $LOAD_PATH.unshift File.join(ENV['PWD'], 'ruby', 'lib')
 $LOAD_PATH.unshift File.join(ENV['PWD'], 'ruby')
 
 require 'conformance/conformance_pb'
-require 'conformance/test_proto/test_messages_edition2023_pb'
-require 'conformance/test_proto/test_messages_edition_unstable_pb'
+require 'conformance/test_protos/test_messages_edition2023_pb'
+require 'conformance/test_protos/test_messages_edition_unstable_pb'
 require 'google/protobuf'
 require 'google/protobuf/test_messages_proto3_pb'
 require 'google/protobuf/test_messages_proto2_pb'
