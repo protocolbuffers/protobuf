@@ -114,13 +114,7 @@ internal_objc_proto_library(
     srcs = [":test_messages_edition2023.proto"],
 )
 
-<<<<<<< HEAD
-internal_ruby_proto_library(
-    name = "test_messages_edition2023_ruby_proto",
-    srcs = ["test_messages_edition2023.proto"],
-=======
 internal_objc_proto_library(
     name = "test_messages_edition_unstable_objc_proto",
     srcs = [":test_messages_edition_unstable.proto"],
->>>>>>> 0404e66d8 (Add conformance test for edition unstable)
 )
