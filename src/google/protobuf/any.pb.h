@@ -84,7 +84,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Any final : public 
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR Any(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Any(::google::protobuf::internal::ConstantInitialized);
 
   inline Any(const Any& from) : Any(nullptr, from) {}
   inline Any(Any&& from) noexcept

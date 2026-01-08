@@ -94,7 +94,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR Mixin(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Mixin(::google::protobuf::internal::ConstantInitialized);
 
   inline Mixin(const Mixin& from) : Mixin(nullptr, from) {}
   inline Mixin(Mixin&& from) noexcept
@@ -312,7 +312,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR Method(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Method(::google::protobuf::internal::ConstantInitialized);
 
   inline Method(const Method& from) : Method(nullptr, from) {}
   inline Method(Method&& from) noexcept
@@ -622,7 +622,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR Api(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Api(::google::protobuf::internal::ConstantInitialized);
 
   inline Api(const Api& from) : Api(nullptr, from) {}
   inline Api(Api&& from) noexcept

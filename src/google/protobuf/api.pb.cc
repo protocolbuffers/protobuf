@@ -40,7 +40,7 @@ inline constexpr Mixin::Impl_::Impl_(
             ::_pbi::ConstantInitialized()) {}
 
 template <typename>
-PROTOBUF_CONSTEXPR Mixin::Mixin(::_pbi::ConstantInitialized)
+constexpr Mixin::Mixin(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(Mixin_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -49,7 +49,7 @@ PROTOBUF_CONSTEXPR Mixin::Mixin(::_pbi::ConstantInitialized)
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct MixinDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR MixinDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr MixinDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~MixinDefaultTypeInternal() {}
   union {
     Mixin _instance;
@@ -89,7 +89,7 @@ inline constexpr Method::Impl_::Impl_(
         syntax_{static_cast< ::google::protobuf::Syntax >(0)} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR Method::Method(::_pbi::ConstantInitialized)
+constexpr Method::Method(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(Method_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -98,7 +98,7 @@ PROTOBUF_CONSTEXPR Method::Method(::_pbi::ConstantInitialized)
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct MethodDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR MethodDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr MethodDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~MethodDefaultTypeInternal() {}
   union {
     Method _instance;
@@ -152,7 +152,7 @@ inline constexpr Api::Impl_::Impl_(
         syntax_{static_cast< ::google::protobuf::Syntax >(0)} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR Api::Api(::_pbi::ConstantInitialized)
+constexpr Api::Api(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(Api_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -161,7 +161,7 @@ PROTOBUF_CONSTEXPR Api::Api(::_pbi::ConstantInitialized)
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct ApiDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR ApiDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr ApiDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~ApiDefaultTypeInternal() {}
   union {
     Api _instance;

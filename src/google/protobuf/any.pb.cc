@@ -44,7 +44,7 @@ inline constexpr Any::Impl_::Impl_(
             ::_pbi::ConstantInitialized()) {}
 
 template <typename>
-PROTOBUF_CONSTEXPR Any::Any(::_pbi::ConstantInitialized)
+constexpr Any::Any(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(Any_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -53,7 +53,7 @@ PROTOBUF_CONSTEXPR Any::Any(::_pbi::ConstantInitialized)
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct AnyDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR AnyDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr AnyDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~AnyDefaultTypeInternal() {}
   union {
     Any _instance;

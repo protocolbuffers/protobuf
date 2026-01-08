@@ -84,7 +84,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR FieldMask(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr FieldMask(::google::protobuf::internal::ConstantInitialized);
 
   inline FieldMask(const FieldMask& from) : FieldMask(nullptr, from) {}
   inline FieldMask(FieldMask&& from) noexcept

@@ -145,7 +145,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ListValue final : p
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR ListValue(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr ListValue(::google::protobuf::internal::ConstantInitialized);
 
   inline ListValue(const ListValue& from) : ListValue(nullptr, from) {}
   inline ListValue(ListValue&& from) noexcept
@@ -351,7 +351,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct final : publ
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR Struct(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Struct(::google::protobuf::internal::ConstantInitialized);
 
   inline Struct(const Struct& from) : Struct(nullptr, from) {}
   inline Struct(Struct&& from) noexcept
@@ -550,7 +550,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct_FieldsEntry_DoNotUse final
                       ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE>;
   Struct_FieldsEntry_DoNotUse();
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR Struct_FieldsEntry_DoNotUse(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Struct_FieldsEntry_DoNotUse(::google::protobuf::internal::ConstantInitialized);
   explicit Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static constexpr const void* PROTOBUF_NONNULL internal_default_instance() {
     return &_Struct_FieldsEntry_DoNotUse_default_instance_;
@@ -592,7 +592,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR Value(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Value(::google::protobuf::internal::ConstantInitialized);
 
   inline Value(const Value& from) : Value(nullptr, from) {}
   inline Value(Value&& from) noexcept

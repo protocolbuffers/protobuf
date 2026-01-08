@@ -84,7 +84,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Duration final : pu
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR Duration(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Duration(::google::protobuf::internal::ConstantInitialized);
 
   inline Duration(const Duration& from) : Duration(nullptr, from) {}
   inline Duration(Duration&& from) noexcept

@@ -36,7 +36,7 @@ inline constexpr Timestamp::Impl_::Impl_(
         nanos_{0} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR Timestamp::Timestamp(::_pbi::ConstantInitialized)
+constexpr Timestamp::Timestamp(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(Timestamp_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -45,7 +45,7 @@ PROTOBUF_CONSTEXPR Timestamp::Timestamp(::_pbi::ConstantInitialized)
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct TimestampDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR TimestampDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr TimestampDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~TimestampDefaultTypeInternal() {}
   union {
     Timestamp _instance;

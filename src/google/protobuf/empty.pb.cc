@@ -28,7 +28,7 @@ namespace _fl = ::google::protobuf::internal::field_layout;
 namespace google {
 namespace protobuf {
 template <typename>
-PROTOBUF_CONSTEXPR Empty::Empty(::_pbi::ConstantInitialized)
+constexpr Empty::Empty(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::internal::ZeroFieldsBase(Empty_class_data_.base()){}
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -36,7 +36,7 @@ PROTOBUF_CONSTEXPR Empty::Empty(::_pbi::ConstantInitialized)
 }
 #endif  // PROTOBUF_CUSTOM_VTABLE
 struct EmptyDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR EmptyDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr EmptyDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~EmptyDefaultTypeInternal() {}
   union {
     Empty _instance;

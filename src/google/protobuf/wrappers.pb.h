@@ -116,7 +116,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt64Value final :
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR UInt64Value(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr UInt64Value(::google::protobuf::internal::ConstantInitialized);
 
   inline UInt64Value(const UInt64Value& from) : UInt64Value(nullptr, from) {}
   inline UInt64Value(UInt64Value&& from) noexcept
@@ -312,7 +312,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt32Value final :
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR UInt32Value(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr UInt32Value(::google::protobuf::internal::ConstantInitialized);
 
   inline UInt32Value(const UInt32Value& from) : UInt32Value(nullptr, from) {}
   inline UInt32Value(UInt32Value&& from) noexcept
@@ -508,7 +508,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED StringValue final :
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR StringValue(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr StringValue(::google::protobuf::internal::ConstantInitialized);
 
   inline StringValue(const StringValue& from) : StringValue(nullptr, from) {}
   inline StringValue(StringValue&& from) noexcept
@@ -709,7 +709,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int64Value final : 
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR Int64Value(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Int64Value(::google::protobuf::internal::ConstantInitialized);
 
   inline Int64Value(const Int64Value& from) : Int64Value(nullptr, from) {}
   inline Int64Value(Int64Value&& from) noexcept
@@ -905,7 +905,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int32Value final : 
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR Int32Value(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Int32Value(::google::protobuf::internal::ConstantInitialized);
 
   inline Int32Value(const Int32Value& from) : Int32Value(nullptr, from) {}
   inline Int32Value(Int32Value&& from) noexcept
@@ -1101,7 +1101,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FloatValue final : 
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR FloatValue(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr FloatValue(::google::protobuf::internal::ConstantInitialized);
 
   inline FloatValue(const FloatValue& from) : FloatValue(nullptr, from) {}
   inline FloatValue(FloatValue&& from) noexcept
@@ -1297,7 +1297,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DoubleValue final :
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR DoubleValue(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr DoubleValue(::google::protobuf::internal::ConstantInitialized);
 
   inline DoubleValue(const DoubleValue& from) : DoubleValue(nullptr, from) {}
   inline DoubleValue(DoubleValue&& from) noexcept
@@ -1493,7 +1493,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BytesValue final : 
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR BytesValue(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr BytesValue(::google::protobuf::internal::ConstantInitialized);
 
   inline BytesValue(const BytesValue& from) : BytesValue(nullptr, from) {}
   inline BytesValue(BytesValue&& from) noexcept
@@ -1694,7 +1694,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BoolValue final : p
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR BoolValue(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr BoolValue(::google::protobuf::internal::ConstantInitialized);
 
   inline BoolValue(const BoolValue& from) : BoolValue(nullptr, from) {}
   inline BoolValue(BoolValue&& from) noexcept

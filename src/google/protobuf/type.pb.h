@@ -258,7 +258,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR Option(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Option(::google::protobuf::internal::ConstantInitialized);
 
   inline Option(const Option& from) : Option(nullptr, from) {}
   inline Option(Option&& from) noexcept
@@ -477,7 +477,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR Field(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Field(::google::protobuf::internal::ConstantInitialized);
 
   inline Field(const Field& from) : Field(nullptr, from) {}
   inline Field(Field&& from) noexcept
@@ -870,7 +870,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR EnumValue(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr EnumValue(::google::protobuf::internal::ConstantInitialized);
 
   inline EnumValue(const EnumValue& from) : EnumValue(nullptr, from) {}
   inline EnumValue(EnumValue&& from) noexcept
@@ -1105,7 +1105,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR Type(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Type(::google::protobuf::internal::ConstantInitialized);
 
   inline Type(const Type& from) : Type(nullptr, from) {}
   inline Type(Type&& from) noexcept
@@ -1424,7 +1424,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR Enum(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Enum(::google::protobuf::internal::ConstantInitialized);
 
   inline Enum(const Enum& from) : Enum(nullptr, from) {}
   inline Enum(Enum&& from) noexcept

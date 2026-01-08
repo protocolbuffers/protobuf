@@ -36,7 +36,7 @@ inline constexpr Duration::Impl_::Impl_(
         nanos_{0} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR Duration::Duration(::_pbi::ConstantInitialized)
+constexpr Duration::Duration(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(Duration_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -45,7 +45,7 @@ PROTOBUF_CONSTEXPR Duration::Duration(::_pbi::ConstantInitialized)
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct DurationDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR DurationDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr DurationDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~DurationDefaultTypeInternal() {}
   union {
     Duration _instance;

@@ -35,7 +35,7 @@ inline constexpr UInt64Value::Impl_::Impl_(
         value_{::uint64_t{0u}} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR UInt64Value::UInt64Value(::_pbi::ConstantInitialized)
+constexpr UInt64Value::UInt64Value(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(UInt64Value_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -44,7 +44,7 @@ PROTOBUF_CONSTEXPR UInt64Value::UInt64Value(::_pbi::ConstantInitialized)
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct UInt64ValueDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR UInt64ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr UInt64ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~UInt64ValueDefaultTypeInternal() {}
   union {
     UInt64Value _instance;
@@ -61,7 +61,7 @@ inline constexpr UInt32Value::Impl_::Impl_(
         value_{0u} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR UInt32Value::UInt32Value(::_pbi::ConstantInitialized)
+constexpr UInt32Value::UInt32Value(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(UInt32Value_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -70,7 +70,7 @@ PROTOBUF_CONSTEXPR UInt32Value::UInt32Value(::_pbi::ConstantInitialized)
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct UInt32ValueDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR UInt32ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr UInt32ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~UInt32ValueDefaultTypeInternal() {}
   union {
     UInt32Value _instance;
@@ -89,7 +89,7 @@ inline constexpr StringValue::Impl_::Impl_(
             ::_pbi::ConstantInitialized()) {}
 
 template <typename>
-PROTOBUF_CONSTEXPR StringValue::StringValue(::_pbi::ConstantInitialized)
+constexpr StringValue::StringValue(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(StringValue_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -98,7 +98,7 @@ PROTOBUF_CONSTEXPR StringValue::StringValue(::_pbi::ConstantInitialized)
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct StringValueDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR StringValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr StringValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~StringValueDefaultTypeInternal() {}
   union {
     StringValue _instance;
@@ -115,7 +115,7 @@ inline constexpr Int64Value::Impl_::Impl_(
         value_{::int64_t{0}} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR Int64Value::Int64Value(::_pbi::ConstantInitialized)
+constexpr Int64Value::Int64Value(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(Int64Value_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -124,7 +124,7 @@ PROTOBUF_CONSTEXPR Int64Value::Int64Value(::_pbi::ConstantInitialized)
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct Int64ValueDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR Int64ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr Int64ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~Int64ValueDefaultTypeInternal() {}
   union {
     Int64Value _instance;
@@ -141,7 +141,7 @@ inline constexpr Int32Value::Impl_::Impl_(
         value_{0} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR Int32Value::Int32Value(::_pbi::ConstantInitialized)
+constexpr Int32Value::Int32Value(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(Int32Value_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -150,7 +150,7 @@ PROTOBUF_CONSTEXPR Int32Value::Int32Value(::_pbi::ConstantInitialized)
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct Int32ValueDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR Int32ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr Int32ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~Int32ValueDefaultTypeInternal() {}
   union {
     Int32Value _instance;
@@ -167,7 +167,7 @@ inline constexpr FloatValue::Impl_::Impl_(
         value_{0} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR FloatValue::FloatValue(::_pbi::ConstantInitialized)
+constexpr FloatValue::FloatValue(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(FloatValue_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -176,7 +176,7 @@ PROTOBUF_CONSTEXPR FloatValue::FloatValue(::_pbi::ConstantInitialized)
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct FloatValueDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR FloatValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr FloatValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~FloatValueDefaultTypeInternal() {}
   union {
     FloatValue _instance;
@@ -193,7 +193,7 @@ inline constexpr DoubleValue::Impl_::Impl_(
         value_{0} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR DoubleValue::DoubleValue(::_pbi::ConstantInitialized)
+constexpr DoubleValue::DoubleValue(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(DoubleValue_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -202,7 +202,7 @@ PROTOBUF_CONSTEXPR DoubleValue::DoubleValue(::_pbi::ConstantInitialized)
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct DoubleValueDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR DoubleValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr DoubleValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~DoubleValueDefaultTypeInternal() {}
   union {
     DoubleValue _instance;
@@ -221,7 +221,7 @@ inline constexpr BytesValue::Impl_::Impl_(
             ::_pbi::ConstantInitialized()) {}
 
 template <typename>
-PROTOBUF_CONSTEXPR BytesValue::BytesValue(::_pbi::ConstantInitialized)
+constexpr BytesValue::BytesValue(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(BytesValue_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -230,7 +230,7 @@ PROTOBUF_CONSTEXPR BytesValue::BytesValue(::_pbi::ConstantInitialized)
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct BytesValueDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR BytesValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr BytesValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~BytesValueDefaultTypeInternal() {}
   union {
     BytesValue _instance;
@@ -247,7 +247,7 @@ inline constexpr BoolValue::Impl_::Impl_(
         value_{false} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR BoolValue::BoolValue(::_pbi::ConstantInitialized)
+constexpr BoolValue::BoolValue(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(BoolValue_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -256,7 +256,7 @@ PROTOBUF_CONSTEXPR BoolValue::BoolValue(::_pbi::ConstantInitialized)
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct BoolValueDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR BoolValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr BoolValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~BoolValueDefaultTypeInternal() {}
   union {
     BoolValue _instance;

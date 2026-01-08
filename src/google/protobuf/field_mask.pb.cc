@@ -43,7 +43,7 @@ inline constexpr FieldMask::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_CONSTEXPR FieldMask::FieldMask(::_pbi::ConstantInitialized)
+constexpr FieldMask::FieldMask(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(FieldMask_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -52,7 +52,7 @@ PROTOBUF_CONSTEXPR FieldMask::FieldMask(::_pbi::ConstantInitialized)
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct FieldMaskDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR FieldMaskDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr FieldMaskDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~FieldMaskDefaultTypeInternal() {}
   union {
     FieldMask _instance;

@@ -37,7 +37,7 @@ inline constexpr SourceContext::Impl_::Impl_(
             ::_pbi::ConstantInitialized()) {}
 
 template <typename>
-PROTOBUF_CONSTEXPR SourceContext::SourceContext(::_pbi::ConstantInitialized)
+constexpr SourceContext::SourceContext(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(SourceContext_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -46,7 +46,7 @@ PROTOBUF_CONSTEXPR SourceContext::SourceContext(::_pbi::ConstantInitialized)
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct SourceContextDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR SourceContextDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr SourceContextDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~SourceContextDefaultTypeInternal() {}
   union {
     SourceContext _instance;
