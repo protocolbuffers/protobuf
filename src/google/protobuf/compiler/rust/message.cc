@@ -741,6 +741,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
         //~ We implement drop unconditionally, so that `$Msg$: Drop` regardless
         //~ of kernel.
         impl $std$::ops::Drop for $Msg$ {
+          #[inline]
           fn drop(&mut self) {
             $Msg::drop$
           }
