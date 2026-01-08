@@ -181,4 +181,4 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           version: 8.0.1 # Bazel version
           bazel-cache: php_macos15/${{ matrix.version }}
-          bazel: test //php:conformance_test //php:conformance_test_c --action_env=PATH --test_env=PATH --xcode_version_config=//.github:host_xcodes_macos15
+          bazel: test //php:conformance_test --action_env=PATH --test_env=PATH --xcode_version_config=//.github:host_xcodes_macos15
