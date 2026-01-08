@@ -1,5 +1,4 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("//bazel:proto_descriptor_set.bzl", "proto_descriptor_set")
 load("//bazel:proto_library.bzl", "proto_library")
 load(":bazel_proto_library_tests.bzl", "bazel_proto_library_test_suite")
 load(":cc_toolchain_tests.bzl", "cc_toolchain_test_suite")
