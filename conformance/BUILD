@@ -628,6 +628,7 @@ rb_binary(
     deps = [
         ":conformance_ruby_proto",
         "//conformance/test_protos:test_messages_edition2023_ruby_proto",
+        "//conformance/test_protos:test_messages_edition_unstable_ruby_proto",
         "//ruby:conformance_editions_test_ruby_proto",
         "//ruby:conformance_test_ruby_proto",
         "//ruby:protobuf",

@@ -114,6 +114,17 @@ internal_objc_proto_library(
     srcs = [":test_messages_edition2023.proto"],
 )
 
+internal_ruby_proto_library(
+   name = "test_messages_edition2023_ruby_proto",
+   srcs = ["test_messages_edition2023.proto"],
+)
+
+internal_ruby_proto_library(
+    name = "test_messages_edition_unstable_ruby_proto",
+    testonly = True,
+    srcs = [":copied_test_messages_edition_unstable_proto"],
+)
+
 internal_objc_proto_library(
     name = "test_messages_edition_unstable_objc_proto",
     srcs = [":test_messages_edition_unstable.proto"],
