@@ -143,7 +143,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      */
     public function getPositiveIntValue()
     {
-        return isset($this->positive_int_value) ? $this->positive_int_value : 0;
+        return isset($this->positive_int_value) ? $this->positive_int_value : GPBUtil::compatibleInt64(0, '0');
     }
 
     public function hasPositiveIntValue()
@@ -175,7 +175,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      */
     public function getNegativeIntValue()
     {
-        return isset($this->negative_int_value) ? $this->negative_int_value : 0;
+        return isset($this->negative_int_value) ? $this->negative_int_value : GPBUtil::compatibleInt64(0, '0');
     }
 
     public function hasNegativeIntValue()

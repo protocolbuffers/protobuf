@@ -524,7 +524,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getOptimizeFor()
     {
-        return isset($this->optimize_for) ? $this->optimize_for : 0;
+        return isset($this->optimize_for) ? $this->optimize_for : 1;
     }
 
     public function hasOptimizeFor()
@@ -761,7 +761,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getCcEnableArenas()
     {
-        return isset($this->cc_enable_arenas) ? $this->cc_enable_arenas : false;
+        return isset($this->cc_enable_arenas) ? $this->cc_enable_arenas : true;
     }
 
     public function hasCcEnableArenas()

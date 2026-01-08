@@ -172,7 +172,7 @@ class ExtensionRangeOptions extends \Google\Protobuf\Internal\Message
      */
     public function getVerification()
     {
-        return isset($this->verification) ? $this->verification : 0;
+        return isset($this->verification) ? $this->verification : 1;
     }
 
     public function hasVerification()
