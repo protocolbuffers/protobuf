@@ -653,7 +653,7 @@ TEST(FeatureResolverLifetimesTest, RemovedUnstableFeature) {
   EXPECT_THAT(
       results.errors,
       ElementsAre(AllOf(HasSubstr("pb.TestFeatures.removed_unstable_feature"),
-                        HasSubstr("removed in edition UNSTABLEf"))));
+                        HasSubstr("removed in edition UNSTABLE"))));
   EXPECT_THAT(results.warnings, IsEmpty());
 }
 
