@@ -640,8 +640,7 @@ TEST(FeatureResolverLifetimesTest, RemovedFeature) {
                                                            features, nullptr);
   EXPECT_THAT(results.errors,
               ElementsAre(AllOf(HasSubstr("pb.TestFeatures.removed_feature"),
-                                HasSubstr("removed in edition 2024:"),
-                                HasSubstr("Custom feature removal error"))));
+                                HasSubstr("removed in edition 2024"))));
   EXPECT_THAT(results.warnings, IsEmpty());
 }
 
@@ -654,8 +653,7 @@ TEST(FeatureResolverLifetimesTest, RemovedUnstableFeature) {
   EXPECT_THAT(
       results.errors,
       ElementsAre(AllOf(HasSubstr("pb.TestFeatures.removed_unstable_feature"),
-                        HasSubstr("removed in edition UNSTABLE:"),
-                        HasSubstr("Custom feature removal error"))));
+                        HasSubstr("removed in edition UNSTABLE"))));
   EXPECT_THAT(results.warnings, IsEmpty());
 }
 

@@ -299,8 +299,7 @@ message TestFeatures {
     targets = TARGET_TYPE_METHOD,
     feature_support = {
       edition_introduced: EDITION_2023,
-      edition_removed: EDITION_UNSTABLE,
-      removal_error: "Custom feature removal error"
+      edition_removed: EDITION_UNSTABLE
     },
     edition_defaults = { edition: EDITION_LEGACY, value: "UNSTABLE1" }
   ];
