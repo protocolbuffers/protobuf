@@ -2583,12 +2583,6 @@ class PROTOBUF_EXPORT DescriptorPool {
   // Disallow [enforce_utf8 = false] in .proto files.
   void DisallowEnforceUtf8() { disallow_enforce_utf8_ = true; }
 
-  // Use the deprecated legacy behavior for handling JSON field name conflicts.
-  ABSL_DEPRECATED("Deprecated treatment of field name conflicts is enabled.")
-  void UseDeprecatedLegacyJsonFieldConflicts() {
-    deprecated_legacy_json_field_conflicts_ = true;
-  }
-
 
   // For internal use only:  Gets a non-const pointer to the generated pool.
   // This is called at static-initialization time only, so thread-safety is
