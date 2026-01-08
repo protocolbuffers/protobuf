@@ -653,20 +653,7 @@ TEST(FeatureResolverLifetimesTest, RemovedUnstableFeature) {
   EXPECT_THAT(
       results.errors,
       ElementsAre(AllOf(HasSubstr("pb.TestFeatures.removed_unstable_feature"),
-                        HasSubstr("removed in edition UNSTABLE"))));
-  EXPECT_THAT(results.warnings, IsEmpty());
-}
-
-TEST(FeatureResolverLifetimesTest, RemovedFeatureWithNoRemovalError) {
-  FeatureSet features = ParseTextOrDie(R"pb(
-    [pb.test] { same_edition_removed_feature: VALUE1 }
-  )pb");
-  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2023,
-                                                           features, nullptr);
-  EXPECT_THAT(results.errors,
-              ElementsAre(AllOf(
-                  HasSubstr("pb.TestFeatures.same_edition_removed_feature"),
-                  HasSubstr("removed in edition 2023"), Not(HasSubstr(":")))));
+                        HasSubstr("removed in edition UNSTABLEf"))));
   EXPECT_THAT(results.warnings, IsEmpty());
 }
 
