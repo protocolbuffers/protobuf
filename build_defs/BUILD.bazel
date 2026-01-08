@@ -49,13 +49,6 @@ platform(
     ],
 )
 
-config_setting(
-    name = "protobuf_allow_msvc",
-    values = {
-        "define": "protobuf_allow_msvc=true",
-    },
-)
-
 selects.config_setting_group(
     name = "config_msvc",
     match_any = [
