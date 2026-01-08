@@ -165,14 +165,9 @@ std::string ToJsonName(const absl::string_view input) {
 
 template <typename OptionsT>
 bool IsLegacyJsonFieldConflictEnabled(const OptionsT& options) {
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
+  PROTOBUF_IGNORE_DEPRECATION_START
   return options.deprecated_legacy_json_field_conflicts();
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 
 // Backport of fold expressions for the comma operator to C++11.
