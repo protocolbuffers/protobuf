@@ -41,7 +41,7 @@ inline constexpr Version::Impl_::Impl_(
         patch_{0} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR Version::Version(::_pbi::ConstantInitialized)
+constexpr Version::Version(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(Version_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -50,7 +50,7 @@ PROTOBUF_CONSTEXPR Version::Version(::_pbi::ConstantInitialized)
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct VersionDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR VersionDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr VersionDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~VersionDefaultTypeInternal() {}
   union {
     Version _instance;
@@ -76,7 +76,7 @@ inline constexpr CodeGeneratorResponse_File::Impl_::Impl_(
         generated_code_info_{nullptr} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR CodeGeneratorResponse_File::CodeGeneratorResponse_File(::_pbi::ConstantInitialized)
+constexpr CodeGeneratorResponse_File::CodeGeneratorResponse_File(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(CodeGeneratorResponse_File_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -85,7 +85,7 @@ PROTOBUF_CONSTEXPR CodeGeneratorResponse_File::CodeGeneratorResponse_File(::_pbi
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct CodeGeneratorResponse_FileDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR CodeGeneratorResponse_FileDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr CodeGeneratorResponse_FileDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorResponse_FileDefaultTypeInternal() {}
   union {
     CodeGeneratorResponse_File _instance;
@@ -116,7 +116,7 @@ inline constexpr CodeGeneratorResponse::Impl_::Impl_(
         maximum_edition_{0} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR CodeGeneratorResponse::CodeGeneratorResponse(::_pbi::ConstantInitialized)
+constexpr CodeGeneratorResponse::CodeGeneratorResponse(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(CodeGeneratorResponse_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -125,7 +125,7 @@ PROTOBUF_CONSTEXPR CodeGeneratorResponse::CodeGeneratorResponse(::_pbi::Constant
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct CodeGeneratorResponseDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR CodeGeneratorResponseDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr CodeGeneratorResponseDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorResponseDefaultTypeInternal() {}
   union {
     CodeGeneratorResponse _instance;
@@ -172,7 +172,7 @@ inline constexpr CodeGeneratorRequest::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_CONSTEXPR CodeGeneratorRequest::CodeGeneratorRequest(::_pbi::ConstantInitialized)
+constexpr CodeGeneratorRequest::CodeGeneratorRequest(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(CodeGeneratorRequest_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -181,7 +181,7 @@ PROTOBUF_CONSTEXPR CodeGeneratorRequest::CodeGeneratorRequest(::_pbi::ConstantIn
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct CodeGeneratorRequestDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR CodeGeneratorRequestDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr CodeGeneratorRequestDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorRequestDefaultTypeInternal() {}
   union {
     CodeGeneratorRequest _instance;

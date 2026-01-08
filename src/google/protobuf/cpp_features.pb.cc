@@ -36,7 +36,7 @@ inline constexpr CppFeatures::Impl_::Impl_(
         enum_name_uses_string_view_{false} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR CppFeatures::CppFeatures(::_pbi::ConstantInitialized)
+constexpr CppFeatures::CppFeatures(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(CppFeatures_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -45,7 +45,7 @@ PROTOBUF_CONSTEXPR CppFeatures::CppFeatures(::_pbi::ConstantInitialized)
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct CppFeaturesDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR CppFeaturesDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr CppFeaturesDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~CppFeaturesDefaultTypeInternal() {}
   union {
     CppFeatures _instance;

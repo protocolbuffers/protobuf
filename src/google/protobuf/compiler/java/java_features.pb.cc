@@ -27,7 +27,7 @@ namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
 namespace pb {
 template <typename>
-PROTOBUF_CONSTEXPR JavaFeatures_NestInFileClassFeature::JavaFeatures_NestInFileClassFeature(::_pbi::ConstantInitialized)
+constexpr JavaFeatures_NestInFileClassFeature::JavaFeatures_NestInFileClassFeature(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::internal::ZeroFieldsBase(JavaFeatures_NestInFileClassFeature_class_data_.base()){}
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -35,7 +35,7 @@ PROTOBUF_CONSTEXPR JavaFeatures_NestInFileClassFeature::JavaFeatures_NestInFileC
 }
 #endif  // PROTOBUF_CUSTOM_VTABLE
 struct JavaFeatures_NestInFileClassFeatureDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR JavaFeatures_NestInFileClassFeatureDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr JavaFeatures_NestInFileClassFeatureDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~JavaFeatures_NestInFileClassFeatureDefaultTypeInternal() {}
   union {
     JavaFeatures_NestInFileClassFeature _instance;
@@ -56,7 +56,7 @@ inline constexpr JavaFeatures::Impl_::Impl_(
         nest_in_file_class_{static_cast< ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass >(0)} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR JavaFeatures::JavaFeatures(::_pbi::ConstantInitialized)
+constexpr JavaFeatures::JavaFeatures(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(JavaFeatures_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -65,7 +65,7 @@ PROTOBUF_CONSTEXPR JavaFeatures::JavaFeatures(::_pbi::ConstantInitialized)
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct JavaFeaturesDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR JavaFeaturesDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr JavaFeaturesDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~JavaFeaturesDefaultTypeInternal() {}
   union {
     JavaFeatures _instance;
