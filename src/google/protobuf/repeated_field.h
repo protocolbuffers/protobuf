@@ -1122,7 +1122,16 @@ inline Element* RepeatedField<Element>::AddAlreadyReserved()
 template <typename Element>
 inline Element* RepeatedField<Element>::AddNAlreadyReserved(int n)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  internal::RuntimeAssertInBoundsGE(n, 0);
+  if (ABSL_PREDICT_FALSE(n < 0)) {
+    // Calling with size 0 ensures that internal check (`n < 0 || n >= 0`)
+    // fails for any negative input.
+    internal::RuntimeAssertInBounds(n, 0);
+  }
+  // n = 0 will fail if it reaches RuntimeAssertInBoundsLE.
+  if (n == 0) {
+    return unsafe_elements(is_soo()) + size(is_soo());
+  }
+
   const bool is_soo = this->is_soo();
   const int old_size = size(is_soo);
   [[maybe_unused]] const int capacity = Capacity(is_soo);
