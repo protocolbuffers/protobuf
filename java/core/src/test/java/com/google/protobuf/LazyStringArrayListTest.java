@@ -100,11 +100,10 @@ public class LazyStringArrayListTest {
     assertThat(cPrime).isNotSameInstanceAs(STRING_C);
     assertThat(cPrime).isEqualTo(STRING_C);
 
-    // String c and c should stay the same once cached.
+    // String b and c should stay the same once cached.
     assertThat(list.get(1)).isSameInstanceAs(bPrime);
     assertThat(list.get(2)).isSameInstanceAs(cPrime);
 
-    // ByteString needs to be computed from string for both a and b
     ByteString aPrimeByteString = list.getByteString(0);
     assertThat(aPrimeByteString).isEqualTo(BYTE_STRING_A);
     ByteString bPrimeByteString = list.getByteString(1);
