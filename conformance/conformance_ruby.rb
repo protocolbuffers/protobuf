@@ -12,7 +12,7 @@ $LOAD_PATH.unshift ENV['PWD']
 $LOAD_PATH.unshift File.join(ENV['PWD'], 'ruby', 'lib')
 $LOAD_PATH.unshift File.join(ENV['PWD'], 'ruby')
 
-require 'conformance/ruby/conformance_pb'
+require 'conformance/test_proto/conformance_pb'
 require 'conformance/test_proto/test_messages_edition2023_pb'
 require 'conformance/test_proto/test_messages_edition_unstable_pb'
 require 'google/protobuf'
