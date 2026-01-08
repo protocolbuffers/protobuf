@@ -1555,7 +1555,7 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
                               $pbi$::WireFormatLite::$val_wire_type$>;
           $classname$();
           template <typename = void>
-          explicit PROTOBUF_CONSTEXPR $classname$($pbi$::ConstantInitialized);
+          explicit constexpr $classname$($pbi$::ConstantInitialized);
           explicit $classname$($pb$::Arena* $nullable$ arena);
           static constexpr const void* $nonnull$ internal_default_instance() {
             return &_$classname$_default_instance_;
@@ -2236,7 +2236,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           //~ Templatize constexpr constructor as a workaround for a bug in
           //~ gcc 12 (warning in gcc 13).
           template <typename = void>
-          explicit PROTOBUF_CONSTEXPR $classname$($pbi$::ConstantInitialized);
+          explicit constexpr $classname$($pbi$::ConstantInitialized);
 
           inline $classname$(const $classname$& from) : $classname$(nullptr, from) {}
           inline $classname$($classname$&& from) noexcept
@@ -3131,7 +3131,6 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
 
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
-  auto c = p->WithVars({{"constexpr", "PROTOBUF_CONSTEXPR"}});
   Formatter format(p);
 
   if (IsMapEntryMessage(descriptor_) || !HasImplData(descriptor_, options_)) {
@@ -3147,7 +3146,7 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
               //~ Templatize constexpr constructor as a workaround for a bug in
               //~ gcc 12 (warning in gcc 13).
               template <typename>
-              $constexpr$ $classname$::$classname$(::_pbi::ConstantInitialized)
+              constexpr $classname$::$classname$(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
                   : $base$($classname$_class_data_.base()){}
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -3175,7 +3174,7 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
   p->Emit(
       R"cc(
         template <typename>
-        $constexpr$ $classname$::$classname$(::_pbi::ConstantInitialized)
+        constexpr $classname$::$classname$(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             : $superclass$($classname$_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
