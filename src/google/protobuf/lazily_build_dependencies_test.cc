@@ -24,13 +24,10 @@
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/unittest_delimited.pb.h"
-#include "google/protobuf/unittest_delimited_import.pb.h"
 #include "google/protobuf/unittest_features.pb.h"
 #include "google/protobuf/unittest_lazy_dependencies.pb.h"
 #include "google/protobuf/unittest_lazy_dependencies_custom_option.pb.h"
 #include "google/protobuf/unittest_lazy_dependencies_enum.pb.h"
-#include "google/protobuf/unittest_proto3_arena.pb.h"
-#include "google/protobuf/unittest_string_type.pb.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
