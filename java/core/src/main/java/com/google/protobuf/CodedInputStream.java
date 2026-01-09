@@ -384,7 +384,16 @@ public abstract class CodedInputStream {
   /** Read a {@code bytes} field value from the stream. */
   public abstract byte[] readByteArray() throws IOException;
 
-  /** Read a {@code bytes} field value from the stream. */
+  /**
+   * Read a {@code bytes} field value from the stream.
+   *
+   * <p>The returned {@link ByteBuffer} may reference (alias) the underlying input buffer for
+   * decoders that are backed by a stable byte array and when aliasing is enabled.
+   *
+   * <p>Safety contract: Callers should treat the returned buffer as read-only and should not rely
+   * on its contents remaining valid after the input advances. If you need a stable, read-only view,
+   * consider calling {@link ByteBuffer#asReadOnlyBuffer()} immediately on the returned buffer.
+   */
   public abstract ByteBuffer readByteBuffer() throws IOException;
 
   /** Read a {@code uint32} field value from the stream. */
@@ -429,8 +438,24 @@ public abstract class CodedInputStream {
   // -----------------------------------------------------------------
 
   /**
-   * Enables {@link ByteString} aliasing of the underlying buffer, trading off on buffer pinning for
-   * data copies. Only valid for buffer-backed streams.
+   * Enables aliasing of the underlying input buffer for buffer-backed decoders.
+   *
+   * <p>When aliasing is enabled and supported by the underlying decoder, {@link #readBytes()} and
+   * {@link #readByteBuffer()} may return views into the underlying input buffer instead of copying
+   * the bytes. This can reduce allocations and improve throughput for workloads that parse many
+   * length-delimited {@code bytes} fields.
+   *
+   * <p>Safety contract: If aliasing is enabled, the caller must ensure the underlying input buffer
+   * is not mutated or reused while any returned {@link ByteString} or {@link ByteBuffer} is still
+   * in use. If you cannot guarantee buffer lifetime (for example, when using pooled buffers), do
+   * not enable aliasing or copy the bytes before storing them.
+   *
+   * <p>Aliasing is generally only possible for array-backed decoders. Stream-backed decoders
+   * typically do not support aliasing because their internal buffers are refilled and reused.
+   *
+   * <p>Note: {@link #readByteBuffer()} may return a mutable {@link ByteBuffer} even when it aliases
+   * the underlying input. Callers that require safety-by-default should treat the returned buffer
+   * as read-only or call {@link ByteBuffer#asReadOnlyBuffer()} immediately.
    */
   public abstract void enableAliasing(boolean enabled);
 
