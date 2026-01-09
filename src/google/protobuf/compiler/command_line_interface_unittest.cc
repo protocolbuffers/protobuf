@@ -23,6 +23,8 @@
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
+#include "google/protobuf/cpp_features.pb.h"
+#include "editions/edition_defaults_test_utils.h"
 #include "google/protobuf/unittest_features.pb.h"
 #include "google/protobuf/unittest_invalid_features.pb.h"
 
@@ -2147,8 +2149,39 @@ TEST_F(CommandLineInterfaceTest,
   Run("protocol_compiler --experimental_editions --proto_path=$tmpdir "
       "--test_out=$tmpdir foo.proto");
   ExpectErrorSubstring(
-      "foo.proto:2:5: Edition 99997_TEST_ONLY is later than the maximum "
-      "supported edition 2024\n");
+      absl::StrCat("Edition 99997_TEST_ONLY is later than the maximum "
+                   "supported edition ",
+                   ProtocMaximumEdition()));
+}
+
+TEST_F(CommandLineInterfaceTest, UnstableEditionWithFlag) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "UNSTABLE";
+    package foo;
+    message Foo {
+    }
+  )schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir --experimental_editions "
+      "--test_out=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, UnstableEditionWithoutFlag) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "UNSTABLE";
+    package foo;
+    message Foo {
+    }
+  )schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "--test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "foo.proto: is a file using edition UNSTABLE, which is later than "
+      "the protoc maximum supported edition 2024.");
 }
 
 TEST_F(CommandLineInterfaceTest, EditionDefaults) {
@@ -2296,6 +2329,31 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
               )pb"));
 }
 
+TEST_F(CommandLineInterfaceTest, EditionDefaultsWithUnstable) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("google/protobuf/unittest_features.proto",
+                 pb::TestFeatures::descriptor()->file()->DebugString());
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "--edition_defaults_out=$tmpdir/defaults "
+      "google/protobuf/unittest_features.proto "
+      "google/protobuf/descriptor.proto");
+  ExpectNoErrors();
+
+  FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
+  const auto unstable_defaults = FindEditionDefault(defaults, EDITION_UNSTABLE);
+  ASSERT_TRUE(unstable_defaults.has_value());
+  EXPECT_EQ(unstable_defaults->edition(), EDITION_UNSTABLE);
+  EXPECT_EQ(unstable_defaults->overridable_features()
+                .GetExtension(pb::test)
+                .new_unstable_feature(),
+            pb::UnstableEnumFeature::UNSTABLE2);
+  EXPECT_EQ(unstable_defaults->overridable_features()
+                .GetExtension(pb::test)
+                .unstable_existing_feature(),
+            pb::UnstableEnumFeature::UNSTABLE3);
+}
+
 TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
@@ -2385,34 +2443,45 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_EQ(defaults.minimum_edition(), EDITION_PROTO2);
   EXPECT_EQ(defaults.maximum_edition(), EDITION_99999_TEST_ONLY);
-  ASSERT_EQ(defaults.defaults_size(), 7);
-  EXPECT_EQ(defaults.defaults(0).edition(), EDITION_LEGACY);
-  EXPECT_EQ(defaults.defaults(2).edition(), EDITION_2023);
-  EXPECT_EQ(defaults.defaults(3).edition(), EDITION_2024);
-  EXPECT_EQ(defaults.defaults(4).edition(), EDITION_99997_TEST_ONLY);
-  EXPECT_EQ(defaults.defaults(5).edition(), EDITION_99998_TEST_ONLY);
-  EXPECT_EQ(defaults.defaults(0)
-                .fixed_features()
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_LEGACY)->edition(),
+            EDITION_LEGACY);
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_2023)->edition(),
+            EDITION_2023);
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_2024)->edition(),
+            EDITION_2024);
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_UNSTABLE)->edition(),
+            EDITION_UNSTABLE);
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_99997_TEST_ONLY)->edition(),
+            EDITION_99997_TEST_ONLY);
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_99998_TEST_ONLY)->edition(),
+            EDITION_99998_TEST_ONLY);
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_LEGACY)
+                ->fixed_features()
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::EnumFeature::VALUE1);
-  EXPECT_EQ(defaults.defaults(2)
-                .overridable_features()
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_2023)
+                ->overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::EnumFeature::VALUE3);
-  EXPECT_EQ(defaults.defaults(3)
-                .overridable_features()
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_2024)
+                ->overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::EnumFeature::VALUE3);
-  EXPECT_EQ(defaults.defaults(4)
-                .overridable_features()
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_UNSTABLE)
+                ->overridable_features()
+                .GetExtension(pb::test)
+                .new_unstable_feature(),
+            pb::UnstableEnumFeature::UNSTABLE2);
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_99997_TEST_ONLY)
+                ->overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::EnumFeature::VALUE4);
-  EXPECT_EQ(defaults.defaults(5)
-                .overridable_features()
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_99998_TEST_ONLY)
+                ->overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::EnumFeature::VALUE5);

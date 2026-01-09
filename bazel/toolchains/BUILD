@@ -53,7 +53,11 @@ bool_flag(
 config_setting(
     name = "prefer_prebuilt_protoc.flag_set",
     flag_values = {":prefer_prebuilt_protoc": "true"},
-    visibility = ["//bazel/private/toolchains/prebuilt:__pkg__"],
+    visibility = [
+        "//bazel/private/toolchains/prebuilt:__pkg__",
+        # Needed by cc_toolchain to switch between minimal and full protoc
+        "//:__pkg__",
+    ],
 )
 
 # The public API users set to disable the validation action failing.

@@ -19,6 +19,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/parser.h"
+#include "editions/edition_defaults_test_utils.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/test_textproto.h"
@@ -507,6 +508,22 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
                 minimum_edition: EDITION_PROTO2
                 maximum_edition: EDITION_2024
               )pb")));
+}
+
+TEST_F(CodeGeneratorTest, BuildFeatureSetDefaultsWithUnstable) {
+  TestGenerator generator;
+  auto result = generator.BuildFeatureSetDefaults();
+  ASSERT_TRUE(result.ok()) << result.status().message();
+  const auto unstable_defaults = FindEditionDefault(*result, EDITION_UNSTABLE);
+  ASSERT_TRUE(unstable_defaults.has_value());
+  EXPECT_EQ(unstable_defaults->overridable_features()
+                .GetExtension(pb::test)
+                .new_unstable_feature(),
+            pb::UnstableEnumFeature::UNSTABLE2);
+  EXPECT_EQ(unstable_defaults->overridable_features()
+                .GetExtension(pb::test)
+                .unstable_existing_feature(),
+            pb::UnstableEnumFeature::UNSTABLE3);
 }
 
 TEST_F(CodeGeneratorTest, BuildFeatureSetDefaultsUnsupported) {

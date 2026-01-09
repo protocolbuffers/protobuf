@@ -239,6 +239,8 @@ ConformanceTestSuite::ConformanceRequestSetting::GetSyntaxIdentifier() const {
       return "Proto3";
     case Edition::EDITION_PROTO2:
       return "Proto2";
+    case Edition::EDITION_UNSTABLE:
+      return "EditionUnstable";
     default: {
       std::string id = "Editions";
       if (prototype_message_.GetDescriptor()->name() == "TestAllTypesProto2") {
