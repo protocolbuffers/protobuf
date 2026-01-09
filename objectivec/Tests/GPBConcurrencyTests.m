@@ -150,7 +150,11 @@ static const int kNumMessages = 100;
   for (int i = 0; i < 10; i++) {
     for (TestAllExtensions *message in messages) {
       ForeignMessage *foreign =
+#if GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS
+          [message getExtension:Objc_Protobuf_Tests_extension_OptionalForeignMessageExtension()];
+#else
           [message getExtension:[UnittestRoot optionalForeignMessageExtension]];
+#endif
       XCTAssertEqual(foreign.c, 0);
     }
   }
@@ -162,7 +166,12 @@ static const int kNumMessages = 100;
   NSArray *threads = [self createThreadsWithSelector:sel object:messages];
   [self startThreads:threads];
   [self joinThreads:threads];
+#if GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS
+  GPBExtensionDescriptor *extension =
+      Objc_Protobuf_Tests_extension_OptionalForeignMessageExtension();
+#else
   GPBExtensionDescriptor *extension = [UnittestRoot optionalForeignMessageExtension];
+#endif
   for (TestAllExtensions *message in messages) {
     XCTAssertFalse([message hasExtension:extension]);
   }
