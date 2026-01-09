@@ -26,7 +26,7 @@ namespace ProtobufTestMessages.EditionUnstable {
           string.Concat(
             "Cjxjb25mb3JtYW5jZS90ZXN0X3Byb3Rvcy90ZXN0X21lc3NhZ2VzX2VkaXRp",
             "b25fdW5zdGFibGUucHJvdG8SJ3Byb3RvYnVmX3Rlc3RfbWVzc2FnZXMuZWRp",
-            "dGlvbl91bnN0YWJsZSIbCg5Db21wbGV4TWVzc2FnZRIJCgFkGAEgASgFIvMM",
+            "dGlvbl91bnN0YWJsZSIbCg5Db21wbGV4TWVzc2FnZRIJCgFkGAEgASgFIs4O",
             "ChtUZXN0QWxsVHlwZXNFZGl0aW9uVW5zdGFibGUSFgoOb3B0aW9uYWxfaW50",
             "MzIYASABKAUSbwoYb3B0aW9uYWxfZm9yZWlnbl9tZXNzYWdlGAIgASgLMkYu",
             "cHJvdG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0aW9uX3Vuc3RhYmxlLkZvcmVp",
@@ -53,29 +53,34 @@ namespace ProtobufTestMessages.EditionUnstable {
             "bFR5cGVzRWRpdGlvblVuc3RhYmxlLk1hcFN0cmluZ0ZvcmVpZ25NZXNzYWdl",
             "RW50cnkSfwoXbWFwX3N0cmluZ19mb3JlaWduX2VudW0YDCADKAsyXi5wcm90",
             "b2J1Zl90ZXN0X21lc3NhZ2VzLmVkaXRpb25fdW5zdGFibGUuVGVzdEFsbFR5",
-            "cGVzRWRpdGlvblVuc3RhYmxlLk1hcFN0cmluZ0ZvcmVpZ25FbnVtRW50cnka",
-            "NAoSTWFwSW50MzJJbnQzMkVudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgC",
-            "IAEoBToCOAEaMgoQTWFwQm9vbEJvb2xFbnRyeRILCgNrZXkYASABKAgSDQoF",
-            "dmFsdWUYAiABKAg6AjgBGjYKFE1hcFN0cmluZ1N0cmluZ0VudHJ5EgsKA2tl",
-            "eRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEahgEKHE1hcFN0cmluZ0ZvcmVp",
-            "Z25NZXNzYWdlRW50cnkSCwoDa2V5GAEgASgJElUKBXZhbHVlGAIgASgLMkYu",
-            "cHJvdG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0aW9uX3Vuc3RhYmxlLkZvcmVp",
-            "Z25NZXNzYWdlRWRpdGlvblVuc3RhYmxlOgI4ARqAAQoZTWFwU3RyaW5nRm9y",
-            "ZWlnbkVudW1FbnRyeRILCgNrZXkYASABKAkSUgoFdmFsdWUYAiABKA4yQy5w",
-            "cm90b2J1Zl90ZXN0X21lc3NhZ2VzLmVkaXRpb25fdW5zdGFibGUuRm9yZWln",
-            "bkVudW1FZGl0aW9uVW5zdGFibGU6AjgBKgUIeBDJASIqCh1Gb3JlaWduTWVz",
-            "c2FnZUVkaXRpb25VbnN0YWJsZRIJCgFjGAEgASgFKk8KGkZvcmVpZ25FbnVt",
-            "RWRpdGlvblVuc3RhYmxlEg8KC0ZPUkVJR05fRk9PEAASDwoLRk9SRUlHTl9C",
-            "QVIQARIPCgtGT1JFSUdOX0JBWhACOl0KD2V4dGVuc2lvbl9pbnQzMhJELnBy",
-            "b3RvYnVmX3Rlc3RfbWVzc2FnZXMuZWRpdGlvbl91bnN0YWJsZS5UZXN0QWxs",
-            "VHlwZXNFZGl0aW9uVW5zdGFibGUYeCABKAVCSwoyY29tLmdvb2dsZS5wcm90",
-            "b2J1Zl90ZXN0X21lc3NhZ2VzLmVkaXRpb25fdW5zdGFibGWiAg9FZGl0aW9u",
-            "VW5zdGFibGWSAwIoAmIIZWRpdGlvbnNwj04="));
+            "cGVzRWRpdGlvblVuc3RhYmxlLk1hcFN0cmluZ0ZvcmVpZ25FbnVtRW50cnkS",
+            "FgoOb3B0aW9uYWxfYnl0ZXMYDSABKAwSFgoOcmVwZWF0ZWRfYnl0ZXMYDiAD",
+            "KAwScgoQbWFwX3N0cmluZ19ieXRlcxgPIAMoCzJYLnByb3RvYnVmX3Rlc3Rf",
+            "bWVzc2FnZXMuZWRpdGlvbl91bnN0YWJsZS5UZXN0QWxsVHlwZXNFZGl0aW9u",
+            "VW5zdGFibGUuTWFwU3RyaW5nQnl0ZXNFbnRyeRo0ChJNYXBJbnQzMkludDMy",
+            "RW50cnkSCwoDa2V5GAEgASgFEg0KBXZhbHVlGAIgASgFOgI4ARoyChBNYXBC",
+            "b29sQm9vbEVudHJ5EgsKA2tleRgBIAEoCBINCgV2YWx1ZRgCIAEoCDoCOAEa",
+            "NgoUTWFwU3RyaW5nU3RyaW5nRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVl",
+            "GAIgASgJOgI4ARqGAQocTWFwU3RyaW5nRm9yZWlnbk1lc3NhZ2VFbnRyeRIL",
+            "CgNrZXkYASABKAkSVQoFdmFsdWUYAiABKAsyRi5wcm90b2J1Zl90ZXN0X21l",
+            "c3NhZ2VzLmVkaXRpb25fdW5zdGFibGUuRm9yZWlnbk1lc3NhZ2VFZGl0aW9u",
+            "VW5zdGFibGU6AjgBGoABChlNYXBTdHJpbmdGb3JlaWduRW51bUVudHJ5EgsK",
+            "A2tleRgBIAEoCRJSCgV2YWx1ZRgCIAEoDjJDLnByb3RvYnVmX3Rlc3RfbWVz",
+            "c2FnZXMuZWRpdGlvbl91bnN0YWJsZS5Gb3JlaWduRW51bUVkaXRpb25VbnN0",
+            "YWJsZToCOAEaNQoTTWFwU3RyaW5nQnl0ZXNFbnRyeRILCgNrZXkYASABKAkS",
+            "DQoFdmFsdWUYAiABKAw6AjgBKgUIeBDJASIqCh1Gb3JlaWduTWVzc2FnZUVk",
+            "aXRpb25VbnN0YWJsZRIJCgFjGAEgASgFKk8KGkZvcmVpZ25FbnVtRWRpdGlv",
+            "blVuc3RhYmxlEg8KC0ZPUkVJR05fRk9PEAASDwoLRk9SRUlHTl9CQVIQARIP",
+            "CgtGT1JFSUdOX0JBWhACOl0KD2V4dGVuc2lvbl9pbnQzMhJELnByb3RvYnVm",
+            "X3Rlc3RfbWVzc2FnZXMuZWRpdGlvbl91bnN0YWJsZS5UZXN0QWxsVHlwZXNF",
+            "ZGl0aW9uVW5zdGFibGUYeCABKAVCSwoyY29tLmdvb2dsZS5wcm90b2J1Zl90",
+            "ZXN0X21lc3NhZ2VzLmVkaXRpb25fdW5zdGFibGWiAg9FZGl0aW9uVW5zdGFi",
+            "bGWSAwIoAmIIZWRpdGlvbnNwj04="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.EditionUnstable.ForeignEnumEditionUnstable), }, new pb::Extension[] { TestMessagesEditionUnstableExtensions.ExtensionInt32 }, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.EditionUnstable.ComplexMessage), global::ProtobufTestMessages.EditionUnstable.ComplexMessage.Parser, new[]{ "D" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.EditionUnstable.TestAllTypesEditionUnstable), global::ProtobufTestMessages.EditionUnstable.TestAllTypesEditionUnstable.Parser, new[]{ "OptionalInt32", "OptionalForeignMessage", "OptionalForeignEnum", "RecursiveMessage", "RepeatedInt32", "RepeatedForeignMessage", "RepeatedForeignEnum", "MapInt32Int32", "MapBoolBool", "MapStringString", "MapStringForeignMessage", "MapStringForeignEnum" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, null, null, null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.EditionUnstable.TestAllTypesEditionUnstable), global::ProtobufTestMessages.EditionUnstable.TestAllTypesEditionUnstable.Parser, new[]{ "OptionalInt32", "OptionalForeignMessage", "OptionalForeignEnum", "RecursiveMessage", "RepeatedInt32", "RepeatedForeignMessage", "RepeatedForeignEnum", "MapInt32Int32", "MapBoolBool", "MapStringString", "MapStringForeignMessage", "MapStringForeignEnum", "OptionalBytes", "RepeatedBytes", "MapStringBytes" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, null, null, null, null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.EditionUnstable.ForeignMessageEditionUnstable), global::ProtobufTestMessages.EditionUnstable.ForeignMessageEditionUnstable.Parser, new[]{ "C" }, null, null, null, null)
           }));
     }
@@ -364,6 +369,9 @@ namespace ProtobufTestMessages.EditionUnstable {
       mapStringString_ = other.mapStringString_.Clone();
       mapStringForeignMessage_ = other.mapStringForeignMessage_.Clone();
       mapStringForeignEnum_ = other.mapStringForeignEnum_.Clone();
+      optionalBytes_ = other.optionalBytes_;
+      repeatedBytes_ = other.repeatedBytes_.Clone();
+      mapStringBytes_ = other.mapStringBytes_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
       _extensions = pb::ExtensionSet.Clone(other._extensions);
     }
@@ -549,6 +557,57 @@ namespace ProtobufTestMessages.EditionUnstable {
       get { return mapStringForeignEnum_; }
     }
 
+    /// <summary>Field number for the "optional_bytes" field.</summary>
+    public const int OptionalBytesFieldNumber = 13;
+    private readonly static pb::ByteString OptionalBytesDefaultValue = pb::ByteString.Empty;
+
+    private pb::ByteString optionalBytes_;
+    /// <summary>
+    /// bytes
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public pb::ByteString OptionalBytes {
+      get { return optionalBytes_ ?? OptionalBytesDefaultValue; }
+      set {
+        optionalBytes_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+    /// <summary>Gets whether the "optional_bytes" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasOptionalBytes {
+      get { return optionalBytes_ != null; }
+    }
+    /// <summary>Clears the value of the "optional_bytes" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearOptionalBytes() {
+      optionalBytes_ = null;
+    }
+
+    /// <summary>Field number for the "repeated_bytes" field.</summary>
+    public const int RepeatedBytesFieldNumber = 14;
+    private static readonly pb::FieldCodec<pb::ByteString> _repeated_repeatedBytes_codec
+        = pb::FieldCodec.ForBytes(114);
+    private readonly pbc::RepeatedField<pb::ByteString> repeatedBytes_ = new pbc::RepeatedField<pb::ByteString>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public pbc::RepeatedField<pb::ByteString> RepeatedBytes {
+      get { return repeatedBytes_; }
+    }
+
+    /// <summary>Field number for the "map_string_bytes" field.</summary>
+    public const int MapStringBytesFieldNumber = 15;
+    private static readonly pbc::MapField<string, pb::ByteString>.Codec _map_mapStringBytes_codec
+        = new pbc::MapField<string, pb::ByteString>.Codec(pb::FieldCodec.ForString(10, ""), pb::FieldCodec.ForBytes(18, pb::ByteString.Empty), 122);
+    private readonly pbc::MapField<string, pb::ByteString> mapStringBytes_ = new pbc::MapField<string, pb::ByteString>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public pbc::MapField<string, pb::ByteString> MapStringBytes {
+      get { return mapStringBytes_; }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -576,6 +635,9 @@ namespace ProtobufTestMessages.EditionUnstable {
       if (!MapStringString.Equals(other.MapStringString)) return false;
       if (!MapStringForeignMessage.Equals(other.MapStringForeignMessage)) return false;
       if (!MapStringForeignEnum.Equals(other.MapStringForeignEnum)) return false;
+      if (OptionalBytes != other.OptionalBytes) return false;
+      if(!repeatedBytes_.Equals(other.repeatedBytes_)) return false;
+      if (!MapStringBytes.Equals(other.MapStringBytes)) return false;
       if (!Equals(_extensions, other._extensions)) {
         return false;
       }
@@ -598,6 +660,9 @@ namespace ProtobufTestMessages.EditionUnstable {
       hash ^= MapStringString.GetHashCode();
       hash ^= MapStringForeignMessage.GetHashCode();
       hash ^= MapStringForeignEnum.GetHashCode();
+      if (HasOptionalBytes) hash ^= OptionalBytes.GetHashCode();
+      hash ^= repeatedBytes_.GetHashCode();
+      hash ^= MapStringBytes.GetHashCode();
       if (_extensions != null) {
         hash ^= _extensions.GetHashCode();
       }
@@ -643,6 +708,12 @@ namespace ProtobufTestMessages.EditionUnstable {
       mapStringString_.WriteTo(output, _map_mapStringString_codec);
       mapStringForeignMessage_.WriteTo(output, _map_mapStringForeignMessage_codec);
       mapStringForeignEnum_.WriteTo(output, _map_mapStringForeignEnum_codec);
+      if (HasOptionalBytes) {
+        output.WriteRawTag(106);
+        output.WriteBytes(OptionalBytes);
+      }
+      repeatedBytes_.WriteTo(output, _repeated_repeatedBytes_codec);
+      mapStringBytes_.WriteTo(output, _map_mapStringBytes_codec);
       if (_extensions != null) {
         _extensions.WriteTo(output);
       }
@@ -680,6 +751,12 @@ namespace ProtobufTestMessages.EditionUnstable {
       mapStringString_.WriteTo(ref output, _map_mapStringString_codec);
       mapStringForeignMessage_.WriteTo(ref output, _map_mapStringForeignMessage_codec);
       mapStringForeignEnum_.WriteTo(ref output, _map_mapStringForeignEnum_codec);
+      if (HasOptionalBytes) {
+        output.WriteRawTag(106);
+        output.WriteBytes(OptionalBytes);
+      }
+      repeatedBytes_.WriteTo(ref output, _repeated_repeatedBytes_codec);
+      mapStringBytes_.WriteTo(ref output, _map_mapStringBytes_codec);
       if (_extensions != null) {
         _extensions.WriteTo(ref output);
       }
@@ -713,6 +790,11 @@ namespace ProtobufTestMessages.EditionUnstable {
       size += mapStringString_.CalculateSize(_map_mapStringString_codec);
       size += mapStringForeignMessage_.CalculateSize(_map_mapStringForeignMessage_codec);
       size += mapStringForeignEnum_.CalculateSize(_map_mapStringForeignEnum_codec);
+      if (HasOptionalBytes) {
+        size += 1 + pb::CodedOutputStream.ComputeBytesSize(OptionalBytes);
+      }
+      size += repeatedBytes_.CalculateSize(_repeated_repeatedBytes_codec);
+      size += mapStringBytes_.CalculateSize(_map_mapStringBytes_codec);
       if (_extensions != null) {
         size += _extensions.CalculateSize();
       }
@@ -754,6 +836,11 @@ namespace ProtobufTestMessages.EditionUnstable {
       mapStringString_.MergeFrom(other.mapStringString_);
       mapStringForeignMessage_.MergeFrom(other.mapStringForeignMessage_);
       mapStringForeignEnum_.MergeFrom(other.mapStringForeignEnum_);
+      if (other.HasOptionalBytes) {
+        OptionalBytes = other.OptionalBytes;
+      }
+      repeatedBytes_.Add(other.repeatedBytes_);
+      mapStringBytes_.MergeFrom(other.mapStringBytes_);
       pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -832,6 +919,18 @@ namespace ProtobufTestMessages.EditionUnstable {
             mapStringForeignEnum_.AddEntriesFrom(input, _map_mapStringForeignEnum_codec);
             break;
           }
+          case 106: {
+            OptionalBytes = input.ReadBytes();
+            break;
+          }
+          case 114: {
+            repeatedBytes_.AddEntriesFrom(input, _repeated_repeatedBytes_codec);
+            break;
+          }
+          case 122: {
+            mapStringBytes_.AddEntriesFrom(input, _map_mapStringBytes_codec);
+            break;
+          }
         }
       }
     #endif
@@ -907,6 +1006,18 @@ namespace ProtobufTestMessages.EditionUnstable {
           }
           case 98: {
             mapStringForeignEnum_.AddEntriesFrom(ref input, _map_mapStringForeignEnum_codec);
+            break;
+          }
+          case 106: {
+            OptionalBytes = input.ReadBytes();
+            break;
+          }
+          case 114: {
+            repeatedBytes_.AddEntriesFrom(ref input, _repeated_repeatedBytes_codec);
+            break;
+          }
+          case 122: {
+            mapStringBytes_.AddEntriesFrom(ref input, _map_mapStringBytes_codec);
             break;
           }
         }
