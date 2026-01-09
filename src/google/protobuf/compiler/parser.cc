@@ -34,6 +34,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/strtod.h"
@@ -50,6 +51,18 @@ namespace {
 
 using TypeNameMap =
     absl::flat_hash_map<absl::string_view, FieldDescriptorProto::Type>;
+
+absl::optional<absl::string_view> NumericTypeMaybeReplacedWith(
+    absl::string_view type_name) {
+  static const auto* const kReplacements =
+      new absl::flat_hash_map<absl::string_view, absl::string_view>{
+          {"fixed32", "uint32"}, {"fixed64", "uint64"},  {"sfixed32", "int32"},
+          {"sfixed64", "int64"}, {"sint32", "zigzag32"}, {"sint64", "zigzag64"},
+      };
+  auto it = kReplacements->find(type_name);
+  return it == kReplacements->end() ? absl::nullopt
+                                    : absl::make_optional(it->second);
+}
 
 const TypeNameMap& GetTypeNameTable() {
   static auto* table = new auto([]() {
@@ -78,27 +91,21 @@ const TypeNameMap& GetTypeNameTable() {
   return *table;
 }
 
-const TypeNameMap& GetFixedFirstTypeNameTable() {
+const TypeNameMap& GetTypeNameTableWithFixedWireForIntTypes() {
   static auto* table = new auto([]() {
     TypeNameMap result;
 
     result["double"] = FieldDescriptorProto::TYPE_DOUBLE;
     result["float"] = FieldDescriptorProto::TYPE_FLOAT;
-    result["uint64"] = FieldDescriptorProto::TYPE_UINT64;
-    result["fixed64"] = FieldDescriptorProto::TYPE_FIXED64;
-    result["fixed32"] = FieldDescriptorProto::TYPE_FIXED32;
+    result["uint64"] = FieldDescriptorProto::TYPE_FIXED64;
     result["bool"] = FieldDescriptorProto::TYPE_BOOL;
     result["string"] = FieldDescriptorProto::TYPE_STRING;
     result["group"] = FieldDescriptorProto::TYPE_GROUP;
 
     result["bytes"] = FieldDescriptorProto::TYPE_BYTES;
-    result["uint32"] = FieldDescriptorProto::TYPE_UINT32;
-    result["sfixed32"] = FieldDescriptorProto::TYPE_SFIXED32;
-    result["sfixed64"] = FieldDescriptorProto::TYPE_SFIXED64;
-    result["int32"] = FieldDescriptorProto::TYPE_INT32;
-    result["int64"] = FieldDescriptorProto::TYPE_INT64;
-    result["sint32"] = FieldDescriptorProto::TYPE_SINT32;
-    result["sint64"] = FieldDescriptorProto::TYPE_SINT64;
+    result["uint32"] = FieldDescriptorProto::TYPE_FIXED32;
+    result["int32"] = FieldDescriptorProto::TYPE_SFIXED32;
+    result["int64"] = FieldDescriptorProto::TYPE_SFIXED64;
 
     // New types added to preserve legacy behavior.
     result["varint32"] = FieldDescriptorProto::TYPE_INT32;
@@ -2449,16 +2456,17 @@ bool Parser::ParseLabel(FieldDescriptorProto::Label* label,
   return true;
 }
 
-bool Parser::ShouldUseFixedFirstType() const {
+bool Parser::ShouldUseFixedWireForIntTypes() const {
   return syntax_identifier_ == "editions" &&
          edition_ == Edition::EDITION_UNSTABLE;
 }
 
 bool Parser::ParseType(FieldDescriptorProto::Type* type,
                        std::string* type_name) {
-  const auto& type_names_table = ShouldUseFixedFirstType()
-                                     ? GetFixedFirstTypeNameTable()
-                                     : GetTypeNameTable();
+  const auto& type_names_table =
+      ShouldUseFixedWireForIntTypes()
+          ? GetTypeNameTableWithFixedWireForIntTypes()
+          : GetTypeNameTable();
   auto iter = type_names_table.find(input_->current().text);
   if (iter != type_names_table.end()) {
     if (syntax_identifier_ == "editions" &&
@@ -2469,6 +2477,15 @@ bool Parser::ParseType(FieldDescriptorProto::Type* type,
           "message field.");
     }
     *type = iter->second;
+    input_->Next();
+  } else if (ShouldUseFixedWireForIntTypes() &&
+             NumericTypeMaybeReplacedWith(input_->current().text)) {
+    RecordError([&] {
+      return absl::StrFormat(
+          "Type '%s' is obsolete in unstable editions, use '%s' instead.",
+          input_->current().text,
+          *NumericTypeMaybeReplacedWith(input_->current().text));
+    });
     input_->Next();
   } else {
     DO(ParseUserDefinedType(type_name));
