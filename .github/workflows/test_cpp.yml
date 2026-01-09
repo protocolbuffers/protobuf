@@ -350,7 +350,8 @@ jobs:
         include:
           - name: MacOS CMake
             os: macos-14
-            cache-prefix: macos-cmake-bazel7
+            flags: -DCMAKE_CXX_STANDARD=14
+            cache-prefix: macos-cmake
           - name: Windows CMake
             os: windows-2022
             flags: >-
