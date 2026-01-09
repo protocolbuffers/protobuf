@@ -315,16 +315,16 @@ jobs:
         include:
           - name: MacOS Bazel
             os: macos-14
-            cache_key: macos-14-bazel8
-            bazel: test //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
+            cache_key: macos-14-bazel
+            bazel: test //src/...
           - name: MacOS Apple Silicon Bazel
             os: macos-14
             cache_key: macos-14-arm
-            bazel: test --cpu=darwin_arm64 //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
+            bazel: test --cpu=darwin_arm64 //src/...
           - name: MacOS Intel Bazel
             os: macos-14
             cache_key: macos-14-intel
-            bazel: test --cpu=darwin_x86_64 //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
+            bazel: test --cpu=darwin_x86_64 //src/...
           - name: Windows Bazel
             os: windows-2022
             cache_key: windows-2022
@@ -350,6 +350,7 @@ jobs:
         include:
           - name: MacOS CMake
             os: macos-14
+            flags: -DCMAKE_CXX_STANDARD=14
             cache-prefix: macos-cmake
           - name: Windows CMake
             os: windows-2022
