@@ -67,17 +67,6 @@ UPB_INLINE void UPB_PRIVATE(upb_Xsan_Init)(upb_Xsan *xsan) {
 #endif
 }
 
-UPB_INLINE void UPB_PRIVATE(upb_Xsan_MarkInitialized)(void* addr, size_t size) {
-#if UPB_HAS_FEATURE(memory_sanitizer)
-  if (size) {
-    __msan_unpoison(addr, size);
-  }
-#else
-  UPB_UNUSED(addr);
-  UPB_UNUSED(size);
-#endif
-}
-
 // Marks the given region as poisoned, meaning that it is not accessible until
 // it is unpoisoned.
 UPB_INLINE void UPB_PRIVATE(upb_Xsan_PoisonRegion)(const void *addr,
