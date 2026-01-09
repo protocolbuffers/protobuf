@@ -56,3 +56,8 @@ message AccessorsCollide {
 
   optional int32 clear_x = 7;
 }
+
+message SomeMsg {}
+enum SomeMsgView {
+  SOME_MSG_VIEW_UNSPECIFIED = 0;
+}
