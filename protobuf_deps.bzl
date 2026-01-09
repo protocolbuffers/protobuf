@@ -150,7 +150,7 @@ def protobuf_deps():
     if not native.existing_rule("system_python"):
         system_python(
             name = "system_python",
-            minimum_python_version = "3.9",
+            minimum_python_version = "3.10",
         )
 
     if not native.existing_rule("rules_jvm_external"):
@@ -204,18 +204,8 @@ def protobuf_deps():
 
     # Python Downloads
     python_source_archive(
-        version = "3.9.0",
-        sha256 = "df796b2dc8ef085edae2597a41c1c0a63625ebd92487adaef2fed22b567873e8",
-    )
-    python_nuget_package(
-        version = "3.9.0",
-        cpu = "i686",
-        sha256 = "229abecbe49dc08fe5709e0b31e70edfb3b88f23335ebfc2904c44f940fd59b6",
-    )
-    python_nuget_package(
-        version = "3.9.0",
-        cpu = "x86-64",
-        sha256 = "6af58a733e7dfbfcdd50d55788134393d6ffe7ab8270effbf724bdb786558832",
+        version = "3.10.0",
+        sha256 = "c4e0cbad57c90690cb813fb4663ef670b4d0f587d8171e2c42bd4c9245bd2758",
     )
     python_nuget_package(
         version = "3.10.0",
