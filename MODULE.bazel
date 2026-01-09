@@ -139,11 +139,11 @@ register_toolchains("//bazel/private/toolchains/prebuilt:all")
 register_toolchains("//bazel/private/toolchains:all")
 
 SUPPORTED_PYTHON_VERSIONS = [
-    "3.9",
     "3.10",
     "3.11",
     "3.12",
     "3.13",
+    "3.14",
 ]
 
 # TODO: Replace system_python with hermetic_python.
@@ -331,18 +331,8 @@ archive_override(
 # Python headers for release
 python_headers = use_extension("//python/dist:python_downloads.bzl", "python_headers", dev_dependency = True)
 python_headers.source_archive(
-    sha256 = "df796b2dc8ef085edae2597a41c1c0a63625ebd92487adaef2fed22b567873e8",
-    version = "3.9.0",
-)
-python_headers.nuget_package(
-    cpu = "i686",
-    sha256 = "229abecbe49dc08fe5709e0b31e70edfb3b88f23335ebfc2904c44f940fd59b6",
-    version = "3.9.0",
-)
-python_headers.nuget_package(
-    cpu = "x86-64",
-    sha256 = "6af58a733e7dfbfcdd50d55788134393d6ffe7ab8270effbf724bdb786558832",
-    version = "3.9.0",
+    sha256 = "c4e0cbad57c90690cb813fb4663ef670b4d0f587d8171e2c42bd4c9245bd2758",
+    version = "3.10.0",
 )
 python_headers.nuget_package(
     cpu = "i686",
@@ -357,8 +347,6 @@ python_headers.nuget_package(
 use_repo(
     python_headers,
     "nuget_python_i686_3.10.0",
-    "nuget_python_i686_3.9.0",
     "nuget_python_x86-64_3.10.0",
-    "nuget_python_x86-64_3.9.0",
-    "python-3.9.0",
+    "python-3.10.0",
 )
