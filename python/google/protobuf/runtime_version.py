@@ -29,7 +29,7 @@ class Domain(Enum):
 OSS_DOMAIN = Domain.PUBLIC
 OSS_MAJOR = 6
 OSS_MINOR = 33
-OSS_PATCH = 3
+OSS_PATCH = 4
 OSS_SUFFIX = '-dev'
 
 DOMAIN = OSS_DOMAIN
