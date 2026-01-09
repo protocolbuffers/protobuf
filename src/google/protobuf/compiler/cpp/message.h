@@ -43,8 +43,7 @@ class MessageGenerator {
   MessageGenerator(
       const Descriptor* descriptor,
       const absl::flat_hash_map<absl::string_view, std::string>& ignored,
-      int index_in_file_messages, const Options& options,
-      MessageSCCAnalyzer* scc_analyzer);
+      int index_in_file_messages, const Options& options);
 
   MessageGenerator(const MessageGenerator&) = delete;
   MessageGenerator& operator=(const MessageGenerator&) = delete;
@@ -249,8 +248,6 @@ class MessageGenerator {
 
   std::unique_ptr<MessageLayoutHelper> message_layout_helper_;
   std::unique_ptr<ParseFunctionGenerator> parse_function_generator_;
-
-  MessageSCCAnalyzer* scc_analyzer_;
 
   absl::flat_hash_map<absl::string_view, std::string> variables_;
 

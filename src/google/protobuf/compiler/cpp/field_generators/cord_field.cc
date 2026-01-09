@@ -57,8 +57,7 @@ void SetCordVariables(
 
 class CordFieldGenerator : public FieldGeneratorBase {
  public:
-  CordFieldGenerator(const FieldDescriptor* descriptor, const Options& options,
-                     MessageSCCAnalyzer* scc);
+  CordFieldGenerator(const FieldDescriptor* descriptor, const Options& options);
   ~CordFieldGenerator() override = default;
 
   void GeneratePrivateMembers(io::Printer* printer) const override;
@@ -113,7 +112,7 @@ class CordFieldGenerator : public FieldGeneratorBase {
 class CordOneofFieldGenerator : public CordFieldGenerator {
  public:
   CordOneofFieldGenerator(const FieldDescriptor* descriptor,
-                          const Options& options, MessageSCCAnalyzer* scc);
+                          const Options& options);
   ~CordOneofFieldGenerator() override = default;
 
   void GeneratePrivateMembers(io::Printer* printer) const override;
@@ -134,9 +133,8 @@ class CordOneofFieldGenerator : public CordFieldGenerator {
 
 
 CordFieldGenerator::CordFieldGenerator(const FieldDescriptor* descriptor,
-                                       const Options& options,
-                                       MessageSCCAnalyzer* scc)
-    : FieldGeneratorBase(descriptor, options, scc) {
+                                       const Options& options)
+    : FieldGeneratorBase(descriptor, options) {
   SetCordVariables(descriptor, &variables_, options);
 }
 
@@ -306,9 +304,8 @@ void CordFieldGenerator::GenerateAggregateInitializer(io::Printer* p) const {
 // ===================================================================
 
 CordOneofFieldGenerator::CordOneofFieldGenerator(
-    const FieldDescriptor* descriptor, const Options& options,
-    MessageSCCAnalyzer* scc)
-    : CordFieldGenerator(descriptor, options, scc) {}
+    const FieldDescriptor* descriptor, const Options& options)
+    : CordFieldGenerator(descriptor, options) {}
 
 void CordOneofFieldGenerator::GeneratePrivateMembers(
     io::Printer* printer) const {
@@ -452,16 +449,14 @@ void CordOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSingularCordGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc) {
-  return absl::make_unique<CordFieldGenerator>(desc, options, scc);
+    const FieldDescriptor* desc, const Options& options) {
+  return absl::make_unique<CordFieldGenerator>(desc, options);
 }
 
 
 std::unique_ptr<FieldGeneratorBase> MakeOneofCordGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc) {
-  return absl::make_unique<CordOneofFieldGenerator>(desc, options, scc);
+    const FieldDescriptor* desc, const Options& options) {
+  return absl::make_unique<CordOneofFieldGenerator>(desc, options);
 }
 
 }  // namespace cpp

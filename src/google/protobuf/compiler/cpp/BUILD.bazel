@@ -269,6 +269,7 @@ cc_test(
     srcs = ["file_unittest.cc"],
     deps = [
         ":cpp",
+        ":names_internal",
         "//:protobuf",
         "//src/google/protobuf",
         "//src/google/protobuf:cc_test_protos",

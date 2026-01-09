@@ -60,9 +60,8 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
 
 class SingularEnum : public FieldGeneratorBase {
  public:
-  SingularEnum(const FieldDescriptor* field, const Options& opts,
-               MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
+  SingularEnum(const FieldDescriptor* field, const Options& opts)
+      : FieldGeneratorBase(field, opts), opts_(&opts) {}
   ~SingularEnum() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -218,9 +217,8 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 
 class RepeatedEnum : public FieldGeneratorBase {
  public:
-  RepeatedEnum(const FieldDescriptor* field, const Options& opts,
-               MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc),
+  RepeatedEnum(const FieldDescriptor* field, const Options& opts)
+      : FieldGeneratorBase(field, opts),
         opts_(&opts),
         has_cached_size_(field_->is_packed() &&
                          HasGeneratedMethods(field_->file(), opts) &&
@@ -587,15 +585,13 @@ void RepeatedEnum::GenerateByteSize(io::Printer* p) const {
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarEnumGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc) {
-  return absl::make_unique<SingularEnum>(desc, options, scc);
+    const FieldDescriptor* desc, const Options& options) {
+  return absl::make_unique<SingularEnum>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedEnumGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc) {
-  return absl::make_unique<RepeatedEnum>(desc, options, scc);
+    const FieldDescriptor* desc, const Options& options) {
+  return absl::make_unique<RepeatedEnum>(desc, options);
 }
 
 }  // namespace cpp

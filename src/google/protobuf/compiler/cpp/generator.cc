@@ -409,6 +409,9 @@ bool CppGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
 
   // -----------------------------------------------------------------
 
+  MessageSCCAnalyzer scc_analyzer(common_file_options);
+  common_file_options.scc_analyzer = &scc_analyzer;
+
   for (size_t i = 0; i < files.size(); i++) {
     const FileDescriptor* file = files[i];
     Options file_options = common_file_options;

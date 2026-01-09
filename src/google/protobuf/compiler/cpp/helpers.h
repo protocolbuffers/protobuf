@@ -107,13 +107,11 @@ class MessageSCCAnalyzer;
 
 // Returns true if it's safe to init "field" to zero.
 bool CanInitializeByZeroing(const FieldDescriptor* field,
-                            const Options& options,
-                            MessageSCCAnalyzer* scc_analyzer);
+                            const Options& options);
 // Returns true if it's safe to reset "field" to zero.
 bool CanClearByZeroing(const FieldDescriptor* field);
 // Determines if swap can be implemented via memcpy.
-bool HasTrivialSwap(const FieldDescriptor* field, const Options& options,
-                    MessageSCCAnalyzer* scc_analyzer);
+bool HasTrivialSwap(const FieldDescriptor* field, const Options& options);
 
 PROTOC_EXPORT std::string ClassName(const Descriptor* descriptor);
 PROTOC_EXPORT std::string ClassName(const EnumDescriptor* enum_descriptor);
@@ -413,12 +411,10 @@ inline bool IsFieldInlined(const FieldDescriptor* field,
 }
 
 // Does the given FileDescriptor use lazy fields?
-bool HasLazyFields(const FileDescriptor* file, const Options& options,
-                   MessageSCCAnalyzer* scc_analyzer);
+bool HasLazyFields(const FileDescriptor* file, const Options& options);
 
 // Is the given field a supported lazy field?
-bool IsLazy(const FieldDescriptor* field, const Options& options,
-            MessageSCCAnalyzer* scc_analyzer);
+bool IsLazy(const FieldDescriptor* field, const Options& options);
 
 // Is this an explicit (non-profile driven) lazy field, as denoted by
 // lazy/unverified_lazy in the descriptor?
@@ -435,18 +431,15 @@ inline bool IsExplicitLazy(const FieldDescriptor* field) {
 }
 
 internal::field_layout::TransformValidation GetLazyStyle(
-    const FieldDescriptor* field, const Options& options,
-    MessageSCCAnalyzer* scc_analyzer);
+    const FieldDescriptor* field, const Options& options);
 
-bool IsEagerlyVerifiedLazy(const FieldDescriptor* field, const Options& options,
-                           MessageSCCAnalyzer* scc_analyzer);
+bool IsEagerlyVerifiedLazy(const FieldDescriptor* field,
+                           const Options& options);
 
 bool IsLazilyVerifiedLazy(const FieldDescriptor* field, const Options& options);
 
-bool ShouldVerify(const Descriptor* descriptor, const Options& options,
-                  MessageSCCAnalyzer* scc_analyzer);
-bool ShouldVerify(const FileDescriptor* file, const Options& options,
-                  MessageSCCAnalyzer* scc_analyzer);
+bool ShouldVerify(const Descriptor* descriptor, const Options& options);
+bool ShouldVerify(const FileDescriptor* file, const Options& options);
 bool ShouldVerifyRecursively(const FieldDescriptor* field);
 
 // Indicates whether to use predefined verify methods for a given message. If a
@@ -528,8 +521,7 @@ bool IsV2EnabledForMessage(const Descriptor* descriptor,
 
 // Returns true if a message (descriptor) needs v2 verify function because it
 // may (transitively) contain a required field.
-bool ShouldVerifyV2(const Descriptor* descriptor, const Options& options,
-                    MessageSCCAnalyzer* scc_analyzer);
+bool ShouldVerifyV2(const Descriptor* descriptor, const Options& options);
 
 
 // Does this file have generated parsing, serialization, and other
@@ -884,8 +876,7 @@ bool UsingImplicitWeakFields(const FileDescriptor* file,
                              const Options& options);
 
 // Indicates whether to treat this field as implicitly weak.
-bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
-                         MessageSCCAnalyzer* scc_analyzer);
+bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options);
 
 inline std::string SimpleBaseClass(const Descriptor* desc,
                                    const Options& options) {

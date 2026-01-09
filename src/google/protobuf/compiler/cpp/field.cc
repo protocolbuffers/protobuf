@@ -115,8 +115,7 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
 }
 
 FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* field,
-                                       const Options& options,
-                                       MessageSCCAnalyzer* scc)
+                                       const Options& options)
     : field_(field), options_(options) {
   bool is_repeated_or_map = field->is_repeated();
   should_split_ = ShouldSplit(field, options);
@@ -143,14 +142,14 @@ FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* field,
       is_message_ = true;
       is_group_ = field->type() == FieldDescriptor::TYPE_GROUP;
       is_foreign_ = IsCrossFileMessage(field);
-      is_weak_ = IsImplicitWeakField(field, options, scc);
-      is_lazy_ = IsLazy(field, options, scc);
+      is_weak_ = IsImplicitWeakField(field, options);
+      is_lazy_ = IsLazy(field, options);
       has_trivial_value_ = !(is_repeated_or_map || is_lazy_);
       has_default_constexpr_constructor_ = is_repeated_or_map || is_lazy_;
       break;
   }
 
-  has_trivial_zero_default_ = CanInitializeByZeroing(field, options, scc);
+  has_trivial_zero_default_ = CanInitializeByZeroing(field, options);
   has_brace_default_assign_ = has_trivial_zero_default_ && !is_lazy_;
 }
 
@@ -298,63 +297,62 @@ Sub FieldGeneratorBase::InternalMetadataOffsetSub(io::Printer* p) {
 
 namespace {
 std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
-                                                  const Options& options,
-                                                  MessageSCCAnalyzer* scc) {
+                                                  const Options& options) {
 
   if (field->is_map()) {
     ABSL_CHECK(
         !(field->options().lazy() || field->options().unverified_lazy()));
-    return MakeMapGenerator(field, options, scc);
+    return MakeMapGenerator(field, options);
   }
   if (field->is_repeated()) {
     ABSL_CHECK(!field->options().unverified_lazy());
 
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        return MakeRepeatedMessageGenerator(field, options, scc);
+        return MakeRepeatedMessageGenerator(field, options);
       case FieldDescriptor::CPPTYPE_STRING: {
         if (field->cpp_string_type() == FieldDescriptor::CppStringType::kView) {
-          return MakeRepeatedStringViewGenerator(field, options, scc);
+          return MakeRepeatedStringViewGenerator(field, options);
         } else {
-          return MakeRepeatedStringGenerator(field, options, scc);
+          return MakeRepeatedStringGenerator(field, options);
         }
       }
       case FieldDescriptor::CPPTYPE_ENUM:
-        return MakeRepeatedEnumGenerator(field, options, scc);
+        return MakeRepeatedEnumGenerator(field, options);
       default:
-        return MakeRepeatedPrimitiveGenerator(field, options, scc);
+        return MakeRepeatedPrimitiveGenerator(field, options);
     }
   }
 
   if (field->real_containing_oneof() &&
       field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-    return MakeOneofMessageGenerator(field, options, scc);
+    return MakeOneofMessageGenerator(field, options);
   }
 
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      return MakeSinguarMessageGenerator(field, options, scc);
+      return MakeSinguarMessageGenerator(field, options);
     case FieldDescriptor::CPPTYPE_ENUM:
-      return MakeSinguarEnumGenerator(field, options, scc);
+      return MakeSinguarEnumGenerator(field, options);
     case FieldDescriptor::CPPTYPE_STRING: {
       switch (field->cpp_string_type()) {
         case FieldDescriptor::CppStringType::kView:
-          return MakeSingularStringViewGenerator(field, options, scc);
+          return MakeSingularStringViewGenerator(field, options);
         case FieldDescriptor::CppStringType::kCord:
           if (field->type() == FieldDescriptor::TYPE_BYTES) {
             if (field->real_containing_oneof()) {
-              return MakeOneofCordGenerator(field, options, scc);
+              return MakeOneofCordGenerator(field, options);
             } else {
-              return MakeSingularCordGenerator(field, options, scc);
+              return MakeSingularCordGenerator(field, options);
             }
           }
           ABSL_FALLTHROUGH_INTENDED;
         default:
-          return MakeSinguarStringGenerator(field, options, scc);
+          return MakeSinguarStringGenerator(field, options);
       }
     }
     default:
-      return MakeSinguarPrimitiveGenerator(field, options, scc);
+      return MakeSinguarPrimitiveGenerator(field, options);
   }
 }
 
@@ -397,16 +395,15 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
 
 FieldGenerator::FieldGenerator(const FieldDescriptor* field,
                                const Options& options,
-                               MessageSCCAnalyzer* scc_analyzer,
                                absl::optional<uint32_t> hasbit_index)
-    : impl_(MakeGenerator(field, options, scc_analyzer)),
+    : impl_(MakeGenerator(field, options)),
       field_vars_(FieldVars(field, options)),
       tracker_vars_(MakeTrackerCalls(field, options)),
       per_generator_vars_(impl_->MakeVars()) {
   HasBitVars(field, options, hasbit_index, field_vars_);
 }
 
-void FieldGeneratorTable::Build(const Options& options, MessageSCCAnalyzer* scc,
+void FieldGeneratorTable::Build(const Options& options,
                                 absl::Span<const int32_t> has_bit_indices) {
   // Construct all the FieldGenerators.
   fields_.reserve(static_cast<size_t>(descriptor_->field_count()));
@@ -417,7 +414,7 @@ void FieldGeneratorTable::Build(const Options& options, MessageSCCAnalyzer* scc,
       has_bit_index = static_cast<uint32_t>(has_bit_indices[index]);
     }
 
-    fields_.push_back(FieldGenerator(field, options, scc, has_bit_index));
+    fields_.push_back(FieldGenerator(field, options, has_bit_index));
   }
 }
 
