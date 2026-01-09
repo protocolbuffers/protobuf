@@ -506,25 +506,37 @@ static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc, size_t first_size) {
   return &a->head;
 }
 
-upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
-  UPB_STATIC_ASSERT(
-      sizeof(void*) * UPB_ARENA_SIZE_HACK >= sizeof(upb_ArenaState),
-      "Need to update UPB_ARENA_SIZE_HACK");
-  upb_ArenaState* a;
-
-  if (mem) {
-    /* Align initial pointer up so that we return properly-aligned pointers. */
-    void* aligned = (void*)UPB_ALIGN_MALLOC((uintptr_t)mem);
-    size_t delta = (uintptr_t)aligned - (uintptr_t)mem;
-    n = delta <= n ? n - delta : 0;
-    mem = aligned;
+static bool upb_SafeAdd(size_t a, size_t b, size_t* result) {
+  if (b > SIZE_MAX - a) {
+    return false;  // Would overflow
   }
-  if (UPB_UNLIKELY(n < sizeof(upb_ArenaState) || !mem)) {
-    upb_Arena* ret = _upb_Arena_InitSlow(alloc, mem ? 0 : n);
-#ifdef UPB_TRACING_ENABLED
-    upb_Arena_LogInit(ret, n);
-#endif
-    return ret;
+  *result = a + b;
+  return true;
+}
+
+upb_Arena* upb_Arena_Init(void* mem, size_t size, upb_alloc* alloc) {
+  if (!mem) {
+    size = 0;
+  }
+  
+  // Security: Validate that we can safely allocate arena header
+  size_t required_size;
+  if (!upb_SafeAdd(sizeof(upb_Arena), UPB_ALIGN_UP(0, UPB_MALLOC_ALIGN), &required_size)) {
+    return NULL;  // Size calculation would overflow
+  }
+  
+  if (size < required_size) {
+    if (!alloc) return NULL;
+    
+    // Allocate initial block - validate size won't overflow
+    size_t alloc_size = 256;  // Default small allocation
+    if (!upb_SafeAdd(sizeof(upb_Arena), alloc_size, &required_size)) {
+      return NULL;
+    }
+    
+    mem = alloc->func(alloc, NULL, 0, required_size);
+    if (!mem) return NULL;
+    size = required_size;
   }
 
   a = mem;

@@ -57,6 +57,17 @@ inline size_t AllocationSize(size_t last_size, size_t start_size,
   return std::min(2 * last_size, max_size);
 }
 
+// Safe addition that detects overflow.
+// Returns true if addition succeeded without overflow, false otherwise.
+// Result is stored in *result only if return value is true.
+inline bool SafeAdd(size_t a, size_t b, size_t* result) {
+  if (b > std::numeric_limits<size_t>::max() - a) {
+    return false;  // Would overflow
+  }
+  *result = a + b;
+  return true;
+}
+
 SizedPtr AllocateMemory(const AllocationPolicy& policy, size_t size) {
   if (policy.block_alloc == nullptr) {
     return AllocateAtLeast(size);
@@ -68,12 +79,28 @@ SizedPtr AllocateBlock(const AllocationPolicy* policy_ptr, size_t last_size,
                        size_t min_bytes) {
   AllocationPolicy policy;  // default policy
   if (policy_ptr) policy = *policy_ptr;
+  
+  // Security: Validate that min_bytes + kBlockHeaderSize won't overflow
+  size_t required_size;
+  if (!SafeAdd(SerialArena::kBlockHeaderSize, min_bytes, &required_size)) {
+    // Overflow detected - this is a security-critical error
+    ABSL_LOG(ERROR) << "Arena allocation size overflow detected: min_bytes="
+                    << min_bytes << " exceeds maximum safe allocation";
+    return {nullptr, 0};
+  }
+  
+  // Additional sanity check: reject obviously too-large requests
+  // Reserve at least half of address space for other uses
+  constexpr size_t kMaxReasonableAllocation = std::numeric_limits<size_t>::max() / 2;
+  if (min_bytes > kMaxReasonableAllocation) {
+    ABSL_LOG(ERROR) << "Arena allocation request too large: min_bytes="
+                    << min_bytes << " exceeds reasonable limit";
+    return {nullptr, 0};
+  }
+  
   size_t size =
       AllocationSize(last_size, policy.start_block_size, policy.max_block_size);
-  // Verify that min_bytes + kBlockHeaderSize won't overflow.
-  ABSL_CHECK_LE(min_bytes, std::numeric_limits<size_t>::max() -
-                               SerialArena::kBlockHeaderSize);
-  size = std::max(size, SerialArena::kBlockHeaderSize + min_bytes);
+  size = std::max(size, required_size);
 
   return AllocateMemory(policy, size);
 }
