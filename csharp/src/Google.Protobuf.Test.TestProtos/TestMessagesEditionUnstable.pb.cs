@@ -26,16 +26,16 @@ namespace ProtobufTestMessages.EditionUnstable {
           string.Concat(
             "Cjxjb25mb3JtYW5jZS90ZXN0X3Byb3Rvcy90ZXN0X21lc3NhZ2VzX2VkaXRp",
             "b25fdW5zdGFibGUucHJvdG8SJ3Byb3RvYnVmX3Rlc3RfbWVzc2FnZXMuZWRp",
-            "dGlvbl91bnN0YWJsZSIbCg5Db21wbGV4TWVzc2FnZRIJCgFkGAEgASgFIs4O",
+            "dGlvbl91bnN0YWJsZSIbCg5Db21wbGV4TWVzc2FnZRIJCgFkGAEgASgPIs4O",
             "ChtUZXN0QWxsVHlwZXNFZGl0aW9uVW5zdGFibGUSFgoOb3B0aW9uYWxfaW50",
-            "MzIYASABKAUSbwoYb3B0aW9uYWxfZm9yZWlnbl9tZXNzYWdlGAIgASgLMkYu",
+            "MzIYASABKA8SbwoYb3B0aW9uYWxfZm9yZWlnbl9tZXNzYWdlGAIgASgLMkYu",
             "cHJvdG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0aW9uX3Vuc3RhYmxlLkZvcmVp",
             "Z25NZXNzYWdlRWRpdGlvblVuc3RhYmxlQgWqAQIoARJiChVvcHRpb25hbF9m",
             "b3JlaWduX2VudW0YAyABKA4yQy5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLmVk",
             "aXRpb25fdW5zdGFibGUuRm9yZWlnbkVudW1FZGl0aW9uVW5zdGFibGUSZgoR",
             "cmVjdXJzaXZlX21lc3NhZ2UYBCABKAsyRC5wcm90b2J1Zl90ZXN0X21lc3Nh",
             "Z2VzLmVkaXRpb25fdW5zdGFibGUuVGVzdEFsbFR5cGVzRWRpdGlvblVuc3Rh",
-            "YmxlQgWqAQIoARIWCg5yZXBlYXRlZF9pbnQzMhgFIAMoBRJvChhyZXBlYXRl",
+            "YmxlQgWqAQIoARIWCg5yZXBlYXRlZF9pbnQzMhgFIAMoDxJvChhyZXBlYXRl",
             "ZF9mb3JlaWduX21lc3NhZ2UYBiADKAsyRi5wcm90b2J1Zl90ZXN0X21lc3Nh",
             "Z2VzLmVkaXRpb25fdW5zdGFibGUuRm9yZWlnbk1lc3NhZ2VFZGl0aW9uVW5z",
             "dGFibGVCBaoBAigBEmIKFXJlcGVhdGVkX2ZvcmVpZ25fZW51bRgHIAMoDjJD",
@@ -58,7 +58,7 @@ namespace ProtobufTestMessages.EditionUnstable {
             "KAwScgoQbWFwX3N0cmluZ19ieXRlcxgPIAMoCzJYLnByb3RvYnVmX3Rlc3Rf",
             "bWVzc2FnZXMuZWRpdGlvbl91bnN0YWJsZS5UZXN0QWxsVHlwZXNFZGl0aW9u",
             "VW5zdGFibGUuTWFwU3RyaW5nQnl0ZXNFbnRyeRo0ChJNYXBJbnQzMkludDMy",
-            "RW50cnkSCwoDa2V5GAEgASgFEg0KBXZhbHVlGAIgASgFOgI4ARoyChBNYXBC",
+            "RW50cnkSCwoDa2V5GAEgASgPEg0KBXZhbHVlGAIgASgPOgI4ARoyChBNYXBC",
             "b29sQm9vbEVudHJ5EgsKA2tleRgBIAEoCBINCgV2YWx1ZRgCIAEoCDoCOAEa",
             "NgoUTWFwU3RyaW5nU3RyaW5nRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVl",
             "GAIgASgJOgI4ARqGAQocTWFwU3RyaW5nRm9yZWlnbk1lc3NhZ2VFbnRyeRIL",
@@ -69,11 +69,11 @@ namespace ProtobufTestMessages.EditionUnstable {
             "c2FnZXMuZWRpdGlvbl91bnN0YWJsZS5Gb3JlaWduRW51bUVkaXRpb25VbnN0",
             "YWJsZToCOAEaNQoTTWFwU3RyaW5nQnl0ZXNFbnRyeRILCgNrZXkYASABKAkS",
             "DQoFdmFsdWUYAiABKAw6AjgBKgUIeBDJASIqCh1Gb3JlaWduTWVzc2FnZUVk",
-            "aXRpb25VbnN0YWJsZRIJCgFjGAEgASgFKk8KGkZvcmVpZ25FbnVtRWRpdGlv",
+            "aXRpb25VbnN0YWJsZRIJCgFjGAEgASgPKk8KGkZvcmVpZ25FbnVtRWRpdGlv",
             "blVuc3RhYmxlEg8KC0ZPUkVJR05fRk9PEAASDwoLRk9SRUlHTl9CQVIQARIP",
             "CgtGT1JFSUdOX0JBWhACOl0KD2V4dGVuc2lvbl9pbnQzMhJELnByb3RvYnVm",
             "X3Rlc3RfbWVzc2FnZXMuZWRpdGlvbl91bnN0YWJsZS5UZXN0QWxsVHlwZXNF",
-            "ZGl0aW9uVW5zdGFibGUYeCABKAVCSwoyY29tLmdvb2dsZS5wcm90b2J1Zl90",
+            "ZGl0aW9uVW5zdGFibGUYeCABKA9CSwoyY29tLmdvb2dsZS5wcm90b2J1Zl90",
             "ZXN0X21lc3NhZ2VzLmVkaXRpb25fdW5zdGFibGWiAg9FZGl0aW9uVW5zdGFi",
             "bGWSAwIoAmIIZWRpdGlvbnNwj04="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
@@ -90,7 +90,7 @@ namespace ProtobufTestMessages.EditionUnstable {
   /// <summary>Holder for extension identifiers generated from the top level of conformance/test_protos/test_messages_edition_unstable.proto</summary>
   public static partial class TestMessagesEditionUnstableExtensions {
     public static readonly pb::Extension<global::ProtobufTestMessages.EditionUnstable.TestAllTypesEditionUnstable, int> ExtensionInt32 =
-      new pb::Extension<global::ProtobufTestMessages.EditionUnstable.TestAllTypesEditionUnstable, int>(120, pb::FieldCodec.ForInt32(960, 0));
+      new pb::Extension<global::ProtobufTestMessages.EditionUnstable.TestAllTypesEditionUnstable, int>(120, pb::FieldCodec.ForSFixed32(965, 0));
   }
 
   #region Enums
@@ -220,8 +220,8 @@ namespace ProtobufTestMessages.EditionUnstable {
       output.WriteRawMessage(this);
     #else
       if (HasD) {
-        output.WriteRawTag(8);
-        output.WriteInt32(D);
+        output.WriteRawTag(13);
+        output.WriteSFixed32(D);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -234,8 +234,8 @@ namespace ProtobufTestMessages.EditionUnstable {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       if (HasD) {
-        output.WriteRawTag(8);
-        output.WriteInt32(D);
+        output.WriteRawTag(13);
+        output.WriteSFixed32(D);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -248,7 +248,7 @@ namespace ProtobufTestMessages.EditionUnstable {
     public int CalculateSize() {
       int size = 0;
       if (HasD) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(D);
+        size += 1 + 4;
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -284,8 +284,8 @@ namespace ProtobufTestMessages.EditionUnstable {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            D = input.ReadInt32();
+          case 13: {
+            D = input.ReadSFixed32();
             break;
           }
         }
@@ -307,8 +307,8 @@ namespace ProtobufTestMessages.EditionUnstable {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
-          case 8: {
-            D = input.ReadInt32();
+          case 13: {
+            D = input.ReadSFixed32();
             break;
           }
         }
@@ -466,7 +466,7 @@ namespace ProtobufTestMessages.EditionUnstable {
     /// <summary>Field number for the "repeated_int32" field.</summary>
     public const int RepeatedInt32FieldNumber = 5;
     private static readonly pb::FieldCodec<int> _repeated_repeatedInt32_codec
-        = pb::FieldCodec.ForInt32(42);
+        = pb::FieldCodec.ForSFixed32(42);
     private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
     /// <summary>
     /// Repeated
@@ -502,7 +502,7 @@ namespace ProtobufTestMessages.EditionUnstable {
     /// <summary>Field number for the "map_int32_int32" field.</summary>
     public const int MapInt32Int32FieldNumber = 8;
     private static readonly pbc::MapField<int, int>.Codec _map_mapInt32Int32_codec
-        = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForInt32(16, 0), 66);
+        = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForSFixed32(13, 0), pb::FieldCodec.ForSFixed32(21, 0), 66);
     private readonly pbc::MapField<int, int> mapInt32Int32_ = new pbc::MapField<int, int>();
     /// <summary>
     /// Map
@@ -685,8 +685,8 @@ namespace ProtobufTestMessages.EditionUnstable {
       output.WriteRawMessage(this);
     #else
       if (HasOptionalInt32) {
-        output.WriteRawTag(8);
-        output.WriteInt32(OptionalInt32);
+        output.WriteRawTag(13);
+        output.WriteSFixed32(OptionalInt32);
       }
       if (optionalForeignMessage_ != null) {
         output.WriteRawTag(18);
@@ -728,8 +728,8 @@ namespace ProtobufTestMessages.EditionUnstable {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       if (HasOptionalInt32) {
-        output.WriteRawTag(8);
-        output.WriteInt32(OptionalInt32);
+        output.WriteRawTag(13);
+        output.WriteSFixed32(OptionalInt32);
       }
       if (optionalForeignMessage_ != null) {
         output.WriteRawTag(18);
@@ -771,7 +771,7 @@ namespace ProtobufTestMessages.EditionUnstable {
     public int CalculateSize() {
       int size = 0;
       if (HasOptionalInt32) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(OptionalInt32);
+        size += 1 + 4;
       }
       if (optionalForeignMessage_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(OptionalForeignMessage);
@@ -863,8 +863,8 @@ namespace ProtobufTestMessages.EditionUnstable {
               _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             }
             break;
-          case 8: {
-            OptionalInt32 = input.ReadInt32();
+          case 13: {
+            OptionalInt32 = input.ReadSFixed32();
             break;
           }
           case 18: {
@@ -886,7 +886,7 @@ namespace ProtobufTestMessages.EditionUnstable {
             break;
           }
           case 42:
-          case 40: {
+          case 45: {
             repeatedInt32_.AddEntriesFrom(input, _repeated_repeatedInt32_codec);
             break;
           }
@@ -952,8 +952,8 @@ namespace ProtobufTestMessages.EditionUnstable {
               _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             }
             break;
-          case 8: {
-            OptionalInt32 = input.ReadInt32();
+          case 13: {
+            OptionalInt32 = input.ReadSFixed32();
             break;
           }
           case 18: {
@@ -975,7 +975,7 @@ namespace ProtobufTestMessages.EditionUnstable {
             break;
           }
           case 42:
-          case 40: {
+          case 45: {
             repeatedInt32_.AddEntriesFrom(ref input, _repeated_repeatedInt32_codec);
             break;
           }
@@ -1166,8 +1166,8 @@ namespace ProtobufTestMessages.EditionUnstable {
       output.WriteRawMessage(this);
     #else
       if (HasC) {
-        output.WriteRawTag(8);
-        output.WriteInt32(C);
+        output.WriteRawTag(13);
+        output.WriteSFixed32(C);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -1180,8 +1180,8 @@ namespace ProtobufTestMessages.EditionUnstable {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       if (HasC) {
-        output.WriteRawTag(8);
-        output.WriteInt32(C);
+        output.WriteRawTag(13);
+        output.WriteSFixed32(C);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -1194,7 +1194,7 @@ namespace ProtobufTestMessages.EditionUnstable {
     public int CalculateSize() {
       int size = 0;
       if (HasC) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(C);
+        size += 1 + 4;
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1230,8 +1230,8 @@ namespace ProtobufTestMessages.EditionUnstable {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            C = input.ReadInt32();
+          case 13: {
+            C = input.ReadSFixed32();
             break;
           }
         }
@@ -1253,8 +1253,8 @@ namespace ProtobufTestMessages.EditionUnstable {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
-          case 8: {
-            C = input.ReadInt32();
+          case 13: {
+            C = input.ReadSFixed32();
             break;
           }
         }
