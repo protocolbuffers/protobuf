@@ -16,7 +16,6 @@
 #include <string>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -3684,6 +3683,22 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForAny() {
         "optionalAny": null
       })",
                    R"(
+      )");
+
+  // google.protobuf.Empty packed into an Any, implementations must accept it
+  // without the "value" field set. This also confirms that what they round trip
+  // does not have `"value":{}` set on it, since the test harness uses the C++
+  // JSON parser which will reject it.
+  RunValidJsonTest("AnyEmpty", REQUIRED,
+                   R"({
+        "optionalAny": {
+          "@type": "type.googleapis.com/google.protobuf.Empty"
+        }
+      })",
+                   R"(
+        optional_any: {
+          [type.googleapis.com/google.protobuf.Empty] {}
+        }
       )");
 }
 

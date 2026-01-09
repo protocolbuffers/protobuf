@@ -258,6 +258,7 @@ proto_library(
     deps = [
         "//:any_proto",
         "//:duration_proto",
+        "//:empty_proto",
         "//:field_mask_proto",
         "//:struct_proto",
         "//:timestamp_proto",
