@@ -11,6 +11,7 @@ load("@rules_cc//cc:find_cc_toolchain.bzl", "use_cc_toolchain")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
+load("//bazel/flags:flags.bzl", "get_flag_value")
 load("//bazel/private:cc_proto_support.bzl", "cc_proto_compile_and_link")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
@@ -48,25 +49,24 @@ def _get_strip_include_prefix(ctx, proto_info):
 
 def _aspect_impl(target, ctx):
     proto_info = target[ProtoInfo]
-    proto_configuration = ctx.fragments.proto
 
     sources = []
     headers = []
     textual_hdrs = []
 
-    proto_toolchain = toolchains.find_toolchain(ctx, "_aspect_cc_proto_toolchain", _CC_PROTO_TOOLCHAIN)
+    proto_toolchain = toolchains.find_toolchain(ctx, "proto_toolchain_for_cc", _CC_PROTO_TOOLCHAIN)
     should_generate_code = proto_common.experimental_should_generate_code(proto_info, proto_toolchain, "cc_proto_library", target.label)
 
     if should_generate_code:
         if len(proto_info.direct_sources) != 0:
             # Bazel 7 didn't expose cc_proto_library_source_suffixes used by Kythe
             # gradually falling back to .pb.cc
-            if type(proto_configuration.cc_proto_library_source_suffixes) == "builtin_function_or_method":
+            if type(get_flag_value(ctx, "cc_proto_library_source_suffixes")) == "builtin_function_or_method":
                 source_suffixes = [".pb.cc"]
                 header_suffixes = [".pb.h"]
             else:
-                source_suffixes = proto_configuration.cc_proto_library_source_suffixes
-                header_suffixes = proto_configuration.cc_proto_library_header_suffixes
+                source_suffixes = get_flag_value(ctx, "cc_proto_library_source_suffixes")
+                header_suffixes = get_flag_value(ctx, "cc_proto_library_header_suffixes")
             sources = _get_output_files(ctx.actions, proto_info, source_suffixes)
             headers = _get_output_files(ctx.actions, proto_info, header_suffixes)
             header_provider = _ProtoCcHeaderInfo(headers = depset(headers))
@@ -122,9 +122,22 @@ cc_proto_aspect = aspect(
     fragments = ["cpp", "proto"],
     required_providers = [ProtoInfo],
     provides = [CcInfo],
-    attrs = toolchains.if_legacy_toolchain({"_aspect_cc_proto_toolchain": attr.label(
-        default = configuration_field(fragment = "proto", name = "proto_toolchain_for_cc"),
-    )}),
+    attrs = {
+                "_cc_proto_library_header_suffixes": attr.label(
+                    default = "//bazel/flags/cc:cc_proto_library_header_suffixes",
+                ),
+                "_cc_proto_library_source_suffixes": attr.label(
+                    default = "//bazel/flags/cc:cc_proto_library_source_suffixes",
+                ),
+            } |
+            toolchains.if_legacy_toolchain({
+                "_aspect_cc_proto_toolchain": attr.label(
+                    default = configuration_field(fragment = "proto", name = "proto_toolchain_for_cc"),
+                ),
+                "_proto_toolchain_for_cc": attr.label(
+                    default = Label("//bazel/flags/cc:proto_toolchain_for_cc"),
+                ),
+            }),
     toolchains = use_cc_toolchain() + toolchains.use_toolchain(_CC_PROTO_TOOLCHAIN),
 )
 
@@ -140,7 +153,7 @@ def _cc_proto_library_impl(ctx):
         )
     dep = ctx.attr.deps[0]
 
-    proto_toolchain = toolchains.find_toolchain(ctx, "_aspect_cc_proto_toolchain", _CC_PROTO_TOOLCHAIN)
+    proto_toolchain = toolchains.find_toolchain(ctx, "proto_toolchain_for_cc", _CC_PROTO_TOOLCHAIN)
     proto_common.check_collocated(ctx.label, dep[ProtoInfo], proto_toolchain)
 
     return [DefaultInfo(files = dep[_ProtoCcFilesInfo].files), dep[CcInfo], dep[OutputGroupInfo]]
@@ -191,6 +204,9 @@ rules to generate C++ code for.""",
     } | toolchains.if_legacy_toolchain({
         "_aspect_cc_proto_toolchain": attr.label(
             default = configuration_field(fragment = "proto", name = "proto_toolchain_for_cc"),
+        ),
+        "_proto_toolchain_for_cc": attr.label(
+            default = "//bazel/flags/cc:proto_toolchain_for_cc",
         ),
     }),
     provides = [CcInfo],

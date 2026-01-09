@@ -9,6 +9,7 @@
 
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_lang_toolchain_info.bzl", "ProtoLangToolchainInfo")
+load("//bazel/flags:flags.bzl", "get_flag_value")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
 def _impl(ctx):
@@ -24,7 +25,7 @@ def _impl(ctx):
                 plugin = None,
                 runtime = None,
                 proto_compiler = ctx.attr.proto_compiler.files_to_run,
-                protoc_opts = ctx.fragments.proto.experimental_protoc_opts,
+                protoc_opts = get_flag_value(ctx, "protocopt"),
                 progress_message = ctx.attr.progress_message,
                 mnemonic = ctx.attr.mnemonic,
                 **(dict(toolchain_type = toolchains.PROTO_TOOLCHAIN) if proto_common.INCOMPATIBLE_PASS_TOOLCHAIN_TYPE else {})
@@ -44,6 +45,9 @@ proto_toolchain = rule(
                 cfg = "exec",
                 executable = True,
                 allow_files = True,  # Used by mocks in tests. Consider fixing tests and removing it.
+            ),
+            "_protocopt": attr.label(
+                default = Label("//bazel/flags/cc:protocopt"),
             ),
         },
     provides = [platform_common.ToolchainInfo],
