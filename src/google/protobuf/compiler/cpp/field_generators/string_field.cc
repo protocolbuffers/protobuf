@@ -81,7 +81,7 @@ class SingularString : public FieldGeneratorBase {
     // allocating arena is null.
     p->Emit({{"Str", is_inlined() ? "InlinedStringField" : "ArenaStringPtr"}},
             R"cc(
-              $pbi$::$Str$ $name$_;
+              $pbi$::$Str$ $member$;
             )cc");
   }
 
@@ -99,7 +99,7 @@ class SingularString : public FieldGeneratorBase {
         if (oneof_needs_init) {
           _this->$field_$.InitDefault();
         }
-        _this->$field_$.Set(from._internal_$name$(), arena);
+        _this->$field_$.Set(from.$field_$.Get(), arena);
       )cc");
     } else {
       p->Emit(R"cc(
@@ -119,10 +119,17 @@ class SingularString : public FieldGeneratorBase {
   }
 
   void GenerateByteSize(io::Printer* p) const override {
-    p->Emit(R"cc(
-      total_size += $kTagBytes$ + $pbi$::WireFormatLite::$DeclaredType$Size(
-                                      this_._internal_$name$());
-    )cc");
+    if (is_oneof()) {
+      p->Emit(R"cc(
+        total_size += $kTagBytes$ + $pbi$::WireFormatLite::$DeclaredType$Size(
+                                        this_.$field_$.Get());
+      )cc");
+    } else {
+      p->Emit(R"cc(
+        total_size += $kTagBytes$ + $pbi$::WireFormatLite::$DeclaredType$Size(
+                                        this_._internal_$name$());
+      )cc");
+    }
   }
 
 
@@ -617,9 +624,10 @@ void SingularString::GenerateSerializeWithCachedSizesToArray(
                                              "static_cast<int>(_s.length()),");
             }}},
           R"cc(
-            const ::std::string& _s = this_._internal_$name$();
+            const ::std::string& _s = this_.$field_$.Get();
             $utf8_check$;
-            target = stream->Write$DeclaredType$MaybeAliased($number$, _s, target);
+            target = stream->Write$DeclaredType$MaybeAliased(
+                $number_or_active_oneof$, _s, target);
           )cc");
 }
 

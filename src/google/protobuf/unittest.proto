@@ -2719,3 +2719,92 @@ message TestAllTypesAsExtension {
     TestAllTypes ext = 10;
   }
 }
+
+message OneofGroupingTestProto {
+  enum EnumA {
+    AV = 0;
+  }
+  enum EnumB {
+    BV = 0;
+  }
+  message M1 {}
+  message M2 {}
+  message M3 {}
+  message M4 {}
+
+  message Basic {
+    oneof o {
+      double f_double = 1;
+      double f_double2 = 2;
+
+      float f_float = 10;
+      float f_float2 = 11;
+
+      int64 f_int64 = 20;
+      sfixed64 f_sfixed64 = 21;
+      sint64 f_sint64 = 22;
+
+      uint64 f_uint64 = 30;
+      fixed64 f_fixed64 = 31;
+
+      int32 f_int32 = 40;
+      sint32 f_sint32 = 41;
+      sfixed32 f_sfixed32 = 42;
+
+      fixed32 f_fixed32 = 50;
+      uint32 f_uint32 = 51;
+
+      bool f_bool = 60;
+      bool f_bool2 = 61;
+
+      string f_string = 70;
+      bytes f_bytes = 71;
+
+      string f_cord = 80 [ctype = CORD];
+      bytes f_cord_as_bytes = 81 [ctype = CORD];
+
+      string f_string_piece = 90 [ctype = STRING_PIECE];
+      bytes f_bytes_piece = 91 [ctype = STRING_PIECE];
+
+      EnumA f_enum_a = 100;
+      EnumB f_enum_b = 101;
+
+      M1 f_group = 110 [features.message_encoding = DELIMITED];  // NO_PROTO1
+      M2 f_message = 111;
+
+      M3 f_lazy = 120 [lazy = true];
+      M4 f_lazy2 = 121 [lazy = true];
+    }
+  }
+  message ManyMessages {
+    oneof o {
+      M1 m1 = 1;
+      M2 m2 = 2;
+      M3 g1 = 3 [features.message_encoding = DELIMITED];  // NO_PROTO1
+      M4 g2 = 4 [features.message_encoding = DELIMITED];  // NO_PROTO1
+    }
+  }
+
+  message ByteSizeFixed {
+    oneof o {
+      double f_double_9 = 1;
+      float f_float_9 = 500000000;
+      fixed32 f_fixed32_9 = 500000001;
+      sfixed32 f_sfixed32_9 = 500000002;
+      fixed64 f_fixed64_9 = 2;
+      sfixed64 f_sfixed64_9 = 3;
+
+      float f_float_5 = 4;
+      fixed32 f_fixed32_5 = 5;
+      sfixed32 f_sfixed32_5 = 6;
+      bool f_bool_5 = 5000000;
+
+      double f_double_10 = 100;
+      fixed64 f_fixed64_10 = 101;
+      sfixed64 f_sfixed64_10 = 102;
+
+      bool f_bool_2 = 7;
+      bool f_bool_2_again = 8;
+    }
+  }
+}

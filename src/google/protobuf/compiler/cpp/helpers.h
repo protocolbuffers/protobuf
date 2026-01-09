@@ -216,7 +216,12 @@ std::string ResolveKeyword(absl::string_view name);
 PROTOC_EXPORT std::string FieldName(const FieldDescriptor* field);
 
 // Returns the (unqualified) private member name for this field in C++ code.
-std::string FieldMemberName(const FieldDescriptor* field, bool split);
+std::string FieldMemberNameNonOneof(const FieldDescriptor* field, bool split);
+std::string FieldMemberName(const FieldDescriptor* field, const Options& opts);
+
+// DO NOT SUBMIT: DOC
+bool MessageFieldUsesBaseClass(const FieldDescriptor* field,
+                               const Options& options);
 
 // Returns an estimate of the compiler's alignment for the field.  This
 // can't guarantee to be correct because the generated code could be compiled on
@@ -258,6 +263,28 @@ const char* DeclaredTypeMethodName(FieldDescriptor::Type type);
 // Get the declared cpp_type name in CamelCase format, as is used e.g. for the
 // methods of v2 WireFormat.  For example, CPPTYPE_INT32 becomes "Int32".
 absl::string_view DeclaredCppTypeMethodName(FieldDescriptor::CppType type);
+
+// Oneof grouping.
+//
+// Grouping the oneof fields allows the code generation to improve or elide the
+// switch statements.
+enum class OneofGrouping {
+  kDeclare,
+  kCopy,
+  kClear,
+  kMerge,
+  kByteSize,
+  kIsInitialized,
+  kSerialize,
+};
+
+std::vector<std::vector<const FieldDescriptor*>> GetOneofGroups(
+    absl::Span<const FieldDescriptor* const> fields, OneofGrouping grouping,
+    const Options& options);
+
+std::vector<std::vector<const FieldDescriptor*>> GetOneofGroups(
+    const OneofDescriptor* oneof, OneofGrouping grouping,
+    const Options& options);
 
 // Return the code that evaluates to the number when compiled.
 std::string Int32ToString(int number);

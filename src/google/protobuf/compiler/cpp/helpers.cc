@@ -649,16 +649,228 @@ std::string FieldName(const FieldDescriptor* field) {
                                     NameKind::kFunction);
 }
 
-std::string FieldMemberName(const FieldDescriptor* field, bool split) {
-  absl::string_view prefix = "_impl_.";
-  absl::string_view split_prefix = split ? "_split_->" : "";
-  if (field->real_containing_oneof() == nullptr) {
-    return absl::StrCat(prefix, split_prefix, FieldName(field), "_");
+static absl::string_view CppStringTypeName(
+    FieldDescriptor::CppStringType type) {
+  switch (type) {
+    case FieldDescriptor::CppStringType::kCord:
+      return "Cord";
+    case FieldDescriptor::CppStringType::kView:
+      return "View";
+    case FieldDescriptor::CppStringType::kString:
+      return "String";
+    case FieldDescriptor::CppStringType::kStringPiece:
+      return "StringPiece";
+  }
+}
+
+std::string FieldMemberNameNonOneof(const FieldDescriptor* field, bool split) {
+  ABSL_CHECK(field->real_containing_oneof() == nullptr);
+  const absl::string_view prefix = "_impl_.";
+  return absl::StrCat(prefix, split ? "_split_->" : "", FieldName(field), "_");
+}
+
+std::string FieldMemberName(const FieldDescriptor* field, const Options& opts) {
+  const absl::string_view prefix = "_impl_.";
+  const bool split = ShouldSplit(field, opts);
+  const auto* oneof = field->real_containing_oneof();
+  if (oneof == nullptr) {
+    return FieldMemberNameNonOneof(field, split);
   }
   // Oneof fields are never split.
   ABSL_CHECK(!split);
-  return absl::StrCat(prefix, field->containing_oneof()->name(), "_.",
-                      FieldName(field), "_");
+
+  // Oneof fields have special naming for grouping.
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_UINT64:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+    case FieldDescriptor::CPPTYPE_BOOL:
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return absl::StrCat(prefix, oneof->name(), "_.", "_",
+                          field->cpp_type_name(), "_");
+    case FieldDescriptor::CPPTYPE_STRING:
+      return absl::StrCat(prefix, oneof->name(), "_.", "_",
+                          CppStringTypeName(field->cpp_string_type()), "_");
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      if (IsLazy(field, opts)) {
+        return absl::StrCat(prefix, oneof->name(), "_.", "_lazy_message_");
+      }
+      if (MessageFieldUsesBaseClass(field, opts)) {
+        return absl::StrCat(prefix, oneof->name(), "_.", "_Message_");
+      }
+      return absl::StrCat(prefix, oneof->name(), "_.", FieldName(field), "_");
+  }
+}
+
+std::vector<std::vector<const FieldDescriptor*>> GetOneofGroups(
+    absl::Span<const FieldDescriptor* const> fields, OneofGrouping grouping,
+    const Options& options) {
+  using Key = std::variant<int, std::string, const FieldDescriptor*,
+                           FieldDescriptor::Type>;
+
+  const auto get_key = [&](const auto* field) -> Key {
+    if (grouping == OneofGrouping::kSerialize) {
+      // For serialize we look at wire type.
+      // For numeric types, we don't use groups. The helper serializers are
+      // inlined and having a constant tag in them makes them smaller and
+      // efficient.
+      // For the more complex types we call a non-inline function passing the
+      // field number, so we can group them without a cost.
+      switch (field->type()) {
+        case FieldDescriptor::TYPE_BOOL:
+        case FieldDescriptor::TYPE_ENUM:
+        case FieldDescriptor::TYPE_INT32:
+        case FieldDescriptor::TYPE_INT64:
+        case FieldDescriptor::TYPE_SINT32:
+        case FieldDescriptor::TYPE_SINT64:
+        case FieldDescriptor::TYPE_UINT32:
+        case FieldDescriptor::TYPE_UINT64:
+        case FieldDescriptor::TYPE_FIXED64:
+        case FieldDescriptor::TYPE_FIXED32:
+        case FieldDescriptor::TYPE_SFIXED32:
+        case FieldDescriptor::TYPE_SFIXED64:
+        case FieldDescriptor::TYPE_FLOAT:
+        case FieldDescriptor::TYPE_DOUBLE:
+          return field;
+
+        case FieldDescriptor::TYPE_BYTES:
+        case FieldDescriptor::TYPE_STRING:
+          if (internal::cpp::GetUtf8CheckMode(
+                  field, GetOptimizeFor(field->file(), options) ==
+                             FileOptions::LITE_RUNTIME) !=
+              internal::cpp::Utf8CheckMode::kNone) {
+            // If we are checking for utf8, we print specialized error messages,
+            // so don't group.
+            return field;
+          }
+          return FieldMemberName(field, options);
+
+        case FieldDescriptor::TYPE_MESSAGE:
+        case FieldDescriptor::TYPE_GROUP:
+          if (IsLazy(field, options)) {
+            // This passes a default instance so they have to be different.
+            return field;
+          }
+          // Group by field name and wiretype.
+          return absl::StrCat(FieldMemberName(field, options), ":",
+                              field->type_name());
+      }
+    }
+
+    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+        IsLazy(field, options) &&
+        (grouping == OneofGrouping::kMerge ||
+         grouping == OneofGrouping::kIsInitialized)) {
+      // These pass a default instance so they have to be different.
+      return field;
+    }
+    return FieldMemberName(field, options);
+  };
+
+  std::vector<std::vector<const FieldDescriptor*>> out;
+  if (grouping == OneofGrouping::kByteSize) {
+    const auto get_key_for_byte_size =
+        [&](const auto* field) -> std::vector<Key> {
+      const int tag_size = internal::WireFormatLite::TagSize(
+          field->number(),
+          static_cast<internal::WireFormatLite::FieldType>(field->type()));
+      switch (field->type()) {
+        case FieldDescriptor::TYPE_DOUBLE:
+        case FieldDescriptor::TYPE_FIXED64:
+        case FieldDescriptor::TYPE_SFIXED64:
+          return {tag_size + 8};
+
+        case FieldDescriptor::TYPE_FLOAT:
+        case FieldDescriptor::TYPE_FIXED32:
+        case FieldDescriptor::TYPE_SFIXED32:
+          return {tag_size + 4};
+
+        case FieldDescriptor::TYPE_BOOL:
+          return {tag_size + 1};
+
+        case FieldDescriptor::TYPE_ENUM:
+        case FieldDescriptor::TYPE_INT32:
+        case FieldDescriptor::TYPE_INT64:
+        case FieldDescriptor::TYPE_SINT32:
+        case FieldDescriptor::TYPE_SINT64:
+        case FieldDescriptor::TYPE_UINT32:
+        case FieldDescriptor::TYPE_UINT64:
+          // These group by tag size + wire type encoding. They use varint in
+          // different ways.
+          return {tag_size, field->type()};
+
+        case FieldDescriptor::TYPE_BYTES:
+        case FieldDescriptor::TYPE_STRING:
+          return {tag_size, get_key(field)};
+
+        case FieldDescriptor::TYPE_MESSAGE:
+        case FieldDescriptor::TYPE_GROUP:
+          // Ignore the tag size. We will calculate it dynamically to group
+          // better.
+          return {field->type(), get_key(field)};
+      }
+    };
+    absl::btree_map<std::vector<Key>, std::vector<const FieldDescriptor*>>
+        groups;
+    for (auto* field : fields) {
+      groups[get_key_for_byte_size(field)].push_back(field);
+    }
+    for (auto& [k, v] : groups) out.push_back(std::move(v));
+  } else {
+    absl::btree_map<Key, std::vector<const FieldDescriptor*>> groups;
+    for (auto* field : fields) {
+      groups[get_key(field)].push_back(field);
+    }
+    for (auto& [k, v] : groups) out.push_back(std::move(v));
+  }
+  return out;
+}
+
+std::vector<std::vector<const FieldDescriptor*>> GetOneofGroups(
+    const OneofDescriptor* oneof, OneofGrouping grouping,
+    const Options& options) {
+  auto range = FieldRange(oneof);
+  return GetOneofGroups(
+      std::vector<const FieldDescriptor*>(range.begin(), range.end()), grouping,
+      options);
+}
+
+bool MessageFieldUsesBaseClass(const FieldDescriptor* field,
+                               const Options& options) {
+  if (IsImplicitWeakField(field, options)) return true;
+  if (IsLikelyPresent(field, options)) return false;
+
+  auto* oneof = field->real_containing_oneof();
+  if (oneof == nullptr) return false;
+
+  int num_message = 0;
+  for (auto* f : FieldRange(oneof)) {
+    num_message += f->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+                   !IsLazy(f, options);
+
+    // For non-weak oneof fields, we choose to use a base class pointer when the
+    // oneof has many message fields in it.  Using a base class here is not
+    // about correctness, but about performance and binary size.
+    //
+    // This allows the compiler to merge all the different switch cases (since
+    // the code is identical for all message alternatives) reducing binary size.
+    // The runtime dispatch is effectively changed from a switch statement to a
+    // virtual function call. For many oneofs, it completely elides the switch
+    // dispatch.
+    //
+    // This constant is a tradeoff. We want to allow optimizations (like
+    // inlining) on small oneofs. For small oneofs the compiler can use faster
+    // alternatives to table-based jumps. Also, the technique used here has less
+    // of a binary size win for small oneofs.
+    static constexpr int kMaxStaticTypeCount = 3;
+    if (num_message >= kMaxStaticTypeCount) {
+      return true;
+    }
+  }
+  return false;
 }
 
 std::string OneofCaseConstantName(const FieldDescriptor* field) {

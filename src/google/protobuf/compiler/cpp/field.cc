@@ -45,6 +45,14 @@ using Sub = ::google::protobuf::io::Printer::Sub;
 
 std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
   bool split = ShouldSplit(field, opts);
+  std::string field_name = FieldMemberName(field, opts);
+  std::string member_name =
+      field_name.substr(field_name.find_last_of(".>") + 1);
+  std::string active_oneof =
+      field->real_containing_oneof()
+          ? absl::StrCat("_impl_._oneof_case_[",
+                         field->real_containing_oneof()->index(), "]")
+          : "";
   std::vector<Sub> vars = {
       // This will eventually be renamed to "field", once the existing "field"
       // variable is replaced with "field_" everywhere.
@@ -52,11 +60,13 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       // Same as above, but represents internal use.
       {"name_internal", FieldName(field)},
 
+      {"member", member_name},
+
       {"index", field->index()},
       {"number", field->number()},
       {"pkg.Msg.field", field->full_name()},
 
-      {"field_", FieldMemberName(field, split)},
+      {"field_", field_name},
       {"DeclaredType", DeclaredTypeMethodName(field->type())},
       {"DeclaredCppType", DeclaredCppTypeMethodName(field->cpp_type())},
       {"Oneof", field->real_containing_oneof() ? "Oneof" : ""},
@@ -67,6 +77,12 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
           split ? "PrepareSplitMessageForWrite();" : "")
           .WithSuffix(";"),
       Sub("DEPRECATED", DeprecatedAttribute(opts, field)).WithSuffix(" "),
+
+      // For oneof field implementations.
+      {"active_oneof", active_oneof},
+      {"number_or_active_oneof", field->real_containing_oneof()
+                                     ? active_oneof
+                                     : absl::StrCat(field->number())},
 
       // These variables are placeholders to pick out the beginning and ends of
       // identifiers for annotations (when doing so with existing variables
@@ -84,7 +100,7 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
                     "::internal::TSanRead(&_impl_)")},
 
       // Old-style names.
-      {"field", FieldMemberName(field, split)},
+      {"field", field_name},
       {"declared_type", DeclaredTypeMethodName(field->type())},
       {"classname", ClassName(FieldScope(field), false)},
       {"ns", Namespace(field, opts)},

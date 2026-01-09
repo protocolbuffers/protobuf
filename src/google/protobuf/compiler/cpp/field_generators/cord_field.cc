@@ -121,6 +121,9 @@ class CordOneofFieldGenerator : public CordFieldGenerator {
   void GenerateNonInlineAccessorDefinitions(
       io::Printer* printer) const override;
   bool RequiresArena(GeneratorFunction func) const override;
+  void GenerateSerializeWithCachedSizesToArray(
+      io::Printer* printer) const override;
+  void GenerateByteSize(io::Printer* printer) const override;
   void GenerateClearingCode(io::Printer* printer) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateMergingCode(io::Printer* printer) const override;
@@ -310,7 +313,7 @@ CordOneofFieldGenerator::CordOneofFieldGenerator(
 void CordOneofFieldGenerator::GeneratePrivateMembers(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("::absl::Cord* $nonnull$ $name$_;\n");
+  format("::absl::Cord* $nonnull$ $member$;\n");
 }
 
 void CordOneofFieldGenerator::GenerateStaticMembers(
@@ -418,6 +421,13 @@ bool CordOneofFieldGenerator::RequiresArena(GeneratorFunction func) const {
   return false;
 }
 
+void CordOneofFieldGenerator::GenerateByteSize(io::Printer* printer) const {
+  printer->Emit(R"cc(
+    total_size += $kTagBytes$ +
+                  $pbi$::WireFormatLite::$declared_type$Size(*this_.$field_$);
+  )cc");
+}
+
 void CordOneofFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   format(
@@ -434,6 +444,20 @@ void CordOneofFieldGenerator::GenerateArenaDestructorCode(
     io::Printer* printer) const {
   // We inherit from CordFieldGenerator, so we need to re-override to the
   // default behavior here.
+}
+
+void CordOneofFieldGenerator::GenerateSerializeWithCachedSizesToArray(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  if (field_->type() == FieldDescriptor::TYPE_STRING) {
+    GenerateUtf8CheckCodeForCord(
+        field_, options_, false,
+        absl::Substitute("*this_.$0, ", printer->LookupVar("field_")), format);
+  }
+  printer->Emit(R"cc(
+    target =
+        stream->Write$declared_type$($active_oneof$, *this_.$field_$, target);
+  )cc");
 }
 
 void CordOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) const {

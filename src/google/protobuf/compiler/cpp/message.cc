@@ -337,7 +337,7 @@ void EmitNonDefaultCheckForString(io::Printer* p, absl::string_view prefix,
                  {
                      {"prefix", prefix},
                      {"name", FieldName(field)},
-                     {"field", FieldMemberName(field, split)},
+                     {"field", FieldMemberNameNonOneof(field, split)},
                  },
                  // The merge semantic is "overwrite if present". This statement
                  // is emitted when hasbit is set and src proto field is
@@ -759,6 +759,86 @@ void MessageGenerator::AddGenerators(
         descriptor_->extension(i), options_));
     extension_generators_.push_back(extension_generators->back().get());
   }
+}
+
+template <typename Input>
+void MessageGenerator::EmitOneofHandler(
+    io::Printer* p, const Input& input, OneofGrouping grouping,
+    absl::string_view prefix,
+    absl::FunctionRef<void(const FieldDescriptor*)> field_handler) const {
+  const auto groups = GetOneofGroups(input, grouping, options_);
+  const auto* oneof = groups[0][0]->real_containing_oneof();
+  const bool exhaustive =
+      oneof->field_count() ==
+      std::accumulate(groups.begin(), groups.end(), 0,
+                      [](int s, auto& g) { return s + g.size(); });
+
+  auto v = p->WithVars({{"prefix", prefix},
+                        {"name", oneof->name()},
+                        {"NAME", absl::AsciiStrToUpper(oneof->name())}});
+
+  if (groups.size() == 1) {
+    auto* field = groups[0][0];
+
+    if (exhaustive) {
+      // Only one group and exhaustive, don't use a switch.
+      p->Emit({{"body", [&] { field_handler(field); }}},
+              R"cc(
+                if ($prefix$$name$_case() != $NAME$_NOT_SET) {
+                  $body$;
+                }
+              )cc");
+      return;
+    }
+
+    if (groups[0].size() == 1) {
+      // We have single element, so just check for it.
+      p->Emit({{"Name", UnderscoresToCamelCase(field->name(), true)},
+               {"body", [&] { field_handler(field); }}},
+              R"cc(
+                if ($prefix$$name$_case() == k$Name$) {
+                  $body$;
+                }
+              )cc");
+      return;
+    }
+  }
+
+  const auto* largest = &*std::max_element(
+      groups.begin(), groups.end(), [&](const auto& lhs, const auto& rhs) {
+        return lhs.size() < rhs.size();
+      });
+
+  p->Emit(
+      {{"default_if_not_exhaustive", exhaustive ? "" : "default:"},
+       {"cases",
+        [&] {
+          for (const auto& group : groups) {
+            for (const auto* field : group) {
+              p->Emit({{"Name", UnderscoresToCamelCase(field->name(), true)}},
+                      R"cc(
+                        case k$Name$:
+                      )cc");
+            }
+            p->Emit(
+                {{"default", exhaustive && largest == &group ? "default:" : ""},
+                 {"body", [&] { field_handler(group[0]); }}},
+                R"cc(
+                  $default$ {
+                    $body$;
+                    break;
+                  }
+                )cc");
+          }
+        }}},
+      R"cc(
+        switch ($prefix$$name$_case()) {
+          case $NAME$_NOT_SET:
+            $default_if_not_exhaustive$;
+            break;
+            $cases$;
+        }
+      )cc");
 }
 
 void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
@@ -1672,8 +1752,9 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
                  {"oneof_name", oneof->name()},
                  {"oneof_fields",
                   [&] {
-                    for (auto field : FieldRange(oneof)) {
-                      field_generators_.get(field).GeneratePrivateMembers(p);
+                    for (const auto& group : GetOneofGroups(
+                             oneof, OneofGrouping::kDeclare, options_)) {
+                      field_generators_.get(group[0]).GeneratePrivateMembers(p);
                     }
                   }}},
                 R"cc(
@@ -2711,7 +2792,7 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
              ShouldSplit(field, options_) ? "::Impl_::Split" : "",
              ShouldSplit(field, options_)
                  ? absl::StrCat(FieldName(field), "_")
-                 : FieldMemberName(field, /*split=*/false));
+                 : FieldMemberNameNonOneof(field, /*split=*/false));
     }
 
     // Some information about a field is in the pdproto profile. The profile is
@@ -2781,7 +2862,7 @@ void MessageGenerator::GenerateZeroInitFields(io::Printer* p) const {
                                sizeof($Impl$::$last$_));
                 )cc");
       } else {
-        p->Emit({{"field", FieldMemberName(first, false)}},
+        p->Emit({{"field", FieldMemberNameNonOneof(first, false)}},
                 R"cc(
                   $field$ = {};
                 )cc");
@@ -3222,7 +3303,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
                                sizeof($Impl$::$last$_));
                 )cc");
       } else {
-        p->Emit({{"field", FieldMemberName(first, split)}},
+        p->Emit({{"field", FieldMemberNameNonOneof(first, split)}},
                 R"cc(
                   $field$ = from.$field$;
                 )cc");
@@ -3310,34 +3391,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
 
   auto generate_copy_oneof_fields = [&]() {
     for (const auto* oneof : OneOfRange(descriptor_)) {
-      p->Emit(
-          {{"name", oneof->name()},
-           {"NAME", absl::AsciiStrToUpper(oneof->name())},
-           {"cases",
-            [&] {
-              for (const auto* field : FieldRange(oneof)) {
-                p->Emit(
-                    {{"Name", UnderscoresToCamelCase(field->name(), true)},
-                     {"field", FieldMemberName(field, /*split=*/false)},
-                     {"body",
-                      [&] {
-                        field_generators_.get(field).GenerateOneofCopyConstruct(
-                            p);
-                      }}},
-                    R"cc(
-                      case k$Name$:
-                        $body$;
-                        break;
-                    )cc");
-              }
-            }}},
-          R"cc(
-            switch ($name$_case()) {
-              case $NAME$_NOT_SET:
-                break;
-                $cases$;
-            }
-          )cc");
+      EmitOneofHandler(p, oneof, OneofGrouping::kCopy, "", [&](auto* field) {
+        field_generators_.get(field).GenerateOneofCopyConstruct(p);
+      });
     }
   };
 
@@ -3686,8 +3742,8 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
               "::memset(&$1$, 0, static_cast<::size_t>(\n"
               "    reinterpret_cast<char*>(&$2$) -\n"
               "    reinterpret_cast<char*>(&$1$)) + sizeof($2$));\n",
-              FieldMemberName(memset_start, chunk_is_split),
-              FieldMemberName(memset_end, chunk_is_split));
+              FieldMemberNameNonOneof(memset_start, chunk_is_split),
+              FieldMemberNameNonOneof(memset_end, chunk_is_split));
         }
       }
 
@@ -3771,29 +3827,17 @@ void MessageGenerator::GenerateOneofClear(io::Printer* p) {
         "// @@protoc_insertion_point(one_of_clear_start:$full_name$)\n");
     format.Indent();
     format("$pbi$::TSanWrite(&_impl_);\n");
-    format("switch ($oneofname$_case()) {\n");
-    format.Indent();
-    for (auto field : FieldRange(oneof)) {
-      format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
-      format.Indent();
+
+    EmitOneofHandler(p, oneof, OneofGrouping::kClear, "", [&](auto* field) {
       // We clear only allocated objects in oneofs
       if (!IsStringOrMessage(field)) {
         format("// No need to clear\n");
       } else {
         field_generators_.get(field).GenerateClearingCode(p);
       }
-      format("break;\n");
-      format.Outdent();
-      format("}\n");
-    }
+    });
+
     format(
-        "case $1$_NOT_SET: {\n"
-        "  break;\n"
-        "}\n",
-        absl::AsciiStrToUpper(oneof->name()));
-    format.Outdent();
-    format(
-        "}\n"
         "$oneof_case$[$1$] = $2$_NOT_SET;\n",
         i, absl::AsciiStrToUpper(oneof->name()));
     format.Outdent();
@@ -3857,8 +3901,8 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
         // Use a memswap, then skip run_length fields.
         const size_t run_length = it->second;
         const std::string first_field_name =
-            FieldMemberName(field, /*split=*/false);
-        const std::string last_field_name = FieldMemberName(
+            FieldMemberNameNonOneof(field, /*split=*/false);
+        const std::string last_field_name = FieldMemberNameNonOneof(
             optimized_order_[i + run_length - 1], /*split=*/false);
 
         auto v = p->WithVars({
@@ -3945,14 +3989,14 @@ MessageGenerator::NewOpRequirements MessageGenerator::GetNewOp(
     const auto print_arena_offset = [&](absl::string_view suffix = "") {
       ++arena_seeding_count;
       if (arena_emitter) {
-        arena_emitter->Emit(
-            {{"field", FieldMemberName(field, false)}, {"suffix", suffix}},
-            R"cc(
-              PROTOBUF_FIELD_OFFSET($classname$, $field$) +
-                  decltype($classname$::$field$)::
-                      InternalGetArenaOffset$suffix$(
-                          $superclass$::internal_visibility()),
-            )cc");
+        arena_emitter->Emit({{"field", FieldMemberNameNonOneof(field, false)},
+                             {"suffix", suffix}},
+                            R"cc(
+                              PROTOBUF_FIELD_OFFSET($classname$, $field$) +
+                                  decltype($classname$::$field$)::
+                                      InternalGetArenaOffset$suffix$(
+                                          $superclass$::internal_visibility()),
+                            )cc");
       }
     };
     if (ShouldSplit(field, options_)) {
@@ -4469,24 +4513,13 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
                 {{"name", oneof->name()},
                  {"NAME", absl::AsciiStrToUpper(oneof->name())},
                  {"index", oneof->index()},
-                 {"cases",
+                 {"populate",
                   [&] {
-                    for (const auto* field : FieldRange(oneof)) {
-                      p->Emit(
-                          {{"Label",
-                            UnderscoresToCamelCase(field->name(), true)},
-                           {"body",
-                            [&] {
-                              field_generators_.get(field).GenerateMergingCode(
-                                  p);
-                            }}},
-                          R"cc(
-                            case k$Label$: {
-                              $body$;
-                              break;
-                            }
-                          )cc");
-                    }
+                    EmitOneofHandler(
+                        p, oneof, OneofGrouping::kMerge, "_this->",
+                        [&](auto* field) {
+                          field_generators_.get(field).GenerateMergingCode(p);
+                        });
                   }}},
                 R"cc(
                   if (const uint32_t oneof_from_case =
@@ -4500,11 +4533,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
                       _this->$oneof_case$[$index$] = oneof_from_case;
                     }
 
-                    switch (oneof_from_case) {
-                      $cases$;
-                      case $NAME$_NOT_SET:
-                        break;
-                    }
+                    $populate$;
                   }
                 )cc");
           }
@@ -4633,37 +4662,13 @@ void MessageGenerator::GenerateVerifyV2(io::Printer* p) {
 void MessageGenerator::GenerateSerializeOneofFields(
     io::Printer* p, const std::vector<const FieldDescriptor*>& fields) {
   ABSL_CHECK(!fields.empty());
-  if (fields.size() == 1) {
-    GenerateSerializeOneField(p, fields[0], -1);
-    return;
-  }
-  // We have multiple mutually exclusive choices.  Emit a switch statement.
-  const OneofDescriptor* oneof = fields[0]->containing_oneof();
-  p->Emit({{"name", oneof->name()},
-           {"cases",
-            [&] {
-              for (const auto* field : fields) {
-                p->Emit({{"Name", UnderscoresToCamelCase(field->name(), true)},
-                         {"body",
-                          [&] {
-                            field_generators_.get(field)
-                                .GenerateSerializeWithCachedSizesToArray(p);
-                          }}},
-                        R"cc(
-                          case k$Name$: {
-                            $body$;
-                            break;
-                          }
-                        )cc");
-              }
-            }}},
-          R"cc(
-            switch (this_.$name$_case()) {
-              $cases$;
-              default:
-                break;
-            }
-          )cc");
+
+  EmitOneofHandler(
+      p, fields, OneofGrouping::kSerialize, "this_.", [&](auto* field) {
+        field_generators_.get(field).GenerateSerializeWithCachedSizesToArray(p);
+      });
+
+  return;
 }
 
 void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
@@ -5382,36 +5387,10 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
           // Fields inside a oneof don't use _has_bits_ so we count them in a
           // separate pass.
           for (auto oneof : OneOfRange(descriptor_)) {
-            p->Emit(
-                {{"oneof_name", oneof->name()},
-                 {"oneof_case_name", absl::AsciiStrToUpper(oneof->name())},
-                 {"case_per_field",
-                  [&] {
-                    for (auto field : FieldRange(oneof)) {
-                      PrintFieldComment(Formatter{p}, field, options_);
-                      p->Emit(
-                          {{"field_name",
-                            UnderscoresToCamelCase(field->name(), true)},
-                           {"field_byte_size",
-                            [&] {
-                              field_generators_.get(field).GenerateByteSize(p);
-                            }}},
-                          R"cc(
-                            case k$field_name$: {
-                              $field_byte_size$;
-                              break;
-                            }
-                          )cc");
-                    }
-                  }}},
-                R"cc(
-                  switch (this_.$oneof_name$_case()) {
-                    $case_per_field$;
-                    case $oneof_case_name$_NOT_SET: {
-                      break;
-                    }
-                  }
-                )cc");
+            EmitOneofHandler(p, oneof, OneofGrouping::kByteSize, "this_.",
+                             [&](auto* field) {
+                               field_generators_.get(field).GenerateByteSize(p);
+                             });
           }
         }},
        {"handle_weak_fields",
@@ -5642,34 +5621,11 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
            [&] {
              for (const auto* oneof : OneOfRange(descriptor_)) {
                if (!has_required_field(oneof)) continue;
-               p->Emit({{"name", oneof->name()},
-                        {"NAME", absl::AsciiStrToUpper(oneof->name())},
-                        {"cases",
-                         [&] {
-                           for (const auto* field : FieldRange(oneof)) {
-                             p->Emit({{"Name", UnderscoresToCamelCase(
-                                                   field->name(), true)},
-                                      {"body",
-                                       [&] {
-                                         field_generators_.get(field)
-                                             .GenerateIsInitialized(p);
-                                       }}},
-                                     R"cc(
-                                       case k$Name$: {
-                                         $body$;
-                                         break;
-                                       }
-                                     )cc");
-                           }
-                         }}},
-                       R"cc(
-                         switch (this_.$name$_case()) {
-                           $cases$;
-                           case $NAME$_NOT_SET: {
-                             break;
-                           }
-                         }
-                       )cc");
+               EmitOneofHandler(
+                   p, oneof, OneofGrouping::kIsInitialized, "this_.",
+                   [&](auto* field) {
+                     field_generators_.get(field).GenerateIsInitialized(p);
+                   });
              }
            }},
       },
