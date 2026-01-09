@@ -315,7 +315,7 @@ jobs:
         include:
           - name: MacOS Bazel
             os: macos-14
-            cache_key: macos-14-bazel8
+            cache_key: macos-14-bazel
             bazel: test //src/...
           - name: MacOS Apple Silicon Bazel
             os: macos-14
