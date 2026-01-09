@@ -380,16 +380,13 @@ void BinaryAndJsonConformanceSuite::RunUnstableTests() {
   SetTypeUrl(GetTypeUrl(TestAllTypesEditionUnstable::GetDescriptor()));
 
   RunValidProtobufTest<TestAllTypesEditionUnstable>(
-      absl::StrCat("ValidInt32"), REQUIRED,
-      field(1, WireFormatLite::WIRETYPE_VARINT, varint(99)),
-      R"pb(optional_int32: 99)pb");
+      absl::StrCat("ValidBytes"), REQUIRED, len(13, "foo"),
+      R"pb(optional_bytes: "foo")pb");
 
   RunValidProtobufTest<TestAllTypesEditionUnstable>(
-      absl::StrCat("ValidMap.Integer"), REQUIRED,
-      len(8,
-          absl::StrCat(field(1, WireFormatLite::WIRETYPE_VARINT, varint(99)),
-                       field(2, WireFormatLite::WIRETYPE_VARINT, varint(87)))),
-      R"pb(map_int32_int32 { key: 99 value: 87 })pb");
+      absl::StrCat("ValidMap.Bytes"), REQUIRED,
+      len(15, absl::StrCat(len(1, "foo"), len(2, "barbaz"))),
+      R"pb(map_string_bytes { key: "foo" value: "barbaz" })pb");
 }
 
 void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
