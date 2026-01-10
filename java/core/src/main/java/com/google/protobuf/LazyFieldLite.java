@@ -92,6 +92,14 @@ public class LazyFieldLite {
   private volatile boolean corrupted;
 
   /**
+   * Required field presence is usually checked by calling `isInitialized` on the parsed message
+   * instead of at decoding phase (when LazyField is initialized), so we need to defer the check
+   * until it is actually needed. For example, `builder.mergeFrom` will not trigger the check, but
+   * the following `builder.build()` will.
+   */
+  private volatile boolean containsMissingRequiredFields;
+
+  /**
    * Carry a message's default instance which is used by {@code hashCode()}, {@code equals()}, and
    * {@code toString()}. Can be null.
    */
@@ -116,6 +124,14 @@ public class LazyFieldLite {
   /** Constructs a LazyFieldLite with no contents, and no ability to parse extensions. */
   public LazyFieldLite() {
     defaultInstance = null;
+  }
+
+  public boolean containsMissingRequiredFields() {
+    return containsMissingRequiredFields;
+  }
+
+  public void setContainsMissingRequiredFields(boolean containsMissingRequiredFields) {
+    this.containsMissingRequiredFields = containsMissingRequiredFields;
   }
 
   /**
@@ -331,10 +347,9 @@ public class LazyFieldLite {
    * <p>LazyField is not thread-safe for write access. Synchronizations are needed under read/write
    * situations.
    */
-  public void mergeFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry)
-      throws IOException {
+  void mergeFrom(ByteString bytes, ExtensionRegistryLite extensionRegistry) throws IOException {
     if (this.containsDefaultInstance()) {
-      setByteString(input.readBytes(), extensionRegistry);
+      setByteString(bytes, extensionRegistry);
       return;
     }
 
@@ -350,7 +365,7 @@ public class LazyFieldLite {
     // to outway the benefits of combining the extension registries, which is not normally done for
     // lite protos anyways.
     if (this.delayedBytes != null) {
-      setByteString(this.delayedBytes.concat(input.readBytes()), this.extensionRegistry);
+      setByteString(this.delayedBytes.concat(bytes), this.extensionRegistry);
       return;
     }
 
@@ -358,11 +373,19 @@ public class LazyFieldLite {
     // case that the extension registries are not the same then we might in the future if we
     // need to serialize and parse a message again.
     try {
-      setValue(value.toBuilder().mergeFrom(input, extensionRegistry).build());
+      setValue(value.toBuilder().mergeFrom(bytes, extensionRegistry).build());
     } catch (InvalidProtocolBufferException e) {
       // Nothing is logged and no exceptions are thrown. Clients will be unaware that a proto
       // was invalid.
     }
+  }
+
+  /**
+   * Merges another instance's contents from a stream.
+   */
+  public void mergeFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry)
+      throws IOException {
+    mergeFrom(input.readBytes(), extensionRegistry);
   }
 
   private static MessageLite mergeValueAndBytes(
@@ -477,8 +500,15 @@ public class LazyFieldLite {
       try {
         if (delayedBytes != null) {
           // The extensionRegistry shouldn't be null here since we have delayedBytes.
+          // We don't enforce required field presence in lazy mode here, as `isInitialized()` at
+          // `build()` or `parseFrom()` has already checked missing required fields before this
+          // step, so exception has already been thrown or `parsePartialFrom()` is used.
           MessageLite parsedValue =
-              defaultInstance.getParserForType().parseFrom(delayedBytes, extensionRegistry);
+              ExtensionRegistryLite.lazyExtensionFieldValidationEnabled()
+                  ? defaultInstance
+                      .getParserForType()
+                      .parsePartialFrom(delayedBytes, extensionRegistry)
+                  : defaultInstance.getParserForType().parseFrom(delayedBytes, extensionRegistry);
           this.value = parsedValue;
           this.memoizedBytes = delayedBytes;
         } else {

@@ -62,6 +62,7 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "TestRequiredEnum",
       "TestRepeatedString",
       "TestRepeatedScalarDifferentTagSizes",
+      "TestRecursiveMessageWithRequiredFields",
       "TestRecursiveMessage",
       "TestReallyLargeTagNumber",
       "TestPickleNestedMessage.NestedMessage.NestedNestedMessage",
