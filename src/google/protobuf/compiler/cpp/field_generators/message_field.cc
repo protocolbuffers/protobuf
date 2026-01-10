@@ -40,9 +40,8 @@ using Sub = ::google::protobuf::io::Printer::Sub;
 
 std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
                       bool is_weak, bool use_base_class) {
-  bool split = ShouldSplit(field, opts);
   bool is_foreign = IsCrossFileMessage(field);
-  std::string field_name = FieldMemberName(field, split);
+  std::string field_name = FieldMemberName(field, opts);
   std::string qualified_type = FieldMessageTypeName(field, opts);
   std::string default_ref =
       QualifiedDefaultInstanceName(field->message_type(), opts);
@@ -92,7 +91,7 @@ class SingularMessage : public FieldGeneratorBase {
 
   void GeneratePrivateMembers(io::Printer* p) const override {
     p->Emit(R"cc(
-      $MemberType$* $nullable$ $name$_;
+      $MemberType$* $nullable$ $member$;
     )cc");
   }
 
@@ -389,14 +388,14 @@ void SingularMessage::GenerateSerializeWithCachedSizesToArray(
   if (!is_group()) {
     p->Emit(R"cc(
       target = $pbi$::WireFormatLite::InternalWrite$declared_type$(
-          $number$, *this_.$field_$, this_.$field_$->GetCachedSize(), target,
-          stream);
+          $number_or_active_oneof$, *this_.$field_$,
+          this_.$field_$->GetCachedSize(), target, stream);
     )cc");
   } else {
     p->Emit(R"cc(
       target = stream->EnsureSpace(target);
       target = $pbi$::WireFormatLite::InternalWrite$declared_type$(
-          $number$, *this_.$field_$, target, stream);
+          $number_or_active_oneof$, *this_.$field_$, target, stream);
     )cc");
   }
 }
@@ -457,39 +456,12 @@ void SingularMessage::GenerateAggregateInitializer(io::Printer* p) const {
 class OneofMessage : public SingularMessage {
  public:
   OneofMessage(const FieldDescriptor* descriptor, const Options& options)
-      : SingularMessage(descriptor, options) {
-    auto* oneof = descriptor->containing_oneof();
-    num_message_fields_in_oneof_ = 0;
-    for (int i = 0; i < oneof->field_count(); ++i) {
-      num_message_fields_in_oneof_ +=
-          oneof->field(i)->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE;
-    }
-  }
+      : SingularMessage(descriptor, options),
+        use_base_class_(MessageFieldUsesBaseClass(descriptor, options)) {}
 
   ~OneofMessage() override = default;
 
-  bool use_base_class() const {
-    if (is_weak()) return true;
-
-    // For non-weak oneof fields, we choose to use a base class pointer when the
-    // oneof has many message fields in it.  Using a base class here is not
-    // about correctness, but about performance and binary size.
-    //
-    // This allows the compiler to merge all the different switch cases (since
-    // the code is identical for all message alternatives) reducing binary size.
-    // The runtime dispatch is effectively changed from a switch statement to a
-    // virtual function call. For many oneofs, it completely elides the switch
-    // dispatch.
-    //
-    // This constant is a tradeoff. We want to allow optimizations (like
-    // inlining) on small oneofs. For small oneofs the compiler can use faster
-    // alternatives to table-based jumps. Also, the technique used here has less
-    // of a binary size win for small oneofs.
-    static constexpr int kMaxStaticTypeCount = 3;
-    return num_message_fields_in_oneof_ >= kMaxStaticTypeCount &&
-           // Hot alternatives are kept as their static type for performance..
-           !IsLikelyPresent(field_, *opts_);
-  }
+  bool use_base_class() const { return use_base_class_; }
 
   std::vector<Sub> MakeVars() const override {
     return Vars(field_, *opts_, is_weak(), use_base_class());
@@ -502,13 +474,14 @@ class OneofMessage : public SingularMessage {
   void GenerateSwappingCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
   void GenerateCopyConstructorCode(io::Printer* p) const override;
+  void GenerateByteSize(io::Printer* p) const override;
   void GenerateIsInitialized(io::Printer* p) const override;
   bool NeedsIsInitialized() const override;
   void GenerateMergingCode(io::Printer* p) const override;
   bool RequiresArena(GeneratorFunction func) const override;
 
  private:
-  int num_message_fields_in_oneof_;
+  bool use_base_class_;
 };
 
 void OneofMessage::GenerateNonInlineAccessorDefinitions(io::Printer* p) const {
@@ -649,6 +622,26 @@ void OneofMessage::GenerateClearingCode(io::Printer* p) const {
           )cc");
 }
 
+void OneofMessage::GenerateByteSize(io::Printer* p) const {
+  if (use_base_class()) {
+    // If we are using the base class then we might group better if we calculate
+    // the tag size dynamically.
+    p->Emit({{"type",
+              field_->type() == field_->TYPE_MESSAGE ? "MESSAGE" : "GROUP"}},
+            R"cc(
+              total_size +=
+                  $pbi$::WireFormatLite::TagSize(
+                      $active_oneof$, $pbi$::WireFormatLite::TYPE_$type$) +
+                  $pbi$::WireFormatLite::$declared_type$Size(*this_.$field_$);
+            )cc");
+  } else {
+    p->Emit(R"cc(
+      total_size += $tag_size$ +
+                    $pbi$::WireFormatLite::$declared_type$Size(*this_.$field_$);
+    )cc");
+  }
+}
+
 void OneofMessage::GenerateMessageClearingCode(io::Printer* p) const {
   GenerateClearingCode(p);
 }
@@ -675,8 +668,7 @@ void OneofMessage::GenerateIsInitialized(io::Printer* p) const {
   if (!NeedsIsInitialized()) return;
 
   p->Emit(R"cc(
-    if (this_.$has_field$ && !this_.$field_$->IsInitialized())
-      return false;
+    if (!this_.$field_$->IsInitialized()) return false;
   )cc");
 }
 

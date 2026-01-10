@@ -219,7 +219,7 @@ Getters RepeatedFieldGetters(const FieldDescriptor* field,
 }
 
 Getters StringFieldGetters(const FieldDescriptor* field, const Options& opts) {
-  std::string member = FieldMemberName(field, ShouldSplit(field, opts));
+  std::string member = FieldMemberName(field, opts);
 
   Getters getters;
   if (IsArenaStringPtr(field, opts) && !field->default_value_string().empty()) {
@@ -238,7 +238,7 @@ Getters StringOneofGetters(const FieldDescriptor* field,
                            const OneofDescriptor* oneof, const Options& opts) {
   ABSL_CHECK(oneof != nullptr);
 
-  std::string member = FieldMemberName(field, ShouldSplit(field, opts));
+  std::string member = FieldMemberName(field, opts);
 
   std::string field_ptr = member;
   if (IsArenaStringPtr(field, opts)) {
@@ -271,7 +271,7 @@ Getters StringOneofGetters(const FieldDescriptor* field,
 
 Getters SingularFieldGetters(const FieldDescriptor* field,
                              const Options& opts) {
-  std::string member = FieldMemberName(field, ShouldSplit(field, opts));
+  std::string member = FieldMemberName(field, opts);
 
   Getters getters;
   getters.base = absl::StrCat("&", member);

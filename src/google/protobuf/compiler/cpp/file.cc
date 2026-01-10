@@ -686,7 +686,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
             {"class", ClassName(generator->descriptor())},
             {"field", FieldName(field)},
             {"default", DefaultInstanceName(generator->descriptor(), options_)},
-            {"member", FieldMemberName(field, ShouldSplit(field, options_))},
+            {"member", FieldMemberName(field, options_)},
         },
         R"cc(
           PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::std::true_type

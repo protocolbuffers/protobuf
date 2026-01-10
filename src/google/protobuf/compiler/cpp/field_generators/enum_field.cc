@@ -68,7 +68,7 @@ class SingularEnum : public FieldGeneratorBase {
 
   void GeneratePrivateMembers(io::Printer* p) const override {
     p->Emit(R"cc(
-      int $name$_;
+      int $member$;
     )cc");
   }
 
@@ -101,15 +101,15 @@ class SingularEnum : public FieldGeneratorBase {
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override {
     p->Emit(R"cc(
       target = stream->EnsureSpace(target);
-      target = ::_pbi::WireFormatLite::WriteEnumToArray(
-          $number$, this_._internal_$name$(), target);
+      target = ::_pbi::WireFormatLite::WriteEnumToArray($number$,
+                                                        this_.$field_$, target);
     )cc");
   }
 
   void GenerateByteSize(io::Printer* p) const override {
     p->Emit(R"cc(
-      total_size += $kTagBytes$ +
-                    ::_pbi::WireFormatLite::EnumSize(this_._internal_$name$());
+      total_size +=
+          $kTagBytes$ + ::_pbi::WireFormatLite::EnumSize(this_.$field_$);
     )cc");
   }
 
