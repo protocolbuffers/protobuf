@@ -17,6 +17,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "google/protobuf/descriptor.pb.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/log/die_if_null.h"
