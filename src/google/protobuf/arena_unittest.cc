@@ -1946,8 +1946,51 @@ TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
   }
 }
 
+TEST(ArenaTest, AllocationOverflowSafety) {
+  // Test that attempting to allocate near SIZE_MAX fails safely
+  upb_Arena* arena = upb_Arena_New();
+  
+  // These should fail gracefully without crashing or corrupting memory
+  constexpr size_t kNearMax = std::numeric_limits<size_t>::max() - 1000;
+  void* ptr1 = upb_Arena_Malloc(arena, kNearMax);
+  EXPECT_EQ(ptr1, nullptr);
+  
+  // Arena should still be usable for normal allocations
+  void* ptr2 = upb_Arena_Malloc(arena, 100);
+  EXPECT_NE(ptr2, nullptr);
+  
+  upb_Arena_Free(arena);
+}
 
-}  // namespace protobuf
-}  // namespace google
+TEST(ArenaTest, BlockAllocationOverflowProtection) {
+  // Test that internal block allocation detects overflow
+  upb_Arena* arena = upb_Arena_New();
+  
+  // Request allocation that would overflow when adding header size
+  constexpr size_t kMaxValid = std::numeric_limits<size_t>::max() / 2;
+  void* ptr = upb_Arena_Malloc(arena, kMaxValid + 1);
+  
+  // Should fail gracefully
+  EXPECT_EQ(ptr, nullptr);
+  
+  upb_Arena_Free(arena);
+}
 
-#include "google/protobuf/port_undef.inc"
+TEST(ArenaTest, MaximumValidAllocation) {
+  // Test that maximum reasonable allocation still works
+  upb_Arena* arena = upb_Arena_New();
+  
+  // This should work (though might fail due to system memory limits)
+  constexpr size_t kLargeButValid = 1024 * 1024 * 100;  // 100 MB
+  void* ptr = upb_Arena_Malloc(arena, kLargeButValid);
+  
+  // Either succeeds or fails gracefully, never corrupts
+  if (ptr) {
+    // If allocation succeeded, write to it to ensure it's real
+    memset(ptr, 0xAA, 1024);  // Write just first KB to avoid OOM
+  }
+  
+  upb_Arena_Free(arena);
+}
+
+// ...existing code...
