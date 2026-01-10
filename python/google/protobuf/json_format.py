@@ -726,12 +726,11 @@ class _Parser(object):
           value['value'], sub_message, '{0}.value'.format(path)
       )
     elif full_name in _WKTJSONMETHODS:
-      methodcaller(
-          _WKTJSONMETHODS[full_name][1],
-          value['value'],
-          sub_message,
-          '{0}.value'.format(path),
-      )(self)
+      # For well-known types (including nested Any), use ConvertMessage
+      # to ensure recursion depth is properly tracked
+      self.ConvertMessage(
+          value['value'], sub_message, '{0}.value'.format(path)
+      )
     else:
       del value['@type']
       try:
