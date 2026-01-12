@@ -242,9 +242,7 @@ class FieldMaskTree {
 
     ~Node() { ClearChildren(); }
 
-    void ClearChildren() {
-      children.clear();
-    }
+    void ClearChildren() { children.clear(); }
 
     absl::btree_map<std::string, std::unique_ptr<Node>> children;
   };
@@ -440,6 +438,9 @@ void FieldMaskTree::MergeMessage(const Node* node, const Message& source,
     if (field == nullptr) {
       ABSL_LOG(ERROR) << "Cannot find field \"" << field_name
                       << "\" in message " << descriptor->full_name();
+      ABSL_LOG(ERROR) << "DO_NOT_SUBMIT: source: " << source.DebugString();
+      ABSL_LOG(ERROR) << "DO_NOT_SUBMIT: destination: "
+                      << destination->DebugString();
       continue;
     }
     if (!child->children.empty()) {
@@ -657,7 +658,7 @@ bool FieldMaskUtil::IsPathInFieldMask(absl::string_view path,
     if (current == mask_path) {
       return true;
     }
-      // Also check whether mask.paths(i) is a prefix of path.
+    // Also check whether mask.paths(i) is a prefix of path.
     if (mask_path.length() < current.length() &&
         absl::ConsumePrefix(&current, mask_path) &&
         absl::ConsumePrefix(&current, ".")) {
