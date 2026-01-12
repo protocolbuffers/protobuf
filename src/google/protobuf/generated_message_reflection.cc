@@ -48,7 +48,6 @@
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/has_bits.h"
-#include "google/protobuf/inlined_string_field.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
