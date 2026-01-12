@@ -33,7 +33,7 @@
 +    // int32 int32_field = 1;
      cached_has_bits = this_._impl_._has_bits_[0];
      if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-       total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+       total_size +=
 [  FAILED  ] third_party/protobuf/editions/golden/simple_proto3.pb.cc
 [ RUN      ] third_party/protobuf/editions/golden/simple_proto3.pb.h
 @@ @@

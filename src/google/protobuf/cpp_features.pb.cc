@@ -317,21 +317,21 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
   if (CheckHasBit(cached_has_bits, 0x00000002U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
-        1, this_._internal_legacy_closed_enum(), target);
+        1, this_._impl_.legacy_closed_enum_, target);
   }
 
   // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteEnumToArray(
-        2, this_._internal_string_type(), target);
+    target = ::_pbi::WireFormatLite::WriteEnumToArray(2,
+                                                      this_._impl_.string_type_, target);
   }
 
   // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
   if (CheckHasBit(cached_has_bits, 0x00000004U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
-        3, this_._internal_enum_name_uses_string_view(), target);
+        3, this_._impl_.enum_name_uses_string_view_, target);
   }
 
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
@@ -363,8 +363,8 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
    {
     // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size += 1 +
-                    ::_pbi::WireFormatLite::EnumSize(this_._internal_string_type());
+      total_size +=
+          1 + ::_pbi::WireFormatLite::EnumSize(this_._impl_.string_type_);
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,

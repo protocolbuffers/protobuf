@@ -537,27 +537,28 @@ PROTOBUF_NOINLINE void Version::Clear() {
   if (CheckHasBit(cached_has_bits, 0x00000002U)) {
     target =
         ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<1>(
-            stream, this_._internal_major(), target);
+            stream, this_._impl_.major_, target);
   }
 
   // optional int32 minor = 2;
   if (CheckHasBit(cached_has_bits, 0x00000004U)) {
     target =
         ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<2>(
-            stream, this_._internal_minor(), target);
+            stream, this_._impl_.minor_, target);
   }
 
   // optional int32 patch = 3;
   if (CheckHasBit(cached_has_bits, 0x00000008U)) {
     target =
         ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<3>(
-            stream, this_._internal_patch(), target);
+            stream, this_._impl_.patch_, target);
   }
 
   // optional string suffix = 4;
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    const ::std::string& _s = this_._internal_suffix();
-    target = stream->WriteStringMaybeAliased(4, _s, target);
+    const ::std::string& _s = this_._impl_.suffix_.Get();
+    target = stream->WriteStringMaybeAliased(
+        4, _s, target);
   }
 
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
@@ -589,22 +590,22 @@ PROTOBUF_NOINLINE void Version::Clear() {
     // optional string suffix = 4;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this_._internal_suffix());
+                                      this_._impl_.suffix_.Get());
     }
     // optional int32 major = 1;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-          this_._internal_major());
+      total_size +=
+          ::_pbi::WireFormatLite::Int32SizePlusOne(this_._impl_.major_);
     }
     // optional int32 minor = 2;
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-          this_._internal_minor());
+      total_size +=
+          ::_pbi::WireFormatLite::Int32SizePlusOne(this_._impl_.minor_);
     }
     // optional int32 patch = 3;
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-          this_._internal_patch());
+      total_size +=
+          ::_pbi::WireFormatLite::Int32SizePlusOne(this_._impl_.patch_);
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -998,15 +999,16 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
 
   // optional string parameter = 2;
   if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-    const ::std::string& _s = this_._internal_parameter();
-    target = stream->WriteStringMaybeAliased(2, _s, target);
+    const ::std::string& _s = this_._impl_.parameter_.Get();
+    target = stream->WriteStringMaybeAliased(
+        2, _s, target);
   }
 
   // optional .google.protobuf.compiler.Version compiler_version = 3;
   if (CheckHasBit(cached_has_bits, 0x00000008U)) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        3, *this_._impl_.compiler_version_, this_._impl_.compiler_version_->GetCachedSize(), target,
-        stream);
+        3, *this_._impl_.compiler_version_,
+        this_._impl_.compiler_version_->GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
@@ -1080,7 +1082,7 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
     // optional string parameter = 2;
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this_._internal_parameter());
+                                      this_._impl_.parameter_.Get());
     }
     // optional .google.protobuf.compiler.Version compiler_version = 3;
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
@@ -1408,27 +1410,30 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string name = 1;
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    const ::std::string& _s = this_._internal_name();
-    target = stream->WriteStringMaybeAliased(1, _s, target);
+    const ::std::string& _s = this_._impl_.name_.Get();
+    target = stream->WriteStringMaybeAliased(
+        1, _s, target);
   }
 
   // optional string insertion_point = 2;
   if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-    const ::std::string& _s = this_._internal_insertion_point();
-    target = stream->WriteStringMaybeAliased(2, _s, target);
+    const ::std::string& _s = this_._impl_.insertion_point_.Get();
+    target = stream->WriteStringMaybeAliased(
+        2, _s, target);
   }
 
   // optional string content = 15;
   if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-    const ::std::string& _s = this_._internal_content();
-    target = stream->WriteStringMaybeAliased(15, _s, target);
+    const ::std::string& _s = this_._impl_.content_.Get();
+    target = stream->WriteStringMaybeAliased(
+        15, _s, target);
   }
 
   // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
   if (CheckHasBit(cached_has_bits, 0x00000008U)) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        16, *this_._impl_.generated_code_info_, this_._impl_.generated_code_info_->GetCachedSize(), target,
-        stream);
+        16, *this_._impl_.generated_code_info_,
+        this_._impl_.generated_code_info_->GetCachedSize(), target, stream);
   }
 
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
@@ -1460,17 +1465,17 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
     // optional string name = 1;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this_._internal_name());
+                                      this_._impl_.name_.Get());
     }
     // optional string insertion_point = 2;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this_._internal_insertion_point());
+                                      this_._impl_.insertion_point_.Get());
     }
     // optional string content = 15;
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this_._internal_content());
+                                      this_._impl_.content_.Get());
     }
     // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
@@ -1811,29 +1816,30 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string error = 1;
   if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-    const ::std::string& _s = this_._internal_error();
-    target = stream->WriteStringMaybeAliased(1, _s, target);
+    const ::std::string& _s = this_._impl_.error_.Get();
+    target = stream->WriteStringMaybeAliased(
+        1, _s, target);
   }
 
   // optional uint64 supported_features = 2;
   if (CheckHasBit(cached_has_bits, 0x00000004U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteUInt64ToArray(
-        2, this_._internal_supported_features(), target);
+        2, this_._impl_.supported_features_, target);
   }
 
   // optional int32 minimum_edition = 3;
   if (CheckHasBit(cached_has_bits, 0x00000008U)) {
     target =
         ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<3>(
-            stream, this_._internal_minimum_edition(), target);
+            stream, this_._impl_.minimum_edition_, target);
   }
 
   // optional int32 maximum_edition = 4;
   if (CheckHasBit(cached_has_bits, 0x00000010U)) {
     target =
         ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<4>(
-            stream, this_._internal_maximum_edition(), target);
+            stream, this_._impl_.maximum_edition_, target);
   }
 
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
@@ -1885,22 +1891,22 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
     // optional string error = 1;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this_._internal_error());
+                                      this_._impl_.error_.Get());
     }
     // optional uint64 supported_features = 2;
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(
-          this_._internal_supported_features());
+      total_size +=
+          ::_pbi::WireFormatLite::UInt64SizePlusOne(this_._impl_.supported_features_);
     }
     // optional int32 minimum_edition = 3;
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-          this_._internal_minimum_edition());
+      total_size +=
+          ::_pbi::WireFormatLite::Int32SizePlusOne(this_._impl_.minimum_edition_);
     }
     // optional int32 maximum_edition = 4;
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-          this_._internal_maximum_edition());
+      total_size +=
+          ::_pbi::WireFormatLite::Int32SizePlusOne(this_._impl_.maximum_edition_);
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,

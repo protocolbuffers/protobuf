@@ -607,12 +607,12 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
                                        : "::uint64_t";
           func_name = absl::StrCat(
               "::_pbi::TcParser::SingularVarintNoZag1<", field_type,
-              ", offsetof(",                                      //
-              ClassName(as_field->field->containing_type()),      //
-              ", ",                                               //
-              FieldMemberName(as_field->field, /*split=*/false),  //
-              "), ",                                              //
-              as_field->hasbit_idx,                               //
+              ", offsetof(",                                              //
+              ClassName(as_field->field->containing_type()),              //
+              ", ",                                                       //
+              FieldMemberNameNonOneof(as_field->field, /*split=*/false),  //
+              "), ",                                                      //
+              as_field->hasbit_idx,                                       //
               ">()");
         }
       }
@@ -623,7 +623,8 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
               {"coded_tag", as_field->coded_tag},
               {"hasbit_idx", as_field->hasbit_idx},
               {"aux_idx", as_field->aux_idx},
-              {"field_name", FieldMemberName(as_field->field, /*split=*/false)},
+              {"field_name",
+               FieldMemberNameNonOneof(as_field->field, /*split=*/false)},
           },
           R"cc(
             {$target$,
@@ -650,9 +651,9 @@ void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
     bool split = ShouldSplit(field, options_);
     const OneofDescriptor* oneof = field->real_containing_oneof();
 
-    auto v = p->WithVars(
-        {{"field_name", FieldName(field)},
-         {"field_member_name", FieldMemberName(field, /*split=*/false)}});
+    auto v =
+        p->WithVars({{"field_name", FieldName(field)},
+                     {"field_member_name", FieldMemberName(field, options_)}});
 
     p->Emit(
         {{"offset",
@@ -663,6 +664,9 @@ void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
               p->Emit(
                   "PROTOBUF_FIELD_OFFSET($classname$::Impl_::Split, "
                   "$field_name$_),");
+            } else if (oneof) {
+              p->Emit({{"oneof_name", FieldMemberName(oneof)}},
+                      "PROTOBUF_FIELD_OFFSET($classname$, $oneof_name$),");
             } else {
               p->Emit(
                   "PROTOBUF_FIELD_OFFSET($classname$, $field_member_name$),");

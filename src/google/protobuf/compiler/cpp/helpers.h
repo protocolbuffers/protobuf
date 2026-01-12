@@ -216,7 +216,13 @@ std::string ResolveKeyword(absl::string_view name);
 PROTOC_EXPORT std::string FieldName(const FieldDescriptor* field);
 
 // Returns the (unqualified) private member name for this field in C++ code.
-std::string FieldMemberName(const FieldDescriptor* field, bool split);
+std::string FieldMemberNameNonOneof(const FieldDescriptor* field, bool split);
+std::string FieldMemberName(const FieldDescriptor* field, const Options& opts);
+std::string FieldMemberName(const OneofDescriptor* oneof);
+
+// DO NOT SUBMIT: DOC
+bool MessageFieldUsesBaseClass(const FieldDescriptor* field,
+                               const Options& options);
 
 // Returns an estimate of the compiler's alignment for the field.  This
 // can't guarantee to be correct because the generated code could be compiled on

@@ -649,16 +649,99 @@ std::string FieldName(const FieldDescriptor* field) {
                                     NameKind::kFunction);
 }
 
-std::string FieldMemberName(const FieldDescriptor* field, bool split) {
-  absl::string_view prefix = "_impl_.";
-  absl::string_view split_prefix = split ? "_split_->" : "";
-  if (field->real_containing_oneof() == nullptr) {
-    return absl::StrCat(prefix, split_prefix, FieldName(field), "_");
+static absl::string_view CppStringTypeName(
+    FieldDescriptor::CppStringType type) {
+  switch (type) {
+    case FieldDescriptor::CppStringType::kCord:
+      return "Cord";
+    case FieldDescriptor::CppStringType::kView:
+      return "View";
+    case FieldDescriptor::CppStringType::kString:
+      return "String";
+    default:
+      internal::Unreachable();
+  }
+}
+
+std::string FieldMemberNameNonOneof(const FieldDescriptor* field, bool split) {
+  ABSL_CHECK(field->real_containing_oneof() == nullptr);
+  const absl::string_view prefix = "_impl_.";
+  return absl::StrCat(prefix, split ? "_split_->" : "", FieldName(field), "_");
+}
+
+std::string FieldMemberName(const FieldDescriptor* field, const Options& opts) {
+  const bool split = ShouldSplit(field, opts);
+  const auto* oneof = field->real_containing_oneof();
+  if (oneof == nullptr) {
+    return FieldMemberNameNonOneof(field, split);
   }
   // Oneof fields are never split.
   ABSL_CHECK(!split);
-  return absl::StrCat(prefix, field->containing_oneof()->name(), "_.",
-                      FieldName(field), "_");
+
+  // Oneof fields have special naming for grouping.
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_UINT64:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+    case FieldDescriptor::CPPTYPE_BOOL:
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return absl::StrCat(FieldMemberName(oneof), "._", field->cpp_type_name(),
+                          "_");
+    case FieldDescriptor::CPPTYPE_STRING:
+      return absl::StrCat(FieldMemberName(oneof), "._",
+                          CppStringTypeName(field->cpp_string_type()), "_");
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      if (IsLazy(field, opts)) {
+        return absl::StrCat(FieldMemberName(oneof), "._lazy_message_");
+      }
+      if (MessageFieldUsesBaseClass(field, opts)) {
+        return absl::StrCat(FieldMemberName(oneof), "._Message_");
+      }
+      return absl::StrCat(FieldMemberName(oneof), ".", FieldName(field), "_");
+  }
+}
+
+std::string FieldMemberName(const OneofDescriptor* oneof) {
+  const absl::string_view prefix = "_impl_.";
+  return absl::StrCat(prefix, oneof->name(), "_");
+}
+
+bool MessageFieldUsesBaseClass(const FieldDescriptor* field,
+                               const Options& options) {
+  if (IsImplicitWeakField(field, options)) return true;
+  if (IsLikelyPresent(field, options)) return false;
+
+  auto* oneof = field->real_containing_oneof();
+  if (oneof == nullptr) return false;
+
+  int num_message = 0;
+  for (auto* f : FieldRange(oneof)) {
+    num_message += f->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+                   !IsLazy(f, options);
+
+    // For non-weak oneof fields, we choose to use a base class pointer when the
+    // oneof has many message fields in it.  Using a base class here is not
+    // about correctness, but about performance and binary size.
+    //
+    // This allows the compiler to merge all the different switch cases (since
+    // the code is identical for all message alternatives) reducing binary size.
+    // The runtime dispatch is effectively changed from a switch statement to a
+    // virtual function call. For many oneofs, it completely elides the switch
+    // dispatch.
+    //
+    // This constant is a tradeoff. We want to allow optimizations (like
+    // inlining) on small oneofs. For small oneofs the compiler can use faster
+    // alternatives to table-based jumps. Also, the technique used here has less
+    // of a binary size win for small oneofs.
+    static constexpr int kMaxStaticTypeCount = 3;
+    if (num_message >= kMaxStaticTypeCount) {
+      return true;
+    }
+  }
+  return false;
 }
 
 std::string OneofCaseConstantName(const FieldDescriptor* field) {

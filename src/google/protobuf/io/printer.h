@@ -684,7 +684,16 @@ class PROTOBUF_EXPORT Printer {
     return absl::MakeCleanup([this] { substitution_listener_ = nullptr; });
   }
 
+  // DO NOT SUBMIT DOCUMENT.
+  std::string DryRun(absl::FunctionRef<void(io::Printer*)> handler) const;
+
  private:
+  struct DryRunTag {};
+  Printer(DryRunTag, ZeroCopyOutputStream* output, const Printer& from)
+      : sink_(output),
+        options_(from.options_),
+        var_lookups_(from.var_lookups_) {}
+
   struct PrintOptions;
   struct Format;
 

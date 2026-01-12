@@ -100,7 +100,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
 
   void GeneratePrivateMembers(io::Printer* p) const override {
     p->Emit(R"cc(
-      $Type$ $name$_;
+      $Type$ $member$;
     )cc");
   }
 
@@ -111,9 +111,17 @@ class SingularPrimitive final : public FieldGeneratorBase {
   }
 
   void GenerateMergingCode(io::Printer* p) const override {
-    p->Emit(R"cc(
-      _this->$field_$ = from.$field_$;
-    )cc");
+    if (is_oneof()) {
+      // Copy the whole union to allow deduping between different trivial types.
+      p->Emit({{"oneof", FieldMemberName(field_->real_containing_oneof())}},
+              R"cc(
+                _this->$oneof$ = from.$oneof$;
+              )cc");
+    } else {
+      p->Emit(R"cc(
+        _this->$field_$ = from.$field_$;
+      )cc");
+    }
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
@@ -242,13 +250,13 @@ void SingularPrimitive::GenerateSerializeWithCachedSizesToArray(
     p->Emit(R"cc(
       target =
           $pbi$::WireFormatLite::Write$declared_type$ToArrayWithField<$number$>(
-              stream, this_._internal_$name$(), target);
+              stream, this_.$field_$, target);
     )cc");
   } else {
     p->Emit(R"cc(
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::Write$DeclaredType$ToArray(
-          $number$, this_._internal_$name$(), target);
+          $number$, this_.$field_$, target);
     )cc");
   }
 }
@@ -268,15 +276,15 @@ void SingularPrimitive::GenerateByteSize(io::Printer* p) const {
   // free inside of WireFormatLite, so we can save an instruction here.
   if (tag_size == 1) {
     p->Emit(R"cc(
-      total_size += ::_pbi::WireFormatLite::$DeclaredType$SizePlusOne(
-          this_._internal_$name$());
+      total_size +=
+          ::_pbi::WireFormatLite::$DeclaredType$SizePlusOne(this_.$field_$);
     )cc");
     return;
   }
 
   p->Emit(R"cc(
-    total_size += $kTagBytes$ + ::_pbi::WireFormatLite::$DeclaredType$Size(
-                                    this_._internal_$name$());
+    total_size += $kTagBytes$ +
+                  ::_pbi::WireFormatLite::$DeclaredType$Size(this_.$field_$);
   )cc");
 }
 

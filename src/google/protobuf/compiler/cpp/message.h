@@ -89,6 +89,12 @@ class MessageGenerator {
   using GeneratorFunction = FieldGeneratorBase::GeneratorFunction;
   enum class InitType { kConstexpr, kArena, kArenaCopy };
 
+  template <typename Input>
+  void EmitOneofHandler(
+      io::Printer* p, const Input& fields, absl::string_view prefix,
+      absl::FunctionRef<void(const FieldDescriptor*, io::Printer*)>
+          field_handler) const;
+
   // Generate declarations and definitions of accessors for fields.
   void GenerateFieldAccessorDeclarations(io::Printer* p);
   void GenerateFieldAccessorDefinitions(io::Printer* p);

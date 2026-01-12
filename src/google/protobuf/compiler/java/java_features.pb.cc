@@ -489,35 +489,35 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
   if (CheckHasBit(cached_has_bits, 0x00000002U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
-        1, this_._internal_legacy_closed_enum(), target);
+        1, this_._impl_.legacy_closed_enum_, target);
   }
 
   // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteEnumToArray(
-        2, this_._internal_utf8_validation(), target);
+    target = ::_pbi::WireFormatLite::WriteEnumToArray(2,
+                                                      this_._impl_.utf8_validation_, target);
   }
 
   // optional bool large_enum = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
   if (CheckHasBit(cached_has_bits, 0x00000004U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
-        3, this_._internal_large_enum(), target);
+        3, this_._impl_.large_enum_, target);
   }
 
   // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
   if (CheckHasBit(cached_has_bits, 0x00000008U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
-        4, this_._internal_use_old_outer_classname_default(), target);
+        4, this_._impl_.use_old_outer_classname_default_, target);
   }
 
   // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
   if (CheckHasBit(cached_has_bits, 0x00000010U)) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteEnumToArray(
-        5, this_._internal_nest_in_file_class(), target);
+    target = ::_pbi::WireFormatLite::WriteEnumToArray(5,
+                                                      this_._impl_.nest_in_file_class_, target);
   }
 
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
@@ -549,13 +549,13 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
   if (BatchCheckHasBit(cached_has_bits, 0x00000011U)) {
     // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size += 1 +
-                    ::_pbi::WireFormatLite::EnumSize(this_._internal_utf8_validation());
+      total_size +=
+          1 + ::_pbi::WireFormatLite::EnumSize(this_._impl_.utf8_validation_);
     }
     // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      total_size += 1 +
-                    ::_pbi::WireFormatLite::EnumSize(this_._internal_nest_in_file_class());
+      total_size +=
+          1 + ::_pbi::WireFormatLite::EnumSize(this_._impl_.nest_in_file_class_);
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,

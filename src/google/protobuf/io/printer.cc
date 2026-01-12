@@ -32,6 +32,7 @@
 #include "absl/strings/strip.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 namespace google {
 namespace protobuf {
@@ -300,6 +301,17 @@ Printer::Printer(ZeroCopyOutputStream* output, Options options)
 Printer::Printer(ZeroCopyOutputStream* output, char variable_delimiter,
                  AnnotationCollector* annotation_collector)
     : Printer(output, Options{variable_delimiter, annotation_collector}) {}
+
+std::string Printer::DryRun(
+    absl::FunctionRef<void(io::Printer*)> handler) const {
+  std::string out;
+  {
+    io::StringOutputStream stream(&out);
+    io::Printer printer(DryRunTag{}, &stream, *this);
+    handler(&printer);
+  }
+  return out;
+}
 
 absl::string_view Printer::LookupVar(absl::string_view var) {
   auto result = LookupInFrameStack(var, absl::MakeSpan(var_lookups_));
