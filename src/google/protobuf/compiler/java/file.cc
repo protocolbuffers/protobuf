@@ -266,6 +266,18 @@ bool FileGenerator::Validate(std::string* error) {
         << "name for the .proto file to be safe.";
   }
 
+  google::protobuf::internal::VisitDescriptors(*file_, [&](const EnumDescriptor& enm) {
+    if (enm.containing_type() != nullptr &&
+        enm.containing_type()->name() == enm.name()) {
+      absl::StrAppend(
+          error, file_->name(),
+          ": Cannot generate Java output because the enum \"", enm.full_name(),
+          "\" would be an enum nested inside a class with the same name, "
+          "which is not allowed in the Java language. "
+          "Please rename either the enum or containing message name.\n");
+    }
+  });
+
   // Check that no field is a closed enum with implicit presence. For normal
   // cases this will be rejected by protoc before the generator is invoked, but
   // for cases like legacy_closed_enum it may reach the generator.
