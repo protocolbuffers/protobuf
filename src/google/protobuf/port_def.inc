@@ -416,35 +416,30 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #error PROTOBUF_CONSTINIT was previously defined
 #endif
 
-// Lexan sets both MSV_VER and clang, so handle it with the clang path.
-#if defined(_MSC_VER) && !defined(__clang__)
-// MSVC 17 currently seems to raise an error about constant-initialized pointers.
-# if PROTOBUF_MSC_VER_MIN(1930)
+#if defined(PROTOBUF_USE_DLLS) && (defined(_WIN32) || defined(__CYGWIN__))
+// On Windows, `constinit` structures cannot include pointers to dllimport
+// symbols, which are defined in another dll. If libprotobuf is built as a dll,
+// generated parse tables breaks this. See
+// https://github.com/protocolbuffers/protobuf/issues/10159 and
+// https://github.com/protocolbuffers/protobuf/pull/13240. Work around this by
+// suppressing `constinit`.
 #define PROTOBUF_CONSTINIT
-# endif
 #elif defined(__GNUC__) && !defined(__clang__)
 // GCC doesn't support constinit aggregate initialization of absl::Cord.
-# if PROTOBUF_GNUC_MIN(12, 2)
 #define PROTOBUF_CONSTINIT
-# endif
-#else
-# if defined(__cpp_constinit) && !defined(__CYGWIN__)
+#elif defined(__cpp_constinit)
 #define PROTOBUF_CONSTINIT constinit
-#  define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+#define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
 // Some older Clang versions incorrectly raise an error about
 // constant-initializing weak default instance pointers. Versions 12.0 and
 // higher seem to work, except that XCode 12.5.1 shows the error even though it
 // uses Clang 12.0.5.
-#elif !defined(__CYGWIN__) && !defined(__MINGW32__) &&                 \
-    ABSL_HAVE_CPP_ATTRIBUTE(clang::require_constant_initialization) && \
-    ((defined(__APPLE__) && PROTOBUF_CLANG_MIN(13, 0)) ||              \
+#elif ABSL_HAVE_CPP_ATTRIBUTE(clang::require_constant_initialization) && \
+    ((defined(__APPLE__) && PROTOBUF_CLANG_MIN(13, 0)) ||                \
      (!defined(__APPLE__) && PROTOBUF_CLANG_MIN(12, 0)))
 #define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
-#  define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-# endif
-#endif
-
-#ifndef PROTOBUF_CONSTINIT
+#define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+#else
 #define PROTOBUF_CONSTINIT
 #endif
 
