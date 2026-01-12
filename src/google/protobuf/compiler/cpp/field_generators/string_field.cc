@@ -134,7 +134,7 @@ class SingularString : public FieldGeneratorBase {
 
   void GenerateMemberConstexprConstructor(io::Printer* p) const override {
     if (is_inlined()) {
-      p->Emit("$name$_(nullptr, false)");
+      p->Emit("$name$_{}");
     } else {
       p->Emit(
           "$name$_(\n"
@@ -195,12 +195,6 @@ void SingularString::GenerateStaticMembers(io::Printer* p) const {
   if (!EmptyDefault()) {
     p->Emit(R"cc(
       static const $pbi$::LazyString $default_variable_name$;
-    )cc");
-  }
-  if (is_inlined()) {
-    // `_init_inline_xxx` is used for initializing default instances.
-    p->Emit(R"cc(
-      static ::std::true_type _init_inline_$name$_;
     )cc");
   }
 }

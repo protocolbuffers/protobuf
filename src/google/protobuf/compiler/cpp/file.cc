@@ -650,7 +650,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
           };
 
           PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const $type$ $name$
               __attribute__((section("$section$")));
         )cc");
   } else {
@@ -670,28 +670,8 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
           };
 
           PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
-        )cc");
-  }
-
-  for (int i = 0; i < generator->descriptor()->field_count(); ++i) {
-    const FieldDescriptor* field = generator->descriptor()->field(i);
-    if (!IsStringInlined(field, options_)) {
-      continue;
-    }
-
-    // Force the initialization of the inlined string in the default instance.
-    p->Emit(
-        {
-            {"class", ClassName(generator->descriptor())},
-            {"field", FieldName(field)},
-            {"default", DefaultInstanceName(generator->descriptor(), options_)},
-            {"member", FieldMemberName(field, ShouldSplit(field, options_))},
-        },
-        R"cc(
-          PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::std::true_type
-              $class$::Impl_::_init_inline_$field$_ =
-                  ($default$._instance.$member$.Init(), ::std::true_type{});
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const $type$ $name$
+                  ABSL_ATTRIBUTE_SECTION_VARIABLE(".data.rel.ro");
         )cc");
   }
 
@@ -783,7 +763,7 @@ void FileGenerator::GenerateInternalForwardDeclarations(
         p->Emit({{"type", DefaultInstanceType(instance, options_)},
                  {"name", DefaultInstanceName(instance, options_)}},
                 R"cc(
-                  extern __attribute__((weak)) $type$ $name$;
+                  extern __attribute__((weak)) const $type$ $name$;
                 )cc");
       }
     }
@@ -1467,12 +1447,14 @@ class FileGenerator::ForwardDeclarations {
               Sub("class", c.first).AnnotatedAs(desc),
               {"default_type", DefaultInstanceType(desc, options)},
               {"default_name", DefaultInstanceName(desc, options)},
+              {"const",
+               IsFileDescriptorProto(desc->file(), options) ? "" : "const"},
               {"classdata_type", ClassDataType(desc, options)},
           },
           R"cc(
             class $class$;
             struct $default_type$;
-            $dllexport_decl $extern $default_type$ $default_name$;
+            $dllexport_decl $extern $const $$default_type$ $default_name$;
             $dllexport_decl $extern const $pbi$::$classdata_type$ $class$_class_data_;
           )cc");
     }

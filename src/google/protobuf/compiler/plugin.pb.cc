@@ -58,7 +58,8 @@ struct VersionDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 VersionDefaultTypeInternal _Version_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const VersionDefaultTypeInternal _Version_default_instance_
+        ABSL_ATTRIBUTE_SECTION_VARIABLE(".data.rel.ro");
 
 inline constexpr CodeGeneratorResponse_File::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -93,7 +94,8 @@ struct CodeGeneratorResponse_FileDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorResponse_FileDefaultTypeInternal _CodeGeneratorResponse_File_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorResponse_FileDefaultTypeInternal _CodeGeneratorResponse_File_default_instance_
+        ABSL_ATTRIBUTE_SECTION_VARIABLE(".data.rel.ro");
 
 inline constexpr CodeGeneratorResponse::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -133,7 +135,8 @@ struct CodeGeneratorResponseDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorResponseDefaultTypeInternal _CodeGeneratorResponse_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorResponseDefaultTypeInternal _CodeGeneratorResponse_default_instance_
+        ABSL_ATTRIBUTE_SECTION_VARIABLE(".data.rel.ro");
 
 inline constexpr CodeGeneratorRequest::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -189,7 +192,8 @@ struct CodeGeneratorRequestDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorRequestDefaultTypeInternal _CodeGeneratorRequest_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorRequestDefaultTypeInternal _CodeGeneratorRequest_default_instance_
+        ABSL_ATTRIBUTE_SECTION_VARIABLE(".data.rel.ro");
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
