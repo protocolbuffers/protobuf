@@ -1786,7 +1786,9 @@ MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
       if (field->is_required()) {
         result.contains_required = true;
       }
+      PROTOBUF_IGNORE_DEPRECATION_START
       if (field->options().weak()) {
+        PROTOBUF_IGNORE_DEPRECATION_STOP
         result.contains_weak = true;
       }
       switch (field->type()) {

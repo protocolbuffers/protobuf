@@ -7981,7 +7981,9 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
     // if weak fields exist or not so that we don't need to force building
     // weak dependencies. However the name lookup rules for symbols are
     // somewhat complicated, so I defer it too another CL.
+    PROTOBUF_IGNORE_DEPRECATION_START
     bool is_weak = !pool_->enforce_weak_ && proto.options().weak();
+    PROTOBUF_IGNORE_DEPRECATION_STOP
     bool is_lazy = pool_->lazily_build_dependencies_ && !is_weak;
 
     Symbol type =
@@ -10585,7 +10587,10 @@ bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
 
 HasbitMode GetFieldHasbitModeWithoutProfile(const FieldDescriptor* field) {
   // Do not generate hasbits for "real-oneof", weak, or extension fields.
-  if (field->real_containing_oneof() || field->options().weak() ||
+  PROTOBUF_IGNORE_DEPRECATION_START
+  const bool field_is_weak = field->options().weak();
+  PROTOBUF_IGNORE_DEPRECATION_STOP
+  if (field->real_containing_oneof() || field_is_weak ||
       field->is_extension()) {
     return HasbitMode::kNoHasbit;
   }
