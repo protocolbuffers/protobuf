@@ -30,11 +30,12 @@ jobs:
         bazelversion: [ '7.6.1', '8.0.0' ]
         bzlmod: [ true, false ]
         toolchain_resolution:
-          # Default flags, uses from-source protoc
-          - ""
-          # still uses from-source protoc unless 
-          # --@com_google_protobuf//bazel/toolchains:prefer_prebuilt_protoc is set
-          - "--incompatible_enable_proto_toolchain_resolution=true"
+          # Skip toolchain resolution, use //:protoc cc_binary target directly; uses from-source protoc
+          - "--noincompatible_enable_proto_toolchain_resolution"
+          # still uses from-source protoc because 
+          # --@com_google_protobuf//bazel/toolchains:prefer_prebuilt_protoc is not set
+          # We must do this because we test a prerelease of protobuf which would violate the cross-version-runtime-guarantee
+          - "--incompatible_enable_proto_toolchain_resolution --no@protobuf//bazel/toolchains:prefer_prebuilt_protoc"
     runs-on: ${{ matrix.runner }}-latest
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Examples ${{ matrix.runner }} ${{ matrix.bazelversion }}${{ matrix.bzlmod && ' (bzlmod)' || '' }} ${{ matrix.toolchain_resolution && ' (toolchain resolution)' || '' }}
     steps:
