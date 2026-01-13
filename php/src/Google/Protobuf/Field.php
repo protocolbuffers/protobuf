@@ -136,7 +136,7 @@ class Field extends \Google\Protobuf\Internal\Message
      * @param int $var one of the values in {@see \Google\Protobuf\Field\Kind}
      * @return $this
      */
-    public function setKind($var)
+    public function setKind(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Field\Kind::class);
         $this->kind = $var;
@@ -162,7 +162,7 @@ class Field extends \Google\Protobuf\Internal\Message
      * @param int $var one of the values in {@see \Google\Protobuf\Field\Cardinality}
      * @return $this
      */
-    public function setCardinality($var)
+    public function setCardinality(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Field\Cardinality::class);
         $this->cardinality = $var;
@@ -188,7 +188,7 @@ class Field extends \Google\Protobuf\Internal\Message
      * @param int $var
      * @return $this
      */
-    public function setNumber($var)
+    public function setNumber(int $var)
     {
         GPBUtil::checkInt32($var);
         $this->number = $var;
@@ -214,7 +214,7 @@ class Field extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setName($var)
+    public function setName(string $var)
     {
         GPBUtil::checkString($var, True);
         $this->name = $var;
@@ -242,7 +242,7 @@ class Field extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setTypeUrl($var)
+    public function setTypeUrl(string $var)
     {
         GPBUtil::checkString($var, True);
         $this->type_url = $var;
@@ -270,7 +270,7 @@ class Field extends \Google\Protobuf\Internal\Message
      * @param int $var
      * @return $this
      */
-    public function setOneofIndex($var)
+    public function setOneofIndex(int $var)
     {
         GPBUtil::checkInt32($var);
         $this->oneof_index = $var;
@@ -296,9 +296,8 @@ class Field extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setPacked($var)
+    public function setPacked(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->packed = $var;
 
         return $this;
@@ -322,7 +321,7 @@ class Field extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Option[] $var
      * @return $this
      */
-    public function setOptions($var)
+    public function setOptions(array|RepeatedField $var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Option::class);
         $this->options = $arr;
@@ -348,7 +347,7 @@ class Field extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setJsonName($var)
+    public function setJsonName(string $var)
     {
         GPBUtil::checkString($var, True);
         $this->json_name = $var;
@@ -374,7 +373,7 @@ class Field extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setDefaultValue($var)
+    public function setDefaultValue(string $var)
     {
         GPBUtil::checkString($var, True);
         $this->default_value = $var;

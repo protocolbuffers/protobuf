@@ -391,48 +391,48 @@ std::string LabelForField(const FieldDescriptor* field) {
 
 std::string PhpSetterTypeName(const FieldDescriptor* field,
                               const Options& options) {
-  std::string type;
   if (field->is_map()) {
-    type = "array|\\Google\\Protobuf\\Internal\\MapField";
-  } else if (field->is_repeated()) {
-    type = "array|RepeatedField";
-  } else {
-    switch (field->type()) {
-      case FieldDescriptor::TYPE_INT32:
-      case FieldDescriptor::TYPE_UINT32:
-      case FieldDescriptor::TYPE_SINT32:
-      case FieldDescriptor::TYPE_FIXED32:
-      case FieldDescriptor::TYPE_SFIXED32:
-      case FieldDescriptor::TYPE_ENUM:
-        type = "int";
-        break;
-      case FieldDescriptor::TYPE_INT64:
-      case FieldDescriptor::TYPE_UINT64:
-      case FieldDescriptor::TYPE_SINT64:
-      case FieldDescriptor::TYPE_FIXED64:
-      case FieldDescriptor::TYPE_SFIXED64:
-        type = "int|string";
-        break;
-      case FieldDescriptor::TYPE_DOUBLE:
-      case FieldDescriptor::TYPE_FLOAT:
-        type = "float";
-        break;
-      case FieldDescriptor::TYPE_BOOL:
-        type = "bool";
-        break;
-      case FieldDescriptor::TYPE_STRING:
-      case FieldDescriptor::TYPE_BYTES:
-        type = "string";
-        break;
-      case FieldDescriptor::TYPE_MESSAGE:
-        type = absl::StrCat("\\", FullClassName(field->message_type(), options));
-        break;
-      case FieldDescriptor::TYPE_GROUP:
-        return "null";
-      default:
-        assert(false);
-        return "";
-    }
+    return "array|\\Google\\Protobuf\\Internal\\MapField";
+  }
+  if (field->is_repeated()) {
+    return "array|RepeatedField";
+  }
+  std::string type;
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_FIXED32:
+    case FieldDescriptor::TYPE_SFIXED32:
+    case FieldDescriptor::TYPE_ENUM:
+      type = "int";
+      break;
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_FIXED64:
+    case FieldDescriptor::TYPE_SFIXED64:
+      type = "int|string";
+      break;
+    case FieldDescriptor::TYPE_DOUBLE:
+    case FieldDescriptor::TYPE_FLOAT:
+      type = "float";
+      break;
+    case FieldDescriptor::TYPE_BOOL:
+      type = "bool";
+      break;
+    case FieldDescriptor::TYPE_STRING:
+    case FieldDescriptor::TYPE_BYTES:
+      type = "string";
+      break;
+    case FieldDescriptor::TYPE_MESSAGE:
+      type = absl::StrCat("\\", FullClassName(field->message_type(), options));
+      break;
+    case FieldDescriptor::TYPE_GROUP:
+      return "null";
+    default:
+      assert(false);
+      return "";
   }
   if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     return absl::StrCat(type, "|null");

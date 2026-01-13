@@ -70,7 +70,7 @@ class Value extends \Google\Protobuf\Internal\Message
      * @param int $var one of the values in {@see \Google\Protobuf\NullValue}
      * @return $this
      */
-    public function setNullValue($var)
+    public function setNullValue(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\NullValue::class);
         $this->writeOneof(1, $var);
@@ -101,9 +101,8 @@ class Value extends \Google\Protobuf\Internal\Message
      * @param float $var
      * @return $this
      */
-    public function setNumberValue($var)
+    public function setNumberValue(float $var)
     {
-        GPBUtil::checkDouble($var);
         $this->writeOneof(2, $var);
 
         return $this;
@@ -132,7 +131,7 @@ class Value extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setStringValue($var)
+    public function setStringValue(string $var)
     {
         GPBUtil::checkString($var, True);
         $this->writeOneof(3, $var);
@@ -163,9 +162,8 @@ class Value extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setBoolValue($var)
+    public function setBoolValue(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->writeOneof(4, $var);
 
         return $this;
@@ -194,7 +192,7 @@ class Value extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Struct $var
      * @return $this
      */
-    public function setStructValue($var)
+    public function setStructValue(\Google\Protobuf\Struct|null $var)
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Struct::class);
         $this->writeOneof(5, $var);
@@ -225,7 +223,7 @@ class Value extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\ListValue $var
      * @return $this
      */
-    public function setListValue($var)
+    public function setListValue(\Google\Protobuf\ListValue|null $var)
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\ListValue::class);
         $this->writeOneof(6, $var);

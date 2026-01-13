@@ -97,7 +97,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setName($var)
+    public function setName(string $var)
     {
         GPBUtil::checkString($var, True);
         $this->name = $var;
@@ -135,7 +135,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setInputType($var)
+    public function setInputType(string $var)
     {
         GPBUtil::checkString($var, True);
         $this->input_type = $var;
@@ -167,7 +167,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setOutputType($var)
+    public function setOutputType(string $var)
     {
         GPBUtil::checkString($var, True);
         $this->output_type = $var;
@@ -199,7 +199,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\MethodOptions $var
      * @return $this
      */
-    public function setOptions($var)
+    public function setOptions(\Google\Protobuf\Internal\MethodOptions|null $var)
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\MethodOptions::class);
         $this->options = $var;
@@ -235,9 +235,8 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setClientStreaming($var)
+    public function setClientStreaming(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->client_streaming = $var;
 
         return $this;
@@ -271,9 +270,8 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setServerStreaming($var)
+    public function setServerStreaming(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->server_streaming = $var;
 
         return $this;

@@ -546,7 +546,7 @@ class PhpImplementationTest extends TestBase
     {
         $this->expectException(TypeError::class);
         $this->expectExceptionMessage(
-            'Argument #1 ($var) must be of type Foo\TestMessage\Sub, array given');
+            'Argument #1 ($var) must be of type ?Foo\TestMessage\Sub, array given');
 
         $m = new TestMessage([
             'optional_message' => [
@@ -555,39 +555,48 @@ class PhpImplementationTest extends TestBase
         ]);
     }
 
+    public function testArrayConstructorWithNullValues()
+    {
+        $requestData = [
+            'optional_message' => null,
+        ];
+
+        $m = new TestMessage($requestData);
+        $this->assertSame(null, $m->getOptionalMessage());
+    }
+
     /**
      * @dataProvider provideArrayConstructorWithNullValuesThrowsException
      */
-    public function testArrayConstructorWithNullValuesThrowsException($requestData)
+    public function testArrayConstructorWithNullValuesThrowsException($fieldName)
     {
         $this->expectException(TypeError::class);
         $this->expectExceptionMessage('Argument #1 ($var) must be of type');
 
-        $m = new TestMessage($requestData);
+        $m = new TestMessage([$fieldName => null]);
     }
 
     public function provideArrayConstructorWithNullValuesThrowsException()
     {
         return [
-            [['optional_bool' => null]],
-            [['optional_string' => null]],
-            [['optional_bytes' => null]],
-            [['optional_message' => null]],
-            [['optional_int32' => null]],
-            [['optional_int64' => null]],
-            [['optional_uint32' => null]],
-            [['optional_uint64' => null]],
-            [['optional_sint32' => null]],
-            [['optional_sint64' => null]],
-            [['optional_fixed32' => null]],
-            [['optional_fixed64' => null]],
-            [['optional_sfixed32' => null]],
-            [['optional_sfixed64' => null]],
-            [['optional_float' => null]],
-            [['optional_double' => null]],
-            [['optional_enum' => null]],
-            [['repeated_int32' => null]],
-            [['map_int32_int32' => null]],
+            ['optional_bool'],
+            ['optional_string'],
+            ['optional_bytes'],
+            ['optional_int32'],
+            ['optional_int64'],
+            ['optional_uint32'],
+            ['optional_uint64'],
+            ['optional_sint32'],
+            ['optional_sint64'],
+            ['optional_fixed32'],
+            ['optional_fixed64'],
+            ['optional_sfixed32'],
+            ['optional_sfixed64'],
+            ['optional_float'],
+            ['optional_double'],
+            ['optional_enum'],
+            ['repeated_int32'],
+            ['map_int32_int32'],
         ];
     }
 }

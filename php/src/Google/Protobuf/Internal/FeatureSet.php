@@ -101,7 +101,7 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
      * @param int $var one of the values in {@see \Google\Protobuf\Internal\FeatureSet\FieldPresence}
      * @return $this
      */
-    public function setFieldPresence($var)
+    public function setFieldPresence(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\FieldPresence::class);
         $this->field_presence = $var;
@@ -133,7 +133,7 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
      * @param int $var one of the values in {@see \Google\Protobuf\Internal\FeatureSet\EnumType}
      * @return $this
      */
-    public function setEnumType($var)
+    public function setEnumType(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\EnumType::class);
         $this->enum_type = $var;
@@ -165,7 +165,7 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
      * @param int $var one of the values in {@see \Google\Protobuf\Internal\FeatureSet\RepeatedFieldEncoding}
      * @return $this
      */
-    public function setRepeatedFieldEncoding($var)
+    public function setRepeatedFieldEncoding(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\RepeatedFieldEncoding::class);
         $this->repeated_field_encoding = $var;
@@ -197,7 +197,7 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
      * @param int $var one of the values in {@see \Google\Protobuf\Internal\FeatureSet\Utf8Validation}
      * @return $this
      */
-    public function setUtf8Validation($var)
+    public function setUtf8Validation(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\Utf8Validation::class);
         $this->utf8_validation = $var;
@@ -229,7 +229,7 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
      * @param int $var one of the values in {@see \Google\Protobuf\Internal\FeatureSet\MessageEncoding}
      * @return $this
      */
-    public function setMessageEncoding($var)
+    public function setMessageEncoding(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\MessageEncoding::class);
         $this->message_encoding = $var;
@@ -261,7 +261,7 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
      * @param int $var one of the values in {@see \Google\Protobuf\Internal\FeatureSet\JsonFormat}
      * @return $this
      */
-    public function setJsonFormat($var)
+    public function setJsonFormat(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\JsonFormat::class);
         $this->json_format = $var;
@@ -293,7 +293,7 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
      * @param int $var one of the values in {@see \Google\Protobuf\Internal\FeatureSet\EnforceNamingStyle}
      * @return $this
      */
-    public function setEnforceNamingStyle($var)
+    public function setEnforceNamingStyle(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\EnforceNamingStyle::class);
         $this->enforce_naming_style = $var;
@@ -325,7 +325,7 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
      * @param int $var one of the values in {@see \Google\Protobuf\Internal\FeatureSet\VisibilityFeature\DefaultSymbolVisibility}
      * @return $this
      */
-    public function setDefaultSymbolVisibility($var)
+    public function setDefaultSymbolVisibility(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\VisibilityFeature\DefaultSymbolVisibility::class);
         $this->default_symbol_visibility = $var;

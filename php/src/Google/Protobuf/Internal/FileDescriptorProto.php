@@ -186,7 +186,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setName($var)
+    public function setName(string $var)
     {
         GPBUtil::checkString($var, True);
         $this->name = $var;
@@ -222,7 +222,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setPackage($var)
+    public function setPackage(string $var)
     {
         GPBUtil::checkString($var, True);
         $this->package = $var;
@@ -248,7 +248,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param string[] $var
      * @return $this
      */
-    public function setDependency($var)
+    public function setDependency(array|RepeatedField $var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
         $this->dependency = $arr;
@@ -274,7 +274,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param int[] $var
      * @return $this
      */
-    public function setPublicDependency($var)
+    public function setPublicDependency(array|RepeatedField $var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::INT32);
         $this->public_dependency = $arr;
@@ -302,7 +302,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param int[] $var
      * @return $this
      */
-    public function setWeakDependency($var)
+    public function setWeakDependency(array|RepeatedField $var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::INT32);
         $this->weak_dependency = $arr;
@@ -330,7 +330,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param string[] $var
      * @return $this
      */
-    public function setOptionDependency($var)
+    public function setOptionDependency(array|RepeatedField $var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
         $this->option_dependency = $arr;
@@ -356,7 +356,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\DescriptorProto[] $var
      * @return $this
      */
-    public function setMessageType($var)
+    public function setMessageType(array|RepeatedField $var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\DescriptorProto::class);
         $this->message_type = $arr;
@@ -378,7 +378,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\EnumDescriptorProto[] $var
      * @return $this
      */
-    public function setEnumType($var)
+    public function setEnumType(array|RepeatedField $var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\EnumDescriptorProto::class);
         $this->enum_type = $arr;
@@ -400,7 +400,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\ServiceDescriptorProto[] $var
      * @return $this
      */
-    public function setService($var)
+    public function setService(array|RepeatedField $var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\ServiceDescriptorProto::class);
         $this->service = $arr;
@@ -422,7 +422,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\FieldDescriptorProto[] $var
      * @return $this
      */
-    public function setExtension($var)
+    public function setExtension(array|RepeatedField $var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\FieldDescriptorProto::class);
         $this->extension = $arr;
@@ -454,7 +454,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\FileOptions $var
      * @return $this
      */
-    public function setOptions($var)
+    public function setOptions(\Google\Protobuf\Internal\FileOptions|null $var)
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FileOptions::class);
         $this->options = $var;
@@ -496,7 +496,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\SourceCodeInfo $var
      * @return $this
      */
-    public function setSourceCodeInfo($var)
+    public function setSourceCodeInfo(\Google\Protobuf\Internal\SourceCodeInfo|null $var)
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\SourceCodeInfo::class);
         $this->source_code_info = $var;
@@ -542,7 +542,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setSyntax($var)
+    public function setSyntax(string $var)
     {
         GPBUtil::checkString($var, True);
         $this->syntax = $var;
@@ -584,7 +584,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param int $var one of the values in {@see \Google\Protobuf\Internal\Edition}
      * @return $this
      */
-    public function setEdition($var)
+    public function setEdition(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\Edition::class);
         $this->edition = $var;

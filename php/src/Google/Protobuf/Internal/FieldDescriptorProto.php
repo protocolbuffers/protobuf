@@ -192,7 +192,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setName($var)
+    public function setName(string $var)
     {
         GPBUtil::checkString($var, True);
         $this->name = $var;
@@ -224,7 +224,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param int $var
      * @return $this
      */
-    public function setNumber($var)
+    public function setNumber(int $var)
     {
         GPBUtil::checkInt32($var);
         $this->number = $var;
@@ -256,7 +256,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param int $var one of the values in {@see \Google\Protobuf\Internal\FieldDescriptorProto\Label}
      * @return $this
      */
-    public function setLabel($var)
+    public function setLabel(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldDescriptorProto\Label::class);
         $this->label = $var;
@@ -294,7 +294,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param int $var one of the values in {@see \Google\Protobuf\Internal\FieldDescriptorProto\Type}
      * @return $this
      */
-    public function setType($var)
+    public function setType(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldDescriptorProto\Type::class);
         $this->type = $var;
@@ -338,7 +338,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setTypeName($var)
+    public function setTypeName(string $var)
     {
         GPBUtil::checkString($var, True);
         $this->type_name = $var;
@@ -376,7 +376,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setExtendee($var)
+    public function setExtendee(string $var)
     {
         GPBUtil::checkString($var, True);
         $this->extendee = $var;
@@ -418,7 +418,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setDefaultValue($var)
+    public function setDefaultValue(string $var)
     {
         GPBUtil::checkString($var, True);
         $this->default_value = $var;
@@ -456,7 +456,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param int $var
      * @return $this
      */
-    public function setOneofIndex($var)
+    public function setOneofIndex(int $var)
     {
         GPBUtil::checkInt32($var);
         $this->oneof_index = $var;
@@ -498,7 +498,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setJsonName($var)
+    public function setJsonName(string $var)
     {
         GPBUtil::checkString($var, True);
         $this->json_name = $var;
@@ -530,7 +530,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\FieldOptions $var
      * @return $this
      */
-    public function setOptions($var)
+    public function setOptions(\Google\Protobuf\Internal\FieldOptions|null $var)
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FieldOptions::class);
         $this->options = $var;
@@ -600,9 +600,8 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setProto3Optional($var)
+    public function setProto3Optional(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->proto3_optional = $var;
 
         return $this;
