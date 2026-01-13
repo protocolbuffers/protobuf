@@ -65,7 +65,16 @@ PyObject* Add(RepeatedCompositeContainer* self, PyObject* args,
 }
 
 static PyObject* AddMethod(PyObject* self, PyObject* args, PyObject* kwargs) {
-  return Add(reinterpret_cast<RepeatedCompositeContainer*>(self), args, kwargs);
+  PyObject* result;
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(self);
+#endif
+  result =
+      Add(reinterpret_cast<RepeatedCompositeContainer*>(self), args, kwargs);
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION();
+#endif
+  return result;
 }
 
 // ---------------------------------------------------------------------
@@ -88,14 +97,24 @@ static PyObject* AddMessage(RepeatedCompositeContainer* self, PyObject* value) {
 }
 
 static PyObject* AppendMethod(PyObject* pself, PyObject* value) {
+  PyObject* result = Py_None;
+
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(pself);
+#endif
+
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
   ScopedPyObjectPtr py_cmsg(AddMessage(self, value));
+
   if (py_cmsg == nullptr) {
-    return nullptr;
+    result = nullptr;
   }
 
-  Py_RETURN_NONE;
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION();
+#endif
+  return result;
 }
 
 // ---------------------------------------------------------------------
@@ -110,6 +129,9 @@ static PyObject* Insert(PyObject* pself, PyObject* args) {
     return nullptr;
   }
 
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(pself);
+#endif
   ScopedPyObjectPtr py_cmsg(AddMessage(self, value));
   if (py_cmsg == nullptr) {
     return nullptr;
@@ -126,8 +148,11 @@ static PyObject* Insert(PyObject* pself, PyObject* args) {
   for (Py_ssize_t i = length; i > end_index; i--) {
     reflection->SwapElements(message, field_descriptor, i, i - 1);
   }
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION()
+#endif
 
-  Py_RETURN_NONE;
+      Py_RETURN_NONE;
 }
 
 // ---------------------------------------------------------------------
@@ -163,7 +188,15 @@ PyObject* Extend(RepeatedCompositeContainer* self, PyObject* value) {
 }
 
 static PyObject* ExtendMethod(PyObject* self, PyObject* value) {
-  return Extend(reinterpret_cast<RepeatedCompositeContainer*>(self), value);
+  PyObject* result;
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(self);
+#endif
+  result = Extend(reinterpret_cast<RepeatedCompositeContainer*>(self), value);
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION()
+#endif
+      return result;
 }
 
 PyObject* MergeFrom(RepeatedCompositeContainer* self, PyObject* other) {
@@ -171,7 +204,16 @@ PyObject* MergeFrom(RepeatedCompositeContainer* self, PyObject* other) {
 }
 
 static PyObject* MergeFromMethod(PyObject* self, PyObject* other) {
-  return MergeFrom(reinterpret_cast<RepeatedCompositeContainer*>(self), other);
+  PyObject* result;
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(self);
+#endif
+  result =
+      MergeFrom(reinterpret_cast<RepeatedCompositeContainer*>(self), other);
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION()
+#endif
+      return result;
 }
 
 // This function does not check the bounds.
@@ -236,7 +278,16 @@ PyObject* Subscript(RepeatedCompositeContainer* self, PyObject* item) {
 }
 
 static PyObject* SubscriptMethod(PyObject* self, PyObject* slice) {
-  return Subscript(reinterpret_cast<RepeatedCompositeContainer*>(self), slice);
+  PyObject* result;
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(self);
+#endif
+  result =
+      Subscript(reinterpret_cast<RepeatedCompositeContainer*>(self), slice);
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION()
+#endif
+      return result;
 }
 
 int AssignSubscript(RepeatedCompositeContainer* self, PyObject* slice,
@@ -252,8 +303,16 @@ int AssignSubscript(RepeatedCompositeContainer* self, PyObject* slice,
 
 static int AssignSubscriptMethod(PyObject* self, PyObject* slice,
                                  PyObject* value) {
-  return AssignSubscript(reinterpret_cast<RepeatedCompositeContainer*>(self),
-                         slice, value);
+  int result;
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(self);
+#endif
+  result = AssignSubscript(reinterpret_cast<RepeatedCompositeContainer*>(self),
+                           slice, value);
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION()
+#endif
+      return result;
 }
 
 static PyObject* Remove(PyObject* pself, PyObject* value) {
@@ -272,7 +331,15 @@ static PyObject* Remove(PyObject* pself, PyObject* value) {
     }
     if (result) {
       ScopedPyObjectPtr py_index(PyLong_FromSsize_t(i));
-      if (AssignSubscript(self, py_index.get(), nullptr) < 0) {
+      int status;
+#ifdef Py_GIL_DISABLED
+      Py_BEGIN_CRITICAL_SECTION(pself);
+#endif
+      status = AssignSubscript(self, py_index.get(), nullptr);
+#ifdef Py_GIL_DISABLED
+      Py_END_CRITICAL_SECTION()
+#endif
+          if (status < 0) {
         return nullptr;
       }
       Py_RETURN_NONE;
@@ -383,7 +450,16 @@ static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
     }
   }
 
-  if (SortPythonMessages(self, args, kwds) < 0) {
+  int result;
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(pself);
+#endif
+  result = SortPythonMessages(self, args, kwds);
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION()
+#endif
+
+      if (result < 0) {
     return nullptr;
   }
   Py_RETURN_NONE;
@@ -411,7 +487,16 @@ static PyObject* Reverse(PyObject* pself) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
 
-  if (ReversePythonMessages(self) < 0) {
+  int result;
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(pself);
+#endif
+  result = ReversePythonMessages(self);
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION()
+#endif
+
+      if (result < 0) {
     return nullptr;
   }
   Py_RETURN_NONE;
@@ -419,6 +504,9 @@ static PyObject* Reverse(PyObject* pself) {
 
 // ---------------------------------------------------------------------
 static PyObject* Clear(PyObject* pself) {
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(pself);
+#endif
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
   CMessage* cmessage = self->parent;
@@ -427,7 +515,10 @@ static PyObject* Clear(PyObject* pself) {
   const Reflection* reflection = message->GetReflection();
   Py_ssize_t length = reflection->FieldSize(*message, field_descriptor);
   cmessage::DeleteLastRepeatedWithSize(cmessage, field_descriptor, length);
-  Py_RETURN_NONE;
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION()
+#endif
+      Py_RETURN_NONE;
 }
 
 static PyObject* Item(PyObject* pself, Py_ssize_t index) {
@@ -451,7 +542,15 @@ static PyObject* Pop(PyObject* pself, PyObject* args) {
     return nullptr;
   }
   ScopedPyObjectPtr py_index(PyLong_FromSsize_t(index));
-  if (AssignSubscript(self, py_index.get(), nullptr) < 0) {
+  int status;
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(pself);
+#endif
+  status = AssignSubscript(self, py_index.get(), nullptr);
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION()
+#endif
+      if (status < 0) {
     return nullptr;
   }
   return item;
@@ -539,7 +638,7 @@ PyTypeObject RepeatedCompositeContainer_Type = {
 #if PY_VERSION_HEX >= 0x03080000
     0,  //  tp_vectorcall_offset
 #else
-    nullptr,             //  tp_print
+    nullptr,  //  tp_print
 #endif
     nullptr,                                   //  tp_getattr
     nullptr,                                   //  tp_setattr
