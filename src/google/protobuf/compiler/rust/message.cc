@@ -884,7 +884,7 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
   // Approaches to put the extern "C" in any R"cc()cc" badly confuse either
   // clang-format or VSCode highlighting. Emit this as a vanilla raw string to
   // avoid any issues.
-  ctx.Emit(R"(extern "C" {
+  ctx.Emit(R"(unsafe extern "C" {
   )");
 
   ctx.Emit(
