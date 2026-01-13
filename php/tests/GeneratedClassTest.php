@@ -254,8 +254,11 @@ class GeneratedClassTest extends TestBase
         $m = new TestMessage();
 
         // Set integer.
-        $m->setOptionalUint32(MAX_UINT32);
-        $this->assertSame(-1, $m->getOptionalUint32());
+        if (PHP_INT_SIZE !== 4) {
+            // 32-bit systems throw "TypeError: Argument #1 must be of type int, float given"
+            $m->setOptionalUint32(MAX_UINT32);
+            $this->assertSame(-1, $m->getOptionalUint32());
+        }
         $m->setOptionalUint32(-1);
         $this->assertSame(-1, $m->getOptionalUint32());
         $m->setOptionalUint32(MIN_UINT32);
@@ -264,8 +267,11 @@ class GeneratedClassTest extends TestBase
         // Set float.
         @$m->setOptionalUint32(1.1);
         $this->assertSame(1, $m->getOptionalUint32());
-        $m->setOptionalUint32(MAX_UINT32_FLOAT);
-        $this->assertSame(-1, $m->getOptionalUint32());
+        if (PHP_INT_SIZE !== 4) {
+            // 32-bit systems throw "TypeError: Argument #1 must be of type int, float given"
+            $m->setOptionalUint32(MAX_UINT32_FLOAT);
+            $this->assertSame(-1, $m->getOptionalUint32());
+        }
         $m->setOptionalUint32(-1.0);
         $this->assertSame(-1, $m->getOptionalUint32());
         $m->setOptionalUint32(MIN_UINT32_FLOAT);
@@ -276,8 +282,11 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(2, $m->getOptionalUint32());
         @$m->setOptionalUint32('3.1');
         $this->assertSame(3, $m->getOptionalUint32());
-        $m->setOptionalUint32(MAX_UINT32_STRING);
-        $this->assertSame(-1, $m->getOptionalUint32());
+        if (PHP_INT_SIZE !== 4) {
+            // 32-bit systems throw "TypeError: Argument #1 must be of type int, float given"
+            $m->setOptionalUint32(MAX_UINT32_STRING);
+            $this->assertSame(-1, $m->getOptionalUint32());
+        }
         $m->setOptionalUint32('-1.0');
         $this->assertSame(-1, $m->getOptionalUint32());
         $m->setOptionalUint32(MIN_UINT32_STRING);
