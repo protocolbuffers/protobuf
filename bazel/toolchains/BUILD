@@ -46,8 +46,7 @@ filegroup(
 # The public API users set
 bool_flag(
     name = "prefer_prebuilt_protoc",
-    # TODO: this should be True after the feature is vetted with some adoption
-    build_setting_default = False,
+    build_setting_default = True,
 )
 
 config_setting(
