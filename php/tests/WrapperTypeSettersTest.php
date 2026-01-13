@@ -32,11 +32,11 @@ class WrapperTypeSettersTest extends TestBase
         $newSetterMsg = new $class();
         foreach ($sequence as list($value, $expectedValue)) {
             // Manually wrap the value to pass to the old setter
-            $wrappedValue = is_null($value) ? $value : new $wrapperClass(['value' => $value]);
+            $wrappedValue = is_null($value) ? $value : @new $wrapperClass(['value' => $value]);
 
             // Set values using new and old setters
             $oldSetterMsg->$setter($wrappedValue);
-            $newSetterMsg->$valueSetter($value);
+            @$newSetterMsg->$valueSetter($value);
 
             // Get expected values old getter
             $expectedValue = $oldSetterMsg->$getter();
@@ -149,7 +149,11 @@ class WrapperTypeSettersTest extends TestBase
     public function testUint64ValueUnwrappedInvalidString()
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Expect ');
+        if (extension_loaded('protobuf')) {
+            $this->expectExceptionMessage('Cannot convert ');
+        } else {
+            $this->expectExceptionMessage('Expect ');
+        }
         (new TestWrapperSetters())->setUInt64ValueUnwrapped('abc');
     }
 
@@ -158,7 +162,13 @@ class WrapperTypeSettersTest extends TestBase
      */
     public function testInvalidSetters($setter, $value)
     {
-        $this->expectException(TypeError::class);
+        if (extension_loaded('protobuf')) {
+            $this->expectException(Exception::class);
+            $this->expectExceptionMessage('Cannot convert ');
+        } else {
+            $this->expectException(TypeError::class);
+        }
+
         (new TestWrapperSetters())->$setter($value);
     }
 
