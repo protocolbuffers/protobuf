@@ -603,6 +603,13 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals(-1, $m->getOptionalInt32());
     }
 
+    public function testInvalidVarintLength() {
+        $this->expectException(Exception::class);
+
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin("0afaffffff0f"));
+    }
+
     private function makeRecursiveMessage($depth) {
         $m = new TestMessage();
         $m->setOptionalInt32(1);
