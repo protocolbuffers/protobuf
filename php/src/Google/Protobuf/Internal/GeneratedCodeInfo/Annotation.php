@@ -133,7 +133,7 @@ class Annotation extends \Google\Protobuf\Internal\Message
      */
     public function setSourceFile(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->source_file = $var;
 
         return $this;

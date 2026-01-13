@@ -99,7 +99,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setName(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->name = $var;
 
         return $this;
@@ -137,7 +137,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setInputType(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->input_type = $var;
 
         return $this;
@@ -169,7 +169,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setOutputType(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->output_type = $var;
 
         return $this;
@@ -201,7 +201,6 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setOptions(\Google\Protobuf\Internal\MethodOptions|null $var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\MethodOptions::class);
         $this->options = $var;
 
         return $this;

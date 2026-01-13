@@ -118,7 +118,6 @@ class FeatureSetEditionDefault extends \Google\Protobuf\Internal\Message
      */
     public function setOverridableFeatures(\Google\Protobuf\Internal\FeatureSet|null $var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FeatureSet::class);
         $this->overridable_features = $var;
 
         return $this;
@@ -154,7 +153,6 @@ class FeatureSetEditionDefault extends \Google\Protobuf\Internal\Message
      */
     public function setFixedFeatures(\Google\Protobuf\Internal\FeatureSet|null $var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FeatureSet::class);
         $this->fixed_features = $var;
 
         return $this;

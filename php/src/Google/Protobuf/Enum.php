@@ -102,7 +102,7 @@ class Enum extends \Google\Protobuf\Internal\Message
      */
     public function setName(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->name = $var;
 
         return $this;
@@ -190,7 +190,6 @@ class Enum extends \Google\Protobuf\Internal\Message
      */
     public function setSourceContext(\Google\Protobuf\SourceContext|null $var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\SourceContext::class);
         $this->source_context = $var;
 
         return $this;
@@ -242,7 +241,7 @@ class Enum extends \Google\Protobuf\Internal\Message
      */
     public function setEdition(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->edition = $var;
 
         return $this;

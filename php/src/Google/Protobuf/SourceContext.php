@@ -63,7 +63,7 @@ class SourceContext extends \Google\Protobuf\Internal\Message
      */
     public function setFileName(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->file_name = $var;
 
         return $this;

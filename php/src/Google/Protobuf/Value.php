@@ -133,7 +133,7 @@ class Value extends \Google\Protobuf\Internal\Message
      */
     public function setStringValue(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->writeOneof(3, $var);
 
         return $this;
@@ -194,7 +194,6 @@ class Value extends \Google\Protobuf\Internal\Message
      */
     public function setStructValue(\Google\Protobuf\Struct|null $var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Struct::class);
         $this->writeOneof(5, $var);
 
         return $this;
@@ -225,7 +224,6 @@ class Value extends \Google\Protobuf\Internal\Message
      */
     public function setListValue(\Google\Protobuf\ListValue|null $var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\ListValue::class);
         $this->writeOneof(6, $var);
 
         return $this;

@@ -72,7 +72,7 @@ class NamePart extends \Google\Protobuf\Internal\Message
      */
     public function setNamePart(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->name_part = $var;
 
         return $this;

@@ -121,7 +121,7 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setName(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->name = $var;
 
         return $this;
@@ -285,7 +285,6 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setOptions(\Google\Protobuf\Internal\MessageOptions|null $var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\MessageOptions::class);
         $this->options = $var;
 
         return $this;

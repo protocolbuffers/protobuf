@@ -103,7 +103,7 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setName(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->name = $var;
 
         return $this;
@@ -157,7 +157,6 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setOptions(\Google\Protobuf\Internal\EnumOptions|null $var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\EnumOptions::class);
         $this->options = $var;
 
         return $this;

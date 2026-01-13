@@ -188,7 +188,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setName(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->name = $var;
 
         return $this;
@@ -224,7 +224,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setPackage(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->package = $var;
 
         return $this;
@@ -456,7 +456,6 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setOptions(\Google\Protobuf\Internal\FileOptions|null $var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FileOptions::class);
         $this->options = $var;
 
         return $this;
@@ -498,7 +497,6 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setSourceCodeInfo(\Google\Protobuf\Internal\SourceCodeInfo|null $var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\SourceCodeInfo::class);
         $this->source_code_info = $var;
 
         return $this;
@@ -544,7 +542,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setSyntax(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->syntax = $var;
 
         return $this;

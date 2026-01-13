@@ -150,7 +150,7 @@ class Declaration extends \Google\Protobuf\Internal\Message
      */
     public function setFullName(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->full_name = $var;
 
         return $this;
@@ -190,7 +190,7 @@ class Declaration extends \Google\Protobuf\Internal\Message
      */
     public function setType(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->type = $var;
 
         return $this;

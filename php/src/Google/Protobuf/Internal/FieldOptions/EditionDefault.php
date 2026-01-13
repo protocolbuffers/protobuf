@@ -105,7 +105,7 @@ class EditionDefault extends \Google\Protobuf\Internal\Message
      */
     public function setValue(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->value = $var;
 
         return $this;

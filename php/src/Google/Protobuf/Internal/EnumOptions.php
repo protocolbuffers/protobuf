@@ -264,7 +264,6 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      */
     public function setFeatures(\Google\Protobuf\Internal\FeatureSet|null $var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FeatureSet::class);
         $this->features = $var;
 
         return $this;

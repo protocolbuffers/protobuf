@@ -216,7 +216,7 @@ class Field extends \Google\Protobuf\Internal\Message
      */
     public function setName(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->name = $var;
 
         return $this;
@@ -244,7 +244,7 @@ class Field extends \Google\Protobuf\Internal\Message
      */
     public function setTypeUrl(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->type_url = $var;
 
         return $this;
@@ -349,7 +349,7 @@ class Field extends \Google\Protobuf\Internal\Message
      */
     public function setJsonName(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->json_name = $var;
 
         return $this;
@@ -375,7 +375,7 @@ class Field extends \Google\Protobuf\Internal\Message
      */
     public function setDefaultValue(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->default_value = $var;
 
         return $this;

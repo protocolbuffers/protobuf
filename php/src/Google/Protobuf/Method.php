@@ -128,7 +128,7 @@ class Method extends \Google\Protobuf\Internal\Message
      */
     public function setName(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->name = $var;
 
         return $this;
@@ -154,7 +154,7 @@ class Method extends \Google\Protobuf\Internal\Message
      */
     public function setRequestTypeUrl(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->request_type_url = $var;
 
         return $this;
@@ -205,7 +205,7 @@ class Method extends \Google\Protobuf\Internal\Message
      */
     public function setResponseTypeUrl(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->response_type_url = $var;
 
         return $this;
@@ -328,7 +328,7 @@ class Method extends \Google\Protobuf\Internal\Message
     public function setEdition(string $var)
     {
         @trigger_error('edition is deprecated.', E_USER_DEPRECATED);
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->edition = $var;
 
         return $this;

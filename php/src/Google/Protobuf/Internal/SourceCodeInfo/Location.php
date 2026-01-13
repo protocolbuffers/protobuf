@@ -382,7 +382,7 @@ class Location extends \Google\Protobuf\Internal\Message
      */
     public function setLeadingComments(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->leading_comments = $var;
 
         return $this;
@@ -414,7 +414,7 @@ class Location extends \Google\Protobuf\Internal\Message
      */
     public function setTrailingComments(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->trailing_comments = $var;
 
         return $this;

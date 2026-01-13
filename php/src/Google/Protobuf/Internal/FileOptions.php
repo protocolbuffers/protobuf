@@ -326,7 +326,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function setJavaPackage(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->java_package = $var;
 
         return $this;
@@ -370,7 +370,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function setJavaOuterClassname(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->java_outer_classname = $var;
 
         return $this;
@@ -585,7 +585,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function setGoPackage(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->go_package = $var;
 
         return $this;
@@ -814,7 +814,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function setObjcClassPrefix(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->objc_class_prefix = $var;
 
         return $this;
@@ -850,7 +850,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function setCsharpNamespace(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->csharp_namespace = $var;
 
         return $this;
@@ -892,7 +892,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function setSwiftPrefix(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->swift_prefix = $var;
 
         return $this;
@@ -930,7 +930,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function setPhpClassPrefix(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->php_class_prefix = $var;
 
         return $this;
@@ -970,7 +970,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function setPhpNamespace(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->php_namespace = $var;
 
         return $this;
@@ -1010,7 +1010,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function setPhpMetadataNamespace(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->php_metadata_namespace = $var;
 
         return $this;
@@ -1050,7 +1050,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function setRubyPackage(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->ruby_package = $var;
 
         return $this;
@@ -1092,7 +1092,6 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function setFeatures(\Google\Protobuf\Internal\FeatureSet|null $var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FeatureSet::class);
         $this->features = $var;
 
         return $this;

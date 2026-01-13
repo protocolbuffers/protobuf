@@ -845,16 +845,13 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
     } else {
       printer->Print(");\n");
     }
-  } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-    printer->Print("GPBUtil::checkMessage($var, \\^class_name^::class);\n",
-                   "class_name", FullClassName(field->message_type(), options));
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
     printer->Print("GPBUtil::checkEnum($var, \\^class_name^::class);\n",
                    "class_name", FullClassName(field->enum_type(), options));
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
     printer->Print(
         "GPBUtil::checkString($var, ^utf8^);\n", "utf8",
-        field->type() == FieldDescriptor::TYPE_STRING ? "True" : "False");
+        field->type() == FieldDescriptor::TYPE_STRING ? "true" : "false");
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_INT32 ||
              field->cpp_type() == FieldDescriptor::CPPTYPE_UINT32 ||
              field->cpp_type() == FieldDescriptor::CPPTYPE_INT64 ||

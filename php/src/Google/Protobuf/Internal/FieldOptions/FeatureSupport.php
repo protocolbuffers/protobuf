@@ -196,7 +196,7 @@ class FeatureSupport extends \Google\Protobuf\Internal\Message
      */
     public function setDeprecationWarning(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->deprecation_warning = $var;
 
         return $this;
@@ -274,7 +274,7 @@ class FeatureSupport extends \Google\Protobuf\Internal\Message
      */
     public function setRemovalError(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->removal_error = $var;
 
         return $this;

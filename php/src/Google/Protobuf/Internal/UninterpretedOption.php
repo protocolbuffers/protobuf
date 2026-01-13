@@ -131,7 +131,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      */
     public function setIdentifierValue(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->identifier_value = $var;
 
         return $this;
@@ -258,7 +258,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      */
     public function setStringValue(string $var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->string_value = $var;
 
         return $this;
@@ -290,7 +290,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      */
     public function setAggregateValue(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->aggregate_value = $var;
 
         return $this;

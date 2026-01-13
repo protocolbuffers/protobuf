@@ -227,7 +227,7 @@ class Any extends \Google\Protobuf\Internal\AnyBase
      */
     public function setTypeUrl(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->type_url = $var;
 
         return $this;
@@ -253,7 +253,7 @@ class Any extends \Google\Protobuf\Internal\AnyBase
      */
     public function setValue(string $var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->value = $var;
 
         return $this;
