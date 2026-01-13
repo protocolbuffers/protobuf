@@ -8,7 +8,8 @@
 #ifndef UPB_REFLECTION_ENUM_RESERVED_RANGE_INTERNAL_H_
 #define UPB_REFLECTION_ENUM_RESERVED_RANGE_INTERNAL_H_
 
-#include "upb/reflection/enum_reserved_range.h"
+#include "upb/reflection/def.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -23,7 +24,7 @@ upb_EnumReservedRange* _upb_EnumReservedRange_At(const upb_EnumReservedRange* r,
 // Allocate and initialize an array of |n| reserved ranges owned by |e|.
 upb_EnumReservedRange* _upb_EnumReservedRanges_New(
     upb_DefBuilder* ctx, int n,
-    const UPB_DESC(EnumDescriptorProto_EnumReservedRange*) const* protos,
+    const google_protobuf_EnumDescriptorProto_EnumReservedRange* const* protos,
     const upb_EnumDef* e);
 
 #ifdef __cplusplus

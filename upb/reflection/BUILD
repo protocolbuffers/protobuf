@@ -42,7 +42,10 @@ bootstrap_cc_library(
         "message.h",
         "message.hpp",
     ],
-    bootstrap_deps = [":internal"],
+    bootstrap_deps = [
+        ":internal",
+        ":descriptor_upb_proto",
+    ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [

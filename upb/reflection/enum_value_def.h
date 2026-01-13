@@ -11,6 +11,7 @@
 #define UPB_REFLECTION_ENUM_VALUE_DEF_H_
 
 #include "upb/reflection/common.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -25,10 +26,10 @@ bool upb_EnumValueDef_HasOptions(const upb_EnumValueDef* v);
 uint32_t upb_EnumValueDef_Index(const upb_EnumValueDef* v);
 UPB_API const char* upb_EnumValueDef_Name(const upb_EnumValueDef* v);
 UPB_API int32_t upb_EnumValueDef_Number(const upb_EnumValueDef* v);
-const UPB_DESC(EnumValueOptions) *
-    upb_EnumValueDef_Options(const upb_EnumValueDef* v);
-const UPB_DESC(FeatureSet) *
-    upb_EnumValueDef_ResolvedFeatures(const upb_EnumValueDef* e);
+const google_protobuf_EnumValueOptions* upb_EnumValueDef_Options(
+    const upb_EnumValueDef* v);
+const google_protobuf_FeatureSet* upb_EnumValueDef_ResolvedFeatures(
+    const upb_EnumValueDef* e);
 
 #ifdef __cplusplus
 } /* extern "C" */
