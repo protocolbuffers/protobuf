@@ -15,16 +15,6 @@
 
 upb_DefPool* get_global_symtab();
 
-// In PHP 8.1, mismatched tentative return types emit a deprecation notice.
-// https://wiki.php.net/rfc/internal_method_return_types
-//
-// When compiling for earlier php versions, the return type is dropped.
-#if PHP_VERSION_ID < 80100
-#define ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(       \
-    name, return_reference, required_num_args, type, allow_null) \
-  ZEND_BEGIN_ARG_INFO_EX(name, return_reference, required_num_args, allow_null)
-#endif
-
 ZEND_BEGIN_ARG_INFO(arginfo_void, 0)
 ZEND_END_ARG_INFO()
 

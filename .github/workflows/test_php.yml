@@ -29,23 +29,23 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - name: 8.1 Optimized
-            version: "8.1.14"
-            version-short: "8.1"
+          - name: 8.2 Optimized
+            version: "8.2.2"
+            version-short: "8.2"
             command: composer test && composer test_c
-          - name: 8.1 Debug
-            version: 8.1.14-dbg
-            version-short: "8.1"
+          - name: 8.2 Debug
+            version: 8.2.2-dbg
+            version-short: "8.2"
             command: composer test && composer test_c
-          - name: 8.1 Memory Leak
-            version: 8.1.14-dbg
-            version-short: "8.1"
+          - name: 8.2 Memory Leak
+            version: 8.2.2-dbg
+            version-short: "8.2"
             # Run specialized memory leak & multirequest tests.
             command: composer test_c && tests/multirequest.sh && tests/memory_leak_test.sh
             continuous-only: true
-          - name: 8.1 Valgrind
-            version: 8.1.14-dbg
-            version-short: "8.1"
+          - name: 8.2 Valgrind
+            version: 8.2.2-dbg
+            version-short: "8.2"
             command: composer test_valgrind
             continuous-only: true
           - name: 8.3 Optimized
@@ -65,7 +65,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:8.0.1-${{ matrix.version }}-b77fdae6d4771789dfc66a56bf8d806354e8011a
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:8.0.1-${{ matrix.version }}-9626718698895971df3953d4aa2321d7425f3c5f
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_linux/${{ matrix.version }}
           bash: |
@@ -83,7 +83,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        version: ['8.1']
+        version: ['8.2']
         suffix: [ '', '-zts']
         test: ['test', 'test_c']
         exclude:
@@ -102,7 +102,7 @@ jobs:
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux 32-bit ${{ matrix.version}}${{ matrix.suffix_name }}${{ matrix.test_name }}
     runs-on: ubuntu-22-4core
     env:
-      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:429f924aec315704b4233adcbe4b29006116f27769db98acd176b9eb69c31299
+      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:133077411f272f05164d49d36d51491bdf2915aaa7d4103caa1c9b370b11d29e
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
