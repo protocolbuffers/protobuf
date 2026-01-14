@@ -603,6 +603,38 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals(-1, $m->getOptionalInt32());
     }
 
+    public function testInvalidVarintLength() {
+        $this->expectException(Exception::class);
+
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin("0afaffffff0f"));
+    }
+
+    private function makeRecursiveMessage($depth) {
+        $m = new TestMessage();
+        $m->setOptionalInt32(1);
+        if ($depth == 0) {
+            return $m;
+        }
+        $m->setRecursive($this->makeRecursiveMessage($depth - 1));
+        return $m;
+    }
+
+    public function testRecursiveMessage() {
+        $payload = $this->makeRecursiveMessage(99)->serializeToString();
+
+        $m = new TestMessage();
+        $m->mergeFromString($payload);
+    }
+
+    public function testOverlyRecursiveMessage() {
+        $this->expectException(Exception::class);
+        $payload = $this->makeRecursiveMessage(101)->serializeToString();
+
+        $m = new TestMessage();
+        $m->mergeFromString($payload);
+    }
+
     public function testRandomFieldOrder()
     {
         $m = new TestRandomFieldOrder();
