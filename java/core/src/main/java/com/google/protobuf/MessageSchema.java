@@ -803,7 +803,7 @@ final class MessageSchema<T> implements Schema<T> {
   public boolean equals(T message, T other) {
     final int bufferLength = buffer.length;
     for (int pos = 0; pos < bufferLength; pos += INTS_PER_FIELD) {
-      if (!equals(message, other, pos)) {
+      if (!equalsAtPosition(message, other, pos)) {
         return false;
       }
     }
@@ -822,7 +822,7 @@ final class MessageSchema<T> implements Schema<T> {
     return true;
   }
 
-  private boolean equals(T message, T other, int pos) {
+  private boolean equalsAtPosition(T message, T other, int pos) {
     final int typeAndOffset = typeAndOffsetAt(pos);
     final long offset = offset(typeAndOffset);
 
