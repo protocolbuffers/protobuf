@@ -64,7 +64,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:7.6.1-{0}-5237f14696e60e4b050edfbf7ba9b374f37f83c6', matrix.version) }}
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:8.0.1-{0}-5237f14696e60e4b050edfbf7ba9b374f37f83c6', matrix.version) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: python_linux/${{ matrix.type }}_${{ matrix.version }}
           bazel: test ${{ matrix.targets }} ${{ matrix.flags }} ${{ matrix.nobzlmod && '--noenable_bzlmod' || '' }} --test_env=KOKORO_PYTHON_VERSION
@@ -115,7 +115,7 @@ jobs:
         env:
           KOKORO_PYTHON_VERSION: ${{ matrix.version }}
         with:
-          version: 7.6.1 # Bazel version
+          version: 8.0.1 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: python_macos/${{ matrix.type }}_${{ matrix.version }}
           bazel: >-

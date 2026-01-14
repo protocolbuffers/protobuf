@@ -27,7 +27,7 @@ jobs:
       fail-fast: false
       matrix:
         runner: [ ubuntu, windows, macos ]
-        bazelversion: [ '7.6.1', '8.0.0' ]
+        bazelversion: [ '8.0.0' ]
         bzlmod: [ true, false ]
         toolchain_resolution:
           # Default flags, uses from-source protoc
@@ -87,4 +87,4 @@ jobs:
           version: ${{ matrix.bazelversion }}
           bash: >
             cd examples/example_without_cc_toolchain;
-            bazel build //... $BAZEL_FLAGS --enable_bzlmod=true ${{ matrix.toolchain_resolution }};
+            bazel build //... $BAZEL_FLAGS ${{ matrix.toolchain_resolution }};

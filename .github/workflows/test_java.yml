@@ -48,11 +48,6 @@ jobs:
             cache_key: 'bazel7bzlmod'
             image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.6.1-e0df73e51131ccaf53451355d22577f377357604
             targets: //java/... //java/internal:java_version //compatibility/...
-          - name: Bazel7 Workspace
-            cache_key: 'bazel7nobzlmod'
-            image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.6.1-e0df73e51131ccaf53451355d22577f377357604
-            targets: //java/... //java/internal:java_version //compatibility/...
-            flags: --noenable_bzlmod
           # TODO: b/395623141 - restore this test once runtime uses / emulates aarch64.
           # - name: aarch64
           #   cache_key: 'aarch64'
