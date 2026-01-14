@@ -338,7 +338,7 @@ class CodedInputStream
         $byte_limit, &$old_limit, &$recursion_budget)
     {
         $old_limit = $this->pushLimit($byte_limit);
-        $recursion_limit = --$this->recursion_limit;
+        $recursion_budget = --$this->recursion_budget;
     }
 
     public function decrementRecursionDepthAndPopLimit($byte_limit)
