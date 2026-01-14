@@ -855,7 +855,8 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_INT32 ||
              field->cpp_type() == FieldDescriptor::CPPTYPE_UINT32 ||
              field->cpp_type() == FieldDescriptor::CPPTYPE_INT64 ||
-             field->cpp_type() == FieldDescriptor::CPPTYPE_UINT64) {
+             field->cpp_type() == FieldDescriptor::CPPTYPE_UINT64||
+             field->cpp_type() == FieldDescriptor::CPPTYPE_FLOAT) {
     printer->Print("GPBUtil::check^type^($var);\n", "type",
                    UnderscoresToCamelCase(field->cpp_type_name(), true));
   }

@@ -61,6 +61,7 @@ class FloatValue extends \Google\Protobuf\Internal\Message
      */
     public function setValue(float $var)
     {
+        GPBUtil::checkFloat($var);
         $this->value = $var;
 
         return $this;
