@@ -292,6 +292,7 @@ cc_test(
         "//upb/mem",
         "//upb/message",
         "//upb/port",
+        "//upb/wire",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

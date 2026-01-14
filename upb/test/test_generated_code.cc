@@ -12,16 +12,23 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
+#include <cstring>
 
 #include <gtest/gtest.h>
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
 #include "upb/base/status.h"
 #include "upb/base/string_view.h"
+#include "upb/mem/alloc.h"
+#include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/array.h"
 #include "upb/message/map.h"
+#include "upb/message/message.h"
 #include "upb/test/test.upb.h"
+#include "upb/wire/decode.h"
+#include "upb/wire/encode.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -909,4 +916,41 @@ TEST(GeneratedCode, Maps) {
   val.str_val = test_str_view2;
 
   upb_Map_Set(sb, key, val, arena.ptr());
+}
+
+TEST(GeneratedCode, MapWithRequiredFields) {
+  upb::Arena arena;
+  upb_test_ModelWithMaps* msg = upb_test_ModelWithMaps_new(arena.ptr());
+
+  auto im_required =
+      _upb_test_ModelWithMaps_map_im_required_mutable_upb_map(msg, arena.ptr());
+
+  ASSERT_NE(im_required, nullptr);
+
+  upb_MessageValue key, val;
+  key.int32_val = 0;
+  val.msg_val =
+      (const upb_Message*)upb_test_ModelWithRequiredFields_new(arena.ptr());
+
+  upb_Map_Set(im_required, key, val, arena.ptr());
+
+  // Serializing fails if we are checking required fields, but succeeds if we
+  // don't.
+  size_t size;
+  char* serialized = upb_test_ModelWithMaps_serialize_ex(
+      msg, kUpb_EncodeOption_CheckRequired, arena.ptr(), &size);
+  ASSERT_EQ(serialized, nullptr);
+
+  serialized = upb_test_ModelWithMaps_serialize_ex(msg, 0, arena.ptr(), &size);
+  ASSERT_NE(serialized, nullptr);
+
+  // Likewise, parsing fails if we are checking required fields, but succeeds
+  // if we don't.
+  upb_test_ModelWithMaps* msg2 = upb_test_ModelWithMaps_parse_ex(
+      serialized, size, nullptr, kUpb_DecodeOption_CheckRequired, arena.ptr());
+  ASSERT_EQ(msg2, nullptr);
+
+  msg2 = upb_test_ModelWithMaps_parse_ex(serialized, size, nullptr, 0,
+                                         arena.ptr());
+  ASSERT_NE(msg2, nullptr);
 }

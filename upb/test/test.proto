@@ -90,12 +90,17 @@ message ModelWithSubMessages {
   repeated ModelWithExtensions items = 6;
 }
 
+message ModelWithRequiredFields {
+  required int32 id = 1;
+}
+
 message ModelWithMaps {
   optional int32 id = 1;
   map<string, bytes> map_sb = 2;
   map<string, string> map_ss = 3;
   map<int32, int32> map_ii = 4;
   map<int32, ModelWithExtensions> map_im = 5;
+  map<int32, ModelWithRequiredFields> map_im_required = 6;
 }
 
 message ExtremeDefaults {
