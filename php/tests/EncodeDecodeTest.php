@@ -1603,7 +1603,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals($defaultValue, $to->getOneofFieldUnwrapped());
     }
 
-    public function wrappersDataProvider()
+    public static function wrappersDataProvider()
     {
         return [
             [TestInt32Value::class, 1, "1", 0, "0"],

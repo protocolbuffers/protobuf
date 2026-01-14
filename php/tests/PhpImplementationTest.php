@@ -582,7 +582,7 @@ class PhpImplementationTest extends TestBase
         $m = new TestMessage($requestData);
     }
 
-    public function provideArrayConstructorWithNullValuesThrowsException()
+    public static function provideArrayConstructorWithNullValuesThrowsException()
     {
         return [
             [['optional_int32' => null]],
