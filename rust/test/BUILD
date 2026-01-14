@@ -267,7 +267,10 @@ rust_cc_proto_library(
 proto_library(
     name = "bad_names_proto",
     testonly = True,
-    srcs = ["bad_names.proto"],
+    srcs = [
+        "bad_names.proto",
+        "more_test_protos/bad_names.proto",
+    ],
 )
 
 rust_cc_proto_library(

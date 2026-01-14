@@ -215,7 +215,7 @@ def _compile_cc(
     cc_info = cc_common.merge_cc_infos(direct_cc_infos = cc_infos)
 
     (compilation_context, compilation_outputs) = cc_common.compile(
-        name = src.basename,
+        name = src.short_path,
         actions = ctx.actions,
         feature_configuration = feature_configuration,
         cc_toolchain = cc_toolchain,
@@ -225,7 +225,7 @@ def _compile_cc(
     )
 
     (linking_context, _) = cc_common.create_linking_context_from_compilation_outputs(
-        name = src.basename,
+        name = src.short_path,
         actions = ctx.actions,
         feature_configuration = feature_configuration,
         cc_toolchain = cc_toolchain,
