@@ -8542,6 +8542,10 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
       AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
                "[lazy = true] can only be specified for submessage fields.");
     }
+    if (field->options().unverified_lazy() && field->is_extension()) {
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
+               "Extensions cannot be marked as unverified_lazy.");
+    }
   }
 
   // Only repeated primitive fields may be packed.
