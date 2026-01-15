@@ -1145,9 +1145,11 @@ filegroup(
 
 filegroup(
     name = "test_proto_all_srcs",
+    testonly = 1,
     srcs = [
         ":test_proto_editions_srcs",
         ":test_proto_srcs",
+        "//src/google/protobuf/test_protos:test_proto_srcs",
     ],
     visibility = ["//:__subpackages__"],
 )
@@ -2152,15 +2154,19 @@ cc_test(
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:io_win32",
         "//src/google/protobuf/stubs",
+        "//src/google/protobuf/test_protos:test_cc_protos",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
         "//src/google/protobuf/util:differencer",
         "@abseil-cpp//absl/base:config",
+        "@abseil-cpp//absl/flags:flag",
+        "@abseil-cpp//absl/flags:marshalling",
         "@abseil-cpp//absl/hash:hash_testing",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:scoped_mock_log",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/strings:str_format",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
