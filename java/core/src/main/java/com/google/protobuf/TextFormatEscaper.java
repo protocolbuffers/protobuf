@@ -10,37 +10,31 @@ package com.google.protobuf;
 /**
  * Provide text format escaping of proto instances. These ASCII characters are escaped:
  *
- * ASCII #7   (bell) --> \a
- * ASCII #8   (backspace) --> \b
- * ASCII #9   (horizontal tab) --> \t
- * ASCII #10  (linefeed) --> \n
- * ASCII #11  (vertical tab) --> \v
- * ASCII #13  (carriage return) --> \r
- * ASCII #12  (formfeed) --> \f
- * ASCII #34  (apostrophe) --> \'
- * ASCII #39  (straight double quote) --> \"
- * ASCII #92  (backslash) --> \\
- *
- * Other printable ASCII characters between 32 and 127 inclusive are output as is, unescaped.
- * Other ASCII characters less than 32 and all Unicode characters 128 or greater are
- * first encoded as UTF-8, then each byte is escaped individually as a 3-digit octal escape.
+ * <ul>
+ *   <li>ASCII #7 (bell) --> \a
+ *   <li>ASCII #8 (backspace) --> \b
+ *   <li>ASCII #9 (horizontal tab) --> \t
+ *   <li>ASCII #10 (linefeed) --> \n
+ *   <li>ASCII #11 (vertical tab) --> \v
+ *   <li>ASCII #13 (carriage return) --> \r
+ *   <li>ASCII #12 (formfeed) --> \f
+ *   <li>ASCII #34 (apostrophe) --> \'
+ *   <li>ASCII #39 (straight double quote) --> \"
+ *   <li>ASCII #92 (backslash) --> \\
+ *   <li>ASCII characters besides those three which are in the range [32..127] inclusive are output
+ *       as is, unescaped.
+ *   <li>All other bytes are escaped as octal sequences. If we are printing text, we convert to
+ *       UTF-8 and print any high codepoints as their UTF-8 encoded units in octal escapes.
+ * </ul>
  */
 final class TextFormatEscaper {
   private TextFormatEscaper() {}
 
-  private interface ByteSequence {
-    int size();
-
-    byte byteAt(int offset);
-  }
-
-  /**
-   * Backslash escapes bytes in the format used in protocol buffer text format.
-   */
-  static String escapeBytes(ByteSequence input) {
-    final StringBuilder builder = new StringBuilder(input.size());
-    for (int i = 0; i < input.size(); i++) {
-      byte b = input.byteAt(i);
+  /** Backslash escapes bytes in the format used in protocol buffer text format. */
+  static String escapeBytes(byte[] input) {
+    final StringBuilder builder = new StringBuilder(input.length);
+    for (int i = 0; i < input.length; i++) {
+      byte b = input[i];
       switch (b) {
         case 0x07:
           builder.append("\\a");
@@ -89,45 +83,25 @@ final class TextFormatEscaper {
     return builder.toString();
   }
 
-  /**
-   * Backslash escapes bytes in the format used in protocol buffer text format.
-   */
+  /** Backslash escapes bytes in the format used in protocol buffer text format. */
   static String escapeBytes(final ByteString input) {
-    return escapeBytes(
-        new ByteSequence() {
-          @Override
-          public int size() {
-            return input.size();
-          }
-
-          @Override
-          public byte byteAt(int offset) {
-            return input.byteAt(offset);
-          }
-        });
+    return escapeBytes(input.toByteArray());
   }
 
-  /** Like {@link #escapeBytes(ByteString)}, but used for byte array. */
-  static String escapeBytes(final byte[] input) {
-    return escapeBytes(
-        new ByteSequence() {
-          @Override
-          public int size() {
-            return input.length;
-          }
-
-          @Override
-          public byte byteAt(int offset) {
-            return input[offset];
-          }
-        });
+  static boolean needsEscape(char c) {
+    return c < 0x20 || c > 0x7e || c == '\'' || c == '"' || c == '\\';
   }
 
-  /**
-   * Like {@link #escapeBytes(ByteString)}, but escapes a text string.
-   */
+  /** Like {@link #escapeBytes(ByteString)}, but escapes a text string. */
   static String escapeText(String input) {
-    return escapeBytes(ByteString.copyFromUtf8(input));
+    // Loop on the string to see if any character even needs escaping. If yes, then convert into
+    // UTF-8 and then escape on those bytes. If not, we can just return the original input.
+    for (int i = 0; i < input.length(); ++i) {
+      if (needsEscape(input.charAt(i))) {
+        return escapeBytes(input.getBytes(Internal.UTF_8));
+      }
+    }
+    return input;
   }
 
   /** Escape double quotes and backslashes in a String for unicode output of a message. */
