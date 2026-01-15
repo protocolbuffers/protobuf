@@ -397,9 +397,9 @@ public abstract class CodedInputStream {
   /**
    * Read a {@code bytes} field value from the stream.
    *
-   * <p>The returned {@link ByteBuffer} may reference (alias) the underlying input buffer for
-   * decoders that are backed by an on-heap {@code byte[]} whose contents will not be overwritten or
-   * reused for the lifetime of the returned view, and when aliasing is enabled.
+   * <p>If aliasing is enabled, the returned {@link ByteBuffer} may reference (alias) the underlying
+   * input buffer for decoders that are backed by an on-heap {@code byte[]} whose contents will not
+   * be overwritten or reused for the lifetime of the returned view.
    *
    * <p>Safety contract: Callers should treat the returned buffer as read-only and should not rely
    * on its contents remaining valid after the input advances. If you need a stable, read-only view,
