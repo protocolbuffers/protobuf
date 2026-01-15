@@ -1805,9 +1805,9 @@ template <typename Element>
 inline void RepeatedPtrField<Element>::ExtractSubrangeWithArena(
     Arena* arena, int start, int num, Element** elements) {
   ABSL_DCHECK_EQ(arena, GetArena());
-  ABSL_DCHECK_GE(start, 0);
-  ABSL_DCHECK_GE(num, 0);
-  ABSL_DCHECK_LE(start + num, size());
+  internal::RuntimeAssertInBoundsGE(start, 0);
+  internal::RuntimeAssertInBoundsGE(num, 0);
+  internal::RuntimeAssertInBoundsLE(static_cast<int64_t>(start) + num, size());
 
   if (num == 0) return;
 
