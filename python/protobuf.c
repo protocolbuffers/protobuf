@@ -180,24 +180,58 @@ PyUpb_WeakMap* PyUpb_ObjCache_Instance(void) {
   return state->obj_cache;
 }
 
+static PyUpb_WeakMap* PyUpb_ObjCache_MaybeInstance(void) {
+  // During the shutdown sequence, our objects may need to be deallocated, or
+  // there may even still be attempts to *construct* new ones (in user code).
+  // At that point our state will be NULL, so all access to the cache has to be
+  // no-op.
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  if (!state) {
+    return NULL;
+  }
+  return state->obj_cache;
+}
+
 void PyUpb_ObjCache_Add(const void* key, PyObject* py_obj) {
-  PyUpb_WeakMap_Add(PyUpb_ObjCache_Instance(), key, py_obj);
+  PyUpb_WeakMap* cache = PyUpb_ObjCache_MaybeInstance();
+  if (!cache) {
+    return;
+  }
+  PyUpb_WeakMap_Add(cache, key, py_obj);
 }
 
 void PyUpb_ObjCache_Delete(const void* key) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
-  if (!state) {
-    // During the shutdown sequence, our object's Dealloc() methods can be
-    // called *after* our module Dealloc() method has been called.  At that
-    // point our state will be NULL and there is nothing to delete out of the
-    // map.
+  PyUpb_WeakMap* cache = PyUpb_ObjCache_MaybeInstance();
+  if (!cache) {
     return;
   }
-  PyUpb_WeakMap_Delete(state->obj_cache, key);
+  PyUpb_WeakMap_Delete(cache, key);
 }
 
 PyObject* PyUpb_ObjCache_Get(const void* key) {
-  return PyUpb_WeakMap_Get(PyUpb_ObjCache_Instance(), key);
+  PyUpb_WeakMap* cache = PyUpb_ObjCache_MaybeInstance();
+  if (!cache) {
+    // When the interpreter is finalizing, the state may not be available, so
+    // we don't try to find existing objects in the object cache - in order to
+    // prevent a crash. Unfortunately, doing this can lead to different
+    // semantics in protobuf APIs during shutdown. For example:
+    //
+    //   m = MyMessage()
+    //
+    //   # Returns true most of the time, but false during shutdown.
+    //   assert(m.submsg is m.submsg)
+    //   assert(Py_IsFinalizing());
+    //
+    //
+    //   # Returns true most of the time, but false during shutdown.
+    //   assert(foo_pb2.DESCRIPTOR.message_types_by_name['Bar'] is
+    //          foo_pb2.DESCRIPTOR.message_types_by_name['Bar')
+#if PY_VERSION_HEX >= 0x030D0000  // >= 3.13
+    assert(Py_IsFinalizing());
+#endif
+    return NULL;
+  }
+  return PyUpb_WeakMap_Get(cache, key);
 }
 
 // -----------------------------------------------------------------------------
