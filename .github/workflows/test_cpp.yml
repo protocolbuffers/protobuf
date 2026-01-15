@@ -418,6 +418,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
+      # --cxxopt="-std:c++17"
         include:
           - name: MacOS Bazel
             os: macos-14
@@ -431,6 +432,10 @@ jobs:
             os: windows-2022
             cache_key: windows-2022-msvc-cl
             bazel: test //src/...  --config=msvc-cl --test_tag_filters=-conformance --build_tag_filters=-conformance
+          - name: Windows Bazel C++20
+            os: windows-2022
+            cache_key: windows-2022-msvc-cl
+            bazel: test //src/...  --config=msvc-cl --cxxopt="-std:c++20" --test_tag_filters=-conformance --build_tag_filters=-conformance
           - name: Windows Bazel clang-cl
             os: windows-2022
             cache_key: windows-2022-clang-cl
@@ -467,6 +472,7 @@ jobs:
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
               -Dprotobuf_BUILD_SHARED_LIBS=OFF
               -Dprotobuf_BUILD_EXAMPLES=ON
+              -DCMAKE_CXX_STANDARD=20
             vsversion: '2022'
             cache-prefix: windows-2022-cmake
           - name: Windows CMake 32-bit
