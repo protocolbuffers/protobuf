@@ -7,9 +7,7 @@
 
 #include "google/protobuf/compiler/csharp/csharp_message_field.h"
 
-#include <sstream>
-
-#include "google/protobuf/compiler/code_generator.h"
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/csharp/csharp_doc_comment.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 #include "google/protobuf/compiler/csharp/csharp_options.h"
