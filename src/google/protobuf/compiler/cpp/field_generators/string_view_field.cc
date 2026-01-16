@@ -138,7 +138,7 @@ class SingularStringView : public FieldGeneratorBase {
 
   void GenerateMemberConstexprConstructor(io::Printer* p) const override {
     if (is_inlined()) {
-      p->Emit("$name$_(nullptr, false)");
+      p->Emit("$name$_{}");
     } else if (use_micro_string()) {
       if (EmptyDefault()) {
         p->Emit("$name$_{}");
@@ -216,12 +216,6 @@ void SingularStringView::GenerateStaticMembers(io::Printer* p) const {
         static const $pbi$::LazyString $default_variable_name$;
       )cc");
     }
-  }
-  if (is_inlined()) {
-    // `_init_inline_xxx` is used for initializing default instances.
-    p->Emit(R"cc(
-      static ::std::true_type _init_inline_$name$_;
-    )cc");
   }
 }
 
