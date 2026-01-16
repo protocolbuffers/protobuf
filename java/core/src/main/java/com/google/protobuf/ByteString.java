@@ -542,8 +542,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *     instead.
    */
   @Deprecated
-  public static ByteString copyFrom(String text, String charsetName)
-      throws UnsupportedEncodingException {
+  public
+  static ByteString copyFrom(String text, String charsetName) throws UnsupportedEncodingException {
     return text.isEmpty() ? EMPTY : new LiteralByteString(text.getBytes(charsetName));
   }
 
@@ -905,7 +905,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @deprecated Use either {@link #toStringUtf8()} or {@link #toString(Charset)} instead.
    */
   @Deprecated
-  public final String toString(String charsetName) throws UnsupportedEncodingException {
+  public
+  final String toString(String charsetName) throws UnsupportedEncodingException {
     try {
       return toString(Charset.forName(charsetName));
     } catch (UnsupportedCharsetException e) {
