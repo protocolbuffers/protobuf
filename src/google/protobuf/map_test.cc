@@ -12,23 +12,25 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
-#include <random>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/container/flat_hash_set.h"
 #include "absl/random/distributions.h"
 #include "absl/random/random.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/map_proto2_unittest.pb.h"
+#include "google/protobuf/map_proto3_unittest.pb.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/reflection_tester.h"
 #include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_import.pb.h"
 
 
 #define UNITTEST ::proto2_unittest
