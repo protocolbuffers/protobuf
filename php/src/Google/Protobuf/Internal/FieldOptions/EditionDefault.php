@@ -67,7 +67,7 @@ class EditionDefault extends \Google\Protobuf\Internal\Message
      * @param int $var one of the values in {@see \Google\Protobuf\Internal\Edition}
      * @return $this
      */
-    public function setEdition($var)
+    public function setEdition(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\Edition::class);
         $this->edition = $var;
@@ -103,9 +103,9 @@ class EditionDefault extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setValue($var)
+    public function setValue(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->value = $var;
 
         return $this;
