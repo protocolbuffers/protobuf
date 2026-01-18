@@ -1258,6 +1258,20 @@ TEST(MessageDifferencerTest, SpecifiedFieldsEqualityAllTest) {
   EXPECT_TRUE(differencer.CompareWithFields(msg1, msg2, fields1, fields2));
 }
 
+TEST(MessageDifferencerTest, SpecifiedFieldsPresenceTest) {
+  unittest::TestAllTypes msg1;
+  unittest::TestAllTypes msg2;
+  msg1.mutable_optional_nested_message();
+  util::MessageDifferencer differencer;
+  EXPECT_FALSE(differencer.Equals(msg1, msg2));
+
+  const Descriptor* desc = msg1.GetDescriptor();
+  const FieldDescriptor* optional_nested_message_desc =
+      desc->FindFieldByName("optional_nested_message");
+  std::vector<const FieldDescriptor*> fields = {optional_nested_message_desc};
+  EXPECT_FALSE(differencer.CompareWithFields(msg1, msg2, fields, fields));
+}
+
 TEST(MessageDifferencerTest, SpecifiedFieldsInequalityAllTest) {
   unittest::TestAllTypes msg1;
   unittest::TestAllTypes msg2;
