@@ -2063,4 +2063,25 @@ class GeneratedClassTest extends TestBase
         // test forwardslash on new line
         $this->assertContains("* /\n", $docComment);
     }
+
+    public function testForeachOnMessageDoesNotSegfault()
+    {
+        // Regression test for issue #22173
+        // https://github.com/protocolbuffers/protobuf/issues/22173
+        //
+        // Attempting to iterate a protobuf Message with foreach should not
+        // cause a segmentation fault. While messages are not meant to be
+        // iterable (they have fixed fields, not dynamic properties), we
+        // should handle this gracefully by returning an empty iteration
+        // rather than crashing.
+        $m = new TestMessage();
+        $m->setOptionalInt32(42);
+        $m->setOptionalString("test");
+
+        $count = 0;
+        foreach ($m as $key => $value) {
+        }
+
+        $this->assertTrue(true);
+    }
 }
