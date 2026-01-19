@@ -349,8 +349,8 @@ public final class GeneratorNames {
   }
 
   private static boolean getNestInFileClass(ServiceDescriptor descriptor) {
-   return getNestInFileClass(
-       descriptor.getFile(), descriptor.getFeatures().getExtension(JavaFeaturesProto.java_));
+    return getNestInFileClass(
+        descriptor.getFile(), descriptor.getFeatures().getExtension(JavaFeaturesProto.java_));
   }
 
   /** Returns the name of the given descriptor without the package name prefix. */
