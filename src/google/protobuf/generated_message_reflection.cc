@@ -3538,10 +3538,16 @@ void Reflection::PopulateTcParseFastEntries(
       *fast_entries++ = {GetFastParseFunction(nonfield->func),
                          {nonfield->coded_tag, nonfield->nonfield_info}};
     } else if (auto* as_field = fast_field.AsField()) {
-      *fast_entries++ = {
-          GetFastParseFunction(as_field->func),
-          {as_field->coded_tag, as_field->hasbit_idx, as_field->aux_idx,
-           static_cast<uint16_t>(schema_.GetFieldOffset(as_field->field))}};
+      const uint32_t field_offset = schema_.GetFieldOffset(as_field->field);
+      if (static_cast<uint16_t>(field_offset) == field_offset) {
+        *fast_entries++ = {
+            GetFastParseFunction(as_field->func),
+            {as_field->coded_tag, as_field->hasbit_idx, as_field->aux_idx,
+             static_cast<uint16_t>(field_offset)}};
+      } else {
+        // The offset is too large, so just ignore the fast field.
+        *fast_entries++ = {internal::TcParser::MiniParse, {}};
+      }
     } else {
       ABSL_DCHECK(fast_field.is_empty());
       // No fast entry here. Use mini parser.

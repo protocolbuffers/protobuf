@@ -1831,6 +1831,7 @@ cc_test(
         ":cpp_features_cc_proto",
         ":port",
         ":protobuf",
+        ":protobuf_lite",
         ":test_util",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
