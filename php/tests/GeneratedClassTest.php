@@ -44,6 +44,23 @@ class TestMessageMockProxy extends TestMessage
 
 class GeneratedClassTest extends TestBase
 {
+    private $orig_level;
+
+    /**
+     * @before
+     */
+    public function setErrorLevel()
+    {
+        $this->orig_level = error_reporting();
+    }
+
+    /**
+     * @after
+     */
+    public function restoreErrorLevel()
+    {
+        error_reporting($this->orig_level);
+    }
 
     #########################################################
     # Test field accessors.
@@ -532,8 +549,10 @@ class GeneratedClassTest extends TestBase
         $m = new TestMessage(['optional_bool' => 1.5]);
         $this->assertTrue($m->getOptionalBool());
 
+        error_reporting($this->orig_level & ~E_WARNING);
         $m = new TestMessage(['optional_bool' => NAN]);
         $this->assertTrue($m->getOptionalBool());
+        error_reporting($this->orig_level);
 
         $m = new TestMessage(['optional_bool' => INF]);
         $this->assertTrue($m->getOptionalBool());
@@ -550,7 +569,9 @@ class GeneratedClassTest extends TestBase
         $rf[] = -0.0;
         $rf[] = 0.0;
         $rf[] = 1.5;
+        error_reporting($this->orig_level & ~E_WARNING);
         $rf[] = NAN;
+        error_reporting($this->orig_level);
         $rf[] = INF;
         $rf[] = -INF;
 
