@@ -501,6 +501,9 @@ class PROTOC_EXPORT CommandLineInterface {
   // When using --encode, this will be passed to SetSerializationDeterministic.
   bool deterministic_output_ = false;
 
+  // When using --encode, this will be passed to AllowUnknownExtensions.
+  bool allow_unknown_extensions_ = false;
+
   bool opensource_runtime_ = google::protobuf::internal::IsOss();
 
 };

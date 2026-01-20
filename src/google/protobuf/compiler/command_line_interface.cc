@@ -1817,6 +1817,7 @@ void CommandLineInterface::Clear() {
   disallow_services_ = false;
   direct_dependencies_explicitly_set_ = false;
   deterministic_output_ = false;
+  allow_unknown_extensions_ = false;
 }
 
 bool CommandLineInterface::MakeProtoProtoPathRelative(
@@ -2154,8 +2155,9 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
       *name == "--experimental_editions" ||
       *name == "--print_free_field_numbers" ||
       *name == "--experimental_allow_proto3_optional" ||
-      *name == "--deterministic_output" || *name == "--fatal_warnings") {
-    // HACK:  These are the only flags that don't take a value.
+      *name == "--deterministic_output" || *name == "--fatal_warnings" ||
+      *name == "--allow_unknown_extensions") {
+    // HACK:  These are flags that don't take a value.
     //   They probably should not be hard-coded like this but for now it's
     //   not worth doing better.
     return false;
@@ -2425,6 +2427,9 @@ CommandLineInterface::InterpretArgument(const std::string& name,
   } else if (name == "--deterministic_output") {
     deterministic_output_ = true;
 
+  } else if (name == "--allow_unknown_extensions") {
+    allow_unknown_extensions_ = true;
+
   } else if (name == "--error_format") {
     if (value == "gcc") {
       error_format_ = ERROR_FORMAT_GCC;
@@ -2667,6 +2672,9 @@ Parse PROTO_FILES and generate output based on the options given:
   --error_format=FORMAT       Set the format in which to print errors.
                               FORMAT may be 'gcc' (the default) or 'msvs'
                               (Microsoft Visual Studio format).
+  --allow_unknown_extensions      When using --encode, parse text-format
+                              message in lenient mode, allowing unknown
+                              fields and extensions.
   --fatal_warnings            Make warnings be fatal (similar to -Werr in
                               gcc). This flag will make protoc return
                               with a non-zero exit code if any warnings
@@ -3161,6 +3169,9 @@ bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
     TextFormat::Parser parser;
     parser.RecordErrorsTo(&error_collector);
     parser.AllowPartialMessage(true);
+    if (allow_unknown_extensions_) {
+      parser.AllowUnknownExtension(allow_unknown_extensions_);
+    }
 
     if (!parser.Parse(&in, message.get())) {
       std::cerr << "Failed to parse input." << std::endl;

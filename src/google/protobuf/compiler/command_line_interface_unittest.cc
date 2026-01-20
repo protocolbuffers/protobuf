@@ -5558,6 +5558,13 @@ static void WriteGoldenMessage(const std::string& filename) {
   ABSL_CHECK_OK(File::SetContents(filename, golden, true));
 }
 
+static void WriteGoldenExtensionsMessage(const std::string& filename) {
+  proto2_unittest::TestAllExtensions message;
+  TestUtil::SetAllExtensions(&message);
+  std::string golden = message.SerializeAsString();
+  ABSL_CHECK_OK(File::SetContents(filename, golden, true));
+}
+
 TEST_P(EncodeDecodeTest, Encode) {
   std::string golden_path = absl::StrCat(TestTempDir(), "/golden_message");
   WriteGoldenMessage(golden_path);
@@ -5641,6 +5648,23 @@ TEST_P(EncodeDecodeTest, EncodeDeterministicOutput) {
   }
   EXPECT_TRUE(Run(absl::StrCat(
       args, " --encode=proto2_unittest.TestAllTypes --deterministic_output")));
+  ExpectStdoutMatchesBinaryFile(golden_path);
+  ExpectNoErrors();
+}
+
+TEST_P(EncodeDecodeTest, AllowUnknownExtensions) {
+  std::string golden_path = absl::StrCat(TestTempDir(), "/golden_message");
+  WriteGoldenExtensionsMessage(golden_path);
+  RedirectStdinFromFile(TestUtil::GetTestDataPath(
+      "google/protobuf/"
+      "testdata/text_format_unittest_extensions_data_with_unknown.txt"));
+  std::string args;
+  if (GetParam() != DESCRIPTOR_SET_IN) {
+    args.append("google/protobuf/unittest.proto");
+  }
+  EXPECT_TRUE(Run(absl::StrCat(args,
+                               " --encode=proto2_unittest.TestAllExtensions "
+                               "--allow_unknown_extensions")));
   ExpectStdoutMatchesBinaryFile(golden_path);
   ExpectNoErrors();
 }
