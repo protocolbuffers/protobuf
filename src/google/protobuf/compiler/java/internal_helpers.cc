@@ -175,7 +175,7 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
           interface_names.reserve(interface_count);
           for (int count = 0; count < interface_count; count++) {
             interface_names.push_back(
-                absl::StrFormat("%s%d", descriptor->name(), count));
+                absl::StrFormat("%s_%d", descriptor->name(), count));
           }
           printer->Emit(
               {{"interface_names", absl::StrJoin(interface_names, ", ")}},
@@ -225,7 +225,7 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
           )");
           for (int count = 0; count < interface_count; count++) {
             printer->Emit({{"count", absl::StrCat(count)}}, R"(
-                found = $classname$$count$.forNumber$count$(value);
+                found = $classname$_$count$.forNumber$count$(value);
                 if (found != null) {
                   return found;
                 }
@@ -242,7 +242,7 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
           )");
           for (int count = 0; count < interface_count; count++) {
             printer->Emit({{"count", absl::StrCat(count)}}, R"(
-              found = $classname$$count$.valueOf$count$(name);
+              found = $classname$_$count$.valueOf$count$(name);
               if (found != null) {
                 return found;
               }
@@ -264,7 +264,7 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
 
           for (int count = 0; count < interface_count; count++) {
             printer->Emit({{"count", count}}, R"(
-              $classname$[] values$count$ = $classname$$count$.values$count$();
+              $classname$[] values$count$ = $classname$_$count$.values$count$();
               System.arraycopy(values$count$, 0, values, ordinal, values$count$.length);
               ordinal += values$count$.length;
             )");
@@ -527,7 +527,7 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
                      {"deprecation", deprecation}},
                     R"(
                     $deprecation$
-                    public static final $classname$ $name$ = $classname$$canonical_interface_index$.$canonical_name$;
+                    public static final $classname$ $name$ = $classname$_$canonical_interface_index$.$canonical_name$;
 
                   )");
               } else {
@@ -624,7 +624,7 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
                           )");
           }}},
         R"(
-          interface $classname$$count$ {
+          interface $classname$_$count$ {
 
             $enums$
 
