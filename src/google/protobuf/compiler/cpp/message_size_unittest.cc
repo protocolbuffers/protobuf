@@ -16,7 +16,7 @@
 #include "google/protobuf/internal_metadata_locator.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
-#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest.proto.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

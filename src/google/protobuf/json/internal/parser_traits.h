@@ -16,7 +16,7 @@
 #include <string>
 #include <utility>
 
-#include "google/protobuf/type.pb.h"
+#include "google/protobuf/type.proto.h"
 #include "absl/base/attributes.h"
 #include "absl/base/casts.h"
 #include "absl/container/flat_hash_map.h"

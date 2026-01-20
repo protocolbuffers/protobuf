@@ -17,7 +17,7 @@
 #include <string>
 #include <utility>
 
-#include "google/protobuf/type.pb.h"
+#include "google/protobuf/type.proto.h"
 #include "absl/algorithm/container.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"

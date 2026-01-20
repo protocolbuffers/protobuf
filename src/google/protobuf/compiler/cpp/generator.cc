@@ -31,9 +31,9 @@
 #include "google/protobuf/compiler/cpp/file.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
-#include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/cpp_features.proto.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -253,6 +253,17 @@ static bool IsEnumMapType(const FieldDescriptor& field) {
   return false;
 }
 
+static bool ParseBoolParameter(absl::string_view key, absl::string_view value) {
+  if (value.empty() || value == "true") {
+    return true;
+  } else if (value == "false") {
+    return false;
+  } else {
+    ABSL_LOG(FATAL) << "Invalid value for " << key << ": " << value
+                    << " (should be true or false)";
+  }
+}
+
 absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
   absl::Status status = absl::OkStatus();
   google::protobuf::internal::VisitDescriptors(*file, [&](const FieldDescriptor& field) {
@@ -373,7 +384,7 @@ bool CppGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
     } else if (key == "descriptor_implicit_weak_messages") {
       common_file_options.descriptor_implicit_weak_messages = true;
     } else if (key == "proto_h") {
-      common_file_options.proto_h = true;
+      common_file_options.proto_h = ParseBoolParameter(key, value);
     } else if (key == "proto_static_reflection_h") {
     } else if (key == "annotate_accessor") {
       common_file_options.annotate_accessor = true;

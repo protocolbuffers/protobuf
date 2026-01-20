@@ -5,13 +5,13 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "google/protobuf/descriptor.h"
-#include "editions/golden/test_messages_proto2_editions.pb.h"
-#include "editions/golden/test_messages_proto3_editions.pb.h"
-#include "editions/input/test_editions_default_features.pb.h"
+#include "editions/golden/test_messages_proto2_editions.proto.h"
+#include "editions/golden/test_messages_proto3_editions.proto.h"
+#include "editions/input/test_editions_default_features.proto.h"
 #include "google/protobuf/internal_feature_helper.h"
 #include "google/protobuf/test_textproto.h"
 

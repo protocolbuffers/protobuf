@@ -14,6 +14,7 @@ import "google/protobuf/descriptor.proto";
 
 option java_package = "com.google.protobuf";
 option java_outer_classname = "JavaFeaturesProto";
+option dllexport_decl = "PROTOBUF_EXPORT";
 
 extend google.protobuf.FeatureSet {
   optional JavaFeatures java = 1001;

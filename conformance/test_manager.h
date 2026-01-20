@@ -9,7 +9,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
-#include "conformance/conformance.pb.h"
+#include "conformance/conformance.proto.h"
 #include "failure_list_trie_node.h"
 
 namespace google {

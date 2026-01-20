@@ -8,7 +8,7 @@
 #ifndef GOOGLE_UPB_UPB_GENERATOR_COMMON_DESC_HELPERS_H__
 #define GOOGLE_UPB_UPB_GENERATOR_COMMON_DESC_HELPERS_H__
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/descriptor.upb.h"
 #include "google/protobuf/descriptor.h"
 #include "upb/mem/arena.hpp"

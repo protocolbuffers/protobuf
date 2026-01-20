@@ -131,6 +131,8 @@ class CommandLineInterfaceTester : public testing::Test {
   void ExpectFileContentNotContainsSubstring(
       absl::string_view filename, absl::string_view content_substring);
 
+  bool OutputFileExists(absl::string_view filename);
+
  private:
   // The object we are testing.
   CommandLineInterface cli_;

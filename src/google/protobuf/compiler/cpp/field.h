@@ -25,7 +25,7 @@
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
-#include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/cpp_features.proto.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 

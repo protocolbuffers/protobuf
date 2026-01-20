@@ -26,7 +26,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "conformance/conformance.pb.h"
+#include "conformance/conformance.proto.h"
 #include "failure_list_trie_node.h"
 #include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/endian.h"

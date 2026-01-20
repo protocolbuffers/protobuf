@@ -14,9 +14,9 @@
 
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_import.pb.h"
-#include "google/protobuf/unittest_mset.pb.h"
+#include "google/protobuf/unittest.proto.h"
+#include "google/protobuf/unittest_import.proto.h"
+#include "google/protobuf/unittest_mset.proto.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

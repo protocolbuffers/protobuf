@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
@@ -23,15 +23,15 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/parser.h"
-#include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/cpp_features.proto.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/text_format.h"
-#include "google/protobuf/unittest_custom_options.pb.h"
-#include "google/protobuf/unittest_features.pb.h"
+#include "google/protobuf/unittest_custom_options.proto.h"
+#include "google/protobuf/unittest_features.proto.h"
 #include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.

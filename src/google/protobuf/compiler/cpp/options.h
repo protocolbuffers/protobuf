@@ -13,6 +13,7 @@
 #include <string>
 
 #include "absl/container/flat_hash_set.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/port.h"
 
 namespace google {
@@ -46,6 +47,11 @@ struct FieldListenerOptions {
 
 // Generator options (see generator.cc for a description of each):
 struct Options {
+  Options() {
+    // Default temporarily differs between google3 and OSS.
+    proto_h = google::protobuf::internal::IsOss();
+  }
+
   const AccessInfoMap* access_info_map = nullptr;
   const SplitMap* split_map = nullptr;
   cpp::MessageSCCAnalyzer* scc_analyzer = nullptr;
@@ -57,7 +63,7 @@ struct Options {
   EnforceOptimizeMode enforce_mode = EnforceOptimizeMode::kNoEnforcement;
   int num_cc_files = 0;
   BoundsCheckMode bounds_check_mode = BoundsCheckMode::kNoEnforcement;
-  bool proto_h = false;
+  bool proto_h;
   bool transitive_pb_h = true;
   bool annotate_headers = false;
   bool lite_implicit_weak_fields = false;

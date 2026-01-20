@@ -11,10 +11,10 @@
 #include <unistd.h>
 #endif
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/escaping.h"
-#include "google/protobuf/compiler/plugin.pb.h"
+#include "google/protobuf/compiler/plugin.proto.h"
 #include "google/protobuf/io/io_win32.h"
 
 using google::protobuf::compiler::CodeGeneratorRequest;

@@ -31,8 +31,8 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/any.pb.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/any.proto.h"
+#include "google/protobuf/descriptor.proto.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/base/log_severity.h"
@@ -57,7 +57,7 @@
 #include "absl/synchronization/notification.h"
 #include "google/protobuf/compiler/importer.h"
 #include "google/protobuf/compiler/parser.h"
-#include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/cpp_features.proto.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/descriptor_test_utils.h"
@@ -71,16 +71,16 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/text_format.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_custom_options.pb.h"
-#include "google/protobuf/unittest_delimited.pb.h"
-#include "google/protobuf/unittest_delimited_import.pb.h"
-#include "google/protobuf/unittest_features.pb.h"
-#include "google/protobuf/unittest_lazy_dependencies.pb.h"
-#include "google/protobuf/unittest_lazy_dependencies_custom_option.pb.h"
-#include "google/protobuf/unittest_lazy_dependencies_enum.pb.h"
-#include "google/protobuf/unittest_proto3_arena.pb.h"
-#include "google/protobuf/unittest_string_type.pb.h"
+#include "google/protobuf/unittest.proto.h"
+#include "google/protobuf/unittest_custom_options.proto.h"
+#include "google/protobuf/unittest_delimited.proto.h"
+#include "google/protobuf/unittest_delimited_import.proto.h"
+#include "google/protobuf/unittest_features.proto.h"
+#include "google/protobuf/unittest_lazy_dependencies.proto.h"
+#include "google/protobuf/unittest_lazy_dependencies_custom_option.proto.h"
+#include "google/protobuf/unittest_lazy_dependencies_enum.proto.h"
+#include "google/protobuf/unittest_proto3_arena.proto.h"
+#include "google/protobuf/unittest_string_type.proto.h"
 
 
 // Must be included last.

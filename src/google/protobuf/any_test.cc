@@ -11,12 +11,12 @@
 #include <string>
 #include <utility>
 
-#include "google/protobuf/any.pb.h"
+#include "google/protobuf/any.proto.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
-#include "google/protobuf/any_test.pb.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_import.pb.h"
+#include "google/protobuf/any_test.proto.h"
+#include "google/protobuf/unittest.proto.h"
+#include "google/protobuf/unittest_import.proto.h"
 
 
 // Must be included last.

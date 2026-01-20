@@ -15,7 +15,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/message.h"

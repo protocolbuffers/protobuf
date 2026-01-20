@@ -17,12 +17,12 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "conformance_test.h"
-#include "conformance/test_protos/test_messages_edition2023.pb.h"
-#include "conformance/test_protos/test_messages_edition_unstable.pb.h"
-#include "editions/golden/test_messages_proto2_editions.pb.h"
-#include "editions/golden/test_messages_proto3_editions.pb.h"
-#include "google/protobuf/test_messages_proto2.pb.h"
-#include "google/protobuf/test_messages_proto3.pb.h"
+#include "conformance/test_protos/test_messages_edition2023.proto.h"
+#include "conformance/test_protos/test_messages_edition_unstable.proto.h"
+#include "editions/golden/test_messages_proto2_editions.proto.h"
+#include "editions/golden/test_messages_proto3_editions.proto.h"
+#include "google/protobuf/test_messages_proto2.proto.h"
+#include "google/protobuf/test_messages_proto3.proto.h"
 #include "google/protobuf/text_format.h"
 
 using conformance::ConformanceRequest;

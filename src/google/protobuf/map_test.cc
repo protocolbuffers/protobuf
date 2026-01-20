@@ -24,11 +24,11 @@
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/map_field.h"
-#include "google/protobuf/map_proto2_unittest.pb.h"
-#include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/map_proto2_unittest.proto.h"
+#include "google/protobuf/map_unittest.proto.h"
 #include "google/protobuf/reflection_tester.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_import.pb.h"
+#include "google/protobuf/unittest.proto.h"
+#include "google/protobuf/unittest_import.proto.h"
 
 
 #define UNITTEST ::proto2_unittest

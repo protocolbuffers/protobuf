@@ -31,7 +31,7 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/wire_format_lite.h"

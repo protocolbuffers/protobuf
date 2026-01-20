@@ -22,8 +22,8 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/test_util.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_import.pb.h"
+#include "google/protobuf/unittest.proto.h"
+#include "google/protobuf/unittest_import.proto.h"
 
 
 namespace google {

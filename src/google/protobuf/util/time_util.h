@@ -15,8 +15,8 @@
 #include <ostream>
 #include <string>
 
-#include "google/protobuf/duration.pb.h"
-#include "google/protobuf/timestamp.pb.h"
+#include "google/protobuf/duration.proto.h"
+#include "google/protobuf/timestamp.proto.h"
 #include "absl/strings/string_view.h"
 
 // Must be included last.

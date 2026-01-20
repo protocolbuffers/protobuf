@@ -26,6 +26,7 @@
 #include <string>
 #include <vector>
 
+#include "google/protobuf/descriptor.proto.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/flags/flag.h"
@@ -35,18 +36,18 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/map_test_util.h"
-#include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/map_unittest.proto.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/text_format.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_custom_options.pb.h"
-#include "google/protobuf/unittest_import.pb.h"
-#include "google/protobuf/unittest_import_option.pb.h"
-#include "google/protobuf/unittest_mset.pb.h"
-#include "google/protobuf/unittest_mset_wire_format.pb.h"
-#include "google/protobuf/unittest_proto3.pb.h"
+#include "google/protobuf/unittest.proto.h"
+#include "google/protobuf/unittest_custom_options.proto.h"
+#include "google/protobuf/unittest_import.proto.h"
+#include "google/protobuf/unittest_import_option.proto.h"
+#include "google/protobuf/unittest_mset.proto.h"
+#include "google/protobuf/unittest_mset_wire_format.proto.h"
+#include "google/protobuf/unittest_proto3.proto.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

@@ -13,11 +13,11 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include <gtest/gtest.h>
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/java/java_features.pb.h"
+#include "google/protobuf/compiler/java/java_features.proto.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 
 

@@ -35,9 +35,9 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/text_format.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_import.pb.h"
-#include "google/protobuf/unittest_lite.pb.h"
+#include "google/protobuf/unittest.proto.h"
+#include "google/protobuf/unittest_import.proto.h"
+#include "google/protobuf/unittest_lite.proto.h"
 #include "google/protobuf/wire_format.h"
 
 namespace google {

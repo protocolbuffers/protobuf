@@ -31,7 +31,7 @@
 #define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
 #endif
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"

@@ -10,11 +10,11 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/any.pb.h"
-#include "google/protobuf/source_context.pb.h"
-#include "google/protobuf/type.pb.h"
-#include "google/protobuf/wrappers.pb.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/any.proto.h"
+#include "google/protobuf/source_context.proto.h"
+#include "google/protobuf/type.proto.h"
+#include "google/protobuf/wrappers.proto.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/strings/escaping.h"

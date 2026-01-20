@@ -20,10 +20,10 @@
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_test_util.h"
-#include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/map_unittest.proto.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/repeated_field.h"
-#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest.proto.h"
 #include "google/protobuf/wire_format_lite.h"
 
 // Must be included last.

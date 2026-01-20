@@ -11,21 +11,21 @@
 #include <memory>
 #include <string>
 
-#include "google/protobuf/any.pb.h"
-#include "google/protobuf/type.pb.h"
-#include "google/protobuf/wrappers.pb.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/any.proto.h"
+#include "google/protobuf/type.proto.h"
+#include "google/protobuf/wrappers.proto.h"
+#include "google/protobuf/descriptor.proto.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/util/json_format_proto3.pb.h"
-#include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/util/json_format_proto3.proto.h"
+#include "google/protobuf/map_unittest.proto.h"
 #include "google/protobuf/test_textproto.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_custom_options.pb.h"
-#include "google/protobuf/unittest_import.pb.h"
+#include "google/protobuf/unittest.proto.h"
+#include "google/protobuf/unittest_custom_options.proto.h"
+#include "google/protobuf/unittest_import.proto.h"
 #include "google/protobuf/util/type_resolver.h"
 
 namespace google {

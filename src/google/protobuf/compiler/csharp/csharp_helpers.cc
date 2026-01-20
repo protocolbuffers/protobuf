@@ -36,7 +36,7 @@
 #include "google/protobuf/compiler/csharp/names.h"
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"

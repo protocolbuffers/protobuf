@@ -4065,6 +4065,22 @@ UPB_INLINE bool google_protobuf_FileOptions_has_features(const google_protobuf_F
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FileOptions_msg_init(), 50);
   return upb_Message_HasBaseField(UPB_UPCAST(msg), &field);
 }
+UPB_INLINE void google_protobuf_FileOptions_clear_dllexport_decl(google_protobuf_FileOptions* msg) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FileOptions_msg_init(), 52);
+  upb_Message_ClearBaseField(UPB_UPCAST(msg), &field);
+}
+UPB_INLINE upb_StringView google_protobuf_FileOptions_dllexport_decl(const google_protobuf_FileOptions* msg) {
+  upb_StringView default_val = upb_StringView_FromString("");
+  upb_StringView ret;
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FileOptions_msg_init(), 52);
+  _upb_Message_GetNonExtensionField(UPB_UPCAST(msg), &field,
+                                    &default_val, &ret);
+  return ret;
+}
+UPB_INLINE bool google_protobuf_FileOptions_has_dllexport_decl(const google_protobuf_FileOptions* msg) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FileOptions_msg_init(), 52);
+  return upb_Message_HasBaseField(UPB_UPCAST(msg), &field);
+}
 UPB_INLINE void google_protobuf_FileOptions_clear_uninterpreted_option(google_protobuf_FileOptions* msg) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FileOptions_msg_init(), 999);
   upb_Message_ClearBaseField(UPB_UPCAST(msg), &field);
@@ -4192,6 +4208,10 @@ UPB_INLINE struct google_protobuf_FeatureSet* google_protobuf_FileOptions_mutabl
     if (sub) google_protobuf_FileOptions_set_features(msg, sub);
   }
   return sub;
+}
+UPB_INLINE void google_protobuf_FileOptions_set_dllexport_decl(google_protobuf_FileOptions* msg, upb_StringView value) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FileOptions_msg_init(), 52);
+  upb_Message_SetBaseField((upb_Message*)msg, &field, &value);
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_FileOptions_mutable_uninterpreted_option(google_protobuf_FileOptions* msg,
                                               size_t* size) {
@@ -7634,7 +7654,7 @@ UPB_INLINE void google_protobuf_GeneratedCodeInfo_Annotation_set_semantic(google
 
 /* Max size 32 is google.protobuf.FileOptions */
 /* Max size 64 is google.protobuf.FileOptions */
-#define _UPB_MAXOPT_SIZE UPB_SIZE(112, 200)
+#define _UPB_MAXOPT_SIZE UPB_SIZE(120, 216)
 #ifdef __cplusplus
               } /* extern "C" */
 #endif

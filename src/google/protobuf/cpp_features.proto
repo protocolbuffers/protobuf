@@ -11,6 +11,8 @@ package pb;
 
 import "google/protobuf/descriptor.proto";
 
+option dllexport_decl = "PROTOBUF_EXPORT";
+
 extend google.protobuf.FeatureSet {
   optional CppFeatures cpp = 1000;
 }

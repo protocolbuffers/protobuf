@@ -14,11 +14,11 @@
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/map_unittest.proto.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/reflection_visit_fields.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_mset.pb.h"
+#include "google/protobuf/unittest.proto.h"
+#include "google/protobuf/unittest_mset.proto.h"
 
 
 namespace google {

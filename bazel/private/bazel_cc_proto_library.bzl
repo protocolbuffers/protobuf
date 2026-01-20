@@ -68,7 +68,7 @@ def _aspect_impl(target, ctx):
                 source_suffixes = proto_configuration.cc_proto_library_source_suffixes
                 header_suffixes = proto_configuration.cc_proto_library_header_suffixes
             sources = _get_output_files(ctx.actions, proto_info, source_suffixes)
-            headers = _get_output_files(ctx.actions, proto_info, header_suffixes)
+            headers = _get_output_files(ctx.actions, proto_info, header_suffixes + [".proto.h"])
             header_provider = _ProtoCcHeaderInfo(headers = depset(headers))
         else:
             # If this proto_library doesn't have sources, it provides the combined headers of all its

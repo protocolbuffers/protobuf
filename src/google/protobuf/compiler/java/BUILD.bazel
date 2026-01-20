@@ -129,7 +129,10 @@ cc_library(
 cc_library(
     name = "java_features_bootstrap",
     srcs = ["java_features.pb.cc"],
-    hdrs = ["java_features.pb.h"],
+    hdrs = [
+        "java_features.pb.h",
+        "java_features.proto.h",
+    ],
     strip_include_prefix = "/src",
     visibility = ["//editions:__pkg__"],
     deps = [
@@ -154,6 +157,7 @@ cc_library(
         "generator.h",
         "generator_factory.h",
         "java_features.pb.h",
+        "java_features.proto.h",
         "shared_code_generator.h",
     ],
     copts = COPTS,

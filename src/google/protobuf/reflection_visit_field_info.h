@@ -13,7 +13,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/inlined_string_field.h"
 #include "google/protobuf/map_field.h"

@@ -11,7 +11,7 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/compiler/command_line_interface.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
@@ -51,8 +51,9 @@ class CppMetadataTest : public ::testing::Test {
     std::string cpp_out = absl::StrCat(
         "--cpp_out=annotate_headers=true,"
         "annotation_pragma_name=pragma_name,"
-        "annotation_guard_name=guard_name:",
-        ::testing::TempDir());
+        "annotation_guard_name=guard_name,",
+        // TODO: Update to work with proto_h=true.
+        "proto_h=false:", ::testing::TempDir());
 
     const bool result = atu::RunProtoCompiler(filename, cpp_out, &cli, file);
 

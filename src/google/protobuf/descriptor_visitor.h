@@ -9,7 +9,7 @@
 #define GOOGLE_PROTOBUF_DESCRIPTOR_VISITOR_H__
 
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/generated_message_reflection.h"
 
 namespace google {

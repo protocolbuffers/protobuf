@@ -16,7 +16,7 @@
 #include <gtest/gtest.h>
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/text_format.h"
-#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest.proto.h"
 
 namespace google {
 namespace protobuf {

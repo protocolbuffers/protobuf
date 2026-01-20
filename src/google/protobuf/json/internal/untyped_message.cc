@@ -16,7 +16,7 @@
 #include <variant>
 #include <vector>
 
-#include "google/protobuf/type.pb.h"
+#include "google/protobuf/type.proto.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"

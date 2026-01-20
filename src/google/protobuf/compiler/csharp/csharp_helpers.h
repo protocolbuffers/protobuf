@@ -18,7 +18,7 @@
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/csharp/names.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/port_def.inc"

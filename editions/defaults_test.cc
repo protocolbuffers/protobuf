@@ -3,7 +3,7 @@
 #include "tools/cpp/runfiles/runfiles.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/memory/memory.h"
@@ -12,8 +12,8 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/java_features.pb.h"
-#include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/java_features.proto.h"
+#include "google/protobuf/cpp_features.proto.h"
 #include "editions/defaults_test_embedded.h"
 #include "editions/defaults_test_embedded_base64.h"
 #include "editions/defaults_test_embedded_decimal_array.h"
@@ -21,7 +21,7 @@
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/test_textproto.h"
-#include "google/protobuf/unittest_features.pb.h"
+#include "google/protobuf/unittest_features.proto.h"
 #include "google/protobuf/stubs/status_macros.h"
 
 

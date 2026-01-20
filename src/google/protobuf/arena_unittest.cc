@@ -43,9 +43,9 @@
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/test_util.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_arena.pb.h"
-#include "google/protobuf/unittest_import.pb.h"
+#include "google/protobuf/unittest.proto.h"
+#include "google/protobuf/unittest_arena.proto.h"
+#include "google/protobuf/unittest_import.proto.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format_lite.h"
 

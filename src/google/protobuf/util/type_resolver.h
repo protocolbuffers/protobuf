@@ -14,8 +14,8 @@
 
 // This inclusion is unused, but we cannot remove it without first fixing IWYU
 // issues in upstream dependencies.
-#include "google/protobuf/any.pb.h"  // IWYU pragma: keep
-#include "google/protobuf/type.pb.h"
+#include "google/protobuf/any.proto.h"  // IWYU pragma: keep
+#include "google/protobuf/type.proto.h"
 #include "absl/status/status.h"
 #include "google/protobuf/port.h"
 

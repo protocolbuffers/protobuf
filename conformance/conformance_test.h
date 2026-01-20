@@ -19,10 +19,10 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_set.h"
-#include "conformance/conformance.pb.h"
+#include "conformance/conformance.proto.h"
 #include "failure_list_trie_node.h"
 #include "test_runner.h"
 #include "google/protobuf/descriptor.h"

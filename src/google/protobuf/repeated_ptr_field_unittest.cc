@@ -31,8 +31,8 @@
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_import.pb.h"
+#include "google/protobuf/unittest.proto.h"
+#include "google/protobuf/unittest_import.proto.h"
 
 
 // Must be included last.

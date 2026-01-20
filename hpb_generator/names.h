@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "hpb_generator/context.h"
 
 namespace google {

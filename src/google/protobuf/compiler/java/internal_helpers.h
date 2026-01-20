@@ -12,13 +12,13 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_INTERNAL_HELPERS_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_INTERNAL_HELPERS_H__
 
-#include "google/protobuf/compiler/java/java_features.pb.h"
+#include "google/protobuf/compiler/java/java_features.proto.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/generator.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"

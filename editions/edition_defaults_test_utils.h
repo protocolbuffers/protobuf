@@ -5,7 +5,7 @@
 // edition defaults.  Only helpers that are specific to
 // edition defaults tests should be added here.
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "absl/types/optional.h"
 
 namespace google {

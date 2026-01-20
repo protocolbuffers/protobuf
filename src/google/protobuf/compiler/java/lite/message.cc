@@ -37,7 +37,7 @@
 #include "google/protobuf/compiler/java/lite/make_field_gens.h"
 #include "google/protobuf/compiler/java/lite/message_builder.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
@@ -17,9 +17,9 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/text_format.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_proto3_arena.pb.h"
-#include "google/protobuf/unittest_proto3_optional.pb.h"
+#include "google/protobuf/unittest.proto.h"
+#include "google/protobuf/unittest_proto3_arena.proto.h"
+#include "google/protobuf/unittest_proto3_optional.proto.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

@@ -30,7 +30,7 @@
 #include "absl/types/span.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/extension_set_inl.h"  // IWYU pragma: keep
 #include "google/protobuf/generated_message_reflection.h"

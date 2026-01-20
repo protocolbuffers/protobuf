@@ -11,7 +11,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
@@ -19,8 +19,8 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_no_field_presence.pb.h"
+#include "google/protobuf/unittest.proto.h"
+#include "google/protobuf/unittest_no_field_presence.proto.h"
 
 namespace google {
 namespace protobuf {

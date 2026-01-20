@@ -48,7 +48,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
-#include "conformance/conformance.pb.h"
+#include "conformance/conformance.proto.h"
 #include "conformance_test.h"
 #include "fork_pipe_runner.h"
 

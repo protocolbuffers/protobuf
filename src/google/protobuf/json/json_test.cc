@@ -11,11 +11,11 @@
 #include <memory>
 #include <string>
 
-#include "google/protobuf/duration.pb.h"
-#include "google/protobuf/field_mask.pb.h"
-#include "google/protobuf/struct.pb.h"
-#include "google/protobuf/timestamp.pb.h"
-#include "google/protobuf/wrappers.pb.h"
+#include "google/protobuf/duration.proto.h"
+#include "google/protobuf/field_mask.proto.h"
+#include "google/protobuf/struct.proto.h"
+#include "google/protobuf/timestamp.proto.h"
+#include "google/protobuf/wrappers.proto.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/status/status.h"
@@ -26,9 +26,9 @@
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/test_zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
-#include "google/protobuf/util/json_format.pb.h"
-#include "google/protobuf/util/json_format_proto3.pb.h"
-#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/util/json_format.proto.h"
+#include "google/protobuf/util/json_format_proto3.proto.h"
+#include "google/protobuf/unittest.proto.h"
 #include "google/protobuf/util/type_resolver.h"
 #include "google/protobuf/util/type_resolver_util.h"
 #include "google/protobuf/stubs/status_macros.h"

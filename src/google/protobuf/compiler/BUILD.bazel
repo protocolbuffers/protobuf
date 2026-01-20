@@ -7,7 +7,6 @@ load(
     "@rules_pkg//pkg:mappings.bzl",
     "pkg_attributes",
     "pkg_files",
-    "strip_prefix",
 )
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
@@ -95,6 +94,7 @@ cc_library(
         "code_generator.h",
         "plugin.h",
         "plugin.pb.h",
+        "plugin.proto.h",
         "scc.h",
     ],
     copts = COPTS,
@@ -330,6 +330,7 @@ filegroup(
         "plugin.pb.cc",
         "plugin.pb.h",
         "plugin.proto",
+        "plugin.proto.h",
     ],
     visibility = [
         "//src/google/protobuf/compiler/cpp:__pkg__",

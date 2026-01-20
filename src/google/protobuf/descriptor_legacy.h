@@ -2,7 +2,7 @@
 #define GOOGLE_PROTOBUF_DESCRIPTOR_LEGACY_H__
 
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

@@ -13,7 +13,7 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 
 const char* const kReservedNames[] = {
     "abstract",     "and",        "array",        "as",         "break",

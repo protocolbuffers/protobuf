@@ -7,7 +7,7 @@
 
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena_test_util.h"
-#include "google/protobuf/map_lite_unittest.pb.h"
+#include "google/protobuf/map_lite_unittest.proto.h"
 #include "google/protobuf/map_test_util.h"
 
 #include <gtest/gtest.h>

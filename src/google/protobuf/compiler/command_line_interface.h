@@ -27,8 +27,8 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator_lite.h"
-#include "google/protobuf/compiler/plugin.pb.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/compiler/plugin.proto.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/port.h"
 
