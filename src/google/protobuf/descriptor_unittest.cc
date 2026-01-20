@@ -4011,6 +4011,121 @@ TEST_P(AllowUnknownDependenciesTest, CustomOption) {
   EXPECT_EQ(2, file->options().uninterpreted_option_size());
 }
 
+TEST_P(AllowUnknownDependenciesTest, MissingTypeAggregateOption) {
+  // Test that we can use an aggregate custom option with a missing type.
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(BuildFile(file_proto) != nullptr);
+
+  FileDescriptorProto option_proto;
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "unknown_custom_options.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          extendee: "google.protobuf.FileOptions"
+          name: "some_option"
+          number: 123456
+          label: LABEL_OPTIONAL
+          type: TYPE_MESSAGE
+          type_name: "some_package.MissingMessage"
+        }
+        options {
+          uninterpreted_option {
+            name { name_part: "some_option" is_extension: true }
+            aggregate_value: "foo: 1 bar { baz: FOO }"
+          }
+        })pb",
+      &option_proto));
+
+  const FileDescriptor* file = BuildFile(option_proto);
+  ASSERT_TRUE(file != nullptr);
+
+  // Verify that no extension options were set, but they were left as
+  // uninterpreted_options.
+  std::vector<const FieldDescriptor*> fields;
+  file->options().GetReflection()->ListFields(file->options(), &fields);
+  EXPECT_EQ(fields.size(), 1);
+  EXPECT_EQ(file->options().unknown_fields().field_count(), 0);
+  EXPECT_EQ(file->options().uninterpreted_option_size(), 1);
+}
+
+TEST_P(AllowUnknownDependenciesTest, MissinNestedTypeAggregateOption) {
+  // Test that we can use an aggregate custom option with a missing type.
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(BuildFile(file_proto) != nullptr);
+
+  FileDescriptorProto option_proto;
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "unknown_custom_options.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          extendee: "google.protobuf.MessageOptions"
+          name: "some_option"
+          number: 123456
+          label: LABEL_OPTIONAL
+          type: TYPE_MESSAGE
+          type_name: "ExtensionType"
+        }
+        message_type {
+          name: "ExtensionType"
+          field { name: "int" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field {
+            name: "msg"
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_MESSAGE
+            type_name: "some_package.MissingMessage"
+          }
+        }
+        message_type {
+          name: "MessageMissing"
+          options {
+            uninterpreted_option {
+              name { name_part: "some_option" is_extension: true }
+              aggregate_value: "int: 1 msg { baz: FOO }"
+            }
+          }
+        }
+        message_type {
+          name: "MessageValid"
+          options {
+            uninterpreted_option {
+              name { name_part: "some_option" is_extension: true }
+              aggregate_value: "int: 9"
+            }
+          }
+        })pb",
+      &option_proto));
+
+  const FileDescriptor* file = BuildFile(option_proto);
+  ASSERT_TRUE(file != nullptr);
+
+  // Verify that no extension options were set, but they were left as
+  // uninterpreted_options.
+  const Descriptor* message = file->FindMessageTypeByName("MessageMissing");
+  ASSERT_NE(message, nullptr);
+  std::vector<const FieldDescriptor*> fields;
+  file->options().GetReflection()->ListFields(message->options(), &fields);
+  EXPECT_EQ(fields.size(), 1);
+  EXPECT_EQ(message->options().unknown_fields().field_count(), 0);
+  EXPECT_EQ(message->options().uninterpreted_option_size(), 1);
+
+  // Aggregate options without missing types should be resolved.
+  message = file->FindMessageTypeByName("MessageValid");
+  ASSERT_NE(message, nullptr);
+  file->options().GetReflection()->ListFields(message->options(), &fields);
+  EXPECT_EQ(fields.size(), 0);
+  EXPECT_EQ(message->options().unknown_fields().field_count(), 1);
+  EXPECT_EQ(message->options().uninterpreted_option_size(), 0);
+}
+
 TEST_P(AllowUnknownDependenciesTest,
        UndeclaredDependencyTriggersBuildOfDependency) {
   // Crazy case: suppose foo.proto refers to a symbol without declaring the
