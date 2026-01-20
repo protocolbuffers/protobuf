@@ -34,8 +34,11 @@ jobs:
           - { name: Ruby 3.1, ruby: ruby-3.1.6, ffi: FFI }
           - { name: Ruby 3.2, ruby: ruby-3.2.6, continuous-only: true }
           - { name: Ruby 3.3, ruby: ruby-3.3.6, continuous-only: true }
-          - { name: Ruby 3.4, ruby: ruby-3.4.1, ffi: NATIVE }
-          - { name: Ruby 3.4, ruby: ruby-3.4.1, ffi: FFI }
+          - { name: Ruby 3.4, ruby: ruby-3.4.1, continuous-only: true }
+          # TODO: Remove the image property in the two entries below and update the configuration
+          # used by all the images the next time there is an update to the Dockerfile
+          - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-ruby-4.0.0-1a1642a7cba0a7fa4c226c2d047ed5fbe6ca5451' }
+          - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: FFI, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-ruby-4.0.0-1a1642a7cba0a7fa4c226c2d047ed5fbe6ca5451' }
           - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: NATIVE }
           - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: FFI }
 
@@ -143,6 +146,8 @@ jobs:
         - { version: "3.3", continuous-only: true }
         - { version: "3.4", ffi: NATIVE }
         - { version: "3.4", ffi: FFI }
+        - { version: "4.0", ffi: NATIVE }
+        - { version: "4.0", ffi: FFI }
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} MacOS Ruby ${{ matrix.version }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: macos-14
@@ -155,7 +160,7 @@ jobs:
 
       - name: Pin Ruby version
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: ruby/setup-ruby@4a9ddd6f338a97768b8006bf671dfbad383215f4 # v1.207.0
+        uses: ruby/setup-ruby@ae195bbe749a7cef685ac729197124a48305c1cb # v1.276.0
         with:
           ruby-version: ${{ matrix.version }}
 
@@ -184,8 +189,14 @@ jobs:
           - { name: Ruby 3.1, ruby: ruby-3.1.6, ffi: FFI }
           - { name: Ruby 3.2, ruby: ruby-3.2.6, continuous-only: true}
           - { name: Ruby 3.3, ruby: ruby-3.3.6, continuous-only: true}
+          # TODO: After https://github.com/ruby/rubygems/issues/9244 is resolved,
+          # Replace these two test configurations:
           - { name: Ruby 3.4, ruby: ruby-3.4.1, ffi: NATIVE }
           - { name: Ruby 3.4, ruby: ruby-3.4.1, ffi: FFI, continuous-only: true }
+          # With these three test configurations:
+          # - { name: Ruby 3.4, ruby: ruby-3.4.1, continuous-only: true }
+          # - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-ruby-4.0.0-1a1642a7cba0a7fa4c226c2d047ed5fbe6ca5451' }
+          # - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: FFI, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-ruby-4.0.0-1a1642a7cba0a7fa4c226c2d047ed5fbe6ca5451' }
           - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: NATIVE }
           - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: FFI, continuous-only: true }
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Install ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
