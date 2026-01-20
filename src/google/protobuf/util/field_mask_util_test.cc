@@ -176,8 +176,8 @@ TEST(FieldMaskUtilTest, GetFieldDescriptors) {
   EXPECT_EQ("bb", field_descriptors[1]->name());
   EXPECT_FALSE(FieldMaskUtil::GetFieldDescriptors(
       TestAllTypes::descriptor(), "optional_nested_message.nonexist", nullptr));
-  // FieldMask can be used to specify sub-fields of a repeated message.
-  EXPECT_TRUE(FieldMaskUtil::GetFieldDescriptors(
+  // FieldMask cannot be used to specify sub-fields of a repeated message.
+  EXPECT_FALSE(FieldMaskUtil::GetFieldDescriptors(
       TestAllTypes::descriptor(), "repeated_nested_message.bb", nullptr));
 }
 
@@ -188,8 +188,8 @@ TEST(FieldMaskUtilTest, TestIsValidPath) {
       FieldMaskUtil::IsValidPath<TestAllTypes>("optional_nested_message.bb"));
   EXPECT_FALSE(FieldMaskUtil::IsValidPath<TestAllTypes>(
       "optional_nested_message.nonexist"));
-  // FieldMask can be used to specify sub-fields of a repeated message.
-  EXPECT_TRUE(
+  // FieldMask cannot be used to specify sub-fields of a repeated message.
+  EXPECT_FALSE(
       FieldMaskUtil::IsValidPath<TestAllTypes>("repeated_nested_message.bb"));
 }
 
@@ -201,11 +201,6 @@ TEST(FieldMaskUtilTest, TestIsValidFieldMask) {
   FieldMaskUtil::FromString(
       "optional_int32,optional_nested_message.bb,optional_nonexist", &mask);
   EXPECT_FALSE(FieldMaskUtil::IsValidFieldMask<TestAllTypes>(mask));
-
-  FieldMask f1_mask;
-  FieldMaskUtil::FromString("repeated_nested_message.f1", &f1_mask);
-  EXPECT_TRUE(
-      FieldMaskUtil::IsValidFieldMask<TestTrimMessageRepeatedField>(f1_mask));
 }
 
 TEST(FieldMaskUtilTest, TestGetFieldMaskForAllFields) {

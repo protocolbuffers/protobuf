@@ -143,7 +143,8 @@ bool FieldMaskUtil::GetFieldDescriptors(
     if (field_descriptors != nullptr) {
       field_descriptors->push_back(field);
     }
-    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+    if (!field->is_repeated() &&
+        field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       descriptor = field->message_type();
     } else {
       descriptor = nullptr;
