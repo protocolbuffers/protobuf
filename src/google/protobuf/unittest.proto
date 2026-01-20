@@ -938,6 +938,11 @@ message TestLazyMessage {
   TestAllTypes sub_message = 1 [
     lazy = true
   ];
+
+  oneof one {
+    TestAllTypes oneof1 = 10 [ lazy = true ];
+    TestAllTypes oneof2 = 20 [ lazy = true ];
+  }
 }
 
 message TestLazyRequiredEnum {
