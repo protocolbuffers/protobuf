@@ -161,6 +161,13 @@ bzl_library(
 )
 
 bzl_library(
+    name = "cc_proto_aspect_name_bzl",
+    srcs = ["cc_proto_aspect_name.bzl"],
+    visibility = [
+    ],
+)
+
+bzl_library(
     name = "toolchain_helpers_bzl",
     srcs = [
         "toolchain_helpers.bzl",
