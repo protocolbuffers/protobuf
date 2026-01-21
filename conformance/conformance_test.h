@@ -148,9 +148,21 @@ class ConformanceTestSuite {
   //                primitive fields in packed form, but an implementation
   //                failing to do so will still be able to communicate with
   //                other implementations.
+  //   FROZEN: the test case may fail in older editions because it exercises
+  //           behavior that is now covered by an Editions feature that the
+  //           older edition predates.
+  //           Unlike other levels, test failures marked with this level are
+  //           not expected to be fixed - their behavior is an historical
+  //           artifact, and it may represent a load bearing behavior of a
+  //           previous edition. Before removing such a test failure from a
+  //           failure list, caution should be exercised to ensure that the
+  //           behavior is indeed no longer required.
+  //           Failure messages for this level should contain a link to the
+  //           documentation for the feature.
   enum ConformanceLevel {
     REQUIRED = 0,
     RECOMMENDED = 1,
+    FROZEN = 2,
   };
 
   class ConformanceRequestSetting {

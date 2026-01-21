@@ -58,7 +58,8 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
   template <typename MessageType>
   void ExpectParseFailureForProto(const std::string& proto,
                                   const std::string& test_name,
-                                  ConformanceLevel level);
+                                  ConformanceLevel level,
+                                  std::string failure_message = "");
 
   void RunDelimitedFieldTests();
 
@@ -87,6 +88,7 @@ class BinaryAndJsonConformanceSuiteImpl {
   using ConformanceLevel = BinaryAndJsonConformanceSuite::ConformanceLevel;
   constexpr static ConformanceLevel RECOMMENDED = ConformanceLevel::RECOMMENDED;
   constexpr static ConformanceLevel REQUIRED = ConformanceLevel::REQUIRED;
+  constexpr static ConformanceLevel FROZEN = ConformanceLevel::FROZEN;
 
   void RunAllTests();
 
@@ -148,12 +150,13 @@ class BinaryAndJsonConformanceSuiteImpl {
   void ExpectSerializeFailureForJson(const std::string& test_name,
                                      ConformanceLevel level,
                                      const std::string& text_format);
-  void ExpectParseFailureForProtoWithProtoVersion(const std::string& proto,
-                                                  const std::string& test_name,
-                                                  ConformanceLevel level);
+  void ExpectParseFailureForProtoWithProtoVersion(
+      const std::string& proto, const std::string& test_name,
+      ConformanceLevel level, std::string failure_message = "");
   void ExpectParseFailureForProto(const std::string& proto,
                                   const std::string& test_name,
-                                  ConformanceLevel level);
+                                  ConformanceLevel level,
+                                  std::string failure_message = "");
   void ExpectHardParseFailureForProto(const std::string& proto,
                                       const std::string& test_name,
                                       ConformanceLevel level);

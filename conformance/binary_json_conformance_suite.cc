@@ -493,7 +493,7 @@ void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
 template <typename MessageType>
 void BinaryAndJsonConformanceSuite::ExpectParseFailureForProto(
     const std::string& proto, const std::string& test_name,
-    ConformanceLevel level) {
+    ConformanceLevel level, std::string failure_message) {
   MessageType prototype;
   // We don't expect output, but if the program erroneously accepts the protobuf
   // we let it send its response as this.  We must not leave it unspecified.
@@ -519,10 +519,14 @@ void BinaryAndJsonConformanceSuite::ExpectParseFailureForProto(
     ReportSkip(test, request, response);
   } else if (response.result_case() == ConformanceResponse::kRuntimeError) {
     test.set_failure_message(
-        "Should have failed to parse, but raised an error instead.");
+        failure_message.empty()
+            ? "Should have failed to parse, but raised an error instead."
+            : failure_message);
     ReportFailure(test, level, request, response);
   } else {
-    test.set_failure_message("Should have failed to parse, but didn't.");
+    test.set_failure_message(failure_message.empty()
+                                 ? "Should have failed to parse, but didn't."
+                                 : failure_message);
     ReportFailure(test, level, request, response);
   }
 }
@@ -531,16 +535,19 @@ template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::
     ExpectParseFailureForProtoWithProtoVersion(const std::string& proto,
                                                const std::string& test_name,
-                                               ConformanceLevel level) {
-  suite_.ExpectParseFailureForProto<MessageType>(proto, test_name, level);
+                                               ConformanceLevel level,
+                                               std::string failure_message) {
+  suite_.ExpectParseFailureForProto<MessageType>(proto, test_name, level,
+                                                 failure_message);
 }
 
 // Expect that this precise protobuf will cause a parse error.
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::ExpectParseFailureForProto(
     const std::string& proto, const std::string& test_name,
-    ConformanceLevel level) {
-  ExpectParseFailureForProtoWithProtoVersion(proto, test_name, level);
+    ConformanceLevel level, std::string failure_message) {
+  ExpectParseFailureForProtoWithProtoVersion(proto, test_name, level,
+                                             failure_message);
 }
 
 // Expect that this protobuf will cause a parse error, even if it is followed
@@ -1575,8 +1582,25 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestInvalidUtf8String() {
         len(69, absl::StrCat(len(1, "foo"), len(2, "\xA0\xB0\xC0\xD0"))),
         "RejectInvalidUtf8.String.MapValue", RECOMMENDED);
   } else {
-    // TODO - Once conformance tests can express failures that are
-    // not expected to be fixed, add proto2 coverage here.
+    ExpectParseFailureForProto(
+        len(14, "\xA0\xB0\xC0\xD0"), "RejectInvalidUtf8.String.Singular",
+        FROZEN,
+        "Predates https://protobuf.dev/editions/features/#utf8_validation");
+    ExpectParseFailureForProto(
+        len(44, "\xA0\xB0\xC0\xD0"), "RejectInvalidUtf8.String.Repeated",
+        FROZEN,
+        "Predates https://protobuf.dev/editions/features/#utf8_validation");
+    ExpectParseFailureForProto(
+        len(113, "\xA0\xB0\xC0\xD0"), "RejectInvalidUtf8.String.Oneof", FROZEN,
+        "Predates https://protobuf.dev/editions/features/#utf8_validation");
+    ExpectParseFailureForProto(
+        "\252\004\013\n\004\240\260\300\320\022\003foo",
+        "RejectInvalidUtf8.String.MapKey", FROZEN,
+        "Predates https://protobuf.dev/editions/features/#utf8_validation");
+    ExpectParseFailureForProto(
+        "\252\004\013\n\003foo\022\004\240\260\300\320",
+        "RejectInvalidUtf8.String.MapValue", FROZEN,
+        "Predates https://protobuf.dev/editions/features/#utf8_validation");
   }
 }
 

@@ -269,6 +269,8 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceLevelToString(
       return "Required";
     case RECOMMENDED:
       return "Recommended";
+    case FROZEN:
+      return "Frozen";
   }
   ABSL_LOG(FATAL) << "Unknown value: " << level;
   return "";
