@@ -408,12 +408,16 @@ where
         // No-op: the memory will be dropped by the arena.
     }
 
-    fn repeated_len(repeated: View<Repeated<Self>>) -> usize {
+    fn repeated_len(_private: Private, repeated: View<Repeated<Self>>) -> usize {
         // SAFETY: `repeated.as_raw()` is a valid `upb_Array*`.
         unsafe { upb_Array_Size(repeated.as_raw(Private)) }
     }
 
-    fn repeated_push(mut repeated: Mut<Repeated<Self>>, val: impl IntoProxied<Self>) {
+    fn repeated_push(
+        _private: Private,
+        mut repeated: Mut<Repeated<Self>>,
+        val: impl IntoProxied<Self>,
+    ) {
         // SAFETY:
         // - `repeated.as_raw()` is a valid `upb_Array*`.
         // - `msg_ptr` is a valid `upb_Message*`.
@@ -429,13 +433,14 @@ where
         };
     }
 
-    fn repeated_clear(mut repeated: Mut<Repeated<Self>>) {
+    fn repeated_clear(_private: Private, mut repeated: Mut<Repeated<Self>>) {
         // SAFETY:
         // - `repeated.as_raw()` is a valid `upb_Array*`.
         unsafe { upb_Array_Resize(repeated.as_raw(Private), 0, repeated.raw_arena(Private)) };
     }
 
     unsafe fn repeated_get_unchecked<'a>(
+        _private: Private,
         repeated: View<'a, Repeated<Self>>,
         index: usize,
     ) -> View<'a, Self> {
@@ -450,6 +455,7 @@ where
     }
 
     unsafe fn repeated_get_mut_unchecked<'a>(
+        _private: Private,
         mut repeated: Mut<'a, Repeated<Self>>,
         index: usize,
     ) -> Mut<'a, Self>
@@ -468,6 +474,7 @@ where
     }
 
     unsafe fn repeated_set_unchecked(
+        _private: Private,
         mut repeated: Mut<Repeated<Self>>,
         index: usize,
         val: impl IntoProxied<Self>,
@@ -484,7 +491,11 @@ where
         }
     }
 
-    fn repeated_copy_from(src: View<Repeated<Self>>, mut dest: Mut<Repeated<Self>>) {
+    fn repeated_copy_from(
+        _private: Private,
+        src: View<Repeated<Self>>,
+        mut dest: Mut<Repeated<Self>>,
+    ) {
         // SAFETY:
         // - `src.as_raw()` and `dest.as_raw()` are both valid arrays of `Self`.
         // - `dest.as_raw()` is mutable.
@@ -494,7 +505,7 @@ where
         }
     }
 
-    fn repeated_reserve(mut repeated: Mut<Repeated<Self>>, additional: usize) {
+    fn repeated_reserve(_private: Private, mut repeated: Mut<Repeated<Self>>, additional: usize) {
         // SAFETY:
         // - `repeated.as_raw()` is a valid `upb_Array*`.
         unsafe {
@@ -986,17 +997,18 @@ where
         // No-op: the memory will be dropped by the arena.
     }
 
-    fn map_clear(mut map: MapMut<Key, Self>) {
+    fn map_clear(_private: Private, mut map: MapMut<Key, Self>) {
         unsafe {
             upb_Map_Clear(map.as_raw(Private));
         }
     }
 
-    fn map_len(map: MapView<Key, Self>) -> usize {
+    fn map_len(_private: Private, map: MapView<Key, Self>) -> usize {
         unsafe { upb_Map_Size(map.as_raw(Private)) }
     }
 
     fn map_insert(
+        _private: Private,
         mut map: MapMut<Key, Self>,
         key: View<'_, Key>,
         value: impl IntoProxied<Self>,
@@ -1019,7 +1031,11 @@ where
         }
     }
 
-    fn map_get<'a>(map: MapView<'a, Key, Self>, key: View<'_, Key>) -> Option<View<'a, Self>> {
+    fn map_get<'a>(
+        _private: Private,
+        map: MapView<'a, Key, Self>,
+        key: View<'_, Key>,
+    ) -> Option<View<'a, Self>> {
         let mut val = MaybeUninit::uninit();
         let found = unsafe {
             upb_Map_Get(map.as_raw(Private), Key::to_message_value(key), val.as_mut_ptr())
@@ -1030,7 +1046,11 @@ where
         Some(unsafe { Self::from_message_value(val.assume_init()) })
     }
 
-    fn map_get_mut<'a>(mut map: MapMut<'a, Key, Self>, key: View<'_, Key>) -> Option<Mut<'a, Self>>
+    fn map_get_mut<'a>(
+        _private: Private,
+        mut map: MapMut<'a, Key, Self>,
+        key: View<'_, Key>,
+    ) -> Option<Mut<'a, Self>>
     where
         Self: Message,
     {
@@ -1040,15 +1060,16 @@ where
         NonNull::new(val).map(|msg| unsafe { Self::from_message_mut(msg, map.arena(Private)) })
     }
 
-    fn map_remove(mut map: MapMut<Key, Self>, key: View<'_, Key>) -> bool {
+    fn map_remove(_private: Private, mut map: MapMut<Key, Self>, key: View<'_, Key>) -> bool {
         unsafe { upb_Map_Delete(map.as_raw(Private), Key::to_message_value(key), ptr::null_mut()) }
     }
-    fn map_iter(map: MapView<Key, Self>) -> MapIter<Key, Self> {
+    fn map_iter(_private: Private, map: MapView<Key, Self>) -> MapIter<Key, Self> {
         // SAFETY: MapView<'_,..>> guarantees its RawMap outlives '_.
         unsafe { MapIter::from_raw(Private, RawMapIter::new(map.as_raw(Private))) }
     }
 
     fn map_iter_next<'a>(
+        _private: Private,
         iter: &mut MapIter<'a, Key, Self>,
     ) -> Option<(View<'a, Key>, View<'a, Self>)> {
         // SAFETY: MapIter<'a, ..> guarantees its RawMapIter outlives 'a.

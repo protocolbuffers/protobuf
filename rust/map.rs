@@ -86,24 +86,55 @@ pub trait ProxiedInMapValue<K>: Proxied
 where
     K: Proxied,
 {
+    #[doc(hidden)]
     fn map_new(_private: Private) -> Map<K, Self>;
 
     /// # Safety
     /// - After `map_free`, no other methods on the input are safe to call.
+    #[doc(hidden)]
     unsafe fn map_free(_private: Private, map: &mut Map<K, Self>);
 
-    fn map_clear(map: MapMut<K, Self>);
-    fn map_len(map: MapView<K, Self>) -> usize;
-    fn map_insert(map: MapMut<K, Self>, key: View<'_, K>, value: impl IntoProxied<Self>) -> bool;
-    fn map_get<'a>(map: MapView<'a, K, Self>, key: View<'_, K>) -> Option<View<'a, Self>>;
-    fn map_get_mut<'a>(map: MapMut<'a, K, Self>, key: View<'_, K>) -> Option<Mut<'a, Self>>
+    #[doc(hidden)]
+    fn map_clear(_private: Private, map: MapMut<K, Self>);
+
+    #[doc(hidden)]
+    fn map_len(_private: Private, map: MapView<K, Self>) -> usize;
+
+    #[doc(hidden)]
+    fn map_insert(
+        _private: Private,
+        map: MapMut<K, Self>,
+        key: View<'_, K>,
+        value: impl IntoProxied<Self>,
+    ) -> bool;
+
+    #[doc(hidden)]
+    fn map_get<'a>(
+        _private: Private,
+        map: MapView<'a, K, Self>,
+        key: View<'_, K>,
+    ) -> Option<View<'a, Self>>;
+
+    #[doc(hidden)]
+    fn map_get_mut<'a>(
+        _private: Private,
+        map: MapMut<'a, K, Self>,
+        key: View<'_, K>,
+    ) -> Option<Mut<'a, Self>>
     where
         Self: Message;
 
-    fn map_remove(map: MapMut<K, Self>, key: View<'_, K>) -> bool;
+    #[doc(hidden)]
+    fn map_remove(_private: Private, map: MapMut<K, Self>, key: View<'_, K>) -> bool;
 
-    fn map_iter(map: MapView<K, Self>) -> MapIter<K, Self>;
-    fn map_iter_next<'a>(iter: &mut MapIter<'a, K, Self>) -> Option<(View<'a, K>, View<'a, Self>)>;
+    #[doc(hidden)]
+    fn map_iter(_private: Private, map: MapView<K, Self>) -> MapIter<K, Self>;
+
+    #[doc(hidden)]
+    fn map_iter_next<'a>(
+        _private: Private,
+        iter: &mut MapIter<'a, K, Self>,
+    ) -> Option<(View<'a, K>, View<'a, Self>)>;
 }
 
 impl<K: Proxied, V: ProxiedInMapValue<K>> Proxied for Map<K, V> {
@@ -254,11 +285,11 @@ where
     where
         K: 'a,
     {
-        V::map_get(self, key.into())
+        V::map_get(Private, self, key.into())
     }
 
     pub fn len(self) -> usize {
-        V::map_len(self)
+        V::map_len(Private, self)
     }
 
     pub fn is_empty(self) -> bool {
@@ -323,25 +354,25 @@ where
     where
         K: 'a,
     {
-        V::map_insert(self.as_mut(), key.into(), value)
+        V::map_insert(Private, self.as_mut(), key.into(), value)
     }
 
     pub fn remove<'a>(&mut self, key: impl Into<View<'a, K>>) -> bool
     where
         K: 'a,
     {
-        V::map_remove(self.as_mut(), key.into())
+        V::map_remove(Private, self.as_mut(), key.into())
     }
 
     pub fn clear(&mut self) {
-        V::map_clear(self.as_mut())
+        V::map_clear(Private, self.as_mut())
     }
 
     pub fn get<'a>(&self, key: impl Into<View<'a, K>>) -> Option<View<'_, V>>
     where
         K: 'a,
     {
-        V::map_get(self.as_view(), key.into())
+        V::map_get(Private, self.as_view(), key.into())
     }
 
     pub fn get_mut<'a>(&mut self, key: impl Into<View<'a, K>>) -> Option<Mut<'_, V>>
@@ -349,7 +380,7 @@ where
         K: 'a,
         V: Message,
     {
-        V::map_get_mut(self.as_mut(), key.into())
+        V::map_get_mut(Private, self.as_mut(), key.into())
     }
 
     pub fn copy_from<'a>(
@@ -458,7 +489,7 @@ where
     type Item = (View<'msg, K>, View<'msg, V>);
 
     fn next(&mut self) -> Option<Self::Item> {
-        V::map_iter_next(self)
+        V::map_iter_next(Private, self)
     }
 }
 
@@ -471,7 +502,7 @@ where
     type Item = (View<'msg, K>, View<'msg, V>);
 
     fn into_iter(self) -> MapIter<'msg, K, V> {
-        V::map_iter(self)
+        V::map_iter(Private, self)
     }
 }
 

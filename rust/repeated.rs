@@ -82,7 +82,7 @@ where
     /// Gets the length of the repeated field.
     #[inline]
     pub fn len(&self) -> usize {
-        T::repeated_len(*self)
+        T::repeated_len(Private, *self)
     }
 
     /// Returns true if the repeated field has no values.
@@ -110,7 +110,7 @@ where
     #[inline]
     pub unsafe fn get_unchecked(self, index: usize) -> View<'msg, T> {
         // SAFETY: in-bounds as promised
-        unsafe { T::repeated_get_unchecked(self, index) }
+        unsafe { T::repeated_get_unchecked(Private, self, index) }
     }
 
     /// Iterates over the values in the repeated field.
@@ -189,7 +189,7 @@ where
         'r: 'msg,
     {
         // SAFETY: in-bounds as promised
-        unsafe { T::repeated_get_mut_unchecked(self.as_mut(), index) }
+        unsafe { T::repeated_get_mut_unchecked(Private, self.as_mut(), index) }
     }
 
     /// Gets the value at `index` without bounds-checking.
@@ -205,7 +205,7 @@ where
     /// Appends `val` to the end of the repeated field.
     #[inline]
     pub fn push(&mut self, val: impl IntoProxied<T>) {
-        T::repeated_push(self.as_mut(), val);
+        T::repeated_push(Private, self.as_mut(), val);
     }
 
     /// Sets the value at `index` to the value `val`.
@@ -227,7 +227,7 @@ where
     /// Undefined behavior if `index >= len`.
     #[inline]
     pub unsafe fn set_unchecked(&mut self, index: usize, val: impl IntoProxied<T>) {
-        unsafe { T::repeated_set_unchecked(self.as_mut(), index, val) }
+        unsafe { T::repeated_set_unchecked(Private, self.as_mut(), index, val) }
     }
 
     /// Iterates over the values in the repeated field.
@@ -237,12 +237,12 @@ where
 
     /// Copies from the `src` repeated field into this one.
     pub fn copy_from(&mut self, src: RepeatedView<'_, T>) {
-        T::repeated_copy_from(src, self.as_mut())
+        T::repeated_copy_from(Private, src, self.as_mut())
     }
 
     /// Clears the repeated field.
     pub fn clear(&mut self) {
-        T::repeated_clear(self.as_mut())
+        T::repeated_clear(Private, self.as_mut())
     }
 }
 
@@ -266,7 +266,7 @@ where
 {
     fn into_proxied(self, _private: Private) -> Repeated<T> {
         let mut repeated: Repeated<T> = Repeated::new();
-        T::repeated_copy_from(self, repeated.as_mut());
+        T::repeated_copy_from(Private, self, repeated.as_mut());
         repeated
     }
 }
@@ -316,22 +316,35 @@ pub unsafe trait ProxiedInRepeated: Proxied + SealedInternal {
     unsafe fn repeated_free(_private: Private, _repeated: &mut Repeated<Self>);
 
     /// Gets the length of the repeated field.
-    fn repeated_len(repeated: View<Repeated<Self>>) -> usize;
+    #[doc(hidden)]
+    fn repeated_len(_private: Private, repeated: View<Repeated<Self>>) -> usize;
 
     /// Appends a new element to the end of the repeated field.
-    fn repeated_push(repeated: Mut<Repeated<Self>>, val: impl IntoProxied<Self>);
+    #[doc(hidden)]
+    fn repeated_push(_private: Private, repeated: Mut<Repeated<Self>>, val: impl IntoProxied<Self>);
 
     /// Clears the repeated field of elements.
-    fn repeated_clear(repeated: Mut<Repeated<Self>>);
+    #[doc(hidden)]
+    fn repeated_clear(_private: Private, repeated: Mut<Repeated<Self>>);
 
     /// # Safety
     /// `index` must be less than `Self::repeated_len(repeated)`
-    unsafe fn repeated_get_unchecked(repeated: View<Repeated<Self>>, index: usize) -> View<Self>;
+    #[doc(hidden)]
+    unsafe fn repeated_get_unchecked(
+        _private: Private,
+        repeated: View<Repeated<Self>>,
+        index: usize,
+    ) -> View<Self>;
 
     /// # Safety
     /// `index` must be less than `Self::repeated_len(repeated)`
     #[allow(unused_variables)]
-    unsafe fn repeated_get_mut_unchecked(repeated: Mut<Repeated<Self>>, index: usize) -> Mut<Self>
+    #[doc(hidden)]
+    unsafe fn repeated_get_mut_unchecked(
+        _private: Private,
+        repeated: Mut<Repeated<Self>>,
+        index: usize,
+    ) -> Mut<Self>
     where
         Self: Message,
     {
@@ -340,18 +353,22 @@ pub unsafe trait ProxiedInRepeated: Proxied + SealedInternal {
 
     /// # Safety
     /// `index` must be less than `Self::repeated_len(repeated)`
+    #[doc(hidden)]
     unsafe fn repeated_set_unchecked(
+        _private: Private,
         repeated: Mut<Repeated<Self>>,
         index: usize,
         val: impl IntoProxied<Self>,
     );
 
     /// Copies the values in the `src` repeated field into `dest`.
-    fn repeated_copy_from(src: View<Repeated<Self>>, dest: Mut<Repeated<Self>>);
+    #[doc(hidden)]
+    fn repeated_copy_from(_private: Private, src: View<Repeated<Self>>, dest: Mut<Repeated<Self>>);
 
     /// Ensures that the repeated field has enough space allocated to insert at
     /// least `additional` values without an allocation.
-    fn repeated_reserve(repeated: Mut<Repeated<Self>>, additional: usize);
+    #[doc(hidden)]
+    fn repeated_reserve(_private: Private, repeated: Mut<Repeated<Self>>, additional: usize);
 }
 
 /// An iterator over the values inside of a [`View<Repeated<T>>`](RepeatedView).
@@ -609,7 +626,7 @@ where
 {
     fn extend<I: IntoIterator<Item = ViewT>>(&mut self, iter: I) {
         let iter = iter.into_iter();
-        T::repeated_reserve(self.as_mut(), iter.size_hint().0);
+        T::repeated_reserve(Private, self.as_mut(), iter.size_hint().0);
         for item in iter {
             self.push(item);
         }
