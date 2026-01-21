@@ -298,9 +298,15 @@ template <typename T>
 using MessageTraits = decltype(MessageTraitsImpl::value<T>);
 
 struct EnumTraitsImpl {
+#ifdef __CUDACC__
+  // Workaround a bug in nvcc. See protocolbuffers/protobuf#21542
+  template <typename T>
+  static std::enable_if_t<sizeof(T) != 0> value;
+#else
   struct Undefined;
   template <typename T>
   static Undefined value;
+#endif
 };
 template <typename T>
 using EnumTraits = decltype(EnumTraitsImpl::value<T>);
