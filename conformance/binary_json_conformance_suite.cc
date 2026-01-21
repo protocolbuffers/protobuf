@@ -947,7 +947,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForType(
   if (type != FieldDescriptor::TYPE_MESSAGE) {
     std::string proto;
     for (size_t i = 0; i < values.size(); i++) {
-      proto += absl::StrCat(tag(field->number(), wire_type), values[i].first);
+      absl::StrAppend(&proto, tag(field->number(), wire_type), values[i].first);
     }
     std::string expected_proto =
         absl::StrCat(tag(field->number(), wire_type), values.back().second);
@@ -979,21 +979,23 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForType(
     std::string unpacked_proto_expected;
 
     for (size_t i = 0; i < values.size(); i++) {
-      default_proto_unpacked +=
-          absl::StrCat(tag(rep_field->number(), wire_type), values[i].first);
-      default_proto_unpacked_expected +=
-          absl::StrCat(tag(rep_field->number(), wire_type), values[i].second);
+      absl::StrAppend(&default_proto_unpacked,
+                      tag(rep_field->number(), wire_type), values[i].first);
+      absl::StrAppend(&default_proto_unpacked_expected,
+                      tag(rep_field->number(), wire_type), values[i].second);
       default_proto_packed += values[i].first;
       default_proto_packed_expected += values[i].second;
-      packed_proto_unpacked +=
-          absl::StrCat(tag(packed_field->number(), wire_type), values[i].first);
+      absl::StrAppend(&packed_proto_unpacked,
+                      tag(packed_field->number(), wire_type), values[i].first);
       packed_proto_packed += values[i].first;
       packed_proto_expected += values[i].second;
-      unpacked_proto_unpacked += absl::StrCat(
-          tag(unpacked_field->number(), wire_type), values[i].first);
+      absl::StrAppend(&unpacked_proto_unpacked,
+                      tag(unpacked_field->number(), wire_type),
+                      values[i].first);
       unpacked_proto_packed += values[i].first;
-      unpacked_proto_expected += absl::StrCat(
-          tag(unpacked_field->number(), wire_type), values[i].second);
+      absl::StrAppend(&unpacked_proto_expected,
+                      tag(unpacked_field->number(), wire_type),
+                      values[i].second);
     }
     default_proto_packed = absl::StrCat(
         tag(rep_field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
@@ -1105,8 +1107,8 @@ void BinaryAndJsonConformanceSuiteImpl<
   const FieldDescriptor* field =
       GetFieldForType(FieldDescriptor::TYPE_MESSAGE, false);
   for (size_t i = 0; i < values.size(); i++) {
-    proto += absl::StrCat(
-        tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+    absl::StrAppend(
+        &proto, tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
         values[i]);
   }
 
