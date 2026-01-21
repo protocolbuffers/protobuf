@@ -19,6 +19,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <limits>
 #include <memory>
 #include <random>
@@ -28,7 +29,10 @@
 
 #include "absl/base/macros.h"
 #include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/cord.h"
@@ -2324,8 +2328,8 @@ bool TextFormat::Printer::PrintAny(const Message& message,
       finder_ ? finder_->FindAnyType(message, url_prefix, full_type_name)
               : DefaultFinderFindAnyType(message, url_prefix, full_type_name);
   if (value_descriptor == nullptr) {
-    ABSL_LOG(WARNING) << "Can't print proto content: proto type " << type_url
-                      << " not found";
+    ABSL_LOG_EVERY_N_SEC(WARNING, 30)
+        << "Can't print proto content: proto type " << type_url << " not found";
     return false;
   }
   DynamicMessageFactory factory;
