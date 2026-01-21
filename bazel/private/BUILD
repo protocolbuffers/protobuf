@@ -153,6 +153,12 @@ bzl_library(
 )
 
 bzl_library(
+    name = "java_proto_aspect_names_bzl",
+    srcs = ["java_proto_aspect_names.bzl"],
+    visibility = ["@rules_java//java/google/rules:__pkg__"],
+)
+
+bzl_library(
     name = "cc_proto_aspect_bzl",
     srcs = ["cc_proto_aspect.bzl"],
     deps = [
