@@ -16,8 +16,12 @@
 #ifndef GOOGLE_PROTOBUF_GENERATED_ENUM_REFLECTION_H__
 #define GOOGLE_PROTOBUF_GENERATED_ENUM_REFLECTION_H__
 
+#include <cstddef>
+#include <iterator>
 #include <string>
+#include <type_traits>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/port.h"
@@ -72,7 +76,79 @@ PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 PROTOBUF_EXPORT const std::string& NameOfEnum(
     const EnumDescriptor* PROTOBUF_NONNULL descriptor, int value);
 
+template <typename Enum>
+class EnumeratedEnumView {
+  // Make the type dependent to avoid eager instantiations.
+  // EnumDescriptor is incomplete at this point, but will be complete when this
+  // template is instantiated.
+  using Desc = std::enable_if_t<sizeof(Enum) != 0, EnumDescriptor>;
+
+ public:
+  using value_type = Enum;
+  class iterator {
+   public:
+    using difference_type = ptrdiff_t;
+    using value_type = Enum;
+    using pointer = value_type*;
+    using reference = value_type&;
+    using iterator_category = std::input_iterator_tag;
+
+    iterator() : desc_(nullptr), index_(0) {}
+    iterator(const iterator&) = default;
+    iterator& operator=(const iterator&) = default;
+
+    friend bool operator==(iterator a, iterator b) {
+      ABSL_DCHECK_EQ(a.desc_, b.desc_);
+      return a.index_ == b.index_;
+    }
+    friend bool operator!=(iterator a, iterator b) { return !(a == b); }
+
+    Enum operator*() const {
+      return static_cast<Enum>(desc_->value(index_)->number());
+    }
+    iterator& operator++() {
+      ++index_;
+      return *this;
+    }
+    iterator operator++(int) {
+      auto copy = *this;
+      ++*this;
+      return copy;
+    }
+
+   private:
+    friend EnumeratedEnumView;
+    iterator(const Desc* PROTOBUF_NONNULL desc, int index)
+        : desc_(desc), index_(index) {}
+    const Desc* PROTOBUF_NONNULL desc_;
+    int index_;
+  };
+  using const_iterator = iterator;
+
+  // Proto enums are never empty.
+  bool empty() const { return false; }
+
+  size_t size() const { return desc_->value_count(); }
+
+  iterator begin() const { return iterator(desc_, 0); }
+  iterator end() const { return iterator(desc_, size()); }
+  iterator cbegin() const { return begin(); }
+  iterator cend() const { return end(); }
+
+ private:
+  const Desc* PROTOBUF_NONNULL desc_ = GetEnumDescriptor<Enum>();
+};
+
 }  // namespace internal
+
+// Returns an iterable object that will yield all the enum labels for `Enum` in
+// the same order as specified in their EnumDescriptor.
+// The returned type is unspecified.
+template <typename Enum>
+auto EnumerateEnumValues() {
+  return internal::EnumeratedEnumView<Enum>{};
+}
+
 }  // namespace protobuf
 }  // namespace google
 

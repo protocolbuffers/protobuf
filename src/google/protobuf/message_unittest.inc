@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <limits>
 #include <string>
+#include <type_traits>
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -61,6 +62,7 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::Not;
 
@@ -2225,6 +2227,48 @@ TEST(MESSAGE_TEST_NAME, AllAddMethodsOnRepeatedStringField) {
   msg.add_repeated_string({'a', 'b', 'c'});
   EXPECT_EQ(msg.repeated_string(0), "abc");
   msg.clear_repeated_string();
+}
+
+TEST(MESSAGE_TEST_NAME, EnumerateEnumValuesTest) {
+  using M = UNITTEST::TestAllTypes;
+  using E = M::NestedEnum;
+  auto view = google::protobuf::EnumerateEnumValues<E>();
+
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(4, view.size());
+
+  std::vector<E> values;
+  for (auto e : view) values.push_back(e);
+  EXPECT_THAT(values, ElementsAre(M::FOO, M::BAR, M::BAZ, M::NEG));
+
+  // Again, but let std::vector do the iteration to make sure they really follow
+  // the contract.
+  values = std::vector<E>(view.begin(), view.end());
+  EXPECT_THAT(values, ElementsAre(M::FOO, M::BAR, M::BAZ, M::NEG));
+}
+
+TEST(MESSAGE_TEST_NAME, EnumerateEnumValuesIteratorTest) {
+  using M = UNITTEST::TestAllTypes;
+  using E = M::NestedEnum;
+  auto view = google::protobuf::EnumerateEnumValues<E>();
+  // Pre Increment
+  auto it = view.begin();
+  EXPECT_EQ(M::FOO, *it);
+  EXPECT_EQ(M::BAR, *++it);
+
+  // operator==
+  auto it2 = view.begin();
+  EXPECT_FALSE(it == it2);
+  EXPECT_TRUE(it != it2);
+  ++it2;
+  EXPECT_FALSE(it != it2);
+  EXPECT_TRUE(it == it2);
+
+  // Post increment
+  it = view.begin();
+  EXPECT_EQ(M::FOO, *it);
+  EXPECT_EQ(M::FOO, *it++);
+  EXPECT_EQ(M::BAR, *it);
 }
 
 
