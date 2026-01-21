@@ -138,8 +138,11 @@ def _generate_rust_gencode(
         extension = ".{}.pb.rs".format("u" if is_upb else "c"),
     )
 
+    # We emit one 'entry point' file which is based on the target name.
+    # Unfortunately, target names may contain slashes which we have to avoid.
+    safe_target_name = ctx.label.name.replace("/", "__")
     entry_point_rs_output = actions.declare_file(
-        "{}.generated.{}.rs".format(ctx.label.name, "u" if is_upb else "c"),
+        "{}.generated.{}.rs".format(safe_target_name, "u" if is_upb else "c"),
         sibling = proto_info.direct_sources[0],
     )
 
