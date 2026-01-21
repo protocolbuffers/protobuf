@@ -956,7 +956,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *
    * <pre>{@code
    * Arrays.equals(byteString.toByteArray(),
-   *     new String(byteString.toByteArray(), "UTF-8").getBytes("UTF-8"))
+   *     new String(byteString.toByteArray(), UTF_8).getBytes(UTF_8))
    * }</pre>
    *
    * <p>This method returns {@code false} for "overlong" byte sequences, as well as for 3-byte
@@ -965,9 +965,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * been modified to also reject "overlong" byte sequences, but (as of 2011) still accepts 3-byte
    * surrogate character byte sequences.
    *
-   * <p>See the Unicode Standard,<br>
-   * Table 3-6. <em>UTF-8 Bit Distribution</em>,<br>
-   * Table 3-7. <em>Well Formed UTF-8 Byte Sequences</em>.
+   * <p>See the Unicode Standard, Table 3-6 <em>UTF-8 Bit Distribution</em>, and Table 3-7 <em>Well
+   * Formed UTF-8 Byte Sequences</em>.
    *
    * @return whether the bytes in this {@code ByteString} are a well-formed UTF-8 byte sequence
    */
