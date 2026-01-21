@@ -431,6 +431,10 @@ jobs:
             os: windows-2022
             cache_key: windows-2022-msvc-cl
             bazel: test //src/...  --config=msvc-cl --test_tag_filters=-conformance --build_tag_filters=-conformance
+          - name: Windows Bazel C++20
+            os: windows-2022
+            cache_key: windows-2022-msvc-cl
+            bazel: test //src/...  --config=msvc-cl --cxxopt="-std:c++20" --test_tag_filters=-conformance --build_tag_filters=-conformance
           - name: Windows Bazel clang-cl
             os: windows-2022
             cache_key: windows-2022-clang-cl

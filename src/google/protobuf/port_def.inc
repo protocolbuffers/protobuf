@@ -424,6 +424,13 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // https://github.com/protocolbuffers/protobuf/pull/13240. Work around this by
 // suppressing `constinit`.
 #define PROTOBUF_CONSTINIT
+#elif defined(_MSC_VER) && !defined(__clang__)
+// On MSVC, but not clang-cl, the above workaround must extend to static library
+// builds too. MSVC can avoid a global constructor when initializing structures
+// containing pointers to same-dll symbols, it relies on the optimizer for this,
+// so we can't enforce constinit. This limitation does not apply to constexpr.
+// See https://godbolt.org/z/hsT9e3zs4
+#define PROTOBUF_CONSTINIT
 #elif defined(__GNUC__) && !defined(__clang__)
 // GCC doesn't support constinit aggregate initialization of absl::Cord.
 #define PROTOBUF_CONSTINIT
