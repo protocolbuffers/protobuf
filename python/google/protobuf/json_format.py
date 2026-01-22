@@ -86,6 +86,8 @@ def MessageToJson(
     descriptor_pool=None,
     ensure_ascii=True,
     always_print_fields_with_no_presence=False,
+    *,
+    int_as_str=True,
 ):
   """Converts protobuf message to JSON format.
 
@@ -107,6 +109,7 @@ def MessageToJson(
       default.
     ensure_ascii: If True, strings with non-ASCII characters are escaped. If
       False, Unicode strings are returned unchanged.
+    int_as_str: If True, int64 and uint64 are converted to strings.
 
   Returns:
     A string containing the JSON formatted protocol buffer message.
@@ -116,6 +119,7 @@ def MessageToJson(
       use_integers_for_enums,
       descriptor_pool,
       always_print_fields_with_no_presence,
+      int_as_str=int_as_str,
   )
   return printer.ToJsonString(message, indent, sort_keys, ensure_ascii)
 
@@ -126,6 +130,8 @@ def MessageToDict(
     preserving_proto_field_name=False,
     use_integers_for_enums=False,
     descriptor_pool=None,
+    *,
+    int_as_str=True,
 ):
   """Converts protobuf message to a dictionary.
 
@@ -143,6 +149,7 @@ def MessageToDict(
     use_integers_for_enums: If true, print integers instead of enum names.
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
       default.
+    int_as_str: If True, int64 and uint64 are converted to strings.
 
   Returns:
     A dict representation of the protocol buffer message.
@@ -152,6 +159,7 @@ def MessageToDict(
       use_integers_for_enums,
       descriptor_pool,
       always_print_fields_with_no_presence,
+      int_as_str=int_as_str,
   )
   # pylint: disable=protected-access
   return printer._MessageToJsonObject(message)
@@ -174,6 +182,8 @@ class _Printer(object):
       use_integers_for_enums=False,
       descriptor_pool=None,
       always_print_fields_with_no_presence=False,
+      *,
+      int_as_str=True,
   ):
     self.always_print_fields_with_no_presence = (
         always_print_fields_with_no_presence
@@ -294,7 +304,10 @@ class _Printer(object):
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_BOOL:
       return bool(value)
     elif field.cpp_type in _INT64_TYPES:
-      return str(value)
+      if self.int_as_str:
+        return str(value)
+      else:
+        return value
     elif field.cpp_type in _FLOAT_TYPES:
       if math.isinf(value):
         if value < 0.0:
