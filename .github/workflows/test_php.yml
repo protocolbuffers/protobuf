@@ -25,6 +25,8 @@ permissions:
 
 jobs:
   linux:
+    env:
+        PHP_SHAS: '{ "8.2.2": "14f4333435330d86eaf085646df1b5b3c9c13caf6a2242ecdadde5334d48e986", "8.2.2-dbg": "f3e7a9d225aa1f0f4037990aaf53a7d70b572b0ac937919db9feb9d739968b37", "8.5.0": "d0bffd32f2c822bd81cfcb5de31bd040f699af120f4bf1e1b8627f935a491bc4" }'
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
@@ -65,7 +67,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:8.0.1-${{ matrix.version }}-d0bffd32f2c822bd81cfcb5de31bd040f699af120f4bf1e1b8627f935a491bc4
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:8.0.1-${{ matrix.version }}-${{ fromJson(env.PHP_SHAS)[matrix.version] }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_linux/${{ matrix.version }}
           bash: |
