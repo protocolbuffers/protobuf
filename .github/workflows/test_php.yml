@@ -49,7 +49,7 @@ jobs:
             command: composer test_valgrind
             continuous-only: true
           - name: 8.5 Optimized
-            version: "8.5.0"
+            version: "8.5.2"
             version-short: "8.5"
             command: composer test && composer test_c
 
