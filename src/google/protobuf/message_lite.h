@@ -299,8 +299,12 @@ using MessageTraits = decltype(MessageTraitsImpl::value<T>);
 
 struct EnumTraitsImpl {
   struct Undefined;
+  // We use an incomplete type to cause a compiler error if something tries to
+  // instantiate `value<T>` with a `T` that had no specialization.
+  // The `enable_if` is there to workaround some compilers/tools that complain
+  // on the declaration even with no instantiations.
   template <typename T>
-  static Undefined value;
+  static std::enable_if_t<sizeof(T) != 0, Undefined> value;
 };
 template <typename T>
 using EnumTraits = decltype(EnumTraitsImpl::value<T>);
