@@ -102,7 +102,7 @@ jobs:
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux 32-bit ${{ matrix.version}}${{ matrix.suffix_name }}${{ matrix.test_name }}
     runs-on: ubuntu-22-4core
     env:
-      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:8d830c578c4c9cfe150258f544b82cca3716dc6a02284966f9d4cb7227509d5e
+      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:60f8ce4a5b28c9d017468a8ff39f2b1aacb711b8a6f27bcd8f5bc463674e78b1
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
