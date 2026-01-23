@@ -59,21 +59,21 @@ impl<'msg, K: ?Sized, V: ?Sized> std::fmt::Debug for MapMut<'msg, K, V> {
     }
 }
 
-pub struct Map<K: Proxied, V: ProxiedInMapValue<K>> {
+pub struct Map<K: MapKey, V: MapValue<K>> {
     inner: InnerMap,
     _phantom: PhantomData<(PhantomData<K>, PhantomData<V>)>,
 }
 
 // SAFETY: `Map` is Sync because it does not implement interior mutability.
-unsafe impl<K: Proxied, V: ProxiedInMapValue<K>> Sync for Map<K, V> {}
+unsafe impl<K: MapKey, V: MapValue<K>> Sync for Map<K, V> {}
 
 // SAFETY: `Map` is Send because it's not bound to a specific thread e.g.
 // it does not use thread-local data or similar.
-unsafe impl<K: Proxied, V: ProxiedInMapValue<K>> Send for Map<K, V> {}
+unsafe impl<K: MapKey, V: MapValue<K>> Send for Map<K, V> {}
 
-impl<K: Proxied, V: ProxiedInMapValue<K>> SealedInternal for Map<K, V> {}
+impl<K: MapKey, V: MapValue<K>> SealedInternal for Map<K, V> {}
 
-impl<K: Proxied, V: ProxiedInMapValue<K>> Drop for Map<K, V> {
+impl<K: MapKey, V: MapValue<K>> Drop for Map<K, V> {
     fn drop(&mut self) {
         // SAFETY:
         // - `drop` is only called once.
@@ -82,10 +82,11 @@ impl<K: Proxied, V: ProxiedInMapValue<K>> Drop for Map<K, V> {
     }
 }
 
-pub trait ProxiedInMapValue<K>: Proxied
-where
-    K: Proxied,
-{
+/// A trait implemented by types which are allowed as keys in maps.
+/// This is all types for fields except for repeated, maps, bytes, messages and enums.
+pub trait MapKey: Proxied {}
+
+pub trait MapValue<K: MapKey>: Proxied {
     #[doc(hidden)]
     fn map_new(_private: Private) -> Map<K, Self>;
 
@@ -137,7 +138,7 @@ where
     ) -> Option<(View<'a, K>, View<'a, Self>)>;
 }
 
-impl<K: Proxied, V: ProxiedInMapValue<K>> Proxied for Map<K, V> {
+impl<K: MapKey, V: MapValue<K>> Proxied for Map<K, V> {
     type View<'msg>
         = MapView<'msg, K, V>
     where
@@ -145,7 +146,7 @@ impl<K: Proxied, V: ProxiedInMapValue<K>> Proxied for Map<K, V> {
         V: 'msg;
 }
 
-impl<K: Proxied, V: ProxiedInMapValue<K>> AsView for Map<K, V> {
+impl<K: MapKey, V: MapValue<K>> AsView for Map<K, V> {
     type Proxied = Self;
 
     fn as_view(&self) -> MapView<'_, K, V> {
@@ -153,7 +154,7 @@ impl<K: Proxied, V: ProxiedInMapValue<K>> AsView for Map<K, V> {
     }
 }
 
-impl<K: Proxied, V: ProxiedInMapValue<K>> MutProxied for Map<K, V> {
+impl<K: MapKey, V: MapValue<K>> MutProxied for Map<K, V> {
     type Mut<'msg>
         = MapMut<'msg, K, V>
     where
@@ -161,7 +162,7 @@ impl<K: Proxied, V: ProxiedInMapValue<K>> MutProxied for Map<K, V> {
         V: 'msg;
 }
 
-impl<K: Proxied, V: ProxiedInMapValue<K>> AsMut for Map<K, V> {
+impl<K: MapKey, V: MapValue<K>> AsMut for Map<K, V> {
     type MutProxied = Self;
 
     fn as_mut(&mut self) -> MapMut<'_, K, V> {
@@ -169,9 +170,9 @@ impl<K: Proxied, V: ProxiedInMapValue<K>> AsMut for Map<K, V> {
     }
 }
 
-impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> SealedInternal for MapView<'msg, K, V> {}
+impl<'msg, K: MapKey, V: MapValue<K>> SealedInternal for MapView<'msg, K, V> {}
 
-impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> AsView for MapView<'msg, K, V> {
+impl<'msg, K: MapKey, V: MapValue<K>> AsView for MapView<'msg, K, V> {
     type Proxied = Map<K, V>;
 
     fn as_view(&self) -> MapView<'_, K, V> {
@@ -179,7 +180,7 @@ impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> AsView for MapView<'msg, K, V> {
     }
 }
 
-impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> IntoView<'msg> for MapView<'msg, K, V> {
+impl<'msg, K: MapKey, V: MapValue<K>> IntoView<'msg> for MapView<'msg, K, V> {
     fn into_view<'shorter>(self) -> MapView<'shorter, K, V>
     where
         'msg: 'shorter,
@@ -188,9 +189,9 @@ impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> IntoView<'msg> for MapView<'msg,
     }
 }
 
-impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> SealedInternal for MapMut<'msg, K, V> {}
+impl<'msg, K: MapKey, V: MapValue<K>> SealedInternal for MapMut<'msg, K, V> {}
 
-impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> AsView for MapMut<'msg, K, V> {
+impl<'msg, K: MapKey, V: MapValue<K>> AsView for MapMut<'msg, K, V> {
     type Proxied = Map<K, V>;
 
     fn as_view(&self) -> MapView<'_, K, V> {
@@ -198,7 +199,7 @@ impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> AsView for MapMut<'msg, K, V> {
     }
 }
 
-impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> IntoView<'msg> for MapMut<'msg, K, V> {
+impl<'msg, K: MapKey, V: MapValue<K>> IntoView<'msg> for MapMut<'msg, K, V> {
     fn into_view<'shorter>(self) -> MapView<'shorter, K, V>
     where
         'msg: 'shorter,
@@ -207,7 +208,7 @@ impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> IntoView<'msg> for MapMut<'msg, 
     }
 }
 
-impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> AsMut for MapMut<'msg, K, V> {
+impl<'msg, K: MapKey, V: MapValue<K>> AsMut for MapMut<'msg, K, V> {
     type MutProxied = Map<K, V>;
 
     fn as_mut(&mut self) -> MapMut<'_, K, V> {
@@ -215,7 +216,7 @@ impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> AsMut for MapMut<'msg, K, V> {
     }
 }
 
-impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> IntoMut<'msg> for MapMut<'msg, K, V> {
+impl<'msg, K: MapKey, V: MapValue<K>> IntoMut<'msg> for MapMut<'msg, K, V> {
     fn into_mut<'shorter>(self) -> MapMut<'shorter, K, V>
     where
         'msg: 'shorter,
@@ -226,8 +227,8 @@ impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> IntoMut<'msg> for MapMut<'msg, K
 
 impl<K, V> Map<K, V>
 where
-    K: Proxied,
-    V: ProxiedInMapValue<K>,
+    K: MapKey,
+    V: MapValue<K>,
 {
     pub fn new() -> Self {
         V::map_new(Private)
@@ -253,8 +254,8 @@ where
 
 impl<K, V> Default for Map<K, V>
 where
-    K: Proxied,
-    V: ProxiedInMapValue<K>,
+    K: MapKey,
+    V: MapValue<K>,
 {
     fn default() -> Self {
         Map::new()
@@ -278,8 +279,8 @@ impl<'msg, K: ?Sized, V: ?Sized> MapView<'msg, K, V> {
 
 impl<'msg, K, V> MapView<'msg, K, V>
 where
-    K: Proxied + 'msg,
-    V: ProxiedInMapValue<K> + 'msg,
+    K: MapKey + 'msg,
+    V: MapValue<K> + 'msg,
 {
     pub fn get<'a>(self, key: impl Into<View<'a, K>>) -> Option<View<'msg, V>>
     where
@@ -336,8 +337,8 @@ impl<'msg, K: ?Sized, V: ?Sized> MapMut<'msg, K, V> {
 
 impl<'msg, K, V> MapMut<'msg, K, V>
 where
-    K: Proxied + 'msg,
-    V: ProxiedInMapValue<K> + 'msg,
+    K: MapKey + 'msg,
+    V: MapValue<K> + 'msg,
 {
     pub fn len(&self) -> usize {
         self.as_view().len()
@@ -420,8 +421,8 @@ where
 
 impl<'msg, K, V> IntoProxied<Map<K, V>> for MapView<'msg, K, V>
 where
-    K: Proxied,
-    V: ProxiedInMapValue<K>,
+    K: MapKey,
+    V: MapValue<K>,
     View<'msg, V>: IntoProxied<V>,
 {
     fn into_proxied(self, _private: Private) -> Map<K, V> {
@@ -433,8 +434,8 @@ where
 
 impl<'msg, K, V> IntoProxied<Map<K, V>> for MapMut<'msg, K, V>
 where
-    K: Proxied,
-    V: ProxiedInMapValue<K>,
+    K: MapKey,
+    V: MapValue<K>,
     View<'msg, V>: IntoProxied<V>,
 {
     fn into_proxied(self, _private: Private) -> Map<K, V> {
@@ -445,8 +446,8 @@ where
 impl<'msg, 'k, 'v, K, KView, V, VView, I> IntoProxied<Map<K, V>> for I
 where
     I: Iterator<Item = (KView, VView)>,
-    K: Proxied + 'msg + 'k,
-    V: ProxiedInMapValue<K> + 'msg + 'v,
+    K: MapKey + 'msg + 'k,
+    V: MapValue<K> + 'msg + 'v,
     KView: Into<View<'k, K>>,
     VView: IntoProxied<V>,
 {
@@ -483,8 +484,8 @@ impl<'msg, K: ?Sized, V: ?Sized> MapIter<'msg, K, V> {
 
 impl<'msg, K, V> Iterator for MapIter<'msg, K, V>
 where
-    K: Proxied + 'msg,
-    V: ProxiedInMapValue<K> + 'msg,
+    K: MapKey + 'msg,
+    V: MapValue<K> + 'msg,
 {
     type Item = (View<'msg, K>, View<'msg, V>);
 
@@ -495,8 +496,8 @@ where
 
 impl<'msg, K, V> IntoIterator for MapView<'msg, K, V>
 where
-    K: Proxied + 'msg,
-    V: ProxiedInMapValue<K> + 'msg,
+    K: MapKey + 'msg,
+    V: MapValue<K> + 'msg,
 {
     type IntoIter = MapIter<'msg, K, V>;
     type Item = (View<'msg, K>, View<'msg, V>);
@@ -508,8 +509,8 @@ where
 
 impl<'msg, K, V> IntoIterator for &'msg Map<K, V>
 where
-    K: Proxied + 'msg,
-    V: ProxiedInMapValue<K> + 'msg,
+    K: MapKey + 'msg,
+    V: MapValue<K> + 'msg,
 {
     type IntoIter = MapIter<'msg, K, V>;
     type Item = (View<'msg, K>, View<'msg, V>);
@@ -522,8 +523,8 @@ where
 impl<'a, 'msg, K, V> IntoIterator for &'a MapView<'msg, K, V>
 where
     'msg: 'a,
-    K: Proxied + 'msg,
-    V: ProxiedInMapValue<K> + 'msg,
+    K: MapKey + 'msg,
+    V: MapValue<K> + 'msg,
 {
     type IntoIter = MapIter<'msg, K, V>;
     type Item = (View<'msg, K>, View<'msg, V>);
@@ -536,8 +537,8 @@ where
 impl<'a, 'msg, K, V> IntoIterator for &'a MapMut<'msg, K, V>
 where
     'msg: 'a,
-    K: Proxied + 'msg,
-    V: ProxiedInMapValue<K> + 'msg,
+    K: MapKey + 'msg,
+    V: MapValue<K> + 'msg,
 {
     type IntoIter = MapIter<'a, K, V>;
     // The View's are valid for 'a instead of 'msg.
@@ -551,8 +552,8 @@ where
 
 impl<'msg, 'k, 'v, KView, VView, K, V> Extend<(KView, VView)> for MapMut<'msg, K, V>
 where
-    K: Proxied + 'msg + 'k,
-    V: ProxiedInMapValue<K> + 'msg + 'v,
+    K: MapKey + 'msg + 'k,
+    V: MapValue<K> + 'msg + 'v,
     KView: Into<View<'k, K>>,
     VView: IntoProxied<V>,
 {

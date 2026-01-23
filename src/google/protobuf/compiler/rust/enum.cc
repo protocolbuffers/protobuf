@@ -52,16 +52,16 @@ void TypeConversions(Context& ctx, const EnumDescriptor& desc) {
       ctx.Emit(
           R"rs(
           impl $pbr$::CppMapTypeConversions for $name$ {
-              fn get_prototype() -> $pbr$::MapValue {
+              fn get_prototype() -> $pbr$::FfiMapValue {
                   Self::to_map_value(Self::default())
               }
 
-              fn to_map_value(self) -> $pbr$::MapValue {
-                  $pbr$::MapValue::make_u32(self.0 as u32)
+              fn to_map_value(self) -> $pbr$::FfiMapValue {
+                  $pbr$::FfiMapValue::make_u32(self.0 as u32)
               }
 
-              unsafe fn from_map_value<'a>(value: $pbr$::MapValue) -> $pb$::View<'a, Self> {
-                  debug_assert_eq!(value.tag, $pbr$::MapValueTag::U32);
+              unsafe fn from_map_value<'a>(value: $pbr$::FfiMapValue) -> $pb$::View<'a, Self> {
+                  debug_assert_eq!(value.tag, $pbr$::FfiMapValueTag::U32);
                   $name$(unsafe { value.val.u as i32 })
               }
           }

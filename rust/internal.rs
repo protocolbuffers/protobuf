@@ -15,8 +15,8 @@ pub use paste::paste;
 use crate::map;
 pub use crate::r#enum::Enum;
 use crate::repeated;
+use crate::MapKey;
 pub use crate::ProtoStr;
-use crate::Proxied;
 pub use std::fmt::Debug;
 
 #[cfg(all(bzl, cpp_kernel))]
@@ -55,7 +55,7 @@ pub fn get_repeated_default_value<T: repeated::ProxiedInRepeated + Default>(
 }
 
 /// Used by the proto! macro to get a default value for a map field.
-pub fn get_map_default_value<K: Proxied, V: map::ProxiedInMapValue<K> + Default>(
+pub fn get_map_default_value<K: MapKey, V: map::MapValue<K> + Default>(
     _: Private,
     _: map::MapView<'_, K, V>,
 ) -> V {

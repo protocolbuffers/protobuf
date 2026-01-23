@@ -25,7 +25,11 @@ pub use crate::codegen_traits::{
     Message, MessageMut, MessageView,
 };
 pub use crate::cord::{ProtoBytesCow, ProtoStringCow};
-pub use crate::map::{Map, MapIter, MapMut, MapView, ProxiedInMapValue};
+pub use crate::map::{Map, MapIter, MapKey, MapMut, MapValue, MapView};
+
+// TODO: Remove this alias once we have confirmed theres no incoming references.
+pub use MapValue as ProxiedInMapValue;
+
 pub use crate::optional::Optional;
 pub use crate::proxied::{
     AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, Proxied, View,

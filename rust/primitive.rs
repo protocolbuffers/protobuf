@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 use crate::__internal::SealedInternal;
-use crate::{AsView, IntoView, Proxied};
+use crate::{AsView, IntoView, MapKey, Proxied};
 
 macro_rules! impl_singular_primitives {
   ($($t:ty),*) => {
@@ -15,6 +15,8 @@ macro_rules! impl_singular_primitives {
         impl Proxied for $t {
             type View<'msg> = $t;
         }
+
+        impl MapKey for $t {}
 
         impl AsView for $t {
             type Proxied = $t;

@@ -9,11 +9,11 @@
 
 use crate::__internal::{MatcherEq, Private, SealedInternal};
 use crate::{
-    AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapView,
-    MergeFrom, Message, MessageMut, MessageMutInterop, MessageView, MessageViewInterop, Mut,
-    OwnedMessageInterop, ParseError, ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInMapValue,
-    ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, Serialize, SerializeError, TakeFrom,
-    View,
+    AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapKey, MapMut,
+    MapValue, MapView, MergeFrom, Message, MessageMut, MessageMutInterop, MessageView,
+    MessageViewInterop, Mut, OwnedMessageInterop, ParseError, ProtoBytes, ProtoStr, ProtoString,
+    Proxied, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, Serialize, SerializeError,
+    TakeFrom, View,
 };
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -554,8 +554,8 @@ pub fn empty_array<T: ProxiedInRepeated>() -> RepeatedView<'static, T> {
 /// Returns a static empty MapView.
 pub fn empty_map<K, V>() -> MapView<'static, K, V>
 where
-    K: Proxied,
-    V: ProxiedInMapValue<K>,
+    K: MapKey,
+    V: MapValue<K>,
 {
     // TODO: Consider creating a static empty map in C.
 
@@ -981,9 +981,9 @@ impl RawMapIter {
     }
 }
 
-impl<Key, MessageType> ProxiedInMapValue<Key> for MessageType
+impl<Key, MessageType> MapValue<Key> for MessageType
 where
-    Key: Proxied + EntityType + UpbTypeConversions<Key::Tag>,
+    Key: MapKey + EntityType + UpbTypeConversions<Key::Tag>,
     Self: Proxied + EntityType + UpbTypeConversions<<Self as EntityType>::Tag>,
 {
     fn map_new(_private: Private) -> Map<Key, Self> {
@@ -1388,8 +1388,8 @@ pub unsafe fn message_set_repeated_field<
 pub unsafe fn message_set_map_field<
     'msg,
     P: Message + AssociatedMiniTable,
-    K: Proxied,
-    V: ProxiedInMapValue<K>,
+    K: MapKey,
+    V: MapValue<K>,
 >(
     parent: MessageMutInner<'msg, P>,
     index: u32,
