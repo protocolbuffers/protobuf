@@ -144,8 +144,8 @@ void CordFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
   if (!field_->default_value_string().empty()) {
     format(
         "struct _default_$name$_func_ {\n"
-        "  constexpr absl::string_view operator()() const {\n"
-        "    return absl::string_view($default$, $default_length$);\n"
+        "  constexpr ::absl::string_view operator()() const {\n"
+        "    return ::absl::string_view($default$, $default_length$);\n"
         "  }\n"
         "};\n");
   }
@@ -319,8 +319,8 @@ void CordOneofFieldGenerator::GenerateStaticMembers(
   if (!field_->default_value_string().empty()) {
     format(
         "struct _default_$name$_func_ {\n"
-        "  constexpr absl::string_view operator()() const {\n"
-        "    return absl::string_view($default$, $default_length$);\n"
+        "  constexpr ::absl::string_view operator()() const {\n"
+        "    return ::absl::string_view($default$, $default_length$);\n"
         "  }\n"
         "};"
         "static const ::absl::Cord $default_variable_name$;\n");

@@ -948,11 +948,11 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_DOUBLE: {
       double value = field->default_value_double();
       if (value == std::numeric_limits<double>::infinity()) {
-        return "std::numeric_limits<double>::infinity()";
+        return "::std::numeric_limits<double>::infinity()";
       } else if (value == -std::numeric_limits<double>::infinity()) {
-        return "-std::numeric_limits<double>::infinity()";
+        return "-::std::numeric_limits<double>::infinity()";
       } else if (value != value) {
-        return "std::numeric_limits<double>::quiet_NaN()";
+        return "::std::numeric_limits<double>::quiet_NaN()";
       } else {
         return io::SimpleDtoa(value);
       }
@@ -960,11 +960,11 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_FLOAT: {
       float value = field->default_value_float();
       if (value == std::numeric_limits<float>::infinity()) {
-        return "std::numeric_limits<float>::infinity()";
+        return "::std::numeric_limits<float>::infinity()";
       } else if (value == -std::numeric_limits<float>::infinity()) {
-        return "-std::numeric_limits<float>::infinity()";
+        return "-::std::numeric_limits<float>::infinity()";
       } else if (value != value) {
-        return "std::numeric_limits<float>::quiet_NaN()";
+        return "::std::numeric_limits<float>::quiet_NaN()";
       } else {
         std::string float_value = io::SimpleFtoa(value);
         // If floating point value contains a period (.) or an exponent

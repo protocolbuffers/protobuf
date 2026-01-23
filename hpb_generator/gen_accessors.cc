@@ -567,16 +567,16 @@ void WriteMapAccessorDefinitions(const google::protobuf::Descriptor* desc,
          {"converted_key_name", converted_key_name},
          {"upb_field_name", upbc_name}},
         R"cc(
-          absl::StatusOr<$const_val$> $class_name$::get_$field_name$(
+          ::absl::StatusOr<$const_val$> $class_name$::get_$field_name$(
               $const_key$ key) {
             upb_StringView value;
             $optional_conversion_code$bool success =
                 $upb_msg_name$_$upb_field_name$_get(msg_, $converted_key_name$,
                                                     &value);
             if (success) {
-              return absl::string_view(value.data, value.size);
+              return ::absl::string_view(value.data, value.size);
             }
-            return absl::NotFoundError("");
+            return ::absl::NotFoundError("");
           }
         )cc");
     ctx.Emit(
@@ -621,7 +621,7 @@ void WriteMapAccessorDefinitions(const google::protobuf::Descriptor* desc,
          {"converted_key_name", converted_key_name},
          {"upb_field_name", upbc_name}},
         R"cc(
-          absl::StatusOr<$const_val$> $class_name$::get_$field_name$(
+          ::absl::StatusOr<$const_val$> $class_name$::get_$field_name$(
               $const_key$ key) {
             $const_val$ value;
             $optional_conversion_code$bool success =
@@ -630,7 +630,7 @@ void WriteMapAccessorDefinitions(const google::protobuf::Descriptor* desc,
             if (success) {
               return value;
             }
-            return absl::NotFoundError("");
+            return ::absl::NotFoundError("");
           }
         )cc");
     ctx.Emit(
