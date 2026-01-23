@@ -182,6 +182,7 @@ bzl_library(
     deps = [
         ":native_bzl",
         "//bazel/common:proto_lang_toolchain_info_bzl",
+        "//bazel/flags:flags_bzl",
     ],
 )
 
