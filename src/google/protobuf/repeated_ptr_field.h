@@ -1980,7 +1980,7 @@ class RustRepeatedMessageHelper {
 // This code based on net/proto/proto-array-internal.h by Jeffrey Yasskin
 // (jyasskin@google.com).
 template <typename Element>
-class RepeatedPtrIterator {
+class ABSL_ATTRIBUTE_VIEW RepeatedPtrIterator {
  public:
   using iterator = RepeatedPtrIterator<Element>;
   using iterator_category = std::random_access_iterator_tag;
