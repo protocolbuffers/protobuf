@@ -102,8 +102,9 @@ if (NOT protobuf_BUILD_PROTOBUF_BINARIES)
   set(protobuf_INSTALL OFF)
 endif()
 
-if(protobuf_BUILD_PROTOC_BINARIES AND NOT protobuf_BUILD_LIBUPB)
-  message(FATAL_ERROR "Building protoc binaries requires building libupb. Either set protobuf_BUILD_LIBUPB=ON to build libupb or set protobuf_BUILD_PROTOC_BINARIES=OFF to not build protoc.")
+if(protobuf_BUILD_LIBPROTOC AND NOT protobuf_BUILD_LIBUPB)
+  message(WARNING "Building protoc binaries requires building libupb. As such, protobuf_BUILD_LIBUPB is being forced to ON.")
+  set(protobuf_BUILD_LIBUPB ON)
 endif()
 
 # Parse version tweaks
