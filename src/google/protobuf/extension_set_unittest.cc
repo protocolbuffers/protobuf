@@ -341,9 +341,9 @@ TEST(ExtensionSetTest, CopyFrom) {
   unittest::TestAllExtensions message1, message2;
 
   TestUtil::SetAllExtensions(&message1);
-  message2.CopyFrom(message1);
+  message2 = message1;
   TestUtil::ExpectAllExtensionsSet(message2);
-  message2.CopyFrom(message1);  // exercise copy when fields already exist
+  message2 = message1;  // exercise copy when fields already exist
   TestUtil::ExpectAllExtensionsSet(message2);
 }
 
@@ -351,9 +351,9 @@ TEST(ExtensionSetTest, CopyFromPacked) {
   unittest::TestPackedExtensions message1, message2;
 
   TestUtil::SetPackedExtensions(&message1);
-  message2.CopyFrom(message1);
+  message2 = message1;
   TestUtil::ExpectPackedExtensionsSet(message2);
-  message2.CopyFrom(message1);  // exercise copy when fields already exist
+  message2 = message1;  // exercise copy when fields already exist
   TestUtil::ExpectPackedExtensionsSet(message2);
 }
 
