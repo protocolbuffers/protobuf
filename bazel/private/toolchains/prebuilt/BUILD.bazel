@@ -11,8 +11,13 @@ load(":protoc_authenticity.bzl", "protoc_authenticity")
     toolchain(
         name = "{}_toolchain".format(platform.replace("-", "_")),
         exec_compatible_with = meta["compatible_with"],
-        # Toolchain resolution will only permit this toolchain if the config_setting for prefer_prebuilt_protoc is true,
-        target_settings = ["@com_google_protobuf//bazel/toolchains:prefer_prebuilt_protoc.flag_set"],
+        # Toolchain resolution will only permit this toolchain if:
+        # 1. prefer_prebuilt_protoc flag is true
+        # 2. The requested version matches via semver (major, major.minor, or exact)
+        target_settings = [
+            "@com_google_protobuf//bazel/toolchains:prefer_prebuilt_protoc.flag_set",
+            "@com_google_protobuf//bazel/private/toolchains/version:semver_match",
+        ],
         # Bazel does not follow this attribute during analysis, so the referenced repo
         # will only be fetched if this toolchain is selected.
         toolchain = "@prebuilt_protoc.{}//:prebuilt_protoc_toolchain".format(platform.replace("-", "_")),

@@ -14,6 +14,7 @@ load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/flags:flags.bzl", "get_flag_value")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
+load("//bazel/private/toolchains/version:version_transition.bzl", "protoc_version_transition")
 
 DIRECT_DEPS_FLAG_TEMPLATE = (
     "--direct_dependencies_violation_msg=" +
@@ -273,6 +274,7 @@ _extra_doc = ""
 
 proto_library = rule(
     implementation = _proto_library_impl,
+    cfg = protoc_version_transition,
     # TODO: proto_common docs are missing
     # TODO: ProtoInfo link doesn't work and docs are missing
     doc = """
