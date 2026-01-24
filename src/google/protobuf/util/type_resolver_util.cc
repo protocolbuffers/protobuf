@@ -23,6 +23,7 @@
 #include "absl/strings/strip.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/strtod.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/util/type_resolver.h"
 
 // clang-format off
