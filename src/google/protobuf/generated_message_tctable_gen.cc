@@ -666,7 +666,9 @@ uint16_t MakeTypeCardForField(
 
 bool HasWeakFields(const Descriptor* descriptor) {
   for (int i = 0; i < descriptor->field_count(); i++) {
+    PROTOBUF_IGNORE_DEPRECATION_START
     if (descriptor->field(i)->options().weak()) {
+      PROTOBUF_IGNORE_DEPRECATION_STOP
       return true;
     }
   }
@@ -703,9 +705,11 @@ uint32_t FastParseTableSize(size_t num_fields,
 }
 
 bool IsFieldTypeEligibleForFastParsing(const FieldDescriptor* field) {
+  PROTOBUF_IGNORE_DEPRECATION_START
+  const bool field_is_weak = field->options().weak();
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   // Map, oneof, weak, and split fields are not handled on the fast path.
-  if (field->is_map() || field->real_containing_oneof() ||
-      field->options().weak()) {
+  if (field->is_map() || field->real_containing_oneof() || field_is_weak) {
     return false;
   }
 
@@ -738,11 +742,14 @@ TailCallTableInfo::BuildFieldEntries(
     auto* field = options.field;
     // In the following code where we assign kSubTable to aux entries, only
     // the following typed fields are supported.
+    PROTOBUF_IGNORE_DEPRECATION_START
+    const bool field_is_weak = field->options().weak();
+    PROTOBUF_IGNORE_DEPRECATION_STOP
     return (field->type() == FieldDescriptor::TYPE_MESSAGE ||
             field->type() == FieldDescriptor::TYPE_GROUP) &&
-           !field->is_map() && !field->options().weak() &&
-           !HasLazyRep(field, options) && !options.is_implicitly_weak &&
-           options.use_direct_tcparser_table && is_non_cold(options);
+           !field->is_map() && !field_is_weak && !HasLazyRep(field, options) &&
+           !options.is_implicitly_weak && options.use_direct_tcparser_table &&
+           is_non_cold(options);
   };
   for (const FieldOptions& options : ordered_fields) {
     if (is_non_cold_subtable(options)) {
@@ -780,7 +787,9 @@ TailCallTableInfo::BuildFieldEntries(
             aux_entries.push_back({kEnumValidator, {map_value}});
           }
         }
+        PROTOBUF_IGNORE_DEPRECATION_START
       } else if (field->options().weak()) {
+        PROTOBUF_IGNORE_DEPRECATION_STOP
         // Disable the type card for this entry to force the fallback.
         entry.type_card = 0;
       } else if (HasLazyRep(field, options)) {

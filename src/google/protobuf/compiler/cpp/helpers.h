@@ -343,7 +343,9 @@ inline bool UseUnknownFieldSet(const FileDescriptor* file,
 }
 
 inline bool IsWeak(const FieldDescriptor* field, const Options& options) {
+  PROTOBUF_IGNORE_DEPRECATION_START
   if (field->options().weak()) {
+    PROTOBUF_IGNORE_DEPRECATION_STOP
     ABSL_CHECK(!options.opensource_runtime);
     return true;
   }
