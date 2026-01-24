@@ -101,6 +101,11 @@ endif ()
 if (NOT protobuf_BUILD_PROTOBUF_BINARIES)
   set(protobuf_INSTALL OFF)
 endif()
+
+if(protobuf_BUILD_PROTOC_BINARIES AND NOT protobuf_BUILD_LIBUPB)
+  message(FATAL_ERROR "Building protoc binaries requires building libupb. Either set protobuf_BUILD_LIBUPB=ON to build libupb or set protobuf_BUILD_PROTOC_BINARIES=OFF to not build protoc.")
+endif()
+
 # Parse version tweaks
 set(protobuf_VERSION_REGEX "^([0-9]+)\\.([0-9]+)\\.([0-9]+)([-]rc[-]|\\.)?([0-9]*)$")
 string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\1"
