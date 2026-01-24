@@ -8,7 +8,7 @@
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
 load("//python:build_targets.bzl", "build_targets")
 load("//python:py_extension.bzl", "py_extension")
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS")
 
 build_targets(name = "python")
 

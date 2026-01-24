@@ -29,22 +29,6 @@ toolchain_type(
 )
 
 bzl_library(
-    name = "upb_proto_library_internal_bzl",
-    srcs = [
-        "upb_proto_library_internal/aspect.bzl",
-        "upb_proto_library_internal/cc_library_func.bzl",
-        "upb_proto_library_internal/copts.bzl",
-        "upb_proto_library_internal/rule.bzl",
-    ],
-    visibility = ["//bazel:__pkg__"],
-    deps = [
-        "//bazel/common:proto_common_bzl",
-        "@bazel_skylib//lib:paths",
-        "@bazel_tools//tools/cpp:toolchain_utils.bzl",
-    ],
-)
-
-bzl_library(
     name = "native_bzl",
     srcs = [
         "native.bzl",

@@ -7,16 +7,13 @@
 
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS")
 load(
-    "//bazel:upb_proto_library.bzl",
+    "//upb/bazel:upb_proto_library.bzl",
     "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
-load(
-    "//upb/bazel:build_defs.bzl",
-    "UPB_DEFAULT_COPTS",
-    "make_shell_script",
-)
+load(":build_defs.bzl", "make_shell_script")
 
 package(default_applicable_licenses = ["//:license"])
 

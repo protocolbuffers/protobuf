@@ -6,27 +6,23 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-
-package(default_applicable_licenses = ["//:license"])
-
-licenses(["notice"])
+load("@bazel_skylib//lib:selects.bzl", "selects")
 
 bzl_library(
-    name = "upb_proto_library_bzl",
+    name = "upb_proto_library_internal_bzl",
     srcs = [
-        "upb_c_proto_library.bzl",
-        "upb_minitable_proto_library.bzl",
-        "upb_proto_library.bzl",
-        "upb_proto_reflection_library.bzl",
-        "visibility.bzl",
+        "upb_proto_library_internal/aspect.bzl",
+        "upb_proto_library_internal/cc_library_func.bzl",
+        "upb_proto_library_internal/copts.bzl",
+        "upb_proto_library_internal/rule.bzl",
     ],
     visibility = [
-        "//visibility:public",
+        "//upb/bazel:__pkg__",
     ],
     deps = [
         "//bazel/common:proto_common_bzl",
         "//bazel/common:proto_info_bzl",
-        "//upb/bazel/private:upb_proto_library_internal_bzl",
-        "@rules_cc//cc/common",
+        "@bazel_skylib//lib:paths",
+        "@bazel_tools//tools/cpp:toolchain_utils.bzl",
     ],
 )
