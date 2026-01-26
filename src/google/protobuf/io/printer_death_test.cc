@@ -14,7 +14,7 @@
 #include <tuple>
 #include <vector>
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>

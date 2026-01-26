@@ -3,7 +3,7 @@
 // source: google/protobuf/compiler/plugin.proto
 // Protobuf C++ Version: 7.35.0-dev
 
-#include "google/protobuf/compiler/plugin.pb.h"
+#include "google/protobuf/compiler/plugin.proto.h"
 
 #include <algorithm>
 #include <type_traits>
@@ -17,6 +17,7 @@
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/wire_format.h"
+#include "google/protobuf/descriptor.proto.h"
 // @@protoc_insertion_point(includes)
 
 // Must be included last.
@@ -285,10 +286,11 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2epro
     "(\t\022\?\n\023generated_code_info\030\020 \001(\0132\".google"
     ".protobuf.GeneratedCodeInfo\"W\n\007Feature\022\020"
     "\n\014FEATURE_NONE\020\000\022\033\n\027FEATURE_PROTO3_OPTIO"
-    "NAL\020\001\022\035\n\031FEATURE_SUPPORTS_EDITIONS\020\002Br\n\034"
-    "com.google.protobuf.compilerB\014PluginProt"
-    "osZ)google.golang.org/protobuf/types/plu"
-    "ginpb\252\002\030Google.Protobuf.Compiler"
+    "NAL\020\001\022\035\n\031FEATURE_SUPPORTS_EDITIONS\020\002B\202\001\n"
+    "\034com.google.protobuf.compilerB\014PluginPro"
+    "tosZ)google.golang.org/protobuf/types/pl"
+    "uginpb\252\002\030Google.Protobuf.Compiler\242\003\rPROT"
+    "OC_EXPORT"
 };
 static const ::_pbi::DescriptorTable* PROTOBUF_NONNULL const
     descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_deps[1] = {
@@ -298,7 +300,7 @@ static ::absl::once_flag descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto = {
     false,
     false,
-    952,
+    969,
     descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
     "google/protobuf/compiler/plugin.proto",
     &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
@@ -1979,6 +1981,14 @@ void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* PROTOBUF_RESTRIC
 }  // namespace google
 namespace google {
 namespace protobuf {
+template void* PROTOBUF_NONNULL Arena::DefaultConstruct<::google::protobuf::compiler::Version>(Arena* PROTOBUF_NULLABLE);
+template void* PROTOBUF_NONNULL Arena::CopyConstruct<::google::protobuf::compiler::Version>(Arena* PROTOBUF_NULLABLE, const void* PROTOBUF_NONNULL);
+template void* PROTOBUF_NONNULL Arena::DefaultConstruct<::google::protobuf::compiler::CodeGeneratorRequest>(Arena* PROTOBUF_NULLABLE);
+template void* PROTOBUF_NONNULL Arena::CopyConstruct<::google::protobuf::compiler::CodeGeneratorRequest>(Arena* PROTOBUF_NULLABLE, const void* PROTOBUF_NONNULL);
+template void* PROTOBUF_NONNULL Arena::DefaultConstruct<::google::protobuf::compiler::CodeGeneratorResponse_File>(Arena* PROTOBUF_NULLABLE);
+template void* PROTOBUF_NONNULL Arena::CopyConstruct<::google::protobuf::compiler::CodeGeneratorResponse_File>(Arena* PROTOBUF_NULLABLE, const void* PROTOBUF_NONNULL);
+template void* PROTOBUF_NONNULL Arena::DefaultConstruct<::google::protobuf::compiler::CodeGeneratorResponse>(Arena* PROTOBUF_NULLABLE);
+template void* PROTOBUF_NONNULL Arena::CopyConstruct<::google::protobuf::compiler::CodeGeneratorResponse>(Arena* PROTOBUF_NULLABLE, const void* PROTOBUF_NONNULL);
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)

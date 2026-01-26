@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"

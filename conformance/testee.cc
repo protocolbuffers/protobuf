@@ -8,7 +8,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "binary_wireformat.h"
-#include "conformance/conformance.pb.h"
+#include "conformance/conformance.proto.h"
 #include "naming.h"
 #include "google/protobuf/descriptor.h"
 

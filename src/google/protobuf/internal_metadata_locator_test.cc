@@ -6,7 +6,7 @@
 
 #include <gtest/gtest.h>
 #include "google/protobuf/arena.h"
-#include "google/protobuf/internal_metadata_locator_test.pb.h"
+#include "google/protobuf/internal_metadata_locator_test.proto.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/metadata_lite.h"

@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
@@ -17,7 +17,7 @@
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/test_textproto.h"
-#include "google/protobuf/unittest_features.pb.h"
+#include "google/protobuf/unittest_features.proto.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

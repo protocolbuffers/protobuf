@@ -13,7 +13,7 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 
 namespace google {
 namespace protobuf {

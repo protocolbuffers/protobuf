@@ -19,7 +19,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"

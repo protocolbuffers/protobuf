@@ -33,7 +33,7 @@
 #include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/compiler/java/full/make_field_gens.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"

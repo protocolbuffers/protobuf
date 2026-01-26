@@ -5,7 +5,7 @@
 
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/descriptor_visitor.h"
 
 // Must be included last.

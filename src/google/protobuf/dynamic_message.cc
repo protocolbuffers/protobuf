@@ -57,7 +57,7 @@
 #include "absl/utility/utility.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_util.h"

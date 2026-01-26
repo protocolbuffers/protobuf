@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/field_mask.pb.h"
+#include "google/protobuf/field_mask.proto.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"

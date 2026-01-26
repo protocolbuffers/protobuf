@@ -2,8 +2,8 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_lite.pb.h"
+#include "google/protobuf/unittest.proto.h"
+#include "google/protobuf/unittest_lite.proto.h"
 
 namespace {
 

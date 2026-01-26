@@ -49,7 +49,7 @@
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/scc.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_tctable_impl.h"

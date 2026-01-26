@@ -18,7 +18,7 @@
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 
 // Must come last:
 #include "google/protobuf/port_def.inc"

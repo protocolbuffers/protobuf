@@ -25,23 +25,23 @@
 #include <tuple>
 #include <vector>
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/cpp_features.proto.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/edition_unittest.pb.h"
+#include "google/protobuf/edition_unittest.proto.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_util.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_import.pb.h"
-#include "google/protobuf/unittest_import_public.pb.h"
-#include "google/protobuf/unittest_no_field_presence.pb.h"
+#include "google/protobuf/unittest.proto.h"
+#include "google/protobuf/unittest_import.proto.h"
+#include "google/protobuf/unittest_import_public.proto.h"
+#include "google/protobuf/unittest_no_field_presence.proto.h"
 
 
 #include "google/protobuf/port_def.inc"

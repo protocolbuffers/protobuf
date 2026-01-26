@@ -1,6 +1,6 @@
 #include "editions/edition_defaults_test_utils.h"
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "absl/types/optional.h"
 
 namespace google {

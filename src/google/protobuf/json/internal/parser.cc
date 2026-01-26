@@ -14,7 +14,7 @@
 #include <string>
 #include <utility>
 
-#include "google/protobuf/type.pb.h"
+#include "google/protobuf/type.proto.h"
 #include "absl/base/attributes.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"

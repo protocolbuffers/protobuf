@@ -32,9 +32,9 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_import.pb.h"
-#include "google/protobuf/unittest_lite.pb.h"
+#include "google/protobuf/unittest.proto.h"
+#include "google/protobuf/unittest_import.proto.h"
+#include "google/protobuf/unittest_lite.proto.h"
 
 #define MESSAGE_TEST_NAME MessageTest
 #define MESSAGE_FACTORY_TEST_NAME MessageFactoryTest

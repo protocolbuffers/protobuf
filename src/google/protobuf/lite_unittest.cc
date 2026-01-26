@@ -28,13 +28,13 @@
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
-#include "google/protobuf/map_lite_unittest.pb.h"
+#include "google/protobuf/map_lite_unittest.proto.h"
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/message_lite.h"
-#include "google/protobuf/only_one_enum_test.pb.h"
+#include "google/protobuf/only_one_enum_test.proto.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/test_util_lite.h"
-#include "google/protobuf/unittest_lite.pb.h"
+#include "google/protobuf/unittest_lite.proto.h"
 #include "google/protobuf/wire_format_lite.h"
 
 

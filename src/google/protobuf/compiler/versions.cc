@@ -14,7 +14,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/plugin.pb.h"
+#include "google/protobuf/compiler/plugin.proto.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

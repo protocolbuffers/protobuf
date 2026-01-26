@@ -268,6 +268,7 @@ genrule(
     srcs = [wkt + ".proto" for wkt in WELL_KNOWN_TYPES],
     outs =
         ["wkt/google/protobuf/" + wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES] +
+        ["wkt/google/protobuf/" + wkt + ".proto.h" for wkt in WELL_KNOWN_TYPES] +
         ["wkt/google/protobuf/" + wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
     cmd = """
         $(execpath //:protoc) \
@@ -283,6 +284,7 @@ staleness_test(
     name = "well_known_types_staleness_test",
     outs =
         [wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES] +
+        [wkt + ".proto.h" for wkt in WELL_KNOWN_TYPES] +
         [wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
     generated_pattern = "wkt/google/protobuf/%s",
     tags = ["manual"],
@@ -294,7 +296,13 @@ staleness_test(
 cc_library(
     name = "cmake_wkt_cc_proto",
     srcs = ["wkt/google/protobuf/" + wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
-    hdrs = ["wkt/google/protobuf/" + wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES],
+    hdrs = [
+        "wkt/google/protobuf/" + wkt + ".pb.h"
+        for wkt in WELL_KNOWN_TYPES
+    ] + [
+        "wkt/google/protobuf/" + wkt + ".proto.h"
+        for wkt in WELL_KNOWN_TYPES
+    ],
     copts = COPTS,
     includes = ["wkt"],
     linkopts = LINK_OPTS,
@@ -745,8 +753,10 @@ cc_library(
 PROTOBUF_HEADERS = [
     "cpp_edition_defaults.h",
     "cpp_features.pb.h",
+    "cpp_features.proto.h",
     "descriptor.h",
     "descriptor.pb.h",
+    "descriptor.proto.h",
     "descriptor_database.h",
     "descriptor_visitor.h",
     "dynamic_message.h",
@@ -1453,6 +1463,7 @@ filegroup(
     data = [
         "descriptor.pb.cc",
         "descriptor.pb.h",
+        "descriptor.proto.h",
     ],
     visibility = ["//src/google/protobuf/compiler/cpp:__pkg__"],
 )
@@ -1463,6 +1474,7 @@ filegroup(
     data = [
         "cpp_features.pb.cc",
         "cpp_features.pb.h",
+        "cpp_features.proto.h",
     ],
     visibility = ["//src/google/protobuf/compiler/cpp:__pkg__"],
 )

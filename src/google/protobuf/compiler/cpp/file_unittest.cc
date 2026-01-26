@@ -17,7 +17,7 @@
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest.proto.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

@@ -12,8 +12,8 @@
 #include <ctime>
 #include <string>
 
-#include "google/protobuf/duration.pb.h"
-#include "google/protobuf/timestamp.pb.h"
+#include "google/protobuf/duration.proto.h"
+#include "google/protobuf/timestamp.proto.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/int128.h"
 #include "absl/strings/str_cat.h"

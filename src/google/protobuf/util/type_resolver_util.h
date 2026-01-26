@@ -10,7 +10,7 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_TYPE_RESOLVER_UTIL_H__
 #define GOOGLE_PROTOBUF_UTIL_TYPE_RESOLVER_UTIL_H__
 
-#include "google/protobuf/type.pb.h"
+#include "google/protobuf/type.proto.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 

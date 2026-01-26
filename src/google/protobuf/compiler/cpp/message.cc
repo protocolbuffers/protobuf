@@ -49,7 +49,7 @@
 #include "google/protobuf/compiler/cpp/parse_function_generator.h"
 #include "google/protobuf/compiler/cpp/tracker.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/has_bits.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"

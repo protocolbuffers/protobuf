@@ -9,9 +9,9 @@
 #include "absl/log/absl_check.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_preserve_unknown_enum.pb.h"
-#include "google/protobuf/unittest_preserve_unknown_enum2.pb.h"
+#include "google/protobuf/unittest.proto.h"
+#include "google/protobuf/unittest_preserve_unknown_enum.proto.h"
+#include "google/protobuf/unittest_preserve_unknown_enum2.proto.h"
 
 namespace google {
 namespace protobuf {

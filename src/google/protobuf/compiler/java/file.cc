@@ -37,7 +37,7 @@
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/printer.h"

@@ -14,7 +14,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 
 namespace google {
 namespace protobuf {

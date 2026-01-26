@@ -10,7 +10,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/text_format.h"
-#include "google/protobuf/unittest_string_view.pb.h"
+#include "google/protobuf/unittest_string_view.proto.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

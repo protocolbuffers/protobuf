@@ -22,7 +22,7 @@
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 #include "google/protobuf/compiler/cpp/generator.h"
 #include "google/protobuf/compiler/python/generator.h"
-#include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/cpp_features.proto.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 

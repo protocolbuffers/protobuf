@@ -52,7 +52,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "conformance/conformance.pb.h"
+#include "conformance/conformance.proto.h"
 #include "google/protobuf/endian.h"
 
 #define STRINGIFY(x) #x

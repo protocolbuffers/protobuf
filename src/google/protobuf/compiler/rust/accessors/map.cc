@@ -15,7 +15,7 @@
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/compiler/rust/upb_helpers.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 
 namespace google {
 namespace protobuf {

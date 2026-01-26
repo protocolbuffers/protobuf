@@ -19,12 +19,12 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
-#include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/map_unittest.proto.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
-#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest.proto.h"
 
 
 namespace google {

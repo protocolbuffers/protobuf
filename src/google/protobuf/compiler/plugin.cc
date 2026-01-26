@@ -27,9 +27,9 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/compiler/plugin.pb.h"
+#include "google/protobuf/compiler/plugin.proto.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 

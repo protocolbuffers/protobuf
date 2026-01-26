@@ -32,7 +32,7 @@
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/scc.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/printer.h"
 
@@ -1157,11 +1157,15 @@ void GenerateUtf8CheckCodeForCord(io::Printer* p, const FieldDescriptor* field,
 bool IsStrictUtf8String(const FieldDescriptor* field, const Options& options);
 
 inline bool ShouldGenerateExternSpecializations(const Options& options) {
-  // For OSS we omit the specializations to reduce codegen size.
+  // When proto_h is disabled we omit the specializations to reduce codegen
+  // size.
+  //
   // Some compilers can't handle that much input in a single translation unit.
-  // These specializations are just a link size optimization and do not affect
-  // correctness or performance, so it is ok to omit them.
-  return !options.opensource_runtime;
+  // When proto_h is disabled, these specializations are just a link size
+  // optimization and do not affect correctness or performance, so it is ok to
+  // omit them. In proto_h mode, TUs are generally smaller, so this optimization
+  // is not as important.
+  return options.proto_h;
 }
 
 struct OneOfRangeImpl {

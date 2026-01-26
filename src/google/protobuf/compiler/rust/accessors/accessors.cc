@@ -15,7 +15,7 @@
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/rust_field_type.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/port.h"
 
 namespace google {

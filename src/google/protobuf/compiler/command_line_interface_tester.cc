@@ -209,6 +209,10 @@ void CommandLineInterfaceTester::ExpectFileContentNotContainsSubstring(
   EXPECT_THAT(FileContents(filename), Not(HasSubstr(content_substring)));
 }
 
+bool CommandLineInterfaceTester::OutputFileExists(absl::string_view filename) {
+  return FileExists(absl::StrCat(temp_directory_, "/", filename));
+}
+
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google

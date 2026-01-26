@@ -23,10 +23,10 @@
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
-#include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/cpp_features.proto.h"
 #include "editions/edition_defaults_test_utils.h"
-#include "google/protobuf/unittest_features.pb.h"
-#include "google/protobuf/unittest_invalid_features.pb.h"
+#include "google/protobuf/unittest_features.proto.h"
+#include "google/protobuf/unittest_invalid_features.proto.h"
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -38,8 +38,8 @@
 
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
-#include "google/protobuf/any.pb.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/any.proto.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/strings/str_split.h"
@@ -49,13 +49,13 @@
 #include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/mock_code_generator.h"
-#include "google/protobuf/compiler/plugin.pb.h"
+#include "google/protobuf/compiler/plugin.proto.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_custom_options.pb.h"
-#include "google/protobuf/unittest_import.pb.h"
+#include "google/protobuf/unittest.proto.h"
+#include "google/protobuf/unittest_custom_options.proto.h"
+#include "google/protobuf/unittest_import.proto.h"
 
 #ifdef GOOGLE_PROTOBUF_USE_BAZEL_GENERATED_PLUGIN_PATHS
 // This is needed because of https://github.com/bazelbuild/bazel/issues/19124.

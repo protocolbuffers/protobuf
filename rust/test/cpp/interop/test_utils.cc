@@ -13,7 +13,7 @@
 #include "google/protobuf/descriptor.h"
 #include "rust/cpp_kernel/serialized_data.h"
 #include "rust/cpp_kernel/strings.h"
-#include "rust/test/cpp/interop/interop_test.pb.h"
+#include "rust/test/cpp/interop/interop_test.proto.h"
 
 using google::protobuf::rust::SerializedData;
 using google::protobuf::rust::SerializeMsg;

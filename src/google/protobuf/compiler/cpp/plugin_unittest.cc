@@ -189,17 +189,19 @@ TEST(CppPluginTest, PluginTest) {
 
   CppGenerator cpp_generator;
   TestGenerator test_generator;
-  cli.RegisterGenerator("--cpp_out", &cpp_generator, "");
+  cli.RegisterGenerator("--cpp_out", "--cpp_opt", &cpp_generator, "");
   cli.RegisterGenerator("--test_out", &test_generator, "");
 
   std::string proto_path = absl::StrCat("-I", ::testing::TempDir());
   std::string cpp_out = absl::StrCat("--cpp_out=", ::testing::TempDir());
+  // TODO: Update to work with proto_h=true.
+  std::string cpp_opt("--cpp_opt=proto_h=false");
   std::string test_out = absl::StrCat("--test_out=", ::testing::TempDir());
 
-  const char* argv[] = {"protoc", proto_path.c_str(), cpp_out.c_str(),
-                        test_out.c_str(), "test.proto"};
+  const char* argv[] = {"protoc",        proto_path.c_str(), cpp_out.c_str(),
+                        cpp_opt.c_str(), test_out.c_str(),   "test.proto"};
 
-  EXPECT_EQ(0, cli.Run(5, argv));
+  EXPECT_EQ(0, cli.Run(6, argv));
 }
 
 }  // namespace

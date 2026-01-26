@@ -41,7 +41,7 @@
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/printer.h"
@@ -1432,6 +1432,7 @@ class FileGenerator::ForwardDeclarations {
               Sub("enum", e.first).AnnotatedAs(e.second),
               {"DEPRECATED",
                e.second->options().deprecated() ? "[[deprecated]]" : ""},
+              {"dllexport_decl", DllExport(e.second)},
           },
           R"cc(
             enum $DEPRECATED $$enum$ : int;
@@ -1447,6 +1448,7 @@ class FileGenerator::ForwardDeclarations {
               {"default_type", DefaultInstanceType(desc, options)},
               {"default_name", DefaultInstanceName(desc, options)},
               {"classdata_type", ClassDataType(desc, options)},
+              {"dllexport_decl", DllExport(desc)},
           },
           R"cc(
             class $class$;
@@ -1464,6 +1466,7 @@ class FileGenerator::ForwardDeclarations {
                DefaultInstanceType(desc, options, /*split=*/true)},
               {"default_name",
                DefaultInstanceName(desc, options, /*split=*/true)},
+              {"dllexport_decl", DllExport(desc)},
           },
           R"cc(
             struct $default_type$;
@@ -1517,6 +1520,11 @@ class FileGenerator::ForwardDeclarations {
   }
 
  private:
+  template <typename T>
+  std::string DllExport(const T* desc) const {
+    return desc->file()->options().dllexport_decl();
+  }
+
   absl::btree_map<std::string, const Descriptor*> classes_;
   absl::btree_map<std::string, const EnumDescriptor*> enums_;
   absl::btree_map<std::string, const Descriptor*> splits_;

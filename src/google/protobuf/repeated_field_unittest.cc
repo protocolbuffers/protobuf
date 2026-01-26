@@ -41,7 +41,7 @@
 #include "google/protobuf/port.h"
 // TODO: Remove.
 #include "google/protobuf/repeated_ptr_field.h"
-#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest.proto.h"
 
 
 // Must be included last.

@@ -1,10 +1,10 @@
 #include "editions/edition_defaults_test_utils.h"
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include <gtest/gtest.h>
 #include "absl/types/optional.h"
 #include "google/protobuf/test_textproto.h"
-#include "google/protobuf/unittest_features.pb.h"
+#include "google/protobuf/unittest_features.proto.h"
 
 namespace google {
 namespace protobuf {

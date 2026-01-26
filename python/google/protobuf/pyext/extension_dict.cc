@@ -14,7 +14,7 @@
 #include <memory>
 #include <vector>
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"

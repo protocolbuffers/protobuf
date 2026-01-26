@@ -15,7 +15,7 @@
 
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
-#include "conformance/conformance.pb.h"
+#include "conformance/conformance.proto.h"
 #include "test_runner.h"
 
 namespace google {

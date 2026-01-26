@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"

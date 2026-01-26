@@ -12,16 +12,16 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/field_mask.pb.h"
+#include "google/protobuf/field_mask.proto.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/base/log_severity.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/test_util.h"
-#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest.proto.h"
 #include "google/protobuf/util/field_mask_util.h"
-#include "google/protobuf/util/field_mask_util_test.pb.h"
+#include "google/protobuf/util/field_mask_util_test.proto.h"
 
 namespace google {
 namespace protobuf {

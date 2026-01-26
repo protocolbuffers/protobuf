@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "absl/strings/string_view.h"
 #include "hpb_generator/context.h"
 #include "hpb_generator/gen_accessors.h"

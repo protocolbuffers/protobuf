@@ -3,11 +3,11 @@
 
 #include <string>
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "conformance/conformance.pb.h"
+#include "conformance/conformance.proto.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_legacy.h"
 

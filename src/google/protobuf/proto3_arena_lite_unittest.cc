@@ -12,7 +12,7 @@
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
-#include "google/protobuf/unittest_proto3_arena.pb.h"
+#include "google/protobuf/unittest_proto3_arena.proto.h"
 
 using proto3_arena_unittest::TestAllTypes;
 

@@ -21,7 +21,7 @@
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/port.h"

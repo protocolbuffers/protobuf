@@ -10,7 +10,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest.proto.h"
 
 namespace google {
 namespace protobuf {

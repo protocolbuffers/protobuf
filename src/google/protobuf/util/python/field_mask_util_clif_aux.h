@@ -3,7 +3,7 @@
 
 #include <Python.h>
 
-#include "google/protobuf/field_mask.pb.h"
+#include "google/protobuf/field_mask.proto.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/util/field_mask_util.h"
 

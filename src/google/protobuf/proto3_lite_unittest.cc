@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/unittest_proto3.pb.h"
+#include "google/protobuf/unittest_proto3.proto.h"
 
 #define LITE_TEST_NAME Proto3LiteTest
 #define UNITTEST ::proto3_unittest

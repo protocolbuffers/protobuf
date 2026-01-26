@@ -12,7 +12,7 @@
 #include <memory>
 
 #include "google/protobuf/message.h"
-#include "google/protobuf/internal/self_recursive.pb.h"
+#include "google/protobuf/internal/self_recursive.proto.h"
 #include "third_party/pybind11_protobuf/native_proto_caster.h"
 
 namespace google::protobuf::python {

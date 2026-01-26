@@ -3,7 +3,7 @@
 // source: google/protobuf/compiler/java/java_features.proto
 // Protobuf C++ Version: 7.35.0-dev
 
-#include "google/protobuf/compiler/java/java_features.pb.h"
+#include "google/protobuf/compiler/java/java_features.proto.h"
 
 #include <algorithm>
 #include <type_traits>
@@ -17,6 +17,7 @@
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/wire_format.h"
+#include "google/protobuf/descriptor.proto.h"
 // @@protoc_insertion_point(includes)
 
 // Must be included last.
@@ -138,8 +139,9 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fjava_2fjava_
     "\002\"F\n\016Utf8Validation\022\033\n\027UTF8_VALIDATION_U"
     "NKNOWN\020\000\022\013\n\007DEFAULT\020\001\022\n\n\006VERIFY\020\002J\004\010\006\020\007:"
     "<\n\004java\022\033.google.protobuf.FeatureSet\030\351\007 "
-    "\001(\0132\020.pb.JavaFeaturesB(\n\023com.google.prot"
-    "obufB\021JavaFeaturesProto"
+    "\001(\0132\020.pb.JavaFeaturesB:\n\023com.google.prot"
+    "obufB\021JavaFeaturesProto\242\003\017PROTOBUF_EXPOR"
+    "T"
 };
 static const ::_pbi::DescriptorTable* PROTOBUF_NONNULL const
     descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_deps[1] = {
@@ -149,7 +151,7 @@ static ::absl::once_flag descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2f
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto = {
     false,
     false,
-    1223,
+    1241,
     descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
     "google/protobuf/compiler/java/java_features.proto",
     &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_once,
@@ -629,6 +631,10 @@ PROTOBUF_CONSTINIT PROTOC_EXPORT
 }  // namespace pb
 namespace google {
 namespace protobuf {
+template void* PROTOBUF_NONNULL Arena::DefaultConstruct<::pb::JavaFeatures_NestInFileClassFeature>(Arena* PROTOBUF_NULLABLE);
+template void* PROTOBUF_NONNULL Arena::CopyConstruct<::pb::JavaFeatures_NestInFileClassFeature>(Arena* PROTOBUF_NULLABLE, const void* PROTOBUF_NONNULL);
+template void* PROTOBUF_NONNULL Arena::DefaultConstruct<::pb::JavaFeatures>(Arena* PROTOBUF_NULLABLE);
+template void* PROTOBUF_NONNULL Arena::CopyConstruct<::pb::JavaFeatures>(Arena* PROTOBUF_NULLABLE, const void* PROTOBUF_NONNULL);
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)

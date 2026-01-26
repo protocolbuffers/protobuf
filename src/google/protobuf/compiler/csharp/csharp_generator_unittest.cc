@@ -7,11 +7,11 @@
 
 #include <memory>
 
-#include "google/protobuf/any.pb.h"
+#include "google/protobuf/any.proto.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 

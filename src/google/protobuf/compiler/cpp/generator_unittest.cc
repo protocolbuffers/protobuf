@@ -9,10 +9,10 @@
 
 #include <memory>
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/compiler/command_line_interface_tester.h"
-#include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/cpp_features.proto.h"
 
 
 namespace google {
@@ -312,6 +312,64 @@ TEST_F(CppGeneratorTest, CtypeOnExtensionTest) {
       "extensions");
 }
 
+
+TEST_F(CppGeneratorTest, ProtoHNotSpecified) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto2";
+    message Foo {
+      optional int32 bar = 1;
+    })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  EXPECT_TRUE(OutputFileExists("foo.proto.h"));
+}
+
+TEST_F(CppGeneratorTest, ProtoHSetToTrue) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto2";
+    message Foo {
+      optional int32 bar = 1;
+    })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--cpp_opt=proto_h=true foo.proto");
+  ExpectNoErrors();
+
+  EXPECT_TRUE(OutputFileExists("foo.proto.h"));
+}
+
+TEST_F(CppGeneratorTest, ProtoHSetToFalse) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto2";
+    message Foo {
+      optional int32 bar = 1;
+    })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--cpp_opt=proto_h=false foo.proto");
+  ExpectNoErrors();
+
+  EXPECT_FALSE(OutputFileExists("foo.proto.h"));
+}
+
+TEST_F(CppGeneratorTest, ProtoHSetToInvalidValue) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto2";
+    message Foo {
+      optional int32 bar = 1;
+    })schema");
+  RunProtocAndExpectDeath(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--cpp_out=$tmpdir "
+      "--cpp_opt=proto_h=abcde foo.proto",
+      "Invalid value for proto_h: abcde");
+}
 
 }  // namespace
 }  // namespace cpp

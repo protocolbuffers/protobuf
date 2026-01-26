@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 #include "google/protobuf/compiler/php/php_generator.h"

@@ -20,7 +20,7 @@
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 
 namespace google {
 namespace protobuf {

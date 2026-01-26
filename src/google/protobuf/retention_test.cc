@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
@@ -20,7 +20,7 @@
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/text_format.h"
-#include "google/protobuf/unittest_retention.pb.h"
+#include "google/protobuf/unittest_retention.proto.h"
 #include "google/protobuf/util/message_differencer.h"
 
 namespace google {

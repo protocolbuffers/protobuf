@@ -22,8 +22,8 @@
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/cpp_features.pb.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/cpp_features.proto.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/port.h"
 
 // Must be included last.
