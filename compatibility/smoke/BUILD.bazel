@@ -1,6 +1,8 @@
 load("@rules_java//java:defs.bzl", "java_test")
 load("//compatibility/smoke:stale_gencode_smoke_test.bzl", "stale_gencode_smoke_test")
 
+stale_gencode_smoke_test("3.0.0")
+
 stale_gencode_smoke_test("3.8.0")
 
 stale_gencode_smoke_test("3.11.0")
