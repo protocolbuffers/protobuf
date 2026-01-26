@@ -19,6 +19,7 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/charset.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/port.h"
 
@@ -376,34 +377,27 @@ class PROTOBUF_EXPORT Tokenizer {
   // -----------------------------------------------------------------
   // These helper methods make the parsing code more readable.  The
   // "character classes" referred to are defined at the top of the .cc file.
-  // Basically it is a C++ class with one method:
-  //   static bool InClass(char c);
-  // The method returns true if c is a member of this "class", like "Letter"
-  // or "Digit".
 
   // Returns true if the current character is of the given character
   // class, but does not consume anything.
-  template <typename CharacterClass>
-  inline bool LookingAt();
+  inline bool LookingAt(const absl::CharSet& character_class);
 
   // If the current character is in the given class, consume it and return
   // true.  Otherwise return false.
-  // e.g. TryConsumeOne<Letter>()
-  template <typename CharacterClass>
-  inline bool TryConsumeOne();
+  // e.g. TryConsumeOne(kLetter)
+  inline bool TryConsumeOne(const absl::CharSet& character_class);
 
   // Like above, but try to consume the specific character indicated.
   inline bool TryConsume(char c);
 
   // Consume zero or more of the given character class.
-  template <typename CharacterClass>
-  inline void ConsumeZeroOrMore();
+  inline void ConsumeZeroOrMore(const absl::CharSet& character_class);
 
   // Consume one or more of the given character class or log the given
   // error message.
-  // e.g. ConsumeOneOrMore<Digit>("Expected digits.");
-  template <typename CharacterClass>
-  inline void ConsumeOneOrMore(const char* error);
+  // e.g. ConsumeOneOrMore(kDigit, "Expected digits.");
+  inline void ConsumeOneOrMore(const absl::CharSet& character_class,
+                               const char* error);
 };
 
 // inline methods ====================================================
