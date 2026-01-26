@@ -128,6 +128,7 @@ cc_test(
     srcs = ["relative_path_test.cc"],
     deps = [
         ":relative_path",
+        "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
