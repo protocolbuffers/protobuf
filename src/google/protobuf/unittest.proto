@@ -43,6 +43,10 @@ option java_outer_classname = "UnittestProto";
 
 // This proto includes every type of field in both singular and repeated
 // forms.
+// Warning: Many tests make assume about the number of fields in TestAllTypes,
+//          including assumptions about wire compatibility of overlay messages.
+//          Take care when adding or modifying fields in this message to check
+//          TGP results and fix any issues.
 message TestAllTypes {
   message NestedMessage {
     // The field name "b" fails to compile in proto1 because it conflicts with
@@ -252,6 +256,9 @@ message TestAllTypes {
       lazy = true
     ];
   }
+
+  // Field numbers used by TestAllExtensions.
+  reserved 1001, 1002, 1003;
 }
 
 // This proto includes a recursively nested message.
@@ -327,6 +334,10 @@ message TestAllExtensions {
   extensions 1 to max;
 }
 
+// Warning: some tests assume that TestAllTypes and TestAllExtensions are
+// wire compatible. Take care when adding or modifying fields in this message
+// to add a corresponding field in TestAllTypes and vice versa, ensuring that
+// they have the same field number and have compatible wire formats.
 extend TestAllExtensions {
   // Singular
   int32 optional_int32_extension = 1;
@@ -501,12 +512,9 @@ extend TestAllExtensions {
   string oneof_string_extension = 113;
   bytes oneof_bytes_extension = 114;
 
-  string optional_utf8_string_extension = 115 [
-    features.utf8_validation = VERIFY
-  ];
-  repeated string repeated_utf8_string_extension = 116 [
-    features.utf8_validation = VERIFY
-  ];
+  // Don't use field numbers 115 through 117, they are used by
+  // TestAllTypes.oneof_field. Use of 117 below for TestRequired (rather than
+  // TestAllTypes.NestedMessage) is a bug and should be fixed.
 
   // Singular message containing required fields; used to test initialization.
   TestRequired required_message_extension = 117;
