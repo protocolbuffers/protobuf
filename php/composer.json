@@ -1,6 +1,6 @@
 {
   "name": "google/protobuf",
-  "type": "library",
+  "type": "php-ext",
   "description": "proto library for PHP",
   "keywords": ["proto"],
   "homepage": "https://developers.google.com/protocol-buffers/",
@@ -34,5 +34,9 @@
   },
   "config": {
     "process-timeout": 1200
+  },
+  "php-ext": {
+    "extension-name": "protobuf",
+    "build-path": "ext/google/protobuf"
   }
 }
