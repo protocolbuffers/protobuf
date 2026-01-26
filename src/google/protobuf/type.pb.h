@@ -238,6 +238,8 @@ template <>
   return ::google::protobuf::internal::ParseNamedEnum<Syntax>(Syntax_descriptor(), name,
                                            value);
 }
+using ::google::protobuf::internal::generated_enum::AbslParseFlag;
+using ::google::protobuf::internal::generated_enum::AbslUnparseFlag;
 
 // ===================================================================
 
