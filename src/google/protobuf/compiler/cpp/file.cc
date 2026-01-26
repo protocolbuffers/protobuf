@@ -1809,6 +1809,13 @@ void FileGenerator::GenerateEnumDefinitions(io::Printer* p) {
   for (size_t i = 0; i < enum_generators_.size(); ++i) {
     enum_generators_[i]->GenerateDefinition(p);
   }
+  if (HasEnumDefinitions(file_)) {
+    // Inject the ADL hooks for absl flags.
+    p->Emit(R"cc(
+      using $pbi$::generated_enum::AbslParseFlag;
+      using $pbi$::generated_enum::AbslUnparseFlag;
+    )cc");
+  }
 }
 
 void FileGenerator::GenerateServiceDefinitions(io::Printer* p) {

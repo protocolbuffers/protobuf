@@ -129,6 +129,8 @@ template <>
   return ::google::protobuf::internal::ParseNamedEnum<CodeGeneratorResponse_Feature>(CodeGeneratorResponse_Feature_descriptor(), name,
                                            value);
 }
+using ::google::protobuf::internal::generated_enum::AbslParseFlag;
+using ::google::protobuf::internal::generated_enum::AbslUnparseFlag;
 
 // ===================================================================
 

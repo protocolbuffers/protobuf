@@ -164,6 +164,8 @@ template <>
   return ::google::protobuf::internal::ParseNamedEnum<JavaFeatures_Utf8Validation>(JavaFeatures_Utf8Validation_descriptor(), name,
                                            value);
 }
+using ::google::protobuf::internal::generated_enum::AbslParseFlag;
+using ::google::protobuf::internal::generated_enum::AbslUnparseFlag;
 
 // ===================================================================
 

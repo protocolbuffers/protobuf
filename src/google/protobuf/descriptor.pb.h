@@ -1071,6 +1071,8 @@ template <>
   return ::google::protobuf::internal::ParseNamedEnum<SymbolVisibility>(SymbolVisibility_descriptor(), name,
                                            value);
 }
+using ::google::protobuf::internal::generated_enum::AbslParseFlag;
+using ::google::protobuf::internal::generated_enum::AbslUnparseFlag;
 
 // ===================================================================
 

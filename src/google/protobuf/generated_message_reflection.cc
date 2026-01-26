@@ -32,7 +32,10 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/numbers.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/types/span.h"
@@ -189,6 +192,39 @@ bool IsMatchingCType(const FieldDescriptor* field, int ctype) {
       return ctype == FieldOptions::STRING;
   }
   internal::Unreachable();
+}
+
+bool AbslParseFlagImpl(absl::string_view text, int& e,
+                       const EnumDescriptor& desc, std::string& error) {
+  if (const auto* value = desc.FindValueByName(text)) {
+    e = value->number();
+    return true;
+  }
+
+  // Try as a number
+  int as_number;
+  if (absl::SimpleAtoi(text, &as_number) &&
+      desc.FindValueByNumber(as_number) != nullptr) {
+    e = as_number;
+    return true;
+  }
+
+  std::vector<absl::string_view> supported_values;
+  supported_values.reserve(desc.value_count());
+  for (int i = 0; i < desc.value_count(); i++) {
+    supported_values.push_back(desc.value(i)->name());
+  }
+  error = absl::StrFormat(
+      "Invalid value '%s' for enum '%s'. Supported values are: %s.", text,
+      desc.full_name(), absl::StrJoin(supported_values, ", "));
+  return false;
+}
+
+std::string AbslUnparseFlagImpl(int e, const EnumDescriptor& desc) {
+  if (const auto* value = desc.FindValueByNumber(e)) {
+    return std::string(value->name());
+  }
+  return absl::StrCat(e);
 }
 
 }  // namespace internal
