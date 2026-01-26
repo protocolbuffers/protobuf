@@ -413,7 +413,7 @@
 
   XCTAssertFalse(msg.hasOptionalEnum);
   XCTAssertEqual(msg.repeatedEnumArray.count, 0U);
-  XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertEqual(msg.oOneOfCase, (int32_t)Message3_O_OneOfCase_GPBUnsetOneOfCase);
 
   // All the values should be in unknown fields.
 
