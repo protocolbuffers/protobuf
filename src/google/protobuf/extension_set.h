@@ -254,17 +254,6 @@ class PROTOBUF_EXPORT ExtensionSet {
   constexpr ExtensionSet() = default;
   ExtensionSet(const ExtensionSet& rhs) = delete;
 
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
-  // Arena enabled constructors: for internal use only.
-  ExtensionSet(internal::InternalVisibility, Arena* arena)
-      : ExtensionSet(arena) {}
-
-  // TODO: make constructor private, and migrate `ArenaInitialized`
-  // to `InternalVisibility` overloaded constructor(s).
-  explicit constexpr ExtensionSet(Arena* arena);
-  ExtensionSet(ArenaInitialized, Arena* arena) : ExtensionSet(arena) {}
-#endif  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
-
   ExtensionSet& operator=(const ExtensionSet&) = delete;
   ~ExtensionSet();
 
@@ -413,9 +402,6 @@ class PROTOBUF_EXPORT ExtensionSet {
                                          const FieldDescriptor* descriptor,
                                          MessageFactory* factory);
 #undef desc
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD Arena* GetArena() const { return arena_; }
-#endif
 
   // repeated fields -------------------------------------------------
 
@@ -455,7 +441,6 @@ class PROTOBUF_EXPORT ExtensionSet {
   template <typename T>
   auto& Add(Arena* arena, int number, FieldType type,
             const FieldDescriptor* descriptor) {
-    DebugAssertArenaMatches(arena);
     static_assert(std::is_class_v<T>);
     Extension& ext = FindOrCreate(arena, number, type, true, false, descriptor,
                                   &CreateImpl<RepFor<T>>);
@@ -465,7 +450,6 @@ class PROTOBUF_EXPORT ExtensionSet {
   template <typename T>
   void Add(Arena* arena, int number, FieldType type, bool packed, T value,
            const FieldDescriptor* descriptor) {
-    DebugAssertArenaMatches(arena);
     static_assert(std::is_arithmetic_v<T>,
                   "Only arithmetic types take `packed`");
     Extension& ext = FindOrCreate(arena, number, type, true, packed, descriptor,
@@ -629,13 +613,6 @@ class PROTOBUF_EXPORT ExtensionSet {
   // will complain about unresolved symbols when building the lite runtime
   // as .dll.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int SpaceUsedExcludingSelf() const;
-
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static constexpr size_t
-  InternalGetArenaOffset(internal::InternalVisibility) {
-    return PROTOBUF_FIELD_OFFSET(ExtensionSet, arena_);
-  }
-#endif
 
   // Moves an extension from one ExtensionSet to another.
   //
@@ -1301,30 +1278,6 @@ class PROTOBUF_EXPORT ExtensionSet {
                                    uint16_t powerof2_flat_capacity);
   static void DeleteFlatMap(const KeyValue* flat, uint16_t flat_capacity);
 
-  void DebugAssertArenaMatches(Arena* arena) const {
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
-    // If we don't have an arena ptr, then we can't DCHECK that the arena is
-    // correct.
-    (void)arena;
-#else
-    ABSL_DCHECK_EQ(arena, GetArena());
-#endif
-  }
-
-  void DebugAssertSameArena(const ExtensionSet& other) const {
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
-    // If we don't have an arena ptr, then we can't DCHECK that the arenas
-    // match.
-    (void)other;
-#else
-    ABSL_DCHECK_EQ(GetArena(), other.GetArena());
-#endif
-  }
-
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
-  Arena* arena_ = nullptr;
-#endif
-
   // Manual memory-management:
   // map_.flat is an allocated array of flat_capacity_ elements.
   // [map_.flat, map_.flat + flat_size_) is the currently-in-use prefix.
@@ -1338,11 +1291,6 @@ class PROTOBUF_EXPORT ExtensionSet {
     LargeMap* large;
   } map_ = {nullptr};
 };
-
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
-constexpr ExtensionSet::ExtensionSet(Arena* arena)
-    : arena_(arena), flat_capacity_(0), flat_size_(0), map_{nullptr} {}
-#endif
 
 // ===================================================================
 // Glue for generated extension accessors
