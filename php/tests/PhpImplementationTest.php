@@ -230,7 +230,7 @@ class PhpImplementationTest extends TestBase
         $this->assertSame(-2, GPBWire::zigZagDecode32(3));
         $this->assertSame(0x3FFFFFFF,  GPBWire::zigZagDecode32(0x7FFFFFFE));
         $this->assertSame(-1073741824, GPBWire::zigZagDecode32(0x7FFFFFFF));
-        $this->assertSame(0x7FFFFFFF,  GPBWire::zigZagDecode32(0xFFFFFFFE));
+        @$this->assertSame(0x7FFFFFFF,  GPBWire::zigZagDecode32(0xFFFFFFFE));
         $this->assertSame((int)-2147483648,GPBWire::zigZagDecode32(0xFFFFFFFF));
 
         if (PHP_INT_SIZE == 4) {
