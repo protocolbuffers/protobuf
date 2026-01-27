@@ -37,24 +37,6 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
-#define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fcpp_5ffeatures_2eproto PROTOBUF_EXPORT
-
-namespace google {
-namespace protobuf {
-namespace internal {
-template <typename T>
-::absl::string_view GetAnyMessageName();
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
-
-// Internal implementation detail -- do not use these members.
-struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fcpp_5ffeatures_2eproto {
-  static const ::uint32_t offsets[];
-};
-extern "C" {
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto;
-}  // extern "C"
 namespace pb {
 enum CppFeatures_StringType : int;
 PROTOBUF_EXPORT extern const uint32_t CppFeatures_StringType_internal_data_[];
@@ -77,6 +59,25 @@ inline ::absl::string_view GetFeatureSetDefaultsData<::pb::CppFeatures>() {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fcpp_5ffeatures_2eproto PROTOBUF_EXPORT
+
+namespace google {
+namespace protobuf {
+namespace internal {
+template <typename T>
+::absl::string_view GetAnyMessageName();
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google
+
+// Internal implementation detail -- do not use these members.
+struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fcpp_5ffeatures_2eproto {
+  static const ::uint32_t offsets[];
+};
+extern "C" {
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto;
+}  // extern "C"
 
 namespace pb {
 enum CppFeatures_StringType : int {

@@ -45,9 +45,9 @@
 #include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/printer.h"
+#include "google/protobuf/port.h"
 
 // Must be last.
-#include "google/protobuf/port.h"
 #include "google/protobuf/port_def.inc"
 
 namespace google {
@@ -227,10 +227,6 @@ void FileGenerator::GenerateMacroUndefs(io::Printer* p) {
 void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
   p->Emit(
       {
-          {"port_def",
-           [&] { IncludeFile("third_party/protobuf/port_def.inc", p); }},
-          {"port_undef",
-           [&] { IncludeFile("third_party/protobuf/port_undef.inc", p); }},
           {"dllexport_macro", FileDllExport(file_, options_)},
           {"undefs", [&] { GenerateMacroUndefs(p); }},
           {"global_state_decls",
@@ -245,7 +241,6 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
                }  // namespace internal
              )cc");
            }},
-          {"fwd_decls", [&] { GenerateForwardDeclarations(p); }},
           {"proto2_ns_enums",
            [&] { GenerateProto2NamespaceEnumSpecializations(p); }},
           {"main_decls",
@@ -284,32 +279,24 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
            }},
       },
       R"(
-          // Must be included last.
-          $port_def$
-
           #define $dllexport_macro$$ dllexport_decl$
           $undefs$
 
           $any_metadata$;
 
           $global_state_decls$;
-          $fwd_decls$
 
           $main_decls$
 
           $proto2_ns_enums$
 
           // @@protoc_insertion_point(global_scope)
-
-          $port_undef$
       )");
 }
 
 void FileGenerator::GenerateProtoHeader(io::Printer* p,
                                         absl::string_view info_path) {
-  if (!options_.proto_h) {
-    return;
-  }
+  ABSL_CHECK(options_.proto_h);
 
   GenerateFile(p, GeneratedFileType::kProtoH, [&] {
     if (!options_.opensource_runtime) {
@@ -327,6 +314,10 @@ void FileGenerator::GenerateProtoHeader(io::Printer* p,
 
     p->Emit(
         {
+            {"port_def",
+             [&] { IncludeFile("third_party/protobuf/port_def.inc", p); }},
+            {"port_undef",
+             [&] { IncludeFile("third_party/protobuf/port_undef.inc", p); }},
             {"library_includes", [&] { GenerateLibraryIncludes(p); }},
             {"proto_includes",
              [&] {
@@ -336,6 +327,14 @@ void FileGenerator::GenerateProtoHeader(io::Printer* p,
                     #include "$name$.proto.h"
                  )");
                }
+               std::string target_basename = StripProto(file_->name());
+               if (!options_.opensource_runtime) {
+                 GetBootstrapBasename(options_, target_basename,
+                                      &target_basename);
+               }
+               p->Emit({{"name", target_basename}}, R"(
+                    #include "$name$.proto.fwd_internal.h"
+                 )");
              }},
             {"metadata_pragma", [&] { GenerateMetadataPragma(p, info_path); }},
             {"header_main", [&] { GenerateSharedHeaderCode(p); }},
@@ -345,8 +344,13 @@ void FileGenerator::GenerateProtoHeader(io::Printer* p,
           $proto_includes$;
           // @@protoc_insertion_point(includes)
 
+          // Must be included last.
+          $port_def$;
+
           $metadata_pragma$;
           $header_main$;
+
+          $port_undef$;
         )cc");
   });
 }
@@ -356,6 +360,10 @@ void FileGenerator::GeneratePBHeader(io::Printer* p,
   GenerateFile(p, GeneratedFileType::kPbH, [&] {
     p->Emit(
         {
+            {"port_def",
+             [&] { IncludeFile("third_party/protobuf/port_def.inc", p); }},
+            {"port_undef",
+             [&] { IncludeFile("third_party/protobuf/port_undef.inc", p); }},
             {"library_includes",
              [&] {
                if (options_.proto_h) {
@@ -378,6 +386,10 @@ void FileGenerator::GeneratePBHeader(io::Printer* p,
                }
              }},
             {"metadata_pragma", [&] { GenerateMetadataPragma(p, info_path); }},
+            {"fwd_decls",
+             [&] {
+               if (!options_.proto_h) GenerateForwardDeclarations(p);
+             }},
             {"header_main",
              [&] {
                if (!options_.proto_h) {
@@ -403,8 +415,15 @@ void FileGenerator::GeneratePBHeader(io::Printer* p,
           $proto_includes$;
           // @@protoc_insertion_point(includes)
 
+          // Must be included last.
+          $port_def$;
+
+          $fwd_decls$;
+
           $metadata_pragma$;
           $header_main$;
+
+          $port_undef$;
         )cc");
   });
 }
@@ -1531,6 +1550,27 @@ static void PublicImportDFS(
       PublicImportDFS(dep, fd_set);
     }
   }
+}
+
+void FileGenerator::GenerateProtoFwdHeader(io::Printer* p) {
+  ABSL_CHECK(options_.proto_h);
+  GenerateFile(p, GeneratedFileType::kProtoFwdH, [&] {
+    IncludeFile("third_party/protobuf/message_lite.h", p);
+
+    p->Emit(
+        {
+            {"port_def",
+             [&] { IncludeFile("third_party/protobuf/port_def.inc", p); }},
+            {"port_undef",
+             [&] { IncludeFile("third_party/protobuf/port_undef.inc", p); }},
+            {"fwd_decl", [&] { GenerateForwardDeclarations(p); }},
+        },
+        R"cc(
+          $port_def$;
+          $fwd_decl$;
+          $port_undef$;
+        )cc");
+  });
 }
 
 void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {

@@ -38,24 +38,6 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
-#define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto PROTOC_EXPORT
-
-namespace google {
-namespace protobuf {
-namespace internal {
-template <typename T>
-::absl::string_view GetAnyMessageName();
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
-
-// Internal implementation detail -- do not use these members.
-struct PROTOC_EXPORT TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto {
-  static const ::uint32_t offsets[];
-};
-extern "C" {
-PROTOC_EXPORT extern const ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto;
-}  // extern "C"
 namespace pb {
 enum JavaFeatures_NestInFileClassFeature_NestInFileClass : int;
 PROTOC_EXPORT extern const uint32_t JavaFeatures_NestInFileClassFeature_NestInFileClass_internal_data_[];
@@ -87,6 +69,25 @@ inline ::absl::string_view GetFeatureSetDefaultsData<::pb::JavaFeatures>() {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto PROTOC_EXPORT
+
+namespace google {
+namespace protobuf {
+namespace internal {
+template <typename T>
+::absl::string_view GetAnyMessageName();
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google
+
+// Internal implementation detail -- do not use these members.
+struct PROTOC_EXPORT TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto {
+  static const ::uint32_t offsets[];
+};
+extern "C" {
+PROTOC_EXPORT extern const ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto;
+}  // extern "C"
 
 namespace pb {
 enum JavaFeatures_NestInFileClassFeature_NestInFileClass : int {

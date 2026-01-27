@@ -1982,6 +1982,21 @@ bool MaybeBootstrap(const Options& options, GeneratorContext* generator_context,
             #endif // PROTOBUF_INCLUDED_$file$_FORWARD_PROTO_H
           )");
 
+  auto proto_fwd_h = absl::WrapUnique(generator_context->Open(
+      absl::StrCat(*basename, ".proto.fwd_internal.h")));
+  io::Printer(proto_fwd_h.get())
+      .Emit(
+          {
+              {"fwd_to", bootstrap_basename},
+              {"file", FilenameIdentifier(*basename)},
+          },
+          R"(
+            #ifndef PROTOBUF_INCLUDED_$file$_FORWARD_PROTO_FWD_INTERNAL_H
+            #define PROTOBUF_INCLUDED_$file$_FORWARD_PROTO_FWD_INTERNAL_H
+            #include "$fwd_to$.proto.fwd_internal.h"  // IWYU pragma: export
+            #endif // PROTOBUF_INCLUDED_$file$_FORWARD_PROTO_FWD_INTERNAL_H
+          )");
+
   auto pb_cc = absl::WrapUnique(
       generator_context->Open(absl::StrCat(*basename, ".pb.cc")));
   io::Printer(pb_cc.get()).PrintRaw("\n");

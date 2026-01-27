@@ -627,7 +627,12 @@ bool IsAnyMessage(const Descriptor* descriptor);
 
 bool IsWellKnownMessage(const FileDescriptor* file);
 
-enum class GeneratedFileType : int { kPbH, kProtoH, kProtoStaticReflectionH };
+enum class GeneratedFileType : int {
+  kPbH,
+  kProtoH,
+  kProtoStaticReflectionH,
+  kProtoFwdH
+};
 
 inline std::string IncludeGuard(const FileDescriptor* file,
                                 GeneratedFileType file_type,
@@ -644,6 +649,10 @@ inline std::string IncludeGuard(const FileDescriptor* file,
       break;
     case GeneratedFileType::kProtoStaticReflectionH:
       extension = ".proto.static_reflection.h";
+      break;
+    case GeneratedFileType::kProtoFwdH:
+      extension = ".proto.fwd_internal.h";
+      break;
   }
   return FilenameIdentifier(absl::StrCat(file->name(), extension));
 }

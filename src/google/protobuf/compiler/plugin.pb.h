@@ -37,30 +37,6 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
-#define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fcompiler_2fplugin_2eproto PROTOC_EXPORT
-#ifdef major
-#undef major
-#endif  // major
-#ifdef minor
-#undef minor
-#endif  // minor
-
-namespace google {
-namespace protobuf {
-namespace internal {
-template <typename T>
-::absl::string_view GetAnyMessageName();
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
-
-// Internal implementation detail -- do not use these members.
-struct PROTOC_EXPORT TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto {
-  static const ::uint32_t offsets[];
-};
-extern "C" {
-PROTOC_EXPORT extern const ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
-}  // extern "C"
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -88,6 +64,31 @@ internal::EnumTraitsT<::google::protobuf::compiler::CodeGeneratorResponse_Featur
     internal::EnumTraitsImpl::value<::google::protobuf::compiler::CodeGeneratorResponse_Feature>;
 }  // namespace protobuf
 }  // namespace google
+
+#define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fcompiler_2fplugin_2eproto PROTOC_EXPORT
+#ifdef major
+#undef major
+#endif  // major
+#ifdef minor
+#undef minor
+#endif  // minor
+
+namespace google {
+namespace protobuf {
+namespace internal {
+template <typename T>
+::absl::string_view GetAnyMessageName();
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google
+
+// Internal implementation detail -- do not use these members.
+struct PROTOC_EXPORT TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto {
+  static const ::uint32_t offsets[];
+};
+extern "C" {
+PROTOC_EXPORT extern const ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
+}  // extern "C"
 
 namespace google {
 namespace protobuf {

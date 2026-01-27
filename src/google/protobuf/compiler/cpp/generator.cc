@@ -152,6 +152,12 @@ bool CppGenerator::GenerateImpl(const FileDescriptor* file,
       auto info_output = absl::WrapUnique(generator_context->Open(info_path));
       ABSL_CHECK(annotations.SerializeToZeroCopyStream(info_output.get()));
     }
+
+    auto fwd_output = absl::WrapUnique(generator_context->Open(
+        absl::StrCat(basename, ".proto.fwd_internal.h")));
+    io::Printer fwd_p(fwd_output.get());
+    auto fwd_v = fwd_p.WithVars(CommonVars(file_options));
+    file_generator.GenerateProtoFwdHeader(&fwd_p);
   }
 
   {
