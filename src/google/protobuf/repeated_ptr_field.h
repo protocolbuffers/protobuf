@@ -2500,36 +2500,6 @@ class UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator {
  private:
   RepeatedPtrField<T>* field_;
 };
-
-template <typename T>
-const T& CheckedGetOrDefault(const RepeatedPtrField<T>& field, int index) {
-  if (ABSL_PREDICT_FALSE(index < 0 || index >= field.size())) {
-    LogIndexOutOfBounds(index, field.size());
-    return GenericTypeHandler<T>::default_instance();
-  }
-  return field.Get(index);
-}
-
-template <typename T>
-inline void CheckIndexInBoundsOrAbort(const RepeatedPtrField<T>& field,
-                                      int index) {
-  if (ABSL_PREDICT_FALSE(index < 0 || index >= field.size())) {
-    LogIndexOutOfBoundsAndAbort(index, field.size());
-  }
-}
-
-template <typename T>
-const T& CheckedGetOrAbort(const RepeatedPtrField<T>& field, int index) {
-  CheckIndexInBoundsOrAbort(field, index);
-  return field.Get(index);
-}
-
-template <typename T>
-inline T* CheckedMutableOrAbort(RepeatedPtrField<T>* field, int index) {
-  CheckIndexInBoundsOrAbort(*field, index);
-  return field->Mutable(index);
-}
-
 }  // namespace internal
 
 // Provides a back insert iterator for RepeatedPtrField instances,

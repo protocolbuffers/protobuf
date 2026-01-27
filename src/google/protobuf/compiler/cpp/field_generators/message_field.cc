@@ -783,20 +783,19 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
 void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   // TODO: move insertion points
 
-  p->Emit({GetEmitRepeatedFieldMutableSub(*opts_, p)},
-          R"cc(
-            //~ Note: no need to set hasbit in mutable_$name$(int index).
-            //~ Hasbits only need to be updated if a new element is
-            //~ (potentially) added, not if an existing element is mutated.
-            inline $Submsg$* $nonnull$ $Msg$::mutable_$name$(int index)
-                ABSL_ATTRIBUTE_LIFETIME_BOUND {
-              $WeakDescriptorSelfPin$;
-              $annotate_mutable$;
-              // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
-              $StrongRef$;
-              return $mutable$;
-            }
-          )cc");
+  p->Emit(R"cc(
+    //~ Note: no need to set hasbit in mutable_$name$(int index).
+    //~ Hasbits only need to be updated if a new element is
+    //~ (potentially) added, not if an existing element is mutated.
+    inline $Submsg$* $nonnull$ $Msg$::mutable_$name$(int index)
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
+      $annotate_mutable$;
+      // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
+      $StrongRef$;
+      return _internal_mutable_$name_internal$()->Mutable(index);
+    }
+  )cc");
 
   p->Emit(R"cc(
     inline $pb$::RepeatedPtrField<$Submsg$>* $nonnull$ $Msg$::mutable_$name$()
@@ -810,17 +809,16 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       return _internal_mutable_$name_internal$();
     }
   )cc");
-  p->Emit({GetEmitRepeatedFieldGetterSub(*opts_, p)},
-          R"cc(
-            inline const $Submsg$& $Msg$::$name$(int index) const
-                ABSL_ATTRIBUTE_LIFETIME_BOUND {
-              $WeakDescriptorSelfPin$;
-              $annotate_get$;
-              // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-              $StrongRef$;
-              return $getter$;
-            }
-          )cc");
+  p->Emit(R"cc(
+    inline const $Submsg$& $Msg$::$name$(int index) const
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
+      $annotate_get$;
+      // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
+      $StrongRef$;
+      return _internal_$name_internal$().Get(index);
+    }
+  )cc");
   p->Emit(R"cc(
     inline $Submsg$* $nonnull$ $Msg$::add_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {

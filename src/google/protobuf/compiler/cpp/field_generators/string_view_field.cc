@@ -668,14 +668,12 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
     io::Printer* p) const {
   p->Emit(
       {
-          {GetEmitRepeatedFieldGetterSub(*opts_, p)},
           {"bytes_tag",
            [&] {
              if (field_->type() == FieldDescriptor::TYPE_BYTES) {
                p->Emit(", $pbi$::BytesTag{}");
              }
            }},
-          {GetEmitRepeatedFieldMutableSub(*opts_, p)},
       },
       R"cc(
         inline ::absl::string_view $Msg$::$name$(int index) const
@@ -683,7 +681,7 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
           $WeakDescriptorSelfPin$;
           $annotate_get$;
           // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-          return $getter$;
+          return _internal_$name_internal$().Get(index);
         }
         //~ Note: no need to set hasbit in set_$name$(int index). Hasbits only
         //~ need to be updated if a new element is (potentially) added, not if
@@ -691,7 +689,9 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
         template <typename Arg_>
         inline void $Msg$::set_$name$(int index, Arg_&& value) {
           $WeakDescriptorSelfPin$;
-          $pbi$::AssignToString(*$mutable$, ::std::forward<Arg_>(value) $bytes_tag$);
+          $pbi$::AssignToString(
+              *_internal_mutable_$name_internal$()->Mutable(index),
+              ::std::forward<Arg_>(value) $bytes_tag$);
           $annotate_set$;
           // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
         }

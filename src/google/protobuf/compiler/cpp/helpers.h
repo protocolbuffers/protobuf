@@ -1238,69 +1238,6 @@ bool HasOnDeserializeTracker(const Descriptor* descriptor,
 // signature.
 bool NeedsPostLoopHandler(const Descriptor* descriptor, const Options& options);
 
-// Emit the repeated field getter for the custom options.
-// Depending on the bounds check mode specified, this will emit the
-// corresponding getter.
-inline auto GetEmitRepeatedFieldGetterSub(const Options& options,
-                                          io::Printer* p) {
-  return io::Printer::Sub{
-      "getter",
-      [&options, p] {
-        switch (options.bounds_check_mode) {
-          case BoundsCheckMode::kNoEnforcement:
-            p->Emit(R"cc(_internal_$name_internal$().Get(index))cc");
-            break;
-          case BoundsCheckMode::kReturnDefaultValue:
-            p->Emit(R"cc(
-              $pbi$::CheckedGetOrDefault(_internal_$name_internal$(), index)
-            )cc");
-            break;
-          case BoundsCheckMode::kAbort:
-            p->Emit(R"cc(
-              $pbi$::CheckedGetOrAbort(_internal_$name_internal$(), index)
-            )cc");
-            break;
-        }
-      }}
-      .WithSuffix("");
-}
-
-// Emit the code for getting a mutable element from a repeated field. This will
-// generate different code depending on the `bounds_check_mode` specified in the
-// options.
-// TODO: b/347304492 Harden this function by taking in the field and checking
-// if splitting is supported.
-inline auto GetEmitRepeatedFieldMutableSub(const Options& options,
-                                           io::Printer* p,
-                                           bool use_stringpiecefield = false) {
-  return io::Printer::Sub{
-      "mutable",
-      [&options, p, use_stringpiecefield] {
-        switch (options.bounds_check_mode) {
-          case BoundsCheckMode::kNoEnforcement:
-          case BoundsCheckMode::kReturnDefaultValue:
-            if (use_stringpiecefield) {
-              p->Emit("$field$.Mutable(index)");
-            } else {
-              p->Emit(
-                  R"cc(_internal_mutable_$name_internal$()->Mutable(index))cc");
-            }
-            break;
-          case BoundsCheckMode::kAbort:
-            if (use_stringpiecefield) {
-              p->Emit("$pbi$::CheckedMutableOrAbort(&$field$, index)");
-            } else {
-              p->Emit(R"cc(
-                $pbi$::CheckedMutableOrAbort(
-                    _internal_mutable_$name_internal$(), index)
-              )cc");
-            }
-            break;
-        }
-      }}
-      .WithSuffix("");
-}
-
 // Priority used for static initializers.
 enum InitPriority {
   kInitPriority101,
