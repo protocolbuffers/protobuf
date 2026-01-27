@@ -12,6 +12,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -217,8 +218,10 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
     actual_order.emplace_back(
         absl::StripPrefix(desc->full_name(), "proto2_unittest."));
   }
-  EXPECT_THAT(actual_order,
-              ::testing::ElementsAreArray(kExpectedDescriptorOrder));
+  // We compare strings because GoogleTest has a nice diff view for strings.
+  // It makes an easier to understand output on failure.
+  EXPECT_EQ(absl::StrJoin(actual_order, "\n"),
+            absl::StrJoin(kExpectedDescriptorOrder, "\n"));
 }
 
 }  // namespace
