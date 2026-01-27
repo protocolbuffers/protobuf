@@ -6,7 +6,8 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use crate::{
-    AsMut, AsView, IntoMut, IntoProxied, IntoView, Message, Mut, MutProxied, Proxied, View,
+    AsMut, AsView, IntoMut, IntoProxied, IntoView, Message, Mut, MutProxied, Proxied, Singular,
+    View,
     __internal::runtime::{InnerMap, InnerMapMut, RawMap, RawMapIter},
     __internal::{Private, SealedInternal},
 };
@@ -84,9 +85,11 @@ impl<K: MapKey, V: MapValue<K>> Drop for Map<K, V> {
 
 /// A trait implemented by types which are allowed as keys in maps.
 /// This is all types for fields except for repeated, maps, bytes, messages and enums.
-pub trait MapKey: Proxied {}
+pub trait MapKey: Proxied + SealedInternal {}
 
-pub trait MapValue<K: MapKey>: Proxied {
+/// A trait implemented by types which are allowed as values in maps, which is all Singular types.
+/// This trait is distinct from `Singular` only because of the generic `K: MapKey`.
+pub trait MapValue<K: MapKey>: Singular + SealedInternal {
     #[doc(hidden)]
     fn map_new(_private: Private) -> Map<K, Self>;
 

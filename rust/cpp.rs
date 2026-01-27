@@ -11,8 +11,8 @@ use crate::__internal::{Enum, MatcherEq, Private, SealedInternal};
 use crate::{
     AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapKey, MapMut,
     MapValue, MapView, MergeFrom, Message, MessageMutInterop, Mut, MutProxied, ParseError,
-    ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInRepeated, Repeated, RepeatedMut,
-    RepeatedView, Serialize, SerializeError, TakeFrom, View,
+    ProtoBytes, ProtoStr, ProtoString, Proxied, Repeated, RepeatedMut, RepeatedView, Serialize,
+    SerializeError, Singular, TakeFrom, View,
 };
 use core::fmt::Debug;
 use paste::paste;
@@ -549,7 +549,7 @@ impl CppTypeConversions for ProtoBytes {
     }
 }
 
-unsafe impl<T> ProxiedInRepeated for T
+unsafe impl<T> Singular for T
 where
     Self: MutProxied + CppGetRawMessage + Message,
     for<'a> View<'a, Self>:
@@ -695,7 +695,7 @@ macro_rules! impl_repeated_primitives {
                     additional: usize);
             }
 
-            unsafe impl ProxiedInRepeated for $t {
+            unsafe impl Singular for $t {
                 #[allow(dead_code)]
                 #[inline]
                 fn repeated_new(_: Private) -> Repeated<$t> {
@@ -786,7 +786,7 @@ unsafe extern "C" {
 }
 
 /// Cast a `RepeatedView<SomeEnum>` to `RepeatedView<c_int>`.
-pub fn cast_enum_repeated_view<E: Enum + ProxiedInRepeated>(
+pub fn cast_enum_repeated_view<E: Enum + Singular>(
     repeated: RepeatedView<E>,
 ) -> RepeatedView<c_int> {
     // SAFETY: the implementer of `Enum` has promised that this
@@ -798,7 +798,7 @@ pub fn cast_enum_repeated_view<E: Enum + ProxiedInRepeated>(
 ///
 /// Writing an unknown value is sound because all enums
 /// are representationally open.
-pub fn cast_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
+pub fn cast_enum_repeated_mut<E: Enum + Singular>(
     mut repeated: RepeatedMut<E>,
 ) -> RepeatedMut<c_int> {
     // SAFETY: the implementer of `Enum` has promised that this
@@ -813,15 +813,12 @@ pub fn cast_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
 
 /// Cast a `RepeatedMut<SomeEnum>` to `RepeatedMut<c_int>` and call
 /// repeated_reserve.
-pub fn reserve_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
-    repeated: RepeatedMut<E>,
-    additional: usize,
-) {
+pub fn reserve_enum_repeated_mut<E: Enum + Singular>(repeated: RepeatedMut<E>, additional: usize) {
     let int_repeated = cast_enum_repeated_mut(repeated);
-    ProxiedInRepeated::repeated_reserve(Private, int_repeated, additional);
+    Singular::repeated_reserve(Private, int_repeated, additional);
 }
 
-pub fn new_enum_repeated<E: Enum + ProxiedInRepeated>() -> Repeated<E> {
+pub fn new_enum_repeated<E: Enum + Singular>() -> Repeated<E> {
     let int_repeated = Repeated::<c_int>::new();
     let raw = int_repeated.inner.raw();
     std::mem::forget(int_repeated);
@@ -833,11 +830,11 @@ pub fn new_enum_repeated<E: Enum + ProxiedInRepeated>() -> Repeated<E> {
 /// # Safety
 /// - The passed in `&mut Repeated<E>` must not be used after this function is
 ///   called.
-pub unsafe fn free_enum_repeated<E: Enum + ProxiedInRepeated>(repeated: &mut Repeated<E>) {
+pub unsafe fn free_enum_repeated<E: Enum + Singular>(repeated: &mut Repeated<E>) {
     unsafe {
         let mut int_r: Repeated<c_int> =
             Repeated::from_inner(Private, InnerRepeated::from_raw(repeated.inner.raw()));
-        ProxiedInRepeated::repeated_free(Private, &mut int_r);
+        Singular::repeated_free(Private, &mut int_r);
         std::mem::forget(int_r);
     }
 }
@@ -1273,7 +1270,7 @@ generate_map_key_impl!(
 impl<Key, Value> MapValue<Key> for Value
 where
     Key: MapKey + FfiMapKey + CppMapTypeConversions,
-    Value: Proxied + CppMapTypeConversions,
+    Value: Singular + CppMapTypeConversions,
 {
     fn map_new(_private: Private) -> Map<Key, Self> {
         unsafe {

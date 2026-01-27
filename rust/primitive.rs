@@ -34,7 +34,7 @@ macro_rules! impl_singular_primitives {
           }
         }
 
-        // ProxiedInRepeated is implemented in {cpp,upb}.rs
+        // Singular is implemented in {cpp,upb}.rs
       )*
   }
 }

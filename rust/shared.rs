@@ -27,7 +27,7 @@ pub use crate::codegen_traits::{
 pub use crate::cord::{ProtoBytesCow, ProtoStringCow};
 pub use crate::map::{Map, MapIter, MapKey, MapMut, MapValue, MapView};
 
-// TODO: Remove this alias once we have confirmed theres no incoming references.
+// TODO: Remove this alias once we have confirmed there are no incoming references.
 pub use MapValue as ProxiedInMapValue;
 
 pub use crate::optional::Optional;
@@ -35,9 +35,13 @@ pub use crate::proxied::{
     AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, Proxied, View,
 };
 pub use crate::r#enum::{Enum, UnknownEnumValue};
-pub use crate::repeated::{ProxiedInRepeated, Repeated, RepeatedIter, RepeatedMut, RepeatedView};
+pub use crate::repeated::{Repeated, RepeatedIter, RepeatedMut, RepeatedView};
+pub use crate::singular::Singular;
 pub use crate::string::{ProtoBytes, ProtoStr, ProtoString, Utf8Error};
 pub use protobuf_macros::proto_proc as proto;
+
+// TODO: Remove this alias once we have confirmed there are no incoming references.
+pub use Singular as ProxiedInRepeated;
 
 pub mod prelude;
 
@@ -68,6 +72,7 @@ mod optional;
 mod primitive;
 mod proxied;
 mod repeated;
+mod singular;
 mod string;
 
 #[cfg(not(bzl))]

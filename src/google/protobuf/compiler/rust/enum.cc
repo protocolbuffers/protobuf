@@ -311,7 +311,7 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
             {"name", name},
         },
         R"rs(
-      unsafe impl $pb$::ProxiedInRepeated for $name$ {
+      unsafe impl $pb$::Singular for $name$ {
         fn repeated_new(_private: $pbi$::Private) -> $pb$::Repeated<Self> {
           $pbr$::new_enum_repeated()
         }

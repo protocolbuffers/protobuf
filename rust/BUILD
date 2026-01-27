@@ -62,6 +62,7 @@ PROTOBUF_SHARED = [
     "proxied.rs",
     "repeated.rs",
     "shared.rs",
+    "singular.rs",
     "string.rs",
     # go/keep-sorted end
 ]

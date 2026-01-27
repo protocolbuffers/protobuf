@@ -14,7 +14,8 @@ pub use paste::paste;
 
 use crate::map;
 pub use crate::r#enum::Enum;
-use crate::repeated;
+use crate::repeated::RepeatedView;
+use crate::singular::Singular;
 use crate::MapKey;
 pub use crate::ProtoStr;
 pub use std::fmt::Debug;
@@ -47,10 +48,7 @@ pub trait MatcherEq: SealedInternal + Debug {
 }
 
 /// Used by the proto! macro to get a default value for a repeated field.
-pub fn get_repeated_default_value<T: repeated::ProxiedInRepeated + Default>(
-    _: Private,
-    _: repeated::RepeatedView<'_, T>,
-) -> T {
+pub fn get_repeated_default_value<T: Singular + Default>(_: Private, _: RepeatedView<'_, T>) -> T {
     Default::default()
 }
 

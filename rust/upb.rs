@@ -12,8 +12,8 @@ use crate::{
     AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapKey, MapMut,
     MapValue, MapView, MergeFrom, Message, MessageMut, MessageMutInterop, MessageView,
     MessageViewInterop, Mut, OwnedMessageInterop, ParseError, ProtoBytes, ProtoStr, ProtoString,
-    Proxied, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, Serialize, SerializeError,
-    TakeFrom, View,
+    Proxied, Repeated, RepeatedMut, RepeatedView, Serialize, SerializeError, Singular, TakeFrom,
+    View,
 };
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -393,7 +393,7 @@ impl<'msg> InnerRepeatedMut<'msg> {
     }
 }
 
-unsafe impl<T> ProxiedInRepeated for T
+unsafe impl<T> Singular for T
 where
     T: EntityType + UpbTypeConversions<T::Tag>,
 {
@@ -534,7 +534,7 @@ impl<'msg, T> RepeatedMut<'msg, T> {
 }
 
 /// Returns a static empty RepeatedView.
-pub fn empty_array<T: ProxiedInRepeated>() -> RepeatedView<'static, T> {
+pub fn empty_array<T: Singular>() -> RepeatedView<'static, T> {
     // TODO: Consider creating a static empty array in C.
 
     // Use `i32` for a shared empty repeated for all repeated types in the program.
@@ -1362,11 +1362,7 @@ pub unsafe fn message_set_bytes_field<'msg, P: Message + AssociatedMiniTable>(
 
 /// # Safety
 /// - The field at `index` must be a repeated field of `T`.
-pub unsafe fn message_set_repeated_field<
-    'msg,
-    P: Message + AssociatedMiniTable,
-    T: ProxiedInRepeated,
->(
+pub unsafe fn message_set_repeated_field<'msg, P: Message + AssociatedMiniTable, T: Singular>(
     parent: MessageMutInner<'msg, P>,
     index: u32,
     val: impl IntoProxied<Repeated<T>>,
