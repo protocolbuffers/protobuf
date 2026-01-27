@@ -74,6 +74,20 @@ int GetExperimentalJavaFieldTypeForPacked(const FieldDescriptor* field) {
     return 0;
   }
 }
+
+// Returns `true` if `descriptor` contains an enum named `name<n>` for any `n`
+// from `0` to `count - 1`.
+template <typename Descriptor>
+bool HasConflictingEnum(const Descriptor* descriptor, absl::string_view name,
+                        int count) {
+  for (int i = 0; i < count; i++) {
+    if (descriptor->FindEnumTypeByName(absl::StrFormat("%s%d", name, i))) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 int GetExperimentalJavaFieldType(const FieldDescriptor* field) {
@@ -144,6 +158,19 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
     }
   }
 
+  // Detect the most likely conflict scenario: a numbered version of the enum
+  // already exists.
+  bool has_conflict =
+      descriptor->containing_type() != nullptr
+          ? HasConflictingEnum(descriptor->containing_type(),
+                               descriptor->name(), interface_count)
+          : HasConflictingEnum(descriptor->file(), descriptor->name(),
+                               interface_count);
+
+  // If the style guide is followed (underscores cannot be followed directly
+  // by a number), then using an underscore separator cannot create conflicts.
+  absl::string_view count_sep = has_conflict ? "_" : "";
+
   printer->Emit(
       {{"classname", descriptor->name()},
        {"static", IsOwnFile(descriptor, immutable_api) ? " " : " static "},
@@ -174,8 +201,8 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
           std::vector<std::string> interface_names;
           interface_names.reserve(interface_count);
           for (int count = 0; count < interface_count; count++) {
-            interface_names.push_back(
-                absl::StrFormat("%s%d", descriptor->name(), count));
+            interface_names.push_back(absl::StrFormat(
+                "%s%s%d", descriptor->name(), count_sep, count));
           }
           printer->Emit(
               {{"interface_names", absl::StrJoin(interface_names, ", ")}},
@@ -224,8 +251,9 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
                 $classname$ found = null;
           )");
           for (int count = 0; count < interface_count; count++) {
-            printer->Emit({{"count", absl::StrCat(count)}}, R"(
-                found = $classname$$count$.forNumber$count$(value);
+            printer->Emit(
+                {{"count", absl::StrCat(count)}, {"count_sep", count_sep}}, R"(
+                found = $classname$$count_sep$$count$.forNumber$count$(value);
                 if (found != null) {
                   return found;
                 }
@@ -241,8 +269,9 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
             $classname$ found = null;
           )");
           for (int count = 0; count < interface_count; count++) {
-            printer->Emit({{"count", absl::StrCat(count)}}, R"(
-              found = $classname$$count$.valueOf$count$(name);
+            printer->Emit(
+                {{"count", absl::StrCat(count)}, {"count_sep", count_sep}}, R"(
+              found = $classname$$count_sep$$count$.valueOf$count$(name);
               if (found != null) {
                 return found;
               }
@@ -263,8 +292,8 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
           )");
 
           for (int count = 0; count < interface_count; count++) {
-            printer->Emit({{"count", count}}, R"(
-              $classname$[] values$count$ = $classname$$count$.values$count$();
+            printer->Emit({{"count", count}, {"count_sep", count_sep}}, R"(
+              $classname$[] values$count$ = $classname$$count_sep$$count$.values$count$();
               System.arraycopy(values$count$, 0, values, ordinal, values$count$.length);
               ordinal += values$count$.length;
             )");
@@ -487,6 +516,7 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
     printer->Emit(
         {{"classname", descriptor->name()},
          {"count", count},
+         {"count_sep", count_sep},
          {"method_return_null_annotation",
           [&] {
             if (!google::protobuf::internal::IsOss()) {
@@ -524,10 +554,11 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
                     {{"name", value->name()},
                      {"canonical_name", aliases[value]->name()},
                      {"canonical_interface_index", canonical_interface_index},
+                     {"count_sep", count_sep},
                      {"deprecation", deprecation}},
                     R"(
                     $deprecation$
-                    public static final $classname$ $name$ = $classname$$canonical_interface_index$.$canonical_name$;
+                    public static final $classname$ $name$ = $classname$$count_sep$$canonical_interface_index$.$canonical_name$;
 
                   )");
               } else {
@@ -624,7 +655,7 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
                           )");
           }}},
         R"(
-          interface $classname$$count$ {
+          interface $classname$$count_sep$$count$ {
 
             $enums$
 
