@@ -226,6 +226,7 @@ class PhpImplementationTest extends TestBase
         $this->assertSame(0x7FFFFFFF, GPBWire::zigZagEncode32(0xC0000000));
         $this->assertSame(0x7FFFFFFF,  GPBWire::zigZagDecode32(0xFFFFFFFE));
         $this->assertSame(-2, GPBWire::zigZagDecode32(3));
+        $this->assertSame((int)-2147483648,GPBWire::zigZagDecode32(0xFFFFFFFF));
         error_reporting($orig_level);
         $this->assertSame(0x7FFFFFFF, GPBWire::zigZagEncode32(-1073741824));
 
@@ -234,7 +235,6 @@ class PhpImplementationTest extends TestBase
         $this->assertSame(1,  GPBWire::zigZagDecode32(2));
         $this->assertSame(0x3FFFFFFF,  GPBWire::zigZagDecode32(0x7FFFFFFE));
         $this->assertSame(-1073741824, GPBWire::zigZagDecode32(0x7FFFFFFF));
-        $this->assertSame((int)-2147483648,GPBWire::zigZagDecode32(0xFFFFFFFF));
 
         if (PHP_INT_SIZE == 4) {
             $this->assertSame(-2, GPBWire::zigZagEncode32(0x7FFFFFFF));
