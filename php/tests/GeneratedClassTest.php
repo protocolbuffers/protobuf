@@ -532,7 +532,7 @@ class GeneratedClassTest extends TestBase
         $m = new TestMessage(['optional_bool' => 1.5]);
         $this->assertTrue($m->getOptionalBool());
 
-        $m = new TestMessage(['optional_bool' => NAN]);
+        @$m = new TestMessage(['optional_bool' => NAN]);
         $this->assertTrue($m->getOptionalBool());
 
         $m = new TestMessage(['optional_bool' => INF]);
@@ -550,7 +550,7 @@ class GeneratedClassTest extends TestBase
         $rf[] = -0.0;
         $rf[] = 0.0;
         $rf[] = 1.5;
-        $rf[] = NAN;
+        @$rf[] = NAN;
         $rf[] = INF;
         $rf[] = -INF;
 
