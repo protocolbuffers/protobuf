@@ -954,3 +954,47 @@ TEST(GeneratedCode, MapWithRequiredFields) {
                                          arena.ptr());
   ASSERT_NE(msg2, nullptr);
 }
+
+TEST(GeneratedCode, ReservedNames) {
+  upb_Arena* arena = upb_Arena_New();
+  upb_test_TestReserved* msg = upb_test_TestReserved_new(arena);
+
+  // Check that we can call the mangled accessors.
+  // If they weren't mangled, this would fail to compile because of
+  // collisions with the message-level functions.
+  upb_StringView val = upb_StringView_FromString("test");
+  upb_test_TestReserved_set_new_(msg, val);
+  upb_test_TestReserved_set_parse_(msg, val);
+  upb_test_TestReserved_set_parse_ex_(msg, val);
+  upb_test_TestReserved_set_serialize_(msg, val);
+  upb_test_TestReserved_set_serialize_ex_(msg, val);
+
+  EXPECT_TRUE(upb_StringView_IsEqual(val, upb_test_TestReserved_new_(msg)));
+  EXPECT_TRUE(upb_StringView_IsEqual(val, upb_test_TestReserved_parse_(msg)));
+  EXPECT_TRUE(
+      upb_StringView_IsEqual(val, upb_test_TestReserved_parse_ex_(msg)));
+  EXPECT_TRUE(
+      upb_StringView_IsEqual(val, upb_test_TestReserved_serialize_(msg)));
+  EXPECT_TRUE(
+      upb_StringView_IsEqual(val, upb_test_TestReserved_serialize_ex_(msg)));
+
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, MutablePrefix) {
+  upb_Arena* arena = upb_Arena_New();
+  upb_test_TestReserved* msg = upb_test_TestReserved_new(arena);
+
+  // mutable_foo should be mangled to mutable_foo_ because foo exists.
+  upb_test_TestReserved* sub = upb_test_TestReserved_new(arena);
+  upb_test_TestReserved_set_mutable_foo_(msg, sub);
+
+  EXPECT_EQ(sub, upb_test_TestReserved_mutable_foo_(msg));
+
+  // The actual "mutable" accessor for field "foo" should still be available.
+  upb_test_TestReserved* mutable_foo =
+      upb_test_TestReserved_mutable_foo(msg, arena);
+  EXPECT_NE(nullptr, mutable_foo);
+
+  upb_Arena_Free(arena);
+}
