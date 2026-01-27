@@ -16,10 +16,11 @@ permissions:
   contents: write
 jobs:
   release:
-    uses: bazel-contrib/.github/.github/workflows/release_ruleset.yaml@v7.2.3
+    uses: bazel-contrib/.github/.github/workflows/release_ruleset.yaml@v7.3.0
     with:
       release_files: protobuf-*.bazel.tar.gz
-      prerelease: false
+      prerelease: ${{ contains(inputs.tag_name, '-rc') }}
+      generate_release_notes: false
       tag_name: ${{ inputs.tag_name }}
       # The release was already created by Google-internal mechanism,
       # so there aren't any useful assertions to make here.
