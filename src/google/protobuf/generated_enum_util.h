@@ -14,6 +14,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "absl/strings/ascii.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -125,6 +126,12 @@ namespace generated_enum {
 template <typename Enum, EnableIfProtoEnum<Enum, true> = 0>
 bool AbslParseFlag(absl::string_view text, Enum* e, std::string* error) {
   if (LiteEnumFuncs<Enum>::kParseFunc(text, e)) return true;
+
+  // Try as lower case
+  if (absl::AsciiStrToLower(text) == text &&
+      LiteEnumFuncs<Enum>::kParseFunc(absl::AsciiStrToUpper(text), e)) {
+    return true;
+  }
 
   // Try as a number
   int as_number;

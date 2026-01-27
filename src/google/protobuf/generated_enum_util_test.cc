@@ -178,10 +178,17 @@ TEST(ProtoEnumTest, HasAbseilFlagSupport) {
   absl::CommandLineFlag* flag = absl::FindCommandLineFlag("test_proto_enum");
   EXPECT_EQ("BAZ", flag->CurrentValue());
   std::string error;
+
+  // Label
   EXPECT_TRUE(flag->ParseFrom("FOO", &error));
   EXPECT_EQ(T::FOO, absl::GetFlag(FLAGS_test_proto_enum));
   EXPECT_EQ("FOO", flag->CurrentValue());
 
+  // Lowercase label
+  EXPECT_TRUE(flag->ParseFrom("baz", &error));
+  EXPECT_EQ(T::BAZ, absl::GetFlag(FLAGS_test_proto_enum));
+
+  // Numeric value
   EXPECT_TRUE(flag->ParseFrom("2", &error));
   EXPECT_EQ(T::BAR, absl::GetFlag(FLAGS_test_proto_enum));
   EXPECT_EQ("BAR", flag->CurrentValue());
@@ -204,10 +211,17 @@ TEST(ProtoEnumTest, HasAbseilFlagSupportWithLiteEnums) {
       absl::FindCommandLineFlag("test_proto_enum_lite");
   EXPECT_EQ("BAZ", flag->CurrentValue());
   std::string error;
+
+  // Label
   EXPECT_TRUE(flag->ParseFrom("FOO", &error));
   EXPECT_EQ(T::FOO, absl::GetFlag(FLAGS_test_proto_enum_lite));
   EXPECT_EQ("FOO", flag->CurrentValue());
 
+  // Lowercase label
+  EXPECT_TRUE(flag->ParseFrom("baz", &error));
+  EXPECT_EQ(T::BAZ, absl::GetFlag(FLAGS_test_proto_enum_lite));
+
+  // Numeric value
   EXPECT_TRUE(flag->ParseFrom("2", &error));
   EXPECT_EQ(T::BAR, absl::GetFlag(FLAGS_test_proto_enum_lite));
   EXPECT_EQ("BAR", flag->CurrentValue());
