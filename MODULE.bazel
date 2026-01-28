@@ -16,11 +16,12 @@ module(
 # These dependencies must be declared before the other rules dependencies.
 bazel_dep(name = "rules_apple", version = "4.0.0", repo_name = "build_bazel_rules_apple")
 
-# Required to pass CI on Windows
+# Increase the version of rules_swift required for this repo without taking a direct dependency on it.
 single_version_override(
     module_name = "rules_swift",
     version = "3.0.2",
 )
+
 bazel_dep(name = "apple_support", version = "1.15.1", repo_name = "build_bazel_apple_support")
 
 # Keep apple_support on 1.15.1 for now to avoid this issue:

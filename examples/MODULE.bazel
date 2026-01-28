@@ -23,3 +23,9 @@ bazel_dep(name = "rules_cc", version = "0.0.17")
 bazel_dep(name = "rules_java", version = "8.6.1")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.6.0")
+
+# Increase the version of rules_swift required for this repo without taking a direct dependency on it.
+single_version_override(
+    module_name = "rules_swift",
+    version = "3.0.2",
+)

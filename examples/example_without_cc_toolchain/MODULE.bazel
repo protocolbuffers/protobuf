@@ -11,3 +11,9 @@ local_path_override(
     module_name = "protobuf",
     path = "../..",
 )
+
+# Increase the version of rules_swift required for this repo without taking a direct dependency on it.
+single_version_override(
+    module_name = "rules_swift",
+    version = "3.0.2",
+)
