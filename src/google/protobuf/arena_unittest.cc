@@ -504,12 +504,8 @@ TEST(ArenaTest, RepeatedPtrFieldMoveCtorOnArena) {
   // The only extra allocation with moves is sizeof(RepeatedPtrField).
   // Align up to 8 bytes to match default arena alignment, as sizeof(T) may not
   // be a multiple of 8 on 32-bit platforms.
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   EXPECT_EQ(usage_by_move,
             Align8(sizeof(internal::RepeatedPtrFieldWithArena<TestAllTypes>)));
-#else
-  EXPECT_EQ(usage_by_move, Align8(sizeof(internal::RepeatedPtrFieldBase)));
-#endif
   EXPECT_LT(usage_by_move + Align8(sizeof(TestAllTypes)), usage_original);
 
   // Status after move is unspecified and must not be assumed. It's merely

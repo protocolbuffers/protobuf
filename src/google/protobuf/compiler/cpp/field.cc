@@ -156,23 +156,10 @@ FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* field,
 void FieldGeneratorBase::GenerateMemberConstexprConstructor(
     io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
-  if (field_->is_map()) {
+  if (field_->is_repeated() || field_->is_map()) {
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-              $name$_{visibility, $internal_metadata_offset$}
-#else
-              $name$_ {}
-#endif
-            )cc");
-  } else if (field_->is_repeated()) {
-    p->Emit({InternalMetadataOffsetSub(p)},
-            R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-              $name$_{visibility, $internal_metadata_offset$}
-#else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-              $name$_ {}
-#endif
+              $name$_ { visibility, $internal_metadata_offset$ }
             )cc");
   } else {
     p->Emit({{"default", DefaultValue(options_, field_)}},
@@ -182,26 +169,14 @@ void FieldGeneratorBase::GenerateMemberConstexprConstructor(
 
 void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
-  if (field_->is_map()) {
-    p->Emit({InternalMetadataOffsetSub(p)},
-            R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-              $name$_{visibility, $internal_metadata_offset$}
-#else
-              $name$_ { visibility, arena }
-#endif
-            )cc");
-  } else if (field_->is_repeated()) {
+  if (field_->is_repeated() || field_->is_map()) {
     if (ShouldSplit(field_, options_)) {
+      ABSL_CHECK(field_->is_repeated());
       p->Emit("$name$_{}");  // RawPtr<Repeated>
     } else {
       p->Emit({InternalMetadataOffsetSub(p)},
               R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-                $name$_{visibility, $internal_metadata_offset$}
-#else
-                $name$_ { visibility, arena }
-#endif
+                $name$_ { visibility, $internal_metadata_offset$ }
               )cc");
     }
   } else {
@@ -212,23 +187,12 @@ void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
 
 void FieldGeneratorBase::GenerateMemberCopyConstructor(io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
-  if (field_->is_map()) {
+  if (field_->is_repeated() || field_->is_map()) {
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-              $name$_{visibility, $internal_metadata_offset$, from.$name$_}
-#else
-              $name$_ { visibility, arena, from.$name$_ }
-#endif
-            )cc");
-  } else if (field_->is_repeated()) {
-    p->Emit({InternalMetadataOffsetSub(p)},
-            R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-              $name$_{visibility, $internal_metadata_offset$, from.$name$_}
-#else
-              $name$_ { visibility, arena, from.$name$_ }
-#endif
+              $name$_ {
+                visibility, $internal_metadata_offset$, from.$name$_
+              }
             )cc");
   } else {
     p->Emit("$name$_{from.$name$_}");

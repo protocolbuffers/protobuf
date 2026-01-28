@@ -180,7 +180,6 @@ void ExtensionSet::RegisterMessageExtension(
 
 ExtensionSet::~ExtensionSet() {
   // Deletes all allocated extensions.
-  DebugAssertArenaMatches(nullptr);
 
   ForEach([](int /* number */, Extension& ext) { ext.Free(); }, PrefetchNta{});
   if (ABSL_PREDICT_FALSE(is_large())) {
@@ -305,7 +304,6 @@ const void* ExtensionSet::GetRawRepeatedField(int number,
 void* ExtensionSet::MutableRawRepeatedField(Arena* arena, int number,
                                             FieldType field_type, bool packed,
                                             const FieldDescriptor* desc) {
-  DebugAssertArenaMatches(arena);
   Extension* extension;
 
   // We instantiate an empty Repeated{,Ptr}Field if one doesn't exist for this
@@ -407,7 +405,6 @@ uint8_t* ExtensionSet::InternalSerializeMessage(
 std::string* ExtensionSet::MutableString(Arena* arena, int number,
                                          FieldType type,
                                          const FieldDescriptor* descriptor) {
-  DebugAssertArenaMatches(arena);
   Extension* extension;
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
@@ -431,7 +428,6 @@ std::string* ExtensionSet::MutableRepeatedString(int number, int index) {
 
 std::string* ExtensionSet::AddString(Arena* arena, int number, FieldType type,
                                      const FieldDescriptor* descriptor) {
-  DebugAssertArenaMatches(arena);
   Extension* extension;
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
@@ -453,7 +449,6 @@ std::string* ExtensionSet::AddString(Arena* arena, int number, FieldType type,
 
 const MessageLite& ExtensionSet::GetMessage(
     Arena* arena, int number, const MessageLite& default_value) const {
-  DebugAssertArenaMatches(arena);
   const Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return the default value.
@@ -477,7 +472,6 @@ MessageLite* ExtensionSet::MutableMessage(Arena* arena, int number,
                                           FieldType type,
                                           const MessageLite& prototype,
                                           const FieldDescriptor* descriptor) {
-  DebugAssertArenaMatches(arena);
   Extension* extension;
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
@@ -508,7 +502,6 @@ MessageLite* ExtensionSet::MutableMessage(Arena* arena, int number,
 void ExtensionSet::SetAllocatedMessage(Arena* arena, int number, FieldType type,
                                        const FieldDescriptor* descriptor,
                                        MessageLite* message) {
-  DebugAssertArenaMatches(arena);
   if (message == nullptr) {
     ClearExtension(number);
     return;
@@ -557,7 +550,6 @@ void ExtensionSet::SetAllocatedMessage(Arena* arena, int number, FieldType type,
 void ExtensionSet::UnsafeArenaSetAllocatedMessage(
     Arena* arena, int number, FieldType type, const FieldDescriptor* descriptor,
     MessageLite* message) {
-  DebugAssertArenaMatches(arena);
   if (message == nullptr) {
     ClearExtension(number);
     return;
@@ -587,7 +579,6 @@ void ExtensionSet::UnsafeArenaSetAllocatedMessage(
 
 MessageLite* ExtensionSet::ReleaseMessage(Arena* arena, int number,
                                           const MessageLite& prototype) {
-  DebugAssertArenaMatches(arena);
   Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return nullptr.
@@ -617,7 +608,6 @@ MessageLite* ExtensionSet::ReleaseMessage(Arena* arena, int number,
 
 MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
     Arena* arena, int number, const MessageLite& prototype) {
-  DebugAssertArenaMatches(arena);
   Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return nullptr.
@@ -662,7 +652,6 @@ MessageLite* ExtensionSet::MutableRepeatedMessage(int number, int index) {
 MessageLite* ExtensionSet::AddMessage(Arena* arena, int number, FieldType type,
                                       const ClassData* class_data,
                                       const FieldDescriptor* descriptor) {
-  DebugAssertArenaMatches(arena);
   Extension* extension;
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
@@ -821,8 +810,6 @@ void ExtensionSet::InternalMergeFromSmallToEmpty(Arena* arena,
                                                  const MessageLite* extendee,
                                                  const ExtensionSet& other,
                                                  Arena* other_arena) {
-  DebugAssertArenaMatches(arena);
-  other.DebugAssertArenaMatches(other_arena);
   ABSL_DCHECK(!other.is_large());
   // Compiler is complaining on potential side effects for `!other.is_large()`.
   ABSL_ASSUME(static_cast<int16_t>(flat_size_) >= 0);
@@ -854,8 +841,6 @@ void ExtensionSet::InternalMergeFromSlow(Arena* arena,
                                          const MessageLite* extendee,
                                          const ExtensionSet& other,
                                          Arena* other_arena) {
-  DebugAssertArenaMatches(arena);
-  other.DebugAssertArenaMatches(other_arena);
   if (ABSL_PREDICT_TRUE(!is_large())) {
     if (ABSL_PREDICT_TRUE(!other.is_large())) {
       GrowCapacity(arena, SizeOfUnion(flat_begin(), flat_end(),
@@ -878,7 +863,6 @@ void ExtensionSet::InternalMergeFromSlow(Arena* arena,
 void ExtensionSet::InternalExtensionMergeFromIntoUninitializedExtension(
     Arena* arena, Extension& dst_extension, const MessageLite* extendee,
     int number, const Extension& other_extension, Arena* other_arena) {
-  DebugAssertArenaMatches(arena);
   // Copy and initialize all the fields.
   // We fix up incorrect pointers later.
   // Primitive values are copied here.
@@ -945,7 +929,6 @@ void ExtensionSet::InternalExtensionMergeFrom(Arena* arena,
                                               int number,
                                               const Extension& other_extension,
                                               Arena* other_arena) {
-  DebugAssertArenaMatches(arena);
   Extension* dst_extension;
   bool is_new = MaybeNewExtension(arena, number, other_extension.descriptor,
                                   &dst_extension);
@@ -1035,8 +1018,6 @@ void ExtensionSet::InternalExtensionMergeFrom(Arena* arena,
 
 void ExtensionSet::Swap(Arena* arena, const MessageLite* extendee,
                         ExtensionSet* other, Arena* other_arena) {
-  DebugAssertArenaMatches(arena);
-  other->DebugAssertArenaMatches(other_arena);
   if (internal::CanUseInternalSwap(arena, other_arena)) {
     InternalSwap(other);
   } else {
@@ -1054,7 +1035,6 @@ void ExtensionSet::Swap(Arena* arena, const MessageLite* extendee,
 
 void ExtensionSet::InternalSwap(ExtensionSet* other) {
   using std::swap;
-  DebugAssertSameArena(*other);
   swap(flat_capacity_, other->flat_capacity_);
   swap(flat_size_, other->flat_size_);
   swap(map_, other->map_);
@@ -1063,8 +1043,6 @@ void ExtensionSet::InternalSwap(ExtensionSet* other) {
 void ExtensionSet::SwapExtension(Arena* arena, const MessageLite* extendee,
                                  ExtensionSet* other, Arena* other_arena,
                                  int number) {
-  DebugAssertArenaMatches(arena);
-  other->DebugAssertArenaMatches(other_arena);
   if (this == other) return;
 
   if (arena == other_arena) {
@@ -1116,8 +1094,6 @@ void ExtensionSet::UnsafeShallowSwapExtension(Arena* arena, ExtensionSet* other,
 
   if (this_ext == other_ext) return;
 
-  DebugAssertSameArena(*other);
-
   if (this_ext != nullptr && other_ext != nullptr) {
     std::swap(*this_ext, *other_ext);
   } else if (this_ext == nullptr) {
@@ -1133,7 +1109,6 @@ bool ExtensionSet::IsInitialized(Arena* arena,
                                  const MessageLite* extendee) const {
   // Extensions are never required.  However, we need to check that all
   // embedded messages are initialized.
-  DebugAssertArenaMatches(arena);
   if (ABSL_PREDICT_FALSE(is_large())) {
     for (const auto& kv : *map_.large) {
       if (!kv.second.IsInitialized(this, extendee, kv.first, arena)) {
@@ -1264,7 +1239,6 @@ ExtensionSet::Extension& ExtensionSet::FindOrCreate(
     Arena* arena, int number, FieldType type, bool repeated, bool packed,
     const FieldDescriptor* descriptor,
     Extension& (*pointer_creator)(Extension& ext, Arena* arena)) {
-  DebugAssertArenaMatches(arena);
   Extension* extension;
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
@@ -1641,7 +1615,6 @@ std::pair<ExtensionSet::Extension*, bool> ExtensionSet::Insert(Arena* arena,
 }
 
 void ExtensionSet::GrowCapacity(Arena* arena, size_t minimum_new_capacity) {
-  DebugAssertArenaMatches(arena);
   if (ABSL_PREDICT_FALSE(is_large())) {
     return;  // LargeMap does not have a "reserve" method.
   }
@@ -1683,7 +1656,6 @@ void ExtensionSet::GrowCapacity(Arena* arena, size_t minimum_new_capacity) {
 
 void ExtensionSet::InternalReserveSmallCapacityFromEmpty(
     Arena* arena, size_t minimum_new_capacity) {
-  DebugAssertArenaMatches(arena);
   ABSL_DCHECK(flat_capacity_ == 0);
   ABSL_DCHECK(minimum_new_capacity <= kMaximumFlatCapacity);
   ABSL_DCHECK(minimum_new_capacity > 0);
