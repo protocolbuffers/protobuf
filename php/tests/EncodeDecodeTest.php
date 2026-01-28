@@ -629,6 +629,10 @@ class EncodeDecodeTest extends TestBase
 
         $m = new TestMessage();
         $m->mergeFromString($payload);
+
+        // If execution reaches this line, it means no exception was thrown.
+        // This assertion prevents PHPUnit from marking the test as risky.
+        $this->assertTrue(true);
     }
 
     public function testOverlyRecursiveMessage() {
@@ -1636,7 +1640,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals($defaultValue, $to->getOneofFieldUnwrapped());
     }
 
-    public function wrappersDataProvider()
+    public static function wrappersDataProvider()
     {
         return [
             [TestInt32Value::class, 1, "1", 0, "0"],
