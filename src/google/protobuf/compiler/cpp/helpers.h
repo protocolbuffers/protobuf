@@ -393,6 +393,9 @@ internal::cpp::HasbitMode GetFieldHasbitMode(const FieldDescriptor* field,
 PROTOC_EXPORT bool HasHasbit(const FieldDescriptor* field,
                              const Options& options);
 
+uint32_t RepeatedFieldSsoCapacity(const FieldDescriptor* field,
+                                  const Options& options);
+
 bool IsStringInliningEnabled(const Options& options);
 
 // Returns true if the provided field is a singular string and can be inlined.

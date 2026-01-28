@@ -87,18 +87,6 @@ inline void memswap(char* PROTOBUF_RESTRICT a, char* PROTOBUF_RESTRICT b) {
   std::swap_ranges(a, a + N, b);
 }
 
-// A trait that tells offset of `T::resolver_`.
-//
-// Do not use this struct - it exists for internal use only.
-template <typename T>
-struct InternalMetadataResolverOffsetHelper {
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-  static constexpr size_t value = offsetof(T, resolver_);
-#else
-  static constexpr size_t value = offsetof(T, arena_);
-#endif
-};
-
 // Copies the object in the arena.
 // Used in the slow path. Out-of-line for lower binary size cost.
 PROTOBUF_EXPORT MessageLite* CloneSlow(Arena* arena, const MessageLite& value);
@@ -189,9 +177,12 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   using Value = typename TypeHandler::Type;
 
-  static constexpr int kSSOCapacity = 1;
+  static constexpr uint32_t kCapacityTagBits = sizeof(void*) == 8 ? 3 : 0;
+  static constexpr uint32_t kCapacityTag = (1 << kCapacityTagBits) - 1;
 
  protected:
+  static constexpr uint32_t kDefaultSSOCapacity = 1;
+
   // We use the same TypeHandler for all Message types to deduplicate generated
   // code.
   template <typename TypeHandler>
@@ -201,14 +192,34 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   constexpr RepeatedPtrFieldBase()
-      : tagged_rep_or_elem_(nullptr), current_size_(0) {}
+      : RepeatedPtrFieldBase(kDefaultSSOCapacity) {}
   constexpr explicit RepeatedPtrFieldBase(InternalMetadataOffset offset)
-      : tagged_rep_or_elem_(nullptr), current_size_(0), resolver_(offset) {}
+      : RepeatedPtrFieldBase(offset, kDefaultSSOCapacity) {}
+  constexpr explicit RepeatedPtrFieldBase(uint32_t sso_capacity)
+      : RepeatedPtrFieldBase(/*offset=*/{}, sso_capacity) {}
+  constexpr RepeatedPtrFieldBase(InternalMetadataOffset offset,
+                                 uint32_t sso_capacity)
+      : current_size_(0),
+        resolver_(offset, (sizeof(void*) ==
+#ifdef NDEBUG
+                           9
+#else
+                           8
+#endif
+                           )
+                              ? sso_capacity - 1
+                              : kDefaultSSOCapacity - 1),
+        tagged_rep_or_elem_(nullptr) {
+    ABSL_DCHECK_GT(sso_capacity, uint32_t{0});
+    if constexpr (sizeof(void*) == 8) {
+      ABSL_DCHECK_LE(sso_capacity, kCapacityTag + 1);
+    }
+  }
 #else
   constexpr RepeatedPtrFieldBase()
-      : tagged_rep_or_elem_(nullptr), current_size_(0), arena_(nullptr) {}
+      : current_size_(0), arena_(nullptr), tagged_rep_or_elem_(nullptr) {}
   explicit RepeatedPtrFieldBase(Arena* arena)
-      : tagged_rep_or_elem_(nullptr), current_size_(0), arena_(arena) {}
+      : current_size_(0), arena_(arena), tagged_rep_or_elem_(nullptr) {}
 #endif
 
   RepeatedPtrFieldBase(const RepeatedPtrFieldBase&) = delete;
@@ -232,7 +243,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   //
   //   * prefer `SizeAtCapacity()` to `size() == Capacity()`;
   //   * prefer `AllocatedSizeAtCapacity()` to `allocated_size() == Capacity()`.
-  int Capacity() const { return using_sso() ? kSSOCapacity : rep()->capacity; }
+  int Capacity() const {
+    return using_sso() ? resolver_.Tag() + 1 : rep()->capacity;
+  }
 
   template <typename TypeHandler>
   const Value<TypeHandler>& at(int index) const {
@@ -389,13 +402,21 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     MergeFromConcreteMessage(from, arena, Arena::CopyConstruct<T>);
   }
 
+  template <typename TypeHandler>
   inline void InternalSwap(RepeatedPtrFieldBase* PROTOBUF_RESTRICT rhs) {
     ABSL_DCHECK(this != rhs);
 
-    // Swap all fields except arena offset and arena pointer at once.
-    internal::memswap<
-        InternalMetadataResolverOffsetHelper<RepeatedPtrFieldBase>::value>(
-        reinterpret_cast<char*>(this), reinterpret_cast<char*>(rhs));
+    if (resolver_.Tag() != rhs->resolver_.Tag()) {
+      Arena* arena = GetArena();
+      SwapFallback<TypeHandler>(arena, rhs, arena);
+      return;
+    }
+
+    // Swap all fields except the internal metadata offset.
+    std::swap(current_size_, rhs->current_size_);
+    for (int i = 0; i < resolver_.Tag() + 1; ++i) {
+      std::swap((&tagged_rep_or_elem_)[i], (&rhs->tagged_rep_or_elem_)[i]);
+    }
   }
 
   // Returns true if there are no preallocated elements in the array.
@@ -412,10 +433,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       *InternalExtend(1, arena) = value;
       ++rep()->allocated_size;
     } else {
-      if (using_sso()) {
-        tagged_rep_or_elem_ = value;
-      } else {
-        rep()->elements[current_size_] = value;
+      const bool is_sso = using_sso();
+      elements(is_sso)[current_size_] = value;
+      if (!is_sso) {
         ++rep()->allocated_size;
       }
     }
@@ -473,7 +493,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     ABSL_DCHECK_EQ(arena, GetArena());
     ABSL_DCHECK_EQ(other_arena, other->GetArena());
     if (internal::CanUseInternalSwap(arena, other_arena)) {
-      InternalSwap(other);
+      InternalSwap<TypeHandler>(other);
     } else {
       SwapFallback<TypeHandler>(arena, other, other_arena);
     }
@@ -554,7 +574,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       // We have some cleared objects.  We don't care about their order, so we
       // can just move the first one to the end to make space.
       element_at(allocated_size()) = element_at(current_size_);
-      ++rep()->allocated_size;
+      if (!using_sso()) ++rep()->allocated_size;
     } else {
       // There are no cleared objects.
       if (!using_sso()) ++rep()->allocated_size;
@@ -586,15 +606,17 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     ABSL_DCHECK_GT(current_size_, 0);
     ExchangeCurrentSize(current_size_ - 1);
     auto* result = cast<TypeHandler>(element_at(current_size_));
-    if (using_sso()) {
-      tagged_rep_or_elem_ = nullptr;
-    } else {
+
+    int last_allocated_idx = this->allocated_size() - 1;
+    if (current_size_ < last_allocated_idx) {
+      // There are cleared elements on the end; replace the removed element
+      // with the last allocated element.
+      element_at(current_size_) = element_at(last_allocated_idx);
+    }
+
+    element_at(last_allocated_idx) = nullptr;
+    if (!using_sso()) {
       --rep()->allocated_size;
-      if (current_size_ < allocated_size()) {
-        // There are cleared elements on the end; replace the removed element
-        // with the last allocated element.
-        element_at(current_size_) = element_at(allocated_size());
-      }
     }
     return result;
   }
@@ -636,7 +658,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Gets the Arena on which this RepeatedPtrField stores its elements.
   inline Arena* GetArena() const {
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-    return ResolveArena<&RepeatedPtrFieldBase::resolver_>(this);
+    return ResolveTaggedArena<&RepeatedPtrFieldBase::resolver_,
+                              kCapacityTagBits>(this);
 #else
     return arena_;
 #endif
@@ -689,11 +712,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   friend class internal::TcParser;  // TODO: Remove this friend.
 
-  // Expose offset of `resolver_` without exposing the member itself. Used to
-  // optimize code size of `InternalSwap` method.
-  template <typename T>
-  friend struct InternalMetadataResolverOffsetHelper;
-
   // The reflection implementation needs to call protected methods directly,
   // reinterpreting pointers as being to Message instead of a specific Message
   // subclass.
@@ -741,17 +759,20 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     return allocated_size() == Capacity();
   }
 
-  void* const* elements() const {
-    return using_sso() ? &tagged_rep_or_elem_ : +rep()->elements;
+  void* const* elements(bool using_sso) const {
+    return using_sso ? &tagged_rep_or_elem_ : +rep()->elements;
   }
-  void** elements() {
-    return using_sso() ? &tagged_rep_or_elem_ : +rep()->elements;
+  void* const* elements() const { return elements(using_sso()); }
+  void** elements(bool using_sso) {
+    ABSL_DCHECK_EQ(using_sso, this->using_sso());
+    return using_sso ? &tagged_rep_or_elem_ : +rep()->elements;
   }
+  void** elements() { return elements(using_sso()); }
 
   void*& element_at(int index) {
     if (using_sso()) {
-      ABSL_DCHECK_EQ(index, 0);
-      return tagged_rep_or_elem_;
+      ABSL_DCHECK_LT(index, Capacity());
+      return (&tagged_rep_or_elem_)[index];
     }
     return rep()->elements[index];
   }
@@ -760,8 +781,15 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   int allocated_size() const {
-    return using_sso() ? (tagged_rep_or_elem_ != nullptr ? 1 : 0)
-                       : rep()->allocated_size;
+    if (using_sso()) {
+      const int capacity = Capacity();
+      int i = current_size_;
+      for (; i < capacity && elements(/*using_sso=*/true)[i] != nullptr; ++i)
+        continue;
+      return i;
+    } else {
+      return rep()->allocated_size;
+    }
   }
   Rep* rep() {
     ABSL_DCHECK(!using_sso());
@@ -850,14 +878,14 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // misses due to the indirection, because these fields are checked frequently.
   // Placing all fields directly in the RepeatedPtrFieldBase instance would cost
   // significant performance for memory-sensitive workloads.
-  void* tagged_rep_or_elem_;
   int current_size_;
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-  InternalMetadataResolver resolver_;
+  TaggedInternalMetadataResolver<kCapacityTagBits> resolver_;
 #else
   const int arena_offset_placeholder_do_not_use_ = 0;
   Arena* arena_;
 #endif
+  void* tagged_rep_or_elem_;
 };
 
 // Appends all message values from `from` to this instance using the abstract
@@ -882,35 +910,20 @@ PROTOBUF_EXPORT void RepeatedPtrFieldBase::MergeFrom<std::string>(
 inline void* RepeatedPtrFieldBase::AddInternal(
     Arena* arena, absl::FunctionRef<ElementNewFn> factory) {
   ABSL_DCHECK_EQ(arena, GetArena());
-  if (tagged_rep_or_elem_ == nullptr) {
-    ExchangeCurrentSize(1);
-    factory(arena, tagged_rep_or_elem_);
-    return tagged_rep_or_elem_;
-  }
   absl::PrefetchToLocalCache(tagged_rep_or_elem_);
-  if (using_sso()) {
-    if (current_size_ == 0) {
-      ExchangeCurrentSize(1);
-      return tagged_rep_or_elem_;
-    }
-    void*& result = *InternalExtend(1, arena);
-    factory(arena, result);
-    Rep* r = rep();
-    r->allocated_size = 2;
-    ExchangeCurrentSize(2);
-    return result;
-  }
-  Rep* r = rep();
+  bool is_sso = using_sso();
   if (ABSL_PREDICT_FALSE(SizeAtCapacity())) {
     InternalExtend(1, arena);
-    r = rep();
-  } else {
-    if (ClearedCount() > 0) {
-      return r->elements[ExchangeCurrentSize(current_size_ + 1)];
-    }
+    is_sso = false;
+  } else if ((is_sso && elements(is_sso)[current_size_] != nullptr) ||
+             (!is_sso && ClearedCount() > 0)) {
+    return elements(is_sso)[ExchangeCurrentSize(current_size_ + 1)];
   }
-  ++r->allocated_size;
-  void*& result = r->elements[ExchangeCurrentSize(current_size_ + 1)];
+
+  if (!is_sso) {
+    ++rep()->allocated_size;
+  }
+  void*& result = elements(is_sso)[ExchangeCurrentSize(current_size_ + 1)];
   factory(arena, result);
   return result;
 }
@@ -946,7 +959,7 @@ template <typename TypeHandler>
 PROTOBUF_NOINLINE void RepeatedPtrFieldBase::SwapFallbackWithTemp(
     Arena* arena, RepeatedPtrFieldBase* other, Arena* other_arena,
     RepeatedPtrFieldBase& temp) {
-  ABSL_DCHECK(!internal::CanUseInternalSwap(GetArena(), other->GetArena()));
+  // ABSL_DCHECK(!internal::CanUseInternalSwap(GetArena(), other->GetArena()));
   ABSL_DCHECK_EQ(arena, GetArena());
   ABSL_DCHECK_EQ(other_arena, other->GetArena());
 
@@ -957,13 +970,13 @@ PROTOBUF_NOINLINE void RepeatedPtrFieldBase::SwapFallbackWithTemp(
     temp.MergeFrom<typename TypeHandler::Type>(*this, other_arena);
   }
   this->CopyFrom<TypeHandler>(*other, arena);
-  other->InternalSwap(&temp);
+  other->InternalSwap<TypeHandler>(&temp);
 }
 
 template <typename TypeHandler>
 PROTOBUF_NOINLINE void RepeatedPtrFieldBase::SwapFallback(
     Arena* arena, RepeatedPtrFieldBase* other, Arena* other_arena) {
-  ABSL_DCHECK(!internal::CanUseInternalSwap(GetArena(), other->GetArena()));
+  // ABSL_DCHECK(!internal::CanUseInternalSwap(GetArena(), other->GetArena()));
   ABSL_DCHECK_EQ(arena, GetArena());
   ABSL_DCHECK_EQ(other_arena, other->GetArena());
 
@@ -1159,11 +1172,21 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   constexpr PROTOBUF_ALWAYS_INLINE RepeatedPtrField(
       internal::InternalVisibility, internal::InternalMetadataOffset offset)
-      : RepeatedPtrField(offset) {}
+      : RepeatedPtrField(offset, RepeatedPtrFieldBase::kDefaultSSOCapacity) {}
+  constexpr PROTOBUF_ALWAYS_INLINE RepeatedPtrField(
+      internal::InternalVisibility, internal::InternalMetadataOffset offset,
+      uint32_t sso_capacity)
+      : RepeatedPtrField(offset, sso_capacity) {}
+
   PROTOBUF_ALWAYS_INLINE RepeatedPtrField(
       internal::InternalVisibility, internal::InternalMetadataOffset offset,
       const RepeatedPtrField& rhs)
-      : RepeatedPtrField(offset, rhs) {}
+      : RepeatedPtrField(offset, RepeatedPtrFieldBase::kDefaultSSOCapacity,
+                         rhs) {}
+  PROTOBUF_ALWAYS_INLINE RepeatedPtrField(
+      internal::InternalVisibility, internal::InternalMetadataOffset offset,
+      uint32_t sso_capacity, const RepeatedPtrField& rhs)
+      : RepeatedPtrField(offset, sso_capacity, rhs) {}
 
 #else
   RepeatedPtrField(internal::InternalVisibility, Arena* arena)
@@ -1449,7 +1472,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   //
   // This is public due to it being called by generated code.
   void InternalSwap(RepeatedPtrField* PROTOBUF_RESTRICT other) {
-    internal::RepeatedPtrFieldBase::InternalSwap(other);
+    internal::RepeatedPtrFieldBase::InternalSwap<TypeHandler>(other);
   }
 
   // For internal use only.
@@ -1523,10 +1546,22 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   constexpr explicit RepeatedPtrField(internal::InternalMetadataOffset offset);
+  constexpr RepeatedPtrField(internal::InternalMetadataOffset offset,
+                             uint32_t sso_capacity);
+
   RepeatedPtrField(internal::InternalMetadataOffset offset,
-                   const RepeatedPtrField& rhs);
+                   const RepeatedPtrField& rhs)
+      : RepeatedPtrField(offset, RepeatedPtrFieldBase::kDefaultSSOCapacity,
+                         rhs) {}
   RepeatedPtrField(internal::InternalMetadataOffset offset,
-                   RepeatedPtrField&& rhs);
+                   uint32_t sso_capacity, const RepeatedPtrField& rhs);
+
+  RepeatedPtrField(internal::InternalMetadataOffset offset,
+                   RepeatedPtrField&& rhs)
+      : RepeatedPtrField(offset, RepeatedPtrFieldBase::kDefaultSSOCapacity,
+                         std::move(rhs)) {}
+  RepeatedPtrField(internal::InternalMetadataOffset offset,
+                   uint32_t sso_capacity, RepeatedPtrField&& rhs);
 #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   RepeatedPtrField(Arena* arena, const RepeatedPtrField& rhs);
   RepeatedPtrField(Arena* arena, RepeatedPtrField&& rhs);
@@ -1597,16 +1632,39 @@ constexpr
 }
 
 template <typename Element>
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+constexpr
+#endif
+    PROTOBUF_ALWAYS_INLINE RepeatedPtrField<Element>::RepeatedPtrField(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+        internal::InternalMetadataOffset offset, uint32_t sso_capacity
+#else
+    Arena* arena
+#endif
+        )
+    : RepeatedPtrFieldBase(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+          offset, sso_capacity
+#else
+          arena
+#endif
+      ) {
+  // We can't have StaticValidityCheck here because that requires Element to be
+  // a complete type, and in split repeated fields cases, we call
+  // CreateMessage<RepeatedPtrField<T>> for incomplete Ts.
+}
+
+template <typename Element>
 PROTOBUF_ALWAYS_INLINE RepeatedPtrField<Element>::RepeatedPtrField(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-    internal::InternalMetadataOffset offset,
+    internal::InternalMetadataOffset offset, uint32_t sso_capacity,
 #else
     Arena* arena,
 #endif
     const RepeatedPtrField& rhs)
     : RepeatedPtrFieldBase(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-          offset
+          offset, sso_capacity
 #else
           arena
 #endif
@@ -1644,14 +1702,14 @@ inline RepeatedPtrField<Element>& RepeatedPtrField<Element>::operator=(
 template <typename Element>
 inline RepeatedPtrField<Element>::RepeatedPtrField(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-    internal::InternalMetadataOffset offset,
+    internal::InternalMetadataOffset offset, uint32_t sso_capacity,
 #else
     Arena* arena,
 #endif
     RepeatedPtrField&& rhs)
     : RepeatedPtrFieldBase(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-          offset
+          offset, sso_capacity
 #else
           arena
 #endif
@@ -1928,7 +1986,7 @@ inline void RepeatedPtrField<Element>::UnsafeArenaSwap(
     RepeatedPtrField* other) {
   if (this == other) return;
   ABSL_DCHECK_EQ(GetArena(), other->GetArena());
-  RepeatedPtrFieldBase::InternalSwap(other);
+  RepeatedPtrFieldBase::InternalSwap<TypeHandler>(other);
 }
 
 template <typename Element>
@@ -2041,6 +2099,49 @@ struct FieldArenaRep<const RepeatedPtrField<Element>> {
   }
 };
 #endif
+
+template <typename Element, size_t SsoCapacity>
+struct RepeatedPtrFieldWithSSOStorage {
+  constexpr PROTOBUF_ALWAYS_INLINE RepeatedPtrFieldWithSSOStorage(
+      internal::InternalVisibility visibility,
+      internal::InternalMetadataOffset offset)
+      : field(visibility, offset, SsoCapacity), elements{} {
+    for (int i = 1; i < SsoCapacity; ++i) {
+      elements[i - 1] = nullptr;
+    }
+  }
+
+  constexpr explicit PROTOBUF_ALWAYS_INLINE RepeatedPtrFieldWithSSOStorage(
+      internal::InternalMetadataOffset offset)
+      : field(offset, SsoCapacity), elements{} {
+    for (int i = 1; i < SsoCapacity; ++i) {
+      elements[i - 1] = nullptr;
+    }
+  }
+
+  PROTOBUF_ALWAYS_INLINE RepeatedPtrFieldWithSSOStorage(
+      internal::InternalVisibility visibility,
+      internal::InternalMetadataOffset offset,
+      const RepeatedPtrField<Element>& rhs)
+      : field(visibility, offset, SsoCapacity, rhs) {
+    for (int i = std::max(rhs.size(), 1); i < SsoCapacity; ++i) {
+      elements[i - 1] = nullptr;
+    }
+  }
+
+  ~RepeatedPtrFieldWithSSOStorage() {
+    // We have to run the destructor of `field` before `elements`. For msan
+    // builds, the destructor of `elements` will poison that memory, but the
+    // repeated field still potentially needs to read from it to free the
+    // elements in the additional SSO storage.
+    field.~RepeatedPtrField();
+  }
+
+  union {
+    RepeatedPtrField<Element> field;
+  };
+  void* elements[SsoCapacity - 1];
+};
 
 // This class gives the Rust implementation access to some protected methods on
 // RepeatedPtrFieldBase. These methods allow us to operate solely on the
@@ -2549,14 +2650,6 @@ UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
       mutable_field);
 }
 
-
-namespace internal {
-// Size optimization for `memswap<N>` - supplied below N is used by every
-// `RepeatedPtrField<T>`.
-extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE void
-memswap<InternalMetadataResolverOffsetHelper<RepeatedPtrFieldBase>::value>(
-    char* PROTOBUF_RESTRICT, char* PROTOBUF_RESTRICT);
-}  // namespace internal
 
 }  // namespace protobuf
 }  // namespace google

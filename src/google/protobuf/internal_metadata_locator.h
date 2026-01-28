@@ -170,8 +170,13 @@ class TaggedInternalMetadataResolver {
 
   constexpr explicit TaggedInternalMetadataResolver(
       InternalMetadataOffset offset)
-      : offset_(static_cast<uint32_t>(offset.Offset())) {
-    ABSL_DCHECK_EQ(offset_ & kTagMask, uint32_t{0});
+      : TaggedInternalMetadataResolver(offset, /*tag=*/0) {}
+
+  constexpr TaggedInternalMetadataResolver(InternalMetadataOffset offset,
+                                           uint32_t tag)
+      : offset_(static_cast<uint32_t>(offset.Offset()) | tag) {
+    ABSL_DCHECK_EQ(offset.Offset() & kTagMask, uint32_t{0});
+    ABSL_DCHECK_EQ(tag & ~kTagMask, uint32_t{0});
   }
 
   constexpr int32_t Offset() const {

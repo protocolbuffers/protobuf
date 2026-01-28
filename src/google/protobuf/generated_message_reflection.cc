@@ -722,7 +722,7 @@ void SwapFieldHelper::SwapRepeatedStringField(const Reflection* r, Message* lhs,
       auto* lhs_string = r->MutableRaw<RepeatedPtrFieldBase>(lhs, field);
       auto* rhs_string = r->MutableRaw<RepeatedPtrFieldBase>(rhs, field);
       if (unsafe_shallow_swap) {
-        lhs_string->InternalSwap(rhs_string);
+        lhs_string->InternalSwap<GenericTypeHandler<std::string>>(rhs_string);
       } else {
         lhs_string->Swap<GenericTypeHandler<std::string>>(lhs_arena, rhs_string,
                                                           rhs_arena);
@@ -843,7 +843,7 @@ void SwapFieldHelper::SwapRepeatedMessageField(const Reflection* r,
     auto* lhs_rm = r->MutableRaw<RepeatedPtrFieldBase>(lhs, field);
     auto* rhs_rm = r->MutableRaw<RepeatedPtrFieldBase>(rhs, field);
     if (unsafe_shallow_swap) {
-      lhs_rm->InternalSwap(rhs_rm);
+      lhs_rm->InternalSwap<GenericTypeHandler<Message>>(rhs_rm);
     } else {
       lhs_rm->Swap<GenericTypeHandler<Message>>(lhs->GetArena(), rhs_rm,
                                                 rhs->GetArena());

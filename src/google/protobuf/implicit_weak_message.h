@@ -218,7 +218,7 @@ struct WeakRepeatedPtrField {
     base().template MergeFrom<MessageLite>(other.base(), arena);
   }
   void InternalSwap(WeakRepeatedPtrField* PROTOBUF_RESTRICT other) {
-    base().InternalSwap(&other->base());
+    base().template InternalSwap<TypeHandler>(&other->base());
   }
 
   const internal::RepeatedPtrFieldBase& base() const { return weak; }

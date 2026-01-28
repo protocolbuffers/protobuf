@@ -222,14 +222,23 @@ void FieldGeneratorBase::GenerateMemberCopyConstructor(io::Printer* p) const {
 #endif
             )cc");
   } else if (field_->is_repeated()) {
-    p->Emit({InternalMetadataOffsetSub(p)},
-            R"cc(
+    if (field_->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE && !is_weak()) {
+      p->Emit({InternalMetadataOffsetSub(p)},
+              R"cc(
+                $name$_ {
+                  visibility, $internal_metadata_offset$, from.$name$_.field
+                }
+              )cc");
+    } else {
+      p->Emit({InternalMetadataOffsetSub(p)},
+              R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-              $name$_{visibility, $internal_metadata_offset$, from.$name$_}
+                $name$_{visibility, $internal_metadata_offset$, from.$name$_}
 #else
-              $name$_ { visibility, arena, from.$name$_ }
+                $name$_ { visibility, arena, from.$name$_ }
 #endif
-            )cc");
+              )cc");
+    }
   } else {
     p->Emit("$name$_{from.$name$_}");
   }
