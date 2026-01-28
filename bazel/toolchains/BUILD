@@ -41,32 +41,3 @@ filegroup(
         "//bazel:__pkg__",
     ],
 )
-
-# The public API users set
-bool_flag(
-    name = "prefer_prebuilt_protoc",
-    # TODO: this should be True after the feature is vetted with some adoption
-    build_setting_default = False,
-)
-
-config_setting(
-    name = "prefer_prebuilt_protoc.flag_set",
-    flag_values = {":prefer_prebuilt_protoc": "true"},
-    visibility = [
-        "//bazel/private/oss/toolchains/prebuilt:__pkg__",
-        # Needed by cc_toolchain to switch between minimal and full protoc
-        "//:__pkg__",
-    ],
-)
-
-# The public API users set to disable the validation action failing.
-bool_flag(
-    name = "allow_nonstandard_protoc",
-    build_setting_default = False,
-)
-
-config_setting(
-    name = "allow_nonstandard_protoc.flag_set",
-    flag_values = {":allow_nonstandard_protoc": "true"},
-    visibility = ["//bazel/private/oss/toolchains/prebuilt:__pkg__"],
-)
