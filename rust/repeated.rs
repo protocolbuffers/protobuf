@@ -178,10 +178,9 @@ impl<'msg, T: Singular> RepeatedMut<'msg, T> {
     /// # Safety
     /// Undefined behavior if `index >= len`.
     #[inline]
-    pub unsafe fn get_mut_unchecked<'r>(&'r mut self, index: usize) -> Mut<'msg, T>
+    pub unsafe fn get_mut_unchecked(&mut self, index: usize) -> Mut<'_, T>
     where
         T: Message,
-        'r: 'msg,
     {
         // SAFETY: in-bounds as promised
         unsafe { T::repeated_get_mut_unchecked(Private, self.as_mut(), index) }
@@ -201,6 +200,18 @@ impl<'msg, T: Singular> RepeatedMut<'msg, T> {
     #[inline]
     pub fn push(&mut self, val: impl IntoProxied<T>) {
         T::repeated_push(Private, self.as_mut(), val);
+    }
+
+    /// Appends the default message instance of T and returns a mutable reference to it.
+    #[inline]
+    pub fn push_default(&mut self) -> Mut<'_, T>
+    where
+        T: Message,
+    {
+        // TODO: This should be optimized on Cpp kernel by adding another thunk to expose Add().
+        self.push(T::default());
+        // SAFETY: we just pushed a value into the repeated field, so there is at least one element.
+        unsafe { self.get_mut_unchecked(self.len() - 1) }
     }
 
     /// Sets the value at `index` to the value `val`.
