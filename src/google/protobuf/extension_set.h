@@ -122,14 +122,17 @@ enum class LazyAnnotation : int8_t {
 
 // Information about a registered extension.
 struct ExtensionInfo {
-  constexpr ExtensionInfo() : enum_validity_check() {}
+  constexpr ExtensionInfo()
+      : is_packed(false), is_utf8(false), enum_validity_check() {}
   constexpr ExtensionInfo(const MessageLite* extendee, int param_number,
-                          FieldType type_param, bool isrepeated, bool ispacked)
+                          FieldType type_param, bool isrepeated, bool ispacked,
+                          bool is_utf8)
       : message(extendee),
         number(param_number),
         type(type_param),
         is_repeated(isrepeated),
         is_packed(ispacked),
+        is_utf8(is_utf8),
         enum_validity_check() {}
   constexpr ExtensionInfo(const MessageLite* extendee, int param_number,
                           FieldType type_param, bool isrepeated, bool ispacked,
@@ -140,6 +143,7 @@ struct ExtensionInfo {
         type(type_param),
         is_repeated(isrepeated),
         is_packed(ispacked),
+        is_utf8(false),
         is_lazy(islazy),
         enum_validity_check(),
         lazy_eager_verify_func(verify_func)
@@ -151,7 +155,8 @@ struct ExtensionInfo {
 
   FieldType type = 0;
   bool is_repeated = false;
-  bool is_packed = false;
+  bool is_packed : 1;
+  bool is_utf8 : 1;  // validate UTF8 if true
   LazyAnnotation is_lazy = LazyAnnotation::kUndefined;
 
   struct EnumValidityCheck {
@@ -275,7 +280,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // methods do.
   static void RegisterExtension(const MessageLite* extendee, int number,
                                 FieldType type, bool is_repeated,
-                                bool is_packed);
+                                bool is_packed, bool is_utf8 = false);
   static void RegisterEnumExtension(const MessageLite* extendee, int number,
                                     FieldType type, bool is_repeated,
                                     bool is_packed,
