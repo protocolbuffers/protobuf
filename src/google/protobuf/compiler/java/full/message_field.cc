@@ -54,16 +54,20 @@ void SetMessageVariables(
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
   (*variables)["on_changed"] = "onChanged();";
   (*variables)["get_parser"] = "parser()";
+  (*variables)["parser_var"] = absl::StrCat((*variables)["name"], "Parser_");
 
   if (HasHasbit(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_to_local"] =
         GenerateSetBitToLocal(messageBitIndex);
+    (*variables)["set_has_field_bit_message"] =
+        absl::StrCat(GenerateSetBit(messageBitIndex), ";");
 
     (*variables)["is_field_present_message"] = GenerateGetBit(messageBitIndex);
   } else {
     (*variables)["set_has_field_bit_to_local"] = "";
+    (*variables)["set_has_field_bit_message"] = "";
     variables->insert({"is_field_present_message",
                        absl::StrCat((*variables)["name"], "_ != null")});
   }
@@ -80,6 +84,9 @@ void SetMessageVariables(
       absl::StrCat(GenerateClearBit(builderBitIndex), ";");
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(builderBitIndex);
+
+  (*variables)["builder_var"] =
+      absl::StrCat((*variables)["name"], "Builder_");
 
   (*variables)["tag_size"] = absl::StrCat(
       internal::WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
@@ -392,6 +399,53 @@ void ImmutableMessageFieldGenerator::GenerateBuildingCode(
     printer->Print(variables_, "  $set_has_field_bit_to_local$;\n");
   }
   printer->Print("}\n");
+}
+
+void ImmutableMessageFieldGenerator::GenerateParsingCode(
+    io::Printer* printer) const {
+  printer->Print(variables_,
+                 "if ($builder_var$ == null && !$is_field_present_message$) {\n");
+  printer->Indent();
+  if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
+    printer->Print(variables_,
+                   "$name$_ = input.readGroup($number$, $parser_var$,\n"
+                   "    extensionRegistry);\n"
+                   "$set_has_field_bit_message$\n");
+  } else {
+    printer->Print(variables_,
+                   "$name$_ = input.readMessage($parser_var$, extensionRegistry);\n"
+                   "$set_has_field_bit_message$\n");
+  }
+  printer->Outdent();
+  printer->Print(variables_,
+                 "} else {\n");
+  printer->Indent();
+  printer->Print(variables_,
+                 "if ($builder_var$ == null) {\n"
+                 "  $builder_var$ = $type$.newBuilder();\n"
+                 "  $builder_var$.mergeFrom($name$_);\n"
+                 "  $name$_ = null;\n"
+                 "}\n");
+  if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
+    printer->Print(variables_,
+                   "input.readGroup($number$, $builder_var$,\n"
+                   "    extensionRegistry);\n"
+                   "$set_has_field_bit_message$\n");
+  } else {
+    printer->Print(variables_,
+                   "input.readMessage($builder_var$, extensionRegistry);\n"
+                   "$set_has_field_bit_message$\n");
+  }
+  printer->Outdent();
+  printer->Print(variables_, "}\n");
+}
+
+void ImmutableMessageFieldGenerator::GenerateParsingDoneCode(
+    io::Printer* printer) const {
+  printer->Print(variables_,
+                 "if ($builder_var$ != null) {\n"
+                 "  $name$_ = $builder_var$.buildPartial();\n"
+                 "}\n");
 }
 
 void ImmutableMessageFieldGenerator::GenerateBuilderParsingCode(
@@ -717,6 +771,52 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderParsingCode(
                    "    extensionRegistry);\n"
                    "$set_oneof_case_message$;\n");
   }
+}
+
+void ImmutableMessageOneofFieldGenerator::GenerateParsingCode(
+    io::Printer* printer) const {
+  printer->Print(variables_,
+                 "if ($builder_var$ == null && !($has_oneof_case_message$)) {\n");
+  printer->Indent();
+  if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
+    printer->Print(variables_,
+                   "$oneof_name$_ = input.readGroup($number$, $parser_var$,\n"
+                   "    extensionRegistry);\n");
+  } else {
+    printer->Print(variables_,
+                   "$oneof_name$_ =\n"
+                   "    input.readMessage($parser_var$, extensionRegistry);\n");
+  }
+  printer->Print(variables_, "$set_oneof_case_message$;\n");
+  printer->Outdent();
+  printer->Print(variables_, "} else {\n");
+  printer->Indent();
+  printer->Print(variables_,
+                 "if ($builder_var$ == null) {\n"
+                 "  $builder_var$ = $type$.newBuilder();\n"
+                 "  $builder_var$.mergeFrom(($type$) $oneof_name$_);\n"
+                 "  $oneof_name$_ = null;\n"
+                 "}\n");
+  if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
+    printer->Print(variables_,
+                   "input.readGroup($number$, $builder_var$,\n"
+                   "    extensionRegistry);\n");
+  } else {
+    printer->Print(variables_,
+                   "input.readMessage($builder_var$, extensionRegistry);\n");
+  }
+  printer->Print(variables_,
+                 "$set_oneof_case_message$;\n");
+  printer->Outdent();
+  printer->Print(variables_, "}\n");
+}
+
+void ImmutableMessageOneofFieldGenerator::GenerateParsingDoneCode(
+    io::Printer* printer) const {
+  printer->Print(variables_,
+                 "if ($has_oneof_case_message$ && $builder_var$ != null) {\n"
+                 "  $oneof_name$_ = $builder_var$.buildPartial();\n"
+                 "}\n");
 }
 
 void ImmutableMessageOneofFieldGenerator::GenerateSerializationCode(
@@ -1268,6 +1368,32 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderParsingCode(
                               "ensure$capitalized_name$IsMutable();\n"
                               "$name$_.add(m);\n",
                               "$name$Builder_.addMessage(m);\n");
+}
+
+void RepeatedImmutableMessageFieldGenerator::GenerateParsingCode(
+    io::Printer* printer) const {
+  printer->Print(variables_,
+                 "if ($name$_.isEmpty()) {\n"
+                 "  $name$_ = new java.util.ArrayList<$type$>();\n"
+                 "}\n");
+  if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
+    printer->Print(variables_,
+                   "$name$_.add(\n"
+                   "    input.readGroup($number$, $parser_var$,\n"
+                   "        extensionRegistry));\n");
+  } else {
+    printer->Print(variables_,
+                   "$name$_.add(\n"
+                   "    input.readMessage($parser_var$, extensionRegistry));\n");
+  }
+}
+
+void RepeatedImmutableMessageFieldGenerator::GenerateParsingDoneCode(
+    io::Printer* printer) const {
+  printer->Print(variables_,
+                 "if (!$name$_.isEmpty()) {\n"
+                 "  $name$_ = java.util.Collections.unmodifiableList($name$_);\n"
+                 "}\n");
 }
 
 void RepeatedImmutableMessageFieldGenerator::GenerateSerializationCode(
