@@ -6,6 +6,8 @@ so that the integrity of the prebuilt tools is included in the release artifact.
 The checked in content is only here to allow load() statements in the sources to resolve, and permit local testing.
 """
 
+visibility("private")
+
 # An arbitrary version of protobuf that includes pre-built binaries.
 # See /examples/example_without_cc_toolchain which uses this for testing.
 # TODO: add some automation to update this version occasionally.

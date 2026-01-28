@@ -7,6 +7,10 @@
 #
 """Vendored version of bazel_features for protobuf, to keep a one-step setup"""
 
+visibility([
+    "//",
+])
+
 _PROTO_BAZEL_FEATURES = """bazel_features = struct(
   cc = struct(
     protobuf_on_allowlist = {protobuf_on_allowlist},

@@ -4,6 +4,8 @@ load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 load(":tool_integrity.bzl", "RELEASE_VERSION")
 
+visibility("private")
+
 def _protoc_authenticity_impl(ctx):
     # When this flag is disabled, then users have no way to replace the protoc binary with their own toolchain registration.
     # Therefore there's no validation to perform.

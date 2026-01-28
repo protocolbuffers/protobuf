@@ -5,6 +5,10 @@ load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
+visibility([
+    "//bazel",
+])
+
 _PY_PROTO_TOOLCHAIN = Label("//bazel/private:python_toolchain_type")
 
 _PyProtoInfo = provider(
