@@ -30,7 +30,7 @@ py_repositories()
 """
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("//bazel/private:proto_bazel_features.bzl", "proto_bazel_features")  # buildifier: disable=bzl-visibility
+load("//bazel/private/oss:proto_bazel_features.bzl", "proto_bazel_features")  # buildifier: disable=bzl-visibility
 load("//python/dist:python_downloads.bzl", "python_nuget_package", "python_source_archive")
 load("//python/dist:system_python.bzl", "system_python")
 
@@ -217,4 +217,4 @@ def protobuf_deps():
         cpu = "x86-64",
         sha256 = "4474c83c25625d93e772e926f95f4cd398a0abbb52793625fa30f39af3d2cc00",
     )
-    native.register_toolchains("//bazel/private/toolchains:all")
+    native.register_toolchains("//bazel/private/oss/toolchains:all")

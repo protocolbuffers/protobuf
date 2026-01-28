@@ -13,7 +13,7 @@ load("@rules_testing//lib:truth.bzl", "subjects")
 load("@rules_testing//lib:util.bzl", "util")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
-load("//bazel/private:bazel_java_proto_library_rule.bzl", java_proto_aspect = "bazel_java_proto_aspect")
+load("//bazel/private:java_proto_library.bzl", "java_proto_aspect")
 
 def java_proto_library_test_suite(name):
     util.helper_target(

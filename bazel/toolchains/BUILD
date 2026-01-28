@@ -54,7 +54,7 @@ config_setting(
     name = "prefer_prebuilt_protoc.flag_set",
     flag_values = {":prefer_prebuilt_protoc": "true"},
     visibility = [
-        "//bazel/private/toolchains/prebuilt:__pkg__",
+        "//bazel/private/oss/toolchains/prebuilt:__pkg__",
         # Needed by cc_toolchain to switch between minimal and full protoc
         "//:__pkg__",
     ],
@@ -69,5 +69,5 @@ bool_flag(
 config_setting(
     name = "allow_nonstandard_protoc.flag_set",
     flag_values = {":allow_nonstandard_protoc": "true"},
-    visibility = ["//bazel/private/toolchains/prebuilt:__pkg__"],
+    visibility = ["//bazel/private/oss/toolchains/prebuilt:__pkg__"],
 )

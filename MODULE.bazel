@@ -132,11 +132,11 @@ use_repo(
 
 # However this registration only matters if the config_setting for prefer_prebuilt_protoc is true,
 # using --@protobuf//bazel/toolchains:prefer_prebuilt_protoc
-register_toolchains("//bazel/private/toolchains/prebuilt:all")
+register_toolchains("//bazel/private/oss/toolchains/prebuilt:all")
 
 # From-source protobuf toolchains
 # Fallback if nothing is already registered
-register_toolchains("//bazel/private/toolchains:all")
+register_toolchains("//bazel/private/oss/toolchains:all")
 
 SUPPORTED_PYTHON_VERSIONS = [
     "3.10",
