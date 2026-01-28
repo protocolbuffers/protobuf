@@ -570,7 +570,7 @@ proto_lang_toolchain(
         # Set minimal protoc if prefer_prebuilt_protoc.flag_set is true since a prebuilt for protoc_minimal is not available
         # TODO: Add a flag to switch between minimal and full protoc with proto_lang_toolchain once we have a minimal protoc binary.
         # Setting this attribute to None will make the toolchain to pick the full protoc binary.
-        "//bazel/toolchains:prefer_prebuilt_protoc.flag_set": None,
+        "//bazel/flags:prefer_prebuilt_protoc.flag_set": None,
         "//conditions:default": "//src/google/protobuf/compiler:protoc_minimal",
     }),
     runtime = "//src/google/protobuf",
