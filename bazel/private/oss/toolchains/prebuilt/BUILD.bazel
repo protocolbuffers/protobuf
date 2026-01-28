@@ -12,7 +12,7 @@ load(":protoc_authenticity.bzl", "protoc_authenticity")
         name = "{}_toolchain".format(platform.replace("-", "_")),
         exec_compatible_with = meta["compatible_with"],
         # Toolchain resolution will only permit this toolchain if the config_setting for prefer_prebuilt_protoc is true,
-        target_settings = ["@com_google_protobuf//bazel/toolchains:prefer_prebuilt_protoc.flag_set"],
+        target_settings = ["@com_google_protobuf//bazel/flags:prefer_prebuilt_protoc.flag_set"],
         # Bazel does not follow this attribute during analysis, so the referenced repo
         # will only be fetched if this toolchain is selected.
         toolchain = "@prebuilt_protoc.{}//:prebuilt_protoc_toolchain".format(platform.replace("-", "_")),
@@ -25,7 +25,7 @@ load(":protoc_authenticity.bzl", "protoc_authenticity")
 protoc_authenticity(
     name = "authenticity_validation",
     fail_on_mismatch = select({
-        "//bazel/toolchains:allow_nonstandard_protoc.flag_set": False,
+        "//bazel/flags:allow_nonstandard_protoc.flag_set": False,
         "//conditions:default": True,
     }),
     visibility = ["//visibility:public"],
