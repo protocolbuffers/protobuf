@@ -20,5 +20,9 @@ class PreviouslyGeneratedClassTest extends TestBase
           $m = new \Previous\readonly();
           $this->assertTrue(true);
         ');
+
+        // If execution reaches this line, it means no exception was thrown.
+        // This assertion prevents PHPUnit from marking the test as risky.
+        $this->assertTrue(true);
     }
 }

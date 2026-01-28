@@ -9,7 +9,7 @@
     "php": ">=7.0.0"
   },
   "require-dev": {
-    "phpunit/phpunit": ">=5.0.0"
+    "phpunit/phpunit": ">=10.5.62 <11.0.0"
   },
   "suggest": {
     "ext-bcmath": "Need to support JSON deserialization"
