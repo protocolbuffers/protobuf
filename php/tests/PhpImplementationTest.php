@@ -576,7 +576,7 @@ class PhpImplementationTest extends TestBase
         $m = new TestMessage([$fieldName => null]);
     }
 
-    public function provideArrayConstructorWithNullValuesThrowsException()
+    public static function provideArrayConstructorWithNullValuesThrowsException()
     {
         return [
             ['optional_bool'],
