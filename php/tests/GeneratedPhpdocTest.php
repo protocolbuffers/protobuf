@@ -18,8 +18,8 @@ class GeneratedPhpdocTest extends TestBase
     {
         $class = new ReflectionClass('Foo\TestMessage');
         $doc = $class->getMethod('__construct')->getDocComment();
-        $this->assertStringContains('@param array $data', $doc);
-        $this->assertStringContains('@type int $optional_int32', $doc);
+        $this->assertStringContainsString('@param array $data', $doc);
+        $this->assertStringContainsString('@type int $optional_int32', $doc);
     }
 
     /**
@@ -34,7 +34,7 @@ class GeneratedPhpdocTest extends TestBase
         }
     }
 
-    public function providePhpDocForGettersAndSetters()
+    public static function providePhpDocForGettersAndSetters()
     {
         return [
             [

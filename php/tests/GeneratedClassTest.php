@@ -1964,15 +1964,15 @@ class GeneratedClassTest extends TestBase
         $this->assertEquals('     */', array_pop($commentLines));
         $docComment = implode("\n", $commentLines);
         // test special characters
-        $this->assertContains(";,/?:&=+$-_.!~*'()", $docComment);
+        $this->assertStringContainsString(";,/?:&=+$-_.!~*'()", $docComment);
         // test open doc comment
-        $this->assertContains('/*', $docComment);
+        $this->assertStringContainsString('/*', $docComment);
         // test escaped closed doc comment
-        $this->assertNotContains('*/', $docComment);
-        $this->assertContains('{@*}', $docComment);
+        $this->assertStringNotContainsString('*/', $docComment);
+        $this->assertStringContainsString('{@*}', $docComment);
         // test escaped at-sign
-        $this->assertContains('\@foo', $docComment);
+        $this->assertStringContainsString('\@foo', $docComment);
         // test forwardslash on new line
-        $this->assertContains("* /\n", $docComment);
+        $this->assertStringContainsString("* /\n", $docComment);
     }
 }
