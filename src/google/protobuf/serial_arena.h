@@ -201,6 +201,13 @@ class PROTOBUF_EXPORT SerialArena {
   bool MaybeAllocateAligned(size_t n, void** out) {
     ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
     ABSL_DCHECK_GE(limit_, ptr());
+    
+    // Security: Check for pointer arithmetic overflow
+    // ptr() + n could overflow if n is maliciously large
+    if (n > static_cast<size_t>(limit_ - ptr())) {
+      return false;
+    }
+    
     char* ret = ptr();
     if (ABSL_PREDICT_FALSE(limit_ - ret < static_cast<ptrdiff_t>(n))) {
       return false;

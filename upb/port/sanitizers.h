@@ -36,12 +36,9 @@ typedef struct {
 UPB_INLINE uint8_t _upb_Xsan_NextTag(upb_Xsan *xsan) {
 #if UPB_HWASAN
   xsan->state++;
-  if (xsan->state <= UPB_HWASAN_POISON_TAG) {
-    xsan->state = UPB_HWASAN_POISON_TAG + 1;
-  }
   return xsan->state;
 #else
-  UPB_UNUSED(xsan);
+  (void)xsan;
   return 0;
 #endif
 }
