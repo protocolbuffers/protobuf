@@ -88,3 +88,21 @@ jobs:
           bash: >
             cd examples/example_without_cc_toolchain;
             bazel build //... $BAZEL_FLAGS ${{ matrix.toolchain_resolution }};
+
+  bazel-tests:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+    name: Bazel Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v5
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: "bazel-tests"
+          bazel: test //bazel/...

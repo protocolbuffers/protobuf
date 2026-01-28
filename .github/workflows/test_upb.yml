@@ -54,7 +54,7 @@ jobs:
           image: ${{ matrix.config.image || 'us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:8.0.1-12e21b8dda91028bc14212a3ab582c7c4d149fac' }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel
-          bazel: test //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/... ${{ matrix.config.flags }}
+          bazel: test //benchmarks/... //lua/... //python/... //upb/... //upb_generator/... ${{ matrix.config.flags }}
           exclude-targets: ${{ matrix.config.exclude-targets }}
 
   windows:
