@@ -5,8 +5,8 @@ visibility([
 ])
 
 java_lite_proto_aspect_name = "//bazel/private:java_lite_proto_library.bzl%_java_lite_proto_aspect"
-java_proto_aspect_name = "//bazel/private:bazel_java_proto_library_rule.bzl%bazel_java_proto_aspect"
+java_proto_aspect_name = "//bazel/private:java_proto_library.bzl%java_proto_aspect"
 java_mutable_proto_aspect_names = [
-    "//bazel/private:google_java_mutable_proto_library.bzl%google_java_mutable_proto_aspect_services",
-    "//bazel/private:google_java_mutable_proto_library.bzl%google_java_mutable_proto_aspect_noservices",
+    "//bazel/private/google:java_mutable_proto_library.bzl%google_java_mutable_proto_aspect_services",
+    "//bazel/private/google:java_mutable_proto_library.bzl%google_java_mutable_proto_aspect_noservices",
 ]

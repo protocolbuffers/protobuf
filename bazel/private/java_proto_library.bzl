@@ -17,7 +17,7 @@ _JAVA_PROTO_TOOLCHAIN = Label("//bazel/private:java_toolchain_type")
 def _filter_provider(provider, *attrs):
     return [dep[provider] for attr in attrs for dep in attr if provider in dep]
 
-def _bazel_java_proto_aspect_impl(target, ctx):
+def _java_proto_aspect_impl(target, ctx):
     """Generates and compiles Java code for a proto_library.
 
     The function runs protobuf compiler on the `proto_library` target using
@@ -69,8 +69,8 @@ def _bazel_java_proto_aspect_impl(target, ctx):
         JavaProtoAspectInfo(jars = depset(jars, transitive = transitive_jars)),
     ]
 
-bazel_java_proto_aspect = aspect(
-    implementation = _bazel_java_proto_aspect_impl,
+java_proto_aspect = aspect(
+    implementation = _java_proto_aspect_impl,
     attrs = (
         toolchains.if_legacy_toolchain({
             "_aspect_java_proto_toolchain": attr.label(
@@ -88,7 +88,10 @@ bazel_java_proto_aspect = aspect(
     fragments = ["java"],
 )
 
-def bazel_java_proto_library_rule(ctx):
+# Legacy alias for the aspect.
+bazel_java_proto_aspect = java_proto_aspect
+
+def _java_proto_library_rule_impl(ctx):
     """Merges results of `java_proto_aspect` in `deps`.
 
     Args:
@@ -115,7 +118,7 @@ def bazel_java_proto_library_rule(ctx):
     ]
 
 java_proto_library = rule(
-    implementation = bazel_java_proto_library_rule,
+    implementation = _java_proto_library_rule_impl,
     doc = """
 <p>
 <code>java_proto_library</code> generates Java code from <code>.proto</code> files.
