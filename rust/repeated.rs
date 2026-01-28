@@ -76,10 +76,7 @@ impl<'msg, T> RepeatedView<'msg, T> {
     }
 }
 
-impl<'msg, T> RepeatedView<'msg, T>
-where
-    T: Singular + 'msg,
-{
+impl<'msg, T: Singular> RepeatedView<'msg, T> {
     /// Gets the length of the repeated field.
     #[inline]
     pub fn len(&self) -> usize {
@@ -139,10 +136,7 @@ impl<'msg, T> RepeatedMut<'msg, T> {
     }
 }
 
-impl<'msg, T> RepeatedMut<'msg, T>
-where
-    T: Singular + 'msg,
-{
+impl<'msg, T: Singular> RepeatedMut<'msg, T> {
     /// Gets the length of the repeated field.
     #[inline]
     pub fn len(&self) -> usize {
@@ -397,12 +391,9 @@ where
     }
 }
 
-impl<'msg, T> SealedInternal for RepeatedView<'msg, T> where T: Singular + 'msg {}
+impl<'msg, T: Singular> SealedInternal for RepeatedView<'msg, T> {}
 
-impl<'msg, T> AsView for RepeatedView<'msg, T>
-where
-    T: Singular + 'msg,
-{
+impl<'msg, T: Singular> AsView for RepeatedView<'msg, T> {
     type Proxied = Repeated<T>;
 
     #[inline]
@@ -411,10 +402,7 @@ where
     }
 }
 
-impl<'msg, T> IntoView<'msg> for RepeatedView<'msg, T>
-where
-    T: Singular + 'msg,
-{
+impl<'msg, T: Singular> IntoView<'msg> for RepeatedView<'msg, T> {
     #[inline]
     fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
     where
@@ -424,12 +412,9 @@ where
     }
 }
 
-impl<'msg, T> SealedInternal for RepeatedMut<'msg, T> where T: Singular + 'msg {}
+impl<'msg, T: Singular> SealedInternal for RepeatedMut<'msg, T> {}
 
-impl<'msg, T> AsView for RepeatedMut<'msg, T>
-where
-    T: Singular + 'msg,
-{
+impl<'msg, T: Singular> AsView for RepeatedMut<'msg, T> {
     type Proxied = Repeated<T>;
 
     #[inline]
@@ -438,10 +423,7 @@ where
     }
 }
 
-impl<'msg, T> IntoView<'msg> for RepeatedMut<'msg, T>
-where
-    T: Singular + 'msg,
-{
+impl<'msg, T: Singular> IntoView<'msg> for RepeatedMut<'msg, T> {
     #[inline]
     fn into_view<'shorter>(self) -> RepeatedView<'shorter, T>
     where
@@ -451,10 +433,7 @@ where
     }
 }
 
-impl<'msg, T> AsMut for RepeatedMut<'msg, T>
-where
-    T: Singular + 'msg,
-{
+impl<'msg, T: Singular> AsMut for RepeatedMut<'msg, T> {
     type MutProxied = Repeated<T>;
 
     #[inline]
@@ -463,10 +442,7 @@ where
     }
 }
 
-impl<'msg, T> IntoMut<'msg> for RepeatedMut<'msg, T>
-where
-    T: Singular + 'msg,
-{
+impl<'msg, T: Singular> IntoMut<'msg> for RepeatedMut<'msg, T> {
     #[inline]
     fn into_mut<'shorter>(self) -> RepeatedMut<'shorter, T>
     where
@@ -476,10 +452,7 @@ where
     }
 }
 
-impl<'msg, T> iter::Iterator for RepeatedIter<'msg, T>
-where
-    T: Singular + 'msg,
-{
+impl<'msg, T: Singular> iter::Iterator for RepeatedIter<'msg, T> {
     type Item = View<'msg, T>;
 
     #[inline]
@@ -506,10 +479,7 @@ impl<'msg, T: Singular> ExactSizeIterator for RepeatedIter<'msg, T> {
 // TODO: impl DoubleEndedIterator
 impl<'msg, T: Singular> FusedIterator for RepeatedIter<'msg, T> {}
 
-impl<'msg, T> iter::IntoIterator for RepeatedView<'msg, T>
-where
-    T: Singular + 'msg,
-{
+impl<'msg, T: Singular> iter::IntoIterator for RepeatedView<'msg, T> {
     type Item = View<'msg, T>;
     type IntoIter = RepeatedIter<'msg, T>;
 
@@ -518,10 +488,7 @@ where
     }
 }
 
-impl<'msg, T> iter::IntoIterator for &'_ RepeatedView<'msg, T>
-where
-    T: Singular + 'msg,
-{
+impl<'msg, T: Singular> iter::IntoIterator for &'_ RepeatedView<'msg, T> {
     type Item = View<'msg, T>;
     type IntoIter = RepeatedIter<'msg, T>;
 
@@ -530,10 +497,7 @@ where
     }
 }
 
-impl<'borrow, T> iter::IntoIterator for &'borrow RepeatedMut<'_, T>
-where
-    T: Singular + 'borrow,
-{
+impl<'borrow, T: Singular> iter::IntoIterator for &'borrow RepeatedMut<'_, T> {
     type Item = View<'borrow, T>;
     type IntoIter = RepeatedIter<'borrow, T>;
 
@@ -542,9 +506,9 @@ where
     }
 }
 
-impl<'msg, 'view, T, ViewT> Extend<ViewT> for RepeatedMut<'msg, T>
+impl<'msg, T, ViewT> Extend<ViewT> for RepeatedMut<'msg, T>
 where
-    T: Singular + 'view,
+    T: Singular,
     ViewT: IntoProxied<T>,
 {
     fn extend<I: IntoIterator<Item = ViewT>>(&mut self, iter: I) {
