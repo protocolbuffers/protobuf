@@ -71,6 +71,7 @@ absl::flat_hash_map<absl::string_view, std::string> FileVars(
        UniqueName("file_level_enum_descriptors", file, options)},
       {"file_level_service_descriptors",
        UniqueName("file_level_service_descriptors", file, options)},
+      {"static_init", UniqueName("static_init", file, options)},
   };
 }
 
@@ -839,7 +840,7 @@ void FileGenerator::GenerateStaticInitializer(io::Printer* p) {
           }}},
         R"cc(
           PROTOBUF_ATTRIBUTE_INIT_PRIORITY$priority$ static ::std::false_type
-              _static_init$priority$_ [[maybe_unused]] =
+              _$static_init$_$priority$_ [[maybe_unused]] =
                   ($expr$, ::std::false_type{});
         )cc");
     // Reset the vector because we might be generating many files.
