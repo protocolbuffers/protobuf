@@ -7,6 +7,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 #endregion
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -220,6 +221,192 @@ namespace Google.Protobuf
         }
 
         /// <summary>
+        /// Maps an arbitrary key to the appropriate type given a FieldDescriptor.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="keyDescriptor"></param>
+        /// <returns>the key parsed to the correct type provided by <paramref name="key"/> or null, if not possible.</returns>
+        /// <exception cref="InvalidOperationException">Thrown for impossible cases, e.g. when keyDescriptor is a message.</exception>
+        private object MapKeyToDescriptor(string key, FieldDescriptor keyDescriptor)
+        {
+            switch (keyDescriptor.FieldType)
+            {
+                case FieldType.Bool:
+                    {
+                        if (bool.TryParse(key, out var result))
+                        {
+                            return result;
+                        }
+                        return default;
+                    }
+                case FieldType.String:
+                    return key;
+                case FieldType.UInt64:
+                case FieldType.Fixed64:
+                    {
+                        if (ulong.TryParse(key, out var result))
+                        {
+                            return result;
+                        }
+                        return default;
+                    }
+                case FieldType.Fixed32:
+                case FieldType.UInt32:
+                    {
+                        if (uint.TryParse(key, out var result))
+                        {
+                            return result;
+                        }
+                        return default;
+                    }
+                case FieldType.SFixed64:
+                case FieldType.SInt64:
+                case FieldType.Int64:
+                    {
+                        if (long.TryParse(key, out var result))
+                        {
+                            return result;
+                        }
+                        return default;
+                    }
+                case FieldType.SInt32:
+                case FieldType.SFixed32:
+                case FieldType.Int32:
+                    {
+                        if (int.TryParse(key, out var result))
+                        {
+                            return result;
+                        }
+                        return default;
+                    }
+
+                case FieldType.Enum:
+                case FieldType.Group:
+                case FieldType.Message:
+                case FieldType.Bytes:
+                case FieldType.Double:
+                case FieldType.Float:
+                default:
+                    {
+                        // These cases are not valid keys anyway, and would throw problems way before reaching here.
+                        throw new InvalidOperationException("Impossible cases for map keys.");
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Merges all keys specified by a sub-tree from <paramref name="sourceMap"/> to <paramref name="destinationMap"/>.
+        ///
+        /// This method is only used for merging map fields.
+        /// </summary>
+        private void Merge(
+            Node node,
+            string path,
+            // mapField.IsMap is always true
+            FieldDescriptor mapField,
+            IDictionary sourceMap,
+            IDictionary destinationMap,
+            FieldMask.MergeOptions options)
+        {
+            var entryMessage = mapField.MessageType;
+            var keyDescriptor = entryMessage.FindFieldByName("key");
+            var valueDescriptor = entryMessage.FindFieldByName("value");
+
+            foreach (var entry in node.Children)
+            {
+                var originalKey = entry.Key;
+                var key = MapKeyToDescriptor(originalKey, keyDescriptor);
+                if (key == default)
+                {
+                    Debug.WriteLine($"Key {originalKey} is not valid for Field \"{valueDescriptor.FullName}\", which has key type: {keyDescriptor.FieldType}");
+                    continue;
+                }
+                // "sourceField" and "destinationField" are reflected via "valueDescriptor
+                var sourceField = sourceMap.Contains(key) ? sourceMap[key] : null;
+                var destinationField = destinationMap.Contains(key) ? destinationMap[key] : null;
+                if (entry.Value.Children.Count != 0)
+                {
+                    // here we check if the path is valid, by checking if the entry represents a message.
+                    // so a map<string, string> should never have a child node,
+                    // but a map<string, Message> can have a child.
+                    if (valueDescriptor.FieldType != FieldType.Message)
+                    {
+                        Debug.WriteLine($"Field \"{valueDescriptor.FullName}\" is not a message field and cannot have sub-fields.");
+                        continue;
+                    }
+
+                    if (sourceField == null
+                        && destinationField == null)
+                    {
+                        // If the message field is not present in both source and destination, skip recursing
+                        // so we don't create unnecessary empty messages.
+                        continue;
+                    }
+
+                    if (destinationField == null)
+                    {
+                        // If we have to merge but the destination does not contain the field, create it.
+                        destinationField = valueDescriptor.MessageType.Parser.CreateTemplate();
+                        destinationMap[key] = destinationField;
+                    }
+
+                    if (sourceField == null)
+                    {
+                        // If the message field is not present in the source but is in the destination, create an empty one
+                        // so we can properly handle child entries
+                        sourceField = valueDescriptor.MessageType.Parser.CreateTemplate();
+                    }
+
+                    var childPath = path.Length == 0 ? entry.Key : path + "." + entry.Key;
+                    Merge(entry.Value, childPath, (IMessage) sourceField, (IMessage) destinationField, options);
+                    continue;
+                }
+
+                if (valueDescriptor.FieldType == FieldType.Message && !valueDescriptor.MessageType.IsWrapperType)
+                {
+                    var sourceByteString = sourceField == null ? null : ((IMessage) sourceField).ToByteString();
+                    if (options.ReplaceMessageFields)
+                    {
+                        if (sourceByteString == null)
+                        {
+                            destinationMap.Remove(key);
+                        }
+                        else
+                        {
+                            destinationMap[key] = valueDescriptor.MessageType.Parser.ParseFrom(sourceByteString);
+                        }
+                    }
+                    else
+                    {
+                        if (sourceByteString != null)
+                        {
+                            if (destinationField != null)
+                            {
+                                ((IMessage) destinationField).MergeFrom(sourceByteString);
+                            }
+                            else
+                            {
+                                destinationMap[key] = valueDescriptor.MessageType.Parser.ParseFrom(sourceByteString);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (sourceField != null)
+                    {
+                        destinationMap[key] = sourceField;
+                    }
+                    else
+                    {
+                        // Since map fields can't have null values, we don't respect the ReplacePrimitiveFields option here.
+                        destinationMap.Remove(key);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Merges all fields specified by a sub-tree from <paramref name="source"/> to <paramref name="destination"/>.
         /// </summary>
         private void Merge(
@@ -249,7 +436,18 @@ namespace Google.Protobuf
                     if (field.IsRepeated
                         || field.FieldType != FieldType.Message)
                     {
-                        Debug.WriteLine($"Field \"{field.FullName}\" is not a singular message field and cannot have sub-fields.");
+                        if (field.IsMap)
+                        {
+                            // Use the Merge overload that accepts map fields.
+                            var sourceMap = (IDictionary) field.Accessor.GetValue(source);
+                            var destinationMap = (IDictionary) field.Accessor.GetValue(destination);
+
+                            var childPathForMap = path.Length == 0 ? entry.Key : path + "." + entry.Key;
+                            Merge(entry.Value, childPathForMap, field, sourceMap, destinationMap, options);
+                            continue;
+                        }
+
+                        Debug.WriteLine($"Field \"{field.FullName}\" is not a singular message field nor a map field and cannot have sub-fields.");
                         continue;
                     }
 
@@ -282,7 +480,7 @@ namespace Google.Protobuf
                     continue;
                 }
 
-                if (field.IsRepeated)
+                if (field.IsRepeated && !field.IsMap)
                 {
                     if (options.ReplaceRepeatedFields)
                     {
@@ -294,6 +492,61 @@ namespace Google.Protobuf
                     foreach (var element in sourceField)
                     {
                         destinationField.Add(element);
+                    }
+                }
+                else if (field.IsMap)
+                {
+                    var sourceMap = (IDictionary) field.Accessor.GetValue(source);
+                    var destinationMap = (IDictionary) field.Accessor.GetValue(destination);
+                    // fields always have an implicit Entry message.
+                    var entryMessage = field.MessageType;
+                    var valueDescriptor = entryMessage.FindFieldByName("value");
+                    var sourceEnumerator = sourceMap.GetEnumerator();
+                    while (sourceEnumerator.MoveNext())
+                    {
+                        var sourceEntry = sourceEnumerator.Entry;
+                        var key = sourceEntry.Key;
+                        // sourceValue is never null.
+                        var sourceValue = sourceMap[key];
+                        if (valueDescriptor.FieldType == FieldType.Message)
+                        {
+                            if (valueDescriptor.MessageType.IsWrapperType)
+                            {
+                                // Well-known wrapper types are represented as nullable primitive types, so we do not "merge" them.
+                                // Instead, any non-null value just overwrites the previous value directly.
+                                destinationMap[key] = sourceValue;
+                            }
+                            else
+                            {
+                                var sourceByteString = ((IMessage) sourceValue).ToByteString();
+                                if (destinationMap.Contains(key))
+                                {
+                                    if (options.ReplaceMessageFields)
+                                    {
+                                        destinationMap[key] = valueDescriptor.MessageType.Parser.ParseFrom(sourceByteString);
+                                    }
+                                    else
+                                    {
+                                        ((IMessage) destinationMap[key]).MergeFrom(sourceByteString);
+                                    }
+                                }
+                                else
+                                {
+                                    // if the destination map does not contain the key, just add it.
+                                    destinationMap[key] = valueDescriptor.MessageType.Parser.ParseFrom(sourceByteString);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // the destination is NOT a message, so it's always a primitive type.
+                            destinationMap[key] = sourceValue;
+                        }
+                    }
+                    // some enumerators implement IDisposable, for example: Dictionary<,>.Enumerator
+                    if (sourceEnumerator is IDisposable sourceEnumeratorDisposable)
+                    {
+                        sourceEnumeratorDisposable.Dispose();
                     }
                 }
                 else
