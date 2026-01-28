@@ -195,7 +195,8 @@ def _proto_gen_impl(ctx):
         generated_files.extend(outs)
 
         inputs = [src] + deps.to_list()
-        tools = [ctx.executable.protoc]
+        protoc = ctx.executable.protoc or _protoc_files_to_run(ctx)
+        tools = [protoc]
         if ctx.executable.plugin:
             plugin = ctx.executable.plugin
             lang = ctx.attr.plugin_language
@@ -218,14 +219,14 @@ def _proto_gen_impl(ctx):
                 tools = tools,
                 outputs = outs,
                 arguments = args + import_flags.to_list() + [src.path],
-                executable = ctx.executable.protoc,
+                executable = protoc,
                 mnemonic = "ProtoCompile",
                 use_default_shell_env = True,
             )
         else:
             for out in outs:
                 orig_command = " ".join(
-                    ["$(realpath %s)" % ctx.executable.protoc.path] + args +
+                    ["$(realpath %s)" % protoc.path] + args +
                     import_flags_real + [src.basename],
                 )
                 command = ";".join([
@@ -267,7 +268,6 @@ Args:
   deps: a list of dependency labels; must be other proto libraries.
   enable_editions: if true, sets the --experimental_editions flag.
   includes: a list of include paths to .proto files.
-  protoc: the label of the protocol compiler to generate the sources.
   plugin: the label of the protocol compiler plugin to be passed to the protocol
     compiler.
   plugin_language: the language of the generated sources
@@ -288,7 +288,7 @@ _proto_gen = rule(
             cfg = "exec",
             executable = True,
             allow_single_file = True,
-            mandatory = True,
+            mandatory = False,
         ),
         "plugin": attr.label(
             cfg = "exec",
@@ -302,8 +302,10 @@ _proto_gen = rule(
         "out_type": attr.string(
             default = "all",
         ),
-    },
+    } | _PROTOC_ATTRS,
     implementation = _proto_gen_impl,
+    fragments = _PROTOC_FRAGMENTS,
+    toolchains = _PROTOC_TOOLCHAINS,
 )
 
 def _internal_gen_well_known_protos_java_impl(ctx):
@@ -434,7 +436,7 @@ def internal_objc_proto_library(
         proto_deps = [],
         includes = ["."],
         default_runtime = Label("//:protobuf_objc"),
-        protoc = Label("//:protoc"),
+        protoc = None,
         testonly = None,
         visibility = ["//visibility:public"],
         **kwargs):
@@ -522,7 +524,7 @@ def internal_ruby_proto_library(
         deps = [],
         includes = ["."],
         default_runtime = "@com_google_protobuf//ruby:protobuf",
-        protoc = "@com_google_protobuf//:protoc",
+        protoc = None,
         testonly = None,
         visibility = ["//visibility:public"],
         **kwargs):
@@ -577,7 +579,7 @@ def internal_rbs_proto_library(
         srcs = [],
         deps = [],
         includes = ["."],
-        protoc = "@com_google_protobuf//:protoc",
+        protoc = None,
         testonly = None,
         visibility = ["//visibility:public"],
         **kwargs):
@@ -640,7 +642,7 @@ def internal_py_proto_library(
         py_extra_srcs = [],
         include = None,
         default_runtime = Label("//:protobuf_python"),
-        protoc = Label("//:protoc"),
+        protoc = None,
         use_grpc_plugin = False,
         testonly = None,
         **kargs):
@@ -716,7 +718,7 @@ def _source_proto_library(
         outs = [],
         lang = None,
         includes = ["."],
-        protoc = Label("//:protoc"),
+        protoc = None,
         testonly = None,
         visibility = ["//visibility:public"],
         enable_editions = False,

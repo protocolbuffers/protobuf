@@ -671,7 +671,6 @@ internal_py_proto_library(
     testonly = 1,
     srcs = [":generated_protos"],
     default_runtime = "",
-    protoc = ":protoc",
     deps = ["//python:python_common_test_protos"],
 )
 
