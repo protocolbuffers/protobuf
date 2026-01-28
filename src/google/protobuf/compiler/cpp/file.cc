@@ -71,6 +71,7 @@ absl::flat_hash_map<absl::string_view, std::string> FileVars(
        UniqueName("file_level_enum_descriptors", file, options)},
       {"file_level_service_descriptors",
        UniqueName("file_level_service_descriptors", file, options)},
+      {"file_default_instances", UniqueName("file_default_instances", file, options)},
   };
 }
 
@@ -843,7 +844,7 @@ void FileGenerator::GenerateSource(io::Printer* p) {
         },
         R"cc(
           $weak_defaults$;
-          static const ::_pb::Message* file_default_instances[] = {
+          static const ::_pb::Message* $file_default_instances$[] = {
               $defaults$,
           };
         )cc");
@@ -1115,7 +1116,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
           };
         )cc");
     constexpr absl::string_view file_default_instances_code = R"cc(
-      static const ::_pb::Message* $nonnull$ const file_default_instances[] = {
+      static const ::_pb::Message* $nonnull$ const $file_default_instances$[] = {
           $defaults$,
       };
     )cc";
@@ -1143,7 +1144,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
       const ::uint32_t $tablename$::offsets[1] = {};
       static constexpr ::_pbi::MigrationSchema* $nullable$ schemas = nullptr;
       static constexpr ::_pb::Message* $nonnull$ const* $nullable$
-          file_default_instances = nullptr;
+          $file_default_instances$ = nullptr;
     )cc");
   }
 
@@ -1271,7 +1272,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
             $num_deps$,
             $num_msgs$,
             schemas,
-            file_default_instances,
+            $file_default_instances$,
             $tablename$::offsets,
             $file_level_enum_descriptors$,
             $file_level_service_descriptors$,
