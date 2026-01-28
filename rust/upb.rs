@@ -9,11 +9,10 @@
 
 use crate::__internal::{MatcherEq, Private, SealedInternal};
 use crate::{
-    AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapKey, MapMut,
-    MapValue, MapView, MergeFrom, Message, MessageMut, MessageMutInterop, MessageView,
-    MessageViewInterop, Mut, OwnedMessageInterop, ParseError, ProtoBytes, ProtoStr, ProtoString,
-    Proxied, Repeated, RepeatedMut, RepeatedView, Serialize, SerializeError, Singular, TakeFrom,
-    View,
+    AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapValue,
+    MapView, MergeFrom, Message, MessageMut, MessageMutInterop, MessageView, MessageViewInterop,
+    Mut, OwnedMessageInterop, ParseError, ProtoBytes, ProtoStr, ProtoString, Proxied, Repeated,
+    RepeatedMut, RepeatedView, Serialize, SerializeError, Singular, TakeFrom, View,
 };
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -44,6 +43,12 @@ pub fn debug_string<T: UpbGetMessagePtr>(msg: &T) -> String {
 pub(crate) type RawRepeatedField = upb::RawArray;
 pub(crate) type RawMap = upb::RawMap;
 pub(crate) type PtrAndLen = upb::StringView;
+
+/// A trait implemented by types which are allowed as keys in maps.
+/// This is all types for fields except for repeated, maps, bytes, messages, enums and floating point types.
+/// This trait is defined separately in cpp.rs and upb.rs to be able to set better subtrait bounds.
+#[doc(hidden)]
+pub trait MapKey: Proxied + EntityType + UpbTypeConversions<Self::Tag> + SealedInternal {}
 
 // This struct represents a raw minitable pointer. We need it to be Send and Sync so that we can
 // store it in a static OnceLock for lazy initialization of minitables. It should not be used for
@@ -555,7 +560,7 @@ pub fn empty_array<T: Singular>() -> RepeatedView<'static, T> {
 pub fn empty_map<K, V>() -> MapView<'static, K, V>
 where
     K: MapKey,
-    V: MapValue<K>,
+    V: MapValue,
 {
     // TODO: Consider creating a static empty map in C.
 
@@ -981,43 +986,42 @@ impl RawMapIter {
     }
 }
 
-impl<Key, MessageType> MapValue<Key> for MessageType
+impl<MessageType> MapValue for MessageType
 where
-    Key: MapKey + EntityType + UpbTypeConversions<Key::Tag>,
     Self: Proxied + EntityType + UpbTypeConversions<<Self as EntityType>::Tag>,
 {
-    fn map_new(_private: Private) -> Map<Key, Self> {
+    fn map_new<K: MapKey>(_private: Private) -> Map<K, Self> {
         let arena = Arena::new();
-        let raw = unsafe { upb_Map_New(arena.raw(), Key::upb_type(), Self::upb_type()) };
+        let raw = unsafe { upb_Map_New(arena.raw(), K::upb_type(), Self::upb_type()) };
 
         Map::from_inner(Private, InnerMap::new(raw, arena))
     }
 
-    unsafe fn map_free(_private: Private, _map: &mut Map<Key, Self>) {
+    unsafe fn map_free<K: MapKey>(_private: Private, _map: &mut Map<K, Self>) {
         // No-op: the memory will be dropped by the arena.
     }
 
-    fn map_clear(_private: Private, mut map: MapMut<Key, Self>) {
+    fn map_clear<K: MapKey>(_private: Private, mut map: MapMut<K, Self>) {
         unsafe {
             upb_Map_Clear(map.as_raw(Private));
         }
     }
 
-    fn map_len(_private: Private, map: MapView<Key, Self>) -> usize {
+    fn map_len<K: MapKey>(_private: Private, map: MapView<K, Self>) -> usize {
         unsafe { upb_Map_Size(map.as_raw(Private)) }
     }
 
-    fn map_insert(
+    fn map_insert<K: MapKey>(
         _private: Private,
-        mut map: MapMut<Key, Self>,
-        key: View<'_, Key>,
+        mut map: MapMut<K, Self>,
+        key: View<'_, K>,
         value: impl IntoProxied<Self>,
     ) -> bool {
         let arena = map.inner(Private).raw_arena();
         let insert_status = unsafe {
             upb_Map_Insert(
                 map.as_raw(Private),
-                Key::to_message_value(key),
+                K::to_message_value(key),
                 Self::into_message_value_fuse_if_required(arena, value.into_proxied(Private)),
                 arena,
             )
@@ -1031,52 +1035,55 @@ where
         }
     }
 
-    fn map_get<'a>(
+    fn map_get<'a, K: MapKey>(
         _private: Private,
-        map: MapView<'a, Key, Self>,
-        key: View<'_, Key>,
+        map: MapView<'a, K, Self>,
+        key: View<'_, K>,
     ) -> Option<View<'a, Self>> {
         let mut val = MaybeUninit::uninit();
-        let found = unsafe {
-            upb_Map_Get(map.as_raw(Private), Key::to_message_value(key), val.as_mut_ptr())
-        };
+        let found =
+            unsafe { upb_Map_Get(map.as_raw(Private), K::to_message_value(key), val.as_mut_ptr()) };
         if !found {
             return None;
         }
         Some(unsafe { Self::from_message_value(val.assume_init()) })
     }
 
-    fn map_get_mut<'a>(
+    fn map_get_mut<'a, K: MapKey>(
         _private: Private,
-        mut map: MapMut<'a, Key, Self>,
-        key: View<'_, Key>,
+        mut map: MapMut<'a, K, Self>,
+        key: View<'_, K>,
     ) -> Option<Mut<'a, Self>>
     where
         Self: Message,
     {
         // SAFETY: The map is valid as promised by the caller.
-        let val = unsafe { upb_Map_GetMutable(map.as_raw(Private), Key::to_message_value(key)) };
+        let val = unsafe { upb_Map_GetMutable(map.as_raw(Private), K::to_message_value(key)) };
         // SAFETY: The lifetime of the MapMut is guaranteed to outlive the returned Mut.
         NonNull::new(val).map(|msg| unsafe { Self::from_message_mut(msg, map.arena(Private)) })
     }
 
-    fn map_remove(_private: Private, mut map: MapMut<Key, Self>, key: View<'_, Key>) -> bool {
-        unsafe { upb_Map_Delete(map.as_raw(Private), Key::to_message_value(key), ptr::null_mut()) }
+    fn map_remove<K: MapKey>(
+        _private: Private,
+        mut map: MapMut<K, Self>,
+        key: View<'_, K>,
+    ) -> bool {
+        unsafe { upb_Map_Delete(map.as_raw(Private), K::to_message_value(key), ptr::null_mut()) }
     }
-    fn map_iter(_private: Private, map: MapView<Key, Self>) -> MapIter<Key, Self> {
+    fn map_iter<K: MapKey>(_private: Private, map: MapView<K, Self>) -> MapIter<K, Self> {
         // SAFETY: MapView<'_,..>> guarantees its RawMap outlives '_.
         unsafe { MapIter::from_raw(Private, RawMapIter::new(map.as_raw(Private))) }
     }
 
-    fn map_iter_next<'a>(
+    fn map_iter_next<'a, K: MapKey>(
         _private: Private,
-        iter: &mut MapIter<'a, Key, Self>,
-    ) -> Option<(View<'a, Key>, View<'a, Self>)> {
+        iter: &mut MapIter<'a, K, Self>,
+    ) -> Option<(View<'a, K>, View<'a, Self>)> {
         // SAFETY: MapIter<'a, ..> guarantees its RawMapIter outlives 'a.
         unsafe { iter.as_raw_mut(Private).next_unchecked() }
             // SAFETY: MapIter<K, V> returns key and values message values
             //         with the variants for K and V active.
-            .map(|(k, v)| unsafe { (Key::from_message_value(k), Self::from_message_value(v)) })
+            .map(|(k, v)| unsafe { (K::from_message_value(k), Self::from_message_value(v)) })
     }
 }
 
@@ -1385,7 +1392,7 @@ pub unsafe fn message_set_map_field<
     'msg,
     P: Message + AssociatedMiniTable,
     K: MapKey,
-    V: MapValue<K>,
+    V: MapValue,
 >(
     parent: MessageMutInner<'msg, P>,
     index: u32,
