@@ -1,5 +1,4 @@
 Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                        # Should have failed to parse, but didn't.
-Recommended.Editions.ProtobufInput.RejectInvalidUtf8.String.Extension                                             # Should have failed to parse, but didn't.
 # TODO: Uncomment once conformance tests can express failures that are not expected to be fixed.
 # Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.MapKey                                         # Should have failed to parse, but didn't.
 # Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.MapValue.                                      # Should have failed to parse, but didn't.
