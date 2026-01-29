@@ -1,5 +1,7 @@
 "List of published platforms on protobuf GitHub releases"
 
+visibility("private")
+
 # Keys are chosen to match the filenames published on protocolbuffers/protobuf releases
 # NB: keys in this list are nearly identical to /toolchain/BUILD.bazel#TOOLCHAINS
 # Perhaps we should share code.

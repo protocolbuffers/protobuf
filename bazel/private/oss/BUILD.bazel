@@ -31,7 +31,7 @@ bzl_library(
 bzl_library(
     name = "py_proto_library_bzl",
     srcs = ["py_proto_library.bzl"],
-    visibility = ["//visibility:public"],
+    visibility = ["//bazel:__pkg__"],
     deps = [
         "//bazel/common:proto_common_bzl",
         "//bazel/common:proto_info_bzl",
