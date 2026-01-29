@@ -1760,6 +1760,107 @@ class JsonFormatTest(JsonFormatBase):
         '{"payload": {}, "child": {"child":{}}}', message, max_recursion_depth=3
     )
 
+  def testAnyRecursionDepthEnforcement(self):
+    """Test that nested Any messages respect max_recursion_depth limit."""
+    # Test that deeply nested Any messages raise ParseError instead of
+    # bypassing the recursion limit. This prevents DoS via nested Any.
+    message = any_pb2.Any()
+
+    # Create nested Any structure that should exceed depth limit
+    # With max_recursion_depth=5, we can nest 4 Any messages
+    # (depth 1 = outer Any, depth 2-4 = nested Anys, depth 5 = final value)
+    nested_any = {
+        '@type': 'type.googleapis.com/google.protobuf.Any',
+        'value': {
+            '@type': 'type.googleapis.com/google.protobuf.Any',
+            'value': {
+                '@type': 'type.googleapis.com/google.protobuf.Any',
+                'value': {
+                    '@type': 'type.googleapis.com/google.protobuf.Any',
+                    'value': {
+                        '@type': 'type.googleapis.com/google.protobuf.Any',
+                        'value': {},
+                    },
+                },
+            },
+        },
+    }
+
+    # Should raise ParseError due to exceeding max depth, not RecursionError
+    self.assertRaisesRegex(
+        json_format.ParseError,
+        'Message too deep. Max recursion depth is 5',
+        json_format.ParseDict,
+        nested_any,
+        message,
+        max_recursion_depth=5,
+    )
+
+    # Verify that Any messages within the limit can be parsed successfully
+    # With max_recursion_depth=5, we can nest up to 4 Any messages
+    shallow_any = {
+        '@type': 'type.googleapis.com/google.protobuf.Any',
+        'value': {
+            '@type': 'type.googleapis.com/google.protobuf.Any',
+            'value': {
+                '@type': 'type.googleapis.com/google.protobuf.Any',
+                'value': {
+                    '@type': 'type.googleapis.com/google.protobuf.Any',
+                    'value': {},
+                },
+            },
+        },
+    }
+    json_format.ParseDict(shallow_any, message, max_recursion_depth=5)
+
+  def testAnyRecursionDepthBoundary(self):
+    """Test recursion depth boundary behavior (exclusive upper limit)."""
+    message = any_pb2.Any()
+
+    # Create nested Any at depth exactly 4 (should succeed with max_recursion_depth=5)
+    depth_4_any = {
+        '@type': 'type.googleapis.com/google.protobuf.Any',
+        'value': {
+            '@type': 'type.googleapis.com/google.protobuf.Any',
+            'value': {
+                '@type': 'type.googleapis.com/google.protobuf.Any',
+                'value': {
+                    '@type': 'type.googleapis.com/google.protobuf.Any',
+                    'value': {},
+                },
+            },
+        },
+    }
+    # This should succeed: depth 4 < max_recursion_depth 5
+    json_format.ParseDict(depth_4_any, message, max_recursion_depth=5)
+
+    # Create nested Any at depth exactly 5 (should fail with max_recursion_depth=5)
+    depth_5_any = {
+        '@type': 'type.googleapis.com/google.protobuf.Any',
+        'value': {
+            '@type': 'type.googleapis.com/google.protobuf.Any',
+            'value': {
+                '@type': 'type.googleapis.com/google.protobuf.Any',
+                'value': {
+                    '@type': 'type.googleapis.com/google.protobuf.Any',
+                    'value': {
+                        '@type': 'type.googleapis.com/google.protobuf.Any',
+                        'value': {},
+                    },
+                },
+            },
+        },
+    }
+    # This should fail: depth 5 == max_recursion_depth 5 (exclusive limit)
+    self.assertRaisesRegex(
+        json_format.ParseError,
+        'Message too deep. Max recursion depth is 5',
+        json_format.ParseDict,
+        depth_5_any,
+        message,
+        max_recursion_depth=5,
+    )
+
   def testJsonNameConflictSerilize(self):
     message = more_messages_pb2.ConflictJsonName(value=2)
     self.assertEqual(
