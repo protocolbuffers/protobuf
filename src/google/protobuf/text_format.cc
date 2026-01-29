@@ -26,9 +26,11 @@
 #include <utility>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/base/macros.h"
 #include "absl/container/btree_set.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/cord.h"
@@ -38,7 +40,9 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
+#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
 #include "google/protobuf/any.h"
@@ -53,7 +57,9 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/reflection_mode.h"
+#include "google/protobuf/reflection_visit_fields.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -173,6 +179,189 @@ PROTOBUF_EXPORT std::string Utf8Format(const Message& message) {
                                     FieldReporterLevel::kUtf8Format);
 }
 
+
+namespace {
+
+enum class AbslFlagFormat {
+  kError,
+  kTextFormat,
+  kBase64Serialized,
+  kBase64TextFormat,
+};
+
+struct AbslFlagHeader {
+  AbslFlagFormat format = AbslFlagFormat::kError;
+  absl::string_view format_name;
+  std::vector<absl::string_view> options;
+  bool uses_dead_char = false;
+  bool uses_prefix = false;
+};
+
+AbslFlagHeader ConsumeAbslFlagHeader(absl::string_view& text) {
+  AbslFlagHeader header;
+
+  if (text.empty()) {
+    // Whatever format is fine.
+    header.format = AbslFlagFormat::kTextFormat;
+    return header;
+  }
+
+  if (absl::ConsumePrefix(&text, ":")) {
+    header.uses_dead_char = true;
+  }
+
+  auto pos = text.find(':');
+  if (pos == text.npos) {
+    header.format = AbslFlagFormat::kTextFormat;
+    return header;
+  }
+
+  if (std::vector<absl::string_view> parts =
+          absl::StrSplit(text.substr(0, pos), ',');
+      !parts.empty()) {
+    header.format_name = parts[0];
+    parts.erase(parts.begin());
+    header.options = std::move(parts);
+  }
+
+  if (header.format_name == "text") {
+    header.uses_prefix = true;
+    header.format = AbslFlagFormat::kTextFormat;
+  } else if (header.format_name == "base64text") {
+    header.uses_prefix = true;
+    header.format = AbslFlagFormat::kBase64TextFormat;
+  } else if (header.format_name == "base64serialized") {
+    header.uses_prefix = true;
+    header.format = AbslFlagFormat::kBase64Serialized;
+  } else {
+    header.format = header.uses_dead_char ? AbslFlagFormat::kError
+                                          : AbslFlagFormat::kTextFormat;
+  }
+
+  if (header.uses_prefix) {
+    text.remove_prefix(pos + 1);
+  }
+  return header;
+}
+
+}  // namespace
+
+bool Message::AbslParseFlagImpl(absl::string_view text, std::string& error) {
+  Clear();
+
+  auto header = ConsumeAbslFlagHeader(text);
+
+  // If we have a prefix without a dead char, verify that the message does not
+  // have a field by that name as that would be ambiguous.
+  if (!header.uses_dead_char && header.uses_prefix &&
+      GetDescriptor()->FindFieldByName(header.format_name) != nullptr) {
+    error = absl::StrFormat(
+        "Prefix `%s:` used is ambiguous with message fields. If you meant to "
+        "use this prefix, use `:%s:` instead. If you meant to use text "
+        "format, use `:text:` as a prefix.",
+        header.format_name, header.format_name);
+    return false;
+  }
+
+  if (!header.uses_dead_char && header.uses_prefix && !header.options.empty()) {
+    error = absl::StrFormat(
+        "Format options are only allowed with delimited format specifier. Use "
+        "`:%1$s:` instead of `%1$s:`.",
+        absl::StrCat(header.format_name, ",",
+                     absl::StrJoin(header.options, ",")));
+    return false;
+  }
+
+  std::string unescaped;
+  const auto unescape = [&] {
+    if (!absl::Base64Unescape(text, &unescaped)) {
+      error = absl::StrFormat("Invalid base64 input.");
+      return false;
+    }
+    text = unescaped;
+    return true;
+  };
+
+  const auto verify_options =
+      [&](std::initializer_list<absl::string_view> valid_options) -> bool {
+    for (absl::string_view o : header.options) {
+      if (!absl::c_linear_search(valid_options, o)) {
+        error = absl::StrFormat("Unknown option `%s` for format `%s`.", o,
+                                header.format_name);
+        return false;
+      }
+    }
+    return true;
+  };
+
+  switch (header.format) {
+    case AbslFlagFormat::kError:
+      error = absl::StrFormat("Unrecognized format prefix `%s`.",
+                              header.format_name);
+      return false;
+
+    case AbslFlagFormat::kBase64TextFormat:
+      if (!unescape()) return false;
+      [[fallthrough]];
+    case AbslFlagFormat::kTextFormat: {
+      static constexpr absl::string_view kIgnoreUnknown = "ignore_unknown";
+      if (!verify_options({kIgnoreUnknown})) return false;
+      TextFormat::Parser parser;
+      struct StringErrorCollector : io::ErrorCollector {
+        explicit StringErrorCollector(std::string& error) : error(error) {}
+        std::string& error;
+        void RecordError(int line, io::ColumnNumber column,
+                         absl::string_view message) override {
+          error = absl::StrFormat("(Line %v, Column %v): %v", line, column,
+                                  message);
+        }
+      } collector(error);
+      if (absl::c_linear_search(header.options, kIgnoreUnknown)) {
+        // DO NOT SUBMIT: Test this
+        parser.AllowUnknownField(true);
+        parser.AllowUnknownExtension(true);
+      }
+      parser.RecordErrorsTo(&collector);
+      return parser.ParseFromString(text, this);
+    }
+
+    case AbslFlagFormat::kBase64Serialized:
+      if (!verify_options({})) return false;
+      return unescape() && ParseFromString(text);
+
+    default:
+      internal::Unreachable();
+  }
+}
+
+std::string Message::AbslUnparseFlagImpl() const {
+  bool has_ufs = !GetReflection()->GetUnknownFields(*this).empty();
+  internal::VisitMessageFields(*this, [&](const auto& msg) {
+    has_ufs = has_ufs || !msg.GetReflection()->GetUnknownFields(msg).empty();
+  });
+
+  if (has_ufs) {
+    // We can't use text format because it won't round trip
+    // Use binary instead.
+    return absl::StrCat(":base64serialized:",
+                        absl::Base64Escape(SerializeAsString()));
+  } else {
+    TextFormat::Printer printer;
+    printer.SetSingleLineMode(true);
+    printer.SetUseShortRepeatedPrimitives(true);
+    std::string str;
+    // PrintToString can't really fail.
+    (void)printer.PrintToString(*this, &str);
+
+    // If completely empty, just return the empty string.
+    // It is usually the default and nicer to read.
+    if (str.empty()) {
+      return str;
+    }
+
+    return absl::StrCat(":text:", str);
+  }
+}
 
 // ===========================================================================
 // Implementation of the parse information tree class.

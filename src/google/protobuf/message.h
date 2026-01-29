@@ -387,6 +387,14 @@ class PROTOBUF_EXPORT Message : public MessageLite {
     return GetMetadata().reflection;
   }
 
+  friend bool AbslParseFlag(absl::string_view text, Message* msg,
+                            std::string* error) {
+    return msg->AbslParseFlagImpl(text, *error);
+  }
+  friend std::string AbslUnparseFlag(const Message& msg) {
+    return msg.AbslUnparseFlagImpl();
+  }
+
  protected:
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
   constexpr Message() {}
@@ -400,6 +408,9 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   // For CODE_SIZE types
   static bool IsInitializedImpl(const MessageLite&);
+
+  bool AbslParseFlagImpl(absl::string_view text, std::string& error);
+  std::string AbslUnparseFlagImpl() const;
 
   size_t ComputeUnknownFieldsSize(
       size_t total_size, const internal::CachedSize* cached_size) const;
