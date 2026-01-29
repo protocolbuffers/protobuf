@@ -784,7 +784,7 @@ void OnShutdown(void (*func)()) {
 
 void OnShutdownRun(void (*f)(const void*), const void* arg) {
   auto shutdown_data = ShutdownData::get();
-  absl::MutexLock lock(&shutdown_data->mutex);
+  absl::MutexLock lock(shutdown_data->mutex);
   shutdown_data->functions.push_back(std::make_pair(f, arg));
 }
 
