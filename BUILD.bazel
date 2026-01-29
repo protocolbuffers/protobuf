@@ -273,6 +273,12 @@ alias(
 )
 
 alias(
+    name = "timestamp_upb_reflection_proto",
+    actual = "//src/google/protobuf:timestamp_upb_reflection_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
     name = "type_upb_reflection_proto",
     actual = "//src/google/protobuf:type_upb_reflection_proto",
     visibility = ["//visibility:public"],
