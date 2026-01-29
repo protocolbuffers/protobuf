@@ -18,6 +18,7 @@ use write::{Clear, ClearAndParse, CopyFrom, MergeFrom, TakeFrom};
 /// A trait that all generated owned message types implement.
 pub trait Message: SealedInternal
   + MutProxied
+  + for<'a> MutProxied<View<'a> = Self::MessageView<'a>, Mut<'a> = Self::MessageMut<'a>>
   // Create traits:
   + Parse + Default
   // Read traits:
@@ -31,6 +32,15 @@ pub trait Message: SealedInternal
   // C++ Interop:
   + OwnedMessageInterop
 {
+    /// The same type as `<Self as Proxied>::View`. This is defined as a second redundant trait
+    /// bound because it helps the compiler resolve generic bounds in some cases.
+    #[doc(hidden)]
+    type MessageView<'msg>: MessageView<'msg, Message = Self>;
+
+    /// The same type as `<Self as Proxied>::Mut`. This is defined as a second redundant trait
+    /// bound because it helps the compiler resolve generic bounds in some cases.
+    #[doc(hidden)]
+    type MessageMut<'msg>: MessageMut<'msg, Message = Self>;
 }
 
 /// A trait that all generated message views implement.
@@ -44,7 +54,7 @@ pub trait MessageView<'msg>: SealedInternal
     // C++ Interop:
     + MessageViewInterop<'msg>
 {
-    #[doc(hidden)]
+    /// The owned message type that this is a view of.
     type Message: Message;
 }
 
@@ -61,7 +71,7 @@ pub trait MessageMut<'msg>: SealedInternal
     // C++ Interop:
     + MessageMutInterop<'msg>
 {
-    #[doc(hidden)]
+    /// The owned message type that this is a mut of.
     type Message: Message;
 }
 
