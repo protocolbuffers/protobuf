@@ -81,3 +81,8 @@ filegroup(
         "//bazel/private:__pkg__",
     ],
 )
+
+alias(
+    name = "prefer_prebuilt_protoc",
+    actual = "//bazel/flags:prefer_prebuilt_protoc",
+)
