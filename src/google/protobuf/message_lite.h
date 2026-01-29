@@ -105,26 +105,22 @@ class MessageCreator {
   };
 
   constexpr MessageCreator()
-      : allocation_size_(), tag_(), alignment_(), arena_bits_(uintptr_t{}) {}
+      : allocation_size_(), tag_(), alignment_(), func_(nullptr) {}
 
   static constexpr MessageCreator ZeroInit(uint32_t allocation_size,
-                                           uint8_t alignment,
-                                           uintptr_t arena_bits = 0) {
+                                           uint8_t alignment) {
     MessageCreator out;
     out.allocation_size_ = allocation_size;
     out.tag_ = kZeroInit;
     out.alignment_ = alignment;
-    out.arena_bits_ = arena_bits;
     return out;
   }
   static constexpr MessageCreator CopyInit(uint32_t allocation_size,
-                                           uint8_t alignment,
-                                           uintptr_t arena_bits = 0) {
+                                           uint8_t alignment) {
     MessageCreator out;
     out.allocation_size_ = allocation_size;
     out.tag_ = kMemcpy;
     out.alignment_ = alignment;
-    out.arena_bits_ = arena_bits;
     return out;
   }
   constexpr MessageCreator(Func func, uint32_t allocation_size,
@@ -150,19 +146,11 @@ class MessageCreator {
 
   uint8_t alignment() const { return alignment_; }
 
-  uintptr_t arena_bits() const {
-    ABSL_DCHECK_NE(+tag(), +kFunc);
-    return arena_bits_;
-  }
-
  private:
   uint32_t allocation_size_;
   Tag tag_;
   uint8_t alignment_;
-  union {
-    Func func_;
-    uintptr_t arena_bits_;
-  };
+  Func func_;
 };
 
 // Allow easy change to regular int on platforms where the atomic might have a
@@ -1476,38 +1464,6 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
       memcpy(dst + size - 64, src + size - 64, 64);
     }
   }
-
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-  ABSL_DCHECK_EQ(arena_bits(), uintptr_t{0});
-#else
-  if (arena_bits() != 0) {
-    if (as_tag == kZeroInit) {
-      PROTOBUF_DEBUG_COUNTER("MessageCreator.ZeroArena").Inc();
-    } else {
-      PROTOBUF_DEBUG_COUNTER("MessageCreator.McpyArena").Inc();
-    }
-  } else {
-    if (as_tag == kZeroInit) {
-      PROTOBUF_DEBUG_COUNTER("MessageCreator.Zero").Inc();
-    } else {
-      PROTOBUF_DEBUG_COUNTER("MessageCreator.Mcpy").Inc();
-    }
-  }
-
-  if (internal::PerformDebugChecks() || arena != nullptr) {
-    if (uintptr_t offsets = arena_bits()) {
-      do {
-        const size_t offset = absl::countr_zero(offsets) * sizeof(Arena*);
-        ABSL_DCHECK_LE(offset + sizeof(Arena*), size);
-        // Verify we are overwriting a null pointer. If we are not, there is a
-        // bug somewhere.
-        ABSL_DCHECK_EQ(*reinterpret_cast<Arena**>(dst + offset), nullptr);
-        memcpy(dst + offset, &arena, sizeof(arena));
-        offsets &= offsets - 1;
-      } while (offsets != 0);
-    }
-  }
-#endif  // PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 
   // The second memcpy overwrites part of the first, but the compiler should
   // avoid the double-write. It's easier than trying to avoid the overlap.
