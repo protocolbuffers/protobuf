@@ -70,8 +70,9 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount, Arena* arena) {
 
   if (using_sso()) {
     new_rep->capacity = new_capacity;
-    new_rep->allocated_size = tagged_rep_or_elem_ != nullptr ? 1 : 0;
-    new_rep->elements[0] = tagged_rep_or_elem_;
+    new_rep->allocated_size = allocated_size();
+    std::memcpy(new_rep->elements, &tagged_rep_or_elem_,
+                old_capacity * kPtrSize);
   } else {
     Rep* old_rep = rep();
     new_rep->capacity = new_capacity;
@@ -110,8 +111,14 @@ void RepeatedPtrFieldBase::DestroyProtos() {
 
 void RepeatedPtrFieldBase::CloseGap(int start, int num) {
   if (using_sso()) {
-    if (start == 0 && num == 1) {
-      tagged_rep_or_elem_ = nullptr;
+    const int capacity = Capacity();
+    int i;
+    for (i = start + num; i < capacity && (&tagged_rep_or_elem_)[i] != nullptr;
+         ++i) {
+      (&tagged_rep_or_elem_)[i - num] = (&tagged_rep_or_elem_)[i];
+    }
+    for (i -= num; i < start + num; ++i) {
+      (&tagged_rep_or_elem_)[i] = nullptr;
     }
   } else {
     // Close up a gap of "num" elements starting at offset "start".
@@ -126,10 +133,6 @@ void RepeatedPtrFieldBase::CloseGap(int start, int num) {
 void InternalOutOfLineDeleteMessageLite(MessageLite* message) {
   delete message;
 }
-
-template PROTOBUF_EXPORT_TEMPLATE_DEFINE void
-memswap<InternalMetadataResolverOffsetHelper<RepeatedPtrFieldBase>::value>(
-    char* PROTOBUF_RESTRICT, char* PROTOBUF_RESTRICT);
 
 template <typename T, typename CopyElementFn, typename CreateAndMergeFn>
 PROTOBUF_ALWAYS_INLINE void RepeatedPtrFieldBase::MergeFromInternal(

@@ -743,8 +743,14 @@ void RepeatedMessage::GeneratePrivateMembers(io::Printer* p) const {
     p->Emit(R"cc(
       $pbi$::RawPtr<$pb$::$Weak$RepeatedPtrField<$Submsg$>> $name$_;
     )cc");
+  } else if (is_weak()) {
+    p->Emit(R"cc(
+      $pb$::$Weak$RepeatedPtrField<$Submsg$> $name$_;
+    )cc");
   } else {
-    p->Emit("$pb$::$Weak$RepeatedPtrField< $Submsg$ > $name$_;\n");
+    p->Emit({{"sso_capacity", RepeatedFieldSsoCapacity(field_, *opts_)}}, R"cc(
+      $pbi$::RepeatedPtrFieldWithSSOStorage<$Submsg$, $sso_capacity$> $name$_;
+    )cc");
   }
 }
 
@@ -862,7 +868,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         return $field_$.Get();
       }
     )cc");
-  } else {
+  } else if (is_weak()) {
     p->Emit(R"cc(
       inline const $pb$::$Weak$RepeatedPtrField<$Submsg$>&
       $Msg$::_internal$_weak$_$name_internal$() const {
@@ -873,6 +879,19 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $Msg$::_internal_mutable$_weak$_$name_internal$() {
         $TsanDetectConcurrentRead$;
         return &$field_$;
+      }
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      inline const $pb$::$Weak$RepeatedPtrField<$Submsg$>&
+      $Msg$::_internal$_weak$_$name_internal$() const {
+        $TsanDetectConcurrentRead$;
+        return $field_$.field;
+      }
+      inline $pb$::$Weak$RepeatedPtrField<$Submsg$>* $nonnull$
+      $Msg$::_internal_mutable$_weak$_$name_internal$() {
+        $TsanDetectConcurrentRead$;
+        return &$field_$.field;
       }
     )cc");
   }
@@ -893,8 +912,10 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 void RepeatedMessage::GenerateClearingCode(io::Printer* p) const {
   if (should_split()) {
     p->Emit("$field_$.ClearIfNotDefault();\n");
-  } else {
+  } else if (is_weak()) {
     p->Emit("$field_$.Clear();\n");
+  } else {
+    p->Emit("$field_$.field.Clear();\n");
   }
 }
 
@@ -922,7 +943,8 @@ void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
 void RepeatedMessage::GenerateSwappingCode(io::Printer* p) const {
   ABSL_CHECK(!should_split());
   p->Emit(R"cc(
-    $field_$.InternalSwap(&other->$field_$);
+    _internal_mutable$_weak$_$name$()->InternalSwap(
+        other->_internal_mutable$_weak$_$name$());
   )cc");
 }
 

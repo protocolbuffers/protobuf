@@ -1104,6 +1104,39 @@ bool HasHasbit(const FieldDescriptor* field, const Options& options) {
   return GetFieldHasbitMode(field, options) != HasbitMode::kNoHasbit;
 }
 
+uint32_t RepeatedFieldSsoCapacity(const FieldDescriptor* field,
+                                  const Options& options) {
+  if (!IsProfileDriven(options) || !options.access_info_map->InProfile(field)) {
+    auto hash = farmhash::Fingerprint128(field->full_name());
+    return static_cast<uint32_t>(hash) % 8 + 1;
+  }
+
+  auto stats = options.access_info_map->RepeatedElementStats(field);
+  if (!stats.has_value()) {
+    return 1;
+  }
+
+  if (stats->mean <= 8.0) {
+    static constexpr double kThreshold = 0.8;
+    uint64_t total = 0;
+    for (size_t i = 0; i < stats->histogram.size(); ++i) {
+      total += stats->histogram[i];
+    }
+    uint64_t target = static_cast<uint64_t>(total * kThreshold);
+    uint64_t cumulative = 0;
+    for (size_t i = 0; i < stats->histogram.size(); ++i) {
+      cumulative += stats->histogram[i];
+      if (cumulative >= target) {
+        return 1 << i;
+      }
+    }
+
+    return 1;
+  } else {
+    return 1;
+  }
+}
+
 bool IsStringInliningEnabled(const Options& options) {
   return options.force_inline_string || IsProfileDriven(options);
 }
