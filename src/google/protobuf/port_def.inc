@@ -73,6 +73,8 @@
 #define PROTOBUF_BUILTIN_ATOMIC 1
 #endif
 
+#define PROTOBUF_BOOTSTRAP_CONST
+
 // Portable check for GCC minimum version:
 // https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
 #if defined(__GNUC__) && defined(__GNUC_MINOR__) \
