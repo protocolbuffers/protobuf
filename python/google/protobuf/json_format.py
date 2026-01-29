@@ -527,6 +527,10 @@ class _Parser(object):
     Raises:
       ParseError: In case of convert problems.
     """
+    # Increment recursion depth at message entry. The max_recursion_depth limit
+    # is exclusive: a depth value equal to max_recursion_depth will trigger an
+    # error. For example, with max_recursion_depth=5, nesting up to depth 4 is
+    # allowed, but attempting depth 5 raises ParseError.
     self.recursion_depth += 1
     if self.recursion_depth > self.max_recursion_depth:
       raise ParseError(
@@ -747,12 +751,11 @@ class _Parser(object):
           value['value'], sub_message, '{0}.value'.format(path)
       )
     elif full_name in _WKTJSONMETHODS:
-      methodcaller(
-          _WKTJSONMETHODS[full_name][1],
-          value['value'],
-          sub_message,
-          '{0}.value'.format(path),
-      )(self)
+      # For well-known types (including nested Any), use ConvertMessage
+      # to ensure recursion depth is properly tracked
+      self.ConvertMessage(
+          value['value'], sub_message, '{0}.value'.format(path)
+      )
     else:
       del value['@type']
       try:
