@@ -32,14 +32,10 @@ inline constexpr FieldMask::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
       : _cached_size_{0},
-        #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        paths_{visibility, ::_pbi::InternalMetadataOffset::Build<
+        paths_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::FieldMask,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldMask, _impl_.paths_)>()
-        }
-        #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        paths_ {}
-        #endif
+         }
      {}
 
 template <typename>
@@ -137,14 +133,12 @@ PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
     [[maybe_unused]] const ::google::protobuf::FieldMask& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
-        #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        paths_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FieldMask,
-            PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldMask, _impl_.paths_)>()
-        , from.paths_}
-        #else
-        paths_ { visibility, arena, from.paths_ }
-        #endif
+        paths_ {
+          visibility, ::_pbi::InternalMetadataOffset::Build<
+              ::google::protobuf::FieldMask,
+              PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldMask, _impl_.paths_)>()
+          , from.paths_
+        }
      {}
 
 FieldMask::FieldMask(
@@ -167,14 +161,10 @@ PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
-        #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        paths_{visibility, ::_pbi::InternalMetadataOffset::Build<
+        paths_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::FieldMask,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldMask, _impl_.paths_)>()
-        }
-        #else
-        paths_ { visibility, arena }
-        #endif
+         }
      {}
 
 inline void FieldMask::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
@@ -199,29 +189,10 @@ inline void* PROTOBUF_NONNULL FieldMask::PlacementNew_(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FieldMask(arena);
 }
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 constexpr auto FieldMask::InternalNewImpl_() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FieldMask),
                                             alignof(FieldMask));
 }
-#else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-constexpr auto FieldMask::InternalNewImpl_() {
-  constexpr auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
-      PROTOBUF_FIELD_OFFSET(FieldMask, _impl_.paths_) +
-          decltype(FieldMask::_impl_.paths_)::
-              InternalGetArenaOffset(
-                  ::google::protobuf::Message::internal_visibility()),
-  });
-  if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::ZeroInit(
-        sizeof(FieldMask), alignof(FieldMask), *arena_bits);
-  } else {
-    return ::google::protobuf::internal::MessageCreator(&FieldMask::PlacementNew_,
-                                 sizeof(FieldMask),
-                                 alignof(FieldMask));
-  }
-}
-#endif
 constexpr auto FieldMask::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
