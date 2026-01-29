@@ -47,11 +47,13 @@ cc_library(
         "utf8_range_neon.inc",
         "utf8_range_sse.inc",
     ],
+    strip_include_prefix = "/third_party/utf8_range",
 )
 
 cc_library(
     name = "utf8_validity",
     hdrs = ["utf8_validity.h"],
+    strip_include_prefix = "/third_party/utf8_range",
     deps = [
         ":utf8_range",
         "@abseil-cpp//absl/strings",
