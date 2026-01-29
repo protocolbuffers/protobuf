@@ -86,6 +86,7 @@ filegroup(
         "descriptor_pool.h",
         "extension_dict.c",
         "extension_dict.h",
+        "free_threading_mutex.h",
         "map.c",
         "map.h",
         "message.c",

@@ -11,12 +11,22 @@
 #include "python/descriptor_containers.h"
 #include "python/descriptor_pool.h"
 #include "python/extension_dict.h"
+#include "python/free_threading_mutex.h"
 #include "python/map.h"
 #include "python/message.h"
 #include "python/repeated.h"
 #include "python/unknown_fields.h"
+#ifdef Py_GIL_DISABLED
+#include <pthread.h>
+#endif
 
 static upb_Arena* PyUpb_NewArena(void);
+
+#ifdef Py_GIL_DISABLED
+static FreeThreadingMutex obj_cache_mutex = {PTHREAD_MUTEX_INITIALIZER};
+#else
+static FreeThreadingMutex obj_cache_mutex;
+#endif
 
 static void PyUpb_ModuleDealloc(void* module) {
   PyUpb_ModuleState* s = PyModule_GetState(module);
@@ -197,7 +207,9 @@ void PyUpb_ObjCache_Add(const void* key, PyObject* py_obj) {
   if (!cache) {
     return;
   }
+  FreeThreadingLock(&obj_cache_mutex);
   PyUpb_WeakMap_Add(cache, key, py_obj);
+  FreeThreadingUnlock(&obj_cache_mutex);
 }
 
 void PyUpb_ObjCache_Delete(const void* key) {
@@ -205,7 +217,9 @@ void PyUpb_ObjCache_Delete(const void* key) {
   if (!cache) {
     return;
   }
+  FreeThreadingLock(&obj_cache_mutex);
   PyUpb_WeakMap_Delete(cache, key);
+  FreeThreadingUnlock(&obj_cache_mutex);
 }
 
 PyObject* PyUpb_ObjCache_Get(const void* key) {
