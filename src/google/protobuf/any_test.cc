@@ -16,7 +16,6 @@
 #include "absl/log/absl_check.h"
 #include "google/protobuf/any_test.pb.h"
 #include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_import.pb.h"
 
 
 // Must be included last.
