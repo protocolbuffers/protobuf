@@ -48,9 +48,9 @@ jobs:
             version-short: "8.2"
             command: composer test_valgrind
             continuous-only: true
-          - name: 8.3 Optimized
-            version: "8.3.1"
-            version-short: "8.3"
+          - name: 8.5 Optimized
+            version: "8.5.2"
+            version-short: "8.5"
             command: composer test && composer test_c
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.name}}
@@ -65,7 +65,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:8.0.1-${{ matrix.version }}-9626718698895971df3953d4aa2321d7425f3c5f
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:8.0.1-${{ matrix.version }}-7d856878bb9d57cf17083cbf1078afe50f3013f3
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_linux/${{ matrix.version }}
           bash: |
@@ -83,7 +83,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        version: ['8.2']
+        version: ['8.2', '8.5']
         suffix: [ '', '-zts']
         test: ['test', 'test_c']
         exclude:
@@ -102,7 +102,7 @@ jobs:
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux 32-bit ${{ matrix.version}}${{ matrix.suffix_name }}${{ matrix.test_name }}
     runs-on: ubuntu-22-4core
     env:
-      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:133077411f272f05164d49d36d51491bdf2915aaa7d4103caa1c9b370b11d29e
+      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:60f8ce4a5b28c9d017468a8ff39f2b1aacb711b8a6f27bcd8f5bc463674e78b1
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
