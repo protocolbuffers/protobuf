@@ -46,6 +46,14 @@ bzl_library(
 )
 
 bzl_library(
+    name = "upb_c_proto_library_bzl",
+    srcs = ["upb_c_proto_library.bzl"],
+    deprecation = "Use upb/bazel:upb_proto_library_bzl instead",
+    visibility = ["//visibility:public"],
+    deps = ["//upb/bazel:upb_proto_library_bzl"],
+)
+
+bzl_library(
     name = "proto_descriptor_set_bzl",
     srcs = ["proto_descriptor_set.bzl"],
     visibility = ["//visibility:public"],
@@ -61,6 +69,7 @@ filegroup(
         ":java_lite_proto_library_bzl",
         ":proto_library_bzl",
         ":py_proto_library_bzl",
+        ":upb_c_proto_library_bzl",
         "//bazel/common:for_bazel_tests",
         "//bazel/flags:for_bazel_tests",
         "//bazel/toolchains:for_bazel_tests",

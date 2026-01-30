@@ -8,8 +8,6 @@ load("//upb/bazel/private:upb_proto_library_internal/aspect.bzl", "upb_proto_asp
 load("//upb/bazel/private:upb_proto_library_internal/cc_library_func.bzl", "upb_use_cpp_toolchain")
 load("//upb/bazel/private:upb_proto_library_internal/rule.bzl", "upb_proto_rule_impl")
 
-visibility(upb_clients)
-
 UpbWrappedCcInfo = provider(
     "Provider for cc_info for protos",
     fields = ["cc_info"],
