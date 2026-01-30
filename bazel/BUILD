@@ -54,6 +54,14 @@ bzl_library(
 )
 
 bzl_library(
+    name = "upb_proto_reflection_library_bzl",
+    srcs = ["upb_proto_reflection_library.bzl"],
+    deprecation = "Use upb/bazel:upb_proto_library_bzl instead",
+    visibility = ["//visibility:public"],
+    deps = ["//upb/bazel:upb_proto_library_bzl"],
+)
+
+bzl_library(
     name = "proto_descriptor_set_bzl",
     srcs = ["proto_descriptor_set.bzl"],
     visibility = ["//visibility:public"],
@@ -70,6 +78,7 @@ filegroup(
         ":proto_library_bzl",
         ":py_proto_library_bzl",
         ":upb_c_proto_library_bzl",
+        ":upb_proto_reflection_library_bzl",
         "//bazel/common:for_bazel_tests",
         "//bazel/flags:for_bazel_tests",
         "//bazel/toolchains:for_bazel_tests",
