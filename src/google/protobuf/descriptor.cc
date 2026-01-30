@@ -2149,37 +2149,38 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
   // necessary.
   {
     absl::WriterMutexLock l(&unknown_enum_values_mu_);
-    auto it = unknown_enum_values_by_number_.find(query);
-    if (it != unknown_enum_values_by_number_.end()) {
-      return *it;
-    }
+    auto it = unknown_enum_values_by_number_.lazy_emplace(
+        query, [&](const auto& ctor) {
+          // Create an EnumValueDescriptor dynamically. We don't insert it into
+          // the EnumDescriptor (it's not a part of the enum as originally
+          // defined), but we do insert it into the table so that we can return
+          // the same pointer later.
+          std::string enum_value_name = absl::StrFormat(
+              "UNKNOWN_ENUM_VALUE_%s_%d", parent->name(), number);
+          auto* pool = DescriptorPool::generated_pool();
+          auto* tables =
+              const_cast<DescriptorPool::Tables*>(pool->tables_.get());
+          internal::FlatAllocator alloc;
+          alloc.PlanArray<EnumValueDescriptor>(1);
+          alloc.PlanArray<std::string>(2);
 
-    // Create an EnumValueDescriptor dynamically. We don't insert it into the
-    // EnumDescriptor (it's not a part of the enum as originally defined), but
-    // we do insert it into the table so that we can return the same pointer
-    // later.
-    std::string enum_value_name =
-        absl::StrFormat("UNKNOWN_ENUM_VALUE_%s_%d", parent->name(), number);
-    auto* pool = DescriptorPool::generated_pool();
-    auto* tables = const_cast<DescriptorPool::Tables*>(pool->tables_.get());
-    internal::FlatAllocator alloc;
-    alloc.PlanArray<EnumValueDescriptor>(1);
-    alloc.PlanArray<std::string>(2);
-
-    {
-      // Must lock the pool because we will do allocations in the shared arena.
-      absl::MutexLockMaybe l2(pool->mutex_);
-      alloc.FinalizePlanning(tables);
-    }
-    EnumValueDescriptor* result = alloc.AllocateArray<EnumValueDescriptor>(1);
-    result->all_names_ = alloc.AllocateStrings(
-        enum_value_name,
-        absl::StrCat(parent->full_name(), ".", enum_value_name));
-    result->number_ = number;
-    result->type_ = parent;
-    result->options_ = &EnumValueOptions::default_instance();
-    unknown_enum_values_by_number_.insert(result);
-    return result;
+          {
+            // Must lock the pool because we will do allocations in the shared
+            // arena.
+            absl::MutexLockMaybe l2(pool->mutex_);
+            alloc.FinalizePlanning(tables);
+          }
+          EnumValueDescriptor* result =
+              alloc.AllocateArray<EnumValueDescriptor>(1);
+          result->all_names_ = alloc.AllocateStrings(
+              enum_value_name,
+              absl::StrCat(parent->full_name(), ".", enum_value_name));
+          result->number_ = number;
+          result->type_ = parent;
+          result->options_ = &EnumValueOptions::default_instance();
+          ctor(result);
+        });
+    return *it;
   }
 }
 
