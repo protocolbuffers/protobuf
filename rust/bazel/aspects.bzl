@@ -323,6 +323,7 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps, aliases, runtime):
             owner = ctx.label,
         ),
         output_hash = output_hash,
+        allowed_unstable_features = ["register_tool"],
     )
 
     return DepVariantInfo(
