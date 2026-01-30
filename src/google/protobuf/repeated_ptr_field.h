@@ -462,6 +462,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   void SwapElements(int index1, int index2) {
+    internal::RuntimeAssertInBounds(index1, current_size_);
+    internal::RuntimeAssertInBounds(index2, current_size_);
     using std::swap;  // enable ADL with fallback
     swap(element_at(index1), element_at(index2));
   }
@@ -565,7 +567,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // arena.
   template <typename TypeHandler>
   Value<TypeHandler>* UnsafeArenaReleaseLast() {
-    ABSL_DCHECK_GT(current_size_, 0);
+    internal::RuntimeAssertInBounds(0, current_size_);
     ExchangeCurrentSize(current_size_ - 1);
     auto* result = cast<TypeHandler>(element_at(current_size_));
     if (using_sso()) {
@@ -1726,9 +1728,9 @@ inline void RepeatedPtrField<Element>::ExtractSubrangeWithArena(
 template <typename Element>
 inline void RepeatedPtrField<Element>::UnsafeArenaExtractSubrange(
     int start, int num, Element** elements) {
-  ABSL_DCHECK_GE(start, 0);
-  ABSL_DCHECK_GE(num, 0);
-  ABSL_DCHECK_LE(start + num, size());
+  internal::RuntimeAssertInBoundsGE(start, 0);
+  internal::RuntimeAssertInBoundsGE(num, 0);
+  internal::RuntimeAssertInBoundsLE(static_cast<int64_t>(start) + num, size());
 
   if (num > 0) {
     // Save the values of the removed elements if requested.
