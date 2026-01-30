@@ -19,6 +19,7 @@ import legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMostTypesProto3.Nes
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.TextFormat;
 import com.google.protobuf.util.JsonFormat;
 import java.util.Map;
 import org.junit.Test;
@@ -72,6 +73,18 @@ public class StaleGencodeSmokeTest {
 
     TestMessage.Builder roundTrip = TestMessage.newBuilder();
     JsonFormat.parser().merge(json, roundTrip);
+    assertThat(roundTrip.build()).isEqualTo(msg);
+  }
+
+  @Test
+  public void testSerializeParseText() throws Exception {
+    TestMessage.Builder b = TestMessage.newBuilder();
+    b.setX("hello");
+    TestMessage msg = b.build();
+    String text = TextFormat.printer().printToString(msg);
+
+    TestMessage.Builder roundTrip = TestMessage.newBuilder();
+    TextFormat.getParser().merge(text, roundTrip);
     assertThat(roundTrip.build()).isEqualTo(msg);
   }
 
