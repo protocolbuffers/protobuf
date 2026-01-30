@@ -98,7 +98,7 @@ class CodedOutputStream
         }
 
         while (($low >= 0x80 || $low < 0) || $high != 0) {
-            $buffer[$current] = chr($low | 0x80);
+            $buffer[$current] = chr(($low | 0x80) & 0xFF);
             $value = ($value >> 7) & ~(0x7F << ((PHP_INT_SIZE << 3) - 7));
             $carry = ($high & 0x7F) << ((PHP_INT_SIZE << 3) - 7);
             $high = ($high >> 7) & ~(0x7F << ((PHP_INT_SIZE << 3) - 7));
