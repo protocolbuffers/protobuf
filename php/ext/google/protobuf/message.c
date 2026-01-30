@@ -400,10 +400,21 @@ static zend_object* Message_clone_obj(zend_object* object) {
  * Message_get_properties()
  *
  * Object handler for the get_properties event in PHP. This returns a HashTable
- * of our internal properties. We don't support this, so we return NULL.
+ * of our internal properties.
+ *
+ * Protobuf messages are not meant to be iterable, but we must return an empty
+ * HashTable instead of NULL to prevent segmentation faults when users attempt
+ * to iterate over a message with foreach().
+ *
+ * See: https://github.com/protocolbuffers/protobuf/issues/22173
  */
 static HashTable* Message_get_properties(zend_object* object) {
-  return NULL;  // We don't offer direct references to our properties.
+  // Ensure the standard properties table is initialized (even if empty)
+  // to prevent segmentation faults when users attempt foreach() iteration.
+  if (!object->properties) {
+    zend_std_get_properties(object);
+  }
+  return object->properties;
 }
 
 // C Functions from message.h. /////////////////////////////////////////////////
