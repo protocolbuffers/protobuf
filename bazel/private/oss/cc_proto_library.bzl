@@ -15,6 +15,10 @@ load("//bazel/flags:flags.bzl", "get_flag_value")
 load("//bazel/private:cc_proto_support.bzl", "cc_proto_compile_and_link")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
+visibility([
+    "//bazel/...",
+])
+
 _CC_PROTO_TOOLCHAIN = Label("//bazel/private:cc_toolchain_type")
 
 _ProtoCcFilesInfo = provider(fields = ["files"], doc = "Provide cc proto files.")
