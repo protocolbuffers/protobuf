@@ -123,6 +123,16 @@ cc_proto_library(
     deps = [":field_mask_proto"],
 )
 
+upb_c_proto_library(
+    name = "field_mask_upb_proto",
+    deps = [":field_mask_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "field_mask_upb_reflection_proto",
+    deps = [":field_mask_proto"],
+)
+
 proto_library(
     name = "source_context_proto",
     srcs = ["source_context.proto"],
