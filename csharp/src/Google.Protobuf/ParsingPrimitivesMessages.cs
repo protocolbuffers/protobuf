@@ -48,7 +48,7 @@ namespace Google.Protobuf
                     ParsingPrimitives.SkipRawBytes(ref buffer, ref state, length);
                     break;
                 case WireFormat.WireType.Varint:
-                    ParsingPrimitives.ParseRawVarint32(ref buffer, ref state);
+                    ParsingPrimitives.ParseRawVarint64(ref buffer, ref state);
                     break;
             }
         }
