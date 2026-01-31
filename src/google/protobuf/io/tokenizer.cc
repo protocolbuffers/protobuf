@@ -67,11 +67,15 @@
 
 #include "google/protobuf/io/tokenizer.h"
 
+#include <string>
+
 #include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/charset.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
@@ -83,47 +87,24 @@ namespace protobuf {
 namespace io {
 namespace {
 
-// As mentioned above, I don't trust ctype.h due to the presence of "locales".
-// So, I have written replacement functions here.  Someone please smack me if
-// this is a bad idea or if there is some way around this.
-//
-// These "character classes" are designed to be used in template methods.
-// For instance, Tokenizer::ConsumeZeroOrMore<Whitespace>() will eat
-// whitespace.
+// These "character classes" are designed to be used in the consumer
+// methods of Tokenizer. For example, Tokenizer::ConsumeZeroOrMore(kWhitespace)
+// will eat whitespace.
 
 // Note:  No class is allowed to contain '\0', since this is used to mark end-
 //   of-input and is handled specially.
 
-#define CHARACTER_CLASS(NAME, EXPRESSION)                     \
-  class NAME {                                                \
-   public:                                                    \
-    static inline bool InClass(char c) { return EXPRESSION; } \
-  }
-
-CHARACTER_CLASS(Whitespace, c == ' ' || c == '\n' || c == '\t' || c == '\r' ||
-                                c == '\v' || c == '\f');
-CHARACTER_CLASS(WhitespaceNoNewline,
-                c == ' ' || c == '\t' || c == '\r' || c == '\v' || c == '\f');
-
-CHARACTER_CLASS(Unprintable, c<' ' && c> '\0');
-
-CHARACTER_CLASS(Digit, '0' <= c && c <= '9');
-CHARACTER_CLASS(OctalDigit, '0' <= c && c <= '7');
-CHARACTER_CLASS(HexDigit, ('0' <= c && c <= '9') || ('a' <= c && c <= 'f') ||
-                              ('A' <= c && c <= 'F'));
-
-CHARACTER_CLASS(Letter,
-                ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || (c == '_'));
-
-CHARACTER_CLASS(Alphanumeric, ('a' <= c && c <= 'z') ||
-                                  ('A' <= c && c <= 'Z') ||
-                                  ('0' <= c && c <= '9') || (c == '_'));
-
-CHARACTER_CLASS(Escape, c == 'a' || c == 'b' || c == 'f' || c == 'n' ||
-                            c == 'r' || c == 't' || c == 'v' || c == '\\' ||
-                            c == '?' || c == '\'' || c == '\"');
-
-#undef CHARACTER_CLASS
+constexpr absl::CharSet kWhitespace = absl::CharSet::AsciiWhitespace();
+constexpr absl::CharSet kWhitespaceNoNewline =
+    kWhitespace & ~absl::CharSet::Char('\n');
+constexpr absl::CharSet kUnprintable = absl::CharSet::Range(1, ' ' - 1);
+constexpr absl::CharSet kDigit = absl::CharSet::AsciiDigits();
+constexpr absl::CharSet kOctalDigit = absl::CharSet::Range('0', '7');
+constexpr absl::CharSet kHexDigit = absl::CharSet::AsciiHexDigits();
+constexpr absl::CharSet kLetter =
+    absl::CharSet::AsciiAlphabet() | absl::CharSet::Char('_');
+constexpr absl::CharSet kAlphanumeric = kLetter | kDigit;
+constexpr absl::CharSet kEscape = absl::CharSet(R"(abfnrtv\?'")");
 
 // Given a char, interpret it as a numeric digit and return its value.
 // This supports any number base up to 36.
@@ -329,14 +310,12 @@ inline void Tokenizer::EndToken() {
 // -------------------------------------------------------------------
 // Helper methods that consume characters.
 
-template <typename CharacterClass>
-inline bool Tokenizer::LookingAt() {
-  return CharacterClass::InClass(current_char_);
+inline bool Tokenizer::LookingAt(const absl::CharSet& character_class) {
+  return character_class.contains(current_char_);
 }
 
-template <typename CharacterClass>
-inline bool Tokenizer::TryConsumeOne() {
-  if (CharacterClass::InClass(current_char_)) {
+inline bool Tokenizer::TryConsumeOne(const absl::CharSet& character_class) {
+  if (character_class.contains(current_char_)) {
     NextChar();
     return true;
   } else {
@@ -353,21 +332,20 @@ inline bool Tokenizer::TryConsume(char c) {
   }
 }
 
-template <typename CharacterClass>
-inline void Tokenizer::ConsumeZeroOrMore() {
-  while (CharacterClass::InClass(current_char_)) {
+inline void Tokenizer::ConsumeZeroOrMore(const absl::CharSet& character_class) {
+  while (character_class.contains(current_char_)) {
     NextChar();
   }
 }
 
-template <typename CharacterClass>
-inline void Tokenizer::ConsumeOneOrMore(const char* error) {
-  if (!CharacterClass::InClass(current_char_)) {
+inline void Tokenizer::ConsumeOneOrMore(const absl::CharSet& character_class,
+                                        const char* error) {
+  if (!character_class.contains(current_char_)) {
     AddError(error);
   } else {
     do {
       NextChar();
-    } while (CharacterClass::InClass(current_char_));
+    } while (character_class.contains(current_char_));
   }
 }
 
@@ -394,20 +372,20 @@ void Tokenizer::ConsumeString(char delimiter) {
       case '\\': {
         // An escape sequence.
         NextChar();
-        if (TryConsumeOne<Escape>()) {
+        if (TryConsumeOne(kEscape)) {
           // Valid escape sequence.
-        } else if (TryConsumeOne<OctalDigit>()) {
+        } else if (TryConsumeOne(kOctalDigit)) {
           // Possibly followed by two more octal digits, but these will
           // just be consumed by the main loop anyway so we don't need
           // to do so explicitly here.
         } else if (TryConsume('x') || TryConsume('X')) {
-          if (!TryConsumeOne<HexDigit>()) {
+          if (!TryConsumeOne(kHexDigit)) {
             AddError("Expected hex digits for escape sequence.");
           }
           // Possibly followed by another hex digit, but again we don't care.
         } else if (TryConsume('u')) {
-          if (!TryConsumeOne<HexDigit>() || !TryConsumeOne<HexDigit>() ||
-              !TryConsumeOne<HexDigit>() || !TryConsumeOne<HexDigit>()) {
+          if (!TryConsumeOne(kHexDigit) || !TryConsumeOne(kHexDigit) ||
+              !TryConsumeOne(kHexDigit) || !TryConsumeOne(kHexDigit)) {
             AddError("Expected four hex digits for \\u escape sequence.");
           }
         } else if (TryConsume('U')) {
@@ -415,9 +393,9 @@ void Tokenizer::ConsumeString(char delimiter) {
           // legal.
           if (!TryConsume('0') || !TryConsume('0') ||
               !(TryConsume('0') || TryConsume('1')) ||
-              !TryConsumeOne<HexDigit>() || !TryConsumeOne<HexDigit>() ||
-              !TryConsumeOne<HexDigit>() || !TryConsumeOne<HexDigit>() ||
-              !TryConsumeOne<HexDigit>()) {
+              !TryConsumeOne(kHexDigit) || !TryConsumeOne(kHexDigit) ||
+              !TryConsumeOne(kHexDigit) || !TryConsumeOne(kHexDigit) ||
+              !TryConsumeOne(kHexDigit)) {
             AddError(
                 "Expected eight hex digits up to 10ffff for \\U escape "
                 "sequence");
@@ -446,34 +424,34 @@ Tokenizer::TokenType Tokenizer::ConsumeNumber(bool started_with_zero,
 
   if (started_with_zero && (TryConsume('x') || TryConsume('X'))) {
     // A hex number (started with "0x").
-    ConsumeOneOrMore<HexDigit>("\"0x\" must be followed by hex digits.");
+    ConsumeOneOrMore(kHexDigit, "\"0x\" must be followed by hex digits.");
 
-  } else if (started_with_zero && LookingAt<Digit>()) {
+  } else if (started_with_zero && LookingAt(kDigit)) {
     // An octal number (had a leading zero).
-    ConsumeZeroOrMore<OctalDigit>();
-    if (LookingAt<Digit>()) {
+    ConsumeZeroOrMore(kOctalDigit);
+    if (LookingAt(kDigit)) {
       AddError("Numbers starting with leading zero must be in octal.");
-      ConsumeZeroOrMore<Digit>();
+      ConsumeZeroOrMore(kDigit);
     }
 
   } else {
     // A decimal number.
     if (started_with_dot) {
       is_float = true;
-      ConsumeZeroOrMore<Digit>();
+      ConsumeZeroOrMore(kDigit);
     } else {
-      ConsumeZeroOrMore<Digit>();
+      ConsumeZeroOrMore(kDigit);
 
       if (TryConsume('.')) {
         is_float = true;
-        ConsumeZeroOrMore<Digit>();
+        ConsumeZeroOrMore(kDigit);
       }
     }
 
     if (TryConsume('e') || TryConsume('E')) {
       is_float = true;
       TryConsume('-') || TryConsume('+');
-      ConsumeOneOrMore<Digit>("\"e\" must be followed by exponent.");
+      ConsumeOneOrMore(kDigit, "\"e\" must be followed by exponent.");
     }
 
     if (allow_f_after_float_ && (TryConsume('f') || TryConsume('F'))) {
@@ -481,7 +459,7 @@ Tokenizer::TokenType Tokenizer::ConsumeNumber(bool started_with_zero,
     }
   }
 
-  if (LookingAt<Letter>() && require_space_after_number_) {
+  if (LookingAt(kLetter) && require_space_after_number_) {
     AddError("Need space between number and identifier.");
   } else if (current_char_ == '.') {
     if (is_float) {
@@ -522,7 +500,7 @@ void Tokenizer::ConsumeBlockComment(std::string* content) {
       if (content != nullptr) StopRecording();
 
       // Consume leading whitespace and asterisk;
-      ConsumeZeroOrMore<WhitespaceNoNewline>();
+      ConsumeZeroOrMore(kWhitespaceNoNewline);
       if (TryConsume('*')) {
         if (TryConsume('/')) {
           // End of comment.
@@ -578,15 +556,15 @@ Tokenizer::NextCommentStatus Tokenizer::TryConsumeCommentStart() {
 
 bool Tokenizer::TryConsumeWhitespace() {
   if (report_newlines_) {
-    if (TryConsumeOne<WhitespaceNoNewline>()) {
-      ConsumeZeroOrMore<WhitespaceNoNewline>();
+    if (TryConsumeOne(kWhitespaceNoNewline)) {
+      ConsumeZeroOrMore(kWhitespaceNoNewline);
       current_.type = TYPE_WHITESPACE;
       return true;
     }
     return false;
   }
-  if (TryConsumeOne<Whitespace>()) {
-    ConsumeZeroOrMore<Whitespace>();
+  if (TryConsumeOne(kWhitespace)) {
+    ConsumeZeroOrMore(kWhitespace);
     current_.type = TYPE_WHITESPACE;
     return report_whitespace_;
   }
@@ -633,7 +611,7 @@ bool Tokenizer::Next() {
     // Check for EOF before continuing.
     if (read_error_) break;
 
-    if (LookingAt<Unprintable>() || current_char_ == '\0') {
+    if (LookingAt(kUnprintable) || current_char_ == '\0') {
       AddError("Invalid control characters encountered in text.");
       NextChar();
       // Skip more unprintable characters, too.  But, remember that '\0' is
@@ -641,7 +619,7 @@ bool Tokenizer::Next() {
       // to be careful not to go into an infinite loop of trying to consume
       // it, so make sure to check read_error_ explicitly before consuming
       // '\0'.
-      while (TryConsumeOne<Unprintable>() ||
+      while (TryConsumeOne(kUnprintable) ||
              (!read_error_ && TryConsume('\0'))) {
         // Ignore.
       }
@@ -650,8 +628,8 @@ bool Tokenizer::Next() {
       // Reading some sort of token.
       StartToken();
 
-      if (TryConsumeOne<Letter>()) {
-        ConsumeZeroOrMore<Alphanumeric>();
+      if (TryConsumeOne(kLetter)) {
+        ConsumeZeroOrMore(kAlphanumeric);
         current_.type = TYPE_IDENTIFIER;
       } else if (TryConsume('0')) {
         current_.type = ConsumeNumber(true, false);
@@ -659,7 +637,7 @@ bool Tokenizer::Next() {
         // This could be the beginning of a floating-point number, or it could
         // just be a '.' symbol.
 
-        if (TryConsumeOne<Digit>()) {
+        if (TryConsumeOne(kDigit)) {
           // It's a floating-point number.
           if (previous_.type == TYPE_IDENTIFIER &&
               current_.line == previous_.line &&
@@ -673,7 +651,7 @@ bool Tokenizer::Next() {
         } else {
           current_.type = TYPE_SYMBOL;
         }
-      } else if (TryConsumeOne<Digit>()) {
+      } else if (TryConsumeOne(kDigit)) {
         current_.type = ConsumeNumber(false, false);
       } else if (TryConsume('\"')) {
         ConsumeString('\"');
@@ -859,7 +837,7 @@ bool Tokenizer::NextWithComments(std::string* prev_trailing_comments,
   } else {
     // A comment appearing on the same line must be attached to the previous
     // declaration.
-    ConsumeZeroOrMore<WhitespaceNoNewline>();
+    ConsumeZeroOrMore(kWhitespaceNoNewline);
     switch (TryConsumeCommentStart()) {
       case LINE_COMMENT:
         trailing_comment_end_line = line_;
@@ -872,7 +850,7 @@ bool Tokenizer::NextWithComments(std::string* prev_trailing_comments,
       case BLOCK_COMMENT:
         ConsumeBlockComment(collector.GetBufferForBlockComment());
         trailing_comment_end_line = line_;
-        ConsumeZeroOrMore<WhitespaceNoNewline>();
+        ConsumeZeroOrMore(kWhitespaceNoNewline);
 
         // Don't allow comments on subsequent lines to be attached to a trailing
         // comment.
@@ -891,7 +869,7 @@ bool Tokenizer::NextWithComments(std::string* prev_trailing_comments,
 
   // OK, we are now on the line *after* the previous token.
   while (true) {
-    ConsumeZeroOrMore<WhitespaceNoNewline>();
+    ConsumeZeroOrMore(kWhitespaceNoNewline);
 
     switch (TryConsumeCommentStart()) {
       case LINE_COMMENT:
@@ -902,7 +880,7 @@ bool Tokenizer::NextWithComments(std::string* prev_trailing_comments,
 
         // Consume the rest of the line so that we don't interpret it as a
         // blank line the next time around the loop.
-        ConsumeZeroOrMore<WhitespaceNoNewline>();
+        ConsumeZeroOrMore(kWhitespaceNoNewline);
         TryConsume('\n');
         break;
       case SLASH_NOT_COMMENT:
@@ -1183,14 +1161,14 @@ void Tokenizer::ParseStringAppend(const std::string& text,
       // An escape sequence.
       ++ptr;
 
-      if (OctalDigit::InClass(*ptr)) {
+      if (kOctalDigit.contains(*ptr)) {
         // An octal escape.  May one, two, or three digits.
         int code = DigitValue(*ptr);
-        if (OctalDigit::InClass(ptr[1])) {
+        if (kOctalDigit.contains(ptr[1])) {
           ++ptr;
           code = code * 8 + DigitValue(*ptr);
         }
-        if (OctalDigit::InClass(ptr[1])) {
+        if (kOctalDigit.contains(ptr[1])) {
           ++ptr;
           code = code * 8 + DigitValue(*ptr);
         }
@@ -1200,11 +1178,11 @@ void Tokenizer::ParseStringAppend(const std::string& text,
         // A hex escape.  May zero, one, or two digits.  (The zero case
         // will have been caught as an error earlier.)
         int code = 0;
-        if (HexDigit::InClass(ptr[1])) {
+        if (kHexDigit.contains(ptr[1])) {
           ++ptr;
           code = DigitValue(*ptr);
         }
-        if (HexDigit::InClass(ptr[1])) {
+        if (kHexDigit.contains(ptr[1])) {
           ++ptr;
           code = code * 16 + DigitValue(*ptr);
         }
@@ -1233,10 +1211,10 @@ void Tokenizer::ParseStringAppend(const std::string& text,
   }
 }
 
-template <typename CharacterClass>
-static bool AllInClass(const std::string& s) {
+static bool AllInClass(const absl::CharSet& character_class,
+                       absl::string_view s) {
   for (const char character : s) {
-    if (!CharacterClass::InClass(character)) return false;
+    if (!character_class.contains(character)) return false;
   }
   return true;
 }
@@ -1244,8 +1222,8 @@ static bool AllInClass(const std::string& s) {
 bool Tokenizer::IsIdentifier(const std::string& text) {
   // Mirrors IDENTIFIER definition in Tokenizer::Next() above.
   if (text.empty()) return false;
-  if (!Letter::InClass(text.at(0))) return false;
-  if (!AllInClass<Alphanumeric>(text.substr(1))) return false;
+  if (!kLetter.contains(text.at(0))) return false;
+  if (!AllInClass(kAlphanumeric, text.substr(1))) return false;
   return true;
 }
 
