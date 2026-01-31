@@ -24,7 +24,6 @@ PLATFORMS
   ruby
   universal-java-23
   x64-mingw-ucrt
-  x64-mingw32
   x86-linux
   x86-mingw32
   x86_64-darwin
