@@ -14,7 +14,7 @@ load(
     "lua_proto_library",
 )
 load(
-    "//upb/bazel:build_defs.bzl",
+    "//upb/bazel:copts.bzl",
     "UPB_DEFAULT_COPTS",
     "UPB_DEFAULT_CPPOPTS",
 )

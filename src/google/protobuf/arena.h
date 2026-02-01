@@ -500,22 +500,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     template <typename... Args>
     static T* PROTOBUF_NONNULL ConstructOnArena(void* PROTOBUF_NONNULL ptr,
                                                 Arena& arena, Args&&... args) {
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-      // TODO - ClangTidy gives warnings for calling the deprecated
-      // constructors here, which leads to log spam. It is correct to invoke
-      // these constructors through the Arena class as it will allow us to
-      // silently switch to a different constructor once arena pointers are
-      // removed. While these constructors exists, we will call the
-      // `InternalVisibility` overrides to silence the warning.
-      if constexpr (internal::HasDeprecatedArenaConstructor<T>()) {
-        return new (ptr) T(internal::InternalVisibility(), &arena,
-                           static_cast<Args&&>(args)...);
-      } else {
-#endif
-        return new (ptr) T(&arena, static_cast<Args&&>(args)...);
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-      }
-#endif
+      return new (ptr) T(&arena, static_cast<Args&&>(args)...);
     }
 
     template <typename... Args>

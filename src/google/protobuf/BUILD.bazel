@@ -6,14 +6,14 @@ load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
-load("//bazel:upb_c_proto_library.bzl", "upb_c_proto_library")
-load("//bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
-load("//bazel:upb_proto_reflection_library.bzl", "upb_proto_reflection_library")
 load(
     "//bazel/tests:protobuf_test_proto_library.bzl",
     "protobuf_test_proto_library",
 )
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
+load("//upb/bazel:upb_c_proto_library.bzl", "upb_c_proto_library")
+load("//upb/bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
+load("//upb/bazel:upb_proto_reflection_library.bzl", "upb_proto_reflection_library")
 load("//upb/cmake:build_defs.bzl", "staleness_test")
 
 package(
@@ -120,6 +120,16 @@ proto_library(
 
 cc_proto_library(
     name = "field_mask_cc_proto",
+    deps = [":field_mask_proto"],
+)
+
+upb_c_proto_library(
+    name = "field_mask_upb_proto",
+    deps = [":field_mask_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "field_mask_upb_reflection_proto",
     deps = [":field_mask_proto"],
 )
 
@@ -1090,6 +1100,7 @@ filegroup(
         "unittest_redaction.proto",
         "unittest_retention.proto",
         "unittest_string_type.proto",
+        "unittest_utf8_string_extensions.proto",
         "unittest_well_known_types.proto",
     ],
     visibility = ["//:__subpackages__"],
@@ -1182,6 +1193,7 @@ protobuf_test_proto_library(
         "unittest_retention.proto",
         "unittest_string_type.proto",
         "unittest_string_view.proto",
+        "unittest_utf8_string_extensions.proto",
         "unittest_well_known_types.proto",
     ],
     option_deps = [
@@ -1353,7 +1365,7 @@ proto_library(
     strip_import_prefix = "/src",
     visibility = [
         "//:__pkg__",
-        "//conformance:__pkg__",
+        "//conformance:__subpackages__",
         "//lua:__subpackages__",
         "//python:__subpackages__",
         "//upb:__subpackages__",
@@ -1366,7 +1378,7 @@ proto_library(
     strip_import_prefix = "/src",
     visibility = [
         "//:__pkg__",
-        "//conformance:__pkg__",
+        "//conformance:__subpackages__",
         "//lua:__subpackages__",
         "//python:__subpackages__",
         "//upb:__subpackages__",
@@ -1374,6 +1386,7 @@ proto_library(
     deps = [
         ":any_proto",
         ":duration_proto",
+        ":empty_proto",
         ":field_mask_proto",
         ":struct_proto",
         ":timestamp_proto",
@@ -1830,6 +1843,7 @@ cc_test(
         ":cpp_features_cc_proto",
         ":port",
         ":protobuf",
+        ":protobuf_lite",
         ":test_util",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
@@ -1856,6 +1870,7 @@ cc_test(
         ":port",
         ":protobuf",
         ":protobuf_lite",
+        ":test_textproto",
         ":test_util",
         ":test_util2",
         "//src/google/protobuf/io",
@@ -1863,6 +1878,7 @@ cc_test(
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
         "//src/google/protobuf/util:differencer",
+        "//third_party/utf8_range:utf8_validity",
         "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
@@ -2492,10 +2508,15 @@ cc_test(
     name = "generated_enum_util_test",
     srcs = ["generated_enum_util_test.cc"],
     deps = [
+        ":cc_lite_test_protos",
+        ":cc_test_protos",
         ":port",
         ":protobuf",
         ":protobuf_lite",
         "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/flags:commandlineflag",
+        "@abseil-cpp//absl/flags:flag",
+        "@abseil-cpp//absl/flags:reflection",
         "@abseil-cpp//absl/strings:str_format",
         "@abseil-cpp//absl/types:span",
         "@googletest//:gtest",

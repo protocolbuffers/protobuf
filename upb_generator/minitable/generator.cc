@@ -231,7 +231,7 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
   std::string msgext = "kUpb_ExtMode_NonExtendable";
 
   if (message.extension_range_count()) {
-    if (UPB_DESC(MessageOptions_message_set_wire_format)(message.options())) {
+    if (google_protobuf_MessageOptions_message_set_wire_format(message.options())) {
       msgext = "kUpb_ExtMode_IsMessageSet";
     } else {
       msgext = "kUpb_ExtMode_Extendable";

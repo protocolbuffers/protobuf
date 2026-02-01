@@ -10,7 +10,11 @@
 #ifndef UPB_REFLECTION_ONEOF_DEF_H_
 #define UPB_REFLECTION_ONEOF_DEF_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "upb/reflection/common.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -36,9 +40,8 @@ const upb_FieldDef* upb_OneofDef_LookupNumber(const upb_OneofDef* o,
                                               uint32_t num);
 UPB_API const char* upb_OneofDef_Name(const upb_OneofDef* o);
 int upb_OneofDef_numfields(const upb_OneofDef* o);
-const UPB_DESC(OneofOptions*) upb_OneofDef_Options(const upb_OneofDef* o);
-const UPB_DESC(FeatureSet*)
-    upb_OneofDef_ResolvedFeatures(const upb_OneofDef* o);
+const google_protobuf_OneofOptions* upb_OneofDef_Options(const upb_OneofDef* o);
+const google_protobuf_FeatureSet* upb_OneofDef_ResolvedFeatures(const upb_OneofDef* o);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -34,9 +34,8 @@ namespace compiler {
 namespace cpp {
 
 ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
-                                       const Options& options,
-                                       MessageSCCAnalyzer* scc_analyzer)
-    : descriptor_(descriptor), options_(options), scc_analyzer_(scc_analyzer) {
+                                       const Options& options)
+    : descriptor_(descriptor), options_(options) {
   // Construct type_traits_.
   if (descriptor_->is_repeated()) {
     type_traits_ = "Repeated";
@@ -238,6 +237,9 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
        DescriptorTableName(descriptor_->containing_type()->file(), options_)},
       {"extendee_index", find_index(descriptor_->containing_type())},
       {"preregister", priority == kInitPriority101},
+      {"is_utf8", descriptor_->requires_utf8_validation()
+                      ? "/*is_utf8=*/true"
+                      : "/*is_utf8=*/false"},
   }});
   switch (descriptor_->cpp_type()) {
     case FieldDescriptor::CPPTYPE_ENUM:
@@ -268,11 +270,11 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
           // Only verify msgs.
           descriptor_->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
           // Options say to verify.
-          ShouldVerify(descriptor_->message_type(), options_, scc_analyzer_) &&
-          ShouldVerify(descriptor_->containing_type(), options_, scc_analyzer_);
+          ShouldVerify(descriptor_->message_type(), options_) &&
+          ShouldVerify(descriptor_->containing_type(), options_);
       const bool should_verify_v2 =
           should_verify &&
-          ShouldVerifyV2(descriptor_->message_type(), options_, scc_analyzer_);
+          ShouldVerifyV2(descriptor_->message_type(), options_);
       const auto message_type = FieldMessageTypeName(descriptor_, options_);
       auto v = p->WithVars(
           {{"verify", should_verify
@@ -332,7 +334,7 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
             R"cc(
               ::_pbi::ExtensionSet::RegisterExtension(
                   &$extendee$::default_instance(), $number$, $field_type$,
-                  $repeated$, $packed$),
+                  $repeated$, $packed$, $is_utf8$),
             )cc");
       }
 

@@ -12,7 +12,7 @@ load("@rules_testing//lib:util.bzl", "util")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//bazel/tests/testdata:compile_rule.bzl", "compile_rule")
 
-_PREFER_PREBUILT_PROTOC = str(Label("//bazel/toolchains:prefer_prebuilt_protoc"))
+_PREFER_PREBUILT_PROTOC = str(Label("//bazel/flags:prefer_prebuilt_protoc"))
 
 def cc_toolchain_test_suite(name):
     test_suite(

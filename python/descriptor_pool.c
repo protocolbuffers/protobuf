@@ -12,6 +12,7 @@
 #include "python/descriptor.h"
 #include "python/message.h"
 #include "python/protobuf.h"
+#include "python/python_api.h"
 #include "upb/base/upcast.h"
 #include "upb/message/compare.h"
 #include "upb/reflection/def.h"
@@ -75,7 +76,11 @@ static int PyUpb_DescriptorPool_Clear(PyUpb_DescriptorPool* self) {
 
 PyObject* PyUpb_DescriptorPool_Get(const upb_DefPool* symtab) {
   PyObject* pool = PyUpb_ObjCache_Get(symtab);
-  assert(pool);
+  assert(pool
+#if PY_VERSION_HEX >= 0x030D0000  // >= 3.13
+         || Py_IsFinalizing()
+#endif
+  );
   return pool;
 }
 

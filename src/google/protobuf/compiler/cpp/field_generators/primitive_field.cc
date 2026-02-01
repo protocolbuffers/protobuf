@@ -92,9 +92,8 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& options) {
 
 class SingularPrimitive final : public FieldGeneratorBase {
  public:
-  SingularPrimitive(const FieldDescriptor* field, const Options& opts,
-                    MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
+  SingularPrimitive(const FieldDescriptor* field, const Options& opts)
+      : FieldGeneratorBase(field, opts), opts_(&opts) {}
   ~SingularPrimitive() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -284,9 +283,8 @@ void SingularPrimitive::GenerateByteSize(io::Printer* p) const {
 
 class RepeatedPrimitive final : public FieldGeneratorBase {
  public:
-  RepeatedPrimitive(const FieldDescriptor* field, const Options& opts,
-                    MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
+  RepeatedPrimitive(const FieldDescriptor* field, const Options& opts)
+      : FieldGeneratorBase(field, opts), opts_(&opts) {}
   ~RepeatedPrimitive() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -354,11 +352,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
     ABSL_CHECK(!should_split());
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
               decltype($field_$){$internal_metadata_offset$},
-#else
-              decltype($field_$){arena},
-#endif
             )cc");
     GenerateCacheSizeInitializer(p);
   }
@@ -374,11 +368,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   void GenerateMemberConstexprConstructor(io::Printer* p) const override {
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-              $name$_{visibility, $internal_metadata_offset$}
-#else
-              $name$_ {}
-#endif
+              $name$_ { visibility, $internal_metadata_offset$ }
             )cc");
     if (HasCachedSize()) {
       p->Emit(",\n_$name$_cached_byte_size_{0}");
@@ -388,11 +378,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   void GenerateMemberConstructor(io::Printer* p) const override {
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-              $name$_{visibility, $internal_metadata_offset$}
-#else
-              $name$_ { visibility, arena }
-#endif
+              $name$_ { visibility, $internal_metadata_offset$ }
             )cc");
     if (HasCachedSize()) {
       p->Emit(",\n_$name$_cached_byte_size_{0}");
@@ -402,11 +388,10 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   void GenerateMemberCopyConstructor(io::Printer* p) const override {
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-              $name$_{visibility, $internal_metadata_offset$, from.$name$_}
-#else
-              $name$_ { visibility, arena, from.$name$_ }
-#endif)cc");
+              $name$_ {
+                visibility, $internal_metadata_offset$, from.$name$_
+              }
+            )cc");
     if (HasCachedSize()) {
       p->Emit(",\n_$name$_cached_byte_size_{0}");
     }
@@ -671,15 +656,13 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarPrimitiveGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc) {
-  return absl::make_unique<SingularPrimitive>(desc, options, scc);
+    const FieldDescriptor* desc, const Options& options) {
+  return absl::make_unique<SingularPrimitive>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedPrimitiveGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc) {
-  return absl::make_unique<RepeatedPrimitive>(desc, options, scc);
+    const FieldDescriptor* desc, const Options& options) {
+  return absl::make_unique<RepeatedPrimitive>(desc, options);
 }
 
 }  // namespace cpp

@@ -21,6 +21,7 @@
 #include "hpb_generator/gen_enums.h"
 #include "hpb_generator/gen_extensions.h"
 #include "hpb_generator/gen_utils.h"
+#include "hpb_generator/keywords.h"
 #include "hpb_generator/names.h"
 #include "google/protobuf/descriptor.h"
 #include "upb_generator/c/names.h"
@@ -516,21 +517,24 @@ void WriteUsingEnumsInHeader(
             message->full_name()) {
       continue;
     }
-    ctx.Emit({{"enum_name", enum_descriptor->name()}}, "using $enum_name$");
+    ctx.Emit({{"enum_name", ResolveKeywordConflict(enum_descriptor->name())}},
+             "using $enum_name$");
     if (enum_descriptor->options().deprecated()) {
-      ctx.Emit({{"enum_name", enum_descriptor->name()}},
+      ctx.Emit({{"enum_name", ResolveKeywordConflict(enum_descriptor->name())}},
                " ABSL_DEPRECATED(\"Proto enum $enum_name$\")");
     }
     ctx.Emit({{"enum_resolved_type_name", enum_resolved_type_name}},
              " = $enum_resolved_type_name$;\n");
     int value_count = enum_descriptor->value_count();
     for (int i = 0; i < value_count; i++) {
-      ctx.Emit({{"enum_name", enum_descriptor->name()},
-                {"enum_value_name", enum_descriptor->value(i)->name()}},
+      ctx.Emit({{"enum_name", ResolveKeywordConflict(enum_descriptor->name())},
+                {"enum_value_name",
+                 ResolveKeywordConflict(enum_descriptor->value(i)->name())}},
                "static constexpr $enum_name$ $enum_value_name$");
       if (enum_descriptor->options().deprecated() ||
           enum_descriptor->value(i)->options().deprecated()) {
-        ctx.Emit({{"enum_value_name", enum_descriptor->value(i)->name()}},
+        ctx.Emit({{"enum_value_name",
+                   ResolveKeywordConflict(enum_descriptor->value(i)->name())}},
                  " ABSL_DEPRECATED(\"Proto enum value $enum_value_name$\") ");
       }
       ctx.Emit({{"enum_value_symbol",

@@ -32,7 +32,11 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/ascii.h"
+#include "absl/strings/numbers.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/types/span.h"
@@ -189,6 +193,47 @@ bool IsMatchingCType(const FieldDescriptor* field, int ctype) {
       return ctype == FieldOptions::STRING;
   }
   internal::Unreachable();
+}
+
+bool AbslParseFlagImpl(absl::string_view text, int& e,
+                       const EnumDescriptor& desc, std::string& error) {
+  if (const auto* value = desc.FindValueByName(text)) {
+    e = value->number();
+    return true;
+  }
+
+  // Try as lower case
+  if (absl::AsciiStrToLower(text) == text) {
+    if (const auto* value = desc.FindValueByName(absl::AsciiStrToUpper(text))) {
+      e = value->number();
+      return true;
+    }
+  }
+
+  // Try as a number
+  int as_number;
+  if (absl::SimpleAtoi(text, &as_number) &&
+      desc.FindValueByNumber(as_number) != nullptr) {
+    e = as_number;
+    return true;
+  }
+
+  std::vector<absl::string_view> supported_values;
+  supported_values.reserve(desc.value_count());
+  for (int i = 0; i < desc.value_count(); i++) {
+    supported_values.push_back(desc.value(i)->name());
+  }
+  error = absl::StrFormat(
+      "Invalid value '%s' for enum '%s'. Supported values are: %s.", text,
+      desc.full_name(), absl::StrJoin(supported_values, ", "));
+  return false;
+}
+
+std::string AbslUnparseFlagImpl(int e, const EnumDescriptor& desc) {
+  if (const auto* value = desc.FindValueByNumber(e)) {
+    return std::string(value->name());
+  }
+  return absl::StrCat(e);
 }
 
 }  // namespace internal
@@ -2466,12 +2511,12 @@ const Message* Reflection::GetDefaultMessageInstance(
   // instances to allow for this. But only do this for real fields.
   // This is an optimization to avoid going to GetPrototype() below, as that
   // requires a lock and a map lookup.
-  if (!field->is_extension() && !field->options().weak() &&
-      !IsLazyField(field) && !schema_.InRealOneof(field)) {
+  if (!field->is_extension() && !field->is_repeated() &&
+      !field->options().weak() && !IsLazyField(field) &&
+      !schema_.InRealOneof(field)) {
     auto* res = DefaultRaw<const Message*>(field);
-    if (res != nullptr) {
-      return res;
-    }
+    ABSL_DCHECK_NE(res, nullptr);
+    return res;
   }
   // Otherwise, just go to the factory.
   return message_factory_->GetPrototype(field->message_type());
@@ -3538,10 +3583,16 @@ void Reflection::PopulateTcParseFastEntries(
       *fast_entries++ = {GetFastParseFunction(nonfield->func),
                          {nonfield->coded_tag, nonfield->nonfield_info}};
     } else if (auto* as_field = fast_field.AsField()) {
-      *fast_entries++ = {
-          GetFastParseFunction(as_field->func),
-          {as_field->coded_tag, as_field->hasbit_idx, as_field->aux_idx,
-           static_cast<uint16_t>(schema_.GetFieldOffset(as_field->field))}};
+      const uint32_t field_offset = schema_.GetFieldOffset(as_field->field);
+      if (static_cast<uint16_t>(field_offset) == field_offset) {
+        *fast_entries++ = {
+            GetFastParseFunction(as_field->func),
+            {as_field->coded_tag, as_field->hasbit_idx, as_field->aux_idx,
+             static_cast<uint16_t>(field_offset)}};
+      } else {
+        // The offset is too large, so just ignore the fast field.
+        *fast_entries++ = {internal::TcParser::MiniParse, {}};
+      }
     } else {
       ABSL_DCHECK(fast_field.is_empty());
       // No fast entry here. Use mini parser.

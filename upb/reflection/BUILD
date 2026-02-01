@@ -12,7 +12,7 @@ load(
     "compile_edition_defaults",
     "embed_edition_defaults",
 )
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS")
 load(
     "//upb/cmake:build_defs.bzl",
     "staleness_test",
@@ -42,7 +42,10 @@ bootstrap_cc_library(
         "message.h",
         "message.hpp",
     ],
-    bootstrap_deps = [":internal"],
+    bootstrap_deps = [
+        ":internal",
+        ":descriptor_upb_proto",
+    ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [

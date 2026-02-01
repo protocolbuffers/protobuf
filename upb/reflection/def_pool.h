@@ -26,8 +26,8 @@ UPB_API void upb_DefPool_Free(upb_DefPool* s);
 
 UPB_API upb_DefPool* upb_DefPool_New(void);
 
-UPB_API const UPB_DESC(FeatureSetDefaults) *
-    upb_DefPool_FeatureSetDefaults(const upb_DefPool* s);
+UPB_API const google_protobuf_FeatureSetDefaults* upb_DefPool_FeatureSetDefaults(
+    const upb_DefPool* s);
 
 UPB_API bool upb_DefPool_SetFeatureSetDefaults(upb_DefPool* s,
                                                const char* serialized_defaults,
@@ -56,8 +56,8 @@ const upb_FileDef* upb_DefPool_FindFileByNameWithSize(const upb_DefPool* s,
 const upb_FieldDef* upb_DefPool_FindExtensionByMiniTable(
     const upb_DefPool* s, const upb_MiniTableExtension* ext);
 
-UPB_API const upb_FieldDef* upb_DefPool_FindExtensionByName(const upb_DefPool* s,
-                                                    const char* sym);
+UPB_API const upb_FieldDef* upb_DefPool_FindExtensionByName(
+    const upb_DefPool* s, const char* sym);
 
 const upb_FieldDef* upb_DefPool_FindExtensionByNameWithSize(
     const upb_DefPool* s, const char* name, size_t size);
@@ -67,7 +67,7 @@ const upb_FieldDef* upb_DefPool_FindExtensionByNumber(const upb_DefPool* s,
                                                       int32_t fieldnum);
 
 UPB_API const upb_ServiceDef* upb_DefPool_FindServiceByName(
-  const upb_DefPool* s, const char* name);
+    const upb_DefPool* s, const char* name);
 
 const upb_ServiceDef* upb_DefPool_FindServiceByNameWithSize(
     const upb_DefPool* s, const char* name, size_t size);
@@ -76,7 +76,7 @@ const upb_FileDef* upb_DefPool_FindFileContainingSymbol(const upb_DefPool* s,
                                                         const char* name);
 
 UPB_API const upb_FileDef* upb_DefPool_AddFile(
-    upb_DefPool* s, const UPB_DESC(FileDescriptorProto) * file_proto,
+    upb_DefPool* s, const google_protobuf_FileDescriptorProto* file_proto,
     upb_Status* status);
 
 UPB_API const upb_ExtensionRegistry* upb_DefPool_ExtensionRegistry(

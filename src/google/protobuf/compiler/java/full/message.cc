@@ -859,6 +859,11 @@ void ImmutableMessageGenerator::GenerateIsInitialized(io::Printer* printer) {
     // isInitialized() is always true.
     if (!HasRequiredFields(descriptor_)) {
       printer->Print(
+          "/**\n"
+          "  * @deprecated This always returns true for this type as it \n"
+          "  *   does not transitively contain any required fields.\n"
+          "  */\n"
+          "@java.lang.Deprecated\n"
           "@java.lang.Override\n"
           "public final boolean isInitialized() {\n"
           "  return true;\n"

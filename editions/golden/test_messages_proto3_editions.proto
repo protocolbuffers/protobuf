@@ -18,6 +18,7 @@ package protobuf_test_messages.editions.proto3;
 
 import "google/protobuf/any.proto";
 import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
@@ -255,6 +256,7 @@ message TestAllTypesProto3 {
   google.protobuf.Any optional_any = 305;
   google.protobuf.Value optional_value = 306;
   google.protobuf.NullValue optional_null_value = 307;
+  google.protobuf.Empty optional_empty = 308;
   repeated google.protobuf.Duration repeated_duration = 311;
   repeated google.protobuf.Timestamp repeated_timestamp = 312;
   repeated google.protobuf.FieldMask repeated_fieldmask = 313;
@@ -262,6 +264,7 @@ message TestAllTypesProto3 {
   repeated google.protobuf.Any repeated_any = 315;
   repeated google.protobuf.Value repeated_value = 316;
   repeated google.protobuf.ListValue repeated_list_value = 317;
+  repeated google.protobuf.Empty repeated_empty = 318;
 
   // Test field-name-to-JSON-name convention.
   // (protobuf says names can be any valid C/C++ identifier.)

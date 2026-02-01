@@ -11,7 +11,7 @@
 
 use crate::__internal::runtime::InnerProtoString;
 use crate::__internal::{Private, SealedInternal};
-use crate::{AsView, IntoProxied, IntoView, Mut, MutProxied, Optional, Proxied, View};
+use crate::{AsView, IntoProxied, IntoView, MapKey, Mut, MutProxied, Optional, Proxied, View};
 use std::borrow::Cow;
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 use std::convert::{AsMut, AsRef};
@@ -485,6 +485,8 @@ impl Ord for ProtoStr {
 impl Proxied for ProtoString {
     type View<'msg> = &'msg ProtoStr;
 }
+
+impl MapKey for ProtoString {}
 
 impl AsView for ProtoString {
     type Proxied = Self;

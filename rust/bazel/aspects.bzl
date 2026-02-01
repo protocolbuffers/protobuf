@@ -20,8 +20,12 @@ load("@rules_rust//rust/private:rustc.bzl", "rustc_compile_action")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:cc_proto_aspect.bzl", "cc_proto_aspect")
+load(
+    "encode_raw_string_as_crate_name.bzl",
+    "encode_raw_string_as_crate_name",
+)
 
-visibility(["//rust/...", "//third_party/crubit/rs_bindings_from_cc/..."])
+visibility(["//rust/...", "//third_party/crubit/rs_bindings_from_cc/...", "//net/proto2/compiler/stubby/cc/build_defs/..."])
 
 CrateMappingInfo = provider(
     doc = "Struct mapping crate name to the .proto import paths",
@@ -34,8 +38,13 @@ CrateMappingInfo = provider(
 RustProtoInfo = provider(
     doc = "Rust protobuf provider info",
     fields = {
-        "dep_variant_infos": "List of DepVariantInfo for the compiled Rust " +
-                             "gencode (also covers its transitive dependencies)",
+        "dep_variant_infos": "List(DepVariantInfo): infos for the compiled Rust gencode. \
+            When the target is a regular proto library, this contains a single element -- the info for the top-level generated code. \
+            When the target is a srcsless proto library, this contains the infos of its dependencies.",
+        "exports_dep_variant_infos": "List(DepVariantInfo): Transitive infos from targets from the proto_library.exports attribute. \
+            When the target is a srcsless proto library, this contains the exports infos from all of its dependencies. \
+            This is a list instead of a depset, since we pass them as direct dependencies when compiling rust code. \
+            We assume the proto exports feature is not widely used in a way where this will lead to unacceptable analysis-time overhead.",
         "crate_mapping": "depset(CrateMappingInfo) containing mappings of all transitive " +
                          "dependencies of the current proto_library.",
     },
@@ -51,6 +60,9 @@ def _rust_version_ge(version):
 
 def label_to_crate_name(ctx, label, toolchain):
     return label.name.replace("-", "_")
+
+def encode_label_as_crate_name(label):
+    return encode_raw_string_as_crate_name(str(label))
 
 def proto_rust_toolchain_label(is_upb):
     if is_upb:
@@ -126,8 +138,11 @@ def _generate_rust_gencode(
         extension = ".{}.pb.rs".format("u" if is_upb else "c"),
     )
 
+    # We emit one 'entry point' file which is based on the target name.
+    # Unfortunately, target names may contain slashes which we have to avoid.
+    safe_target_name = ctx.label.name.replace("/", "__")
     entry_point_rs_output = actions.declare_file(
-        "{}.generated.{}.rs".format(ctx.label.name, "u" if is_upb else "c"),
+        "{}.generated.{}.rs".format(safe_target_name, "u" if is_upb else "c"),
         sibling = proto_info.direct_sources[0],
     )
 
@@ -203,7 +218,7 @@ def _compile_cc(
     cc_info = cc_common.merge_cc_infos(direct_cc_infos = cc_infos)
 
     (compilation_context, compilation_outputs) = cc_common.compile(
-        name = src.basename,
+        name = src.short_path,
         actions = ctx.actions,
         feature_configuration = feature_configuration,
         cc_toolchain = cc_toolchain,
@@ -213,7 +228,7 @@ def _compile_cc(
     )
 
     (linking_context, _) = cc_common.create_linking_context_from_compilation_outputs(
-        name = src.basename,
+        name = src.short_path,
         actions = ctx.actions,
         feature_configuration = feature_configuration,
         cc_toolchain = cc_toolchain,
@@ -226,7 +241,7 @@ def _compile_cc(
         linking_context = linking_context,
     )
 
-def _compile_rust(ctx, attr, src, extra_srcs, deps, runtime):
+def _compile_rust(ctx, attr, src, extra_srcs, deps, aliases, runtime):
     """Compiles a Rust source file.
 
     Eventually this function could be upstreamed into rules_rust and be made present in rust_common.
@@ -237,6 +252,7 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps, runtime):
       src (File): The crate root source file to be compiled.
       extra_srcs ([File]): Additional source files to include in the crate.
       deps (List[DepVariantInfo]): A list of dependencies needed.
+      aliases (dict[Target, str]): A mapping from dependency target to its crate name.
       runtime: The protobuf runtime target.
 
     Returns:
@@ -292,7 +308,7 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps, runtime):
             # generated code to use a consistent name, even though the actual
             # name of the runtime crate varies depending on the protobuf kernel
             # and build system.
-            aliases = {runtime: "protobuf"},
+            aliases = {runtime: "protobuf"} | aliases,
             output = lib,
             metadata = rmeta,
             edition = "2024",
@@ -302,8 +318,6 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps, runtime):
             compile_data_targets = depset([]),
             owner = ctx.label,
         ),
-        # Needed to make transitive public imports not violate layering.
-        force_all_deps_direct = True,
         output_hash = output_hash,
     )
 
@@ -343,8 +357,13 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         transitive_crate_mappings.append(rust_proto_info.crate_mapping)
 
     dep_variant_infos = []
-    for info in [d[RustProtoInfo].dep_variant_infos for d in proto_deps]:
-        dep_variant_infos += info
+
+    # Infos of exports of dependencies.
+    dep_exports_dep_variant_infos = []
+
+    for dep in proto_deps:
+        dep_variant_infos += dep[RustProtoInfo].dep_variant_infos
+        dep_exports_dep_variant_infos += dep[RustProtoInfo].exports_dep_variant_infos
 
     # If there are no srcs, then this is an alias library (which in Rust acts as a middle
     # library in a dependency chain). Don't generate any Rust code for it, but do propagate the
@@ -352,8 +371,21 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
     if not proto_srcs:
         return [RustProtoInfo(
             dep_variant_infos = dep_variant_infos,
+            exports_dep_variant_infos = dep_exports_dep_variant_infos,
             crate_mapping = depset(transitive = transitive_crate_mappings),
         )]
+
+    # Add the infos from dependencies' exports, as they are needed to compile the
+    # generated code of this target.
+    dep_variant_infos += dep_exports_dep_variant_infos
+
+    # Exports of this target are the directly and transitively exported
+    # dependencies.
+    exported_proto_deps = getattr(ctx.rule.attr, "exports", [])
+    exports_dep_variant_infos = []
+    for d in exported_proto_deps:
+        exports_dep_variant_infos.extend(d[RustProtoInfo].dep_variant_infos)
+        exports_dep_variant_infos.extend(d[RustProtoInfo].exports_dep_variant_infos)
 
     proto_lang_toolchain = ctx.attr._proto_lang_toolchain[proto_common.ProtoLangToolchainInfo]
     cc_toolchain = find_cpp_toolchain(ctx)
@@ -422,19 +454,35 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         for dep in ctx.attr._extra_deps
     ]
 
+    aliases = {}
+
+    for d in dep_variant_infos:
+        label = Label(d.crate_info.owner)
+        target = struct(label = label)
+        qualified_name = encode_label_as_crate_name(label)
+        aliases[target] = qualified_name
+
+    deps = ([dep_variant_info_for_runtime] +
+            dep_variant_info_for_native_gencode +
+            dep_variant_infos +
+            extra_dep_variant_infos +
+            exports_dep_variant_infos)
+
     dep_variant_info = _compile_rust(
         ctx = ctx,
         attr = ctx.rule.attr,
         src = entry_point_rs_output,
         extra_srcs = rs_gencode,
-        deps = [dep_variant_info_for_runtime] + dep_variant_info_for_native_gencode + dep_variant_infos + extra_dep_variant_infos,
+        deps = deps,
+        aliases = aliases,
         runtime = runtime,
     )
     return [RustProtoInfo(
         dep_variant_infos = [dep_variant_info],
+        exports_dep_variant_infos = exports_dep_variant_infos,
         crate_mapping = depset(
             direct = [CrateMappingInfo(
-                crate_name = label_to_crate_name(ctx, target.label, toolchain),
+                crate_name = encode_label_as_crate_name(ctx.label),
                 import_paths = tuple([get_import_path(f) for f in proto_srcs]),
             )],
             transitive = transitive_crate_mappings,
@@ -444,7 +492,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
 def _make_proto_library_aspect(is_upb):
     return aspect(
         implementation = (_rust_upb_proto_aspect_impl if is_upb else _rust_cc_proto_aspect_impl),
-        attr_aspects = ["deps"],
+        attr_aspects = ["deps", "exports"],
         requires = ([] if is_upb else [cc_proto_aspect]),
         attrs = {
             "_collect_cc_coverage": attr.label(

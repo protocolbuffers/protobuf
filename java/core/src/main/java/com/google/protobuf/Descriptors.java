@@ -1768,7 +1768,8 @@ public final class Descriptors {
       // This is especially important for descriptor.proto since getting the JavaFeaturesProto
       // extension itself involves calling legacyEnumFieldTreatedAsClosed() which would otherwise
       // infinite loop.
-      if (getFile().getDependencies().isEmpty()) {
+      if (getFile().getDependencies().isEmpty()
+          && getFile().proto.getOptionDependencyCount() == 0) {
         return getType() == Type.ENUM && getEnumType().isClosed();
       }
 

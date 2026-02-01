@@ -8,6 +8,11 @@
 #ifndef UPB_REFLECTION_FILE_DEF_INTERNAL_H_
 #define UPB_REFLECTION_FILE_DEF_INTERNAL_H_
 
+#include <stdint.h>
+
+#include "upb/mini_table/extension.h"
+#include "upb/reflection/def.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 #include "upb/reflection/file_def.h"
 
 // Must be last.
@@ -27,7 +32,7 @@ bool _upb_FileDef_ClosedEnumCheckingDisabled(const upb_FileDef* f);
 const char* _upb_FileDef_RawPackage(const upb_FileDef* f);
 
 void _upb_FileDef_Create(upb_DefBuilder* ctx,
-                         const UPB_DESC(FileDescriptorProto) * file_proto);
+                         const google_protobuf_FileDescriptorProto* file_proto);
 
 #ifdef __cplusplus
 } /* extern "C" */

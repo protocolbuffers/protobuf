@@ -9,17 +9,17 @@ load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load(
-    "//bazel:upb_minitable_proto_library.bzl",
+    "//upb/bazel:copts.bzl",
+    "UPB_DEFAULT_CPPOPTS",
+)
+load(
+    "//upb/bazel:upb_minitable_proto_library.bzl",
     "upb_minitable_proto_library",
 )
 load(
-    "//bazel:upb_proto_library.bzl",
+    "//upb/bazel:upb_proto_library.bzl",
     "upb_c_proto_library",
     "upb_proto_reflection_library",
-)
-load(
-    "//upb/bazel:build_defs.bzl",
-    "UPB_DEFAULT_CPPOPTS",
 )
 
 package(default_applicable_licenses = ["//:license"])
@@ -292,6 +292,7 @@ cc_test(
         "//upb/mem",
         "//upb/message",
         "//upb/port",
+        "//upb/wire",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

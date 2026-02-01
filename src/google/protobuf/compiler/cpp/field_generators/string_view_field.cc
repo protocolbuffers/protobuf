@@ -70,9 +70,8 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
 
 class SingularStringView : public FieldGeneratorBase {
  public:
-  SingularStringView(const FieldDescriptor* field, const Options& opts,
-                     MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
+  SingularStringView(const FieldDescriptor* field, const Options& opts)
+      : FieldGeneratorBase(field, opts), opts_(&opts) {}
   ~SingularStringView() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -139,7 +138,7 @@ class SingularStringView : public FieldGeneratorBase {
 
   void GenerateMemberConstexprConstructor(io::Printer* p) const override {
     if (is_inlined()) {
-      p->Emit("$name$_(nullptr, false)");
+      p->Emit("$name$_{}");
     } else if (use_micro_string()) {
       if (EmptyDefault()) {
         p->Emit("$name$_{}");
@@ -217,12 +216,6 @@ void SingularStringView::GenerateStaticMembers(io::Printer* p) const {
         static const $pbi$::LazyString $default_variable_name$;
       )cc");
     }
-  }
-  if (is_inlined()) {
-    // `_init_inline_xxx` is used for initializing default instances.
-    p->Emit(R"cc(
-      static ::std::true_type _init_inline_$name$_;
-    )cc");
   }
 }
 
@@ -541,9 +534,8 @@ void SingularStringView::GenerateAggregateInitializer(io::Printer* p) const {
 
 class RepeatedStringView : public FieldGeneratorBase {
  public:
-  RepeatedStringView(const FieldDescriptor* field, const Options& opts,
-                     MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
+  RepeatedStringView(const FieldDescriptor* field, const Options& opts)
+      : FieldGeneratorBase(field, opts), opts_(&opts) {}
   ~RepeatedStringView() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -676,14 +668,12 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
     io::Printer* p) const {
   p->Emit(
       {
-          {GetEmitRepeatedFieldGetterSub(*opts_, p)},
           {"bytes_tag",
            [&] {
              if (field_->type() == FieldDescriptor::TYPE_BYTES) {
                p->Emit(", $pbi$::BytesTag{}");
              }
            }},
-          {GetEmitRepeatedFieldMutableSub(*opts_, p)},
       },
       R"cc(
         inline ::absl::string_view $Msg$::$name$(int index) const
@@ -691,7 +681,7 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
           $WeakDescriptorSelfPin$;
           $annotate_get$;
           // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-          return $getter$;
+          return _internal_$name_internal$().Get(index);
         }
         //~ Note: no need to set hasbit in set_$name$(int index). Hasbits only
         //~ need to be updated if a new element is (potentially) added, not if
@@ -699,7 +689,9 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
         template <typename Arg_>
         inline void $Msg$::set_$name$(int index, Arg_&& value) {
           $WeakDescriptorSelfPin$;
-          $pbi$::AssignToString(*$mutable$, ::std::forward<Arg_>(value) $bytes_tag$);
+          $pbi$::AssignToString(
+              *_internal_mutable_$name_internal$()->Mutable(index),
+              ::std::forward<Arg_>(value) $bytes_tag$);
           $annotate_set$;
           // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
         }
@@ -788,15 +780,13 @@ void RepeatedStringView::GenerateSerializeWithCachedSizesToArray(
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSingularStringViewGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc) {
-  return absl::make_unique<SingularStringView>(desc, options, scc);
+    const FieldDescriptor* desc, const Options& options) {
+  return absl::make_unique<SingularStringView>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedStringViewGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc) {
-  return absl::make_unique<RepeatedStringView>(desc, options, scc);
+    const FieldDescriptor* desc, const Options& options) {
+  return absl::make_unique<RepeatedStringView>(desc, options);
 }
 
 }  // namespace cpp
