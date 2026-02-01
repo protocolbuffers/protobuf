@@ -1222,8 +1222,7 @@ void ImmutableMessageGenerator::GenerateParsingConstructor(
   }
 
   printer->Print(
-      "com.google.protobuf.UnknownFieldSet.Builder unknownFields =\n"
-      "    com.google.protobuf.UnknownFieldSet.newBuilder();\n");
+      "com.google.protobuf.UnknownFieldSet.Builder unknownFields = null;\n");
 
   printer->Print("try {\n");
   printer->Indent();
@@ -1277,9 +1276,12 @@ void ImmutableMessageGenerator::GenerateParsingConstructor(
 
   printer->Print(
       "default: {\n"
+      "  if (unknownFields == null) {\n"
+      "    unknownFields = com.google.protobuf.UnknownFieldSet.newBuilder();\n"
+      "  }\n"
       "  if (!parseUnknownField(\n"
       "      input, unknownFields, extensionRegistry, tag)) {\n"
-        "    done = true;\n"
+      "    done = true;\n"
       "  }\n"
       "  break;\n"
       "}\n");
@@ -1309,7 +1311,9 @@ void ImmutableMessageGenerator::GenerateParsingConstructor(
   }
 
   printer->Print(
-      "this.unknownFields = unknownFields.build();\n");
+      "this.unknownFields = unknownFields == null\n"
+      "    ? com.google.protobuf.UnknownFieldSet.getDefaultInstance()\n"
+      "    : unknownFields.build();\n");
   printer->Print("internalMakeExtensionsImmutable();\n");
 
   printer->Outdent();
