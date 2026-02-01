@@ -57,7 +57,7 @@ class PROTOBUF_EXPORT DescriptorDatabase {
   using StringViewArg ABSL_DEPRECATE_AND_INLINE() = absl::string_view;
 
  public:
-  inline DescriptorDatabase() {}
+  inline DescriptorDatabase() = default;
   DescriptorDatabase(const DescriptorDatabase&) = delete;
   DescriptorDatabase& operator=(const DescriptorDatabase&) = delete;
   virtual ~DescriptorDatabase();
