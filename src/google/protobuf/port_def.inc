@@ -261,6 +261,12 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
   _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
 #define PROTOBUF_IGNORE_DEPRECATION_STOP                     \
   _Pragma("GCC diagnostic pop")
+#elif defined(_MSC_VER)
+#define PROTOBUF_IGNORE_DEPRECATION_START                    \
+  __pragma(warning(push))                                    \
+  __pragma(warning(disable: 4996))
+#define PROTOBUF_IGNORE_DEPRECATION_STOP                     \
+  __pragma(warning(pop))
 #else
 #define PROTOBUF_IGNORE_DEPRECATION_START
 #define PROTOBUF_IGNORE_DEPRECATION_STOP
