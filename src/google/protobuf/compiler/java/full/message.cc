@@ -364,7 +364,11 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
       "}\n"
       "\n");
 
-  if (context_->HasGeneratedMethods(descriptor_)) {
+  // Skip parsing constructor for extendable messages as they require
+  // complex extension parsing logic that isn't compatible with the
+  // constructor-based parsing optimization.
+  if (context_->HasGeneratedMethods(descriptor_) &&
+      descriptor_->extension_range_count() == 0) {
     GenerateParsingConstructor(printer);
   }
 
@@ -1194,7 +1198,8 @@ void ImmutableMessageGenerator::GenerateParsingConstructor(
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
-    if (GetJavaType(field) == JAVATYPE_MESSAGE && !field->is_repeated()) {
+    if (GetJavaType(field) == JAVATYPE_MESSAGE && !field->is_repeated() &&
+        !IsMapEntry(field->message_type())) {
       const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
       printer->Print("$type$.Builder $name$Builder_ = null;\n", "type",
                      name_resolver_->GetImmutableClassName(
@@ -1205,7 +1210,8 @@ void ImmutableMessageGenerator::GenerateParsingConstructor(
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
-    if (GetJavaType(field) == JAVATYPE_MESSAGE) {
+    if (GetJavaType(field) == JAVATYPE_MESSAGE &&
+        !IsMapEntry(field->message_type())) {
       const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
       printer->Print(
           "com.google.protobuf.Parser<$type$> $name$Parser_ =\n"
@@ -1216,7 +1222,8 @@ void ImmutableMessageGenerator::GenerateParsingConstructor(
   }
 
   printer->Print(
-      "com.google.protobuf.UnknownFieldSet.Builder unknownFields = null;\n");
+      "com.google.protobuf.UnknownFieldSet.Builder unknownFields =\n"
+      "    com.google.protobuf.UnknownFieldSet.newBuilder();\n");
 
   printer->Print("try {\n");
   printer->Indent();
@@ -1270,12 +1277,9 @@ void ImmutableMessageGenerator::GenerateParsingConstructor(
 
   printer->Print(
       "default: {\n"
-      "  if (unknownFields == null) {\n"
-      "    unknownFields = com.google.protobuf.UnknownFieldSet.newBuilder();\n"
-      "  }\n"
       "  if (!parseUnknownField(\n"
       "      input, unknownFields, extensionRegistry, tag)) {\n"
-      "    done = true;\n"
+        "    done = true;\n"
       "  }\n"
       "  break;\n"
       "}\n");
@@ -1305,9 +1309,7 @@ void ImmutableMessageGenerator::GenerateParsingConstructor(
   }
 
   printer->Print(
-      "this.unknownFields = unknownFields == null\n"
-      "    ? com.google.protobuf.UnknownFieldSet.getDefaultInstance()\n"
-      "    : unknownFields.build();\n");
+      "this.unknownFields = unknownFields.build();\n");
   printer->Print("internalMakeExtensionsImmutable();\n");
 
   printer->Outdent();
@@ -1328,7 +1330,9 @@ void ImmutableMessageGenerator::GenerateParser(io::Printer* printer) {
       "      com.google.protobuf.ExtensionRegistryLite extensionRegistry)\n"
       "      throws com.google.protobuf.InvalidProtocolBufferException {\n",
       "classname", descriptor_->name());
-  if (context_->HasGeneratedMethods(descriptor_)) {
+  // Use parsing constructor only if it was generated (i.e., for non-extendable messages)
+  if (context_->HasGeneratedMethods(descriptor_) &&
+      descriptor_->extension_range_count() == 0) {
     printer->Print("    return new $classname$(input, extensionRegistry);\n",
                    "classname", descriptor_->name());
   } else {
