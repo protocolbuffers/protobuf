@@ -1214,8 +1214,7 @@ void ImmutableMessageGenerator::GenerateParsingConstructor(
         !IsMapEntry(field->message_type())) {
       const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
       printer->Print(
-          "com.google.protobuf.Parser<$type$> $name$Parser_ =\n"
-          "    $type$.parser();\n",
+          "com.google.protobuf.Parser<$type$> $name$Parser_ = null;\n",
           "type", name_resolver_->GetImmutableClassName(field->message_type()),
           "name", info->name);
     }

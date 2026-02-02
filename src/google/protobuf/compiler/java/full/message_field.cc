@@ -406,6 +406,11 @@ void ImmutableMessageFieldGenerator::GenerateParsingCode(
   printer->Print(variables_,
                  "if ($builder_var$ == null && !$is_field_present_message$) {\n");
   printer->Indent();
+  // Lazy initialization to avoid circular static dependencies (deadlock risk)
+  printer->Print(variables_,
+                 "if ($parser_var$ == null) {\n"
+                 "  $parser_var$ = $type$.parser();\n"
+                 "}\n");
   if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
                    "$name$_ = input.readGroup($number$, $parser_var$,\n"
@@ -778,6 +783,11 @@ void ImmutableMessageOneofFieldGenerator::GenerateParsingCode(
   printer->Print(variables_,
                  "if ($builder_var$ == null && !($has_oneof_case_message$)) {\n");
   printer->Indent();
+  // Lazy initialization to avoid circular static dependencies (deadlock risk)
+  printer->Print(variables_,
+                 "if ($parser_var$ == null) {\n"
+                 "  $parser_var$ = $type$.parser();\n"
+                 "}\n");
   if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
                    "$oneof_name$_ = input.readGroup($number$, $parser_var$,\n"
@@ -1375,6 +1385,11 @@ void RepeatedImmutableMessageFieldGenerator::GenerateParsingCode(
   printer->Print(variables_,
                  "if ($name$_.isEmpty()) {\n"
                  "  $name$_ = new java.util.ArrayList<$type$>();\n"
+                 "}\n");
+  // Lazy initialization to avoid circular static dependencies (deadlock risk)
+  printer->Print(variables_,
+                 "if ($parser_var$ == null) {\n"
+                 "  $parser_var$ = $type$.parser();\n"
                  "}\n");
   if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
