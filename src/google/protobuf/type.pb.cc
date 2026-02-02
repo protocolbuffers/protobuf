@@ -318,7 +318,7 @@ static const ::_pbi::MigrationSchema
         {55, sizeof(::google::protobuf::EnumValue)},
         {64, sizeof(::google::protobuf::Option)},
 };
-static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
+static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances_google_2fprotobuf_2ftype_2eproto[] = {
     &::google::protobuf::_Type_default_instance_._instance,
     &::google::protobuf::_Field_default_instance_._instance,
     &::google::protobuf::_Enum_default_instance_._instance,
@@ -387,7 +387,7 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
     2,
     5,
     schemas,
-    file_default_instances,
+    file_default_instances_google_2fprotobuf_2ftype_2eproto,
     TableStruct_google_2fprotobuf_2ftype_2eproto::offsets,
     file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto,
     file_level_service_descriptors_google_2fprotobuf_2ftype_2eproto,
