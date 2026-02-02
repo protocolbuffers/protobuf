@@ -13,6 +13,21 @@ import "google/protobuf/descriptor.proto";
 
 option java_outer_classname = "UnittestFeatures";
 
+// Custom option added for option open enum coverage
+extend google.protobuf.MessageOptions {
+  CustomOptionLifetimesMessage custom_option_lifetimes_message = 7737012;
+}
+
+message CustomOptionLifetimesMessage {
+  CustomOptionLifetimesEnum custom_enum = 1;
+  repeated CustomOptionLifetimesEnum repeated_custom_enum = 2;
+}
+
+enum CustomOptionLifetimesEnum {
+  TEST_CUSTOM_OPTION = 0;
+  CUSTOM_OPTION1 = 1;
+}
+
 extend google.protobuf.FeatureSet {
   TestFeatures test = 9999;
 }
