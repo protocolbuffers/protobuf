@@ -9,7 +9,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 //
-// This file contains classes which describe a type of protocol message.
+// This file contains classes which describe a type of protocol  message.
 // You can use a message's descriptor to learn at runtime what fields
 // it contains and what the types of those fields are.  The Message
 // interface also allows you to dynamically access and modify individual
