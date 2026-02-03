@@ -462,10 +462,10 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
     const FieldDescriptor* field = descriptor_->field(i);
     if (field->is_repeated()) {
       switch (field->cpp_type()) {
-#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                           \
-  case FieldDescriptor::CPPTYPE_##UPPERCASE:                        \
-    total_size += GetRaw<RepeatedField<LOWERCASE> >(message, field) \
-                      .SpaceUsedExcludingSelfLong();                \
+#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                          \
+  case FieldDescriptor::CPPTYPE_##UPPERCASE:                       \
+    total_size += GetRaw<RepeatedField<LOWERCASE>>(message, field) \
+                      .SpaceUsedExcludingSelfLong();               \
     break
 
         HANDLE_TYPE(INT32, int32_t);
@@ -487,7 +487,7 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
             case FieldDescriptor::CppStringType::kView:
             case FieldDescriptor::CppStringType::kString:
               total_size +=
-                  GetRaw<RepeatedPtrField<std::string> >(message, field)
+                  GetRaw<RepeatedPtrField<std::string>>(message, field)
                       .SpaceUsedExcludingSelfLong();
               break;
           }
@@ -502,7 +502,7 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
             // so we use RepeatedPtrFieldBase directly.
             total_size +=
                 GetRaw<RepeatedPtrFieldBase>(message, field)
-                    .SpaceUsedExcludingSelfLong<GenericTypeHandler<Message> >();
+                    .SpaceUsedExcludingSelfLong<GenericTypeHandler<Message>>();
           }
 
           break;
@@ -634,28 +634,28 @@ void Reflection::InternalMoveOneofField(const FieldDescriptor* field,
         break;
       }
       switch (field->cpp_string_type()) {
-          case FieldDescriptor::CppStringType::kCord:
-            to->SetCord(from->GetCord());
-            break;
-          case FieldDescriptor::CppStringType::kView:
-          case FieldDescriptor::CppStringType::kString:
-            if (IsMicroString(field)) {
-              to->SetMicroString(from->GetMicroString());
-            } else {
-              to->SetArenaStringPtr(from->GetArenaStringPtr());
-            }
-            break;
+        case FieldDescriptor::CppStringType::kCord:
+          to->SetCord(from->GetCord());
+          break;
+        case FieldDescriptor::CppStringType::kView:
+        case FieldDescriptor::CppStringType::kString:
+          if (IsMicroString(field)) {
+            to->SetMicroString(from->GetMicroString());
+          } else {
+            to->SetArenaStringPtr(from->GetArenaStringPtr());
+          }
+          break;
       }
-        break;
-      default:
-        ABSL_LOG(FATAL) << "unimplemented type: " << field->cpp_type();
+      break;
+    default:
+      ABSL_LOG(FATAL) << "unimplemented type: " << field->cpp_type();
   }
-    if (unsafe_shallow_swap) {
-      // Not clearing oneof case after move may cause unwanted "ClearOneof"
-      // where the residual message or string value is deleted and causes
-      // use-after-free (only for unsafe swap).
-      from->ClearOneofCase();
-    }
+  if (unsafe_shallow_swap) {
+    // Not clearing oneof case after move may cause unwanted "ClearOneof"
+    // where the residual message or string value is deleted and causes
+    // use-after-free (only for unsafe swap).
+    from->ClearOneofCase();
+  }
 }
 
 namespace internal {
@@ -924,10 +924,10 @@ void Reflection::SwapField(Message* message1, Message* message2,
                            const FieldDescriptor* field) const {
   if (field->is_repeated()) {
     switch (field->cpp_type()) {
-#define SWAP_ARRAYS(CPPTYPE, TYPE)                                 \
-  case FieldDescriptor::CPPTYPE_##CPPTYPE:                         \
-    MutableRaw<RepeatedField<TYPE> >(message1, field)              \
-        ->Swap(MutableRaw<RepeatedField<TYPE> >(message2, field)); \
+#define SWAP_ARRAYS(CPPTYPE, TYPE)                                \
+  case FieldDescriptor::CPPTYPE_##CPPTYPE:                        \
+    MutableRaw<RepeatedField<TYPE>>(message1, field)              \
+        ->Swap(MutableRaw<RepeatedField<TYPE>>(message2, field)); \
     break;
 
       SWAP_ARRAYS(INT32, int32_t);
@@ -1422,7 +1422,7 @@ int Reflection::FieldSize(const Message& message,
     switch (field->cpp_type()) {
 #define HANDLE_TYPE(UPPERCASE, LOWERCASE)    \
   case FieldDescriptor::CPPTYPE_##UPPERCASE: \
-    return GetRaw<RepeatedField<LOWERCASE> >(message, field).size()
+    return GetRaw<RepeatedField<LOWERCASE>>(message, field).size()
 
       HANDLE_TYPE(INT32, int32_t);
       HANDLE_TYPE(INT64, int64_t);
@@ -1436,7 +1436,7 @@ int Reflection::FieldSize(const Message& message,
 
       case FieldDescriptor::CPPTYPE_STRING:
         if (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord) {
-          return GetRaw<RepeatedField<absl::Cord> >(message, field).size();
+          return GetRaw<RepeatedField<absl::Cord>>(message, field).size();
         }
         ABSL_FALLTHROUGH_INTENDED;
       case FieldDescriptor::CPPTYPE_MESSAGE:
@@ -1595,9 +1595,9 @@ void Reflection::RemoveLast(Message* message,
     MutableExtensionSet(message)->RemoveLast(field->number());
   } else {
     switch (field->cpp_type()) {
-#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                                \
-  case FieldDescriptor::CPPTYPE_##UPPERCASE:                             \
-    MutableRaw<RepeatedField<LOWERCASE> >(message, field)->RemoveLast(); \
+#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                               \
+  case FieldDescriptor::CPPTYPE_##UPPERCASE:                            \
+    MutableRaw<RepeatedField<LOWERCASE>>(message, field)->RemoveLast(); \
     break
 
       HANDLE_TYPE(INT32, int32_t);
@@ -1617,7 +1617,7 @@ void Reflection::RemoveLast(Message* message,
             break;
           case FieldDescriptor::CppStringType::kView:
           case FieldDescriptor::CppStringType::kString:
-            MutableRaw<RepeatedPtrField<std::string> >(message, field)
+            MutableRaw<RepeatedPtrField<std::string>>(message, field)
                 ->RemoveLast();
             break;
         }
@@ -1627,10 +1627,10 @@ void Reflection::RemoveLast(Message* message,
         if (IsMapFieldInApi(field)) {
           MutableRaw<MapFieldBase>(message, field)
               ->MutableRepeatedField()
-              ->RemoveLast<GenericTypeHandler<Message> >();
+              ->RemoveLast<GenericTypeHandler<Message>>();
         } else {
           MutableRaw<RepeatedPtrFieldBase>(message, field)
-              ->RemoveLast<GenericTypeHandler<Message> >();
+              ->RemoveLast<GenericTypeHandler<Message>>();
         }
         break;
     }
@@ -1693,10 +1693,10 @@ void Reflection::SwapElements(Message* message, const FieldDescriptor* field,
     MutableExtensionSet(message)->SwapElements(field->number(), index1, index2);
   } else {
     switch (field->cpp_type()) {
-#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                 \
-  case FieldDescriptor::CPPTYPE_##UPPERCASE:              \
-    MutableRaw<RepeatedField<LOWERCASE> >(message, field) \
-        ->SwapElements(index1, index2);                   \
+#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                \
+  case FieldDescriptor::CPPTYPE_##UPPERCASE:             \
+    MutableRaw<RepeatedField<LOWERCASE>>(message, field) \
+        ->SwapElements(index1, index2);                  \
     break
 
       HANDLE_TYPE(INT32, int32_t);
@@ -1711,7 +1711,7 @@ void Reflection::SwapElements(Message* message, const FieldDescriptor* field,
 
       case FieldDescriptor::CPPTYPE_STRING:
         if (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord) {
-          MutableRaw<RepeatedField<absl::Cord> >(message, field)
+          MutableRaw<RepeatedField<absl::Cord>>(message, field)
               ->SwapElements(index1, index2);
           break;
         }
@@ -2708,10 +2708,10 @@ const Message& Reflection::GetRepeatedMessage(const Message& message,
     if (IsMapFieldInApi(field)) {
       return GetRaw<MapFieldBase>(message, field)
           .GetRepeatedField()
-          .Get<GenericTypeHandler<Message> >(index);
+          .Get<GenericTypeHandler<Message>>(index);
     } else {
       return GetRaw<RepeatedPtrFieldBase>(message, field)
-          .Get<GenericTypeHandler<Message> >(index);
+          .Get<GenericTypeHandler<Message>>(index);
     }
   }
 }
@@ -2731,10 +2731,10 @@ Message* Reflection::MutableRepeatedMessage(Message* message,
     if (IsMapFieldInApi(field)) {
       return MutableRaw<MapFieldBase>(message, field)
           ->MutableRepeatedField()
-          ->Mutable<GenericTypeHandler<Message> >(index);
+          ->Mutable<GenericTypeHandler<Message>>(index);
     } else {
       return MutableRaw<RepeatedPtrFieldBase>(message, field)
-          ->Mutable<GenericTypeHandler<Message> >(index);
+          ->Mutable<GenericTypeHandler<Message>>(index);
     }
   }
 }
@@ -2763,14 +2763,14 @@ Message* Reflection::AddMessage(Message* message, const FieldDescriptor* field,
     } else {
       repeated = MutableRaw<RepeatedPtrFieldBase>(message, field);
     }
-    result = repeated->AddFromCleared<GenericTypeHandler<Message> >();
+    result = repeated->AddFromCleared<GenericTypeHandler<Message>>();
     if (result == nullptr) {
       // We must allocate a new object.
       const Message* prototype;
       if (repeated->size() == 0) {
         prototype = factory->GetPrototype(field->message_type());
       } else {
-        prototype = &repeated->Get<GenericTypeHandler<Message> >(0);
+        prototype = &repeated->Get<GenericTypeHandler<Message>>(0);
       }
       result = prototype->New(arena);
       // We can guarantee here that repeated and result are either both heap
@@ -3730,13 +3730,12 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
     return a.field->number() < b.field->number();
   });
 
-  internal::TailCallTableInfo table_info(
-      descriptor_,
-      {
-          /* is_lite */ false,
-          /* uses_codegen */ false,
-      },
-      fields);
+  internal::TailCallTableInfo table_info(descriptor_,
+                                         {
+                                             /* is_lite */ false,
+                                             /* uses_codegen */ false,
+                                         },
+                                         fields);
 
   const size_t fast_entries_count = table_info.fast_path_fields.size();
   ABSL_CHECK_EQ(static_cast<int>(fast_entries_count),

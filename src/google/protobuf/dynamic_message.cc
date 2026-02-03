@@ -751,12 +751,12 @@ DynamicMessage::~DynamicMessage() {
         }
       }
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-          if (!is_prototype()) {
-        Message* message = *reinterpret_cast<Message**>(field_ptr);
-        if (message != nullptr) {
-          delete message;
+        if (!is_prototype()) {
+          Message* message = *reinterpret_cast<Message**>(field_ptr);
+          if (message != nullptr) {
+            delete message;
+          }
         }
-      }
     }
   }
 }
@@ -996,8 +996,8 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
       type_info->oneof_case_offset,
       static_cast<int>(type_info->class_data.allocation_size()),
       type_info->weak_field_map_offset,
-      -1,       // split_offset_
-      -1,       // sizeof_split_
+      -1,  // split_offset_
+      -1,  // sizeof_split_
   };
 
   type_info->class_data.reflection = new Reflection(

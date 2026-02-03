@@ -399,13 +399,14 @@ struct PROTOBUF_EXPORT ClassData {
   // In normal mode we have the small constructor to avoid the cost in
   // codegen.
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
-  constexpr ClassData(
-      const MessageLite* prototype, const internal::TcParseTableBase* tc_table,
-      bool (*is_initialized)(const MessageLite&),
-      void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg),
-      internal::MessageCreator message_creator, uint32_t cached_size_offset,
-      bool is_lite
-      )
+  constexpr ClassData(const MessageLite* prototype,
+                      const internal::TcParseTableBase* tc_table,
+                      bool (*is_initialized)(const MessageLite&),
+                      void (*merge_to_from)(MessageLite& to,
+                                            const MessageLite& from_msg),
+                      internal::MessageCreator message_creator,
+                      uint32_t cached_size_offset, bool is_lite
+                      )
       : prototype(prototype),
         tc_table(tc_table),
         is_initialized(is_initialized),
