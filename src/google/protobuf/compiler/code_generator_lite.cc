@@ -11,10 +11,13 @@
 #include <utility>
 #include <vector>
 
+#include "absl/base/attributes.h"
+#include "absl/base/const_init.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
+#include "absl/synchronization/mutex.h"
 
 
 namespace google {
@@ -61,10 +64,12 @@ bool IsKnownFeatureProto(absl::string_view filename) {
 namespace internal {
 
 bool is_oss_was_read = false;
+ABSL_CONST_INIT absl::Mutex oss_mutex(absl::kConstInit);
 
 bool is_oss = true;
 
 bool IsOss() {
+  absl::MutexLock lock(oss_mutex);
   is_oss_was_read = true;
   return is_oss;
 }
