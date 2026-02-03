@@ -7,7 +7,7 @@
 
 package com.google.protobuf;
 
-import com.google.protobuf.UnittestCycle;
+import protobuf_unittest.UnittestCycle;
 import proto2_unittest.UnittestProto;
 import proto2_unittest.UnittestProto.TestAllTypes;
 import java.util.ArrayList;
