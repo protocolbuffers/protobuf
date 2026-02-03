@@ -21,11 +21,21 @@ def from_json_string(value: str) -> Timestamp:
       accepted as long as they fit into nano-seconds precision. Example of
       accepted format: '1972-01-01T10:00:20.021-05:00'
 
+  Returns:
+    A Timestamp parsed from the given string.
+
   Raises:
     ValueError: On parsing problems.
   """
   timestamp = Timestamp()
   timestamp.FromJsonString(value)
+  return timestamp
+
+
+def from_datetime(dt: datetime.datetime) -> Timestamp:
+  """Converts a datetime to Timestamp."""
+  timestamp = Timestamp()
+  timestamp.FromDatetime(dt)
   return timestamp
 
 
@@ -67,6 +77,9 @@ def from_current_time() -> Timestamp:
 def to_json_string(ts: Timestamp) -> str:
   """Converts Timestamp to RFC 3339 date string format.
 
+  Args:
+    ts: The timestamp to convert.
+
   Returns:
     A string converted from timestamp. The string is always Z-normalized
     and uses 3, 6 or 9 fractional digits as required to represent the
@@ -101,6 +114,7 @@ def to_datetime(
   """Converts Timestamp to a datetime.
 
   Args:
+    ts: The timestamp to convert.
     tz: A datetime.tzinfo subclass; defaults to None.
 
   Returns:
