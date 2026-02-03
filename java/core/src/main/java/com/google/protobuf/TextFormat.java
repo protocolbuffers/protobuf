@@ -2938,7 +2938,7 @@ public final class TextFormat {
    * it's weird.
    */
   static String escapeText(final String input) {
-    return escapeBytes(ByteString.copyFromUtf8(input));
+    return TextFormatEscaper.escapeText(input);
   }
 
   /** Escape double quotes and backslashes in a String for emittingUnicode output of a message. */

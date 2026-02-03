@@ -88,19 +88,53 @@ final class TextFormatEscaper {
     return escapeBytes(input.toByteArray());
   }
 
-  static boolean needsEscape(char c) {
-    return c < 0x20 || c > 0x7e || c == '\'' || c == '"' || c == '\\';
-  }
-
   /** Like {@link #escapeBytes(ByteString)}, but escapes a text string. */
   static String escapeText(String input) {
-    // Loop on the string to see if any character even needs escaping. If yes, then convert into
-    // UTF-8 and then escape on those bytes. If not, we can just return the original input.
+    boolean hasSingleQuote = false;
+    boolean hasDoubleQuote = false;
+    boolean hasBackslash = false;
+
     for (int i = 0; i < input.length(); ++i) {
-      if (needsEscape(input.charAt(i))) {
+      char c = input.charAt(i);
+
+      // If there are any characters outside of ASCII range we eagerly convert to UTF and escape on
+      // those bytes (including quotes as well). Note that escaping to UTF8 bytes instead of \\u
+      // sequences is itself somewhat nonsensical, but JavaProto has behaved this way for a long
+      // time, and changing the behavior would be disruptive.
+      if (c < 0x20 || c > 0x7e) {
         return escapeBytes(input.getBytes(Internal.UTF_8));
       }
+
+      // While in this loop, keep track if there are any single quotes, double quotes, or
+      // backslashes. This can help avoid multiple passes over the string looking for each of the
+      // bad characters.
+      switch (c) {
+        case '\'':
+          hasSingleQuote = true;
+          break;
+        case '"':
+          hasDoubleQuote = true;
+          break;
+        case '\\':
+          hasBackslash = true;
+          break;
+        default:
+          break;
+      }
     }
+
+    // Note: escape backslashes first. Order matters to avoid double-escaping the backslashes that
+    // are added when escaping the quotes.
+    if (hasBackslash) {
+      input = input.replace("\\", "\\\\");
+    }
+    if (hasSingleQuote) {
+      input = input.replace("\'", "\\\'");
+    }
+    if (hasDoubleQuote) {
+      input = input.replace("\"", "\\\"");
+    }
+
     return input;
   }
 
