@@ -52,16 +52,16 @@ constexpr Any::Any(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct AnyDefaultTypeInternal {
-  constexpr AnyDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~AnyDefaultTypeInternal() {}
+struct AnyGlobalsTypeInternal {
+  constexpr AnyGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  ~AnyGlobalsTypeInternal() {}
   union {
-    Any _instance;
+    Any _default;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 AnyDefaultTypeInternal _Any_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 AnyGlobalsTypeInternal _Any_globals_;
 }  // namespace protobuf
 }  // namespace google
 static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
@@ -85,7 +85,7 @@ static const ::_pbi::MigrationSchema
         {0, sizeof(::google::protobuf::Any)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::google::protobuf::_Any_default_instance_._instance,
+    &::google::protobuf::_Any_globals_._default,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fany_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -208,7 +208,7 @@ constexpr auto Any::InternalNewImpl_() {
 constexpr auto Any::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
-          &_Any_default_instance_._instance,
+          &_Any_globals_._default,
           &_table_.header,
           nullptr,  // IsInitialized
           &Any::MergeImpl,
