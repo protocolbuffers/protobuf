@@ -45,16 +45,16 @@ constexpr SourceContext::SourceContext(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct SourceContextDefaultTypeInternal {
-  constexpr SourceContextDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~SourceContextDefaultTypeInternal() {}
+struct SourceContextGlobalsTypeInternal {
+  constexpr SourceContextGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  ~SourceContextGlobalsTypeInternal() {}
   union {
-    SourceContext _instance;
+    SourceContext _default;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceContextDefaultTypeInternal _SourceContext_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceContextGlobalsTypeInternal _SourceContext_globals_;
 }  // namespace protobuf
 }  // namespace google
 static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
@@ -76,7 +76,7 @@ static const ::_pbi::MigrationSchema
         {0, sizeof(::google::protobuf::SourceContext)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::google::protobuf::_SourceContext_default_instance_._instance,
+    &::google::protobuf::_SourceContext_globals_._default,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fsource_5fcontext_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -185,7 +185,7 @@ constexpr auto SourceContext::InternalNewImpl_() {
 constexpr auto SourceContext::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
-          &_SourceContext_default_instance_._instance,
+          &_SourceContext_globals_._default,
           &_table_.header,
           nullptr,  // IsInitialized
           &SourceContext::MergeImpl,

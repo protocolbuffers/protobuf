@@ -34,16 +34,16 @@ constexpr JavaFeatures_NestInFileClassFeature::JavaFeatures_NestInFileClassFeatu
     : ::google::protobuf::internal::ZeroFieldsBase() {
 }
 #endif  // PROTOBUF_CUSTOM_VTABLE
-struct JavaFeatures_NestInFileClassFeatureDefaultTypeInternal {
-  constexpr JavaFeatures_NestInFileClassFeatureDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~JavaFeatures_NestInFileClassFeatureDefaultTypeInternal() {}
+struct JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal {
+  constexpr JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  ~JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal() {}
   union {
-    JavaFeatures_NestInFileClassFeature _instance;
+    JavaFeatures_NestInFileClassFeature _default;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 JavaFeatures_NestInFileClassFeatureDefaultTypeInternal _JavaFeatures_NestInFileClassFeature_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal _JavaFeatures_NestInFileClassFeature_globals_;
 
 inline constexpr JavaFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -64,16 +64,16 @@ constexpr JavaFeatures::JavaFeatures(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct JavaFeaturesDefaultTypeInternal {
-  constexpr JavaFeaturesDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~JavaFeaturesDefaultTypeInternal() {}
+struct JavaFeaturesGlobalsTypeInternal {
+  constexpr JavaFeaturesGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  ~JavaFeaturesGlobalsTypeInternal() {}
   union {
-    JavaFeatures _instance;
+    JavaFeatures _default;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 JavaFeaturesDefaultTypeInternal _JavaFeatures_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 JavaFeaturesGlobalsTypeInternal _JavaFeatures_globals_;
 }  // namespace pb
 static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
     file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[2];
@@ -104,8 +104,8 @@ static const ::_pbi::MigrationSchema
         {1, sizeof(::pb::JavaFeatures)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::pb::_JavaFeatures_NestInFileClassFeature_default_instance_._instance,
-    &::pb::_JavaFeatures_default_instance_._instance,
+    &::pb::_JavaFeatures_NestInFileClassFeature_globals_._default,
+    &::pb::_JavaFeatures_globals_._default,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -219,7 +219,7 @@ constexpr auto JavaFeatures_NestInFileClassFeature::InternalNewImpl_() {
 constexpr auto JavaFeatures_NestInFileClassFeature::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
-          &_JavaFeatures_NestInFileClassFeature_default_instance_._instance,
+          &_JavaFeatures_NestInFileClassFeature_globals_._default,
           &_table_.header,
           nullptr,  // IsInitialized
           &JavaFeatures_NestInFileClassFeature::MergeImpl,
@@ -356,7 +356,7 @@ constexpr auto JavaFeatures::InternalNewImpl_() {
 constexpr auto JavaFeatures::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
-          &_JavaFeatures_default_instance_._instance,
+          &_JavaFeatures_globals_._default,
           &_table_.header,
           nullptr,  // IsInitialized
           &JavaFeatures::MergeImpl,
@@ -624,7 +624,7 @@ void JavaFeatures::InternalSwap(JavaFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL
 PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<
         ::google::protobuf::FeatureSet, ::_pbi::MessageTypeTraits< ::pb::JavaFeatures >, 11, false>
-        java(kJavaFieldNumber, &::pb::_JavaFeatures_default_instance_);
+        java(kJavaFieldNumber, &::pb::_JavaFeatures_globals_);
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
 namespace google {

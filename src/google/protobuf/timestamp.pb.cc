@@ -44,16 +44,16 @@ constexpr Timestamp::Timestamp(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct TimestampDefaultTypeInternal {
-  constexpr TimestampDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~TimestampDefaultTypeInternal() {}
+struct TimestampGlobalsTypeInternal {
+  constexpr TimestampGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  ~TimestampGlobalsTypeInternal() {}
   union {
-    Timestamp _instance;
+    Timestamp _default;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 TimestampDefaultTypeInternal _Timestamp_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 TimestampGlobalsTypeInternal _Timestamp_globals_;
 }  // namespace protobuf
 }  // namespace google
 static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
@@ -77,7 +77,7 @@ static const ::_pbi::MigrationSchema
         {0, sizeof(::google::protobuf::Timestamp)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::google::protobuf::_Timestamp_default_instance_._instance,
+    &::google::protobuf::_Timestamp_globals_._default,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -177,7 +177,7 @@ constexpr auto Timestamp::InternalNewImpl_() {
 constexpr auto Timestamp::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
-          &_Timestamp_default_instance_._instance,
+          &_Timestamp_globals_._default,
           &_table_.header,
           nullptr,  // IsInitialized
           &Timestamp::MergeImpl,

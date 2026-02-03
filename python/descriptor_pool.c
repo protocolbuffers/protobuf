@@ -49,7 +49,7 @@ static PyObject* PyUpb_DescriptorPool_DoCreateWithCache(
   pool->symtab = upb_DefPool_New();
   pool->db = db;
   Py_XINCREF(pool->db);
-  PyUpb_WeakMap_Add(obj_cache, pool->symtab, &pool->ob_base);
+  PyUpb_KnownObjCache_Add(obj_cache, pool->symtab, &pool->ob_base);
   return &pool->ob_base;
 }
 

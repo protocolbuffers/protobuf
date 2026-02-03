@@ -48,16 +48,16 @@ constexpr Mixin::Mixin(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct MixinDefaultTypeInternal {
-  constexpr MixinDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~MixinDefaultTypeInternal() {}
+struct MixinGlobalsTypeInternal {
+  constexpr MixinGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  ~MixinGlobalsTypeInternal() {}
   union {
-    Mixin _instance;
+    Mixin _default;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MixinDefaultTypeInternal _Mixin_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MixinGlobalsTypeInternal _Mixin_globals_;
 
 inline constexpr Method::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -93,16 +93,16 @@ constexpr Method::Method(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct MethodDefaultTypeInternal {
-  constexpr MethodDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~MethodDefaultTypeInternal() {}
+struct MethodGlobalsTypeInternal {
+  constexpr MethodGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  ~MethodGlobalsTypeInternal() {}
   union {
-    Method _instance;
+    Method _default;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodDefaultTypeInternal _Method_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodGlobalsTypeInternal _Method_globals_;
 
 inline constexpr Api::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -144,16 +144,16 @@ constexpr Api::Api(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct ApiDefaultTypeInternal {
-  constexpr ApiDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~ApiDefaultTypeInternal() {}
+struct ApiGlobalsTypeInternal {
+  constexpr ApiGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  ~ApiGlobalsTypeInternal() {}
   union {
-    Api _instance;
+    Api _default;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ApiDefaultTypeInternal _Api_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ApiGlobalsTypeInternal _Api_globals_;
 }  // namespace protobuf
 }  // namespace google
 static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
@@ -217,9 +217,9 @@ static const ::_pbi::MigrationSchema
         {38, sizeof(::google::protobuf::Mixin)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::google::protobuf::_Api_default_instance_._instance,
-    &::google::protobuf::_Method_default_instance_._instance,
-    &::google::protobuf::_Mixin_default_instance_._instance,
+    &::google::protobuf::_Api_globals_._default,
+    &::google::protobuf::_Method_globals_._default,
+    &::google::protobuf::_Mixin_globals_._default,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fapi_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -413,7 +413,7 @@ constexpr auto Api::InternalNewImpl_() {
 constexpr auto Api::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
-          &_Api_default_instance_._instance,
+          &_Api_globals_._default,
           &_table_.header,
           nullptr,  // IsInitialized
           &Api::MergeImpl,
@@ -981,7 +981,7 @@ constexpr auto Method::InternalNewImpl_() {
 constexpr auto Method::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
-          &_Method_default_instance_._instance,
+          &_Method_globals_._default,
           &_table_.header,
           nullptr,  // IsInitialized
           &Method::MergeImpl,
@@ -1502,7 +1502,7 @@ constexpr auto Mixin::InternalNewImpl_() {
 constexpr auto Mixin::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
-          &_Mixin_default_instance_._instance,
+          &_Mixin_globals_._default,
           &_table_.header,
           nullptr,  // IsInitialized
           &Mixin::MergeImpl,

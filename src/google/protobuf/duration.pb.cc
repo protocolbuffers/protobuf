@@ -44,16 +44,16 @@ constexpr Duration::Duration(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct DurationDefaultTypeInternal {
-  constexpr DurationDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~DurationDefaultTypeInternal() {}
+struct DurationGlobalsTypeInternal {
+  constexpr DurationGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  ~DurationGlobalsTypeInternal() {}
   union {
-    Duration _instance;
+    Duration _default;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DurationDefaultTypeInternal _Duration_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DurationGlobalsTypeInternal _Duration_globals_;
 }  // namespace protobuf
 }  // namespace google
 static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
@@ -77,7 +77,7 @@ static const ::_pbi::MigrationSchema
         {0, sizeof(::google::protobuf::Duration)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::google::protobuf::_Duration_default_instance_._instance,
+    &::google::protobuf::_Duration_globals_._default,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fduration_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -177,7 +177,7 @@ constexpr auto Duration::InternalNewImpl_() {
 constexpr auto Duration::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
-          &_Duration_default_instance_._instance,
+          &_Duration_globals_._default,
           &_table_.header,
           nullptr,  // IsInitialized
           &Duration::MergeImpl,

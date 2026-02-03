@@ -46,16 +46,16 @@ constexpr Option::Option(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct OptionDefaultTypeInternal {
-  constexpr OptionDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~OptionDefaultTypeInternal() {}
+struct OptionGlobalsTypeInternal {
+  constexpr OptionGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  ~OptionGlobalsTypeInternal() {}
   union {
-    Option _instance;
+    Option _default;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OptionDefaultTypeInternal _Option_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OptionGlobalsTypeInternal _Option_globals_;
 
 inline constexpr Field::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -93,16 +93,16 @@ constexpr Field::Field(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct FieldDefaultTypeInternal {
-  constexpr FieldDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~FieldDefaultTypeInternal() {}
+struct FieldGlobalsTypeInternal {
+  constexpr FieldGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  ~FieldGlobalsTypeInternal() {}
   union {
-    Field _instance;
+    Field _default;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldDefaultTypeInternal _Field_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldGlobalsTypeInternal _Field_globals_;
 
 inline constexpr EnumValue::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -127,16 +127,16 @@ constexpr EnumValue::EnumValue(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct EnumValueDefaultTypeInternal {
-  constexpr EnumValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~EnumValueDefaultTypeInternal() {}
+struct EnumValueGlobalsTypeInternal {
+  constexpr EnumValueGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  ~EnumValueGlobalsTypeInternal() {}
   union {
-    EnumValue _instance;
+    EnumValue _default;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueDefaultTypeInternal _EnumValue_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueGlobalsTypeInternal _EnumValue_globals_;
 
 inline constexpr Type::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -175,16 +175,16 @@ constexpr Type::Type(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct TypeDefaultTypeInternal {
-  constexpr TypeDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~TypeDefaultTypeInternal() {}
+struct TypeGlobalsTypeInternal {
+  constexpr TypeGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  ~TypeGlobalsTypeInternal() {}
   union {
-    Type _instance;
+    Type _default;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 TypeDefaultTypeInternal _Type_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 TypeGlobalsTypeInternal _Type_globals_;
 
 inline constexpr Enum::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -218,16 +218,16 @@ constexpr Enum::Enum(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct EnumDefaultTypeInternal {
-  constexpr EnumDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~EnumDefaultTypeInternal() {}
+struct EnumGlobalsTypeInternal {
+  constexpr EnumGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  ~EnumGlobalsTypeInternal() {}
   union {
-    Enum _instance;
+    Enum _default;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDefaultTypeInternal _Enum_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumGlobalsTypeInternal _Enum_globals_;
 }  // namespace protobuf
 }  // namespace google
 static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
@@ -319,11 +319,11 @@ static const ::_pbi::MigrationSchema
         {64, sizeof(::google::protobuf::Option)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::google::protobuf::_Type_default_instance_._instance,
-    &::google::protobuf::_Field_default_instance_._instance,
-    &::google::protobuf::_Enum_default_instance_._instance,
-    &::google::protobuf::_EnumValue_default_instance_._instance,
-    &::google::protobuf::_Option_default_instance_._instance,
+    &::google::protobuf::_Type_globals_._default,
+    &::google::protobuf::_Field_globals_._default,
+    &::google::protobuf::_Enum_globals_._default,
+    &::google::protobuf::_EnumValue_globals_._default,
+    &::google::protobuf::_Option_globals_._default,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2ftype_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -551,7 +551,7 @@ constexpr auto Type::InternalNewImpl_() {
 constexpr auto Type::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
-          &_Type_default_instance_._instance,
+          &_Type_globals_._default,
           &_table_.header,
           nullptr,  // IsInitialized
           &Type::MergeImpl,
@@ -1076,7 +1076,7 @@ constexpr auto Field::InternalNewImpl_() {
 constexpr auto Field::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
-          &_Field_default_instance_._instance,
+          &_Field_globals_._default,
           &_table_.header,
           nullptr,  // IsInitialized
           &Field::MergeImpl,
@@ -1709,7 +1709,7 @@ constexpr auto Enum::InternalNewImpl_() {
 constexpr auto Enum::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
-          &_Enum_default_instance_._instance,
+          &_Enum_globals_._default,
           &_table_.header,
           nullptr,  // IsInitialized
           &Enum::MergeImpl,
@@ -2180,7 +2180,7 @@ constexpr auto EnumValue::InternalNewImpl_() {
 constexpr auto EnumValue::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
-          &_EnumValue_default_instance_._instance,
+          &_EnumValue_globals_._default,
           &_table_.header,
           nullptr,  // IsInitialized
           &EnumValue::MergeImpl,
@@ -2539,7 +2539,7 @@ constexpr auto Option::InternalNewImpl_() {
 constexpr auto Option::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
-          &_Option_default_instance_._instance,
+          &_Option_globals_._default,
           &_table_.header,
           nullptr,  // IsInitialized
           &Option::MergeImpl,

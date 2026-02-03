@@ -44,16 +44,16 @@ constexpr CppFeatures::CppFeatures(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct CppFeaturesDefaultTypeInternal {
-  constexpr CppFeaturesDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~CppFeaturesDefaultTypeInternal() {}
+struct CppFeaturesGlobalsTypeInternal {
+  constexpr CppFeaturesGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  ~CppFeaturesGlobalsTypeInternal() {}
   union {
-    CppFeatures _instance;
+    CppFeatures _default;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CppFeaturesDefaultTypeInternal _CppFeatures_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CppFeaturesGlobalsTypeInternal _CppFeatures_globals_;
 }  // namespace pb
 static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
     file_level_enum_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto[1];
@@ -78,7 +78,7 @@ static const ::_pbi::MigrationSchema
         {0, sizeof(::pb::CppFeatures)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::pb::_CppFeatures_default_instance_._instance,
+    &::pb::_CppFeatures_globals_._default,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffeatures_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -199,7 +199,7 @@ constexpr auto CppFeatures::InternalNewImpl_() {
 constexpr auto CppFeatures::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
-          &_CppFeatures_default_instance_._instance,
+          &_CppFeatures_globals_._default,
           &_table_.header,
           nullptr,  // IsInitialized
           &CppFeatures::MergeImpl,
@@ -427,7 +427,7 @@ void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<
         ::google::protobuf::FeatureSet, ::_pbi::MessageTypeTraits< ::pb::CppFeatures >, 11, false>
-        cpp(kCppFieldNumber, &::pb::_CppFeatures_default_instance_);
+        cpp(kCppFieldNumber, &::pb::_CppFeatures_globals_);
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
 namespace google {
