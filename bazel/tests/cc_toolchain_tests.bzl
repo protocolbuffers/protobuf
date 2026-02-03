@@ -50,7 +50,7 @@ def _test_cc_toolchain_uses_full_protoc_when_prefer_prebuilt_flag_set_impl(env, 
     # When prefer_prebuilt_protoc is True, protoc_minimal_do_not_use is None,
     # so the cc_toolchain should use the full protoc (not protoc_minimal).
     # The protoc path should end with "/protoc" not contain "protoc_minimal"
-    action.argv().contains_predicate(matching.str_matches("*/protoc"))
+    action.argv().contains_predicate(matching.any(matching.str_matches("*/protoc"), matching.str_matches("*/protoc.exe")))
     action.argv().not_contains_predicate(matching.str_matches("*protoc_minimal*"))
 
 def _test_cc_toolchain_uses_protoc_minimal_by_default(name):
