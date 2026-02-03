@@ -1539,7 +1539,7 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
           explicit constexpr $classname$($pbi$::ConstantInitialized);
           explicit $classname$($pb$::Arena* $nullable$ arena);
           static constexpr const void* $nonnull$ internal_default_instance() {
-            return &_$classname$_default_instance_;
+            return &_$classname$_globals_;
           }
 
           $decl_verify_func$;
@@ -2093,12 +2093,12 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
        {"decl_split_methods",
         [&] {
           if (!ShouldSplit(descriptor_, options_)) return;
-          p->Emit({{"default_name", DefaultInstanceName(descriptor_, options_,
-                                                        /*split=*/true)}},
+          p->Emit({{"split_default",
+                    SplitDefaultInstanceName(descriptor_, options_)}},
                   R"cc(
                     private:
                     inline bool IsSplitMessageDefault() const {
-                      return $split$ == reinterpret_cast<const Impl_::Split*>(&$default_name$);
+                      return $split$ == reinterpret_cast<const Impl_::Split*>(&$split_default$);
                     }
                     PROTOBUF_NOINLINE void PrepareSplitMessageForWrite();
 
@@ -2192,8 +2192,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         [&] {
           if (!ShouldSplit(descriptor_, options_)) return;
 
-          p->Emit({{"split_default", DefaultInstanceType(descriptor_, options_,
-                                                         /*split=*/true)}},
+          p->Emit({{"split_default",
+                    SplitDefaultInstanceType(descriptor_, options_)}},
                   R"cc(
                     friend struct $split_default$;
                   )cc");
@@ -2251,8 +2251,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           $descriptor_accessor$;
           $get_descriptor$;
           $nodiscard $static const $classname$& default_instance() {
-            return *reinterpret_cast<const $classname$*>(
-                &_$classname$_default_instance_);
+            return *reinterpret_cast<const $classname$*>(&_$classname$_globals_);
           }
           $decl_oneof$;
           static constexpr int kIndexInFileMessages = $index_in_file_messages$;
@@ -2546,10 +2545,8 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   }
 
   if (ShouldSplit(descriptor_, options_)) {
-    p->Emit({{"split_default",
-              DefaultInstanceName(descriptor_, options_, /*split=*/true)},
-             {"default",
-              DefaultInstanceName(descriptor_, options_, /*split=*/false)}},
+    p->Emit({{"split_default", SplitDefaultInstanceName(descriptor_, options_)},
+             {"default", MsgGlobalsInstanceName(descriptor_, options_)}},
             R"cc(
               void $classname$::PrepareSplitMessageForWrite() {
                 if (ABSL_PREDICT_TRUE(IsSplitMessageDefault())) {
@@ -2871,7 +2868,7 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
   auto init_split = [&] {
     if (ShouldSplit(descriptor_, options_)) {
       separator();
-      p->Emit({{"name", DefaultInstanceName(descriptor_, options_, true)}},
+      p->Emit({{"name", SplitDefaultInstanceName(descriptor_, options_)}},
               "_split_{const_cast<Split*>(&$name$._instance)}");
     }
   };
@@ -3988,8 +3985,8 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
 
   auto vars = p->WithVars(
       {{"default_instance",
-        absl::StrCat("&", DefaultInstanceName(descriptor_, options_),
-                     "._instance")}});
+        absl::StrCat("&", MsgGlobalsInstanceName(descriptor_, options_),
+                     "._default")}});
   const auto is_initialized = [&] {
     if (NeedsIsInitialized()) {
       p->Emit(R"cc(
