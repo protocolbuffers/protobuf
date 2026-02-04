@@ -524,7 +524,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           inner: $pbr$::OwnedMessageInner<$Msg$>
         }
 
-        impl $pb$::Message for $Msg$ {}
+        impl $pb$::Message for $Msg$ {
+          type MessageView<'msg> = $Msg$View<'msg>;
+          type MessageMut<'msg> = $Msg$Mut<'msg>;
+        }
 
         impl $std$::default::Default for $Msg$ {
           fn default() -> Self {
