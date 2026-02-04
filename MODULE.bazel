@@ -17,6 +17,7 @@ module(
 # Workaround rules_apple having a default dependency on rules_swift 2.4.0, which in turn has a
 # hard dependency on the presence of swiftc.exe on Windows.
 bazel_dep(name = "rules_swift", version = "3.0.2", repo_name = "build_bazel_rules_swift")
+
 # TODO: Can rules_apple be removed, and thus allow rules_swift to be removed?
 bazel_dep(name = "rules_apple", version = "4.0.0", repo_name = "build_bazel_rules_apple")
 bazel_dep(name = "apple_support", version = "1.15.1", repo_name = "build_bazel_apple_support")
@@ -153,7 +154,7 @@ SUPPORTED_PYTHON_VERSIONS = [
 # TODO: Replace system_python with hermetic_python.
 # TODO: Remove dev_dependency once system_python is no longer used and we support
 # python/upb in Bazel.
-system_python = use_extension("//python/dist:system_python.bzl", "system_python_extension", dev_dependency = True)
+system_python = use_extension("//python/dist:system_python.bzl", "system_python_extension")
 system_python.find(
     name = "system_python",
     minimum = "3.9",
