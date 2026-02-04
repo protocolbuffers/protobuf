@@ -147,7 +147,7 @@ SUPPORTED_PYTHON_VERSIONS = [
 # TODO: Replace system_python with hermetic_python.
 # TODO: Remove dev_dependency once system_python is no longer used and we support
 # python/upb in Bazel.
-system_python = use_extension("//python/dist:system_python.bzl", "system_python_extension", dev_dependency = True)
+system_python = use_extension("//python/dist:system_python.bzl", "system_python_extension")
 system_python.find(
     name = "system_python",
     minimum = "3.9",
