@@ -163,6 +163,7 @@ static const char* const kKeywordList[] = {
     "inline",
     "int",
     "long",
+    "module",
     "mutable",
     "namespace",
     "new",
