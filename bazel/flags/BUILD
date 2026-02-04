@@ -41,7 +41,7 @@ bool_flag(
     name = "prefer_prebuilt_protoc",
     # TODO: this should be True after the feature is vetted with some adoption
     build_setting_default = False,
-    visibility = ["//bazel:__pkg__"],
+    visibility = ["//bazel/toolchains:__pkg__"],
 )
 
 config_setting(
