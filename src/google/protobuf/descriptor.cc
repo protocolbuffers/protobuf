@@ -6687,7 +6687,8 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
                 GetFile(descriptor), {descriptor.proto_features_, &desc_proto,
                                       GetFullName(descriptor), proto.name()});
           }
-          if (!IsDefaultInstance(*descriptor.options_)) {
+          if (!IsDefaultInstance(*descriptor.options_) &&
+              descriptor.options_->ByteSizeLong() != 0) {
             deferred_validation_.ValidateFeatureLifetimes(
                 GetFile(descriptor), {descriptor.options_, &desc_proto,
                                       GetFullName(descriptor), proto.name()});
