@@ -9,6 +9,7 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static com.google.protobuf.WireFormat.FIXED64_SIZE;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThrows;
 
@@ -149,7 +150,7 @@ public class CodedInputStreamTest {
     private int readCalls;
 
     public SmallBlockInputStream(byte[] data, int blockSize) {
-      super(new ByteArrayInputStream(data));
+      super(new ByteArrayInputStreamMatchingZeroLengthReadSemantics(data));
       this.blockSize = blockSize;
     }
 
@@ -217,7 +218,7 @@ public class CodedInputStreamTest {
     // array first.
     byte[] longerData = new byte[data.length + 1];
     System.arraycopy(data, 0, longerData, 0, data.length);
-    InputStream rawInput = new ByteArrayInputStream(longerData);
+    InputStream rawInput = new ByteArrayInputStreamMatchingZeroLengthReadSemantics(longerData);
     assertThat(CodedInputStream.readRawVarint32(rawInput)).isEqualTo((int) value);
     assertThat(rawInput.available()).isEqualTo(1);
   }
@@ -253,7 +254,8 @@ public class CodedInputStreamTest {
 
     // Make sure we get the same error when reading direct from an InputStream.
     try {
-      CodedInputStream.readRawVarint32(new ByteArrayInputStream(data));
+      CodedInputStream.readRawVarint32(
+          new ByteArrayInputStreamMatchingZeroLengthReadSemantics(data));
       assertWithMessage("Should have thrown an exception.").fail();
     } catch (InvalidProtocolBufferException e) {
       assertThat(e).hasMessageThat().isEqualTo(expected.getMessage());
@@ -800,13 +802,16 @@ public class CodedInputStreamTest {
             InvalidProtocolBufferException.class,
             () ->
                 MapContainer.parseFrom(
-                    new ByteArrayInputStream(NESTING_SGROUP_WITH_INITIAL_BYTES)));
+                    new ByteArrayInputStreamMatchingZeroLengthReadSemantics(
+                        NESTING_SGROUP_WITH_INITIAL_BYTES)));
     Throwable mergeFromThrown =
         assertThrows(
             InvalidProtocolBufferException.class,
             () ->
                 MapContainer.newBuilder()
-                    .mergeFrom(new ByteArrayInputStream(NESTING_SGROUP_WITH_INITIAL_BYTES)));
+                    .mergeFrom(
+                        new ByteArrayInputStreamMatchingZeroLengthReadSemantics(
+                            NESTING_SGROUP_WITH_INITIAL_BYTES)));
 
     assertThat(parseFromThrown)
         .hasMessageThat()
@@ -818,7 +823,8 @@ public class CodedInputStreamTest {
 
   @Test
   public void testMaliciousSGroupTags_inputStream_skipMessage() throws Exception {
-    ByteArrayInputStream inputSteam = new ByteArrayInputStream(NESTING_SGROUP);
+    InputStream inputSteam =
+        new ByteArrayInputStreamMatchingZeroLengthReadSemantics(NESTING_SGROUP);
     CodedInputStream input = CodedInputStream.newInstance(inputSteam);
     CodedOutputStream output = CodedOutputStream.newInstance(new byte[NESTING_SGROUP.length]);
 
@@ -986,7 +992,9 @@ public class CodedInputStreamTest {
         inputStreamBufferLength <= rawInput.length + 1;
         inputStreamBufferLength++) {
       CodedInputStream input =
-          CodedInputStream.newInstance(new ByteArrayInputStream(rawInput), inputStreamBufferLength);
+          CodedInputStream.newInstance(
+              new ByteArrayInputStreamMatchingZeroLengthReadSemantics(rawInput),
+              inputStreamBufferLength);
       input.setSizeLimit(rawInput.length - 1);
       input.readString();
       input.readString();
@@ -1001,7 +1009,9 @@ public class CodedInputStreamTest {
 
   @Test
   public void testIsAtEnd() throws Exception {
-    CodedInputStream input = CodedInputStream.newInstance(new ByteArrayInputStream(new byte[5]));
+    CodedInputStream input =
+        CodedInputStream.newInstance(
+            new ByteArrayInputStreamMatchingZeroLengthReadSemantics(new byte[5]));
     try {
       for (int i = 0; i < 5; i++) {
         assertThat(input.isAtEnd()).isFalse();
@@ -1026,7 +1036,9 @@ public class CodedInputStreamTest {
     output.flush();
 
     byte[] rawInput = rawOutput.toByteArray();
-    CodedInputStream input = CodedInputStream.newInstance(new ByteArrayInputStream(rawInput));
+    CodedInputStream input =
+        CodedInputStream.newInstance(
+            new ByteArrayInputStreamMatchingZeroLengthReadSemantics(rawInput));
     // The length of the whole rawInput
     input.setSizeLimit(11);
     // Some number that is smaller than the rawInput's length
@@ -1260,7 +1272,7 @@ public class CodedInputStreamTest {
 
     CodedInputStream input =
         CodedInputStream.newInstance(
-            new ByteArrayInputStream(data) {
+            new ByteArrayInputStreamMatchingZeroLengthReadSemantics(data) {
               @Override
               public synchronized int available() {
                 return 0;
@@ -1285,7 +1297,7 @@ public class CodedInputStreamTest {
 
     CodedInputStream input =
         CodedInputStream.newInstance(
-            new ByteArrayInputStream(data) {
+            new ByteArrayInputStreamMatchingZeroLengthReadSemantics(data) {
               @Override
               public synchronized int available() {
                 return 0;
@@ -1569,7 +1581,9 @@ public class CodedInputStreamTest {
   @Test
   public void testSkipPastEndOfByteArrayInput() throws Exception {
     try {
-      CodedInputStream.newInstance(new ByteArrayInputStream(new byte[100])).skipRawBytes(101);
+      CodedInputStream.newInstance(
+              new ByteArrayInputStreamMatchingZeroLengthReadSemantics(new byte[100]))
+          .skipRawBytes(101);
       assertWithMessage("Should have thrown an exception").fail();
     } catch (InvalidProtocolBufferException e) {
       // Expected
@@ -1580,11 +1594,11 @@ public class CodedInputStreamTest {
   public void testMaliciousInputStream() throws Exception {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     CodedOutputStream codedOutputStream = CodedOutputStream.newInstance(outputStream);
-    codedOutputStream.writeByteArrayNoTag(new byte[] {0x0, 0x1, 0x2, 0x3, 0x4, 0x5});
+    codedOutputStream.writeByteArrayNoTag(new byte[] {0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8});
     codedOutputStream.flush();
     final List<byte[]> maliciousCapture = new ArrayList<>();
     InputStream inputStream =
-        new ByteArrayInputStream(outputStream.toByteArray()) {
+        new ByteArrayInputStreamMatchingZeroLengthReadSemantics(outputStream.toByteArray()) {
           @Override
           public synchronized int read(byte[] b, int off, int len) {
             maliciousCapture.add(b);
@@ -1679,5 +1693,67 @@ public class CodedInputStreamTest {
     CodedInputStream cis = CodedInputStream.newInstance(inputList);
     cis.readRawBytes(4096);
     assertThat(cis.isAtEnd()).isTrue();
+  }
+
+  @Test
+  public void testStreamDecoderReadFixed64_inputTooSmall(@TestParameter boolean bufferTooSmall)
+      throws Exception {
+    byte[] data = bytes(0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12);
+    InputStream input = new ByteArrayInputStreamMatchingZeroLengthReadSemantics(data);
+    CodedInputStream cis =
+        CodedInputStream.newInstance(input, FIXED64_SIZE - (bufferTooSmall ? 1 : 0));
+    try {
+      cis.readFixed64();
+      assertWithMessage("Should have thrown an exception").fail();
+    } catch (InvalidProtocolBufferException expected) {
+      assertThat(expected)
+          .hasMessageThat()
+          .isEqualTo(InvalidProtocolBufferException.truncatedMessage().getMessage());
+    }
+  }
+
+  @Test
+  public void testStreamDecoderReadFixed64_bufferBounds(@TestParameter boolean bufferTooSmall)
+      throws Exception {
+    byte[] data = bytes(0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12);
+    InputStream input = new ByteArrayInputStreamMatchingZeroLengthReadSemantics(data);
+    CodedInputStream cis =
+        CodedInputStream.newInstance(input, FIXED64_SIZE - (bufferTooSmall ? 1 : 0));
+    assertThat(cis.readFixed64()).isEqualTo(0x123456789abcdef0L);
+  }
+
+  /**
+   * A {@link ByteArrayInputStream} that matches the behavior of {@link
+   * InputStream#read(byte[],int,int)} when the requested length is 0.
+   */
+  private static class ByteArrayInputStreamMatchingZeroLengthReadSemantics
+      extends ByteArrayInputStream {
+    private ByteArrayInputStreamMatchingZeroLengthReadSemantics(byte[] data) {
+      super(data);
+    }
+
+    @Override
+    public synchronized int read(byte[] b, int off, int len) {
+      // Inline Objects.checkFromIndexSize() which is API 30+.
+      if ((b.length | off | len) < 0 || len > b.length - off) {
+        throw new IndexOutOfBoundsException();
+      }
+      // Eagerly return 0 if the requested length is 0 to match InputStream behavior.
+      if (len == 0) {
+        return 0;
+      }
+
+      if (pos >= count) {
+        return -1;
+      }
+
+      int avail = count - pos;
+      if (len > avail) {
+        len = avail;
+      }
+      System.arraycopy(buf, pos, b, off, len);
+      pos += len;
+      return len;
+    }
   }
 }
