@@ -10,8 +10,6 @@ if(${CMAKE_VERSION} VERSION_GREATER 3.16 OR ${CMAKE_VERSION} VERSION_EQUAL 3.16)
   include_guard()
 endif()
 
-set(rules_swift-version "3.0.2")
-set(rules_apple-version "4.0.0")
 set(apple_support-version "1.15.1")
 set(abseil-cpp-version "20250512.1")
 set(rules_cc-version "0.0.17")
