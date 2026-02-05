@@ -3582,7 +3582,7 @@ class SourceLocationCommentPrinter {
     // Perform the SourceLocation lookup only if we're including user comments,
     // because the lookup is fairly expensive.
     have_source_loc_ =
-        options.include_comments && desc->GetSourceLocation(&source_loc_);
+        options_.include_comments && desc->GetSourceLocation(&source_loc_);
   }
   SourceLocationCommentPrinter(const FileDescriptor* file,
                                const std::vector<int>& path,
@@ -3591,8 +3591,8 @@ class SourceLocationCommentPrinter {
       : options_(options), prefix_(prefix) {
     // Perform the SourceLocation lookup only if we're including user comments,
     // because the lookup is fairly expensive.
-    have_source_loc_ =
-        options.include_comments && file->GetSourceLocation(path, &source_loc_);
+    have_source_loc_ = options_.include_comments &&
+                       file->GetSourceLocation(path, &source_loc_);
   }
   void AddPreComment(std::string* output) {
     if (have_source_loc_) {
