@@ -152,8 +152,7 @@ void ExtensionGenerator::GenerateDeclaration(io::Printer* p) const {
       R"cc(
         inline $constant_qualifier $constexpr int $constant_name$ = $number$;
         $id_qualifier$ $pbi$::ExtensionIdentifier<
-            $extendee$, $pbi$::$type_traits$, $field_type$, $packed$>
-            $name$;
+            $extendee$, $pbi$::$type_traits$, $field_type$, $packed$>($name$);
       )cc");
 }
 
