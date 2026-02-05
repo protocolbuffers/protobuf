@@ -4075,7 +4075,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                     false,
                     $v2_data$,
                 },
-                &$classname$::kDescriptorMethods,
+                &::_pbi::kDescriptorMethods,
                 &$desc_table$,
                 $tracker_on_get_metadata$,
             };

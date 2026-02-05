@@ -232,7 +232,7 @@ constexpr auto JavaFeatures_NestInFileClassFeature::InternalGenerateClassData_()
           PROTOBUF_FIELD_OFFSET(JavaFeatures_NestInFileClassFeature, _impl_._cached_size_),
           false,
       },
-      &JavaFeatures_NestInFileClassFeature::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
       nullptr,  // tracker
   };
@@ -369,7 +369,7 @@ constexpr auto JavaFeatures::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._cached_size_),
           false,
       },
-      &JavaFeatures::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
       nullptr,  // tracker
   };

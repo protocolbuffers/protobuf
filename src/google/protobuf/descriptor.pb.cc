@@ -2603,7 +2603,7 @@ constexpr auto FileDescriptorSet::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FileDescriptorSet, _impl_._cached_size_),
           false,
       },
-      &FileDescriptorSet::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -3011,7 +3011,7 @@ constexpr auto FileDescriptorProto::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._cached_size_),
           false,
       },
-      &FileDescriptorProto::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -3725,7 +3725,7 @@ constexpr auto DescriptorProto_ExtensionRange::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._cached_size_),
           false,
       },
-      &DescriptorProto_ExtensionRange::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -4046,7 +4046,7 @@ constexpr auto DescriptorProto_ReservedRange::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._cached_size_),
           false,
       },
-      &DescriptorProto_ReservedRange::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -4442,7 +4442,7 @@ constexpr auto DescriptorProto::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._cached_size_),
           false,
       },
-      &DescriptorProto::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -5098,7 +5098,7 @@ constexpr auto ExtensionRangeOptions_Declaration::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._cached_size_),
           false,
       },
-      &ExtensionRangeOptions_Declaration::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -5488,7 +5488,7 @@ constexpr auto ExtensionRangeOptions::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._cached_size_),
           false,
       },
-      &ExtensionRangeOptions::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -5918,7 +5918,7 @@ constexpr auto FieldDescriptorProto::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._cached_size_),
           false,
       },
-      &FieldDescriptorProto::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -6449,7 +6449,7 @@ constexpr auto OneofDescriptorProto::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._cached_size_),
           false,
       },
-      &OneofDescriptorProto::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -6745,7 +6745,7 @@ constexpr auto EnumDescriptorProto_EnumReservedRange::InternalGenerateClassData_
           PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._cached_size_),
           false,
       },
-      &EnumDescriptorProto_EnumReservedRange::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -7081,7 +7081,7 @@ constexpr auto EnumDescriptorProto::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._cached_size_),
           false,
       },
-      &EnumDescriptorProto::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -7534,7 +7534,7 @@ constexpr auto EnumValueDescriptorProto::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._cached_size_),
           false,
       },
-      &EnumValueDescriptorProto::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -7885,7 +7885,7 @@ constexpr auto ServiceDescriptorProto::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._cached_size_),
           false,
       },
-      &ServiceDescriptorProto::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -8253,7 +8253,7 @@ constexpr auto MethodDescriptorProto::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._cached_size_),
           false,
       },
-      &MethodDescriptorProto::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -8714,7 +8714,7 @@ constexpr auto FileOptions::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._cached_size_),
           false,
       },
-      &FileOptions::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -9500,7 +9500,7 @@ constexpr auto MessageOptions::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._cached_size_),
           false,
       },
-      &MessageOptions::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -9917,7 +9917,7 @@ constexpr auto FieldOptions_EditionDefault::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._cached_size_),
           false,
       },
-      &FieldOptions_EditionDefault::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -10219,7 +10219,7 @@ constexpr auto FieldOptions_FeatureSupport::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_._cached_size_),
           false,
       },
-      &FieldOptions_FeatureSupport::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -10648,7 +10648,7 @@ constexpr auto FieldOptions::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._cached_size_),
           false,
       },
-      &FieldOptions::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -11272,7 +11272,7 @@ constexpr auto OneofOptions::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._cached_size_),
           false,
       },
-      &OneofOptions::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -11638,7 +11638,7 @@ constexpr auto EnumOptions::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._cached_size_),
           false,
       },
-      &EnumOptions::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -12061,7 +12061,7 @@ constexpr auto EnumValueOptions::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._cached_size_),
           false,
       },
-      &EnumValueOptions::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -12494,7 +12494,7 @@ constexpr auto ServiceOptions::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._cached_size_),
           false,
       },
-      &ServiceOptions::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -12884,7 +12884,7 @@ constexpr auto MethodOptions::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._cached_size_),
           false,
       },
-      &MethodOptions::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -13275,7 +13275,7 @@ constexpr auto UninterpretedOption_NamePart::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._cached_size_),
           false,
       },
-      &UninterpretedOption_NamePart::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -13594,7 +13594,7 @@ constexpr auto UninterpretedOption::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._cached_size_),
           false,
       },
-      &UninterpretedOption::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -13984,7 +13984,7 @@ constexpr auto FeatureSet_VisibilityFeature::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FeatureSet_VisibilityFeature, _impl_._cached_size_),
           false,
       },
-      &FeatureSet_VisibilityFeature::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -14145,7 +14145,7 @@ constexpr auto FeatureSet::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._cached_size_),
           false,
       },
-      &FeatureSet::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -14599,7 +14599,7 @@ constexpr auto FeatureSetDefaults_FeatureSetEditionDefault::InternalGenerateClas
           PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._cached_size_),
           false,
       },
-      &FeatureSetDefaults_FeatureSetEditionDefault::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -14963,7 +14963,7 @@ constexpr auto FeatureSetDefaults::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._cached_size_),
           false,
       },
-      &FeatureSetDefaults::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -15337,7 +15337,7 @@ constexpr auto SourceCodeInfo_Location::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._cached_size_),
           false,
       },
-      &SourceCodeInfo_Location::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -15737,7 +15737,7 @@ constexpr auto SourceCodeInfo::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(SourceCodeInfo, _impl_._cached_size_),
           false,
       },
-      &SourceCodeInfo::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -16052,7 +16052,7 @@ constexpr auto GeneratedCodeInfo_Annotation::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._cached_size_),
           false,
       },
-      &GeneratedCodeInfo_Annotation::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
@@ -16434,7 +16434,7 @@ constexpr auto GeneratedCodeInfo::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo, _impl_._cached_size_),
           false,
       },
-      &GeneratedCodeInfo::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };

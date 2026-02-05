@@ -410,7 +410,7 @@ constexpr auto Version::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(Version, _impl_._cached_size_),
           false,
       },
-      &Version::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
       nullptr,  // tracker
   };
@@ -800,7 +800,7 @@ constexpr auto CodeGeneratorRequest::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._cached_size_),
           false,
       },
-      &CodeGeneratorRequest::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
       nullptr,  // tracker
   };
@@ -1229,7 +1229,7 @@ constexpr auto CodeGeneratorResponse_File::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._cached_size_),
           false,
       },
-      &CodeGeneratorResponse_File::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
       nullptr,  // tracker
   };
@@ -1600,7 +1600,7 @@ constexpr auto CodeGeneratorResponse::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._cached_size_),
           false,
       },
-      &CodeGeneratorResponse::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
       nullptr,  // tracker
   };

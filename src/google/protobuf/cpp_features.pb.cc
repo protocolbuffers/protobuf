@@ -212,7 +212,7 @@ constexpr auto CppFeatures::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
           false,
       },
-      &CppFeatures::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
       nullptr,  // tracker
   };

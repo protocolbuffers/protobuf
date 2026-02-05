@@ -65,6 +65,7 @@
 #include "google/protobuf/internal_metadata_locator.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/micro_string.h"
 #include "google/protobuf/port.h"
@@ -395,7 +396,7 @@ struct DynamicMessageFactory::TypeInfo {
           PROTOBUF_FIELD_OFFSET(DynamicMessage, cached_byte_size_),
           false,
       },
-      &DynamicMessage::kDescriptorMethods,
+      &internal::kDescriptorMethods,
       nullptr,  // descriptor_table
       nullptr,  // get_metadata_tracker
   };

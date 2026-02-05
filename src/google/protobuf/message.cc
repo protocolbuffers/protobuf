@@ -60,6 +60,65 @@ namespace internal {
 // defined in generated_message_reflection.cc
 void RegisterFileLevelMetadata(const DescriptorTable* descriptor_table);
 
+struct DescriptorMethodsFriend {
+  static const TcParseTableBase* GetTcParseTable(const MessageLite& msg) {
+    return DownCastMessage<Message>(msg).GetReflection()->GetTcParseTable();
+  }
+};
+
+namespace {
+
+Metadata GetMetadataImpl(const internal::ClassDataFull& data) {
+  auto* table = data.descriptor_table;
+  // Only codegen types provide a table. DynamicMessage does not provide a table
+  // and instead eagerly initializes the descriptor/reflection members.
+  if (ABSL_PREDICT_TRUE(table != nullptr)) {
+    if (ABSL_PREDICT_FALSE(data.get_metadata_tracker != nullptr)) {
+      data.get_metadata_tracker();
+    }
+    absl::call_once(*table->once, [table] {
+      internal::AssignDescriptorsOnceInnerCall(table);
+    });
+  }
+  return {data.descriptor, data.reflection};
+}
+
+// Helper function to get type name - logic from Message::GetTypeNameImpl
+absl::string_view GetTypeNameImpl(const ClassData* data) {
+  return GetMetadataImpl(data->full()).descriptor->full_name();
+}
+
+// Helper function for InitializationErrorString - logic from existing static
+// function
+std::string InitializationErrorStringImpl(const MessageLite& msg) {
+  return DownCastMessage<Message>(msg).InitializationErrorString();
+}
+
+// Helper function to get TcParseTable - logic from Message::GetTcParseTableImpl
+const internal::TcParseTableBase* GetTcParseTableImpl(const MessageLite& msg) {
+  return DescriptorMethodsFriend::GetTcParseTable(msg);
+}
+
+// Helper function for SpaceUsedLong - logic from Message::SpaceUsedLongImpl
+size_t SpaceUsedLongImpl(const MessageLite& msg_lite) {
+  auto& msg = DownCastMessage<Message>(msg_lite);
+  return msg.GetReflection()->SpaceUsedLong(msg);
+}
+
+// Helper function for DebugString - logic from existing static function
+std::string DebugStringImpl(const MessageLite& msg) {
+  return DownCastMessage<Message>(msg).DebugString();
+}
+
+}  // namespace
+
+PROTOBUF_CONSTINIT PROTOBUF_EXPORT const DescriptorMethods
+    kDescriptorMethods = {
+        GetTypeNameImpl,     InitializationErrorStringImpl,
+        GetTcParseTableImpl, SpaceUsedLongImpl,
+        DebugStringImpl,
+};
+
 }  // namespace internal
 
 using internal::ReflectionOps;
@@ -158,18 +217,7 @@ Metadata Message::GetMetadata() const {
 }
 
 Metadata Message::GetMetadataImpl(const internal::ClassDataFull& data) {
-  auto* table = data.descriptor_table;
-  // Only codegen types provide a table. DynamicMessage does not provide a table
-  // and instead eagerly initializes the descriptor/reflection members.
-  if (ABSL_PREDICT_TRUE(table != nullptr)) {
-    if (ABSL_PREDICT_FALSE(data.get_metadata_tracker != nullptr)) {
-      data.get_metadata_tracker();
-    }
-    absl::call_once(*table->once, [table] {
-      internal::AssignDescriptorsOnceInnerCall(table);
-    });
-  }
-  return {data.descriptor, data.reflection};
+  return internal::GetMetadataImpl(data);
 }
 
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
@@ -207,35 +255,6 @@ size_t Message::MaybeComputeUnknownFieldsSize(
 size_t Message::SpaceUsedLong() const {
   return GetClassData()->full().descriptor_methods->space_used_long(*this);
 }
-
-absl::string_view Message::GetTypeNameImpl(const internal::ClassData* data) {
-  return GetMetadataImpl(data->full()).descriptor->full_name();
-}
-
-static std::string InitializationErrorStringImpl(const MessageLite& msg) {
-  return DownCastMessage<Message>(msg).InitializationErrorString();
-}
-
-const internal::TcParseTableBase* Message::GetTcParseTableImpl(
-    const MessageLite& msg) {
-  return DownCastMessage<Message>(msg).GetReflection()->GetTcParseTable();
-}
-
-size_t Message::SpaceUsedLongImpl(const MessageLite& msg_lite) {
-  auto& msg = DownCastMessage<Message>(msg_lite);
-  return msg.GetReflection()->SpaceUsedLong(msg);
-}
-
-static std::string DebugStringImpl(const MessageLite& msg) {
-  return DownCastMessage<Message>(msg).DebugString();
-}
-
-PROTOBUF_CONSTINIT const internal::DescriptorMethods
-    Message::kDescriptorMethods = {
-        GetTypeNameImpl,     InitializationErrorStringImpl,
-        GetTcParseTableImpl, SpaceUsedLongImpl,
-        DebugStringImpl,
-};
 
 namespace internal {
 void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
