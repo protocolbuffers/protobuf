@@ -146,7 +146,7 @@ constexpr auto Empty::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(Empty, _impl_._cached_size_),
           false,
       },
-      &Empty::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fempty_2eproto,
       nullptr,  // tracker
   };

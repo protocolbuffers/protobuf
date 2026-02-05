@@ -190,7 +190,7 @@ constexpr auto Timestamp::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._cached_size_),
           false,
       },
-      &Timestamp::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto,
       nullptr,  // tracker
   };

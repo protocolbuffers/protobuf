@@ -456,7 +456,7 @@ constexpr auto DoubleValue::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_._cached_size_),
           false,
       },
-      &DoubleValue::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
       nullptr,  // tracker
   };
@@ -702,7 +702,7 @@ constexpr auto FloatValue::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FloatValue, _impl_._cached_size_),
           false,
       },
-      &FloatValue::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
       nullptr,  // tracker
   };
@@ -948,7 +948,7 @@ constexpr auto Int64Value::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(Int64Value, _impl_._cached_size_),
           false,
       },
-      &Int64Value::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
       nullptr,  // tracker
   };
@@ -1195,7 +1195,7 @@ constexpr auto UInt64Value::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_._cached_size_),
           false,
       },
-      &UInt64Value::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
       nullptr,  // tracker
   };
@@ -1442,7 +1442,7 @@ constexpr auto Int32Value::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(Int32Value, _impl_._cached_size_),
           false,
       },
-      &Int32Value::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
       nullptr,  // tracker
   };
@@ -1689,7 +1689,7 @@ constexpr auto UInt32Value::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_._cached_size_),
           false,
       },
-      &UInt32Value::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
       nullptr,  // tracker
   };
@@ -1936,7 +1936,7 @@ constexpr auto BoolValue::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(BoolValue, _impl_._cached_size_),
           false,
       },
-      &BoolValue::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
       nullptr,  // tracker
   };
@@ -2196,7 +2196,7 @@ constexpr auto StringValue::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(StringValue, _impl_._cached_size_),
           false,
       },
-      &StringValue::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
       nullptr,  // tracker
   };
@@ -2470,7 +2470,7 @@ constexpr auto BytesValue::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(BytesValue, _impl_._cached_size_),
           false,
       },
-      &BytesValue::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
       nullptr,  // tracker
   };

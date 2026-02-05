@@ -209,7 +209,7 @@ constexpr auto FieldMask::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FieldMask, _impl_._cached_size_),
           false,
       },
-      &FieldMask::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto,
       nullptr,  // tracker
   };

@@ -426,7 +426,7 @@ constexpr auto Api::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(Api, _impl_._cached_size_),
           false,
       },
-      &Api::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fapi_2eproto,
       nullptr,  // tracker
   };
@@ -994,7 +994,7 @@ constexpr auto Method::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(Method, _impl_._cached_size_),
           false,
       },
-      &Method::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fapi_2eproto,
       nullptr,  // tracker
   };
@@ -1515,7 +1515,7 @@ constexpr auto Mixin::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(Mixin, _impl_._cached_size_),
           false,
       },
-      &Mixin::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fapi_2eproto,
       nullptr,  // tracker
   };

@@ -198,7 +198,7 @@ constexpr auto SourceContext::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._cached_size_),
           false,
       },
-      &SourceContext::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto,
       nullptr,  // tracker
   };

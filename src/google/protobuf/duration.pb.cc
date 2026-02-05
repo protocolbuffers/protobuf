@@ -190,7 +190,7 @@ constexpr auto Duration::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(Duration, _impl_._cached_size_),
           false,
       },
-      &Duration::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fduration_2eproto,
       nullptr,  // tracker
   };

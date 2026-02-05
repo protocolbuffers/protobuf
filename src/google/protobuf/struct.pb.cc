@@ -264,7 +264,7 @@ constexpr auto Struct_FieldsEntry_DoNotUse::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_._cached_size_),
           false,
       },
-      &Struct_FieldsEntry_DoNotUse::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fstruct_2eproto,
       nullptr,  // tracker
   };
@@ -426,7 +426,7 @@ constexpr auto Struct::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(Struct, _impl_._cached_size_),
           false,
       },
-      &Struct::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fstruct_2eproto,
       nullptr,  // tracker
   };
@@ -809,7 +809,7 @@ constexpr auto Value::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(Value, _impl_._cached_size_),
           false,
       },
-      &Value::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fstruct_2eproto,
       nullptr,  // tracker
   };
@@ -1197,7 +1197,7 @@ constexpr auto ListValue::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(ListValue, _impl_._cached_size_),
           false,
       },
-      &ListValue::kDescriptorMethods,
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fstruct_2eproto,
       nullptr,  // tracker
   };
