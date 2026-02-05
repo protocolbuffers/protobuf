@@ -13,7 +13,7 @@ module(
 # https://bazel.build/versions/6.0.0/build/bzlmod#version-resolution
 # Thus the highest version in their module graph is resolved.
 
-bazel_dep(name = "apple_support", version = "1.16.0", repo_name = "build_bazel_apple_support")
+bazel_dep(name = "apple_support", version = "1.24.5", repo_name = "build_bazel_apple_support")
 
 # Unused but must be pinned to avoid old broken versions
 bazel_dep(name = "rules_proto", version = "7.1.0")
