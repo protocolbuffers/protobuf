@@ -564,7 +564,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
 
 void ImmutableMessageGenerator::GenerateMessageSerializationMethods(
     io::Printer* printer) {
-  std::unique_ptr<const FieldDescriptor*[]> sorted_fields(
+  std::vector<const FieldDescriptor*> sorted_fields(
       SortFieldsByNumber(descriptor_));
 
   printer->Print(
@@ -599,7 +599,7 @@ void ImmutableMessageGenerator::GenerateMessageSerializationMethods(
 
   GenerateSerializeFieldsAndExtensions(printer,
                                        field_generators_.field_generators(),
-                                       descriptor_, sorted_fields.get());
+                                       descriptor_, sorted_fields);
 
   if (descriptor_->options().message_set_wire_format()) {
     printer->Print("getUnknownFields().writeAsMessageSetTo(output);\n");
