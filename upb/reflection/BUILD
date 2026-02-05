@@ -12,7 +12,7 @@ load(
     "compile_edition_defaults",
     "embed_edition_defaults",
 )
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS")
 load(
     "//upb/cmake:build_defs.bzl",
     "staleness_test",

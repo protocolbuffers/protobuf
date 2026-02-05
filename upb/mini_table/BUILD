@@ -10,12 +10,12 @@ load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load(
-    "//bazel:upb_minitable_proto_library.bzl",
-    "upb_minitable_proto_library",
+    "//upb/bazel:copts.bzl",
+    "UPB_DEFAULT_COPTS",
 )
 load(
-    "//upb/bazel:build_defs.bzl",
-    "UPB_DEFAULT_COPTS",
+    "//upb/bazel:upb_minitable_proto_library.bzl",
+    "upb_minitable_proto_library",
 )
 load(
     "//upb/cmake:build_defs.bzl",
