@@ -20,14 +20,7 @@ bazel_dep(name = "rules_swift", version = "3.0.2", repo_name = "build_bazel_rule
 
 # TODO: Can rules_apple be removed, and thus allow rules_swift to be removed?
 bazel_dep(name = "rules_apple", version = "4.0.0", repo_name = "build_bazel_rules_apple")
-bazel_dep(name = "apple_support", version = "1.15.1", repo_name = "build_bazel_apple_support")
-
-# Keep apple_support on 1.15.1 for now to avoid this issue:
-# https://github.com/bazelbuild/apple_support/issues/316
-single_version_override(
-    module_name = "apple_support",
-    version = "1.15.1",
-)
+bazel_dep(name = "apple_support", version = "1.24.5", repo_name = "build_bazel_apple_support")
 
 #ifndef PROTO2_OPENSOURCE
 # LINT.IfChange
