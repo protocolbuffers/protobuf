@@ -29,9 +29,6 @@
 #if __has_builtin(__builtin_nan)
 #define UPB_NAN __builtin_nan("0")
 #endif
-#if __has_builtin(__builtin_inf)
-#define UPB_INFINITY __builtin_inf()
-#endif
 #endif
 #ifndef UPB_NAN
 #define UPB_NAN 0.0 / 0.0
