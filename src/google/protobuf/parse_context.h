@@ -18,6 +18,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "absl/base/casts.h"
 #include "absl/base/config.h"
 #include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
@@ -69,6 +70,10 @@ inline void WriteLengthDelimited(uint32_t num, absl::string_view val,
 // If varints are valid only up to some point, then returns at least the number
 // of valid varints.
 int CountVarintsAssumingLargeArray(const char* ptr, const char* end);
+
+// Checks if each byte in the array is a valid representation for a bool, i.e.
+// 0 or 1, assuming that end - ptr >= 8. Optimized for the result being true.
+bool VerifyBoolsAssumingLargeArray(const char* ptr, const char* end);
 
 
 // The basic abstraction the parser is designed for is a slight modification
@@ -178,7 +183,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     // end up with an invalid limit and it can lead to integer overflows.
     limit_ = limit_ + std::move(delta).token();
     if (ABSL_PREDICT_FALSE(!EndedAtLimit())) return false;
-    // TODO(gerbens) We could remove this line and hoist the code to
+    // TODO We could remove this line and hoist the code to
     // DoneFallback. Study the perf/bin-size effects.
     limit_end_ = buffer_end_ + (std::min)(0, limit_);
     return true;
@@ -399,7 +404,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return res;
   }
 
-  // TODO(b/432303376) Can V1 enjoy a code deduplication benefit by using this?
+  // TODO Can V1 enjoy a code deduplication benefit by using this?
   const char* InitFrom(const BoundedZCIS& bounded_zcis) {
     return InitFrom(bounded_zcis.zcis, bounded_zcis.limit);
   }
@@ -509,7 +514,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       }
       ptr += chunk_size;
       size -= chunk_size;
-      // TODO(gerbens) Next calls NextBuffer which generates buffers with
+      // TODO Next calls NextBuffer which generates buffers with
       // overlap and thus incurs cost of copying the slop regions. This is not
       // necessary for reading strings. We should just call Next buffers.
       if (limit_ <= kSlopBytes) return nullptr;
@@ -1437,6 +1442,21 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
   // Assume that varint are valid and just count the number of bytes with
   // continuation bit not set. In a valid varint there is only 1 such byte.
   if (end - ptr >= 16) {
+    if constexpr (std::is_same_v<T, bool> && sizeof(bool) == sizeof(uint8_t)) {
+      if (absl::bit_cast<uint8_t>(false) == 0 &&  // Not constexpr on MSVC.
+          absl::bit_cast<uint8_t>(true) == 1) {
+        if (VerifyBoolsAssumingLargeArray(ptr, end)) {
+          // Each byte is 0 or 1.
+          const int count = end - ptr;
+          out.ReserveWithArena(arena, out.size() + count);
+          T* x = out.AddNAlreadyReserved(count);
+          // For T being bool, conv must be equivalent to a conversion to bool
+          // (zigzag encoding is not applicable), so it can be skipped.
+          std::memcpy(x, ptr, count);
+          return end;
+        }
+      }
+    }
     int count = CountVarintsAssumingLargeArray(ptr, end);
     if (count == end - ptr) {
       // We have exactly one element per byte, so avoid the costly varint
@@ -1460,7 +1480,7 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
       });
       int new_size = x - out.data();
       ABSL_DCHECK_LE(new_size, old_size + count);
-      // We may have overreserved if the the data are truncated or malformed,
+      // We may have overreserved if the data are truncated or malformed,
       // so set the actual size to avoid exposing uninitialized memory.
       out.Truncate(new_size);
     }

@@ -70,7 +70,7 @@ std::string CppTypeInternal(const google::protobuf::FieldDescriptor* field, bool
     case google::protobuf::FieldDescriptor::CPPTYPE_UINT64:
       return "uint64_t";
     case google::protobuf::FieldDescriptor::CPPTYPE_STRING:
-      return "absl::string_view";
+      return "::absl::string_view";
     default:
       ABSL_LOG(FATAL) << "Unexpected type: " << field->cpp_type();
   }

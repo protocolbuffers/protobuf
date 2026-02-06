@@ -7814,7 +7814,7 @@ namespace Google.Protobuf.Reflection {
     /// This should only be used as a temporary measure against broken builds due
     /// to the change in behavior for JSON field name conflicts.
     ///
-    /// TODO(b/261750190) This is legacy behavior we plan to remove once downstream
+    /// TODO This is legacy behavior we plan to remove once downstream
     /// teams have had time to migrate.
     /// </summary>
     [global::System.ObsoleteAttribute]
@@ -10331,7 +10331,7 @@ namespace Google.Protobuf.Reflection {
     /// and strips underscored from the fields before comparison in proto3 only.
     /// The new behavior takes `json_name` into account and applies to proto2 as
     /// well.
-    /// TODO(b/261750190) Remove this legacy behavior once downstream teams have
+    /// TODO Remove this legacy behavior once downstream teams have
     /// had time to migrate.
     /// </summary>
     [global::System.ObsoleteAttribute]
@@ -12685,7 +12685,7 @@ namespace Google.Protobuf.Reflection {
   }
 
   /// <summary>
-  /// TODO(b/274655146) Enums in C++ gencode (and potentially other languages) are
+  /// TODO Enums in C++ gencode (and potentially other languages) are
   /// not well scoped.  This means that each of the feature enums below can clash
   /// with each other.  The short names we've chosen maximize call-site
   /// readability, but leave us very open to this scenario.  A future feature will

@@ -76,7 +76,7 @@ class ExtensionRegistry {
       const ExtensionRegistry& extension_registry);
   upb_ExtensionRegistry* registry_;
 #endif
-  // TODO: Introduce ShutdownHpbLibrary
+  // TODO: b/379100963 - Introduce ShutdownHpbLibrary
   static const ExtensionRegistry* NewGeneratedRegistry() {
 #if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
     static const upb_GeneratedRegistryRef* registry_ref =

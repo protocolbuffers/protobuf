@@ -8,7 +8,8 @@
 #ifndef UPB_REFLECTION_SERVICE_DEF_INTERNAL_H_
 #define UPB_REFLECTION_SERVICE_DEF_INTERNAL_H_
 
-#include "upb/reflection/service_def.h"
+#include "upb/reflection/def.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -20,11 +21,10 @@ extern "C" {
 upb_ServiceDef* _upb_ServiceDef_At(const upb_ServiceDef* s, int i);
 
 // Allocate and initialize an array of |n| service defs.
-upb_ServiceDef* _upb_ServiceDefs_New(upb_DefBuilder* ctx, int n,
-                                     const UPB_DESC(ServiceDescriptorProto*)
-                                         const* protos,
-                                     const UPB_DESC(FeatureSet*)
-                                         parent_features);
+upb_ServiceDef* _upb_ServiceDefs_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_ServiceDescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features);
 
 #ifdef __cplusplus
 } /* extern "C" */

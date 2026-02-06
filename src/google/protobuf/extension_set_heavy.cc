@@ -68,7 +68,7 @@ void ExtensionSet::AppendToList(
           if (ext.descriptor == nullptr) {
             const FieldDescriptor* field =
                 pool->FindExtensionByNumber(extendee, number);
-            // TODO(b/467683606) This should be limited to and only reachable by
+            // TODO This should be limited to and only reachable by
             // lite extensions on full messages.
             if (field != nullptr) {
               output->push_back(field);
@@ -105,7 +105,6 @@ inline WireFormatLite::FieldType field_type(FieldType type) {
 const MessageLite& ExtensionSet::GetMessage(Arena* arena, int number,
                                             const Descriptor* message_type,
                                             MessageFactory* factory) const {
-  DebugAssertArenaMatches(arena);
   const Extension* extension = FindOrNull(number);
   if (extension == nullptr || extension->is_cleared) {
     // Not present.  Return the default value.
@@ -124,7 +123,6 @@ const MessageLite& ExtensionSet::GetMessage(Arena* arena, int number,
 MessageLite* ExtensionSet::MutableMessage(Arena* arena,
                                           const FieldDescriptor* descriptor,
                                           MessageFactory* factory) {
-  DebugAssertArenaMatches(arena);
   Extension* extension;
   if (MaybeNewExtension(arena, descriptor->number(), descriptor, &extension)) {
     extension->type = descriptor->type();
@@ -153,7 +151,6 @@ MessageLite* ExtensionSet::MutableMessage(Arena* arena,
 MessageLite* ExtensionSet::ReleaseMessage(Arena* arena,
                                           const FieldDescriptor* descriptor,
                                           MessageFactory* factory) {
-  DebugAssertArenaMatches(arena);
   Extension* extension = FindOrNull(descriptor->number());
   if (extension == nullptr) {
     // Not present.  Return nullptr.
@@ -182,7 +179,6 @@ MessageLite* ExtensionSet::ReleaseMessage(Arena* arena,
 
 MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
     Arena* arena, const FieldDescriptor* descriptor, MessageFactory* factory) {
-  DebugAssertArenaMatches(arena);
   Extension* extension = FindOrNull(descriptor->number());
   if (extension == nullptr) {
     // Not present.  Return nullptr.

@@ -90,7 +90,7 @@ void FieldGenerator::GeneratePritimiveField(io::Printer* printer) const {
             {"jvm_name_set",
              [&] { JvmName("${$set$kt_capitalized_name$$}$", name_ctx); }},
         },
-        "// TODO: remove this hack; we should access properties\n"
+        "// TODO: b/336400327 - remove this hack; we should access properties\n"
         "$kt_deprecation$public var $kt_name$: $kt_type$\n"
         "  $jvm_name_get$"
         "  $getter$() = $kt_dsl_builder$.get${$$kt_capitalized_name$$}$()\n"

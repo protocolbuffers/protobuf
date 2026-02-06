@@ -91,10 +91,51 @@ public abstract class CodedInputStream {
     return newInstance(buf, off, len, /* bufferIsImmutable= */ false);
   }
 
+  /**
+   * Experiment to enable new varint reading. Only for internal use for performance evaluation. Will
+   * be removed once evaluation is complete.
+   */
+  enum VarintExperiment {
+    CONTROL,
+
+    /**
+     * Use the new varint impl for all varint32 reads, even int32 where negative values are 10
+     * bytes.
+     */
+    NEW_ALL_CASES,
+
+    /**
+     * Use the new varint only for cases where 10 bytes should never occur (though they may be
+     * legal).
+     */
+    NEW_TAGS_LENGTHS_UNSIGNED_ONLY
+  }
+
+  @SuppressWarnings("NonFinalStaticField")
+  private static VarintExperiment varintExperiment = VarintExperiment.CONTROL;
+
+  /** Method to enable new varint experiment. Only for Search to use for evaluation. */
+  static void setVarintExperiment(VarintExperiment experiment) {
+    varintExperiment = experiment;
+  }
+
   /** Create a new CodedInputStream wrapping the given byte array slice. */
   static CodedInputStream newInstance(
       final byte[] buf, final int off, final int len, final boolean bufferIsImmutable) {
-    ArrayDecoder result = new ArrayDecoder(buf, off, len, bufferIsImmutable);
+    final ArrayDecoder result;
+    switch (varintExperiment) {
+      case NEW_ALL_CASES:
+        result = new ArrayDecoderNewVarintAllCases(buf, off, len, bufferIsImmutable);
+        break;
+      case NEW_TAGS_LENGTHS_UNSIGNED_ONLY:
+        result = new ArrayDecoderNewVarintTagsLengthsOnly(buf, off, len, bufferIsImmutable);
+        break;
+      case CONTROL:
+      default:
+        result = new ArrayDecoderOldVarint(buf, off, len, bufferIsImmutable);
+        break;
+    }
+
     try {
       // Some uses of CodedInputStream can be more efficient if they know
       // exactly how many bytes are available.  By pushing the end point of the
@@ -378,13 +419,33 @@ public abstract class CodedInputStream {
   public abstract <T extends MessageLite> T readMessage(
       final Parser<T> parser, final ExtensionRegistryLite extensionRegistry) throws IOException;
 
-  /** Read a {@code bytes} field value from the stream. */
+  /**
+   * Read a {@code bytes} field value from the stream.
+   *
+   * <p>When {@link #enableAliasing(boolean)} is enabled and supported by the underlying decoder,
+   * the returned {@link ByteString} may reference (alias) the underlying input buffer instead of
+   * copying the bytes.
+   *
+   * <p>Safety contract: Callers must ensure the underlying input buffer is not mutated or reused
+   * while the returned {@link ByteString} is still in use. If you cannot guarantee buffer
+   * lifetime, do not enable aliasing or copy the bytes before storing them.
+   */
   public abstract ByteString readBytes() throws IOException;
 
   /** Read a {@code bytes} field value from the stream. */
   public abstract byte[] readByteArray() throws IOException;
 
-  /** Read a {@code bytes} field value from the stream. */
+  /**
+   * Read a {@code bytes} field value from the stream.
+   *
+   * <p>If aliasing is enabled, the returned {@link ByteBuffer} may reference (alias) the underlying
+   * input buffer for decoders that are backed by an on-heap {@code byte[]} whose contents will not
+   * be overwritten or reused for the lifetime of the returned view.
+   *
+   * <p>Safety contract: Callers should treat the returned buffer as read-only and should not rely
+   * on its contents remaining valid after the input advances. If you need a stable, read-only view,
+   * consider calling {@link ByteBuffer#asReadOnlyBuffer()} immediately on the returned buffer.
+   */
   public abstract ByteBuffer readByteBuffer() throws IOException;
 
   /** Read a {@code uint32} field value from the stream. */
@@ -429,8 +490,29 @@ public abstract class CodedInputStream {
   // -----------------------------------------------------------------
 
   /**
-   * Enables {@link ByteString} aliasing of the underlying buffer, trading off on buffer pinning for
-   * data copies. Only valid for buffer-backed streams.
+   * Enables aliasing of the underlying input buffer for buffer-backed decoders.
+   *
+   * <p>When aliasing is enabled and supported by the underlying decoder, {@link #readBytes()} and
+   * {@link #readByteBuffer()} may return views into the underlying input buffer instead of copying
+   * the bytes. This can reduce allocations and improve throughput for workloads that parse many
+   * length-delimited {@code bytes} fields.
+   *
+   * <p>Some decoder implementations may ignore this setting (i.e., treat it as a no-op), such as
+   * stream-backed decoders whose internal buffers are refilled and reused (and therefore may
+   * overwrite previously returned views), or direct-backed decoders that are not backed by a
+   * stable on-heap {@code byte[]}.
+   *
+   * <p>Safety contract: If aliasing is enabled, the caller must ensure the underlying input buffer
+   * is not mutated or reused while any returned {@link ByteString} or {@link ByteBuffer} is still
+   * in use. If you cannot guarantee buffer lifetime (for example, when using pooled buffers), do
+   * not enable aliasing or copy the bytes before storing them.
+   *
+   * <p>Aliasing is generally only possible for array-backed decoders. Stream-backed decoders
+   * typically do not support aliasing because their internal buffers are refilled and reused.
+   *
+   * <p>Note: {@link #readByteBuffer()} may return a mutable {@link ByteBuffer} even when it aliases
+   * the underlying input. Callers that require safety-by-default should treat the returned buffer
+   * as read-only or call {@link ByteBuffer#asReadOnlyBuffer()} immediately.
    */
   public abstract void enableAliasing(boolean enabled);
 
@@ -651,8 +733,59 @@ public abstract class CodedInputStream {
     return readRawVarint32(firstByte, input);
   }
 
+  private static final class ArrayDecoderNewVarintAllCases extends ArrayDecoder {
+    private ArrayDecoderNewVarintAllCases(
+        final byte[] buffer, final int offset, final int len, boolean immutable) {
+      super(buffer, offset, len, immutable);
+    }
+
+    @Override
+    protected int readRawVarint32Expected5BytesMax() throws IOException {
+      return super.readRawVarint32New();
+    }
+
+    @Override
+    protected int readRawVarint32Expected10BytesMax() throws IOException {
+      return super.readRawVarint32New();
+    }
+  }
+
+  private static final class ArrayDecoderNewVarintTagsLengthsOnly extends ArrayDecoder {
+    private ArrayDecoderNewVarintTagsLengthsOnly(
+        final byte[] buffer, final int offset, final int len, boolean immutable) {
+      super(buffer, offset, len, immutable);
+    }
+
+    @Override
+    protected int readRawVarint32Expected5BytesMax() throws IOException {
+      return super.readRawVarint32New();
+    }
+
+    @Override
+    protected int readRawVarint32Expected10BytesMax() throws IOException {
+      return super.readRawVarint32Old();
+    }
+  }
+
+  private static final class ArrayDecoderOldVarint extends ArrayDecoder {
+    private ArrayDecoderOldVarint(
+        final byte[] buffer, final int offset, final int len, boolean immutable) {
+      super(buffer, offset, len, immutable);
+    }
+
+    @Override
+    protected int readRawVarint32Expected5BytesMax() throws IOException {
+      return super.readRawVarint32Old();
+    }
+
+    @Override
+    protected int readRawVarint32Expected10BytesMax() throws IOException {
+      return super.readRawVarint32Old();
+    }
+  }
+
   /** A {@link CodedInputStream} implementation that uses a backing array as the input. */
-  private static final class ArrayDecoder extends CodedInputStream {
+  private abstract static class ArrayDecoder extends CodedInputStream {
     private final byte[] buffer;
     private final boolean immutable;
     private int limit;
@@ -680,7 +813,7 @@ public abstract class CodedInputStream {
         return 0;
       }
 
-      lastTag = readRawVarint32();
+      lastTag = readRawVarint32Expected5BytesMax();
       if (WireFormat.getTagFieldNumber(lastTag) == 0) {
         // If we actually read zero (or any tag number corresponding to field
         // number zero), that's not a valid tag.
@@ -711,7 +844,7 @@ public abstract class CodedInputStream {
           skipRawBytes(FIXED64_SIZE);
           return true;
         case WireFormat.WIRETYPE_LENGTH_DELIMITED:
-          skipRawBytes(readRawVarint32());
+          skipRawBytes(readRawVarint32Expected5BytesMax());
           return true;
         case WireFormat.WIRETYPE_START_GROUP:
           skipMessage();
@@ -805,7 +938,7 @@ public abstract class CodedInputStream {
 
     @Override
     public int readInt32() throws IOException {
-      return readRawVarint32();
+      return readRawVarint32Expected10BytesMax();
     }
 
     @Override
@@ -825,7 +958,7 @@ public abstract class CodedInputStream {
 
     @Override
     public String readString() throws IOException {
-      final int size = readRawVarint32();
+      final int size = readRawVarint32Expected5BytesMax();
       if (size > 0 && size <= (limit - pos)) {
         // Fast path:  We already have the bytes in a contiguous buffer, so
         //   just copy directly from it.
@@ -845,7 +978,7 @@ public abstract class CodedInputStream {
 
     @Override
     public String readStringRequireUtf8() throws IOException {
-      final int size = readRawVarint32();
+      final int size = readRawVarint32Expected5BytesMax();
       if (size > 0 && size <= (limit - pos)) {
         String result = Utf8.decodeUtf8(buffer, pos, size);
         pos += size;
@@ -899,7 +1032,7 @@ public abstract class CodedInputStream {
     public void readMessage(
         final MessageLite.Builder builder, final ExtensionRegistryLite extensionRegistry)
         throws IOException {
-      final int length = readRawVarint32();
+      final int length = readRawVarint32Expected5BytesMax();
       checkRecursionLimit();
       final int oldLimit = pushLimit(length);
       ++messageDepth;
@@ -915,7 +1048,7 @@ public abstract class CodedInputStream {
     @Override
     public <T extends MessageLite> T readMessage(
         final Parser<T> parser, final ExtensionRegistryLite extensionRegistry) throws IOException {
-      int length = readRawVarint32();
+      int length = readRawVarint32Expected5BytesMax();
       checkRecursionLimit();
       final int oldLimit = pushLimit(length);
       ++messageDepth;
@@ -930,7 +1063,7 @@ public abstract class CodedInputStream {
     }
 
     private ByteString readBytesInternal(boolean requireUtf8) throws IOException {
-      final int size = readRawVarint32();
+      final int size = readRawVarint32Expected5BytesMax();
       if (size > 0 && size <= (limit - pos)) {
         // Fast path:  We already have the bytes in a contiguous buffer, so
         //   just copy directly from it.
@@ -955,13 +1088,13 @@ public abstract class CodedInputStream {
 
     @Override
     public byte[] readByteArray() throws IOException {
-      final int size = readRawVarint32();
+      final int size = readRawVarint32Expected5BytesMax();
       return readRawBytes(size);
     }
 
     @Override
     public ByteBuffer readByteBuffer() throws IOException {
-      final int size = readRawVarint32();
+      final int size = readRawVarint32Expected5BytesMax();
       if (size > 0 && size <= (limit - pos)) {
         // Fast path: We already have the bytes in a contiguous buffer.
         // When aliasing is enabled, we can return a ByteBuffer pointing directly
@@ -988,12 +1121,12 @@ public abstract class CodedInputStream {
 
     @Override
     public int readUInt32() throws IOException {
-      return readRawVarint32();
+      return readRawVarint32Expected5BytesMax();
     }
 
     @Override
     public int readEnum() throws IOException {
-      return readRawVarint32();
+      return readRawVarint32Expected10BytesMax();
     }
 
     @Override
@@ -1008,7 +1141,7 @@ public abstract class CodedInputStream {
 
     @Override
     public int readSInt32() throws IOException {
-      return decodeZigZag32(readRawVarint32());
+      return decodeZigZag32(readRawVarint32Expected5BytesMax());
     }
 
     @Override
@@ -1018,8 +1151,30 @@ public abstract class CodedInputStream {
 
     // =================================================================
 
+    /**
+     * Temporary shim to enable new varint experiment.
+     *
+     * <p>Same as readRawVarint32 but for callers where the varint being longer than 5 bytes should
+     * never happen in practice (eg tags and lengths).
+     */
+    @SuppressWarnings("EffectivelyPrivate") // Overridden by sibling classes above.
+    protected abstract int readRawVarint32Expected5BytesMax() throws IOException;
+
+    /**
+     * Temporary shim to enable new varint experiment.
+     *
+     * <p>Same as readRawVarint32 but for callers where a 10-byte varint is 'normal' (eg int32
+     * fields where negative values will be 10 bytes).
+     */
+    @SuppressWarnings("EffectivelyPrivate") // Overridden by sibling classes above.
+    protected abstract int readRawVarint32Expected10BytesMax() throws IOException;
+
     @Override
     public int readRawVarint32() throws IOException {
+      return readRawVarint32Expected10BytesMax();
+    }
+
+    protected int readRawVarint32Old() throws IOException {
       // See implementation notes for readRawVarint64
       fastpath:
       {
@@ -1059,6 +1214,58 @@ public abstract class CodedInputStream {
         return x;
       }
       return (int) readRawVarint64SlowPath();
+    }
+
+    protected int readRawVarint32New() throws IOException {
+      try {
+        int x = readRawVarint32NewFast();
+        if (pos > limit) {
+          throw InvalidProtocolBufferException.truncatedMessage();
+        }
+        return x;
+      } catch (IndexOutOfBoundsException unused) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      } catch (InvalidProtocolBufferException e) {
+        // If a varint is both >10 bytes long and also escaped the limit, prefer to throw
+        // a truncated message exception instead of a malformed varint exception.
+        if (pos > limit) {
+          throw InvalidProtocolBufferException.truncatedMessage();
+        }
+        throw e;
+      }
+    }
+
+    /**
+     * Fast case: the limit is not checked here, this may read in the buffer past the limit, and may
+     * throw an IndexOutOfBoundsException if the varint runs off the end of the buffer.
+     */
+    private int readRawVarint32NewFast() throws IOException {
+      int tempPos = pos;
+
+      final byte[] buffer = this.buffer;
+      int x = buffer[tempPos++];
+      if (x >= 0) {
+      } else if ((x ^= (buffer[tempPos++] << 7)) < 0) {
+        x ^= (~0 << 7);
+      } else if ((x ^= (buffer[tempPos++] << 14)) >= 0) {
+        x ^= (~0 << 7) ^ (~0 << 14);
+      } else if ((x ^= (buffer[tempPos++] << 21)) < 0) {
+        x ^= (~0 << 7) ^ (~0 << 14) ^ (~0 << 21);
+      } else {
+        int y = buffer[tempPos++];
+        x ^= y << 28;
+        x ^= (~0 << 7) ^ (~0 << 14) ^ (~0 << 21) ^ (~0 << 28);
+        if (y < 0
+            && buffer[tempPos++] < 0
+            && buffer[tempPos++] < 0
+            && buffer[tempPos++] < 0
+            && buffer[tempPos++] < 0
+            && buffer[tempPos++] < 0) {
+          throw InvalidProtocolBufferException.malformedVarint();
+        }
+      }
+      pos = tempPos;
+      return x;
     }
 
     private void skipRawVarint() throws IOException {

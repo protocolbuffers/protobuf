@@ -32,7 +32,7 @@ namespace hpb::interop::upb {
  * Warning: any minitable skew will incur arbitrary memory access. Ensuring
  * minitable compatibility is the responsibility of the caller.
  */
-// TODO: consider rename to OwnMessage
+// TODO: b/365824801 - consider rename to OwnMessage
 template <typename T>
 T MoveMessage(upb_Message* msg, upb_Arena* arena) {
   return internal::PrivateAccess::InvokeConstructor<T>(msg, arena);
@@ -84,8 +84,8 @@ upb_Arena* UnwrapArena(T&& arena) {
  * The upb message must not be mutated directly while the handle is alive.
  *
  * T must match actual type of `msg`.
- * TODO: revisit GetArena for CHandles
- * TODO: consider passing in MiniTable to ensure match
+ * TODO: b/361596328 - revisit GetArena for CHandles
+ * TODO: b/362743843 - consider passing in MiniTable to ensure match
  */
 // REMARK: This overload will be deleted soon. Prefer the overloads that take in
 // the CMessageType or MiniTable.

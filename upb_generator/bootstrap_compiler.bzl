@@ -3,11 +3,11 @@
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load(
-    "//bazel:upb_minitable_proto_library.bzl",
+    "//upb/bazel:upb_minitable_proto_library.bzl",
     "upb_minitable_proto_library",
 )
 load(
-    "//bazel:upb_proto_library.bzl",
+    "//upb/bazel:upb_proto_library.bzl",
     "upb_proto_library",
 )
 load(
@@ -22,7 +22,7 @@ _extra_proto_path = "-I$$(dirname $(location //:descriptor_proto_srcs))/../.. "
 
 # This visibility is used automatically for anything used by the bootstrapping process.
 _bootstrap_visibility = [
-    # TODO: Remove protoc from bootstrap visibility.
+    # TODO: b/396430482 - Remove protoc from bootstrap visibility.
     "//src/google/protobuf/compiler:__pkg__",
     "//src/google/protobuf/compiler/rust:__pkg__",
     "//third_party/upb/github:__pkg__",

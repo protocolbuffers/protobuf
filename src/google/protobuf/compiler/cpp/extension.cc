@@ -34,9 +34,8 @@ namespace compiler {
 namespace cpp {
 
 ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
-                                       const Options& options,
-                                       MessageSCCAnalyzer* scc_analyzer)
-    : descriptor_(descriptor), options_(options), scc_analyzer_(scc_analyzer) {
+                                       const Options& options)
+    : descriptor_(descriptor), options_(options) {
   // Construct type_traits_.
   if (descriptor_->is_repeated()) {
     type_traits_ = "Repeated";
@@ -153,59 +152,50 @@ void ExtensionGenerator::GenerateDeclaration(io::Printer* p) const {
       R"cc(
         inline $constant_qualifier $constexpr int $constant_name$ = $number$;
         $id_qualifier$ $pbi$::ExtensionIdentifier<
-            $extendee$, $pbi$::$type_traits$, $field_type$, $packed$>
-            $name$;
+            $extendee$, $pbi$::$type_traits$, $field_type$, $packed$>($name$);
       )cc");
 }
 
 void ExtensionGenerator::GenerateDefinition(io::Printer* p) {
   auto vars = p->WithVars(variables_);
-  auto generate_default_string = [&] {
-    if (descriptor_->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
-      // We need to declare a global string which will contain the default
-      // value. We cannot declare it at class scope because that would require
-      // exposing it in the header which would be annoying for other reasons. So
-      // we replace :: with _ in the name and declare it as a global.
-      return absl::StrReplaceAll(variables_["scoped_name"], {{"::", "_"}}) +
-             "_default";
-    } else if (descriptor_->message_type()) {
-      // We have to initialize the default instance for extensions at
-      // registration time.
-      return absl::StrCat("&", QualifiedDefaultInstanceName(
-                                   descriptor_->message_type(), options_));
-    } else {
-      return DefaultValue(options_, descriptor_);
-    }
-  };
-
-  auto local_var = p->WithVars({
-      {"default_str", generate_default_string()},
-      {"default_val", DefaultValue(options_, descriptor_)},
-      {"message_type", descriptor_->message_type() != nullptr
-                           ? FieldMessageTypeName(descriptor_, options_)
-                           : ""},
-  });
-  p->Emit(
-      {
-          {"declare_default_str",
-           [&] {
-             if (descriptor_->cpp_type() != FieldDescriptor::CPPTYPE_STRING)
-               return;
-
-             // If this is a class member, it needs to be declared in its class
-             // scope.
-             p->Emit(R"cc(
-               const std::string $default_str$($default_val$);
-             )cc");
-           }},
-      },
-      R"cc(
-        $declare_default_str$;
-        PROTOBUF_CONSTINIT$ dllexport_decl$
-            PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<
-                $extendee$, ::_pbi::$type_traits$, $field_type$, $packed$>
-                $scoped_name$($constant_name$, $default_str$);
-      )cc");
+  if (descriptor_->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
+    // We need to declare a global string which will contain the default
+    // value. We cannot declare it at class scope because that would require
+    // exposing it in the header which would be annoying for other reasons. So
+    // we replace :: with _ in the name and declare it as a global.
+    p->Emit({{"default_str",
+              absl::StrReplaceAll(variables_["scoped_name"], {{"::", "_"}}) +
+                  "_default"},
+             {"default_val", DefaultValue(options_, descriptor_)}},
+            // If this is a class member, it needs to be declared in its class
+            // scope.
+            R"cc(
+              const std::string $default_str$($default_val$);
+              PROTOBUF_CONSTINIT$ dllexport_decl$
+                  PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<
+                      $extendee$, ::_pbi::$type_traits$, $field_type$, $packed$>
+                      $scoped_name$($constant_name$, $default_str$);
+            )cc");
+  } else if (descriptor_->message_type()) {
+    // We have to initialize the default instance for extensions at
+    // registration time.
+    p->Emit({{"globals_name", QualifiedMsgGlobalsInstanceName(
+                                  descriptor_->message_type(), options_)}},
+            R"cc(
+              PROTOBUF_CONSTINIT$ dllexport_decl$
+                  PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<
+                      $extendee$, ::_pbi::$type_traits$, $field_type$, $packed$>
+                      $scoped_name$($constant_name$, &$globals_name$);
+            )cc");
+  } else {
+    p->Emit({{"default_val", DefaultValue(options_, descriptor_)}},
+            R"cc(
+              PROTOBUF_CONSTINIT$ dllexport_decl$
+                  PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<
+                      $extendee$, ::_pbi::$type_traits$, $field_type$, $packed$>
+                      $scoped_name$($constant_name$, $default_val$);
+            )cc");
+  }
 }
 
 bool ExtensionGenerator::WillGenerateRegistration(InitPriority priority) {
@@ -238,6 +228,9 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
        DescriptorTableName(descriptor_->containing_type()->file(), options_)},
       {"extendee_index", find_index(descriptor_->containing_type())},
       {"preregister", priority == kInitPriority101},
+      {"is_utf8", descriptor_->requires_utf8_validation()
+                      ? "/*is_utf8=*/true"
+                      : "/*is_utf8=*/false"},
   }});
   switch (descriptor_->cpp_type()) {
     case FieldDescriptor::CPPTYPE_ENUM:
@@ -268,11 +261,11 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
           // Only verify msgs.
           descriptor_->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
           // Options say to verify.
-          ShouldVerify(descriptor_->message_type(), options_, scc_analyzer_) &&
-          ShouldVerify(descriptor_->containing_type(), options_, scc_analyzer_);
+          ShouldVerify(descriptor_->message_type(), options_) &&
+          ShouldVerify(descriptor_->containing_type(), options_);
       const bool should_verify_v2 =
           should_verify &&
-          ShouldVerifyV2(descriptor_->message_type(), options_, scc_analyzer_);
+          ShouldVerifyV2(descriptor_->message_type(), options_);
       const auto message_type = FieldMessageTypeName(descriptor_, options_);
       auto v = p->WithVars(
           {{"verify", should_verify
@@ -332,7 +325,7 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
             R"cc(
               ::_pbi::ExtensionSet::RegisterExtension(
                   &$extendee$::default_instance(), $number$, $field_type$,
-                  $repeated$, $packed$),
+                  $repeated$, $packed$, $is_utf8$),
             )cc");
       }
 

@@ -69,7 +69,7 @@ UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(upb_Message* msg,
       }
     }
   }
-  // TODO: Add debug check that the unknown field is an overall
+  // TODO: b/376969853  - Add debug check that the unknown field is an overall
   // valid proto field
   if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, arena)) {
     return false;
@@ -148,7 +148,7 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
     memcpy(copy, data[i].data, data[i].size);
     copy += data[i].size;
   }
-  // TODO: Add debug check that the unknown field is an overall
+  // TODO: b/376969853  - Add debug check that the unknown field is an overall
   // valid proto field
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   in->aux_data[in->size++] = upb_TaggedAuxPtr_MakeUnknownData(view);
@@ -280,7 +280,7 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
 
   // Extensions.
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  // TODO: use iterator API
+  // TODO: b/376969853 - use iterator API
   uint32_t size = in ? in->size : 0;
   for (size_t i = 0; i < size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];

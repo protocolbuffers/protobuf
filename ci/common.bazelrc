@@ -6,7 +6,7 @@ build:dbg --compilation_mode=dbg
 build:opt --compilation_mode=opt
 
 build:san-common --config=dbg --strip=never --copt=-O1 --copt=-fno-omit-frame-pointer
-# TODO(b/392921707) ASAN hits ODR violations with shared linkage due to
+# TODO ASAN hits ODR violations with shared linkage due to
 # cc_proto_library cyclic dependency.
 build:san-common --dynamic_mode=off
 

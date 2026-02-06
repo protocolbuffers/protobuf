@@ -92,10 +92,13 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * Create a new {@code CodedOutputStream} that writes directly to the given byte array slice. If
-   * more bytes are written than fit in the slice, {@link OutOfSpaceException} will be thrown.
-   * Writing directly to a flat array is faster than writing to an {@code OutputStream}. See also
-   * {@link ByteString#newCodedBuilder}.
+   * Create a new {@code CodedOutputStream} that writes directly to the given byte array slice.
+   *
+   * @param flatArray the flat array to write to.
+   * @param offset the offset into the array to start writing at.
+   * @param length the number of bytes to write. Callers are responsible for ensuring that the bytes
+   *     written do not exceed the specified length by calling {@link #spaceLeft()} on the returned
+   *     {@link CodedOutputStream}.
    */
   public static CodedOutputStream newInstance(
       final byte[] flatArray, final int offset, final int length) {
@@ -832,20 +835,24 @@ public abstract class CodedOutputStream extends ByteOutput {
   public abstract void flush() throws IOException;
 
   /**
-   * If writing to a flat array, return the space left in the array. Otherwise, throws {@code
-   * UnsupportedOperationException}.
+   * If writing to a flat array, return the space left in the array, which can be a negative value
+   * if writing past the limit specified in {@link #newInstance(byte[], int, int)} but before the
+   * end of the array. Otherwise, throws {@code UnsupportedOperationException}.
    */
   public abstract int spaceLeft();
 
   /**
-   * Verifies that {@link #spaceLeft()} returns zero. It's common to create a byte array that is
-   * exactly big enough to hold a message, then write to it with a {@code CodedOutputStream}.
-   * Calling {@code checkNoSpaceLeft()} after writing verifies that the message was actually as big
-   * as expected, which can help catch bugs.
+   * Verifies that {@link #spaceLeft()} does not return a positive value. It's common to create a
+   * byte array that is exactly big enough to hold a message, then write to it with a {@code
+   * CodedOutputStream}. Calling {@code checkNoSpaceLeft()} after writing verifies that the message
+   * was actually as big as expected, which can help catch bugs.
    */
   public final void checkNoSpaceLeft() {
-    if (spaceLeft() != 0) {
+    if (spaceLeft() > 0) {
       throw new IllegalStateException("Did not write as much data as expected.");
+    }
+    if (spaceLeft() < 0) {
+      throw new IllegalStateException("Wrote more data than expected.");
     }
   }
 
@@ -1322,7 +1329,7 @@ public abstract class CodedOutputStream extends ByteOutput {
         final int minLengthVarIntSize = computeUInt32SizeNoTag(value.length());
         if (minLengthVarIntSize == maxLengthVarIntSize) {
           position = oldPosition + minLengthVarIntSize;
-          int newPosition = Utf8.encode(value, buffer, position, spaceLeft());
+          int newPosition = Utf8.encode(value, buffer, position, buffer.length - position);
           // Since this class is stateful and tracks the position, we rewind and store the state,
           // prepend the length, then reset it back to the end of the string.
           position = oldPosition;
@@ -1332,7 +1339,7 @@ public abstract class CodedOutputStream extends ByteOutput {
         } else {
           int length = Utf8.encodedLength(value);
           writeUInt32NoTag(length);
-          position = Utf8.encode(value, buffer, position, spaceLeft());
+          position = Utf8.encode(value, buffer, position, buffer.length - position);
         }
       } catch (IndexOutOfBoundsException e) {
         throw new OutOfSpaceException(e);

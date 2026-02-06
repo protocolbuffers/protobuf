@@ -100,7 +100,6 @@ void UntypedMapBase::UntypedSwap(Arena* arena, UntypedMapBase& other,
   if (arena == other_arena) {
     InternalSwap(&other);
   } else {
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
     // `FieldWithArena` checks that the arena pointer is null when destroying a
     // destructor-skippable type. Since `UntypedMapBase` is
     // destructor-skippable, we need to put it in an `absl::NoDestructor` and
@@ -108,9 +107,6 @@ void UntypedMapBase::UntypedSwap(Arena* arena, UntypedMapBase& other,
     absl::NoDestructor<FieldWithArena<UntypedMapBase>> tmp_container(
         arena, type_info_);
     UntypedMapBase& tmp = tmp_container->field();
-#else
-    UntypedMapBase tmp(arena, type_info_);
-#endif
     InternalSwap(&tmp);
 
     ABSL_DCHECK(empty());
@@ -121,9 +117,7 @@ void UntypedMapBase::UntypedSwap(Arena* arena, UntypedMapBase& other,
 
     if (arena == nullptr) {
       tmp.ClearTable(arena, /*reset=*/false);
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
       tmp.~UntypedMapBase();
-#endif
     }
   }
 }
@@ -152,13 +146,7 @@ void UntypedMapBase::ClearTableImpl(Arena* arena, bool reset) {
   if (arena == nullptr) {
     const auto loop = [this](auto destroy_node) {
       NodeBase** table = table_;
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-      map_index_t index_of_first_non_null = 0;
-#else
-      map_index_t index_of_first_non_null = index_of_first_non_null_;
-#endif
-      for (map_index_t b = index_of_first_non_null, end = num_buckets_; b < end;
-           ++b) {
+      for (map_index_t b = 0, end = num_buckets_; b < end; ++b) {
         for (NodeBase* node = table[b]; node != nullptr;) {
           NodeBase* next = node->next;
           absl::PrefetchToLocalCacheNta(next);
@@ -200,9 +188,6 @@ void UntypedMapBase::ClearTableImpl(Arena* arena, bool reset) {
   if (reset) {
     std::fill(table_, table_ + num_buckets_, nullptr);
     num_elements_ = 0;
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-    index_of_first_non_null_ = num_buckets_;
-#endif
   } else {
     DeleteTable(arena, table_, num_buckets_);
   }

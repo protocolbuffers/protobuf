@@ -44,6 +44,23 @@ class TestMessageMockProxy extends TestMessage
 
 class GeneratedClassTest extends TestBase
 {
+    private $orig_level;
+
+    /**
+     * @before
+     */
+    public function setErrorLevel()
+    {
+        $this->orig_level = error_reporting();
+    }
+
+    /**
+     * @after
+     */
+    public function restoreErrorLevel()
+    {
+        error_reporting($this->orig_level);
+    }
 
     #########################################################
     # Test field accessors.
@@ -71,7 +88,7 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(MIN_INT32, $m->getOptionalInt32());
 
         // Set float.
-        $m->setOptionalInt32(1.1);
+        @$m->setOptionalInt32(1.1);
         $this->assertSame(1, $m->getOptionalInt32());
         $m->setOptionalInt32(MAX_INT32_FLOAT);
         $this->assertSame(MAX_INT32, $m->getOptionalInt32());
@@ -81,7 +98,7 @@ class GeneratedClassTest extends TestBase
         // Set string.
         $m->setOptionalInt32('2');
         $this->assertSame(2, $m->getOptionalInt32());
-        $m->setOptionalInt32('3.1');
+        @$m->setOptionalInt32('3.1');
         $this->assertSame(3, $m->getOptionalInt32());
         $m->setOptionalInt32(MAX_INT32_STRING);
         $this->assertSame(MAX_INT32, $m->getOptionalInt32());
@@ -254,18 +271,24 @@ class GeneratedClassTest extends TestBase
         $m = new TestMessage();
 
         // Set integer.
-        $m->setOptionalUint32(MAX_UINT32);
-        $this->assertSame(-1, $m->getOptionalUint32());
+        if (PHP_INT_SIZE !== 4) {
+            // 32-bit systems throw "TypeError: Argument #1 must be of type int, float given"
+            $m->setOptionalUint32(MAX_UINT32);
+            $this->assertSame(-1, $m->getOptionalUint32());
+        }
         $m->setOptionalUint32(-1);
         $this->assertSame(-1, $m->getOptionalUint32());
         $m->setOptionalUint32(MIN_UINT32);
         $this->assertSame(MIN_INT32, $m->getOptionalUint32());
 
         // Set float.
-        $m->setOptionalUint32(1.1);
+        @$m->setOptionalUint32(1.1);
         $this->assertSame(1, $m->getOptionalUint32());
-        $m->setOptionalUint32(MAX_UINT32_FLOAT);
-        $this->assertSame(-1, $m->getOptionalUint32());
+        if (PHP_INT_SIZE !== 4) {
+            // 32-bit systems throw "TypeError: Argument #1 must be of type int, float given"
+            $m->setOptionalUint32(MAX_UINT32_FLOAT);
+            $this->assertSame(-1, $m->getOptionalUint32());
+        }
         $m->setOptionalUint32(-1.0);
         $this->assertSame(-1, $m->getOptionalUint32());
         $m->setOptionalUint32(MIN_UINT32_FLOAT);
@@ -274,10 +297,13 @@ class GeneratedClassTest extends TestBase
         // Set string.
         $m->setOptionalUint32('2');
         $this->assertSame(2, $m->getOptionalUint32());
-        $m->setOptionalUint32('3.1');
+        @$m->setOptionalUint32('3.1');
         $this->assertSame(3, $m->getOptionalUint32());
-        $m->setOptionalUint32(MAX_UINT32_STRING);
-        $this->assertSame(-1, $m->getOptionalUint32());
+        if (PHP_INT_SIZE !== 4) {
+            // 32-bit systems throw "TypeError: Argument #1 must be of type int, float given"
+            $m->setOptionalUint32(MAX_UINT32_STRING);
+            $this->assertSame(-1, $m->getOptionalUint32());
+        }
         $m->setOptionalUint32('-1.0');
         $this->assertSame(-1, $m->getOptionalUint32());
         $m->setOptionalUint32(MIN_UINT32_STRING);
@@ -299,7 +325,7 @@ class GeneratedClassTest extends TestBase
         $this->assertEquals(MIN_INT64, $m->getOptionalInt64());
 
         // Set float.
-        $m->setOptionalInt64(1.1);
+        @$m->setOptionalInt64(1.1);
         if (PHP_INT_SIZE == 4) {
             $this->assertSame('1', $m->getOptionalInt64());
         } else {
@@ -353,7 +379,7 @@ class GeneratedClassTest extends TestBase
         }
 
         // Set float.
-        $m->setOptionalUint64(1.1);
+        @$m->setOptionalUint64(1.1);
         if (PHP_INT_SIZE == 4) {
             $this->assertSame('1', $m->getOptionalUint64());
         } else {
@@ -400,7 +426,7 @@ class GeneratedClassTest extends TestBase
         $this->assertEquals(TestEnum::ONE, $m->getOptionalEnum());
 
         // Set float.
-        $m->setOptionalEnum(1.1);
+        @$m->setOptionalEnum(1.1);
         $this->assertEquals(TestEnum::ONE, $m->getOptionalEnum());
 
         // Set string.
@@ -451,17 +477,17 @@ class GeneratedClassTest extends TestBase
 
         // Set integer.
         $m->setOptionalFloat(1);
-        $this->assertFloatEquals(1.0, $m->getOptionalFloat(), MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(1.0, $m->getOptionalFloat(), MAX_FLOAT_DIFF);
 
         // Set float.
         $m->setOptionalFloat(1.1);
-        $this->assertFloatEquals(1.1, $m->getOptionalFloat(), MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(1.1, $m->getOptionalFloat(), MAX_FLOAT_DIFF);
 
         // Set string.
         $m->setOptionalFloat('2');
-        $this->assertFloatEquals(2.0, $m->getOptionalFloat(), MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(2.0, $m->getOptionalFloat(), MAX_FLOAT_DIFF);
         $m->setOptionalFloat('3.1');
-        $this->assertFloatEquals(3.1, $m->getOptionalFloat(), MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(3.1, $m->getOptionalFloat(), MAX_FLOAT_DIFF);
     }
 
     #########################################################
@@ -474,17 +500,17 @@ class GeneratedClassTest extends TestBase
 
         // Set integer.
         $m->setOptionalDouble(1);
-        $this->assertFloatEquals(1.0, $m->getOptionalDouble(), MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(1.0, $m->getOptionalDouble(), MAX_FLOAT_DIFF);
 
         // Set float.
         $m->setOptionalDouble(1.1);
-        $this->assertFloatEquals(1.1, $m->getOptionalDouble(), MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(1.1, $m->getOptionalDouble(), MAX_FLOAT_DIFF);
 
         // Set string.
         $m->setOptionalDouble('2');
-        $this->assertFloatEquals(2.0, $m->getOptionalDouble(), MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(2.0, $m->getOptionalDouble(), MAX_FLOAT_DIFF);
         $m->setOptionalDouble('3.1');
-        $this->assertFloatEquals(3.1, $m->getOptionalDouble(), MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(3.1, $m->getOptionalDouble(), MAX_FLOAT_DIFF);
     }
 
     #########################################################
@@ -523,8 +549,12 @@ class GeneratedClassTest extends TestBase
         $m = new TestMessage(['optional_bool' => 1.5]);
         $this->assertTrue($m->getOptionalBool());
 
+        // Currently this generates a warning so we suppress it. In PHP 9, this will be promoted to an error and the test should be removed.
+        // https://wiki.php.net/rfc/warnings-php-8-5#coercing_nan_to_other_types
+        error_reporting($this->orig_level & ~E_WARNING);
         $m = new TestMessage(['optional_bool' => NAN]);
         $this->assertTrue($m->getOptionalBool());
+        error_reporting($this->orig_level);
 
         $m = new TestMessage(['optional_bool' => INF]);
         $this->assertTrue($m->getOptionalBool());
@@ -541,7 +571,11 @@ class GeneratedClassTest extends TestBase
         $rf[] = -0.0;
         $rf[] = 0.0;
         $rf[] = 1.5;
+        // Currently this generates a warning so we suppress it. In PHP 9, this will be promoted to an error and the test should be removed.
+        // https://wiki.php.net/rfc/warnings-php-8-5#coercing_nan_to_other_types
+        error_reporting($this->orig_level & ~E_WARNING);
         $rf[] = NAN;
+        error_reporting($this->orig_level);
         $rf[] = INF;
         $rf[] = -INF;
 
@@ -2052,15 +2086,15 @@ class GeneratedClassTest extends TestBase
         $this->assertEquals('     */', array_pop($commentLines));
         $docComment = implode("\n", $commentLines);
         // test special characters
-        $this->assertContains(";,/?:&=+$-_.!~*'()", $docComment);
+        $this->assertStringContainsString(";,/?:&=+$-_.!~*'()", $docComment);
         // test open doc comment
-        $this->assertContains('/*', $docComment);
+        $this->assertStringContainsString('/*', $docComment);
         // test escaped closed doc comment
-        $this->assertNotContains('*/', $docComment);
-        $this->assertContains('{@*}', $docComment);
+        $this->assertStringNotContainsString('*/', $docComment);
+        $this->assertStringContainsString('{@*}', $docComment);
         // test escaped at-sign
-        $this->assertContains('\@foo', $docComment);
+        $this->assertStringContainsString('\@foo', $docComment);
         // test forwardslash on new line
-        $this->assertContains("* /\n", $docComment);
+        $this->assertStringContainsString("* /\n", $docComment);
     }
 }

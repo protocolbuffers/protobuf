@@ -125,7 +125,7 @@ class PROTOBUF_EXPORT Parser final {
   // ending after the closing '}' is encountered and consumed, or at EOF.
   void SkipRestOfBlock();
 
-  bool ShouldUseFixedFirstType() const;
+  bool ShouldUseFixedWireForIntTypes() const;
 
   // -----------------------------------------------------------------
   // Single-token consuming helpers

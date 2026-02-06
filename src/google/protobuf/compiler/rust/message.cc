@@ -318,21 +318,21 @@ void TypeConversions(Context& ctx, const Descriptor& msg) {
       ctx.Emit(
           R"rs(
           impl $pbr$::CppMapTypeConversions for $Msg$ {
-              fn get_prototype() -> $pbr$::MapValue {
-                  $pbr$::MapValue::make_message(<$Msg$View as $std$::default::Default>::default().raw_msg())
+              fn get_prototype() -> $pbr$::FfiMapValue {
+                  $pbr$::FfiMapValue::make_message(<$Msg$View as $std$::default::Default>::default().raw_msg())
               }
 
-              fn to_map_value(self) -> $pbr$::MapValue {
-                  $pbr$::MapValue::make_message(std::mem::ManuallyDrop::new(self).raw_msg())
+              fn to_map_value(self) -> $pbr$::FfiMapValue {
+                  $pbr$::FfiMapValue::make_message(std::mem::ManuallyDrop::new(self).raw_msg())
               }
 
-              unsafe fn from_map_value<'b>(value: $pbr$::MapValue) -> $Msg$View<'b> {
-                  debug_assert_eq!(value.tag, $pbr$::MapValueTag::Message);
+              unsafe fn from_map_value<'b>(value: $pbr$::FfiMapValue) -> $Msg$View<'b> {
+                  debug_assert_eq!(value.tag, $pbr$::FfiMapValueTag::Message);
                   unsafe { $pbr$::MessageViewInner::wrap_raw(value.val.m).into() }
               }
 
-              unsafe fn mut_from_map_value<'b>(value: $pbr$::MapValue) -> $Msg$Mut<'b> {
-                  debug_assert_eq!(value.tag, $pbr$::MapValueTag::Message);
+              unsafe fn mut_from_map_value<'b>(value: $pbr$::FfiMapValue) -> $Msg$Mut<'b> {
+                  debug_assert_eq!(value.tag, $pbr$::FfiMapValueTag::Message);
                   let inner = unsafe { $pbr$::MessageMutInner::wrap_raw(value.val.m) };
                   $Msg$Mut { inner }
               }
@@ -741,6 +741,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
         //~ We implement drop unconditionally, so that `$Msg$: Drop` regardless
         //~ of kernel.
         impl $std$::ops::Drop for $Msg$ {
+          #[inline]
           fn drop(&mut self) {
             $Msg::drop$
           }

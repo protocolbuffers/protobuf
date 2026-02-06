@@ -148,8 +148,7 @@ static PyDescriptorPool* PyDescriptorPool_NewWithUnderlay(
 }
 
 static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
-    DescriptorDatabase* database,
-    bool use_deprecated_legacy_json_field_conflicts) {
+    DescriptorDatabase* database) {
   PyDescriptorPool* cpool = _CreateDescriptorPool();
   if (cpool == nullptr) {
     return nullptr;
@@ -163,11 +162,6 @@ static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
   } else {
     pool = new DescriptorPool();
     cpool->is_mutable = true;
-  }
-  if (use_deprecated_legacy_json_field_conflicts) {
-    PROTOBUF_IGNORE_DEPRECATION_START
-    pool->UseDeprecatedLegacyJsonFieldConflicts();
-    PROTOBUF_IGNORE_DEPRECATION_STOP
   }
   cpool->pool = pool;
   cpool->is_owned = true;
@@ -188,7 +182,6 @@ static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
 // The public DescriptorPool constructor.
 static PyObject* New(PyTypeObject* type,
                      PyObject* args, PyObject* kwargs) {
-  int use_deprecated_legacy_json_field_conflicts = 0;
   static const char* kwlist[] = {"descriptor_db", nullptr};
   PyObject* py_database = nullptr;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O",
@@ -200,7 +193,7 @@ static PyObject* New(PyTypeObject* type,
     database = new PyDescriptorDatabase(py_database);
   }
   return reinterpret_cast<PyObject*>(PyDescriptorPool_NewWithDatabase(
-      database, use_deprecated_legacy_json_field_conflicts));
+      database));
 }
 
 static void Dealloc(PyObject* pself) {

@@ -30,7 +30,7 @@ py_repositories()
 """
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("//bazel/private:proto_bazel_features.bzl", "proto_bazel_features")  # buildifier: disable=bzl-visibility
+load("//bazel/private/oss:proto_bazel_features.bzl", "proto_bazel_features")  # buildifier: disable=bzl-visibility
 load("//python/dist:python_downloads.bzl", "python_nuget_package", "python_source_archive")
 load("//python/dist:system_python.bzl", "system_python")
 
@@ -75,10 +75,10 @@ def protobuf_deps():
     if not native.existing_rule("bazel_skylib"):
         http_archive(
             name = "bazel_skylib",
-            sha256 = "d00f1389ee20b60018e92644e0948e16e350a7707219e7a390fb0a99b6ec9262",
+            sha256 = "3b5b49006181f5f8ff626ef8ddceaa95e9bb8ad294f7b5d7b11ea9f7ddaf8c59",
             urls = [
-                "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.7.0/bazel-skylib-1.7.0.tar.gz",
-                "https://github.com/bazelbuild/bazel-skylib/releases/download/1.7.0/bazel-skylib-1.7.0.tar.gz",
+                "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.9.0/bazel-skylib-1.9.0.tar.gz",
+                "https://github.com/bazelbuild/bazel-skylib/releases/download/1.9.0/bazel-skylib-1.9.0.tar.gz",
             ],
         )
 
@@ -150,7 +150,7 @@ def protobuf_deps():
     if not native.existing_rule("system_python"):
         system_python(
             name = "system_python",
-            minimum_python_version = "3.9",
+            minimum_python_version = "3.10",
         )
 
     if not native.existing_rule("rules_jvm_external"):
@@ -171,11 +171,21 @@ def protobuf_deps():
             sha256 = "d20c951960ed77cb7b341c2a59488534e494d5ad1d30c4818c736d57772a9fef",
         )
 
+    # Workaround rules_apple having a default dependency on rules_swift 2.4.0, which in turn has a
+    # hard dependency on the presence of swiftc.exe on Windows.
+    if not native.existing_rule("build_bazel_rules_swift"):
+        http_archive(
+            name = "build_bazel_rules_swift",
+            sha256 = "b17bdad10f3996cffc1ae3634e426d5280848cdb25ae5351f39357599938f5c6",
+            url = "https://github.com/bazelbuild/rules_swift/releases/download/3.0.2/rules_swift.3.0.2.tar.gz",
+        )
+
+    # TODO: Can rules_apple be removed, and thus allow rules_swift to be removed?
     if not native.existing_rule("build_bazel_rules_apple"):
         http_archive(
             name = "build_bazel_rules_apple",
-            sha256 = "86ff9c3a2c7bc308fef339bcd5b3819aa735215033886cc281eb63f10cd17976",
-            url = "https://github.com/bazelbuild/rules_apple/releases/download/3.16.0/rules_apple.3.16.0.tar.gz",
+            sha256 = "70b0fb2aec1055c978109199bf58ccb5008aba8e242f3305194045c271ca3cae",
+            url = "https://github.com/bazelbuild/rules_apple/releases/download/4.0.0/rules_apple.4.0.0.tar.gz",
         )
 
     if not native.existing_rule("build_bazel_apple_support"):
@@ -204,18 +214,8 @@ def protobuf_deps():
 
     # Python Downloads
     python_source_archive(
-        version = "3.9.0",
-        sha256 = "df796b2dc8ef085edae2597a41c1c0a63625ebd92487adaef2fed22b567873e8",
-    )
-    python_nuget_package(
-        version = "3.9.0",
-        cpu = "i686",
-        sha256 = "229abecbe49dc08fe5709e0b31e70edfb3b88f23335ebfc2904c44f940fd59b6",
-    )
-    python_nuget_package(
-        version = "3.9.0",
-        cpu = "x86-64",
-        sha256 = "6af58a733e7dfbfcdd50d55788134393d6ffe7ab8270effbf724bdb786558832",
+        version = "3.10.0",
+        sha256 = "c4e0cbad57c90690cb813fb4663ef670b4d0f587d8171e2c42bd4c9245bd2758",
     )
     python_nuget_package(
         version = "3.10.0",
@@ -227,4 +227,4 @@ def protobuf_deps():
         cpu = "x86-64",
         sha256 = "4474c83c25625d93e772e926f95f4cd398a0abbb52793625fa30f39af3d2cc00",
     )
-    native.register_toolchains("//bazel/private/toolchains:all")
+    native.register_toolchains("//bazel/private/oss/toolchains:all")

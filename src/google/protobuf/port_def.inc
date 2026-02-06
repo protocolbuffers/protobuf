@@ -416,41 +416,38 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #error PROTOBUF_CONSTINIT was previously defined
 #endif
 
-// Lexan sets both MSV_VER and clang, so handle it with the clang path.
-#if defined(_MSC_VER) && !defined(__clang__)
-// MSVC 17 currently seems to raise an error about constant-initialized pointers.
-# if PROTOBUF_MSC_VER_MIN(1930)
-#  define PROTOBUF_CONSTINIT
-#  define PROTOBUF_CONSTEXPR constexpr
-# endif
+#if defined(PROTOBUF_USE_DLLS) && (defined(_WIN32) || defined(__CYGWIN__))
+// On Windows, `constinit` structures cannot include pointers to dllimport
+// symbols, which are defined in another dll. If libprotobuf is built as a dll,
+// generated parse tables breaks this. See
+// https://github.com/protocolbuffers/protobuf/issues/10159 and
+// https://github.com/protocolbuffers/protobuf/pull/13240. Work around this by
+// suppressing `constinit`.
+#define PROTOBUF_CONSTINIT
+#elif defined(_MSC_VER) && !defined(__clang__)
+// On MSVC, but not clang-cl, the above workaround must extend to static library
+// builds too. MSVC can avoid a global constructor when initializing structures
+// containing pointers to same-dll symbols, it relies on the optimizer for this,
+// so we can't enforce constinit. This limitation does not apply to constexpr.
+// See https://godbolt.org/z/hsT9e3zs4
+#define PROTOBUF_CONSTINIT
 #elif defined(__GNUC__) && !defined(__clang__)
 // GCC doesn't support constinit aggregate initialization of absl::Cord.
-# if PROTOBUF_GNUC_MIN(12, 2)
-#  define PROTOBUF_CONSTINIT
-#  define PROTOBUF_CONSTEXPR constexpr
-# endif
-#else
-# if defined(__cpp_constinit) && !defined(__CYGWIN__)
-#  define PROTOBUF_CONSTINIT constinit
-#  define PROTOBUF_CONSTEXPR constexpr
-#  define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+#define PROTOBUF_CONSTINIT
+#elif defined(__cpp_constinit)
+#define PROTOBUF_CONSTINIT constinit
+#define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
 // Some older Clang versions incorrectly raise an error about
 // constant-initializing weak default instance pointers. Versions 12.0 and
 // higher seem to work, except that XCode 12.5.1 shows the error even though it
 // uses Clang 12.0.5.
-#elif !defined(__CYGWIN__) && !defined(__MINGW32__) &&                 \
-    ABSL_HAVE_CPP_ATTRIBUTE(clang::require_constant_initialization) && \
-    ((defined(__APPLE__) && PROTOBUF_CLANG_MIN(13, 0)) ||              \
+#elif ABSL_HAVE_CPP_ATTRIBUTE(clang::require_constant_initialization) && \
+    ((defined(__APPLE__) && PROTOBUF_CLANG_MIN(13, 0)) ||                \
      (!defined(__APPLE__) && PROTOBUF_CLANG_MIN(12, 0)))
-#  define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
-#  define PROTOBUF_CONSTEXPR constexpr
-#  define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-# endif
-#endif
-
-#ifndef PROTOBUF_CONSTINIT
+#define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
+#define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+#else
 #define PROTOBUF_CONSTINIT
-#define PROTOBUF_CONSTEXPR
 #endif
 
 // Some globals with an empty non-trivial destructor are annotated with
@@ -599,15 +596,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // ThreadSafeArenaz is turned off completely in opensource builds.
 
 
-// TODO(b/174574783) remove these flags once the feature is stable.
-#ifndef PROTOBUF_INTERNAL_DISABLE_REMOVED_ARENA_PTRS
-#define PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD 1
-#define PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD 1
-#define PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET 1
-#define PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD 1
-#define PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_STRING_PIECE_FIELD 1
-#endif  // PROTOBUF_INTERNAL_DISABLE_REMOVED_ARENA_PTRS
-
 #include "google/protobuf/os_macros_undef.inc"
 
 // Protobuf does not support building with a number of warnings that are noisy
@@ -639,6 +627,9 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #endif
 #ifdef __GNUC__
 #pragma GCC diagnostic push
+// We sometimes use "unnecessary" parenthesis in codegen to prevent ambiguity or
+// conflicts with contextual keywords.
+#pragma GCC diagnostic ignored "-Wparentheses"
 // Some of the warnings below only exist in some GCC versions; those version
 // ranges are poorly documented.
 #pragma GCC diagnostic ignored "-Wpragmas"

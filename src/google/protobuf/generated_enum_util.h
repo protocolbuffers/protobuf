@@ -14,6 +14,9 @@
 #include <type_traits>
 #include <vector>
 
+#include "absl/strings/ascii.h"
+#include "absl/strings/numbers.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "google/protobuf/explicitly_constructed.h"
@@ -110,6 +113,43 @@ PROTOBUF_ALWAYS_INLINE bool ValidateEnumInlined(int value,
   }
   return false;
 }
+
+// Abseil flag implementation for LITE enums.
+template <typename E, bool is_lite>
+using EnableIfProtoEnum = std::enable_if_t<
+    is_proto_enum<E>::value && is_lite == LiteEnumFuncs<E>::kIsDefined, int>;
+
+namespace generated_enum {
+// We inject these functions in the user namespace to allow for ADL on the
+// enums.
+// These overloads handle LITE enums.
+template <typename Enum, EnableIfProtoEnum<Enum, true> = 0>
+bool AbslParseFlag(absl::string_view text, Enum* e, std::string* error) {
+  if (LiteEnumFuncs<Enum>::kParseFunc(text, e)) return true;
+
+  // Try as lower case
+  if (absl::AsciiStrToLower(text) == text &&
+      LiteEnumFuncs<Enum>::kParseFunc(absl::AsciiStrToUpper(text), e)) {
+    return true;
+  }
+
+  // Try as a number
+  int as_number;
+  if (absl::SimpleAtoi(text, &as_number) &&
+      ValidateEnum(as_number, EnumTraits<Enum>::validation_data())) {
+    *e = static_cast<Enum>(as_number);
+    return true;
+  }
+
+  return false;
+}
+
+template <typename Enum, EnableIfProtoEnum<Enum, true> = 0>
+std::string AbslUnparseFlag(Enum e) {
+  absl::string_view name = LiteEnumFuncs<Enum>::kNameFunc(e);
+  return name.empty() ? absl::StrCat(static_cast<int>(e)) : std::string(name);
+}
+}  // namespace generated_enum
 
 }  // namespace internal
 }  // namespace protobuf

@@ -68,9 +68,8 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
 
 class SingularString : public FieldGeneratorBase {
  public:
-  SingularString(const FieldDescriptor* field, const Options& opts,
-                 MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
+  SingularString(const FieldDescriptor* field, const Options& opts)
+      : FieldGeneratorBase(field, opts), opts_(&opts) {}
   ~SingularString() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -135,7 +134,7 @@ class SingularString : public FieldGeneratorBase {
 
   void GenerateMemberConstexprConstructor(io::Printer* p) const override {
     if (is_inlined()) {
-      p->Emit("$name$_(nullptr, false)");
+      p->Emit("$name$_{}");
     } else {
       p->Emit(
           "$name$_(\n"
@@ -196,12 +195,6 @@ void SingularString::GenerateStaticMembers(io::Printer* p) const {
   if (!EmptyDefault()) {
     p->Emit(R"cc(
       static const $pbi$::LazyString $default_variable_name$;
-    )cc");
-  }
-  if (is_inlined()) {
-    // `_init_inline_xxx` is used for initializing default instances.
-    p->Emit(R"cc(
-      static ::std::true_type _init_inline_$name$_;
     )cc");
   }
 }
@@ -660,9 +653,8 @@ void SingularString::GenerateAggregateInitializer(io::Printer* p) const {
 
 class RepeatedString : public FieldGeneratorBase {
  public:
-  RepeatedString(const FieldDescriptor* field, const Options& opts,
-                 MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
+  RepeatedString(const FieldDescriptor* field, const Options& opts)
+      : FieldGeneratorBase(field, opts), opts_(&opts) {}
   ~RepeatedString() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -801,14 +793,12 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   bool bytes = field_->type() == FieldDescriptor::TYPE_BYTES;
   p->Emit(
       {
-          GetEmitRepeatedFieldGetterSub(*opts_, p),
           {"bytes_tag",
            [&] {
              if (bytes) {
                p->Emit(", $pbi$::BytesTag{}");
              }
            }},
-          GetEmitRepeatedFieldMutableSub(*opts_, p),
       },
       R"cc(
         inline ::std::string* $nonnull$ $Msg$::add_$name$()
@@ -828,7 +818,7 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $WeakDescriptorSelfPin$;
           $annotate_get$;
           // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-          return $getter$;
+          return _internal_$name_internal$().Get(index);
         }
         //~ Note: no need to set hasbit in mutable_$name$(int index). Hasbits
         //~ only need to be updated if a new element is (potentially) added, not
@@ -838,7 +828,7 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $WeakDescriptorSelfPin$;
           $annotate_mutable$;
           // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
-          return $mutable$;
+          return _internal_mutable_$name_internal$()->Mutable(index);
         }
         //~ Note: no need to set hasbit in set_$name$(int index). Hasbits
         //~ only need to be updated if a new element is (potentially) added, not
@@ -846,8 +836,9 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         template <typename Arg_, typename... Args_>
         inline void $Msg$::set_$name$(int index, Arg_&& value, Args_... args) {
           $WeakDescriptorSelfPin$;
-          $pbi$::AssignToString(*$mutable$, ::std::forward<Arg_>(value),
-                                args... $bytes_tag$);
+          $pbi$::AssignToString(
+              *_internal_mutable_$name_internal$()->Mutable(index),
+              ::std::forward<Arg_>(value), args... $bytes_tag$);
           $annotate_set$;
           // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
         }
@@ -935,15 +926,13 @@ void RepeatedString::GenerateSerializeWithCachedSizesToArray(
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarStringGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc) {
-  return absl::make_unique<SingularString>(desc, options, scc);
+    const FieldDescriptor* desc, const Options& options) {
+  return absl::make_unique<SingularString>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedStringGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc) {
-  return absl::make_unique<RepeatedString>(desc, options, scc);
+    const FieldDescriptor* desc, const Options& options) {
+  return absl::make_unique<RepeatedString>(desc, options);
 }
 
 }  // namespace cpp

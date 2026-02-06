@@ -808,7 +808,7 @@ class SecondaryDescriptorFromDescriptorDB(DescriptorPoolTestBase,
         no_package_pb2.DESCRIPTOR.serialized_pb))
     self.pool = descriptor_pool.DescriptorPool(descriptor_db=self.db)
 
-  # TODO: This is a helper function for testErrorCollector to
+  # TODO: b/387527786 - This is a helper function for testErrorCollector to
   # capture some of the nonconformant, C++-specific behavior.
   def assertCppErrorCollectorCorrect(self):
     self.assertEqual(api_implementation.Type(), 'cpp')
@@ -858,7 +858,7 @@ class SecondaryDescriptorFromDescriptorDB(DescriptorPoolTestBase,
         + error_msg,
     )
 
-  # TODO: This is a helper function for testErrorCollector to
+  # TODO: b/387527786 - This is a helper function for testErrorCollector to
   # capture some of the nonconformant, UPB-specific behavior.
   def assertUpbErrorCollectorCorrect(self):
     self.assertEqual(api_implementation.Type(), 'upb')
@@ -912,7 +912,7 @@ class SecondaryDescriptorFromDescriptorDB(DescriptorPoolTestBase,
 
     # Nonconformance: UPB will raise a TypeError whereas other implementations
     # will raise KeyError when SubMessage cannot be indexed.
-    # TODO: Fix this nonconformance between (cpp+python)/upb.
+    # TODO: b/387527786 - Fix this nonconformance between (cpp+python)/upb.
     error_type = TypeError if api_implementation.Type() == 'upb' else KeyError
     self.assertRaisesRegex(
         error_type,
@@ -935,7 +935,7 @@ class SecondaryDescriptorFromDescriptorDB(DescriptorPoolTestBase,
     # called the first time, a KeyError will be raised but call the find
     # method later will return a descriptor which is not build.
     # TODO: fix pure python to revert the load if file can not be build
-    # TODO: Fix this nonconformance between python/cpp/upb.
+    # TODO: b/387527786 - Fix this nonconformance between python/cpp/upb.
     if api_implementation.Type() != 'python':
       if api_implementation.Type() == 'cpp':
         self.assertCppErrorCollectorCorrect()

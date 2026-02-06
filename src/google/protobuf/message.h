@@ -149,6 +149,7 @@ class TextFormat;
 namespace internal {
 struct FuzzPeer;
 struct DescriptorTable;
+struct DescriptorMethodsFriend;
 template <bool is_oneof>
 struct DynamicFieldInfoHelper;
 class HasBitsTestPeer;
@@ -408,20 +409,12 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
 
   // Reflection based version for reflection based types.
-  static absl::string_view GetTypeNameImpl(const internal::ClassData* data);
   static void MergeImpl(MessageLite& to, const MessageLite& from);
   void ClearImpl();
   static size_t ByteSizeLongImpl(const MessageLite& msg);
   static uint8_t* _InternalSerializeImpl(const MessageLite& msg,
                                          uint8_t* target,
                                          io::EpsCopyOutputStream* stream);
-
-  static const internal::TcParseTableBase* GetTcParseTableImpl(
-      const MessageLite& msg);
-
-  static size_t SpaceUsedLongImpl(const MessageLite& msg_lite);
-
-  static const internal::DescriptorMethods kDescriptorMethods;
 
 };
 
@@ -434,6 +427,8 @@ void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
 // Forward-declare interfaces used to implement RepeatedFieldRef.
 // These are protobuf internals that users shouldn't care about.
 class RepeatedFieldAccessor;
+
+extern PROTOBUF_EXPORT const DescriptorMethods kDescriptorMethods;
 }  // namespace internal
 
 // This interface contains methods that can be used to dynamically access
@@ -1120,6 +1115,7 @@ class PROTOBUF_EXPORT Reflection final {
   template <typename MessageT>
   friend struct internal::MapDynamicFieldInfo;
   friend class internal::ReflectionVisit;
+  friend internal::DescriptorMethodsFriend;
   friend bool internal::IsDescendant(const Message& root,
                                      const Message& message);
   friend void internal::MaybePoisonAfterClear(Message* root);

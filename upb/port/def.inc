@@ -514,17 +514,13 @@ Error, UINTPTR_MAX is undefined
 
 #if defined(UPB_IS_GOOGLE3) && \
     (!defined(UPB_BOOTSTRAP_STAGE) || UPB_BOOTSTRAP_STAGE != 0)
-#define UPB_DESC(sym) proto2_##sym
 #define UPB_DESC_MINITABLE(sym) &proto2__##sym##_msg_init
 #elif defined(UPB_IS_GOOGLE3) && defined(UPB_BOOTSTRAP_STAGE) && \
     UPB_BOOTSTRAP_STAGE == 0
-#define UPB_DESC(sym) proto2_##sym
 #define UPB_DESC_MINITABLE(sym) proto2__##sym##_msg_init()
 #elif defined(UPB_BOOTSTRAP_STAGE) && UPB_BOOTSTRAP_STAGE == 0
-#define UPB_DESC(sym) google_protobuf_##sym
 #define UPB_DESC_MINITABLE(sym) google__protobuf__##sym##_msg_init()
 #else
-#define UPB_DESC(sym) google_protobuf_##sym
 #define UPB_DESC_MINITABLE(sym) &google__protobuf__##sym##_msg_init
 #endif
 
@@ -641,7 +637,7 @@ Error, UINTPTR_MAX is undefined
 
 // Workaround for https://github.com/llvm/llvm-project/issues/167577 until it's
 // fixed.  Some function must exist for the constructor to work properly.
-// TODO(b/460538289) Remove this or gate it on a future version of clang.
+// TODO Remove this or gate it on a future version of clang.
 #if defined(__clang__) && defined(__arm__)
 #define _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                            \
   __attribute__((used, visibility("hidden"))) void UPB_PRIVATE(unique_name)( \

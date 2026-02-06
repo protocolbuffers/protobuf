@@ -1241,11 +1241,7 @@ TEST(RepeatedField, Cleanups) {
 
 TEST(RepeatedField, InitialSooCapacity) {
   if (sizeof(void*) == 8) {
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
     EXPECT_EQ(RepeatedField<bool>().Capacity(), 8);
-#else
-    EXPECT_EQ(RepeatedField<bool>().Capacity(), 3);
-#endif
     EXPECT_EQ(RepeatedField<int32_t>().Capacity(), 2);
     EXPECT_EQ(RepeatedField<int64_t>().Capacity(), 1);
     EXPECT_EQ(RepeatedField<absl::Cord>().Capacity(), 0);

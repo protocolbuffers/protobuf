@@ -1,7 +1,7 @@
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load(
-    "//upb/bazel:build_defs.bzl",
+    "//upb/bazel:copts.bzl",
     "UPB_DEFAULT_COPTS",
     "UPB_DEFAULT_CPPOPTS",
 )

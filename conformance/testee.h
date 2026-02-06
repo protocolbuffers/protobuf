@@ -27,7 +27,7 @@
 //                .SerializeText({.print_unknown_fields = true}),
 //             ParsedPayload(EqualsProto("pb(1: "foo")pb")));
 
-// TODO(b/410123876) Possible future APIs to expand conformance coverage:
+// TODO Possible future APIs to expand conformance coverage:
 // - Add ClearUnknownFields() to InMemoryMessage
 // - Add MergeFrom() method to InMemoryMessage to merge raw binary
 // - Remove && qualifiers on Parse* and add InMemoryMessage::Merge that merges

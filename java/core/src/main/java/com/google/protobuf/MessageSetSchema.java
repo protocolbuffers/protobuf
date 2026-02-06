@@ -39,7 +39,7 @@ final class MessageSetSchema<T> implements Schema<T> {
   @SuppressWarnings("unchecked")
   @Override
   public T newInstance() {
-    // TODO(b/248560713) decide if we're keeping support for Full in schema classes and handle this
+    // TODO decide if we're keeping support for Full in schema classes and handle this
     // better.
     if (defaultInstance instanceof GeneratedMessageLite) {
       return (T) ((GeneratedMessageLite<?, ?>) defaultInstance).newMutableInstance();
@@ -116,7 +116,7 @@ final class MessageSetSchema<T> implements Schema<T> {
   public void mergeFrom(
       T message, byte[] data, int position, int limit, ArrayDecoders.Registers registers)
       throws IOException {
-    // TODO(b/248560713) decide if we're keeping support for Full in schema classes and handle this
+    // TODO decide if we're keeping support for Full in schema classes and handle this
     // better.
     UnknownFieldSetLite unknownFields = ((GeneratedMessageLite) message).unknownFields;
     if (unknownFields == UnknownFieldSetLite.getDefaultInstance()) {
@@ -166,7 +166,7 @@ final class MessageSetSchema<T> implements Schema<T> {
             if (wireType == WireFormat.WIRETYPE_VARINT) {
               position = ArrayDecoders.decodeVarint32(data, position, registers);
               typeId = registers.int1;
-              // TODO(b/248560713) decide if we're keeping support for Full in schema classes and
+              // TODO decide if we're keeping support for Full in schema classes and
               // handle this better.
               extension =
                   (GeneratedMessageLite.GeneratedExtension<?, ?>)

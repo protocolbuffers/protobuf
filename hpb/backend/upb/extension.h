@@ -126,7 +126,7 @@ struct UpbExtensionTrait<absl::string_view> {
   }
 };
 
-// TODO: flesh out non-promotional msg support that does
+// TODO: b/375460289 - flesh out non-promotional msg support that does
 // not return an error if missing but the default msg
 template <typename T>
 struct UpbExtensionTrait<T> {

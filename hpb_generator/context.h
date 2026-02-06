@@ -98,7 +98,7 @@ class Context final {
   upb::DefPool pool_;
 };
 
-// TODO: re-house these 4 legacy funcs post io::Printer move
+// TODO: b/373438292 - re-house these 4 legacy funcs post io::Printer move
 inline std::string ToCIdent(absl::string_view str) {
   return absl::StrReplaceAll(str, {{".", "_"}, {"/", "_"}, {"-", "_"}});
 }

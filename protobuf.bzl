@@ -67,6 +67,9 @@ def _PyOuts(srcs, use_grpc_plugin = False):
 def _RubyOuts(srcs):
     return [s[:-len(".proto")] + "_pb.rb" for s in srcs]
 
+def _RBSOuts(srcs):
+    return [s[:-len(".proto")] + "_pb.rbs" for s in srcs]
+
 def _CsharpOuts(srcs):
     return [
         "".join([token.capitalize() for token in src[:-len(".proto")].split("_")]) + ".cs"
@@ -180,6 +183,8 @@ def _proto_gen_impl(ctx):
                 outs.extend(_PyOuts([src.basename], use_grpc_plugin = use_grpc_plugin))
             elif lang == "ruby":
                 outs.extend(_RubyOuts([src.basename]))
+            elif lang == "rbs":
+                outs.extend(_RBSOuts([src.basename]))
 
             # Otherwise, rely on user-supplied outs.
             args.append(("--%s_out=" + path_tpl) % (lang, gen_dir))
@@ -190,7 +195,8 @@ def _proto_gen_impl(ctx):
         generated_files.extend(outs)
 
         inputs = [src] + deps.to_list()
-        tools = [ctx.executable.protoc]
+        protoc = ctx.executable.protoc or _protoc_files_to_run(ctx)
+        tools = [protoc]
         if ctx.executable.plugin:
             plugin = ctx.executable.plugin
             lang = ctx.attr.plugin_language
@@ -213,14 +219,14 @@ def _proto_gen_impl(ctx):
                 tools = tools,
                 outputs = outs,
                 arguments = args + import_flags.to_list() + [src.path],
-                executable = ctx.executable.protoc,
+                executable = protoc,
                 mnemonic = "ProtoCompile",
                 use_default_shell_env = True,
             )
         else:
             for out in outs:
                 orig_command = " ".join(
-                    ["$(realpath %s)" % ctx.executable.protoc.path] + args +
+                    ["$(realpath %s)" % protoc.path] + args +
                     import_flags_real + [src.basename],
                 )
                 command = ";".join([
@@ -262,7 +268,6 @@ Args:
   deps: a list of dependency labels; must be other proto libraries.
   enable_editions: if true, sets the --experimental_editions flag.
   includes: a list of include paths to .proto files.
-  protoc: the label of the protocol compiler to generate the sources.
   plugin: the label of the protocol compiler plugin to be passed to the protocol
     compiler.
   plugin_language: the language of the generated sources
@@ -283,7 +288,7 @@ _proto_gen = rule(
             cfg = "exec",
             executable = True,
             allow_single_file = True,
-            mandatory = True,
+            mandatory = False,
         ),
         "plugin": attr.label(
             cfg = "exec",
@@ -297,8 +302,10 @@ _proto_gen = rule(
         "out_type": attr.string(
             default = "all",
         ),
-    },
+    } | _PROTOC_ATTRS,
     implementation = _proto_gen_impl,
+    fragments = _PROTOC_FRAGMENTS,
+    toolchains = _PROTOC_TOOLCHAINS,
 )
 
 def _internal_gen_well_known_protos_java_impl(ctx):
@@ -429,7 +436,7 @@ def internal_objc_proto_library(
         proto_deps = [],
         includes = ["."],
         default_runtime = Label("//:protobuf_objc"),
-        protoc = Label("//:protoc"),
+        protoc = None,
         testonly = None,
         visibility = ["//visibility:public"],
         **kwargs):
@@ -517,7 +524,7 @@ def internal_ruby_proto_library(
         deps = [],
         includes = ["."],
         default_runtime = "@com_google_protobuf//ruby:protobuf",
-        protoc = "@com_google_protobuf//:protoc",
+        protoc = None,
         testonly = None,
         visibility = ["//visibility:public"],
         **kwargs):
@@ -542,8 +549,6 @@ def internal_ruby_proto_library(
 
     """
 
-    # Note: we need to run the protoc build twice to get separate targets for
-    # the generated header and the source files.
     _proto_gen(
         name = name + "_genproto",
         srcs = srcs,
@@ -568,6 +573,58 @@ def internal_ruby_proto_library(
         **kwargs
     )
 
+def internal_rbs_proto_library(
+        name,
+        ruby_library,
+        srcs = [],
+        deps = [],
+        includes = ["."],
+        protoc = None,
+        testonly = None,
+        visibility = ["//visibility:public"],
+        **kwargs):
+    """Create RBS type definitions for the Ruby protobuf library from proto source files
+
+    NOTE: the rule is only an internal workaround to generate protos. The
+    interface may change and the rule may be removed when bazel has introduced
+    the native rule.
+
+    Args:
+      name: the name of the ruby_proto_library.
+      ruby_library: the ruby library rule to document.
+      srcs: the .proto files to compile.
+      deps: a list of dependency labels; must be a internal_rbs_proto_library.
+      includes: a string indicating the include path of the .proto files.
+      protoc: the label of the protocol compiler to generate the sources.
+      testonly: common rule attribute (see:
+          https://bazel.build/reference/be/common-definitions#common-attributes)
+      visibility: the visibility of the generated files.
+      **kwargs: other keyword arguments that are passed to ruby_library.
+
+    """
+
+    _proto_gen(
+        name = name + "_genproto_rbs",
+        srcs = srcs,
+        deps = [s + "_genproto_rbs" for s in deps],
+        langs = ["rbs"],
+        includes = includes,
+        protoc = protoc,
+        testonly = testonly,
+        visibility = visibility,
+        tags = ["manual"],
+    )
+
+    ruby_library(
+        name = name,
+        srcs = [name + "_genproto_rbs"],
+        deps = [],
+        testonly = testonly,
+        visibility = visibility,
+        includes = includes,
+        **kwargs
+    )
+
 # When canonical labels are in use, use additional "@" prefix
 _canonical_label_prefix = "@" if str(Label("//:protoc")).startswith("@@") else ""
 
@@ -585,7 +642,7 @@ def internal_py_proto_library(
         py_extra_srcs = [],
         include = None,
         default_runtime = Label("//:protobuf_python"),
-        protoc = Label("//:protoc"),
+        protoc = None,
         use_grpc_plugin = False,
         testonly = None,
         **kargs):
@@ -661,7 +718,7 @@ def _source_proto_library(
         outs = [],
         lang = None,
         includes = ["."],
-        protoc = Label("//:protoc"),
+        protoc = None,
         testonly = None,
         visibility = ["//visibility:public"],
         enable_editions = False,

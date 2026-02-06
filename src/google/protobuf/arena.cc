@@ -337,7 +337,7 @@ uint64_t SerialArena::SpaceUsed() const {
   // ThreadSafeArena::SpaceUsed).  However, worst-case space_used_ will have
   // stale data and the calculation will incorrectly assume 100%
   // usage of the *current* block.
-  // TODO(mkruskal) Consider eliminating this race in exchange for a possible
+  // TODO Consider eliminating this race in exchange for a possible
   // performance hit on ARM (see cl/455186837).
 
   uint64_t space_used = 0;
@@ -922,10 +922,10 @@ PROTOBUF_NOINLINE void* ThreadSafeArena::AllocateAlignedFallback(size_t n) {
   return GetSerialArenaFallback(n)->AllocateAligned<alloc_client>(n);
 }
 
-template void* ThreadSafeArena::AllocateAlignedFallback<
-    AllocationClient::kDefault>(size_t);
 template void*
-    ThreadSafeArena::AllocateAlignedFallback<AllocationClient::kArray>(size_t);
+ThreadSafeArena::AllocateAlignedFallback<AllocationClient::kDefault>(size_t);
+template void*
+ThreadSafeArena::AllocateAlignedFallback<AllocationClient::kArray>(size_t);
 
 void ThreadSafeArena::CleanupList() {
   if constexpr (HasMemoryPoisoning()) {

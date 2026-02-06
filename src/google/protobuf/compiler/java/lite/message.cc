@@ -531,7 +531,7 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
 
     int map_count = 0;
     int repeated_count = 0;
-    std::unique_ptr<const FieldDescriptor*[]> sorted_fields(
+    std::vector<const FieldDescriptor*> sorted_fields(
         SortFieldsByNumber(descriptor_));
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* field = sorted_fields[i];

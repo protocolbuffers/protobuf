@@ -365,7 +365,7 @@ public class TimestampsTest {
   public void testTimestampParseInvalidMonth() throws Exception {
     final String value = "2000-40-01T00:00:00Z";
     final String expected = "2003-04-01T00:00:00Z";
-    // TODO: this shouldn't parse successfully
+    // TODO: b/379874415 - this shouldn't parse successfully
     assertThat(Timestamps.parse(value)).isEqualTo(Timestamps.parse(expected));
     assertThat(Timestamps.parseUnchecked(value)).isEqualTo(Timestamps.parse(expected));
   }

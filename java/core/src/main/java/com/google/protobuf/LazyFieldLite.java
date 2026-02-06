@@ -170,10 +170,8 @@ public class LazyFieldLite {
    * Determines whether this LazyFieldLite instance represents the default instance of this type.
    */
   public boolean containsDefaultInstance() {
-    // TODO: ByteString can be empty but not the same as ByteString.EMPTY. Use
-    // `isEmpty()` instead for both `delayedBytes` and `memoizedBytes`.
-    return memoizedBytes == ByteString.EMPTY
-        || (value == null && (delayedBytes == null || delayedBytes == ByteString.EMPTY))
+    return (memoizedBytes != null && memoizedBytes.isEmpty())
+        || (value == null && (delayedBytes == null || delayedBytes.isEmpty()))
         || (defaultInstance != null && value == defaultInstance);
   }
 
@@ -319,7 +317,7 @@ public class LazyFieldLite {
     // this may result in some extensions being lost that shouldn't have been, but its the
     // best that we can do if we reach this point and is not expected to occur in real use.
     if (defaultInstance == null) {
-      // TODO: Consider throwing an exception here.
+      // TODO: b/467739361 - Consider throwing an exception here.
       this.delayedBytes = this.delayedBytes.concat(other.delayedBytes);
       return;
     }

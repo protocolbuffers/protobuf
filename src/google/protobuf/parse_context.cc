@@ -190,7 +190,7 @@ std::pair<const char*, bool> EpsCopyInputStream::DoneFallback(int overrun,
   if (ABSL_PREDICT_FALSE(overrun > limit_)) return {nullptr, true};
   ABSL_DCHECK(overrun != limit_);  // Guaranteed by caller.
   ABSL_DCHECK(overrun < limit_);   // Follows from above
-  // TODO(gerbens) Instead of this dcheck we could just assign, and remove
+  // TODO Instead of this dcheck we could just assign, and remove
   // updating the limit_end from PopLimit, ie.
   // limit_end_ = buffer_end_ + (std::min)(0, limit_);
   // if (ptr < limit_end_) return {ptr, false};
@@ -787,6 +787,26 @@ int CountVarintsAssumingLargeArray(const char* ptr, const char* end) {
   return num_varints -
          absl::popcount(EndianHelper<8>::Load(limit) &
                         (0x8080808080808080 << ((ptr - limit) * 8)));
+}
+
+bool VerifyBoolsAssumingLargeArray(const char* ptr, const char* end) {
+  ABSL_DCHECK_GE(end - ptr, int{sizeof(uint64_t)});
+
+  // Verify whole blocks, except for the last one.
+  uint64_t bit_or = 0;
+  const char* const limit = end - sizeof(uint64_t);
+  while (ptr < limit) {
+    uint64_t block;
+    std::memcpy(&block, ptr, 8);
+    bit_or |= block;
+    ptr += 8;
+  }
+  // Verify the last, possibly incomplete block.
+  uint64_t block;
+  std::memcpy(&block, limit, 8);
+  bit_or |= block;
+
+  return (bit_or & ~0x0101010101010101) == 0;
 }
 
 }  // namespace internal

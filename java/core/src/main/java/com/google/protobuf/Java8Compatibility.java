@@ -13,7 +13,7 @@ import java.nio.Buffer;
  * Wrappers around {@link Buffer} methods that are covariantly overridden in Java 9+. See
  * https://github.com/protocolbuffers/protobuf/issues/11393
  *
- * <p>TODO(b/270454719) remove when Java 8 support is no longer needed.
+ * <p>TODO remove when Java 8 support is no longer needed.
  */
 final class Java8Compatibility {
   static void clear(Buffer b) {

@@ -638,7 +638,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Reads a top-level message or a nested message after the limits for this message have been pushed.
         /// (parser will proceed until the end of the current limit)
-        /// NOTE: e.g. msg.MergeFrom(CodedInputStream input) method
+        /// NOTE: this method needs to be public because it's invoked by the generated code - e.g. msg.MergeFrom(CodedInputStream input) method
         /// </summary>
         public void ReadRawMessage(IMessage message)
         {
