@@ -64,7 +64,7 @@ constexpr Version::Version(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct VersionGlobalsTypeInternal {
+struct VersionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr VersionGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~VersionGlobalsTypeInternal() {}
   union {
@@ -99,7 +99,7 @@ constexpr CodeGeneratorResponse_File::CodeGeneratorResponse_File(::_pbi::Constan
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct CodeGeneratorResponse_FileGlobalsTypeInternal {
+struct CodeGeneratorResponse_FileGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr CodeGeneratorResponse_FileGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorResponse_FileGlobalsTypeInternal() {}
   union {
@@ -135,7 +135,7 @@ constexpr CodeGeneratorResponse::CodeGeneratorResponse(::_pbi::ConstantInitializ
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct CodeGeneratorResponseGlobalsTypeInternal {
+struct CodeGeneratorResponseGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr CodeGeneratorResponseGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorResponseGlobalsTypeInternal() {}
   union {
@@ -179,7 +179,7 @@ constexpr CodeGeneratorRequest::CodeGeneratorRequest(::_pbi::ConstantInitialized
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct CodeGeneratorRequestGlobalsTypeInternal {
+struct CodeGeneratorRequestGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr CodeGeneratorRequestGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorRequestGlobalsTypeInternal() {}
   union {

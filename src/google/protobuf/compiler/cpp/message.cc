@@ -2188,6 +2188,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         }},
        {"decl_impl", [&] { GenerateImplDefinition(p); }},
        {"classdata_type", ClassDataType(descriptor_, options_)},
+       {"msg_globals", MsgGlobalsInstanceName(descriptor_, options_)},
        {"split_friend",
         [&] {
           if (!ShouldSplit(descriptor_, options_)) return;
@@ -2251,7 +2252,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           $descriptor_accessor$;
           $get_descriptor$;
           $nodiscard $static const $classname$& default_instance() {
-            return *reinterpret_cast<const $classname$*>(&_$classname$_globals_);
+            return *$pbi$::MessageGlobalsBase::default_instance<$classname$>(
+                &$msg_globals$);
           }
           $decl_oneof$;
           static constexpr int kIndexInFileMessages = $index_in_file_messages$;

@@ -121,7 +121,7 @@ constexpr UninterpretedOption_NamePart::UninterpretedOption_NamePart(::_pbi::Con
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct UninterpretedOption_NamePartGlobalsTypeInternal {
+struct UninterpretedOption_NamePartGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr UninterpretedOption_NamePartGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -174,7 +174,7 @@ constexpr SourceCodeInfo_Location::SourceCodeInfo_Location(::_pbi::ConstantIniti
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct SourceCodeInfo_LocationGlobalsTypeInternal {
+struct SourceCodeInfo_LocationGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr SourceCodeInfo_LocationGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -216,7 +216,7 @@ constexpr GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::_pbi::Con
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct GeneratedCodeInfo_AnnotationGlobalsTypeInternal {
+struct GeneratedCodeInfo_AnnotationGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr GeneratedCodeInfo_AnnotationGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -255,7 +255,7 @@ constexpr FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(::_pbi::Const
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct FieldOptions_FeatureSupportGlobalsTypeInternal {
+struct FieldOptions_FeatureSupportGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr FieldOptions_FeatureSupportGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -289,7 +289,7 @@ constexpr FieldOptions_EditionDefault::FieldOptions_EditionDefault(::_pbi::Const
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct FieldOptions_EditionDefaultGlobalsTypeInternal {
+struct FieldOptions_EditionDefaultGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr FieldOptions_EditionDefaultGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -312,7 +312,7 @@ constexpr FeatureSet_VisibilityFeature::FeatureSet_VisibilityFeature(::_pbi::Con
     : ::google::protobuf::internal::ZeroFieldsBase() {
 }
 #endif  // PROTOBUF_CUSTOM_VTABLE
-struct FeatureSet_VisibilityFeatureGlobalsTypeInternal {
+struct FeatureSet_VisibilityFeatureGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr FeatureSet_VisibilityFeatureGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -350,7 +350,7 @@ constexpr FeatureSet::FeatureSet(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct FeatureSetGlobalsTypeInternal {
+struct FeatureSetGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr FeatureSetGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -389,7 +389,7 @@ constexpr ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(:
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct ExtensionRangeOptions_DeclarationGlobalsTypeInternal {
+struct ExtensionRangeOptions_DeclarationGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr ExtensionRangeOptions_DeclarationGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -421,7 +421,7 @@ constexpr EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReserve
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal {
+struct EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -453,7 +453,7 @@ constexpr DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::_pbi::C
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct DescriptorProto_ReservedRangeGlobalsTypeInternal {
+struct DescriptorProto_ReservedRangeGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr DescriptorProto_ReservedRangeGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -500,7 +500,7 @@ constexpr UninterpretedOption::UninterpretedOption(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct UninterpretedOptionGlobalsTypeInternal {
+struct UninterpretedOptionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr UninterpretedOptionGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -535,7 +535,7 @@ constexpr SourceCodeInfo::SourceCodeInfo(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct SourceCodeInfoGlobalsTypeInternal {
+struct SourceCodeInfoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr SourceCodeInfoGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -570,7 +570,7 @@ constexpr GeneratedCodeInfo::GeneratedCodeInfo(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct GeneratedCodeInfoGlobalsTypeInternal {
+struct GeneratedCodeInfoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr GeneratedCodeInfoGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -603,7 +603,7 @@ constexpr FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_Featur
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal {
+struct FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -640,7 +640,7 @@ constexpr ServiceOptions::ServiceOptions(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct ServiceOptionsGlobalsTypeInternal {
+struct ServiceOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr ServiceOptionsGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -676,7 +676,7 @@ constexpr OneofOptions::OneofOptions(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct OneofOptionsGlobalsTypeInternal {
+struct OneofOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr OneofOptionsGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -714,7 +714,7 @@ constexpr MethodOptions::MethodOptions(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct MethodOptionsGlobalsTypeInternal {
+struct MethodOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr MethodOptionsGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -755,7 +755,7 @@ constexpr MessageOptions::MessageOptions(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct MessageOptionsGlobalsTypeInternal {
+struct MessageOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr MessageOptionsGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -830,7 +830,7 @@ constexpr FileOptions::FileOptions(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct FileOptionsGlobalsTypeInternal {
+struct FileOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr FileOptionsGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -886,7 +886,7 @@ constexpr FieldOptions::FieldOptions(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct FieldOptionsGlobalsTypeInternal {
+struct FieldOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr FieldOptionsGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -923,7 +923,7 @@ constexpr FeatureSetDefaults::FeatureSetDefaults(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct FeatureSetDefaultsGlobalsTypeInternal {
+struct FeatureSetDefaultsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr FeatureSetDefaultsGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -965,7 +965,7 @@ constexpr ExtensionRangeOptions::ExtensionRangeOptions(::_pbi::ConstantInitializ
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct ExtensionRangeOptionsGlobalsTypeInternal {
+struct ExtensionRangeOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr ExtensionRangeOptionsGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -1004,7 +1004,7 @@ constexpr EnumValueOptions::EnumValueOptions(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct EnumValueOptionsGlobalsTypeInternal {
+struct EnumValueOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr EnumValueOptionsGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -1043,7 +1043,7 @@ constexpr EnumOptions::EnumOptions(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct EnumOptionsGlobalsTypeInternal {
+struct EnumOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr EnumOptionsGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -1077,7 +1077,7 @@ constexpr OneofDescriptorProto::OneofDescriptorProto(::_pbi::ConstantInitialized
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct OneofDescriptorProtoGlobalsTypeInternal {
+struct OneofDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr OneofDescriptorProtoGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -1119,7 +1119,7 @@ constexpr MethodDescriptorProto::MethodDescriptorProto(::_pbi::ConstantInitializ
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct MethodDescriptorProtoGlobalsTypeInternal {
+struct MethodDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr MethodDescriptorProtoGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -1170,7 +1170,7 @@ constexpr FieldDescriptorProto::FieldDescriptorProto(::_pbi::ConstantInitialized
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct FieldDescriptorProtoGlobalsTypeInternal {
+struct FieldDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr FieldDescriptorProtoGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -1205,7 +1205,7 @@ constexpr EnumValueDescriptorProto::EnumValueDescriptorProto(::_pbi::ConstantIni
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct EnumValueDescriptorProtoGlobalsTypeInternal {
+struct EnumValueDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr EnumValueDescriptorProtoGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -1238,7 +1238,7 @@ constexpr DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::_pbi:
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct DescriptorProto_ExtensionRangeGlobalsTypeInternal {
+struct DescriptorProto_ExtensionRangeGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr DescriptorProto_ExtensionRangeGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -1277,7 +1277,7 @@ constexpr ServiceDescriptorProto::ServiceDescriptorProto(::_pbi::ConstantInitial
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct ServiceDescriptorProtoGlobalsTypeInternal {
+struct ServiceDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr ServiceDescriptorProtoGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -1327,7 +1327,7 @@ constexpr EnumDescriptorProto::EnumDescriptorProto(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct EnumDescriptorProtoGlobalsTypeInternal {
+struct EnumDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr EnumDescriptorProtoGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -1402,7 +1402,7 @@ constexpr DescriptorProto::DescriptorProto(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct DescriptorProtoGlobalsTypeInternal {
+struct DescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr DescriptorProtoGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -1484,7 +1484,7 @@ constexpr FileDescriptorProto::FileDescriptorProto(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct FileDescriptorProtoGlobalsTypeInternal {
+struct FileDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr FileDescriptorProtoGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -1519,7 +1519,7 @@ constexpr FileDescriptorSet::FileDescriptorSet(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct FileDescriptorSetGlobalsTypeInternal {
+struct FileDescriptorSetGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr FileDescriptorSetGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
