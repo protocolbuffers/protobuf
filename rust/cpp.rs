@@ -10,10 +10,71 @@
 use crate::__internal::{Enum, MatcherEq, Private, SealedInternal};
 use crate::{
     AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapValue,
-    MapView, MergeFrom, Message, MessageMutInterop, Mut, MutProxied, ParseError, ProtoBytes,
-    ProtoStr, ProtoString, Proxied, Repeated, RepeatedMut, RepeatedView, Serialize, SerializeError,
-    Singular, TakeFrom, View,
+    MapView, MergeFrom, Message, MessageMutInterop, MessageViewInterop, Mut, MutProxied,
+    OwnedMessageInterop, ParseError, ProtoBytes, ProtoStr, ProtoString, Proxied, Repeated,
+    RepeatedMut, RepeatedView, Serialize, SerializeError, Singular, TakeFrom, View,
 };
+
+// Internal helper to get extension.
+// This is called by Extension::get.
+pub fn get_extension_message<'a, M, T>(m: View<'a, M>, number: u32) -> Option<View<'a, T>>
+where
+    M: Message,
+    T: Message + Default,
+    View<'a, M>: MessageViewInterop<'a>,
+    View<'a, T>: MessageViewInterop<'a>,
+{
+    // SAFETY: m.__unstable_as_raw_message() is valid.
+    let raw_ptr = m.__unstable_as_raw_message();
+    // RawMessage is NonNull<...>, and FFI expects it.
+    // We trust that msg is valid per View invariants.
+    let raw_msg = unsafe { std::ptr::NonNull::new_unchecked(raw_ptr as *mut _) };
+    let raw_ext = unsafe { proto2_rust_Message_GetExtension(raw_msg, number as std::ffi::c_int) };
+    if raw_ext.is_none() {
+        return None;
+    }
+    let raw_ext = raw_ext.unwrap();
+    // SAFETY: raw_ext is returned by GetExtension from the message m.
+    // Its lifetime is tied to 'a (lifetime of m).
+    // The C++ reflection API guarantees that the returned reference is valid as long as the message is.
+    unsafe {
+        Some(View::<'a, T>::__unstable_wrap_raw_message_unchecked_lifetime(
+            raw_ext.as_ptr() as *const _
+        ))
+    }
+}
+
+pub fn has_extension_message<'a, M, T>(m: View<'a, M>, number: u32) -> bool
+where
+    M: Message,
+    T: Message + Default,
+    View<'a, M>: MessageViewInterop<'a>,
+{
+    let raw_ptr = m.__unstable_as_raw_message();
+    // View's raw ptr is *const c_void. RawMessage is NonNull<RawMessageData>.
+    // Casting is required.
+    let raw_msg = unsafe { RawMessage::new_unchecked(raw_ptr as *mut _) };
+    unsafe { proto2_rust_Message_HasExtension(raw_msg, number as c_int) }
+}
+
+pub fn set_extension_message<'a, M, T>(mut m: Mut<'a, M>, number: u32, val: T)
+where
+    M: Message,
+    T: Message + Default,
+    Mut<'a, M>: MessageMutInterop<'a>,
+    for<'b> View<'b, T>: MessageViewInterop<'b>,
+{
+    let raw_ptr = m.__unstable_as_raw_message_mut();
+    let raw_msg = unsafe { RawMessage::new_unchecked(raw_ptr as *mut _) };
+    let mut_ext = unsafe { proto2_rust_Message_GetMutableExtension(raw_msg, number as c_int) };
+    if let Some(mut_ext) = mut_ext {
+        let val_view = val.as_view();
+        let val_raw = val_view.__unstable_as_raw_message();
+        let val_raw_msg = unsafe { RawMessage::new_unchecked(val_raw as *mut _) };
+        // Use copy_from to clear and merge (set semantics).
+        unsafe { proto2_rust_Message_copy_from(mut_ext, val_raw_msg) };
+    }
+}
 use core::fmt::Debug;
 use paste::paste;
 use std::convert::identity;
@@ -119,6 +180,12 @@ unsafe extern "C" {
     pub fn proto2_rust_Message_copy_from(dst: RawMessage, src: RawMessage);
     pub fn proto2_rust_Message_merge_from(dst: RawMessage, src: RawMessage);
     pub fn proto2_rust_Message_get_descriptor(m: RawMessage) -> *const std::ffi::c_void;
+    pub fn proto2_rust_Message_GetExtension(m: RawMessage, number: c_int) -> Option<RawMessage>;
+    pub fn proto2_rust_Message_HasExtension(m: RawMessage, number: c_int) -> bool;
+    pub fn proto2_rust_Message_GetMutableExtension(
+        m: RawMessage,
+        number: c_int,
+    ) -> Option<RawMessage>;
 }
 
 impl Drop for InnerProtoString {

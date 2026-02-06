@@ -54,6 +54,7 @@ PROTOBUF_SHARED = [
     "codegen_traits.rs",
     "cord.rs",
     "enum.rs",
+    "extension.rs",
     "internal.rs",
     "map.rs",
     "optional.rs",

@@ -126,6 +126,11 @@ unsafe extern "C" {
         sub_enums: *const RawMiniTableEnum,
         sub_enum_count: usize,
     ) -> bool;
+
+    /// # Safety
+    /// - `f` must be valid to deref
+    #[link_name = "upb_rust_MiniTableField_IsExtension"]
+    pub fn upb_MiniTableField_IsExtension(f: *const upb_MiniTableField) -> bool;
 }
 
 #[cfg(test)]

@@ -5,7 +5,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
-load("@rules_rust//rust:defs.bzl", "rust_library")
+load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//rust:defs.bzl",
@@ -541,4 +541,32 @@ rust_library(
     testonly = True,
     srcs = ["same_name_double_alias_exported_deps_consumer.rs"],
     deps = [":same_name_double_alias_exported_deps_rust_proto"],
+)
+
+rust_test(
+    name = "extension_test",
+    srcs = ["extension_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp": "protobuf",
+    },
+    edition = "2021",
+    deps = [
+        ":unittest_cpp_rust_proto",
+        "//rust:protobuf_cpp",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "extension_test_upb",
+    srcs = ["extension_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb": "protobuf",
+    },
+    edition = "2021",
+    deps = [
+        ":unittest_upb_rust_proto",
+        "//rust:protobuf_upb",
+        "@crate_index//:googletest",
+    ],
 )

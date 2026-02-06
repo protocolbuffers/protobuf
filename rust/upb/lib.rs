@@ -45,12 +45,14 @@ pub use sys::message::map::{
     upb_Map_Next, upb_Map_Size, MapInsertStatus, RawMap, UPB_MAP_BEGIN,
 };
 pub use sys::message::message::{
-    upb_Message_DeepClone, upb_Message_DeepCopy, upb_Message_GetMap,
-    upb_Message_GetOrCreateMutableMap, upb_Message_IsEqual, upb_Message_MergeFrom,
+    upb_Message_ClearExtension, upb_Message_DeepClone, upb_Message_DeepCopy,
+    upb_Message_DeleteUnknown, upb_Message_GetMessage, upb_Message_GetOrCreateMutableMap,
+    upb_Message_GetUnknown, upb_Message_IsEqual, upb_Message_MergeFrom, upb_Message_NextUnknown,
     upb_Message_SetBaseField, upb_Message_WhichOneofFieldNumber, RawMessage,
 };
 pub use sys::message::message_value::upb_MessageValue;
 pub use sys::mini_table::mini_table::{
-    upb_MiniTable, upb_MiniTableEnum, upb_MiniTableEnum_Build, upb_MiniTable_Build,
-    upb_MiniTable_Link, upb_MiniTable_SubMessage, upb_Status, RawMiniTable, RawMiniTableEnum,
+    upb_MiniTable, upb_MiniTableEnum, upb_MiniTableEnum_Build, upb_MiniTableField_IsExtension,
+    upb_MiniTable_Build, upb_MiniTable_FindFieldByNumber, upb_MiniTable_Link,
+    upb_MiniTable_SubMessage, upb_Status, RawMiniTable, RawMiniTableEnum, RawMiniTableField,
 };
