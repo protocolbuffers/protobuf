@@ -49,8 +49,8 @@ def from_nanoseconds(nanos: float) -> Duration:
   return duration
 
 
-def from_seconds(seconds: float) -> Duration:
-  """Converts seconds to Duration."""
+def from_seconds(seconds: int) -> Duration:
+  """Converts whole seconds to Duration."""
   duration = Duration()
   duration.FromSeconds(seconds)
   return duration
