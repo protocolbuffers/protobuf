@@ -92,7 +92,7 @@ jobs:
   bazel-tests:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
-    name: Bazel Tests
+    name: Bazel Tests ubuntu
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
@@ -105,4 +105,23 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "bazel-tests"
+          bazel: test //bazel/...
+
+  bazel-tests:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        runner: [ windows, macos ]
+    name: Bazel Tests ${{ matrix.runner }}
+    runs-on: ${{ matrix.runner }}-latest
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v5
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel@v5
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: "bazel-tests-${{ matrix.runner }}"
           bazel: test //bazel/...
