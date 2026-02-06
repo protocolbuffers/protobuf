@@ -409,10 +409,11 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       return EMPTY;
     }
     checkRange(offset, offset + size, bytes.length);
-    if (requireUtf8 && !Utf8.isValidUtf8(bytes, offset, offset + size)) {
+    byte[] copy = byteArrayCopier.copyFrom(bytes, offset, size);
+    if (requireUtf8 && !Utf8.isValidUtf8(copy)) {
       throw InvalidProtocolBufferException.invalidUtf8();
     }
-    return new LiteralByteString(byteArrayCopier.copyFrom(bytes, offset, size));
+    return new LiteralByteString(copy);
   }
 
   /**
