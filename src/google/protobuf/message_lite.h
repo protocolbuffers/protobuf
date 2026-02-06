@@ -248,6 +248,19 @@ struct ClassData;
 template <typename Type>
 const ClassData* GetClassData(const Type& msg);
 
+struct MessageGlobalsBase {
+  template <typename T>
+  const T* default_instance() const {
+    return reinterpret_cast<const T*>(this);
+  }
+
+  template <typename T>
+  static const T* default_instance(const void* globals) {
+    return reinterpret_cast<const MessageGlobalsBase*>(globals)
+        ->default_instance<T>();
+  }
+};
+
 template <const auto* kDefault, const auto* kClassData>
 struct GeneratedMessageTraitsT {
   static constexpr const void* default_instance() { return kDefault; }
