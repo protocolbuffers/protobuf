@@ -355,3 +355,53 @@ use_repo(
     "nuget_python_x86-64_3.10.0",
     "python-3.10.0",
 )
+
+flag_alias(
+    name = "experimental_protoc_opts",
+    starlark_flag = "//third_party/protobuf/bazel/flags/cc:protocopt",
+)
+
+flag_alias(
+    name = "experimental_proto_descriptor_sets_include_source_info",
+    starlark_flag = "//third_party/protobuf/bazel/flags:experimental_proto_descriptor_sets_include_source_info",
+)
+
+flag_alias(
+    name = "proto_compiler",
+    starlark_flag = "//third_party/protobuf/bazel/flags:proto_compiler",
+)
+
+flag_alias(
+    name = "proto_toolchain_for_javalite",
+    starlark_flag = "//third_party/protobuf/bazel/flags/java:proto_toolchain_for_javalite",
+)
+
+flag_alias(
+    name = "proto_toolchain_for_java",
+    starlark_flag = "//third_party/protobuf/bazel/flags/java:proto_toolchain_for_java",
+)
+
+flag_alias(
+    name = "proto_toolchain_for_cc",
+    starlark_flag = "//third_party/protobuf/bazel/flags/cc:proto_toolchain_for_cc",
+)
+
+flag_alias(
+    name = "strict_proto_deps",
+    starlark_flag = "//third_party/protobuf/bazel/flags:strict_proto_deps",
+)
+
+flag_alias(
+    name = "strict_public_imports",
+    starlark_flag = "//third_party/protobuf/bazel/flags:strict_public_imports",
+)
+
+flag_alias(
+    name = "cc_proto_library_header_suffixes",
+    starlark_flag = "//third_party/protobuf/bazel/flags/cc:cc_proto_library_header_suffixes",
+)
+
+flag_alias(
+    name = "cc_proto_library_source_suffixes",
+    starlark_flag = "//third_party/protobuf/bazel/flags/cc:cc_proto_library_source_suffixes",
+)
