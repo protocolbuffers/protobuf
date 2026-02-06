@@ -58,7 +58,12 @@ public abstract class CodedInputStream {
     return newInstance(input, DEFAULT_BUFFER_SIZE);
   }
 
-  /** Create a new CodedInputStream wrapping the given InputStream, with a specified buffer size. */
+  /**
+   * Create a new CodedInputStream wrapping the given InputStream, with a specified buffer size.
+   *
+   * <p>{@code bufferSize} must be greater than 0. If {@code bufferSize} is less than 8, a minimum
+   * buffer size of 8 will be used to ensure efficient reading of 64-bit values.
+   */
   public static CodedInputStream newInstance(final InputStream input, int bufferSize) {
     if (bufferSize <= 0) {
       throw new IllegalArgumentException("bufferSize must be > 0");
@@ -1560,6 +1565,9 @@ public abstract class CodedInputStream {
 
     private StreamDecoder(final InputStream input, int bufferSize) {
       checkNotNull(input, "input");
+      if (bufferSize < FIXED64_SIZE) {
+        bufferSize = FIXED64_SIZE;
+      }
       this.input = input;
       this.buffer = new byte[bufferSize];
       this.bufferSize = 0;
