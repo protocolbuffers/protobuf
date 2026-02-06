@@ -624,8 +624,7 @@ std::string ClassDataType(const Descriptor* descriptor,
                  // via options.
                  IsBootstrapProto(options, descriptor->file())
              ? "ClassDataFull"
-             : absl::StrFormat("ClassDataLite<%d>",
-                               descriptor->full_name().size() + 1);
+             : "ClassDataLite";
 }
 
 std::string DescriptorTableName(const FileDescriptor* file,
