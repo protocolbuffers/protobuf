@@ -90,9 +90,11 @@ namespace {
 // These "character classes" are designed to be used in the consumer
 // methods of Tokenizer. For example, Tokenizer::ConsumeZeroOrMore(kWhitespace)
 // will eat whitespace.
-
+//
 // Note:  No class is allowed to contain '\0', since this is used to mark end-
 //   of-input and is handled specially.
+//
+// See: https://protobuf.dev/reference/protobuf/textformat-spec/#characters
 
 constexpr absl::CharSet kWhitespace = absl::CharSet::AsciiWhitespace();
 constexpr absl::CharSet kWhitespaceNoNewline =
@@ -105,6 +107,8 @@ constexpr absl::CharSet kLetter =
     absl::CharSet::AsciiAlphabet() | absl::CharSet::Char('_');
 constexpr absl::CharSet kAlphanumeric = kLetter | kDigit;
 constexpr absl::CharSet kEscape = absl::CharSet(R"(abfnrtv\?'")");
+constexpr absl::CharSet kUrlChar =
+    kAlphanumeric | absl::CharSet("-.~!$&()*+,;=%/");
 
 // Given a char, interpret it as a numeric digit and return its value.
 // This supports any number base up to 36.
@@ -219,6 +223,11 @@ bool Tokenizer::report_newlines() const { return report_newlines_; }
 void Tokenizer::set_report_newlines(bool report) {
   report_newlines_ = report;
   report_whitespace_ |= report;  // enable report_whitespace if necessary
+}
+
+bool Tokenizer::report_url_chars() const { return report_url_chars_; }
+void Tokenizer::set_report_url_chars(bool report) {
+  report_url_chars_ = report;
 }
 
 // -------------------------------------------------------------------
@@ -473,6 +482,17 @@ Tokenizer::TokenType Tokenizer::ConsumeNumber(bool started_with_zero,
   return is_float ? TYPE_FLOAT : TYPE_INTEGER;
 }
 
+void Tokenizer::ConsumeSymbol() {
+  // Check if the high order bit is set.
+  if (current_char_ & 0x80) {
+    error_collector_->RecordError(
+        line_, column_,
+        absl::StrFormat("Interpreting non ascii codepoint %d.",
+                        static_cast<unsigned char>(current_char_)));
+  }
+  NextChar();
+}
+
 void Tokenizer::ConsumeLineComment(std::string* content) {
   if (content != nullptr) RecordTo(content);
 
@@ -628,47 +648,53 @@ bool Tokenizer::Next() {
       // Reading some sort of token.
       StartToken();
 
-      if (TryConsumeOne(kLetter)) {
-        ConsumeZeroOrMore(kAlphanumeric);
-        current_.type = TYPE_IDENTIFIER;
-      } else if (TryConsume('0')) {
-        current_.type = ConsumeNumber(true, false);
-      } else if (TryConsume('.')) {
-        // This could be the beginning of a floating-point number, or it could
-        // just be a '.' symbol.
-
-        if (TryConsumeOne(kDigit)) {
-          // It's a floating-point number.
-          if (previous_.type == TYPE_IDENTIFIER &&
-              current_.line == previous_.line &&
-              current_.column == previous_.end_column) {
-            // We don't accept syntax like "blah.123".
-            error_collector_->RecordError(
-                line_, column_ - 2,
-                "Need space between identifier and decimal point.");
-          }
-          current_.type = ConsumeNumber(false, true);
+      if (report_url_chars_) {
+        // URL chars mode: Produce URL chars or symbol tokens.
+        if (TryConsumeOne(kUrlChar)) {
+          ConsumeZeroOrMore(kUrlChar);
+          current_.type = TYPE_URL_CHARS;
         } else {
+          ConsumeSymbol();
           current_.type = TYPE_SYMBOL;
         }
-      } else if (TryConsumeOne(kDigit)) {
-        current_.type = ConsumeNumber(false, false);
-      } else if (TryConsume('\"')) {
-        ConsumeString('\"');
-        current_.type = TYPE_STRING;
-      } else if (TryConsume('\'')) {
-        ConsumeString('\'');
-        current_.type = TYPE_STRING;
       } else {
-        // Check if the high order bit is set.
-        if (current_char_ & 0x80) {
-          error_collector_->RecordError(
-              line_, column_,
-              absl::StrFormat("Interpreting non ascii codepoint %d.",
-                              static_cast<unsigned char>(current_char_)));
+        // Regular mode: Produce identifier, int, float, string or symbol
+        // tokens.
+        if (TryConsumeOne(kLetter)) {
+          ConsumeZeroOrMore(kAlphanumeric);
+          current_.type = TYPE_IDENTIFIER;
+        } else if (TryConsume('0')) {
+          current_.type = ConsumeNumber(true, false);
+        } else if (TryConsume('.')) {
+          // This could be the beginning of a floating-point number, or it could
+          // just be a '.' symbol.
+
+          if (TryConsumeOne(kDigit)) {
+            // It's a floating-point number.
+            if (previous_.type == TYPE_IDENTIFIER &&
+                current_.line == previous_.line &&
+                current_.column == previous_.end_column) {
+              // We don't accept syntax like "blah.123".
+              error_collector_->RecordError(
+                  line_, column_ - 2,
+                  "Need space between identifier and decimal point.");
+            }
+            current_.type = ConsumeNumber(false, true);
+          } else {
+            current_.type = TYPE_SYMBOL;
+          }
+        } else if (TryConsumeOne(kDigit)) {
+          current_.type = ConsumeNumber(false, false);
+        } else if (TryConsume('\"')) {
+          ConsumeString('\"');
+          current_.type = TYPE_STRING;
+        } else if (TryConsume('\'')) {
+          ConsumeString('\'');
+          current_.type = TYPE_STRING;
+        } else {
+          ConsumeSymbol();
+          current_.type = TYPE_SYMBOL;
         }
-        NextChar();
-        current_.type = TYPE_SYMBOL;
       }
 
       EndToken();
@@ -1219,7 +1245,7 @@ static bool AllInClass(const absl::CharSet& character_class,
   return true;
 }
 
-bool Tokenizer::IsIdentifier(const std::string& text) {
+bool Tokenizer::IsIdentifier(absl::string_view text) {
   // Mirrors IDENTIFIER definition in Tokenizer::Next() above.
   if (text.empty()) return false;
   if (!kLetter.contains(text.at(0))) return false;
