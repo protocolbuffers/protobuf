@@ -603,6 +603,243 @@ impl<'msg, K: ?Sized, V: ?Sized> MapMut<'msg, K, V> {
     }
 }
 
+// Internal helper to get extension.
+pub fn get_extension_message<'a, M, T>(m: View<'a, M>, number: u32) -> Option<View<'a, T>>
+where
+    M: Message + AssociatedMiniTable,
+    T: Message + AssociatedMiniTable,
+    View<'a, M>: MessageViewInterop<'a>,
+    View<'a, T>: MessageViewInterop<'a>,
+{
+    // SAFETY: m.as_raw(Private) is a valid upb_Message*.
+    unsafe {
+        let mt = M::mini_table();
+        let field = upb_MiniTable_FindFieldByNumber(mt, number);
+        let raw_m_ptr = m.__unstable_as_raw_message() as *mut _;
+        let raw_m = RawMessage::new_unchecked(raw_m_ptr);
+
+        if !field.is_null() {
+            let field = NonNull::new_unchecked(field as *mut _);
+            let msg_val = upb_Message_GetMessage(raw_m, field);
+            if let Some(ptr) = msg_val {
+                return Some(View::<T>::__unstable_wrap_raw_message_unchecked_lifetime(
+                    ptr.as_ptr() as *const _,
+                ));
+            }
+            return None;
+        }
+
+        // Field not found in minitable (unknown field).
+        // Scan unknown fields.
+        let mut unknown_len = 0;
+        let mut unknown_ptr: *const i8 = std::ptr::null();
+        let mut iter = 0; // upb_Message_NextUnknown expects usize* (uintptr_t*)
+        let mut last_found_data = None;
+
+        while upb_Message_NextUnknown(raw_m, &mut unknown_ptr, &mut unknown_len, &mut iter) {
+            let unknown_bytes = slice::from_raw_parts(unknown_ptr as *const u8, unknown_len);
+            if let Some(data) = find_last_extension_bytes(unknown_bytes, number) {
+                last_found_data = Some(data);
+            }
+        }
+
+        if let Some(data) = last_found_data {
+            // Parse into a leaked arena to satisfy lifetime requirements.
+            let arena = Arena::new();
+            let msg_ptr = MessagePtr::<T>::new(&arena).expect("alloc failed");
+
+            if upb::wire::decode(data, msg_ptr, &arena).is_ok() {
+                let _leaked_arena = Box::leak(Box::new(arena));
+                return Some(View::<T>::__unstable_wrap_raw_message_unchecked_lifetime(
+                    msg_ptr.raw().as_ptr() as *const _,
+                ));
+            }
+        }
+        None
+    }
+}
+
+pub fn has_extension_message<'a, M, T>(m: View<'a, M>, number: u32) -> bool
+where
+    M: Message + AssociatedMiniTable,
+    T: Message + AssociatedMiniTable,
+    View<'a, M>: MessageViewInterop<'a>,
+{
+    // Check linked
+    let mt = M::mini_table();
+    let field = unsafe { upb_MiniTable_FindFieldByNumber(mt, number) };
+    if !field.is_null() && unsafe { upb_MiniTableField_IsExtension(field) } {
+        // Linked extension.
+        // It's a message extension (T: Message).
+        // Check presence via GetMessage.
+        let raw_m_ptr = m.__unstable_as_raw_message() as *mut _;
+        let raw_m = unsafe { RawMessage::new_unchecked(raw_m_ptr) };
+        let field = unsafe { NonNull::new_unchecked(field as *mut _) };
+        let val = unsafe { upb_Message_GetMessage(raw_m, field) };
+        return val.is_some();
+    }
+
+    // Check unknown
+    let raw_m_ptr = m.__unstable_as_raw_message() as *mut _;
+    let raw_m = unsafe { RawMessage::new_unchecked(raw_m_ptr) };
+    let mut iter = 0;
+    let mut data: *const i8 = ptr::null();
+    let mut len: usize = 0;
+
+    // SAFETY: accessing raw message for read is safe.
+    unsafe {
+        while upb_Message_NextUnknown(raw_m, &mut data, &mut len, &mut iter) {
+            let bytes = slice::from_raw_parts(data as *const u8, len);
+            if find_last_extension_bytes(bytes, number).is_some() {
+                return true;
+            }
+        }
+    }
+
+    false
+}
+
+pub fn set_extension_message<'a, M, T>(mut m: Mut<'a, M>, number: u32, val: T)
+where
+    M: Message + AssociatedMiniTable,
+    T: Message + Default + AssociatedMiniTable,
+    Mut<'a, M>: UpbGetMessagePtrMut<Msg = M> + UpbGetArena + UpbGetMessagePtr,
+{
+    // SAFETY: m.get_ptr(Private) returns a valid MessagePtr.
+    unsafe {
+        let raw_m = m.get_ptr(Private).raw();
+        // 1. Try to clear existing linked extension.
+        // If the extension is linked (in mini table), this clears it.
+        let mt = M::mini_table();
+        let field = upb_MiniTable_FindFieldByNumber(mt, number);
+        if !field.is_null() {
+            // SAFETY: field is not null and comes from valid mini table.
+            let field_non_null = NonNull::new_unchecked(field as *mut _);
+            upb_Message_ClearExtension(raw_m, field_non_null);
+        } else {
+            // 2. If valid unknown extension, delete it.
+            // This is needed because if we set it, we want to replace the old value.
+            delete_unknown_extension(raw_m, number);
+        }
+
+        // 3. Serialize new value and decode into message.
+        // We need to encode with the tag.
+        // Protobuf extensions are serialized as a field with the extension number.
+        // EXTENSION WIRE FORMAT: tag (number << 3 | wire_type) + length + data.
+        let val_bytes = val.serialize().expect("serialize failed");
+
+        let mut tag_bytes = Vec::new();
+        let tag = (number << 3) | 2; // WireType::Delimited = 2
+        encode_varint(tag as u64, &mut tag_bytes);
+        encode_varint(val_bytes.len() as u64, &mut tag_bytes);
+
+        // Concatenate.
+        let mut buf = tag_bytes;
+        buf.extend_from_slice(&val_bytes);
+
+        // Decode into m.
+        // We use the message's arena to allocate the extension data.
+        // Avoid borrow checker error by getting ptr (immut) then arena (mut).
+        let msg_ptr = m.get_ptr(Private);
+        let arena = m.get_arena(Private);
+
+        // SAFETY: decode merges the data into the message.
+        upb::wire::decode(&buf, msg_ptr, arena).expect("decode failed");
+    }
+}
+
+// Helper to delete unknown field.
+unsafe fn delete_unknown_extension(_msg: RawMessage, _number: u32) {
+    // TODO: Implement deletion of unknown fields.
+    // For now, we rely on "last writer wins" semantics of Protobuf.
+    // When we append the new extension value, it will be the one used by parsers.
+    // Repeated extensions will accumulate, which is correct for repeated fields,
+    // but for singular fields it might waste space (though semantically correct).
+}
+
+fn encode_varint(mut value: u64, buf: &mut Vec<u8>) {
+    loop {
+        if value < 0x80 {
+            buf.push(value as u8);
+            break;
+        } else {
+            buf.push((value as u8 & 0x7F) | 0x80);
+            value >>= 7;
+        }
+    }
+}
+
+// Helper to find the LAST occurrence of an extension in a byte slice.
+fn find_last_extension_bytes(mut data: &[u8], number: u32) -> Option<&[u8]> {
+    let mut last_found = None;
+    while !data.is_empty() {
+        let (tag, rem) = read_varint(data)?;
+        let field_num = tag >> 3;
+        let wire_type = tag & 7;
+        let mut rest = rem;
+
+        if field_num == number as u64 {
+            if wire_type == 2 {
+                let (len, after_len) = read_varint(rest)?;
+                if len as usize <= after_len.len() {
+                    last_found = Some(&after_len[..len as usize]);
+                    rest = &after_len[len as usize..];
+                } else {
+                    return None;
+                }
+            } else {
+                return None; // Mismatch wire type
+            }
+        } else {
+            // Skip
+            match wire_type {
+                0 => {
+                    let (_, r) = read_varint(rest)?;
+                    rest = r;
+                }
+                1 => {
+                    if rest.len() >= 8 {
+                        rest = &rest[8..];
+                    } else {
+                        return None;
+                    }
+                }
+                2 => {
+                    let (len, r) = read_varint(rest)?;
+                    if len as usize <= r.len() {
+                        rest = &r[len as usize..];
+                    } else {
+                        return None;
+                    }
+                }
+                5 => {
+                    if rest.len() >= 4 {
+                        rest = &rest[4..];
+                    } else {
+                        return None;
+                    }
+                }
+                3 | 4 => return None, // Groups not supported in this simple parser
+                _ => return None,
+            }
+        }
+        data = rest;
+    }
+    last_found
+}
+
+fn read_varint(data: &[u8]) -> Option<(u64, &[u8])> {
+    let mut val = 0u64;
+    for i in 0..core::cmp::min(10, data.len()) {
+        let b = data[i];
+        val |= ((b & 0x7F) as u64) << (i * 7);
+        if b & 0x80 == 0 {
+            return Some((val, &data[i + 1..]));
+        }
+    }
+    None
+}
+
 #[derive(Debug)]
 #[doc(hidden)]
 pub struct InnerMap {

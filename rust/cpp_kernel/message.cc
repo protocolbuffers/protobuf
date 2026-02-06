@@ -2,6 +2,7 @@
 
 #include <limits>
 
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/message_lite.h"
 #include "rust/cpp_kernel/serialized_data.h"
 #include "rust/cpp_kernel/strings.h"
@@ -57,6 +58,93 @@ const void* proto2_rust_Message_get_descriptor(const google::protobuf::MessageLi
       return nullptr;
     }
     return msg->GetDescriptor();
+  }
+  return nullptr;
+}
+
+const void* proto2_rust_Message_GetExtension(const google::protobuf::MessageLite* msg,
+                                             int number) {
+  if constexpr (kHasFullRuntime) {
+    auto m = google::protobuf::DynamicCastMessage<google::protobuf::Message>(msg);
+    if (m == nullptr) {
+      return nullptr;
+    }
+    const google::protobuf::Reflection* reflection = m->GetReflection();
+    const google::protobuf::Descriptor* descriptor = m->GetDescriptor();
+    if (descriptor == nullptr) {
+      return nullptr;
+    }
+    const google::protobuf::DescriptorPool* pool = descriptor->file()->pool();
+    const google::protobuf::FieldDescriptor* field =
+        pool->FindExtensionByNumber(descriptor, number);
+    if (field == nullptr) {
+      return nullptr;
+    }
+
+    // For now, we only support singular message extensions.
+    if (field->is_repeated() ||
+        field->cpp_type() != google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
+      return nullptr;
+    }
+
+    if (!reflection->HasField(*m, field)) {
+      return nullptr;
+    }
+
+    const google::protobuf::Message& extension_msg = reflection->GetMessage(*m, field);
+    return &extension_msg;
+  }
+  return nullptr;
+}
+
+bool proto2_rust_Message_HasExtension(const google::protobuf::MessageLite* msg,
+                                      int number) {
+  if constexpr (kHasFullRuntime) {
+    auto m = google::protobuf::DynamicCastMessage<google::protobuf::Message>(msg);
+    if (m == nullptr) {
+      return false;
+    }
+    const google::protobuf::Reflection* reflection = m->GetReflection();
+    const google::protobuf::Descriptor* descriptor = m->GetDescriptor();
+    if (descriptor == nullptr) {
+      return false;
+    }
+    const google::protobuf::DescriptorPool* pool = descriptor->file()->pool();
+    const google::protobuf::FieldDescriptor* field =
+        pool->FindExtensionByNumber(descriptor, number);
+    if (field == nullptr) {
+      return false;
+    }
+    return reflection->HasField(*m, field);
+  }
+  return false;
+}
+
+void* proto2_rust_Message_GetMutableExtension(google::protobuf::MessageLite* msg,
+                                              int number) {
+  if constexpr (kHasFullRuntime) {
+    auto m = google::protobuf::DynamicCastMessage<google::protobuf::Message>(msg);
+    if (m == nullptr) {
+      return nullptr;
+    }
+    const google::protobuf::Reflection* reflection = m->GetReflection();
+    const google::protobuf::Descriptor* descriptor = m->GetDescriptor();
+    if (descriptor == nullptr) {
+      return nullptr;
+    }
+    const google::protobuf::DescriptorPool* pool = descriptor->file()->pool();
+    const google::protobuf::FieldDescriptor* field =
+        pool->FindExtensionByNumber(descriptor, number);
+    if (field == nullptr) {
+      return nullptr;
+    }
+
+    if (field->is_repeated() ||
+        field->cpp_type() != google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
+      return nullptr;
+    }
+
+    return reflection->MutableMessage(m, field);
   }
   return nullptr;
 }

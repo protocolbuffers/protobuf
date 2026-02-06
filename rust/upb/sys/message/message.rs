@@ -272,6 +272,42 @@ unsafe extern "C" {
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a field within a oneof associated with `m`
     pub fn upb_Message_WhichOneofFieldNumber(m: RawMessage, f: RawMiniTableField) -> u32;
+
+    /// Returns the unknown data for the message.
+    ///
+    /// # Safety
+    /// - `m` must be valid to deref
+    /// - `len` must be a valid pointer to writable memory
+    #[link_name = "upb_rust_Message_GetUnknown"]
+    pub fn upb_Message_GetUnknown(m: RawMessage, len: *mut usize) -> *const u8;
+
+    /// # Safety
+    /// - `m` and `data` must be valid to deref
+    /// - `len` and `iter` must be valid pointers
+    #[link_name = "upb_rust_Message_NextUnknown"]
+    pub fn upb_Message_NextUnknown(
+        m: RawMessage,
+        data: *mut *const i8,
+        len: *mut usize,
+        iter: *mut usize,
+    ) -> bool;
+
+    /// # Safety
+    /// - `msg` must be valid
+    /// - `data` must be a pointer to a valid StringView inside the unknown fields
+    /// - `iter` must be the iterator
+    /// - `arena` must be valid
+    pub fn upb_Message_DeleteUnknown(
+        msg: RawMessage,
+        data: *const StringView,
+        iter: *mut usize,
+        arena: RawArena,
+    ) -> i32;
+
+    /// # Safety
+    /// - `msg` and `f` must be valid
+    #[link_name = "upb_rust_Message_ClearExtension"]
+    pub fn upb_Message_ClearExtension(msg: RawMessage, f: RawMiniTableField);
 }
 
 #[cfg(test)]
