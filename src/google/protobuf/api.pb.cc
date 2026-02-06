@@ -25,6 +25,19 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+namespace {
+PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
+    file_reflection_data[] = {
+        // ::google::protobuf::Api
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fapi_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::Method
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fapi_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::Mixin
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fapi_2eproto, /* tracker*/ nullptr,},
+};
+}  // namespace
+#endif
 namespace google {
 namespace protobuf {
 
@@ -411,6 +424,24 @@ constexpr auto Api::InternalNewImpl_() {
                                             alignof(Api));
 }
 constexpr auto Api::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_Api_globals_._default,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &Api::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<Api>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &Api::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<Api>(), &Api::ByteSizeLong,
+              &Api::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(Api, _impl_._cached_size_),
+          false,
+      },
+      &file_reflection_data[0]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_Api_globals_._default,
@@ -430,6 +461,7 @@ constexpr auto Api::InternalGenerateClassData_() {
       &descriptor_table_google_2fprotobuf_2fapi_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -979,6 +1011,24 @@ constexpr auto Method::InternalNewImpl_() {
                                             alignof(Method));
 }
 constexpr auto Method::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_Method_globals_._default,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &Method::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<Method>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &Method::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<Method>(), &Method::ByteSizeLong,
+              &Method::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(Method, _impl_._cached_size_),
+          false,
+      },
+      &file_reflection_data[1]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_Method_globals_._default,
@@ -998,6 +1048,7 @@ constexpr auto Method::InternalGenerateClassData_() {
       &descriptor_table_google_2fprotobuf_2fapi_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -1500,6 +1551,24 @@ constexpr auto Mixin::InternalNewImpl_() {
                                             alignof(Mixin));
 }
 constexpr auto Mixin::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_Mixin_globals_._default,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &Mixin::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<Mixin>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &Mixin::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<Mixin>(), &Mixin::ByteSizeLong,
+              &Mixin::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(Mixin, _impl_._cached_size_),
+          false,
+      },
+      &file_reflection_data[2]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_Mixin_globals_._default,
@@ -1519,6 +1588,7 @@ constexpr auto Mixin::InternalGenerateClassData_() {
       &descriptor_table_google_2fprotobuf_2fapi_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const

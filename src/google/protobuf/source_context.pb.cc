@@ -25,6 +25,15 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+namespace {
+PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
+    file_reflection_data[] = {
+        // ::google::protobuf::SourceContext
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto, /* tracker*/ nullptr,},
+};
+}  // namespace
+#endif
 namespace google {
 namespace protobuf {
 
@@ -183,6 +192,24 @@ constexpr auto SourceContext::InternalNewImpl_() {
                                             alignof(SourceContext));
 }
 constexpr auto SourceContext::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_SourceContext_globals_._default,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &SourceContext::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<SourceContext>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &SourceContext::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<SourceContext>(), &SourceContext::ByteSizeLong,
+              &SourceContext::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._cached_size_),
+          false,
+      },
+      &file_reflection_data[0]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_SourceContext_globals_._default,
@@ -202,6 +229,7 @@ constexpr auto SourceContext::InternalGenerateClassData_() {
       &descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const

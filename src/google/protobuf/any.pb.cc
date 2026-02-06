@@ -25,6 +25,15 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+namespace {
+PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
+    file_reflection_data[] = {
+        // ::google::protobuf::Any
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fany_2eproto, /* tracker*/ nullptr,},
+};
+}  // namespace
+#endif
 #if defined(__llvm__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wuninitialized"
@@ -206,6 +215,24 @@ constexpr auto Any::InternalNewImpl_() {
                                             alignof(Any));
 }
 constexpr auto Any::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_Any_globals_._default,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &Any::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<Any>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &Any::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<Any>(), &Any::ByteSizeLong,
+              &Any::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(Any, _impl_._cached_size_),
+          false,
+      },
+      &file_reflection_data[0]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_Any_globals_._default,
@@ -225,6 +252,7 @@ constexpr auto Any::InternalGenerateClassData_() {
       &descriptor_table_google_2fprotobuf_2fany_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
