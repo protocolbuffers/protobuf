@@ -207,7 +207,8 @@ size_t UntypedMapBase::SpaceUsedExcludingSelfLong() const {
         [&](const MessageLite* msg) -> size_t {
           const auto* class_data = GetClassData(*msg);
           if (class_data->is_lite) return 0;
-          return class_data->full().descriptor_methods->space_used_long(*msg) -
+          return class_data->full().descriptor_methods()->space_used_long(
+                     *msg) -
                  class_data->allocation_size();
         },
         [](const void*) -> size_t { return 0; }};

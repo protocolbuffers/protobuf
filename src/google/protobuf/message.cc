@@ -69,18 +69,18 @@ struct DescriptorMethodsFriend {
 namespace {
 
 Metadata GetMetadataImpl(const internal::ClassDataFull& data) {
-  auto* table = data.descriptor_table;
+  auto* table = data.descriptor_table();
   // Only codegen types provide a table. DynamicMessage does not provide a table
   // and instead eagerly initializes the descriptor/reflection members.
   if (ABSL_PREDICT_TRUE(table != nullptr)) {
-    if (ABSL_PREDICT_FALSE(data.get_metadata_tracker != nullptr)) {
+    if (ABSL_PREDICT_FALSE(data.has_get_metadata_tracker())) {
       data.get_metadata_tracker();
     }
     absl::call_once(*table->once, [table] {
       internal::AssignDescriptorsOnceInnerCall(table);
     });
   }
-  return {data.descriptor, data.reflection};
+  return {data.descriptor(), data.reflection()};
 }
 
 // Helper function to get type name - logic from Message::GetTypeNameImpl
@@ -253,7 +253,7 @@ size_t Message::MaybeComputeUnknownFieldsSize(
 
 
 size_t Message::SpaceUsedLong() const {
-  return GetClassData()->full().descriptor_methods->space_used_long(*this);
+  return GetClassData()->full().descriptor_methods()->space_used_long(*this);
 }
 
 namespace internal {

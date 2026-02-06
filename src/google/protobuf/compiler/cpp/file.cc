@@ -884,6 +884,42 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   GetCrossFileReferencesForFile(file_, &refs);
   GenerateInternalForwardDeclarations(refs, p);
 
+  if (HasDescriptorMethods(file_, options_) && !message_generators_.empty()) {
+    p->Emit(
+        {{"reflection_data",
+          [&] {
+            for (const auto& generator : message_generators_) {
+              p->Emit(
+                  {{"class",
+                    QualifiedClassName(generator->descriptor(), options_)},
+                   {"tracker_on_get_metadata",
+                    [&] {
+                      if (HasTracker(generator->descriptor(), options_)) {
+                        p->Emit(
+                            R"cc(&::_pbi::PrivateAccess::TrackerOnGetMetadata<
+                                     $class$>,)cc");
+                      } else {
+                        p->Emit(R"cc(/* tracker*/ nullptr,)cc");
+                      }
+                    }}},
+                  R"cc(
+                    // $class$
+                    {&::_pbi::kDescriptorMethods, &::$desc_table$, $tracker_on_get_metadata$},
+                  )cc");
+            }
+          }}},
+        R"cc(
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+          namespace {
+          PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
+              file_reflection_data[] = {
+                  $reflection_data$,
+          };
+          }  // namespace
+#endif
+        )cc");
+  }
+
   // When in weak descriptor mode, we generate the file_default_instances before
   // the default instances.
   if (UsingImplicitWeakDescriptor(file_, options_) &&

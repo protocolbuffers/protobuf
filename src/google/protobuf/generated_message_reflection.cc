@@ -3885,14 +3885,14 @@ class AssignDescriptorsHelper {
       auto& class_data = default_instance_data_[0]->GetClassData()->full();
       // If there is no descriptor_table in the class data, then it is not
       // interested in receiving reflection information either.
-      if (class_data.descriptor_table != nullptr) {
-        class_data.descriptor = descriptor;
+      if (class_data.descriptor_table() != nullptr) {
+        class_data.set_descriptor(descriptor);
 
-        class_data.reflection = OnShutdownDelete(new Reflection(
+        class_data.set_reflection(OnShutdownDelete(new Reflection(
             descriptor,
             MigrationToReflectionSchema(default_instance_data_, offsets_,
                                         *schemas_),
-            DescriptorPool::internal_generated_pool(), factory_));
+            DescriptorPool::internal_generated_pool(), factory_)));
       }
     }
     for (int i = 0; i < descriptor->enum_type_count(); i++) {

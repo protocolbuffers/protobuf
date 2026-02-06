@@ -483,25 +483,27 @@ struct PROTOBUF_EXPORT DescriptorMethods {
   std::string (*debug_string)(const MessageLite&);
 };
 
-struct PROTOBUF_EXPORT ClassDataFull : ClassData {
-  constexpr ClassDataFull(ClassData base,
-                          const DescriptorMethods* descriptor_methods,
-                          const internal::DescriptorTable* descriptor_table,
-                          void (*get_metadata_tracker)())
-      : ClassData(base),
-        reflection(),
-        descriptor(),
+// ClassData* can and should be placed on read-only section to maximize sharing.
+// However, ClassDataFull has mutable fields for lazy initialization of
+// reflection related data. To keep the lazy initialization and to move the
+// ClassDataFull to the read-only section we use a secondary table. Extra
+// indirection should be tolerable considering that reflection isn't performance
+// critical.
+struct PROTOBUF_EXPORT ReflectionData {
+  constexpr ReflectionData(const DescriptorMethods* descriptor_methods,
+                           const internal::DescriptorTable* descriptor_table,
+                           void (*get_metadata_tracker)())
+      : reflection(nullptr),
+        descriptor(nullptr),
         descriptor_table(descriptor_table),
         descriptor_methods(descriptor_methods),
         get_metadata_tracker(get_metadata_tracker) {}
 
-  constexpr const ClassData* base() const { return this; }
-
   // Accesses are protected by the once_flag in `descriptor_table`. When the
   // table is null these are populated from the beginning and need to
   // protection.
-  mutable const Reflection* reflection;
-  mutable const Descriptor* descriptor;
+  const Reflection* reflection;
+  const Descriptor* descriptor;
 
   // Codegen types will provide a DescriptorTable to do lazy
   // registration/initialization of the reflection objects.
@@ -513,6 +515,92 @@ struct PROTOBUF_EXPORT ClassDataFull : ClassData {
   // that GetMetadata was called.
   void (*get_metadata_tracker)();
 };
+
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+struct PROTOBUF_EXPORT ClassDataFull : ClassData {
+  constexpr ClassDataFull(ClassData base,
+                          const DescriptorMethods* descriptor_methods,
+                          const internal::DescriptorTable* descriptor_table,
+                          void (*get_metadata_tracker)())
+      : ClassData(base),
+        reflection_ptr(nullptr),
+        descriptor_ptr(nullptr),
+        descriptor_table_ptr(descriptor_table),
+        descriptor_methods_ptr(descriptor_methods),
+        get_metadata_tracker_func(get_metadata_tracker) {}
+
+  constexpr const ClassData* base() const { return this; }
+
+  // Accessors for reflection related data.
+  const Reflection* reflection() const { return reflection_ptr; }
+  const Descriptor* descriptor() const { return descriptor_ptr; }
+
+  void set_reflection(const Reflection* reflection) const {
+    reflection_ptr = reflection;
+  }
+  void set_descriptor(const Descriptor* descriptor) const {
+    descriptor_ptr = descriptor;
+  }
+
+  const internal::DescriptorTable* descriptor_table() const {
+    return descriptor_table_ptr;
+  }
+  const DescriptorMethods* descriptor_methods() const {
+    return descriptor_methods_ptr;
+  }
+  bool has_get_metadata_tracker() const {
+    return get_metadata_tracker_func != nullptr;
+  }
+  void get_metadata_tracker() const { get_metadata_tracker_func(); }
+
+  // Accesses are protected by the once_flag in `descriptor_table`. When the
+  // table is null these are populated from the beginning and need to
+  // protection.
+  mutable const Reflection* reflection_ptr;
+  mutable const Descriptor* descriptor_ptr;
+
+  // Codegen types will provide a DescriptorTable to do lazy
+  // registration/initialization of the reflection objects.
+  // Other types, like DynamicMessage, keep the table as null but eagerly
+  // populate `reflection`/`descriptor` fields.
+  const internal::DescriptorTable* descriptor_table_ptr;
+  const DescriptorMethods* descriptor_methods_ptr;
+  // When an access tracker is installed, this function notifies the tracker
+  // that GetMetadata was called.
+  void (*get_metadata_tracker_func)();
+};
+#else
+struct PROTOBUF_EXPORT ClassDataFull : ClassData {
+  constexpr ClassDataFull(ClassData base, ReflectionData* reflection_data)
+      : ClassData(base), reflection_data(reflection_data) {}
+
+  constexpr const ClassData* base() const { return this; }
+
+  // Accessors for reflection related data.
+  const Reflection* reflection() const { return reflection_data->reflection; }
+  const Descriptor* descriptor() const { return reflection_data->descriptor; }
+
+  void set_reflection(const Reflection* reflection) const {
+    reflection_data->reflection = reflection;
+  }
+  void set_descriptor(const Descriptor* descriptor) const {
+    reflection_data->descriptor = descriptor;
+  }
+
+  const internal::DescriptorTable* descriptor_table() const {
+    return reflection_data->descriptor_table;
+  }
+  const DescriptorMethods* descriptor_methods() const {
+    return reflection_data->descriptor_methods;
+  }
+  bool has_get_metadata_tracker() const {
+    return reflection_data->get_metadata_tracker != nullptr;
+  }
+  void get_metadata_tracker() const { reflection_data->get_metadata_tracker(); }
+
+  ReflectionData* reflection_data;
+};
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 inline const ClassDataFull& ClassData::full() const {
   ABSL_DCHECK(!is_lite);
@@ -1006,7 +1094,7 @@ class PROTOBUF_EXPORT MessageLite {
     auto* tc_table = data->tc_table;
     if (ABSL_PREDICT_FALSE(tc_table == nullptr)) {
       ABSL_DCHECK(!data->is_lite);
-      return data->full().descriptor_methods->get_tc_table(*this);
+      return data->full().descriptor_methods()->get_tc_table(*this);
     }
     return tc_table;
   }

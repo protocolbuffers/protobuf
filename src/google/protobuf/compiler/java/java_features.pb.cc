@@ -25,6 +25,17 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+namespace {
+PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
+    file_reflection_data[] = {
+        // ::pb::JavaFeatures_NestInFileClassFeature
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto, /* tracker*/ nullptr,},
+        // ::pb::JavaFeatures
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto, /* tracker*/ nullptr,},
+};
+}  // namespace
+#endif
 namespace pb {
 template <typename>
 constexpr JavaFeatures_NestInFileClassFeature::JavaFeatures_NestInFileClassFeature(::_pbi::ConstantInitialized)
@@ -217,6 +228,24 @@ constexpr auto JavaFeatures_NestInFileClassFeature::InternalNewImpl_() {
                                             alignof(JavaFeatures_NestInFileClassFeature));
 }
 constexpr auto JavaFeatures_NestInFileClassFeature::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_JavaFeatures_NestInFileClassFeature_globals_._default,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &JavaFeatures_NestInFileClassFeature::MergeImpl,
+          ::google::protobuf::internal::ZeroFieldsBase::GetNewImpl<JavaFeatures_NestInFileClassFeature>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &JavaFeatures_NestInFileClassFeature::SharedDtor,
+          ::google::protobuf::internal::ZeroFieldsBase::GetClearImpl<JavaFeatures_NestInFileClassFeature>(), &JavaFeatures_NestInFileClassFeature::ByteSizeLong,
+              &JavaFeatures_NestInFileClassFeature::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(JavaFeatures_NestInFileClassFeature, _impl_._cached_size_),
+          false,
+      },
+      &file_reflection_data[0]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_JavaFeatures_NestInFileClassFeature_globals_._default,
@@ -236,6 +265,7 @@ constexpr auto JavaFeatures_NestInFileClassFeature::InternalGenerateClassData_()
       &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -354,6 +384,24 @@ constexpr auto JavaFeatures::InternalNewImpl_() {
                                             alignof(JavaFeatures));
 }
 constexpr auto JavaFeatures::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_JavaFeatures_globals_._default,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &JavaFeatures::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<JavaFeatures>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &JavaFeatures::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<JavaFeatures>(), &JavaFeatures::ByteSizeLong,
+              &JavaFeatures::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._cached_size_),
+          false,
+      },
+      &file_reflection_data[1]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_JavaFeatures_globals_._default,
@@ -373,6 +421,7 @@ constexpr auto JavaFeatures::InternalGenerateClassData_() {
       &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
