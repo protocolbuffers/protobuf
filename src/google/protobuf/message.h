@@ -388,6 +388,33 @@ class PROTOBUF_EXPORT Message : public MessageLite {
     return GetMetadata().reflection;
   }
 
+  // Abseil flag support for Messages.
+  //
+  // Flag syntax is `:format,options...:value` where:
+  //  - `format` is one of `text`, `serialized`.
+  //  - `options` is a possibly empty list of options. Each format has its
+  //    supported options.
+  //  - `value` is the payload in the specified format.
+  //
+  //  The valid options are:
+  //
+  //   * For `text`:
+  //     - `base64`: indicates that `value` is encoded as base64.
+  //     - `ignore_unknown`: when specified, unknown field/extensions are
+  //       dropped. Otherwise, they cause a parse failure.
+  //
+  //   * For `serialized`:
+  //     - `base64`: indicates that `value` is encoded as base64. It is
+  //       recommended to use `serialized` with `base64` given that passing
+  //       binary data in shells is difficult and error prone.
+  friend bool AbslParseFlag(absl::string_view text, Message* msg,
+                            std::string* error) {
+    return msg->AbslParseFlagImpl(text, *error);
+  }
+  friend std::string AbslUnparseFlag(const Message& msg) {
+    return msg.AbslUnparseFlagImpl();
+  }
+
  protected:
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
   constexpr Message() {}
@@ -401,6 +428,9 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   // For CODE_SIZE types
   static bool IsInitializedImpl(const MessageLite&);
+
+  bool AbslParseFlagImpl(absl::string_view text, std::string& error);
+  std::string AbslUnparseFlagImpl() const;
 
   size_t ComputeUnknownFieldsSize(
       size_t total_size, const internal::CachedSize* cached_size) const;
