@@ -11,5 +11,6 @@ load("@rules_python//python:defs.bzl", "py_binary")
 py_binary(
     name = "amalgamate",
     srcs = ["amalgamate.py"],
+    strict_deps = False,
     visibility = ["//visibility:private"],
 )

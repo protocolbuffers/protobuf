@@ -108,16 +108,19 @@ SIZE_BENCHMARKS = {
 py_binary(
     name = "gen_synthetic_protos",
     srcs = ["gen_synthetic_protos.py"],
+    strict_deps = False,
 )
 
 py_binary(
     name = "gen_upb_binary_c",
     srcs = ["gen_upb_binary_c.py"],
+    strict_deps = False,
 )
 
 py_binary(
     name = "gen_protobuf_binary_cc",
     srcs = ["gen_protobuf_binary_cc.py"],
+    strict_deps = False,
 )
 
 genrule(
