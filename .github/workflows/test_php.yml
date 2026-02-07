@@ -188,7 +188,7 @@ jobs:
 
       - name: Pin PHP version
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f # 2.35.5
+        uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1  # 2.36.0
         with:
           php-version: ${{ matrix.version }}
 
