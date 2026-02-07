@@ -151,6 +151,7 @@ Single-value arguments:
 -   `DEPENDENCIES` — Arguments forwarded to the `DEPENDS` of the underlying
     `add_custom_command` invocation.
 -   `TARGET` — CMake target that will have the generated files added as sources.
+-   `protobuf_generate_PROTOC_EXE` - The generated protoc compiler.
 
 Multi-value arguments:
 
