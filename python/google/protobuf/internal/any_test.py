@@ -57,6 +57,34 @@ class AnyTest(unittest.TestCase):
     empty_any = any_pb2.Any()
     self.assertFalse(proto_any.is_type(empty_any, all_descriptor))
 
+  def test_unpack_to(self):
+    all_types = unittest_pb2.TestAllTypes(optional_int32=123)
+    any_msg = any_pb2.Any()
+    any_msg.Pack(all_types)
+
+    # Unpack by type name
+    unpacked = any_msg.UnpackTo('proto2_unittest.TestAllTypes')
+    self.assertIsInstance(unpacked, unittest_pb2.TestAllTypes)
+    self.assertEqual(unpacked.optional_int32, 123)
+
+    # Unpack by class
+    unpacked = any_msg.UnpackTo(unittest_pb2.TestAllTypes)
+    self.assertIsInstance(unpacked, unittest_pb2.TestAllTypes)
+    self.assertEqual(unpacked.optional_int32, 123)
+
+    # Unpack by descriptor
+    unpacked = any_msg.UnpackTo(unittest_pb2.TestAllTypes.DESCRIPTOR)
+    self.assertIsInstance(unpacked, unittest_pb2.TestAllTypes)
+    self.assertEqual(unpacked.optional_int32, 123)
+
+    # Unpack mismatch
+    unpacked = any_msg.UnpackTo('proto2_unittest.TestAllExtensions')
+    self.assertIsNone(unpacked)
+
+    # Unpack non-existent
+    unpacked = any_msg.UnpackTo('non.existent.Type')
+    self.assertIsNone(unpacked)
+
 
 if __name__ == '__main__':
   unittest.main()
