@@ -89,6 +89,7 @@ bzl_library(
         "//bazel/common:proto_common_bzl",
         "//bazel/common:proto_info_bzl",
         "@rules_java//java/common",
+        "@rules_java//java/google:google_bzl",
     ],
 )
 
