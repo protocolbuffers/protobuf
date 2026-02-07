@@ -75,6 +75,44 @@ class Any(object):
     """Checks if this Any represents the given protobuf type."""
     return '/' in self.type_url and self.TypeName() == descriptor.full_name
 
+  def UnpackTo(self, message_type):
+    """Unpacks the current Any message into a new message instance.
+
+    Args:
+      message_type: A message class, a descriptor, or the full name of the
+          message type.
+
+    Returns:
+      The unpacked message instance, or None if the type doesn't match or
+      the type name is not found.
+    """
+    # pylint: disable=g-import-not-at-top
+    from google.protobuf import descriptor
+    from google.protobuf import descriptor_pool
+    from google.protobuf import message_factory
+
+    if isinstance(message_type, str):
+      try:
+        msg_descriptor = (
+            descriptor_pool.Default().FindMessageTypeByName(message_type))
+      except KeyError:
+        return None
+    elif isinstance(message_type, descriptor.Descriptor):
+      msg_descriptor = message_type
+    else:
+      # Assume it's a message class
+      try:
+        msg_descriptor = message_type.DESCRIPTOR
+      except AttributeError:
+        return None
+
+    if not self.Is(msg_descriptor):
+      return None
+
+    msg = message_factory.GetMessageClass(msg_descriptor)()
+    msg.ParseFromString(self.value)
+    return msg
+
 
 class Timestamp(object):
   """Class for Timestamp message type."""
