@@ -4123,14 +4123,31 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
   } else {
     p->Emit(
         {
-            {"type_size", descriptor_->full_name().size() + 1},
             {"is_initialized", is_initialized},
             {"custom_vtable_methods", custom_vtable_methods},
             {"v2_data", emit_v2_data},
+            {"define_type_names_for_weak",
+             [&] {
+               if (!UsingImplicitWeakFields(descriptor_->file(), options_)) {
+                 return;
+               }
+               p->Emit(R"cc(
+                 static constexpr const char _msg_type_name[] = "$full_name$";
+               )cc");
+             }},
+            {"type_name_ptr",
+             [&] {
+               if (!UsingImplicitWeakFields(descriptor_->file(), options_)) {
+                 p->Emit(R"cc(_file_type_names[$index_in_file_messages$],)cc");
+               } else {
+                 p->Emit(R"cc(_msg_type_name,)cc");
+               }
+             }},
         },
         R"cc(
+          $define_type_names_for_weak$;
           constexpr auto $classname$::InternalGenerateClassData_() {
-            return $pbi$::ClassDataLite<$type_size$>{
+            return $pbi$::ClassDataLite{
                 {
                     $default_instance$,
                     &_table_.header,
@@ -4145,13 +4162,13 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                     true,
                     $v2_data$,
                 },
-                "$full_name$",
+                $type_name_ptr$,
             };
           }
 
           PROTOBUF_CONSTINIT
           PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-          const $pbi$::ClassDataLite<$type_size$> $classname$_class_data_ =
+          const $pbi$::ClassDataLite $classname$_class_data_ =
               $classname$::InternalGenerateClassData_();
 
           //~ This function needs to be marked as weak to avoid significantly

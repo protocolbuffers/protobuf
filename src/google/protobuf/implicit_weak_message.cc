@@ -62,7 +62,11 @@ const TcParseTable<0> ImplicitWeakMessage::table_ =
     internal::CreateStubTcParseTable<ImplicitWeakMessage, ParseImpl>(
         class_data_.base());
 
-constexpr ClassDataLite<1> ImplicitWeakMessage::class_data_ = {
+namespace {
+constexpr const char kImplicitWeakMessageTypeName[] = "";
+}
+
+constexpr ClassDataLite ImplicitWeakMessage::class_data_ = {
     {
         &implicit_weak_message_default_instance.instance,
         &table_.header,
@@ -78,7 +82,7 @@ constexpr ClassDataLite<1> ImplicitWeakMessage::class_data_ = {
         PROTOBUF_FIELD_OFFSET(ImplicitWeakMessage, cached_size_),
         true,
     },
-    ""};
+    kImplicitWeakMessageTypeName};
 
 const ClassData* ImplicitWeakMessage::GetClassData() const {
   return class_data_.base();

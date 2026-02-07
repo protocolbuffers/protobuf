@@ -882,6 +882,25 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   GenerateSourcePrelude(p);
   CrossFileReferences refs;
   GetCrossFileReferencesForFile(file_, &refs);
+
+  if (!HasDescriptorMethods(file_, options_) && !message_generators_.empty()) {
+    p->Emit({{"type_names",
+              [&] {
+                for (const auto& mg : message_generators_) {
+                  p->Emit({{"name", mg->descriptor()->full_name()}}, R"cc(
+                    "$name$",
+                  )cc");
+                }
+              }}},
+            R"cc(
+              namespace {
+              constexpr const char* _file_type_names[] = {
+                  $type_names$,
+              };
+              }  // namespace
+            )cc");
+  }
+
   GenerateInternalForwardDeclarations(refs, p);
 
   if (HasDescriptorMethods(file_, options_) && !message_generators_.empty()) {
