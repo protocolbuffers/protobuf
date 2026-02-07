@@ -83,7 +83,7 @@ const ::uint32_t
 };
 
 static const ::_pbi::MigrationSchema
-    schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
+    schemas_google_2fprotobuf_2ffield_5fmask_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, sizeof(::google::protobuf::FieldMask)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
@@ -109,7 +109,7 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
     nullptr,
     0,
     1,
-    schemas,
+    schemas_google_2fprotobuf_2ffield_5fmask_2eproto,
     file_default_instances,
     TableStruct_google_2fprotobuf_2ffield_5fmask_2eproto::offsets,
     file_level_enum_descriptors_google_2fprotobuf_2ffield_5fmask_2eproto,
