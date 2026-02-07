@@ -545,6 +545,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   // guarantee that both repeated fields are on the same arena or are on the
   // heap. Swapping between different arenas is disallowed and caught by a
   // ABSL_DCHECK (see API docs for details).
+  ABSL_DEPRECATED(
+      "Use Swap() for ownership transfer, or message borrowers for temporary "
+      "swaps.")
   void UnsafeArenaSwap(RepeatedField* other);
 
   // Copy constructs `n` instances in place into the array `dst`.
