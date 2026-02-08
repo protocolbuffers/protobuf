@@ -636,6 +636,10 @@ enum {
   kMessageTag = ((kUpb_MsgSet_Message << 3) | kUpb_WireType_Delimited),
 };
 
+static upb_DecodeStatus upb_Decoder_Decode(upb_Decoder* decoder,
+                                           const char* buf, upb_Message* msg,
+                                           const upb_MiniTable* m,
+                                           upb_Arena* arena);
 static void upb_Decoder_AddKnownMessageSetItem(
     upb_Decoder* d, upb_Message* msg, const upb_MiniTableExtension* item_mt,
     const char* data, uint32_t size) {
@@ -648,9 +652,13 @@ static void upb_Decoder_AddKnownMessageSetItem(
   upb_Message* submsg = _upb_Decoder_NewSubMessage2(
       d, ext->ext->UPB_PRIVATE(sub).UPB_PRIVATE(submsg),
       &ext->ext->UPB_PRIVATE(field), submsgp);
-  upb_DecodeStatus status = upb_Decode(
-      data, size, submsg, upb_MiniTableExtension_GetSubMessage(item_mt),
-      d->extreg, d->options, &d->arena);
+  upb_Decoder decoder;
+  data = upb_Decoder_Init(&decoder, data, size, d->extreg, d->options,
+                          &d->arena, NULL, 0);
+  decoder.depth = d->depth - 1;
+  upb_DecodeStatus status = upb_Decoder_Decode(
+      &decoder, data, submsg, upb_MiniTableExtension_GetSubMessage(item_mt),
+      &d->arena);
   if (status != kUpb_DecodeStatus_Ok) {
     upb_ErrorHandler_ThrowError(&d->err, status);
   }

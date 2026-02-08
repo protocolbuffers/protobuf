@@ -870,6 +870,12 @@ message TestReallyLargeTagNumber {
 message TestRecursiveMessage {
   TestRecursiveMessage a = 1;
   int32 i = 2;
+  map<int32, TestRecursiveMessage> map_field = 3;
+  extensions 100 to max;
+}
+
+extend TestRecursiveMessage {
+  TestAllTypes message_set_extension = 1001;
 }
 
 // Test that mutual recursion works.

@@ -835,7 +835,7 @@ def MessageSetItemDecoder(descriptor):
   local_ReadTag = ReadTag
   local_DecodeVarint = _DecodeVarint
 
-  def DecodeItem(buffer, pos, end, message, field_dict):
+  def DecodeItem(buffer, pos, end, message, field_dict, current_depth=0):
     """Decode serialized message set to its value and new position.
 
     Args:
@@ -888,7 +888,12 @@ def MessageSetItemDecoder(descriptor):
           message_factory.GetMessageClass(message_type)
         value = field_dict.setdefault(
             extension, message_type._concrete_class())
-      if value._InternalParse(buffer, message_start,message_end) != message_end:
+      if (
+          value._InternalParse(
+              buffer, message_start, message_end, current_depth + 1
+          )
+          != message_end
+      ):
         # The only reason _InternalParse would return early is if it encountered
         # an end-group tag.
         raise _DecodeError('Unexpected end-group tag.')
@@ -957,7 +962,6 @@ def MapDecoder(field_descriptor, new_default, is_message_map):
   message_type = field_descriptor.message_type
 
   def DecodeMap(buffer, pos, end, message, field_dict, current_depth=0):
-    del current_depth  # Unused.
     submsg = message_type._concrete_class()
     value = field_dict.get(key)
     if value is None:
@@ -970,7 +974,10 @@ def MapDecoder(field_descriptor, new_default, is_message_map):
         raise _DecodeError('Truncated message.')
       # Read sub-message.
       submsg.Clear()
-      if submsg._InternalParse(buffer, pos, new_pos) != new_pos:
+      if (
+          submsg._InternalParse(buffer, pos, new_pos, current_depth + 1)
+          != new_pos
+      ):
         # The only reason _InternalParse would return early is if it
         # encountered an end-group tag.
         raise _DecodeError('Unexpected end-group tag.')

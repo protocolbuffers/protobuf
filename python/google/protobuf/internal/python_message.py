@@ -1241,7 +1241,9 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
           tag_bytes, (None, None)
       )
       if field_decoder:
-        pos = field_decoder(buffer, new_pos, end, self, field_dict)
+        pos = field_decoder(
+            buffer, new_pos, end, self, field_dict, current_depth
+        )
         continue
       field_des, is_packed = fields_by_tag.get(tag_bytes, (None, None))
       if field_des is None:
