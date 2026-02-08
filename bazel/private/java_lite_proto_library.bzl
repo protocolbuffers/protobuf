@@ -6,7 +6,6 @@
 # https://developers.google.com/open-source/licenses/bsd
 """A Starlark implementation of the java_lite_proto_library rule."""
 
-load("@rules_java//java/common:java_common.bzl", "java_common")
 load("@rules_java//java/common:java_info.bzl", "JavaInfo")
 load("@rules_java//java/common:proguard_spec_info.bzl", "ProguardSpecInfo")
 load("//bazel/common:proto_common.bzl", "proto_common")
@@ -117,9 +116,6 @@ def _rule_impl(ctx):
 
     transitive_src_and_runtime_jars = depset(transitive = [dep[JavaProtoAspectInfo].jars for dep in ctx.attr.deps])
     transitive_runtime_jars = depset(transitive = [java_info.transitive_runtime_jars])
-
-    if hasattr(java_common, "add_constraints"):
-        java_info = java_common.add_constraints(java_info, constraints = ["android"])
 
     return [
         java_info,
