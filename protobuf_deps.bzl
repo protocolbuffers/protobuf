@@ -171,23 +171,6 @@ def protobuf_deps():
             sha256 = "d20c951960ed77cb7b341c2a59488534e494d5ad1d30c4818c736d57772a9fef",
         )
 
-    # Workaround rules_apple having a default dependency on rules_swift 2.4.0, which in turn has a
-    # hard dependency on the presence of swiftc.exe on Windows.
-    if not native.existing_rule("build_bazel_rules_swift"):
-        http_archive(
-            name = "build_bazel_rules_swift",
-            sha256 = "b17bdad10f3996cffc1ae3634e426d5280848cdb25ae5351f39357599938f5c6",
-            url = "https://github.com/bazelbuild/rules_swift/releases/download/3.0.2/rules_swift.3.0.2.tar.gz",
-        )
-
-    # TODO: Can rules_apple be removed, and thus allow rules_swift to be removed?
-    if not native.existing_rule("build_bazel_rules_apple"):
-        http_archive(
-            name = "build_bazel_rules_apple",
-            sha256 = "70b0fb2aec1055c978109199bf58ccb5008aba8e242f3305194045c271ca3cae",
-            url = "https://github.com/bazelbuild/rules_apple/releases/download/4.0.0/rules_apple.4.0.0.tar.gz",
-        )
-
     if not native.existing_rule("build_bazel_apple_support"):
         http_archive(
             name = "build_bazel_apple_support",
