@@ -355,6 +355,7 @@ message TestAllTypesProto2 {
     }
 
     int32 i = 9;
+    MessageSetCorrect sub_msg = 10;
   }
 
   message ExtensionWithOneof {

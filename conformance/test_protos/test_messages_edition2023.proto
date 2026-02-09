@@ -191,6 +191,9 @@ message TestAllTypesEdition2023 {
   }
   GroupLikeType groupliketype = 201;
   GroupLikeType delimited_field = 202;
+
+  // recursive
+  map<int32, TestAllTypesEdition2023> map_recursive = 301;
 }
 
 message ForeignMessageEdition2023 {
