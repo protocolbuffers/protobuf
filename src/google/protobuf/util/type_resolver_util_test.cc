@@ -15,6 +15,7 @@
 #include "google/protobuf/type.pb.h"
 #include "google/protobuf/wrappers.pb.h"
 #include "google/protobuf/descriptor.pb.h"
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
@@ -22,10 +23,10 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/util/json_format_proto3.pb.h"
 #include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
-#include "google/protobuf/unittest_import.pb.h"
 #include "google/protobuf/util/type_resolver.h"
 
 namespace google {
