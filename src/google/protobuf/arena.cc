@@ -700,7 +700,7 @@ void ThreadSafeArena::AddSerialArena(void* id, SerialArena* serial) {
   }
 
   // Slow path with acquiring mutex.
-  absl::MutexLock lock(&mutex_);
+  absl::MutexLock lock(mutex_);
 
   // Refetch and if someone else installed a new head, try allocating on that!
   SerialArenaChunk* new_head = head_.load(std::memory_order_acquire);
