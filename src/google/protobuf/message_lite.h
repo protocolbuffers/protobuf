@@ -464,12 +464,13 @@ struct PROTOBUF_EXPORT ClassData {
   uint8_t alignment() const { return message_creator.alignment(); }
 };
 
-template <size_t N>
-struct ClassDataLite {
-  ClassData header;
-  const char type_name[N];
+struct ClassDataLite : ClassData {
+  constexpr ClassDataLite(ClassData base, const char* type_name)
+      : ClassData(base), type_name(type_name) {}
 
-  constexpr const ClassData* base() const { return &header; }
+  const char* type_name;
+
+  constexpr const ClassData* base() const { return this; }
 };
 
 // We use a secondary vtable for descriptor based methods. This way ClassData

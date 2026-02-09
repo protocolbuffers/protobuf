@@ -4123,14 +4123,13 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
   } else {
     p->Emit(
         {
-            {"type_size", descriptor_->full_name().size() + 1},
             {"is_initialized", is_initialized},
             {"custom_vtable_methods", custom_vtable_methods},
             {"v2_data", emit_v2_data},
         },
         R"cc(
           constexpr auto $classname$::InternalGenerateClassData_() {
-            return $pbi$::ClassDataLite<$type_size$>{
+            return $pbi$::ClassDataLite{
                 {
                     $default_instance$,
                     &_table_.header,
@@ -4151,7 +4150,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
 
           PROTOBUF_CONSTINIT
           PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-          const $pbi$::ClassDataLite<$type_size$> $classname$_class_data_ =
+          const $pbi$::ClassDataLite $classname$_class_data_ =
               $classname$::InternalGenerateClassData_();
 
           //~ This function needs to be marked as weak to avoid significantly
