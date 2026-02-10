@@ -83,28 +83,13 @@ namespace internal {
 // For more details of the donating states transitions, go/pd-inlined-string.
 class PROTOBUF_EXPORT InlinedStringField {
  public:
-  InlinedStringField() : str_() {}
+  // OSS may use C++17 which would fail on constexpr constructor with
+  // std::string. As no actual OSS code refers to this constructor, templating
+  // it avoids ifdef'ing.
+  template <typename = void>
+  constexpr InlinedStringField() : str_() {}
   InlinedStringField(const InlinedStringField&) = delete;
   InlinedStringField& operator=(const InlinedStringField&) = delete;
-#if defined(__cpp_lib_constexpr_string) && __cpp_lib_constexpr_string >= 201907L
-  // No need to do dynamic initialization here.
-  constexpr void Init() {}
-  // Add the dummy parameter just to make InlinedStringField(nullptr)
-  // unambiguous.
-  constexpr InlinedStringField(
-      const ExplicitlyConstructed<std::string>* /*default_value*/,
-      bool /*dummy*/)
-      : str_{} {}
-#else
-  inline void Init() { ::new (static_cast<void*>(&str_)) std::string(); }
-  // Add the dummy parameter just to make InlinedStringField(nullptr)
-  // unambiguous.
-  constexpr InlinedStringField(
-      const ExplicitlyConstructed<std::string>* /*default_value*/,
-      bool /*dummy*/)
-      : dummy_{} {}
-#endif
-
   explicit InlinedStringField(const std::string& default_value);
   explicit InlinedStringField(Arena* arena);
   InlinedStringField(Arena* arena, const InlinedStringField& rhs);
@@ -247,7 +232,6 @@ class PROTOBUF_EXPORT InlinedStringField {
 
   union {
     std::string str_;
-    char dummy_;
   };
 
   std::string* MutableSlow(Arena* arena);

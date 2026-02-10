@@ -318,8 +318,11 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
         this, /*run_proto3_tests=*/true);
     BinaryAndJsonConformanceSuiteImpl<TestAllTypesProto2Editions>(
         this, /*run_proto3_tests=*/false);
-    RunDelimitedFieldTests();
-    RunUnstableTests();
+    if (!this->performance_) {
+      RunDelimitedFieldTests();
+      RunUnstableTests();
+      RunUtf8ValidationTests();
+    }
   }
 }
 
@@ -387,6 +390,18 @@ void BinaryAndJsonConformanceSuite::RunUnstableTests() {
       absl::StrCat("ValidMap.Bytes"), REQUIRED,
       len(15, absl::StrCat(len(1, "foo"), len(2, "barbaz"))),
       R"pb(map_string_bytes { key: "foo" value: "barbaz" })pb");
+}
+
+void BinaryAndJsonConformanceSuite::RunUtf8ValidationTests() {
+  ExpectParseFailureForProto<TestAllTypesEdition2023>(
+      len(133, "\xA0\xB0\xC0\xD0"), "RejectInvalidUtf8.String.Extension",
+      RECOMMENDED);
+  RunValidBinaryProtobufTest<
+      TestAllTypesEdition2023>(absl::StrCat(
+                                   "AcceptInvalidUtf8.Bytes.Extension"),
+                               REQUIRED, len(134, "\xA0\xB0\xC0\xD0"),
+                               R"pb([protobuf_test_messages.editions
+                                         .extension_bytes]: "\xA0\xB0\xC0\xD0")pb");
 }
 
 void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
@@ -476,10 +491,9 @@ void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
 }
 
 template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::
-    ExpectParseFailureForProtoWithProtoVersion(const std::string& proto,
-                                               const std::string& test_name,
-                                               ConformanceLevel level) {
+void BinaryAndJsonConformanceSuite::ExpectParseFailureForProto(
+    const std::string& proto, const std::string& test_name,
+    ConformanceLevel level) {
   MessageType prototype;
   // We don't expect output, but if the program erroneously accepts the protobuf
   // we let it send its response as this.  We must not leave it unspecified.
@@ -493,20 +507,32 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
       absl::StrCat(setting.ConformanceLevelToString(level), ".",
                    setting.GetSyntaxIdentifier(), ".ProtobufInput.", test_name);
 
-  if (!suite_.RunTest(effective_test_name, request, &response)) {
+  if (!RunTest(effective_test_name, request, &response)) {
     return;
   }
 
   TestStatus test;
   test.set_name(effective_test_name);
   if (response.result_case() == ConformanceResponse::kParseError) {
-    suite_.ReportSuccess(test);
+    ReportSuccess(test);
   } else if (response.result_case() == ConformanceResponse::kSkipped) {
-    suite_.ReportSkip(test, request, response);
+    ReportSkip(test, request, response);
+  } else if (response.result_case() == ConformanceResponse::kRuntimeError) {
+    test.set_failure_message(
+        "Should have failed to parse, but raised an error instead.");
+    ReportFailure(test, level, request, response);
   } else {
     test.set_failure_message("Should have failed to parse, but didn't.");
-    suite_.ReportFailure(test, level, request, response);
+    ReportFailure(test, level, request, response);
   }
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::
+    ExpectParseFailureForProtoWithProtoVersion(const std::string& proto,
+                                               const std::string& test_name,
+                                               ConformanceLevel level) {
+  suite_.ExpectParseFailureForProto<MessageType>(proto, test_name, level);
 }
 
 // Expect that this precise protobuf will cause a parse error.
@@ -947,7 +973,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForType(
   if (type != FieldDescriptor::TYPE_MESSAGE) {
     std::string proto;
     for (size_t i = 0; i < values.size(); i++) {
-      proto += absl::StrCat(tag(field->number(), wire_type), values[i].first);
+      absl::StrAppend(&proto, tag(field->number(), wire_type), values[i].first);
     }
     std::string expected_proto =
         absl::StrCat(tag(field->number(), wire_type), values.back().second);
@@ -979,21 +1005,23 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForType(
     std::string unpacked_proto_expected;
 
     for (size_t i = 0; i < values.size(); i++) {
-      default_proto_unpacked +=
-          absl::StrCat(tag(rep_field->number(), wire_type), values[i].first);
-      default_proto_unpacked_expected +=
-          absl::StrCat(tag(rep_field->number(), wire_type), values[i].second);
+      absl::StrAppend(&default_proto_unpacked,
+                      tag(rep_field->number(), wire_type), values[i].first);
+      absl::StrAppend(&default_proto_unpacked_expected,
+                      tag(rep_field->number(), wire_type), values[i].second);
       default_proto_packed += values[i].first;
       default_proto_packed_expected += values[i].second;
-      packed_proto_unpacked +=
-          absl::StrCat(tag(packed_field->number(), wire_type), values[i].first);
+      absl::StrAppend(&packed_proto_unpacked,
+                      tag(packed_field->number(), wire_type), values[i].first);
       packed_proto_packed += values[i].first;
       packed_proto_expected += values[i].second;
-      unpacked_proto_unpacked += absl::StrCat(
-          tag(unpacked_field->number(), wire_type), values[i].first);
+      absl::StrAppend(&unpacked_proto_unpacked,
+                      tag(unpacked_field->number(), wire_type),
+                      values[i].first);
       unpacked_proto_packed += values[i].first;
-      unpacked_proto_expected += absl::StrCat(
-          tag(unpacked_field->number(), wire_type), values[i].second);
+      absl::StrAppend(&unpacked_proto_expected,
+                      tag(unpacked_field->number(), wire_type),
+                      values[i].second);
     }
     default_proto_packed = absl::StrCat(
         tag(rep_field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
@@ -1105,8 +1133,8 @@ void BinaryAndJsonConformanceSuiteImpl<
   const FieldDescriptor* field =
       GetFieldForType(FieldDescriptor::TYPE_MESSAGE, false);
   for (size_t i = 0; i < values.size(); i++) {
-    proto += absl::StrCat(
-        tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+    absl::StrAppend(
+        &proto, tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
         values[i]);
   }
 
@@ -1530,6 +1558,29 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownWireType() {
 }
 
 template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestInvalidUtf8String() {
+  if (run_proto3_tests_) {
+    ExpectParseFailureForProto(len(14, "\xA0\xB0\xC0\xD0"),
+                               "RejectInvalidUtf8.String.Singular",
+                               RECOMMENDED);
+    ExpectParseFailureForProto(len(44, "\xA0\xB0\xC0\xD0"),
+                               "RejectInvalidUtf8.String.Repeated",
+                               RECOMMENDED);
+    ExpectParseFailureForProto(len(113, "\xA0\xB0\xC0\xD0"),
+                               "RejectInvalidUtf8.String.Oneof", RECOMMENDED);
+    ExpectParseFailureForProto(
+        len(69, absl::StrCat(len(1, "\xA0\xB0\xC0\xD0"), len(2, "foo"))),
+        "RejectInvalidUtf8.String.MapKey", RECOMMENDED);
+    ExpectParseFailureForProto(
+        len(69, absl::StrCat(len(1, "foo"), len(2, "\xA0\xB0\xC0\xD0"))),
+        "RejectInvalidUtf8.String.MapValue", RECOMMENDED);
+  } else {
+    // TODO - Once conformance tests can express failures that are
+    // not expected to be fixed, add proto2 coverage here.
+  }
+}
+
+template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestOneofMessage() {
   MessageType message;
   message.set_oneof_uint32(0);
@@ -1700,6 +1751,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
     TestIllegalTags();
     TestUnmatchedGroup();
     TestUnknownWireType();
+    TestInvalidUtf8String();
 
     int64_t kInt64Min = -9223372036854775808ULL;
     int64_t kInt64Max = 9223372036854775807ULL;

@@ -1608,7 +1608,6 @@ class DescriptorPool::DeferredValidation {
   struct LifetimesInfo {
     const Message* option_to_validate;  // features or options to validate
     const Message* proto;
-    bool is_feature;
     absl::string_view full_name;
     absl::string_view filename;
   };
@@ -1637,20 +1636,16 @@ class DescriptorPool::DeferredValidation {
       return true;
     }
 
-    static absl::string_view feature_set_name = "google.protobuf.FeatureSet";
     bool has_errors = false;
     for (const auto& it : lifetimes_info_map_) {
       const FileDescriptor* file = it.first;
 
       for (const auto& info : it.second) {
-        const Descriptor* feature_set_descriptor = nullptr;
-        // TODO: Support custom options
-        if (info.is_feature) {
-          feature_set_descriptor =
-              pool_->FindMessageTypeByName(feature_set_name);
-        }
+        const Descriptor* option_descriptor = nullptr;
+        option_descriptor = pool_->FindMessageTypeByName(
+            info.option_to_validate->GetTypeName());
         auto results = FeatureResolver::ValidateFeatureLifetimes(
-            file->edition(), *info.option_to_validate, feature_set_descriptor);
+            file->edition(), *info.option_to_validate, option_descriptor);
         for (const auto& error : results.errors) {
           has_errors = true;
           if (error_collector_ == nullptr) {
@@ -3587,7 +3582,7 @@ class SourceLocationCommentPrinter {
     // Perform the SourceLocation lookup only if we're including user comments,
     // because the lookup is fairly expensive.
     have_source_loc_ =
-        options.include_comments && desc->GetSourceLocation(&source_loc_);
+        options_.include_comments && desc->GetSourceLocation(&source_loc_);
   }
   SourceLocationCommentPrinter(const FileDescriptor* file,
                                const std::vector<int>& path,
@@ -3596,8 +3591,8 @@ class SourceLocationCommentPrinter {
       : options_(options), prefix_(prefix) {
     // Perform the SourceLocation lookup only if we're including user comments,
     // because the lookup is fairly expensive.
-    have_source_loc_ =
-        options.include_comments && file->GetSourceLocation(path, &source_loc_);
+    have_source_loc_ = options_.include_comments &&
+                       file->GetSourceLocation(path, &source_loc_);
   }
   void AddPreComment(std::string* output) {
     if (have_source_loc_) {
@@ -4886,12 +4881,12 @@ class DescriptorBuilder {
     // Validates the value for the option field of the currently interpreted
     // option and then sets it on the unknown_field.
     bool SetOptionValue(const FieldDescriptor* option_field,
-                        UnknownFieldSet* unknown_fields);
+                        UnknownFieldSet* unknown_fields, Message* options);
 
     // Parses an aggregate value for a CPPTYPE_MESSAGE option and
     // saves it into *unknown_fields.
     bool SetAggregateOption(const FieldDescriptor* option_field,
-                            UnknownFieldSet* unknown_fields);
+                            UnknownFieldSet* unknown_fields, Message* options);
 
     // Convenience functions to set an int field the right way, depending on
     // its wire type (a single int CppType can represent multiple wire types).
@@ -5010,9 +5005,9 @@ class DescriptorBuilder {
                        const DescriptorProto::ExtensionRange& proto) {}
   void ValidateExtensionRangeOptions(const DescriptorProto& proto,
                                      const Descriptor& message);
-  void MaybeAddFeatureSupportError(const absl::Status& feature_support_status,
-                                   const Message& proto,
-                                   absl::string_view full_name);
+  void MaybeAddError(const absl::Status& status, absl::string_view full_name,
+                     const Message& descriptor,
+                     DescriptorPool::ErrorCollector::ErrorLocation location);
   void ValidateExtensionDeclaration(
       absl::string_view full_name,
       const RepeatedPtrField<ExtensionRangeOptions_Declaration>& declarations,
@@ -6347,10 +6342,9 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
 
   absl::StatusOr<FeatureResolver> feature_resolver =
       FeatureResolver::Create(file_->edition_, defaults);
-  if (!feature_resolver.ok()) {
-    AddError(proto.name(), proto, DescriptorPool::ErrorCollector::EDITIONS,
-             [&] { return std::string(feature_resolver.status().message()); });
-  } else {
+  MaybeAddError(feature_resolver.status(), proto.name(), proto,
+                DescriptorPool::ErrorCollector::EDITIONS);
+  if (feature_resolver.ok()) {
     feature_resolver_.emplace(std::move(feature_resolver).value());
   }
 
@@ -6690,15 +6684,14 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
         *result, proto, [&](const auto& descriptor, const auto& desc_proto) {
           if (!IsDefaultInstance(*descriptor.proto_features_)) {
             deferred_validation_.ValidateFeatureLifetimes(
-                GetFile(descriptor),
-                {descriptor.proto_features_, &desc_proto, /*is_feature=*/true,
-                 GetFullName(descriptor), proto.name()});
+                GetFile(descriptor), {descriptor.proto_features_, &desc_proto,
+                                      GetFullName(descriptor), proto.name()});
           }
-          if (!IsDefaultInstance(*descriptor.options_)) {
+          if (!IsDefaultInstance(*descriptor.options_) &&
+              descriptor.options_->ByteSizeLong() != 0) {
             deferred_validation_.ValidateFeatureLifetimes(
-                GetFile(descriptor),
-                {descriptor.options_, &desc_proto,
-                 /*is_feature=*/false, GetFullName(descriptor), proto.name()});
+                GetFile(descriptor), {descriptor.options_, &desc_proto,
+                                      GetFullName(descriptor), proto.name()});
           }
         });
   }
@@ -8503,15 +8496,15 @@ void DescriptorBuilder::ValidateOptions(const OneofDescriptor* /*oneof*/,
 }
 
 
-void DescriptorBuilder::MaybeAddFeatureSupportError(
-    const absl::Status& feature_support_status, const Message& proto,
-    absl::string_view full_name) {
-  if (feature_support_status.ok()) {
+void DescriptorBuilder::MaybeAddError(
+    const absl::Status& status, absl::string_view full_name,
+    const Message& descriptor,
+    DescriptorPool::ErrorCollector::ErrorLocation location) {
+  if (status.ok()) {
     return;
   }
-  std::string feature_support_error(feature_support_status.message());
-  AddError(full_name, proto, DescriptorPool::ErrorCollector::OPTION_NAME,
-           feature_support_error.c_str());
+  std::string error(status.message());
+  AddError(full_name, descriptor, location, error.c_str());
 }
 
 void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
@@ -8522,8 +8515,8 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
   if (pool_->enforce_feature_support_validation_) {
     absl::Status feature_support_status =
         FeatureResolver::ValidateFieldFeatureSupport(*field);
-    MaybeAddFeatureSupportError(feature_support_status, proto,
-                                field->full_name());
+    MaybeAddError(feature_support_status, field->full_name(), proto,
+                  DescriptorPool::ErrorCollector::OPTION_NAME);
   }
 
   ValidateFieldFeatures(field, proto);
@@ -8541,6 +8534,10 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
     if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
       AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
                "[lazy = true] can only be specified for submessage fields.");
+    }
+    if (field->options().unverified_lazy() && field->is_extension()) {
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
+               "Extensions cannot be marked as unverified_lazy.");
     }
   }
 
@@ -8861,8 +8858,8 @@ void DescriptorBuilder::ValidateOptions(const EnumValueDescriptor* enum_value,
     absl::Status feature_support_result =
         FeatureResolver::ValidateFeatureSupport(
             enum_value->options().feature_support(), enum_value->full_name());
-    MaybeAddFeatureSupportError(feature_support_result, proto,
-                                enum_value->full_name());
+    MaybeAddError(feature_support_result, enum_value->full_name(), proto,
+                  DescriptorPool::ErrorCollector::OPTION_NAME);
   }
 }
 
@@ -9684,7 +9681,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   // innermost message.
   std::unique_ptr<UnknownFieldSet> unknown_fields =
       std::make_unique<UnknownFieldSet>();
-  if (!SetOptionValue(field, unknown_fields.get())) {
+  if (!SetOptionValue(field, unknown_fields.get(), options)) {
     return false;  // SetOptionValue() already added the error.
   }
 
@@ -9924,7 +9921,8 @@ std::string ValueMustBeInt(absl::string_view type_name,
 }  // namespace
 
 bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
-    const FieldDescriptor* option_field, UnknownFieldSet* unknown_fields) {
+    const FieldDescriptor* option_field, UnknownFieldSet* unknown_fields,
+    Message* options) {
   // We switch on the CppType to validate.
   switch (option_field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
@@ -10154,12 +10152,10 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
       unknown_fields->AddLengthDelimited(option_field->number(),
                                          uninterpreted_option_->string_value());
       break;
-
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      if (!SetAggregateOption(option_field, unknown_fields)) {
+      if (!SetAggregateOption(option_field, unknown_fields, options)) {
         return false;
       }
-      break;
   }
 
   return true;
@@ -10237,7 +10233,8 @@ class AggregateErrorCollector : public io::ErrorCollector {
 // option_field, parse the supplied text-format string into this
 // message, and serialize the resulting message to produce the value.
 bool DescriptorBuilder::OptionInterpreter::SetAggregateOption(
-    const FieldDescriptor* option_field, UnknownFieldSet* unknown_fields) {
+    const FieldDescriptor* option_field, UnknownFieldSet* unknown_fields,
+    Message* options) {
   if (!uninterpreted_option_->has_aggregate_value()) {
     return AddValueError([&] {
       return absl::StrCat("Option \"", option_field->full_name(),
@@ -10263,11 +10260,18 @@ bool DescriptorBuilder::OptionInterpreter::SetAggregateOption(
   parser.SetFinder(&finder);
   if (!parser.ParseFromString(uninterpreted_option_->aggregate_value(),
                               dynamic.get())) {
-    AddValueError([&] {
-      return absl::StrCat("Error while parsing option value for \"",
-                          option_field->name(), "\": ", collector.error_);
-    });
-    return false;
+    if (get_allow_unknown(builder_->pool_)) {
+      // We can't interpret the option, but AllowUnknownDependencies() is
+      // enabled, so we will just leave it as uninterpreted.
+      AddWithoutInterpreting(*uninterpreted_option_, options);
+      return true;
+    } else {
+      AddValueError([&] {
+        return absl::StrCat("Error while parsing option value for \"",
+                            option_field->name(), "\": ", collector.error_);
+      });
+      return false;
+    }
   } else {
     std::string serial;
     ABSL_CHECK(dynamic->SerializeToString(&serial));  // Never fails

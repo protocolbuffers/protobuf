@@ -55,7 +55,6 @@ def build_targets(name):
         srcs = [":copied_wkt_proto_files"],
         include = ".",
         default_runtime = "",
-        protoc = "//:protoc",
         srcs_version = "PY2AND3",
         visibility = [
             "//:__pkg__",
@@ -291,7 +290,6 @@ def build_targets(name):
         ],
         include = ".",
         default_runtime = "",
-        protoc = "//:protoc",
         srcs_version = "PY2AND3",
         visibility = [
             "//:__pkg__",
@@ -306,7 +304,6 @@ def build_targets(name):
         srcs = [":copied_test_proto_files"],
         include = ".",
         default_runtime = "",
-        protoc = "//:protoc",
         srcs_version = "PY2AND3",
         visibility = ["//:__pkg__"],
         deps = [":well_known_types_py_pb2", ":test_dependency_proto_py_pb2"],
@@ -321,7 +318,6 @@ def build_targets(name):
         ]),
         include = ".",
         default_runtime = ":protobuf_python",
-        protoc = "//:protoc",
         srcs_version = "PY2AND3",
         visibility = ["//:__pkg__"],
         deps = [":python_common_test_protos"],
@@ -333,7 +329,6 @@ def build_targets(name):
         srcs = [":copied_conformance_test_files"],
         include = ".",
         default_runtime = "//:protobuf_python",
-        protoc = "//:protoc",
         visibility = [
             "//conformance:__pkg__",
             "//python:__subpackages__",

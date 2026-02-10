@@ -922,10 +922,10 @@ PROTOBUF_NOINLINE void* ThreadSafeArena::AllocateAlignedFallback(size_t n) {
   return GetSerialArenaFallback(n)->AllocateAligned<alloc_client>(n);
 }
 
-template void* ThreadSafeArena::AllocateAlignedFallback<
-    AllocationClient::kDefault>(size_t);
 template void*
-    ThreadSafeArena::AllocateAlignedFallback<AllocationClient::kArray>(size_t);
+ThreadSafeArena::AllocateAlignedFallback<AllocationClient::kDefault>(size_t);
+template void*
+ThreadSafeArena::AllocateAlignedFallback<AllocationClient::kArray>(size_t);
 
 void ThreadSafeArena::CleanupList() {
   if constexpr (HasMemoryPoisoning()) {

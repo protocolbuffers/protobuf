@@ -42,6 +42,10 @@
 #include "google/protobuf/port_def.inc"
 
 
+#if defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
+#define PROTOBUF_MESSAGE_GLOBALS
+#endif  // PROTOBUF_ENABLE_STABLE_EXPERIMENTS
+
 namespace google {
 namespace protobuf {
 

@@ -115,23 +115,6 @@ void DebugAssertUniformLikelyPresence(
   });
 }
 
-// Returns true if any field in the message uses arena offsets. If this is true,
-// the message will generate two `ClassData`s, one for use when the arena offset
-// feature is disabled, and one for when it is enabled.
-//
-// The reason for generating two different `ClassData`s is that fields using
-// arena offsets are initialized differently than they are currently. If a field
-// uses arena offsets, it no longer needs arena seeding, and it is not
-// zero-initializable.
-bool MessageHasFieldUsingArenaOffset(const Descriptor* descriptor) {
-  return absl::c_any_of(
-             FieldRange(descriptor),
-             [](const FieldDescriptor* field) {
-               return field->is_repeated() || field->is_map();
-             }) ||
-         descriptor->extension_range_count() > 0;
-}
-
 // Generates a condition that checks presence of a field. If probability is
 // provided, the condition will be wrapped with
 // PROTOBUF_EXPECT_TRUE_WITH_PROBABILITY.
@@ -1556,7 +1539,7 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
           explicit constexpr $classname$($pbi$::ConstantInitialized);
           explicit $classname$($pb$::Arena* $nullable$ arena);
           static constexpr const void* $nonnull$ internal_default_instance() {
-            return &_$classname$_default_instance_;
+            return &_$classname$_globals_;
           }
 
           $decl_verify_func$;
@@ -2110,12 +2093,12 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
        {"decl_split_methods",
         [&] {
           if (!ShouldSplit(descriptor_, options_)) return;
-          p->Emit({{"default_name", DefaultInstanceName(descriptor_, options_,
-                                                        /*split=*/true)}},
+          p->Emit({{"split_default",
+                    SplitDefaultInstanceName(descriptor_, options_)}},
                   R"cc(
                     private:
                     inline bool IsSplitMessageDefault() const {
-                      return $split$ == reinterpret_cast<const Impl_::Split*>(&$default_name$);
+                      return $split$ == reinterpret_cast<const Impl_::Split*>(&$split_default$);
                     }
                     PROTOBUF_NOINLINE void PrepareSplitMessageForWrite();
 
@@ -2209,8 +2192,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         [&] {
           if (!ShouldSplit(descriptor_, options_)) return;
 
-          p->Emit({{"split_default", DefaultInstanceType(descriptor_, options_,
-                                                         /*split=*/true)}},
+          p->Emit({{"split_default",
+                    SplitDefaultInstanceType(descriptor_, options_)}},
                   R"cc(
                     friend struct $split_default$;
                   )cc");
@@ -2268,8 +2251,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           $descriptor_accessor$;
           $get_descriptor$;
           $nodiscard $static const $classname$& default_instance() {
-            return *reinterpret_cast<const $classname$*>(
-                &_$classname$_default_instance_);
+            return *reinterpret_cast<const $classname$*>(&_$classname$_globals_);
           }
           $decl_oneof$;
           static constexpr int kIndexInFileMessages = $index_in_file_messages$;
@@ -2563,10 +2545,8 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   }
 
   if (ShouldSplit(descriptor_, options_)) {
-    p->Emit({{"split_default",
-              DefaultInstanceName(descriptor_, options_, /*split=*/true)},
-             {"default",
-              DefaultInstanceName(descriptor_, options_, /*split=*/false)}},
+    p->Emit({{"split_default", SplitDefaultInstanceName(descriptor_, options_)},
+             {"default", MsgGlobalsInstanceName(descriptor_, options_)}},
             R"cc(
               void $classname$::PrepareSplitMessageForWrite() {
                 if (ABSL_PREDICT_TRUE(IsSplitMessageDefault())) {
@@ -2843,11 +2823,7 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
         init_type != InitType::kConstexpr) {
       separator();
       p->Emit(R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
         _extensions_ {}
-#else
-        _extensions_ { visibility, arena }
-#endif
       )cc");
     }
   };
@@ -2892,7 +2868,7 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
   auto init_split = [&] {
     if (ShouldSplit(descriptor_, options_)) {
       separator();
-      p->Emit({{"name", DefaultInstanceName(descriptor_, options_, true)}},
+      p->Emit({{"name", SplitDefaultInstanceName(descriptor_, options_)}},
               "_split_{const_cast<Split*>(&$name$._instance)}");
     }
   };
@@ -3905,9 +3881,7 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
   format("}\n");
 }
 
-MessageGenerator::NewOpRequirements MessageGenerator::GetNewOp(
-    io::Printer* arena_emitter, bool use_arena_offset) const {
-  size_t arena_seeding_count = 0;
+MessageGenerator::NewOpRequirements MessageGenerator::GetNewOp() const {
   NewOpRequirements op;
   if (IsBootstrapProto(options_, descriptor_->file())) {
     // To simplify bootstrapping we always use a function for these types.
@@ -3921,59 +3895,17 @@ MessageGenerator::NewOpRequirements MessageGenerator::GetNewOp(
     op.needs_to_run_constructor = true;
   }
 
-  // Extension set does not use arena offsets, since we were able to remove all
-  // uses of `GetArena()` by passing the arena pointer from above. We will
-  // flag-gate the removal of the arena pointer in the extension set with the
-  // arena offset changes for measurement purposes.
-  if (descriptor_->extension_range_count() > 0 && !use_arena_offset) {
-    op.needs_arena_seeding = true;
-    ++arena_seeding_count;
-    if (arena_emitter) {
-      arena_emitter->Emit(R"cc(
-        PROTOBUF_FIELD_OFFSET($classname$, $extensions$) +
-            decltype($classname$::$extensions$)::InternalGetArenaOffset(
-                $superclass$::internal_visibility()),
-      )cc");
-    }
-  }
-
   if (num_weak_fields_ != 0) {
     op.needs_to_run_constructor = true;
   }
 
   for (const FieldDescriptor* field : FieldRange(descriptor_)) {
-    const auto print_arena_offset = [&](absl::string_view suffix = "") {
-      ++arena_seeding_count;
-      if (arena_emitter) {
-        arena_emitter->Emit(
-            {{"field", FieldMemberName(field, false)}, {"suffix", suffix}},
-            R"cc(
-              PROTOBUF_FIELD_OFFSET($classname$, $field$) +
-                  decltype($classname$::$field$)::
-                      InternalGetArenaOffset$suffix$(
-                          $superclass$::internal_visibility()),
-            )cc");
-      }
-    };
     if (ShouldSplit(field, options_)) {
       op.needs_memcpy = true;
     } else if (field->real_containing_oneof() != nullptr) {
       /* nothing to do */
-    } else if (field->is_map()) {
-      // MapField contains an internal vtable pointer and arena offset we need
-      // to copy.
+    } else if (field->is_repeated() || field->is_map()) {
       op.needs_memcpy = true;
-      if (!use_arena_offset) {
-        op.needs_arena_seeding = true;
-        print_arena_offset();
-      }
-    } else if (field->is_repeated()) {
-      if (use_arena_offset) {
-        op.needs_memcpy = true;
-      } else {
-        op.needs_arena_seeding = true;
-        print_arena_offset();
-      }
     } else {
       const auto& generator = field_generators_.get(field);
       if (generator.has_trivial_zero_default()) {
@@ -4012,24 +3944,11 @@ MessageGenerator::NewOpRequirements MessageGenerator::GetNewOp(
     }
   }
 
-  // If we are going to generate too many arena seeding offsets, we can skip the
-  // attempt because we know it will fail at compile time and fallback to
-  // placement new. The arena seeding code can handle up to an offset of
-  // `63 * sizeof(Arena*)`.
-  // This prevents generating huge lists that have to be run during constant
-  // evaluation to just fail anyway. The actual upper bound is smaller than
-  // this, but any reasonable value is enough to prevent long compile times for
-  // big messages.
-  if (arena_seeding_count >= 64) {
-    op.needs_to_run_constructor = true;
-  }
-
   return op;
 }
 
-void MessageGenerator::GenerateNewOp(io::Printer* p,
-                                     bool use_arena_offset) const {
-  const auto new_op = GetNewOp(nullptr, use_arena_offset);
+void MessageGenerator::GenerateNewOp(io::Printer* p) const {
+  const auto new_op = GetNewOp();
   if (new_op.needs_to_run_constructor) {
     p->Emit(R"cc(
       constexpr auto $classname$::InternalNewImpl_() {
@@ -4037,24 +3956,6 @@ void MessageGenerator::GenerateNewOp(io::Printer* p,
                                      sizeof($classname$), alignof($classname$));
       }
     )cc");
-  } else if (new_op.needs_arena_seeding) {
-    p->Emit({{"copy_type", new_op.needs_memcpy ? "CopyInit" : "ZeroInit"},
-             {"arena_offsets", [&] { GetNewOp(p, use_arena_offset); }}},
-            R"cc(
-              constexpr auto $classname$::InternalNewImpl_() {
-                constexpr auto arena_bits = $pbi$::EncodePlacementArenaOffsets({
-                    $arena_offsets$,
-                });
-                if (arena_bits.has_value()) {
-                  return $pbi$::MessageCreator::$copy_type$(
-                      sizeof($classname$), alignof($classname$), *arena_bits);
-                } else {
-                  return $pbi$::MessageCreator(&$classname$::PlacementNew_,
-                                               sizeof($classname$),
-                                               alignof($classname$));
-                }
-              }
-            )cc");
   } else {
     p->Emit({{"copy_type", new_op.needs_memcpy ? "CopyInit" : "ZeroInit"}},
             R"cc(
@@ -4080,25 +3981,13 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
     }
   )cc");
 
-  if (MessageHasFieldUsingArenaOffset(descriptor_)) {
-    p->Emit({{"new_op", [&] { GenerateNewOp(p, /*use_arena_offset=*/false); }},
-             {"new_op_with_arena_offset",
-              [&] { GenerateNewOp(p, /*use_arena_offset=*/true); }}},
-            R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-              $new_op_with_arena_offset$;
-#else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-              $new_op$;
-#endif
-            )cc");
-  } else {
-    GenerateNewOp(p, /*use_arena_offset=*/false);
-  }
+  GenerateNewOp(p);
 
   auto vars = p->WithVars(
       {{"default_instance",
-        absl::StrCat("&", DefaultInstanceName(descriptor_, options_),
-                     "._instance")}});
+        absl::StrCat("&", MsgGlobalsInstanceName(descriptor_, options_),
+                     "._default")},
+       {"index_in_file_messages", index_in_file_messages_}});
   const auto is_initialized = [&] {
     if (NeedsIsInitialized()) {
       p->Emit(R"cc(
@@ -4172,6 +4061,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
         },
         R"cc(
           constexpr auto $classname$::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
             return $pbi$::ClassDataFull{
                 $pbi$::ClassData{
                     $default_instance$,
@@ -4187,10 +4077,28 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                     false,
                     $v2_data$,
                 },
-                &$classname$::kDescriptorMethods,
+                &file_reflection_data[$index_in_file_messages$]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+            return $pbi$::ClassDataFull{
+                $pbi$::ClassData{
+                    $default_instance$,
+                    &_table_.header,
+                    $is_initialized$,
+                    &$classname$::MergeImpl,
+                    $superclass$::GetNewImpl<$classname$>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    &$classname$::SharedDtor,
+                    $custom_vtable_methods$,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+                    PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
+                    false,
+                    $v2_data$,
+                },
+                &::_pbi::kDescriptorMethods,
                 &$desc_table$,
                 $tracker_on_get_metadata$,
             };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
           }
 
           PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -4215,14 +4123,13 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
   } else {
     p->Emit(
         {
-            {"type_size", descriptor_->full_name().size() + 1},
             {"is_initialized", is_initialized},
             {"custom_vtable_methods", custom_vtable_methods},
             {"v2_data", emit_v2_data},
         },
         R"cc(
           constexpr auto $classname$::InternalGenerateClassData_() {
-            return $pbi$::ClassDataLite<$type_size$>{
+            return $pbi$::ClassDataLite{
                 {
                     $default_instance$,
                     &_table_.header,
@@ -4243,7 +4150,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
 
           PROTOBUF_CONSTINIT
           PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-          const $pbi$::ClassDataLite<$type_size$> $classname$_class_data_ =
+          const $pbi$::ClassDataLite $classname$_class_data_ =
               $classname$::InternalGenerateClassData_();
 
           //~ This function needs to be marked as weak to avoid significantly

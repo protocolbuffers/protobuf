@@ -74,7 +74,7 @@ class FeatureSetDefaults extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\FeatureSetDefaults\FeatureSetEditionDefault[] $var
      * @return $this
      */
-    public function setDefaults($var)
+    public function setDefaults(array|RepeatedField $var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\FeatureSetDefaults\FeatureSetEditionDefault::class);
         $this->defaults = $arr;
@@ -112,7 +112,7 @@ class FeatureSetDefaults extends \Google\Protobuf\Internal\Message
      * @param int $var one of the values in {@see \Google\Protobuf\Internal\Edition}
      * @return $this
      */
-    public function setMinimumEdition($var)
+    public function setMinimumEdition(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\Edition::class);
         $this->minimum_edition = $var;
@@ -150,7 +150,7 @@ class FeatureSetDefaults extends \Google\Protobuf\Internal\Message
      * @param int $var one of the values in {@see \Google\Protobuf\Internal\Edition}
      * @return $this
      */
-    public function setMaximumEdition($var)
+    public function setMaximumEdition(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\Edition::class);
         $this->maximum_edition = $var;

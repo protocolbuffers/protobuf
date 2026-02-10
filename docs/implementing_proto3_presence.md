@@ -1,8 +1,8 @@
 # How To Implement Field Presence for Proto3
 
-Protobuf release 3.12 adds experimental support for `optional` fields in
-proto3. Proto3 optional fields track presence like in proto2. For background
-information about what presence tracking means, please see
+Protobuf release 3.12 adds experimental support for `optional` fields in proto3.
+Proto3 optional fields track presence like in proto2. For background information
+about what presence tracking means, please see
 [docs/field_presence](field_presence.md).
 
 ## Document Summary
@@ -13,12 +13,12 @@ optional fields. First-party code generators developed by Google are being
 updated already. However third-party code generators will need to be updated
 independently by their authors. This includes:
 
-- implementations of Protocol Buffers for other languages.
-- alternate implementations of Protocol Buffers that target specialized use
-  cases.
-- RPC code generators that create generated APIs for service calls.
-- code generators that implement some utility code on top of protobuf generated
-  classes.
+-   implementations of Protocol Buffers for other languages.
+-   alternate implementations of Protocol Buffers that target specialized use
+    cases.
+-   RPC code generators that create generated APIs for service calls.
+-   code generators that implement some utility code on top of protobuf
+    generated classes.
 
 While this document speaks in terms of "code generators", these same principles
 apply to implementations that dynamically generate a protocol buffer API "on the
@@ -27,17 +27,17 @@ fly", directly from a descriptor, in languages that support this kind of usage.
 ## Background
 
 Presence tracking was added to proto3 in response to user feedback, both from
-inside Google and [from open-source
-users](https://github.com/protocolbuffers/protobuf/issues/1606). The [proto3
-wrapper
-types](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/wrappers.proto)
+inside Google and
+[from open-source users](https://github.com/protocolbuffers/protobuf/issues/1606).
+The
+[proto3 wrapper types](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/wrappers.proto)
 were previously the only supported presence mechanism for proto3. Users have
 pointed to both efficiency and usability issues with the wrapper types.
 
 Presence in proto3 uses exactly the same syntax and semantics as in proto2.
 Proto3 Fields marked `optional` will track presence like proto2, while fields
 without any label (known as "singular fields"), will continue to omit presence
-information.  The `optional` keyword was chosen to minimize differences with
+information. The `optional` keyword was chosen to minimize differences with
 proto2.
 
 Unfortunately, for the current descriptor protos and `Descriptor` API (as of
@@ -94,14 +94,14 @@ message Foo {
 
 As a result, the main two goals when updating a code generator are:
 
-1. Give `optional` fields like `foo` normal field presence, as described in
-   [docs/field_presence](field_presence.md) If your implementation already
-   supports proto2, a proto3 `optional` field should use exactly the same API
-   and internal implementation as proto2 `optional`.
-2. Avoid generating any oneof-based accessors for the synthetic oneof. Its only
-   purpose is to make reflection-based algorithms work properly if they are
-   not aware of proto3 presence. The synthetic oneof should not appear anywhere
-   in the generated API.
+1.  Give `optional` fields like `foo` normal field presence, as described in
+    [docs/field_presence](field_presence.md) If your implementation already
+    supports proto2, a proto3 `optional` field should use exactly the same API
+    and internal implementation as proto2 `optional`.
+2.  Avoid generating any oneof-based accessors for the synthetic oneof. Its only
+    purpose is to make reflection-based algorithms work properly if they are not
+    aware of proto3 presence. The synthetic oneof should not appear anywhere in
+    the generated API.
 
 ### Satisfying the Experimental Check
 
@@ -122,10 +122,10 @@ test.proto: This file contains proto3 optional fields, but --experimental_allow_
 
 There are two options for getting around this error:
 
-1. Pass `--experimental_allow_proto3_optional` to protoc.
-2. Make your filename (or a directory name) contain the string
-   `test_proto3_optional`. This indicates that the proto file is specifically
-   for testing proto3 optional support, so the check is suppressed.
+1.  Pass `--experimental_allow_proto3_optional` to protoc.
+2.  Make your filename (or a directory name) contain the string
+    `test_proto3_optional`. This indicates that the proto file is specifically
+    for testing proto3 optional support, so the check is suppressed.
 
 These options are demonstrated below:
 
@@ -139,12 +139,12 @@ $ protoc test_proto3_optional.proto --cpp_out=.
 $
 ```
 
-The experimental check will be removed  in a future release, once we are ready
-to make this feature generally available. Ideally this will happen for the 3.13
+The experimental check will be removed in a future release, once we are ready to
+make this feature generally available. Ideally this will happen for the 3.13
 release of protobuf, sometime in mid-2020, but there is not a specific date set
 for this yet. Some of the timing will depend on feedback we get from the
-community, so if you have questions or concerns please get in touch via a
-GitHub issue.
+community, so if you have questions or concerns please get in touch via a GitHub
+issue.
 
 ### Signaling That Your Code Generator Supports Proto3 Optional
 
@@ -161,14 +161,13 @@ proto3. Please ask the owner of this code generator to support proto3 optional.
 This check exists to make sure that code generators get a chance to update
 before they are used with proto3 `optional` fields. Without this check an old
 code generator might emit obsolete generated APIs (like accessors for a
-synthetic oneof) and users could start depending on these. That would create
-a legacy migration burden once a code generator actually implements the feature.
+synthetic oneof) and users could start depending on these. That would create a
+legacy migration burden once a code generator actually implements the feature.
 
 To signal that your code generator supports `optional` fields in proto3, you
 need to tell `protoc` what features you support. The method for doing this
 depends on whether you are using the C++
-`google::protobuf::compiler::CodeGenerator`
-framework or not.
+`google::protobuf::compiler::CodeGenerator` framework or not.
 
 If you are using the CodeGenerator framework:
 
@@ -214,11 +213,12 @@ If your code generator does not currently support proto2, you will need to
 design an API and implementation for supporting presence in scalar fields.
 Generally this means:
 
-- allocating a bit inside the generated class to represent whether a given field
-  is present or not.
-- exposing a `has_foo()` method for each field to return the value of this bit.
-- make the parser set this bit when a value is parsed from the wire.
-- make the serializer test this bit to decide whether to serialize.
+-   allocating a bit inside the generated class to represent whether a given
+    field is present or not.
+-   exposing a `has_foo()` method for each field to return the value of this
+    bit.
+-   make the parser set this bit when a value is parsed from the wire.
+-   make the serializer test this bit to decide whether to serialize.
 
 If your code generator already supports proto2, then most of your work is
 already done. All you need to do is make sure that proto3 optional fields have
@@ -309,47 +309,47 @@ If your implementation offers reflection, there are a few other changes to make:
 The API for reflecting over fields and oneofs should make the following changes.
 These match the changes implemented in C++ reflection.
 
-1. Add a `FieldDescriptor::has_presence()` method returning `bool`
-   (adjusted to your language's naming convention).  This should return true
-   for all fields that have explicit presence, as documented in
-   [docs/field_presence](field_presence.md).  In particular, this includes
-   fields in a oneof, proto2 scalar fields, and proto3 `optional` fields.
-   This accessor will allow users to query what fields have presence without
-   thinking about the difference between proto2 and proto3.
-2. As a corollary of (1), please do *not* expose an accessor for the
-   `FieldDescriptorProto.proto3_optional` field. We want to avoid having
-   users implement any proto2/proto3-specific logic. Users should use the
-   `has_presence()` function instead.
-3. You may also wish to add a `FieldDescriptor::has_optional_keyword()` method
-   returning `bool`, which indicates whether the `optional` keyword is present.
-   Message fields will always return `true` for `has_presence()`, so this method
-   can allow a user to know whether the user wrote `optional` or not. It can
-   occasionally be useful to have this information, even though it does not
-   change the presence semantics of the field.
-4. If your reflection API may be used for a code generator, you may wish to
-   implement methods to help users tell the difference between real and
-   synthetic oneofs.  In particular:
-   - `OneofDescriptor::is_synthetic()`: returns true if this is a synthetic
-     oneof.
-   - `FieldDescriptor::real_containing_oneof()`: like `containing_oneof()`,
-     but returns `nullptr` if the oneof is synthetic.
-   - `Descriptor::real_oneof_decl_count()`: like `oneof_decl_count()`, but
-     returns the number of real oneofs only.
+1.  Add a `FieldDescriptor::has_presence()` method returning `bool` (adjusted to
+    your language's naming convention). This should return true for all fields
+    that have explicit presence, as documented in
+    [docs/field_presence](field_presence.md). In particular, this includes
+    fields in a oneof, proto2 scalar fields, and proto3 `optional` fields. This
+    accessor will allow users to query what fields have presence without
+    thinking about the difference between proto2 and proto3.
+2.  As a corollary of (1), please do *not* expose an accessor for the
+    `FieldDescriptorProto.proto3_optional` field. We want to avoid having users
+    implement any proto2/proto3-specific logic. Users should use the
+    `has_presence()` function instead.
+3.  You may also wish to add a `FieldDescriptor::has_optional_keyword()` method
+    returning `bool`, which indicates whether the `optional` keyword is present.
+    Message fields will always return `true` for `has_presence()`, so this
+    method can allow a user to know whether the user wrote `optional` or not. It
+    can occasionally be useful to have this information, even though it does not
+    change the presence semantics of the field.
+4.  If your reflection API may be used for a code generator, you may wish to
+    implement methods to help users tell the difference between real and
+    synthetic oneofs. In particular:
+    -   `OneofDescriptor::is_synthetic()`: returns true if this is a synthetic
+        oneof.
+    -   `FieldDescriptor::real_containing_oneof()`: like `containing_oneof()`,
+        but returns `nullptr` if the oneof is synthetic.
+    -   `Descriptor::real_oneof_decl_count()`: like `oneof_decl_count()`, but
+        returns the number of real oneofs only.
 
 ### Implementation Changes
 
-Proto3 `optional` fields and synthetic oneofs must work correctly when
-reflected on. Specifically:
+Proto3 `optional` fields and synthetic oneofs must work correctly when reflected
+on. Specifically:
 
-1. Reflection for synthetic oneofs should work properly. Even though synthetic
-   oneofs do not really exist in the message, you can still make reflection work
-   as if they did. In particular, you can make a method like
-   `Reflection::HasOneof()` or `Reflection::GetOneofFieldDescriptor()` look at
-   the hasbit to determine if the oneof is present or not.
-2. Reflection for proto3 optional fields should work properly. For example, a
-   method like `Reflection::HasField()` should know to look for the hasbit for a
-   proto3 `optional` field. It should not be fooled by the synthetic oneof into
-   thinking that there is a `case` member for the oneof.
+1.  Reflection for synthetic oneofs should work properly. Even though synthetic
+    oneofs do not really exist in the message, you can still make reflection
+    work as if they did. In particular, you can make a method like
+    `Reflection::HasOneof()` or `Reflection::GetOneofFieldDescriptor()` look at
+    the hasbit to determine if the oneof is present or not.
+2.  Reflection for proto3 optional fields should work properly. For example, a
+    method like `Reflection::HasField()` should know to look for the hasbit for
+    a proto3 `optional` field. It should not be fooled by the synthetic oneof
+    into thinking that there is a `case` member for the oneof.
 
 Once you have updated reflection to work properly with proto3 `optional` and
 synthetic oneofs, any code that *uses* your reflection interface should work
@@ -367,8 +367,8 @@ serializer, if you have one.
 
 ### Validating Descriptors
 
-If your reflection implementation supports loading descriptors at runtime,
-you must verify that all synthetic oneofs are ordered after all "real" oneofs.
+If your reflection implementation supports loading descriptors at runtime, you
+must verify that all synthetic oneofs are ordered after all "real" oneofs.
 
 Here is the code that implements this validation step in C++, for inspiration:
 

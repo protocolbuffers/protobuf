@@ -79,7 +79,7 @@ class ExtensionRange extends \Google\Protobuf\Internal\Message
      * @param int $var
      * @return $this
      */
-    public function setStart($var)
+    public function setStart(int $var)
     {
         GPBUtil::checkInt32($var);
         $this->start = $var;
@@ -115,7 +115,7 @@ class ExtensionRange extends \Google\Protobuf\Internal\Message
      * @param int $var
      * @return $this
      */
-    public function setEnd($var)
+    public function setEnd(int $var)
     {
         GPBUtil::checkInt32($var);
         $this->end = $var;
@@ -147,9 +147,8 @@ class ExtensionRange extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\ExtensionRangeOptions $var
      * @return $this
      */
-    public function setOptions($var)
+    public function setOptions(\Google\Protobuf\Internal\ExtensionRangeOptions|null $var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\ExtensionRangeOptions::class);
         $this->options = $var;
 
         return $this;

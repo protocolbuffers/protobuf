@@ -340,49 +340,61 @@ void ValidateSingleFeatureLifetimes(
     results.errors.emplace_back(std::move(error_message));
   } else if (feature_support.has_edition_deprecated() &&
              edition >= feature_support.edition_deprecated()) {
-    std::string error_message = absl::Substitute(
+    std::string warning_message = absl::Substitute(
         "$0 has been deprecated in edition "
         "$1: $2",
         full_name, feature_support.edition_deprecated(),
         feature_support.deprecation_warning());
-    results.warnings.emplace_back(std::move(error_message));
+    results.warnings.emplace_back(std::move(warning_message));
   }
 }
 
 void ValidateFeatureLifetimesImpl(Edition edition, const Message& message,
-                                  FeatureResolver::ValidationResults& results,
-                                  bool is_feature) {
+                                  FeatureResolver::ValidationResults& results) {
   std::vector<const FieldDescriptor*> fields;
   message.GetReflection()->ListFields(message, &fields);
   for (const FieldDescriptor* field : fields) {
-    // TODO: Support repeated option enum values and custom options
-    // feature support
-    if (is_feature) {
-      // Recurse into message extension.
-      if (field->is_extension() &&
-          field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+    const Reflection* reflector = message.GetReflection();
+    // Recurse into all Messages to be validated
+    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      // Recursing into repeated Messages
+      if (field->is_repeated()) {
+        for (int index = 0; index < reflector->FieldSize(message, field);
+             index++) {
+          ValidateFeatureLifetimesImpl(
+              edition, reflector->GetRepeatedMessage(message, field, index),
+              results);
+        }
+      } else {
         ValidateFeatureLifetimesImpl(
-            edition, message.GetReflection()->GetMessage(message, field),
-            results, is_feature);
-        continue;
+            edition, reflector->GetMessage(message, field), results);
       }
-
-      if (field->enum_type() != nullptr) {
-        int number = message.GetReflection()->GetEnumValue(message, field);
+    }
+    // Validating ENUM value
+    if (field->enum_type() != nullptr) {
+      // Handling repeated enum values. Ex: OptionTargetType option
+      if (field->is_repeated()) {
+        for (int index = 0; index < reflector->FieldSize(message, field);
+             index++) {
+          int number = reflector->GetRepeatedEnumValue(message, field, index);
+          auto value = field->enum_type()->FindValueByNumber(number);
+          if (value == nullptr) {
+            continue;
+          }
+          ValidateSingleFeatureLifetimes(edition, value->full_name(),
+                                         value->options().feature_support(),
+                                         results);
+        }
+      } else {
+        int number = reflector->GetEnumValue(message, field);
         auto value = field->enum_type()->FindValueByNumber(number);
         if (value == nullptr) {
-          results.errors.emplace_back(absl::StrCat(
-              "Feature ", field->full_name(), " has no known value ", number));
           continue;
         }
         ValidateSingleFeatureLifetimes(edition, value->full_name(),
                                        value->options().feature_support(),
                                        results);
       }
-    }
-    // TODO: Support custom options
-    if (field->is_extension()) {
-      continue;
     }
     ValidateSingleFeatureLifetimes(edition, field->full_name(),
                                    field->options().feature_support(), results);
@@ -521,10 +533,7 @@ FeatureResolver::ValidationResults FeatureResolver::ValidateFeatureLifetimes(
   const Message* pool_option = nullptr;
   DynamicMessageFactory factory;
   std::unique_ptr<Message> message_storage;
-  bool is_feature =
-      option.GetDescriptor()->name() == FeatureSet::descriptor()->name();
-  // TODO: Support custom options
-  if (pool_descriptor != nullptr && is_feature) {
+  if (pool_descriptor != nullptr) {
     // Move the messages back to the current pool so that we can reflect on
     // any extensions.
     message_storage =
@@ -543,7 +552,7 @@ FeatureResolver::ValidationResults FeatureResolver::ValidateFeatureLifetimes(
 
   ValidationResults results;
   // Validate feature support
-  ValidateFeatureLifetimesImpl(edition, *pool_option, results, is_feature);
+  ValidateFeatureLifetimesImpl(edition, *pool_option, results);
 
   return results;
 }

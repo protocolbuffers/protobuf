@@ -988,6 +988,12 @@ public class TextFormatTest {
         .isEqualTo(bytes("\0\001\007\b\f\n\r\t\013\\\'\""));
     assertThat(TextFormat.unescapeText("\\000\\001\\a\\b\\f\\n\\r\\t\\v\\\\\\'\\\""))
         .isEqualTo("\0\001\007\b\f\n\r\t\013\\\'\"");
+
+    String quotesAndBackslashOnly = "\\\"\'\\";
+    assertThat(TextFormat.escapeText(quotesAndBackslashOnly)).isEqualTo("\\\\\\\"\\\'\\\\");
+    assertThat(TextFormat.unescapeText(TextFormat.escapeText(quotesAndBackslashOnly)))
+        .isEqualTo(quotesAndBackslashOnly);
+
     assertThat(TextFormat.escapeText(ESCAPE_TEST_STRING)).isEqualTo(ESCAPE_TEST_STRING_ESCAPED);
     assertThat(TextFormat.unescapeText(ESCAPE_TEST_STRING_ESCAPED)).isEqualTo(ESCAPE_TEST_STRING);
 
