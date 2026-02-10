@@ -1366,7 +1366,9 @@ class FileGenerator::ForwardDeclarations {
             class $class$;
             struct $globals_type$;
             $dllexport_decl $extern $globals_type$ $globals_name$;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
             $dllexport_decl $extern const $pbi$::$classdata_type$ $class$_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
           )cc");
     }
 
@@ -1418,10 +1420,16 @@ class FileGenerator::ForwardDeclarations {
         // The fallback traits are slower, but correct.
         if (options.dllexport_decl.empty()) {
           p->Emit(R"cc(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
             template <>
             internal::GeneratedMessageTraitsT<&$default_name$,
                                               &$class$_class_data_>
                 internal::MessageTraitsImpl::value<$class$>;
+#else
+            template <>
+            internal::GeneratedMessageTraitsFromGlobalsT<&$default_name$>
+                internal::MessageTraitsImpl::value<$class$>;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
           )cc");
         }
       }
