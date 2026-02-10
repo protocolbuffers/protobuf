@@ -328,7 +328,18 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
               )cc");
             }
           }},
-         {"class_data", [&] { p->Emit("$classname$_class_data_.base(),\n"); }},
+         {"class_data",
+          [&] {
+            p->Emit(
+                {{"globals", MsgGlobalsInstanceName(descriptor_, options_)}},
+                R"cc(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+                  $classname$_class_data_.base(),
+#else
+                  $globals$.class_data.base(),
+#endif
+                )cc");
+          }},
          {"post_loop_handler",
           [&] {
             if (NeedsPostLoopHandler(descriptor_, options_)) {
@@ -387,6 +398,17 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
           break;
         case TailCallTableInfo::kSplitSizeof:
           p->Emit("{_fl::Offset{sizeof($classname$::Impl_::Split)}},\n");
+          break;
+        case TailCallTableInfo::kSubMessageGlobals:
+          p->Emit({{"name", QualifiedMsgGlobalsInstanceName(
+                                aux_entry.field->message_type(), options_)}},
+                  R"cc(
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+                    {::_pbi::FieldAuxMessageGlobals{}, &$name$},
+#else
+                    {::_pbi::FieldAuxDefaultMessage{}, &$name$},
+#endif
+                  )cc");
           break;
         case TailCallTableInfo::kSubMessage:
           p->Emit({{"name", QualifiedMsgGlobalsInstanceName(

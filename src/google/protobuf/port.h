@@ -46,6 +46,8 @@
 #define PROTOBUF_MESSAGE_GLOBALS
 #endif  // PROTOBUF_ENABLE_STABLE_EXPERIMENTS
 
+// #define PROTOBUF_MESSAGE_GLOBALS
+
 namespace google {
 namespace protobuf {
 

@@ -329,7 +329,7 @@ class MapSorterPtr {
 };
 
 struct WeakDescriptorDefaultTail {
-  const Message** target;
+  const MessageGlobalsBase** target;
   size_t size;
 };
 
@@ -415,6 +415,10 @@ struct PrivateAccess {
   template <typename T>
   static void TrackerOnGetMetadata() {
     T::Impl_::TrackerOnGetMetadata();
+  }
+  template <typename T>
+  static constexpr internal::MessageCreator GetNewImpl() {
+    return MessageLite::GetNewImpl<T>();
   }
 };
 

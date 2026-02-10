@@ -2681,9 +2681,16 @@ inline const TcParseTableBase* TcParser::GetTableFromAux(
     return aux.table;
   }
   ABSL_DCHECK(tv == field_layout::kTvDefault || tv == field_layout::kTvWeakPtr);
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   const MessageLite* prototype = tv == field_layout::kTvDefault
                                      ? aux.message_default()
                                      : aux.message_default_weak();
+#else
+  const MessageLite* prototype =
+      tv == field_layout::kTvDefault
+          ? aux.message_default()
+          : MessageGlobalsBase::ToDefaultInstance(aux.message_globals_weak());
+#endif
   return prototype->GetTcParseTable();
 }
 

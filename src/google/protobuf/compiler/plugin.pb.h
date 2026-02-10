@@ -69,19 +69,27 @@ PROTOC_EXPORT extern const uint32_t CodeGeneratorResponse_Feature_internal_data_
 class CodeGeneratorRequest;
 struct CodeGeneratorRequestGlobalsTypeInternal;
 PROTOC_EXPORT extern CodeGeneratorRequestGlobalsTypeInternal _CodeGeneratorRequest_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorRequest_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class CodeGeneratorResponse;
 struct CodeGeneratorResponseGlobalsTypeInternal;
 PROTOC_EXPORT extern CodeGeneratorResponseGlobalsTypeInternal _CodeGeneratorResponse_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class CodeGeneratorResponse_File;
 struct CodeGeneratorResponse_FileGlobalsTypeInternal;
 PROTOC_EXPORT extern CodeGeneratorResponse_FileGlobalsTypeInternal _CodeGeneratorResponse_File_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_File_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class Version;
 struct VersionGlobalsTypeInternal;
 PROTOC_EXPORT extern VersionGlobalsTypeInternal _Version_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull Version_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace compiler
 template <>
 internal::EnumTraitsT<::google::protobuf::compiler::CodeGeneratorResponse_Feature_internal_data_>
@@ -190,7 +198,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Version& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Version>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Version>(
         &_Version_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
@@ -276,7 +284,9 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -353,6 +363,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend VersionGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -378,8 +389,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
-
-PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull Version_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse_File final : public ::google::protobuf::Message
@@ -435,7 +444,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const CodeGeneratorResponse_File& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<CodeGeneratorResponse_File>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<CodeGeneratorResponse_File>(
         &_CodeGeneratorResponse_File_globals_);
   }
   static constexpr int kIndexInFileMessages = 2;
@@ -521,7 +530,9 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -612,6 +623,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend CodeGeneratorResponse_FileGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -637,8 +649,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
-
-PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_File_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse final : public ::google::protobuf::Message
@@ -694,7 +704,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const CodeGeneratorResponse& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<CodeGeneratorResponse>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<CodeGeneratorResponse>(
         &_CodeGeneratorResponse_globals_);
   }
   static constexpr int kIndexInFileMessages = 3;
@@ -780,7 +790,9 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -900,6 +912,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend CodeGeneratorResponseGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -926,8 +939,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
-
-PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest final : public ::google::protobuf::Message
@@ -983,7 +994,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const CodeGeneratorRequest& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<CodeGeneratorRequest>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<CodeGeneratorRequest>(
         &_CodeGeneratorRequest_globals_);
   }
   static constexpr int kIndexInFileMessages = 1;
@@ -1074,7 +1085,9 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1197,6 +1210,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend CodeGeneratorRequestGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -1223,8 +1237,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
-
-PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorRequest_class_data_;
 
 // ===================================================================
 
@@ -1659,7 +1671,7 @@ inline void CodeGeneratorRequest::clear_compiler_version() {
 inline const ::google::protobuf::compiler::Version& CodeGeneratorRequest::_internal_compiler_version() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::compiler::Version* p = _impl_.compiler_version_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::compiler::Version>(&::google::protobuf::compiler::_Version_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::compiler::Version>(&::google::protobuf::compiler::_Version_globals_);
 }
 inline const ::google::protobuf::compiler::Version& CodeGeneratorRequest::compiler_version() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
@@ -1963,7 +1975,7 @@ inline bool CodeGeneratorResponse_File::has_generated_code_info() const {
 inline const ::google::protobuf::GeneratedCodeInfo& CodeGeneratorResponse_File::_internal_generated_code_info() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::GeneratedCodeInfo* p = _impl_.generated_code_info_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::GeneratedCodeInfo>(&::google::protobuf::_GeneratedCodeInfo_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::GeneratedCodeInfo>(&::google::protobuf::_GeneratedCodeInfo_globals_);
 }
 inline const ::google::protobuf::GeneratedCodeInfo& CodeGeneratorResponse_File::generated_code_info() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)

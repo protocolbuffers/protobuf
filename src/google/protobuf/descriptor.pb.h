@@ -100,139 +100,207 @@ PROTOBUF_EXPORT extern const uint32_t SymbolVisibility_internal_data_[];
 class DescriptorProto;
 struct DescriptorProtoGlobalsTypeInternal;
 PROTOBUF_EXPORT extern DescriptorProtoGlobalsTypeInternal _DescriptorProto_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DescriptorProto_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class DescriptorProto_ExtensionRange;
 struct DescriptorProto_ExtensionRangeGlobalsTypeInternal;
 PROTOBUF_EXPORT extern DescriptorProto_ExtensionRangeGlobalsTypeInternal _DescriptorProto_ExtensionRange_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DescriptorProto_ExtensionRange_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class DescriptorProto_ReservedRange;
 struct DescriptorProto_ReservedRangeGlobalsTypeInternal;
 PROTOBUF_EXPORT extern DescriptorProto_ReservedRangeGlobalsTypeInternal _DescriptorProto_ReservedRange_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DescriptorProto_ReservedRange_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class EnumDescriptorProto;
 struct EnumDescriptorProtoGlobalsTypeInternal;
 PROTOBUF_EXPORT extern EnumDescriptorProtoGlobalsTypeInternal _EnumDescriptorProto_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumDescriptorProto_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class EnumDescriptorProto_EnumReservedRange;
 struct EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal;
 PROTOBUF_EXPORT extern EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal _EnumDescriptorProto_EnumReservedRange_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumDescriptorProto_EnumReservedRange_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class EnumOptions;
 struct EnumOptionsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern EnumOptionsGlobalsTypeInternal _EnumOptions_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumOptions_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class EnumValueDescriptorProto;
 struct EnumValueDescriptorProtoGlobalsTypeInternal;
 PROTOBUF_EXPORT extern EnumValueDescriptorProtoGlobalsTypeInternal _EnumValueDescriptorProto_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValueDescriptorProto_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class EnumValueOptions;
 struct EnumValueOptionsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern EnumValueOptionsGlobalsTypeInternal _EnumValueOptions_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValueOptions_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class ExtensionRangeOptions;
 struct ExtensionRangeOptionsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern ExtensionRangeOptionsGlobalsTypeInternal _ExtensionRangeOptions_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ExtensionRangeOptions_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class ExtensionRangeOptions_Declaration;
 struct ExtensionRangeOptions_DeclarationGlobalsTypeInternal;
 PROTOBUF_EXPORT extern ExtensionRangeOptions_DeclarationGlobalsTypeInternal _ExtensionRangeOptions_Declaration_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ExtensionRangeOptions_Declaration_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FeatureSet;
 struct FeatureSetGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FeatureSetGlobalsTypeInternal _FeatureSet_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSet_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FeatureSetDefaults;
 struct FeatureSetDefaultsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FeatureSetDefaultsGlobalsTypeInternal _FeatureSetDefaults_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSetDefaults_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FeatureSetDefaults_FeatureSetEditionDefault;
 struct FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal _FeatureSetDefaults_FeatureSetEditionDefault_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSetDefaults_FeatureSetEditionDefault_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FeatureSet_VisibilityFeature;
 struct FeatureSet_VisibilityFeatureGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FeatureSet_VisibilityFeatureGlobalsTypeInternal _FeatureSet_VisibilityFeature_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSet_VisibilityFeature_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FieldDescriptorProto;
 struct FieldDescriptorProtoGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FieldDescriptorProtoGlobalsTypeInternal _FieldDescriptorProto_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldDescriptorProto_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FieldOptions;
 struct FieldOptionsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FieldOptionsGlobalsTypeInternal _FieldOptions_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldOptions_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FieldOptions_EditionDefault;
 struct FieldOptions_EditionDefaultGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FieldOptions_EditionDefaultGlobalsTypeInternal _FieldOptions_EditionDefault_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldOptions_EditionDefault_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FieldOptions_FeatureSupport;
 struct FieldOptions_FeatureSupportGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FieldOptions_FeatureSupportGlobalsTypeInternal _FieldOptions_FeatureSupport_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldOptions_FeatureSupport_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FileDescriptorProto;
 struct FileDescriptorProtoGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FileDescriptorProtoGlobalsTypeInternal _FileDescriptorProto_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FileDescriptorProto_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FileDescriptorSet;
 struct FileDescriptorSetGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FileDescriptorSetGlobalsTypeInternal _FileDescriptorSet_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FileDescriptorSet_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FileOptions;
 struct FileOptionsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FileOptionsGlobalsTypeInternal _FileOptions_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FileOptions_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class GeneratedCodeInfo;
 struct GeneratedCodeInfoGlobalsTypeInternal;
 PROTOBUF_EXPORT extern GeneratedCodeInfoGlobalsTypeInternal _GeneratedCodeInfo_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull GeneratedCodeInfo_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class GeneratedCodeInfo_Annotation;
 struct GeneratedCodeInfo_AnnotationGlobalsTypeInternal;
 PROTOBUF_EXPORT extern GeneratedCodeInfo_AnnotationGlobalsTypeInternal _GeneratedCodeInfo_Annotation_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull GeneratedCodeInfo_Annotation_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class MessageOptions;
 struct MessageOptionsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern MessageOptionsGlobalsTypeInternal _MessageOptions_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull MessageOptions_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class MethodDescriptorProto;
 struct MethodDescriptorProtoGlobalsTypeInternal;
 PROTOBUF_EXPORT extern MethodDescriptorProtoGlobalsTypeInternal _MethodDescriptorProto_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull MethodDescriptorProto_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class MethodOptions;
 struct MethodOptionsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern MethodOptionsGlobalsTypeInternal _MethodOptions_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull MethodOptions_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class OneofDescriptorProto;
 struct OneofDescriptorProtoGlobalsTypeInternal;
 PROTOBUF_EXPORT extern OneofDescriptorProtoGlobalsTypeInternal _OneofDescriptorProto_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull OneofDescriptorProto_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class OneofOptions;
 struct OneofOptionsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern OneofOptionsGlobalsTypeInternal _OneofOptions_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull OneofOptions_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class ServiceDescriptorProto;
 struct ServiceDescriptorProtoGlobalsTypeInternal;
 PROTOBUF_EXPORT extern ServiceDescriptorProtoGlobalsTypeInternal _ServiceDescriptorProto_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ServiceDescriptorProto_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class ServiceOptions;
 struct ServiceOptionsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern ServiceOptionsGlobalsTypeInternal _ServiceOptions_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ServiceOptions_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class SourceCodeInfo;
 struct SourceCodeInfoGlobalsTypeInternal;
 PROTOBUF_EXPORT extern SourceCodeInfoGlobalsTypeInternal _SourceCodeInfo_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceCodeInfo_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class SourceCodeInfo_Location;
 struct SourceCodeInfo_LocationGlobalsTypeInternal;
 PROTOBUF_EXPORT extern SourceCodeInfo_LocationGlobalsTypeInternal _SourceCodeInfo_Location_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceCodeInfo_Location_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class UninterpretedOption;
 struct UninterpretedOptionGlobalsTypeInternal;
 PROTOBUF_EXPORT extern UninterpretedOptionGlobalsTypeInternal _UninterpretedOption_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UninterpretedOption_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class UninterpretedOption_NamePart;
 struct UninterpretedOption_NamePartGlobalsTypeInternal;
 PROTOBUF_EXPORT extern UninterpretedOption_NamePartGlobalsTypeInternal _UninterpretedOption_NamePart_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UninterpretedOption_NamePart_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 template <>
 internal::EnumTraitsT<::google::protobuf::Edition_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::Edition>;
@@ -1132,7 +1200,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const UninterpretedOption_NamePart& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<UninterpretedOption_NamePart>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<UninterpretedOption_NamePart>(
         &_UninterpretedOption_NamePart_globals_);
   }
   static constexpr int kIndexInFileMessages = 24;
@@ -1223,7 +1291,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1274,6 +1344,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend UninterpretedOption_NamePartGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -1297,8 +1368,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UninterpretedOption_NamePart_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Location final : public ::google::protobuf::Message
@@ -1354,7 +1423,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const SourceCodeInfo_Location& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<SourceCodeInfo_Location>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<SourceCodeInfo_Location>(
         &_SourceCodeInfo_Location_globals_);
   }
   static constexpr int kIndexInFileMessages = 30;
@@ -1440,7 +1509,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1562,6 +1633,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend SourceCodeInfo_LocationGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -1590,8 +1662,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceCodeInfo_Location_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_Annotation final : public ::google::protobuf::Message
@@ -1647,7 +1717,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const GeneratedCodeInfo_Annotation& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<GeneratedCodeInfo_Annotation>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<GeneratedCodeInfo_Annotation>(
         &_GeneratedCodeInfo_Annotation_globals_);
   }
   static constexpr int kIndexInFileMessages = 32;
@@ -1733,7 +1803,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1851,6 +1923,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend GeneratedCodeInfo_AnnotationGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -1878,8 +1951,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull GeneratedCodeInfo_Annotation_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_FeatureSupport final : public ::google::protobuf::Message
@@ -1935,7 +2006,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FieldOptions_FeatureSupport& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FieldOptions_FeatureSupport>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FieldOptions_FeatureSupport>(
         &_FieldOptions_FeatureSupport_globals_);
   }
   static constexpr int kIndexInFileMessages = 17;
@@ -2021,7 +2092,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -2116,6 +2189,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend FieldOptions_FeatureSupportGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -2142,8 +2216,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldOptions_FeatureSupport_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_EditionDefault final : public ::google::protobuf::Message
@@ -2199,7 +2271,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FieldOptions_EditionDefault& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FieldOptions_EditionDefault>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FieldOptions_EditionDefault>(
         &_FieldOptions_EditionDefault_globals_);
   }
   static constexpr int kIndexInFileMessages = 16;
@@ -2285,7 +2357,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -2336,6 +2410,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend FieldOptions_EditionDefaultGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -2359,8 +2434,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldOptions_EditionDefault_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_VisibilityFeature final : public ::google::protobuf::internal::ZeroFieldsBase
@@ -2415,7 +2488,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_Visibili
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FeatureSet_VisibilityFeature& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FeatureSet_VisibilityFeature>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FeatureSet_VisibilityFeature>(
         &_FeatureSet_VisibilityFeature_globals_);
   }
   static constexpr int kIndexInFileMessages = 26;
@@ -2472,7 +2545,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_Visibili
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -2513,14 +2588,13 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_Visibili
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend FeatureSet_VisibilityFeatureGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSet_VisibilityFeature_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : public ::google::protobuf::Message
@@ -2576,7 +2650,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FeatureSet& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FeatureSet>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FeatureSet>(
         &_FeatureSet_globals_);
   }
   static constexpr int kIndexInFileMessages = 27;
@@ -2667,7 +2741,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -3130,6 +3206,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend FeatureSetGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -3160,8 +3237,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSet_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptions_Declaration final : public ::google::protobuf::Message
@@ -3217,7 +3292,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const ExtensionRangeOptions_Declaration& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<ExtensionRangeOptions_Declaration>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<ExtensionRangeOptions_Declaration>(
         &_ExtensionRangeOptions_Declaration_globals_);
   }
   static constexpr int kIndexInFileMessages = 5;
@@ -3303,7 +3378,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -3398,6 +3475,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend ExtensionRangeOptions_DeclarationGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -3424,8 +3502,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ExtensionRangeOptions_Declaration_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto_EnumReservedRange final : public ::google::protobuf::Message
@@ -3481,7 +3557,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const EnumDescriptorProto_EnumReservedRange& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<EnumDescriptorProto_EnumReservedRange>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<EnumDescriptorProto_EnumReservedRange>(
         &_EnumDescriptorProto_EnumReservedRange_globals_);
   }
   static constexpr int kIndexInFileMessages = 9;
@@ -3567,7 +3643,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -3613,6 +3691,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -3636,8 +3715,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumDescriptorProto_EnumReservedRange_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_ReservedRange final : public ::google::protobuf::Message
@@ -3693,7 +3770,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Res
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const DescriptorProto_ReservedRange& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<DescriptorProto_ReservedRange>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<DescriptorProto_ReservedRange>(
         &_DescriptorProto_ReservedRange_globals_);
   }
   static constexpr int kIndexInFileMessages = 3;
@@ -3779,7 +3856,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Res
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -3825,6 +3904,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Res
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend DescriptorProto_ReservedRangeGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -3848,8 +3928,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Res
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DescriptorProto_ReservedRange_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption final : public ::google::protobuf::Message
@@ -3905,7 +3983,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const UninterpretedOption& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<UninterpretedOption>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<UninterpretedOption>(
         &_UninterpretedOption_globals_);
   }
   static constexpr int kIndexInFileMessages = 25;
@@ -3996,7 +4074,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -4131,6 +4211,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend UninterpretedOptionGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -4159,8 +4240,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UninterpretedOption_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo final : public ::google::protobuf::Message
@@ -4216,7 +4295,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const SourceCodeInfo& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<SourceCodeInfo>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<SourceCodeInfo>(
         &_SourceCodeInfo_globals_);
   }
   static constexpr int kIndexInFileMessages = 31;
@@ -4307,7 +4386,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -4539,6 +4620,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend SourceCodeInfoGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -4562,8 +4644,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceCodeInfo_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo final : public ::google::protobuf::Message
@@ -4619,7 +4699,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const GeneratedCodeInfo& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<GeneratedCodeInfo>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<GeneratedCodeInfo>(
         &_GeneratedCodeInfo_globals_);
   }
   static constexpr int kIndexInFileMessages = 33;
@@ -4705,7 +4785,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -4747,6 +4829,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend GeneratedCodeInfoGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -4769,8 +4852,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull GeneratedCodeInfo_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_FeatureSetEditionDefault final : public ::google::protobuf::Message
@@ -4826,7 +4907,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FeatureSetDefaults_FeatureSetEditionDefault& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FeatureSetDefaults_FeatureSetEditionDefault>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FeatureSetDefaults_FeatureSetEditionDefault>(
         &_FeatureSetDefaults_FeatureSetEditionDefault_globals_);
   }
   static constexpr int kIndexInFileMessages = 28;
@@ -4917,7 +4998,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -4984,6 +5067,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -5008,8 +5092,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSetDefaults_FeatureSetEditionDefault_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions final : public ::google::protobuf::Message
@@ -5065,7 +5147,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const ServiceOptions& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<ServiceOptions>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<ServiceOptions>(
         &_ServiceOptions_globals_);
   }
   static constexpr int kIndexInFileMessages = 22;
@@ -5156,7 +5238,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -5417,6 +5501,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend ServiceOptionsGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -5442,8 +5527,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ServiceOptions_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final : public ::google::protobuf::Message
@@ -5499,7 +5582,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const OneofOptions& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<OneofOptions>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<OneofOptions>(
         &_OneofOptions_globals_);
   }
   static constexpr int kIndexInFileMessages = 19;
@@ -5590,7 +5673,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -5838,6 +5923,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend OneofOptionsGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -5862,8 +5948,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull OneofOptions_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final : public ::google::protobuf::Message
@@ -5919,7 +6003,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const MethodOptions& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<MethodOptions>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<MethodOptions>(
         &_MethodOptions_globals_);
   }
   static constexpr int kIndexInFileMessages = 23;
@@ -6010,7 +6094,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -6305,6 +6391,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend MethodOptionsGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -6331,8 +6418,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull MethodOptions_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions final : public ::google::protobuf::Message
@@ -6388,7 +6473,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const MessageOptions& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<MessageOptions>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<MessageOptions>(
         &_MessageOptions_globals_);
   }
   static constexpr int kIndexInFileMessages = 15;
@@ -6479,7 +6564,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -6792,6 +6879,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend MessageOptionsGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -6821,8 +6909,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull MessageOptions_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final : public ::google::protobuf::Message
@@ -6878,7 +6964,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FileOptions& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FileOptions>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FileOptions>(
         &_FileOptions_globals_);
   }
   static constexpr int kIndexInFileMessages = 14;
@@ -6969,7 +7055,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -7535,6 +7623,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend FileOptionsGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -7578,8 +7667,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FileOptions_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final : public ::google::protobuf::Message
@@ -7635,7 +7722,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FieldOptions& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FieldOptions>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FieldOptions>(
         &_FieldOptions_globals_);
   }
   static constexpr int kIndexInFileMessages = 18;
@@ -7726,7 +7813,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -8243,6 +8332,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend FieldOptionsGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -8279,8 +8369,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldOptions_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults final : public ::google::protobuf::Message
@@ -8336,7 +8424,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FeatureSetDefaults& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FeatureSetDefaults>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FeatureSetDefaults>(
         &_FeatureSetDefaults_globals_);
   }
   static constexpr int kIndexInFileMessages = 29;
@@ -8427,7 +8515,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -8495,6 +8585,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend FeatureSetDefaultsGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -8519,8 +8610,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSetDefaults_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptions final : public ::google::protobuf::Message
@@ -8576,7 +8665,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const ExtensionRangeOptions& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<ExtensionRangeOptions>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<ExtensionRangeOptions>(
         &_ExtensionRangeOptions_globals_);
   }
   static constexpr int kIndexInFileMessages = 6;
@@ -8667,7 +8756,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -8970,6 +9061,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend ExtensionRangeOptionsGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -8996,8 +9088,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ExtensionRangeOptions_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions final : public ::google::protobuf::Message
@@ -9053,7 +9143,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const EnumValueOptions& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<EnumValueOptions>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<EnumValueOptions>(
         &_EnumValueOptions_globals_);
   }
   static constexpr int kIndexInFileMessages = 21;
@@ -9144,7 +9234,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -9435,6 +9527,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend EnumValueOptionsGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -9462,8 +9555,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValueOptions_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final : public ::google::protobuf::Message
@@ -9519,7 +9610,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const EnumOptions& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<EnumOptions>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<EnumOptions>(
         &_EnumOptions_globals_);
   }
   static constexpr int kIndexInFileMessages = 20;
@@ -9610,7 +9701,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -9897,6 +9990,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend EnumOptionsGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -9924,8 +10018,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumOptions_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProto final : public ::google::protobuf::Message
@@ -9981,7 +10073,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const OneofDescriptorProto& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<OneofDescriptorProto>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<OneofDescriptorProto>(
         &_OneofDescriptorProto_globals_);
   }
   static constexpr int kIndexInFileMessages = 8;
@@ -10072,7 +10164,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -10127,6 +10221,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend OneofDescriptorProtoGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -10150,8 +10245,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull OneofDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorProto final : public ::google::protobuf::Message
@@ -10207,7 +10300,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const MethodDescriptorProto& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<MethodDescriptorProto>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<MethodDescriptorProto>(
         &_MethodDescriptorProto_globals_);
   }
   static constexpr int kIndexInFileMessages = 13;
@@ -10298,7 +10391,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -10415,6 +10510,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend MethodDescriptorProtoGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -10442,8 +10538,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull MethodDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProto final : public ::google::protobuf::Message
@@ -10499,7 +10593,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FieldDescriptorProto& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FieldDescriptorProto>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FieldDescriptorProto>(
         &_FieldDescriptorProto_globals_);
   }
   static constexpr int kIndexInFileMessages = 7;
@@ -10590,7 +10684,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -10839,6 +10935,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend FieldDescriptorProtoGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -10871,8 +10968,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptorProto final : public ::google::protobuf::Message
@@ -10928,7 +11023,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const EnumValueDescriptorProto& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<EnumValueDescriptorProto>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<EnumValueDescriptorProto>(
         &_EnumValueDescriptorProto_globals_);
   }
   static constexpr int kIndexInFileMessages = 11;
@@ -11019,7 +11114,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -11087,6 +11184,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend EnumValueDescriptorProtoGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -11111,8 +11209,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValueDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_ExtensionRange final : public ::google::protobuf::Message
@@ -11168,7 +11264,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const DescriptorProto_ExtensionRange& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<DescriptorProto_ExtensionRange>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<DescriptorProto_ExtensionRange>(
         &_DescriptorProto_ExtensionRange_globals_);
   }
   static constexpr int kIndexInFileMessages = 2;
@@ -11259,7 +11355,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -11322,6 +11420,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend DescriptorProto_ExtensionRangeGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -11346,8 +11445,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DescriptorProto_ExtensionRange_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorProto final : public ::google::protobuf::Message
@@ -11403,7 +11500,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const ServiceDescriptorProto& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<ServiceDescriptorProto>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<ServiceDescriptorProto>(
         &_ServiceDescriptorProto_globals_);
   }
   static constexpr int kIndexInFileMessages = 12;
@@ -11494,7 +11591,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -11570,6 +11669,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend ServiceDescriptorProtoGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -11594,8 +11694,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ServiceDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto final : public ::google::protobuf::Message
@@ -11651,7 +11749,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const EnumDescriptorProto& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<EnumDescriptorProto>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<EnumDescriptorProto>(
         &_EnumDescriptorProto_globals_);
   }
   static constexpr int kIndexInFileMessages = 10;
@@ -11742,7 +11840,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -11879,6 +11979,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend EnumDescriptorProtoGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -11906,8 +12007,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto final : public ::google::protobuf::Message
@@ -11963,7 +12062,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const DescriptorProto& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<DescriptorProto>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<DescriptorProto>(
         &_DescriptorProto_globals_);
   }
   static constexpr int kIndexInFileMessages = 4;
@@ -12054,7 +12153,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -12297,6 +12398,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend DescriptorProtoGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -12329,8 +12431,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto final : public ::google::protobuf::Message
@@ -12386,7 +12486,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FileDescriptorProto& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FileDescriptorProto>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FileDescriptorProto>(
         &_FileDescriptorProto_globals_);
   }
   static constexpr int kIndexInFileMessages = 1;
@@ -12477,7 +12577,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -12774,6 +12876,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend FileDescriptorProtoGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -12809,8 +12912,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FileDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet final : public ::google::protobuf::Message
@@ -12866,7 +12967,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FileDescriptorSet& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FileDescriptorSet>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FileDescriptorSet>(
         &_FileDescriptorSet_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
@@ -12957,7 +13058,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -13188,6 +13291,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend FileDescriptorSetGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -13211,8 +13315,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FileDescriptorSet_class_data_;
 
 // ===================================================================
 
@@ -13915,7 +14017,7 @@ inline void FileDescriptorProto::clear_options() {
 inline const ::google::protobuf::FileOptions& FileDescriptorProto::_internal_options() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FileOptions* p = _impl_.options_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FileOptions>(&::google::protobuf::_FileOptions_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::FileOptions>(&::google::protobuf::_FileOptions_globals_);
 }
 inline const ::google::protobuf::FileOptions& FileDescriptorProto::options() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.options)
@@ -14014,7 +14116,7 @@ inline void FileDescriptorProto::clear_source_code_info() {
 inline const ::google::protobuf::SourceCodeInfo& FileDescriptorProto::_internal_source_code_info() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::SourceCodeInfo* p = _impl_.source_code_info_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::SourceCodeInfo>(&::google::protobuf::_SourceCodeInfo_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::SourceCodeInfo>(&::google::protobuf::_SourceCodeInfo_globals_);
 }
 inline const ::google::protobuf::SourceCodeInfo& FileDescriptorProto::source_code_info() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.source_code_info)
@@ -14276,7 +14378,7 @@ inline void DescriptorProto_ExtensionRange::clear_options() {
 inline const ::google::protobuf::ExtensionRangeOptions& DescriptorProto_ExtensionRange::_internal_options() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::ExtensionRangeOptions* p = _impl_.options_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::ExtensionRangeOptions>(&::google::protobuf::_ExtensionRangeOptions_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::ExtensionRangeOptions>(&::google::protobuf::_ExtensionRangeOptions_globals_);
 }
 inline const ::google::protobuf::ExtensionRangeOptions& DescriptorProto_ExtensionRange::options() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.ExtensionRange.options)
@@ -14846,7 +14948,7 @@ inline void DescriptorProto::clear_options() {
 inline const ::google::protobuf::MessageOptions& DescriptorProto::_internal_options() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::MessageOptions* p = _impl_.options_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::MessageOptions>(&::google::protobuf::_MessageOptions_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::MessageOptions>(&::google::protobuf::_MessageOptions_globals_);
 }
 inline const ::google::protobuf::MessageOptions& DescriptorProto::options() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.options)
@@ -15451,7 +15553,7 @@ inline void ExtensionRangeOptions::clear_features() {
 inline const ::google::protobuf::FeatureSet& ExtensionRangeOptions::_internal_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& ExtensionRangeOptions::features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.features)
@@ -16053,7 +16155,7 @@ inline void FieldDescriptorProto::clear_options() {
 inline const ::google::protobuf::FieldOptions& FieldDescriptorProto::_internal_options() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FieldOptions* p = _impl_.options_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FieldOptions>(&::google::protobuf::_FieldOptions_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::FieldOptions>(&::google::protobuf::_FieldOptions_globals_);
 }
 inline const ::google::protobuf::FieldOptions& FieldDescriptorProto::options() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldDescriptorProto.options)
@@ -16254,7 +16356,7 @@ inline void OneofDescriptorProto::clear_options() {
 inline const ::google::protobuf::OneofOptions& OneofDescriptorProto::_internal_options() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::OneofOptions* p = _impl_.options_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::OneofOptions>(&::google::protobuf::_OneofOptions_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::OneofOptions>(&::google::protobuf::_OneofOptions_globals_);
 }
 inline const ::google::protobuf::OneofOptions& OneofDescriptorProto::options() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.OneofDescriptorProto.options)
@@ -16544,7 +16646,7 @@ inline void EnumDescriptorProto::clear_options() {
 inline const ::google::protobuf::EnumOptions& EnumDescriptorProto::_internal_options() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::EnumOptions* p = _impl_.options_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::EnumOptions>(&::google::protobuf::_EnumOptions_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::EnumOptions>(&::google::protobuf::_EnumOptions_globals_);
 }
 inline const ::google::protobuf::EnumOptions& EnumDescriptorProto::options() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumDescriptorProto.options)
@@ -16906,7 +17008,7 @@ inline void EnumValueDescriptorProto::clear_options() {
 inline const ::google::protobuf::EnumValueOptions& EnumValueDescriptorProto::_internal_options() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::EnumValueOptions* p = _impl_.options_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::EnumValueOptions>(&::google::protobuf::_EnumValueOptions_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::EnumValueOptions>(&::google::protobuf::_EnumValueOptions_globals_);
 }
 inline const ::google::protobuf::EnumValueOptions& EnumValueDescriptorProto::options() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValueDescriptorProto.options)
@@ -17134,7 +17236,7 @@ inline void ServiceDescriptorProto::clear_options() {
 inline const ::google::protobuf::ServiceOptions& ServiceDescriptorProto::_internal_options() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::ServiceOptions* p = _impl_.options_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::ServiceOptions>(&::google::protobuf::_ServiceOptions_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::ServiceOptions>(&::google::protobuf::_ServiceOptions_globals_);
 }
 inline const ::google::protobuf::ServiceOptions& ServiceDescriptorProto::options() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.ServiceDescriptorProto.options)
@@ -17444,7 +17546,7 @@ inline void MethodDescriptorProto::clear_options() {
 inline const ::google::protobuf::MethodOptions& MethodDescriptorProto::_internal_options() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::MethodOptions* p = _impl_.options_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::MethodOptions>(&::google::protobuf::_MethodOptions_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::MethodOptions>(&::google::protobuf::_MethodOptions_globals_);
 }
 inline const ::google::protobuf::MethodOptions& MethodDescriptorProto::options() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.MethodDescriptorProto.options)
@@ -18559,7 +18661,7 @@ inline void FileOptions::clear_features() {
 inline const ::google::protobuf::FeatureSet& FileOptions::_internal_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& FileOptions::features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.features)
@@ -18863,7 +18965,7 @@ inline void MessageOptions::clear_features() {
 inline const ::google::protobuf::FeatureSet& MessageOptions::_internal_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& MessageOptions::features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.MessageOptions.features)
@@ -19748,7 +19850,7 @@ inline void FieldOptions::clear_features() {
 inline const ::google::protobuf::FeatureSet& FieldOptions::_internal_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& FieldOptions::features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.features)
@@ -19847,7 +19949,7 @@ inline void FieldOptions::clear_feature_support() {
 inline const ::google::protobuf::FieldOptions_FeatureSupport& FieldOptions::_internal_feature_support() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FieldOptions_FeatureSupport* p = _impl_.feature_support_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FieldOptions_FeatureSupport>(&::google::protobuf::_FieldOptions_FeatureSupport_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::FieldOptions_FeatureSupport>(&::google::protobuf::_FieldOptions_FeatureSupport_globals_);
 }
 inline const ::google::protobuf::FieldOptions_FeatureSupport& FieldOptions::feature_support() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.feature_support)
@@ -20006,7 +20108,7 @@ inline void OneofOptions::clear_features() {
 inline const ::google::protobuf::FeatureSet& OneofOptions::_internal_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& OneofOptions::features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.OneofOptions.features)
@@ -20252,7 +20354,7 @@ inline void EnumOptions::clear_features() {
 inline const ::google::protobuf::FeatureSet& EnumOptions::_internal_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& EnumOptions::features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumOptions.features)
@@ -20440,7 +20542,7 @@ inline void EnumValueOptions::clear_features() {
 inline const ::google::protobuf::FeatureSet& EnumValueOptions::_internal_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& EnumValueOptions::features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValueOptions.features)
@@ -20568,7 +20670,7 @@ inline void EnumValueOptions::clear_feature_support() {
 inline const ::google::protobuf::FieldOptions_FeatureSupport& EnumValueOptions::_internal_feature_support() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FieldOptions_FeatureSupport* p = _impl_.feature_support_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FieldOptions_FeatureSupport>(&::google::protobuf::_FieldOptions_FeatureSupport_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::FieldOptions_FeatureSupport>(&::google::protobuf::_FieldOptions_FeatureSupport_globals_);
 }
 inline const ::google::protobuf::FieldOptions_FeatureSupport& EnumValueOptions::feature_support() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValueOptions.feature_support)
@@ -20727,7 +20829,7 @@ inline void ServiceOptions::clear_features() {
 inline const ::google::protobuf::FeatureSet& ServiceOptions::_internal_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& ServiceOptions::features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.ServiceOptions.features)
@@ -20976,7 +21078,7 @@ inline void MethodOptions::clear_features() {
 inline const ::google::protobuf::FeatureSet& MethodOptions::_internal_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& MethodOptions::features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.MethodOptions.features)
@@ -21887,7 +21989,7 @@ inline void FeatureSetDefaults_FeatureSetEditionDefault::clear_overridable_featu
 inline const ::google::protobuf::FeatureSet& FeatureSetDefaults_FeatureSetEditionDefault::_internal_overridable_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.overridable_features_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& FeatureSetDefaults_FeatureSetEditionDefault::overridable_features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.overridable_features)
@@ -21986,7 +22088,7 @@ inline void FeatureSetDefaults_FeatureSetEditionDefault::clear_fixed_features() 
 inline const ::google::protobuf::FeatureSet& FeatureSetDefaults_FeatureSetEditionDefault::_internal_fixed_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.fixed_features_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& FeatureSetDefaults_FeatureSetEditionDefault::fixed_features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.fixed_features)
