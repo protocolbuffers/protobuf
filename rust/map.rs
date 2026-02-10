@@ -18,27 +18,6 @@ use std::marker::PhantomData;
 #[doc(inline)]
 pub use crate::__internal::runtime::MapKey;
 
-pub trait MapKeyValued {
-    type MapKey: MapKey;
-    type MapValue: MapValue;
-}
-
-pub trait AsMapView: MapKeyValued {
-    fn as_map_view(
-        &self,
-    ) -> MapView<'_, <Self as MapKeyValued>::MapKey, <Self as MapKeyValued>::MapValue>;
-}
-
-pub trait AsMapMut: MapKeyValued {
-    fn as_map_mut(
-        &mut self,
-    ) -> MapMut<'_, <Self as MapKeyValued>::MapKey, <Self as MapKeyValued>::MapValue>;
-}
-
-pub trait IntoMap: MapKeyValued {
-    fn into_map(self) -> Map<<Self as MapKeyValued>::MapKey, <Self as MapKeyValued>::MapValue>;
-}
-
 /// A trait implemented by types which are allowed as values in maps, which is all Singular types.
 /// This trait is distinct from `Singular` only because of the generic `K: MapKey`.
 pub trait MapValue: Singular + SealedInternal {
@@ -148,29 +127,6 @@ impl<K: MapKey, V: MapValue> Drop for Map<K, V> {
 
 impl<K: MapKey, V: MapValue> Proxied for Map<K, V> {
     type View<'msg> = MapView<'msg, K, V>;
-}
-
-impl<K: MapKey, V: MapValue> MapKeyValued for Map<K, V> {
-    type MapKey = K;
-    type MapValue = V;
-}
-
-impl<K: MapKey, V: MapValue> AsMapView for Map<K, V> {
-    fn as_map_view(&self) -> MapView<'_, K, V> {
-        self.as_view()
-    }
-}
-
-impl<K: MapKey, V: MapValue> AsMapMut for Map<K, V> {
-    fn as_map_mut(&mut self) -> MapMut<'_, K, V> {
-        self.as_mut()
-    }
-}
-
-impl<K: MapKey, V: MapValue> IntoMap for Map<K, V> {
-    fn into_map(self) -> Map<K, V> {
-        self
-    }
 }
 
 impl<K: MapKey, V: MapValue> AsView for Map<K, V> {
@@ -290,34 +246,6 @@ impl<'msg, K: MapKey, V: MapValue> MapView<'msg, K, V> {
     pub fn values(self) -> impl Iterator<Item = View<'msg, V>> + 'msg {
         self.into_iter().map(|(_, v)| v)
     }
-
-    /// Copies the contents of 'self' into a new owned Map.
-    pub fn to_owned(self) -> Map<K, V>
-    where
-        View<'msg, V>: IntoProxied<V>,
-    {
-        self.into_proxied(Private)
-    }
-}
-
-impl<'msg, K: MapKey, V: MapValue> MapKeyValued for MapView<'msg, K, V> {
-    type MapKey = K;
-    type MapValue = V;
-}
-
-impl<'msg, K: MapKey, V: MapValue> AsMapView for MapView<'msg, K, V> {
-    fn as_map_view(&self) -> MapView<'_, K, V> {
-        self.as_view()
-    }
-}
-
-impl<'msg, K: MapKey, V: MapValue> IntoMap for MapView<'msg, K, V>
-where
-    View<'msg, V>: IntoProxied<V>,
-{
-    fn into_map(self) -> Map<K, V> {
-        self.to_owned()
-    }
 }
 
 impl<'msg, K: MapKey, V: MapValue> AsView for MapView<'msg, K, V> {
@@ -375,32 +303,6 @@ impl<'msg, K: ?Sized, V: ?Sized> std::fmt::Debug for MapMut<'msg, K, V> {
 }
 
 impl<'msg, K: MapKey, V: MapValue> SealedInternal for MapMut<'msg, K, V> {}
-
-impl<'msg, K: MapKey, V: MapValue> MapKeyValued for MapMut<'msg, K, V> {
-    type MapKey = K;
-    type MapValue = V;
-}
-
-impl<'msg, K: MapKey, V: MapValue> AsMapView for MapMut<'msg, K, V> {
-    fn as_map_view(&self) -> MapView<'_, K, V> {
-        self.as_view()
-    }
-}
-
-impl<'msg, K: MapKey, V: MapValue> AsMapMut for MapMut<'msg, K, V> {
-    fn as_map_mut(&mut self) -> MapMut<'_, K, V> {
-        self.as_mut()
-    }
-}
-
-impl<'msg, K: MapKey, V: MapValue> IntoMap for MapMut<'msg, K, V>
-where
-    View<'msg, V>: IntoProxied<V>,
-{
-    fn into_map(self) -> Map<K, V> {
-        self.to_owned()
-    }
-}
 
 impl<'msg, K: MapKey, V: MapValue> AsView for MapMut<'msg, K, V> {
     type Proxied = Map<K, V>;
@@ -516,14 +418,6 @@ impl<'msg, K: MapKey, V: MapValue> MapMut<'msg, K, V> {
     /// The iterator element type is `View<V>`.
     pub fn values(&self) -> impl Iterator<Item = View<'_, V>> + '_ {
         self.as_view().values()
-    }
-
-    /// Copies the contents of 'self' into a new owned Map.
-    pub fn to_owned(self) -> Map<K, V>
-    where
-        View<'msg, V>: IntoProxied<V>,
-    {
-        self.into_proxied(Private)
     }
 }
 
