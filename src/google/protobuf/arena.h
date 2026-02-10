@@ -53,7 +53,7 @@ namespace protobuf {
 
 struct ArenaOptions;  // defined below
 class Arena;          // defined below
-class Message;  // defined in message.h
+class Message;        // defined in message.h
 class MessageLite;
 template <typename Key, typename T>
 class Map;
@@ -728,8 +728,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
   template <typename Type>
   friend class internal::GenericTypeHandler;
-  friend class internal::InternalMetadata;  // For user_arena().
-  friend class internal::LazyField;         // For DefaultConstruct.
+  friend class internal::InternalMetadata;    // For user_arena().
+  friend class internal::LazyField;           // For DefaultConstruct.
   friend class internal::EpsCopyInputStream;  // For parser performance
   friend class internal::TcParser;            // For parser performance
   friend class MessageLite;

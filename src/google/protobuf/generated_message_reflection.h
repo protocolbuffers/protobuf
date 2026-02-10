@@ -348,7 +348,7 @@ const std::string& NameOfDenseEnum(int v) {
   static_assert(max_val - min_val >= 0, "Too many enums between min and max.");
   static DenseEnumCacheInfo deci = {/* atomic ptr */ {}, min_val, max_val,
                                     descriptor_fn};
-  const std::string** cache = deci.cache.load(std::memory_order_acquire );
+  const std::string** cache = deci.cache.load(std::memory_order_acquire);
   if (ABSL_PREDICT_TRUE(cache != nullptr)) {
     if (ABSL_PREDICT_TRUE(v >= min_val && v <= max_val)) {
       return *cache[v - min_val];

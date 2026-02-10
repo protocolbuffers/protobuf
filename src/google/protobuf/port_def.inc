@@ -627,6 +627,9 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #endif
 #ifdef __GNUC__
 #pragma GCC diagnostic push
+// We sometimes use "unnecessary" parenthesis in codegen to prevent ambiguity or
+// conflicts with contextual keywords.
+#pragma GCC diagnostic ignored "-Wparentheses"
 // Some of the warnings below only exist in some GCC versions; those version
 // ranges are poorly documented.
 #pragma GCC diagnostic ignored "-Wpragmas"

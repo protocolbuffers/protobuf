@@ -1790,7 +1790,7 @@ TEST(ArenaTest, BlockSizeDoubling) {
   ASSERT_GT(arena.SpaceAllocated(), first_block_size);
   auto second_block_size = (arena.SpaceAllocated() - first_block_size);
 
-  EXPECT_GE(second_block_size, 2*first_block_size);
+  EXPECT_GE(second_block_size, 2 * first_block_size);
 }
 
 TEST(ArenaTest, Alignment) {

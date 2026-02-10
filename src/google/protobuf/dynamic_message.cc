@@ -65,6 +65,7 @@
 #include "google/protobuf/internal_metadata_locator.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/micro_string.h"
 #include "google/protobuf/port.h"
@@ -381,6 +382,7 @@ struct DynamicMessageFactory::TypeInfo {
   std::unique_ptr<uint32_t[]> has_bits_indices;
   int weak_field_map_offset;  // The offset for the weak_field_map;
 
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   internal::ClassDataFull class_data = {
       internal::ClassData{
           nullptr,  // default_instance
@@ -395,18 +397,41 @@ struct DynamicMessageFactory::TypeInfo {
           PROTOBUF_FIELD_OFFSET(DynamicMessage, cached_byte_size_),
           false,
       },
-      &DynamicMessage::kDescriptorMethods,
+      &internal::kDescriptorMethods,
       nullptr,  // descriptor_table
       nullptr,  // get_metadata_tracker
   };
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+  internal::ReflectionData reflection_data = {
+      &internal::kDescriptorMethods,
+      nullptr,  // descriptor_table
+      nullptr,  // get_metadata_tracker
+  };
+  internal::ClassDataFull class_data = {
+      internal::ClassData{
+          nullptr,  // default_instance
+          nullptr,  // tc_table
+          &DynamicMessage::IsInitializedImpl,
+          &DynamicMessage::MergeImpl,
+          internal::MessageCreator(),  // to be filled later
+          &DynamicMessage::DestroyImpl,
+          static_cast<void (MessageLite::*)()>(&DynamicMessage::ClearImpl),
+          DynamicMessage::ByteSizeLongImpl,
+          DynamicMessage::_InternalSerializeImpl,
+          PROTOBUF_FIELD_OFFSET(DynamicMessage, cached_byte_size_),
+          false,
+      },
+      &reflection_data,
+  };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
   TypeInfo() = default;
 
   ~TypeInfo() {
     delete class_data.prototype;
-    delete class_data.reflection;
+    delete class_data.reflection();
 
-    auto* type = class_data.descriptor;
+    auto* type = class_data.descriptor();
 
     // Scribble the payload to prevent unsanitized opt builds from silently
     // allowing use-after-free bugs where the factory is destroyed but the
@@ -478,7 +503,7 @@ inline void* DynamicMessage::MutableOneofCaseRaw(int i) {
 }
 inline void* DynamicMessage::MutableOneofFieldRaw(const FieldDescriptor* f) {
   return OffsetToPointer(
-      type_info_->offsets[type_info_->class_data.descriptor->field_count() +
+      type_info_->offsets[type_info_->class_data.descriptor()->field_count() +
                           f->containing_oneof()->index()]);
 }
 
@@ -492,7 +517,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
   // in practice that's not strictly necessary for types that don't have a
   // constructor.)
 
-  const Descriptor* descriptor = type_info_->class_data.descriptor;
+  const Descriptor* descriptor = type_info_->class_data.descriptor();
   Arena* arena = GetArena();
   // Initialize oneof cases.
   int oneof_count = 0;
@@ -637,7 +662,7 @@ void DynamicMessage::operator delete(DynamicMessage* msg,
 #endif
 
 DynamicMessage::~DynamicMessage() {
-  const Descriptor* descriptor = type_info_->class_data.descriptor;
+  const Descriptor* descriptor = type_info_->class_data.descriptor();
 
   _internal_metadata_.Delete<UnknownFieldSet>();
 
@@ -751,12 +776,12 @@ DynamicMessage::~DynamicMessage() {
         }
       }
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-          if (!is_prototype()) {
-        Message* message = *reinterpret_cast<Message**>(field_ptr);
-        if (message != nullptr) {
-          delete message;
+        if (!is_prototype()) {
+          Message* message = *reinterpret_cast<Message**>(field_ptr);
+          if (message != nullptr) {
+            delete message;
+          }
         }
-      }
     }
   }
 }
@@ -777,7 +802,7 @@ void DynamicMessage::CrossLinkPrototypes() {
   ABSL_CHECK(is_prototype());
 
   DynamicMessageFactory* factory = type_info_->factory;
-  const Descriptor* descriptor = type_info_->class_data.descriptor;
+  const Descriptor* descriptor = type_info_->class_data.descriptor();
 
   // Cross-link default messages.
   for (int i = 0; i < descriptor->field_count(); i++) {
@@ -840,7 +865,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   TypeInfo* type_info = new TypeInfo;
   *target = type_info;
 
-  type_info->class_data.descriptor = type;
+  type_info->class_data.set_descriptor(type);
   type_info->class_data.is_dynamic = true;
   type_info->pool = (pool_ == nullptr) ? type->file()->pool() : pool_;
   type_info->factory = this;
@@ -996,12 +1021,12 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
       type_info->oneof_case_offset,
       static_cast<int>(type_info->class_data.allocation_size()),
       type_info->weak_field_map_offset,
-      -1,       // split_offset_
-      -1,       // sizeof_split_
+      -1,  // split_offset_
+      -1,  // sizeof_split_
   };
 
-  type_info->class_data.reflection = new Reflection(
-      type_info->class_data.descriptor, schema, type_info->pool, this);
+  type_info->class_data.set_reflection(new Reflection(
+      type_info->class_data.descriptor(), schema, type_info->pool, this));
 
   // Cross link prototypes.
   prototype->CrossLinkPrototypes();

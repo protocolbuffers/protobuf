@@ -72,6 +72,101 @@ pub trait MapValue: Singular + SealedInternal {
     ) -> Option<(View<'a, K>, View<'a, Self>)>;
 }
 
+pub struct Map<K: MapKey, V: MapValue> {
+    inner: InnerMap,
+    _phantom: PhantomData<(PhantomData<K>, PhantomData<V>)>,
+}
+
+// SAFETY: `Map` is Sync because it does not implement interior mutability.
+unsafe impl<K: MapKey, V: MapValue> Sync for Map<K, V> {}
+
+// SAFETY: `Map` is Send because it's not bound to a specific thread e.g.
+// it does not use thread-local data or similar.
+unsafe impl<K: MapKey, V: MapValue> Send for Map<K, V> {}
+
+impl<K: MapKey, V: MapValue> SealedInternal for Map<K, V> {}
+
+impl<K: MapKey, V: MapValue> Map<K, V> {
+    pub fn new() -> Self {
+        V::map_new(Private)
+    }
+
+    pub fn as_mut(&mut self) -> MapMut<'_, K, V> {
+        MapMut { inner: self.inner.as_mut(), _phantom: PhantomData }
+    }
+
+    pub fn as_view(&self) -> MapView<'_, K, V> {
+        MapView { raw: self.inner.raw, _phantom: PhantomData }
+    }
+
+    #[doc(hidden)]
+    pub fn from_inner(_: Private, inner: InnerMap) -> Self {
+        Self { inner, _phantom: PhantomData }
+    }
+
+    #[doc(hidden)]
+    pub fn as_raw(&self, _: Private) -> RawMap {
+        self.inner.raw
+    }
+}
+
+impl<K: MapKey, V: MapValue> Default for Map<K, V> {
+    fn default() -> Self {
+        Map::new()
+    }
+}
+
+impl<K: MapKey, V: MapValue> Drop for Map<K, V> {
+    fn drop(&mut self) {
+        // SAFETY:
+        // - `drop` is only called once.
+        // - 'map_free` is only called here.
+        unsafe { V::map_free(Private, self) }
+    }
+}
+
+impl<K: MapKey, V: MapValue> Proxied for Map<K, V> {
+    type View<'msg> = MapView<'msg, K, V>;
+}
+
+impl<K: MapKey, V: MapValue> AsView for Map<K, V> {
+    type Proxied = Self;
+
+    fn as_view(&self) -> MapView<'_, K, V> {
+        self.as_view()
+    }
+}
+
+impl<K: MapKey, V: MapValue> MutProxied for Map<K, V> {
+    type Mut<'msg> = MapMut<'msg, K, V>;
+}
+
+impl<K: MapKey, V: MapValue> AsMut for Map<K, V> {
+    type MutProxied = Self;
+
+    fn as_mut(&mut self) -> MapMut<'_, K, V> {
+        self.as_mut()
+    }
+}
+
+impl<'msg, K, KView, V, VView, I> IntoProxied<Map<K, V>> for I
+where
+    I: Iterator<Item = (KView, VView)>,
+    K: MapKey,
+    V: MapValue,
+    KView: Into<View<'msg, K>>,
+    VView: IntoProxied<V>,
+{
+    fn into_proxied(self, _: Private) -> Map<K, V> {
+        let mut m = Map::<K, V>::new();
+        m.as_mut().extend(self);
+        m
+    }
+}
+
+/// A view of a map field.
+///
+/// This is a proxy type that is conceptually similar to a `&Map<K, V>`
 #[repr(transparent)]
 pub struct MapView<'msg, K: ?Sized, V: ?Sized> {
     raw: RawMap,
@@ -97,84 +192,61 @@ impl<'msg, K: ?Sized, V: ?Sized> std::fmt::Debug for MapView<'msg, K, V> {
     }
 }
 
-pub struct MapMut<'msg, K: ?Sized, V: ?Sized> {
-    pub(crate) inner: InnerMapMut<'msg>,
-    _phantom: PhantomData<(&'msg mut K, &'msg mut V)>,
-}
-
-impl<'msg, K: ?Sized, V: ?Sized> MapMut<'msg, K, V> {
-    pub fn inner(&self, _: Private) -> InnerMapMut<'_> {
-        self.inner
-    }
-}
-
-unsafe impl<'msg, K: ?Sized, V: ?Sized> Sync for MapMut<'msg, K, V> {}
-
-impl<'msg, K: ?Sized, V: ?Sized> std::fmt::Debug for MapMut<'msg, K, V> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("MapMut")
-            .field(&std::any::type_name::<K>())
-            .field(&std::any::type_name::<V>())
-            .finish()
-    }
-}
-
-pub struct Map<K: MapKey, V: MapValue> {
-    inner: InnerMap,
-    _phantom: PhantomData<(PhantomData<K>, PhantomData<V>)>,
-}
-
-// SAFETY: `Map` is Sync because it does not implement interior mutability.
-unsafe impl<K: MapKey, V: MapValue> Sync for Map<K, V> {}
-
-// SAFETY: `Map` is Send because it's not bound to a specific thread e.g.
-// it does not use thread-local data or similar.
-unsafe impl<K: MapKey, V: MapValue> Send for Map<K, V> {}
-
-impl<K: MapKey, V: MapValue> SealedInternal for Map<K, V> {}
-
-impl<K: MapKey, V: MapValue> Drop for Map<K, V> {
-    fn drop(&mut self) {
-        // SAFETY:
-        // - `drop` is only called once.
-        // - 'map_free` is only called here.
-        unsafe { V::map_free(Private, self) }
-    }
-}
-
-impl<K: MapKey, V: MapValue> Proxied for Map<K, V> {
-    type View<'msg>
-        = MapView<'msg, K, V>
-    where
-        K: 'msg,
-        V: 'msg;
-}
-
-impl<K: MapKey, V: MapValue> AsView for Map<K, V> {
-    type Proxied = Self;
-
-    fn as_view(&self) -> MapView<'_, K, V> {
-        self.as_view()
-    }
-}
-
-impl<K: MapKey, V: MapValue> MutProxied for Map<K, V> {
-    type Mut<'msg>
-        = MapMut<'msg, K, V>
-    where
-        K: 'msg,
-        V: 'msg;
-}
-
-impl<K: MapKey, V: MapValue> AsMut for Map<K, V> {
-    type MutProxied = Self;
-
-    fn as_mut(&mut self) -> MapMut<'_, K, V> {
-        self.as_mut()
-    }
-}
-
 impl<'msg, K: MapKey, V: MapValue> SealedInternal for MapView<'msg, K, V> {}
+
+#[doc(hidden)]
+impl<'msg, K: ?Sized, V: ?Sized> MapView<'msg, K, V> {
+    #[doc(hidden)]
+    pub fn as_raw(&self, _: Private) -> RawMap {
+        self.raw
+    }
+
+    /// # Safety
+    /// - `raw` must be valid to read from for `'msg`.
+    #[doc(hidden)]
+    pub unsafe fn from_raw(_: Private, raw: RawMap) -> Self {
+        Self { raw, _phantom: PhantomData }
+    }
+}
+
+impl<'msg, K: MapKey, V: MapValue> MapView<'msg, K, V> {
+    pub fn get<'a>(self, key: impl Into<View<'a, K>>) -> Option<View<'msg, V>>
+    where
+        K: 'a,
+    {
+        V::map_get(Private, self, key.into())
+    }
+
+    pub fn len(self) -> usize {
+        V::map_len(Private, self)
+    }
+
+    pub fn is_empty(self) -> bool {
+        self.len() == 0
+    }
+
+    /// Returns an iterator visiting all key-value pairs in arbitrary order.
+    ///
+    /// The iterator element type is `(View<K>, View<V>)`.
+    /// This is an alias for `<Self as IntoIterator>::into_iter`.
+    pub fn iter(self) -> MapIter<'msg, K, V> {
+        self.into_iter()
+    }
+
+    /// Returns an iterator visiting all keys in arbitrary order.
+    ///
+    /// The iterator element type is `View<K>`.
+    pub fn keys(self) -> impl Iterator<Item = View<'msg, K>> + 'msg {
+        self.into_iter().map(|(k, _)| k)
+    }
+
+    /// Returns an iterator visiting all values in arbitrary order.
+    ///
+    /// The iterator element type is `View<V>`.
+    pub fn values(self) -> impl Iterator<Item = View<'msg, V>> + 'msg {
+        self.into_iter().map(|(_, v)| v)
+    }
+}
 
 impl<'msg, K: MapKey, V: MapValue> AsView for MapView<'msg, K, V> {
     type Proxied = Map<K, V>;
@@ -190,6 +262,43 @@ impl<'msg, K: MapKey, V: MapValue> IntoView<'msg> for MapView<'msg, K, V> {
         'msg: 'shorter,
     {
         MapView { raw: self.raw, _phantom: PhantomData }
+    }
+}
+
+impl<'msg, K: MapKey, V: MapValue> IntoProxied<Map<K, V>> for MapView<'msg, K, V>
+where
+    View<'msg, V>: IntoProxied<V>,
+{
+    fn into_proxied(self, _: Private) -> Map<K, V> {
+        let mut m = Map::<K, V>::new();
+        m.as_mut().copy_from(self);
+        m
+    }
+}
+
+/// A mutable proxy of a map field.
+///
+/// This is a proxy type that is conceptually similar to a `&mut Map<K, V>`
+pub struct MapMut<'msg, K: ?Sized, V: ?Sized> {
+    pub(crate) inner: InnerMapMut<'msg>,
+    _phantom: PhantomData<(&'msg mut K, &'msg mut V)>,
+}
+
+impl<'msg, K: ?Sized, V: ?Sized> MapMut<'msg, K, V> {
+    #[doc(hidden)]
+    pub fn inner(&self, _: Private) -> InnerMapMut<'_> {
+        self.inner
+    }
+}
+
+unsafe impl<'msg, K: ?Sized, V: ?Sized> Sync for MapMut<'msg, K, V> {}
+
+impl<'msg, K: ?Sized, V: ?Sized> std::fmt::Debug for MapMut<'msg, K, V> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("MapMut")
+            .field(&std::any::type_name::<K>())
+            .field(&std::any::type_name::<V>())
+            .finish()
     }
 }
 
@@ -229,101 +338,6 @@ impl<'msg, K: MapKey, V: MapValue> IntoMut<'msg> for MapMut<'msg, K, V> {
     }
 }
 
-impl<K, V> Map<K, V>
-where
-    K: MapKey,
-    V: MapValue,
-{
-    pub fn new() -> Self {
-        V::map_new(Private)
-    }
-
-    pub fn as_mut(&mut self) -> MapMut<'_, K, V> {
-        MapMut { inner: self.inner.as_mut(), _phantom: PhantomData }
-    }
-
-    pub fn as_view(&self) -> MapView<'_, K, V> {
-        MapView { raw: self.inner.raw, _phantom: PhantomData }
-    }
-
-    #[doc(hidden)]
-    pub fn from_inner(_: Private, inner: InnerMap) -> Self {
-        Self { inner, _phantom: PhantomData }
-    }
-
-    pub fn as_raw(&self, _: Private) -> RawMap {
-        self.inner.raw
-    }
-}
-
-impl<K, V> Default for Map<K, V>
-where
-    K: MapKey,
-    V: MapValue,
-{
-    fn default() -> Self {
-        Map::new()
-    }
-}
-
-#[doc(hidden)]
-impl<'msg, K: ?Sized, V: ?Sized> MapView<'msg, K, V> {
-    #[doc(hidden)]
-    pub fn as_raw(&self, _: Private) -> RawMap {
-        self.raw
-    }
-
-    /// # Safety
-    /// - `raw` must be valid to read from for `'msg`.
-    #[doc(hidden)]
-    pub unsafe fn from_raw(_: Private, raw: RawMap) -> Self {
-        Self { raw, _phantom: PhantomData }
-    }
-}
-
-impl<'msg, K, V> MapView<'msg, K, V>
-where
-    K: MapKey,
-    V: MapValue,
-{
-    pub fn get<'a>(self, key: impl Into<View<'a, K>>) -> Option<View<'msg, V>>
-    where
-        K: 'a,
-    {
-        V::map_get(Private, self, key.into())
-    }
-
-    pub fn len(self) -> usize {
-        V::map_len(Private, self)
-    }
-
-    pub fn is_empty(self) -> bool {
-        self.len() == 0
-    }
-
-    /// Returns an iterator visiting all key-value pairs in arbitrary order.
-    ///
-    /// The iterator element type is `(View<K>, View<V>)`.
-    /// This is an alias for `<Self as IntoIterator>::into_iter`.
-    pub fn iter(self) -> MapIter<'msg, K, V> {
-        self.into_iter()
-    }
-
-    /// Returns an iterator visiting all keys in arbitrary order.
-    ///
-    /// The iterator element type is `View<K>`.
-    pub fn keys(self) -> impl Iterator<Item = View<'msg, K>> + 'msg {
-        self.into_iter().map(|(k, _)| k)
-    }
-
-    /// Returns an iterator visiting all values in arbitrary order.
-    ///
-    /// The iterator element type is `View<V>`.
-    pub fn values(self) -> impl Iterator<Item = View<'msg, V>> + 'msg {
-        self.into_iter().map(|(_, v)| v)
-    }
-}
-
 #[doc(hidden)]
 impl<'msg, K: ?Sized, V: ?Sized> MapMut<'msg, K, V> {
     /// # Safety
@@ -339,11 +353,7 @@ impl<'msg, K: ?Sized, V: ?Sized> MapMut<'msg, K, V> {
     }
 }
 
-impl<'msg, K, V> MapMut<'msg, K, V>
-where
-    K: MapKey,
-    V: MapValue,
-{
+impl<'msg, K: MapKey, V: MapValue> MapMut<'msg, K, V> {
     pub fn len(&self) -> usize {
         self.as_view().len()
     }
@@ -355,17 +365,11 @@ where
     /// Adds a key-value pair to the map.
     ///
     /// Returns `true` if the entry was newly inserted.
-    pub fn insert<'a>(&mut self, key: impl Into<View<'a, K>>, value: impl IntoProxied<V>) -> bool
-    where
-        K: 'a,
-    {
+    pub fn insert<'a>(&mut self, key: impl Into<View<'a, K>>, value: impl IntoProxied<V>) -> bool {
         V::map_insert(Private, self.as_mut(), key.into(), value)
     }
 
-    pub fn remove<'a>(&mut self, key: impl Into<View<'a, K>>) -> bool
-    where
-        K: 'a,
-    {
+    pub fn remove<'a>(&mut self, key: impl Into<View<'a, K>>) -> bool {
         V::map_remove(Private, self.as_mut(), key.into())
     }
 
@@ -373,16 +377,12 @@ where
         V::map_clear(Private, self.as_mut())
     }
 
-    pub fn get<'a>(&self, key: impl Into<View<'a, K>>) -> Option<View<'_, V>>
-    where
-        K: 'a,
-    {
+    pub fn get<'a>(&self, key: impl Into<View<'a, K>>) -> Option<View<'_, V>> {
         V::map_get(Private, self.as_view(), key.into())
     }
 
     pub fn get_mut<'a>(&mut self, key: impl Into<View<'a, K>>) -> Option<Mut<'_, V>>
     where
-        K: 'a,
         V: Message,
     {
         V::map_get_mut(Private, self.as_mut(), key.into())
@@ -391,9 +391,7 @@ where
     pub fn copy_from<'a>(
         &mut self,
         src: impl IntoIterator<Item = (impl Into<View<'a, K>>, impl IntoProxied<V>)>,
-    ) where
-        K: 'a,
-    {
+    ) {
         //TODO
         self.clear();
         for (k, v) in src.into_iter() {
@@ -423,23 +421,8 @@ where
     }
 }
 
-impl<'msg, K, V> IntoProxied<Map<K, V>> for MapView<'msg, K, V>
+impl<'msg, K: MapKey, V: MapValue> IntoProxied<Map<K, V>> for MapMut<'msg, K, V>
 where
-    K: MapKey,
-    V: MapValue,
-    View<'msg, V>: IntoProxied<V>,
-{
-    fn into_proxied(self, _: Private) -> Map<K, V> {
-        let mut m = Map::<K, V>::new();
-        m.as_mut().copy_from(self);
-        m
-    }
-}
-
-impl<'msg, K, V> IntoProxied<Map<K, V>> for MapMut<'msg, K, V>
-where
-    K: MapKey,
-    V: MapValue,
     View<'msg, V>: IntoProxied<V>,
 {
     fn into_proxied(self, _: Private) -> Map<K, V> {
@@ -447,18 +430,17 @@ where
     }
 }
 
-impl<'msg, K, KView, V, VView, I> IntoProxied<Map<K, V>> for I
+impl<'msg, 'k, KView, VView, K, V> Extend<(KView, VView)> for MapMut<'msg, K, V>
 where
-    I: Iterator<Item = (KView, VView)>,
     K: MapKey,
     V: MapValue,
-    KView: Into<View<'msg, K>>,
+    KView: Into<View<'k, K>>,
     VView: IntoProxied<V>,
 {
-    fn into_proxied(self, _: Private) -> Map<K, V> {
-        let mut m = Map::<K, V>::new();
-        m.as_mut().extend(self);
-        m
+    fn extend<T: IntoIterator<Item = (KView, VView)>>(&mut self, iter: T) {
+        for (k, v) in iter.into_iter() {
+            self.insert(k, v);
+        }
     }
 }
 
@@ -486,11 +468,7 @@ impl<'msg, K: ?Sized, V: ?Sized> MapIter<'msg, K, V> {
     }
 }
 
-impl<'msg, K, V> Iterator for MapIter<'msg, K, V>
-where
-    K: MapKey,
-    V: MapValue,
-{
+impl<'msg, K: MapKey, V: MapValue> Iterator for MapIter<'msg, K, V> {
     type Item = (View<'msg, K>, View<'msg, V>);
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -498,11 +476,7 @@ where
     }
 }
 
-impl<'msg, K, V> IntoIterator for MapView<'msg, K, V>
-where
-    K: MapKey,
-    V: MapValue,
-{
+impl<'msg, K: MapKey, V: MapValue> IntoIterator for MapView<'msg, K, V> {
     type IntoIter = MapIter<'msg, K, V>;
     type Item = (View<'msg, K>, View<'msg, V>);
 
@@ -511,11 +485,7 @@ where
     }
 }
 
-impl<'msg, K, V> IntoIterator for &'msg Map<K, V>
-where
-    K: MapKey,
-    V: MapValue,
-{
+impl<'msg, K: MapKey, V: MapValue> IntoIterator for &'msg Map<K, V> {
     type IntoIter = MapIter<'msg, K, V>;
     type Item = (View<'msg, K>, View<'msg, V>);
 
@@ -524,11 +494,9 @@ where
     }
 }
 
-impl<'a, 'msg, K, V> IntoIterator for &'a MapView<'msg, K, V>
+impl<'a, 'msg, K: MapKey, V: MapValue> IntoIterator for &'a MapView<'msg, K, V>
 where
     'msg: 'a,
-    K: MapKey,
-    V: MapValue,
 {
     type IntoIter = MapIter<'msg, K, V>;
     type Item = (View<'msg, K>, View<'msg, V>);
@@ -538,11 +506,9 @@ where
     }
 }
 
-impl<'a, 'msg, K, V> IntoIterator for &'a MapMut<'msg, K, V>
+impl<'a, 'msg, K: MapKey, V: MapValue> IntoIterator for &'a MapMut<'msg, K, V>
 where
     'msg: 'a,
-    K: MapKey,
-    V: MapValue,
 {
     type IntoIter = MapIter<'a, K, V>;
     // The View's are valid for 'a instead of 'msg.
@@ -551,20 +517,6 @@ where
 
     fn into_iter(self) -> MapIter<'a, K, V> {
         self.as_view().into_iter()
-    }
-}
-
-impl<'msg, 'k, KView, VView, K, V> Extend<(KView, VView)> for MapMut<'msg, K, V>
-where
-    K: MapKey,
-    V: MapValue,
-    KView: Into<View<'k, K>>,
-    VView: IntoProxied<V>,
-{
-    fn extend<T: IntoIterator<Item = (KView, VView)>>(&mut self, iter: T) {
-        for (k, v) in iter.into_iter() {
-            self.insert(k, v);
-        }
     }
 }
 

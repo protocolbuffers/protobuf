@@ -1539,7 +1539,7 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
           explicit constexpr $classname$($pbi$::ConstantInitialized);
           explicit $classname$($pb$::Arena* $nullable$ arena);
           static constexpr const void* $nonnull$ internal_default_instance() {
-            return &_$classname$_default_instance_;
+            return &_$classname$_globals_;
           }
 
           $decl_verify_func$;
@@ -2093,12 +2093,12 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
        {"decl_split_methods",
         [&] {
           if (!ShouldSplit(descriptor_, options_)) return;
-          p->Emit({{"default_name", DefaultInstanceName(descriptor_, options_,
-                                                        /*split=*/true)}},
+          p->Emit({{"split_default",
+                    SplitDefaultInstanceName(descriptor_, options_)}},
                   R"cc(
                     private:
                     inline bool IsSplitMessageDefault() const {
-                      return $split$ == reinterpret_cast<const Impl_::Split*>(&$default_name$);
+                      return $split$ == reinterpret_cast<const Impl_::Split*>(&$split_default$);
                     }
                     PROTOBUF_NOINLINE void PrepareSplitMessageForWrite();
 
@@ -2192,8 +2192,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         [&] {
           if (!ShouldSplit(descriptor_, options_)) return;
 
-          p->Emit({{"split_default", DefaultInstanceType(descriptor_, options_,
-                                                         /*split=*/true)}},
+          p->Emit({{"split_default",
+                    SplitDefaultInstanceType(descriptor_, options_)}},
                   R"cc(
                     friend struct $split_default$;
                   )cc");
@@ -2251,8 +2251,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           $descriptor_accessor$;
           $get_descriptor$;
           $nodiscard $static const $classname$& default_instance() {
-            return *reinterpret_cast<const $classname$*>(
-                &_$classname$_default_instance_);
+            return *reinterpret_cast<const $classname$*>(&_$classname$_globals_);
           }
           $decl_oneof$;
           static constexpr int kIndexInFileMessages = $index_in_file_messages$;
@@ -2546,10 +2545,8 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   }
 
   if (ShouldSplit(descriptor_, options_)) {
-    p->Emit({{"split_default",
-              DefaultInstanceName(descriptor_, options_, /*split=*/true)},
-             {"default",
-              DefaultInstanceName(descriptor_, options_, /*split=*/false)}},
+    p->Emit({{"split_default", SplitDefaultInstanceName(descriptor_, options_)},
+             {"default", MsgGlobalsInstanceName(descriptor_, options_)}},
             R"cc(
               void $classname$::PrepareSplitMessageForWrite() {
                 if (ABSL_PREDICT_TRUE(IsSplitMessageDefault())) {
@@ -2871,7 +2868,7 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
   auto init_split = [&] {
     if (ShouldSplit(descriptor_, options_)) {
       separator();
-      p->Emit({{"name", DefaultInstanceName(descriptor_, options_, true)}},
+      p->Emit({{"name", SplitDefaultInstanceName(descriptor_, options_)}},
               "_split_{const_cast<Split*>(&$name$._instance)}");
     }
   };
@@ -3988,8 +3985,9 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
 
   auto vars = p->WithVars(
       {{"default_instance",
-        absl::StrCat("&", DefaultInstanceName(descriptor_, options_),
-                     "._instance")}});
+        absl::StrCat("&", MsgGlobalsInstanceName(descriptor_, options_),
+                     "._default")},
+       {"index_in_file_messages", index_in_file_messages_}});
   const auto is_initialized = [&] {
     if (NeedsIsInitialized()) {
       p->Emit(R"cc(
@@ -4063,6 +4061,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
         },
         R"cc(
           constexpr auto $classname$::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
             return $pbi$::ClassDataFull{
                 $pbi$::ClassData{
                     $default_instance$,
@@ -4078,10 +4077,28 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                     false,
                     $v2_data$,
                 },
-                &$classname$::kDescriptorMethods,
+                &file_reflection_data[$index_in_file_messages$]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+            return $pbi$::ClassDataFull{
+                $pbi$::ClassData{
+                    $default_instance$,
+                    &_table_.header,
+                    $is_initialized$,
+                    &$classname$::MergeImpl,
+                    $superclass$::GetNewImpl<$classname$>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    &$classname$::SharedDtor,
+                    $custom_vtable_methods$,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+                    PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
+                    false,
+                    $v2_data$,
+                },
+                &::_pbi::kDescriptorMethods,
                 &$desc_table$,
                 $tracker_on_get_metadata$,
             };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
           }
 
           PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -4106,14 +4123,13 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
   } else {
     p->Emit(
         {
-            {"type_size", descriptor_->full_name().size() + 1},
             {"is_initialized", is_initialized},
             {"custom_vtable_methods", custom_vtable_methods},
             {"v2_data", emit_v2_data},
         },
         R"cc(
           constexpr auto $classname$::InternalGenerateClassData_() {
-            return $pbi$::ClassDataLite<$type_size$>{
+            return $pbi$::ClassDataLite{
                 {
                     $default_instance$,
                     &_table_.header,
@@ -4134,7 +4150,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
 
           PROTOBUF_CONSTINIT
           PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-          const $pbi$::ClassDataLite<$type_size$> $classname$_class_data_ =
+          const $pbi$::ClassDataLite $classname$_class_data_ =
               $classname$::InternalGenerateClassData_();
 
           //~ This function needs to be marked as weak to avoid significantly

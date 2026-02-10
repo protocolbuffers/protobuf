@@ -172,7 +172,9 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
   absl::string_view count_sep = has_conflict ? "_" : "";
 
   printer->Emit(
-      {{"classname", descriptor->name()},
+
+      {io::Printer::Sub("classname", descriptor->name())
+           .AnnotatedAs(descriptor),
        {"static", IsOwnFile(descriptor, immutable_api) ? " " : " static "},
        {"deprecation",
         descriptor->options().deprecated() ? "@java.lang.Deprecated" : ""},
@@ -551,7 +553,7 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
                 // than where the alias is defined (they might be arbitrarily
                 // far apart). We name the constant by that interface directly.
                 printer->Emit(
-                    {{"name", value->name()},
+                    {io::Printer::Sub("name", value->name()).AnnotatedAs(value),
                      {"canonical_name", aliases[value]->name()},
                      {"canonical_interface_index", canonical_interface_index},
                      {"count_sep", count_sep},
@@ -562,22 +564,25 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
 
                   )");
               } else {
-                printer->Emit({{"name", value->name()},
-                               {"number", value->number()},
-                               {"index", value->index()},
-                               {"deprecation", deprecation}},
-                              R"(
+                printer->Emit(
+                    {io::Printer::Sub("name", value->name()).AnnotatedAs(value),
+                     {"number", value->number()},
+                     {"index", value->index()},
+                     {"deprecation", deprecation}},
+                    R"(
                     $deprecation$
                     public static final $classname$ $name$ = new $classname$($number$, $index$, "$name$");
 
                 )");
               }
-              printer->Emit({{"name", value->name()},
+              printer->Emit({io::Printer::Sub(
+                                 "name", absl::StrCat(value->name(), "_VALUE"))
+                                 .AnnotatedAs(value),
                              {"number", value->number()},
                              {"deprecation", deprecation}},
                             R"(
                     $deprecation$
-                    public static final int $name$_VALUE = $number$;
+                    public static final int $name$ = $number$;
                   )");
             }
           }},

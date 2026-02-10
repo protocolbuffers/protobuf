@@ -21,6 +21,103 @@ use crate::{
     __internal::{Private, SealedInternal},
 };
 
+/// A `repeated` field of `T`, used as the owned target for `Proxied`.
+///
+/// Users will generally write [`View<Repeated<T>>`](RepeatedView) or
+/// [`Mut<Repeated<T>>`](RepeatedMut) to access the repeated elements
+pub struct Repeated<T: Singular> {
+    pub(crate) inner: InnerRepeated,
+    _phantom: PhantomData<T>,
+}
+
+// SAFETY: `Repeated` is Sync because it does not implement interior mutability.
+unsafe impl<T: Singular> Sync for Repeated<T> {}
+
+// SAFETY: `Repeated` is Send because it's not bound to a specific thread e.g.
+// it does not use thread-local data or similar.
+unsafe impl<T: Singular> Send for Repeated<T> {}
+
+impl<T: Singular> Repeated<T> {
+    pub fn new() -> Self {
+        T::repeated_new(Private)
+    }
+
+    pub(crate) fn as_mut(&mut self) -> RepeatedMut<'_, T> {
+        RepeatedMut { inner: self.inner.as_mut(), _phantom: PhantomData }
+    }
+
+    pub fn as_view(&self) -> View<'_, Repeated<T>> {
+        RepeatedView { raw: self.inner.raw(), _phantom: PhantomData }
+    }
+
+    #[doc(hidden)]
+    pub fn inner(&self, _private: Private) -> &InnerRepeated {
+        &self.inner
+    }
+
+    #[doc(hidden)]
+    pub fn from_inner(_private: Private, inner: InnerRepeated) -> Self {
+        Self { inner, _phantom: PhantomData }
+    }
+}
+
+impl<T: Singular, I, U> IntoProxied<Repeated<T>> for I
+where
+    I: Iterator<Item = U>,
+    U: IntoProxied<T>,
+{
+    fn into_proxied(self, _private: Private) -> Repeated<T> {
+        let mut repeated: Repeated<T> = Repeated::new();
+        repeated.as_mut().extend(self);
+        repeated
+    }
+}
+
+impl<T: Singular> Default for Repeated<T> {
+    fn default() -> Self {
+        Repeated::new()
+    }
+}
+
+impl<T: Singular> Drop for Repeated<T> {
+    fn drop(&mut self) {
+        // SAFETY: only called once
+        unsafe { T::repeated_free(Private, self) }
+    }
+}
+
+impl<T: Singular> Proxied for Repeated<T> {
+    type View<'msg>
+        = RepeatedView<'msg, T>
+    where
+        Repeated<T>: 'msg;
+}
+
+impl<T: Singular> SealedInternal for Repeated<T> {}
+
+impl<T: Singular> AsView for Repeated<T> {
+    type Proxied = Self;
+
+    fn as_view(&self) -> RepeatedView<'_, T> {
+        self.as_view()
+    }
+}
+
+impl<T: Singular> MutProxied for Repeated<T> {
+    type Mut<'msg>
+        = RepeatedMut<'msg, T>
+    where
+        Repeated<T>: 'msg;
+}
+
+impl<T: Singular> AsMut for Repeated<T> {
+    type MutProxied = Self;
+
+    fn as_mut(&mut self) -> RepeatedMut<'_, T> {
+        self.as_mut()
+    }
+}
+
 /// Views the elements in a `repeated` field of `T`.
 #[repr(transparent)]
 pub struct RepeatedView<'msg, T> {
@@ -45,19 +142,7 @@ impl<'msg, T> Debug for RepeatedView<'msg, T> {
     }
 }
 
-/// Mutates the elements in a `repeated` field of `T`.
-pub struct RepeatedMut<'msg, T> {
-    pub(crate) inner: InnerRepeatedMut<'msg>,
-    _phantom: PhantomData<&'msg mut T>,
-}
-
-unsafe impl<'msg, T> Sync for RepeatedMut<'msg, T> {}
-
-impl<'msg, T> Debug for RepeatedMut<'msg, T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("RepeatedMut").field("raw", &self.inner.raw).finish()
-    }
-}
+impl<'msg, T: Singular> SealedInternal for RepeatedView<'msg, T> {}
 
 #[doc(hidden)]
 impl<'msg, T> RepeatedView<'msg, T> {
@@ -114,6 +199,47 @@ impl<'msg, T: Singular> RepeatedView<'msg, T> {
     /// Iterates over the values in the repeated field.
     pub fn iter(self) -> RepeatedIter<'msg, T> {
         self.into_iter()
+    }
+}
+
+impl<'msg, T: Singular> AsView for RepeatedView<'msg, T> {
+    type Proxied = Repeated<T>;
+
+    #[inline]
+    fn as_view(&self) -> View<'msg, Self::Proxied> {
+        *self
+    }
+}
+
+impl<'msg, T: Singular> IntoView<'msg> for RepeatedView<'msg, T> {
+    #[inline]
+    fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
+    where
+        'msg: 'shorter,
+    {
+        RepeatedView { raw: self.raw, _phantom: PhantomData }
+    }
+}
+
+impl<'msg, T: Singular> IntoProxied<Repeated<T>> for RepeatedView<'msg, T> {
+    fn into_proxied(self, _private: Private) -> Repeated<T> {
+        let mut repeated: Repeated<T> = Repeated::new();
+        T::repeated_copy_from(Private, self, repeated.as_mut());
+        repeated
+    }
+}
+
+/// Mutates the elements in a `repeated` field of `T`.
+pub struct RepeatedMut<'msg, T> {
+    pub(crate) inner: InnerRepeatedMut<'msg>,
+    _phantom: PhantomData<&'msg mut T>,
+}
+
+unsafe impl<'msg, T> Sync for RepeatedMut<'msg, T> {}
+
+impl<'msg, T> Debug for RepeatedMut<'msg, T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("RepeatedMut").field("raw", &self.inner.raw).finish()
     }
 }
 
@@ -252,174 +378,9 @@ impl<'msg, T: Singular> RepeatedMut<'msg, T> {
     }
 }
 
-impl<T> Repeated<T>
-where
-    T: Singular,
-{
-    pub fn as_view(&self) -> View<'_, Repeated<T>> {
-        RepeatedView { raw: self.inner.raw(), _phantom: PhantomData }
-    }
-
-    #[doc(hidden)]
-    pub fn inner(&self, _private: Private) -> &InnerRepeated {
-        &self.inner
-    }
-}
-
-impl<'msg, T> IntoProxied<Repeated<T>> for RepeatedView<'msg, T>
-where
-    T: 'msg + Singular,
-{
-    fn into_proxied(self, _private: Private) -> Repeated<T> {
-        let mut repeated: Repeated<T> = Repeated::new();
-        T::repeated_copy_from(Private, self, repeated.as_mut());
-        repeated
-    }
-}
-
-impl<'msg, T> IntoProxied<Repeated<T>> for RepeatedMut<'msg, T>
-where
-    T: 'msg + Singular,
-{
+impl<'msg, T: Singular> IntoProxied<Repeated<T>> for RepeatedMut<'msg, T> {
     fn into_proxied(self, _private: Private) -> Repeated<T> {
         IntoProxied::into_proxied(self.as_view(), _private)
-    }
-}
-
-impl<'msg, T, I, U> IntoProxied<Repeated<T>> for I
-where
-    I: Iterator<Item = U>,
-    T: 'msg + Singular,
-    U: IntoProxied<T>,
-{
-    fn into_proxied(self, _private: Private) -> Repeated<T> {
-        let mut repeated: Repeated<T> = Repeated::new();
-        repeated.as_mut().extend(self);
-        repeated
-    }
-}
-
-/// An iterator over the values inside of a [`View<Repeated<T>>`](RepeatedView).
-#[derive(Clone)]
-pub struct RepeatedIter<'msg, T> {
-    view: RepeatedView<'msg, T>,
-    current_index: usize,
-}
-
-impl<'msg, T> Debug for RepeatedIter<'msg, T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("RepeatedIter")
-            .field("view", &self.view)
-            .field("current_index", &self.current_index)
-            .finish()
-    }
-}
-
-/// A `repeated` field of `T`, used as the owned target for `Proxied`.
-///
-/// Users will generally write [`View<Repeated<T>>`](RepeatedView) or
-/// [`Mut<Repeated<T>>`](RepeatedMut) to access the repeated elements
-pub struct Repeated<T: Singular> {
-    pub(crate) inner: InnerRepeated,
-    _phantom: PhantomData<T>,
-}
-
-// SAFETY: `Repeated` is Sync because it does not implement interior mutability.
-unsafe impl<T: Singular> Sync for Repeated<T> {}
-
-// SAFETY: `Repeated` is Send because it's not bound to a specific thread e.g.
-// it does not use thread-local data or similar.
-unsafe impl<T: Singular> Send for Repeated<T> {}
-
-impl<T: Singular> Repeated<T> {
-    pub fn new() -> Self {
-        T::repeated_new(Private)
-    }
-    #[doc(hidden)]
-    pub fn from_inner(_private: Private, inner: InnerRepeated) -> Self {
-        Self { inner, _phantom: PhantomData }
-    }
-
-    pub(crate) fn as_mut(&mut self) -> RepeatedMut<'_, T> {
-        RepeatedMut { inner: self.inner.as_mut(), _phantom: PhantomData }
-    }
-}
-
-impl<T: Singular> Default for Repeated<T> {
-    fn default() -> Self {
-        Repeated::new()
-    }
-}
-
-impl<T: Singular> Drop for Repeated<T> {
-    fn drop(&mut self) {
-        // SAFETY: only called once
-        unsafe { T::repeated_free(Private, self) }
-    }
-}
-
-impl<T> Proxied for Repeated<T>
-where
-    T: Singular,
-{
-    type View<'msg>
-        = RepeatedView<'msg, T>
-    where
-        Repeated<T>: 'msg;
-}
-
-impl<T> SealedInternal for Repeated<T> where T: Singular {}
-
-impl<T> AsView for Repeated<T>
-where
-    T: Singular,
-{
-    type Proxied = Self;
-
-    fn as_view(&self) -> RepeatedView<'_, T> {
-        self.as_view()
-    }
-}
-
-impl<T> MutProxied for Repeated<T>
-where
-    T: Singular,
-{
-    type Mut<'msg>
-        = RepeatedMut<'msg, T>
-    where
-        Repeated<T>: 'msg;
-}
-
-impl<T> AsMut for Repeated<T>
-where
-    T: Singular,
-{
-    type MutProxied = Self;
-
-    fn as_mut(&mut self) -> RepeatedMut<'_, T> {
-        self.as_mut()
-    }
-}
-
-impl<'msg, T: Singular> SealedInternal for RepeatedView<'msg, T> {}
-
-impl<'msg, T: Singular> AsView for RepeatedView<'msg, T> {
-    type Proxied = Repeated<T>;
-
-    #[inline]
-    fn as_view(&self) -> View<'msg, Self::Proxied> {
-        *self
-    }
-}
-
-impl<'msg, T: Singular> IntoView<'msg> for RepeatedView<'msg, T> {
-    #[inline]
-    fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
-    where
-        'msg: 'shorter,
-    {
-        RepeatedView { raw: self.raw, _phantom: PhantomData }
     }
 }
 
@@ -460,6 +421,35 @@ impl<'msg, T: Singular> IntoMut<'msg> for RepeatedMut<'msg, T> {
         'msg: 'shorter,
     {
         RepeatedMut { inner: self.inner, _phantom: PhantomData }
+    }
+}
+
+impl<'msg, T: Singular, ViewT> Extend<ViewT> for RepeatedMut<'msg, T>
+where
+    ViewT: IntoProxied<T>,
+{
+    fn extend<I: IntoIterator<Item = ViewT>>(&mut self, iter: I) {
+        let iter = iter.into_iter();
+        T::repeated_reserve(Private, self.as_mut(), iter.size_hint().0);
+        for item in iter {
+            self.push(item);
+        }
+    }
+}
+
+/// An iterator over the values inside of a [`View<Repeated<T>>`](RepeatedView).
+#[derive(Clone)]
+pub struct RepeatedIter<'msg, T> {
+    view: RepeatedView<'msg, T>,
+    current_index: usize,
+}
+
+impl<'msg, T> Debug for RepeatedIter<'msg, T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("RepeatedIter")
+            .field("view", &self.view)
+            .field("current_index", &self.current_index)
+            .finish()
     }
 }
 
@@ -514,20 +504,6 @@ impl<'borrow, T: Singular> iter::IntoIterator for &'borrow RepeatedMut<'_, T> {
 
     fn into_iter(self) -> Self::IntoIter {
         RepeatedIter { view: self.as_view(), current_index: 0 }
-    }
-}
-
-impl<'msg, T, ViewT> Extend<ViewT> for RepeatedMut<'msg, T>
-where
-    T: Singular,
-    ViewT: IntoProxied<T>,
-{
-    fn extend<I: IntoIterator<Item = ViewT>>(&mut self, iter: I) {
-        let iter = iter.into_iter();
-        T::repeated_reserve(Private, self.as_mut(), iter.size_hint().0);
-        for item in iter {
-            self.push(item);
-        }
     }
 }
 

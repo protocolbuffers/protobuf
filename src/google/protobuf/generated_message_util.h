@@ -424,6 +424,11 @@ struct PrivateAccess {
   static auto& GetExtensionSet(T& msg) {
     return msg._impl_._extensions_;
   }
+
+  template <typename T>
+  static void TrackerOnGetMetadata() {
+    T::Impl_::TrackerOnGetMetadata();
+  }
 };
 
 }  // namespace internal

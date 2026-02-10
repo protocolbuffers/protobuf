@@ -45,7 +45,7 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
   std::string field_name = FieldMemberName(field, split);
   std::string qualified_type = FieldMessageTypeName(field, opts);
   std::string default_ref =
-      QualifiedDefaultInstanceName(field->message_type(), opts);
+      QualifiedMsgGlobalsInstanceName(field->message_type(), opts);
   std::string base = absl::StrCat(
       "::", ProtobufNamespace(opts), "::",
       HasDescriptorMethods(field->file(), opts) ? "Message" : "MessageLite");
