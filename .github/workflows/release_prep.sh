@@ -9,7 +9,7 @@ TAG=$1
 PREFIX="protobuf-${TAG:1}"
 ARCHIVE="$PREFIX.bazel.tar.gz"
 ARCHIVE_TMP=$(mktemp)
-INTEGRITY_FILE=${PREFIX}/bazel/private/prebuilt_tool_integrity.bzl
+INTEGRITY_FILE=${PREFIX}/bazel/private/oss/toolchains/prebuilt/protoc_toolchain.bzl
 
 # NB: configuration for 'git archive' is in /.gitattributes
 git archive --format=tar --prefix=${PREFIX}/ ${TAG} > $ARCHIVE_TMP
@@ -27,7 +27,7 @@ reduce .assets[] as $a (
   # Start with an empty dictionary, and for each asset, add
   {}; . + {
     # The format required in starlark, i.e. "release-name": "deadbeef123"
-    ($a.name): ($a.digest | sub("^sha256:"; "")) 
+    ($a.name): ($a.digest | sub("^sha256:"; ""))
   }
 )
 EOF

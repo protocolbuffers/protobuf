@@ -154,9 +154,15 @@ def _test_binary_option_deps_impl(env, target):
     java_info.transitive_source_jars_in_package().contains_exactly([
         "{package}/option_deps_foo-speed-src.jar",
     ])
+    java_info.transitive_source_jars().contains(
+        "java/core/liblite_runtime_only-src.jar",
+    )
     java_info.transitive_compile_time_jars_in_package().contains_exactly([
         "{package}/liboption_deps_foo-speed-hjar.jar",
     ])
+    java_info.transitive_compile_time_jars().contains(
+        "java/core/liblite_runtime_only-hjar.jar",
+    )
 
 def _filter_inpackage(file_depset, owner):
     return depset([f for f in file_depset.to_list() if f.owner.package == owner.package])

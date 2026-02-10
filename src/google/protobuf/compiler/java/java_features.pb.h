@@ -610,8 +610,7 @@ PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull JavaFeatu
 
 inline constexpr int kJavaFieldNumber = 1001;
 PROTOC_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
-    ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::JavaFeatures >, 11, false>
-    java;
+    ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::JavaFeatures >, 11, false>(java);
 
 // ===================================================================
 

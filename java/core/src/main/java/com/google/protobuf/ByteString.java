@@ -127,7 +127,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   /**
    * Gets the byte at the given index. This method should be used only for random access to
    * individual bytes. To access bytes sequentially, use the {@link ByteIterator} returned by {@link
-   * #iterator()}, and call {@link #substring(int, int)} first if necessary.
+   * #iterator()}, and call {@link #substringNoCopy(int, int)} first if necessary.
    *
    * @param index index of byte
    * @return the value
@@ -317,7 +317,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * Return the substring from {@code beginIndex}, inclusive, to the end of the string.
    *
    * @param beginIndex start at this index
-   * @return substring sharing underlying data
+   * @return substring
    * @throws IndexOutOfBoundsException if {@code beginIndex < 0} or {@code beginIndex > size()}.
    */
   public final ByteString substring(int beginIndex) {
@@ -329,11 +329,37 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *
    * @param beginIndex start at this index
    * @param endIndex the last character is the one before this index
-   * @return substring sharing underlying data
+   * @return substring
    * @throws IndexOutOfBoundsException if {@code beginIndex < 0}, {@code endIndex > size()}, or
    *     {@code beginIndex > endIndex}.
    */
   public abstract ByteString substring(int beginIndex, int endIndex);
+
+  /**
+   * Return the substring from {@code beginIndex}, inclusive, to the end of the string. Unlike
+   * {@link #substring(int)} this method tries to avoid copies of the underlying data where
+   * possible, but may still copy in some situations.
+   *
+   * @param beginIndex start at this index
+   * @return substring sharing underlying data
+   * @throws IndexOutOfBoundsException if {@code beginIndex < 0} or {@code beginIndex > size()}.
+   */
+  public final ByteString substringNoCopy(int beginIndex) {
+    return substringNoCopy(beginIndex, size());
+  }
+
+  /**
+   * Return the substring from {@code beginIndex}, inclusive, to {@code endIndex}, exclusive. Unlike
+   * {@link #substring(int, int)} this method tries to avoid copies of the underlying data where
+   * possible, but may still copy in some situations.
+   *
+   * @param beginIndex start at this index
+   * @param endIndex the last character is the one before this index
+   * @return substring sharing underlying data
+   * @throws IndexOutOfBoundsException if {@code beginIndex < 0}, {@code endIndex > size()}, or
+   *     {@code beginIndex > endIndex}.
+   */
+  public abstract ByteString substringNoCopy(int beginIndex, int endIndex);
 
   /**
    * Tests if this bytestring starts with the specified prefix. Similar to {@link
@@ -344,7 +370,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *     byte sequence represented by this string; <code>false</code> otherwise.
    */
   public final boolean startsWith(ByteString prefix) {
-    return size() >= prefix.size() && substring(0, prefix.size()).equals(prefix);
+    return size() >= prefix.size() && substringNoCopy(0, prefix.size()).equals(prefix);
   }
 
   /**
@@ -356,7 +382,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *     byte sequence represented by this string; <code>false</code> otherwise.
    */
   public final boolean endsWith(ByteString suffix) {
-    return size() >= suffix.size() && substring(size() - suffix.size()).equals(suffix);
+    return size() >= suffix.size() && substringNoCopy(size() - suffix.size()).equals(suffix);
   }
 
   // =================================================================
@@ -409,10 +435,11 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       return EMPTY;
     }
     checkRange(offset, offset + size, bytes.length);
-    if (requireUtf8 && !Utf8.isValidUtf8(bytes, offset, offset + size)) {
+    byte[] copy = byteArrayCopier.copyFrom(bytes, offset, size);
+    if (requireUtf8 && !Utf8.isValidUtf8(copy)) {
       throw InvalidProtocolBufferException.invalidUtf8();
     }
-    return new LiteralByteString(byteArrayCopier.copyFrom(bytes, offset, size));
+    return new LiteralByteString(copy);
   }
 
   /**
@@ -773,7 +800,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @param targetOffset offset within the target buffer
    * @param numberToCopy number of bytes to copy
    * @throws IndexOutOfBoundsException if an offset or size is negative or too large
-   * @deprecated Use {@code byteString.substring(sourceOffset, sourceOffset +
+   * @deprecated Use {@code byteString.substringNoCopy(sourceOffset, sourceOffset +
    *     numberToCopy).copyTo(target, targetOffset)} instead.
    */
   @Deprecated
@@ -796,7 +823,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * Copies bytes into a ByteBuffer.
    *
    * <p>To copy a subset of bytes, you call this method on the return value of {@link
-   * #substring(int, int)}. Example: {@code byteString.substring(start, end).copyTo(target)}
+   * #substring(int, int)}. Example: {@code byteString.substringNoCopy(start, end).copyTo(target)}
    *
    * @param target ByteBuffer to copy into.
    * @throws java.nio.ReadOnlyBufferException if the {@code target} is read-only
@@ -1433,7 +1460,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   private String truncateAndEscapeForDisplay() {
     final int limit = 50;
 
-    return size() <= limit ? escapeBytes(this) : escapeBytes(substring(0, limit - 3)) + "...";
+    return size() <= limit ? escapeBytes(this) : escapeBytes(substringNoCopy(0, limit - 3)) + "...";
   }
 
   /**
@@ -1501,6 +1528,17 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
 
     @Override
     public ByteString substring(int beginIndex, int endIndex) {
+      final int length = checkRange(beginIndex, endIndex, size());
+
+      if (length == 0) {
+        return ByteString.EMPTY;
+      }
+
+      return new BoundedByteString(bytes, beginIndex, length);
+    }
+
+    @Override
+    public ByteString substringNoCopy(int beginIndex, int endIndex) {
       final int length = checkRange(beginIndex, endIndex, size());
 
       if (length == 0) {
@@ -1606,7 +1644,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
         return subArrayEquals(bytes, 0, bbsOther.bytes, bbsOther.offset + offset, length);
       }
 
-      return other.substring(offset, offset + length).equals(substring(0, length));
+      return other.substringNoCopy(offset, offset + length).equals(substringNoCopy(0, length));
     }
 
     @Override
@@ -1701,6 +1739,15 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       return new BoundedByteString(bytes, offset + beginIndex, substringLength);
     }
 
+    @Override
+    public ByteString substringNoCopy(int beginIndex, int endIndex) {
+      int substringLength = checkRange(beginIndex, endIndex, length);
+      if (substringLength == 0) {
+        return ByteString.EMPTY;
+      }
+      return new BoundedByteString(bytes, offset + beginIndex, substringLength);
+    }
+
     // =================================================================
     // ByteString -> byte[]
     @Override
@@ -1781,8 +1828,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       }
 
       return other
-          .substring(offset, offset + length)
-          .equals(substring(this.offset, this.offset + length));
+          .substringNoCopy(offset, offset + length)
+          .equals(substringNoCopy(this.offset, this.offset + length));
     }
 
     @Override

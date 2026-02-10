@@ -25,6 +25,81 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+namespace {
+PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
+    file_reflection_data[] = {
+        // ::google::protobuf::FileDescriptorSet
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::FileDescriptorProto
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::DescriptorProto_ExtensionRange
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::DescriptorProto_ReservedRange
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::DescriptorProto
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::ExtensionRangeOptions_Declaration
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::ExtensionRangeOptions
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::FieldDescriptorProto
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::OneofDescriptorProto
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::EnumDescriptorProto_EnumReservedRange
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::EnumDescriptorProto
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::EnumValueDescriptorProto
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::ServiceDescriptorProto
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::MethodDescriptorProto
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::FileOptions
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::MessageOptions
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::FieldOptions_EditionDefault
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::FieldOptions_FeatureSupport
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::FieldOptions
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::OneofOptions
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::EnumOptions
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::EnumValueOptions
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::ServiceOptions
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::MethodOptions
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::UninterpretedOption_NamePart
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::UninterpretedOption
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::FeatureSet_VisibilityFeature
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::FeatureSet
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::FeatureSetDefaults
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::SourceCodeInfo_Location
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::SourceCodeInfo
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::GeneratedCodeInfo_Annotation
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+        // ::google::protobuf::GeneratedCodeInfo
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto, /* tracker*/ nullptr,},
+};
+}  // namespace
+#endif
 namespace google {
 namespace protobuf {
 
@@ -2588,6 +2663,7 @@ constexpr auto FileDescriptorSet::InternalNewImpl_() {
                                             alignof(FileDescriptorSet));
 }
 constexpr auto FileDescriptorSet::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_FileDescriptorSet_globals_._default,
@@ -2603,10 +2679,28 @@ constexpr auto FileDescriptorSet::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FileDescriptorSet, _impl_._cached_size_),
           false,
       },
-      &FileDescriptorSet::kDescriptorMethods,
+      &file_reflection_data[0]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_FileDescriptorSet_globals_._default,
+          &_table_.header,
+          FileDescriptorSet::IsInitializedImpl,
+          &FileDescriptorSet::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<FileDescriptorSet>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &FileDescriptorSet::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<FileDescriptorSet>(), &FileDescriptorSet::ByteSizeLong,
+              &FileDescriptorSet::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(FileDescriptorSet, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -2996,6 +3090,7 @@ constexpr auto FileDescriptorProto::InternalNewImpl_() {
                                             alignof(FileDescriptorProto));
 }
 constexpr auto FileDescriptorProto::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_FileDescriptorProto_globals_._default,
@@ -3011,10 +3106,28 @@ constexpr auto FileDescriptorProto::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._cached_size_),
           false,
       },
-      &FileDescriptorProto::kDescriptorMethods,
+      &file_reflection_data[1]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_FileDescriptorProto_globals_._default,
+          &_table_.header,
+          FileDescriptorProto::IsInitializedImpl,
+          &FileDescriptorProto::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<FileDescriptorProto>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &FileDescriptorProto::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<FileDescriptorProto>(), &FileDescriptorProto::ByteSizeLong,
+              &FileDescriptorProto::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -3710,6 +3823,7 @@ constexpr auto DescriptorProto_ExtensionRange::InternalNewImpl_() {
                                             alignof(DescriptorProto_ExtensionRange));
 }
 constexpr auto DescriptorProto_ExtensionRange::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_DescriptorProto_ExtensionRange_globals_._default,
@@ -3725,10 +3839,28 @@ constexpr auto DescriptorProto_ExtensionRange::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._cached_size_),
           false,
       },
-      &DescriptorProto_ExtensionRange::kDescriptorMethods,
+      &file_reflection_data[2]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_DescriptorProto_ExtensionRange_globals_._default,
+          &_table_.header,
+          DescriptorProto_ExtensionRange::IsInitializedImpl,
+          &DescriptorProto_ExtensionRange::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<DescriptorProto_ExtensionRange>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &DescriptorProto_ExtensionRange::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<DescriptorProto_ExtensionRange>(), &DescriptorProto_ExtensionRange::ByteSizeLong,
+              &DescriptorProto_ExtensionRange::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -4031,6 +4163,7 @@ constexpr auto DescriptorProto_ReservedRange::InternalNewImpl_() {
                                             alignof(DescriptorProto_ReservedRange));
 }
 constexpr auto DescriptorProto_ReservedRange::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_DescriptorProto_ReservedRange_globals_._default,
@@ -4046,10 +4179,28 @@ constexpr auto DescriptorProto_ReservedRange::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._cached_size_),
           false,
       },
-      &DescriptorProto_ReservedRange::kDescriptorMethods,
+      &file_reflection_data[3]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_DescriptorProto_ReservedRange_globals_._default,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &DescriptorProto_ReservedRange::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<DescriptorProto_ReservedRange>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &DescriptorProto_ReservedRange::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<DescriptorProto_ReservedRange>(), &DescriptorProto_ReservedRange::ByteSizeLong,
+              &DescriptorProto_ReservedRange::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -4427,6 +4578,7 @@ constexpr auto DescriptorProto::InternalNewImpl_() {
                                             alignof(DescriptorProto));
 }
 constexpr auto DescriptorProto::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_DescriptorProto_globals_._default,
@@ -4442,10 +4594,28 @@ constexpr auto DescriptorProto::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._cached_size_),
           false,
       },
-      &DescriptorProto::kDescriptorMethods,
+      &file_reflection_data[4]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_DescriptorProto_globals_._default,
+          &_table_.header,
+          DescriptorProto::IsInitializedImpl,
+          &DescriptorProto::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<DescriptorProto>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &DescriptorProto::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<DescriptorProto>(), &DescriptorProto::ByteSizeLong,
+              &DescriptorProto::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -5083,6 +5253,7 @@ constexpr auto ExtensionRangeOptions_Declaration::InternalNewImpl_() {
                                             alignof(ExtensionRangeOptions_Declaration));
 }
 constexpr auto ExtensionRangeOptions_Declaration::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_ExtensionRangeOptions_Declaration_globals_._default,
@@ -5098,10 +5269,28 @@ constexpr auto ExtensionRangeOptions_Declaration::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._cached_size_),
           false,
       },
-      &ExtensionRangeOptions_Declaration::kDescriptorMethods,
+      &file_reflection_data[5]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_ExtensionRangeOptions_Declaration_globals_._default,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &ExtensionRangeOptions_Declaration::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<ExtensionRangeOptions_Declaration>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &ExtensionRangeOptions_Declaration::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<ExtensionRangeOptions_Declaration>(), &ExtensionRangeOptions_Declaration::ByteSizeLong,
+              &ExtensionRangeOptions_Declaration::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -5473,6 +5662,7 @@ constexpr auto ExtensionRangeOptions::InternalNewImpl_() {
                                             alignof(ExtensionRangeOptions));
 }
 constexpr auto ExtensionRangeOptions::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_ExtensionRangeOptions_globals_._default,
@@ -5488,10 +5678,28 @@ constexpr auto ExtensionRangeOptions::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._cached_size_),
           false,
       },
-      &ExtensionRangeOptions::kDescriptorMethods,
+      &file_reflection_data[6]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_ExtensionRangeOptions_globals_._default,
+          &_table_.header,
+          ExtensionRangeOptions::IsInitializedImpl,
+          &ExtensionRangeOptions::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<ExtensionRangeOptions>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &ExtensionRangeOptions::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<ExtensionRangeOptions>(), &ExtensionRangeOptions::ByteSizeLong,
+              &ExtensionRangeOptions::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -5903,6 +6111,7 @@ constexpr auto FieldDescriptorProto::InternalNewImpl_() {
                                             alignof(FieldDescriptorProto));
 }
 constexpr auto FieldDescriptorProto::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_FieldDescriptorProto_globals_._default,
@@ -5918,10 +6127,28 @@ constexpr auto FieldDescriptorProto::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._cached_size_),
           false,
       },
-      &FieldDescriptorProto::kDescriptorMethods,
+      &file_reflection_data[7]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_FieldDescriptorProto_globals_._default,
+          &_table_.header,
+          FieldDescriptorProto::IsInitializedImpl,
+          &FieldDescriptorProto::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<FieldDescriptorProto>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &FieldDescriptorProto::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<FieldDescriptorProto>(), &FieldDescriptorProto::ByteSizeLong,
+              &FieldDescriptorProto::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -6434,6 +6661,7 @@ constexpr auto OneofDescriptorProto::InternalNewImpl_() {
                                             alignof(OneofDescriptorProto));
 }
 constexpr auto OneofDescriptorProto::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_OneofDescriptorProto_globals_._default,
@@ -6449,10 +6677,28 @@ constexpr auto OneofDescriptorProto::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._cached_size_),
           false,
       },
-      &OneofDescriptorProto::kDescriptorMethods,
+      &file_reflection_data[8]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_OneofDescriptorProto_globals_._default,
+          &_table_.header,
+          OneofDescriptorProto::IsInitializedImpl,
+          &OneofDescriptorProto::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<OneofDescriptorProto>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &OneofDescriptorProto::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<OneofDescriptorProto>(), &OneofDescriptorProto::ByteSizeLong,
+              &OneofDescriptorProto::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -6730,6 +6976,7 @@ constexpr auto EnumDescriptorProto_EnumReservedRange::InternalNewImpl_() {
                                             alignof(EnumDescriptorProto_EnumReservedRange));
 }
 constexpr auto EnumDescriptorProto_EnumReservedRange::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_EnumDescriptorProto_EnumReservedRange_globals_._default,
@@ -6745,10 +6992,28 @@ constexpr auto EnumDescriptorProto_EnumReservedRange::InternalGenerateClassData_
           PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._cached_size_),
           false,
       },
-      &EnumDescriptorProto_EnumReservedRange::kDescriptorMethods,
+      &file_reflection_data[9]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_EnumDescriptorProto_EnumReservedRange_globals_._default,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &EnumDescriptorProto_EnumReservedRange::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<EnumDescriptorProto_EnumReservedRange>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &EnumDescriptorProto_EnumReservedRange::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<EnumDescriptorProto_EnumReservedRange>(), &EnumDescriptorProto_EnumReservedRange::ByteSizeLong,
+              &EnumDescriptorProto_EnumReservedRange::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -7066,6 +7331,7 @@ constexpr auto EnumDescriptorProto::InternalNewImpl_() {
                                             alignof(EnumDescriptorProto));
 }
 constexpr auto EnumDescriptorProto::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_EnumDescriptorProto_globals_._default,
@@ -7081,10 +7347,28 @@ constexpr auto EnumDescriptorProto::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._cached_size_),
           false,
       },
-      &EnumDescriptorProto::kDescriptorMethods,
+      &file_reflection_data[10]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_EnumDescriptorProto_globals_._default,
+          &_table_.header,
+          EnumDescriptorProto::IsInitializedImpl,
+          &EnumDescriptorProto::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<EnumDescriptorProto>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &EnumDescriptorProto::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<EnumDescriptorProto>(), &EnumDescriptorProto::ByteSizeLong,
+              &EnumDescriptorProto::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -7519,6 +7803,7 @@ constexpr auto EnumValueDescriptorProto::InternalNewImpl_() {
                                             alignof(EnumValueDescriptorProto));
 }
 constexpr auto EnumValueDescriptorProto::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_EnumValueDescriptorProto_globals_._default,
@@ -7534,10 +7819,28 @@ constexpr auto EnumValueDescriptorProto::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._cached_size_),
           false,
       },
-      &EnumValueDescriptorProto::kDescriptorMethods,
+      &file_reflection_data[11]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_EnumValueDescriptorProto_globals_._default,
+          &_table_.header,
+          EnumValueDescriptorProto::IsInitializedImpl,
+          &EnumValueDescriptorProto::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<EnumValueDescriptorProto>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &EnumValueDescriptorProto::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<EnumValueDescriptorProto>(), &EnumValueDescriptorProto::ByteSizeLong,
+              &EnumValueDescriptorProto::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -7870,6 +8173,7 @@ constexpr auto ServiceDescriptorProto::InternalNewImpl_() {
                                             alignof(ServiceDescriptorProto));
 }
 constexpr auto ServiceDescriptorProto::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_ServiceDescriptorProto_globals_._default,
@@ -7885,10 +8189,28 @@ constexpr auto ServiceDescriptorProto::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._cached_size_),
           false,
       },
-      &ServiceDescriptorProto::kDescriptorMethods,
+      &file_reflection_data[12]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_ServiceDescriptorProto_globals_._default,
+          &_table_.header,
+          ServiceDescriptorProto::IsInitializedImpl,
+          &ServiceDescriptorProto::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<ServiceDescriptorProto>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &ServiceDescriptorProto::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<ServiceDescriptorProto>(), &ServiceDescriptorProto::ByteSizeLong,
+              &ServiceDescriptorProto::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -8238,6 +8560,7 @@ constexpr auto MethodDescriptorProto::InternalNewImpl_() {
                                             alignof(MethodDescriptorProto));
 }
 constexpr auto MethodDescriptorProto::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_MethodDescriptorProto_globals_._default,
@@ -8253,10 +8576,28 @@ constexpr auto MethodDescriptorProto::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._cached_size_),
           false,
       },
-      &MethodDescriptorProto::kDescriptorMethods,
+      &file_reflection_data[13]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_MethodDescriptorProto_globals_._default,
+          &_table_.header,
+          MethodDescriptorProto::IsInitializedImpl,
+          &MethodDescriptorProto::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<MethodDescriptorProto>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &MethodDescriptorProto::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<MethodDescriptorProto>(), &MethodDescriptorProto::ByteSizeLong,
+              &MethodDescriptorProto::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -8699,6 +9040,7 @@ constexpr auto FileOptions::InternalNewImpl_() {
                                             alignof(FileOptions));
 }
 constexpr auto FileOptions::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_FileOptions_globals_._default,
@@ -8714,10 +9056,28 @@ constexpr auto FileOptions::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._cached_size_),
           false,
       },
-      &FileOptions::kDescriptorMethods,
+      &file_reflection_data[14]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_FileOptions_globals_._default,
+          &_table_.header,
+          FileOptions::IsInitializedImpl,
+          &FileOptions::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<FileOptions>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &FileOptions::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<FileOptions>(), &FileOptions::ByteSizeLong,
+              &FileOptions::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -9485,6 +9845,7 @@ constexpr auto MessageOptions::InternalNewImpl_() {
                                             alignof(MessageOptions));
 }
 constexpr auto MessageOptions::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_MessageOptions_globals_._default,
@@ -9500,10 +9861,28 @@ constexpr auto MessageOptions::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._cached_size_),
           false,
       },
-      &MessageOptions::kDescriptorMethods,
+      &file_reflection_data[15]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_MessageOptions_globals_._default,
+          &_table_.header,
+          MessageOptions::IsInitializedImpl,
+          &MessageOptions::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<MessageOptions>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &MessageOptions::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<MessageOptions>(), &MessageOptions::ByteSizeLong,
+              &MessageOptions::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -9902,6 +10281,7 @@ constexpr auto FieldOptions_EditionDefault::InternalNewImpl_() {
                                             alignof(FieldOptions_EditionDefault));
 }
 constexpr auto FieldOptions_EditionDefault::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_FieldOptions_EditionDefault_globals_._default,
@@ -9917,10 +10297,28 @@ constexpr auto FieldOptions_EditionDefault::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._cached_size_),
           false,
       },
-      &FieldOptions_EditionDefault::kDescriptorMethods,
+      &file_reflection_data[16]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_FieldOptions_EditionDefault_globals_._default,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &FieldOptions_EditionDefault::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<FieldOptions_EditionDefault>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &FieldOptions_EditionDefault::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<FieldOptions_EditionDefault>(), &FieldOptions_EditionDefault::ByteSizeLong,
+              &FieldOptions_EditionDefault::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -10204,6 +10602,7 @@ constexpr auto FieldOptions_FeatureSupport::InternalNewImpl_() {
                                             alignof(FieldOptions_FeatureSupport));
 }
 constexpr auto FieldOptions_FeatureSupport::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_FieldOptions_FeatureSupport_globals_._default,
@@ -10219,10 +10618,28 @@ constexpr auto FieldOptions_FeatureSupport::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_._cached_size_),
           false,
       },
-      &FieldOptions_FeatureSupport::kDescriptorMethods,
+      &file_reflection_data[17]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_FieldOptions_FeatureSupport_globals_._default,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &FieldOptions_FeatureSupport::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<FieldOptions_FeatureSupport>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &FieldOptions_FeatureSupport::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<FieldOptions_FeatureSupport>(), &FieldOptions_FeatureSupport::ByteSizeLong,
+              &FieldOptions_FeatureSupport::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -10633,6 +11050,7 @@ constexpr auto FieldOptions::InternalNewImpl_() {
                                             alignof(FieldOptions));
 }
 constexpr auto FieldOptions::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_FieldOptions_globals_._default,
@@ -10648,10 +11066,28 @@ constexpr auto FieldOptions::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._cached_size_),
           false,
       },
-      &FieldOptions::kDescriptorMethods,
+      &file_reflection_data[18]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_FieldOptions_globals_._default,
+          &_table_.header,
+          FieldOptions::IsInitializedImpl,
+          &FieldOptions::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<FieldOptions>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &FieldOptions::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<FieldOptions>(), &FieldOptions::ByteSizeLong,
+              &FieldOptions::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -11257,6 +11693,7 @@ constexpr auto OneofOptions::InternalNewImpl_() {
                                             alignof(OneofOptions));
 }
 constexpr auto OneofOptions::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_OneofOptions_globals_._default,
@@ -11272,10 +11709,28 @@ constexpr auto OneofOptions::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._cached_size_),
           false,
       },
-      &OneofOptions::kDescriptorMethods,
+      &file_reflection_data[19]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_OneofOptions_globals_._default,
+          &_table_.header,
+          OneofOptions::IsInitializedImpl,
+          &OneofOptions::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<OneofOptions>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &OneofOptions::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<OneofOptions>(), &OneofOptions::ByteSizeLong,
+              &OneofOptions::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -11623,6 +12078,7 @@ constexpr auto EnumOptions::InternalNewImpl_() {
                                             alignof(EnumOptions));
 }
 constexpr auto EnumOptions::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_EnumOptions_globals_._default,
@@ -11638,10 +12094,28 @@ constexpr auto EnumOptions::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._cached_size_),
           false,
       },
-      &EnumOptions::kDescriptorMethods,
+      &file_reflection_data[20]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_EnumOptions_globals_._default,
+          &_table_.header,
+          EnumOptions::IsInitializedImpl,
+          &EnumOptions::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<EnumOptions>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &EnumOptions::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<EnumOptions>(), &EnumOptions::ByteSizeLong,
+              &EnumOptions::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -12046,6 +12520,7 @@ constexpr auto EnumValueOptions::InternalNewImpl_() {
                                             alignof(EnumValueOptions));
 }
 constexpr auto EnumValueOptions::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_EnumValueOptions_globals_._default,
@@ -12061,10 +12536,28 @@ constexpr auto EnumValueOptions::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._cached_size_),
           false,
       },
-      &EnumValueOptions::kDescriptorMethods,
+      &file_reflection_data[21]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_EnumValueOptions_globals_._default,
+          &_table_.header,
+          EnumValueOptions::IsInitializedImpl,
+          &EnumValueOptions::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<EnumValueOptions>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &EnumValueOptions::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<EnumValueOptions>(), &EnumValueOptions::ByteSizeLong,
+              &EnumValueOptions::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -12479,6 +12972,7 @@ constexpr auto ServiceOptions::InternalNewImpl_() {
                                             alignof(ServiceOptions));
 }
 constexpr auto ServiceOptions::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_ServiceOptions_globals_._default,
@@ -12494,10 +12988,28 @@ constexpr auto ServiceOptions::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._cached_size_),
           false,
       },
-      &ServiceOptions::kDescriptorMethods,
+      &file_reflection_data[22]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_ServiceOptions_globals_._default,
+          &_table_.header,
+          ServiceOptions::IsInitializedImpl,
+          &ServiceOptions::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<ServiceOptions>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &ServiceOptions::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<ServiceOptions>(), &ServiceOptions::ByteSizeLong,
+              &ServiceOptions::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -12869,6 +13381,7 @@ constexpr auto MethodOptions::InternalNewImpl_() {
                                             alignof(MethodOptions));
 }
 constexpr auto MethodOptions::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_MethodOptions_globals_._default,
@@ -12884,10 +13397,28 @@ constexpr auto MethodOptions::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._cached_size_),
           false,
       },
-      &MethodOptions::kDescriptorMethods,
+      &file_reflection_data[23]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_MethodOptions_globals_._default,
+          &_table_.header,
+          MethodOptions::IsInitializedImpl,
+          &MethodOptions::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<MethodOptions>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &MethodOptions::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<MethodOptions>(), &MethodOptions::ByteSizeLong,
+              &MethodOptions::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -13260,6 +13791,7 @@ constexpr auto UninterpretedOption_NamePart::InternalNewImpl_() {
                                             alignof(UninterpretedOption_NamePart));
 }
 constexpr auto UninterpretedOption_NamePart::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_UninterpretedOption_NamePart_globals_._default,
@@ -13275,10 +13807,28 @@ constexpr auto UninterpretedOption_NamePart::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._cached_size_),
           false,
       },
-      &UninterpretedOption_NamePart::kDescriptorMethods,
+      &file_reflection_data[24]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_UninterpretedOption_NamePart_globals_._default,
+          &_table_.header,
+          UninterpretedOption_NamePart::IsInitializedImpl,
+          &UninterpretedOption_NamePart::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<UninterpretedOption_NamePart>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &UninterpretedOption_NamePart::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<UninterpretedOption_NamePart>(), &UninterpretedOption_NamePart::ByteSizeLong,
+              &UninterpretedOption_NamePart::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -13579,6 +14129,7 @@ constexpr auto UninterpretedOption::InternalNewImpl_() {
                                             alignof(UninterpretedOption));
 }
 constexpr auto UninterpretedOption::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_UninterpretedOption_globals_._default,
@@ -13594,10 +14145,28 @@ constexpr auto UninterpretedOption::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._cached_size_),
           false,
       },
-      &UninterpretedOption::kDescriptorMethods,
+      &file_reflection_data[25]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_UninterpretedOption_globals_._default,
+          &_table_.header,
+          UninterpretedOption::IsInitializedImpl,
+          &UninterpretedOption::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<UninterpretedOption>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &UninterpretedOption::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<UninterpretedOption>(), &UninterpretedOption::ByteSizeLong,
+              &UninterpretedOption::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -13969,6 +14538,7 @@ constexpr auto FeatureSet_VisibilityFeature::InternalNewImpl_() {
                                             alignof(FeatureSet_VisibilityFeature));
 }
 constexpr auto FeatureSet_VisibilityFeature::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_FeatureSet_VisibilityFeature_globals_._default,
@@ -13984,10 +14554,28 @@ constexpr auto FeatureSet_VisibilityFeature::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FeatureSet_VisibilityFeature, _impl_._cached_size_),
           false,
       },
-      &FeatureSet_VisibilityFeature::kDescriptorMethods,
+      &file_reflection_data[26]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_FeatureSet_VisibilityFeature_globals_._default,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &FeatureSet_VisibilityFeature::MergeImpl,
+          ::google::protobuf::internal::ZeroFieldsBase::GetNewImpl<FeatureSet_VisibilityFeature>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &FeatureSet_VisibilityFeature::SharedDtor,
+          ::google::protobuf::internal::ZeroFieldsBase::GetClearImpl<FeatureSet_VisibilityFeature>(), &FeatureSet_VisibilityFeature::ByteSizeLong,
+              &FeatureSet_VisibilityFeature::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(FeatureSet_VisibilityFeature, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -14130,6 +14718,7 @@ constexpr auto FeatureSet::InternalNewImpl_() {
                                             alignof(FeatureSet));
 }
 constexpr auto FeatureSet::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_FeatureSet_globals_._default,
@@ -14145,10 +14734,28 @@ constexpr auto FeatureSet::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._cached_size_),
           false,
       },
-      &FeatureSet::kDescriptorMethods,
+      &file_reflection_data[27]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_FeatureSet_globals_._default,
+          &_table_.header,
+          FeatureSet::IsInitializedImpl,
+          &FeatureSet::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<FeatureSet>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &FeatureSet::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<FeatureSet>(), &FeatureSet::ByteSizeLong,
+              &FeatureSet::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -14584,6 +15191,7 @@ constexpr auto FeatureSetDefaults_FeatureSetEditionDefault::InternalNewImpl_() {
                                             alignof(FeatureSetDefaults_FeatureSetEditionDefault));
 }
 constexpr auto FeatureSetDefaults_FeatureSetEditionDefault::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_FeatureSetDefaults_FeatureSetEditionDefault_globals_._default,
@@ -14599,10 +15207,28 @@ constexpr auto FeatureSetDefaults_FeatureSetEditionDefault::InternalGenerateClas
           PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._cached_size_),
           false,
       },
-      &FeatureSetDefaults_FeatureSetEditionDefault::kDescriptorMethods,
+      &file_reflection_data[28]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_FeatureSetDefaults_FeatureSetEditionDefault_globals_._default,
+          &_table_.header,
+          FeatureSetDefaults_FeatureSetEditionDefault::IsInitializedImpl,
+          &FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<FeatureSetDefaults_FeatureSetEditionDefault>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &FeatureSetDefaults_FeatureSetEditionDefault::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<FeatureSetDefaults_FeatureSetEditionDefault>(), &FeatureSetDefaults_FeatureSetEditionDefault::ByteSizeLong,
+              &FeatureSetDefaults_FeatureSetEditionDefault::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -14948,6 +15574,7 @@ constexpr auto FeatureSetDefaults::InternalNewImpl_() {
                                             alignof(FeatureSetDefaults));
 }
 constexpr auto FeatureSetDefaults::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_FeatureSetDefaults_globals_._default,
@@ -14963,10 +15590,28 @@ constexpr auto FeatureSetDefaults::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._cached_size_),
           false,
       },
-      &FeatureSetDefaults::kDescriptorMethods,
+      &file_reflection_data[29]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_FeatureSetDefaults_globals_._default,
+          &_table_.header,
+          FeatureSetDefaults::IsInitializedImpl,
+          &FeatureSetDefaults::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<FeatureSetDefaults>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &FeatureSetDefaults::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<FeatureSetDefaults>(), &FeatureSetDefaults::ByteSizeLong,
+              &FeatureSetDefaults::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -15322,6 +15967,7 @@ constexpr auto SourceCodeInfo_Location::InternalNewImpl_() {
                                             alignof(SourceCodeInfo_Location));
 }
 constexpr auto SourceCodeInfo_Location::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_SourceCodeInfo_Location_globals_._default,
@@ -15337,10 +15983,28 @@ constexpr auto SourceCodeInfo_Location::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._cached_size_),
           false,
       },
-      &SourceCodeInfo_Location::kDescriptorMethods,
+      &file_reflection_data[30]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_SourceCodeInfo_Location_globals_._default,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &SourceCodeInfo_Location::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<SourceCodeInfo_Location>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &SourceCodeInfo_Location::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<SourceCodeInfo_Location>(), &SourceCodeInfo_Location::ByteSizeLong,
+              &SourceCodeInfo_Location::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -15722,6 +16386,7 @@ constexpr auto SourceCodeInfo::InternalNewImpl_() {
                                             alignof(SourceCodeInfo));
 }
 constexpr auto SourceCodeInfo::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_SourceCodeInfo_globals_._default,
@@ -15737,10 +16402,28 @@ constexpr auto SourceCodeInfo::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(SourceCodeInfo, _impl_._cached_size_),
           false,
       },
-      &SourceCodeInfo::kDescriptorMethods,
+      &file_reflection_data[31]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_SourceCodeInfo_globals_._default,
+          &_table_.header,
+          SourceCodeInfo::IsInitializedImpl,
+          &SourceCodeInfo::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<SourceCodeInfo>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &SourceCodeInfo::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<SourceCodeInfo>(), &SourceCodeInfo::ByteSizeLong,
+              &SourceCodeInfo::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(SourceCodeInfo, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -16037,6 +16720,7 @@ constexpr auto GeneratedCodeInfo_Annotation::InternalNewImpl_() {
                                             alignof(GeneratedCodeInfo_Annotation));
 }
 constexpr auto GeneratedCodeInfo_Annotation::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_GeneratedCodeInfo_Annotation_globals_._default,
@@ -16052,10 +16736,28 @@ constexpr auto GeneratedCodeInfo_Annotation::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._cached_size_),
           false,
       },
-      &GeneratedCodeInfo_Annotation::kDescriptorMethods,
+      &file_reflection_data[32]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_GeneratedCodeInfo_Annotation_globals_._default,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &GeneratedCodeInfo_Annotation::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<GeneratedCodeInfo_Annotation>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &GeneratedCodeInfo_Annotation::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<GeneratedCodeInfo_Annotation>(), &GeneratedCodeInfo_Annotation::ByteSizeLong,
+              &GeneratedCodeInfo_Annotation::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -16419,6 +17121,7 @@ constexpr auto GeneratedCodeInfo::InternalNewImpl_() {
                                             alignof(GeneratedCodeInfo));
 }
 constexpr auto GeneratedCodeInfo::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_GeneratedCodeInfo_globals_._default,
@@ -16434,10 +17137,28 @@ constexpr auto GeneratedCodeInfo::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo, _impl_._cached_size_),
           false,
       },
-      &GeneratedCodeInfo::kDescriptorMethods,
+      &file_reflection_data[33]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_GeneratedCodeInfo_globals_._default,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &GeneratedCodeInfo::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<GeneratedCodeInfo>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &GeneratedCodeInfo::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<GeneratedCodeInfo>(), &GeneratedCodeInfo::ByteSizeLong,
+              &GeneratedCodeInfo::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const

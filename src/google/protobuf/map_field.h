@@ -251,6 +251,10 @@ class PROTOBUF_EXPORT MapKey {
         return H::combine(std::move(state), key.GetUInt32Value());
       case FieldDescriptor::CPPTYPE_BOOL:
         return H::combine(std::move(state), key.GetBoolValue());
+      case FieldDescriptor::CPPTYPE_DOUBLE:
+      case FieldDescriptor::CPPTYPE_FLOAT:
+      case FieldDescriptor::CPPTYPE_ENUM:
+      case FieldDescriptor::CPPTYPE_MESSAGE:
       default:
         internal::Unreachable();
     }

@@ -3986,7 +3986,8 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
   auto vars = p->WithVars(
       {{"default_instance",
         absl::StrCat("&", MsgGlobalsInstanceName(descriptor_, options_),
-                     "._default")}});
+                     "._default")},
+       {"index_in_file_messages", index_in_file_messages_}});
   const auto is_initialized = [&] {
     if (NeedsIsInitialized()) {
       p->Emit(R"cc(
@@ -4060,6 +4061,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
         },
         R"cc(
           constexpr auto $classname$::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
             return $pbi$::ClassDataFull{
                 $pbi$::ClassData{
                     $default_instance$,
@@ -4075,10 +4077,28 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                     false,
                     $v2_data$,
                 },
-                &$classname$::kDescriptorMethods,
+                &file_reflection_data[$index_in_file_messages$]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+            return $pbi$::ClassDataFull{
+                $pbi$::ClassData{
+                    $default_instance$,
+                    &_table_.header,
+                    $is_initialized$,
+                    &$classname$::MergeImpl,
+                    $superclass$::GetNewImpl<$classname$>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    &$classname$::SharedDtor,
+                    $custom_vtable_methods$,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+                    PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
+                    false,
+                    $v2_data$,
+                },
+                &::_pbi::kDescriptorMethods,
                 &$desc_table$,
                 $tracker_on_get_metadata$,
             };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
           }
 
           PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -4103,14 +4123,13 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
   } else {
     p->Emit(
         {
-            {"type_size", descriptor_->full_name().size() + 1},
             {"is_initialized", is_initialized},
             {"custom_vtable_methods", custom_vtable_methods},
             {"v2_data", emit_v2_data},
         },
         R"cc(
           constexpr auto $classname$::InternalGenerateClassData_() {
-            return $pbi$::ClassDataLite<$type_size$>{
+            return $pbi$::ClassDataLite{
                 {
                     $default_instance$,
                     &_table_.header,
@@ -4131,7 +4150,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
 
           PROTOBUF_CONSTINIT
           PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-          const $pbi$::ClassDataLite<$type_size$> $classname$_class_data_ =
+          const $pbi$::ClassDataLite $classname$_class_data_ =
               $classname$::InternalGenerateClassData_();
 
           //~ This function needs to be marked as weak to avoid significantly

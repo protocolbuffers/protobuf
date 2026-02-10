@@ -816,14 +816,13 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // A few notes on internal representation:
   //
   // We use an indirected approach, with struct Rep, to keep
-  // sizeof(RepeatedPtrFieldBase) equivalent to what it was before arena support
-  // was added; namely, 3 8-byte machine words on x86-64. An instance of Rep is
-  // allocated only when the repeated field is non-empty, and it is a
-  // dynamically-sized struct (the header is directly followed by elements[]).
-  // We place arena_ and current_size_ directly in the object to avoid cache
-  // misses due to the indirection, because these fields are checked frequently.
-  // Placing all fields directly in the RepeatedPtrFieldBase instance would cost
-  // significant performance for memory-sensitive workloads.
+  // sizeof(RepeatedPtrFieldBase) small. An instance of Rep is allocated only
+  // when the repeated field is non-empty, and it is a dynamically-sized struct
+  // (the header is directly followed by elements[]). We place current_size_
+  // directly in the object to avoid cache misses due to the indirection,
+  // because this field is checked frequently. Placing all fields directly in
+  // the RepeatedPtrFieldBase instance would cost significant performance for
+  // memory-sensitive workloads.
   void* tagged_rep_or_elem_;
   int current_size_;
   InternalMetadataResolver resolver_;
