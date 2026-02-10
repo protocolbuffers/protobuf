@@ -1267,7 +1267,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
 
  public:
   // Iterators
-  class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED const_iterator
+  class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ABSL_ATTRIBUTE_VIEW const_iterator
       : private internal::UntypedMapIterator {
     using BaseIt = internal::UntypedMapIterator;
 
@@ -1316,7 +1316,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
     friend class internal::TypeDefinedMapFieldBase<Key, T>;
   };
 
-  class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED iterator
+  class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ABSL_ATTRIBUTE_VIEW iterator
       : private internal::UntypedMapIterator {
     using BaseIt = internal::UntypedMapIterator;
 

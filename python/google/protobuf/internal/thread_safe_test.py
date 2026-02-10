@@ -75,10 +75,6 @@ class FreeThreadingTest(unittest.TestCase):
 
     self.RunThreads(thread_size, DoNothing)
 
-  @unittest.skipIf(
-      api_implementation.Type() != 'cpp',
-      'Only cpp supports free threading for now',
-  )
   def testDescriptorPoolMap(self):
     thread_size = 20
     self.success_count = 0

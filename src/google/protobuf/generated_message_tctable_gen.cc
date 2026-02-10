@@ -485,10 +485,9 @@ TailCallTableInfo::NumToEntryTable MakeNumToEntryTable(
   return num_to_entry_table;
 }
 
-uint16_t MakeTypeCardForField(
-    const FieldDescriptor* field, bool has_hasbit,
-    const TailCallTableInfo::FieldOptions& options,
-    cpp::Utf8CheckMode utf8_check_mode) {
+uint16_t MakeTypeCardForField(const FieldDescriptor* field, bool has_hasbit,
+                              const TailCallTableInfo::FieldOptions& options,
+                              cpp::Utf8CheckMode utf8_check_mode) {
   uint16_t type_card;
   namespace fl = internal::field_layout;
   if (field->is_repeated()) {

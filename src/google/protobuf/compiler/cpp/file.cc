@@ -581,10 +581,10 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
     // there just to improve performance and binary size in these builds.
     p->Emit(
         {
-            {"type", DefaultInstanceType(generator->descriptor(), options_,
-                                         /*split=*/true)},
-            {"name", DefaultInstanceName(generator->descriptor(), options_,
-                                         /*split=*/true)},
+            {"type",
+             SplitDefaultInstanceType(generator->descriptor(), options_)},
+            {"name",
+             SplitDefaultInstanceName(generator->descriptor(), options_)},
             {"default",
              [&] { generator->GenerateInitDefaultSplitInstance(p); }},
             {"class", absl::StrCat(ClassName(generator->descriptor()),
@@ -605,24 +605,24 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
 
   generator->GenerateConstexprConstructor(p);
 
+  auto v = p->WithVars({
+      {"type", MsgGlobalsInstanceType(generator->descriptor(), options_)},
+      {"name", MsgGlobalsInstanceName(generator->descriptor(), options_)},
+      {"class", ClassName(generator->descriptor())},
+  });
   if (IsFileDescriptorProto(file_, options_)) {
     p->Emit(
-        {
-            {"type", DefaultInstanceType(generator->descriptor(), options_)},
-            {"name", DefaultInstanceName(generator->descriptor(), options_)},
-            {"class", ClassName(generator->descriptor())},
-        },
         R"cc(
           struct $type$ {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-            constexpr $type$() : _instance(::_pbi::ConstantInitialized{}) {}
+            constexpr $type$() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
             $type$() {}
-            void Init() { ::new (&_instance) $class$(); };
+            void Init() { ::new (&_default) $class$(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
             ~$type$() {}
             union {
-              $class$ _instance;
+              $class$ _default;
             };
           };
 
@@ -633,20 +633,17 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
     p->Emit(
         {
             {"index", generator->index_in_file_messages()},
-            {"type", DefaultInstanceType(generator->descriptor(), options_)},
-            {"name", DefaultInstanceName(generator->descriptor(), options_)},
-            {"class", ClassName(generator->descriptor())},
             {"section", WeakDefaultInstanceSection(
                             generator->descriptor(),
                             generator->index_in_file_messages(), options_)},
         },
         R"cc(
           struct $type$ {
-            constexpr $type$() : _instance(::_pbi::ConstantInitialized{}) {}
+            constexpr $type$() : _default(::_pbi::ConstantInitialized{}) {}
             ~$type$() {}
-            //~ _instance must be the first member.
+            //~ _default must be the first member.
             union {
-              $class$ _instance;
+              $class$ _default;
             };
             ::_pbi::WeakDescriptorDefaultTail tail = {
                 file_default_instances + $index$, sizeof($type$)};
@@ -658,17 +655,12 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
         )cc");
   } else {
     p->Emit(
-        {
-            {"type", DefaultInstanceType(generator->descriptor(), options_)},
-            {"name", DefaultInstanceName(generator->descriptor(), options_)},
-            {"class", ClassName(generator->descriptor())},
-        },
         R"cc(
           struct $type$ {
-            constexpr $type$() : _instance(::_pbi::ConstantInitialized{}) {}
+            constexpr $type$() : _default(::_pbi::ConstantInitialized{}) {}
             ~$type$() {}
             union {
-              $class$ _instance;
+              $class$ _default;
             };
           };
 
@@ -680,8 +672,8 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
   if (options_.lite_implicit_weak_fields) {
     p->Emit(
         {
-            {"ptr", DefaultInstancePtr(generator->descriptor(), options_)},
-            {"name", DefaultInstanceName(generator->descriptor(), options_)},
+            {"ptr", MsgGlobalsInstancePtr(generator->descriptor(), options_)},
+            {"name", MsgGlobalsInstanceName(generator->descriptor(), options_)},
         },
         R"cc(
           PROTOBUF_CONSTINIT const void* $ptr$ = &$name$;
@@ -757,13 +749,13 @@ void FileGenerator::GenerateInternalForwardDeclarations(
       ns.ChangeTo(Namespace(instance, options_));
 
       if (options_.lite_implicit_weak_fields) {
-        p->Emit({{"ptr", DefaultInstancePtr(instance, options_)}}, R"cc(
+        p->Emit({{"ptr", MsgGlobalsInstancePtr(instance, options_)}}, R"cc(
           PROTOBUF_CONSTINIT __attribute__((weak)) const void* $ptr$ =
               &::_pbi::implicit_weak_message_default_instance;
         )cc");
       } else {
-        p->Emit({{"type", DefaultInstanceType(instance, options_)},
-                 {"name", DefaultInstanceName(instance, options_)}},
+        p->Emit({{"type", MsgGlobalsInstanceType(instance, options_)},
+                 {"name", MsgGlobalsInstanceName(instance, options_)}},
                 R"cc(
                   extern __attribute__((weak)) $type$ $name$;
                 )cc");
@@ -894,6 +886,42 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   CrossFileReferences refs;
   GetCrossFileReferencesForFile(file_, &refs);
   GenerateInternalForwardDeclarations(refs, p);
+
+  if (HasDescriptorMethods(file_, options_) && !message_generators_.empty()) {
+    p->Emit(
+        {{"reflection_data",
+          [&] {
+            for (const auto& generator : message_generators_) {
+              p->Emit(
+                  {{"class",
+                    QualifiedClassName(generator->descriptor(), options_)},
+                   {"tracker_on_get_metadata",
+                    [&] {
+                      if (HasTracker(generator->descriptor(), options_)) {
+                        p->Emit(
+                            R"cc(&::_pbi::PrivateAccess::TrackerOnGetMetadata<
+                                     $class$>,)cc");
+                      } else {
+                        p->Emit(R"cc(/* tracker*/ nullptr,)cc");
+                      }
+                    }}},
+                  R"cc(
+                    // $class$
+                    {&::_pbi::kDescriptorMethods, &::$desc_table$, $tracker_on_get_metadata$},
+                  )cc");
+            }
+          }}},
+        R"cc(
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+          namespace {
+          PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
+              file_reflection_data[] = {
+                  $reflection_data$,
+          };
+          }  // namespace
+#endif
+        )cc");
+  }
 
   // When in weak descriptor mode, we generate the file_default_instances before
   // the default instances.
@@ -1219,7 +1247,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                        {"class", ClassName(gen->descriptor())},
                    },
                    R"cc(
-                     &$ns$::_$class$_default_instance_._instance,
+                     &$ns$::_$class$_globals_._default,
                    )cc");
              }
            }}};
@@ -1404,7 +1432,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                                         [&](std::string* out, const auto& gen) {
                                           absl::StrAppend(
                                               out,
-                                              DefaultInstanceName(
+                                              MsgGlobalsInstanceName(
                                                   gen->descriptor(), options_),
                                               ".Init();");
                                         })}},
@@ -1447,14 +1475,14 @@ class FileGenerator::ForwardDeclarations {
       p->Emit(
           {
               Sub("class", c.first).AnnotatedAs(desc),
-              {"default_type", DefaultInstanceType(desc, options)},
-              {"default_name", DefaultInstanceName(desc, options)},
+              {"globals_type", MsgGlobalsInstanceType(desc, options)},
+              {"globals_name", MsgGlobalsInstanceName(desc, options)},
               {"classdata_type", ClassDataType(desc, options)},
           },
           R"cc(
             class $class$;
-            struct $default_type$;
-            $dllexport_decl $extern $default_type$ $default_name$;
+            struct $globals_type$;
+            $dllexport_decl $extern $globals_type$ $globals_name$;
             $dllexport_decl $extern const $pbi$::$classdata_type$ $class$_class_data_;
           )cc");
     }
@@ -1463,10 +1491,8 @@ class FileGenerator::ForwardDeclarations {
       const Descriptor* desc = s.second;
       p->Emit(
           {
-              {"default_type",
-               DefaultInstanceType(desc, options, /*split=*/true)},
-              {"default_name",
-               DefaultInstanceName(desc, options, /*split=*/true)},
+              {"default_type", SplitDefaultInstanceType(desc, options)},
+              {"default_name", SplitDefaultInstanceName(desc, options)},
           },
           R"cc(
             struct $default_type$;
@@ -1487,10 +1513,10 @@ class FileGenerator::ForwardDeclarations {
     if (ShouldGenerateExternSpecializations(options)) {
       for (const auto& c : classes_) {
         if (!ShouldGenerateClass(c.second, options)) continue;
-        auto vars = p->WithVars(
-            {{"class", QualifiedClassName(c.second, options)},
-             {"default_name", QualifiedDefaultInstanceName(c.second, options,
-                                                           /*split=*/false)}});
+        auto vars =
+            p->WithVars({{"class", QualifiedClassName(c.second, options)},
+                         {"default_name",
+                          QualifiedMsgGlobalsInstanceName(c.second, options)}});
         // To reduce total linker input size in large binaries we make these
         // functions extern and define then in the pb.cc file. This avoids bloat
         // in callers by having duplicate definitions of the template.

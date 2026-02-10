@@ -462,6 +462,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   void SwapElements(int index1, int index2) {
+    internal::RuntimeAssertInBounds(index1, current_size_);
+    internal::RuntimeAssertInBounds(index2, current_size_);
     using std::swap;  // enable ADL with fallback
     swap(element_at(index1), element_at(index2));
   }
@@ -565,7 +567,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // arena.
   template <typename TypeHandler>
   Value<TypeHandler>* UnsafeArenaReleaseLast() {
-    ABSL_DCHECK_GT(current_size_, 0);
+    internal::RuntimeAssertInBounds(0, current_size_);
     ExchangeCurrentSize(current_size_ - 1);
     auto* result = cast<TypeHandler>(element_at(current_size_));
     if (using_sso()) {
@@ -814,14 +816,13 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // A few notes on internal representation:
   //
   // We use an indirected approach, with struct Rep, to keep
-  // sizeof(RepeatedPtrFieldBase) equivalent to what it was before arena support
-  // was added; namely, 3 8-byte machine words on x86-64. An instance of Rep is
-  // allocated only when the repeated field is non-empty, and it is a
-  // dynamically-sized struct (the header is directly followed by elements[]).
-  // We place arena_ and current_size_ directly in the object to avoid cache
-  // misses due to the indirection, because these fields are checked frequently.
-  // Placing all fields directly in the RepeatedPtrFieldBase instance would cost
-  // significant performance for memory-sensitive workloads.
+  // sizeof(RepeatedPtrFieldBase) small. An instance of Rep is allocated only
+  // when the repeated field is non-empty, and it is a dynamically-sized struct
+  // (the header is directly followed by elements[]). We place current_size_
+  // directly in the object to avoid cache misses due to the indirection,
+  // because this field is checked frequently. Placing all fields directly in
+  // the RepeatedPtrFieldBase instance would cost significant performance for
+  // memory-sensitive workloads.
   void* tagged_rep_or_elem_;
   int current_size_;
   InternalMetadataResolver resolver_;
@@ -1726,9 +1727,9 @@ inline void RepeatedPtrField<Element>::ExtractSubrangeWithArena(
 template <typename Element>
 inline void RepeatedPtrField<Element>::UnsafeArenaExtractSubrange(
     int start, int num, Element** elements) {
-  ABSL_DCHECK_GE(start, 0);
-  ABSL_DCHECK_GE(num, 0);
-  ABSL_DCHECK_LE(start + num, size());
+  internal::RuntimeAssertInBoundsGE(start, 0);
+  internal::RuntimeAssertInBoundsGE(num, 0);
+  internal::RuntimeAssertInBoundsLE(static_cast<int64_t>(start) + num, size());
 
   if (num > 0) {
     // Save the values of the removed elements if requested.
@@ -1978,7 +1979,7 @@ class RustRepeatedMessageHelper {
 // This code based on net/proto/proto-array-internal.h by Jeffrey Yasskin
 // (jyasskin@google.com).
 template <typename Element>
-class RepeatedPtrIterator {
+class ABSL_ATTRIBUTE_VIEW RepeatedPtrIterator {
  public:
   using iterator = RepeatedPtrIterator<Element>;
   using iterator_category = std::random_access_iterator_tag;

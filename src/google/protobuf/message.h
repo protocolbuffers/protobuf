@@ -149,6 +149,7 @@ class TextFormat;
 namespace internal {
 struct FuzzPeer;
 struct DescriptorTable;
+struct DescriptorMethodsFriend;
 template <bool is_oneof>
 struct DynamicFieldInfoHelper;
 class HasBitsTestPeer;
@@ -387,6 +388,33 @@ class PROTOBUF_EXPORT Message : public MessageLite {
     return GetMetadata().reflection;
   }
 
+  // Abseil flag support for Messages.
+  //
+  // Flag syntax is `:format,options...:value` where:
+  //  - `format` is one of `text`, `serialized`.
+  //  - `options` is a possibly empty list of options. Each format has its
+  //    supported options.
+  //  - `value` is the payload in the specified format.
+  //
+  //  The valid options are:
+  //
+  //   * For `text`:
+  //     - `base64`: indicates that `value` is encoded as base64.
+  //     - `ignore_unknown`: when specified, unknown field/extensions are
+  //       dropped. Otherwise, they cause a parse failure.
+  //
+  //   * For `serialized`:
+  //     - `base64`: indicates that `value` is encoded as base64. It is
+  //       recommended to use `serialized` with `base64` given that passing
+  //       binary data in shells is difficult and error prone.
+  friend bool AbslParseFlag(absl::string_view text, Message* msg,
+                            std::string* error) {
+    return msg->AbslParseFlagImpl(text, *error);
+  }
+  friend std::string AbslUnparseFlag(const Message& msg) {
+    return msg.AbslUnparseFlagImpl();
+  }
+
  protected:
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
   constexpr Message() {}
@@ -401,6 +429,9 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // For CODE_SIZE types
   static bool IsInitializedImpl(const MessageLite&);
 
+  bool AbslParseFlagImpl(absl::string_view text, std::string& error);
+  std::string AbslUnparseFlagImpl() const;
+
   size_t ComputeUnknownFieldsSize(
       size_t total_size, const internal::CachedSize* cached_size) const;
   size_t MaybeComputeUnknownFieldsSize(
@@ -408,20 +439,12 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
 
   // Reflection based version for reflection based types.
-  static absl::string_view GetTypeNameImpl(const internal::ClassData* data);
   static void MergeImpl(MessageLite& to, const MessageLite& from);
   void ClearImpl();
   static size_t ByteSizeLongImpl(const MessageLite& msg);
   static uint8_t* _InternalSerializeImpl(const MessageLite& msg,
                                          uint8_t* target,
                                          io::EpsCopyOutputStream* stream);
-
-  static const internal::TcParseTableBase* GetTcParseTableImpl(
-      const MessageLite& msg);
-
-  static size_t SpaceUsedLongImpl(const MessageLite& msg_lite);
-
-  static const internal::DescriptorMethods kDescriptorMethods;
 
 };
 
@@ -434,6 +457,8 @@ void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
 // Forward-declare interfaces used to implement RepeatedFieldRef.
 // These are protobuf internals that users shouldn't care about.
 class RepeatedFieldAccessor;
+
+extern PROTOBUF_EXPORT const DescriptorMethods kDescriptorMethods;
 }  // namespace internal
 
 // This interface contains methods that can be used to dynamically access
@@ -1120,6 +1145,7 @@ class PROTOBUF_EXPORT Reflection final {
   template <typename MessageT>
   friend struct internal::MapDynamicFieldInfo;
   friend class internal::ReflectionVisit;
+  friend internal::DescriptorMethodsFriend;
   friend bool internal::IsDescendant(const Message& root,
                                      const Message& message);
   friend void internal::MaybePoisonAfterClear(Message* root);

@@ -211,15 +211,20 @@ TEST(MapTest, AlwaysSerializesBothEntries) {
         ASSERT_EQ(4, entry_message->ByteSizeLong());
         EXPECT_EQ(entry_message->SerializeAsString(),
                   std::string({
-                      '\010', '\0',  // key, VARINT, value=0
-                      '\022', '\0',  // value, LEN, size=0
+                      '\010',
+                      '\0',  // key, VARINT, value=0
+                      '\022',
+                      '\0',  // value, LEN, size=0
                   }));
         ASSERT_EQ(6, message->ByteSizeLong());
         EXPECT_EQ(message->SerializeAsString(),
                   std::string({
-                      '\012', '\04',  // field=1, LEN, size=4
-                      '\010', '\0',   // key, VARINT, value=0
-                      '\022', '\0',   // value, LEN, size=0
+                      '\012',
+                      '\04',  // field=1, LEN, size=4
+                      '\010',
+                      '\0',  // key, VARINT, value=0
+                      '\022',
+                      '\0',  // value, LEN, size=0
                   }));
       }
     }

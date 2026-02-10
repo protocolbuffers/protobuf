@@ -4052,7 +4052,7 @@ TEST_P(AllowUnknownDependenciesTest, MissingTypeAggregateOption) {
   EXPECT_EQ(file->options().uninterpreted_option_size(), 1);
 }
 
-TEST_P(AllowUnknownDependenciesTest, MissinNestedTypeAggregateOption) {
+TEST_P(AllowUnknownDependenciesTest, MissingNestedTypeAggregateOption) {
   // Test that we can use an aggregate custom option with a missing type.
 
   FileDescriptorProto file_proto;
@@ -4112,7 +4112,7 @@ TEST_P(AllowUnknownDependenciesTest, MissinNestedTypeAggregateOption) {
   const Descriptor* message = file->FindMessageTypeByName("MessageMissing");
   ASSERT_NE(message, nullptr);
   std::vector<const FieldDescriptor*> fields;
-  file->options().GetReflection()->ListFields(message->options(), &fields);
+  message->options().GetReflection()->ListFields(message->options(), &fields);
   EXPECT_EQ(fields.size(), 1);
   EXPECT_EQ(message->options().unknown_fields().field_count(), 0);
   EXPECT_EQ(message->options().uninterpreted_option_size(), 1);
@@ -4120,7 +4120,7 @@ TEST_P(AllowUnknownDependenciesTest, MissinNestedTypeAggregateOption) {
   // Aggregate options without missing types should be resolved.
   message = file->FindMessageTypeByName("MessageValid");
   ASSERT_NE(message, nullptr);
-  file->options().GetReflection()->ListFields(message->options(), &fields);
+  message->options().GetReflection()->ListFields(message->options(), &fields);
   EXPECT_EQ(fields.size(), 0);
   EXPECT_EQ(message->options().unknown_fields().field_count(), 1);
   EXPECT_EQ(message->options().uninterpreted_option_size(), 0);
@@ -12905,6 +12905,61 @@ TEST_F(FeaturesTest, ExistingUnstableFeatureDefault) {
   EXPECT_EQ(
       GetFeatures(file).GetExtension(pb::test).unstable_existing_feature(),
       pb::UNSTABLE3);
+}
+
+TEST_F(FeaturesTest, FeatureLifetimesOptionRemoved) {
+  BuildDescriptorMessagesInTestPool();
+  ParseAndBuildFileWithErrorSubstr(
+      "featurelifetimes.proto", R"schema(
+    edition = "2024";
+    package featurelifetimes;
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.MessageOptions {
+      bool removed_option = 7733026 [feature_support = {
+        edition_removed: EDITION_2023
+        removal_error: "removed_option removal error"
+      }];
+    }
+    message SomeMessage {
+      option (removed_option) = true;
+    }
+  )schema",
+      "featurelifetimes.removed_option has been removed in edition 2023: "
+      "removed_option removal error");
+}
+
+TEST_F(FeaturesTest, FeatureLifetimesOptionDeprecated) {
+  BuildDescriptorMessagesInTestPool();
+
+  ParseAndBuildFile("featurelifetimes.proto", R"schema(
+    edition = "2024";
+    package featurelifetimes;
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.MessageOptions {
+       bool deprecated_option = 7733026 [feature_support = {
+        edition_deprecated: EDITION_2023
+        deprecation_warning: "deprecated_option deprecation warning"
+      }];
+    }
+  )schema");
+
+  pool_.AddDirectInputFile("some_message.proto");
+  ParseAndBuildFileWithWarningSubstr(
+      "some_message.proto",
+      R"schema(
+      edition = "2024";
+      package some_message;
+      import "google/protobuf/descriptor.proto";
+      import "featurelifetimes.proto";
+
+      message SomeMessage {
+        option (featurelifetimes.deprecated_option) = true;
+      }
+    )schema",
+      "featurelifetimes.deprecated_option has been deprecated in edition 2023: "
+      "deprecated_option deprecation warning");
 }
 
 // Test that the result of FileDescriptor::DebugString() can be used to create

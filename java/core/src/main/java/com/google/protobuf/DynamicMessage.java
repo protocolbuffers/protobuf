@@ -36,9 +36,10 @@ public final class DynamicMessage extends AbstractMessage {
   /**
    * Stores previously-computed {@code isInitialized} results. {@code isInitialized} can be
    * expensive to compute in situations where a large message is converted to a builder, modified,
-   * and then rebuilt.
+   * and then rebuilt. A byte field used instead of an idiomatic tristate enum to follow the pattern
+   * established on gencode, micro-optimizing for better layout.
    */
-  private transient byte isInitializedMemo = NO_MEMO_PRESENT;
+  private transient byte memoizedIsInitialized = NO_MEMO_PRESENT;
 
   private static final byte NO_MEMO_PRESENT = -1;
   private static final byte IS_INITIALIZED_FALSE = 0;
@@ -226,19 +227,17 @@ public final class DynamicMessage extends AbstractMessage {
 
   @Override
   public boolean isInitialized() {
-    // This section departs slightly from idiomatic style because it is expected that this style
-    // will optimize better on mobile after processing by technologies like AppReduce.
-    if (isInitializedMemo == IS_INITIALIZED_TRUE) {
+    if (memoizedIsInitialized == IS_INITIALIZED_TRUE) {
       return true;
     }
-    if (isInitializedMemo == IS_INITIALIZED_FALSE) {
+    if (memoizedIsInitialized == IS_INITIALIZED_FALSE) {
       return false;
     }
     if (isInitialized(type, fields)) {
-      isInitializedMemo = IS_INITIALIZED_TRUE;
+      memoizedIsInitialized = IS_INITIALIZED_TRUE;
       return true;
     }
-    isInitializedMemo = IS_INITIALIZED_FALSE;
+    memoizedIsInitialized = IS_INITIALIZED_FALSE;
     return false;
   }
 
