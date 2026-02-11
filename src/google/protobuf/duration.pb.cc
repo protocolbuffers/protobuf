@@ -53,7 +53,7 @@ constexpr Duration::Duration(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct DurationGlobalsTypeInternal {
+struct DurationGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr DurationGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~DurationGlobalsTypeInternal() {}
   union {

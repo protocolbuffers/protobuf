@@ -123,7 +123,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceContext final
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const SourceContext& default_instance() {
-    return *reinterpret_cast<const SourceContext*>(&_SourceContext_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<SourceContext>(
+        &_SourceContext_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(SourceContext& a, SourceContext& b) { a.Swap(&b); }

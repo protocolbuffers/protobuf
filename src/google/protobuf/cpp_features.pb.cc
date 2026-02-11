@@ -53,7 +53,7 @@ constexpr CppFeatures::CppFeatures(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct CppFeaturesGlobalsTypeInternal {
+struct CppFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr CppFeaturesGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~CppFeaturesGlobalsTypeInternal() {}
   union {

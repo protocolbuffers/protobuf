@@ -608,6 +608,21 @@ inline const ClassDataFull& ClassData::full() const {
   return *static_cast<const ClassDataFull*>(this);
 }
 
+struct MessageGlobalsBase {
+  template <typename T>
+  const T* default_instance() const {
+    return reinterpret_cast<const T*>(this);
+  }
+
+  static const MessageGlobalsBase* ToMessageGlobalsBase(const void* globals) {
+    return reinterpret_cast<const MessageGlobalsBase*>(globals);
+  }
+
+  template <typename T>
+  static const T* default_instance(const void* globals) {
+    return ToMessageGlobalsBase(globals)->default_instance<T>();
+  }
+};
 }  // namespace internal
 
 // Interface to light weight protocol messages.

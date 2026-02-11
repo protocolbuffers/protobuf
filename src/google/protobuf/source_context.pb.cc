@@ -54,7 +54,7 @@ constexpr SourceContext::SourceContext(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct SourceContextGlobalsTypeInternal {
+struct SourceContextGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr SourceContextGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~SourceContextGlobalsTypeInternal() {}
   union {

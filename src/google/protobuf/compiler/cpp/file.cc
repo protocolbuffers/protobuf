@@ -610,7 +610,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
   if (IsFileDescriptorProto(file_, options_)) {
     p->Emit(
         R"cc(
-          struct $type$ {
+          struct $type$ : ::_pbi::MessageGlobalsBase {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
             constexpr $type$() : _default(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -635,7 +635,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
                             generator->index_in_file_messages(), options_)},
         },
         R"cc(
-          struct $type$ {
+          struct $type$ : ::_pbi::MessageGlobalsBase {
             constexpr $type$() : _default(::_pbi::ConstantInitialized{}) {}
             ~$type$() {}
             //~ _default must be the first member.
@@ -653,7 +653,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
   } else {
     p->Emit(
         R"cc(
-          struct $type$ {
+          struct $type$ : ::_pbi::MessageGlobalsBase {
             constexpr $type$() : _default(::_pbi::ConstantInitialized{}) {}
             ~$type$() {}
             union {
