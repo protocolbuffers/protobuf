@@ -4,8 +4,8 @@ load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 
 visibility([
     "//third_party/grpc/bazel",
-    "//bazel/private/...",
     "//bazel/flags",
+    "//bazel/private/...",
 ])
 
 # Maps flag names to their native reference
