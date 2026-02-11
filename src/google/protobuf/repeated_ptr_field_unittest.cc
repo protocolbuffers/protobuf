@@ -1171,6 +1171,27 @@ TEST(RepeatedPtrFieldTest, DeleteSubrange) {
   // DeleteSubrange is a trivial extension of ExtendSubrange.
 }
 
+TEST(RepeatedPtrFieldTest, Proto2Erase) {
+  RepeatedPtrField<std::string> elements;
+  while (elements.size() < 15) {
+    elements.Add(absl::StrCat(elements.size() % 5));
+  }
+  EXPECT_EQ(3, google::protobuf::erase(elements, "3"));
+  EXPECT_THAT(elements, ElementsAre("0", "1", "2", "4", "0", "1", "2", "4", "0",
+                                    "1", "2", "4"));
+}
+
+TEST(RepeatedPtrFieldTest, EraseIf) {
+  RepeatedPtrField<std::string> elements;
+  while (elements.size() < 10) {
+    elements.Add(absl::StrCat(elements.size()));
+  }
+  EXPECT_EQ(4, google::protobuf::erase_if(elements, [](absl::string_view str) {
+              return str[0] % 3 == 0;
+            }));
+  EXPECT_THAT(elements, ElementsAre("1", "2", "4", "5", "7", "8"));
+}
+
 TEST(RepeatedPtrFieldTest, Cleanups) {
   Arena arena;
   auto growth = internal::CleanupGrowth(arena, [&] {

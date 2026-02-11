@@ -1290,6 +1290,22 @@ inline size_t RepeatedField<Element>::SpaceUsedExcludingSelfLong() const {
              : 0;
 }
 
+// Like C++20's std::erase_if, for RepeatedField
+template <typename T, typename Pred>
+size_t erase_if(RepeatedField<T>& cont, Pred pred) {
+  auto it = std::remove_if(cont.begin(), cont.end(), pred);
+  const size_t removed = cont.end() - it;
+  cont.Truncate(cont.size() - removed);
+  return removed;
+}
+
+// Like C++20's std::erase, for RepeatedField
+template <typename T, typename U>
+size_t erase(RepeatedField<T>& cont, const U& value) {
+  return google::protobuf::erase_if(cont,
+                          [&](const auto& elem) { return elem == value; });
+}
+
 namespace internal {
 // Returns the new size for a reserved field based on its 'capacity' and the
 // requested 'new_size'. The result is clamped to the closed interval:
