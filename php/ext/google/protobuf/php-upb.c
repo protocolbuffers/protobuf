@@ -6329,10 +6329,11 @@ static void jsonenc_fieldpath(jsonenc* e, upb_StringView path) {
     if (ch >= 'A' && ch <= 'Z') {
       jsonenc_err(e, "Field mask element may not have upper-case letter.");
     } else if (ch == '_') {
-      if (ptr == end - 1 || *(ptr + 1) < 'a' || *(ptr + 1) > 'z') {
+      if (ptr == end - 1 || !(islower(*(ptr+1)) || isdigit(*(ptr+1)))) {
         jsonenc_err(e, "Underscore must be followed by a lowercase letter.");
       }
-      ch = *++ptr - 32;
+      ch = *++ptr;
+      if (islower(ch)) ch -= 32;
     }
 
     jsonenc_putbytes(e, &ch, 1);
