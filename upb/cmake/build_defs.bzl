@@ -50,6 +50,7 @@ def staleness_test(name, outs, generated_pattern, target_files = None, tags = []
     py_test(
         name = name,
         srcs = [script_name],
+        strict_deps = False,
         data = existing_outs + [generated_pattern % file for file in outs],
         python_version = "PY3",
         deps = [
