@@ -26,6 +26,9 @@ upb_ServiceDef* _upb_ServiceDefs_New(
     const google_protobuf_ServiceDescriptorProto* const* protos,
     const google_protobuf_FeatureSet* parent_features);
 
+void _upb_ServiceDef_InsertMethod(upb_DefBuilder* ctx, upb_ServiceDef* s,
+                                  const upb_MethodDef* m);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

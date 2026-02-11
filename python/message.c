@@ -1978,7 +1978,7 @@ static PyObject* PyUpb_MessageMeta_GetDynamicAttr(PyObject* self,
     PyObject* klass = state->enum_type_wrapper_class;
     ret = PyUpb_EnumDescriptor_Get(enumdef);
     ret = PyObject_CallFunctionObjArgs(klass, ret, NULL);
-  } else if ((enumval = upb_DefPool_FindEnumByNameval(symtab, key))) {
+  } else if ((enumval = upb_DefPool_FindEnumValueByName(symtab, key))) {
     ret = PyLong_FromLong(upb_EnumValueDef_Number(enumval));
   } else if ((ext = upb_DefPool_FindExtensionByName(symtab, key))) {
     ret = PyUpb_FieldDescriptor_Get(ext);

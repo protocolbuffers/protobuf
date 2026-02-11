@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include "upb/base/string_view.h"
+#include "upb/hash/str_table.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/descriptor_bootstrap.h"
@@ -29,6 +30,7 @@ struct upb_ServiceDef {
   upb_MethodDef* methods;
   int method_count;
   int index;
+  upb_strtable ntof;
 };
 
 upb_ServiceDef* _upb_ServiceDef_At(const upb_ServiceDef* s, int index) {
@@ -73,13 +75,18 @@ const upb_MethodDef* upb_ServiceDef_Method(const upb_ServiceDef* s, int i) {
 
 const upb_MethodDef* upb_ServiceDef_FindMethodByName(const upb_ServiceDef* s,
                                                      const char* name) {
-  for (int i = 0; i < s->method_count; i++) {
-    const upb_MethodDef* m = _upb_MethodDef_At(s->methods, i);
-    if (strcmp(name, upb_MethodDef_Name(m)) == 0) {
-      return m;
-    }
+  return upb_ServiceDef_FindMethodByNameWithSize(s, name, strlen(name));
+}
+
+const upb_MethodDef* upb_ServiceDef_FindMethodByNameWithSize(
+    const upb_ServiceDef* s, const char* name, size_t len) {
+  upb_value val;
+
+  if (!upb_strtable_lookup2(&s->ntof, name, len, &val)) {
+    return NULL;
   }
-  return NULL;
+
+  return _upb_DefType_Unpack(val, UPB_DEFTYPE_METHOD);
 }
 
 static void create_service(upb_DefBuilder* ctx,
@@ -104,6 +111,8 @@ static void create_service(upb_DefBuilder* ctx,
   const google_protobuf_MethodDescriptorProto* const* methods =
       google_protobuf_ServiceDescriptorProto_method(svc_proto, &n);
   s->method_count = n;
+  bool ok = upb_strtable_init(&s->ntof, n, ctx->arena);
+  if (!ok) _upb_DefBuilder_OomErr(ctx);
   s->methods = _upb_MethodDefs_New(ctx, n, methods, s->resolved_features, s);
 }
 
@@ -119,4 +128,18 @@ upb_ServiceDef* _upb_ServiceDefs_New(
     s[i].index = i;
   }
   return s;
+}
+
+void _upb_ServiceDef_InsertMethod(upb_DefBuilder* ctx, upb_ServiceDef* s,
+                                  const upb_MethodDef* m) {
+  const char* shortname = upb_MethodDef_Name(m);
+  const size_t shortnamelen = strlen(shortname);
+  upb_value existing_v;
+  if (upb_strtable_lookup(&s->ntof, shortname, &existing_v)) {
+    _upb_DefBuilder_Errf(ctx, "duplicate method name (%s)", shortname);
+  }
+  const upb_value method_v = _upb_DefType_Pack(m, UPB_DEFTYPE_METHOD);
+  bool ok = upb_strtable_insert(&s->ntof, shortname, shortnamelen, method_v,
+                                ctx->arena);
+  if (!ok) _upb_DefBuilder_OomErr(ctx);
 }

@@ -12,6 +12,7 @@
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/descriptor_bootstrap.h"
 #include "upb/reflection/internal/def_builder.h"
+#include "upb/reflection/internal/service_def.h"
 #include "upb/reflection/service_def.h"
 
 // Must be last.
@@ -100,6 +101,7 @@ static void create_method(upb_DefBuilder* ctx,
   m->output_type = _upb_DefBuilder_Resolve(
       ctx, m->full_name, m->full_name,
       google_protobuf_MethodDescriptorProto_output_type(method_proto), UPB_DEFTYPE_MSG);
+  _upb_ServiceDef_InsertMethod(ctx, s, m);
 }
 
 // Allocate and initialize an array of |n| method defs belonging to |s|.

@@ -27,6 +27,9 @@ typedef enum {
   // Only inside message table.
   UPB_DEFTYPE_FIELD = 0,
   UPB_DEFTYPE_ONEOF = 1,
+
+  // Only inside service table.
+  UPB_DEFTYPE_METHOD = 0,
 } upb_deftype_t;
 
 #ifdef __cplusplus
