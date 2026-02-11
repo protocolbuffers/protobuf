@@ -11,17 +11,4 @@
     <ProjectReference Include="..\Google.Protobuf.Test\Google.Protobuf.Test.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="**/*.pb*.cs" />
-    <None Include="**/*.pb*.cs" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net8.0' ">
-    <Compile Include="**/*.pb.cs" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
-    <Compile Include="**/*.pb.nrt.cs" />
-  </ItemGroup>
-
 </Project>
