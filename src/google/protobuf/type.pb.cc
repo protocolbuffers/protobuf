@@ -63,7 +63,7 @@ constexpr Option::Option(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct OptionGlobalsTypeInternal {
+struct OptionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr OptionGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~OptionGlobalsTypeInternal() {}
   union {
@@ -110,7 +110,7 @@ constexpr Field::Field(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct FieldGlobalsTypeInternal {
+struct FieldGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr FieldGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~FieldGlobalsTypeInternal() {}
   union {
@@ -144,7 +144,7 @@ constexpr EnumValue::EnumValue(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct EnumValueGlobalsTypeInternal {
+struct EnumValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr EnumValueGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~EnumValueGlobalsTypeInternal() {}
   union {
@@ -192,7 +192,7 @@ constexpr Type::Type(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct TypeGlobalsTypeInternal {
+struct TypeGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr TypeGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~TypeGlobalsTypeInternal() {}
   union {
@@ -235,7 +235,7 @@ constexpr Enum::Enum(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct EnumGlobalsTypeInternal {
+struct EnumGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr EnumGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~EnumGlobalsTypeInternal() {}
   union {
