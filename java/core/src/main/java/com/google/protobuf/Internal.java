@@ -36,6 +36,7 @@ public final class Internal {
   static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
 
   /** Throws an appropriate {@link NullPointerException} if the given objects is {@code null}. */
+  @CanIgnoreReturnValue
   static <T> T checkNotNull(T obj) {
     if (obj == null) {
       throw new NullPointerException();
@@ -44,6 +45,7 @@ public final class Internal {
   }
 
   /** Throws an appropriate {@link NullPointerException} if the given objects is {@code null}. */
+  @CanIgnoreReturnValue
   static <T> T checkNotNull(T obj, String message) {
     if (obj == null) {
       throw new NullPointerException(message);

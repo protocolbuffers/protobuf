@@ -117,7 +117,7 @@ struct ReflectionSchema {
   uint32_t GetObjectSize() const { return static_cast<uint32_t>(object_size_); }
 
   bool InRealOneof(const FieldDescriptor* field) const {
-    return field->real_containing_oneof();
+    return field->real_containing_oneof() != nullptr;
   }
 
   // Offset of any field.
@@ -159,21 +159,6 @@ struct ReflectionSchema {
   uint32_t HasBitsOffset() const {
     ABSL_DCHECK(HasHasbits());
     return static_cast<uint32_t>(has_bits_offset_);
-  }
-
-  bool HasInlinedString() const { return inlined_string_donated_offset_ != -1; }
-
-  // Bit index within the bit array of _inlined_string_donated_.  Bit order is
-  // low-to-high.
-  uint32_t InlinedStringIndex(const FieldDescriptor* field) const {
-    ABSL_DCHECK(HasInlinedString());
-    return inlined_string_indices_[field->index()];
-  }
-
-  // Byte offset of the _inlined_string_donated_ array.
-  uint32_t InlinedStringDonatedOffset() const {
-    ABSL_DCHECK(HasInlinedString());
-    return static_cast<uint32_t>(inlined_string_donated_offset_);
   }
 
   // Whether this message has an ExtensionSet.
@@ -242,8 +227,6 @@ struct ReflectionSchema {
   int oneof_case_offset_;
   int object_size_;
   int weak_field_map_offset_;
-  const uint32_t* inlined_string_indices_;
-  int inlined_string_donated_offset_;
   int split_offset_;
   int sizeof_split_;
 
@@ -365,7 +348,7 @@ const std::string& NameOfDenseEnum(int v) {
   static_assert(max_val - min_val >= 0, "Too many enums between min and max.");
   static DenseEnumCacheInfo deci = {/* atomic ptr */ {}, min_val, max_val,
                                     descriptor_fn};
-  const std::string** cache = deci.cache.load(std::memory_order_acquire );
+  const std::string** cache = deci.cache.load(std::memory_order_acquire);
   if (ABSL_PREDICT_TRUE(cache != nullptr)) {
     if (ABSL_PREDICT_TRUE(v >= min_val && v <= max_val)) {
       return *cache[v - min_val];

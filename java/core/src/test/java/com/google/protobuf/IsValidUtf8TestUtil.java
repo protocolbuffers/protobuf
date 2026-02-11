@@ -15,6 +15,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 /**
@@ -42,7 +43,7 @@ final class IsValidUtf8TestUtil {
       new ByteStringFactory() {
         @Override
         public ByteString newByteString(byte[] bytes) {
-          return ByteString.nioByteString(ByteBuffer.wrap(bytes));
+          return ByteString.wrap(ByteBuffer.wrap(bytes));
         }
       };
 
@@ -67,7 +68,7 @@ final class IsValidUtf8TestUtil {
           buffer.clear();
           buffer.put(bytes);
           buffer.flip();
-          return ByteString.nioByteString(buffer);
+          return ByteString.wrap(buffer);
         }
       };
 
@@ -291,7 +292,7 @@ final class IsValidUtf8TestUtil {
       if (i > 0) {
         s.append(" ");
       }
-      s.append(String.format("%02x", b[i] & 0xFF));
+      s.append(String.format(Locale.ROOT, "%02x", b[i] & 0xFF));
     }
     s.append("\"");
     return s.toString();

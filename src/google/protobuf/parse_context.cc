@@ -19,10 +19,12 @@
 #include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
+#include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/micro_string.h"
 #include "google/protobuf/port.h"
@@ -597,8 +599,9 @@ const char* InlineGreedyStringParser(std::string* s, const char* ptr,
 
 
 template <typename T, bool sign>
-const char* VarintParser(void* object, const char* ptr, ParseContext* ctx) {
-  return ctx->ReadPackedVarint(ptr, [object](uint64_t varint) {
+const char* VarintParser(void* object, Arena* arena, const char* ptr,
+                         ParseContext* ctx) {
+  return ctx->ReadPackedVarint(ptr, [object, arena](uint64_t varint) {
     T val;
     if (sign) {
       if (sizeof(T) == 8) {
@@ -609,73 +612,77 @@ const char* VarintParser(void* object, const char* ptr, ParseContext* ctx) {
     } else {
       val = varint;
     }
-    static_cast<RepeatedField<T>*>(object)->Add(val);
+    static_cast<RepeatedField<T>*>(object)->InternalAddWithArena(
+        InternalVisibility(), arena, val);
   });
 }
 
-const char* PackedInt32Parser(void* object, const char* ptr,
+const char* PackedInt32Parser(void* object, Arena* arena, const char* ptr,
                               ParseContext* ctx) {
-  return VarintParser<int32_t, false>(object, ptr, ctx);
+  return VarintParser<int32_t, false>(object, arena, ptr, ctx);
 }
-const char* PackedUInt32Parser(void* object, const char* ptr,
+const char* PackedUInt32Parser(void* object, Arena* arena, const char* ptr,
                                ParseContext* ctx) {
-  return VarintParser<uint32_t, false>(object, ptr, ctx);
+  return VarintParser<uint32_t, false>(object, arena, ptr, ctx);
 }
-const char* PackedInt64Parser(void* object, const char* ptr,
+const char* PackedInt64Parser(void* object, Arena* arena, const char* ptr,
                               ParseContext* ctx) {
-  return VarintParser<int64_t, false>(object, ptr, ctx);
+  return VarintParser<int64_t, false>(object, arena, ptr, ctx);
 }
-const char* PackedUInt64Parser(void* object, const char* ptr,
+const char* PackedUInt64Parser(void* object, Arena* arena, const char* ptr,
                                ParseContext* ctx) {
-  return VarintParser<uint64_t, false>(object, ptr, ctx);
+  return VarintParser<uint64_t, false>(object, arena, ptr, ctx);
 }
-const char* PackedSInt32Parser(void* object, const char* ptr,
+const char* PackedSInt32Parser(void* object, Arena* arena, const char* ptr,
                                ParseContext* ctx) {
-  return VarintParser<int32_t, true>(object, ptr, ctx);
+  return VarintParser<int32_t, true>(object, arena, ptr, ctx);
 }
-const char* PackedSInt64Parser(void* object, const char* ptr,
+const char* PackedSInt64Parser(void* object, Arena* arena, const char* ptr,
                                ParseContext* ctx) {
-  return VarintParser<int64_t, true>(object, ptr, ctx);
+  return VarintParser<int64_t, true>(object, arena, ptr, ctx);
 }
 
-const char* PackedEnumParser(void* object, const char* ptr, ParseContext* ctx) {
-  return VarintParser<int, false>(object, ptr, ctx);
+const char* PackedEnumParser(void* object, Arena* arena, const char* ptr,
+                             ParseContext* ctx) {
+  return VarintParser<int, false>(object, arena, ptr, ctx);
 }
 
-const char* PackedBoolParser(void* object, const char* ptr, ParseContext* ctx) {
-  return VarintParser<bool, false>(object, ptr, ctx);
+const char* PackedBoolParser(void* object, Arena* arena, const char* ptr,
+                             ParseContext* ctx) {
+  return VarintParser<bool, false>(object, arena, ptr, ctx);
 }
 
 template <typename T>
-const char* FixedParser(void* object, const char* ptr, ParseContext* ctx) {
+const char* FixedParser(void* object, Arena* arena, const char* ptr,
+                        ParseContext* ctx) {
   int size = ReadSize(&ptr);
-  return ctx->ReadPackedFixed(ptr, size,
+  return ctx->ReadPackedFixed(ptr, arena, size,
                               static_cast<RepeatedField<T>*>(object));
 }
 
-const char* PackedFixed32Parser(void* object, const char* ptr,
+const char* PackedFixed32Parser(void* object, Arena* arena, const char* ptr,
                                 ParseContext* ctx) {
-  return FixedParser<uint32_t>(object, ptr, ctx);
+  return FixedParser<uint32_t>(object, arena, ptr, ctx);
 }
-const char* PackedSFixed32Parser(void* object, const char* ptr,
+const char* PackedSFixed32Parser(void* object, Arena* arena, const char* ptr,
                                  ParseContext* ctx) {
-  return FixedParser<int32_t>(object, ptr, ctx);
+  return FixedParser<int32_t>(object, arena, ptr, ctx);
 }
-const char* PackedFixed64Parser(void* object, const char* ptr,
+const char* PackedFixed64Parser(void* object, Arena* arena, const char* ptr,
                                 ParseContext* ctx) {
-  return FixedParser<uint64_t>(object, ptr, ctx);
+  return FixedParser<uint64_t>(object, arena, ptr, ctx);
 }
-const char* PackedSFixed64Parser(void* object, const char* ptr,
+const char* PackedSFixed64Parser(void* object, Arena* arena, const char* ptr,
                                  ParseContext* ctx) {
-  return FixedParser<int64_t>(object, ptr, ctx);
+  return FixedParser<int64_t>(object, arena, ptr, ctx);
 }
-const char* PackedFloatParser(void* object, const char* ptr,
+const char* PackedFloatParser(void* object, Arena* arena, const char* ptr,
                               ParseContext* ctx) {
-  return FixedParser<float>(object, ptr, ctx);
+  return FixedParser<float>(object, arena, ptr, ctx);
 }
-const char* PackedDoubleParser(void* object, const char* ptr,
+const char* PackedDoubleParser(void* object, Arena* arena, const char* ptr,
                                ParseContext* ctx) {
-  return FixedParser<double>(object, ptr, ctx);
+  return FixedParser<double>(object, arena, ptr, ctx);
 }
 
 class UnknownFieldLiteParserHelper {
@@ -692,7 +699,8 @@ class UnknownFieldLiteParserHelper {
     if (unknown_ == nullptr) return;
     WriteVarint(num * 8 + 1, unknown_);
     char buffer[8];
-    io::CodedOutputStream::WriteLittleEndian64ToArray(
+    // TODO: Remove this suppression.
+    (void)io::CodedOutputStream::WriteLittleEndian64ToArray(
         value, reinterpret_cast<uint8_t*>(buffer));
     unknown_->append(buffer, 8);
   }
@@ -718,7 +726,8 @@ class UnknownFieldLiteParserHelper {
     if (unknown_ == nullptr) return;
     WriteVarint(num * 8 + 5, unknown_);
     char buffer[4];
-    io::CodedOutputStream::WriteLittleEndian32ToArray(
+    // TODO: Remove this suppression.
+    (void)io::CodedOutputStream::WriteLittleEndian32ToArray(
         value, reinterpret_cast<uint8_t*>(buffer));
     unknown_->append(buffer, 4);
   }
@@ -751,10 +760,54 @@ const char* EpsCopyInputStream::ReadMicroStringFallback(const char* ptr,
   return ptr;
 }
 
+template const char* EpsCopyInputStream::NextBuffer<false>(int, int);
+template const char* EpsCopyInputStream::NextBuffer<true>(int, int);
+
 template std::pair<const char*, bool> EpsCopyInputStream::DoneFallback<false>(
     int, int);
 template std::pair<const char*, bool> EpsCopyInputStream::DoneFallback<true>(
     int, int);
+
+int CountVarintsAssumingLargeArray(const char* ptr, const char* end) {
+  // The number of varints is the number of bytes with the highest bit clear.
+  // This is easier to compute as the total number of bytes, minus the number
+  // of bytes with the highest bit set.
+  int num_varints = end - ptr;
+  ABSL_DCHECK_GE(num_varints, int{sizeof(uint64_t)});
+
+  // Count in whole blocks, except for the last one.
+  const char* const limit = end - sizeof(uint64_t);
+  while (ptr < limit) {
+    num_varints -=
+        absl::popcount(EndianHelper<8>::Load(ptr) & 0x8080808080808080);
+    ptr += sizeof(uint64_t);
+  }
+
+  // Count in the last, possibly incomplete block.
+  return num_varints -
+         absl::popcount(EndianHelper<8>::Load(limit) &
+                        (0x8080808080808080 << ((ptr - limit) * 8)));
+}
+
+bool VerifyBoolsAssumingLargeArray(const char* ptr, const char* end) {
+  ABSL_DCHECK_GE(end - ptr, int{sizeof(uint64_t)});
+
+  // Verify whole blocks, except for the last one.
+  uint64_t bit_or = 0;
+  const char* const limit = end - sizeof(uint64_t);
+  while (ptr < limit) {
+    uint64_t block;
+    std::memcpy(&block, ptr, 8);
+    bit_or |= block;
+    ptr += 8;
+  }
+  // Verify the last, possibly incomplete block.
+  uint64_t block;
+  std::memcpy(&block, limit, 8);
+  bit_or |= block;
+
+  return (bit_or & ~0x0101010101010101) == 0;
+}
 
 }  // namespace internal
 }  // namespace protobuf

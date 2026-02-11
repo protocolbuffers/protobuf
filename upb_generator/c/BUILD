@@ -5,10 +5,10 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load(
-    "//upb/bazel:build_defs.bzl",
+    "//upb/bazel:copts.bzl",
     "UPB_DEFAULT_CPPOPTS",
 )
 load("//upb_generator:bootstrap_compiler.bzl", "bootstrap_cc_binary")
@@ -58,6 +58,8 @@ bootstrap_cc_binary(
         ":names_internal",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:plugin",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
         "//upb/base",
         "//upb/mem",
         "//upb/mini_table",
@@ -73,7 +75,7 @@ bootstrap_cc_binary(
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/memory",
         "@abseil-cpp//absl/strings",
-        "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/types:span",
     ],
 )
 
@@ -85,5 +87,5 @@ proto_lang_toolchain(
     plugin_format_flag = "--plugin=protoc-gen-upb=%s",
     progress_message = "Generating upb protos",
     runtime = "//upb:generated_code_support",
-    visibility = ["//bazel:__pkg__"],
+    visibility = ["//upb/bazel:__pkg__"],
 )

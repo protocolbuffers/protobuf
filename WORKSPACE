@@ -114,10 +114,6 @@ load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 
 rules_pkg_dependencies()
 
-load("@build_bazel_rules_apple//apple:repositories.bzl", "apple_rules_dependencies")
-
-apple_rules_dependencies()
-
 load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
 
 apple_support_dependencies()
@@ -248,48 +244,6 @@ rules_fuzzing_init()
 load("@fuzzing_py_deps//:requirements.bzl", fuzzing_py_deps_install_deps = "install_deps")
 
 fuzzing_py_deps_install_deps()
-
-# This version of rules_rust is older than the one in MODULE.bazel, but we
-# cannot upgrade any further without breaking the WORKSPACE-based build.
-http_archive(
-    name = "rules_rust",
-    integrity = "sha256-8TBqrAsli3kN8BrZq8arsN8LZUFsdLTvJ/Sqsph4CmQ=",
-    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.56.0/rules_rust-0.56.0.tar.gz"],
-)
-
-load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains")
-
-rules_rust_dependencies()
-
-rust_register_toolchains(edition = "2021")
-
-load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_repository")
-
-# to repin, invoke `CARGO_BAZEL_REPIN=1 bazel sync --only=crate_index`
-crates_repository(
-    name = "crate_index",
-    cargo_lockfile = "//:Cargo.lock",
-    lockfile = "//:Cargo.bazel.lock",
-    packages = {
-        "googletest": crate.spec(
-            git = "https://github.com/google/googletest-rust",
-            rev = "0db12bb338b9e75884a24493273c6bf4ce0fa5f5",
-        ),
-        "paste": crate.spec(
-            version = ">=1",
-        ),
-        "quote": crate.spec(
-            version = ">=1",
-        ),
-        "syn": crate.spec(
-            version = ">=2",
-        ),
-    },
-)
-
-load("@crate_index//:defs.bzl", "crate_repositories")
-
-crate_repositories()
 
 # For testing runtime against old gencode from a previous major version.
 http_archive(

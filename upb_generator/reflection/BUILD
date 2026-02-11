@@ -6,9 +6,9 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_CPPOPTS")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_CPPOPTS")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -75,5 +75,5 @@ proto_lang_toolchain(
     plugin_format_flag = "--plugin=protoc-gen-upbdefs=%s",
     progress_message = "Generating upb protos",
     runtime = "//upb/reflection:generated_reflection_support",
-    visibility = ["//bazel:__pkg__"],
+    visibility = ["//upb/bazel:__pkg__"],
 )

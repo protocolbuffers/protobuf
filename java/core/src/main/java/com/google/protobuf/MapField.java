@@ -123,6 +123,10 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
     return new MapField<K, V>(defaultEntry, StorageMode.MAP, new LinkedHashMap<K, V>());
   }
 
+  static <K, V> MapField<K, V> newMapField(MapEntry<K, V> defaultEntry, int entries) {
+    return new MapField<K, V>(defaultEntry, StorageMode.MAP, newLinkedHashMapWithCapacity(entries));
+  }
+
   private Message convertKeyAndValueToMessage(K key, V value) {
     return converter.convertKeyAndValueToMessage(key, value);
   }
@@ -132,15 +136,23 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
   }
 
   private List<Message> convertMapToList(MutabilityAwareMap<K, V> mapData) {
-    List<Message> listData = new ArrayList<Message>();
+    List<Message> listData = new ArrayList<Message>(mapData.size());
     for (Map.Entry<K, V> entry : mapData.entrySet()) {
       listData.add(convertKeyAndValueToMessage(entry.getKey(), entry.getValue()));
     }
     return listData;
   }
 
+  private static <K, V> LinkedHashMap<K, V> newLinkedHashMapWithCapacity(int entries) {
+    // When minimum supported Java version is 19, this method can be replaced with
+    // LinkedHashMap.newLinkedHashMap
+    // Map's default load factor is 0.75.
+    int mapCapacity = (int) Math.ceil(entries / (double) 0.75);
+    return new LinkedHashMap<K, V>(mapCapacity);
+  }
+
   private MutabilityAwareMap<K, V> convertListToMap(List<Message> listData) {
-    Map<K, V> mapData = new LinkedHashMap<K, V>();
+    Map<K, V> mapData = newLinkedHashMapWithCapacity(listData.size());
     for (Message item : listData) {
       convertMessageToKeyAndValue(item, mapData);
     }
@@ -248,7 +260,9 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
     return isMutable;
   }
 
-  /* (non-Javadoc)
+  /**
+   * (non-Javadoc)
+   *
    * @see com.google.protobuf.MutabilityOracle#ensureMutable()
    */
   @Override

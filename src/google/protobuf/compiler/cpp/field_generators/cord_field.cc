@@ -57,8 +57,7 @@ void SetCordVariables(
 
 class CordFieldGenerator : public FieldGeneratorBase {
  public:
-  CordFieldGenerator(const FieldDescriptor* descriptor, const Options& options,
-                     MessageSCCAnalyzer* scc);
+  CordFieldGenerator(const FieldDescriptor* descriptor, const Options& options);
   ~CordFieldGenerator() override = default;
 
   void GeneratePrivateMembers(io::Printer* printer) const override;
@@ -67,7 +66,6 @@ class CordFieldGenerator : public FieldGeneratorBase {
   void GenerateClearingCode(io::Printer* printer) const override;
   void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
-  void GenerateConstructorCode(io::Printer* printer) const override;
   void GenerateArenaDestructorCode(io::Printer* printer) const override;
   void GenerateSerializeWithCachedSizesToArray(
       io::Printer* printer) const override;
@@ -114,7 +112,7 @@ class CordFieldGenerator : public FieldGeneratorBase {
 class CordOneofFieldGenerator : public CordFieldGenerator {
  public:
   CordOneofFieldGenerator(const FieldDescriptor* descriptor,
-                          const Options& options, MessageSCCAnalyzer* scc);
+                          const Options& options);
   ~CordOneofFieldGenerator() override = default;
 
   void GeneratePrivateMembers(io::Printer* printer) const override;
@@ -126,7 +124,6 @@ class CordOneofFieldGenerator : public CordFieldGenerator {
   void GenerateClearingCode(io::Printer* printer) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateMergingCode(io::Printer* printer) const override;
-  void GenerateConstructorCode(io::Printer* printer) const override {}
   void GenerateArenaDestructorCode(io::Printer* printer) const override;
   // Overrides CordFieldGenerator behavior.
   ArenaDtorNeeds NeedsArenaDestructor() const override {
@@ -136,9 +133,8 @@ class CordOneofFieldGenerator : public CordFieldGenerator {
 
 
 CordFieldGenerator::CordFieldGenerator(const FieldDescriptor* descriptor,
-                                       const Options& options,
-                                       MessageSCCAnalyzer* scc)
-    : FieldGeneratorBase(descriptor, options, scc) {
+                                       const Options& options)
+    : FieldGeneratorBase(descriptor, options) {
   SetCordVariables(descriptor, &variables_, options);
 }
 
@@ -148,8 +144,8 @@ void CordFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
   if (!field_->default_value_string().empty()) {
     format(
         "struct _default_$name$_func_ {\n"
-        "  constexpr absl::string_view operator()() const {\n"
-        "    return absl::string_view($default$, $default_length$);\n"
+        "  constexpr ::absl::string_view operator()() const {\n"
+        "    return ::absl::string_view($default$, $default_length$);\n"
         "  }\n"
         "};\n");
   }
@@ -158,8 +154,10 @@ void CordFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
 void CordFieldGenerator::GenerateAccessorDeclarations(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$deprecated_attr$const ::absl::Cord& ${1$$name$$}$() const;\n",
-         field_);
+  format(
+      "[[nodiscard]] $deprecated_attr$const ::absl::Cord& ${1$$name$$}$() "
+      "const;\n",
+      field_);
   format(
       "$deprecated_attr$void ${1$set_$name$$}$(const ::absl::Cord& value);\n"
       "$deprecated_attr$void ${1$set_$name$$}$(::absl::string_view value);\n",
@@ -244,14 +242,6 @@ void CordFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
   format("$field$.swap(other->$field$);\n");
 }
 
-void CordFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
-  ABSL_CHECK(!should_split());
-  Formatter format(printer, variables_);
-  if (!field_->default_value_string().empty()) {
-    format("$field$ = ::absl::string_view($default$, $default_length$);\n");
-  }
-}
-
 void CordFieldGenerator::GenerateArenaDestructorCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
@@ -314,9 +304,8 @@ void CordFieldGenerator::GenerateAggregateInitializer(io::Printer* p) const {
 // ===================================================================
 
 CordOneofFieldGenerator::CordOneofFieldGenerator(
-    const FieldDescriptor* descriptor, const Options& options,
-    MessageSCCAnalyzer* scc)
-    : CordFieldGenerator(descriptor, options, scc) {}
+    const FieldDescriptor* descriptor, const Options& options)
+    : CordFieldGenerator(descriptor, options) {}
 
 void CordOneofFieldGenerator::GeneratePrivateMembers(
     io::Printer* printer) const {
@@ -330,8 +319,8 @@ void CordOneofFieldGenerator::GenerateStaticMembers(
   if (!field_->default_value_string().empty()) {
     format(
         "struct _default_$name$_func_ {\n"
-        "  constexpr absl::string_view operator()() const {\n"
-        "    return absl::string_view($default$, $default_length$);\n"
+        "  constexpr ::absl::string_view operator()() const {\n"
+        "    return ::absl::string_view($default$, $default_length$);\n"
         "  }\n"
         "};"
         "static const ::absl::Cord $default_variable_name$;\n");
@@ -460,16 +449,14 @@ void CordOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSingularCordGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc) {
-  return absl::make_unique<CordFieldGenerator>(desc, options, scc);
+    const FieldDescriptor* desc, const Options& options) {
+  return absl::make_unique<CordFieldGenerator>(desc, options);
 }
 
 
 std::unique_ptr<FieldGeneratorBase> MakeOneofCordGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc) {
-  return absl::make_unique<CordOneofFieldGenerator>(desc, options, scc);
+    const FieldDescriptor* desc, const Options& options) {
+  return absl::make_unique<CordOneofFieldGenerator>(desc, options);
 }
 
 }  // namespace cpp

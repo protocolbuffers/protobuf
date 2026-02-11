@@ -1,0 +1,6 @@
+# Simulate a non-functional CC toolchain
+common --per_file_copt=external/.*protobuf.*/src/google/protobuf/compiler/main.cc@--THIS_CC_TOOLCHAIN_IS_BROKEN
+common --host_per_file_copt=external/.*protobuf.*/src/google/protobuf/compiler/main.cc@--THIS_CC_TOOLCHAIN_IS_BROKEN
+# But, users should be able to use pre-built protoc toolchains instead.
+common --incompatible_enable_proto_toolchain_resolution
+common --@com_google_protobuf//bazel/toolchains:prefer_prebuilt_protoc

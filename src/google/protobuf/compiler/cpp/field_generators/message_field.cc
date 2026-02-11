@@ -44,8 +44,7 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
   bool is_foreign = IsCrossFileMessage(field);
   std::string field_name = FieldMemberName(field, split);
   std::string qualified_type = FieldMessageTypeName(field, opts);
-  std::string default_ref =
-      QualifiedDefaultInstanceName(field->message_type(), opts);
+
   std::string base = absl::StrCat(
       "::", ProtobufNamespace(opts), "::",
       HasDescriptorMethods(field->file(), opts) ? "Message" : "MessageLite");
@@ -53,7 +52,11 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
   return {
       {"Submsg", qualified_type},
       {"MemberType", use_base_class ? base : qualified_type},
-      {"kDefault", default_ref},
+      {"kDefaultRef",
+       absl::Substitute(
+           "*::google::protobuf::internal::MessageGlobalsBase::default_instance<$0>(&$1)",
+           qualified_type,
+           QualifiedMsgGlobalsInstanceName(field->message_type(), opts))},
       Sub{"cast_to_field",
           use_base_class ? absl::Substitute("reinterpret_cast<$0*>", base) : ""}
           .ConditionalFunctionCall(),
@@ -77,11 +80,11 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
 
 class SingularMessage : public FieldGeneratorBase {
  public:
-  SingularMessage(const FieldDescriptor* field, const Options& opts,
-                  MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc),
+  SingularMessage(const FieldDescriptor* field, const Options& opts)
+      : FieldGeneratorBase(field, opts),
         opts_(&opts),
-        has_required_(scc->HasRequiredFields(field->message_type())),
+        has_required_(
+            opts.scc_analyzer->HasRequiredFields(field->message_type())),
         has_hasbit_(HasHasbit(field, opts)) {}
 
   ~SingularMessage() override = default;
@@ -107,7 +110,6 @@ class SingularMessage : public FieldGeneratorBase {
   void GenerateMergingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
-  void GenerateConstructorCode(io::Printer* p) const override {}
   void GenerateCopyConstructorCode(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
@@ -157,7 +159,7 @@ void SingularMessage::GenerateAccessorDeclarations(io::Printer* p) const {
       AnnotatedAccessors(field_, {"mutable_"}, AnnotationCollector::kAlias));
 
   p->Emit(R"cc(
-    $DEPRECATED$ const $Submsg$& $name$() const;
+    $DEPRECATED$ [[nodiscard]] const $Submsg$& $name$() const;
     $DEPRECATED$ [[nodiscard]] $Submsg$* $nullable$ $release_name$();
     $DEPRECATED$ $Submsg$* $nonnull$ $mutable_name$();
     $DEPRECATED$ void $set_allocated_name$($Submsg$* $nullable$ value);
@@ -194,7 +196,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $TsanDetectConcurrentRead$;
       $StrongRef$;
       const $Submsg$* p = $cast_field_$;
-      return p != nullptr ? *p : reinterpret_cast<const $Submsg$&>($kDefault$);
+      return p != nullptr ? *p : $kDefaultRef$;
     }
     inline const $Submsg$& $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
@@ -457,9 +459,8 @@ void SingularMessage::GenerateAggregateInitializer(io::Printer* p) const {
 
 class OneofMessage : public SingularMessage {
  public:
-  OneofMessage(const FieldDescriptor* descriptor, const Options& options,
-               MessageSCCAnalyzer* scc_analyzer)
-      : SingularMessage(descriptor, options, scc_analyzer) {
+  OneofMessage(const FieldDescriptor* descriptor, const Options& options)
+      : SingularMessage(descriptor, options) {
     auto* oneof = descriptor->containing_oneof();
     num_message_fields_in_oneof_ = 0;
     for (int i = 0; i < oneof->field_count(); ++i) {
@@ -503,7 +504,6 @@ class OneofMessage : public SingularMessage {
   void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
-  void GenerateConstructorCode(io::Printer* p) const override;
   void GenerateCopyConstructorCode(io::Printer* p) const override;
   void GenerateIsInitialized(io::Printer* p) const override;
   bool NeedsIsInitialized() const override;
@@ -561,7 +561,7 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     inline const $Submsg$& $Msg$::_internal_$name_internal$() const {
       $StrongRef$;
       return $has_field$ ? static_cast<const $Submsg$&>(*$cast_field_$)
-                         : reinterpret_cast<const $Submsg$&>($kDefault$);
+                         : $kDefaultRef$;
     }
   )cc");
   p->Emit(R"cc(
@@ -665,11 +665,6 @@ void OneofMessage::GenerateDestructorCode(io::Printer* p) const {
   // behavior.
 }
 
-void OneofMessage::GenerateConstructorCode(io::Printer* p) const {
-  // Don't print any constructor code. The field is in a union. We allocate
-  // space only when this field is used.
-}
-
 void OneofMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   ABSL_CHECK(!has_hasbit_);
   p->Emit(R"cc(
@@ -714,11 +709,11 @@ bool OneofMessage::RequiresArena(GeneratorFunction func) const {
 
 class RepeatedMessage : public FieldGeneratorBase {
  public:
-  RepeatedMessage(const FieldDescriptor* field, const Options& opts,
-                  MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc),
+  RepeatedMessage(const FieldDescriptor* field, const Options& opts)
+      : FieldGeneratorBase(field, opts),
         opts_(&opts),
-        has_required_(scc->HasRequiredFields(field->message_type())) {}
+        has_required_(
+            opts.scc_analyzer->HasRequiredFields(field->message_type())) {}
 
   ~RepeatedMessage() override = default;
 
@@ -732,7 +727,6 @@ class RepeatedMessage : public FieldGeneratorBase {
   void GenerateClearingCode(io::Printer* p) const override;
   void GenerateMergingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
-  void GenerateConstructorCode(io::Printer* p) const override;
   void GenerateCopyConstructorCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
@@ -766,8 +760,9 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
                                            io::AnnotationCollector::kAlias));
 
   p->Emit(R"cc(
-    $DEPRECATED$ $Submsg$* $nonnull$ $mutable_name$(int index);
-    $DEPRECATED$ $pb$::RepeatedPtrField<$Submsg$>* $nonnull$ $mutable_name$();
+    [[nodiscard]] $DEPRECATED$ $Submsg$* $nonnull$ $mutable_name$(int index);
+    [[nodiscard]] $DEPRECATED$ $pb$::RepeatedPtrField<$Submsg$>* $nonnull$
+    $mutable_name$();
 
     private:
     const $pb$::RepeatedPtrField<$Submsg$>& $_internal_name$() const;
@@ -781,29 +776,29 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
   }
   p->Emit(R"cc(
     public:
-    $DEPRECATED$ const $Submsg$& $name$(int index) const;
+    [[nodiscard]] $DEPRECATED$ const $Submsg$& $name$(int index) const;
     $DEPRECATED$ $Submsg$* $nonnull$ $add_name$();
-    $DEPRECATED$ const $pb$::RepeatedPtrField<$Submsg$>& $name$() const;
+    [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedPtrField<$Submsg$>& $name$()
+        const;
   )cc");
 }
 
 void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   // TODO: move insertion points
 
-  p->Emit({GetEmitRepeatedFieldMutableSub(*opts_, p)},
-          R"cc(
-            //~ Note: no need to set hasbit in mutable_$name$(int index).
-            //~ Hasbits only need to be updated if a new element is
-            //~ (potentially) added, not if an existing element is mutated.
-            inline $Submsg$* $nonnull$ $Msg$::mutable_$name$(int index)
-                ABSL_ATTRIBUTE_LIFETIME_BOUND {
-              $WeakDescriptorSelfPin$;
-              $annotate_mutable$;
-              // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
-              $StrongRef$;
-              return $mutable$;
-            }
-          )cc");
+  p->Emit(R"cc(
+    //~ Note: no need to set hasbit in mutable_$name$(int index).
+    //~ Hasbits only need to be updated if a new element is
+    //~ (potentially) added, not if an existing element is mutated.
+    inline $Submsg$* $nonnull$ $Msg$::mutable_$name$(int index)
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
+      $annotate_mutable$;
+      // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
+      $StrongRef$;
+      return _internal_mutable_$name_internal$()->Mutable(index);
+    }
+  )cc");
 
   p->Emit(R"cc(
     inline $pb$::RepeatedPtrField<$Submsg$>* $nonnull$ $Msg$::mutable_$name$()
@@ -817,17 +812,16 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       return _internal_mutable_$name_internal$();
     }
   )cc");
-  p->Emit({GetEmitRepeatedFieldGetterSub(*opts_, p)},
-          R"cc(
-            inline const $Submsg$& $Msg$::$name$(int index) const
-                ABSL_ATTRIBUTE_LIFETIME_BOUND {
-              $WeakDescriptorSelfPin$;
-              $annotate_get$;
-              // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-              $StrongRef$;
-              return $getter$;
-            }
-          )cc");
+  p->Emit(R"cc(
+    inline const $Submsg$& $Msg$::$name$(int index) const
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
+      $annotate_get$;
+      // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
+      $StrongRef$;
+      return _internal_$name_internal$().Get(index);
+    }
+  )cc");
   p->Emit(R"cc(
     inline $Submsg$* $nonnull$ $Msg$::add_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -933,10 +927,6 @@ void RepeatedMessage::GenerateSwappingCode(io::Printer* p) const {
   p->Emit(R"cc(
     $field_$.InternalSwap(&other->$field_$);
   )cc");
-}
-
-void RepeatedMessage::GenerateConstructorCode(io::Printer* p) const {
-  // Not needed for repeated fields.
 }
 
 void RepeatedMessage::GenerateCopyConstructorCode(io::Printer* p) const {
@@ -1066,21 +1056,18 @@ bool RepeatedMessage::RequiresArena(GeneratorFunction func) const {
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarMessageGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc) {
-  return absl::make_unique<SingularMessage>(desc, options, scc);
+    const FieldDescriptor* desc, const Options& options) {
+  return absl::make_unique<SingularMessage>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedMessageGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc) {
-  return absl::make_unique<RepeatedMessage>(desc, options, scc);
+    const FieldDescriptor* desc, const Options& options) {
+  return absl::make_unique<RepeatedMessage>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeOneofMessageGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc) {
-  return absl::make_unique<OneofMessage>(desc, options, scc);
+    const FieldDescriptor* desc, const Options& options) {
+  return absl::make_unique<OneofMessage>(desc, options);
 }
 
 }  // namespace cpp

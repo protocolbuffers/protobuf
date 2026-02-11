@@ -30,7 +30,7 @@ pub enum MapInsertStatus {
 
 pub const UPB_MAP_BEGIN: usize = usize::MAX;
 
-extern "C" {
+unsafe extern "C" {
     pub fn upb_Map_New(arena: RawArena, key_type: CType, value_type: CType) -> RawMap;
     pub fn upb_Map_Size(map: RawMap) -> usize;
     pub fn upb_Map_Insert(

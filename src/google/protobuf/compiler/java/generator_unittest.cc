@@ -354,7 +354,7 @@ BBB = 1;
       "--experimental_editions");
 
   ExpectErrorSubstring(
-      "foo.proto:6:6: Feature pb.JavaFeatures.large_enum wasn't introduced "
+      "foo.proto:6:6: pb.JavaFeatures.large_enum wasn't introduced "
       "until edition 2024 and can't be used in edition 2023");
 }
 
@@ -377,6 +377,26 @@ TEST_F(JavaGeneratorTest,
       "Cannot generate Java output because the file's outer "
       "class name, \"TestFileNameProto\", matches the name "
       "of one of the types declared inside it");
+}
+
+TEST_F(JavaGeneratorTest, InvalidConflictingNestedEnumName) {
+  CreateTempFile("test_file_name.proto",
+                 R"schema(
+      edition = "2024";
+      package foo;
+      message TestNameConflict {
+        enum TestNameConflict {
+          UNSPECIFIED = 0;
+        }
+      }
+      )schema");
+
+  RunProtoc(
+      "protocol_compiler --experimental_editions --java_out=$tmpdir "
+      "-I$tmpdir test_file_name.proto");
+
+  ExpectErrorSubstring(
+      "would be an enum nested inside a class with the same name");
 }
 
 TEST_F(JavaGeneratorTest, ExtensionsOptionImportsAreUnknown) {
@@ -508,6 +528,8 @@ TEST_F(JavaGeneratorTest, ExtensionsPublicImportsAreKnown) {
                             absl::StrCat("registry.add(", PACKAGE_IMPORT_PREFIX,
                                          "foo.FooProto.fileOpt);")));
 }
+
+
 }  // namespace
 }  // namespace java
 }  // namespace compiler

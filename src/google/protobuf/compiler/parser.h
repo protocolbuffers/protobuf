@@ -18,6 +18,7 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
@@ -123,6 +124,8 @@ class PROTOBUF_EXPORT Parser final {
   // Consume the rest of the current block, including nested blocks,
   // ending after the closing '}' is encountered and consumed, or at EOF.
   void SkipRestOfBlock();
+
+  bool ShouldUseFixedWireForIntTypes() const;
 
   // -----------------------------------------------------------------
   // Single-token consuming helpers
@@ -372,10 +375,10 @@ class PROTOBUF_EXPORT Parser final {
   bool ParseMessageStatement(DescriptorProto* message,
                              const LocationRecorder& message_location,
                              const FileDescriptorProto* containing_file);
-  bool ParseEnumStatement(EnumDescriptorProto* message,
+  bool ParseEnumStatement(EnumDescriptorProto* enum_type,
                           const LocationRecorder& enum_location,
                           const FileDescriptorProto* containing_file);
-  bool ParseServiceStatement(ServiceDescriptorProto* message,
+  bool ParseServiceStatement(ServiceDescriptorProto* service,
                              const LocationRecorder& service_location,
                              const FileDescriptorProto* containing_file);
 
@@ -422,13 +425,13 @@ class PROTOBUF_EXPORT Parser final {
   bool ParseReservedIdentifier(std::string* name, ErrorMaker error_message);
   bool ParseReservedNumbers(DescriptorProto* message,
                             const LocationRecorder& parent_location);
-  bool ParseReserved(EnumDescriptorProto* message,
-                     const LocationRecorder& message_location);
-  bool ParseReservedNames(EnumDescriptorProto* message,
+  bool ParseReserved(EnumDescriptorProto* proto,
+                     const LocationRecorder& enum_location);
+  bool ParseReservedNames(EnumDescriptorProto* proto,
                           const LocationRecorder& parent_location);
-  bool ParseReservedIdentifiers(EnumDescriptorProto* message,
+  bool ParseReservedIdentifiers(EnumDescriptorProto* proto,
                                 const LocationRecorder& parent_location);
-  bool ParseReservedNumbers(EnumDescriptorProto* message,
+  bool ParseReservedNumbers(EnumDescriptorProto* proto,
                             const LocationRecorder& parent_location);
 
   // Parse an "extend" declaration.  (See also comments for

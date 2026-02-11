@@ -14,7 +14,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -23,6 +22,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/generator.h"
@@ -39,6 +39,7 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
+
 using ::google::protobuf::internal::WireFormat;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
@@ -60,6 +61,7 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"DeclaredCppType", DeclaredCppTypeMethodName(field->cpp_type())},
       {"Oneof", field->real_containing_oneof() ? "Oneof" : ""},
       {"Utf8", IsStrictUtf8String(field, opts) ? "Utf8" : "Raw"},
+      {"StrType", IsStrictUtf8String(field, opts) ? "String" : "Bytes"},
       {"kTagBytes", WireFormat::TagSize(field->number(), field->type())},
       Sub("PrepareSplitMessageForWrite",
           split ? "PrepareSplitMessageForWrite();" : "")
@@ -113,8 +115,7 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
 }
 
 FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* field,
-                                       const Options& options,
-                                       MessageSCCAnalyzer* scc)
+                                       const Options& options)
     : field_(field), options_(options) {
   bool is_repeated_or_map = field->is_repeated();
   should_split_ = ShouldSplit(field, options);
@@ -141,22 +142,25 @@ FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* field,
       is_message_ = true;
       is_group_ = field->type() == FieldDescriptor::TYPE_GROUP;
       is_foreign_ = IsCrossFileMessage(field);
-      is_weak_ = IsImplicitWeakField(field, options, scc);
-      is_lazy_ = IsLazy(field, options, scc);
+      is_weak_ = IsImplicitWeakField(field, options);
+      is_lazy_ = IsLazy(field, options);
       has_trivial_value_ = !(is_repeated_or_map || is_lazy_);
       has_default_constexpr_constructor_ = is_repeated_or_map || is_lazy_;
       break;
   }
 
-  has_trivial_zero_default_ = CanInitializeByZeroing(field, options, scc);
+  has_trivial_zero_default_ = CanInitializeByZeroing(field, options);
   has_brace_default_assign_ = has_trivial_zero_default_ && !is_lazy_;
 }
 
 void FieldGeneratorBase::GenerateMemberConstexprConstructor(
     io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
-  if (field_->is_repeated()) {
-    p->Emit("$name$_{}");
+  if (field_->is_repeated() || field_->is_map()) {
+    p->Emit({InternalMetadataOffsetSub(p)},
+            R"cc(
+              $name$_ { visibility, $internal_metadata_offset$ }
+            )cc");
   } else {
     p->Emit({{"default", DefaultValue(options_, field_)}},
             "$name$_{$default$}");
@@ -165,13 +169,15 @@ void FieldGeneratorBase::GenerateMemberConstexprConstructor(
 
 void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
-  if (field_->is_map()) {
-    p->Emit("$name$_{visibility, arena}");
-  } else if (field_->is_repeated()) {
+  if (field_->is_repeated() || field_->is_map()) {
     if (ShouldSplit(field_, options_)) {
+      ABSL_CHECK(!field_->is_map());
       p->Emit("$name$_{}");  // RawPtr<Repeated>
     } else {
-      p->Emit("$name$_{visibility, arena}");
+      p->Emit({InternalMetadataOffsetSub(p)},
+              R"cc(
+                $name$_ { visibility, $internal_metadata_offset$ }
+              )cc");
     }
   } else {
     p->Emit({{"default", DefaultValue(options_, field_)}},
@@ -181,8 +187,13 @@ void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
 
 void FieldGeneratorBase::GenerateMemberCopyConstructor(io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
-  if (field_->is_repeated()) {
-    p->Emit("$name$_{visibility, arena, from.$name$_}");
+  if (field_->is_repeated() || field_->is_map()) {
+    p->Emit({InternalMetadataOffsetSub(p)},
+            R"cc(
+              $name$_ {
+                visibility, $internal_metadata_offset$, from.$name$_
+              }
+            )cc");
   } else {
     p->Emit("$name$_{from.$name$_}");
   }
@@ -236,73 +247,85 @@ pb::CppFeatures::StringType FieldGeneratorBase::GetDeclaredStringType() const {
       .string_type();
 }
 
+Sub FieldGeneratorBase::InternalMetadataOffsetSub(io::Printer* p) {
+  return Sub("internal_metadata_offset",
+             [p] {
+               p->Emit(R"cc(
+                 ::_pbi::InternalMetadataOffset::Build<
+                     $classtype$,
+                     PROTOBUF_FIELD_OFFSET($classtype$, _impl_.$name$_)>()
+               )cc");
+             })
+      .WithSuffix("");
+}
+
 namespace {
 std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
-                                                  const Options& options,
-                                                  MessageSCCAnalyzer* scc) {
+                                                  const Options& options) {
 
   if (field->is_map()) {
     ABSL_CHECK(
         !(field->options().lazy() || field->options().unverified_lazy()));
-    return MakeMapGenerator(field, options, scc);
+    return MakeMapGenerator(field, options);
   }
   if (field->is_repeated()) {
     ABSL_CHECK(!field->options().unverified_lazy());
 
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        return MakeRepeatedMessageGenerator(field, options, scc);
+        return MakeRepeatedMessageGenerator(field, options);
       case FieldDescriptor::CPPTYPE_STRING: {
         if (field->cpp_string_type() == FieldDescriptor::CppStringType::kView) {
-          return MakeRepeatedStringViewGenerator(field, options, scc);
+          return MakeRepeatedStringViewGenerator(field, options);
         } else {
-          return MakeRepeatedStringGenerator(field, options, scc);
+          return MakeRepeatedStringGenerator(field, options);
         }
       }
       case FieldDescriptor::CPPTYPE_ENUM:
-        return MakeRepeatedEnumGenerator(field, options, scc);
+        return MakeRepeatedEnumGenerator(field, options);
       default:
-        return MakeRepeatedPrimitiveGenerator(field, options, scc);
+        return MakeRepeatedPrimitiveGenerator(field, options);
     }
   }
 
   if (field->real_containing_oneof() &&
       field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-    return MakeOneofMessageGenerator(field, options, scc);
+    return MakeOneofMessageGenerator(field, options);
   }
 
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      return MakeSinguarMessageGenerator(field, options, scc);
+      return MakeSinguarMessageGenerator(field, options);
     case FieldDescriptor::CPPTYPE_ENUM:
-      return MakeSinguarEnumGenerator(field, options, scc);
+      return MakeSinguarEnumGenerator(field, options);
     case FieldDescriptor::CPPTYPE_STRING: {
       switch (field->cpp_string_type()) {
         case FieldDescriptor::CppStringType::kView:
-          return MakeSingularStringViewGenerator(field, options, scc);
+          return MakeSingularStringViewGenerator(field, options);
         case FieldDescriptor::CppStringType::kCord:
           if (field->type() == FieldDescriptor::TYPE_BYTES) {
             if (field->real_containing_oneof()) {
-              return MakeOneofCordGenerator(field, options, scc);
+              return MakeOneofCordGenerator(field, options);
             } else {
-              return MakeSingularCordGenerator(field, options, scc);
+              return MakeSingularCordGenerator(field, options);
             }
           }
           ABSL_FALLTHROUGH_INTENDED;
         default:
-          return MakeSinguarStringGenerator(field, options, scc);
+          return MakeSinguarStringGenerator(field, options);
       }
     }
     default:
-      return MakeSinguarPrimitiveGenerator(field, options, scc);
+      return MakeSinguarPrimitiveGenerator(field, options);
   }
 }
 
 void HasBitVars(const FieldDescriptor* field, const Options& opts,
-                std::optional<uint32_t> idx, std::vector<Sub>& vars) {
+                absl::optional<uint32_t> idx, std::vector<Sub>& vars) {
   if (!idx.has_value()) {
     vars.emplace_back(Sub("set_hasbit", "").WithSuffix(";"));
     vars.emplace_back(Sub("clear_hasbit", "").WithSuffix(";"));
+    vars.emplace_back("exclude_mask", "0xFFFFFFFFU");
     return;
   }
 
@@ -329,70 +352,33 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
   vars.emplace_back("has_hasbit", has);
   vars.emplace_back(Sub("set_hasbit", set).WithSuffix(";"));
   vars.emplace_back(Sub("clear_hasbit", clr).WithSuffix(";"));
-}
-
-void InlinedStringVars(const FieldDescriptor* field, const Options& opts,
-                       std::optional<uint32_t> idx, std::vector<Sub>& vars) {
-  if (!IsStringInlined(field, opts)) {
-    ABSL_CHECK(!idx.has_value());
-    return;
-  }
-
-  // The first bit is the tracking bit for on demand registering ArenaDtor.
-  ABSL_CHECK_GT(*idx, 0u)
-      << "_inlined_string_donated_'s bit 0 is reserved for arena dtor tracking";
-
-  int32_t index = *idx / 32;
-  std::string mask = absl::StrFormat("0x%08xU", 1u << (*idx % 32));
-  vars.emplace_back("inlined_string_index", index);
-  vars.emplace_back("inlined_string_mask", mask);
-
-  absl::string_view array = IsMapEntryMessage(field->containing_type())
-                                ? "_inlined_string_donated_"
-                                : "_impl_._inlined_string_donated_";
-
-  vars.emplace_back("inlined_string_donated",
-                    absl::StrFormat("(%s[%d] & %s) != 0;", array, index, mask));
-  vars.emplace_back("donating_states_word",
-                    absl::StrFormat("%s[%d]", array, index));
-  vars.emplace_back("mask_for_undonate", absl::StrFormat("~%s", mask));
+  vars.emplace_back("exclude_mask",
+                    absl::StrFormat("0x%08xU", ~(1u << (*idx % 32))));
 }
 }  // namespace
 
 FieldGenerator::FieldGenerator(const FieldDescriptor* field,
                                const Options& options,
-                               MessageSCCAnalyzer* scc_analyzer,
-                               std::optional<uint32_t> hasbit_index,
-                               std::optional<uint32_t> inlined_string_index)
-    : impl_(MakeGenerator(field, options, scc_analyzer)),
+                               absl::optional<uint32_t> hasbit_index)
+    : impl_(MakeGenerator(field, options)),
       field_vars_(FieldVars(field, options)),
       tracker_vars_(MakeTrackerCalls(field, options)),
       per_generator_vars_(impl_->MakeVars()) {
   HasBitVars(field, options, hasbit_index, field_vars_);
-  InlinedStringVars(field, options, inlined_string_index, field_vars_);
 }
 
-void FieldGeneratorTable::Build(
-    const Options& options, MessageSCCAnalyzer* scc,
-    absl::Span<const int32_t> has_bit_indices,
-    absl::Span<const int32_t> inlined_string_indices) {
+void FieldGeneratorTable::Build(const Options& options,
+                                absl::Span<const int32_t> has_bit_indices) {
   // Construct all the FieldGenerators.
   fields_.reserve(static_cast<size_t>(descriptor_->field_count()));
   for (const auto* field : internal::FieldRange(descriptor_)) {
     size_t index = static_cast<size_t>(field->index());
-    std::optional<uint32_t> has_bit_index;
+    absl::optional<uint32_t> has_bit_index;
     if (!has_bit_indices.empty() && has_bit_indices[index] >= 0) {
       has_bit_index = static_cast<uint32_t>(has_bit_indices[index]);
     }
 
-    std::optional<uint32_t> inlined_string_index;
-    if (!inlined_string_indices.empty() && inlined_string_indices[index] >= 0) {
-      inlined_string_index =
-          static_cast<uint32_t>(inlined_string_indices[index]);
-    }
-
-    fields_.push_back(FieldGenerator(field, options, scc, has_bit_index,
-                                     inlined_string_index));
+    fields_.push_back(FieldGenerator(field, options, has_bit_index));
   }
 }
 

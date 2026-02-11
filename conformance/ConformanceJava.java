@@ -17,6 +17,8 @@ import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.TypeRegistry;
 import com.google.protobuf_test_messages.edition2023.TestAllTypesEdition2023;
 import com.google.protobuf_test_messages.edition2023.TestMessagesEdition2023;
+import com.google.protobuf_test_messages.edition_unstable.TestAllTypesEditionUnstable;
+import com.google.protobuf_test_messages.edition_unstable.TestMessagesEditionUnstableProto;
 import com.google.protobuf_test_messages.editions.proto2.TestMessagesProto2Editions;
 import com.google.protobuf_test_messages.editions.proto3.TestMessagesProto3Editions;
 import com.google.protobuf_test_messages.proto2.TestMessagesProto2;
@@ -217,6 +219,8 @@ class ConformanceJava {
         return TestAllTypesProto2.class;
       case "protobuf_test_messages.editions.TestAllTypesEdition2023":
         return TestAllTypesEdition2023.class;
+      case "protobuf_test_messages.edition_unstable.TestAllTypesEditionUnstable":
+        return TestAllTypesEditionUnstable.class;
       case "protobuf_test_messages.editions.proto3.TestAllTypesProto3":
         return TestMessagesProto3Editions.TestAllTypesProto3.class;
       case "protobuf_test_messages.editions.proto2.TestAllTypesProto2":
@@ -235,6 +239,8 @@ class ConformanceJava {
         return TestMessagesProto2.class;
       case "protobuf_test_messages.editions.TestAllTypesEdition2023":
         return TestMessagesEdition2023.class;
+      case "protobuf_test_messages.edition_unstable.TestAllTypesEditionUnstable":
+        return TestMessagesEditionUnstableProto.class;
       case "protobuf_test_messages.editions.proto3.TestAllTypesProto3":
         return TestMessagesProto3Editions.class;
       case "protobuf_test_messages.editions.proto2.TestAllTypesProto2":

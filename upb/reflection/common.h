@@ -14,12 +14,6 @@
 
 #include "upb/reflection/descriptor_bootstrap.h"  // IWYU pragma: export
 
-typedef enum {
-  kUpb_Syntax_Proto2 = 2,
-  kUpb_Syntax_Proto3 = 3,
-  kUpb_Syntax_Editions = 99
-} upb_Syntax;
-
 // Forward declarations for circular references.
 typedef struct upb_DefPool upb_DefPool;
 typedef struct upb_EnumDef upb_EnumDef;

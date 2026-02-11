@@ -24,7 +24,8 @@ namespace internal {
 
 // Shifts "byte" left by n * 7 bits, filling vacated bits from `ones`.
 template <int n>
-PROTOBUF_ALWAYS_INLINE int64_t VarintShlByte(int8_t byte, int64_t ones) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_ALWAYS_INLINE int64_t
+VarintShlByte(int8_t byte, int64_t ones) {
   return static_cast<int64_t>((static_cast<uint64_t>(byte) << n * 7) |
                               (static_cast<uint64_t>(ones) >> (64 - n * 7)));
 }
@@ -33,8 +34,8 @@ PROTOBUF_ALWAYS_INLINE int64_t VarintShlByte(int8_t byte, int64_t ones) {
 // bitwise ANDs the resulting value into the input/output `res` parameter.
 // Returns true if the result was not negative.
 template <int n>
-PROTOBUF_ALWAYS_INLINE bool VarintShlAnd(int8_t byte, int64_t ones,
-                                         int64_t& res) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_ALWAYS_INLINE bool VarintShlAnd(
+    int8_t byte, int64_t ones, int64_t& res) {
   res &= VarintShlByte<n>(byte, ones);
   return res >= 0;
 }
@@ -43,14 +44,15 @@ PROTOBUF_ALWAYS_INLINE bool VarintShlAnd(int8_t byte, int64_t ones,
 // puts the new value in the output only parameter `res`.
 // Returns true if the result was not negative.
 template <int n>
-PROTOBUF_ALWAYS_INLINE bool VarintShl(int8_t byte, int64_t ones, int64_t& res) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_ALWAYS_INLINE bool VarintShl(
+    int8_t byte, int64_t ones, int64_t& res) {
   res = VarintShlByte<n>(byte, ones);
   return res >= 0;
 }
 
 template <typename VarintType, int limit = 10>
-PROTOBUF_ALWAYS_INLINE const char* ShiftMixParseVarint(const char* p,
-                                                       int64_t& res1) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_ALWAYS_INLINE const char*
+ShiftMixParseVarint(const char* p, int64_t& res1) {
   using Signed = std::make_signed_t<VarintType>;
   constexpr bool kIs64BitVarint = std::is_same<Signed, int64_t>::value;
   constexpr bool kIs32BitVarint = std::is_same<Signed, int32_t>::value;

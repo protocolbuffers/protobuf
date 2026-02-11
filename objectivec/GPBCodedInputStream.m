@@ -206,16 +206,33 @@ int32_t GPBCodedInputStreamReadTag(GPBCodedInputStreamState *state) {
     return 0;
   }
 
-  state->lastTag = ReadRawVarint32(state);
+  // The conformance tests now limit things to ensue the varint for a tag fits in 5 bytes. The logic
+  // for this parse is based on _upb_WireReader_ReadLongTag.
+  uint64_t rawTag = 0;
+  BOOL finishedParse = NO;
+  for (int i = 0; i < 5; i++) {
+    uint64_t byte = (uint64_t)ReadRawByte(state);
+    rawTag |= (byte & 0x7F) << (i * 7);
+    if ((byte & 0x80) == 0) {
+      finishedParse = YES;
+      break;
+    }
+  }
+  if (!finishedParse || (rawTag > (uint64_t)UINT32_MAX)) {
+    GPBRaiseStreamError(GPBCodedInputStreamErrorInvalidTag, @"Invalid tag");
+  }
+  uint32_t tag = (uint32_t)rawTag;
+
   // Tags have to include a valid wireformat.
-  if (!GPBWireFormatIsValidTag(state->lastTag)) {
+  if (!GPBWireFormatIsValidTag(tag)) {
     GPBRaiseStreamError(GPBCodedInputStreamErrorInvalidTag, @"Invalid wireformat in tag.");
   }
   // Zero is not a valid field number.
-  if (GPBWireFormatGetTagFieldNumber(state->lastTag) == 0) {
+  if (GPBWireFormatGetTagFieldNumber(tag) == 0) {
     GPBRaiseStreamError(GPBCodedInputStreamErrorInvalidTag,
                         @"A zero field number on the wire is invalid.");
   }
+  state->lastTag = (int32_t)tag;
   return state->lastTag;
 }
 

@@ -26,6 +26,8 @@ inline std::string GetEditionIdentifier(const Descriptor& message) {
       return "Proto3";
     case Edition::EDITION_PROTO2:
       return "Proto2";
+    case Edition::EDITION_UNSTABLE:
+      return "EditionUnstable";
     default: {
       std::string id = "Editions";
       if (message.name() == "TestAllTypesProto2") {

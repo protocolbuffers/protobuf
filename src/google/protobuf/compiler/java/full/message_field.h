@@ -84,8 +84,8 @@ class ImmutableMessageFieldGenerator : public ImmutableFieldGenerator {
       io::Printer* printer, const char* method_prototype,
       const char* regular_case, const char* nested_builder_case,
       const char* trailing_code,
-      std::optional<io::AnnotationCollector::Semantic> semantic =
-          std::nullopt) const;
+      absl::optional<io::AnnotationCollector::Semantic> semantic =
+          absl::nullopt) const;
 };
 
 class ImmutableMessageOneofFieldGenerator
@@ -150,8 +150,8 @@ class RepeatedImmutableMessageFieldGenerator
       io::Printer* printer, const char* method_prototype,
       const char* regular_case, const char* nested_builder_case,
       const char* trailing_code,
-      std::optional<io::AnnotationCollector::Semantic> semantic =
-          std::nullopt) const override;
+      absl::optional<io::AnnotationCollector::Semantic> semantic =
+          absl::nullopt) const override;
 };
 
 }  // namespace java

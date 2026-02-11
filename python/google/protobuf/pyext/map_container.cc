@@ -108,25 +108,21 @@ static bool PythonToMapKey(MapContainer* self, PyObject* obj, MapKey* key,
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
       PROTOBUF_CHECK_GET_INT32(obj, value, false);
-      CheckIntegerWithBool(obj, field_descriptor);
       key->SetInt32Value(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
       PROTOBUF_CHECK_GET_INT64(obj, value, false);
-      CheckIntegerWithBool(obj, field_descriptor);
       key->SetInt64Value(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
       PROTOBUF_CHECK_GET_UINT32(obj, value, false);
-      CheckIntegerWithBool(obj, field_descriptor);
       key->SetUInt32Value(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
       PROTOBUF_CHECK_GET_UINT64(obj, value, false);
-      CheckIntegerWithBool(obj, field_descriptor);
       key->SetUInt64Value(value);
       break;
     }
@@ -214,25 +210,21 @@ static bool PythonToMapValueRef(MapContainer* self, PyObject* obj,
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
       PROTOBUF_CHECK_GET_INT32(obj, value, false);
-      CheckIntegerWithBool(obj, field_descriptor);
       value_ref->SetInt32Value(value);
       return true;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
       PROTOBUF_CHECK_GET_INT64(obj, value, false);
-      CheckIntegerWithBool(obj, field_descriptor);
       value_ref->SetInt64Value(value);
       return true;
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
       PROTOBUF_CHECK_GET_UINT32(obj, value, false);
-      CheckIntegerWithBool(obj, field_descriptor);
       value_ref->SetUInt32Value(value);
       return true;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
       PROTOBUF_CHECK_GET_UINT64(obj, value, false);
-      CheckIntegerWithBool(obj, field_descriptor);
       value_ref->SetUInt64Value(value);
       return true;
     }
@@ -261,7 +253,6 @@ static bool PythonToMapValueRef(MapContainer* self, PyObject* obj,
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
       PROTOBUF_CHECK_GET_INT32(obj, value, false);
-      CheckIntegerWithBool(obj, field_descriptor);
       if (allow_unknown_enum_values) {
         value_ref->SetEnumValue(value);
         return true;
@@ -335,7 +326,7 @@ PyObject* MapReflectionFriend::MergeFrom(PyObject* _self, PyObject* arg) {
       reflection->MutableMapData(message, self->parent_field_descriptor);
   const internal::MapFieldBase* other_field = other_reflection->GetMapData(
       *other_message, other_map->parent_field_descriptor);
-  field->MergeFrom(*other_field);
+  field->MergeFrom(message->GetArena(), *other_field);
   self->version++;
   Py_RETURN_NONE;
 }
@@ -637,7 +628,6 @@ int MapReflectionFriend::MessageMapSetItem(PyObject* _self, PyObject* key,
   const Reflection* reflection = message->GetReflection();
   std::string map_key_string;
   MapKey map_key;
-  MapValueRef value;
 
   self->version++;
 

@@ -515,6 +515,7 @@ bool CheckAndGetInteger(PyObject* arg, T* value) {
   // This definition includes everything with a valid __index__() implementation
   // and shouldn't cast the net too wide.
   if (!strcmp(Py_TYPE(arg)->tp_name, "numpy.ndarray") ||
+      (!strcmp(Py_TYPE(arg)->tp_name, "bool")) ||
       ABSL_PREDICT_FALSE(!PyIndex_Check(arg))) {
     FormatTypeError(arg, "int");
     return false;
@@ -597,18 +598,6 @@ bool CheckAndGetBool(PyObject* arg, bool* value) {
   *value = static_cast<bool>(long_value);
 
   return true;
-}
-
-void CheckIntegerWithBool(PyObject* arg, const FieldDescriptor* field_des) {
-  static int bool_warning_count = 100;
-  if (bool_warning_count > 0 && (!strcmp(Py_TYPE(arg)->tp_name, "bool"))) {
-    --bool_warning_count;
-    std::string error_msg =
-        absl::StrCat(field_des->full_name(),
-                     ": Expected an int, got a boolean. This "
-                     "will be rejected in 7.34.0, please fix it before that");
-    PyErr_WarnEx(PyExc_DeprecationWarning, error_msg.c_str(), 3);
-  }
 }
 
 // Checks whether the given object (which must be "bytes" or "unicode") contains
@@ -764,6 +753,50 @@ static int MaybeReleaseOverlappingOneofField(CMessage* cmessage,
   return 0;
 }
 
+int MaybeReleaseOneofBeforeMerge(CMessage* self, const Message& other) {
+  if (!self->composite_fields) {
+    return 0;
+  }
+
+  Message* message = self->message;
+  const Reflection* reflection = message->GetReflection();
+  PyMessageFactory* factory = GetFactoryForMessage(self);
+  std::vector<const FieldDescriptor*> fields_to_release;
+  std::vector<const FieldDescriptor*> nested_message_fields;
+  for (const auto& item : *self->composite_fields) {
+    const FieldDescriptor* descriptor = item.first;
+    if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+        // For normal repeated message, MergeFrom will append the messages.
+        // For message map with same keys, it is overwrite
+        !descriptor->is_repeated() &&
+        reflection->HasField(*message, descriptor)) {
+      if (reflection->HasField(other, descriptor)) {
+        nested_message_fields.push_back(descriptor);
+      } else {
+        // Release oneof message if the other message has set a different oneof
+        const OneofDescriptor* oneof = descriptor->containing_oneof();
+        if (oneof && reflection->HasOneof(other, oneof)) {
+          fields_to_release.push_back(descriptor);
+        }
+      }
+    }
+  }
+  for (const FieldDescriptor* field : nested_message_fields) {
+    if (MaybeReleaseOneofBeforeMerge(
+            reinterpret_cast<CMessage*>(
+                self->composite_fields->find(field)->second),
+            reflection->GetMessage(other, field, factory->message_factory)) <
+        0) {
+      return -1;
+    }
+  }
+  for (const FieldDescriptor* field : fields_to_release) {
+    if (InternalReleaseFieldByDescriptor(self, field) < 0) {
+      return -1;
+    }
+  }
+  return 0;
+}
 // After a Merge, visit every sub-message that was read-only, and
 // eventually update their pointer if the Merge operation modified them.
 int FixupMessageAfterMerge(CMessage* self) {
@@ -1146,7 +1179,10 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
           if (new_msg == nullptr) {
             return -1;
           }
-          InitWKTOrMerge(descriptor->message_type(), new_msg.get(), next.get());
+          if (InitWKTOrMerge(descriptor->message_type(), new_msg.get(),
+                             next.get()) < 0) {
+            return -1;
+          }
         }
         if (PyErr_Occurred()) {
           // Check to see how PyIter_Next() exited.
@@ -1846,6 +1882,10 @@ PyObject* MergeFrom(CMessage* self, PyObject* arg) {
   }
   AssureWritable(self);
 
+  if (MaybeReleaseOneofBeforeMerge(self, *other_message->message) < 0) {
+    return nullptr;
+  }
+
   self->message->MergeFrom(*other_message->message);
   // Child message might be lazily created before MergeFrom. Make sure they
   // are mutable at this point if child messages are really created.
@@ -2040,11 +2080,11 @@ static PyObject* ListFields(CMessage* self) {
       if (extension_field == nullptr) {
         return nullptr;
       }
-      // With C++ descriptors, the field can always be retrieved, but for
-      // unknown extensions which have not been imported in Python code, there
-      // is no message class and we cannot retrieve the value.
-      // TODO: consider building the class on the fly!
-      if (fields[i]->message_type() != nullptr &&
+      // When using the default descriptor pool, avoid exposing extensions that
+      // happened to be linked in from C++ but not imported via Python.  This is
+      // for consistency with the pure Python implementation.
+      if (fields[i]->file()->pool() == GetDefaultDescriptorPool()->pool &&
+          fields[i]->message_type() != nullptr &&
           message_factory::GetMessageClass(GetFactoryForMessage(self),
                                            fields[i]->message_type()) ==
               nullptr) {
@@ -2282,25 +2322,21 @@ int InternalSetNonOneofScalar(Message* message,
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
       PROTOBUF_CHECK_GET_INT32(arg, value, -1);
-      CheckIntegerWithBool(arg, field_descriptor);
       reflection->SetInt32(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
       PROTOBUF_CHECK_GET_INT64(arg, value, -1);
-      CheckIntegerWithBool(arg, field_descriptor);
       reflection->SetInt64(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
       PROTOBUF_CHECK_GET_UINT32(arg, value, -1);
-      CheckIntegerWithBool(arg, field_descriptor);
       reflection->SetUInt32(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
       PROTOBUF_CHECK_GET_UINT64(arg, value, -1);
-      CheckIntegerWithBool(arg, field_descriptor);
       reflection->SetUInt64(message, field_descriptor, value);
       break;
     }
@@ -2328,7 +2364,6 @@ int InternalSetNonOneofScalar(Message* message,
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
       PROTOBUF_CHECK_GET_INT32(arg, value, -1);
-      CheckIntegerWithBool(arg, field_descriptor);
       if (!field_descriptor->legacy_enum_field_treated_as_closed()) {
         reflection->SetEnumValue(message, field_descriptor, value);
       } else {

@@ -9,6 +9,7 @@
 
 #include "python/message.h"
 #include "python/protobuf.h"
+#include "upb/base/string_view.h"
 #include "upb/message/message.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
@@ -83,14 +84,13 @@ static const char* PyUpb_UnknownFieldSet_BuildMessageSetItem(
       }
       case kUpb_MessageSet_MessageTag: {
         int size;
+        upb_StringView sv;
         ptr = upb_WireReader_ReadSize(ptr, &size, stream);
-        if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(stream, ptr, size)) {
-          goto err;
-        }
-        const char* str = ptr;
-        ptr = upb_EpsCopyInputStream_ReadStringAliased(stream, &str, size);
+        ptr = upb_EpsCopyInputStream_ReadStringAlwaysAlias(stream, ptr, size,
+                                                           &sv);
+        if (!ptr) goto err;
         if (!msg) {
-          msg = PyBytes_FromStringAndSize(str, size);
+          msg = PyBytes_FromStringAndSize(sv.data, sv.size);
           if (!msg) goto err;
         } else {
           // already saw a message here so deliberately skipping the duplicate
@@ -172,13 +172,12 @@ static const char* PyUpb_UnknownFieldSet_BuildValue(
     }
     case kUpb_WireType_Delimited: {
       int size;
+      upb_StringView sv;
       ptr = upb_WireReader_ReadSize(ptr, &size, stream);
-      if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(stream, ptr, size)) {
-        return NULL;
-      }
-      const char* str = ptr;
-      ptr = upb_EpsCopyInputStream_ReadStringAliased(stream, &str, size);
-      *data = PyBytes_FromStringAndSize(str, size);
+      ptr =
+          upb_EpsCopyInputStream_ReadStringAlwaysAlias(stream, ptr, size, &sv);
+      if (!ptr) return NULL;
+      *data = PyBytes_FromStringAndSize(sv.data, sv.size);
       return ptr;
     }
     case kUpb_WireType_StartGroup: {
@@ -251,7 +250,7 @@ static PyObject* PyUpb_UnknownFieldSet_New(PyTypeObject* type, PyObject* args,
   while (upb_Message_NextUnknown(msg, &view, &iter)) {
     const char* ptr = view.data;
     upb_EpsCopyInputStream stream;
-    upb_EpsCopyInputStream_Init(&stream, &ptr, view.size, true);
+    upb_EpsCopyInputStream_Init(&stream, &ptr, view.size);
     const upb_MessageDef* msgdef = PyUpb_Message_GetMsgdef(py_msg);
 
     bool ok;

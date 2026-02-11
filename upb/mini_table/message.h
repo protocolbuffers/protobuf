@@ -36,25 +36,20 @@ UPB_API_INLINE bool upb_MiniTable_IsMessageSet(const upb_MiniTable* m);
 // DEPRECATED: use upb_MiniTable_SubMessage() instead
 // Returns the MiniTable for a message field, NULL if the field is unlinked.
 UPB_API_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
-    const upb_MiniTable* m, const upb_MiniTableField* f);
+    const upb_MiniTableField* f);
 
-// Returns the MiniTable for a message field if it is a submessage, otherwise
-// returns NULL.
-//
-// WARNING: if dynamic tree shaking is in use, the return value may be the
-// "empty", zero-field placeholder message instead of the real message type.
-// If the message is later linked, this function will begin returning the real
-// message type.
+// Returns the MiniTable for a message field if it is a submessage and the field
+// is linked, otherwise returns NULL.
 UPB_API_INLINE const upb_MiniTable* upb_MiniTable_SubMessage(
-    const upb_MiniTable* m, const upb_MiniTableField* f);
+    const upb_MiniTableField* f);
 
 // Returns the MiniTable for a map field.  The given field must refer to a map.
 UPB_API_INLINE const upb_MiniTable* upb_MiniTable_MapEntrySubMessage(
-    const upb_MiniTable* m, const upb_MiniTableField* f);
+    const upb_MiniTableField* f);
 
 // Returns the MiniTableEnum for a message field, NULL if the field is unlinked.
 UPB_API_INLINE const upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
-    const upb_MiniTable* m, const upb_MiniTableField* f);
+    const upb_MiniTableField* f);
 
 // Returns the MiniTableField for the key of a map.
 UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_MapKey(
@@ -66,8 +61,7 @@ UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_MapValue(
 
 // Returns true if this MiniTable field is linked to a MiniTable for the
 // sub-message.
-UPB_API_INLINE bool upb_MiniTable_FieldIsLinked(const upb_MiniTable* m,
-                                                const upb_MiniTableField* f);
+UPB_API_INLINE bool upb_MiniTable_FieldIsLinked(const upb_MiniTableField* f);
 
 // If this field is in a oneof, returns the first field in the oneof.
 //
@@ -92,6 +86,33 @@ bool upb_MiniTable_NextOneofField(const upb_MiniTable* m,
 
 #ifdef __cplusplus
 } /* extern "C" */
+#endif
+
+#ifdef __cplusplus
+// Temporary overloads for functions whose signature has recently changed.
+UPB_DEPRECATE_AND_INLINE()
+inline const upb_MiniTable* upb_MiniTable_SubMessage(
+    const upb_MiniTable* m, const upb_MiniTableField* f) {
+  return upb_MiniTable_SubMessage(f);
+}
+
+UPB_DEPRECATE_AND_INLINE()
+inline const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
+    const upb_MiniTable* m, const upb_MiniTableField* f) {
+  return upb_MiniTable_GetSubMessageTable(f);
+}
+
+UPB_DEPRECATE_AND_INLINE()
+inline const upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
+    const upb_MiniTable* m, const upb_MiniTableField* f) {
+  return upb_MiniTable_GetSubEnumTable(f);
+}
+
+UPB_DEPRECATE_AND_INLINE()
+inline bool upb_MiniTable_FieldIsLinked(const upb_MiniTable* m,
+                                        const upb_MiniTableField* f) {
+  return upb_MiniTable_FieldIsLinked(f);
+}
 #endif
 
 #include "upb/port/undef.inc"

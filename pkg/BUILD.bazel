@@ -208,7 +208,7 @@ cc_dist_library(
         "//src/google/protobuf/compiler/java",
         "//src/google/protobuf/compiler/kotlin",
         "//src/google/protobuf/compiler/objectivec",
-        "//src/google/protobuf/compiler/php",
+        "//src/google/protobuf/compiler/php:php_generator",
         "//src/google/protobuf/compiler/python",
         "//src/google/protobuf/compiler/ruby",
         "//src/google/protobuf/compiler/rust",
@@ -229,15 +229,6 @@ cc_dist_library(
         "//src/google/protobuf/compiler/java:names",
         "//src/google/protobuf/compiler/objectivec:names",
         "//src/google/protobuf/compiler/php:names",
-        # TODO Make these private in the next breaking C++ release.
-        "//src/google/protobuf/compiler/cpp:generator_headers",
-        "//src/google/protobuf/compiler/csharp:generator_headers",
-        "//src/google/protobuf/compiler/java:generator_headers",
-        "//src/google/protobuf/compiler/kotlin:generator_headers",
-        "//src/google/protobuf/compiler/objectivec:generator_headers",
-        "//src/google/protobuf/compiler/php",
-        "//src/google/protobuf/compiler/python:generator_headers",
-        "//src/google/protobuf/compiler/ruby:generator_headers",
     ],
 )
 
@@ -249,6 +240,8 @@ cc_dist_library(
         "//upb/json",
         "//upb/message:compare",
         "//upb/message:copy",
+        "//upb/mini_table:compat",
+        "//upb/mini_table:debug_string",
         "//upb/text",
         "//upb/text:debug",
         "//upb/util:def_to_proto",
@@ -343,6 +336,8 @@ cc_dist_library(
     ],
     tags = ["manual"],
     deps = [
+        "//editions:edition_defaults_test_utils",
+        "//src/google/protobuf:descriptor_test_utils",
         "//src/google/protobuf:lite_test_util",
         "//src/google/protobuf:test_util",
         "//src/google/protobuf:test_util2",

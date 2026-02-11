@@ -21,6 +21,12 @@ namespace protobuf {
 namespace compiler {
 namespace ruby {
 
+std::string GetRequireName(absl::string_view proto_file);
+std::string PackageToModule(absl::string_view name);
+std::string RubifyConstant(absl::string_view name);
+int GeneratePackageModules(const FileDescriptor* file, io::Printer* printer);
+void EndPackageModules(int levels, io::Printer* printer);
+
 // CodeGenerator implementation for generated Ruby protocol buffer classes.
 // If you create your own protocol compiler binary and you want it to support
 // Ruby output, you can do so by registering an instance of this
@@ -34,9 +40,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
            Feature::FEATURE_SUPPORTS_EDITIONS;
   }
   Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
-  Edition GetMaximumEdition() const override {
-    return Edition::EDITION_2024;
-  }
+  Edition GetMaximumEdition() const override { return Edition::EDITION_2024; }
 };
 
 }  // namespace ruby

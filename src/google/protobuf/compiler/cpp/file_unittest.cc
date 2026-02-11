@@ -14,6 +14,8 @@
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/unittest.pb.h"
 
@@ -38,7 +40,10 @@ namespace {
 TEST(FileTest, TopologicallyOrderedDescriptors) {
   const FileDescriptor* fdesc =
       proto2_unittest::TestAllTypes::descriptor()->file();
-  FileGenerator fgen(fdesc, /*options=*/{});
+  Options options;
+  MessageSCCAnalyzer analyzer(options);
+  options.scc_analyzer = &analyzer;
+  FileGenerator fgen(fdesc, options);
   static constexpr absl::string_view kExpectedDescriptorOrder[] = {
       "Uint64Message",
       "Uint32Message",
@@ -106,6 +111,7 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "TestCommentInjectionMessage",
       "TestChildExtensionData.NestedTestAllExtensionsData."
       "NestedDynamicExtensions",
+      "TestAllTypesAsExtension",
       "TestAllTypes.RepeatedGroup",
       "TestAllTypes.OptionalGroup",
       "TestAllTypes.NestedMessage",

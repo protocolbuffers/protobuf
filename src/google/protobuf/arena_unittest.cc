@@ -68,6 +68,13 @@ using ::testing::HasSubstr;
 namespace google {
 namespace protobuf {
 
+namespace {
+
+// Align n to next multiple of 8
+constexpr uint64_t Align8(uint64_t n) { return (n + 7) & -8; }
+
+}  // namespace
+
 
 class Notifier {
  public:
@@ -224,7 +231,7 @@ void TestCtorAndDtorTraits(std::vector<absl::string_view> def,
   {
     actions.clear();
     Arena arena;
-    Arena::Create<TraitsProber>(&arena);
+    (void)Arena::Create<TraitsProber>(&arena);
   }
   EXPECT_THAT(actions, ElementsAreArray(def));
 
@@ -232,14 +239,14 @@ void TestCtorAndDtorTraits(std::vector<absl::string_view> def,
   {
     actions.clear();
     Arena arena;
-    Arena::Create<TraitsProber>(&arena, p);
+    EXPECT_NE(Arena::Create<TraitsProber>(&arena, p), nullptr);
   }
   EXPECT_THAT(actions, ElementsAreArray(copy));
 
   {
     actions.clear();
     Arena arena;
-    Arena::Create<TraitsProber>(&arena, 17);
+    EXPECT_NE(Arena::Create<TraitsProber>(&arena, 17), nullptr);
   }
   EXPECT_THAT(actions, ElementsAreArray(with_int));
 }
@@ -248,7 +255,7 @@ TEST(ArenaTest, ZeroAllocDoesNotReturnNull) {
   Arena arena;
   EXPECT_NE(arena.AllocateAligned(0), nullptr);
   // Try again after allocating some memory.
-  arena.AllocateAligned(10000);
+  (void)arena.AllocateAligned(10000);
   EXPECT_NE(arena.AllocateAligned(0), nullptr);
 }
 
@@ -444,8 +451,10 @@ TEST(ArenaTest, MoveCtorOnArena) {
   TestUtil::ExpectAllFieldsSet(moved->payload());
 
   // The only extra allocation with moves is sizeof(NestedTestAllTypes).
-  EXPECT_EQ(usage_by_move, sizeof(NestedTestAllTypes));
-  EXPECT_LT(usage_by_move + sizeof(TestAllTypes), usage_original);
+  // Align up to 8 bytes to match default arena alignment, as sizeof(T) may not
+  // be a multiple of 8 on 32-bit platforms.
+  EXPECT_EQ(usage_by_move, Align8(sizeof(NestedTestAllTypes)));
+  EXPECT_LT(usage_by_move + Align8(sizeof(TestAllTypes)), usage_original);
 
   // Status after move is unspecified and must not be assumed. It's merely
   // checking current implementation specifics for protobuf internal.
@@ -493,8 +502,11 @@ TEST(ArenaTest, RepeatedPtrFieldMoveCtorOnArena) {
   TestUtil::ExpectAllFieldsSet(moved->Get(0));
 
   // The only extra allocation with moves is sizeof(RepeatedPtrField).
-  EXPECT_EQ(usage_by_move, sizeof(internal::RepeatedPtrFieldBase));
-  EXPECT_LT(usage_by_move + sizeof(TestAllTypes), usage_original);
+  // Align up to 8 bytes to match default arena alignment, as sizeof(T) may not
+  // be a multiple of 8 on 32-bit platforms.
+  EXPECT_EQ(usage_by_move,
+            Align8(sizeof(internal::RepeatedPtrFieldWithArena<TestAllTypes>)));
+  EXPECT_LT(usage_by_move + Align8(sizeof(TestAllTypes)), usage_original);
 
   // Status after move is unspecified and must not be assumed. It's merely
   // checking current implementation specifics for protobuf internal.
@@ -508,7 +520,7 @@ struct OnlyArenaConstructible {
 
 TEST(ArenaTest, ArenaOnlyTypesCanBeConstructed) {
   Arena arena;
-  Arena::Create<OnlyArenaConstructible>(&arena);
+  (void)Arena::Create<OnlyArenaConstructible>(&arena);
 }
 
 TEST(ArenaTest, GetConstructTypeWorks) {
@@ -583,13 +595,15 @@ TEST(ArenaTest, CreateArenaConstructable) {
 TEST(ArenaTest, CreateArenaCheckFailsOnTooLargeInput) {
   size_t max = std::numeric_limits<size_t>::max();
 
-  EXPECT_DEATH(Arena::CreateArray<double>(nullptr, max / sizeof(double) + 1),
-               "Requested size is too large to fit into size_t");
+  EXPECT_DEATH(
+      (void)Arena::CreateArray<double>(nullptr, max / sizeof(double) + 1),
+      "Requested size is too large to fit into size_t");
 
   // For int32_t we trap even at this level because rounding up to 8 bytes will
   // overflow.
-  EXPECT_DEATH(Arena::CreateArray<int32_t>(nullptr, max / sizeof(int32_t)),
-               "Requested size is too large to fit into size_t");
+  EXPECT_DEATH(
+      (void)Arena::CreateArray<int32_t>(nullptr, max / sizeof(int32_t)),
+      "Requested size is too large to fit into size_t");
 }
 
 TEST(ArenaTest, CreateRepeatedPtrField) {
@@ -605,26 +619,26 @@ TEST(ArenaTest, CreateRepeatedPtrField) {
 
 TEST(ArenaTest, CreateMessageDispatchesToSpecialFunctions) {
   hook_called = "";
-  Arena::Create<DispatcherTestProto>(nullptr);
+  (void)Arena::Create<DispatcherTestProto>(nullptr);
   EXPECT_EQ(hook_called, "default");
 
   DispatcherTestProto& ref = dispatcher_test_proto_instance;
   const DispatcherTestProto& cref = ref;
 
   hook_called = "";
-  Arena::Create<DispatcherTestProto>(nullptr);
+  (void)Arena::Create<DispatcherTestProto>(nullptr);
   EXPECT_EQ(hook_called, "default");
 
   hook_called = "";
-  Arena::Create<DispatcherTestProto>(nullptr, ref);
+  (void)Arena::Create<DispatcherTestProto>(nullptr, ref);
   EXPECT_EQ(hook_called, "copy");
 
   hook_called = "";
-  Arena::Create<DispatcherTestProto>(nullptr, cref);
+  (void)Arena::Create<DispatcherTestProto>(nullptr, cref);
   EXPECT_EQ(hook_called, "copy");
 
   hook_called = "";
-  Arena::Create<DispatcherTestProto>(nullptr, 1);
+  (void)Arena::Create<DispatcherTestProto>(nullptr, 1);
   EXPECT_EQ(hook_called, "fallback");
 }
 
@@ -635,7 +649,7 @@ TEST(ArenaTest, Parsing) {
   // Test memory leak.
   Arena arena;
   TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
-  arena_message->ParseFromString(original.SerializeAsString());
+  ABSL_CHECK(arena_message->ParseFromString(original.SerializeAsString()));
   TestUtil::ExpectAllFieldsSet(*arena_message);
 
   // Test that string fields have nul terminator bytes (earlier bug).
@@ -651,10 +665,10 @@ TEST(ArenaTest, UnknownFields) {
   // an arena.
   Arena arena;
   TestEmptyMessage* arena_message = Arena::Create<TestEmptyMessage>(&arena);
-  arena_message->ParseFromString(original.SerializeAsString());
+  ABSL_CHECK(arena_message->ParseFromString(original.SerializeAsString()));
 
   TestAllTypes copied;
-  copied.ParseFromString(arena_message->SerializeAsString());
+  ABSL_CHECK(copied.ParseFromString(arena_message->SerializeAsString()));
   TestUtil::ExpectAllFieldsSet(copied);
 
   // Exercise UFS manual manipulation (setters).
@@ -662,7 +676,7 @@ TEST(ArenaTest, UnknownFields) {
   arena_message->mutable_unknown_fields()->AddVarint(
       TestAllTypes::kOptionalInt32FieldNumber, 42);
   copied.Clear();
-  copied.ParseFromString(arena_message->SerializeAsString());
+  ABSL_CHECK(copied.ParseFromString(arena_message->SerializeAsString()));
   EXPECT_TRUE(copied.has_optional_int32());
   EXPECT_EQ(42, copied.optional_int32());
 
@@ -670,7 +684,7 @@ TEST(ArenaTest, UnknownFields) {
   TestEmptyMessage* arena_message_2 = Arena::Create<TestEmptyMessage>(&arena);
   arena_message_2->Swap(arena_message);
   copied.Clear();
-  copied.ParseFromString(arena_message_2->SerializeAsString());
+  ABSL_CHECK(copied.ParseFromString(arena_message_2->SerializeAsString()));
   EXPECT_TRUE(copied.has_optional_int32());
   EXPECT_EQ(42, copied.optional_int32());
 
@@ -742,11 +756,11 @@ TEST(ArenaTest, ReflectionSwapFields) {
   EXPECT_EQ(&arena1, arena1_message->GetArena());
   EXPECT_EQ(&arena2, arena2_message->GetArena());
   std::string output;
-  arena1_message->SerializeToString(&output);
+  ABSL_CHECK(arena1_message->SerializeToString(&output));
   EXPECT_EQ(0, output.size());
   TestUtil::ExpectAllFieldsSet(*arena2_message);
   reflection->SwapFields(arena1_message, arena2_message, fields);
-  arena2_message->SerializeToString(&output);
+  ABSL_CHECK(arena2_message->SerializeToString(&output));
   EXPECT_EQ(0, output.size());
   TestUtil::ExpectAllFieldsSet(*arena1_message);
 
@@ -778,7 +792,7 @@ TEST(ArenaTest, ReflectionSwapFields) {
   reflection->SwapFields(arena1_message, &message, fields);
   EXPECT_EQ(&arena1, arena1_message->GetArena());
   EXPECT_EQ(nullptr, message.GetArena());
-  arena1_message->SerializeToString(&output);
+  ABSL_CHECK(arena1_message->SerializeToString(&output));
   EXPECT_EQ(0, output.size());
   TestUtil::ExpectAllFieldsSet(message);
 }
@@ -834,7 +848,7 @@ TEST(ArenaTest, SwapBetweenArenasWithAllFieldsSet) {
     TestUtil::SetAllFields(arena2_message);
     arena2_message->Swap(arena1_message);
     std::string output;
-    arena2_message->SerializeToString(&output);
+    ABSL_CHECK(arena2_message->SerializeToString(&output));
     EXPECT_EQ(0, output.size());
   }
   TestUtil::ExpectAllFieldsSet(*arena1_message);
@@ -872,7 +886,7 @@ TEST(ArenaTest, SwapBetweenArenasUsingReflection) {
     const Reflection* r = arena2_message->GetReflection();
     r->Swap(arena1_message, arena2_message);
     std::string output;
-    arena2_message->SerializeToString(&output);
+    ABSL_CHECK(arena2_message->SerializeToString(&output));
     EXPECT_EQ(0, output.size());
   }
   TestUtil::ExpectAllFieldsSet(*arena1_message);
@@ -1465,11 +1479,11 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
     // Fill some repeated fields on the arena to test for leaks. Also that the
     // newly allocated memory is approximately the size of the cleanups for the
     // repeated messages.
-    RepeatedField<int32_t> repeated_int32(&arena);
+    auto* repeated_int32 = Arena::Create<RepeatedField<int32_t>>(&arena);
     auto* repeated_message =
         Arena::Create<RepeatedPtrField<TestAllTypes>>(&arena);
     for (int i = 0; i < 100; i++) {
-      repeated_int32.Add(42);
+      repeated_int32->Add(42);
       repeated_message->Add()->set_optional_int32(42);
       EXPECT_EQ(&arena, repeated_message->Get(0).GetArena());
       const TestAllTypes* msg_in_repeated_field = &repeated_message->Get(0);
@@ -1673,7 +1687,7 @@ TEST(ArenaTest, MessageLiteOnArena) {
   TestAllTypes initial_message;
   FillArenaAwareFields(&initial_message);
   std::string serialized;
-  initial_message.SerializeToString(&serialized);
+  ABSL_CHECK(initial_message.SerializeToString(&serialized));
 
   {
     MessageLite* generic_message = prototype->New(&arena);
@@ -1690,15 +1704,12 @@ TEST(ArenaTest, MessageLiteOnArena) {
 }
 #endif  // PROTOBUF_RTTI
 
-// Align n to next multiple of 8
-uint64_t Align8(uint64_t n) { return (n + 7) & -8; }
-
 TEST(ArenaTest, SpaceAllocated_and_Used) {
   Arena arena_1;
   EXPECT_EQ(0, arena_1.SpaceAllocated());
   EXPECT_EQ(0, arena_1.SpaceUsed());
   EXPECT_EQ(0, arena_1.Reset());
-  Arena::CreateArray<char>(&arena_1, 320);
+  EXPECT_NE(Arena::CreateArray<char>(&arena_1, 320), nullptr);
   // Arena will allocate slightly more than 320 for the block headers.
   EXPECT_LE(320, arena_1.SpaceAllocated());
   EXPECT_EQ(Align8(320), arena_1.SpaceUsed());
@@ -1715,7 +1726,7 @@ TEST(ArenaTest, SpaceAllocated_and_Used) {
   EXPECT_EQ(1024, arena_2.SpaceAllocated());
   EXPECT_EQ(0, arena_2.SpaceUsed());
   EXPECT_EQ(1024, arena_2.Reset());
-  Arena::CreateArray<char>(&arena_2, 55);
+  EXPECT_NE(Arena::CreateArray<char>(&arena_2, 55), nullptr);
   EXPECT_EQ(1024, arena_2.SpaceAllocated());
   EXPECT_EQ(Align8(55), arena_2.SpaceUsed());
   EXPECT_EQ(1024, arena_2.Reset());
@@ -1728,12 +1739,12 @@ void VerifyArenaOverhead(Arena& arena, size_t overhead) {
 
   // Allocate a tiny block and record the allocation size.
   constexpr size_t kTinySize = 8;
-  Arena::CreateArray<char>(&arena, kTinySize);
+  EXPECT_NE(Arena::CreateArray<char>(&arena, kTinySize), nullptr);
   uint64_t space_allocated = arena.SpaceAllocated();
 
   // Next allocation expects to fill up the block but no new block.
   uint64_t next_size = space_allocated - overhead - kTinySize;
-  Arena::CreateArray<char>(&arena, next_size);
+  EXPECT_NE(Arena::CreateArray<char>(&arena, next_size), nullptr);
 
   EXPECT_EQ(space_allocated, arena.SpaceAllocated());
 }
@@ -1751,7 +1762,7 @@ TEST(ArenaTest, StartingBlockSize) {
   EXPECT_EQ(0, default_arena.SpaceAllocated());
 
   // Allocate something to get starting block size.
-  Arena::CreateArray<char>(&default_arena, 1);
+  EXPECT_NE(Arena::CreateArray<char>(&default_arena, 1), nullptr);
   ArenaOptions options;
   // First block size should be the default starting block size.
   EXPECT_EQ(default_arena.SpaceAllocated(), options.start_block_size);
@@ -1759,7 +1770,7 @@ TEST(ArenaTest, StartingBlockSize) {
   // Use a custom starting block size.
   options.start_block_size *= 2;
   Arena custom_arena(options);
-  Arena::CreateArray<char>(&custom_arena, 1);
+  EXPECT_NE(Arena::CreateArray<char>(&custom_arena, 1), nullptr);
   EXPECT_EQ(custom_arena.SpaceAllocated(), options.start_block_size);
 }
 
@@ -1769,17 +1780,17 @@ TEST(ArenaTest, BlockSizeDoubling) {
   EXPECT_EQ(0, arena.SpaceAllocated());
 
   // Allocate something to get initial block size.
-  Arena::CreateArray<char>(&arena, 1);
+  EXPECT_NE(Arena::CreateArray<char>(&arena, 1), nullptr);
   auto first_block_size = arena.SpaceAllocated();
 
   // Keep allocating until space used increases.
   while (arena.SpaceAllocated() == first_block_size) {
-    Arena::CreateArray<char>(&arena, 1);
+    EXPECT_NE(Arena::CreateArray<char>(&arena, 1), nullptr);
   }
   ASSERT_GT(arena.SpaceAllocated(), first_block_size);
   auto second_block_size = (arena.SpaceAllocated() - first_block_size);
 
-  EXPECT_GE(second_block_size, 2*first_block_size);
+  EXPECT_GE(second_block_size, 2 * first_block_size);
 }
 
 TEST(ArenaTest, Alignment) {
@@ -1853,7 +1864,8 @@ TEST(ArenaTest, CleanupDestructionOrder) {
   {
     Arena arena;
     for (int i = 0; i < 3; i++) {
-      Arena::Create<DestroyOrderRecorder>(&arena, &destroy_order, i);
+      EXPECT_NE(Arena::Create<DestroyOrderRecorder>(&arena, &destroy_order, i),
+                nullptr);
     }
   }
   EXPECT_THAT(destroy_order, testing::ElementsAre(2, 1, 0));

@@ -69,19 +69,21 @@ class PROTOBUF_EXPORT UnknownField {
   };
 
   // The field's field number, as seen on the wire.
-  inline int number() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline int number() const;
 
   // The field type.
-  inline Type type() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline Type type() const;
 
   // Accessors -------------------------------------------------------
   // Each method works only for UnknownFields of the corresponding type.
 
-  inline uint64_t varint() const;
-  inline uint32_t fixed32() const;
-  inline uint64_t fixed64() const;
-  inline absl::string_view length_delimited() const;
-  inline const UnknownFieldSet& group() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline uint64_t varint() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline uint32_t fixed32() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline uint64_t fixed64() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline absl::string_view
+  length_delimited() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline const UnknownFieldSet& group()
+      const;
 
   inline void set_varint(uint64_t value);
   inline void set_fixed32(uint32_t value);
@@ -93,9 +95,11 @@ class PROTOBUF_EXPORT UnknownField {
   inline void set_length_delimited(const absl::Cord& value);
   inline UnknownFieldSet* mutable_group();
 
-  inline size_t GetLengthDelimitedSize() const;
-  uint8_t* InternalSerializeLengthDelimitedNoTag(
-      uint8_t* target, io::EpsCopyOutputStream* stream) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline size_t GetLengthDelimitedSize()
+      const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD uint8_t*
+  InternalSerializeLengthDelimitedNoTag(uint8_t* target,
+                                        io::EpsCopyOutputStream* stream) const;
 
  private:
   friend class UnknownFieldSet;
@@ -147,7 +151,7 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   void ClearAndFreeMemory();
 
   // Is this set empty?
-  inline bool empty() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline bool empty() const;
 
   // Merge the contents of some other UnknownFieldSet with this one.
   void MergeFrom(const UnknownFieldSet& other);
@@ -167,26 +171,30 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   // Computes (an estimate of) the total number of bytes currently used for
   // storing the unknown fields in memory. Does NOT include
   // sizeof(*this) in the calculation.
-  size_t SpaceUsedExcludingSelfLong() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD size_t SpaceUsedExcludingSelfLong() const;
 
-  int SpaceUsedExcludingSelf() const {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int SpaceUsedExcludingSelf() const {
     return internal::ToIntSize(SpaceUsedExcludingSelfLong());
   }
 
   // Version of SpaceUsed() including sizeof(*this).
-  size_t SpaceUsedLong() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD size_t SpaceUsedLong() const;
 
-  int SpaceUsed() const { return internal::ToIntSize(SpaceUsedLong()); }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int SpaceUsed() const {
+    return internal::ToIntSize(SpaceUsedLong());
+  }
 
   // Returns the number of fields present in the UnknownFieldSet.
-  inline int field_count() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline int field_count() const;
   // Get a field in the set, where 0 <= index < field_count().  The fields
   // appear in the order in which they were added.
-  inline const UnknownField& field(int index) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline const UnknownField& field(
+      int index) const;
   // Get a mutable pointer to a field in the set, where
   // 0 <= index < field_count().  The fields appear in the order in which
   // they were added.
-  inline UnknownField* mutable_field(int index);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline UnknownField* mutable_field(
+      int index);
 
   // Adding fields ---------------------------------------------------
 
@@ -216,11 +224,16 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   // Parsing helpers -------------------------------------------------
   // These work exactly like the similarly-named methods of Message.
 
-  bool MergeFromCodedStream(io::CodedInputStream* input);
-  bool ParseFromCodedStream(io::CodedInputStream* input);
-  bool ParseFromZeroCopyStream(io::ZeroCopyInputStream* input);
-  bool ParseFromArray(const void* data, int size);
-  inline bool ParseFromString(const absl::string_view data) {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool MergeFromCodedStream(
+      io::CodedInputStream* input);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool ParseFromCodedStream(
+      io::CodedInputStream* input);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool ParseFromZeroCopyStream(
+      io::ZeroCopyInputStream* input);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool ParseFromArray(const void* data,
+                                                          int size);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline bool ParseFromString(
+      const absl::string_view data) {
     return ParseFromArray(data.data(), static_cast<int>(data.size()));
   }
 
@@ -228,13 +241,18 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   // the message is a lite or full proto (for legacy reasons, lite and full
   // return different types for MessageType::unknown_fields()).
   template <typename MessageType>
-  bool MergeFromMessage(const MessageType& message);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool MergeFromMessage(
+      const MessageType& message);
 
   // Serialization.
-  bool SerializeToString(std::string* output) const;
-  bool SerializeToCord(absl::Cord* output) const;
-  bool SerializeToCodedStream(io::CodedOutputStream* output) const;
-  static const UnknownFieldSet& default_instance();
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializeToString(
+      std::string* output) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializeToCord(
+      absl::Cord* output) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializeToCodedStream(
+      io::CodedOutputStream* output) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const UnknownFieldSet&
+  default_instance();
 
   UnknownFieldSet(internal::InternalVisibility, Arena* arena)
       : UnknownFieldSet(arena) {}
@@ -253,6 +271,9 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   explicit UnknownFieldSet(Arena* arena) : fields_(arena) {}
 
   Arena* arena() { return fields_.GetArena(); }
+
+  const RepeatedField<UnknownField>& fields() const { return fields_.field(); }
+  RepeatedField<UnknownField>& fields() { return fields_.field(); }
 
   void ClearFallback();
   void SwapSlow(UnknownFieldSet* other);
@@ -290,7 +311,7 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   }
 
   std::string* v2_data_ = nullptr;
-  RepeatedField<UnknownField> fields_;
+  internal::RepeatedFieldWithArena<UnknownField> fields_;
 };
 
 namespace internal {
@@ -319,7 +340,8 @@ constexpr UnknownFieldSet::UnknownFieldSet() = default;
 
 inline UnknownFieldSet::~UnknownFieldSet() {
   Clear();
-  if (arena() == nullptr) delete v2_data_;
+  ABSL_DCHECK_EQ(arena(), nullptr);
+  delete v2_data_;
 }
 
 inline const UnknownFieldSet& UnknownFieldSet::default_instance() {
@@ -331,17 +353,17 @@ inline const UnknownFieldSet& UnknownFieldSet::default_instance() {
 inline void UnknownFieldSet::ClearAndFreeMemory() { Clear(); }
 
 inline void UnknownFieldSet::Clear() {
-  if (!fields_.empty()) {
+  if (!fields().empty()) {
     ClearFallback();
   }
   if (v2_data_ != nullptr) v2_data_->clear();
 }
 
-inline bool UnknownFieldSet::empty() const { return fields_.empty(); }
+inline bool UnknownFieldSet::empty() const { return fields().empty(); }
 
 inline void UnknownFieldSet::Swap(UnknownFieldSet* x) {
   if (arena() == x->arena()) {
-    fields_.Swap(&x->fields_);
+    fields().Swap(&x->fields());
   } else {
     // We might need to do a deep copy, so use Merge instead
     SwapSlow(x);
@@ -349,13 +371,13 @@ inline void UnknownFieldSet::Swap(UnknownFieldSet* x) {
 }
 
 inline int UnknownFieldSet::field_count() const {
-  return static_cast<int>(fields_.size());
+  return static_cast<int>(fields().size());
 }
 inline const UnknownField& UnknownFieldSet::field(int index) const {
-  return (fields_)[static_cast<size_t>(index)];
+  return (fields())[static_cast<size_t>(index)];
 }
 inline UnknownField* UnknownFieldSet::mutable_field(int index) {
-  return &(fields_)[static_cast<size_t>(index)];
+  return &(fields())[static_cast<size_t>(index)];
 }
 
 inline void UnknownFieldSet::AddLengthDelimited(int number,

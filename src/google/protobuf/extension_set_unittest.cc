@@ -23,6 +23,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/algorithm/container.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
@@ -30,6 +31,7 @@
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
@@ -42,9 +44,12 @@
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/unittest_proto3_extensions.pb.h"
+#include "google/protobuf/unittest_utf8_string_extensions.pb.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
+#include "utf8_validity.h"
 
+#include "google/protobuf/test_textproto.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -101,14 +106,13 @@ class FindExtensionTest : public ::testing::TestWithParam<ExtensionFinderType> {
   bool FindExtensionInfoFromFieldNumber(int wire_type, int field_number,
                                         ExtensionInfo* extension,
                                         bool* was_packed_on_wire) {
-    ExtensionSet es;
     switch (GetParam()) {
       case ExtensionFinderType::kGeneratedExtensionFinder:
-        return es.FindExtensionInfoFromFieldNumber(
+        return ExtensionSet::FindExtensionInfoFromFieldNumber(
             wire_type, field_number, GetFinder<GeneratedExtensionFinder>(),
             extension, was_packed_on_wire);
       case ExtensionFinderType::kDescriptorPoolExtensionFinder:
-        return es.FindExtensionInfoFromFieldNumber(
+        return ExtensionSet::FindExtensionInfoFromFieldNumber(
             wire_type, field_number, GetFinder<DescriptorPoolExtensionFinder>(),
             extension, was_packed_on_wire);
     }
@@ -119,19 +123,18 @@ class FindExtensionTest : public ::testing::TestWithParam<ExtensionFinderType> {
                          ExtensionInfo* extension, bool* was_packed_on_wire) {
     const char* ptr;
     internal::ParseContext ctx(100, false, &ptr, "");
-    ExtensionSet es;
     switch (GetParam()) {
       case ExtensionFinderType::kGeneratedExtensionFinder: {
-        return es.FindExtension(wire_type, field_number, extendee_, &ctx,
-                                extension, was_packed_on_wire);
+        return ExtensionSet::FindExtension(wire_type, field_number, extendee_,
+                                           &ctx, extension, was_packed_on_wire);
       }
       case ExtensionFinderType::kDescriptorPoolExtensionFinder: {
         // We need to contrive a ParseContext that will cause the
         // DescriptorPoolExtensionFinder to be used.
         ctx.data().pool = &dynamic_pool_;
         ctx.data().factory = dynamic_factory_.get();
-        return es.FindExtension(wire_type, field_number, extendee_, &ctx,
-                                extension, was_packed_on_wire);
+        return ExtensionSet::FindExtension(wire_type, field_number, extendee_,
+                                           &ctx, extension, was_packed_on_wire);
       }
     }
     return false;
@@ -543,7 +546,7 @@ TEST(ExtensionSetTest, ArenaSetAllocatedMessageAndRelease) {
 
 TEST(ExtensionSetTest, SwapExtensionBothFullWithArena) {
   Arena arena1;
-  std::unique_ptr<Arena> arena2(new Arena());
+  std::unique_ptr<Arena> arena2 = std::make_unique<Arena>();
 
   unittest::TestAllExtensions* message1 =
       Arena::Create<unittest::TestAllExtensions>(&arena1);
@@ -708,7 +711,7 @@ TEST(ExtensionSetTest, NestedExtensionGroup) {
 
   source.mutable_optionalgroup()->set_a(117);
   source.set_optional_foreign_enum(unittest::FOREIGN_BAZ);
-  source.SerializeToString(&data);
+  ABSL_CHECK(source.SerializeToString(&data));
   EXPECT_TRUE(destination.ParseFromString(data));
   EXPECT_TRUE(
       destination
@@ -733,7 +736,7 @@ TEST(ExtensionSetTest, Parsing) {
   std::string data;
 
   TestUtil::SetAllFields(&source);
-  source.SerializeToString(&data);
+  ABSL_CHECK(source.SerializeToString(&data));
   EXPECT_TRUE(destination.ParseFromString(data));
   TestUtil::SetOneofFieldsExtensions(&destination);
   TestUtil::ExpectAllExtensionsSet(destination);
@@ -746,7 +749,7 @@ TEST(ExtensionSetTest, PackedParsing) {
   std::string data;
 
   TestUtil::SetPackedFields(&source);
-  source.SerializeToString(&data);
+  ABSL_CHECK(source.SerializeToString(&data));
   EXPECT_TRUE(destination.ParseFromString(data));
   TestUtil::ExpectPackedExtensionsSet(destination);
 }
@@ -757,7 +760,7 @@ TEST(ExtensionSetTest, PackedToUnpackedParsing) {
   std::string data;
 
   TestUtil::SetPackedFields(&source);
-  source.SerializeToString(&data);
+  ABSL_CHECK(source.SerializeToString(&data));
   EXPECT_TRUE(destination.ParseFromString(data));
   TestUtil::ExpectUnpackedExtensionsSet(destination);
 
@@ -781,7 +784,7 @@ TEST(ExtensionSetTest, UnpackedToPackedParsing) {
   std::string data;
 
   TestUtil::SetUnpackedFields(&source);
-  source.SerializeToString(&data);
+  ABSL_CHECK(source.SerializeToString(&data));
   EXPECT_TRUE(destination.ParseFromString(data));
   TestUtil::ExpectPackedExtensionsSet(destination);
 
@@ -1356,7 +1359,7 @@ TEST(ExtensionSetTest, DynamicExtensions) {
     // A regular unknown field.
     message.mutable_unknown_fields()->AddLengthDelimited(54321, "unknown");
 
-    message.SerializeToString(&data);
+    ABSL_CHECK(message.SerializeToString(&data));
     dynamic_extension = message;
   }
 
@@ -1372,7 +1375,7 @@ TEST(ExtensionSetTest, DynamicExtensions) {
 
   // Can we print it?
   std::string message_text;
-  TextFormat::PrintToString(message, &message_text);
+  ASSERT_TRUE(TextFormat::PrintToString(message, &message_text));
   EXPECT_EQ(
       "[dynamic_extensions.scalar_extension]: 123\n"
       "[dynamic_extensions.enum_extension]: FOREIGN_BAR\n"
@@ -1511,14 +1514,13 @@ TEST(ExtensionSetTest, ConstInit) {
 
 // Make sure that is_cleared is set correctly for repeated fields.
 TEST(ExtensionSetTest, NumExtensionsWithRepeatedFields) {
-  unittest::TestAllExtensions msg;
   ExtensionSet set;
   const auto* desc =
       unittest::TestAllExtensions::descriptor()->file()->FindExtensionByName(
           "repeated_int32_extension");
   ASSERT_NE(desc, nullptr);
-  set.MutableRawRepeatedField(desc->number(), WireFormatLite::TYPE_INT32, false,
-                              desc);
+  (void)set.MutableRawRepeatedField(/*arena=*/nullptr, desc->number(),
+                                    WireFormatLite::TYPE_INT32, false, desc);
   EXPECT_EQ(set.NumExtensions(), 1);
 }
 
@@ -1545,6 +1547,268 @@ TEST(ExtensionSetTest, Descriptor) {
             pb::CppFeatures::descriptor()->file()->FindExtensionByName("cpp"));
   EXPECT_NE(GetExtensionReflection(pb::cpp), nullptr);
 }
+
+TEST(ExtensionSetTest, MoveExtension) {
+  unittest::TestAllExtensions src;
+  src.SetExtension(unittest::optional_int32_extension, 101);
+  src.SetExtension(unittest::optional_string_extension, "123");
+  *src.MutableExtension(unittest::optional_foreign_message_extension) =
+      unittest::ForeignMessage();
+  src.AddExtension(unittest::repeated_int32_extension, 201);
+  src.AddExtension(unittest::repeated_int32_extension, 202);
+
+  unittest::TestAllExtensions dst;
+  ExtensionSet& set1 = PrivateAccess::GetExtensionSet(src);
+  ExtensionSet& set2 = PrivateAccess::GetExtensionSet(dst);
+
+  // Move fields from set1 to set2
+  EXPECT_TRUE(
+      set2.MoveExtension(nullptr, unittest::optional_int32_extension.number(),
+                         set1, unittest::optional_int32_extension.number()));
+  EXPECT_TRUE(
+      set2.MoveExtension(nullptr, unittest::optional_string_extension.number(),
+                         set1, unittest::optional_string_extension.number()));
+  EXPECT_TRUE(set2.MoveExtension(
+      nullptr, unittest::optional_foreign_message_extension.number(), set1,
+      unittest::optional_foreign_message_extension.number()));
+  EXPECT_TRUE(
+      set2.MoveExtension(nullptr, unittest::repeated_int32_extension.number(),
+                         set1, unittest::repeated_int32_extension.number()));
+
+  // Verify int32 extension
+  EXPECT_FALSE(set1.Has(unittest::optional_int32_extension.number()));
+  EXPECT_TRUE(set2.Has(unittest::optional_int32_extension.number()));
+  EXPECT_TRUE(dst.HasExtension(unittest::optional_int32_extension));
+  EXPECT_EQ(dst.GetExtension(unittest::optional_int32_extension), 101);
+
+  // Verify string extension
+  EXPECT_FALSE(set1.Has(unittest::optional_string_extension.number()));
+  EXPECT_TRUE(set2.Has(unittest::optional_string_extension.number()));
+  EXPECT_TRUE(dst.HasExtension(unittest::optional_string_extension));
+  EXPECT_EQ(dst.GetExtension(unittest::optional_string_extension), "123");
+
+  // Verify foreign message extension
+  EXPECT_FALSE(set1.Has(unittest::optional_foreign_message_extension.number()));
+  EXPECT_TRUE(set2.Has(unittest::optional_foreign_message_extension.number()));
+  EXPECT_TRUE(dst.HasExtension(unittest::optional_foreign_message_extension));
+  EXPECT_EQ(dst.GetExtension(unittest::optional_foreign_message_extension).c(),
+            0);  // Default value
+
+  // Verify repeated int32 extension
+  EXPECT_EQ(set1.ExtensionSize(unittest::repeated_int32_extension.number()), 0);
+  EXPECT_EQ(set2.ExtensionSize(unittest::repeated_int32_extension.number()), 2);
+  EXPECT_THAT(dst.GetRepeatedExtension(unittest::repeated_int32_extension),
+              testing::ElementsAre(201, 202));
+
+  // Test moving a non-existent field.
+  int non_existent_number = 99999;
+  EXPECT_TRUE(set2.MoveExtension(nullptr, non_existent_number, set1,
+                                 non_existent_number));
+  EXPECT_FALSE(set1.Has(non_existent_number));
+  EXPECT_FALSE(set2.Has(non_existent_number));
+
+  // Test moving to an existing field.
+  // Set a different value in set1 for the string extension.
+  src.SetExtension(unittest::optional_string_extension, "999");
+  EXPECT_TRUE(set1.Has(unittest::optional_string_extension.number()));
+  EXPECT_EQ(src.GetExtension(unittest::optional_string_extension), "999");
+
+  // Move the original value from set2 back to set1.
+  EXPECT_TRUE(
+      set1.MoveExtension(nullptr, unittest::optional_string_extension.number(),
+                         set2, unittest::optional_string_extension.number()));
+  EXPECT_FALSE(set2.Has(unittest::optional_string_extension.number()));
+  EXPECT_TRUE(set1.Has(unittest::optional_string_extension.number()));
+  EXPECT_EQ(src.GetExtension(unittest::optional_string_extension), "123");
+}
+
+TEST(ExtensionSetTest, MoveExtensionWithArena) {
+  Arena arena;
+  auto* src = Arena::Create<unittest::TestAllExtensions>(&arena);
+  src->SetExtension(unittest::optional_int32_extension, 101);
+  src->SetExtension(unittest::optional_string_extension, "123");
+  *src->MutableExtension(unittest::optional_foreign_message_extension) =
+      unittest::ForeignMessage();
+  src->AddExtension(unittest::repeated_int32_extension, 201);
+  src->AddExtension(unittest::repeated_int32_extension, 202);
+
+  auto* dst = Arena::Create<unittest::TestAllExtensions>(&arena);
+  ExtensionSet& set1 = PrivateAccess::GetExtensionSet(*src);
+  ExtensionSet& set2 = PrivateAccess::GetExtensionSet(*dst);
+  EXPECT_TRUE(
+      set2.MoveExtension(&arena, unittest::optional_int32_extension.number(),
+                         set1, unittest::optional_int32_extension.number()));
+  EXPECT_TRUE(
+      set2.MoveExtension(&arena, unittest::optional_string_extension.number(),
+                         set1, unittest::optional_string_extension.number()));
+  EXPECT_TRUE(set2.MoveExtension(
+      &arena, unittest::optional_foreign_message_extension.number(), set1,
+      unittest::optional_foreign_message_extension.number()));
+  EXPECT_TRUE(
+      set2.MoveExtension(&arena, unittest::repeated_int32_extension.number(),
+                         set1, unittest::repeated_int32_extension.number()));
+
+  // Verify int32 extension
+  EXPECT_FALSE(set1.Has(unittest::optional_int32_extension.number()));
+  EXPECT_TRUE(set2.Has(unittest::optional_int32_extension.number()));
+  EXPECT_TRUE(dst->HasExtension(unittest::optional_int32_extension));
+  EXPECT_EQ(dst->GetExtension(unittest::optional_int32_extension), 101);
+
+  // Verify string extension
+  EXPECT_FALSE(set1.Has(unittest::optional_string_extension.number()));
+  EXPECT_TRUE(set2.Has(unittest::optional_string_extension.number()));
+  EXPECT_TRUE(dst->HasExtension(unittest::optional_string_extension));
+  EXPECT_EQ(dst->GetExtension(unittest::optional_string_extension), "123");
+
+  // Verify foreign message extension
+  EXPECT_FALSE(set1.Has(unittest::optional_foreign_message_extension.number()));
+  EXPECT_TRUE(set2.Has(unittest::optional_foreign_message_extension.number()));
+  EXPECT_TRUE(dst->HasExtension(unittest::optional_foreign_message_extension));
+  EXPECT_EQ(dst->GetExtension(unittest::optional_foreign_message_extension).c(),
+            0);  // Default value
+
+  // Verify repeated int32 extension
+  EXPECT_EQ(set1.ExtensionSize(unittest::repeated_int32_extension.number()), 0);
+  EXPECT_EQ(set2.ExtensionSize(unittest::repeated_int32_extension.number()), 2);
+  EXPECT_THAT(dst->GetRepeatedExtension(unittest::repeated_int32_extension),
+              testing::ElementsAre(201, 202));
+
+  // Test moving a non-existent field.
+  int non_existent_number = 99999;
+  EXPECT_TRUE(set2.MoveExtension(&arena, non_existent_number, set1,
+                                 non_existent_number));
+  EXPECT_FALSE(set1.Has(non_existent_number));
+  EXPECT_FALSE(set2.Has(non_existent_number));
+
+  // Test moving to an existing field.
+  // Set a different value in set1 for the string extension.
+  src->SetExtension(unittest::optional_string_extension, "999");
+  EXPECT_TRUE(set1.Has(unittest::optional_string_extension.number()));
+  EXPECT_EQ(src->GetExtension(unittest::optional_string_extension), "999");
+
+  // Move the original value from set2 back to set1.
+  EXPECT_TRUE(
+      set1.MoveExtension(&arena, unittest::optional_string_extension.number(),
+                         set2, unittest::optional_string_extension.number()));
+  EXPECT_FALSE(set2.Has(unittest::optional_string_extension.number()));
+  EXPECT_TRUE(set1.Has(unittest::optional_string_extension.number()));
+  EXPECT_EQ(src->GetExtension(unittest::optional_string_extension), "123");
+}
+
+auto MakeExtensionWithLazyRep(int value) {
+  unittest::TestAllExtensions tmp;
+  tmp.SetExtension(unittest::optional_int32_extension, value);
+
+  unittest::TestAllExtensions out;
+  ABSL_CHECK(out.ParseFromString(tmp.SerializeAsString()));
+  return out;
+}
+
+TEST(ExtensionSetTest, MoveLazyMessageExtension) {
+  proto2_unittest::TestAllExtensions src = MakeExtensionWithLazyRep(1234);
+  proto2_unittest::TestAllExtensions dst = MakeExtensionWithLazyRep(5678);
+
+  ExtensionSet& set1 = PrivateAccess::GetExtensionSet(src);
+  ExtensionSet& set2 = PrivateAccess::GetExtensionSet(dst);
+
+  EXPECT_TRUE(
+      set2.MoveExtension(nullptr, unittest::optional_int32_extension.number(),
+                         set1, unittest::optional_int32_extension.number()));
+
+  // Source no longer has the field at all.
+  EXPECT_FALSE(src.HasExtension(unittest::optional_int32_extension));
+
+  // Dest must have the field as set.
+  EXPECT_TRUE(dst.HasExtension(unittest::optional_int32_extension));
+
+  // Dest is lazy.
+  (void)set2.IsLazy(unittest::optional_int32_extension.number());
+
+  // Finally, force the parse just to verify.
+  EXPECT_EQ(dst.GetExtension(unittest::optional_int32_extension), 1234);
+}
+
+TEST(ExtensionSetTest, MoveExtensionWithGeneratedDescriptor) {
+  unittest::TestAllExtensions src;
+  const FieldDescriptor* fd =
+      GetExtensionReflection(unittest::optional_int32_extension);
+  src.GetReflection()->SetInt32(&src, fd, 101);
+
+  unittest::TestAllExtensions dst;
+  ExtensionSet& set1 = PrivateAccess::GetExtensionSet(src);
+  ExtensionSet& set2 = PrivateAccess::GetExtensionSet(dst);
+
+  EXPECT_FALSE(
+      set2.MoveExtension(nullptr, unittest::optional_int32_extension.number(),
+                         set1, unittest::optional_int32_extension.number()));
+
+  EXPECT_TRUE(src.HasExtension(unittest::optional_int32_extension));
+  EXPECT_EQ(src.GetExtension(unittest::optional_int32_extension), 101);
+  EXPECT_FALSE(dst.HasExtension(unittest::optional_int32_extension));
+}
+
+TEST(ExtensionSetTest, MoveExtensionWithDynamicDescriptor) {
+  // Define a dynamic extension.
+  FileDescriptorProto file_descriptor_proto;
+  file_descriptor_proto.set_name("my_dynamic_extensions.proto");
+  file_descriptor_proto.set_package("my_dynamic_package");
+  file_descriptor_proto.add_dependency(
+      unittest::TestAllExtensions::descriptor()->file()->name());
+
+  FieldDescriptorProto* extension = file_descriptor_proto.add_extension();
+  extension->set_name("my_dynamic_int_extension");
+  extension->set_extendee(
+      unittest::TestAllExtensions::descriptor()->full_name());
+  extension->set_number(5000);  // Use a unique extension number.
+  extension->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  extension->set_type(FieldDescriptorProto::TYPE_INT32);
+
+  FieldDescriptorProto* extension2 = file_descriptor_proto.add_extension();
+  extension2->set_name("my_other_dynamic_int_extension");
+  extension2->set_extendee(
+      unittest::TestAllExtensions::descriptor()->full_name());
+  extension2->set_number(5001);  // Use a unique extension number.
+  extension2->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  extension2->set_type(FieldDescriptorProto::TYPE_INT32);
+
+  DescriptorPool dynamic_pool(DescriptorPool::generated_pool());
+  const FileDescriptor* file = dynamic_pool.BuildFile(file_descriptor_proto);
+  ASSERT_TRUE(file != nullptr);
+  DynamicMessageFactory dynamic_factory(&dynamic_pool);
+  dynamic_factory.SetDelegateToGeneratedFactory(true);
+
+  const FieldDescriptor* dynamic_ext_fd =
+      file->FindExtensionByName("my_dynamic_int_extension");
+  ASSERT_TRUE(dynamic_ext_fd != nullptr);
+  const FieldDescriptor* dynamic_ext_fd2 =
+      file->FindExtensionByName("my_other_dynamic_int_extension");
+  ASSERT_TRUE(dynamic_ext_fd2 != nullptr);
+
+  // Set dynamic extension on src message via reflection.
+  auto* prototype =
+      dynamic_factory.GetPrototype(unittest::TestAllExtensions::descriptor());
+  std::unique_ptr<Message> src_msg(prototype->New());
+  src_msg->GetReflection()->SetInt32(src_msg.get(), dynamic_ext_fd, 12345);
+  std::unique_ptr<Message> dst_msg(prototype->New());
+  auto& src = *DynamicCastMessage<unittest::TestAllExtensions>(src_msg.get());
+  auto& dst = *DynamicCastMessage<unittest::TestAllExtensions>(dst_msg.get());
+  ExtensionSet& set1 = PrivateAccess::GetExtensionSet(src);
+  ExtensionSet& set2 = PrivateAccess::GetExtensionSet(dst);
+
+  // Move dynamic extension from src to dst.
+  EXPECT_FALSE(set2.MoveExtension(nullptr, dynamic_ext_fd2->number(), set1,
+                                  dynamic_ext_fd->number()));
+
+  EXPECT_TRUE(src.GetReflection()->HasField(src, dynamic_ext_fd));
+  EXPECT_FALSE(dst.GetReflection()->HasField(dst, dynamic_ext_fd2));
+
+  EXPECT_EQ(src.GetReflection()->GetInt32(src, dynamic_ext_fd), 12345);
+  std::vector<const FieldDescriptor*> fields;
+  src.GetReflection()->ListFields(src, &fields);
+  ASSERT_EQ(fields.size(), 1);
+  EXPECT_EQ(fields[0], dynamic_ext_fd);
+}
+
 
 
 TEST_P(FindExtensionTest,
@@ -1713,6 +1977,55 @@ INSTANTIATE_TEST_SUITE_P(
       absl::c_replace_if(name, [](char c) { return !std::isalnum(c); }, '_');
       return name;
     });
+
+TEST(ExtensionSet, StringWithInvalidUTF8FailsToParse) {
+  // Sanity check that the extension field is marked as requiring UTF-8
+  // validation. `requires_utf8_validation` can only be true for string fields
+  // where feature.utf8_validation = VERIFY.
+  const google::protobuf::DescriptorPool* pool = google::protobuf::DescriptorPool::generated_pool();
+  ASSERT_NE(pool, nullptr);
+  const google::protobuf::FieldDescriptor* string_ext_fd = pool->FindExtensionByName(
+      "proto2_unittest.optional_utf8_string_extension");
+  ASSERT_NE(string_ext_fd, nullptr);
+  ASSERT_TRUE(string_ext_fd->requires_utf8_validation());
+  std::string invalid_utf8 = "\xFF";
+  ASSERT_FALSE(utf8_range::IsStructurallyValid(invalid_utf8));
+
+  proto2_unittest::TestUtf8ValidationOfExtensions test_message;
+  // It is reasonable to debate that UTF-8 validation should be checked in the
+  // setter, but it is not currently done because the setter doesn't have a way
+  // to report errors.
+  test_message.SetExtension(proto2_unittest::optional_utf8_string_extension,
+                            invalid_utf8);
+  std::string data;
+  ASSERT_TRUE(test_message.SerializeToString(&data));
+  proto2_unittest::TestUtf8ValidationOfExtensions parsed_message;
+  ASSERT_FALSE(parsed_message.ParseFromString(data));
+}
+
+TEST(ExtensionSet, BytesWithInvalidUTF8Succeeds) {
+  // Sanity check that the extension field is not marked as requiring UTF-8
+  // validation. `requires_utf8_validation` can only be true for string fields.
+  const google::protobuf::DescriptorPool* pool = google::protobuf::DescriptorPool::generated_pool();
+  ASSERT_NE(pool, nullptr);
+  const google::protobuf::FieldDescriptor* string_ext_fd =
+      pool->FindExtensionByName("proto2_unittest.optional_bytes_extension");
+  ASSERT_NE(string_ext_fd, nullptr);
+  ASSERT_FALSE(string_ext_fd->requires_utf8_validation());
+  std::string invalid_utf8 = "\xFF";
+  ASSERT_FALSE(utf8_range::IsStructurallyValid(invalid_utf8));
+
+  proto2_unittest::TestAllExtensions test_message;
+  test_message.SetExtension(proto2_unittest::optional_bytes_extension,
+                            invalid_utf8);
+  std::string data;
+  ASSERT_TRUE(test_message.SerializeToString(&data));
+  proto2_unittest::TestAllExtensions parsed_message;
+  EXPECT_TRUE(parsed_message.ParseFromString(data));
+  EXPECT_THAT(parsed_message, google::protobuf::EqualsProto(R"pb(
+                [proto2_unittest.optional_bytes_extension]: "\xFF"
+              )pb"));
+}
 
 }  // namespace
 }  // namespace internal

@@ -130,21 +130,30 @@ GPB_FINAL @interface GPBValue : GPBMessage
 
 /** Represents a null value. */
 @property(nonatomic, readwrite) GPBNullValue nullValue;
+@property(nonatomic, readwrite) BOOL hasNullValue;
 
 /** Represents a double value. */
 @property(nonatomic, readwrite) double numberValue;
+@property(nonatomic, readwrite) BOOL hasNumberValue;
 
 /** Represents a string value. */
 @property(nonatomic, readwrite, copy, null_resettable) NSString *stringValue;
+/** Test to see if @c stringValue has been set. */
+@property(nonatomic, readwrite) BOOL hasStringValue;
 
 /** Represents a boolean value. */
 @property(nonatomic, readwrite) BOOL boolValue;
+@property(nonatomic, readwrite) BOOL hasBoolValue;
 
 /** Represents a structured value. */
 @property(nonatomic, readwrite, strong, null_resettable) GPBStruct *structValue;
+/** Test to see if @c structValue has been set. */
+@property(nonatomic, readwrite) BOOL hasStructValue;
 
 /** Represents a repeated `Value`. */
 @property(nonatomic, readwrite, strong, null_resettable) GPBListValue *listValue;
+/** Test to see if @c listValue has been set. */
+@property(nonatomic, readwrite) BOOL hasListValue;
 
 @end
 

@@ -13,7 +13,6 @@
 #include <string>
 
 #include "google/protobuf/compiler/code_generator.h"
-
 #include "google/protobuf/port_def.inc"
 
 namespace google {
@@ -36,9 +35,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
     std::string* error) const override;
   uint64_t GetSupportedFeatures() const override;
   Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
-  Edition GetMaximumEdition() const override {
-    return Edition::EDITION_2024;
-  }
+  Edition GetMaximumEdition() const override { return Edition::EDITION_2024; }
   using CodeGenerator::GetEdition;
 };
 

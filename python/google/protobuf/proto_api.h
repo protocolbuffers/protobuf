@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2008 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
@@ -23,11 +23,13 @@
 #define GOOGLE_PROTOBUF_PYTHON_PROTO_API_H__
 
 #include <cstddef>
+#include <memory>
 #include <string>
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 #include "absl/status/status.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/message.h"
 
@@ -142,8 +144,24 @@ struct PyProto_API {
   // As long as the returned Python DescriptorPool object is kept alive,
   // functions that process C++ descriptors or messages created from this pool
   // can work and return their Python counterparts.
+  // On error, returns nullptr and sets a Python exception.
   virtual PyObject* DescriptorPool_FromPool(
       const google::protobuf::DescriptorPool* pool) const = 0;
+
+  // Takes ownership of a C++ DescriptorPool and returns a Python DescriptorPool
+  // that wraps it.
+  // The optional google::protobuf::DescriptorDatabase will also be owned by the Python
+  // DescriptorPool: use it when the C++ DescriptorPool was built with this
+  // database.
+  // On error, returns nullptr and sets a Python exception.
+  virtual PyObject* DescriptorPool_FromPool(
+      std::unique_ptr<const google::protobuf::DescriptorPool> pool,
+      std::unique_ptr<const google::protobuf::DescriptorDatabase> database) const = 0;
+
+  // Returns the C++ descriptor pool wrapped by a Python object.
+  // On error, returns nullptr and sets a Python exception.
+  virtual const google::protobuf::DescriptorPool* DescriptorPool_AsPool(
+      PyObject* pool) const = 0;
 
  protected:
   PythonMessageMutator CreatePythonMessageMutator(Message* owned_msg,

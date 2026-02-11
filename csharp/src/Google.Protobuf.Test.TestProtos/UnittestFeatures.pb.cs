@@ -25,66 +25,100 @@ namespace Pb {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Cidnb29nbGUvcHJvdG9idWYvdW5pdHRlc3RfZmVhdHVyZXMucHJvdG8SAnBi",
-            "GiBnb29nbGUvcHJvdG9idWYvZGVzY3JpcHRvci5wcm90byKiAQoLVGVzdE1l",
-            "c3NhZ2UaTQoGTmVzdGVkMkMKC3Rlc3RfbmVzdGVkEhsuZ29vZ2xlLnByb3Rv",
-            "YnVmLkZlYXR1cmVTZXQYjU4gASgLMhAucGIuVGVzdEZlYXR1cmVzMkQKDHRl",
-            "c3RfbWVzc2FnZRIbLmdvb2dsZS5wcm90b2J1Zi5GZWF0dXJlU2V0GI5OIAEo",
-            "CzIQLnBiLlRlc3RGZWF0dXJlcyKsDAoMVGVzdEZlYXR1cmVzEnsKDGZpbGVf",
-            "ZmVhdHVyZRgBIAEoDjIPLnBiLkVudW1GZWF0dXJlQlSIAQGYAQGiAQsSBlZB",
-            "TFVFMRiEB6IBCxIGVkFMVUUyGOcHogELEgZWQUxVRTMY6AeiAQwSBlZBTFVF",
-            "NBidjQaiAQwSBlZBTFVFNRiejQayAQMI6AcSTAoXZXh0ZW5zaW9uX3Jhbmdl",
-            "X2ZlYXR1cmUYAiABKA4yDy5wYi5FbnVtRmVhdHVyZUIaiAEBmAECogELEgZW",
-            "QUxVRTEYhAeyAQMI6AcSRAoPbWVzc2FnZV9mZWF0dXJlGAMgASgOMg8ucGIu",
-            "RW51bUZlYXR1cmVCGogBAZgBA6IBCxIGVkFMVUUxGIQHsgEDCOgHEkIKDWZp",
-            "ZWxkX2ZlYXR1cmUYBCABKA4yDy5wYi5FbnVtRmVhdHVyZUIaiAEBmAEEogEL",
-            "EgZWQUxVRTEYhAeyAQMI6AcSQgoNb25lb2ZfZmVhdHVyZRgFIAEoDjIPLnBi",
-            "LkVudW1GZWF0dXJlQhqIAQGYAQWiAQsSBlZBTFVFMRiEB7IBAwjoBxJBCgxl",
-            "bnVtX2ZlYXR1cmUYBiABKA4yDy5wYi5FbnVtRmVhdHVyZUIaiAEBmAEGogEL",
-            "EgZWQUxVRTEYhAeyAQMI6AcSRwoSZW51bV9lbnRyeV9mZWF0dXJlGAcgASgO",
-            "Mg8ucGIuRW51bUZlYXR1cmVCGogBAZgBB6IBCxIGVkFMVUUxGIQHsgEDCOgH",
-            "EkQKD3NlcnZpY2VfZmVhdHVyZRgIIAEoDjIPLnBiLkVudW1GZWF0dXJlQhqI",
-            "AQGYAQiiAQsSBlZBTFVFMRiEB7IBAwjoBxJDCg5tZXRob2RfZmVhdHVyZRgJ",
-            "IAEoDjIPLnBiLkVudW1GZWF0dXJlQhqIAQGYAQmiAQsSBlZBTFVFMRiEB7IB",
-            "AwjoBxJdChBtdWx0aXBsZV9mZWF0dXJlGAogASgOMg8ucGIuRW51bUZlYXR1",
-            "cmVCMogBAZgBAZgBBJgBA5gBBpgBB5gBCJgBCZgBBZgBAqIBCxIGVkFMVUUx",
-            "GIQHsgEDCOgHEkIKEmJvb2xfZmllbGRfZmVhdHVyZRgLIAEoCEImiAEBmAEE",
-            "ogEKEgVmYWxzZRiEB6IBChIEdHJ1ZRidjQayAQMI6AcSWwoOc291cmNlX2Zl",
-            "YXR1cmUYDyABKA4yDy5wYi5FbnVtRmVhdHVyZUIyiAECmAEBmAEEmAEDmAEG",
-            "mAEHmAEImAEJmAEFmAECogELEgZWQUxVRTEYhAeyAQMI6AcSXAoPc291cmNl",
-            "X2ZlYXR1cmUyGBAgASgOMg8ucGIuRW51bUZlYXR1cmVCMogBApgBAZgBBJgB",
-            "A5gBBpgBB5gBCJgBCZgBBZgBAqIBCxIGVkFMVUUxGIQHsgEDCOgHEo0BCg9y",
-            "ZW1vdmVkX2ZlYXR1cmUYESABKA4yDy5wYi5FbnVtRmVhdHVyZUJjiAEBmAEB",
-            "mAEEogELEgZWQUxVRTEYhAeiAQsSBlZBTFVFMhjoB6IBCxIGVkFMVUUzGOkH",
-            "sgEtCOgHEOgHGiJDdXN0b20gZmVhdHVyZSBkZXByZWNhdGlvbiB3YXJuaW5n",
-            "IOkHElQKDmZ1dHVyZV9mZWF0dXJlGBIgASgOMg8ucGIuRW51bUZlYXR1cmVC",
-            "K4gBAZgBAZgBBKIBCxIGVkFMVUUxGIQHogELEgZWQUxVRTIY6QeyAQMI6QcS",
-            "VwoObGVnYWN5X2ZlYXR1cmUYEyABKA4yDy5wYi5FbnVtRmVhdHVyZUIuiAEB",
-            "mAEBmAEEogELEgZWQUxVRTEYhAeiAQsSBlZBTFVFMhjoB7IBBgjnByDoBxLO",
-            "AQoWdmFsdWVfbGlmZXRpbWVfZmVhdHVyZRgUIAEoDjIYLnBiLlZhbHVlTGlm",
-            "ZXRpbWVGZWF0dXJlQpMBiAEBmAEBogEdEhhWQUxVRV9MSUZFVElNRV9JTkhF",
-            "UklURUQYhAeiARoSFVZBTFVFX0xJRkVUSU1FX0ZVVFVSRRjoB6IBGxIVVkFM",
-            "VUVfTElGRVRJTUVfRlVUVVJFGJ+NBrIBLwjoBxCejQYaIkN1c3RvbSBmZWF0",
-            "dXJlIGRlcHJlY2F0aW9uIHdhcm5pbmcgn40GKuYBCgtFbnVtRmVhdHVyZRId",
-            "ChlURVNUX0VOVU1fRkVBVFVSRV9VTktOT1dOEAASCgoGVkFMVUUxEAESCgoG",
-            "VkFMVUUyEAISCgoGVkFMVUUzEAMSCgoGVkFMVUU0EAQSCgoGVkFMVUU1EAUS",
-            "CgoGVkFMVUU2EAYSCgoGVkFMVUU3EAcSCgoGVkFMVUU4EAgSCgoGVkFMVUU5",
-            "EAkSCwoHVkFMVUUxMBAKEgsKB1ZBTFVFMTEQCxILCgdWQUxVRTEyEAwSCwoH",
-            "VkFMVUUxMxANEgsKB1ZBTFVFMTQQDhILCgdWQUxVRTE1EA8q4AIKFFZhbHVl",
-            "TGlmZXRpbWVGZWF0dXJlEh8KG1RFU1RfVkFMVUVfTElGRVRJTUVfVU5LTk9X",
-            "ThAAEhwKGFZBTFVFX0xJRkVUSU1FX0lOSEVSSVRFRBABEk4KFlZBTFVFX0xJ",
-            "RkVUSU1FX1NVUFBPUlQQAhoyIjAInY0GEJ6NBhoiQ3VzdG9tIGZlYXR1cmUg",
-            "ZGVwcmVjYXRpb24gd2FybmluZyCfjQYSJAocVkFMVUVfTElGRVRJTUVfRU1Q",
-            "VFlfU1VQUE9SVBADGgIiABIhChVWQUxVRV9MSUZFVElNRV9GVVRVUkUQBBoG",
-            "IgQInY0GEkkKGVZBTFVFX0xJRkVUSU1FX0RFUFJFQ0FURUQQBRoqIigQnY0G",
-            "GiJDdXN0b20gZmVhdHVyZSBkZXByZWNhdGlvbiB3YXJuaW5nEiUKFlZBTFVF",
-            "X0xJRkVUSU1FX1JFTU9WRUQQBhoJIgcQ6AcgnY0GOjwKBHRlc3QSGy5nb29n",
-            "bGUucHJvdG9idWYuRmVhdHVyZVNldBiPTiABKAsyEC5wYi5UZXN0RmVhdHVy",
-            "ZXNCEkIQVW5pdHRlc3RGZWF0dXJlc2IIZWRpdGlvbnNw6Qc="));
+            "GiBnb29nbGUvcHJvdG9idWYvZGVzY3JpcHRvci5wcm90byKPAQocQ3VzdG9t",
+            "T3B0aW9uTGlmZXRpbWVzTWVzc2FnZRIyCgtjdXN0b21fZW51bRgBIAEoDjId",
+            "LnBiLkN1c3RvbU9wdGlvbkxpZmV0aW1lc0VudW0SOwoUcmVwZWF0ZWRfY3Vz",
+            "dG9tX2VudW0YAiADKA4yHS5wYi5DdXN0b21PcHRpb25MaWZldGltZXNFbnVt",
+            "Iq8BCgtUZXN0TWVzc2FnZRpTCgZOZXN0ZWQySQoLdGVzdF9uZXN0ZWQSGy5n",
+            "b29nbGUucHJvdG9idWYuRmVhdHVyZVNldBiNTiABKAsyFi5wYi5UZXN0TmVz",
+            "dGVkRmVhdHVyZXMySwoMdGVzdF9tZXNzYWdlEhsuZ29vZ2xlLnByb3RvYnVm",
+            "LkZlYXR1cmVTZXQYjk4gASgLMhcucGIuVGVzdE1lc3NhZ2VGZWF0dXJlcyKS",
+            "AQoTVGVzdE1lc3NhZ2VGZWF0dXJlcxJ7CgxmaWxlX2ZlYXR1cmUYASABKA4y",
+            "Dy5wYi5FbnVtRmVhdHVyZUJUiAEBmAEBogELEgZWQUxVRTEYhAeiAQsSBlZB",
+            "TFVFMhjnB6IBCxIGVkFMVUUzGOgHogEMEgZWQUxVRTQYnY0GogEMEgZWQUxV",
+            "RTUYno0GsgEDCOgHIpEBChJUZXN0TmVzdGVkRmVhdHVyZXMSewoMZmlsZV9m",
+            "ZWF0dXJlGAEgASgOMg8ucGIuRW51bUZlYXR1cmVCVIgBAZgBAaIBCxIGVkFM",
+            "VUUxGIQHogELEgZWQUxVRTIY5weiAQsSBlZBTFVFMxjoB6IBDBIGVkFMVUU0",
+            "GJ2NBqIBDBIGVkFMVUU1GJ6NBrIBAwjoByLCEAoMVGVzdEZlYXR1cmVzEnsK",
+            "DGZpbGVfZmVhdHVyZRgBIAEoDjIPLnBiLkVudW1GZWF0dXJlQlSIAQGYAQGi",
+            "AQsSBlZBTFVFMRiEB6IBCxIGVkFMVUUyGOcHogELEgZWQUxVRTMY6AeiAQwS",
+            "BlZBTFVFNBidjQaiAQwSBlZBTFVFNRiejQayAQMI6AcSTAoXZXh0ZW5zaW9u",
+            "X3JhbmdlX2ZlYXR1cmUYAiABKA4yDy5wYi5FbnVtRmVhdHVyZUIaiAEBmAEC",
+            "ogELEgZWQUxVRTEYhAeyAQMI6AcSRAoPbWVzc2FnZV9mZWF0dXJlGAMgASgO",
+            "Mg8ucGIuRW51bUZlYXR1cmVCGogBAZgBA6IBCxIGVkFMVUUxGIQHsgEDCOgH",
+            "EkIKDWZpZWxkX2ZlYXR1cmUYBCABKA4yDy5wYi5FbnVtRmVhdHVyZUIaiAEB",
+            "mAEEogELEgZWQUxVRTEYhAeyAQMI6AcSQgoNb25lb2ZfZmVhdHVyZRgFIAEo",
+            "DjIPLnBiLkVudW1GZWF0dXJlQhqIAQGYAQWiAQsSBlZBTFVFMRiEB7IBAwjo",
+            "BxJBCgxlbnVtX2ZlYXR1cmUYBiABKA4yDy5wYi5FbnVtRmVhdHVyZUIaiAEB",
+            "mAEGogELEgZWQUxVRTEYhAeyAQMI6AcSRwoSZW51bV9lbnRyeV9mZWF0dXJl",
+            "GAcgASgOMg8ucGIuRW51bUZlYXR1cmVCGogBAZgBB6IBCxIGVkFMVUUxGIQH",
+            "sgEDCOgHEkQKD3NlcnZpY2VfZmVhdHVyZRgIIAEoDjIPLnBiLkVudW1GZWF0",
+            "dXJlQhqIAQGYAQiiAQsSBlZBTFVFMRiEB7IBAwjoBxJDCg5tZXRob2RfZmVh",
+            "dHVyZRgJIAEoDjIPLnBiLkVudW1GZWF0dXJlQhqIAQGYAQmiAQsSBlZBTFVF",
+            "MRiEB7IBAwjoBxJdChBtdWx0aXBsZV9mZWF0dXJlGAogASgOMg8ucGIuRW51",
+            "bUZlYXR1cmVCMogBAZgBAZgBBJgBA5gBBpgBB5gBCJgBCZgBBZgBAqIBCxIG",
+            "VkFMVUUxGIQHsgEDCOgHEkIKEmJvb2xfZmllbGRfZmVhdHVyZRgLIAEoCEIm",
+            "iAEBmAEEogEKEgVmYWxzZRiEB6IBChIEdHJ1ZRidjQayAQMI6AcSWwoOc291",
+            "cmNlX2ZlYXR1cmUYDyABKA4yDy5wYi5FbnVtRmVhdHVyZUIyiAECmAEBmAEE",
+            "mAEDmAEGmAEHmAEImAEJmAEFmAECogELEgZWQUxVRTEYhAeyAQMI6AcSXAoP",
+            "c291cmNlX2ZlYXR1cmUyGBAgASgOMg8ucGIuRW51bUZlYXR1cmVCMogBApgB",
+            "AZgBBJgBA5gBBpgBB5gBCJgBCZgBBZgBAqIBCxIGVkFMVUUxGIQHsgEDCOgH",
+            "EqwBCg9yZW1vdmVkX2ZlYXR1cmUYESABKA4yDy5wYi5FbnVtRmVhdHVyZUKB",
+            "AYgBAZgBAZgBBKIBCxIGVkFMVUUxGIQHogELEgZWQUxVRTIY6AeiAQsSBlZB",
+            "TFVFMxjpB7IBSwjoBxDoBxoiQ3VzdG9tIGZlYXR1cmUgZGVwcmVjYXRpb24g",
+            "d2FybmluZyDpByocQ3VzdG9tIGZlYXR1cmUgcmVtb3ZhbCBlcnJvchJXChxz",
+            "YW1lX2VkaXRpb25fcmVtb3ZlZF9mZWF0dXJlGBUgASgOMg8ucGIuRW51bUZl",
+            "YXR1cmVCIIgBAZgBAZgBBKIBCxIGVkFMVUUxGIQHsgEGCOgHIOgHElQKDmZ1",
+            "dHVyZV9mZWF0dXJlGBIgASgOMg8ucGIuRW51bUZlYXR1cmVCK4gBAZgBAZgB",
+            "BKIBCxIGVkFMVUUxGIQHogELEgZWQUxVRTIY6QeyAQMI6QcSdQoObGVnYWN5",
+            "X2ZlYXR1cmUYEyABKA4yDy5wYi5FbnVtRmVhdHVyZUJMiAEBmAEBmAEEogEL",
+            "EgZWQUxVRTEYhAeiAQsSBlZBTFVFMhjoB7IBJAjnByDoByocQ3VzdG9tIGZl",
+            "YXR1cmUgcmVtb3ZhbCBlcnJvchLsAQoWdmFsdWVfbGlmZXRpbWVfZmVhdHVy",
+            "ZRgUIAEoDjIYLnBiLlZhbHVlTGlmZXRpbWVGZWF0dXJlQrEBiAEBmAEBogEd",
+            "EhhWQUxVRV9MSUZFVElNRV9JTkhFUklURUQYhAeiARoSFVZBTFVFX0xJRkVU",
+            "SU1FX0ZVVFVSRRjoB6IBGxIVVkFMVUVfTElGRVRJTUVfRlVUVVJFGJ+NBrIB",
+            "TQjoBxCejQYaIkN1c3RvbSBmZWF0dXJlIGRlcHJlY2F0aW9uIHdhcm5pbmcg",
+            "n40GKhxDdXN0b20gZmVhdHVyZSByZW1vdmFsIGVycm9yEmgKFG5ld191bnN0",
+            "YWJsZV9mZWF0dXJlGBYgASgOMhcucGIuVW5zdGFibGVFbnVtRmVhdHVyZUIx",
+            "iAEBmAEBmAEEogEOEglVTlNUQUJMRTEYhAeiAQ4SCVVOU1RBQkxFMhiPTrIB",
+            "AwiPThJ7Chl1bnN0YWJsZV9leGlzdGluZ19mZWF0dXJlGBcgASgOMhcucGIu",
+            "VW5zdGFibGVFbnVtRmVhdHVyZUI/iAEBmAEGogEOEglVTlNUQUJMRTEYhAei",
+            "AQ4SCVVOU1RBQkxFMhjoB6IBDhIJVU5TVEFCTEUzGI9OsgEDCOgHEnkKGHJl",
+            "bW92ZWRfdW5zdGFibGVfZmVhdHVyZRgYIAEoDjIXLnBiLlVuc3RhYmxlRW51",
+            "bUZlYXR1cmVCPogBAZgBCaIBDhIJVU5TVEFCTEUxGIQHsgEkCOgHII9OKhxD",
+            "dXN0b20gZmVhdHVyZSByZW1vdmFsIGVycm9yKkcKGUN1c3RvbU9wdGlvbkxp",
+            "ZmV0aW1lc0VudW0SFgoSVEVTVF9DVVNUT01fT1BUSU9OEAASEgoOQ1VTVE9N",
+            "X09QVElPTjEQASrmAQoLRW51bUZlYXR1cmUSHQoZVEVTVF9FTlVNX0ZFQVRV",
+            "UkVfVU5LTk9XThAAEgoKBlZBTFVFMRABEgoKBlZBTFVFMhACEgoKBlZBTFVF",
+            "MxADEgoKBlZBTFVFNBAEEgoKBlZBTFVFNRAFEgoKBlZBTFVFNhAGEgoKBlZB",
+            "TFVFNxAHEgoKBlZBTFVFOBAIEgoKBlZBTFVFORAJEgsKB1ZBTFVFMTAQChIL",
+            "CgdWQUxVRTExEAsSCwoHVkFMVUUxMhAMEgsKB1ZBTFVFMTMQDRILCgdWQUxV",
+            "RTE0EA4SCwoHVkFMVUUxNRAPKoABChNVbnN0YWJsZUVudW1GZWF0dXJlEiYK",
+            "IlRFU1RfVU5TVEFCTEVfRU5VTV9GRUFUVVJFX1VOS05PV04QABINCglVTlNU",
+            "QUJMRTEQARINCglVTlNUQUJMRTIQAhIUCglVTlNUQUJMRTMQAxoFIgMIj04S",
+            "DQoJVU5TVEFCTEU0EAQqwAMKFFZhbHVlTGlmZXRpbWVGZWF0dXJlEh8KG1RF",
+            "U1RfVkFMVUVfTElGRVRJTUVfVU5LTk9XThAAEhwKGFZBTFVFX0xJRkVUSU1F",
+            "X0lOSEVSSVRFRBABEmwKFlZBTFVFX0xJRkVUSU1FX1NVUFBPUlQQAhpQIk4I",
+            "nY0GEJ6NBhoiQ3VzdG9tIGZlYXR1cmUgZGVwcmVjYXRpb24gd2FybmluZyCf",
+            "jQYqHEN1c3RvbSBmZWF0dXJlIHJlbW92YWwgZXJyb3ISJAocVkFMVUVfTElG",
+            "RVRJTUVfRU1QVFlfU1VQUE9SVBADGgIiABIhChVWQUxVRV9MSUZFVElNRV9G",
+            "VVRVUkUQBBoGIgQInY0GEkkKGVZBTFVFX0xJRkVUSU1FX0RFUFJFQ0FURUQQ",
+            "BRoqIigQnY0GGiJDdXN0b20gZmVhdHVyZSBkZXByZWNhdGlvbiB3YXJuaW5n",
+            "EmcKFlZBTFVFX0xJRkVUSU1FX1JFTU9WRUQQBhpLIkkQ6AcaIkN1c3RvbSBm",
+            "ZWF0dXJlIGRlcHJlY2F0aW9uIHdhcm5pbmcgnY0GKhxDdXN0b20gZmVhdHVy",
+            "ZSByZW1vdmFsIGVycm9yOm0KH2N1c3RvbV9vcHRpb25fbGlmZXRpbWVzX21l",
+            "c3NhZ2USHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMYtJ3YAyAB",
+            "KAsyIC5wYi5DdXN0b21PcHRpb25MaWZldGltZXNNZXNzYWdlOjwKBHRlc3QS",
+            "Gy5nb29nbGUucHJvdG9idWYuRmVhdHVyZVNldBiPTiABKAsyEC5wYi5UZXN0",
+            "RmVhdHVyZXNCEkIQVW5pdHRlc3RGZWF0dXJlc2IIZWRpdGlvbnNw6Qc="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Reflection.DescriptorReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Pb.EnumFeature), typeof(global::Pb.ValueLifetimeFeature), }, new pb::Extension[] { UnittestFeaturesExtensions.Test }, new pbr::GeneratedClrTypeInfo[] {
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Pb.CustomOptionLifetimesEnum), typeof(global::Pb.EnumFeature), typeof(global::Pb.UnstableEnumFeature), typeof(global::Pb.ValueLifetimeFeature), }, new pb::Extension[] { UnittestFeaturesExtensions.CustomOptionLifetimesMessage, UnittestFeaturesExtensions.Test }, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Pb.CustomOptionLifetimesMessage), global::Pb.CustomOptionLifetimesMessage.Parser, new[]{ "CustomEnum", "RepeatedCustomEnum" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestMessage), global::Pb.TestMessage.Parser, null, null, null, new pb::Extension[] { global::Pb.TestMessage.Extensions.TestMessage }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestMessage.Types.Nested), global::Pb.TestMessage.Types.Nested.Parser, null, null, null, new pb::Extension[] { global::Pb.TestMessage.Types.Nested.Extensions.TestNested }, null)}),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestFeatures), global::Pb.TestFeatures.Parser, new[]{ "FileFeature", "ExtensionRangeFeature", "MessageFeature", "FieldFeature", "OneofFeature", "EnumFeature", "EnumEntryFeature", "ServiceFeature", "MethodFeature", "MultipleFeature", "BoolFieldFeature", "SourceFeature", "SourceFeature2", "RemovedFeature", "FutureFeature", "LegacyFeature", "ValueLifetimeFeature" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestMessageFeatures), global::Pb.TestMessageFeatures.Parser, new[]{ "FileFeature" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestNestedFeatures), global::Pb.TestNestedFeatures.Parser, new[]{ "FileFeature" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestFeatures), global::Pb.TestFeatures.Parser, new[]{ "FileFeature", "ExtensionRangeFeature", "MessageFeature", "FieldFeature", "OneofFeature", "EnumFeature", "EnumEntryFeature", "ServiceFeature", "MethodFeature", "MultipleFeature", "BoolFieldFeature", "SourceFeature", "SourceFeature2", "RemovedFeature", "SameEditionRemovedFeature", "FutureFeature", "LegacyFeature", "ValueLifetimeFeature", "NewUnstableFeature", "UnstableExistingFeature", "RemovedUnstableFeature" }, null, null, null, null)
           }));
     }
     #endregion
@@ -92,11 +126,18 @@ namespace Pb {
   }
   /// <summary>Holder for extension identifiers generated from the top level of google/protobuf/unittest_features.proto</summary>
   public static partial class UnittestFeaturesExtensions {
+    public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::Pb.CustomOptionLifetimesMessage> CustomOptionLifetimesMessage =
+      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::Pb.CustomOptionLifetimesMessage>(7737012, pb::FieldCodec.ForMessage(61896098, global::Pb.CustomOptionLifetimesMessage.Parser));
     public static readonly pb::Extension<global::Google.Protobuf.Reflection.FeatureSet, global::Pb.TestFeatures> Test =
       new pb::Extension<global::Google.Protobuf.Reflection.FeatureSet, global::Pb.TestFeatures>(9999, pb::FieldCodec.ForMessage(79994, global::Pb.TestFeatures.Parser));
   }
 
   #region Enums
+  public enum CustomOptionLifetimesEnum {
+    [pbr::OriginalName("TEST_CUSTOM_OPTION")] TestCustomOption = 0,
+    [pbr::OriginalName("CUSTOM_OPTION1")] CustomOption1 = 1,
+  }
+
   public enum EnumFeature {
     [pbr::OriginalName("TEST_ENUM_FEATURE_UNKNOWN")] TestEnumFeatureUnknown = 0,
     [pbr::OriginalName("VALUE1")] Value1 = 1,
@@ -116,6 +157,14 @@ namespace Pb {
     [pbr::OriginalName("VALUE15")] Value15 = 15,
   }
 
+  public enum UnstableEnumFeature {
+    [pbr::OriginalName("TEST_UNSTABLE_ENUM_FEATURE_UNKNOWN")] TestUnstableEnumFeatureUnknown = 0,
+    [pbr::OriginalName("UNSTABLE1")] Unstable1 = 1,
+    [pbr::OriginalName("UNSTABLE2")] Unstable2 = 2,
+    [pbr::OriginalName("UNSTABLE3")] Unstable3 = 3,
+    [pbr::OriginalName("UNSTABLE4")] Unstable4 = 4,
+  }
+
   public enum ValueLifetimeFeature {
     [pbr::OriginalName("TEST_VALUE_LIFETIME_UNKNOWN")] TestValueLifetimeUnknown = 0,
     [pbr::OriginalName("VALUE_LIFETIME_INHERITED")] ValueLifetimeInherited = 1,
@@ -129,6 +178,249 @@ namespace Pb {
   #endregion
 
   #region Messages
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class CustomOptionLifetimesMessage : pb::IMessage<CustomOptionLifetimesMessage>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<CustomOptionLifetimesMessage> _parser = new pb::MessageParser<CustomOptionLifetimesMessage>(() => new CustomOptionLifetimesMessage());
+    private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<CustomOptionLifetimesMessage> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Pb.UnittestFeaturesReflection.Descriptor.MessageTypes[0]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public CustomOptionLifetimesMessage() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public CustomOptionLifetimesMessage(CustomOptionLifetimesMessage other) : this() {
+      _hasBits0 = other._hasBits0;
+      customEnum_ = other.customEnum_;
+      repeatedCustomEnum_ = other.repeatedCustomEnum_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public CustomOptionLifetimesMessage Clone() {
+      return new CustomOptionLifetimesMessage(this);
+    }
+
+    /// <summary>Field number for the "custom_enum" field.</summary>
+    public const int CustomEnumFieldNumber = 1;
+    private readonly static global::Pb.CustomOptionLifetimesEnum CustomEnumDefaultValue = global::Pb.CustomOptionLifetimesEnum.TestCustomOption;
+
+    private global::Pb.CustomOptionLifetimesEnum customEnum_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Pb.CustomOptionLifetimesEnum CustomEnum {
+      get { if ((_hasBits0 & 1) != 0) { return customEnum_; } else { return CustomEnumDefaultValue; } }
+      set {
+        _hasBits0 |= 1;
+        customEnum_ = value;
+      }
+    }
+    /// <summary>Gets whether the "custom_enum" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasCustomEnum {
+      get { return (_hasBits0 & 1) != 0; }
+    }
+    /// <summary>Clears the value of the "custom_enum" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearCustomEnum() {
+      _hasBits0 &= ~1;
+    }
+
+    /// <summary>Field number for the "repeated_custom_enum" field.</summary>
+    public const int RepeatedCustomEnumFieldNumber = 2;
+    private static readonly pb::FieldCodec<global::Pb.CustomOptionLifetimesEnum> _repeated_repeatedCustomEnum_codec
+        = pb::FieldCodec.ForEnum(18, x => (int) x, x => (global::Pb.CustomOptionLifetimesEnum) x);
+    private readonly pbc::RepeatedField<global::Pb.CustomOptionLifetimesEnum> repeatedCustomEnum_ = new pbc::RepeatedField<global::Pb.CustomOptionLifetimesEnum>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public pbc::RepeatedField<global::Pb.CustomOptionLifetimesEnum> RepeatedCustomEnum {
+      get { return repeatedCustomEnum_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as CustomOptionLifetimesMessage);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(CustomOptionLifetimesMessage other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (CustomEnum != other.CustomEnum) return false;
+      if(!repeatedCustomEnum_.Equals(other.repeatedCustomEnum_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (HasCustomEnum) hash ^= CustomEnum.GetHashCode();
+      hash ^= repeatedCustomEnum_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (HasCustomEnum) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) CustomEnum);
+      }
+      repeatedCustomEnum_.WriteTo(output, _repeated_repeatedCustomEnum_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasCustomEnum) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) CustomEnum);
+      }
+      repeatedCustomEnum_.WriteTo(ref output, _repeated_repeatedCustomEnum_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (HasCustomEnum) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) CustomEnum);
+      }
+      size += repeatedCustomEnum_.CalculateSize(_repeated_repeatedCustomEnum_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(CustomOptionLifetimesMessage other) {
+      if (other == null) {
+        return;
+      }
+      if (other.HasCustomEnum) {
+        CustomEnum = other.CustomEnum;
+      }
+      repeatedCustomEnum_.Add(other.repeatedCustomEnum_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            CustomEnum = (global::Pb.CustomOptionLifetimesEnum) input.ReadEnum();
+            break;
+          }
+          case 18:
+          case 16: {
+            repeatedCustomEnum_.AddEntriesFrom(input, _repeated_repeatedCustomEnum_codec);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            CustomEnum = (global::Pb.CustomOptionLifetimesEnum) input.ReadEnum();
+            break;
+          }
+          case 18:
+          case 16: {
+            repeatedCustomEnum_.AddEntriesFrom(ref input, _repeated_repeatedCustomEnum_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestMessage : pb::IMessage<TestMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -144,7 +436,7 @@ namespace Pb {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Pb.UnittestFeaturesReflection.Descriptor.MessageTypes[0]; }
+      get { return global::Pb.UnittestFeaturesReflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -457,8 +749,8 @@ namespace Pb {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public static partial class Extensions {
-          public static readonly pb::Extension<global::Google.Protobuf.Reflection.FeatureSet, global::Pb.TestFeatures> TestNested =
-            new pb::Extension<global::Google.Protobuf.Reflection.FeatureSet, global::Pb.TestFeatures>(9997, pb::FieldCodec.ForMessage(79978, global::Pb.TestFeatures.Parser));
+          public static readonly pb::Extension<global::Google.Protobuf.Reflection.FeatureSet, global::Pb.TestNestedFeatures> TestNested =
+            new pb::Extension<global::Google.Protobuf.Reflection.FeatureSet, global::Pb.TestNestedFeatures>(9997, pb::FieldCodec.ForMessage(79978, global::Pb.TestNestedFeatures.Parser));
         }
         #endregion
 
@@ -472,10 +764,440 @@ namespace Pb {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Extensions {
-      public static readonly pb::Extension<global::Google.Protobuf.Reflection.FeatureSet, global::Pb.TestFeatures> TestMessage =
-        new pb::Extension<global::Google.Protobuf.Reflection.FeatureSet, global::Pb.TestFeatures>(9998, pb::FieldCodec.ForMessage(79986, global::Pb.TestFeatures.Parser));
+      public static readonly pb::Extension<global::Google.Protobuf.Reflection.FeatureSet, global::Pb.TestMessageFeatures> TestMessage =
+        new pb::Extension<global::Google.Protobuf.Reflection.FeatureSet, global::Pb.TestMessageFeatures>(9998, pb::FieldCodec.ForMessage(79986, global::Pb.TestMessageFeatures.Parser));
     }
     #endregion
+
+  }
+
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class TestMessageFeatures : pb::IMessage<TestMessageFeatures>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<TestMessageFeatures> _parser = new pb::MessageParser<TestMessageFeatures>(() => new TestMessageFeatures());
+    private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<TestMessageFeatures> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Pb.UnittestFeaturesReflection.Descriptor.MessageTypes[2]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public TestMessageFeatures() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public TestMessageFeatures(TestMessageFeatures other) : this() {
+      _hasBits0 = other._hasBits0;
+      fileFeature_ = other.fileFeature_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public TestMessageFeatures Clone() {
+      return new TestMessageFeatures(this);
+    }
+
+    /// <summary>Field number for the "file_feature" field.</summary>
+    public const int FileFeatureFieldNumber = 1;
+    private readonly static global::Pb.EnumFeature FileFeatureDefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+
+    private global::Pb.EnumFeature fileFeature_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Pb.EnumFeature FileFeature {
+      get { if ((_hasBits0 & 1) != 0) { return fileFeature_; } else { return FileFeatureDefaultValue; } }
+      set {
+        _hasBits0 |= 1;
+        fileFeature_ = value;
+      }
+    }
+    /// <summary>Gets whether the "file_feature" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasFileFeature {
+      get { return (_hasBits0 & 1) != 0; }
+    }
+    /// <summary>Clears the value of the "file_feature" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearFileFeature() {
+      _hasBits0 &= ~1;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as TestMessageFeatures);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(TestMessageFeatures other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (FileFeature != other.FileFeature) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (HasFileFeature) hash ^= FileFeature.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (HasFileFeature) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) FileFeature);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasFileFeature) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) FileFeature);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (HasFileFeature) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) FileFeature);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(TestMessageFeatures other) {
+      if (other == null) {
+        return;
+      }
+      if (other.HasFileFeature) {
+        FileFeature = other.FileFeature;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            FileFeature = (global::Pb.EnumFeature) input.ReadEnum();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            FileFeature = (global::Pb.EnumFeature) input.ReadEnum();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class TestNestedFeatures : pb::IMessage<TestNestedFeatures>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<TestNestedFeatures> _parser = new pb::MessageParser<TestNestedFeatures>(() => new TestNestedFeatures());
+    private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<TestNestedFeatures> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Pb.UnittestFeaturesReflection.Descriptor.MessageTypes[3]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public TestNestedFeatures() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public TestNestedFeatures(TestNestedFeatures other) : this() {
+      _hasBits0 = other._hasBits0;
+      fileFeature_ = other.fileFeature_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public TestNestedFeatures Clone() {
+      return new TestNestedFeatures(this);
+    }
+
+    /// <summary>Field number for the "file_feature" field.</summary>
+    public const int FileFeatureFieldNumber = 1;
+    private readonly static global::Pb.EnumFeature FileFeatureDefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+
+    private global::Pb.EnumFeature fileFeature_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Pb.EnumFeature FileFeature {
+      get { if ((_hasBits0 & 1) != 0) { return fileFeature_; } else { return FileFeatureDefaultValue; } }
+      set {
+        _hasBits0 |= 1;
+        fileFeature_ = value;
+      }
+    }
+    /// <summary>Gets whether the "file_feature" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasFileFeature {
+      get { return (_hasBits0 & 1) != 0; }
+    }
+    /// <summary>Clears the value of the "file_feature" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearFileFeature() {
+      _hasBits0 &= ~1;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as TestNestedFeatures);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(TestNestedFeatures other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (FileFeature != other.FileFeature) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (HasFileFeature) hash ^= FileFeature.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (HasFileFeature) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) FileFeature);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasFileFeature) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) FileFeature);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (HasFileFeature) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) FileFeature);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(TestNestedFeatures other) {
+      if (other == null) {
+        return;
+      }
+      if (other.HasFileFeature) {
+        FileFeature = other.FileFeature;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            FileFeature = (global::Pb.EnumFeature) input.ReadEnum();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            FileFeature = (global::Pb.EnumFeature) input.ReadEnum();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
@@ -495,7 +1217,7 @@ namespace Pb {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Pb.UnittestFeaturesReflection.Descriptor.MessageTypes[1]; }
+      get { return global::Pb.UnittestFeaturesReflection.Descriptor.MessageTypes[4]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -530,9 +1252,13 @@ namespace Pb {
       sourceFeature_ = other.sourceFeature_;
       sourceFeature2_ = other.sourceFeature2_;
       removedFeature_ = other.removedFeature_;
+      sameEditionRemovedFeature_ = other.sameEditionRemovedFeature_;
       futureFeature_ = other.futureFeature_;
       legacyFeature_ = other.legacyFeature_;
       valueLifetimeFeature_ = other.valueLifetimeFeature_;
+      newUnstableFeature_ = other.newUnstableFeature_;
+      unstableExistingFeature_ = other.unstableExistingFeature_;
+      removedUnstableFeature_ = other.removedUnstableFeature_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -920,6 +1646,33 @@ namespace Pb {
       _hasBits0 &= ~8192;
     }
 
+    /// <summary>Field number for the "same_edition_removed_feature" field.</summary>
+    public const int SameEditionRemovedFeatureFieldNumber = 21;
+    private readonly static global::Pb.EnumFeature SameEditionRemovedFeatureDefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+
+    private global::Pb.EnumFeature sameEditionRemovedFeature_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Pb.EnumFeature SameEditionRemovedFeature {
+      get { if ((_hasBits0 & 131072) != 0) { return sameEditionRemovedFeature_; } else { return SameEditionRemovedFeatureDefaultValue; } }
+      set {
+        _hasBits0 |= 131072;
+        sameEditionRemovedFeature_ = value;
+      }
+    }
+    /// <summary>Gets whether the "same_edition_removed_feature" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasSameEditionRemovedFeature {
+      get { return (_hasBits0 & 131072) != 0; }
+    }
+    /// <summary>Clears the value of the "same_edition_removed_feature" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearSameEditionRemovedFeature() {
+      _hasBits0 &= ~131072;
+    }
+
     /// <summary>Field number for the "future_feature" field.</summary>
     public const int FutureFeatureFieldNumber = 18;
     private readonly static global::Pb.EnumFeature FutureFeatureDefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
@@ -1001,6 +1754,87 @@ namespace Pb {
       _hasBits0 &= ~65536;
     }
 
+    /// <summary>Field number for the "new_unstable_feature" field.</summary>
+    public const int NewUnstableFeatureFieldNumber = 22;
+    private readonly static global::Pb.UnstableEnumFeature NewUnstableFeatureDefaultValue = global::Pb.UnstableEnumFeature.TestUnstableEnumFeatureUnknown;
+
+    private global::Pb.UnstableEnumFeature newUnstableFeature_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Pb.UnstableEnumFeature NewUnstableFeature {
+      get { if ((_hasBits0 & 262144) != 0) { return newUnstableFeature_; } else { return NewUnstableFeatureDefaultValue; } }
+      set {
+        _hasBits0 |= 262144;
+        newUnstableFeature_ = value;
+      }
+    }
+    /// <summary>Gets whether the "new_unstable_feature" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasNewUnstableFeature {
+      get { return (_hasBits0 & 262144) != 0; }
+    }
+    /// <summary>Clears the value of the "new_unstable_feature" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearNewUnstableFeature() {
+      _hasBits0 &= ~262144;
+    }
+
+    /// <summary>Field number for the "unstable_existing_feature" field.</summary>
+    public const int UnstableExistingFeatureFieldNumber = 23;
+    private readonly static global::Pb.UnstableEnumFeature UnstableExistingFeatureDefaultValue = global::Pb.UnstableEnumFeature.TestUnstableEnumFeatureUnknown;
+
+    private global::Pb.UnstableEnumFeature unstableExistingFeature_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Pb.UnstableEnumFeature UnstableExistingFeature {
+      get { if ((_hasBits0 & 524288) != 0) { return unstableExistingFeature_; } else { return UnstableExistingFeatureDefaultValue; } }
+      set {
+        _hasBits0 |= 524288;
+        unstableExistingFeature_ = value;
+      }
+    }
+    /// <summary>Gets whether the "unstable_existing_feature" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasUnstableExistingFeature {
+      get { return (_hasBits0 & 524288) != 0; }
+    }
+    /// <summary>Clears the value of the "unstable_existing_feature" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearUnstableExistingFeature() {
+      _hasBits0 &= ~524288;
+    }
+
+    /// <summary>Field number for the "removed_unstable_feature" field.</summary>
+    public const int RemovedUnstableFeatureFieldNumber = 24;
+    private readonly static global::Pb.UnstableEnumFeature RemovedUnstableFeatureDefaultValue = global::Pb.UnstableEnumFeature.TestUnstableEnumFeatureUnknown;
+
+    private global::Pb.UnstableEnumFeature removedUnstableFeature_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Pb.UnstableEnumFeature RemovedUnstableFeature {
+      get { if ((_hasBits0 & 1048576) != 0) { return removedUnstableFeature_; } else { return RemovedUnstableFeatureDefaultValue; } }
+      set {
+        _hasBits0 |= 1048576;
+        removedUnstableFeature_ = value;
+      }
+    }
+    /// <summary>Gets whether the "removed_unstable_feature" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasRemovedUnstableFeature {
+      get { return (_hasBits0 & 1048576) != 0; }
+    }
+    /// <summary>Clears the value of the "removed_unstable_feature" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearRemovedUnstableFeature() {
+      _hasBits0 &= ~1048576;
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -1030,9 +1864,13 @@ namespace Pb {
       if (SourceFeature != other.SourceFeature) return false;
       if (SourceFeature2 != other.SourceFeature2) return false;
       if (RemovedFeature != other.RemovedFeature) return false;
+      if (SameEditionRemovedFeature != other.SameEditionRemovedFeature) return false;
       if (FutureFeature != other.FutureFeature) return false;
       if (LegacyFeature != other.LegacyFeature) return false;
       if (ValueLifetimeFeature != other.ValueLifetimeFeature) return false;
+      if (NewUnstableFeature != other.NewUnstableFeature) return false;
+      if (UnstableExistingFeature != other.UnstableExistingFeature) return false;
+      if (RemovedUnstableFeature != other.RemovedUnstableFeature) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1054,9 +1892,13 @@ namespace Pb {
       if (HasSourceFeature) hash ^= SourceFeature.GetHashCode();
       if (HasSourceFeature2) hash ^= SourceFeature2.GetHashCode();
       if (HasRemovedFeature) hash ^= RemovedFeature.GetHashCode();
+      if (HasSameEditionRemovedFeature) hash ^= SameEditionRemovedFeature.GetHashCode();
       if (HasFutureFeature) hash ^= FutureFeature.GetHashCode();
       if (HasLegacyFeature) hash ^= LegacyFeature.GetHashCode();
       if (HasValueLifetimeFeature) hash ^= ValueLifetimeFeature.GetHashCode();
+      if (HasNewUnstableFeature) hash ^= NewUnstableFeature.GetHashCode();
+      if (HasUnstableExistingFeature) hash ^= UnstableExistingFeature.GetHashCode();
+      if (HasRemovedUnstableFeature) hash ^= RemovedUnstableFeature.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1143,6 +1985,22 @@ namespace Pb {
         output.WriteRawTag(160, 1);
         output.WriteEnum((int) ValueLifetimeFeature);
       }
+      if (HasSameEditionRemovedFeature) {
+        output.WriteRawTag(168, 1);
+        output.WriteEnum((int) SameEditionRemovedFeature);
+      }
+      if (HasNewUnstableFeature) {
+        output.WriteRawTag(176, 1);
+        output.WriteEnum((int) NewUnstableFeature);
+      }
+      if (HasUnstableExistingFeature) {
+        output.WriteRawTag(184, 1);
+        output.WriteEnum((int) UnstableExistingFeature);
+      }
+      if (HasRemovedUnstableFeature) {
+        output.WriteRawTag(192, 1);
+        output.WriteEnum((int) RemovedUnstableFeature);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1221,6 +2079,22 @@ namespace Pb {
         output.WriteRawTag(160, 1);
         output.WriteEnum((int) ValueLifetimeFeature);
       }
+      if (HasSameEditionRemovedFeature) {
+        output.WriteRawTag(168, 1);
+        output.WriteEnum((int) SameEditionRemovedFeature);
+      }
+      if (HasNewUnstableFeature) {
+        output.WriteRawTag(176, 1);
+        output.WriteEnum((int) NewUnstableFeature);
+      }
+      if (HasUnstableExistingFeature) {
+        output.WriteRawTag(184, 1);
+        output.WriteEnum((int) UnstableExistingFeature);
+      }
+      if (HasRemovedUnstableFeature) {
+        output.WriteRawTag(192, 1);
+        output.WriteEnum((int) RemovedUnstableFeature);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1273,6 +2147,9 @@ namespace Pb {
       if (HasRemovedFeature) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) RemovedFeature);
       }
+      if (HasSameEditionRemovedFeature) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) SameEditionRemovedFeature);
+      }
       if (HasFutureFeature) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) FutureFeature);
       }
@@ -1281,6 +2158,15 @@ namespace Pb {
       }
       if (HasValueLifetimeFeature) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) ValueLifetimeFeature);
+      }
+      if (HasNewUnstableFeature) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) NewUnstableFeature);
+      }
+      if (HasUnstableExistingFeature) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) UnstableExistingFeature);
+      }
+      if (HasRemovedUnstableFeature) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) RemovedUnstableFeature);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1336,6 +2222,9 @@ namespace Pb {
       if (other.HasRemovedFeature) {
         RemovedFeature = other.RemovedFeature;
       }
+      if (other.HasSameEditionRemovedFeature) {
+        SameEditionRemovedFeature = other.SameEditionRemovedFeature;
+      }
       if (other.HasFutureFeature) {
         FutureFeature = other.FutureFeature;
       }
@@ -1344,6 +2233,15 @@ namespace Pb {
       }
       if (other.HasValueLifetimeFeature) {
         ValueLifetimeFeature = other.ValueLifetimeFeature;
+      }
+      if (other.HasNewUnstableFeature) {
+        NewUnstableFeature = other.NewUnstableFeature;
+      }
+      if (other.HasUnstableExistingFeature) {
+        UnstableExistingFeature = other.UnstableExistingFeature;
+      }
+      if (other.HasRemovedUnstableFeature) {
+        RemovedUnstableFeature = other.RemovedUnstableFeature;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1432,6 +2330,22 @@ namespace Pb {
             ValueLifetimeFeature = (global::Pb.ValueLifetimeFeature) input.ReadEnum();
             break;
           }
+          case 168: {
+            SameEditionRemovedFeature = (global::Pb.EnumFeature) input.ReadEnum();
+            break;
+          }
+          case 176: {
+            NewUnstableFeature = (global::Pb.UnstableEnumFeature) input.ReadEnum();
+            break;
+          }
+          case 184: {
+            UnstableExistingFeature = (global::Pb.UnstableEnumFeature) input.ReadEnum();
+            break;
+          }
+          case 192: {
+            RemovedUnstableFeature = (global::Pb.UnstableEnumFeature) input.ReadEnum();
+            break;
+          }
         }
       }
     #endif
@@ -1517,6 +2431,22 @@ namespace Pb {
           }
           case 160: {
             ValueLifetimeFeature = (global::Pb.ValueLifetimeFeature) input.ReadEnum();
+            break;
+          }
+          case 168: {
+            SameEditionRemovedFeature = (global::Pb.EnumFeature) input.ReadEnum();
+            break;
+          }
+          case 176: {
+            NewUnstableFeature = (global::Pb.UnstableEnumFeature) input.ReadEnum();
+            break;
+          }
+          case 184: {
+            UnstableExistingFeature = (global::Pb.UnstableEnumFeature) input.ReadEnum();
+            break;
+          }
+          case 192: {
+            RemovedUnstableFeature = (global::Pb.UnstableEnumFeature) input.ReadEnum();
             break;
           }
         }

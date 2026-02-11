@@ -17,6 +17,8 @@
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@rules_rust//rust:defs.bzl", "rust_test")
 
+package(default_applicable_licenses = ["//:license"])
+
 # Test sources for the purpose of building with Cargo
 pkg_files(
     name = "test_srcs",

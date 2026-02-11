@@ -15,6 +15,7 @@ using ProtobufTestMessages.Proto2;
 using ProtobufTestMessages.Proto3;
 using ProtobufUnittest;
 using System;
+using System.Linq;
 using UnitTest.Issues.TestProtos;
 
 namespace Google.Protobuf
@@ -904,6 +905,41 @@ namespace Google.Protobuf
 
             var parser63 = new JsonParser(new JsonParser.Settings(63));
             Assert.Throws<InvalidProtocolBufferException>(() => parser63.Parse<TestRecursiveMessage>(data64));
+        }
+
+        [Test]
+        public void MaliciousRecursionOfObjectsInValue()
+        {
+            int depth = 64;
+            string json = string.Join("", Enumerable.Repeat("{\"a\":", depth)) +
+                "{}" +
+                string.Join("", Enumerable.Repeat("}", depth));
+
+            // Each object level requires a Value and a Struct, so we can effectively only
+            // handle half as much depth as in a normal message.
+            var sufficientLimitParser = new JsonParser(new JsonParser.Settings(depth * 2 + 1));
+            sufficientLimitParser.Parse<Value>(json);
+
+            var insufficientLimitParser = new JsonParser(new JsonParser.Settings(depth * 2));
+            Assert.Throws<InvalidProtocolBufferException>(() => insufficientLimitParser.Parse<Value>(json));
+        }
+
+        [Test]
+        public void MaliciousRecursionOfArraysInValue()
+        {
+            int depth = 64;
+            string json = new string('[', depth) + new string(']', depth);
+
+            // Each array level requires a Value and a ListValue, so we can effectively only
+            // handle half as much depth as in a normal message. The limits here are slightly different than
+            // the limits for object recursion due to implementation details, but the inconsistency
+            // is preferred over the complexity of making arrays and objects match precisely in
+            // limit handling.
+            var sufficientLimitParser = new JsonParser(new JsonParser.Settings(depth * 2 - 1));
+            sufficientLimitParser.Parse<Value>(json);
+
+            var insufficientLimitParser = new JsonParser(new JsonParser.Settings(depth * 2 - 2));
+            Assert.Throws<InvalidProtocolBufferException>(() => insufficientLimitParser.Parse<Value>(json));
         }
 
         [Test]

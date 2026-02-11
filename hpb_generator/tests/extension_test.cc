@@ -441,7 +441,7 @@ TEST(CppGeneratedCode, Parse) {
   auto bytes = hpb::Serialize(&model, arena);
   EXPECT_EQ(true, bytes.ok());
   TestModel parsed_model =
-      ::hpb::Parse<TestModel>(bytes.value(), hpb::ParseOptionsDefault())
+      ::hpb::Parse<TestModel>(bytes.value(), hpb::DefaultParseOptions())
           .value();
   EXPECT_EQ("Test123", parsed_model.str1());
   EXPECT_EQ(true, hpb::GetExtension(&parsed_model, theme).ok());
@@ -478,7 +478,7 @@ TEST(CppGeneratedCode, ParseWithExtensionRegistry) {
   EXPECT_EQ(true, bytes.ok());
 
   TestModel parsed_model =
-      ::hpb::Parse<TestModel>(bytes.value(), hpb::ParseOptionsDefault())
+      ::hpb::Parse<TestModel>(bytes.value(), hpb::DefaultParseOptions())
           .value();
   EXPECT_EQ("Test123", parsed_model.str1());
   EXPECT_EQ(true, hpb::GetExtension(&parsed_model, theme).ok());
@@ -502,9 +502,9 @@ TEST(CppGeneratedCode, HpbStatusGeneratedRegistry) {
   auto bytes = ::hpb::Serialize(&model, arena);
   EXPECT_EQ(true, bytes.ok());
 
-  // By default, hpb::ParseOptionsDefault uses the generated registry.
+  // hpb::DefaultParseOptions uses the generated registry.
   hpb::StatusOr<TestModel> parsed_model =
-      ::hpb::Parse<TestModel>(bytes.value(), hpb::ParseOptionsDefault());
+      ::hpb::Parse<TestModel>(bytes.value(), hpb::DefaultParseOptions());
   EXPECT_EQ(true, parsed_model.ok());
   EXPECT_EQ(true, hpb::GetExtension(&parsed_model.value(),
                                     ThemeExtension::theme_extension)
@@ -587,7 +587,7 @@ TEST(CppGeneratedCode, HasExtensionAndRegistry) {
 
   // Test with ExtensionRegistry
   TestModel parsed_model =
-      ::hpb::Parse<TestModel>(data, hpb::ParseOptionsDefault()).value();
+      ::hpb::Parse<TestModel>(data, hpb::DefaultParseOptions()).value();
   EXPECT_TRUE(::hpb::HasExtension(&parsed_model, theme));
 }
 

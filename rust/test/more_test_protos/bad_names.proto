@@ -1,0 +1,15 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// This file exercises the case where a proto_library rule has more than one
+// proto file with the same basename, e.g., `bad_names.proto`, but different
+// paths. In this case, `bad_names.proto` vs.
+// `more_test_protos/bad_names.proto`.
+
+edition = "2024";
+
+package more_test_protos;

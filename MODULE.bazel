@@ -3,7 +3,7 @@
 
 module(
     name = "protobuf",
-    version = "34.0-dev",  # Automatically updated on release
+    version = "35.0-dev",  # Automatically updated on release
     compatibility_level = 1,
     repo_name = "com_google_protobuf",
 )
@@ -13,8 +13,6 @@ module(
 # https://bazel.build/versions/6.0.0/build/bzlmod#version-resolution
 # Thus the highest version in their module graph is resolved.
 
-# These dependencies must be declared before the other rules dependencies.
-bazel_dep(name = "rules_apple", version = "3.16.0", repo_name = "build_bazel_rules_apple")
 bazel_dep(name = "apple_support", version = "1.15.1", repo_name = "build_bazel_apple_support")
 
 # Keep apple_support on 1.15.1 for now to avoid this issue:
@@ -37,7 +35,7 @@ bazel_dep(name = "zlib", version = "1.3.1.bcr.5")
 
 # other dependencies
 bazel_dep(name = "bazel_features", version = "1.33.0", repo_name = "proto_bazel_features")
-bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "bazel_skylib", version = "1.9.0")
 bazel_dep(name = "jsoncpp", version = "1.9.6")
 bazel_dep(name = "rules_java", version = "8.6.1")
 bazel_dep(name = "rules_jvm_external", version = "6.7")
@@ -115,21 +113,41 @@ register_toolchains(
     dev_dependency = True,
 )
 
-# Proto toolchains
-register_toolchains("//bazel/private/toolchains:all")
+# Define toolchains that use pre-built protoc binaries.
+prebuilt_protoc = use_extension("//bazel/private/oss/toolchains/prebuilt:protoc_extension.bzl", "protoc")
+use_repo(
+    prebuilt_protoc,
+    "prebuilt_protoc.linux_aarch_64",
+    "prebuilt_protoc.linux_ppcle_64",
+    "prebuilt_protoc.linux_s390_64",
+    "prebuilt_protoc.linux_x86_32",
+    "prebuilt_protoc.linux_x86_64",
+    "prebuilt_protoc.osx_aarch_64",
+    "prebuilt_protoc.osx_x86_64",
+    "prebuilt_protoc.win32",
+    "prebuilt_protoc.win64",
+)
+
+# However this registration only matters if the config_setting for prefer_prebuilt_protoc is true,
+# using --@protobuf//bazel/flags:prefer_prebuilt_protoc
+register_toolchains("//bazel/private/oss/toolchains/prebuilt:all")
+
+# From-source protobuf toolchains
+# Fallback if nothing is already registered
+register_toolchains("//bazel/private/oss/toolchains:all")
 
 SUPPORTED_PYTHON_VERSIONS = [
-    "3.9",
     "3.10",
     "3.11",
     "3.12",
     "3.13",
+    "3.14",
 ]
 
 # TODO: Replace system_python with hermetic_python.
 # TODO: Remove dev_dependency once system_python is no longer used and we support
 # python/upb in Bazel.
-system_python = use_extension("//python/dist:system_python.bzl", "system_python_extension", dev_dependency = True)
+system_python = use_extension("//python/dist:system_python.bzl", "system_python_extension")
 system_python.find(
     name = "system_python",
     minimum = "3.9",
@@ -179,9 +197,13 @@ register_toolchains(
 )
 
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust", dev_dependency = True)
+
+# As of October 2025, our minimum supported Rust version is 1.79. However, we
+# use 1.85.0 here so that we can get some test coverage with edition 2024.
+# Cargo and our Bazel WORKSPACE build are both still on edition 2021.
 rust.toolchain(
-    edition = "2021",
-    versions = ["1.79.0"],
+    edition = "2024",
+    versions = ["1.85.0"],
 )
 
 crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate", dev_dependency = True)
@@ -307,18 +329,8 @@ archive_override(
 # Python headers for release
 python_headers = use_extension("//python/dist:python_downloads.bzl", "python_headers", dev_dependency = True)
 python_headers.source_archive(
-    sha256 = "df796b2dc8ef085edae2597a41c1c0a63625ebd92487adaef2fed22b567873e8",
-    version = "3.9.0",
-)
-python_headers.nuget_package(
-    cpu = "i686",
-    sha256 = "229abecbe49dc08fe5709e0b31e70edfb3b88f23335ebfc2904c44f940fd59b6",
-    version = "3.9.0",
-)
-python_headers.nuget_package(
-    cpu = "x86-64",
-    sha256 = "6af58a733e7dfbfcdd50d55788134393d6ffe7ab8270effbf724bdb786558832",
-    version = "3.9.0",
+    sha256 = "c4e0cbad57c90690cb813fb4663ef670b4d0f587d8171e2c42bd4c9245bd2758",
+    version = "3.10.0",
 )
 python_headers.nuget_package(
     cpu = "i686",
@@ -333,8 +345,6 @@ python_headers.nuget_package(
 use_repo(
     python_headers,
     "nuget_python_i686_3.10.0",
-    "nuget_python_i686_3.9.0",
     "nuget_python_x86-64_3.10.0",
-    "nuget_python_x86-64_3.9.0",
-    "python-3.9.0",
+    "python-3.10.0",
 )

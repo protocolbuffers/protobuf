@@ -49,13 +49,6 @@ platform(
     ],
 )
 
-config_setting(
-    name = "protobuf_allow_msvc",
-    values = {
-        "define": "protobuf_allow_msvc=true",
-    },
-)
-
 selects.config_setting_group(
     name = "config_msvc",
     match_any = [
@@ -262,11 +255,4 @@ cc_proto_blacklist_test(
         ":type_cc_proto",
         ":wrappers_cc_proto",
     ],
-)
-
-pkg_files(
-    name = "dist_files",
-    srcs = glob(["*"]),
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//pkg:__pkg__"],
 )

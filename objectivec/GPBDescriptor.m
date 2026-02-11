@@ -630,13 +630,6 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   return (description_->flags & GPBFieldRequired) != 0;
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-implementations"
-- (BOOL)isOptional {
-  return self.fieldType == GPBFieldTypeSingle && !self.isRequired;
-}
-#pragma clang diagnostic pop
-
 - (GPBFieldType)fieldType {
   GPBFieldFlags flags = description_->flags;
   if ((flags & GPBFieldRepeated) != 0) {
@@ -1060,6 +1053,9 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 
 - (instancetype)initWithExtensionDescription:(GPBExtensionDescription *)desc
                               runtimeSupport:(const int32_t *)runtimeSupport {
+  // IMPORTANT: In c_function mode, this may be called from any thread during a dispatch_once
+  // scoped to each specific descriptor - i.e., other descriptors may be initializing at the same
+  // time.
   CheckRuntimeSupported(runtimeSupport);
 #if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
   // Compute the unknown options by this version of the runtime and then check the passed in

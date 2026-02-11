@@ -55,8 +55,7 @@ class FileGenerator {
   void Generate(io::Printer* printer);
   void GenerateSiblings(const std::string& package_dir,
                         GeneratorContext* generator_context,
-                        std::vector<std::string>* file_list,
-                        std::vector<std::string>* annotation_list);
+                        std::vector<std::string>* file_list);
 
   const std::string& java_package() { return java_package_; }
 

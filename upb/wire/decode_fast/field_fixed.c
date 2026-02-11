@@ -21,106 +21,91 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-UPB_FORCEINLINE
-int upb_DecodeFast_UnpackedFixed(upb_Decoder* d, const char** ptr,
-                                 upb_Message* msg, intptr_t table,
-                                 uint64_t* hasbits, uint64_t* data,
-                                 upb_DecodeFast_Type type,
-                                 upb_DecodeFast_Cardinality card,
-                                 upb_DecodeFast_TagSize tagsize) {
-  upb_DecodeFastNext ret;
-  upb_DecodeFastField field;
+static bool upb_DecodeFast_SingleFixed(upb_Decoder* d, const char** ptr,
+                                       void* dst, upb_DecodeFast_Type type,
+                                       upb_DecodeFastNext* next) {
   int valbytes = upb_DecodeFast_ValueBytes(type);
-
-  if (!upb_DecodeFast_CheckPackableTag(type, card, tagsize, data,
-                                       kUpb_DecodeFastNext_TailCallPacked,
-                                       &ret) ||
-      !Upb_DecodeFast_GetField(d, *ptr, msg, *data, hasbits, &ret, &field, type,
-                               card)) {
-    return ret;
-  }
-
-  do {
-    *ptr += upb_DecodeFast_TagSizeBytes(tagsize);
-    memcpy(field.dst, *ptr, valbytes);
-    *ptr += valbytes;
-    _upb_Decoder_Trace(d, 'F');
-  } while (upb_DecodeFast_NextRepeated(d, ptr, *data, &ret, &field, type, card,
-                                       tagsize));
-
-  return kUpb_DecodeFastNext_TailCallDispatch;
+  memcpy(dst, *ptr, valbytes);
+  *ptr += valbytes;
+  return true;
 }
 
-UPB_FORCEINLINE
-int upb_DecodeFast_PackedFixed(upb_Decoder* d, const char** ptr,
-                               upb_Message* msg, intptr_t table,
-                               uint64_t* hasbits, uint64_t* data,
-                               upb_DecodeFast_Type type,
-                               upb_DecodeFast_Cardinality card,
-                               upb_DecodeFast_TagSize tagsize) {
-  upb_DecodeFastNext ret;
-  int size;
-  upb_DecodeFastField field;
-  uint8_t valbytes = upb_DecodeFast_ValueBytes(type);
+typedef struct {
+  upb_Decoder* d;
+  upb_DecodeFast_Type type;
+  upb_Message* msg;
+  uint64_t* data;
+  uint64_t* hasbits;
+  upb_DecodeFastNext* ret;
+} upb_DecodeFast_PackedFixedContext;
 
-  const char* data_ptr = *ptr + upb_DecodeFast_TagSizeBytes(tagsize);
+static const char* upb_DecodeFast_PackedFixed(upb_EpsCopyInputStream* st,
+                                              const char* ptr, int size,
+                                              void* ctx) {
+  upb_DecodeFast_PackedFixedContext* c =
+      (upb_DecodeFast_PackedFixedContext*)ctx;
 
-  if (!upb_DecodeFast_CheckPackableTag(type, card, tagsize, data,
-                                       kUpb_DecodeFastNext_TailCallUnpacked,
-                                       &ret) ||
-      !upb_DecodeFast_DecodeShortSizeForImmediateRead(d, &data_ptr, &size,
-                                                      &ret)) {
-    return ret;
-  }
+  int valbytes = upb_DecodeFast_ValueBytes(c->type);
 
   if (size != 0) {
     if (size % valbytes != 0) {
-      UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, &ret);
-      return ret;
+      UPB_DECODEFAST_ERROR(c->d, kUpb_DecodeStatus_Malformed, c->ret);
+      return NULL;
     }
 
-    if (!upb_DecodeFast_GetArrayForAppend(d, *ptr, msg, *data, hasbits, &field,
-                                          type, size / valbytes, &ret)) {
-      return ret;
+    upb_DecodeFastArray arr;
+
+    if (!upb_DecodeFast_GetArrayForAppend(c->d, ptr, c->msg, *c->data,
+                                          c->hasbits, &arr, c->type,
+                                          size / valbytes, c->ret)) {
+      return NULL;
     }
 
-    upb_DecodeFast_InlineMemcpy(field.dst, data_ptr, size);
-    upb_DecodeFastField_AddArraySize(&field, size / valbytes);
+    upb_DecodeFast_InlineMemcpy(arr.dst, ptr, size);
+    arr.dst = UPB_PTR_AT(arr.dst, size, char);
+    upb_DecodeFastField_SetArraySize(&arr, c->type);
   }
 
-  *ptr = data_ptr + size;
-  _upb_Decoder_Trace(d, 'F');
-
-  return kUpb_DecodeFastNext_TailCallDispatch;
+  _upb_Decoder_Trace(c->d, 'F');
+  return ptr + size;
 }
 
 UPB_FORCEINLINE
-int upb_DecodeFast_Fixed(upb_Decoder* d, const char** ptr, upb_Message* msg,
-                         intptr_t table, uint64_t* hasbits, uint64_t* data,
-                         upb_DecodeFast_Type type,
-                         upb_DecodeFast_Cardinality card,
-                         upb_DecodeFast_TagSize tagsize) {
+void upb_DecodeFast_Fixed(upb_Decoder* d, const char** ptr, upb_Message* msg,
+                          intptr_t table, uint64_t* hasbits, uint64_t* data,
+                          upb_DecodeFastNext* ret, upb_DecodeFast_Type type,
+                          upb_DecodeFast_Cardinality card,
+                          upb_DecodeFast_TagSize tagsize) {
   if (card == kUpb_DecodeFast_Packed) {
-    return upb_DecodeFast_PackedFixed(d, ptr, msg, table, hasbits, data, type,
-                                      card, tagsize);
+    upb_DecodeFast_PackedFixedContext ctx = {
+        .d = d,
+        .type = type,
+        .msg = msg,
+        .data = data,
+        .hasbits = hasbits,
+        .ret = ret,
+    };
+    upb_DecodeFast_Delimited(d, ptr, type, card, tagsize, data,
+                             &upb_DecodeFast_PackedFixed, ret, &ctx);
   } else {
-    return upb_DecodeFast_UnpackedFixed(d, ptr, msg, table, hasbits, data, type,
-                                        card, tagsize);
+    upb_DecodeFast_Unpacked(d, ptr, msg, data, hasbits, ret, type, card,
+                            tagsize, &upb_DecodeFast_SingleFixed);
   }
 }
 
 /* Generate all combinations:
  * {s,o,r,p} x {f4,f8} x {1bt,2bt} */
 
-#define F(type, card, tagbytes)                                       \
-  UPB_NOINLINE UPB_PRESERVE_NONE const char* UPB_DECODEFAST_FUNCNAME( \
-      type, card, tagbytes)(UPB_PARSE_PARAMS) {                       \
-    int next = upb_DecodeFast_Fixed(                                  \
-        d, &ptr, msg, table, &hasbits, &data, kUpb_DecodeFast_##type, \
-        kUpb_DecodeFast_##card, kUpb_DecodeFast_##tagbytes);          \
-    UPB_DECODEFAST_NEXTMAYBEPACKED(                                   \
-        next, UPB_DECODEFAST_FUNCNAME(type, Repeated, tagbytes),      \
-        UPB_DECODEFAST_FUNCNAME(type, Packed, tagbytes));             \
+#define F(type, card, tagbytes)                                          \
+  UPB_NOINLINE UPB_PRESERVE_NONE const char* UPB_DECODEFAST_FUNCNAME(    \
+      type, card, tagbytes)(UPB_PARSE_PARAMS) {                          \
+    upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;              \
+    upb_DecodeFast_Fixed(d, &ptr, msg, table, &hasbits, &data, &next,    \
+                         kUpb_DecodeFast_##type, kUpb_DecodeFast_##card, \
+                         kUpb_DecodeFast_##tagbytes);                    \
+    UPB_DECODEFAST_NEXTMAYBEPACKED(                                      \
+        next, UPB_DECODEFAST_FUNCNAME(type, Repeated, tagbytes),         \
+        UPB_DECODEFAST_FUNCNAME(type, Packed, tagbytes));                \
   }
 
 UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Fixed32)

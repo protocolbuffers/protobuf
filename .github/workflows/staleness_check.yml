@@ -27,7 +27,7 @@ jobs:
     if: ${{ github.event.repository.full_name == 'protocolbuffers/protobuf' }}
     steps:
       - name: Checkout
-        uses: protocolbuffers/protobuf-ci/checkout@v4
+        uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
 
@@ -50,17 +50,16 @@ jobs:
         # In branches where automatic updates work as post-submits, we don't want to run staleness
         # tests along with user changes.  Any stale files will be automatically fixed in a follow-up
         # commit.
-        uses: protocolbuffers/protobuf-ci/bazel@v4
+        uses: protocolbuffers/protobuf-ci/bazel@v5
         with:
-          version: 7.6.1 # Bazel version
+          version: 8.0.1 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: staleness
-          # TODO: Enable bzlmod once //python/dist is buildable.
           bash: >
             set -ex;
             echo "Please run ./regenerate_stale_files.sh to regenerate stale files";
             if [[ -z $COMMIT_TRIGGERED_RUN || -z $MAIN_RUN ]]; then
-            bazel query 'attr(tags, "staleness_test", //...)' --noenable_bzlmod | xargs bazel test $BAZEL_FLAGS;
+            bazel query 'attr(tags, "staleness_test", //...)' | xargs bazel test $BAZEL_FLAGS;
             else
-            bazel query 'attr(tags, "staleness_test", //...)' --noenable_bzlmod;
+            bazel query 'attr(tags, "staleness_test", //...)';
             fi

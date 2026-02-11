@@ -16,7 +16,6 @@
 #include <string>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -33,6 +32,7 @@
 #include "conformance/conformance.pb.h"
 #include "conformance_test.h"
 #include "conformance/test_protos/test_messages_edition2023.pb.h"
+#include "conformance/test_protos/test_messages_edition_unstable.pb.h"
 #include "editions/golden/test_messages_proto2_editions.pb.h"
 #include "editions/golden/test_messages_proto3_editions.pb.h"
 #include "google/protobuf/json/json.h"
@@ -51,6 +51,7 @@ using google::protobuf::Descriptor;
 using google::protobuf::FieldDescriptor;
 using google::protobuf::internal::WireFormatLite;
 using google::protobuf::util::NewTypeResolverForDescriptorPool;
+using protobuf_test_messages::edition_unstable::TestAllTypesEditionUnstable;
 using protobuf_test_messages::editions::TestAllTypesEdition2023;
 using protobuf_test_messages::proto2::TestAllTypesProto2;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
@@ -317,12 +318,15 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
         this, /*run_proto3_tests=*/true);
     BinaryAndJsonConformanceSuiteImpl<TestAllTypesProto2Editions>(
         this, /*run_proto3_tests=*/false);
-    RunDelimitedFieldTests();
+    if (!this->performance_) {
+      RunDelimitedFieldTests();
+      RunUnstableTests();
+      RunUtf8ValidationTests();
+    }
   }
 }
 
 void BinaryAndJsonConformanceSuite::RunDelimitedFieldTests() {
-  TestAllTypesEdition2023 prototype;
   SetTypeUrl(GetTypeUrl(TestAllTypesEdition2023::GetDescriptor()));
 
   RunValidProtobufTest<TestAllTypesEdition2023>(
@@ -373,6 +377,31 @@ void BinaryAndJsonConformanceSuite::RunDelimitedFieldTests() {
       absl::StrCat("ValidDelimitedExtension.NotGroupLike"), REQUIRED,
       group(122, field(1, WireFormatLite::WIRETYPE_VARINT, varint(99))),
       R"pb([protobuf_test_messages.editions.delimited_ext] { c: 99 })pb");
+}
+
+void BinaryAndJsonConformanceSuite::RunUnstableTests() {
+  SetTypeUrl(GetTypeUrl(TestAllTypesEditionUnstable::GetDescriptor()));
+
+  RunValidProtobufTest<TestAllTypesEditionUnstable>(
+      absl::StrCat("ValidBytes"), REQUIRED, len(13, "foo"),
+      R"pb(optional_bytes: "foo")pb");
+
+  RunValidProtobufTest<TestAllTypesEditionUnstable>(
+      absl::StrCat("ValidMap.Bytes"), REQUIRED,
+      len(15, absl::StrCat(len(1, "foo"), len(2, "barbaz"))),
+      R"pb(map_string_bytes { key: "foo" value: "barbaz" })pb");
+}
+
+void BinaryAndJsonConformanceSuite::RunUtf8ValidationTests() {
+  ExpectParseFailureForProto<TestAllTypesEdition2023>(
+      len(133, "\xA0\xB0\xC0\xD0"), "RejectInvalidUtf8.String.Extension",
+      RECOMMENDED);
+  RunValidBinaryProtobufTest<
+      TestAllTypesEdition2023>(absl::StrCat(
+                                   "AcceptInvalidUtf8.Bytes.Extension"),
+                               REQUIRED, len(134, "\xA0\xB0\xC0\xD0"),
+                               R"pb([protobuf_test_messages.editions
+                                         .extension_bytes]: "\xA0\xB0\xC0\xD0")pb");
 }
 
 void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
@@ -462,10 +491,9 @@ void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
 }
 
 template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::
-    ExpectParseFailureForProtoWithProtoVersion(const std::string& proto,
-                                               const std::string& test_name,
-                                               ConformanceLevel level) {
+void BinaryAndJsonConformanceSuite::ExpectParseFailureForProto(
+    const std::string& proto, const std::string& test_name,
+    ConformanceLevel level) {
   MessageType prototype;
   // We don't expect output, but if the program erroneously accepts the protobuf
   // we let it send its response as this.  We must not leave it unspecified.
@@ -479,20 +507,32 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
       absl::StrCat(setting.ConformanceLevelToString(level), ".",
                    setting.GetSyntaxIdentifier(), ".ProtobufInput.", test_name);
 
-  if (!suite_.RunTest(effective_test_name, request, &response)) {
+  if (!RunTest(effective_test_name, request, &response)) {
     return;
   }
 
   TestStatus test;
   test.set_name(effective_test_name);
   if (response.result_case() == ConformanceResponse::kParseError) {
-    suite_.ReportSuccess(test);
+    ReportSuccess(test);
   } else if (response.result_case() == ConformanceResponse::kSkipped) {
-    suite_.ReportSkip(test, request, response);
+    ReportSkip(test, request, response);
+  } else if (response.result_case() == ConformanceResponse::kRuntimeError) {
+    test.set_failure_message(
+        "Should have failed to parse, but raised an error instead.");
+    ReportFailure(test, level, request, response);
   } else {
     test.set_failure_message("Should have failed to parse, but didn't.");
-    suite_.ReportFailure(test, level, request, response);
+    ReportFailure(test, level, request, response);
   }
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::
+    ExpectParseFailureForProtoWithProtoVersion(const std::string& proto,
+                                               const std::string& test_name,
+                                               ConformanceLevel level) {
+  suite_.ExpectParseFailureForProto<MessageType>(proto, test_name, level);
 }
 
 // Expect that this precise protobuf will cause a parse error.
@@ -915,9 +955,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForType(
             ? ""
             : absl::StrCat(tag(field->number(), wire_type), values[i].second);
     MessageType test_message;
-    test_message.MergeFromString(expected_proto);
+    ABSL_CHECK(test_message.MergeFromString(expected_proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
 
     RunValidProtobufTest(
         absl::StrCat("ValidDataScalar", type_name, "[", i, "]"), REQUIRED,
@@ -933,14 +973,14 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForType(
   if (type != FieldDescriptor::TYPE_MESSAGE) {
     std::string proto;
     for (size_t i = 0; i < values.size(); i++) {
-      proto += absl::StrCat(tag(field->number(), wire_type), values[i].first);
+      absl::StrAppend(&proto, tag(field->number(), wire_type), values[i].first);
     }
     std::string expected_proto =
         absl::StrCat(tag(field->number(), wire_type), values.back().second);
     MessageType test_message;
-    test_message.MergeFromString(expected_proto);
+    ABSL_CHECK(test_message.MergeFromString(expected_proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
 
     RunValidProtobufTest(absl::StrCat("RepeatedScalarSelectsLast", type_name),
                          REQUIRED, proto, text);
@@ -965,21 +1005,23 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForType(
     std::string unpacked_proto_expected;
 
     for (size_t i = 0; i < values.size(); i++) {
-      default_proto_unpacked +=
-          absl::StrCat(tag(rep_field->number(), wire_type), values[i].first);
-      default_proto_unpacked_expected +=
-          absl::StrCat(tag(rep_field->number(), wire_type), values[i].second);
+      absl::StrAppend(&default_proto_unpacked,
+                      tag(rep_field->number(), wire_type), values[i].first);
+      absl::StrAppend(&default_proto_unpacked_expected,
+                      tag(rep_field->number(), wire_type), values[i].second);
       default_proto_packed += values[i].first;
       default_proto_packed_expected += values[i].second;
-      packed_proto_unpacked +=
-          absl::StrCat(tag(packed_field->number(), wire_type), values[i].first);
+      absl::StrAppend(&packed_proto_unpacked,
+                      tag(packed_field->number(), wire_type), values[i].first);
       packed_proto_packed += values[i].first;
       packed_proto_expected += values[i].second;
-      unpacked_proto_unpacked += absl::StrCat(
-          tag(unpacked_field->number(), wire_type), values[i].first);
+      absl::StrAppend(&unpacked_proto_unpacked,
+                      tag(unpacked_field->number(), wire_type),
+                      values[i].first);
       unpacked_proto_packed += values[i].first;
-      unpacked_proto_expected += absl::StrCat(
-          tag(unpacked_field->number(), wire_type), values[i].second);
+      absl::StrAppend(&unpacked_proto_expected,
+                      tag(unpacked_field->number(), wire_type),
+                      values[i].second);
     }
     default_proto_packed = absl::StrCat(
         tag(rep_field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
@@ -999,9 +1041,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForType(
                      delim(unpacked_proto_packed));
 
     MessageType test_message;
-    test_message.MergeFromString(default_proto_packed_expected);
+    ABSL_CHECK(test_message.MergeFromString(default_proto_packed_expected));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
 
     // Ensures both packed and unpacked data can be parsed.
     RunValidProtobufTest(
@@ -1050,9 +1092,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForType(
           absl::StrCat(tag(rep_field->number(), wire_type), values[i].second);
     }
     MessageType test_message;
-    test_message.MergeFromString(expected_proto);
+    ABSL_CHECK(test_message.MergeFromString(expected_proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
 
     RunValidProtobufTest(absl::StrCat("ValidDataRepeated", type_name), REQUIRED,
                          proto, text);
@@ -1091,8 +1133,8 @@ void BinaryAndJsonConformanceSuiteImpl<
   const FieldDescriptor* field =
       GetFieldForType(FieldDescriptor::TYPE_MESSAGE, false);
   for (size_t i = 0; i < values.size(); i++) {
-    proto += absl::StrCat(
-        tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+    absl::StrAppend(
+        &proto, tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
         values[i]);
   }
 
@@ -1130,9 +1172,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
         tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
         delim(absl::StrCat(key1_data, value1_data)));
     MessageType test_message;
-    test_message.MergeFromString(proto);
+    ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
     RunValidProtobufTest(absl::StrCat("ValidDataMap", key_type_name,
                                       value_type_name, ".Default"),
                          REQUIRED, proto, text);
@@ -1144,9 +1186,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
         tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
         delim(""));
     MessageType test_message;
-    test_message.MergeFromString(proto);
+    ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
     RunValidProtobufTest(absl::StrCat("ValidDataMap", key_type_name,
                                       value_type_name, ".MissingDefault"),
                          REQUIRED, proto, text);
@@ -1158,9 +1200,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
         tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
         delim(absl::StrCat(key2_data, value2_data)));
     MessageType test_message;
-    test_message.MergeFromString(proto);
+    ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
     RunValidProtobufTest(absl::StrCat("ValidDataMap", key_type_name,
                                       value_type_name, ".NonDefault"),
                          REQUIRED, proto, text);
@@ -1172,9 +1214,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
         tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
         delim(absl::StrCat(value2_data, key2_data)));
     MessageType test_message;
-    test_message.MergeFromString(proto);
+    ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
     RunValidProtobufTest(absl::StrCat("ValidDataMap", key_type_name,
                                       value_type_name, ".Unordered"),
                          REQUIRED, proto, text);
@@ -1190,9 +1232,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
         delim(absl::StrCat(key2_data, value2_data)));
     std::string proto = absl::StrCat(proto1, proto2);
     MessageType test_message;
-    test_message.MergeFromString(proto2);
+    ABSL_CHECK(test_message.MergeFromString(proto2));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
     RunValidProtobufTest(absl::StrCat("ValidDataMap", key_type_name,
                                       value_type_name, ".DuplicateKey"),
                          REQUIRED, proto, text);
@@ -1204,9 +1246,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
         tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
         delim(absl::StrCat(key1_data, key2_data, value2_data)));
     MessageType test_message;
-    test_message.MergeFromString(proto);
+    ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
     RunValidProtobufTest(
         absl::StrCat("ValidDataMap", key_type_name, value_type_name,
                      ".DuplicateKeyInMapEntry"),
@@ -1219,9 +1261,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
         tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
         delim(absl::StrCat(key2_data, value1_data, value2_data)));
     MessageType test_message;
-    test_message.MergeFromString(proto);
+    ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
     RunValidProtobufTest(
         absl::StrCat("ValidDataMap", key_type_name, value_type_name,
                      ".DuplicateValueInMapEntry"),
@@ -1262,9 +1304,9 @@ void BinaryAndJsonConformanceSuiteImpl<
       delim(absl::StrCat(key_data, value2_data)));
   std::string proto = absl::StrCat(proto1, proto2);
   MessageType test_message;
-  test_message.MergeFromString(proto2);
+  ABSL_CHECK(test_message.MergeFromString(proto2));
   std::string text;
-  TextFormat::PrintToString(test_message, &text);
+  ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
   RunValidProtobufTest("ValidDataMap.STRING.MESSAGE.MergeValue", REQUIRED,
                        proto, text);
 }
@@ -1287,9 +1329,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForOneofType(
     // Tests oneof with default value.
     const std::string& proto = default_value;
     MessageType test_message;
-    test_message.MergeFromString(proto);
+    ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
 
     RunValidProtobufTest(
         absl::StrCat("ValidDataOneof", type_name, ".DefaultValue"), REQUIRED,
@@ -1303,9 +1345,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForOneofType(
     // Tests oneof with non-default value.
     const std::string& proto = non_default_value;
     MessageType test_message;
-    test_message.MergeFromString(proto);
+    ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
 
     RunValidProtobufTest(
         absl::StrCat("ValidDataOneof", type_name, ".NonDefaultValue"), REQUIRED,
@@ -1320,9 +1362,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForOneofType(
     const std::string proto = absl::StrCat(default_value, non_default_value);
     const std::string& expected_proto = non_default_value;
     MessageType test_message;
-    test_message.MergeFromString(expected_proto);
+    ABSL_CHECK(test_message.MergeFromString(expected_proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
 
     RunValidProtobufTest(absl::StrCat("ValidDataOneof", type_name,
                                       ".MultipleValuesForSameField"),
@@ -1346,9 +1388,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForOneofType(
     const std::string proto = absl::StrCat(other_value, non_default_value);
     const std::string& expected_proto = non_default_value;
     MessageType test_message;
-    test_message.MergeFromString(expected_proto);
+    ABSL_CHECK(test_message.MergeFromString(expected_proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
 
     RunValidProtobufTest(absl::StrCat("ValidDataOneof", type_name,
                                       ".MultipleValuesForDifferentField"),
@@ -1395,9 +1437,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestMergeOneofMessage() {
       delim(merged_data));
 
   MessageType test_message;
-  test_message.MergeFromString(expected_proto);
+  ABSL_CHECK(test_message.MergeFromString(expected_proto));
   std::string text;
-  TextFormat::PrintToString(test_message, &text);
+  ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
   RunValidProtobufTest("ValidDataOneof.MESSAGE.Merge", REQUIRED, proto, text);
   RunValidBinaryProtobufTest("ValidDataOneofBinary.MESSAGE.Merge", RECOMMENDED,
                              proto, expected_proto);
@@ -1412,6 +1454,41 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestIllegalTags() {
     name.back() += i;
     ExpectParseFailureForProto(nullfield[i], name, REQUIRED);
   }
+
+  // Reused for a few cases: this is a single byte tag for a field number 1
+  // varint but where the byte has the continuation bit set, so that we can
+  // easily construct longer tags.
+  std::string tag_with_continuation_bit =
+      tag(1, WireFormatLite::WIRETYPE_VARINT);
+  assert(tag_with_continuation_bit.size() == 1);
+  tag_with_continuation_bit[0] |= 0b10000000;
+
+  // A varint where field number is far out of range of
+  // maximum legal field number. The lower 5 bytes of the varint do look like a
+  // well-formed tag for field number 1.
+  ExpectParseFailureForProto(
+      absl::StrCat(tag_with_continuation_bit, "\x80\x80\x80\x80\x80\x0F",
+                   varint(1234)),
+      "BadTag_FieldNumberTooHigh", REQUIRED);
+
+  // A 5-byte tag varint where the value is above UINT32_MAX (bit 35 is set)
+  ExpectParseFailureForProto(
+      absl::StrCat(tag_with_continuation_bit, "\x80\x80\x80\x40", varint(1234)),
+      "BadTag_FieldNumberSlightlyTooHigh", REQUIRED);
+
+  // A tag where the varint is more than 5 bytes but only because it is an
+  // overlong varint, so the decoded value is still below UINT32_MAX.
+  ExpectParseFailureForProto(
+      absl::StrCat(tag_with_continuation_bit, "\x80\x80\x80\x80\x80\x80\x80",
+                   std::string("\0", 1), varint(1234)),
+      "BadTag_OverlongVarint", REQUIRED);
+
+  // An overlong varint that is even more than 10 bytes.
+  ExpectParseFailureForProto(
+      absl::StrCat(tag_with_continuation_bit,
+                   "\x80\x80\x80\x80\x80\x80\x80\x80\x80\x80\x80",
+                   std::string("\0", 1), varint(1234)),
+      "BadTag_VarintMoreThanTenBytes", REQUIRED);
 }
 
 template <typename MessageType>
@@ -1481,6 +1558,29 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownWireType() {
 }
 
 template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestInvalidUtf8String() {
+  if (run_proto3_tests_) {
+    ExpectParseFailureForProto(len(14, "\xA0\xB0\xC0\xD0"),
+                               "RejectInvalidUtf8.String.Singular",
+                               RECOMMENDED);
+    ExpectParseFailureForProto(len(44, "\xA0\xB0\xC0\xD0"),
+                               "RejectInvalidUtf8.String.Repeated",
+                               RECOMMENDED);
+    ExpectParseFailureForProto(len(113, "\xA0\xB0\xC0\xD0"),
+                               "RejectInvalidUtf8.String.Oneof", RECOMMENDED);
+    ExpectParseFailureForProto(
+        len(69, absl::StrCat(len(1, "\xA0\xB0\xC0\xD0"), len(2, "foo"))),
+        "RejectInvalidUtf8.String.MapKey", RECOMMENDED);
+    ExpectParseFailureForProto(
+        len(69, absl::StrCat(len(1, "foo"), len(2, "\xA0\xB0\xC0\xD0"))),
+        "RejectInvalidUtf8.String.MapValue", RECOMMENDED);
+  } else {
+    // TODO - Once conformance tests can express failures that are
+    // not expected to be fixed, add proto2 coverage here.
+  }
+}
+
+template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestOneofMessage() {
   MessageType message;
   message.set_oneof_uint32(0);
@@ -1520,7 +1620,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestOneofMessage() {
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownMessage() {
   MessageType message;
-  message.ParseFromString("\xA8\x1F\x01");
+  ABSL_CHECK(message.ParseFromString("\xA8\x1F\x01"));
   RunValidBinaryProtobufTest("UnknownVarint", REQUIRED,
                              message.SerializeAsString());
 }
@@ -1651,6 +1751,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
     TestIllegalTags();
     TestUnmatchedGroup();
     TestUnknownWireType();
+    TestInvalidUtf8String();
 
     int64_t kInt64Min = -9223372036854775808ULL;
     int64_t kInt64Max = 9223372036854775807ULL;
@@ -2381,6 +2482,12 @@ void BinaryAndJsonConformanceSuiteImpl<
   // Parser reject non-numeric string values.
   ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumeric", REQUIRED,
                             R"({"optionalInt32": "12abc"})");
+  ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumericSpace",
+                            REQUIRED, R"({"optionalInt32": "12 34"})");
+  ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumericComma",
+                            REQUIRED, R"({"optionalInt32": "12,34"})");
+  ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumericUnicode",
+                            REQUIRED, R"({"optionalInt32": "12谷歌34"})");
   ExpectParseFailureForJson("Int32FieldStringValueNonNumeric", REQUIRED,
                             R"({"optionalInt32": "abc"})");
 
@@ -2536,6 +2643,12 @@ void BinaryAndJsonConformanceSuiteImpl<
                             R"({"optionalFloat": "12abc"})");
   ExpectParseFailureForJson("FloatFieldStringValueNonNumeric", REQUIRED,
                             R"({"optionalFloat": "abc"})");
+  ExpectParseFailureForJson("FloatFieldStringValuePartiallyNumericSpace",
+                            REQUIRED, R"({"optionalFloat": "12 34"})");
+  ExpectParseFailureForJson("FloatFieldStringValuePartiallyNumericComma",
+                            REQUIRED, R"({"optionalFloat": "12,34"})");
+  ExpectParseFailureForJson("FloatFieldStringValuePartiallyNumericUnicode",
+                            REQUIRED, R"({"optionalFloat": "12谷歌34"})");
 
   // Double fields.
   RunValidJsonTest("DoubleFieldMinPositiveValue", REQUIRED,
@@ -3619,6 +3732,22 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForAny() {
         "optionalAny": null
       })",
                    R"(
+      )");
+
+  // google.protobuf.Empty packed into an Any, implementations must accept it
+  // without the "value" field set. This also confirms that what they round trip
+  // does not have `"value":{}` set on it, since the test harness uses the C++
+  // JSON parser which will reject it.
+  RunValidJsonTest("AnyEmpty", REQUIRED,
+                   R"({
+        "optionalAny": {
+          "@type": "type.googleapis.com/google.protobuf.Empty"
+        }
+      })",
+                   R"(
+        optional_any: {
+          [type.googleapis.com/google.protobuf.Empty] {}
+        }
       )");
 }
 

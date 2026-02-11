@@ -52,16 +52,16 @@ void TypeConversions(Context& ctx, const EnumDescriptor& desc) {
       ctx.Emit(
           R"rs(
           impl $pbr$::CppMapTypeConversions for $name$ {
-              fn get_prototype() -> $pbr$::MapValue {
+              fn get_prototype() -> $pbr$::FfiMapValue {
                   Self::to_map_value(Self::default())
               }
 
-              fn to_map_value(self) -> $pbr$::MapValue {
-                  $pbr$::MapValue::make_u32(self.0 as u32)
+              fn to_map_value(self) -> $pbr$::FfiMapValue {
+                  $pbr$::FfiMapValue::make_u32(self.0 as u32)
               }
 
-              unsafe fn from_map_value<'a>(value: $pbr$::MapValue) -> $pb$::View<'a, Self> {
-                  debug_assert_eq!(value.tag, $pbr$::MapValueTag::U32);
+              unsafe fn from_map_value<'a>(value: $pbr$::FfiMapValue) -> $pb$::View<'a, Self> {
+                  debug_assert_eq!(value.tag, $pbr$::FfiMapValueTag::U32);
                   $name$(unsafe { value.val.u as i32 })
               }
           }
@@ -277,9 +277,6 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
         type View<'a> = $name$;
       }
 
-      impl $pb$::Proxy<'_> for $name$ {}
-      impl $pb$::ViewProxy<'_> for $name$ {}
-
       impl $pb$::AsView for $name$ {
         type Proxied = $name$;
 
@@ -314,28 +311,29 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
             {"name", name},
         },
         R"rs(
-      unsafe impl $pb$::ProxiedInRepeated for $name$ {
+      unsafe impl $pb$::Singular for $name$ {
         fn repeated_new(_private: $pbi$::Private) -> $pb$::Repeated<Self> {
           $pbr$::new_enum_repeated()
         }
 
         unsafe fn repeated_free(_private: $pbi$::Private, f: &mut $pb$::Repeated<Self>) {
-          $pbr$::free_enum_repeated(f)
+          unsafe { $pbr$::free_enum_repeated(f) }
         }
 
-        fn repeated_len(r: $pb$::View<$pb$::Repeated<Self>>) -> usize {
+        fn repeated_len(_private: $pbi$::Private, r: $pb$::View<$pb$::Repeated<Self>>) -> usize {
           $pbr$::cast_enum_repeated_view(r).len()
         }
 
-        fn repeated_push(r: $pb$::Mut<$pb$::Repeated<Self>>, val: impl $pb$::IntoProxied<$name$>) {
+        fn repeated_push(_private: $pbi$::Private, r: $pb$::Mut<$pb$::Repeated<Self>>, val: impl $pb$::IntoProxied<$name$>) {
           $pbr$::cast_enum_repeated_mut(r).push(val.into_proxied($pbi$::Private))
         }
 
-        fn repeated_clear(r: $pb$::Mut<$pb$::Repeated<Self>>) {
+        fn repeated_clear(_private: $pbi$::Private, r: $pb$::Mut<$pb$::Repeated<Self>>) {
           $pbr$::cast_enum_repeated_mut(r).clear()
         }
 
         unsafe fn repeated_get_unchecked(
+            _private: $pbi$::Private,
             r: $pb$::View<$pb$::Repeated<Self>>,
             index: usize,
         ) -> $pb$::View<$name$> {
@@ -349,6 +347,7 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
         }
 
         unsafe fn repeated_set_unchecked(
+            _private: $pbi$::Private,
             r: $pb$::Mut<$pb$::Repeated<Self>>,
             index: usize,
             val: impl $pb$::IntoProxied<$name$>,
@@ -361,6 +360,7 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
         }
 
         fn repeated_copy_from(
+            _private: $pbi$::Private,
             src: $pb$::View<$pb$::Repeated<Self>>,
             dest: $pb$::Mut<$pb$::Repeated<Self>>,
         ) {
@@ -369,6 +369,7 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
         }
 
         fn repeated_reserve(
+            _private: $pbi$::Private,
             r: $pb$::Mut<$pb$::Repeated<Self>>,
             additional: usize,
         ) {

@@ -68,6 +68,7 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/importer.h"
@@ -336,10 +337,12 @@ void CommandLineInterface::GetTransitiveDependencies(
   for (int i = 0; i < file->option_dependency_count(); ++i) {
     const FileDescriptor* dep =
         file->pool()->FindFileByName(file->option_dependency_name(i));
-    ABSL_CHECK(dep != nullptr)
+    ABSL_CHECK(dep != nullptr || !descriptor_set_in_names_.empty())
         << "Option dependency " << file->option_dependency_name(i)
         << " not found in pool.  This should never happen.";
-    GetTransitiveDependencies(dep, already_seen, output, options);
+    if (dep != nullptr) {
+      GetTransitiveDependencies(dep, already_seen, output, options);
+    }
   }
 
   // Add this file.
@@ -841,9 +844,9 @@ void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
                       new_metadata);
   }
   if (is_text_format) {
-    TextFormat::PrintToString(new_metadata, encoded_data);
+    ABSL_CHECK(TextFormat::PrintToString(new_metadata, encoded_data));
   } else {
-    new_metadata.SerializeToString(encoded_data);
+    ABSL_CHECK(new_metadata.SerializeToString(encoded_data));
   }
 }
 
@@ -1037,6 +1040,98 @@ bool HasReservedFieldNumber(const FieldDescriptor* field) {
     return true;
   }
   return false;
+}
+
+bool HasDebugRedactBehavior(const EnumDescriptor& enm) {
+  for (int i = 0; i < enm.value_count(); ++i) {
+    const EnumValueDescriptor* value = enm.value(i);
+    if (value->options().debug_redact()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool HasDebugRedactBehavior(
+    const Descriptor& desc,
+    absl::flat_hash_map<const Descriptor*, bool>& visited);
+
+bool HasDebugRedactBehavior(
+    const FieldDescriptor& field,
+    absl::flat_hash_map<const Descriptor*, bool>& visited) {
+  // We do not check field.options().debug_redact() here because that only
+  // controls redaction of that specific field.  The problematic case is enum
+  // values, which can turn *other* custom options into redaction markers.
+  if (field.enum_type() != nullptr &&
+      HasDebugRedactBehavior(*field.enum_type())) {
+    return true;
+  }
+  if (field.message_type() != nullptr &&
+      HasDebugRedactBehavior(*field.message_type(), visited)) {
+    return true;
+  }
+  return false;
+}
+
+bool HasDebugRedactBehavior(
+    const Descriptor& desc,
+    absl::flat_hash_map<const Descriptor*, bool>& visited) {
+  auto result = visited.emplace(&desc, false);
+  if (!result.second) {
+    return result.first->second;
+  }
+  for (int i = 0; i < desc.field_count(); ++i) {
+    if (HasDebugRedactBehavior(*desc.field(i), visited)) {
+      visited[&desc] = true;
+      return true;
+    }
+  }
+  return false;
+}
+
+// Look for any enums with values marked debug_redact within this message
+// schema.  These can be used to mark fields that need to be redacted in debug
+// string APIs, but are only discoverable via reflection that doesn't force
+// linkage.
+absl::optional<std::string> FindDebugRedactMarker(const FileDescriptor& desc) {
+  absl::optional<std::string> debug_redact_value;
+  absl::flat_hash_map<const Descriptor*, bool> visited;
+  google::protobuf::internal::VisitDescriptors(
+      desc, [&debug_redact_value, &visited](const FieldDescriptor& field) {
+        if (field.is_extension() && HasDebugRedactBehavior(field, visited)) {
+          debug_redact_value = std::string(field.full_name());
+        }
+      });
+  return debug_redact_value;
+}
+
+bool ValidateOptionImports(const FileDescriptor& file,
+                           const DescriptorPool& pool,
+                           DescriptorPool::ErrorCollector* printer) {
+  for (int i = 0; i < file.option_dependency_count(); ++i) {
+    const FileDescriptor* dep =
+        pool.FindFileByName(file.option_dependency_name(i));
+    if (dep == nullptr) {
+      // If we don't have the dependency we can't validate it, assume it's ok.
+      continue;
+    }
+    absl::optional<std::string> debug_redact_value =
+        FindDebugRedactMarker(*dep);
+    if (debug_redact_value.has_value()) {
+      printer->RecordError(
+          file.name(), "", nullptr, DescriptorPool::ErrorCollector::OPTION_NAME,
+          absl::StrCat(
+              "Option dependency ", dep->name(), " contains a custom option ",
+              *debug_redact_value,
+              " marked debug_redact, which is used to mark fields that need to "
+              "be redacted in debug string APIs. Switch to a regular import or "
+              "remove the debug_redact annotation to avoid potentially leaking "
+              "sensitive data."));
+      return false;
+    }
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -1270,9 +1365,9 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   descriptor_pool->EnforceWeakDependencies(true);
-  descriptor_pool->EnforceOptionDependencies(true);
   descriptor_pool->EnforceSymbolVisibility(true);
   descriptor_pool->EnforceNamingStyle(true);
+  descriptor_pool->EnforceFeatureSupportValidation(true);
 
   if (!SetupFeatureResolution(*descriptor_pool)) {
     return EXIT_FAILURE;
@@ -1294,6 +1389,11 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   bool validation_error = false;  // Defer exiting so we log more warnings.
 
   for (auto& file : parsed_files) {
+    if (!ValidateOptionImports(*file, *descriptor_pool,
+                               error_collector.get())) {
+      validation_error = true;
+    }
+
     google::protobuf::internal::VisitDescriptors(
         *file, [&](const FieldDescriptor& field) {
           if (HasReservedFieldNumber(&field)) {
@@ -1503,8 +1603,8 @@ PopulateSingleSimpleDescriptorDatabase(const std::string& descriptor_set_name) {
     return nullptr;
   }
 
-  std::unique_ptr<SimpleDescriptorDatabase> database{
-      new SimpleDescriptorDatabase()};
+  std::unique_ptr<SimpleDescriptorDatabase> database =
+      std::make_unique<SimpleDescriptorDatabase>();
 
   for (int j = 0; j < file_descriptor_set.file_size(); j++) {
     FileDescriptorProto previously_added_file_descriptor_proto;
@@ -1564,11 +1664,11 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
                         << ProtocMinimumEdition() << ".";
         return false;
       }
-      if (output.generator->GetMaximumEdition() != ProtocMaximumEdition()) {
+      if (output.generator->GetMaximumEdition() > ProtocMaximumEdition()) {
         ABSL_LOG(ERROR) << "Built-in generator " << output.name
                         << " specifies a maximum edition "
                         << output.generator->GetMaximumEdition()
-                        << " which is not the protoc maximum "
+                        << " which is later than the protoc maximum "
                         << ProtocMaximumEdition() << ".";
         return false;
       }
@@ -3116,6 +3216,15 @@ bool CommandLineInterface::WriteDescriptorSet(
         const FileDescriptor* dependency = file->dependency(j);
         // if the dependency isn't in parsed files, mark it as already seen
         if (to_output.find(dependency) == to_output.end()) {
+          already_seen.insert(dependency);
+        }
+      }
+      for (int j = 0; j < file->option_dependency_count(); j++) {
+        const FileDescriptor* dependency =
+            file->pool()->FindFileByName(file->option_dependency_name(j));
+        // if the dependency isn't in parsed files, mark it as already seen
+        if (dependency != nullptr &&
+            to_output.find(dependency) == to_output.end()) {
           already_seen.insert(dependency);
         }
       }

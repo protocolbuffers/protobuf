@@ -5,21 +5,21 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load(
-    "//bazel:upb_minitable_proto_library.bzl",
+    "//upb/bazel:copts.bzl",
+    "UPB_DEFAULT_CPPOPTS",
+)
+load(
+    "//upb/bazel:upb_minitable_proto_library.bzl",
     "upb_minitable_proto_library",
 )
 load(
-    "//bazel:upb_proto_library.bzl",
+    "//upb/bazel:upb_proto_library.bzl",
     "upb_c_proto_library",
     "upb_proto_reflection_library",
-)
-load(
-    "//upb/bazel:build_defs.bzl",
-    "UPB_DEFAULT_CPPOPTS",
 )
 
 package(default_applicable_licenses = ["//:license"])
@@ -90,6 +90,11 @@ proto_library(
     name = "editions_test_proto",
     testonly = 1,
     srcs = ["editions_test.proto"],
+    option_deps = [
+        ":custom_options_proto",
+        ":custom_options_unlinked_proto",
+    ],
+    deps = ["//:descriptor_proto"],
 )
 
 upb_c_proto_library(
@@ -98,10 +103,39 @@ upb_c_proto_library(
     deps = [":editions_test_proto"],
 )
 
+upb_minitable_proto_library(
+    name = "editions_test_upb_minitable_proto",
+    testonly = 1,
+    visibility = ["//upb:__subpackages__"],
+    deps = [":editions_test_proto"],
+)
+
 upb_proto_reflection_library(
     name = "editions_test_upb_proto_reflection",
     testonly = 1,
     deps = [":editions_test_proto"],
+)
+
+proto_library(
+    name = "test_multiple_files_proto",
+    testonly = 1,
+    srcs = [
+        "test_multiple_files.proto",
+        "test_multiple_files2.proto",
+    ],
+)
+
+upb_c_proto_library(
+    name = "test_multiple_files_upb_c_proto",
+    testonly = 1,
+    deps = [":test_multiple_files_proto"],
+)
+
+upb_minitable_proto_library(
+    name = "test_multiple_files_upb_minitable_proto",
+    testonly = 1,
+    visibility = ["//upb:__subpackages__"],
+    deps = [":test_multiple_files_proto"],
 )
 
 proto_library(
@@ -167,9 +201,9 @@ cc_library(
     deps = [
         "//upb/base",
         "//upb/mem",
-        "//upb/message",
         "//upb/mini_descriptor",
         "//upb/mini_table",
+        "//upb/mini_table:internal",
         "//upb/port",
     ],
 )
@@ -192,11 +226,16 @@ cc_test(
     srcs = ["editions_test.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
+        ":custom_options_upb_c_proto",
         ":editions_test_upb_c_proto",
         ":editions_test_upb_proto_reflection",
         "//upb/base",
         "//upb/mem",
+        "//upb/message",
+        "//upb/mini_table",
+        "//upb/port",
         "//upb/reflection",
+        "//upb/reflection:descriptor_upb_proto",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -253,6 +292,7 @@ cc_test(
         "//upb/mem",
         "//upb/message",
         "//upb/port",
+        "//upb/wire",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -305,6 +345,39 @@ proto_library(
     deps = [":empty_srcs_3_proto"],
 )
 
+proto_library(
+    name = "custom_options_unlinked_proto",
+    testonly = 1,
+    srcs = ["custom_options_unlinked.proto"],
+    deps = ["//:descriptor_proto"],
+)
+
+proto_library(
+    name = "custom_options_proto",
+    testonly = 1,
+    srcs = ["custom_options.proto"],
+    deps = ["//:descriptor_proto"],
+)
+
+upb_c_proto_library(
+    name = "custom_options_upb_c_proto",
+    testonly = 1,
+    deps = [":custom_options_proto"],
+)
+
+upb_minitable_proto_library(
+    name = "custom_options_upb_minitable_proto",
+    testonly = 1,
+    visibility = ["//upb:__subpackages__"],
+    deps = [":custom_options_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "custom_options_upb_proto_reflection",
+    testonly = 1,
+    deps = [":custom_options_proto"],
+)
+
 upb_minitable_proto_library(
     name = "test_import_empty_srcs_upb_minitable_proto",
     testonly = 1,
@@ -354,6 +427,9 @@ filegroup(
     srcs = glob(
         [
             "**/*.proto",
+        ],
+        exclude = [
+            "custom_options_unlinked.proto",
         ],
     ),
     visibility = ["//upb:__pkg__"],

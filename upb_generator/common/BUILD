@@ -5,7 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -29,6 +29,7 @@ cc_library(
     hdrs = ["cpp_to_upb_def.h"],
     visibility = [
         "//hpb_generator:__subpackages__",
+        "//java/com/google/protobuf/interop:__subpackages__",
         "//net/proto2/interop:__subpackages__",
         "//src/google/protobuf/compiler/interop:__subpackages__",
         "//third_party/kotlin/protobuf/generator/native:__subpackages__",

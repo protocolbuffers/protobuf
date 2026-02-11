@@ -161,6 +161,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
   }
 
   @Override
+  @CanIgnoreReturnValue
   public boolean addAll(Collection<? extends String> c) {
     // The default implementation of AbstractCollection.addAll(Collection)
     // delegates to add(Object). This implementation instead delegates to
@@ -170,6 +171,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
   }
 
   @Override
+  @CanIgnoreReturnValue
   public boolean addAll(int index, Collection<? extends String> c) {
     ensureIsMutable();
     // When copying from another LazyStringList, directly copy the underlying
@@ -182,6 +184,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
   }
 
   @Override
+  @CanIgnoreReturnValue
   public boolean addAllByteString(Collection<? extends ByteString> values) {
     ensureIsMutable();
     boolean ret = list.addAll(values);
@@ -190,6 +193,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
   }
 
   @Override
+  @CanIgnoreReturnValue
   public boolean addAllByteArray(Collection<byte[]> c) {
     ensureIsMutable();
     boolean ret = list.addAll(c);
@@ -198,6 +202,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
   }
 
   @Override
+  @CanIgnoreReturnValue
   public String remove(int index) {
     ensureIsMutable();
     Object o = list.remove(index);
@@ -238,6 +243,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
   }
 
   @Override
+  @CanIgnoreReturnValue
   public String set(int index, String s) {
     ensureIsMutable();
     Object o = list.set(index, s);
@@ -254,11 +260,13 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     setAndReturn(index, s);
   }
 
+  @CanIgnoreReturnValue
   private Object setAndReturn(int index, ByteString s) {
     ensureIsMutable();
     return list.set(index, s);
   }
 
+  @CanIgnoreReturnValue
   private Object setAndReturn(int index, byte[] s) {
     ensureIsMutable();
     return list.set(index, s);

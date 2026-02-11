@@ -28,12 +28,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: protocolbuffers/protobuf-ci/checkout@v4
+        uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Package extension
-        uses: protocolbuffers/protobuf-ci/bazel@v4
+        uses: protocolbuffers/protobuf-ci/bazel@v5
         with:
           version: 8.0.1 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -54,11 +54,9 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - version: "8.1"
-            continuous-only: true
           - version: "8.2"
             continuous-only: true
-          - version: "8.3"
+          - version: "8.5"
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Build ${{ matrix.version }}
     runs-on: ubuntu-latest
     steps:
@@ -69,9 +67,9 @@ jobs:
 
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/docker@v4
+        uses: protocolbuffers/protobuf-ci/docker@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-extension:${{ matrix.version }}-a48f26c08d9a803dd0177dda63563f6ea6f7b2d4
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-extension:${{ matrix.version }}-f1c24ed6acfbf6ec709b0de2f702209c9d3ac659
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           skip-staleness-check: true
           command: protobuf-*.tgz

@@ -9,10 +9,10 @@ Implementation of proto_library rule.
 """
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@proto_bazel_features//:features.bzl", "bazel_features")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
+load("//bazel/flags:flags.bzl", "get_flag_value")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
 DIRECT_DEPS_FLAG_TEMPLATE = (
@@ -113,6 +113,7 @@ def _proto_library_impl(ctx):
             default_runfiles = ctx.runfiles(),  # empty
             data_runfiles = data_runfiles,
         ),
+        OutputGroupInfo(_validation = ctx.attr._authenticity_validation[OutputGroupInfo]._validation),
     ]
 
 def _process_srcs(ctx, srcs, import_prefix, strip_import_prefix):
@@ -176,12 +177,15 @@ def _write_descriptor_set(ctx, proto_info, deps, option_deps, exports, descripto
 
     args = ctx.actions.args()
 
-    if ctx.attr._experimental_proto_descriptor_sets_include_source_info[BuildSettingInfo].value:
+    if get_flag_value(ctx, "experimental_proto_descriptor_sets_include_source_info"):
         args.add("--include_source_info")
     args.add("--retain_options")
 
-    strict_deps = ctx.attr._strict_proto_deps[BuildSettingInfo].value
-    if strict_deps:
+    strict_deps = get_flag_value(ctx, "strict_proto_deps")
+
+    # Need to check for off because the starlark flag value doesn't have the sneaky
+    # mapping from "off" to false.
+    if strict_deps and strict_deps != "off":
         if proto_info.direct_sources:
             # Direct sources can be option imported in addition to `deps`.
             strict_importable_sources = depset(
@@ -222,8 +226,11 @@ def _write_descriptor_set(ctx, proto_info, deps, option_deps, exports, descripto
         # Set `-option_dependencies_violation_msg=`
         args.add(ctx.label, format = OPTION_DEPS_FLAG_TEMPLATE)
 
-    strict_imports = ctx.attr._strict_public_imports[BuildSettingInfo].value
-    if strict_imports:
+    strict_imports = get_flag_value(ctx, "strict_public_imports")
+
+    # Need to check for off because the starlark flag value doesn't have the sneaky
+    # mapping from "off" to false.
+    if strict_imports and strict_imports != "OFF":
         public_import_protos = depset(transitive = [export.check_deps_sources for export in exports])
         if not public_import_protos:
             # This line is necessary to trigger the check.
@@ -248,7 +255,7 @@ def _write_descriptor_set(ctx, proto_info, deps, option_deps, exports, descripto
             mnemonic = "GenProtoDescriptorSet",
             progress_message = "Generating Descriptor Set proto_library %{label}",
             proto_compiler = ctx.executable._proto_compiler,
-            protoc_opts = ctx.fragments.proto.experimental_protoc_opts,
+            protoc_opts = get_flag_value(ctx, "protocopt"),
             plugin = None,
         )
 
@@ -298,6 +305,9 @@ See documentation in <code>proto_info.bzl</code>.
 </ul>
 """ + _extra_doc,
     attrs = {
+        "_protocopt": attr.label(
+            default = "//bazel/flags/cc:protocopt",
+        ),
         "srcs": attr.label_list(
             allow_files = [".proto", ".protodevel"],
             flags = ["DIRECT_COMPILE_TIME_INPUT"],
@@ -375,17 +385,31 @@ List of files containing extension declarations. This attribute is only allowed
 for use with MessageSet.
 """,
         ),
+        "_authenticity_validation": attr.label(
+            default = "//bazel/private/oss/toolchains/prebuilt:authenticity_validation",
+            doc = "Validate that the binary registered on the toolchain is produced by protobuf team",
+        ),
         # buildifier: disable=attr-license (calling attr.license())
         "licenses": attr.license() if hasattr(attr, "license") else attr.string_list(),
-        "_experimental_proto_descriptor_sets_include_source_info": attr.label(
+        "_experimental_proto_descriptor_sets_include_source_info_native": attr.label(
             default = "//bazel/private:experimental_proto_descriptor_sets_include_source_info",
         ),
-        "_strict_proto_deps": attr.label(
+        "_experimental_proto_descriptor_sets_include_source_info": attr.label(
+            default = "//bazel/flags:experimental_proto_descriptor_sets_include_source_info",
+        ),
+        "_strict_proto_deps_native": attr.label(
             default =
                 "//bazel/private:strict_proto_deps",
         ),
-        "_strict_public_imports": attr.label(
+        "_strict_proto_deps": attr.label(
+            default =
+                "//bazel/flags:strict_proto_deps",
+        ),
+        "_strict_public_imports_native": attr.label(
             default = "//bazel/private:strict_public_imports",
+        ),
+        "_strict_public_imports": attr.label(
+            default = "//bazel/flags:strict_public_imports",
         ),
     } | toolchains.if_legacy_toolchain({
         "_proto_compiler": attr.label(

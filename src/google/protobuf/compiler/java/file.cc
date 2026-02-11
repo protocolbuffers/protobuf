@@ -122,7 +122,8 @@ void CollectExtensions(const FileDescriptor& file, const Options& options,
                        FieldDescriptorSet* optional_extensions) {
   FileDescriptorProto file_proto = StripSourceRetentionOptions(file);
   std::string file_data;
-  file_proto.SerializeToString(&file_data);
+  // TODO: Remove this suppression.
+  (void)file_proto.SerializeToString(&file_data);
   const Descriptor* file_proto_desc = file.pool()->FindMessageTypeByName(
       file_proto.GetDescriptor()->full_name());
 
@@ -174,7 +175,8 @@ void CollectExtensions(const FileDescriptor& file, const Options& options,
 // with a tail call. This inserts the sequence call-next-method,
 // end this one, begin-next-method as needed.
 void MaybeRestartJavaMethod(io::Printer* printer, int* bytecode_estimate,
-                            int* method_num, const char* chain_statement,
+                            absl::string_view method_name, int* method_num,
+                            const char* chain_statement,
                             const char* method_decl) {
   // The goal here is to stay under 64K bytes of jvm bytecode/method,
   // since otherwise we hit a hardcoded limit in the jvm and javac will
@@ -184,10 +186,12 @@ void MaybeRestartJavaMethod(io::Printer* printer, int* bytecode_estimate,
 
   if ((*bytecode_estimate) > bytesPerMethod) {
     ++(*method_num);
-    printer->Print(chain_statement, "method_num", absl::StrCat(*method_num));
+    printer->Print(chain_statement, "method_name", method_name, "method_num",
+                   absl::StrCat(*method_num));
     printer->Outdent();
     printer->Print("}\n");
-    printer->Print(method_decl, "method_num", absl::StrCat(*method_num));
+    printer->Print(method_decl, "method_name", method_name, "method_num",
+                   absl::StrCat(*method_num));
     printer->Indent();
     *bytecode_estimate = 0;
   }
@@ -261,6 +265,18 @@ bool FileGenerator::Validate(std::string* error) {
         << "java_outer_classname option to specify a different outer class "
         << "name for the .proto file to be safe.";
   }
+
+  google::protobuf::internal::VisitDescriptors(*file_, [&](const EnumDescriptor& enm) {
+    if (enm.containing_type() != nullptr &&
+        enm.containing_type()->name() == enm.name()) {
+      absl::StrAppend(
+          error, file_->name(),
+          ": Cannot generate Java output because the enum \"", enm.full_name(),
+          "\" would be an enum nested inside a class with the same name, "
+          "which is not allowed in the Java language. "
+          "Please rename either the enum or containing message name.\n");
+    }
+  });
 
   // Check that no field is a closed enum with implicit presence. For normal
   // cases this will be rejected by protoc before the generator is invoked, but
@@ -443,13 +459,14 @@ void FileGenerator::Generate(io::Printer* printer) {
     int bytecode_estimate = 0;
     int method_num = 0;
 
+    std::string method_name = "_clinit_autosplit";
     for (int i = 0; i < file_->message_type_count(); i++) {
       bytecode_estimate +=
           message_generators_[i]->GenerateStaticVariableInitializers(printer);
       MaybeRestartJavaMethod(
-          printer, &bytecode_estimate, &method_num,
-          "_clinit_autosplit_$method_num$();\n",
-          "private static void _clinit_autosplit_$method_num$() {\n");
+          printer, &bytecode_estimate, method_name, &method_num,
+          "$method_name$_$method_num$();\n",
+          "private static void $method_name$_$method_num$() {\n");
     }
 
     printer->Outdent();
@@ -471,11 +488,9 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
       "    getDescriptor() {\n"
       "  return descriptor;\n"
       "}\n"
-      "private static $final$ com.google.protobuf.Descriptors.FileDescriptor\n"
+      "private static final com.google.protobuf.Descriptors.FileDescriptor\n"
       "    descriptor;\n"
-      "static {\n",
-      // TODO: Mark this as final.
-      "final", google::protobuf::internal::IsOss() ? "" : "final");
+      "static {\n");
   printer->Indent();
 
   if (google::protobuf::internal::IsOss()) {
@@ -484,24 +499,26 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
   } else {
   }
 
+  std::string method_name = "_clinit_autosplit_dinit";
   int bytecode_estimate = 0;
   int method_num = 0;
-
   for (int i = 0; i < file_->message_type_count(); i++) {
     bytecode_estimate +=
         message_generators_[i]->GenerateStaticVariableInitializers(printer);
     MaybeRestartJavaMethod(
-        printer, &bytecode_estimate, &method_num,
-        "_clinit_autosplit_dinit_$method_num$();\n",
-        "private static void _clinit_autosplit_dinit_$method_num$() {\n");
+        printer, &bytecode_estimate, method_name, &method_num,
+        "$method_name$_$method_num$();\n",
+        "private static void $method_name$_$method_num$() {\n");
   }
+
+
   for (int i = 0; i < file_->extension_count(); i++) {
     bytecode_estimate +=
         extension_generators_[i]->GenerateNonNestedInitializationCode(printer);
     MaybeRestartJavaMethod(
-        printer, &bytecode_estimate, &method_num,
-        "_clinit_autosplit_dinit_$method_num$();\n",
-        "private static void _clinit_autosplit_dinit_$method_num$() {\n");
+        printer, &bytecode_estimate, method_name, &method_num,
+        "$method_name$_$method_num$();\n",
+        "private static void $method_name$_$method_num$() {\n");
   }
   // Feature resolution for Java features uses extension registry
   // which must happen after internalInit() from
@@ -549,9 +566,9 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
           generator_factory_->NewExtensionGenerator(field));
       bytecode_estimate += generator->GenerateRegistrationCode(printer);
       MaybeRestartJavaMethod(
-          printer, &bytecode_estimate, &method_num,
-          "_clinit_autosplit_dinit_$method_num$(registry);\n",
-          "private static void _clinit_autosplit_dinit_$method_num$(\n"
+          printer, &bytecode_estimate, method_name, &method_num,
+          "$method_name$_$method_num$(registry);\n",
+          "private static void $method_name$_$method_num$(\n"
           "    com.google.protobuf.ExtensionRegistry registry) {\n");
     }
     for (const FieldDescriptor* field : optional_extensions) {
@@ -568,9 +585,9 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
                     )java");
       bytecode_estimate += 8;
       MaybeRestartJavaMethod(
-          printer, &bytecode_estimate, &method_num,
-          "_clinit_autosplit_dinit_$method_num$(registry);\n",
-          "private static void _clinit_autosplit_dinit_$method_num$(\n"
+          printer, &bytecode_estimate, method_name, &method_num,
+          "$method_name$_$method_num$(registry);\n",
+          "private static void $method_name$_$method_num$(\n"
           "    com.google.protobuf.ExtensionRegistry registry) {\n");
     }
     printer->Print(
@@ -627,7 +644,8 @@ static void GenerateSibling(
   if (annotate_code) {
     std::unique_ptr<io::ZeroCopyOutputStream> info_output(
         context->Open(info_full_path));
-    annotations.SerializeToZeroCopyStream(info_output.get());
+    // TODO: Remove this suppression.
+    (void)annotations.SerializeToZeroCopyStream(info_output.get());
     annotation_list->push_back(info_full_path);
   }
 }

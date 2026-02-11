@@ -20,6 +20,7 @@
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/pyext/descriptor.h"
+#include "google/protobuf/pyext/descriptor_pool.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/message_factory.h"
 #include "google/protobuf/pyext/repeated_composite_container.h"
@@ -48,11 +49,11 @@ static Py_ssize_t len(ExtensionDict* self) {
 
   for (size_t i = 0; i < fields.size(); ++i) {
     if (fields[i]->is_extension()) {
-      // With C++ descriptors, the field can always be retrieved, but for
-      // unknown extensions which have not been imported in Python code, there
-      // is no message class and we cannot retrieve the value.
-      // ListFields() has the same behavior.
-      if (fields[i]->message_type() != nullptr &&
+      // When using the default descriptor pool, avoid exposing extensions that
+      // happened to be linked in from C++ but not imported via Python.  This is
+      // for consistency with the pure Python implementation.
+      if (fields[i]->file()->pool() == GetDefaultDescriptorPool()->pool &&
+          fields[i]->message_type() != nullptr &&
           message_factory::GetMessageClass(
               cmessage::GetFactoryForMessage(self->parent),
               fields[i]->message_type()) == nullptr) {
@@ -196,7 +197,7 @@ int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value) {
     return cmessage::ClearFieldByDescriptor(self->parent, descriptor);
   }
 
-  if (descriptor->label() != FieldDescriptor::LABEL_OPTIONAL ||
+  if (descriptor->is_repeated() || descriptor->is_required() ||
       descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     PyErr_SetString(PyExc_TypeError,
                     "Extension is repeated and/or composite "
@@ -217,7 +218,7 @@ static const FieldDescriptor* FindMessageSetExtension(
     if (extension->is_extension() &&
         extension->containing_type()->options().message_set_wire_format() &&
         extension->type() == FieldDescriptor::TYPE_MESSAGE &&
-        extension->label() == FieldDescriptor::LABEL_OPTIONAL &&
+        (!extension->is_repeated() && !extension->is_required()) &&
         extension->message_type() == message_descriptor) {
       return extension;
     }
@@ -408,11 +409,12 @@ PyObject* IterNext(PyObject* _self) {
     index = self->index;
     ++self->index;
     if (self->fields[index]->is_extension()) {
-      // With C++ descriptors, the field can always be retrieved, but for
-      // unknown extensions which have not been imported in Python code, there
-      // is no message class and we cannot retrieve the value.
-      // ListFields() has the same behavior.
-      if (self->fields[index]->message_type() != nullptr &&
+      // When using the default descriptor pool, avoid exposing extensions that
+      // happened to be linked in from C++ but not imported via Python.  This is
+      // for consistency with the pure Python implementation.
+      if (self->fields[index]->file()->pool() ==
+              GetDefaultDescriptorPool()->pool &&
+          self->fields[index]->message_type() != nullptr &&
           message_factory::GetMessageClass(
               cmessage::GetFactoryForMessage(self->extension_dict->parent),
               self->fields[index]->message_type()) == nullptr) {

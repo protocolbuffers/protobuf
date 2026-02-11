@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-// Utility functions to convert between protobuf binary format and proto3 JSON
+// Utility functions to convert between protobuf binary format and ProtoJSON
 // format.
 #ifndef GOOGLE_PROTOBUF_JSON_JSON_H__
 #define GOOGLE_PROTOBUF_JSON_JSON_H__

@@ -126,7 +126,7 @@ class Duration extends \Google\Protobuf\Internal\Message
      * @param int|string $var
      * @return $this
      */
-    public function setSeconds($var)
+    public function setSeconds(int|string $var)
     {
         GPBUtil::checkInt64($var);
         $this->seconds = $var;
@@ -162,7 +162,7 @@ class Duration extends \Google\Protobuf\Internal\Message
      * @param int $var
      * @return $this
      */
-    public function setNanos($var)
+    public function setNanos(int $var)
     {
         GPBUtil::checkInt32($var);
         $this->nanos = $var;

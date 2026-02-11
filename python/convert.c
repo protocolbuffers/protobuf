@@ -61,21 +61,12 @@ PyObject* PyUpb_UpbToPy(upb_MessageValue val, const upb_FieldDef* f,
   }
 }
 
-// TODO: raise error in 2026 Q1 release
-static void WarnBool(const upb_FieldDef* f) {
-  static int bool_warning_count = 100;
-  if (bool_warning_count > 0) {
-    --bool_warning_count;
-    PyErr_WarnFormat(PyExc_DeprecationWarning, 3,
-                     "Field %s: Expected an int, got a boolean. This "
-                     "will be rejected in 7.34.0, please fix it before that",
-                     upb_FieldDef_FullName(f));
-  }
-}
-
 static bool PyUpb_GetInt64(PyObject* obj, const upb_FieldDef* f, int64_t* val) {
   if (PyBool_Check(obj)) {
-    WarnBool(f);
+    PyErr_Format(PyExc_TypeError,
+                 "Field %s: Expected an int, got a boolean.",
+                 upb_FieldDef_FullName(f));
+    return false;
   }
   // We require that the value is either an integer or has an __index__
   // conversion.
@@ -98,7 +89,10 @@ static bool PyUpb_GetInt64(PyObject* obj, const upb_FieldDef* f, int64_t* val) {
 static bool PyUpb_GetUint64(PyObject* obj, const upb_FieldDef* f,
                             uint64_t* val) {
   if (PyBool_Check(obj)) {
-    WarnBool(f);
+    PyErr_Format(PyExc_TypeError,
+                 "Field %s: Expected an int, got a boolean.",
+                 upb_FieldDef_FullName(f));
+    return false;
   }
   // We require that the value is either an integer or has an __index__
   // conversion.
@@ -199,7 +193,10 @@ static bool PyUpb_PyToUpbEnum(PyObject* obj, const upb_FieldDef* f,
     return true;
   } else {
     if (PyBool_Check(obj)) {
-      WarnBool(f);
+      PyErr_Format(PyExc_TypeError,
+                   "Field %s: Expected an int, got a boolean.",
+                   upb_FieldDef_FullName(f));
+      return false;
     }
     int32_t i32;
     if (!PyUpb_GetInt32(obj, f, &i32)) return false;

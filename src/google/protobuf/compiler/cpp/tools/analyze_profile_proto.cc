@@ -14,7 +14,6 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
-#include <optional>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -45,6 +44,7 @@
 #include "absl/synchronization/mutex.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/compiler/cpp/cpp_access_info_parse_helper.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
@@ -68,7 +68,7 @@ struct PDProtoAnalysis {
   uint64_t presence_count = 0;
   uint64_t usage_count = 0;
   float presence_probability = 0.0;
-  std::optional<AccessInfoMap::ElementStats> element_stats;
+  absl::optional<AccessInfoMap::ElementStats> element_stats;
 };
 
 std::ostream& operator<<(std::ostream& s, PDProtoScale scale) {
@@ -113,6 +113,7 @@ class PDProtoAnalyzer {
         std::make_unique<cpp::CppAccessInfoParseHelper>());
     options_.access_info_map = &info_map_;
     scc_analyzer_ = std::make_unique<cpp::MessageSCCAnalyzer>(options_);
+    options_.scc_analyzer = scc_analyzer_.get();
   }
 
   void SetFile(const FileDescriptor* file) {
@@ -163,7 +164,7 @@ class PDProtoAnalyzer {
     if (IsFieldInlined(field, options_)) {
       return PDProtoOptimization::kInline;
     }
-    if (IsLazy(field, options_, scc_analyzer_.get())) {
+    if (IsLazy(field, options_)) {
       if (IsLazilyVerifiedLazy(field, options_)) {
         return PDProtoOptimization::kUnverifiedLazy;
       }

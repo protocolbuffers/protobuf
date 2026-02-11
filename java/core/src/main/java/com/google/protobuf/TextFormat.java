@@ -1946,6 +1946,7 @@ public final class TextFormat {
        *
        * @throws IllegalArgumentException if a registry is already set.
        */
+      @CanIgnoreReturnValue
       public Builder setTypeRegistry(TypeRegistry typeRegistry) {
         this.typeRegistry = typeRegistry;
         return this;
@@ -1959,6 +1960,7 @@ public final class TextFormat {
        * <p>Use of this parameter is discouraged which may hide some errors (e.g. spelling error on
        * field name).
        */
+      @CanIgnoreReturnValue
       public Builder setAllowUnknownFields(boolean allowUnknownFields) {
         this.allowUnknownFields = allowUnknownFields;
         return this;
@@ -2222,9 +2224,9 @@ public final class TextFormat {
         // .proto file, which actually matches their type names, not their field
         // names.
         if (field == null) {
-          // Explicitly specify US locale so that this code does not break when
+          // Explicitly specify the 'neutral' ROOT locale so that this code does not break when
           // executing in Turkey.
-          final String lowerName = name.toLowerCase(Locale.US);
+          final String lowerName = name.toLowerCase(Locale.ROOT);
           field = type.findFieldByName(lowerName);
           // If the case-insensitive match worked but the field is NOT a group,
           if (field != null && !field.isGroupLike()) {
@@ -2936,7 +2938,7 @@ public final class TextFormat {
    * it's weird.
    */
   static String escapeText(final String input) {
-    return escapeBytes(ByteString.copyFromUtf8(input));
+    return TextFormatEscaper.escapeText(input);
   }
 
   /** Escape double quotes and backslashes in a String for emittingUnicode output of a message. */

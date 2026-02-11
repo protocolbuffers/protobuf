@@ -7,6 +7,9 @@
 
 #include "hpb/extension.h"
 
+#include "hpb/multibackend.h"
+
+#if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
 #include "upb/mini_table/extension_registry.h"
 
 namespace hpb {
@@ -15,6 +18,6 @@ upb_ExtensionRegistry* GetUpbExtensions(
     const ExtensionRegistry& extension_registry) {
   return extension_registry.registry_;
 }
-
 }  // namespace internal
 }  // namespace hpb
+#endif

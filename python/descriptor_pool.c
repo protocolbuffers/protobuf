@@ -12,6 +12,7 @@
 #include "python/descriptor.h"
 #include "python/message.h"
 #include "python/protobuf.h"
+#include "python/python_api.h"
 #include "upb/base/upcast.h"
 #include "upb/message/compare.h"
 #include "upb/reflection/def.h"
@@ -48,7 +49,7 @@ static PyObject* PyUpb_DescriptorPool_DoCreateWithCache(
   pool->symtab = upb_DefPool_New();
   pool->db = db;
   Py_XINCREF(pool->db);
-  PyUpb_WeakMap_Add(obj_cache, pool->symtab, &pool->ob_base);
+  PyUpb_KnownObjCache_Add(obj_cache, pool->symtab, &pool->ob_base);
   return &pool->ob_base;
 }
 
@@ -75,7 +76,11 @@ static int PyUpb_DescriptorPool_Clear(PyUpb_DescriptorPool* self) {
 
 PyObject* PyUpb_DescriptorPool_Get(const upb_DefPool* symtab) {
   PyObject* pool = PyUpb_ObjCache_Get(symtab);
-  assert(pool);
+  assert(pool
+#if PY_VERSION_HEX >= 0x030D0000  // >= 3.13
+         || Py_IsFinalizing()
+#endif
+  );
   return pool;
 }
 
@@ -325,7 +330,7 @@ static PyObject* PyUpb_DescriptorPool_AddSerializedFile(
         PyExc_ValueError,
         "Cannot call AddSerializedFile on a DescriptorPool that uses a "
         "DescriptorDatabase. Add your file to the underlying database.");
-    return false;
+    return NULL;
   }
   return PyUpb_DescriptorPool_DoAddSerializedFile(_self, serialized_pb);
 }
@@ -338,7 +343,7 @@ static PyObject* PyUpb_DescriptorPool_Add(PyObject* _self,
         PyExc_ValueError,
         "Cannot call Add on a DescriptorPool that uses a DescriptorDatabase. "
         "Add your file to the underlying database.");
-    return false;
+    return NULL;
   }
   return PyUpb_DescriptorPool_DoAdd(_self, file_desc);
 }

@@ -15,13 +15,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <optional>
 #include <string>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
@@ -51,8 +51,7 @@ class FieldGeneratorBase {
   // variable instead of calling GetArena()'
   enum class GeneratorFunction { kMergeFrom };
 
-  FieldGeneratorBase(const FieldDescriptor* field, const Options& options,
-                     MessageSCCAnalyzer* scc_analyzer);
+  FieldGeneratorBase(const FieldDescriptor* field, const Options& options);
 
   FieldGeneratorBase(const FieldGeneratorBase&) = delete;
   FieldGeneratorBase& operator=(const FieldGeneratorBase&) = delete;
@@ -140,8 +139,6 @@ class FieldGeneratorBase {
 
   virtual void GenerateSwappingCode(io::Printer* p) const = 0;
 
-  virtual void GenerateConstructorCode(io::Printer* p) const = 0;
-
   virtual void GenerateDestructorCode(io::Printer* p) const {}
 
   virtual void GenerateArenaDestructorCode(io::Printer* p) const {
@@ -200,10 +197,11 @@ class FieldGeneratorBase {
  protected:
   const FieldDescriptor* field_;
   const Options& options_;
-  MessageSCCAnalyzer* scc_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
 
   pb::CppFeatures::StringType GetDeclaredStringType() const;
+
+  static io::Printer::Sub InternalMetadataOffsetSub(io::Printer* p);
 
 
  private:
@@ -397,16 +395,6 @@ class FieldGenerator {
     impl_->GenerateSwappingCode(p);
   }
 
-  // Generates initialization code for private members declared by
-  // GeneratePrivateMembers().
-  //
-  // These go into the message class's SharedCtor() method, invoked by each of
-  // the generated constructors.
-  void GenerateConstructorCode(io::Printer* p) const {
-    auto vars = PushVarsForCall(p);
-    impl_->GenerateConstructorCode(p);
-  }
-
   // Generates any code that needs to go in the class's SharedDtor() method,
   // invoked by the destructor.
   void GenerateDestructorCode(io::Printer* p) const {
@@ -502,9 +490,7 @@ class FieldGenerator {
  private:
   friend class FieldGeneratorTable;
   FieldGenerator(const FieldDescriptor* field, const Options& options,
-                 MessageSCCAnalyzer* scc_analyzer,
-                 std::optional<uint32_t> hasbit_index,
-                 std::optional<uint32_t> inlined_string_index);
+                 absl::optional<uint32_t> hasbit_index);
 
   std::unique_ptr<FieldGeneratorBase> impl_;
   std::vector<io::Printer::Sub> field_vars_;
@@ -521,9 +507,7 @@ class FieldGeneratorTable {
   FieldGeneratorTable(const FieldGeneratorTable&) = delete;
   FieldGeneratorTable& operator=(const FieldGeneratorTable&) = delete;
 
-  void Build(const Options& options, MessageSCCAnalyzer* scc_analyzer,
-             absl::Span<const int32_t> has_bit_indices,
-             absl::Span<const int32_t> inlined_string_indices);
+  void Build(const Options& options, absl::Span<const int32_t> has_bit_indices);
 
   const FieldGenerator& get(const FieldDescriptor* field) const {
     ABSL_CHECK_EQ(field->containing_type(), descriptor_);

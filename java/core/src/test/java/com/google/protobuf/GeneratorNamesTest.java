@@ -235,6 +235,15 @@ public final class GeneratorNamesTest {
   }
 
   @Test
+  public void getFileClassName_noDirectory() {
+    // This isn't exercisable in blazel because all our tests are in a directory.
+    assertThat(
+            GeneratorNames.getFileClassName(
+                FileDescriptorProto.newBuilder().setName("bar.proto").build()))
+        .isEqualTo("Bar");
+  }
+
+  @Test
   public void getFileClassName_conflictingName2024() {
     // This isn't exercisable in blazel because conflicts trigger a protoc error in edition 2024.
     FileDescriptorProto file =

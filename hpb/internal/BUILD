@@ -5,8 +5,8 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -49,9 +49,15 @@ cc_library(
         "//hpb:__subpackages__",
     ],
     deps = [
-        "//upb/mem",
-        "//upb/message",
-    ],
+        "//hpb:multibackend",
+    ] + select({
+        "//hpb:hpb_backend_cpp": [
+        ],
+        "//hpb:hpb_backend_upb": [
+            "//upb/mem",
+            "//upb/message",
+        ],
+    }),
 )
 
 cc_library(
@@ -84,6 +90,7 @@ cc_test(
         "//hpb",
         "//hpb:arena",
         "//hpb:extension",
+        "//hpb:options",
         "//hpb_generator/tests:test_model_hpb_proto",
         "//upb/mem",
         "//upb/mini_table",

@@ -6,9 +6,9 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
-load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_CPPOPTS")
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_CPPOPTS")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -29,6 +29,7 @@ cc_library(
     deps = [
         ":eps_copy_input_stream",
         "//third_party/utf8_range",
+        "//upb/base",
         "//upb/mem",
         "//upb/mem:internal",
         "//upb/message",
@@ -195,12 +196,25 @@ cc_test(
 )
 
 cc_library(
+    name = "eps_copy_input_stream_internal",
+    hdrs = ["internal/eps_copy_input_stream.h"],
+    visibility = ["//upb:__pkg__"],
+    deps = [
+        "//upb/base",
+        "//upb/mem",
+        "//upb/port",
+    ],
+)
+
+cc_library(
     name = "eps_copy_input_stream",
     srcs = ["eps_copy_input_stream.c"],
     hdrs = ["eps_copy_input_stream.h"],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":eps_copy_input_stream_internal",
+        "//upb/base",
         "//upb/mem",
         "//upb/port",
     ],
@@ -211,6 +225,7 @@ cc_test(
     srcs = ["eps_copy_input_stream_test.cc"],
     deps = [
         ":eps_copy_input_stream",
+        "//upb/base",
         "//upb/mem",
         "@googletest//:gtest",
         "@googletest//:gtest_main",

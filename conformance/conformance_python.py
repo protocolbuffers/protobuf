@@ -20,6 +20,7 @@ from google.protobuf import test_messages_proto2_pb2
 from google.protobuf import test_messages_proto3_pb2
 from conformance import conformance_pb2
 from conformance.test_protos import test_messages_edition2023_pb2
+from conformance.test_protos import test_messages_edition_unstable_pb2
 from editions.golden import test_messages_proto2_editions_pb2
 from editions.golden import test_messages_proto3_editions_pb2
 
@@ -42,6 +43,11 @@ def _create_test_message(type):
     return test_messages_proto2_editions_pb2.TestAllTypesProto2()
   if type == "protobuf_test_messages.editions.proto3.TestAllTypesProto3":
     return test_messages_proto3_editions_pb2.TestAllTypesProto3()
+  if (
+      type
+      == "protobuf_test_messages.edition_unstable.TestAllTypesEditionUnstable"
+  ):
+    return test_messages_edition_unstable_pb2.TestAllTypesEditionUnstable()
   return None
 
 
