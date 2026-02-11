@@ -144,15 +144,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // Owner: shaod@, gberg@
 #define PROTOBUF_FUTURE_DESCRIPTOR_EXTENSION_DECL 1
 
-// Renames DescriptorPool::AddUnusedImportTrackFile
-// Owner: mkruskal@
-#define PROTOBUF_FUTURE_RENAME_ADD_UNUSED_IMPORT 1
-
-// Removes google::protobuf::util::MessageDifferencer::AddIgnoreCriteria that takes a
-// raw pointer as an argument in favor of the overload that takes a unique_ptr.
-// Owner: mkruskal@, natebrennan@
-#define PROTOBUF_FUTURE_REMOVE_ADD_IGNORE_CRITERIA 1
-
 // Marks several logically constant operations on Repeated*Field as nodiscard.
 // Owner: ckennelly@, mkruskal@
 #define PROTOBUF_FUTURE_ADD_NODISCARD [[nodiscard]]
@@ -163,18 +154,8 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 
 #endif
 
-// Introducing a future-breaking change guard for descriptor database migration.
-// This allows google3 to transition to absl::string_view while keeping OSS
-// on std::string until the migration is fully completed.
-// The temporary macro enables incremental migration before permanently flipping
-// the switch.
-#ifdef PROTOBUF_FUTURE_STRING_VIEW_DESCRIPTOR_DATABASE
-#error PROTOBUF_FUTURE_STRING_VIEW_DESCRIPTOR_DATABASE was previously defined
-#endif
-
-#if defined(PROTOBUF_TEMPORARY_ENABLE_STRING_VIEW_DESCRIPTOR_DATABASE)
-#define PROTOBUF_FUTURE_STRING_VIEW_DESCRIPTOR_DATABASE 1
-#endif
+#define PROTOBUF_FUTURE_ADD_EARLY_NODISCARD [[nodiscard]]
+#define PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ABSL_ATTRIBUTE_WARN_UNUSED
 
 #ifdef PROTOBUF_ALWAYS_INLINE
 #error PROTOBUF_ALWAYS_INLINE was previously defined
@@ -185,7 +166,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #elif defined(__GNUC__)
 #define PROTOBUF_ALWAYS_INLINE inline __attribute__((always_inline))
 #elif defined(_MSC_VER)
-#define PROTOBUF_ALWAYS_INLINE inline __forceinline
+#define PROTOBUF_ALWAYS_INLINE __forceinline
 #else
 #define PROTOBUF_ALWAYS_INLINE inline
 #endif
@@ -242,10 +223,8 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #ifdef PROTOBUF_TAILCALL
 #error PROTOBUF_TAILCALL was previously defined
 #endif
-#if ABSL_HAVE_CPP_ATTRIBUTE(clang::musttail) && !defined(__arm__) &&  \
-    !defined(_ARCH_PPC) && !defined(__wasm__) &&                      \
-    !(defined(_MSC_VER) && defined(_M_IX86)) && !defined(__i386__) && \
-    !defined(__s390x__)
+#if ABSL_HAVE_CPP_ATTRIBUTE(clang::musttail) && (defined(__aarch64__) || \
+    defined(__x86_64__) || defined(_M_X64))
 // Compilation fails on ARM32: b/195943306
 // Compilation fails on powerpc64le: b/187985113
 // Compilation fails on X86 Windows:
@@ -255,6 +234,14 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #else
 #define PROTOBUF_MUSTTAIL
 #define PROTOBUF_TAILCALL false
+#endif
+
+// On windows, you need to hint to the compiler that you want to do empty base
+// class optimization with multiple inheritance.
+#ifdef _MSC_VER
+#define PROTOBUF_DECLSPEC_EMPTY_BASES __declspec(empty_bases)
+#else
+#define PROTOBUF_DECLSPEC_EMPTY_BASES
 #endif
 
 #ifdef PROTOBUF_CC
@@ -429,41 +416,38 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #error PROTOBUF_CONSTINIT was previously defined
 #endif
 
-// Lexan sets both MSV_VER and clang, so handle it with the clang path.
-#if defined(_MSC_VER) && !defined(__clang__)
-// MSVC 17 currently seems to raise an error about constant-initialized pointers.
-# if PROTOBUF_MSC_VER_MIN(1930)
-#  define PROTOBUF_CONSTINIT
-#  define PROTOBUF_CONSTEXPR constexpr
-# endif
+#if defined(PROTOBUF_USE_DLLS) && (defined(_WIN32) || defined(__CYGWIN__))
+// On Windows, `constinit` structures cannot include pointers to dllimport
+// symbols, which are defined in another dll. If libprotobuf is built as a dll,
+// generated parse tables breaks this. See
+// https://github.com/protocolbuffers/protobuf/issues/10159 and
+// https://github.com/protocolbuffers/protobuf/pull/13240. Work around this by
+// suppressing `constinit`.
+#define PROTOBUF_CONSTINIT
+#elif defined(_MSC_VER) && !defined(__clang__)
+// On MSVC, but not clang-cl, the above workaround must extend to static library
+// builds too. MSVC can avoid a global constructor when initializing structures
+// containing pointers to same-dll symbols, it relies on the optimizer for this,
+// so we can't enforce constinit. This limitation does not apply to constexpr.
+// See https://godbolt.org/z/hsT9e3zs4
+#define PROTOBUF_CONSTINIT
 #elif defined(__GNUC__) && !defined(__clang__)
 // GCC doesn't support constinit aggregate initialization of absl::Cord.
-# if PROTOBUF_GNUC_MIN(12, 2)
-#  define PROTOBUF_CONSTINIT
-#  define PROTOBUF_CONSTEXPR constexpr
-# endif
-#else
-# if defined(__cpp_constinit) && !defined(__CYGWIN__)
-#  define PROTOBUF_CONSTINIT constinit
-#  define PROTOBUF_CONSTEXPR constexpr
-#  define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+#define PROTOBUF_CONSTINIT
+#elif defined(__cpp_constinit)
+#define PROTOBUF_CONSTINIT constinit
+#define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
 // Some older Clang versions incorrectly raise an error about
 // constant-initializing weak default instance pointers. Versions 12.0 and
 // higher seem to work, except that XCode 12.5.1 shows the error even though it
 // uses Clang 12.0.5.
-#elif !defined(__CYGWIN__) && !defined(__MINGW32__) &&                 \
-    ABSL_HAVE_CPP_ATTRIBUTE(clang::require_constant_initialization) && \
-    ((defined(__APPLE__) && PROTOBUF_CLANG_MIN(13, 0)) ||              \
+#elif ABSL_HAVE_CPP_ATTRIBUTE(clang::require_constant_initialization) && \
+    ((defined(__APPLE__) && PROTOBUF_CLANG_MIN(13, 0)) ||                \
      (!defined(__APPLE__) && PROTOBUF_CLANG_MIN(12, 0)))
-#  define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
-#  define PROTOBUF_CONSTEXPR constexpr
-#  define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-# endif
-#endif
-
-#ifndef PROTOBUF_CONSTINIT
+#define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
+#define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+#else
 #define PROTOBUF_CONSTINIT
-#define PROTOBUF_CONSTEXPR
 #endif
 
 // Some globals with an empty non-trivial destructor are annotated with
@@ -588,7 +572,8 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #error PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED was previously defined
 #endif
 #if defined(__GNUC__) && defined(__clang__) && !defined(__APPLE__) && \
-    !defined(_MSC_VER) && !defined(_WIN32)
+    !defined(_MSC_VER) && !defined(_WIN32) && !defined(__wasm__) &&   \
+    !defined(__EMSCRIPTEN__)
 #define PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 #endif
 
@@ -611,162 +596,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // ThreadSafeArenaz is turned off completely in opensource builds.
 
 
-// noreturn is defined as a macro in C's stdnoreturn.h
-#ifdef noreturn
-#define PROTOBUF_DID_UNDEF_noreturn
-#pragma push_macro("noreturn")
-#undef noreturn
-#endif
-
-// autoheader defines this in some circumstances
-#ifdef PACKAGE
-#define PROTOBUF_DID_UNDEF_PACKAGE
-#pragma push_macro("PACKAGE")
-#undef PACKAGE
-#endif
-
-// a few common headers define this
-#ifdef PACKED
-#define PROTOBUF_DID_UNDEF_PACKED
-#pragma push_macro("PACKED")
-#undef PACKED
-#endif
-
-// This is a macro on Windows, macOS, and some variants of GCC.
-#ifdef DOMAIN
-#define PROTOBUF_DID_UNDEF_DOMAIN
-#pragma push_macro("DOMAIN")
-#undef DOMAIN
-#endif
-
-// linux is a legacy MACRO defined in most popular C++ standards.
-#ifdef linux
-#pragma push_macro("linux")
-#undef linux
-#define PROTOBUF_DID_UNDEF_LINUX
-#endif
-
-// netdb.h defines this on some platforms.
-#ifdef NO_DATA
-#pragma push_macro("NO_DATA")
-#undef NO_DATA
-#define PROTOBUF_DID_UNDEF_NO_DATA
-#endif
-
-// Windows declares several inconvenient macro names.  We #undef them and then
-// restore them in port_undef.inc.
-#ifdef _WIN32
-#pragma push_macro("CompareString")
-#undef CompareString
-#pragma push_macro("CREATE_NEW")
-#undef CREATE_NEW
-#pragma push_macro("DELETE")
-#undef DELETE
-#pragma push_macro("DOUBLE_CLICK")
-#undef DOUBLE_CLICK
-#pragma push_macro("ERROR")
-#undef ERROR
-#pragma push_macro("ERROR_BUSY")
-#undef ERROR_BUSY
-#pragma push_macro("ERROR_INSTALL_FAILED")
-#undef ERROR_INSTALL_FAILED
-#pragma push_macro("ERROR_NOT_FOUND")
-#undef ERROR_NOT_FOUND
-#pragma push_macro("ERROR_RETRY")
-#undef ERROR_RETRY
-#pragma push_macro("ERROR_TIMEOUT")
-#undef ERROR_TIMEOUT
-#pragma push_macro("GetClassName")
-#undef GetClassName
-#pragma push_macro("GetCurrentTime")
-#undef GetCurrentTime
-#pragma push_macro("GetMessage")
-#undef GetMessage
-#pragma push_macro("GetObject")
-#undef GetObject
-#pragma push_macro("IGNORE")
-#undef IGNORE
-#pragma push_macro("IN")
-#undef IN
-#pragma push_macro("INPUT_KEYBOARD")
-#undef INPUT_KEYBOARD
-#pragma push_macro("NO_ERROR")
-#undef NO_ERROR
-#pragma push_macro("OUT")
-#undef OUT
-#pragma push_macro("OPTIONAL")
-#undef OPTIONAL
-#pragma push_macro("min")
-#undef min
-#pragma push_macro("max")
-#undef max
-#pragma push_macro("NEAR")
-#undef NEAR
-#pragma push_macro("NO_DATA")
-#undef NO_DATA
-#pragma push_macro("REASON_UNKNOWN")
-#undef REASON_UNKNOWN
-#pragma push_macro("SERVICE_DISABLED")
-#undef SERVICE_DISABLED
-#pragma push_macro("SERVICE_STOP")
-#undef SERVICE_STOP
-#pragma push_macro("SEVERITY_ERROR")
-#undef SEVERITY_ERROR
-#pragma push_macro("STATUS_PENDING")
-#undef STATUS_PENDING
-#pragma push_macro("STRICT")
-#undef STRICT
-#pragma push_macro("timezone")
-#undef timezone
-#pragma push_macro("TRUE")
-#undef TRUE
-#pragma push_macro("FALSE")
-#undef FALSE
-#endif  // _WIN32
-
-#ifdef __APPLE__
-// Inconvenient macro names from /usr/include/mach/boolean.h in some macOS SDKs.
-#pragma push_macro("TRUE")
-#undef TRUE
-#pragma push_macro("FALSE")
-#undef FALSE
-// Inconvenient macro names from usr/include/sys/syslimits.h in some macOS SDKs.
-#pragma push_macro("UID_MAX")
-#undef UID_MAX
-#pragma push_macro("GID_MAX")
-#undef GID_MAX
-// TYPE_BOOL is defined in the MacOS's ConditionalMacros.h.
-#pragma push_macro("TYPE_BOOL")
-#undef TYPE_BOOL
-#endif  // __APPLE__
-
-#if defined(ANDROID) || defined(__ANDROID__)
-// Inconvenient macro names from usr/include/limits.h in some Android NDKs.
-#pragma push_macro("UID_MAX")
-#undef UID_MAX
-#pragma push_macro("GID_MAX")
-#undef GID_MAX
-#endif  // defined(ANDROID) || defined(__ANDROID__)
-
-#ifdef __FreeBSD__
-// Inconvenient macro names from /usr/include/sys/param.h.
-#pragma push_macro("TRUE")
-#undef TRUE
-#pragma push_macro("FALSE")
-#undef FALSE
-// Inconvenient macro names from /usr/include/sys/limits.h.
-#pragma push_macro("UID_MAX")
-#undef UID_MAX
-#pragma push_macro("GID_MAX")
-#undef GID_MAX
-#endif  // __FreeBSD__
-
-#if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
-// Don't let Objective-C Macros interfere with proto identifiers with the same
-// name.
-#pragma push_macro("DEBUG")
-#undef DEBUG
-#endif // defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
+#include "google/protobuf/os_macros_undef.inc"
 
 // Protobuf does not support building with a number of warnings that are noisy
 // (and of variable quality across compiler versions) or impossible to implement
@@ -780,6 +610,10 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // Turn on -Wdeprecated-enum-enum-conversion. This deprecation comes in C++20
 // via http://wg21.link/p1120r0.
 #pragma clang diagnostic error "-Wdeprecated-enum-enum-conversion"
+// Turn on -Wconstant-conversion which is used in chromiumos_x86_64 builds.
+#pragma clang diagnostic error "-Wconstant-conversion"
+// Turn on -Wunused-label which is used in chromiumos_x86_64 builds.
+#pragma clang diagnostic error "-Wunused-label"
 // This error has been generally flaky, but we need to disable it specifically
 // to fix https://github.com/protocolbuffers/protobuf/issues/12313
 #pragma clang diagnostic ignored "-Wunused-parameter"
@@ -793,6 +627,9 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #endif
 #ifdef __GNUC__
 #pragma GCC diagnostic push
+// We sometimes use "unnecessary" parenthesis in codegen to prevent ambiguity or
+// conflicts with contextual keywords.
+#pragma GCC diagnostic ignored "-Wparentheses"
 // Some of the warnings below only exist in some GCC versions; those version
 // ranges are poorly documented.
 #pragma GCC diagnostic ignored "-Wpragmas"
@@ -940,6 +777,20 @@ namespace internal {
 #define PROTOBUF_NONNULL
 #define PROTOBUF_NULLABLE
 #endif
+
+#ifdef PROTOBUF_NO_MERGE
+#error PROTOBUF_NO_MERGE was previously defined
+#endif  // PROTOBUF_NO_MERGE
+#ifndef PROTOBUF_NO_MERGE
+#define PROTOBUF_NO_MERGE
+#endif  // PROTOBUF_NO_MERGE
+
+#ifdef PROTOBUF_PRESERVE_ALL
+#error PROTOBUF_PRESERVE_ALL was previously defined
+#endif  // PROTOBUF_PRESERVE_ALL
+#ifndef PROTOBUF_PRESERVE_ALL
+#define PROTOBUF_PRESERVE_ALL
+#endif  // PROTOBUF_PRESERVE_ALL
 
 namespace google {
 namespace protobuf {

@@ -110,7 +110,7 @@ void RecordAllocateSlow(ThreadSafeArenaStats* info, size_t used,
   if (info->max_block_size.load(std::memory_order_relaxed) < allocated) {
     info->max_block_size.store(allocated, std::memory_order_relaxed);
   }
-  const uint64_t tid = 1ULL << (GetCachedTID() % 63);
+  const uint64_t tid = 1ULL << (static_cast<uint64_t>(GetCachedTID()) % 63);
   info->thread_ids.fetch_or(tid, std::memory_order_relaxed);
 }
 

@@ -5,6 +5,11 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#[cfg(not(bzl))]
+mod protos;
+#[cfg(not(bzl))]
+use protos::*;
+
 use googletest::prelude::*;
 use protobuf::prelude::*;
 
@@ -19,10 +24,10 @@ fn test_canonical_types() {
 
 #[gtest]
 fn test_parent_serialization() {
-    assert_that!(*parent_rust_proto::Parent::new().serialize().unwrap(), empty());
+    assert_that!(*parent_rust_proto::Parent::new().serialize().unwrap(), is_empty());
 }
 
 #[gtest]
 fn test_child_serialization() {
-    assert_that!(*child_rust_proto::Child::new().serialize().unwrap(), empty());
+    assert_that!(*child_rust_proto::Child::new().serialize().unwrap(), is_empty());
 }

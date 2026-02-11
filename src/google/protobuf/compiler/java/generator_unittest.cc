@@ -12,12 +12,14 @@
 
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/file.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/java_features.pb.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
+
 
 namespace google {
 namespace protobuf {
@@ -26,6 +28,7 @@ namespace java {
 namespace {
 
 #define PACKAGE_PREFIX ""
+#define PACKAGE_IMPORT_PREFIX ""
 
 class JavaGeneratorTest : public CommandLineInterfaceTester {
  protected:
@@ -44,6 +47,16 @@ class JavaGeneratorTest : public CommandLineInterfaceTester {
   bool FileGenerated(absl::string_view filename) {
     std::string path = absl::StrCat(temp_directory(), "/", filename);
     return File::Exists(path);
+  }
+
+  bool FileContainsSubstring(absl::string_view filename,
+                             absl::string_view substring) {
+    std::string path = absl::StrCat(temp_directory(), "/", filename);
+    std::string contents;
+    if (!File::GetContents(path, &contents, true).ok()) {
+      return false;
+    }
+    return contents.find(substring) != std::string::npos;
   }
 };
 
@@ -341,7 +354,7 @@ BBB = 1;
       "--experimental_editions");
 
   ExpectErrorSubstring(
-      "foo.proto:6:6: Feature pb.JavaFeatures.large_enum wasn't introduced "
+      "foo.proto:6:6: pb.JavaFeatures.large_enum wasn't introduced "
       "until edition 2024 and can't be used in edition 2023");
 }
 
@@ -365,6 +378,158 @@ TEST_F(JavaGeneratorTest,
       "class name, \"TestFileNameProto\", matches the name "
       "of one of the types declared inside it");
 }
+
+TEST_F(JavaGeneratorTest, InvalidConflictingNestedEnumName) {
+  CreateTempFile("test_file_name.proto",
+                 R"schema(
+      edition = "2024";
+      package foo;
+      message TestNameConflict {
+        enum TestNameConflict {
+          UNSPECIFIED = 0;
+        }
+      }
+      )schema");
+
+  RunProtoc(
+      "protocol_compiler --experimental_editions --java_out=$tmpdir "
+      "-I$tmpdir test_file_name.proto");
+
+  ExpectErrorSubstring(
+      "would be an enum nested inside a class with the same name");
+}
+
+TEST_F(JavaGeneratorTest, ExtensionsOptionImportsAreUnknown) {
+  CreateTempFile("custom_option.proto", R"schema(
+      edition = "2024";
+      package foo;
+      import "google/protobuf/descriptor.proto";
+      extend google.protobuf.FileOptions {
+        int32 option_import_file_opt = 9998;
+      }
+      extend google.protobuf.MessageOptions {
+        int32 option_import_message_opt = 9998;
+      }
+      extend google.protobuf.FieldOptions {
+        int32 option_import_field_opt = 9998;
+      }
+      )schema");
+  CreateTempFile("foo.proto", R"schema(
+      edition = "2024";
+      package foo;
+      import "google/protobuf/descriptor.proto";
+      import option "custom_option.proto";
+
+      // Should be an unknown custom option for the Java generator if not polluted by pool.
+      option (option_import_file_opt) = 123;
+      option (file_opt) = 123;
+
+      message Foo {
+        option (option_import_message_opt) = 456;
+        option (message_opt) = 456;
+        int32 bar = 1 [(option_import_field_opt) = 789, (field_opt) = 789];
+      }
+      extend google.protobuf.FileOptions {
+        int32 file_opt = 9999;
+      }
+      extend google.protobuf.MessageOptions {
+        int32 message_opt = 9999;
+      }
+      extend google.protobuf.FieldOptions {
+        int32 field_opt = 9999;
+      }
+      )schema");
+
+  RunProtoc(
+      "protocol_compiler --java_out=$tmpdir --experimental_editions "
+      "-I$tmpdir foo.proto");
+
+  ExpectNoErrors();
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "foo/FooProto.java"));
+
+  EXPECT_FALSE(
+      FileContainsSubstring(PACKAGE_PREFIX "foo/FooProto.java",
+                            "foo.CustomOptionProto.optionImportFileOpt"));
+  EXPECT_FALSE(
+      FileContainsSubstring(PACKAGE_PREFIX "foo/FooProto.java",
+                            "foo.CustomOptionProto.optionImportMessageOpt"));
+  EXPECT_FALSE(
+      FileContainsSubstring(PACKAGE_PREFIX "foo/FooProto.java",
+                            "foo.CustomOptionProto.optionImportFieldOpt"));
+
+  EXPECT_TRUE(
+      FileContainsSubstring(PACKAGE_PREFIX "foo/FooProto.java",
+                            absl::StrCat("registry.add(", PACKAGE_IMPORT_PREFIX,
+                                         "foo.FooProto.fileOpt);")));
+  EXPECT_TRUE(
+      FileContainsSubstring(PACKAGE_PREFIX "foo/FooProto.java",
+                            absl::StrCat("registry.add(", PACKAGE_IMPORT_PREFIX,
+                                         "foo.FooProto.messageOpt);")));
+  EXPECT_TRUE(
+      FileContainsSubstring(PACKAGE_PREFIX "foo/FooProto.java",
+                            absl::StrCat("registry.add(", PACKAGE_IMPORT_PREFIX,
+                                         "foo.FooProto.fieldOpt);")));
+}
+
+
+TEST_F(JavaGeneratorTest, ExtensionsPublicImportsAreKnown) {
+  CreateTempFile("custom_option.proto", R"schema(
+      edition = "2024";
+      package foo;
+      import "google/protobuf/descriptor.proto";
+      extend google.protobuf.FileOptions {
+        int32 transitive_public_import_file_opt = 9997;
+      }
+      )schema");
+  CreateTempFile("import_public2.proto", R"schema(
+      edition = "2024";
+      package foo;
+      import "google/protobuf/descriptor.proto";
+      import public "custom_option.proto";
+      extend google.protobuf.FileOptions {
+        int32 public_import_file_opt = 9998;
+      }
+      )schema");
+  CreateTempFile("import_public1.proto", R"schema(
+      edition = "2024";
+      package foo;
+      import public "import_public1.proto";
+      message MyMessage {}
+      )schema");
+  CreateTempFile("foo.proto", R"schema(
+      edition = "2024";
+      package foo;
+      import "google/protobuf/descriptor.proto";
+      import public "import_public2.proto";
+
+      option (transitive_public_import_file_opt) = 123;
+      option (public_import_file_opt) = 123;
+      option (file_opt) = 123;
+
+      extend google.protobuf.FileOptions {
+        int32 file_opt = 9999;
+      }
+      )schema");
+  RunProtoc(
+      "protocol_compiler --java_out=$tmpdir --experimental_editions -I$tmpdir "
+      "foo.proto");
+  ExpectNoErrors();
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "foo/FooProto.java"));
+  EXPECT_TRUE(FileContainsSubstring(
+      PACKAGE_PREFIX "foo/FooProto.java",
+      absl::StrCat("registry.add(", PACKAGE_IMPORT_PREFIX,
+                   "foo.ImportPublic2Proto.publicImportFileOpt);")));
+  EXPECT_TRUE(FileContainsSubstring(
+      PACKAGE_PREFIX "foo/FooProto.java",
+      absl::StrCat("registry.add(", PACKAGE_IMPORT_PREFIX,
+                   "foo.CustomOptionProto.transitivePublicImportFileOpt);")));
+  EXPECT_TRUE(
+      FileContainsSubstring(PACKAGE_PREFIX "foo/FooProto.java",
+                            absl::StrCat("registry.add(", PACKAGE_IMPORT_PREFIX,
+                                         "foo.FooProto.fileOpt);")));
+}
+
+
 }  // namespace
 }  // namespace java
 }  // namespace compiler

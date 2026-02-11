@@ -1,0 +1,36 @@
+edition = "2024";
+
+package protobuf;
+
+option java_package = "com.google.protobuf";
+
+option java_generic_services = true;
+
+import option "google/protobuf/java_features.proto";
+
+message NestInFileClassMessage {
+  option features.(pb.java).nest_in_file_class = YES;
+
+  int32 field = 1;
+
+  message NestedMessage {
+    int32 nested_field = 1;
+  }
+
+  enum NestedEnum {
+    VALUE0 = 0;
+  }
+}
+
+enum NestInFileClassEnum {
+  option features.(pb.java).nest_in_file_class = YES;
+
+  VALUE0 = 0;
+}
+
+service NestInFileClassService {
+  option features.(pb.java).nest_in_file_class = YES;
+
+  // Test method.
+  rpc Foo(NestInFileClassMessage) returns (NestInFileClassMessage) {}
+}

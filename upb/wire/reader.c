@@ -17,33 +17,64 @@
 #include "upb/port/def.inc"
 
 UPB_NOINLINE UPB_PRIVATE(_upb_WireReader_LongVarint)
-    UPB_PRIVATE(_upb_WireReader_ReadLongVarint)(const char* ptr, uint64_t val) {
-  UPB_PRIVATE(_upb_WireReader_LongVarint) ret = {NULL, 0};
-  uint64_t byte;
+    UPB_PRIVATE(_upb_WireReader_ReadLongVarint)(
+        const char* ptr, uint64_t val, upb_EpsCopyInputStream* stream) {
   for (int i = 1; i < 10; i++) {
-    byte = (uint8_t)ptr[i];
+    uint64_t byte = (uint8_t)ptr[i];
     val += (byte - 1) << (i * 7);
     if (!(byte & 0x80)) {
-      ret.ptr = ptr + i + 1;
-      ret.val = val;
-      return ret;
+      return (UPB_PRIVATE(_upb_WireReader_LongVarint)){ptr + i + 1, val};
     }
   }
-  return ret;
+  return (UPB_PRIVATE(_upb_WireReader_LongVarint)){
+      UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(stream), 0};
+}
+
+UPB_NOINLINE UPB_PRIVATE(_upb_WireReader_LongVarint)
+    UPB_PRIVATE(_upb_WireReader_ReadLongTag)(const char* ptr, uint64_t val,
+                                             upb_EpsCopyInputStream* stream) {
+  for (int i = 1; i < 5; i++) {
+    uint64_t byte = (uint8_t)ptr[i];
+    val += (byte - 1) << (i * 7);
+    if (!(byte & 0x80)) {
+      if (val > UINT32_MAX) break;
+      return (UPB_PRIVATE(_upb_WireReader_LongVarint)){ptr + i + 1, val};
+    }
+  }
+  return (UPB_PRIVATE(_upb_WireReader_LongVarint)){
+      UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(stream), 0};
+}
+
+UPB_NOINLINE UPB_PRIVATE(_upb_WireReader_LongVarint)
+    UPB_PRIVATE(_upb_WireReader_ReadLongSize)(const char* ptr, uint64_t val,
+                                              upb_EpsCopyInputStream* stream) {
+  for (int i = 1; i < 5; i++) {
+    uint64_t byte = (uint8_t)ptr[i];
+    val += (byte - 1) << (i * 7);
+    if (!(byte & 0x80)) {
+      if (val > INT32_MAX) break;
+      return (UPB_PRIVATE(_upb_WireReader_LongVarint)){ptr + i + 1, val};
+    }
+  }
+  return (UPB_PRIVATE(_upb_WireReader_LongVarint)){
+      UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(stream), 0};
 }
 
 const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
     const char* ptr, uint32_t tag, int depth_limit,
     upb_EpsCopyInputStream* stream) {
-  if (--depth_limit == 0) return NULL;
+  if (--depth_limit < 0) {
+    return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(stream);
+  }
   uint32_t end_group_tag = (tag & ~7ULL) | kUpb_WireType_EndGroup;
   while (!upb_EpsCopyInputStream_IsDone(stream, &ptr)) {
     uint32_t tag;
-    ptr = upb_WireReader_ReadTag(ptr, &tag);
-    if (!ptr) return NULL;
+    ptr = upb_WireReader_ReadTag(ptr, &tag, stream);
+    if (!ptr) break;
     if (tag == end_group_tag) return ptr;
     ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, stream);
-    if (!ptr) return NULL;
+    if (!ptr) break;
   }
-  return ptr;
+  // Encountered limit end before end group tag.
+  return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(stream);
 }

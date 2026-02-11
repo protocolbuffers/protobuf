@@ -12,7 +12,7 @@ mod sys {
 use sys::mem::arena::RawArena;
 use sys::message::message::RawMessage;
 use sys::mini_table::extension_registry::upb_ExtensionRegistry;
-use sys::mini_table::mini_table::upb_MiniTable;
+use sys::mini_table::mini_table::RawMiniTable;
 
 // LINT.IfChange(encode_status)
 #[repr(C)]
@@ -22,6 +22,7 @@ pub enum EncodeStatus {
     OutOfMemory = 1,
     MaxDepthExceeded = 2,
     MissingRequired = 3,
+    MaxSizeExceeded = 4,
 }
 // LINT.ThenChange()
 
@@ -30,22 +31,21 @@ pub enum EncodeStatus {
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum DecodeStatus {
     Ok = 0,
-    Malformed = 1,
-    OutOfMemory = 2,
+    OutOfMemory = 1,
+    Malformed = 2,
     BadUtf8 = 3,
     MaxDepthExceeded = 4,
     MissingRequired = 5,
-    UnlinkedSubMessage = 6,
 }
 // LINT.ThenChange()
 
-extern "C" {
+unsafe extern "C" {
     // SAFETY:
     // - `mini_table` is the one associated with `msg`
     // - `buf` and `buf_size` are legally writable.
     pub fn upb_Encode(
         msg: RawMessage,
-        mini_table: *const upb_MiniTable,
+        mini_table: RawMiniTable,
         options: i32,
         arena: RawArena,
         buf: *mut *mut u8,
@@ -60,7 +60,7 @@ extern "C" {
         buf: *const u8,
         buf_size: usize,
         msg: RawMessage,
-        mini_table: *const upb_MiniTable,
+        mini_table: RawMiniTable,
         extreg: *const upb_ExtensionRegistry,
         options: i32,
         arena: RawArena,

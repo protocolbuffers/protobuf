@@ -54,6 +54,16 @@ final class IntArrayList extends AbstractProtobufList<Integer>
     this.size = size;
   }
 
+  /**
+   * Constructs a new mutable {@code IntArrayList} containing the same elements as {@code other}.
+   */
+  IntArrayList(IntArrayList other, boolean isMutable) {
+    this(
+        other.size == 0 ? EMPTY_ARRAY : Arrays.copyOf(other.array, other.size),
+        other.size,
+        isMutable);
+  }
+
   @Override
   protected void removeRange(int fromIndex, int toIndex) {
     ensureIsMutable();
@@ -145,11 +155,13 @@ final class IntArrayList extends AbstractProtobufList<Integer>
   }
 
   @Override
+  @CanIgnoreReturnValue
   public Integer set(int index, Integer element) {
     return setInt(index, element);
   }
 
   @Override
+  @CanIgnoreReturnValue
   public int setInt(int index, int element) {
     ensureIsMutable();
     ensureIndexInRange(index);
@@ -159,6 +171,7 @@ final class IntArrayList extends AbstractProtobufList<Integer>
   }
 
   @Override
+  @CanIgnoreReturnValue
   public boolean add(Integer element) {
     addInt(element);
     return true;
@@ -212,6 +225,7 @@ final class IntArrayList extends AbstractProtobufList<Integer>
   }
 
   @Override
+  @CanIgnoreReturnValue
   public boolean addAll(Collection<? extends Integer> collection) {
     ensureIsMutable();
 
@@ -245,6 +259,7 @@ final class IntArrayList extends AbstractProtobufList<Integer>
   }
 
   @Override
+  @CanIgnoreReturnValue
   public Integer remove(int index) {
     ensureIsMutable();
     ensureIndexInRange(index);

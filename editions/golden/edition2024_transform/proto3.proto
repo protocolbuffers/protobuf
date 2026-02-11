@@ -1,0 +1,47 @@
+// clang-format off
+// clang-format off
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2024";
+
+package protobuf_editions_test;
+
+import option "net/proto/proto1_features.proto";
+import option "google/protobuf/java_features.proto";
+import option "google/protobuf/cpp_features.proto";
+
+option java_outer_classname = "Proto3";
+option java_outer_classname_proto1 = "Proto3OuterClass";
+option features.field_presence = IMPLICIT;
+option java_api_version = 1;
+
+enum TestEnumProto3 {
+  option features.(pb.cpp).enum_name_uses_string_view = false;
+  option features.(pb.java).nest_in_file_class = YES;
+
+  TEST_ENUM_PROTO3_UNKNOWN = 0;
+  TEST_ENUM_PROTO3_VALUE = 1;
+}
+
+message TestMessageProto3 {
+  option features.(pb.java).nest_in_file_class = YES;
+
+  string string_field = 1 [
+    features.(pb.cpp).string_type = STRING
+  ];
+
+  map<string, string> string_map_field = 4;
+  repeated int32 int_field = 7;
+  repeated int32 int_field_packed = 8 [
+    features.(pb.proto1).legacy_packed = true
+  ];
+
+  repeated int32 int_field_unpacked = 9 [
+    features.repeated_field_encoding = EXPANDED
+  ];
+}

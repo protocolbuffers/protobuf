@@ -25,6 +25,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
@@ -67,7 +68,7 @@ ImmutableMessageLiteGenerator::ImmutableMessageLiteGenerator(
   }
 }
 
-ImmutableMessageLiteGenerator::~ImmutableMessageLiteGenerator() {}
+ImmutableMessageLiteGenerator::~ImmutableMessageLiteGenerator() = default;
 
 void ImmutableMessageLiteGenerator::GenerateStaticVariables(
     io::Printer* printer, int* bytecode_estimate) {
@@ -95,7 +96,7 @@ void ImmutableMessageLiteGenerator::GenerateInterface(io::Printer* printer) {
       {"classname", std::string(descriptor_->name())},
   };
 
-  if (!context_->options().opensource_runtime) {
+  if (!google::protobuf::internal::IsOss()) {
     printer->Print("@com.google.protobuf.Internal.ProtoNonnullApi\n");
   }
   if (descriptor_->extension_range_count() > 0) {
@@ -221,14 +222,18 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
     vars["oneof_capitalized_name"] =
         context_->GetOneofGeneratorInfo(oneof)->capitalized_name;
     vars["oneof_index"] = absl::StrCat((oneof)->index());
-    if (context_->options().opensource_runtime) {
+    if (google::protobuf::internal::IsOss()) {
       // oneofCase_ and oneof_
       printer->Print(vars,
                      "private int $oneof_name$Case_ = 0;\n"
                      "private java.lang.Object $oneof_name$_;\n");
     }
     // OneofCase enum
-    printer->Print(vars, "public enum ${$$oneof_capitalized_name$Case$}$ {\n");
+    printer->Print(
+        vars,
+        "public enum ${$$oneof_capitalized_name$Case$}$\n"
+        "    implements "
+        "com.google.protobuf.AbstractMessageLite.InternalOneOfEnum {\n");
     printer->Annotate("{", "}", oneof);
     printer->Indent();
     for (int j = 0; j < (oneof)->field_count(); j++) {
@@ -245,7 +250,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
                    "private $oneof_capitalized_name$Case(int value) {\n"
                    "  this.value = value;\n"
                    "}\n");
-    if (context_->options().opensource_runtime) {
+    if (google::protobuf::internal::IsOss()) {
       printer->Print(
           vars,
           "/**\n"
@@ -257,7 +262,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
           "}\n"
           "\n");
     }
-    if (!context_->options().opensource_runtime) {
+    if (!google::protobuf::internal::IsOss()) {
       printer->Print(
           "@com.google.protobuf.Internal.ProtoMethodMayReturnNull\n");
     }
@@ -278,7 +283,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
         "}\n"
         // TODO: Rename this to "getFieldNumber" or something to
         // disambiguate it from actual proto enums.
-        "public int getNumber() {\n"
+        "@java.lang.Override public int getNumber() {\n"
         "  return this.value;\n"
         "}\n",
         "cap_oneof_name", absl::AsciiStrToUpper(vars["oneof_name"]));
@@ -300,7 +305,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
                    "  $oneof_name$_ = null;\n"
                    "}\n"
                    "\n");
-    printer->Annotate("{", "}", oneof);
+    printer->Annotate("{", "}", oneof, io::AnnotationCollector::Semantic::kSet);
   }
 
   // Fields
@@ -526,7 +531,7 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
 
     int map_count = 0;
     int repeated_count = 0;
-    std::unique_ptr<const FieldDescriptor*[]> sorted_fields(
+    std::vector<const FieldDescriptor*> sorted_fields(
         SortFieldsByNumber(descriptor_));
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* field = sorted_fields[i];
@@ -663,7 +668,7 @@ void ImmutableMessageLiteGenerator::GenerateParseFromMethods(
       "\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_),
       "parsedelimitedreturnannotation",
-      context_->options().opensource_runtime
+      google::protobuf::internal::IsOss()
           ? ""
           : "@com.google.protobuf.Internal.ProtoMethodMayReturnNull");
 }

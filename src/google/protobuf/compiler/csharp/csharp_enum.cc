@@ -10,10 +10,10 @@
 #include <sstream>
 #include <string>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/csharp/csharp_doc_comment.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 #include "google/protobuf/compiler/csharp/csharp_options.h"
@@ -31,8 +31,7 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor, const Options* op
     descriptor_(descriptor) {
 }
 
-EnumGenerator::~EnumGenerator() {
-}
+EnumGenerator::~EnumGenerator() = default;
 
 void EnumGenerator::Generate(io::Printer* printer) {
   WriteEnumDocComment(printer, options(), descriptor_);

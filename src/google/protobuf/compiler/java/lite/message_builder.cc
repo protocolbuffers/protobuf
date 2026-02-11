@@ -50,7 +50,7 @@ MessageBuilderLiteGenerator::MessageBuilderLiteGenerator(
   }
 }
 
-MessageBuilderLiteGenerator::~MessageBuilderLiteGenerator() {}
+MessageBuilderLiteGenerator::~MessageBuilderLiteGenerator() = default;
 
 void MessageBuilderLiteGenerator::Generate(io::Printer* printer) {
   WriteMessageDocComment(printer, descriptor_, context_->options());
@@ -98,7 +98,7 @@ void MessageBuilderLiteGenerator::Generate(io::Printer* printer) {
                    "  return this;\n"
                    "}\n"
                    "\n");
-    printer->Annotate("{", "}", oneof);
+    printer->Annotate("{", "}", oneof, io::AnnotationCollector::Semantic::kSet);
   }
 
   for (int i = 0; i < descriptor_->field_count(); i++) {

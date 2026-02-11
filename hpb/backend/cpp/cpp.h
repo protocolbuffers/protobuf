@@ -8,8 +8,10 @@
 #ifndef GOOGLE_PROTOBUF_HPB_BACKEND_CPP_CPP_H__
 #define GOOGLE_PROTOBUF_HPB_BACKEND_CPP_CPP_H__
 
+#include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "hpb/arena.h"
+#include "hpb/extension.h"
 #include "hpb/internal/template_help.h"
 #include "hpb/ptr.h"
 
@@ -18,12 +20,12 @@ namespace hpb::internal::backend::cpp {
 // hpb(cpp) backend stubs.
 
 template <typename T>
-typename T::Proxy CreateMessage(Arena& arena) {
+typename T::Proxy CreateMessage(hpb::Arena& arena) {
   return typename T::Proxy();
 }
 
 template <typename T>
-typename T::Proxy CloneMessage(Ptr<T> message, Arena& arena) {
+typename T::Proxy CloneMessage(Ptr<T> message, hpb::Arena& arena) {
   abort();
 }
 
@@ -38,7 +40,19 @@ void DeepCopy(Ptr<const T> source_message, Ptr<T> target_message) {
 }
 
 template <typename T>
-absl::string_view Serialize(PtrOrRaw<T> message, Arena& arena) {
+absl::string_view Serialize(PtrOrRaw<T> message, hpb::Arena& arena) {
+  abort();
+}
+
+template <typename T>
+bool Parse(PtrOrRaw<T> message, absl::string_view bytes,
+           const ExtensionRegistry& extension_registry) {
+  abort();
+}
+
+template <typename T>
+absl::StatusOr<T> Parse(absl::string_view bytes,
+                        const ExtensionRegistry& extension_registry) {
   abort();
 }
 

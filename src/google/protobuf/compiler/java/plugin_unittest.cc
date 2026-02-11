@@ -28,8 +28,8 @@ namespace {
 
 class TestGenerator : public CodeGenerator {
  public:
-  TestGenerator() {}
-  ~TestGenerator() override {}
+  TestGenerator() = default;
+  ~TestGenerator() override = default;
 
   bool Generate(const FileDescriptor* file, const std::string& parameter,
                 GeneratorContext* context, std::string* error) const override {
@@ -57,7 +57,7 @@ class TestGenerator : public CodeGenerator {
   }
 
   Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
-  Edition GetMaximumEdition() const override { return Edition::EDITION_2023; }
+  Edition GetMaximumEdition() const override { return Edition::EDITION_2024; }
 };
 
 // This test verifies that all the expected insertion points exist.  It does

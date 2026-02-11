@@ -11,6 +11,7 @@
 
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
@@ -75,7 +76,7 @@ void ImmutableMapFieldGenerator::SetMessageVariables(
   // The code that generates the open-source version appears not to understand
   // #else, so we have an #ifndef instead.
   std::string pass_through_nullness =
-      context_->options().opensource_runtime
+      google::protobuf::internal::IsOss()
           ? "/* nullable */\n"
           : "@com.google.protobuf.Internal.ProtoPassThroughNullness ";
 
@@ -201,7 +202,7 @@ void ImmutableMapFieldGenerator::GenerateInterfaceMembers(
 
   const FieldDescriptor* value = MapValueField(descriptor_);
   if (GetJavaType(value) == JAVATYPE_ENUM) {
-    if (context_->options().opensource_runtime) {
+    if (google::protobuf::internal::IsOss()) {
       printer->Print(variables_,
                      "/**\n"
                      " * Use {@link #get$capitalized_name$Map()} instead.\n"
@@ -261,7 +262,7 @@ void ImmutableMapFieldGenerator::GenerateInterfaceMembers(
       printer->Annotate("{", "}", descriptor_);
     }
   } else {
-    if (context_->options().opensource_runtime) {
+    if (google::protobuf::internal::IsOss()) {
       printer->Print(variables_,
                      "/**\n"
                      " * Use {@link #get$capitalized_name$Map()} instead.\n"
@@ -395,7 +396,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
 
   const FieldDescriptor* value = MapValueField(descriptor_);
   if (GetJavaType(value) == JAVATYPE_ENUM) {
-    if (context_->options().opensource_runtime) {
+    if (google::protobuf::internal::IsOss()) {
       printer->Print(
           variables_,
           "/**\n"
@@ -439,7 +440,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
     printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
     if (SupportUnknownEnumValue(value)) {
-      if (context_->options().opensource_runtime) {
+      if (google::protobuf::internal::IsOss()) {
         printer->Print(
             variables_,
             "/**\n"
@@ -482,7 +483,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
       printer->Annotate("{", "}", descriptor_, Semantic::kSet);
     }
   } else {
-    if (context_->options().opensource_runtime) {
+    if (google::protobuf::internal::IsOss()) {
       printer->Print(
           variables_,
           "/**\n"
@@ -547,7 +548,7 @@ void ImmutableMapFieldGenerator::GenerateMapGetters(
 
   const FieldDescriptor* value = MapValueField(descriptor_);
   if (GetJavaType(value) == JAVATYPE_ENUM) {
-    if (context_->options().opensource_runtime) {
+    if (google::protobuf::internal::IsOss()) {
       printer->Print(
           variables_,
           "/**\n"
@@ -661,7 +662,7 @@ void ImmutableMapFieldGenerator::GenerateMapGetters(
       printer->Annotate("{", "}", descriptor_);
     }
   } else {
-    if (context_->options().opensource_runtime) {
+    if (google::protobuf::internal::IsOss()) {
       printer->Print(variables_,
                      "/**\n"
                      " * Use {@link #get$capitalized_name$Map()} instead.\n"
@@ -799,7 +800,7 @@ void ImmutableMapFieldGenerator::GenerateMessageMapBuilderMembers(
                  "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
-  if (context_->options().opensource_runtime) {
+  if (google::protobuf::internal::IsOss()) {
     printer->Print(
         variables_,
         "/**\n"
@@ -887,7 +888,7 @@ void ImmutableMapFieldGenerator::GenerateMessageMapGetters(
       "internalGet$capitalized_name$().ensureBuilderMap().containsKey(key);\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
-  if (context_->options().opensource_runtime) {
+  if (google::protobuf::internal::IsOss()) {
     printer->Print(variables_,
                    "/**\n"
                    " * Use {@link #get$capitalized_name$Map()} instead.\n"
@@ -1042,7 +1043,7 @@ void ImmutableMapFieldGenerator::GenerateSerializedSizeCode(
       "  $name$__ = $default_entry$.newBuilderForType()\n"
       "      .setKey(entry.getKey())\n"
       "      .setValue(entry.getValue())\n"
-      "      .build();\n"
+      "      .buildPartial();\n"
       "  size += com.google.protobuf.CodedOutputStream\n"
       "      .computeMessageSize($number$, $name$__);\n"
       "}\n");

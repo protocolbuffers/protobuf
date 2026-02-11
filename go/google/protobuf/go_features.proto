@@ -80,4 +80,33 @@ message GoFeatures {
       value: "STRIP_ENUM_PREFIX_KEEP"
     }
   ];
+
+  // Wrap the OptimizeMode enum in a message for scoping:
+  // This way, users can type shorter names (SPEED, CODE_SIZE).
+  message OptimizeModeFeature {
+    // The name of this enum matches OptimizeMode in descriptor.proto.
+    enum OptimizeMode {
+      // OPTIMIZE_MODE_UNSPECIFIED results in falling back to the default
+      // (optimize for code size), but needs to be a separate value to distinguish
+      // between an explicitly set optimize mode or a missing optimize mode.
+      OPTIMIZE_MODE_UNSPECIFIED = 0;
+      SPEED = 1;
+      CODE_SIZE = 2;
+      // There is no enum entry for LITE_RUNTIME (descriptor.proto),
+      // because Go Protobuf does not have the concept of a lite runtime.
+    }
+  }
+
+  optional OptimizeModeFeature.OptimizeMode optimize_mode = 4 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_MESSAGE,
+    targets = TARGET_TYPE_FILE,
+    feature_support = {
+      edition_introduced: EDITION_2024,
+    },
+    edition_defaults = {
+      edition: EDITION_LEGACY,
+      value: "OPTIMIZE_MODE_UNSPECIFIED"
+    }
+  ];
 }

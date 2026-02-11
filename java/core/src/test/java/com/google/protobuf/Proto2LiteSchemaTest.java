@@ -18,9 +18,4 @@ public class Proto2LiteSchemaTest extends AbstractProto2LiteSchemaTest {
   protected Schema<Proto2MessageLite> schema() {
     return TestSchemasLite.genericProto2LiteSchema;
   }
-
-  @Override
-  protected void registerSchemas() {
-    TestSchemasLite.registerGenericProto2LiteSchemas();
-  }
 }

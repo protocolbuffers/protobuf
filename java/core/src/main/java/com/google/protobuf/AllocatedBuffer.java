@@ -10,6 +10,7 @@ package com.google.protobuf;
 import static com.google.protobuf.Internal.checkNotNull;
 
 import java.nio.ByteBuffer;
+import java.util.Locale;
 
 /**
  * A buffer that was allocated by a {@link BufferAllocator}. For every buffer, it is guaranteed that
@@ -119,7 +120,8 @@ abstract class AllocatedBuffer {
   public static AllocatedBuffer wrap(final byte[] bytes, final int offset, final int length) {
     if (offset < 0 || length < 0 || (offset + length) > bytes.length) {
       throw new IndexOutOfBoundsException(
-          String.format("bytes.length=%d, offset=%d, length=%d", bytes.length, offset, length));
+          String.format(
+              Locale.ROOT, "bytes.length=%d, offset=%d, length=%d", bytes.length, offset, length));
     }
 
     return wrapNoCheck(bytes, offset, length);

@@ -15,9 +15,34 @@ use sys::mem::arena::RawArena;
 use sys::opaque_pointee::opaque_pointee;
 
 opaque_pointee!(upb_MiniTable);
-pub type RawMiniTable = NonNull<upb_MiniTable>;
+#[repr(transparent)]
+#[derive(Copy, Clone)]
+pub struct RawMiniTable(NonNull<upb_MiniTable>);
+
+impl RawMiniTable {
+    pub const fn dangling() -> RawMiniTable {
+        RawMiniTable(NonNull::dangling())
+    }
+
+    /// # Safety:
+    /// - `m` must be non-null
+    pub unsafe fn new(m: *mut upb_MiniTable) -> RawMiniTable {
+        RawMiniTable(unsafe { NonNull::new_unchecked(m) })
+    }
+}
 
 opaque_pointee!(upb_MiniTableEnum);
+#[repr(transparent)]
+#[derive(Copy, Clone)]
+pub struct RawMiniTableEnum(NonNull<upb_MiniTableEnum>);
+
+impl RawMiniTableEnum {
+    /// # Safety:
+    /// - `m` must be non-null
+    pub unsafe fn new(m: *mut upb_MiniTableEnum) -> RawMiniTableEnum {
+        RawMiniTableEnum(unsafe { NonNull::new_unchecked(m) })
+    }
+}
 
 opaque_pointee!(upb_MiniTableField);
 pub type RawMiniTableField = NonNull<upb_MiniTableField>;
@@ -26,14 +51,14 @@ pub type RawMiniTableField = NonNull<upb_MiniTableField>;
 // we are not currently using it.
 opaque_pointee!(upb_Status);
 
-extern "C" {
+unsafe extern "C" {
     /// Finds the field with the provided number, will return NULL if no such
     /// field is found.
     ///
     /// # Safety
     /// - `m` must be legal to deref
     pub fn upb_MiniTable_FindFieldByNumber(
-        m: *const upb_MiniTable,
+        m: RawMiniTable,
         number: u32,
     ) -> *const upb_MiniTableField;
 
@@ -44,19 +69,13 @@ extern "C" {
     /// # Safety
     /// - `m` must be legal to deref
     /// - `number` must be a valid field index in the `m` table
-    pub fn upb_MiniTable_GetFieldByIndex(
-        m: *const upb_MiniTable,
-        number: u32,
-    ) -> *const upb_MiniTableField;
+    pub fn upb_MiniTable_GetFieldByIndex(m: RawMiniTable, number: u32) -> RawMiniTableField;
 
     /// Gets the sub-MiniTable associated with `f`.
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a mesage or map typed field associated with `m`
-    pub fn upb_MiniTable_SubMessage(
-        m: *const upb_MiniTable,
-        f: *const upb_MiniTableField,
-    ) -> *const upb_MiniTable;
+    pub fn upb_MiniTable_SubMessage(f: RawMiniTableField) -> RawMiniTable;
 
     /// Builds a mini table from the data encoded in the buffer [data, len]. If
     /// any errors occur, returns null and sets a status message if status is
@@ -84,7 +103,7 @@ extern "C" {
         len: usize,
         arena: RawArena,
         status: *mut upb_Status,
-    ) -> *const upb_MiniTableEnum;
+    ) -> *mut upb_MiniTableEnum;
 
     /// Links a message to its sub-messages and sub-enums. The caller must pass
     /// arrays of sub-tables and sub-enums, in the same length and order as is
@@ -101,10 +120,10 @@ extern "C" {
     ///   to `upb_MiniTableEnum`.
     /// - This must only be called once for a given MiniTable.
     pub fn upb_MiniTable_Link(
-        m: *mut upb_MiniTable,
-        sub_tables: *const *const upb_MiniTable,
+        m: RawMiniTable,
+        sub_tables: *const RawMiniTable,
         sub_table_count: usize,
-        sub_enums: *const *const upb_MiniTableEnum,
+        sub_enums: *const RawMiniTableEnum,
         sub_enum_count: usize,
     ) -> bool;
 }

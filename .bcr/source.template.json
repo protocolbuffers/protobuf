@@ -1,5 +1,5 @@
 {
   "integrity": "**leave this alone**",
   "strip_prefix": "{REPO}-{VERSION}",
-  "url": "https://github.com/{OWNER}/{REPO}/releases/download/{TAG}/{REPO}-{VERSION}.zip"
+  "url": "https://github.com/{OWNER}/{REPO}/releases/download/{TAG}/{REPO}-{VERSION}.bazel.tar.gz"
 }

@@ -8,6 +8,7 @@ load(
     "tool_path",
     "with_feature_set",
 )
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 
 all_link_actions = [
     ACTION_NAMES.cpp_link_executable,

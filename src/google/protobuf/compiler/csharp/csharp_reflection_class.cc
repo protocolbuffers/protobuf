@@ -38,8 +38,7 @@ ReflectionClassGenerator::ReflectionClassGenerator(const FileDescriptor* file,
   extensionClassname_ = GetExtensionClassUnqualifiedName(file);
 }
 
-ReflectionClassGenerator::~ReflectionClassGenerator() {
-}
+ReflectionClassGenerator::~ReflectionClassGenerator() = default;
 
 void ReflectionClassGenerator::Generate(io::Printer* printer) {
   WriteIntroduction(printer);

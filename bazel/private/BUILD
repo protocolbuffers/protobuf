@@ -29,22 +29,6 @@ toolchain_type(
 )
 
 bzl_library(
-    name = "upb_proto_library_internal_bzl",
-    srcs = [
-        "upb_proto_library_internal/aspect.bzl",
-        "upb_proto_library_internal/cc_library_func.bzl",
-        "upb_proto_library_internal/copts.bzl",
-        "upb_proto_library_internal/rule.bzl",
-    ],
-    visibility = ["//bazel:__pkg__"],
-    deps = [
-        "//bazel/common:proto_common_bzl",
-        "@bazel_skylib//lib:paths",
-        "@bazel_tools//tools/cpp:toolchain_utils.bzl",
-    ],
-)
-
-bzl_library(
     name = "native_bzl",
     srcs = [
         "native.bzl",
@@ -75,12 +59,14 @@ bzl_library(
 )
 
 bzl_library(
-    name = "bazel_java_proto_library_rule_bzl",
+    name = "java_proto_library_bzl",
     srcs = [
-        "bazel_java_proto_library_rule.bzl",
+        "java_proto_library.bzl",
         "java_proto_support.bzl",
     ],
-    visibility = ["//bazel:__subpackages__"],
+    visibility = [
+        "//bazel:__subpackages__",
+    ],
     deps = [
         ":toolchain_helpers_bzl",
         "//bazel/common:proto_common_bzl",
@@ -107,18 +93,13 @@ bzl_library(
 )
 
 bzl_library(
-    name = "bazel_cc_proto_library_bzl",
-    srcs = [
-        "bazel_cc_proto_library.bzl",
-        "cc_proto_support.bzl",
-    ],
-    visibility = ["//bazel:__subpackages__"],
+    name = "cc_proto_support_bzl",
+    srcs = ["cc_proto_support.bzl"],
+    visibility = ["//bazel/private:__subpackages__"],
     deps = [
-        ":toolchain_helpers_bzl",
-        "//bazel/common:proto_common_bzl",
-        "//bazel/common:proto_info_bzl",
         "@proto_bazel_features//:features",
         "@rules_cc//cc:find_cc_toolchain_bzl",
+        "@rules_cc//cc/common",
     ],
 )
 
@@ -151,10 +132,26 @@ bzl_library(
 )
 
 bzl_library(
+    name = "java_proto_aspect_names_bzl",
+    srcs = ["java_proto_aspect_names.bzl"],
+    visibility = ["@rules_java//java/google/rules:__pkg__"],
+)
+
+bzl_library(
     name = "cc_proto_aspect_bzl",
     srcs = ["cc_proto_aspect.bzl"],
+    visibility = [
+        "//rust/bazel:__pkg__",
+    ],
     deps = [
-        ":bazel_cc_proto_library_bzl",
+        "//bazel/private/oss:cc_proto_library_bzl",
+    ],
+)
+
+bzl_library(
+    name = "cc_proto_aspect_name_bzl",
+    srcs = ["cc_proto_aspect_name.bzl"],
+    visibility = [
     ],
 )
 
@@ -167,6 +164,7 @@ bzl_library(
     deps = [
         ":native_bzl",
         "//bazel/common:proto_lang_toolchain_info_bzl",
+        "//bazel/flags:flags_bzl",
     ],
 )
 
@@ -205,9 +203,11 @@ filegroup(
     testonly = True,
     srcs = [
         "BUILD",
+        ":java_proto_library_bzl",
         ":native_bool_flag_bzl",
+        ":toolchain_helpers_bzl",
         "//bazel:for_bazel_tests",
-        "//bazel/private/toolchains:for_bazel_tests",
+        "//bazel/private/oss/toolchains:for_bazel_tests",
     ],
     visibility = ["//visibility:public"],
 )

@@ -211,12 +211,14 @@ def _compile(
         additional_args.use_param_file(param_file_arg = "@%s")
         additional_args.set_param_file_format("multiline")
 
+    declarations = getattr(proto_info, "transitive_extension_declarations", depset())
+
     actions.run(
         mnemonic = proto_lang_toolchain_info.mnemonic,
         progress_message = experimental_progress_message if experimental_progress_message else proto_lang_toolchain_info.progress_message,
         executable = proto_lang_toolchain_info.proto_compiler,
         arguments = [args, additional_args] if additional_args else [args],
-        inputs = depset(transitive = [proto_info.transitive_sources, additional_inputs]),
+        inputs = depset(transitive = [proto_info.transitive_sources, declarations, additional_inputs]),
         outputs = generated_files,
         tools = tools,
         use_default_shell_env = True,

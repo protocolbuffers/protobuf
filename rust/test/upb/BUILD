@@ -62,3 +62,30 @@ rust_test(
         "@crate_index//:googletest",
     ],
 )
+
+rust_test(
+    name = "entity_type_test",
+    srcs = ["entity_type_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb_export": "protobuf",
+    },
+    deps = [
+        "//rust:protobuf_upb_export",
+        "//rust/test:unittest_upb_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "generated_descriptors_test",
+    srcs = ["generated_descriptors_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb_export": "protobuf",
+    },
+    deps = [
+        "//rust:protobuf_upb_export",
+        "//rust/test:descriptor_upb_rust_proto",
+        "//rust/test:unittest_upb_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)

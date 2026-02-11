@@ -14,13 +14,11 @@ use std::fmt;
 // This problem is referred to as "perfect derive".
 // https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
 
-// Temporarily use the proc macro implementation of the proto! macro only with blazel,
-// and the macro_rules impl with Cargo builds.
-#[cfg(bzl)]
-pub use proto_proc_macro::proto_proc as proto;
-#[cfg(not(bzl))]
-mod proto_macro;
+#[doc(inline)]
+pub use crate::__internal::runtime::message_eq;
 
+#[cfg(all(cpp_kernel, not(lite_runtime)))]
+pub use crate::codegen_traits::interop::MessageDescriptorInterop;
 pub use crate::codegen_traits::{
     create::Parse,
     interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop},
@@ -29,15 +27,20 @@ pub use crate::codegen_traits::{
     Message, MessageMut, MessageView,
 };
 pub use crate::cord::{ProtoBytesCow, ProtoStringCow};
-pub use crate::map::{Map, MapIter, MapMut, MapView, ProxiedInMapValue};
+pub use crate::map::{Map, MapIter, MapKey, MapMut, MapValue, MapView};
+
 pub use crate::optional::Optional;
 pub use crate::proxied::{
-    AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Proxied, Proxy, View,
-    ViewProxy,
+    AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, Proxied, View,
 };
 pub use crate::r#enum::{Enum, UnknownEnumValue};
-pub use crate::repeated::{ProxiedInRepeated, Repeated, RepeatedIter, RepeatedMut, RepeatedView};
+pub use crate::repeated::{Repeated, RepeatedIter, RepeatedMut, RepeatedView};
+pub use crate::singular::Singular;
 pub use crate::string::{ProtoBytes, ProtoStr, ProtoString, Utf8Error};
+pub use protobuf_macros::proto_proc as proto;
+
+// TODO: Remove this alias once we have confirmed there are no incoming references.
+pub use Singular as ProxiedInRepeated;
 
 pub mod prelude;
 
@@ -57,6 +60,7 @@ pub mod prelude;
 /// convention. As application code should never use this module, anything
 /// changes under `__internal` is not considered a semver breaking change.
 #[path = "internal.rs"]
+#[doc(hidden)]
 pub mod __internal;
 
 mod codegen_traits;
@@ -68,24 +72,17 @@ mod optional;
 mod primitive;
 mod proxied;
 mod repeated;
+mod singular;
 mod string;
 
 #[cfg(not(bzl))]
 #[path = "upb/lib.rs"]
 mod upb;
 
-#[cfg(not(bzl))]
-mod utf8;
-
-// Forces the utf8 crate to be accessible from crate::.
-#[cfg(bzl)]
-#[allow(clippy::single_component_path_imports)]
-use utf8;
-
 // If the Upb and C++ kernels are both linked into the same binary, this symbol
 // will be defined twice and cause a link error.
-#[no_mangle]
-extern "C" fn __Disallow_Upb_And_Cpp_In_Same_Binary() {}
+#[unsafe(no_mangle)]
+unsafe extern "C" fn __Disallow_Upb_And_Cpp_In_Same_Binary() {}
 
 /// An error that happened during parsing.
 #[derive(Debug, Clone)]

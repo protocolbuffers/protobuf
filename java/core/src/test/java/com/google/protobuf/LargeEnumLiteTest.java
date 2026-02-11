@@ -10,6 +10,8 @@ package com.google.protobuf;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
+import com.google.protobuf.large.openaliasingenum.edition.LargeOpenAliasingEnum;
+import com.google.protobuf.large.openaliasingenum.edition.LargeOpenAliasingEnumParent;
 import com.google.protobuf.large.openenum.edition.LargeOpenEnum;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,10 +19,30 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class LargeEnumLiteTest {
+  @Test
+  public void testLargeEnumRoundTrip() throws Exception {
+    LargeOpenAliasingEnumParent msg =
+        LargeOpenAliasingEnumParent.newBuilder()
+            .addValues(LargeOpenAliasingEnum.LARGE_ENUM1)
+            .addValues(LargeOpenAliasingEnum.LARGE_ENUM2_ALIAS)
+            .addValues(LargeOpenAliasingEnum.LARGE_ENUM1_ALIAS)
+            .addValues(LargeOpenAliasingEnum.LARGE_ENUM1060)
+            .addValues(LargeOpenAliasingEnum.LARGE_ENUM2000)
+            .build();
+    LargeOpenAliasingEnumParent roundTrip =
+        LargeOpenAliasingEnumParent.parseFrom(
+            msg.toByteArray(), ExtensionRegistryLite.getEmptyRegistry());
+    assertThat(roundTrip).isEqualTo(msg);
+  }
 
   @Test
-  public void testOpenLargeEnum() throws Exception {
+  public void testUnrecognizedGetNumberThrows() throws Exception {
     assertThrows(IllegalArgumentException.class, LargeOpenEnum.UNRECOGNIZED::getNumber);
+  }
+
+  @Test
+  public void testValuesHasAllCanonicals() throws Exception {
+    // The values() method returns only the canonical values, sorted in index order.
     assertThat(LargeOpenEnum.values())
         .isEqualTo(
             new LargeOpenEnum[] {

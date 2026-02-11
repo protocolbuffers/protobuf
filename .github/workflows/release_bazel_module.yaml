@@ -1,0 +1,34 @@
+# Prepare a release specifically for Bazel users, including a pre-built protoc.
+name: Bazel Release
+on:
+  # Can be triggered from the GitHub Actions ui, using the "Run workflow" button on
+  # https://github.com/protocolbuffers/protobuf/actions/workflows/release_bazel_module.yaml
+  # TODO: consider automating the trigger from a new release being created
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: git tag that has the protoc release artifact
+        required: true
+        type: string
+permissions:
+  id-token: write
+  attestations: write
+  contents: write
+jobs:
+  release:
+    uses: bazel-contrib/.github/.github/workflows/release_ruleset.yaml@v7.3.0
+    with:
+      release_files: protobuf-*.bazel.tar.gz
+      prerelease: ${{ contains(inputs.tag_name, '-rc') }}
+      generate_release_notes: false
+      tag_name: ${{ inputs.tag_name }}
+      # The release was already created by Google-internal mechanism,
+      # so there aren't any useful assertions to make here.
+      bazel_test_command: 'true'
+  publish:
+    needs: release
+    uses: ./.github/workflows/publish_to_bcr.yaml
+    with:
+      tag_name: ${{ inputs.tag_name }}
+    secrets:
+      BOT_ACCESS_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}

@@ -20,7 +20,9 @@
 #include <unistd.h>
 #endif
 
+#include "absl/base/log_severity.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/globals.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
@@ -50,7 +52,7 @@ class GeneratorResponseContext : public GeneratorContext {
       : compiler_version_(compiler_version),
         response_(response),
         parsed_files_(parsed_files) {}
-  ~GeneratorResponseContext() override {}
+  ~GeneratorResponseContext() override = default;
 
   // implements GeneratorContext --------------------------------------
 

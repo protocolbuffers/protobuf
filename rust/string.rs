@@ -9,12 +9,9 @@
 #![allow(dead_code)]
 #![allow(unused)]
 
-use crate::__internal::runtime::{InnerProtoString, PtrAndLen, RawMessage};
+use crate::__internal::runtime::InnerProtoString;
 use crate::__internal::{Private, SealedInternal};
-use crate::{
-    utf8::Utf8Chunks, AsView, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Optional, Proxied,
-    Proxy, View, ViewProxy,
-};
+use crate::{AsView, IntoProxied, IntoView, MapKey, Mut, MutProxied, Optional, Proxied, View};
 use std::borrow::Cow;
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 use std::convert::{AsMut, AsRef};
@@ -131,8 +128,6 @@ impl IntoProxied<ProtoBytes> for Arc<[u8]> {
 
 impl SealedInternal for &[u8] {}
 
-impl<'msg> Proxy<'msg> for &'msg [u8] {}
-
 impl AsView for &[u8] {
     type Proxied = ProtoBytes;
 
@@ -149,8 +144,6 @@ impl<'msg> IntoView<'msg> for &'msg [u8] {
         self
     }
 }
-
-impl<'msg> ViewProxy<'msg> for &'msg [u8] {}
 
 /// The bytes were not valid UTF-8.
 #[derive(Debug, PartialEq)]
@@ -399,43 +392,6 @@ impl ProtoStr {
         self.0.len()
     }
 
-    /// Iterates over the `char`s in this protobuf `string`.
-    ///
-    /// Invalid UTF-8 sequences are replaced with
-    /// [`U+FFFD REPLACEMENT CHARACTER`].
-    ///
-    /// [`U+FFFD REPLACEMENT CHARACTER`]: std::char::REPLACEMENT_CHARACTER
-    pub fn chars(&self) -> impl Iterator<Item = char> + '_ + fmt::Debug {
-        Utf8Chunks::new(self.as_bytes()).flat_map(|chunk| {
-            let mut yield_replacement_char = !chunk.invalid().is_empty();
-            chunk.valid().chars().chain(iter::from_fn(move || {
-                // Yield a single replacement character for every
-                // non-empty invalid sequence.
-                yield_replacement_char.then(|| {
-                    yield_replacement_char = false;
-                    char::REPLACEMENT_CHARACTER
-                })
-            }))
-        })
-    }
-
-    /// Returns an iterator over chunks of UTF-8 data in the string.
-    ///
-    /// An `Ok(&str)` is yielded for every valid UTF-8 chunk, and an
-    /// `Err(&[u8])` for each non-UTF-8 chunk. An `Err` will be emitted
-    /// multiple times in a row for contiguous invalid chunks. Each invalid
-    /// chunk in an `Err` has a maximum length of 3 bytes.
-    pub fn utf8_chunks(&self) -> impl Iterator<Item = Result<&str, &[u8]>> + '_ {
-        Utf8Chunks::new(self.as_bytes()).flat_map(|chunk| {
-            let valid = chunk.valid();
-            let invalid = chunk.invalid();
-            (!valid.is_empty())
-                .then_some(Ok(valid))
-                .into_iter()
-                .chain((!invalid.is_empty()).then_some(Err(invalid)))
-        })
-    }
-
     /// Converts known-UTF-8 bytes to a `ProtoStr` without a check.
     ///
     /// # Safety
@@ -491,20 +447,24 @@ impl<'msg> TryFrom<&'msg [u8]> for &'msg ProtoStr {
 
 impl fmt::Debug for ProtoStr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Debug::fmt(&Utf8Chunks::new(self.as_bytes()).debug(), f)
+        write!(f, "\"");
+        for chunk in self.as_bytes().utf8_chunks() {
+            for ch in chunk.valid().chars() {
+                write!(f, "{}", ch.escape_debug());
+            }
+            for byte in chunk.invalid() {
+                // Format byte as \xff.
+                write!(f, "\\x{:02X}", byte);
+            }
+        }
+        write!(f, "\"");
+        Ok(())
     }
 }
 
 impl fmt::Display for ProtoStr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        use std::fmt::Write as _;
-        for chunk in Utf8Chunks::new(self.as_bytes()) {
-            fmt::Display::fmt(chunk.valid(), f)?;
-            if !chunk.invalid().is_empty() {
-                // One invalid chunk is emitted per detected invalid sequence.
-                f.write_char(char::REPLACEMENT_CHARACTER)?;
-            }
-        }
+        fmt::Display::fmt(&String::from_utf8_lossy(self.as_bytes()), f)?;
         Ok(())
     }
 }
@@ -526,6 +486,8 @@ impl Proxied for ProtoString {
     type View<'msg> = &'msg ProtoStr;
 }
 
+impl MapKey for ProtoString {}
+
 impl AsView for ProtoString {
     type Proxied = Self;
 
@@ -533,8 +495,6 @@ impl AsView for ProtoString {
         self.as_view()
     }
 }
-
-impl<'msg> Proxy<'msg> for &'msg ProtoStr {}
 
 impl AsView for &ProtoStr {
     type Proxied = ProtoString;
@@ -552,8 +512,6 @@ impl<'msg> IntoView<'msg> for &'msg ProtoStr {
         self
     }
 }
-
-impl<'msg> ViewProxy<'msg> for &'msg ProtoStr {}
 
 /// Implements `PartialCmp` and `PartialEq` for the `lhs` against the `rhs`
 /// using `AsRef<[u8]>`.
@@ -616,200 +574,5 @@ mod tests {
         // SAFETY: The runtime that this test executes under does not elide UTF-8 checks
         // inside of `ProtoStr`.
         unsafe { ProtoStr::from_utf8_unchecked(bytes) }
-    }
-
-    // UTF-8 test cases copied from:
-    // https://github.com/rust-lang/rust/blob/e8ee0b7/library/core/tests/str_lossy.rs
-
-    #[gtest]
-    fn proto_str_debug() {
-        assert_eq!(&format!("{:?}", test_proto_str(b"Hello There")), "\"Hello There\"");
-        assert_eq!(
-            &format!(
-                "{:?}",
-                test_proto_str(b"Hello\xC0\x80 There\xE6\x83 Goodbye\xf4\x8d\x93\xaa"),
-            ),
-            "\"Hello\\xC0\\x80 There\\xE6\\x83 Goodbye\\u{10d4ea}\"",
-        );
-    }
-
-    #[gtest]
-    fn proto_str_display() {
-        assert_eq!(&test_proto_str(b"Hello There").to_string(), "Hello There");
-        assert_eq!(
-            &test_proto_str(b"Hello\xC0\x80 There\xE6\x83 Goodbye\xf4\x8d\x93\xaa").to_string(),
-            "Hello�� There� Goodbye\u{10d4ea}",
-        );
-    }
-
-    #[gtest]
-    fn proto_str_to_rust_str() {
-        assert_eq!(test_proto_str(b"hello").to_str(), Ok("hello"));
-        assert_eq!(test_proto_str("ศไทย中华Việt Nam".as_bytes()).to_str(), Ok("ศไทย中华Việt Nam"));
-        for expect_fail in [
-            &b"Hello\xC2 There\xFF Goodbye"[..],
-            b"Hello\xC0\x80 There\xE6\x83 Goodbye",
-            b"\xF5foo\xF5\x80bar",
-            b"\xF1foo\xF1\x80bar\xF1\x80\x80baz",
-            b"\xF4foo\xF4\x80bar\xF4\xBFbaz",
-            b"\xF0\x80\x80\x80foo\xF0\x90\x80\x80bar",
-            b"\xED\xA0\x80foo\xED\xBF\xBFbar",
-        ] {
-            assert!(
-                matches!(test_proto_str(expect_fail).to_str(), Err(Utf8Error { inner: _ })),
-                "{expect_fail:?}"
-            );
-        }
-    }
-
-    #[gtest]
-    fn proto_str_to_cow() {
-        assert_eq!(test_proto_str(b"hello").to_cow_lossy(), Cow::Borrowed("hello"));
-        assert_eq!(
-            test_proto_str("ศไทย中华Việt Nam".as_bytes()).to_cow_lossy(),
-            Cow::Borrowed("ศไทย中华Việt Nam")
-        );
-        for (bytes, lossy_str) in [
-            (&b"Hello\xC2 There\xFF Goodbye"[..], "Hello� There� Goodbye"),
-            (b"Hello\xC0\x80 There\xE6\x83 Goodbye", "Hello�� There� Goodbye"),
-            (b"\xF5foo\xF5\x80bar", "�foo��bar"),
-            (b"\xF1foo\xF1\x80bar\xF1\x80\x80baz", "�foo�bar�baz"),
-            (b"\xF4foo\xF4\x80bar\xF4\xBFbaz", "�foo�bar��baz"),
-            (b"\xF0\x80\x80\x80foo\xF0\x90\x80\x80bar", "����foo\u{10000}bar"),
-            (b"\xED\xA0\x80foo\xED\xBF\xBFbar", "���foo���bar"),
-        ] {
-            let cow = test_proto_str(bytes).to_cow_lossy();
-            assert!(matches!(cow, Cow::Owned(_)));
-            assert_eq!(&*cow, lossy_str, "{bytes:?}");
-        }
-    }
-
-    #[gtest]
-    fn proto_str_utf8_chunks() {
-        macro_rules! assert_chunks {
-            ($bytes:expr, $($chunks:expr),* $(,)?) => {
-                let bytes = $bytes;
-                let chunks: &[std::result::Result<&str, &[u8]>] = &[$($chunks),*];
-                let s = test_proto_str(bytes);
-                let mut got_chunks = s.utf8_chunks();
-                let mut expected_chars = chunks.iter().copied();
-                assert!(got_chunks.eq(expected_chars), "{bytes:?} -> {chunks:?}");
-            };
-        }
-        assert_chunks!(b"hello", Ok("hello"));
-        assert_chunks!("ศไทย中华Việt Nam".as_bytes(), Ok("ศไทย中华Việt Nam"));
-        assert_chunks!(
-            b"Hello\xC2 There\xFF Goodbye",
-            Ok("Hello"),
-            Err(b"\xC2"),
-            Ok(" There"),
-            Err(b"\xFF"),
-            Ok(" Goodbye"),
-        );
-        assert_chunks!(
-            b"Hello\xC0\x80 There\xE6\x83 Goodbye",
-            Ok("Hello"),
-            Err(b"\xC0"),
-            Err(b"\x80"),
-            Ok(" There"),
-            Err(b"\xE6\x83"),
-            Ok(" Goodbye"),
-        );
-        assert_chunks!(
-            b"\xF5foo\xF5\x80bar",
-            Err(b"\xF5"),
-            Ok("foo"),
-            Err(b"\xF5"),
-            Err(b"\x80"),
-            Ok("bar"),
-        );
-        assert_chunks!(
-            b"\xF1foo\xF1\x80bar\xF1\x80\x80baz",
-            Err(b"\xF1"),
-            Ok("foo"),
-            Err(b"\xF1\x80"),
-            Ok("bar"),
-            Err(b"\xF1\x80\x80"),
-            Ok("baz"),
-        );
-        assert_chunks!(
-            b"\xF4foo\xF4\x80bar\xF4\xBFbaz",
-            Err(b"\xF4"),
-            Ok("foo"),
-            Err(b"\xF4\x80"),
-            Ok("bar"),
-            Err(b"\xF4"),
-            Err(b"\xBF"),
-            Ok("baz"),
-        );
-        assert_chunks!(
-            b"\xF0\x80\x80\x80foo\xF0\x90\x80\x80bar",
-            Err(b"\xF0"),
-            Err(b"\x80"),
-            Err(b"\x80"),
-            Err(b"\x80"),
-            Ok("foo\u{10000}bar"),
-        );
-        assert_chunks!(
-            b"\xED\xA0\x80foo\xED\xBF\xBFbar",
-            Err(b"\xED"),
-            Err(b"\xA0"),
-            Err(b"\x80"),
-            Ok("foo"),
-            Err(b"\xED"),
-            Err(b"\xBF"),
-            Err(b"\xBF"),
-            Ok("bar"),
-        );
-    }
-
-    #[gtest]
-    fn proto_str_chars() {
-        macro_rules! assert_chars {
-            ($bytes:expr, $chars:expr) => {
-                let bytes = $bytes;
-                let chars = $chars;
-                let s = test_proto_str(bytes);
-                let mut got_chars = s.chars();
-                let mut expected_chars = chars.into_iter();
-                assert!(got_chars.eq(expected_chars), "{bytes:?} -> {chars:?}");
-            };
-        }
-        assert_chars!(b"hello", ['h', 'e', 'l', 'l', 'o']);
-        assert_chars!(
-            "ศไทย中华Việt Nam".as_bytes(),
-            ['ศ', 'ไ', 'ท', 'ย', '中', '华', 'V', 'i', 'ệ', 't', ' ', 'N', 'a', 'm']
-        );
-        assert_chars!(
-            b"Hello\xC2 There\xFF Goodbye",
-            [
-                'H', 'e', 'l', 'l', 'o', '�', ' ', 'T', 'h', 'e', 'r', 'e', '�', ' ', 'G', 'o',
-                'o', 'd', 'b', 'y', 'e'
-            ]
-        );
-        assert_chars!(
-            b"Hello\xC0\x80 There\xE6\x83 Goodbye",
-            [
-                'H', 'e', 'l', 'l', 'o', '�', '�', ' ', 'T', 'h', 'e', 'r', 'e', '�', ' ', 'G',
-                'o', 'o', 'd', 'b', 'y', 'e'
-            ]
-        );
-        assert_chars!(b"\xF5foo\xF5\x80bar", ['�', 'f', 'o', 'o', '�', '�', 'b', 'a', 'r']);
-        assert_chars!(
-            b"\xF1foo\xF1\x80bar\xF1\x80\x80baz",
-            ['�', 'f', 'o', 'o', '�', 'b', 'a', 'r', '�', 'b', 'a', 'z']
-        );
-        assert_chars!(
-            b"\xF4foo\xF4\x80bar\xF4\xBFbaz",
-            ['�', 'f', 'o', 'o', '�', 'b', 'a', 'r', '�', '�', 'b', 'a', 'z']
-        );
-        assert_chars!(
-            b"\xF0\x80\x80\x80foo\xF0\x90\x80\x80bar",
-            ['�', '�', '�', '�', 'f', 'o', 'o', '\u{10000}', 'b', 'a', 'r']
-        );
-        assert_chars!(
-            b"\xED\xA0\x80foo\xED\xBF\xBFbar",
-            ['�', '�', '�', 'f', 'o', 'o', '�', '�', '�', 'b', 'a', 'r']
-        );
     }
 }

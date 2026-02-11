@@ -14,10 +14,14 @@
 #include <string>
 
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/java/java_features.pb.h"
+#include "google/protobuf/compiler/java/generator.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/compiler/java/names_internal.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -93,35 +97,50 @@ std::string FieldName(const FieldDescriptor* field) {
   return field_name;
 }
 
+template <typename Descriptor>
+bool NestedInFileClassImpl(const Descriptor& descriptor) {
+  auto nest_in_file_class =
+      JavaGenerator::GetResolvedSourceFeatureExtension(descriptor, pb::java)
+          .nest_in_file_class();
+  ABSL_CHECK(
+      nest_in_file_class !=
+      pb::JavaFeatures::NestInFileClassFeature::NEST_IN_FILE_CLASS_UNKNOWN);
+
+  if (nest_in_file_class == pb::JavaFeatures::NestInFileClassFeature::LEGACY) {
+    return !descriptor.file()->options().java_multiple_files();
+  }
+  return nest_in_file_class == pb::JavaFeatures::NestInFileClassFeature::YES;
+}
+
 }  // namespace
 
-std::string ClassName(const Descriptor* descriptor) {
+std::string QualifiedClassName(const Descriptor* descriptor) {
   ClassNameResolver name_resolver;
   return name_resolver.GetClassName(descriptor, true);
 }
 
-std::string ClassName(const EnumDescriptor* descriptor) {
+std::string QualifiedClassName(const EnumDescriptor* descriptor) {
   ClassNameResolver name_resolver;
   return name_resolver.GetClassName(descriptor, true);
 }
 
-std::string ClassName(const ServiceDescriptor* descriptor) {
+std::string QualifiedClassName(const ServiceDescriptor* descriptor) {
   ClassNameResolver name_resolver;
   return name_resolver.GetClassName(descriptor, true);
 }
 
-std::string ClassName(const FileDescriptor* descriptor) {
+std::string QualifiedClassName(const FileDescriptor* descriptor) {
   ClassNameResolver name_resolver;
   return name_resolver.GetClassName(descriptor, true);
 }
 
 std::string FileJavaPackage(const FileDescriptor* file, bool immutable,
                             Options options) {
-  return ClassNameResolver(options).GetFileJavaPackage(file, immutable);
+  return ClassNameResolver().GetFileJavaPackage(file, immutable);
 }
 
-std::string FileJavaPackage(const FileDescriptor* file, Options options) {
-  return FileJavaPackage(file, true /* immutable */, options);
+std::string FileJavaPackage(const FileDescriptor* file) {
+  return Proto2DefaultJavaPackage(file);
 }
 
 std::string JavaPackageDirectory(const FileDescriptor* file) {
@@ -160,6 +179,33 @@ std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field) {
   return name;
 }
 
+std::string KotlinFactoryName(const Descriptor* descriptor) {
+  ClassNameResolver name_resolver;
+  return name_resolver.GetKotlinFactoryName(descriptor);
+}
+
+std::string FullyQualifiedKotlinFactoryName(const Descriptor* descriptor) {
+  ClassNameResolver name_resolver;
+  return name_resolver.GetFullyQualifiedKotlinFactoryName(descriptor);
+}
+
+std::string KotlinExtensionsClassName(const Descriptor* descriptor) {
+  ClassNameResolver name_resolver;
+  return name_resolver.GetKotlinExtensionsClassName(descriptor);
+}
+
+
+bool NestedInFileClass(const Descriptor& message) {
+  return NestedInFileClassImpl(message);
+}
+
+bool NestedInFileClass(const EnumDescriptor& enm) {
+  return NestedInFileClassImpl(enm);
+}
+
+bool NestedInFileClass(const ServiceDescriptor& service) {
+  return NestedInFileClassImpl(service);
+}
 
 }  // namespace java
 }  // namespace compiler

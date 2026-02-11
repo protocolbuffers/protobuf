@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use super::sys::mini_table::mini_table::{upb_MiniTable, upb_MiniTableEnum};
+use super::sys::mini_table::mini_table::{RawMiniTable, RawMiniTableEnum};
 
 /// A trait for types which have an associated MiniTable (e.g. generated
 /// messages, and their mut and view proxy types).
@@ -26,10 +26,10 @@ use super::sys::mini_table::mini_table::{upb_MiniTable, upb_MiniTableEnum};
 ///   always have the same non-null value, the underlying pointee should never
 ///   be modified and should have 'static lifetime).
 pub unsafe trait AssociatedMiniTable {
-    fn mini_table() -> *const upb_MiniTable;
+    fn mini_table() -> RawMiniTable;
 }
 
 /// A trait for closed enums that have an associated MiniTable.
 pub unsafe trait AssociatedMiniTableEnum {
-    fn mini_table() -> *const upb_MiniTableEnum;
+    fn mini_table() -> RawMiniTableEnum;
 }

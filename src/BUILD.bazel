@@ -7,34 +7,6 @@ load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix
 load("//conformance:defs.bzl", "conformance_test")
 load("//upb/cmake:build_defs.bzl", "staleness_test")
 
-pkg_files(
-    name = "dist_files",
-    srcs = glob(["**"]),
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//src:__pkg__"],
-)
-
-pkg_filegroup(
-    name = "all_dist_files",
-    srcs = [
-        ":dist_files",
-        "//src/google/protobuf:dist_files",
-        "//src/google/protobuf/compiler:dist_files",
-        "//src/google/protobuf/compiler/cpp:dist_files",
-        "//src/google/protobuf/compiler/csharp:dist_files",
-        "//src/google/protobuf/compiler/java:dist_files",
-        "//src/google/protobuf/compiler/objectivec:dist_files",
-        "//src/google/protobuf/compiler/php:dist_files",
-        "//src/google/protobuf/compiler/python:dist_files",
-        "//src/google/protobuf/compiler/ruby:dist_files",
-        "//src/google/protobuf/io:dist_files",
-        "//src/google/protobuf/stubs:dist_files",
-        "//src/google/protobuf/testing:dist_files",
-        "//src/google/protobuf/util:dist_files",
-    ],
-    visibility = ["//pkg:__pkg__"],
-)
-
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_cpp.txt",

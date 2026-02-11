@@ -16,17 +16,18 @@
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/descriptor.h"
 
-namespace google::protobuf::hpb_generator {
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
 namespace protoc = ::google::protobuf::compiler;
-namespace protobuf = ::proto2;
 using FileDescriptor = ::google::protobuf::FileDescriptor;
 using google::protobuf::Edition;
 
 class Generator : public protoc::CodeGenerator {
  public:
   ~Generator() override = default;
-  bool Generate(const protobuf::FileDescriptor* file,
+  bool Generate(const google::protobuf::FileDescriptor* file,
                 const std::string& parameter, protoc::GeneratorContext* context,
                 std::string* error) const override;
   uint64_t GetSupportedFeatures() const override {
@@ -34,10 +35,11 @@ class Generator : public protoc::CodeGenerator {
            Feature::FEATURE_SUPPORTS_EDITIONS;
   }
   Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
-  Edition GetMaximumEdition() const override { return Edition::EDITION_2023; }
+  Edition GetMaximumEdition() const override { return Edition::EDITION_2024; }
 };
 
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_HPB_GENERATOR_H__

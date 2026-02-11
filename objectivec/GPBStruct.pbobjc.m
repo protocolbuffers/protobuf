@@ -130,12 +130,12 @@ typedef struct GPBStruct__storage_ {
 @implementation GPBValue
 
 @dynamic kindOneOfCase;
-@dynamic nullValue;
-@dynamic numberValue;
-@dynamic stringValue;
-@dynamic boolValue;
-@dynamic structValue;
-@dynamic listValue;
+@dynamic hasNullValue, nullValue;
+@dynamic hasNumberValue, numberValue;
+@dynamic hasStringValue, stringValue;
+@dynamic hasBoolValue, boolValue;
+@dynamic hasStructValue, structValue;
+@dynamic hasListValue, listValue;
 
 typedef struct GPBValue__storage_ {
   uint32_t _has_storage_[2];

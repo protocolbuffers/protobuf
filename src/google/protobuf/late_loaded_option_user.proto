@@ -1,8 +1,8 @@
-edition = "2023";
+edition = "2024";
 
 package proto2_unittest;
 
-import "google/protobuf/late_loaded_option.proto";
+import option "google/protobuf/late_loaded_option.proto";
 
 message LateLoadedOptionUser {
   option (proto2_unittest.LateLoadedOption.ext) = {

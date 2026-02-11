@@ -11,4 +11,21 @@
 #define HPB_INTERNAL_BACKEND_UPB 1
 #define HPB_INTERNAL_BACKEND_CPP 2
 
+namespace hpb {
+namespace internal {
+namespace backend {
+namespace upb {}
+namespace cpp {}
+}  // namespace backend
+}  // namespace internal
+
+#if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
+namespace backend = hpb::internal::backend::upb;
+#elif HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_CPP
+namespace backend = hpb::internal::backend::cpp;
+#else
+#error "Unsupported hpb backend"
+#endif
+}  // namespace hpb
+
 #endif  // GOOGLE_PROTOBUF_HPB_MULTIBACKEND_H__

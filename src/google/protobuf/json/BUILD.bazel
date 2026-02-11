@@ -18,8 +18,10 @@ cc_library(
     strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
+        ":lexer",
         ":parser",
         ":unparser",
+        ":writer",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf/io",
@@ -118,6 +120,7 @@ cc_library(
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/types:optional",
         "@abseil-cpp//absl/types:span",
     ],
 )
@@ -137,12 +140,15 @@ cc_library(
         "//src/google/protobuf/stubs",
         "//third_party/utf8_range:utf8_validity",
         "@abseil-cpp//absl/algorithm:container",
+        "@abseil-cpp//absl/base",
+        "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/numeric:bits",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/types:optional",
     ],
 )
 
@@ -159,6 +165,7 @@ cc_test(
         "//src/google/protobuf/stubs",
         "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:status_matchers",
         "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
@@ -202,6 +209,7 @@ cc_library(
         "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/types:optional",
     ],
 )
 
@@ -238,6 +246,7 @@ cc_library(
         "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/types:optional",
         "@abseil-cpp//absl/types:span",
     ],
 )
@@ -271,6 +280,7 @@ cc_library(
         "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/types:optional",
     ],
 )
 

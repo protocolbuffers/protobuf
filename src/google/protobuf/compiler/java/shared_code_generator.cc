@@ -33,11 +33,9 @@ namespace java {
 
 SharedCodeGenerator::SharedCodeGenerator(const FileDescriptor* file,
                                          const Options& options)
-    : name_resolver_(new ClassNameResolver(options)),
-      file_(file),
-      options_(options) {}
+    : name_resolver_(new ClassNameResolver()), file_(file), options_(options) {}
 
-SharedCodeGenerator::~SharedCodeGenerator() {}
+SharedCodeGenerator::~SharedCodeGenerator() = default;
 
 void SharedCodeGenerator::Generate(
     GeneratorContext* context, std::vector<std::string>* file_list,
@@ -54,9 +52,9 @@ void SharedCodeGenerator::Generate(
     GeneratedCodeInfo annotations;
     io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
         &annotations);
-    std::unique_ptr<io::Printer> printer(new io::Printer(
+    std::unique_ptr<io::Printer> printer = std::make_unique<io::Printer>(
         output.get(), '$',
-        options_.annotate_code ? &annotation_collector : nullptr));
+        options_.annotate_code ? &annotation_collector : nullptr);
     std::string info_relative_path = absl::StrCat(classname, ".java.pb.meta");
     std::string info_full_path = absl::StrCat(filename, ".pb.meta");
     printer->Print(
@@ -66,7 +64,7 @@ void SharedCodeGenerator::Generate(
         "GENCODE\n"
         "// source: $filename$\n",
         "filename", file_->name());
-    if (options_.opensource_runtime) {
+    if (google::protobuf::internal::IsOss()) {
       printer->Print("// Protobuf Java Version: $protobuf_java_version$\n",
                      "protobuf_java_version", PROTOBUF_JAVA_VERSION_STRING);
     }
@@ -98,7 +96,7 @@ void SharedCodeGenerator::Generate(
     printer->Indent();
     printer->Indent();
     GenerateDescriptors(printer.get());
-    PrintGencodeVersionValidator(printer.get(), options_.opensource_runtime,
+    PrintGencodeVersionValidator(printer.get(), google::protobuf::internal::IsOss(),
                                  classname);
     printer->Outdent();
     printer->Outdent();
@@ -109,7 +107,8 @@ void SharedCodeGenerator::Generate(
     if (options_.annotate_code) {
       std::unique_ptr<io::ZeroCopyOutputStream> info_output(
           context->Open(info_full_path));
-      annotations.SerializeToZeroCopyStream(info_output.get());
+      // TODO: Remove this suppression.
+      (void)annotations.SerializeToZeroCopyStream(info_output.get());
       annotation_file_list->push_back(info_full_path);
     }
 
@@ -137,7 +136,8 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
   }
 
   std::string file_data;
-  file_proto.SerializeToString(&file_data);
+  // TODO: Remove this suppression.
+  (void)file_proto.SerializeToString(&file_data);
 
   printer->Print("java.lang.String[] descriptorData = {\n");
   printer->Indent();
@@ -186,7 +186,7 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
   printer->Print(
       "descriptor = com.google.protobuf.Descriptors.FileDescriptor\n"
       "  .internalBuildGeneratedFileFrom(descriptorData,\n");
-  if (options_.opensource_runtime) {
+  if (google::protobuf::internal::IsOss()) {
     printer->Print(
         "    new com.google.protobuf.Descriptors.FileDescriptor[] {\n");
 

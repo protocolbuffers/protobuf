@@ -79,19 +79,15 @@ struct DynamicFieldInfoHelper {
   static T Get(const Reflection* reflection, const Message& message,
                const FieldDescriptor* field) {
     if constexpr (is_oneof) {
-      return reflection->GetRaw<T>(message, field);
-    } else {
-      return reflection->GetRawNonOneof<T>(message, field);
     }
+    return reflection->GetRaw<T>(message, field);
   }
   template <typename T>
   static T& GetRef(const Reflection* reflection, const Message& message,
                    const FieldDescriptor* field) {
     if constexpr (is_oneof) {
-      return reflection->GetRaw<T>(message, field);
-    } else {
-      return reflection->GetRawNonOneof<T>(message, field);
     }
+    return reflection->GetRaw<T>(message, field);
   }
   template <typename T>
   static T& Mutable(const Reflection* reflection, Message& message,
@@ -99,7 +95,7 @@ struct DynamicFieldInfoHelper {
     if constexpr (is_oneof) {
       return *reflection->MutableRaw<T>(&message, field);
     } else {
-      return *reflection->MutableRawNonOneof<T>(&message, field);
+      return *reflection->MutableRaw<T>(&message, field);
     }
   }
 
@@ -707,6 +703,7 @@ struct RepeatedEntityDynamicFieldInfoBase {
     return {const_repeated.cbegin(), const_repeated.cend()};
   }
   iterator_range<typename RepeatedField<FieldT>::iterator> Mutable() {
+    ABSL_DCHECK(!field->is_extension());
     auto& rep =
         *reflection->MutableRepeatedFieldInternal<FieldT>(&message, field);
     return {rep.begin(), rep.end()};
@@ -808,6 +805,7 @@ struct RepeatedPtrEntityDynamicFieldInfoBase {
     return {const_repeated.cbegin(), const_repeated.cend()};
   }
   iterator_range<typename RepeatedPtrField<FieldT>::iterator> Mutable() {
+    ABSL_DCHECK(!field->is_extension());
     auto& rep =
         *reflection->MutableRepeatedPtrFieldInternal<FieldT>(&message, field);
     return {rep.begin(), rep.end()};
@@ -1403,6 +1401,7 @@ struct MapDynamicFieldInfo {
             reflection, message, field);
 
     map_field.Clear();
+    reflection->ClearHasBit(&message, field);
   }
 
   static constexpr bool is_repeated = true;    // NOLINT

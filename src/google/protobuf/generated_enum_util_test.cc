@@ -22,6 +22,17 @@
 #include "absl/strings/str_format.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_lite.pb.h"
+
+#if !defined(PROTOBUF_USE_DLLS) || !defined(_MSC_VER)
+#define PROTOBUF_RUN_FLAG_TESTS
+// Abseil DLL does not include flag reflection, so let's skip the test for
+// now.
+#include "absl/flags/commandlineflag.h"
+#include "absl/flags/flag.h"
+#include "absl/flags/reflection.h"
+#endif
 
 
 // Must be included last.
@@ -30,8 +41,16 @@
 using testing::_;
 using testing::ElementsAre;
 using testing::Gt;
+using testing::HasSubstr;
 using testing::IsEmpty;
 using testing::SizeIs;
+
+#if defined(PROTOBUF_RUN_FLAG_TESTS)
+ABSL_FLAG(proto2_unittest::TestAllTypes::NestedEnum, test_proto_enum,
+          proto2_unittest::TestAllTypes::FOO, "");
+ABSL_FLAG(proto2_unittest::TestAllTypesLite::NestedEnum, test_proto_enum_lite,
+          proto2_unittest::TestAllTypesLite::FOO, "");
+#endif
 
 namespace google {
 namespace protobuf {
@@ -41,9 +60,9 @@ namespace {
 TEST(GenerateEnumDataTest, DebugChecks) {
 #if GTEST_HAS_DEATH_TEST
   // Not unique
-  EXPECT_DEBUG_DEATH(GenerateEnumData({1, 1}), "sorted_and_unique");
+  EXPECT_DEBUG_DEATH((void)GenerateEnumData({1, 1}), "sorted_and_unique");
   // Not sorted
-  EXPECT_DEBUG_DEATH(GenerateEnumData({2, 1}), "sorted_and_unique");
+  EXPECT_DEBUG_DEATH((void)GenerateEnumData({2, 1}), "sorted_and_unique");
 #endif
 }
 
@@ -146,6 +165,71 @@ TEST(GenerateEnumDataTest, BitmapSpaceOptimizationWorks) {
   EXPECT_THAT(ExtractHeader(encoded), HeaderHas(0, 1, 256, 0));
   EXPECT_THAT(encoded, SizeIs(10));
 }
+
+#if defined(PROTOBUF_RUN_FLAG_TESTS)
+TEST(ProtoEnumTest, HasAbseilFlagSupport) {
+  using T = proto2_unittest::TestAllTypes;
+
+  // The default
+  EXPECT_EQ(T::FOO, absl::GetFlag(FLAGS_test_proto_enum));
+  absl::SetFlag(&FLAGS_test_proto_enum, T::BAZ);
+  EXPECT_EQ(T::BAZ, absl::GetFlag(FLAGS_test_proto_enum));
+
+  absl::CommandLineFlag* flag = absl::FindCommandLineFlag("test_proto_enum");
+  EXPECT_EQ("BAZ", flag->CurrentValue());
+  std::string error;
+
+  // Label
+  EXPECT_TRUE(flag->ParseFrom("FOO", &error));
+  EXPECT_EQ(T::FOO, absl::GetFlag(FLAGS_test_proto_enum));
+  EXPECT_EQ("FOO", flag->CurrentValue());
+
+  // Lowercase label
+  EXPECT_TRUE(flag->ParseFrom("baz", &error));
+  EXPECT_EQ(T::BAZ, absl::GetFlag(FLAGS_test_proto_enum));
+
+  // Numeric value
+  EXPECT_TRUE(flag->ParseFrom("2", &error));
+  EXPECT_EQ(T::BAR, absl::GetFlag(FLAGS_test_proto_enum));
+  EXPECT_EQ("BAR", flag->CurrentValue());
+
+  EXPECT_FALSE(flag->ParseFrom("xxx", &error));
+  EXPECT_THAT(error, HasSubstr("Invalid value 'xxx' for enum "
+                               "'proto2_unittest.TestAllTypes.NestedEnum'. "
+                               "Supported values are: FOO, BAR, BAZ, NEG."));
+}
+
+TEST(ProtoEnumTest, HasAbseilFlagSupportWithLiteEnums) {
+  using T = proto2_unittest::TestAllTypesLite;
+
+  // The default
+  EXPECT_EQ(T::FOO, absl::GetFlag(FLAGS_test_proto_enum_lite));
+  absl::SetFlag(&FLAGS_test_proto_enum_lite, T::BAZ);
+  EXPECT_EQ(T::BAZ, absl::GetFlag(FLAGS_test_proto_enum_lite));
+
+  absl::CommandLineFlag* flag =
+      absl::FindCommandLineFlag("test_proto_enum_lite");
+  EXPECT_EQ("BAZ", flag->CurrentValue());
+  std::string error;
+
+  // Label
+  EXPECT_TRUE(flag->ParseFrom("FOO", &error));
+  EXPECT_EQ(T::FOO, absl::GetFlag(FLAGS_test_proto_enum_lite));
+  EXPECT_EQ("FOO", flag->CurrentValue());
+
+  // Lowercase label
+  EXPECT_TRUE(flag->ParseFrom("baz", &error));
+  EXPECT_EQ(T::BAZ, absl::GetFlag(FLAGS_test_proto_enum_lite));
+
+  // Numeric value
+  EXPECT_TRUE(flag->ParseFrom("2", &error));
+  EXPECT_EQ(T::BAR, absl::GetFlag(FLAGS_test_proto_enum_lite));
+  EXPECT_EQ("BAR", flag->CurrentValue());
+
+  EXPECT_FALSE(flag->ParseFrom("xxx", &error));
+  // We don't check errors because we don't generate them for LITE.
+}
+#endif
 
 void GatherValidValues(absl::Span<const uint32_t> data, int32_t min,
                        int32_t max, absl::btree_set<int32_t>& out) {

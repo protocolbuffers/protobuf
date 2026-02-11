@@ -1,5 +1,6 @@
 # This package contains Rust protobuf runtime implementation built on top of the C++ backend.
 
+load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_rust//rust:defs.bzl", "rust_library")
 
 cc_library(
@@ -31,6 +32,7 @@ cc_library(
         "@abseil-cpp//absl/functional:overload",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/memory",
         "@abseil-cpp//absl/strings:string_view",
     ],
 )

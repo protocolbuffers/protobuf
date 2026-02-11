@@ -7,7 +7,6 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"

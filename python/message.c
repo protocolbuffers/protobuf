@@ -191,6 +191,7 @@ typedef struct PyUpb_Message {
 } PyUpb_Message;
 
 static PyObject* PyUpb_Message_GetAttr(PyObject* _self, PyObject* attr);
+static PyObject* PyUpb_Message_Clear(PyUpb_Message* self);
 
 bool PyUpb_Message_IsStub(PyUpb_Message* msg) { return msg->def & 1; }
 
@@ -371,6 +372,42 @@ static bool PyUpb_Message_InitMapAttribute(PyObject* _self, PyObject* name,
   return ok >= 0;
 }
 
+static bool PyUpb_Message_InitWKTOrMerge(const upb_MessageDef* msgdef,
+                                         PyObject* msg, PyObject* value) {
+  if (PyObject_TypeCheck(value, Py_TYPE(msg))) {
+    PyObject* merged = PyUpb_Message_MergeFrom(msg, value);
+    if (!merged) return false;
+    Py_DECREF(merged);
+    return true;
+  }
+
+  if (PyDict_Check(value) &&
+      (upb_MessageDef_WellKnownType(msgdef) == kUpb_WellKnown_Struct)) {
+    bool ok = PyObject_CallMethod(msg, "_internal_assign", "O", value);
+    if (!ok && PyDict_Size(value) == 1) {
+      PyObject* fields_str = PyUnicode_FromString("fields");
+      if (PyDict_Contains(value, fields_str)) {
+        // Fall back to init as normal message field.
+        PyErr_Clear();
+        PyObject* tmp = PyUpb_Message_Clear((PyUpb_Message*)msg);
+        Py_DECREF(tmp);
+        ok = PyUpb_Message_InitAttributes(msg, NULL, value) >= 0;
+      }
+      Py_DECREF(fields_str);
+    }
+    return ok;
+  }
+  if (upb_MessageDef_WellKnownType(msgdef) != kUpb_WellKnown_Unspecified &&
+      PyObject_HasAttrString(msg, "_internal_assign")) {
+    return PyObject_CallMethod(msg, "_internal_assign", "O", value);
+  }
+
+  PyErr_Format(PyExc_TypeError,
+               "Parameter to initialize message field must be "
+               "dict or instance of same class: expected %S got %S.",
+               Py_TYPE(msg), Py_TYPE(value));
+  return false;
+}
 static bool PyUpb_Message_InitRepeatedMessageAttribute(PyObject* _self,
                                                        PyObject* repeated,
                                                        PyObject* value,
@@ -383,16 +420,16 @@ static bool PyUpb_Message_InitRepeatedMessageAttribute(PyObject* _self,
   }
   PyObject* e = NULL;
   PyObject* m = NULL;
+  const upb_MessageDef* m_def = upb_FieldDef_MessageSubDef(f);
   while ((e = PyIter_Next(it)) != NULL) {
-    if (PyDict_Check(e)) {
+    if (PyDict_Check(e) &&
+        (upb_MessageDef_WellKnownType(m_def) != kUpb_WellKnown_Struct)) {
       m = PyUpb_RepeatedCompositeContainer_Add(repeated, NULL, e);
       if (!m) goto err;
     } else {
       m = PyUpb_RepeatedCompositeContainer_Add(repeated, NULL, NULL);
       if (!m) goto err;
-      PyObject* merged = PyUpb_Message_MergeFrom(m, e);
-      if (!merged) goto err;
-      Py_DECREF(merged);
+      if (!PyUpb_Message_InitWKTOrMerge(m_def, m, e)) goto err;
     }
     Py_DECREF(e);
     Py_DECREF(m);
@@ -444,41 +481,12 @@ static bool PyUpb_Message_InitMessageAttribute(PyObject* _self, PyObject* name,
   if (!submsg) return -1;
   assert(!PyErr_Occurred());
   bool ok;
-  if (PyUpb_Message_TryCheck(value)) {
-    PyObject* tmp = PyUpb_Message_MergeFrom(submsg, value);
-    ok = tmp != NULL;
-    Py_XDECREF(tmp);
-  } else if (PyDict_Check(value)) {
-    assert(!PyErr_Occurred());
-    const upb_MessageDef* msgdef = upb_FieldDef_MessageSubDef(field);
-    if (upb_MessageDef_WellKnownType(msgdef) == kUpb_WellKnown_Struct) {
-      ok = PyObject_CallMethod(submsg, "_internal_assign", "O", value);
-      if (!ok && PyDict_Size(value) == 1) {
-        PyObject* fields_str = PyUnicode_FromString("fields");
-        if (PyDict_Contains(value, fields_str)) {
-          // Fall back to init as normal message field.
-          PyErr_Clear();
-          PyObject* tmp = PyUpb_Message_Clear((PyUpb_Message*)submsg);
-          Py_DECREF(tmp);
-          ok = PyUpb_Message_InitAttributes(submsg, NULL, value) >= 0;
-        }
-        Py_DECREF(fields_str);
-      }
-    } else {
-      ok = PyUpb_Message_InitAttributes(submsg, NULL, value) >= 0;
-    }
+  const upb_MessageDef* m_def = upb_FieldDef_MessageSubDef(field);
+  if (PyDict_Check(value) &&
+      (upb_MessageDef_WellKnownType(m_def) != kUpb_WellKnown_Struct)) {
+    ok = PyUpb_Message_InitAttributes(submsg, NULL, value) >= 0;
   } else {
-    const upb_MessageDef* msgdef = upb_FieldDef_MessageSubDef(field);
-    if (upb_MessageDef_WellKnownType(msgdef) != kUpb_WellKnown_Unspecified &&
-        PyObject_HasAttrString(submsg, "_internal_assign")) {
-      ok = PyObject_CallMethod(submsg, "_internal_assign", "O", value);
-    } else {
-      const upb_MessageDef* m = PyUpb_Message_GetMsgdef(_self);
-      PyErr_Format(PyExc_TypeError,
-                   "Message must be initialized with a dict: %s",
-                   upb_MessageDef_FullName(m));
-      ok = false;
-    }
+    ok = PyUpb_Message_InitWKTOrMerge(m_def, submsg, value);
   }
   Py_DECREF(submsg);
   return ok;
@@ -1913,6 +1921,8 @@ static PyObject* PyUpb_MessageMeta_New(PyTypeObject* type, PyObject* args,
   }
 
   const upb_MessageDef* m = PyUpb_Descriptor_GetDef(py_descriptor);
+  // The error message already been filled by the function above.
+  if (m == NULL) return NULL;
   PyObject* ret = PyUpb_ObjCache_Get(upb_MessageDef_MiniTable(m));
   if (ret) return ret;
   return PyUpb_MessageMeta_DoCreateClass(py_descriptor, name, dict);

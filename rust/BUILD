@@ -62,6 +62,7 @@ PROTOBUF_SHARED = [
     "proxied.rs",
     "repeated.rs",
     "shared.rs",
+    "singular.rs",
     "string.rs",
     # go/keep-sorted end
 ]
@@ -74,7 +75,6 @@ ALL_RUST_SRCS = PROTOBUF_SHARED + [
     "gtest_matchers_impl.rs",
     "protobuf.rs",
     "upb.rs",
-    "utf8.rs",
     # go/keep-sorted end
 ]
 
@@ -88,7 +88,7 @@ rust_library(
     srcs = PROTOBUF_SHARED + ["upb.rs"],
     crate_root = "shared.rs",
     proc_macro_deps = [
-        "//rust/proto_proc_macro",
+        "//rust/protobuf_macros",
         "@crate_index//:paste",
     ],
     rustc_flags = [
@@ -97,7 +97,6 @@ rust_library(
     ],
     visibility = [":protobuf_internal"],
     deps = [
-        ":utf8",
         "//rust/upb",
     ],
 )
@@ -105,6 +104,7 @@ rust_library(
 rust_test(
     name = "protobuf_upb_test",
     crate = ":protobuf_upb",
+    edition = "2021",
     rustc_flags = [
         "--cfg=upb_kernel",
         "--cfg=bzl",
@@ -135,7 +135,7 @@ rust_library(
     srcs = PROTOBUF_SHARED + ["cpp.rs"],
     crate_root = "shared.rs",
     proc_macro_deps = [
-        "//rust/proto_proc_macro",
+        "//rust/protobuf_macros",
         "@crate_index//:paste",
     ],
     rustc_flags = [
@@ -144,7 +144,6 @@ rust_library(
     ],
     visibility = [":protobuf_internal"],
     deps = [
-        ":utf8",
         "//rust/cpp_kernel:cpp_api",
     ],
 )
@@ -215,11 +214,6 @@ rust_library(
     ],
 )
 
-rust_library(
-    name = "utf8",
-    srcs = ["utf8.rs"],
-)
-
 proto_lang_toolchain(
     name = "proto_rust_upb_toolchain",
     command_line = "--rust_out=$(OUT)",
@@ -262,11 +256,12 @@ config_setting(
     flag_values = {
         ":rust_proto_library_kernel": "upb",
     },
+    visibility = ["//:__subpackages__"],
 )
 
 pkg_files(
     name = "rust_protobuf_src",
-    srcs = ALL_RUST_SRCS + ["proto_macro.rs"],
+    srcs = ALL_RUST_SRCS,
     strip_prefix = strip_prefix.from_root("rust"),
 )
 
@@ -298,5 +293,5 @@ pkg_filegroup(
 
 alias(
     name = "release",
-    actual = "//rust/release_crates:crates",
+    actual = "//rust/release_crates:workspace",
 )

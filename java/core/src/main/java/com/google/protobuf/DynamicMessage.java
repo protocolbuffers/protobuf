@@ -34,6 +34,18 @@ public final class DynamicMessage extends AbstractMessage {
   private int memoizedSize = -1;
 
   /**
+   * Stores previously-computed {@code isInitialized} results. {@code isInitialized} can be
+   * expensive to compute in situations where a large message is converted to a builder, modified,
+   * and then rebuilt. A byte field used instead of an idiomatic tristate enum to follow the pattern
+   * established on gencode, micro-optimizing for better layout.
+   */
+  private transient byte memoizedIsInitialized = NO_MEMO_PRESENT;
+
+  private static final byte NO_MEMO_PRESENT = -1;
+  private static final byte IS_INITIALIZED_FALSE = 0;
+  private static final byte IS_INITIALIZED_TRUE = 1;
+
+  /**
    * Construct a {@code DynamicMessage} using the given {@code FieldSet}. oneofCases stores the
    * FieldDescriptor for each oneof to indicate which field is set. Caller should make sure the
    * array is immutable.
@@ -215,7 +227,18 @@ public final class DynamicMessage extends AbstractMessage {
 
   @Override
   public boolean isInitialized() {
-    return isInitialized(type, fields);
+    if (memoizedIsInitialized == IS_INITIALIZED_TRUE) {
+      return true;
+    }
+    if (memoizedIsInitialized == IS_INITIALIZED_FALSE) {
+      return false;
+    }
+    if (isInitialized(type, fields)) {
+      memoizedIsInitialized = IS_INITIALIZED_TRUE;
+      return true;
+    }
+    memoizedIsInitialized = IS_INITIALIZED_FALSE;
+    return false;
   }
 
   @Override
@@ -515,7 +538,9 @@ public final class DynamicMessage extends AbstractMessage {
         }
         oneofCases[index] = field;
       } else if (!field.hasPresence()) {
-        if (!field.isRepeated() && value.equals(field.getDefaultValue())) {
+        if (field.isRepeated()
+            ? ((List<?>) value).isEmpty()
+            : value.equals(field.getDefaultValue())) {
           // Setting a field without presence to its default value is equivalent to clearing the
           // field.
           fields.clearField(field);

@@ -3,7 +3,7 @@
 
 module(
     name = "protobuf",
-    version = "32.0-dev",  # Automatically updated on release
+    version = "35.0-dev",  # Automatically updated on release
     compatibility_level = 1,
     repo_name = "com_google_protobuf",
 )
@@ -13,8 +13,6 @@ module(
 # https://bazel.build/versions/6.0.0/build/bzlmod#version-resolution
 # Thus the highest version in their module graph is resolved.
 
-# These dependencies must be declared before the other rules dependencies.
-bazel_dep(name = "rules_apple", version = "3.16.0", repo_name = "build_bazel_rules_apple")
 bazel_dep(name = "apple_support", version = "1.15.1", repo_name = "build_bazel_apple_support")
 
 # Keep apple_support on 1.15.1 for now to avoid this issue:
@@ -28,7 +26,7 @@ single_version_override(
 # LINT.IfChange
 #endif // PROTO2_OPENSOURCE
 # protoc dependencies
-bazel_dep(name = "abseil-cpp", version = "20250127.0")
+bazel_dep(name = "abseil-cpp", version = "20250512.1")
 bazel_dep(name = "rules_cc", version = "0.0.17")
 bazel_dep(name = "zlib", version = "1.3.1.bcr.5")
 #ifndef PROTO2_OPENSOURCE
@@ -36,15 +34,15 @@ bazel_dep(name = "zlib", version = "1.3.1.bcr.5")
 #endif // PROTO2_OPENSOURCE
 
 # other dependencies
-bazel_dep(name = "bazel_features", version = "1.23.0", repo_name = "proto_bazel_features")
-bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "bazel_features", version = "1.33.0", repo_name = "proto_bazel_features")
+bazel_dep(name = "bazel_skylib", version = "1.9.0")
 bazel_dep(name = "jsoncpp", version = "1.9.6")
 bazel_dep(name = "rules_java", version = "8.6.1")
 bazel_dep(name = "rules_jvm_external", version = "6.7")
 bazel_dep(name = "rules_kotlin", version = "1.9.6")
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
-bazel_dep(name = "rules_python", version = "1.1.0")
+bazel_dep(name = "rules_python", version = "1.6.0")
 
 # Pin to rules_proto to 7.1.0 to avoid toolchain incompatibilities when
 # --incompatible_enable_proto_toolchain_resolution=true in Bazel 7.
@@ -54,7 +52,7 @@ bazel_dep(name = "rules_python", version = "1.1.0")
 # rules_proto is needed for @com_google_protobuf_v25 used in //compatibility/... tests
 bazel_dep(name = "rules_proto", version = "7.1.0")
 
-bazel_dep(name = "rules_rust", version = "0.56.0", dev_dependency = True)
+bazel_dep(name = "rules_rust", version = "0.63.0", dev_dependency = True)
 bazel_dep(name = "rules_ruby", version = "0.17.3", dev_dependency = True)
 
 # Workaround for https://github.com/bazelbuild/bazel-central-registry/issues/4230
@@ -115,40 +113,53 @@ register_toolchains(
     dev_dependency = True,
 )
 
-# Proto toolchains
-register_toolchains("//bazel/private/toolchains:all")
+# Define toolchains that use pre-built protoc binaries.
+prebuilt_protoc = use_extension("//bazel/private/oss/toolchains/prebuilt:protoc_extension.bzl", "protoc")
+use_repo(
+    prebuilt_protoc,
+    "prebuilt_protoc.linux_aarch_64",
+    "prebuilt_protoc.linux_ppcle_64",
+    "prebuilt_protoc.linux_s390_64",
+    "prebuilt_protoc.linux_x86_32",
+    "prebuilt_protoc.linux_x86_64",
+    "prebuilt_protoc.osx_aarch_64",
+    "prebuilt_protoc.osx_x86_64",
+    "prebuilt_protoc.win32",
+    "prebuilt_protoc.win64",
+)
+
+# However this registration only matters if the config_setting for prefer_prebuilt_protoc is true,
+# using --@protobuf//bazel/flags:prefer_prebuilt_protoc
+register_toolchains("//bazel/private/oss/toolchains/prebuilt:all")
+
+# From-source protobuf toolchains
+# Fallback if nothing is already registered
+register_toolchains("//bazel/private/oss/toolchains:all")
 
 SUPPORTED_PYTHON_VERSIONS = [
-    "3.9",
     "3.10",
     "3.11",
     "3.12",
+    "3.13",
+    "3.14",
 ]
 
-# TODO: Support hermetic / system python in bzlmod.
-python = use_extension("@rules_python//python/extensions:python.bzl", "python")
-
-[
-    python.toolchain(
-        # Disable root warning for .pyc cache misses since CI runs as root.
-        # See https://github.com/bazelbuild/rules_python/pull/713
-        ignore_root_user_error = True,
-        is_default = python_version == SUPPORTED_PYTHON_VERSIONS[-1],
-        python_version = python_version,
-    )
-    for python_version in SUPPORTED_PYTHON_VERSIONS
-]
-
-use_repo(
-    python,
-    system_python = "python_{}".format(SUPPORTED_PYTHON_VERSIONS[-1].replace(".", "_")),
+# TODO: Replace system_python with hermetic_python.
+# TODO: Remove dev_dependency once system_python is no longer used and we support
+# python/upb in Bazel.
+system_python = use_extension("//python/dist:system_python.bzl", "system_python_extension")
+system_python.find(
+    name = "system_python",
+    minimum = "3.9",
 )
+use_repo(system_python, "system_python")
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_dependency = True)
 
 [
     pip.parse(
         hub_name = "protobuf_pip_deps",
+        python_interpreter_target = "@system_python//:interpreter",
         python_version = python_version,
         requirements_lock = "//python:requirements.txt",
     )
@@ -156,6 +167,44 @@ pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_depen
 ]
 
 use_repo(pip, "protobuf_pip_deps")
+
+local_runtime_repo = use_repo_rule(
+    "@rules_python//python/local_toolchains:repos.bzl",
+    "local_runtime_repo",
+)
+
+local_runtime_toolchains_repo = use_repo_rule(
+    "@rules_python//python/local_toolchains:repos.bzl",
+    "local_runtime_toolchains_repo",
+)
+
+local_runtime_repo(
+    name = "local_python3",
+    dev_dependency = True,
+    interpreter_path = "python3",
+    on_failure = "fail",
+)
+
+local_runtime_toolchains_repo(
+    name = "local_toolchains",
+    dev_dependency = True,
+    runtimes = ["local_python3"],
+)
+
+register_toolchains(
+    "@local_toolchains//:all",
+    dev_dependency = True,
+)
+
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust", dev_dependency = True)
+
+# As of October 2025, our minimum supported Rust version is 1.79. However, we
+# use 1.85.0 here so that we can get some test coverage with edition 2024.
+# Cargo and our Bazel WORKSPACE build are both still on edition 2021.
+rust.toolchain(
+    edition = "2024",
+    versions = ["1.85.0"],
+)
 
 crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate", dev_dependency = True)
 crate.spec(
@@ -177,6 +226,7 @@ crate.spec(
 crate.from_specs()
 use_repo(crate, crate_index = "crates")
 
+# Keep this list minimal; these dependencies will be part of the common `maven` install and could affect end-user projects.
 PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.code.findbugs:jsr305:3.0.2",
     "com.google.code.gson:gson:2.8.9",
@@ -185,9 +235,8 @@ PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.guava:guava:32.0.1-jre",
 ]
 
-protobuf_maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
-protobuf_maven.install(
-    name = "protobuf_maven",
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
     artifacts = PROTOBUF_MAVEN_ARTIFACTS,
     lock_file = "//:maven_install.json",
     repositories = [
@@ -195,7 +244,10 @@ protobuf_maven.install(
         "https://repo.maven.apache.org/maven2",
     ],
 )
-use_repo(protobuf_maven, "protobuf_maven")
+
+# Use the default "maven" namespace because protobuf java targets are exposed to users
+# See https://github.com/protocolbuffers/protobuf/issues/21177
+use_repo(maven, "maven")
 
 # Temporarily pin transitive dependency for https://github.com/bazelbuild/bazel/issues/24426
 bazel_dep(name = "re2", version = "2024-07-02.bcr.1")
@@ -224,7 +276,7 @@ use_repo(protobuf_maven_dev, "protobuf_maven_dev")
 
 bazel_dep(name = "googletest", version = "1.15.2", dev_dependency = True)
 bazel_dep(name = "rules_buf", version = "0.3.0", dev_dependency = True)
-bazel_dep(name = "rules_testing", version = "0.8.0", dev_dependency = True)
+bazel_dep(name = "rules_testing", version = "0.9.0", dev_dependency = True)
 bazel_dep(
     name = "abseil-py",
     version = "2.1.0",
@@ -272,4 +324,27 @@ archive_override(
     ],
     strip_prefix = "protobuf-29.0",
     urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz"],
+)
+
+# Python headers for release
+python_headers = use_extension("//python/dist:python_downloads.bzl", "python_headers", dev_dependency = True)
+python_headers.source_archive(
+    sha256 = "c4e0cbad57c90690cb813fb4663ef670b4d0f587d8171e2c42bd4c9245bd2758",
+    version = "3.10.0",
+)
+python_headers.nuget_package(
+    cpu = "i686",
+    sha256 = "e115e102eb90ce160ab0ef7506b750a8d7ecc385bde0a496f02a54337a8bc333",
+    version = "3.10.0",
+)
+python_headers.nuget_package(
+    cpu = "x86-64",
+    sha256 = "4474c83c25625d93e772e926f95f4cd398a0abbb52793625fa30f39af3d2cc00",
+    version = "3.10.0",
+)
+use_repo(
+    python_headers,
+    "nuget_python_i686_3.10.0",
+    "nuget_python_x86-64_3.10.0",
+    "python-3.10.0",
 )

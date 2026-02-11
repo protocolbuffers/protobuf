@@ -1,13 +1,13 @@
-load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
-load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("//rust/release_crates:substitute_rust_release_version.bzl", "substitute_rust_release_version")
 
-pkg_tar(
+pkg_filegroup(
     name = "protobuf_codegen_crate",
     srcs = [
         ":protobuf_codegen_files",
-        "//:LICENSE",
+        "//rust/release_crates:license",
     ],
+    prefix = "protobuf_codegen",
     tags = ["manual"],
     visibility = ["//rust:__subpackages__"],
 )
@@ -29,5 +29,5 @@ filegroup(
         "Cargo.toml",
         "README.md",
     ] + glob(["src/**/*"]),
-    visibility = ["//rust:__subpackages__"],
+    visibility = ["//visibility:private"],
 )

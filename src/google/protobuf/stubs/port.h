@@ -31,13 +31,6 @@
 #include <byteswap.h>  // IWYU pragma: export
 #endif
 
-#if defined(_MSC_VER) && !defined(__clang__) && \
-    defined(GOOGLE_PROTOBUF_USING_BAZEL) &&     \
-    !defined(GOOGLE_PROTOBUF_MSVC_BAZEL_OVERRIDE)
-#error \
-    "Protobuf will be dropping support for MSVC + Bazel in 34.0.  To continue using it until then, use the flag --define=protobuf_allow_msvc=true.  For feedback or discussion, see github.com/protocolbuffers/protobuf/issues/20085."
-#endif
-
 // Legacy: some users reference these (internal-only) macros even though we
 // don't need them any more.
 #if defined(_MSC_VER) && defined(PROTOBUF_USE_DLLS)
@@ -61,16 +54,6 @@
 
 // ===================================================================
 // from google3/base/port.h
-
-#if (defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L || \
-     (defined(_MSC_VER) && _MSC_VER >= 1900))
-// Define this to 1 if the code is compiled in C++11 mode; leave it
-// undefined otherwise.  Do NOT define it to 0 -- that causes
-// '#ifdef LANG_CXX11' to behave differently from '#if LANG_CXX11'.
-#define LANG_CXX11 1
-#else
-#error "Protobuf requires at least C++11."
-#endif
 
 namespace google {
 namespace protobuf {

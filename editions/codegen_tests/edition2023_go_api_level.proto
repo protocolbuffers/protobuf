@@ -1,0 +1,30 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package protobuf_editions_test.edition2023;
+
+import "third_party/golang/protobuf/v2/src/google/protobuf/go_features.proto";
+
+option features.(pb.go).api_level = API_HYBRID;
+
+message Edition2023GoApiLevelInherit {
+  int32 foo = 1;
+}
+
+message Edition2023GoApiLevelOpen {
+  option features.(pb.go).api_level = API_OPEN;
+
+  int32 foo = 1;
+}
+
+message Edition2023GoApiLevelOpaque {
+  option features.(pb.go).api_level = API_OPAQUE;
+
+  int32 foo = 1;
+}

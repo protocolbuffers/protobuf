@@ -5,6 +5,11 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#[cfg(not(bzl))]
+mod protos;
+#[cfg(not(bzl))]
+use protos::*;
+
 use enums_rust_proto::{test_map_with_nested_enum, TestMapWithNestedEnum};
 use googletest::prelude::*;
 use map_unittest_rust_proto::{MapEnum, TestMap, TestMapWithMessages};
@@ -342,7 +347,7 @@ macro_rules! generate_map_with_msg_values_tests {
                     msg.[< map_ $k_field _all_types_mut >]().remove($k_nonzero),
                     eq(true),
                     "`remove` should return true when key was present.");
-                assert_that!(msg.[< map_ $k_field _all_types >](), empty());
+                assert_that!(msg.[< map_ $k_field _all_types >](), is_empty());
                 assert_that!(
                     msg.[< map_ $k_field _all_types_mut >]().remove($k_nonzero),
                     eq(false),

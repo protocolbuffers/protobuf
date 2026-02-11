@@ -5,15 +5,13 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <type_traits>
+
 #include "google/protobuf/stubs/common.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
-
-#if LANG_CXX11
-#include <type_traits>
-#endif
 
 namespace google {
 namespace protobuf {
@@ -22,9 +20,6 @@ namespace cpp {
 
 // Can't use an anonymous namespace here due to brokenness of Tru64 compiler.
 namespace cpp_unittest {
-
-// Moves are enabled only when compiling with a C++11 compiler or newer.
-#if LANG_CXX11
 
 TEST(MovableMessageTest, MoveConstructor) {
   proto2_unittest::TestAllTypes message1;
@@ -136,8 +131,6 @@ TEST(MovableMessageTest, Noexcept) {
       std::is_nothrow_move_constructible<proto2_unittest::TestAllTypes>());
   EXPECT_TRUE(std::is_nothrow_move_assignable<proto2_unittest::TestAllTypes>());
 }
-
-#endif  // LANG_CXX11
 
 }  // namespace cpp_unittest
 

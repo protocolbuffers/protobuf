@@ -18,6 +18,7 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/helpers.h"
@@ -54,11 +55,17 @@ EnumLiteGenerator::EnumLiteGenerator(const EnumDescriptor* descriptor,
   }
 }
 
-EnumLiteGenerator::~EnumLiteGenerator() {}
+EnumLiteGenerator::~EnumLiteGenerator() = default;
 
 void EnumLiteGenerator::Generate(io::Printer* printer) {
   WriteEnumDocComment(printer, descriptor_, context_->options());
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_, immutable_api_);
+
+  if (CheckLargeEnum(descriptor_)) {
+    GenerateLarge(printer, descriptor_, immutable_api_, context_,
+                  name_resolver_);
+    return;
+  }
 
 
   printer->Print(
@@ -138,7 +145,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
       "  return value;\n"
       "}\n"
       "\n");
-  if (context_->options().opensource_runtime) {
+  if (google::protobuf::internal::IsOss()) {
     printer->Print(
         "/**\n"
         " * @param value The number of the enum to look for.\n"
@@ -153,7 +160,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
         "classname", descriptor_->name());
   }
 
-  if (!context_->options().opensource_runtime) {
+  if (!google::protobuf::internal::IsOss()) {
     printer->Print("@com.google.protobuf.Internal.ProtoMethodMayReturnNull\n");
   }
   printer->Print(
@@ -204,7 +211,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
       "      };\n"
       "\n",
       "classname", descriptor_->name());
-  if (!context_->options().opensource_runtime) {
+  if (!google::protobuf::internal::IsOss()) {
     printer->Print(
         "/**\n"
         " * Override of toString that prints the number and name.\n"

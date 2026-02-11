@@ -40,8 +40,10 @@ from google.protobuf.internal import self_recursive_pb2
 from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
+from google.protobuf.internal import wire_format
 from google.protobuf import descriptor
 from google.protobuf import message
+from google.protobuf import unknown_fields
 from absl.testing import parameterized
 from google.protobuf import map_proto2_unittest_pb2
 from google.protobuf import map_unittest_pb2
@@ -999,6 +1001,50 @@ class MessageTest(unittest.TestCase):
     self.assertEqual('oneof_nested_message',
                      m2.child.payload.WhichOneof('oneof_field'))
 
+  def testOneofReleaseMergeFrom(self, message_module):
+    m = unittest_pb2.TestOneof2()
+    m.foo_message.moo_int = 123
+    reference = m.foo_message
+    self.assertEqual(m.foo_message.moo_int, 123)
+    m2 = unittest_pb2.TestOneof2()
+    m2.foo_lazy_message.moo_int = 456
+    m.MergeFrom(m2)
+    self.assertEqual(reference.moo_int, 123)
+    self.assertEqual(m.foo_message.moo_int, 0)
+    m.foo_message.CopyFrom(reference)
+    self.assertEqual(m.foo_message.moo_int, 123)
+
+  def testNestedOneofRleaseMergeFrom(self, message_module):
+    m = message_module.NestedTestAllTypes()
+    m.payload.oneof_nested_message.bb = 1
+    m.child.payload.oneof_nested_message.bb = 2
+    ref1 = m.payload.oneof_nested_message
+    ref2 = m.child.payload.oneof_nested_message
+    other = message_module.NestedTestAllTypes()
+    other.payload.oneof_uint32 = 22
+    other.child.payload.oneof_string = 'hi'
+    self.assertEqual(ref1.bb, 1)
+    self.assertEqual(ref2.bb, 2)
+    m.MergeFrom(other)
+    # oneof messages are released
+    self.assertEqual(ref1.bb, 1)
+    self.assertEqual(ref2.bb, 2)
+    self.assertEqual(m.payload.oneof_nested_message.bb, 0)
+    self.assertEqual(m.child.payload.oneof_nested_message.bb, 0)
+    self.assertEqual(m.payload.oneof_uint32, 22)
+    self.assertEqual(m.child.payload.oneof_string, 'hi')
+
+  def testOneofNotReleaseMergeFrom(self, message_module):
+    m = message_module.NestedTestAllTypes()
+    m.payload.oneof_nested_message.bb = 1
+    ref = m.payload.oneof_nested_message
+    other = message_module.NestedTestAllTypes()
+    other.payload.oneof_nested_message.bb = 2
+    self.assertEqual(ref.bb, 1)
+    m.MergeFrom(other)
+    # oneof message is not released
+    self.assertEqual(ref.bb, 2)
+
   def testOneofNestedMessageInit(self, message_module):
     m = message_module.TestAllTypes(
         oneof_nested_message=message_module.TestAllTypes.NestedMessage())
@@ -1431,6 +1477,116 @@ class MessageTest(unittest.TestCase):
         'TestAllTypes.NestedMessage', nested.__class__.__qualname__
     )
 
+  def create_bool_to_int(self, message_module, **kwargs):
+    with self.assertRaises(TypeError) as e:
+      m = message_module.TestAllTypes(**kwargs)
+    self.assertIn('bool', str(e.exception))
+    return None
+
+  def assign_bool_to_int(self, msg, field_name, value):
+    old_value = getattr(msg, field_name)
+    with self.assertRaises(TypeError) as e:
+      setattr(msg, field_name, value)
+    self.assertIn('bool', str(e.exception))
+    self.assertEqual(getattr(msg, field_name), old_value)
+
+  def assign_bool_to_map_or_extension(self, msg, field_name, key, value):
+    with self.assertRaises(TypeError) as e:
+      getattr(msg, field_name)[key] = value
+    self.assertIn('bool', str(e.exception))
+
+  def testAssignBoolToEnum(self, message_module):
+    m = self.create_bool_to_int(message_module, optional_nested_enum=True)
+    if m is not None:
+      self.assertEqual(m.optional_nested_enum, 1)
+
+    m = message_module.TestAllTypes(optional_nested_enum=2)
+    self.assign_bool_to_int(m, 'optional_nested_enum', True)
+
+    with warnings.catch_warnings(record=True) as w:
+      m.optional_nested_enum = 2
+      self.assertFalse(w)
+    self.assertEqual(m.optional_nested_enum, 2)
+
+  def testBoolToRepeatedEnum(self, message_module):
+    m = self.create_bool_to_int(message_module, repeated_nested_enum=[True])
+    if m is not None:
+      self.assertEqual(m.repeated_nested_enum, [1])
+
+    m = message_module.TestAllTypes()
+    with self.assertRaises(TypeError) as e:
+      m = message_module.TestAllTypes(repeated_nested_enum=[True])
+    self.assertIn('bool', str(e.exception))
+    self.assertEqual(m.repeated_nested_enum, [])
+
+  def testBoolToOneofEnum(self, message_module):
+    m = unittest_pb2.TestOneof2()
+    self.assign_bool_to_int(m, 'foo_enum', True)
+
+  def testBoolToMapEnum(self, message_module):
+    m = map_unittest_pb2.TestMap()
+    self.assign_bool_to_map_or_extension(m, 'map_int32_enum', 10, True)
+
+  def testBoolToExtensionEnum(self, message_module):
+    m = unittest_pb2.TestAllExtensions()
+    self.assign_bool_to_map_or_extension(
+        m, 'Extensions', unittest_pb2.optional_nested_enum_extension, True
+    )
+
+  def testClosedEnumExtension(self, message_module):
+    m = unittest_pb2.TestAllExtensions()
+    m.ParseFromString(b'\xa8\x01\x7f')
+    unknown = unknown_fields.UnknownFieldSet(m)
+
+    # The data is present in unknown fields.
+    self.assertEqual(unknown[0].field_number, 21)
+    self.assertEqual(unknown[0].wire_type, wire_format.WIRETYPE_VARINT)
+    self.assertEqual(unknown[0].data, 0x7f)
+
+    # There is no extension present.
+    self.assertFalse(
+        m.HasExtension(unittest_pb2.optional_nested_enum_extension)
+    )
+
+  def testAssignBoolToInt(self, message_module):
+    m = self.create_bool_to_int(message_module, optional_int32=True)
+    if m is not None:
+      self.assertEqual(m.optional_int32, 1)
+
+    m = message_module.TestAllTypes(optional_uint32=123)
+    self.assign_bool_to_int(m, 'optional_uint32', True)
+
+    with warnings.catch_warnings(record=True) as w:
+      m.optional_uint32 = 321
+      self.assertFalse(w)
+    self.assertEqual(m.optional_uint32, 321)
+
+  def testAssignBoolToRepeatedInt(self, message_module):
+    m = self.create_bool_to_int(message_module, repeated_int64=[True])
+    if m is not None:
+      self.assertEqual(m.repeated_int64, [1])
+
+    m = message_module.TestAllTypes()
+    with self.assertRaises(TypeError) as e:
+      m.repeated_int64.append(True)
+    self.assertIn('bool', str(e.exception))
+    self.assertEqual(m.repeated_int64, [])
+
+  def testAssignBoolToOneofInt(self, message_module):
+    m = unittest_pb2.TestOneof2()
+    self.assign_bool_to_int(m, 'foo_int', True)
+
+  def testAssignBoolToMapInt(self, message_module):
+    m = map_unittest_pb2.TestMap()
+    self.assign_bool_to_map_or_extension(m, 'map_int32_int32', 10, True)
+    self.assign_bool_to_map_or_extension(m, 'map_int32_int32', True, 1)
+
+  def testAssignBoolToExtensionInt(self, message_module):
+    m = unittest_pb2.TestAllExtensions()
+    self.assign_bool_to_map_or_extension(
+        m, 'Extensions', unittest_pb2.optional_int32_extension, True
+    )
+
 
 @testing_refleaks.TestCase
 class TestRecursiveGroup(unittest.TestCase):
@@ -1767,6 +1923,14 @@ class Proto2Test(unittest.TestCase):
     with self.assertRaises(ValueError):
       unittest_pb2.TestAllTypes(repeated_nested_enum='FOO')
 
+    m1 = unittest_pb2.TestAllTypes(
+        repeated_foreign_message=[{'c': 1}]
+    )
+    with self.assertRaises(TypeError):
+      unittest_pb2.TestAllTypes(
+          repeated_nested_message=m1.repeated_foreign_message
+      )
+
   def testPythonicInitWithDict(self):
     # Both string/unicode field name keys should work.
     kwargs = {
@@ -1952,7 +2116,7 @@ class Proto3Test(unittest.TestCase):
       if field.name.startswith('optional_'):
         self.assertTrue(field.has_presence)
     for field in unittest_pb2.TestAllTypes.DESCRIPTOR.fields:
-      if field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
+      if field.is_repeated:
         self.assertFalse(field.has_presence)
       else:
         self.assertTrue(field.has_presence)

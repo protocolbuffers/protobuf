@@ -12,6 +12,9 @@ use Google\Protobuf\RepeatedField;
 /**
  * A protocol buffer option, which can be attached to a message, field,
  * enumeration, etc.
+ * New usages of this message as an alternative to FileOptions, MessageOptions,
+ * FieldOptions, EnumOptions, EnumValueOptions, ServiceOptions, or MethodOptions
+ * are strongly discouraged.
  *
  * Generated from protobuf message <code>google.protobuf.Option</code>
  */
@@ -83,9 +86,9 @@ class Option extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setName($var)
+    public function setName(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->name = $var;
 
         return $this;
@@ -125,9 +128,8 @@ class Option extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Any $var
      * @return $this
      */
-    public function setValue($var)
+    public function setValue(\Google\Protobuf\Any|null $var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Any::class);
         $this->value = $var;
 
         return $this;

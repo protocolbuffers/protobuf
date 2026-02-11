@@ -55,7 +55,7 @@ message CppFeatures {
   ];
 
   optional bool enum_name_uses_string_view = 3 [
-    retention = RETENTION_SOURCE,
+    retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ENUM,
     targets = TARGET_TYPE_FILE,
     feature_support = {

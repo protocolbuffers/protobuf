@@ -10,6 +10,7 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/descriptor.h"
 #include "rust/cpp_kernel/serialized_data.h"
 #include "rust/cpp_kernel/strings.h"
 #include "rust/test/cpp/interop/interop_test.pb.h"
@@ -37,7 +38,7 @@ extern "C" void DeleteInteropTestMessage(InteropTestMessage* msg) {
 
 extern "C" void* DeserializeInteropTestMessage(const void* data, size_t size) {
   auto* proto = new InteropTestMessage;
-  proto->ParseFromArray(data, static_cast<int>(size));
+  ABSL_CHECK(proto->ParseFromArray(data, static_cast<int>(size)));
   return proto;
 }
 
@@ -63,4 +64,8 @@ extern "C" int64_t TakeOwnershipAndGetOptionalInt64(InteropTestMessage* msg) {
 extern "C" const void* GetConstStaticInteropTestMessage() {
   static const auto* msg = new InteropTestMessage;
   return msg;
+}
+
+extern "C" bool IsExpectedDescriptor(const google::protobuf::Descriptor* descriptor) {
+  return descriptor == InteropTestMessage::GetDescriptor();
 }

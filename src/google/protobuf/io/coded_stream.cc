@@ -214,7 +214,8 @@ bool CodedInputStream::SkipFallback(int count, int original_buffer_size) {
     // We hit the limit.  Skip up to it then fail.
     if (bytes_until_limit > 0) {
       total_bytes_read_ = closest_limit;
-      input_->Skip(bytes_until_limit);
+      // TODO: Remove this suppression.
+      (void)input_->Skip(bytes_until_limit);
     }
     return false;
   }
@@ -337,7 +338,8 @@ bool CodedInputStream::ReadCord(absl::Cord* output, int size) {
   const int available = closest_limit - total_bytes_read_;
   if (ABSL_PREDICT_FALSE(size > available)) {
     total_bytes_read_ = closest_limit;
-    input_->ReadCord(output, available);
+    // TODO: Remove this suppression.
+    (void)input_->ReadCord(output, available);
     return false;
   }
   total_bytes_read_ += size;
@@ -359,7 +361,8 @@ bool CodedInputStream::ReadLittleEndian16Fallback(uint16_t* value) {
     if (!ReadRaw(bytes, kSize)) return false;
     ptr = bytes;
   }
-  ReadLittleEndian16FromArray(ptr, value);
+  // TODO: Remove this suppression.
+  (void)ReadLittleEndian16FromArray(ptr, value);
   return true;
 }
 
@@ -377,7 +380,8 @@ bool CodedInputStream::ReadLittleEndian32Fallback(uint32_t* value) {
     if (!ReadRaw(bytes, kSize)) return false;
     ptr = bytes;
   }
-  ReadLittleEndian32FromArray(ptr, value);
+  // TODO: Remove this suppression.
+  (void)ReadLittleEndian32FromArray(ptr, value);
   return true;
 }
 
@@ -395,7 +399,8 @@ bool CodedInputStream::ReadLittleEndian64Fallback(uint64_t* value) {
     if (!ReadRaw(bytes, kSize)) return false;
     ptr = bytes;
   }
-  ReadLittleEndian64FromArray(ptr, value);
+  // TODO: Remove this suppression.
+  (void)ReadLittleEndian64FromArray(ptr, value);
   return true;
 }
 
@@ -421,8 +426,8 @@ const uint8_t* DecodeVarint64KnownSize(const uint8_t* buffer, uint64_t* value) {
 // so returning a pair is costless.
 PROTOBUF_ALWAYS_INLINE
 ::std::pair<bool, const uint8_t*> ReadVarint32FromArray(uint32_t first_byte,
-                                                      const uint8_t* buffer,
-                                                      uint32_t* value);
+                                                        const uint8_t* buffer,
+                                                        uint32_t* value);
 inline ::std::pair<bool, const uint8_t*> ReadVarint32FromArray(
     uint32_t first_byte, const uint8_t* buffer, uint32_t* value) {
   // Fast path:  We have enough bytes left in the buffer to guarantee that
@@ -821,7 +826,7 @@ bool EpsCopyOutputStream::GetDirectBufferPointer(void** data, int* size,
 }
 
 uint8_t* EpsCopyOutputStream::GetDirectBufferForNBytesAndAdvance(int size,
-                                                               uint8_t** pp) {
+                                                                 uint8_t** pp) {
   if (had_error_) {
     *pp = buffer_;
     return nullptr;
@@ -892,7 +897,7 @@ uint8_t* EpsCopyOutputStream::EnsureSpaceFallback(uint8_t* ptr) {
 }
 
 uint8_t* EpsCopyOutputStream::WriteRawFallback(const void* data, int size,
-                                             uint8_t* ptr) {
+                                               uint8_t* ptr) {
   int s = GetSize(ptr);
   while (s < size) {
     std::memcpy(ptr, data, s);
@@ -906,7 +911,7 @@ uint8_t* EpsCopyOutputStream::WriteRawFallback(const void* data, int size,
 }
 
 uint8_t* EpsCopyOutputStream::WriteAliasedRaw(const void* data, int size,
-                                            uint8_t* ptr) {
+                                              uint8_t* ptr) {
   if (size < GetSize(ptr)
   ) {
     return WriteRaw(data, size, ptr);
@@ -919,7 +924,7 @@ uint8_t* EpsCopyOutputStream::WriteAliasedRaw(const void* data, int size,
 
 #ifndef ABSL_IS_LITTLE_ENDIAN
 uint8_t* EpsCopyOutputStream::WriteRawLittleEndian32(const void* data, int size,
-                                                   uint8_t* ptr) {
+                                                     uint8_t* ptr) {
   auto p = static_cast<const uint8_t*>(data);
   auto end = p + size;
   while (end - p >= kSlopBytes) {
@@ -942,7 +947,7 @@ uint8_t* EpsCopyOutputStream::WriteRawLittleEndian32(const void* data, int size,
 }
 
 uint8_t* EpsCopyOutputStream::WriteRawLittleEndian64(const void* data, int size,
-                                                   uint8_t* ptr) {
+                                                     uint8_t* ptr) {
   auto p = static_cast<const uint8_t*>(data);
   auto end = p + size;
   while (end - p >= kSlopBytes) {
@@ -1003,7 +1008,8 @@ uint8_t* EpsCopyOutputStream::WriteStringOutline(uint32_t num,
   return WriteRaw(s.data(), size, ptr);
 }
 
-uint8_t* EpsCopyOutputStream::WriteCordOutline(const absl::Cord& c, uint8_t* ptr) {
+uint8_t* EpsCopyOutputStream::WriteCordOutline(const absl::Cord& c,
+                                               uint8_t* ptr) {
   uint32_t size = c.size();
   ptr = UnsafeWriteSize(size, ptr);
   return WriteCord(c, ptr);

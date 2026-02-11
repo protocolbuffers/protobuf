@@ -51,7 +51,7 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
 # Note that this deliberately does *not* include old_extensions1.proto
 # and old_extensions2.proto, which are generated with an older version
 # of protoc.
-$PROTOC -Isrc -I. \
+$PROTOC -Isrc -I. -Ijava/core/src/main/resources/ \
     --experimental_allow_proto3_optional \
     --experimental_editions \
     --csharp_out=csharp/src/Google.Protobuf.Test.TestProtos \
@@ -60,6 +60,7 @@ $PROTOC -Isrc -I. \
     --include_source_info \
     --include_imports \
     conformance/test_protos/test_messages_edition2023.proto \
+    conformance/test_protos/test_messages_edition_unstable.proto \
     csharp/protos/map_unittest_proto3.proto \
     csharp/protos/unittest_issues.proto \
     csharp/protos/unittest_custom_options_proto3.proto \

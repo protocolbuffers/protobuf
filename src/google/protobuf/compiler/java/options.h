@@ -35,7 +35,6 @@ struct Options {
   // When set, the protoc will generate the current files and all the transitive
   // dependencies as lite runtime.
   bool enforce_lite;
-  bool opensource_runtime = google::protobuf::internal::IsOss();
   // If true, we should build .meta files and emit @Generated annotations into
   // generated code.
   bool annotate_code;
@@ -55,6 +54,9 @@ struct Options {
   // If true, the generated DSL code will only utilize concrete types, never
   // referring to the OrBuilder interfaces.
   bool dsl_use_concrete_types;
+
+  // Used by protobuf itself and not supported for direct use by users.
+  bool bootstrap = false;
 };
 
 }  // namespace java

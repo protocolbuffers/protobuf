@@ -65,7 +65,7 @@ rules_jvm_external_setup()
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 maven_install(
-    name = "protobuf_maven",
+    name = "maven",
     artifacts = PROTOBUF_MAVEN_ARTIFACTS,
     # For updating instructions, see:
     # https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson
@@ -76,7 +76,7 @@ maven_install(
     ],
 )
 
-load("@protobuf_maven//:defs.bzl", "pinned_maven_install")
+load("@maven//:defs.bzl", "pinned_maven_install")
 
 pinned_maven_install()
 
@@ -113,10 +113,6 @@ bazel_skylib_workspace()
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 
 rules_pkg_dependencies()
-
-load("@build_bazel_rules_apple//apple:repositories.bzl", "apple_rules_dependencies")
-
-apple_rules_dependencies()
 
 load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
 
@@ -249,46 +245,6 @@ load("@fuzzing_py_deps//:requirements.bzl", fuzzing_py_deps_install_deps = "inst
 
 fuzzing_py_deps_install_deps()
 
-http_archive(
-    name = "rules_rust",
-    integrity = "sha256-8TBqrAsli3kN8BrZq8arsN8LZUFsdLTvJ/Sqsph4CmQ=",
-    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.56.0/rules_rust-0.56.0.tar.gz"],
-)
-
-load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains")
-
-rules_rust_dependencies()
-
-rust_register_toolchains(edition = "2021")
-
-load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_repository")
-
-# to repin, invoke `CARGO_BAZEL_REPIN=1 bazel sync --only=crate_index`
-crates_repository(
-    name = "crate_index",
-    cargo_lockfile = "//:Cargo.lock",
-    lockfile = "//:Cargo.bazel.lock",
-    packages = {
-        "googletest": crate.spec(
-            git = "https://github.com/google/googletest-rust",
-            rev = "b407f3b5774defb8917d714bfb7af485e117d621",
-        ),
-        "paste": crate.spec(
-            version = ">=1",
-        ),
-        "quote": crate.spec(
-            version = ">=1",
-        ),
-        "syn": crate.spec(
-            version = ">=2",
-        ),
-    },
-)
-
-load("@crate_index//:defs.bzl", "crate_repositories")
-
-crate_repositories()
-
 # For testing runtime against old gencode from a previous major version.
 http_archive(
     name = "com_google_protobuf_v25",
@@ -309,9 +265,9 @@ protobuf_v25_deps()
 
 http_archive(
     name = "rules_testing",
-    sha256 = "89feaf18d6e2fc07ed7e34510058fc8d48e45e6d2ff8a817a718e8c8e4bcda0e",
-    strip_prefix = "rules_testing-0.8.0",
-    url = "https://github.com/bazelbuild/rules_testing/releases/download/v0.8.0/rules_testing-v0.8.0.tar.gz",
+    sha256 = "281b69eed71e2b95cefc284ee5a1a9f7c5088141b58f2508be910eb22f13b986",
+    strip_prefix = "rules_testing-0.9.0",
+    url = "https://github.com/bazelbuild/rules_testing/releases/download/v0.9.0/rules_testing-v0.9.0.tar.gz",
 )
 
 # For checking breaking changes to well-known types from the previous release version.

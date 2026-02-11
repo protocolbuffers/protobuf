@@ -74,12 +74,12 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                       unsafe {
                         let raw_array = self.inner.ptr_mut().get_or_create_mutable_array_at_index(
                           $upb_mt_field_index$,
-                          self.arena()
+                          self.inner.arena()
                         ).expect("alloc should not fail");
                         $pb$::RepeatedMut::from_inner(
                           $pbi$::Private,
                           $pbr$::InnerRepeatedMut::new(
-                            raw_array, self.arena(),
+                            raw_array, self.inner.arena(),
                           ),
                         )
                       }
@@ -110,22 +110,11 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              if (ctx.is_upb()) {
                ctx.Emit(R"rs(
                     pub fn set_$raw_field_name$(&mut self, src: impl $pb$::IntoProxied<$pb$::Repeated<$RsType$>>) {
-                      let minitable_field = unsafe {
-                        $pbr$::upb_MiniTable_GetFieldByIndex(
-                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                          $upb_mt_field_index$
-                        )
-                      };
-                      let val = src.into_proxied($pbi$::Private);
-                      let inner = val.inner($pbi$::Private);
-
-                      self.arena().fuse(inner.arena());
                       unsafe {
-                          let value_ptr: *const *const std::ffi::c_void =
-                              &(inner.raw().as_ptr() as *const std::ffi::c_void);
-                          $pbr$::upb_Message_SetBaseField(self.raw_msg(),
-                            minitable_field,
-                            value_ptr as *const std::ffi::c_void);
+                        $pbr$::message_set_repeated_field(
+                          $pb$::AsMut::as_mut(self).inner,
+                          $upb_mt_field_index$,
+                          src);
                       }
                     }
                   )rs");

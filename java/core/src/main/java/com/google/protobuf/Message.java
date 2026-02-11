@@ -14,6 +14,9 @@ import java.util.Map;
 /**
  * Abstract interface implemented by Protocol Message objects.
  *
+ * <p>This interface is intended to only be implemented by protoc created gencode. It is not
+ * intended or supported to implement this interface manually.
+ *
  * <p>See also {@link MessageLite}, which defines most of the methods that typical users care about.
  * {@link Message} adds methods that are not available in the "lite" runtime. The biggest added
  * features are introspection and reflection; that is, getting descriptors for the message type and

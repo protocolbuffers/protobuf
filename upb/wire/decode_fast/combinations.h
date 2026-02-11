@@ -199,13 +199,17 @@ UPB_INLINE upb_DecodeFast_Type upb_DecodeFast_GetType(uint32_t function_idx) {
 // index.  Some field types (eg. groups) do not even have a function index at
 // the moment, and so will be rejected by upb_DecodeFast_TryFillEntry() before
 // we even get here.
-#define UPB_DECODEFAST_COMBINATION_IS_ENABLED(type, card, size) \
-  (type == kUpb_DecodeFast_Fixed32 || type == kUpb_DecodeFast_Fixed64)
+#define UPB_DECODEFAST_COMBINATION_IS_ENABLED(type, card, size)              \
+  (type == kUpb_DecodeFast_Fixed32 || type == kUpb_DecodeFast_Fixed64 ||     \
+   ((type == kUpb_DecodeFast_Varint32 || type == kUpb_DecodeFast_Varint64 || \
+     type == kUpb_DecodeFast_ZigZag32 || type == kUpb_DecodeFast_ZigZag64 || \
+     type == kUpb_DecodeFast_Bool || type == kUpb_DecodeFast_Bytes ||        \
+     type == kUpb_DecodeFast_String)))
 
 #ifdef UPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE
 #define UPB_DECODEFAST_ISENABLED(type, card, size)            \
   (UPB_DECODEFAST_COMBINATION_IS_ENABLED(type, card, size) && \
-   (UPB_DECODEFAST_FUNCION_IDX(type, card, size) <=           \
+   (UPB_DECODEFAST_FUNCTION_IDX(type, card, size) <=          \
     UPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE))
 #else
 #define UPB_DECODEFAST_ISENABLED(type, card, size) \

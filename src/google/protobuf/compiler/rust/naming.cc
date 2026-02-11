@@ -39,7 +39,11 @@ namespace compiler {
 namespace rust {
 
 std::string GetCrateName(Context& ctx, const FileDescriptor& dep) {
-  return absl::StrCat("::", RsSafeName(ctx.ImportPathToCrateName(dep.name())));
+  std::string crate_name = RsSafeName(ctx.ImportPathToCrateName(dep.name()));
+  if (absl::StartsWith(crate_name, "crate::")) {
+    return crate_name;
+  }
+  return absl::StrCat("::", crate_name);
 }
 
 std::string GetEntryPointRsFilePath(Context& ctx, const FileDescriptor& file) {
@@ -297,8 +301,7 @@ std::string FieldNameWithCollisionAvoidance(const FieldDescriptor& field) {
 
 std::string RsSafeName(absl::string_view name) {
   if (!IsLegalRawIdentifierName(name)) {
-    return absl::StrCat(name,
-                        "__mangled_because_ident_isnt_a_legal_raw_identifier");
+    return absl::StrCat(name, "_");
   }
   if (IsRustKeyword(name)) {
     return absl::StrCat("r#", name);
@@ -306,8 +309,52 @@ std::string RsSafeName(absl::string_view name) {
   return std::string(name);
 }
 
+namespace {
+
+bool AnyChildMessageNamed(const FileDescriptor* scope, absl::string_view name) {
+  for (int i = 0; i < scope->message_type_count(); ++i) {
+    if (scope->message_type(i)->name() == name) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool AnyChildMessageNamed(const Descriptor* scope, absl::string_view name) {
+  for (int i = 0; i < scope->nested_type_count(); ++i) {
+    if (scope->nested_type(i)->name() == name) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool MustMangleEnumName(const EnumDescriptor& desc) {
+  // If an enum name ends with 'View', we check if there is a message whose name
+  // matches the enum name without the 'View' suffix. If so,
+  // append an extra 'X' character on the end of the gencode enum name. The
+  // reason we special case mangle this is to avoid breakages from the View
+  // type of the message when the .proto file is following this AIP:
+  // https://google.aip.dev/157#view-enumeration
+  if (!absl::EndsWith(desc.name(), "View")) {
+    return false;
+  }
+  absl::string_view name_without_view_suffix =
+      absl::StripSuffix(desc.name(), "View");
+  return desc.containing_type() != nullptr
+             ? AnyChildMessageNamed(desc.containing_type(),
+                                    name_without_view_suffix)
+             : AnyChildMessageNamed(desc.file(), name_without_view_suffix);
+}
+
+}  // namespace
+
 std::string EnumRsName(const EnumDescriptor& desc) {
-  return RsSafeName(SnakeToUpperCamelCase(desc.name()));
+  std::string name = RsSafeName(SnakeToUpperCamelCase(desc.name()));
+  if (MustMangleEnumName(desc)) {
+    absl::StrAppend(&name, "_");
+  }
+  return name;
 }
 
 std::string EnumValueRsName(const EnumValueDescriptor& value) {
@@ -319,7 +366,8 @@ std::string EnumValueRsName(const MultiCasePrefixStripper& stripper,
                             absl::string_view value_name) {
   // Enum values may have a prefix of the name of the enum stripped from the
   // value names in the gencode. This prefix is flexible:
-  // - It can be the original enum name, the name as UpperCamel, or snake_case.
+  // - It can be the original enum name, the name as UpperCamel, or
+  // snake_case.
   // - The stripped prefix may also end in an underscore.
   auto stripped = stripper.StripPrefix(value_name);
 
@@ -433,6 +481,13 @@ absl::string_view MultiCasePrefixStripper::StripPrefix(
     return start_name;
   }
   return name;
+}
+
+std::string DescriptorInfoName(const FileDescriptor& file) {
+  std::string name =
+      absl::StrReplaceAll(StripProto(file.name()), {{"/", "_"}, {"-", "_"}});
+  absl::AsciiStrToUpper(&name);
+  return absl::StrCat(name, "_DESCRIPTOR_INFO");
 }
 
 }  // namespace rust

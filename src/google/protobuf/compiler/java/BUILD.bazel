@@ -25,14 +25,31 @@ cc_library(
 )
 
 cc_library(
-    name = "generator_headers",
-    hdrs = ["generator.h"],
-    copts = COPTS,
+    name = "names_internal",
+    hdrs = ["names_internal.h"],
     strip_include_prefix = "/src",
-    visibility = ["//pkg:__pkg__"],
     deps = [
         "//src/google/protobuf",
-        "//src/google/protobuf/compiler:code_generator",
+    ],
+)
+
+cc_library(
+    name = "context",
+    hdrs = [
+        "context.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler/java:__subpackages__",
+        "//src/google/protobuf/compiler/kotlin:__subpackages__",
+    ],
+    deps = [
+        ":field_common",
+        ":helpers",
+        "//src/google/protobuf:port",
+        "@abseil-cpp//absl/container:flat_hash_map",
     ],
 )
 
@@ -45,7 +62,6 @@ cc_library(
         "names.cc",
     ],
     hdrs = [
-        "context.h",
         "doc_comment.h",
         "generator.h",
         "helpers.h",
@@ -62,12 +78,15 @@ cc_library(
     ],
     deps = [
         ":java_features_bootstrap",
+        ":names_internal",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler:code_generator_lite",
         "//src/google/protobuf/compiler:versions",
         "//src/google/protobuf/io:printer",
         "//src/google/protobuf/io:tokenizer",
+        "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/log:absl_check",
@@ -92,11 +111,15 @@ cc_library(
         "//src/google/protobuf/compiler/kotlin:__subpackages__",
     ],
     deps = [
+        ":context",
         ":helpers",
         ":java_features_bootstrap",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler:code_generator_lite",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
@@ -141,6 +164,8 @@ cc_library(
         "//src/google/protobuf/compiler/kotlin:__subpackages__",
     ],
     deps = [
+        ":context",
+        ":field_common",
         ":generator_common",
         ":helpers",
         ":internal_helpers",
@@ -169,10 +194,24 @@ cc_library(
 )
 
 cc_library(
-    name = "generator_common",
+    name = "field_common",
     srcs = ["field_common.cc"],
+    hdrs = ["field_common.h"],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//src/google/protobuf/compiler/java:__subpackages__",
+        "//src/google/protobuf/compiler/kotlin:__subpackages__",
+    ],
+    deps = [
+        ":helpers",
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "generator_common",
     hdrs = [
-        "field_common.h",
         "generator_common.h",
         "generator_factory.h",
     ],
@@ -182,6 +221,7 @@ cc_library(
         "//src/google/protobuf/compiler/kotlin:__subpackages__",
     ],
     deps = [
+        ":context",
         ":helpers",
         "//src/google/protobuf",
         "//src/google/protobuf:port",

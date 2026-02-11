@@ -40,18 +40,15 @@ class ParseFunctionGenerator {
 
   ParseFunctionGenerator(
       const Descriptor* descriptor, int max_has_bit_index,
-      absl::Span<const int> has_bit_indices,
-      absl::Span<const int> inlined_string_indices, const Options& options,
-      MessageSCCAnalyzer* scc_analyzer,
+      absl::Span<const int> has_bit_indices, const Options& options,
       const absl::flat_hash_map<absl::string_view, std::string>& vars,
       int index_in_file_messages);
 
   static std::vector<internal::TailCallTableInfo::FieldOptions>
   BuildFieldOptions(const Descriptor* descriptor,
                     absl::Span<const FieldDescriptor* const> ordered_fields,
-                    const Options& options, MessageSCCAnalyzer* scc_analyzer,
-                    absl::Span<const int> has_bit_indices,
-                    absl::Span<const int> inlined_string_indices);
+                    const Options& options,
+                    absl::Span<const int> has_bit_indices);
 
   static internal::TailCallTableInfo BuildTcTableInfoFromDescriptor(
       const Descriptor* descriptor, const Options& options,
@@ -71,16 +68,14 @@ class ParseFunctionGenerator {
 
   // Generates the tail-call table definition.
   void GenerateTailCallTable(io::Printer* printer);
-  void GenerateFastFieldEntries(Formatter& format);
+  void GenerateFastFieldEntries(io::Printer* printer);
   void GenerateFieldEntries(io::Printer* p);
   void GenerateFieldNames(Formatter& format);
 
   const Descriptor* descriptor_;
-  MessageSCCAnalyzer* scc_analyzer_;
   const Options& options_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
   std::unique_ptr<internal::TailCallTableInfo> tc_table_info_;
-  std::vector<int> inlined_string_indices_;
   const std::vector<const FieldDescriptor*> ordered_fields_;
   int num_hasbits_;
   int index_in_file_messages_;

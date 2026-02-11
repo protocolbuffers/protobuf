@@ -1,3 +1,6 @@
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 package(default_applicable_licenses = ["//:license"])
 
 cc_library(

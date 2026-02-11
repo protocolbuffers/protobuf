@@ -86,6 +86,19 @@ void CommandLineInterfaceTester::RunProtocWithArgs(
 #endif
 }
 
+void CommandLineInterfaceTester::RunProtocAndExpectDeath(
+    absl::string_view command, const std::string& death_message_regex) {
+  std::vector<std::string> args =
+      absl::StrSplit(command, ' ', absl::SkipEmpty());
+  std::vector<const char*> argv(args.size());
+  for (size_t i = 0; i < args.size(); i++) {
+    args[i] = absl::StrReplaceAll(args[i], {{"$tmpdir", temp_directory_}});
+    argv[i] = args[i].c_str();
+  }
+  EXPECT_DEATH(cli_.Run(static_cast<int>(args.size()), argv.data()),
+               death_message_regex);
+}
+
 // -------------------------------------------------------------------
 
 void CommandLineInterfaceTester::CreateTempFile(absl::string_view name,
@@ -172,14 +185,28 @@ void CommandLineInterfaceTester::
   EXPECT_THAT(captured_stderr_, HasSubstr(expected_substring));
 }
 
-void CommandLineInterfaceTester::ExpectFileContent(absl::string_view filename,
-                                                   absl::string_view content) {
+std::string CommandLineInterfaceTester::FileContents(
+    absl::string_view filename) const {
   std::string path = absl::StrCat(temp_directory_, "/", filename);
   std::string file_contents;
   ABSL_CHECK_OK(File::GetContents(path, &file_contents, true));
+  return file_contents;
+}
 
+void CommandLineInterfaceTester::ExpectFileContent(absl::string_view filename,
+                                                   absl::string_view content) {
   EXPECT_EQ(absl::StrReplaceAll(content, {{"$tmpdir", temp_directory_}}),
-            file_contents);
+            FileContents(filename));
+}
+
+void CommandLineInterfaceTester::ExpectFileContentContainsSubstring(
+    absl::string_view filename, absl::string_view content_substring) {
+  EXPECT_THAT(FileContents(filename), HasSubstr(content_substring));
+}
+
+void CommandLineInterfaceTester::ExpectFileContentNotContainsSubstring(
+    absl::string_view filename, absl::string_view content_substring) {
+  EXPECT_THAT(FileContents(filename), Not(HasSubstr(content_substring)));
 }
 
 }  // namespace compiler

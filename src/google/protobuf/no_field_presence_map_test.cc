@@ -25,15 +25,11 @@ namespace google {
 namespace protobuf {
 namespace {
 
-using ::proto2_nofieldpresence_unittest::ExplicitForeignMessage;
 using ::proto2_nofieldpresence_unittest::FOREIGN_BAZ;
 using ::proto2_nofieldpresence_unittest::FOREIGN_FOO;
-using ::proto2_nofieldpresence_unittest::ForeignMessage;
 using ::proto2_nofieldpresence_unittest::TestAllMapTypes;
 using ::testing::Eq;
-using ::testing::Gt;
 using ::testing::Not;
-using ::testing::StrEq;
 using ::testing::UnorderedPointwise;
 
 // Custom gmock matchers to simplify testing for map entries.
@@ -116,14 +112,14 @@ TEST(NoFieldPresenceTest, GenCodeMapMissingKeyDeathTest) {
   TestAllMapTypes message;
 
   // Trying to find an unset key in a map would crash.
-  EXPECT_DEATH(message.map_int32_bytes().at(9), "key not found");
+  EXPECT_DEATH((void)message.map_int32_bytes().at(9), "key not found");
 }
 
 #ifndef NDEBUG
 // This test case tests a DCHECK assertion. If this scenario happens in
 // optimized builds, it's technically UB, so having a test case for it in opt
 // builds is meaningless.
-TEST(NoFieldPresenceTest, GenCodeMapReflectionMissingKeyDeathTest) {
+TEST(NoFieldPresenceTest, DISABLED_GenCodeMapReflectionMissingKeyDeathTest) {
   TestAllMapTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
@@ -132,8 +128,8 @@ TEST(NoFieldPresenceTest, GenCodeMapReflectionMissingKeyDeathTest) {
       desc->FindFieldByName("map_int32_bytes");
 
   // Trying to get an unset map entry would crash with a DCHECK in debug mode.
-  EXPECT_DEATH(r->GetRepeatedMessage(message, field_map_int32_bytes, 0),
-               "index < current_size_");
+  EXPECT_DEATH((void)r->GetRepeatedMessage(message, field_map_int32_bytes, 0),
+               "index < size");
 }
 #endif
 

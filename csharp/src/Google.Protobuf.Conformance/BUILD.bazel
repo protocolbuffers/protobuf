@@ -77,18 +77,3 @@ filegroup(
     data = [":package_conformance_test"],
     visibility = ["//conformance:__subpackages__"],
 )
-
-################################################################################
-# Distribution files
-################################################################################
-
-pkg_files(
-    name = "dist_files",
-    srcs = [
-        "BUILD.bazel",
-        "Google.Protobuf.Conformance.csproj",
-        "Program.cs",
-    ],
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//csharp:__pkg__"],
-)

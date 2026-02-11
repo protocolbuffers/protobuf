@@ -20,6 +20,12 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+alias(
+    name = "lite_nowkt",
+    actual = "//java/core:lite_runtime_only",
+    visibility = ["//visibility:public"],
+)
+
 proto_lang_toolchain(
     name = "toolchain",
     # keep this in sync w/ LITE_WELL_KNOWN_PROTO_MAP in //:BUILD
@@ -79,20 +85,4 @@ junit_tests(
         "@protobuf_maven_dev//:com_google_truth_truth",
         "@protobuf_maven_dev//:junit_junit",
     ],
-)
-
-pkg_files(
-    name = "dist_files",
-    srcs = glob([
-        "**/*.java",
-    ]) + [
-        "BUILD.bazel",
-        "generate-sources-build.xml",
-        "generate-test-sources-build.xml",
-        "lite.awk",
-        "pom_template.xml",
-        "process-lite-sources-build.xml",
-    ],
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//java:__pkg__"],
 )

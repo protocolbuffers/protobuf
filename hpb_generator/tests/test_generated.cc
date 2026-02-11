@@ -12,17 +12,20 @@
 #include <gtest/gtest.h>
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/hpb/tests/child_model.hpb.h"
-#include "google/protobuf/compiler/hpb/tests/no_package.hpb.h"
-#include "google/protobuf/compiler/hpb/tests/set_alias.hpb.h"
-#include "google/protobuf/compiler/hpb/tests/test_enum.hpb.h"
-#include "google/protobuf/compiler/hpb/tests/test_extension.hpb.h"
-#include "google/protobuf/compiler/hpb/tests/test_model.hpb.h"
+#include "hpb_generator/tests/child_model.hpb.h"
+#include "hpb_generator/tests/no_package.hpb.h"
+#include "hpb_generator/tests/null_enum.hpb.h"
+#include "hpb_generator/tests/set_alias.hpb.h"
+#include "hpb_generator/tests/test_enum.hpb.h"
+#include "hpb_generator/tests/test_extension.hpb.h"
+#include "hpb_generator/tests/test_model.hpb.h"
 #include "hpb/arena.h"
 #include "hpb/backend/upb/interop.h"
 #include "hpb/hpb.h"
+#include "hpb/options.h"
 #include "hpb/ptr.h"
 #include "hpb/requires.h"
+#include "hpb/status.h"
 
 namespace {
 
@@ -47,6 +50,8 @@ TEST(CppGeneratedCode, MessageEnum) { EXPECT_EQ(5, TestModel_Category_IMAGES); }
 TEST(CppGeneratedCode, ImportedEnum) { EXPECT_EQ(3, TestEnum::DEVICE_MONITOR); }
 
 TEST(CppGeneratedCode, Enum) { EXPECT_EQ(1, RED); }
+
+TEST(CppGeneratedCode, NullEnum) { EXPECT_EQ(1, hpb_test::protos::NULL_); }
 
 TEST(CppGeneratedCode, EnumNoPackage) { EXPECT_EQ(1, ::hpb_CELSIUS); }
 
@@ -405,13 +410,39 @@ TEST(CppGeneratedCode, MessageMapStringKeyAndInt32Value) {
   EXPECT_EQ(false, result_after_delete.ok());
 }
 
+TEST(CppGeneratedCode, HpbStatus) {
+  TestModel model;
+  model.set_str1("lightweight status");
+  hpb::Arena arena;
+  absl::StatusOr<absl::string_view> bytes = ::hpb::Serialize(&model, arena);
+  EXPECT_EQ(true, bytes.ok());
+
+  hpb::StatusOr<TestModel> parsed_model = ::hpb::Parse<TestModel>(
+      bytes.value(), hpb::ParseOptionsWithEmptyRegistry());
+  EXPECT_EQ(true, parsed_model.ok());
+  EXPECT_EQ("lightweight status", parsed_model.value().str1());
+}
+
+TEST(CppGeneratedCode, HpbStatusFail) {
+  hpb::StatusOr<TestModel> status = ::hpb::Parse<TestModel>(
+      "definitely not a proto", hpb::ParseOptionsWithEmptyRegistry());
+  EXPECT_EQ(false, status.ok());
+  EXPECT_EQ(status.error(), "Wire format was corrupt");
+
+  absl::StatusOr<TestModel> to_absl_status = status.ToAbslStatusOr();
+  EXPECT_EQ(false, to_absl_status.ok());
+  EXPECT_EQ(to_absl_status.status().message(), "Wire format was corrupt");
+}
+
 TEST(CppGeneratedCode, SerializeUsingArena) {
   TestModel model;
   model.set_str1("Hello World");
   hpb::Arena arena;
   absl::StatusOr<absl::string_view> bytes = ::hpb::Serialize(&model, arena);
   EXPECT_EQ(true, bytes.ok());
-  TestModel parsed_model = ::hpb::Parse<TestModel>(bytes.value()).value();
+  TestModel parsed_model =
+      ::hpb::Parse<TestModel>(bytes.value(), hpb::DefaultParseOptions())
+          .value();
   EXPECT_EQ("Hello World", parsed_model.str1());
 }
 
@@ -423,7 +454,9 @@ TEST(CppGeneratedCode, SerializeProxyUsingArena) {
   absl::StatusOr<absl::string_view> bytes =
       ::hpb::Serialize(&model_proxy, arena);
   EXPECT_EQ(true, bytes.ok());
-  TestModel parsed_model = ::hpb::Parse<TestModel>(bytes.value()).value();
+  TestModel parsed_model =
+      ::hpb::Parse<TestModel>(bytes.value(), hpb::DefaultParseOptions())
+          .value();
   EXPECT_EQ("Hello World", parsed_model.str1());
 }
 
@@ -434,7 +467,9 @@ TEST(CppGeneratedCode, SerializeNestedMessageUsingArena) {
   hpb::Ptr<const TestModel> child = model.recursive_child();
   absl::StatusOr<absl::string_view> bytes = ::hpb::Serialize(child, arena);
   EXPECT_EQ(true, bytes.ok());
-  TestModel parsed_model = ::hpb::Parse<TestModel>(bytes.value()).value();
+  TestModel parsed_model =
+      ::hpb::Parse<TestModel>(bytes.value(), hpb::DefaultParseOptions())
+          .value();
   EXPECT_EQ("Hello World", parsed_model.str1());
 }
 
@@ -666,6 +701,7 @@ TEST(CppGeneratedCode, SetAliasFieldsOutofOrder) {
   ASSERT_EQ(parent1.child()->peeps(), 12);
 }
 
+#ifndef NDEBUG
 TEST(CppGeneratedCode, SetAliasFailsForDifferentArena) {
   hpb::Arena arena;
   auto child = hpb::CreateMessage<Child>(arena);
@@ -673,6 +709,7 @@ TEST(CppGeneratedCode, SetAliasFailsForDifferentArena) {
   auto parent = hpb::CreateMessage<Parent>(different_arena);
   EXPECT_DEATH(parent.set_alias_child(child), "hpb::interop::upb::GetArena");
 }
+#endif
 
 TEST(CppGeneratedCode, SetAliasSucceedsForDifferentArenaFused) {
   hpb::Arena arena;
@@ -711,6 +748,7 @@ TEST(CppGeneratedCode, SetAliasRepeated) {
             hpb::interop::upb::GetMessage(parent1.children(0)));
 }
 
+#ifndef NDEBUG
 TEST(CppGeneratedCode, SetAliasRepeatedFailsForDifferentArena) {
   hpb::Arena arena;
   auto child = hpb::CreateMessage<Child>(arena);
@@ -718,6 +756,7 @@ TEST(CppGeneratedCode, SetAliasRepeatedFailsForDifferentArena) {
   auto parent = hpb::CreateMessage<ParentWithRepeated>(different_arena);
   EXPECT_DEATH(parent.add_alias_children(child), "hpb::interop::upb::GetArena");
 }
+#endif
 
 TEST(CppGeneratedCode, SetAliasMap) {
   hpb::Arena arena;
@@ -736,6 +775,39 @@ TEST(CppGeneratedCode, SetAliasMap) {
   EXPECT_TRUE(c2.ok());
   ASSERT_EQ(hpb::interop::upb::GetMessage(c1.value()),
             hpb::interop::upb::GetMessage(c2.value()));
+}
+
+#ifndef NDEBUG
+TEST(CppGeneratedCode, SetAliasMapFailsDifferentArena) {
+  hpb::Arena arena1;
+  hpb::Arena arena2;
+  auto parent1 = hpb::CreateMessage<ParentWithMap>(arena1);
+
+  auto child = hpb::CreateMessage<Child>(arena2);
+  constexpr int key = 1;
+  EXPECT_DEATH(parent1.set_alias_child_map(key, child),
+               "hpb::interop::upb::GetArena");
+}
+#endif
+
+TEST(CppGeneratedCode, SetAliasSucceedsForDifferentArenaRefs) {
+  hpb::Arena arena;
+  auto parent1 = hpb::CreateMessage<Parent>(arena);
+  auto child = parent1.mutable_child();
+  child->set_peeps(12);
+
+  hpb::Arena other_arena;
+  auto parent2 = hpb::CreateMessage<Parent>(other_arena);
+  other_arena.RefArena(arena);
+
+  parent2.set_alias_child(child);
+
+  ASSERT_EQ(parent1.child()->peeps(), parent2.child()->peeps());
+  ASSERT_EQ(hpb::interop::upb::GetMessage(parent1.child()),
+            hpb::interop::upb::GetMessage(parent2.child()));
+  auto childPtr = hpb::Ptr<Child>(child);
+  ASSERT_EQ(hpb::interop::upb::GetMessage(childPtr),
+            hpb::interop::upb::GetMessage(parent1.child()));
 }
 
 }  // namespace

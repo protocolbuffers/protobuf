@@ -1,6 +1,7 @@
 # We use abbreviated target names in this directory to work around:
 #     https://github.com/bazelbuild/bazel/issues/18683
 
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
@@ -39,6 +40,9 @@ cc_library(
         ":fg",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator_lite",
+        "//src/google/protobuf/compiler/java:context",
+        "//src/google/protobuf/compiler/java:field_common",
         "//src/google/protobuf/compiler/java:generator_common",
         "//src/google/protobuf/compiler/java:helpers",
         "//src/google/protobuf/compiler/java:internal_helpers",
@@ -48,6 +52,7 @@ cc_library(
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/types:optional",
     ],
 )
 
@@ -62,6 +67,7 @@ cc_library(
         ":fg",
         ":fgs",
         "//src/google/protobuf",
+        "//src/google/protobuf/compiler/java:context",
         "//src/google/protobuf/compiler/java:generator_common",
         "//src/google/protobuf/compiler/java:helpers",
     ],
@@ -77,6 +83,8 @@ cc_library(
     deps = [
         "//src/google/protobuf",
         "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator_lite",
+        "//src/google/protobuf/compiler/java:context",
         "//src/google/protobuf/compiler/java:generator_common",
         "//src/google/protobuf/compiler/java:helpers",
         "//src/google/protobuf/io:printer",
@@ -94,6 +102,8 @@ cc_library(
     deps = [
         "//src/google/protobuf",
         "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator_lite",
+        "//src/google/protobuf/compiler/java:context",
         "//src/google/protobuf/compiler/java:generator_common",
         "//src/google/protobuf/compiler/java:helpers",
         "//src/google/protobuf/compiler/java:internal_helpers",
@@ -136,6 +146,9 @@ cc_library(
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/compiler:code_generator_lite",
+        "//src/google/protobuf/compiler/java:context",
+        "//src/google/protobuf/compiler/java:field_common",
         "//src/google/protobuf/compiler/java:generator_common",
         "//src/google/protobuf/compiler/java:helpers",
         "//src/google/protobuf/compiler/java:message_serialization",

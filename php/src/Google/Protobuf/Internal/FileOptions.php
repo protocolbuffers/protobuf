@@ -43,7 +43,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * generated to contain the file's getDescriptor() method as well as any
      * top-level extensions defined in the file.
      *
-     * Generated from protobuf field <code>optional bool java_multiple_files = 10 [default = false];</code>
+     * Generated from protobuf field <code>optional bool java_multiple_files = 10 [default = false, feature_support = {</code>
      */
     protected $java_multiple_files = null;
     /**
@@ -324,9 +324,9 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setJavaPackage($var)
+    public function setJavaPackage(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->java_package = $var;
 
         return $this;
@@ -368,9 +368,9 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setJavaOuterClassname($var)
+    public function setJavaOuterClassname(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->java_outer_classname = $var;
 
         return $this;
@@ -384,7 +384,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * generated to contain the file's getDescriptor() method as well as any
      * top-level extensions defined in the file.
      *
-     * Generated from protobuf field <code>optional bool java_multiple_files = 10 [default = false];</code>
+     * Generated from protobuf field <code>optional bool java_multiple_files = 10 [default = false, feature_support = {</code>
      * @return bool
      */
     public function getJavaMultipleFiles()
@@ -410,13 +410,12 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * generated to contain the file's getDescriptor() method as well as any
      * top-level extensions defined in the file.
      *
-     * Generated from protobuf field <code>optional bool java_multiple_files = 10 [default = false];</code>
+     * Generated from protobuf field <code>optional bool java_multiple_files = 10 [default = false, feature_support = {</code>
      * @param bool $var
      * @return $this
      */
-    public function setJavaMultipleFiles($var)
+    public function setJavaMultipleFiles(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->java_multiple_files = $var;
 
         return $this;
@@ -459,10 +458,9 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * @return $this
      * @deprecated
      */
-    public function setJavaGenerateEqualsAndHash($var)
+    public function setJavaGenerateEqualsAndHash(bool $var)
     {
         @trigger_error('java_generate_equals_and_hash is deprecated.', E_USER_DEPRECATED);
-        GPBUtil::checkBool($var);
         $this->java_generate_equals_and_hash = $var;
 
         return $this;
@@ -510,9 +508,8 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setJavaStringCheckUtf8($var)
+    public function setJavaStringCheckUtf8(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->java_string_check_utf8 = $var;
 
         return $this;
@@ -520,11 +517,11 @@ class FileOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\FileOptions\OptimizeMode}
      */
     public function getOptimizeFor()
     {
-        return isset($this->optimize_for) ? $this->optimize_for : 0;
+        return isset($this->optimize_for) ? $this->optimize_for : 1;
     }
 
     public function hasOptimizeFor()
@@ -539,10 +536,10 @@ class FileOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\FileOptions\OptimizeMode}
      * @return $this
      */
-    public function setOptimizeFor($var)
+    public function setOptimizeFor(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FileOptions\OptimizeMode::class);
         $this->optimize_for = $var;
@@ -586,9 +583,9 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setGoPackage($var)
+    public function setGoPackage(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->go_package = $var;
 
         return $this;
@@ -638,9 +635,8 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setCcGenericServices($var)
+    public function setCcGenericServices(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->cc_generic_services = $var;
 
         return $this;
@@ -670,9 +666,8 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setJavaGenericServices($var)
+    public function setJavaGenericServices(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->java_generic_services = $var;
 
         return $this;
@@ -702,9 +697,8 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setPyGenericServices($var)
+    public function setPyGenericServices(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->py_generic_services = $var;
 
         return $this;
@@ -744,9 +738,8 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setDeprecated($var)
+    public function setDeprecated(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->deprecated = $var;
 
         return $this;
@@ -761,7 +754,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getCcEnableArenas()
     {
-        return isset($this->cc_enable_arenas) ? $this->cc_enable_arenas : false;
+        return isset($this->cc_enable_arenas) ? $this->cc_enable_arenas : true;
     }
 
     public function hasCcEnableArenas()
@@ -782,9 +775,8 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setCcEnableArenas($var)
+    public function setCcEnableArenas(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->cc_enable_arenas = $var;
 
         return $this;
@@ -820,9 +812,9 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setObjcClassPrefix($var)
+    public function setObjcClassPrefix(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->objc_class_prefix = $var;
 
         return $this;
@@ -856,9 +848,9 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setCsharpNamespace($var)
+    public function setCsharpNamespace(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->csharp_namespace = $var;
 
         return $this;
@@ -898,9 +890,9 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setSwiftPrefix($var)
+    public function setSwiftPrefix(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->swift_prefix = $var;
 
         return $this;
@@ -936,9 +928,9 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setPhpClassPrefix($var)
+    public function setPhpClassPrefix(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->php_class_prefix = $var;
 
         return $this;
@@ -976,9 +968,9 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setPhpNamespace($var)
+    public function setPhpNamespace(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->php_namespace = $var;
 
         return $this;
@@ -1016,9 +1008,9 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setPhpMetadataNamespace($var)
+    public function setPhpMetadataNamespace(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->php_metadata_namespace = $var;
 
         return $this;
@@ -1056,9 +1048,9 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setRubyPackage($var)
+    public function setRubyPackage(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->ruby_package = $var;
 
         return $this;
@@ -1098,9 +1090,8 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\FeatureSet $var
      * @return $this
      */
-    public function setFeatures($var)
+    public function setFeatures(\Google\Protobuf\Internal\FeatureSet|null $var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FeatureSet::class);
         $this->features = $var;
 
         return $this;
@@ -1126,7 +1117,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\UninterpretedOption[] $var
      * @return $this
      */
-    public function setUninterpretedOption($var)
+    public function setUninterpretedOption(array|RepeatedField $var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption::class);
         $this->uninterpreted_option = $arr;

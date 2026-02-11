@@ -1,3 +1,8 @@
+#[cfg(not(bzl))]
+mod protos;
+#[cfg(not(bzl))]
+use protos::*;
+
 use googletest::prelude::*;
 use protobuf::prelude::*;
 use unittest_rust_proto::{NestedTestAllTypes, TestAllTypes};

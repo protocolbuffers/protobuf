@@ -558,6 +558,7 @@ public final class MapLiteTest {
   }
 
   @Test
+  @SuppressWarnings("SelfAssertion") // Just testing that the getters execute and are consistent.
   public void testGetMap() {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValues(builder);

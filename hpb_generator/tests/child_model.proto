@@ -9,7 +9,7 @@ edition = "2023";
 
 package hpb_unittest;
 
-import public "google/protobuf/compiler/hpb/tests/test_enum.proto";
+import public "hpb_generator/tests/test_enum.proto";
 
 message ChildModel1 {
   bool child_b1 = 44;

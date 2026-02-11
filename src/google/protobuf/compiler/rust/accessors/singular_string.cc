@@ -87,21 +87,18 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 }
               )rs");
              } else {
-               ctx.Emit(R"rs(
-                let s = val.into_proxied($pbi$::Private);
-                let (view, arena) =
-                  s.into_inner($pbi$::Private).into_raw_parts();
-
-                let parent_arena = self.inner.arena();
-                parent_arena.fuse(&arena);
-
+               ctx.Emit(
+                   {{"string_type", field.type() == FieldDescriptor::TYPE_STRING
+                                        ? "string"
+                                        : "bytes"}},
+                   R"rs(
                 unsafe {
-                  self.inner.ptr_mut().set_base_field_string_at_index(
+                  $pbr$::message_set_$string_type$_field(
+                    $pb$::AsMut::as_mut(self).inner,
                     $upb_mt_field_index$,
-                    view,
-                  );
+                    val);
                 }
-              )rs");
+               )rs");
              }
            }},
           {"setter",
@@ -167,7 +164,7 @@ void SingularString::InThunkCc(Context& ctx,
           {"setter_thunk", ThunkName(ctx, field, "set")},
       },
       R"cc(
-        ::google::protobuf::rust::PtrAndLen $getter_thunk$($QualifiedMsg$* msg) {
+        ::google::protobuf::rust::PtrAndLen $getter_thunk$(const $QualifiedMsg$* msg) {
           absl::string_view val = msg->$field$();
           return ::google::protobuf::rust::PtrAndLen{val.data(), val.size()};
         }

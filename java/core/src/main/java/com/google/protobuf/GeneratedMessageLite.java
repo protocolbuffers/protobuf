@@ -31,6 +31,13 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Lite version of {@link GeneratedMessage}.
  *
+ * <p>Users should generally ignore this class and use the MessageLite interface instead.
+ *
+ * <p>This class is intended to only be extended by protoc created gencode. It is not intended or
+ * supported to extend this class, and any protected methods may be removed without it being
+ * considered a breaking change as long as all supported gencode does not depend on the changed
+ * methods.
+ *
  * @author kenton@google.com Kenton Varda
  */
 public abstract class GeneratedMessageLite<
@@ -211,6 +218,7 @@ public abstract class GeneratedMessageLite<
     return (BuilderType2) dynamicMethod(MethodToInvoke.NEW_BUILDER, null, null);
   }
 
+  @SuppressWarnings("unchecked") // Guaranteed by runtime.
   protected final <
           MessageType2 extends GeneratedMessageLite<MessageType2, BuilderType2>,
           BuilderType2 extends GeneratedMessageLite.Builder<MessageType2, BuilderType2>>
@@ -219,6 +227,7 @@ public abstract class GeneratedMessageLite<
   }
 
   @Override
+  @SuppressWarnings("unchecked") // Guaranteed by runtime.
   public final boolean isInitialized() {
     return isInitialized((MessageType) this, /* shouldMemoize= */ true);
   }
@@ -303,6 +312,7 @@ public abstract class GeneratedMessageLite<
   }
 
   @Override
+  @SuppressWarnings("rawtypes")
   int getSerializedSize(
           Schema schema) {
     if (isMutable()) {
@@ -332,6 +342,7 @@ public abstract class GeneratedMessageLite<
     return getSerializedSize(null);
   }
 
+  @SuppressWarnings("unchecked")
   private int computeSerializedSize(
           Schema<?> nullableSchema) {
     if (nullableSchema == null) {
@@ -1132,7 +1143,7 @@ public abstract class GeneratedMessageLite<
           final Internal.EnumLiteMap<?> enumTypeMap,
           final int number,
           final WireFormat.FieldType type,
-          final Class singularType) {
+          final Class<?> singularType) {
     return new GeneratedExtension<ContainingType, Type>(
         containingTypeDefaultInstance,
         defaultValue,
@@ -1151,7 +1162,7 @@ public abstract class GeneratedMessageLite<
           final int number,
           final WireFormat.FieldType type,
           final boolean isPacked,
-          final Class singularType) {
+          final Class<?> singularType) {
     @SuppressWarnings("unchecked") // Subclasses ensure Type is a List
     Type emptyList = (Type) ProtobufArrayList.emptyList();
     return new GeneratedExtension<ContainingType, Type>(
@@ -1214,9 +1225,14 @@ public abstract class GeneratedMessageLite<
     }
 
     @Override
+    public boolean internalMessageIsImmutable(Object message) {
+      return message instanceof MessageLite;
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
-    public MessageLite.Builder internalMergeFrom(MessageLite.Builder to, MessageLite from) {
-      return ((Builder) to).mergeFrom((GeneratedMessageLite) from);
+    public void internalMergeFrom(Object to, Object from) {
+      ((Builder) to).mergeFrom((GeneratedMessageLite) from);
     }
 
     @Override
@@ -1228,7 +1244,7 @@ public abstract class GeneratedMessageLite<
   // =================================================================
 
   /** Calls Class.getMethod and throws a RuntimeException if it fails. */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "rawtypes"})
   static Method getMethodOrDie(Class clazz, String name, Class... params) {
     try {
       return clazz.getMethod(name, params);
@@ -1280,7 +1296,7 @@ public abstract class GeneratedMessageLite<
         final Type defaultValue,
         final MessageLite messageDefaultInstance,
         final ExtensionDescriptor descriptor,
-        final Class singularType) {
+        final Class<?> singularType) {
       // Defensive checks to verify the correct initialization order of
       // GeneratedExtensions and their related GeneratedMessages.
       if (containingTypeDefaultInstance == null) {

@@ -7,13 +7,6 @@
 
 package com.google.protobuf.util;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
-import com.google.common.base.CaseFormat;
-import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
-import com.google.common.base.Splitter;
-import com.google.common.primitives.Ints;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
@@ -23,6 +16,8 @@ import com.google.protobuf.Message;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /** Utility helper functions to work with {@link com.google.protobuf.FieldMask}. */
@@ -35,7 +30,6 @@ public final class FieldMaskUtil {
 
   /** Converts a FieldMask to a string. */
   public static String toString(FieldMask fieldMask) {
-    // TODO: Consider using com.google.common.base.Joiner here instead.
     StringBuilder result = new StringBuilder();
     boolean first = true;
     for (String value : fieldMask.getPathsList()) {
@@ -55,7 +49,6 @@ public final class FieldMaskUtil {
 
   /** Parses from a string to a FieldMask. */
   public static FieldMask fromString(String value) {
-    // TODO: Consider using com.google.common.base.Splitter here instead.
     return fromStringList(Arrays.asList(value.split(FIELD_PATH_SEPARATOR_REGEX)));
   }
 
@@ -65,7 +58,6 @@ public final class FieldMaskUtil {
    * @throws IllegalArgumentException if any of the field path is invalid.
    */
   public static FieldMask fromString(Class<? extends Message> type, String value) {
-    // TODO: Consider using com.google.common.base.Splitter here instead.
     return fromStringList(type, Arrays.asList(value.split(FIELD_PATH_SEPARATOR_REGEX)));
   }
 
@@ -92,7 +84,7 @@ public final class FieldMaskUtil {
    * paths.
    */
   public static FieldMask fromStringList(Iterable<String> paths) {
-    return fromStringList(Optional.<Descriptor>absent(), paths);
+    return fromStringList(Optional.<Descriptor>empty(), paths);
   }
 
   private static FieldMask fromStringList(Optional<Descriptor> descriptor, Iterable<String> paths) {
@@ -117,7 +109,7 @@ public final class FieldMaskUtil {
    * @throws IllegalArgumentException if any of the fields are invalid for the message.
    */
   public static FieldMask fromFieldNumbers(Class<? extends Message> type, int... fieldNumbers) {
-    return fromFieldNumbers(type, Ints.asList(fieldNumbers));
+    return fromFieldNumbers(type, Arrays.stream(fieldNumbers).boxed().collect(Collectors.toList()));
   }
 
   /**
@@ -128,18 +120,52 @@ public final class FieldMaskUtil {
   public static FieldMask fromFieldNumbers(
       Class<? extends Message> type, Iterable<Integer> fieldNumbers) {
     Descriptor descriptor = Internal.getDefaultInstance(type).getDescriptorForType();
-
     FieldMask.Builder builder = FieldMask.newBuilder();
     for (Integer fieldNumber : fieldNumbers) {
       FieldDescriptor field = descriptor.findFieldByNumber(fieldNumber);
-      checkArgument(field != null, "%s is not a valid field number for %s.", fieldNumber, type);
+      if (field == null) {
+        throw new IllegalArgumentException(
+            String.format(
+                "%s is not a valid field number for %s.", fieldNumber, descriptor.getFullName()));
+      }
       builder.addPaths(field.getName());
     }
     return builder.build();
   }
 
+  /** Converts a lower_underscore to lowerCamelCase style. */
+  private static String lowerUnderscoreToLowerCamel(String str) {
+    StringBuilder sb = new StringBuilder();
+    boolean capitalizeNext = false;
+    for (int i = 0; i < str.length(); i++) {
+      char c = str.charAt(i);
+      if (c == '_') {
+        capitalizeNext = true;
+      } else if (capitalizeNext) {
+        sb.append(Character.toUpperCase(c));
+        capitalizeNext = false;
+      } else {
+        sb.append(Character.toLowerCase(c));
+      }
+    }
+    return sb.toString();
+  }
+
+  /** Converts a lowerCamelCase string to lower_underscore style. */
+  private static String lowerCamelToLowerUnderscore(String str) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < str.length(); i++) {
+      char c = str.charAt(i);
+      if (c >= 'A' && c <= 'Z') {
+        sb.append('_');
+      }
+      sb.append(Character.toLowerCase(c));
+    }
+    return sb.toString();
+  }
+
   /**
-   * Converts a field mask to a Proto3 JSON string, that is converting from snake case to camel case
+   * Converts a field mask to a ProtoJSON string, that is converting from snake case to camel case
    * and joining all paths into one string with commas.
    */
   public static String toJsonString(FieldMask fieldMask) {
@@ -148,23 +174,24 @@ public final class FieldMaskUtil {
       if (path.isEmpty()) {
         continue;
       }
-      paths.add(CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, path));
+      paths.add(lowerUnderscoreToLowerCamel(path));
     }
-    return Joiner.on(FIELD_PATH_SEPARATOR).join(paths);
+    return String.join(FIELD_PATH_SEPARATOR, paths);
   }
 
   /**
-   * Converts a field mask from a Proto3 JSON string, that is splitting the paths along commas and
+   * Converts a field mask from a ProtoJSON string, that is splitting the paths along commas and
    * converting from camel case to snake case.
    */
+  @SuppressWarnings("StringSplitter")
   public static FieldMask fromJsonString(String value) {
-    Iterable<String> paths = Splitter.on(FIELD_PATH_SEPARATOR).split(value);
+    String[] paths = value.split(FIELD_PATH_SEPARATOR);
     FieldMask.Builder builder = FieldMask.newBuilder();
     for (String path : paths) {
       if (path.isEmpty()) {
         continue;
       }
-      builder.addPaths(CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, path));
+      builder.addPaths(lowerCamelToLowerUnderscore(path));
     }
     return builder.build();
   }

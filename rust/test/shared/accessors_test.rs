@@ -7,10 +7,15 @@
 
 //! Tests covering accessors for singular bool, int32, int64, and bytes fields.
 
+#[cfg(not(bzl))]
+mod protos;
+#[cfg(not(bzl))]
+use protos::*;
+
 use googletest::prelude::*;
 use protobuf::prelude::*;
 
-use protobuf::{Optional, ProtoBytes, ProtoStr, ProtoString};
+use protobuf::{message_eq, Optional, ProtoBytes, ProtoStr, ProtoString};
 use std::borrow::Cow;
 use std::ffi::OsString;
 use std::rc::Rc;
@@ -398,7 +403,7 @@ fn test_default_bool_accessors() {
 #[gtest]
 fn test_optional_bytes_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_that!(*msg.optional_bytes(), empty());
+    assert_that!(*msg.optional_bytes(), is_empty());
     assert_that!(msg.has_optional_bytes(), eq(false));
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Unset(&b""[..])));
 
@@ -411,12 +416,12 @@ fn test_optional_bytes_accessors() {
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b"hello world"[..])));
 
     msg.clear_optional_bytes();
-    assert_that!(*msg.optional_bytes(), empty());
+    assert_that!(*msg.optional_bytes(), is_empty());
     assert_that!(msg.has_optional_bytes(), eq(false));
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Unset(&b""[..])));
 
     msg.set_optional_bytes(b"");
-    assert_that!(*msg.optional_bytes(), empty());
+    assert_that!(*msg.optional_bytes(), is_empty());
     assert_that!(msg.has_optional_bytes(), eq(true));
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b""[..])));
 }
@@ -484,7 +489,7 @@ fn test_nonempty_default_bytes_accessors() {
     assert_that!(msg.default_bytes_opt(), eq(Optional::Unset(&b"world"[..])));
 
     msg.set_default_bytes(b"");
-    assert_that!(*msg.default_bytes(), empty());
+    assert_that!(*msg.default_bytes(), is_empty());
     assert_that!(msg.default_bytes_opt(), eq(Optional::Set(&b""[..])));
 
     msg.clear_default_bytes();
@@ -944,4 +949,23 @@ fn test_submsg_clear() {
     assert_that!(m.has_optional_nested_message(), eq(true));
     // ...but it does clear the submsg's value:
     assert_that!(m.optional_nested_message().bb(), eq(0));
+}
+
+#[gtest]
+fn test_message_eq() {
+    let mut m = TestAllTypes::new();
+    let mut sub = m.optional_nested_message_mut();
+    sub.set_bb(7);
+
+    assert_that!(message_eq(&m, &m), eq(true));
+
+    let mut m2 = TestAllTypes::new();
+    assert_that!(message_eq(&m, &m2), eq(false));
+
+    let _ = m2.optional_nested_message_mut();
+    assert_that!(message_eq(&m, &m2), eq(false));
+
+    let mut sub2 = m2.optional_nested_message_mut();
+    sub2.set_bb(7);
+    assert_that!(message_eq(&m, &m2), eq(true));
 }

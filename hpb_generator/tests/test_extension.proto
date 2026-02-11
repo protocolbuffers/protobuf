@@ -9,7 +9,7 @@ edition = "2023";
 
 package hpb_unittest.someotherpackage;
 
-import "google/protobuf/compiler/hpb/tests/test_model.proto";
+import "hpb_generator/tests/test_model.proto";
 
 // Define extension that is extending proto outside this package with a type
 // defined in different file.
@@ -34,5 +34,5 @@ extend TestModel {
   bool bool_ext = 13011 [default = true];
 
   string string_ext = 13012 [default = "mishpacha"];
-  string string_trigraph_ext = 13013 [default = "bseder??!bseder"];
+  string string_escape_ext = 13013 [default = "bseder\"bseder"];
 }

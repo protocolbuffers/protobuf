@@ -10,10 +10,10 @@
 #include <sstream>
 
 #include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/descriptor.h"
 #include "google/protobuf/compiler/csharp/csharp_doc_comment.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 #include "google/protobuf/compiler/csharp/csharp_options.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -28,8 +28,7 @@ EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor,
     : PrimitiveFieldGenerator(descriptor, presenceIndex, options) {
 }
 
-EnumFieldGenerator::~EnumFieldGenerator() {
-}
+EnumFieldGenerator::~EnumFieldGenerator() = default;
 
 void EnumFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(variables_,
@@ -74,8 +73,7 @@ EnumOneofFieldGenerator::EnumOneofFieldGenerator(
   : PrimitiveOneofFieldGenerator(descriptor, presenceIndex, options) {
 }
 
-EnumOneofFieldGenerator::~EnumOneofFieldGenerator() {
-}
+EnumOneofFieldGenerator::~EnumOneofFieldGenerator() = default;
 
 void EnumOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) {
   printer->Print(variables_, "$property_name$ = other.$property_name$;\n");

@@ -25,9 +25,13 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+static constexpr int kNoHasbit = -1;
+
 template <int doublewords>
 class HasBits {
  public:
+  static constexpr int kNumHasWords = doublewords;
+
   PROTOBUF_NDEBUG_INLINE constexpr HasBits() : has_bits_{} {}
 
   constexpr HasBits(std::initializer_list<uint32_t> has_bits) : has_bits_{} {
@@ -42,15 +46,18 @@ class HasBits {
     return has_bits_[index];
   }
 
-  PROTOBUF_NDEBUG_INLINE const uint32_t& operator[](int index) const {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE const uint32_t&
+  operator[](int index) const {
     return has_bits_[index];
   }
 
-  bool operator==(const HasBits<doublewords>& rhs) const {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool operator==(
+      const HasBits<doublewords>& rhs) const {
     return memcmp(has_bits_, rhs.has_bits_, sizeof(has_bits_)) == 0;
   }
 
-  bool operator!=(const HasBits<doublewords>& rhs) const {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool operator!=(
+      const HasBits<doublewords>& rhs) const {
     return !(*this == rhs);
   }
 
@@ -63,7 +70,7 @@ class HasBits {
     }
   }
 
-  bool empty() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool empty() const;
 
  private:
   // Unfortunately, older GCC compilers (and perhaps others) fail on initializer

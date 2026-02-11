@@ -195,11 +195,11 @@ std::vector<void*> ChunkList::PeekForTesting() {
 // It is guaranteed that this is constructed in `b`. IOW, this is not the first
 // arena and `b` cannot be sentry.
 SerialArena::SerialArena(ArenaBlock* b, ThreadSafeArena& parent)
-    : ptr_{b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize)},
-      limit_{b->Limit()},
-      prefetch_ptr_(
+    : prefetch_ptr_(
           b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize)),
       head_{b},
+      ptr_{b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize)},
+      limit_{b->Limit()},
       space_allocated_{b->size},
       parent_{parent} {
   ABSL_DCHECK(!b->IsSentry());
@@ -922,10 +922,10 @@ PROTOBUF_NOINLINE void* ThreadSafeArena::AllocateAlignedFallback(size_t n) {
   return GetSerialArenaFallback(n)->AllocateAligned<alloc_client>(n);
 }
 
-template void* ThreadSafeArena::AllocateAlignedFallback<
-    AllocationClient::kDefault>(size_t);
 template void*
-    ThreadSafeArena::AllocateAlignedFallback<AllocationClient::kArray>(size_t);
+ThreadSafeArena::AllocateAlignedFallback<AllocationClient::kDefault>(size_t);
+template void*
+ThreadSafeArena::AllocateAlignedFallback<AllocationClient::kArray>(size_t);
 
 void ThreadSafeArena::CleanupList() {
   if constexpr (HasMemoryPoisoning()) {

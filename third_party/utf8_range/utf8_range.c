@@ -22,25 +22,25 @@
 #include <string.h>
 
 #if defined(__GNUC__)
-#define FORCE_INLINE_ATTR __attribute__((always_inline))
+#define FORCE_INLINE_ATTR __attribute__((always_inline)) inline
 #elif defined(_MSC_VER)
 #define FORCE_INLINE_ATTR __forceinline
 #else
-#define FORCE_INLINE_ATTR
+#define FORCE_INLINE_ATTR inline
 #endif
 
-static FORCE_INLINE_ATTR inline uint64_t utf8_range_UnalignedLoad64(
+static FORCE_INLINE_ATTR uint64_t utf8_range_UnalignedLoad64(
     const void* p) {
   uint64_t t;
   memcpy(&t, p, sizeof t);
   return t;
 }
 
-static FORCE_INLINE_ATTR inline int utf8_range_AsciiIsAscii(unsigned char c) {
+static FORCE_INLINE_ATTR int utf8_range_AsciiIsAscii(unsigned char c) {
   return c < 128;
 }
 
-static FORCE_INLINE_ATTR inline int utf8_range_IsTrailByteOk(const char c) {
+static FORCE_INLINE_ATTR int utf8_range_IsTrailByteOk(const char c) {
   return (int8_t)(c) <= (int8_t)(0xBF);
 }
 
@@ -175,7 +175,7 @@ static inline const char* utf8_range_SkipAscii(const char* data,
 #include "utf8_range_neon.inc"
 #endif
 
-static FORCE_INLINE_ATTR inline size_t utf8_range_Validate(
+static FORCE_INLINE_ATTR size_t utf8_range_Validate(
     const char* data, size_t len, int return_position) {
   if (len == 0) return 1 - return_position;
   // Save buffer start address for later use

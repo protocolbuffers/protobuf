@@ -60,10 +60,6 @@ inline bool CheckLargeEnum(const EnumDescriptor* descriptor) {
 
 void GenerateLarge(
     io::Printer* printer, const EnumDescriptor* descriptor,
-    std::vector<const EnumValueDescriptor*> canonical_values,
-    std::vector<
-        std::pair<const EnumValueDescriptor*, const EnumValueDescriptor*>>
-        aliases,
     bool immutable_api, Context* context, ClassNameResolver* name_resolver);
 
 // Only the lowest two bytes of the return value are used. The lowest byte

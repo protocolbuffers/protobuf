@@ -256,6 +256,8 @@ void PyiGenerator::PrintImports() const {
   } else {
     if (file_->service_count() > 0) {
       printer_->Print(
+          "from google3.net.rpc.python import legacy_stream_token as "
+          "_legacy_stream_token\n"
           "from google3.net.rpc.python import proto_python_api_2_stub as "
           "_proto_python_api_2_stub\n"
           "from google3.net.rpc.python import pywraprpc as _pywraprpc\n"
@@ -366,6 +368,7 @@ void PyiGenerator::PrintExtensions(const DescriptorT& descriptor) const {
     absl::AsciiStrToUpper(&constant_name);
     printer_->Print("$constant_name$: _ClassVar[int]\n",
                     "constant_name", constant_name);
+    Annotate("constant_name", extension_field);
     printer_->Print("$name$: _descriptor.FieldDescriptor\n",
                     "name", extension_field->name());
     Annotate("name", extension_field);
@@ -482,6 +485,7 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
     printer_->Print(
         "$field_number_name$: _ClassVar[int]\n", "field_number_name",
         absl::StrCat(absl::AsciiStrToUpper(field_des.name()), "_FIELD_NUMBER"));
+    Annotate("field_number_name", &field_des);
   }
   // Prints field name and type
   for (int i = 0; i < message_descriptor.field_count(); ++i) {

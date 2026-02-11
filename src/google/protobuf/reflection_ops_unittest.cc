@@ -11,6 +11,7 @@
 
 #include "google/protobuf/reflection_ops.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <utility>
@@ -489,7 +490,7 @@ TEST(ReflectionOpsTest, EmptyMapIsInitialized) {
   message.set_a(1);
   message.set_b(2);
   message.set_c(3);
-  message.mutable_map_field();
+  (void)message.mutable_map_field();
   EXPECT_TRUE(ReflectionOps::IsInitialized(message));
   EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
                                            /*check_descendants=*/false));

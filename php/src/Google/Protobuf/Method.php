@@ -11,6 +11,10 @@ use Google\Protobuf\RepeatedField;
 
 /**
  * Method represents a method of an API interface.
+ * New usages of this message as an alternative to MethodDescriptorProto are
+ * strongly discouraged. This message does not reliability preserve all
+ * information necessary to model the schema and preserve semantics. Instead
+ * make use of FileDescriptorSet which preserves the necessary information.
  *
  * Generated from protobuf message <code>google.protobuf.Method</code>
  */
@@ -54,10 +58,22 @@ class Method extends \Google\Protobuf\Internal\Message
     private $options;
     /**
      * The source syntax of this method.
+     * This field should be ignored, instead the syntax should be inherited from
+     * Api. This is similar to Field and EnumValue.
      *
-     * Generated from protobuf field <code>.google.protobuf.Syntax syntax = 7;</code>
+     * Generated from protobuf field <code>.google.protobuf.Syntax syntax = 7 [deprecated = true];</code>
+     * @deprecated
      */
     protected $syntax = 0;
+    /**
+     * The source edition string, only valid when syntax is SYNTAX_EDITIONS.
+     * This field should be ignored, instead the edition should be inherited from
+     * Api. This is similar to Field and EnumValue.
+     *
+     * Generated from protobuf field <code>string edition = 8 [deprecated = true];</code>
+     * @deprecated
+     */
+    protected $edition = '';
 
     /**
      * Constructor.
@@ -79,6 +95,12 @@ class Method extends \Google\Protobuf\Internal\Message
      *           Any metadata attached to the method.
      *     @type int $syntax
      *           The source syntax of this method.
+     *           This field should be ignored, instead the syntax should be inherited from
+     *           Api. This is similar to Field and EnumValue.
+     *     @type string $edition
+     *           The source edition string, only valid when syntax is SYNTAX_EDITIONS.
+     *           This field should be ignored, instead the edition should be inherited from
+     *           Api. This is similar to Field and EnumValue.
      * }
      */
     public function __construct($data = NULL) {
@@ -104,9 +126,9 @@ class Method extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setName($var)
+    public function setName(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->name = $var;
 
         return $this;
@@ -130,9 +152,9 @@ class Method extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setRequestTypeUrl($var)
+    public function setRequestTypeUrl(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->request_type_url = $var;
 
         return $this;
@@ -156,9 +178,8 @@ class Method extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setRequestStreaming($var)
+    public function setRequestStreaming(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->request_streaming = $var;
 
         return $this;
@@ -182,9 +203,9 @@ class Method extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setResponseTypeUrl($var)
+    public function setResponseTypeUrl(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->response_type_url = $var;
 
         return $this;
@@ -208,9 +229,8 @@ class Method extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setResponseStreaming($var)
+    public function setResponseStreaming(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->response_streaming = $var;
 
         return $this;
@@ -234,7 +254,7 @@ class Method extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Option[] $var
      * @return $this
      */
-    public function setOptions($var)
+    public function setOptions(array|RepeatedField $var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Option::class);
         $this->options = $arr;
@@ -244,26 +264,72 @@ class Method extends \Google\Protobuf\Internal\Message
 
     /**
      * The source syntax of this method.
+     * This field should be ignored, instead the syntax should be inherited from
+     * Api. This is similar to Field and EnumValue.
      *
-     * Generated from protobuf field <code>.google.protobuf.Syntax syntax = 7;</code>
-     * @return int
+     * Generated from protobuf field <code>.google.protobuf.Syntax syntax = 7 [deprecated = true];</code>
+     * @return int one of the values in {@see \Google\Protobuf\Syntax}
+     * @deprecated
      */
     public function getSyntax()
     {
+        if ($this->syntax !== 0) {
+            @trigger_error('syntax is deprecated.', E_USER_DEPRECATED);
+        }
         return $this->syntax;
     }
 
     /**
      * The source syntax of this method.
+     * This field should be ignored, instead the syntax should be inherited from
+     * Api. This is similar to Field and EnumValue.
      *
-     * Generated from protobuf field <code>.google.protobuf.Syntax syntax = 7;</code>
-     * @param int $var
+     * Generated from protobuf field <code>.google.protobuf.Syntax syntax = 7 [deprecated = true];</code>
+     * @param int $var one of the values in {@see \Google\Protobuf\Syntax}
      * @return $this
+     * @deprecated
      */
-    public function setSyntax($var)
+    public function setSyntax(int $var)
     {
+        @trigger_error('syntax is deprecated.', E_USER_DEPRECATED);
         GPBUtil::checkEnum($var, \Google\Protobuf\Syntax::class);
         $this->syntax = $var;
+
+        return $this;
+    }
+
+    /**
+     * The source edition string, only valid when syntax is SYNTAX_EDITIONS.
+     * This field should be ignored, instead the edition should be inherited from
+     * Api. This is similar to Field and EnumValue.
+     *
+     * Generated from protobuf field <code>string edition = 8 [deprecated = true];</code>
+     * @return string
+     * @deprecated
+     */
+    public function getEdition()
+    {
+        if ($this->edition !== '') {
+            @trigger_error('edition is deprecated.', E_USER_DEPRECATED);
+        }
+        return $this->edition;
+    }
+
+    /**
+     * The source edition string, only valid when syntax is SYNTAX_EDITIONS.
+     * This field should be ignored, instead the edition should be inherited from
+     * Api. This is similar to Field and EnumValue.
+     *
+     * Generated from protobuf field <code>string edition = 8 [deprecated = true];</code>
+     * @param string $var
+     * @return $this
+     * @deprecated
+     */
+    public function setEdition(string $var)
+    {
+        @trigger_error('edition is deprecated.', E_USER_DEPRECATED);
+        GPBUtil::checkString($var, true);
+        $this->edition = $var;
 
         return $this;
     }

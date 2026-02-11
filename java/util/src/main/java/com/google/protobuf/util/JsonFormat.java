@@ -7,9 +7,6 @@
 
 package com.google.protobuf.util;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.io.BaseEncoding;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -54,6 +51,7 @@ import java.io.StringReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.ParseException;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -83,7 +81,7 @@ public class JsonFormat {
         com.google.protobuf.TypeRegistry.getEmptyTypeRegistry(),
         TypeRegistry.getEmptyTypeRegistry(),
         ShouldPrintDefaults.ONLY_IF_PRESENT,
-        /* includingDefaultValueFields */ ImmutableSet.of(),
+        /* includingDefaultValueFields */ Collections.emptySet(),
         /* preservingProtoFieldNames */ false,
         /* omittingInsignificantWhitespace */ false,
         /* printingEnumsAsInts */ false,
@@ -97,7 +95,7 @@ public class JsonFormat {
     ALWAYS_PRINT_SPECIFIED_FIELDS
   }
 
-  /** A Printer converts a protobuf message to the proto3 JSON format. */
+  /** A Printer converts a protobuf message to the ProtoJSON format. */
   public static class Printer {
     private final com.google.protobuf.TypeRegistry registry;
     private final TypeRegistry oldRegistry;
@@ -196,7 +194,7 @@ public class JsonFormat {
           registry,
           oldRegistry,
           ShouldPrintDefaults.ALWAYS_PRINT_EXCEPT_MESSAGES_AND_ONEOFS,
-          ImmutableSet.of(),
+          Collections.emptySet(),
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
@@ -213,9 +211,10 @@ public class JsonFormat {
      * here.
      */
     public Printer includingDefaultValueFields(Set<FieldDescriptor> fieldsToAlwaysOutput) {
-      Preconditions.checkArgument(
-          null != fieldsToAlwaysOutput && !fieldsToAlwaysOutput.isEmpty(),
-          "Non-empty Set must be supplied for includingDefaultValueFields.");
+      if (fieldsToAlwaysOutput == null || fieldsToAlwaysOutput.isEmpty()) {
+        throw new IllegalArgumentException(
+            "Non-empty Set must be supplied for includingDefaultValueFields.");
+      }
       if (shouldPrintDefaults != ShouldPrintDefaults.ONLY_IF_PRESENT) {
         throw new IllegalStateException(
             "JsonFormat includingDefaultValueFields has already been set.");
@@ -224,7 +223,7 @@ public class JsonFormat {
           registry,
           oldRegistry,
           ShouldPrintDefaults.ALWAYS_PRINT_SPECIFIED_FIELDS,
-          ImmutableSet.copyOf(fieldsToAlwaysOutput),
+          Collections.unmodifiableSet(new HashSet<>(fieldsToAlwaysOutput)),
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
@@ -245,7 +244,7 @@ public class JsonFormat {
           registry,
           oldRegistry,
           ShouldPrintDefaults.ALWAYS_PRINT_WITHOUT_PRESENCE_FIELDS,
-          ImmutableSet.of(),
+          Collections.emptySet(),
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
@@ -346,7 +345,7 @@ public class JsonFormat {
     }
 
     /**
-     * Converts a protobuf message to the proto3 JSON format.
+     * Converts a protobuf message to the ProtoJSON format.
      *
      * @throws InvalidProtocolBufferException if the message contains Any types that can't be
      *     resolved
@@ -369,8 +368,8 @@ public class JsonFormat {
     }
 
     /**
-     * Converts a protobuf message to the proto3 JSON format. Throws exceptions if there
-     * are unknown Any types in the message.
+     * Converts a protobuf message to the ProtoJSON format. Throws exceptions if there are unknown
+     * Any types in the message.
      */
     public String print(MessageOrBuilder message) throws InvalidProtocolBufferException {
       try {
@@ -397,9 +396,7 @@ public class JsonFormat {
         Parser.DEFAULT_RECURSION_LIMIT);
   }
 
-  /**
-   * A Parser parses the proto3 JSON format into a protobuf message.
-   */
+  /** A Parser parses the ProtoJSON format into a protobuf message. */
   public static class Parser {
     private final com.google.protobuf.TypeRegistry registry;
     private final TypeRegistry oldRegistry;
@@ -461,10 +458,10 @@ public class JsonFormat {
     }
 
     /**
-     * Parses from the proto3 JSON format into a protobuf message.
+     * Parses from the ProtoJSON format into a protobuf message.
      *
-     * @throws InvalidProtocolBufferException if the input is not valid JSON
-     *         proto3 format or there are unknown fields in the input.
+     * @throws InvalidProtocolBufferException if the input is not valid JSON proto3 format or there
+     *     are unknown fields in the input.
      */
     public void merge(String json, Message.Builder builder) throws InvalidProtocolBufferException {
       // TODO: Investigate the allocation overhead and optimize for
@@ -474,10 +471,10 @@ public class JsonFormat {
     }
 
     /**
-     * Parses from the proto3 JSON encoding into a protobuf message.
+     * Parses from the ProtoJSON encoding into a protobuf message.
      *
-     * @throws InvalidProtocolBufferException if the input is not valid proto3 JSON
-     *         format or there are unknown fields in the input
+     * @throws InvalidProtocolBufferException if the input is not valid ProtoJSON format or there
+     *     are unknown fields in the input
      * @throws IOException if reading from the input throws
      */
     public void merge(Reader json, Message.Builder builder) throws IOException {
@@ -703,9 +700,7 @@ public class JsonFormat {
     }
   }
 
-  /**
-   * A Printer converts protobuf messages to the proto3 JSON format.
-   */
+  /** A Printer converts protobuf messages to the ProtoJSON format. */
   private static final class PrinterImpl {
     private final com.google.protobuf.TypeRegistry registry;
     private final TypeRegistry oldRegistry;
@@ -937,7 +932,7 @@ public class JsonFormat {
     /** Prints google.protobuf.FieldMask */
     private void printFieldMask(MessageOrBuilder message) throws IOException {
       FieldMask value = FieldMask.parseFrom(toByteString(message));
-      generator.print("\"" + FieldMaskUtil.toJsonString(value) + "\"");
+      generator.print(gson.toJson(FieldMaskUtil.toJsonString(value)));
     }
 
     /** Prints google.protobuf.Struct */
@@ -1146,10 +1141,9 @@ public class JsonFormat {
     }
 
     /**
-     * Prints a field's value in the proto3 JSON format.
+     * Prints a field's value in the ProtoJSON format.
      *
-     * @param alwaysWithQuotes whether to always add double-quotes to primitive
-     *        types
+     * @param alwaysWithQuotes whether to always add double-quotes to primitive types
      */
     private void printSingleFieldValue(
         final FieldDescriptor field, final Object value, boolean alwaysWithQuotes)
@@ -1251,7 +1245,7 @@ public class JsonFormat {
 
         case BYTES:
           generator.print("\"");
-          generator.print(BaseEncoding.base64().encode(((ByteString) value).toByteArray()));
+          generator.print(Base64.getEncoder().encodeToString(((ByteString) value).toByteArray()));
           generator.print("\"");
           break;
 
@@ -1533,6 +1527,11 @@ public class JsonFormat {
       Message.Builder contentBuilder =
           DynamicMessage.getDefaultInstance(contentType).newBuilderForType();
       WellKnownTypeParser specialParser = wellKnownTypeParsers.get(contentType.getFullName());
+
+      if (currentDepth >= recursionLimit) {
+        throw new InvalidProtocolBufferException("Hit recursion limit.");
+      }
+      ++currentDepth;
       if (specialParser != null) {
         JsonElement value = object.get("value");
         if (value != null) {
@@ -1541,6 +1540,7 @@ public class JsonFormat {
       } else {
         mergeMessage(json, contentBuilder, true);
       }
+      --currentDepth;
       builder.setField(valueField, contentBuilder.build().toByteString());
     }
 
@@ -1906,9 +1906,9 @@ public class JsonFormat {
 
     private ByteString parseBytes(JsonElement json) {
       try {
-        return ByteString.copyFrom(BaseEncoding.base64().decode(json.getAsString()));
+        return ByteString.copyFrom(Base64.getDecoder().decode(json.getAsString()));
       } catch (IllegalArgumentException e) {
-        return ByteString.copyFrom(BaseEncoding.base64Url().decode(json.getAsString()));
+        return ByteString.copyFrom(Base64.getUrlDecoder().decode(json.getAsString()));
       }
     }
 
@@ -1964,7 +1964,7 @@ public class JsonFormat {
           // If the field type is primitive, but the json type is JsonObject rather than
           // JsonElement, throw a type mismatch error.
           throw new InvalidProtocolBufferException(
-              String.format("Invalid value: %s for expected type: %s", json, field.getType()));
+              "Invalid value: " + json + " for expected type: " + field.getType());
         }
       }
       switch (field.getType()) {

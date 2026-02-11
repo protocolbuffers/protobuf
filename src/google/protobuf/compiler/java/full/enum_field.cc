@@ -120,7 +120,7 @@ ImmutableEnumFieldGenerator::ImmutableEnumFieldGenerator(
                    &variables_, context);
 }
 
-ImmutableEnumFieldGenerator::~ImmutableEnumFieldGenerator() {}
+ImmutableEnumFieldGenerator::~ImmutableEnumFieldGenerator() = default;
 
 int ImmutableEnumFieldGenerator::GetMessageBitIndex() const {
   return message_bit_index_;
@@ -370,7 +370,7 @@ ImmutableEnumOneofFieldGenerator::ImmutableEnumOneofFieldGenerator(
   SetCommonOneofVariables(descriptor, info, &variables_);
 }
 
-ImmutableEnumOneofFieldGenerator::~ImmutableEnumOneofFieldGenerator() {}
+ImmutableEnumOneofFieldGenerator::~ImmutableEnumOneofFieldGenerator() = default;
 
 void ImmutableEnumOneofFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
@@ -592,7 +592,8 @@ RepeatedImmutableEnumFieldGenerator::RepeatedImmutableEnumFieldGenerator(
     : ImmutableEnumFieldGenerator(descriptor, message_bit_index,
                                   builder_bit_index, context) {}
 
-RepeatedImmutableEnumFieldGenerator::~RepeatedImmutableEnumFieldGenerator() {}
+RepeatedImmutableEnumFieldGenerator::~RepeatedImmutableEnumFieldGenerator() =
+    default;
 
 int RepeatedImmutableEnumFieldGenerator::GetNumBitsForMessage() const {
   return 0;

@@ -1,0 +1,26 @@
+edition = "2023";
+
+package com.google.protobuf;
+
+option java_generic_services = true;
+
+message TopLevelMessage {
+  int32 field = 1;
+
+  message NestedMessage {
+    int32 nested_field = 1;
+  }
+
+  enum NestedEnum {
+    VALUE0 = 0;
+  }
+}
+
+enum TopLevelEnum {
+  VALUE0 = 0;
+}
+
+service Pre2024DefaultsService {
+  // Test method.
+  rpc Foo(TopLevelMessage) returns (TopLevelMessage) {}
+}

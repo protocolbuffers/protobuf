@@ -8,11 +8,15 @@
 #include "google/protobuf/json/internal/zero_copy_buffered_stream.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <iterator>
 #include <string>
 #include <utility>
 
 #include "absl/algorithm/container.h"
+#include "absl/log/absl_check.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/stubs/status_macros.h"
@@ -64,6 +68,19 @@ absl::StatusOr<BufferingGuard> ZeroCopyBufferedStream::BufferAtLeast(
   }
   ABSL_DCHECK_GE(Unread().size(), bytes);
   return BufferingGuard(this);
+}
+
+absl::Status ZeroCopyBufferedStream::BufferAtLeastOne() {
+  // Note that this needs to loop because ReadChunk() may return true and buffer
+  // in no bytes. Unlike BufferAtLeast(), we don't need to hold a BufferingGuard
+  // in the middle of the loop because zero byte buffers don't need it and the
+  // first time we get a nonzero we will exit the loop and return.
+  while (Unread().empty()) {
+    if (!ReadChunk()) {
+      return absl::InvalidArgumentError("unexpected EOF");
+    }
+  }
+  return absl::OkStatus();
 }
 
 void ZeroCopyBufferedStream::DownRefBuffer() {

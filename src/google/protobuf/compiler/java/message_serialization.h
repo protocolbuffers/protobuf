@@ -14,6 +14,7 @@
 
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/java/generator_common.h"
+#include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -31,8 +32,9 @@ void GenerateSerializeExtensionRange(io::Printer* printer,
 // number.
 inline void GenerateSerializeFieldsAndExtensions(
     io::Printer* printer,
-    const std::vector<const FieldGenerator*>& field_generators,
-    const Descriptor* descriptor, const FieldDescriptor** sorted_fields) {
+    absl::Span<const FieldGenerator* const> field_generators,
+    const Descriptor* descriptor,
+    absl::Span<const FieldDescriptor* const> sorted_fields) {
   std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
   sorted_extensions.reserve(descriptor->extension_range_count());
   for (int i = 0; i < descriptor->extension_range_count(); ++i) {

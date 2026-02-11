@@ -7,14 +7,13 @@ load(
     "@rules_pkg//pkg:mappings.bzl",
     "pkg_attributes",
     "pkg_files",
-    "strip_prefix",
 )
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
-load("//bazel:upb_c_proto_library.bzl", "upb_c_proto_library")
-load("//bazel:upb_proto_reflection_library.bzl", "upb_proto_reflection_library")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
+load("//upb/bazel:upb_c_proto_library.bzl", "upb_c_proto_library")
+load("//upb/bazel:upb_proto_reflection_library.bzl", "upb_proto_reflection_library")
 load(
     "//upb_generator:bootstrap_compiler.bzl",
     "bootstrap_cc_library",
@@ -71,6 +70,7 @@ cc_library(
         "//src/google/protobuf/io:io_win32",
         "//src/google/protobuf/io:tokenizer",
         "@abseil-cpp//absl/base",
+        "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/cleanup",
         "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/container:flat_hash_set",
@@ -79,6 +79,7 @@ cc_library(
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:cord",
         "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/types:optional",
     ],
 )
 
@@ -106,9 +107,11 @@ cc_library(
         "//src/google/protobuf/compiler:retention",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:io_win32",
+        "@abseil-cpp//absl/base:log_severity",
         "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/log:globals",
         "@abseil-cpp//absl/memory",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
@@ -133,6 +136,7 @@ cc_library(
     strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
+        "//src/google/protobuf",
         "//src/google/protobuf:port",
         "@abseil-cpp//absl/strings",
     ],
@@ -190,6 +194,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":code_generator",
+        ":code_generator_lite",
         ":importer",
         ":retention",
         ":versions",
@@ -213,6 +218,7 @@ cc_library(
         "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/types:optional",
         "@abseil-cpp//absl/types:span",
     ],
 )
@@ -241,7 +247,7 @@ bootstrap_cc_library(
         "//src/google/protobuf/compiler/java",
         "//src/google/protobuf/compiler/kotlin",
         "//src/google/protobuf/compiler/objectivec",
-        "//src/google/protobuf/compiler/php",
+        "//src/google/protobuf/compiler/php:php_generator",
         "//src/google/protobuf/compiler/python",
         "//src/google/protobuf/compiler/ruby",
         "@abseil-cpp//absl/log:initialize",
@@ -307,6 +313,7 @@ cc_library(
         "//src/google/protobuf/testing:file",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/types:optional",
         "@googletest//:gtest",
     ],
 )
@@ -406,6 +413,7 @@ cc_test(
     deps = [
         ":code_generator",
         ":importer",
+        "//editions:edition_defaults_test_utils",
         "//src/google/protobuf",
         "//src/google/protobuf:cc_test_protos",
         "//src/google/protobuf:port",
@@ -455,6 +463,7 @@ cc_test(
         ":mock_code_generator",
         ":test_plugin_paths",
         "//:protobuf",
+        "//editions:edition_defaults_test_utils",
         "//src/google/protobuf",
         "//src/google/protobuf:any_cc_proto",
         "//src/google/protobuf:cc_test_protos",
@@ -544,9 +553,11 @@ cc_test(
         "//src/google/protobuf:test_util2",
         "//src/google/protobuf/compiler:retention",
         "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/memory",
@@ -630,13 +641,6 @@ pkg_files(
 ################################################################################
 # Distribution packaging
 ################################################################################
-
-pkg_files(
-    name = "dist_files",
-    srcs = glob(["**/*"]),
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//src:__pkg__"],
-)
 
 filegroup(
     name = "test_srcs",

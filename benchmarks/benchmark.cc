@@ -22,6 +22,7 @@
 #include "google/protobuf/json/json.h"
 #include "benchmarks/descriptor.pb.h"
 #include "benchmarks/descriptor.upb.h"
+#include "benchmarks/descriptor.upb_minitable.h"
 #include "benchmarks/descriptor.upbdefs.h"
 #include "benchmarks/descriptor_sv.pb.h"
 #include "upb/base/string_view.h"
@@ -30,6 +31,7 @@
 #include "upb/json/encode.h"
 #include "upb/mem/arena.h"
 #include "upb/reflection/def.hpp"
+#include "upb/reflection/internal/def_pool.h"
 #include "upb/wire/decode.h"
 
 upb_StringView descriptor =
@@ -120,61 +122,6 @@ enum LoadDescriptorMode {
   WithLayout,
 };
 
-// This function is mostly copied from upb/def.c, but it is modified to avoid
-// passing in the pre-generated mini-tables, in order to force upb to compute
-// them dynamically.  Generally you would never want to do this, but we want to
-// simulate the cost we would pay if we were loading these types purely from
-// descriptors, with no mini-tales available.
-bool LoadDefInit_BuildLayout(upb_DefPool* s, const _upb_DefPool_Init* init,
-                             size_t* bytes) {
-  _upb_DefPool_Init** deps = init->deps;
-  google_protobuf_FileDescriptorProto* file;
-  upb_Arena* arena;
-  upb_Status status;
-
-  upb_Status_Clear(&status);
-
-  if (upb_DefPool_FindFileByName(s, init->filename)) {
-    return true;
-  }
-
-  arena = upb_Arena_New();
-
-  for (; *deps; deps++) {
-    if (!LoadDefInit_BuildLayout(s, *deps, bytes)) goto err;
-  }
-
-  file = google_protobuf_FileDescriptorProto_parse_ex(
-      init->descriptor.data, init->descriptor.size, nullptr,
-      kUpb_DecodeOption_AliasString, arena);
-  *bytes += init->descriptor.size;
-
-  if (!file) {
-    upb_Status_SetErrorFormat(
-        &status,
-        "Failed to parse compiled-in descriptor for file '%s'. This should "
-        "never happen.",
-        init->filename);
-    goto err;
-  }
-
-  // KEY DIFFERENCE: Here we pass in only the descriptor, and not the
-  // pre-generated minitables.
-  if (!upb_DefPool_AddFile(s, file, &status)) {
-    goto err;
-  }
-
-  upb_Arena_Free(arena);
-  return true;
-
-err:
-  fprintf(stderr,
-          "Error loading compiled-in descriptor for file '%s' (this should "
-          "never happen): %s\n",
-          init->filename, upb_Status_ErrorMessage(&status));
-  exit(1);
-}
-
 template <LoadDescriptorMode Mode>
 static void BM_LoadAdsDescriptor_Upb(benchmark::State& state) {
   size_t bytes_per_iter = 0;
@@ -183,14 +130,14 @@ static void BM_LoadAdsDescriptor_Upb(benchmark::State& state) {
     if (Mode == NoLayout) {
       google_ads_googleads_v17_services_SearchGoogleAdsRequest_getmsgdef(
           defpool.ptr());
-      bytes_per_iter = _upb_DefPool_BytesLoaded(defpool.ptr());
     } else {
-      bytes_per_iter = 0;
-      LoadDefInit_BuildLayout(
+      _upb_DefPool_LoadDefInitEx(
           defpool.ptr(),
           &google_ads_googleads_v17_services_google_ads_service_proto_upbdefinit,
-          &bytes_per_iter);
+          true);
     }
+    bytes_per_iter = _upb_DefPool_BytesLoaded(defpool.ptr());
+    benchmark::DoNotOptimize(defpool);
   }
   state.SetBytesProcessed(state.iterations() * bytes_per_iter);
 }
@@ -222,6 +169,7 @@ static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
         exit(1);
       }
       bytes_per_iter += input.size();
+      benchmark::DoNotOptimize(proto);
     }
 
     if (Mode == WithLayout) {
@@ -232,7 +180,7 @@ static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
         printf("Failed to find descriptor.\n");
         exit(1);
       }
-      factory.GetPrototype(d);
+      (void)factory.GetPrototype(d);
     }
   }
   state.SetBytesProcessed(state.iterations() * bytes_per_iter);
@@ -251,8 +199,39 @@ enum ArenaMode {
   InitBlock,
 };
 
-template <ArenaMode AMode, CopyStrings Copy>
+enum MinitableMode {
+  CompiledIn,
+  Parsed,
+};
+
+/* Minor changes in code can result in changes to binary layout of the compiled
+in minitables. Benchmarking against both the compiled-in representation and the
+runtime parsed representation laid out in an arena can identify a performance
+improvement or regression is due to the actual change or due to unrelated binary
+layout changes. */
+const upb_MiniTable* GetFileDescriptorMiniTable(MinitableMode mode,
+                                                upb::DefPool* defpool) {
+  if (mode == CompiledIn) {
+    return &upb_0benchmark__FileDescriptorProto_msg_init;
+  } else {
+    _upb_DefPool_LoadDefInitEx(
+        defpool->ptr(), &benchmarks_descriptor_proto_upbdefinit,
+        true);
+    const upb_MessageDef* m = upb_DefPool_FindMessageByName(
+        defpool->ptr(), "upb_benchmark.FileDescriptorProto");
+    if (!m) {
+      fprintf(stderr, "Failed to find message definition.\n");
+      exit(1);
+    }
+    return upb_MessageDef_MiniTable(m);
+  }
+}
+
+template <MinitableMode MMode, ArenaMode AMode, CopyStrings Copy>
 static void BM_Parse_Upb_FileDesc(benchmark::State& state) {
+  upb::DefPool defpool;
+  const upb_MiniTable* mt = GetFileDescriptorMiniTable(MMode, &defpool);
+
   for (auto _ : state) {
     upb_Arena* arena;
     if (AMode == InitBlock) {
@@ -260,22 +239,27 @@ static void BM_Parse_Upb_FileDesc(benchmark::State& state) {
     } else {
       arena = upb_Arena_New();
     }
-    upb_benchmark_FileDescriptorProto* set =
-        upb_benchmark_FileDescriptorProto_parse_ex(
-            descriptor.data, descriptor.size, nullptr,
-            Copy == Alias ? kUpb_DecodeOption_AliasString : 0, arena);
-    if (!set) {
-      printf("Failed to parse.\n");
+    upb_Message* set = upb_Message_New(mt, arena);
+    upb_DecodeStatus status =
+        upb_Decode(descriptor.data, descriptor.size, set, mt, nullptr,
+                   Copy == Alias ? kUpb_DecodeOption_AliasString : 0, arena);
+    if (status != kUpb_DecodeStatus_Ok) {
+      printf("Failed to parse with status %d.\n", status);
       exit(1);
     }
+    benchmark::DoNotOptimize(set);
     upb_Arena_Free(arena);
   }
   state.SetBytesProcessed(state.iterations() * descriptor.size);
 }
-BENCHMARK_TEMPLATE(BM_Parse_Upb_FileDesc, UseArena, Copy);
-BENCHMARK_TEMPLATE(BM_Parse_Upb_FileDesc, UseArena, Alias);
-BENCHMARK_TEMPLATE(BM_Parse_Upb_FileDesc, InitBlock, Copy);
-BENCHMARK_TEMPLATE(BM_Parse_Upb_FileDesc, InitBlock, Alias);
+BENCHMARK_TEMPLATE(BM_Parse_Upb_FileDesc, CompiledIn, UseArena, Copy);
+BENCHMARK_TEMPLATE(BM_Parse_Upb_FileDesc, CompiledIn, UseArena, Alias);
+BENCHMARK_TEMPLATE(BM_Parse_Upb_FileDesc, CompiledIn, InitBlock, Copy);
+BENCHMARK_TEMPLATE(BM_Parse_Upb_FileDesc, CompiledIn, InitBlock, Alias);
+BENCHMARK_TEMPLATE(BM_Parse_Upb_FileDesc, Parsed, UseArena, Copy);
+BENCHMARK_TEMPLATE(BM_Parse_Upb_FileDesc, Parsed, UseArena, Alias);
+BENCHMARK_TEMPLATE(BM_Parse_Upb_FileDesc, Parsed, InitBlock, Copy);
+BENCHMARK_TEMPLATE(BM_Parse_Upb_FileDesc, Parsed, InitBlock, Alias);
 
 template <ArenaMode AMode, class P>
 struct Proto2Factory;
@@ -333,6 +317,7 @@ void BM_Parse_Proto2(benchmark::State& state) {
       printf("Failed to parse.\n");
       exit(1);
     }
+    benchmark::DoNotOptimize(proto);
   }
   state.SetBytesProcessed(state.iterations() * descriptor.size);
 }
@@ -343,30 +328,31 @@ BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, InitBlock, Alias);
 
 static void BM_SerializeDescriptor_Proto2(benchmark::State& state) {
   upb_benchmark::FileDescriptorProto proto;
-  proto.ParseFromArray(descriptor.data, descriptor.size);
+  (void)proto.ParseFromString(
+      absl::string_view(descriptor.data, descriptor.size));
   for (auto _ : state) {
-    proto.SerializePartialToArray(buf, sizeof(buf));
+    (void)proto.SerializePartialToArray(buf, sizeof(buf));
+    benchmark::DoNotOptimize(buf);
   }
   state.SetBytesProcessed(state.iterations() * descriptor.size);
 }
 BENCHMARK(BM_SerializeDescriptor_Proto2);
 
-static upb_benchmark_FileDescriptorProto* UpbParseDescriptor(upb_Arena* arena) {
-  upb_benchmark_FileDescriptorProto* set =
-      upb_benchmark_FileDescriptorProto_parse(descriptor.data, descriptor.size,
-                                              arena);
-  if (!set) {
+template <MinitableMode MMode, ArenaMode AMode>
+static void BM_SerializeDescriptor_Upb(benchmark::State& state) {
+  upb::DefPool defpool;
+  const upb_MiniTable* mt = GetFileDescriptorMiniTable(MMode, &defpool);
+
+  upb_Arena* arena = upb_Arena_New();
+  upb_Message* set = upb_Message_New(mt, arena);
+  upb_DecodeStatus status =
+      upb_Decode(descriptor.data, descriptor.size, set, mt, nullptr, 0, arena);
+  if (status != kUpb_DecodeStatus_Ok) {
     printf("Failed to parse.\n");
     exit(1);
   }
-  return set;
-}
 
-template <ArenaMode AMode>
-static void BM_SerializeDescriptor_Upb(benchmark::State& state) {
   int64_t total = 0;
-  upb_Arena* arena = upb_Arena_New();
-  upb_benchmark_FileDescriptorProto* set = UpbParseDescriptor(arena);
   for (auto _ : state) {
     upb_Arena* enc_arena;
     if (AMode == InitBlock) {
@@ -375,19 +361,24 @@ static void BM_SerializeDescriptor_Upb(benchmark::State& state) {
       enc_arena = upb_Arena_New();
     }
     size_t size;
-    char* data =
-        upb_benchmark_FileDescriptorProto_serialize(set, enc_arena, &size);
-    if (!data) {
+    char* data;
+    upb_EncodeStatus encode_status =
+        upb_Encode(set, mt, 0, enc_arena, &data, &size);
+    if (encode_status != kUpb_EncodeStatus_Ok) {
       printf("Failed to serialize.\n");
       exit(1);
     }
     total += size;
+    benchmark::DoNotOptimize(data);
     upb_Arena_Free(enc_arena);
   }
   state.SetBytesProcessed(total);
+  upb_Arena_Free(arena);
 }
-BENCHMARK_TEMPLATE(BM_SerializeDescriptor_Upb, UseArena);
-BENCHMARK_TEMPLATE(BM_SerializeDescriptor_Upb, InitBlock);
+BENCHMARK_TEMPLATE(BM_SerializeDescriptor_Upb, CompiledIn, UseArena);
+BENCHMARK_TEMPLATE(BM_SerializeDescriptor_Upb, CompiledIn, InitBlock);
+BENCHMARK_TEMPLATE(BM_SerializeDescriptor_Upb, Parsed, UseArena);
+BENCHMARK_TEMPLATE(BM_SerializeDescriptor_Upb, Parsed, InitBlock);
 
 static absl::string_view UpbJsonEncode(upb_benchmark_FileDescriptorProto* proto,
                                        const upb_MessageDef* md,
@@ -420,6 +411,7 @@ static void BM_JsonParse_Upb(benchmark::State& state) {
         upb_benchmark_FileDescriptorProto_new(arena);
     upb_JsonDecode(json.data(), json.size(), UPB_UPCAST(proto), md,
                    defpool.ptr(), 0, arena, nullptr);
+    benchmark::DoNotOptimize(proto);
     upb_Arena_Free(arena);
   }
   state.SetBytesProcessed(state.iterations() * json.size());
@@ -429,12 +421,13 @@ BENCHMARK(BM_JsonParse_Upb);
 static void BM_JsonParse_Proto2(benchmark::State& state) {
   protobuf::FileDescriptorProto proto;
   absl::string_view input(descriptor.data, descriptor.size);
-  proto.ParseFromString(input);
+  (void)proto.ParseFromString(input);
   std::string json;
   ABSL_CHECK_OK(google::protobuf::json::MessageToJsonString(proto, &json));
   for (auto _ : state) {
     protobuf::FileDescriptorProto proto;
     ABSL_CHECK_OK(google::protobuf::json::JsonStringToMessage(json, &proto));
+    benchmark::DoNotOptimize(proto);
   }
   state.SetBytesProcessed(state.iterations() * json.size());
 }
@@ -460,6 +453,7 @@ static void BM_JsonSerialize_Upb(benchmark::State& state) {
     // encoder twice, once to discover the size of the buffer.
     upb_JsonEncode(UPB_UPCAST(set), md, nullptr, 0, json_str.data(),
                    json_str.size(), nullptr);
+    benchmark::DoNotOptimize(json_str);
   }
   state.SetBytesProcessed(state.iterations() * json.size());
 }
@@ -468,11 +462,12 @@ BENCHMARK(BM_JsonSerialize_Upb);
 static void BM_JsonSerialize_Proto2(benchmark::State& state) {
   protobuf::FileDescriptorProto proto;
   absl::string_view input(descriptor.data, descriptor.size);
-  proto.ParseFromString(input);
+  (void)proto.ParseFromString(input);
   std::string json;
   for (auto _ : state) {
     json.clear();
     ABSL_CHECK_OK(google::protobuf::json::MessageToJsonString(proto, &json));
+    benchmark::DoNotOptimize(json);
   }
   state.SetBytesProcessed(state.iterations() * json.size());
 }

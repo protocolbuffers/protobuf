@@ -28,6 +28,10 @@ set_target_properties(utf8_validity PROPERTIES
   OUTPUT_NAME ${LIB_PREFIX}utf8_validity
 )
 
+target_include_directories(utf8_validity PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
+)
+
 # Load Abseil dependency.
 if (NOT TARGET absl::strings)
   if (NOT ABSL_ROOT_DIR)

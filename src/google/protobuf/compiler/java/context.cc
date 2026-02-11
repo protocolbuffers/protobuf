@@ -25,11 +25,11 @@ namespace compiler {
 namespace java {
 
 Context::Context(const FileDescriptor* file, const Options& options)
-    : name_resolver_(new ClassNameResolver(options)), options_(options) {
+    : name_resolver_(new ClassNameResolver()), options_(options) {
   InitializeFieldGeneratorInfo(file);
 }
 
-Context::~Context() {}
+Context::~Context() = default;
 
 ClassNameResolver* Context::GetNameResolver() const {
   return name_resolver_.get();

@@ -10,17 +10,96 @@ package com.google.protobuf;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.large.openaliasingenum.edition.LargeOpenAliasingEnum;
+import com.google.protobuf.large.openaliasingenum.edition.LargeOpenAliasingEnumParent;
 import com.google.protobuf.large.openenum.edition.LargeOpenEnum;
+import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class LargeEnumTest {
+  @Test
+  public void enumWithAliases_noStaticInitProblem() {
+    // If there is a cyclical static init problem, this will fail with TEST_ENUM_X_ALIAS being null.
+    // Note that the test may happen to pass if another test happens to touch LargeOpenAliasingEnum
+    // first, but it should be caught by the order-dependent test checker if that regresses.
+    assertThat(LargeOpenAliasingEnum.LARGE_ENUM2).isNotNull();
+    assertThat(LargeOpenAliasingEnum.LARGE_ENUM2_ALIAS).isNotNull();
+  }
 
   @Test
-  public void testOpenLargeEnum() throws Exception {
+  public void valueOfString_returnsCorrectObject() {
+    assertThat(LargeOpenAliasingEnum.valueOf("LARGE_ENUM1"))
+        .isSameInstanceAs(LargeOpenAliasingEnum.LARGE_ENUM1);
+  }
+
+  @Test
+  public void valueOfEnumValueDescriptors_withAliasing_returnsCorrectObject() {
+    assertThat(
+            LargeOpenAliasingEnum.valueOf(LargeOpenAliasingEnum.LARGE_ENUM1.getValueDescriptor()))
+        .isSameInstanceAs(LargeOpenAliasingEnum.LARGE_ENUM1);
+    assertThat(
+            LargeOpenAliasingEnum.valueOf(LargeOpenAliasingEnum.LARGE_ENUM100.getValueDescriptor()))
+        .isSameInstanceAs(LargeOpenAliasingEnum.LARGE_ENUM100);
+    assertThat(
+            LargeOpenAliasingEnum.valueOf(
+                LargeOpenAliasingEnum.LARGE_ENUM1_ALIAS.getValueDescriptor()))
+        .isSameInstanceAs(LargeOpenAliasingEnum.LARGE_ENUM1_ALIAS);
+  }
+
+  @Test
+  public void valueOfEnumValueDescriptors_withoutAliasing_returnsCorrectObject() {
+    assertThat(LargeOpenEnum.valueOf(LargeOpenEnum.LARGE_ENUM1.getValueDescriptor()))
+        .isSameInstanceAs(LargeOpenEnum.LARGE_ENUM1);
+    assertThat(LargeOpenEnum.valueOf(LargeOpenEnum.LARGE_ENUM100.getValueDescriptor()))
+        .isSameInstanceAs(LargeOpenEnum.LARGE_ENUM100);
+  }
+
+  @Test
+  public void testLargeEnumRoundTrip() throws Exception {
+    LargeOpenAliasingEnumParent msg =
+        LargeOpenAliasingEnumParent.newBuilder()
+            .addValues(LargeOpenAliasingEnum.LARGE_ENUM1)
+            .addValues(LargeOpenAliasingEnum.LARGE_ENUM2_ALIAS)
+            .addValues(LargeOpenAliasingEnum.LARGE_ENUM1_ALIAS)
+            .addValues(LargeOpenAliasingEnum.LARGE_ENUM1060)
+            .addValues(LargeOpenAliasingEnum.LARGE_ENUM2000)
+            .build();
+    LargeOpenAliasingEnumParent roundTrip =
+        LargeOpenAliasingEnumParent.parseFrom(
+            msg.toByteArray(), ExtensionRegistryLite.getEmptyRegistry());
+    assertThat(roundTrip).isEqualTo(msg);
+  }
+
+  @Test
+  public void testLargeEnumReflectiveAccess() throws Exception {
+    LargeOpenAliasingEnumParent msg =
+        LargeOpenAliasingEnumParent.newBuilder()
+            .addValues(LargeOpenAliasingEnum.LARGE_ENUM1)
+            .addValues(LargeOpenAliasingEnum.LARGE_ENUM2_ALIAS)
+            .addValues(LargeOpenAliasingEnum.LARGE_ENUM1_ALIAS)
+            .addValues(LargeOpenAliasingEnum.LARGE_ENUM1060)
+            .addValues(LargeOpenAliasingEnum.LARGE_ENUM2000)
+            .build();
+    LargeOpenAliasingEnumParent.Builder roundTripBuilder = LargeOpenAliasingEnumParent.newBuilder();
+    for (Map.Entry<FieldDescriptor, Object> entry : msg.getAllFields().entrySet()) {
+      roundTripBuilder.setField(entry.getKey(), entry.getValue());
+    }
+    LargeOpenAliasingEnumParent roundTrip = roundTripBuilder.build();
+    assertThat(roundTrip).isEqualTo(msg);
+  }
+
+  @Test
+  public void testUnrecognizedGetNumberThrows() throws Exception {
     assertThrows(IllegalArgumentException.class, LargeOpenEnum.UNRECOGNIZED::getNumber);
+  }
+
+  @Test
+  public void testValuesHasAllCanonicals() throws Exception {
+    // The values() method returns only the canonical values, sorted in index order.
     assertThat(LargeOpenEnum.values())
         .isEqualTo(
             new LargeOpenEnum[] {

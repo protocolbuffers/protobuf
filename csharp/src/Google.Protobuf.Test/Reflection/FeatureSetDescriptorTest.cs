@@ -56,7 +56,7 @@ public class FeatureSetDescriptorTest
         // a new edition. It should only be changed when you're sure that all the features in the new
         // edition are supported. Just changing the configuration for feature set default generation
         // will *advertise* that we support the new edition, but that isn't sufficient.
-        Edition maxSupportedEdition = Edition._2023;
+        Edition maxSupportedEdition = Edition._2024;
 
         // These lines should not need to be changed.
         FeatureSetDescriptor.GetEditionDefaults(maxSupportedEdition);

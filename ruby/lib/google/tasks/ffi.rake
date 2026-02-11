@@ -12,7 +12,7 @@ def configure_common_compile_task(task)
   task.add_define 'NDEBUG'
   task.cflags << "-std=gnu99 -O3"
   [
-    :convert, :defs, :map, :message, :protobuf, :repeated_field, :wrap_memcpy
+    :convert, :defs, :map, :message, :protobuf, :repeated_field
   ].each { |file| task.exclude << "/#{file}.c" }
   task.ext_dir = src_dir
   task.source_dirs = [src_dir]

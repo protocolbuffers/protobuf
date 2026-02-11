@@ -55,6 +55,17 @@ final class BooleanArrayList extends AbstractProtobufList<Boolean>
     this.size = size;
   }
 
+  /**
+   * Constructs a new mutable {@code BooleanArrayList} containing the same elements as {@code
+   * other}.
+   */
+  BooleanArrayList(BooleanArrayList other, boolean isMutable) {
+    this(
+        other.size == 0 ? EMPTY_ARRAY : Arrays.copyOf(other.array, other.size),
+        other.size,
+        isMutable);
+  }
+
   @Override
   protected void removeRange(int fromIndex, int toIndex) {
     ensureIsMutable();
@@ -146,11 +157,13 @@ final class BooleanArrayList extends AbstractProtobufList<Boolean>
   }
 
   @Override
+  @CanIgnoreReturnValue
   public Boolean set(int index, Boolean element) {
     return setBoolean(index, element);
   }
 
   @Override
+  @CanIgnoreReturnValue
   public boolean setBoolean(int index, boolean element) {
     ensureIsMutable();
     ensureIndexInRange(index);
@@ -160,6 +173,7 @@ final class BooleanArrayList extends AbstractProtobufList<Boolean>
   }
 
   @Override
+  @CanIgnoreReturnValue
   public boolean add(Boolean element) {
     addBoolean(element);
     return true;
@@ -213,6 +227,7 @@ final class BooleanArrayList extends AbstractProtobufList<Boolean>
   }
 
   @Override
+  @CanIgnoreReturnValue
   public boolean addAll(Collection<? extends Boolean> collection) {
     ensureIsMutable();
 
@@ -246,6 +261,7 @@ final class BooleanArrayList extends AbstractProtobufList<Boolean>
   }
 
   @Override
+  @CanIgnoreReturnValue
   public Boolean remove(int index) {
     ensureIsMutable();
     ensureIndexInRange(index);

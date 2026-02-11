@@ -34,6 +34,7 @@ def _compile_edition_defaults_impl(ctx):
         inputs = sources,
         executable = ctx.executable.protoc or ctx.executable._protoc_minimal,
         arguments = [args],
+        mnemonic = "ProtobufCompileEditionDefaults",
         progress_message = "Generating edition defaults",
     )
 
@@ -52,7 +53,7 @@ compile_edition_defaults = rule(
             cfg = "exec",
         ),
         "_protoc_minimal": attr.label(
-            default = "//src/google/protobuf/compiler:protoc_minimal",
+            default = "//src/google/protobuf/compiler/release:protoc_minimal",
             executable = True,
             cfg = "exec",
         ),
@@ -76,7 +77,10 @@ def _embed_edition_defaults_impl(ctx):
         arguments = [args],
         outputs = [ctx.outputs.output],
         inputs = [ctx.file.defaults, ctx.file.template],
+        mnemonic = "ProtobufEmbedEditionDefaults",
     )
+
+    return DefaultInfo(files = depset([ctx.outputs.output]))
 
 embed_edition_defaults = rule(
     doc = "genrule to embed edition defaults binary data into a template file.",
@@ -103,8 +107,8 @@ embed_edition_defaults = rule(
         ),
         "encoding": attr.string(
             default = "octal",
-            values = ["octal", "base64"],
-            doc = "The encoding format to use for the binary data (octal or base64)",
+            values = ["octal", "base64", "decimal_array", "hex_array"],
+            doc = "The encoding format to use for the binary data (octal, base64, decimal_array, hex_array)",
         ),
         "_escape": attr.label(
             default = "//editions:internal_defaults_escape",

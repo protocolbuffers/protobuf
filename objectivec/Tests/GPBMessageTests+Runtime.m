@@ -95,14 +95,14 @@
     XCTAssertTrue([Message2 instancesRespondToSelector:countSel], @"field: %@", name);
   }
 
-  // OneOf fields - no has*/setHas*
+  // OneOf fields - has*/setHas* is valid.
 
   for (NSString *name in names) {
     // build the selector, i.e. - hasOneofInt32/setHasOneofInt32:
     SEL hasSel = NSSelectorFromString([NSString stringWithFormat:@"hasOneof%@", name]);
     SEL setHasSel = NSSelectorFromString([NSString stringWithFormat:@"setHasOneof%@:", name]);
-    XCTAssertFalse([Message2 instancesRespondToSelector:hasSel], @"field: %@", name);
-    XCTAssertFalse([Message2 instancesRespondToSelector:setHasSel], @"field: %@", name);
+    XCTAssertTrue([Message2 instancesRespondToSelector:hasSel], @"field: %@", name);
+    XCTAssertTrue([Message2 instancesRespondToSelector:setHasSel], @"field: %@", name);
   }
 
   // map<> fields
@@ -186,14 +186,14 @@
     XCTAssertTrue([Message3 instancesRespondToSelector:countSel], @"field: %@", name);
   }
 
-  // OneOf fields - no has*/setHas*
+  // OneOf fields - has*/setHas* is valid.
 
   for (NSString *name in names) {
     // build the selector, i.e. - hasOneofInt32/setHasOneofInt32:
     SEL hasSel = NSSelectorFromString([NSString stringWithFormat:@"hasOneof%@", name]);
     SEL setHasSel = NSSelectorFromString([NSString stringWithFormat:@"setHasOneof%@:", name]);
-    XCTAssertFalse([Message3 instancesRespondToSelector:hasSel], @"field: %@", name);
-    XCTAssertFalse([Message3 instancesRespondToSelector:setHasSel], @"field: %@", name);
+    XCTAssertTrue([Message3 instancesRespondToSelector:hasSel], @"field: %@", name);
+    XCTAssertTrue([Message3 instancesRespondToSelector:setHasSel], @"field: %@", name);
   }
 
   // Single Optional fields

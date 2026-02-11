@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -44,9 +45,12 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
 
     Internal.EnumLiteMap<?> getEnumType();
 
+    boolean internalMessageIsImmutable(Object message);
+
     // If getLiteJavaType() == MESSAGE, this merges a message object of the
-    // type into a builder of the type.  Returns {@code to}.
-    MessageLite.Builder internalMergeFrom(MessageLite.Builder to, MessageLite from);
+    // type into a mutable message of the type.  Requires that isMessageImmutable(to) is false.
+    // builder.
+    void internalMergeFrom(Object to, Object from);
   }
 
   private final SmallSortedMap<T, Object> fields;
@@ -569,11 +573,13 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
           // Extract the actual value for lazy fields.
           otherValue = ((LazyField) otherValue).getValue();
         }
-          value =
-              descriptor
-                  .internalMergeFrom(((MessageLite) value).toBuilder(), (MessageLite) otherValue)
-                  .build();
-        fields.put(descriptor, value);
+        if (descriptor.internalMessageIsImmutable(value)) {
+          MessageLite.Builder builder = ((MessageLite) value).toBuilder();
+          descriptor.internalMergeFrom(builder, otherValue);
+          fields.put(descriptor, builder.build());
+        } else {
+          descriptor.internalMergeFrom(value, otherValue);
+        }
       }
     } else {
       if (isLazyField) {
@@ -597,9 +603,9 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
       CodedInputStream input, final WireFormat.FieldType type, boolean checkUtf8)
       throws IOException {
     if (checkUtf8) {
-      return WireFormat.readPrimitiveField(input, type, WireFormat.Utf8Validation.STRICT);
+      return input.readPrimitiveField(type, WireFormat.Utf8Validation.STRICT);
     } else {
-      return WireFormat.readPrimitiveField(input, type, WireFormat.Utf8Validation.LOOSE);
+      return input.readPrimitiveField(type, WireFormat.Utf8Validation.LOOSE);
     }
   }
 
@@ -662,7 +668,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     // Special case for groups, which need a start and end tag; other fields
     // can just use writeTag() and writeFieldNoTag().
     if (type == WireFormat.FieldType.GROUP) {
-        output.writeGroup(number, (MessageLite) value);
+      output.writeGroup(number, (MessageLite) value);
     } else {
       output.writeTag(number, getWireFormatForFieldType(type, false));
       writeElementNoTag(output, type, value);
@@ -832,8 +838,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
         && !descriptor.isRepeated()
         && !descriptor.isPacked()) {
       if (value instanceof LazyField) {
-        return CodedOutputStream.computeLazyFieldMessageSetExtensionSize(
-            entry.getKey().getNumber(), (LazyField) value);
+        return ((LazyField) value).computeMessageSetExtensionSize(entry.getKey().getNumber());
       } else {
         return CodedOutputStream.computeMessageSetExtensionSize(
             entry.getKey().getNumber(), (MessageLite) value);
@@ -858,7 +863,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     if (type == WireFormat.FieldType.GROUP) {
       // Only count the end group tag for proto2 messages as for proto1 the end
       // group tag will be counted as a part of getSerializedSize().
-        tagSize *= 2;
+      tagSize *= 2;
     }
     return tagSize + computeElementSizeNoTag(type, value);
   }
@@ -916,7 +921,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
 
       case MESSAGE:
         if (value instanceof LazyField) {
-          return CodedOutputStream.computeLazyFieldSizeNoTag((LazyField) value);
+          return ((LazyField) value).computeSizeNoTag();
         } else {
           return CodedOutputStream.computeMessageSizeNoTag((MessageLite) value);
         }
@@ -1307,8 +1312,9 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
         }
         throw new IllegalArgumentException(
             String.format(
+                Locale.ROOT,
                 "Wrong object type used with protocol message reflection.\n"
-                + "Field number: %d, field java type: %s, value type: %s\n",
+                    + "Field number: %d, field java type: %s, value type: %s\n",
                 descriptor.getNumber(),
                 descriptor.getLiteType().getJavaType(),
                 value.getClass().getName()));
@@ -1385,14 +1391,13 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
             // Extract the actual value for lazy fields.
             otherValue = ((LazyField) otherValue).getValue();
           }
-          if (value instanceof MessageLite.Builder) {
-            descriptor.internalMergeFrom((MessageLite.Builder) value, (MessageLite) otherValue);
-          } else {
-            value =
-                descriptor
-                    .internalMergeFrom(((MessageLite) value).toBuilder(), (MessageLite) otherValue)
-                    .build();
+          if (descriptor.internalMessageIsImmutable(value)) {
+            MessageLite.Builder builder = ((MessageLite) value).toBuilder();
+            descriptor.internalMergeFrom(builder, otherValue);
+            value = builder.build();
             fields.put(descriptor, value);
+          } else {
+            descriptor.internalMergeFrom(value, otherValue);
           }
         }
       } else {

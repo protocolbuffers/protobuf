@@ -12,13 +12,13 @@
 #include <cstdint>
 #include <cstring>
 #include <limits>
-#include <optional>
 #include <vector>
 
 #include "absl/container/fixed_array.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -151,7 +151,7 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
 
 #define PROTOBUF_PICK_STRING_FUNCTION(fn)                                 \
   (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord      \
-       ? PROTOBUF_PICK_FUNCTION(fn##cS)                                   \
+       ? PROTOBUF_PICK_REPEATABLE_FUNCTION(fn##c)                         \
    : field->cpp_string_type() == FieldDescriptor::CppStringType::kView && \
            options.use_micro_string                                       \
        ? PROTOBUF_PICK_FUNCTION(fn##mS)                                   \
@@ -160,14 +160,6 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
 
   const FieldDescriptor* field = entry.field;
   info.aux_idx = static_cast<uint8_t>(entry.aux_idx);
-  if (field->type() == FieldDescriptor::TYPE_BYTES ||
-      field->type() == FieldDescriptor::TYPE_STRING) {
-    if (options.is_string_inlined) {
-      ABSL_CHECK(!field->is_repeated());
-      info.aux_idx = static_cast<uint8_t>(entry.inlined_string_idx);
-    }
-  }
-
   TcParseFunction picked = TcParseFunction::kNone;
   switch (field->type()) {
     case FieldDescriptor::TYPE_BOOL:
@@ -225,9 +217,6 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
         case cpp::Utf8CheckMode::kStrict:
           picked = PROTOBUF_PICK_STRING_FUNCTION(kFastU);
           break;
-        case cpp::Utf8CheckMode::kVerify:
-          picked = PROTOBUF_PICK_STRING_FUNCTION(kFastS);
-          break;
         case cpp::Utf8CheckMode::kNone:
           picked = PROTOBUF_PICK_STRING_FUNCTION(kFastB);
           break;
@@ -280,34 +269,12 @@ bool IsFieldEligibleForFastParsing(
     return false;
   }
 
-  // We will check for a valid auxiliary index range later. However, we might
-  // want to change the value we check for inlined string fields.
-  int aux_idx = entry.aux_idx;
-
-  switch (field->type()) {
-      // Some bytes fields can be handled on fast path.
-    case FieldDescriptor::TYPE_STRING:
-    case FieldDescriptor::TYPE_BYTES: {
-      if (options.is_string_inlined) {
-        ABSL_CHECK(!field->is_repeated());
-        // For inlined strings, the donation state index is stored in the
-        // `aux_idx` field of the fast parsing info. We need to check the range
-        // of that value instead of the auxiliary index.
-        aux_idx = entry.inlined_string_idx;
-      }
-      break;
-    }
-
-    default:
-      break;
-  }
-
   if (entry.hasbit_idx > TailCallTableInfo::kMaxFastFieldHasbitIndex)
     return false;
 
   // If the field needs auxiliary data, then the aux index is needed. This
   // must fit in a uint8_t.
-  if (aux_idx > std::numeric_limits<uint8_t>::max()) {
+  if (entry.aux_idx > std::numeric_limits<uint8_t>::max()) {
     return false;
   }
 
@@ -315,7 +282,7 @@ bool IsFieldEligibleForFastParsing(
 }
 
 void PopulateFastFields(
-    std::optional<uint32_t> end_group_tag,
+    absl::optional<uint32_t> end_group_tag,
     const std::vector<TailCallTableInfo::FieldEntryInfo>& field_entries,
     const TailCallTableInfo::MessageOptions& message_options,
     absl::Span<const TailCallTableInfo::FieldOptions> fields,
@@ -518,16 +485,15 @@ TailCallTableInfo::NumToEntryTable MakeNumToEntryTable(
   return num_to_entry_table;
 }
 
-uint16_t MakeTypeCardForField(
-    const FieldDescriptor* field, bool has_hasbit,
-    const TailCallTableInfo::FieldOptions& options,
-    cpp::Utf8CheckMode utf8_check_mode) {
+uint16_t MakeTypeCardForField(const FieldDescriptor* field, bool has_hasbit,
+                              const TailCallTableInfo::FieldOptions& options,
+                              cpp::Utf8CheckMode utf8_check_mode) {
   uint16_t type_card;
   namespace fl = internal::field_layout;
-  if (has_hasbit) {
-    type_card = fl::kFcOptional;
-  } else if (field->is_repeated()) {
+  if (field->is_repeated()) {
     type_card = fl::kFcRepeated;
+  } else if (has_hasbit) {
+    type_card = fl::kFcOptional;
   } else if (field->real_containing_oneof()) {
     type_card = fl::kFcOneof;
   } else {
@@ -628,9 +594,6 @@ uint16_t MakeTypeCardForField(
         case cpp::Utf8CheckMode::kStrict:
           type_card |= fl::kUtf8String;
           break;
-        case cpp::Utf8CheckMode::kVerify:
-          type_card |= fl::kRawString;
-          break;
         case cpp::Utf8CheckMode::kNone:
           type_card |= fl::kBytes;
           break;
@@ -716,9 +679,9 @@ uint32_t GetRecodedTagForFastParsing(const FieldDescriptor* field) {
       internal::WireFormat::MakeTag(field));
 }
 
-std::optional<uint32_t> GetEndGroupTag(const Descriptor* descriptor) {
+absl::optional<uint32_t> GetEndGroupTag(const Descriptor* descriptor) {
   auto* parent = descriptor->containing_type();
-  if (parent == nullptr) return std::nullopt;
+  if (parent == nullptr) return absl::nullopt;
   for (int i = 0; i < parent->field_count(); ++i) {
     auto* field = parent->field(i);
     if (field->type() == field->TYPE_GROUP &&
@@ -727,11 +690,11 @@ std::optional<uint32_t> GetEndGroupTag(const Descriptor* descriptor) {
                                      WireFormatLite::WIRETYPE_END_GROUP);
     }
   }
-  return std::nullopt;
+  return absl::nullopt;
 }
 
 uint32_t FastParseTableSize(size_t num_fields,
-                            std::optional<uint32_t> end_group_tag) {
+                            absl::optional<uint32_t> end_group_tag) {
   return end_group_tag.has_value()
              ? TcParseTableBase::kMaxFastFields
              : std::max(size_t{1}, std::min(TcParseTableBase::kMaxFastFields,
@@ -743,27 +706,6 @@ bool IsFieldTypeEligibleForFastParsing(const FieldDescriptor* field) {
   if (field->is_map() || field->real_containing_oneof() ||
       field->options().weak()) {
     return false;
-  }
-
-  switch (field->type()) {
-      // Some bytes fields can be handled on fast path.
-    case FieldDescriptor::TYPE_STRING:
-    case FieldDescriptor::TYPE_BYTES: {
-      auto ctype = field->cpp_string_type();
-      if (ctype == FieldDescriptor::CppStringType::kString ||
-          ctype == FieldDescriptor::CppStringType::kView) {
-        // strings are fine...
-      } else if (ctype == FieldDescriptor::CppStringType::kCord) {
-        // Cords are worth putting into the fast table, if they're not repeated
-        if (field->is_repeated()) return false;
-      } else {
-        return false;
-      }
-      break;
-    }
-
-    default:
-      break;
   }
 
   // The largest tag that can be read by the tailcall parser is two bytes
@@ -889,21 +831,6 @@ TailCallTableInfo::BuildFieldEntries(
         aux_entry.type = kEnumValidator;
         aux_entry.field = field;
       }
-
-    } else if ((field->type() == FieldDescriptor::TYPE_STRING ||
-                field->type() == FieldDescriptor::TYPE_BYTES) &&
-               options.is_string_inlined) {
-      ABSL_CHECK(!field->is_repeated());
-      // Inlined strings have an extra marker to represent their donation state.
-      int idx = options.inlined_string_index;
-      // For mini parsing, the donation state index is stored as an `offset`
-      // auxiliary entry.
-      entry.aux_idx = aux_entries.size();
-      aux_entries.push_back({kNumericOffset});
-      aux_entries.back().offset = idx;
-      // For fast table parsing, the donation state index is stored instead of
-      // the aux_idx (this will limit the range to 8 bits).
-      entry.inlined_string_idx = idx;
     }
   }
   ABSL_CHECK_EQ(subtable_aux_idx - subtable_aux_idx_begin,
@@ -957,13 +884,6 @@ TailCallTableInfo::TailCallTableInfo(
                              [](const auto& lhs, const auto& rhs) {
                                return lhs.field->number() < rhs.field->number();
                              }));
-  // If this message has any inlined string fields, store the donation state
-  // offset in the first auxiliary entry, which is kInlinedStringAuxIdx.
-  if (std::any_of(ordered_fields.begin(), ordered_fields.end(),
-                  [](auto& f) { return f.is_string_inlined; })) {
-    aux_entries.resize(kInlinedStringAuxIdx + 1);  // Allocate our slot
-    aux_entries[kInlinedStringAuxIdx] = {kInlinedStringDonatedOffset};
-  }
 
   // If this message is split, store the split pointer offset in the second
   // and third auxiliary entries, which are kSplitOffsetAuxIdx and

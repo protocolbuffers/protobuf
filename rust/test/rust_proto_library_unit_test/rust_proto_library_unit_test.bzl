@@ -3,7 +3,11 @@
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//rust:defs.bzl", "rust_cc_proto_library", "rust_upb_proto_library")
-load("//rust/bazel:aspects.bzl", "RustProtoInfo")
+load(
+    "//rust/bazel:aspects.bzl",
+    "RustProtoInfo",
+    "rust_cc_proto_library_aspect",
+)
 load(":defs.bzl", "ActionsInfo", "attach_cc_aspect", "attach_upb_aspect")
 
 def _find_actions_with_mnemonic(actions, mnemonic):
@@ -14,6 +18,18 @@ def _find_actions_with_mnemonic(actions, mnemonic):
             [a.mnemonic for a in actions],
         ))
     return actions
+
+CHECK_CRATE_MAPPING_EXPECTED_CONTENT = """_ao__ao__y__y_rust_y_test_y_rust_proto_library_unit_test_x_grand_d_parent_proto
+2
+rust/test/rust_proto_library_unit_test/grandparent1.proto
+rust/test/rust_proto_library_unit_test/grandparent2.proto
+_ao__ao__y__y_rust_y_test_y_rust_proto_library_unit_test_x_parent_proto
+1
+rust/test/rust_proto_library_unit_test/parent.proto
+_ao__ao__y__y_rust_y_test_y_rust_proto_library_unit_test_x_parent2_proto
+1
+rust/test/rust_proto_library_unit_test/parent2.proto
+"""
 
 def _check_crate_mapping(actions, target_name):
     fw_actions = _find_actions_with_mnemonic(actions, "FileWrite")
@@ -28,18 +44,8 @@ def _check_crate_mapping(actions, target_name):
             target_name,
             fw_actions,
         ))
-    expected_content = """grand_parent_proto
-2
-rust/test/rust_proto_library_unit_test/grandparent1.proto
-rust/test/rust_proto_library_unit_test/grandparent2.proto
-parent_proto
-1
-rust/test/rust_proto_library_unit_test/parent.proto
-parent2_proto
-1
-rust/test/rust_proto_library_unit_test/parent2.proto
-"""
-    if crate_mapping_action.content != expected_content:
+
+    if crate_mapping_action.content != CHECK_CRATE_MAPPING_EXPECTED_CONTENT:
         fail("The crate mapping file content didn't match. Was: {}".format(
             crate_mapping_action.content,
         ))
@@ -210,6 +216,268 @@ def _test_upb_outputs():
         target_under_test = ":child_upb_rust_proto",
     )
 
+# Crate naming testing
+#
+# The crate_names_aspect collects the labels of RustProtoInfo.dep_variant_infos
+# and RustProtoInfo.exports_dep_variant_infos for each transitive dependency of
+# a target under test in a CrateNamesAspectInfo.
+#
+#
+CrateNameInfo = provider(
+    """Collects the labels of direct and exported dep_variants of a single rust_proto_library target.""",
+    fields = {
+        "dep_variants": "List(string): labels of crates that this rust_proto crate directly provides to client rust_proto libraries.",
+        "exports_dep_variants": "List(string): labels of rust_proto crates exported by this rust_proto crate.",
+    },
+)
+
+CrateNamesAspectInfo = provider(
+    """Collects the CrateNameInfo-s for a rust_proto_library target and its transitive dependencies.""",
+    fields = {
+        "infos": "Dict(string, CrateNameInfo): dictionary from labels of transitive dependencies to their CrateNameInfo.",
+    },
+)
+
+def _crate_names_aspect_impl(target, ctx):
+    infos = {}
+
+    rust_proto_info = target[RustProtoInfo] if RustProtoInfo in target else None
+    dep_variant_infos = rust_proto_info.dep_variant_infos if rust_proto_info else []
+    dep_variants = [str(info.crate_info.owner) for info in dep_variant_infos if info.crate_info]
+    exports_dep_variant_infos = rust_proto_info.exports_dep_variant_infos if rust_proto_info else []
+    exports_dep_variants = [str(info.crate_info.owner) for info in exports_dep_variant_infos if info.crate_info]
+    infos[str(target.label)] = CrateNameInfo(
+        dep_variants = dep_variants,
+        exports_dep_variants = exports_dep_variants,
+    )
+
+    deps = getattr(ctx.rule.attr, "deps", [])
+    for dep in deps:
+        if CrateNamesAspectInfo in dep:
+            infos |= dep[CrateNamesAspectInfo].infos
+
+    return [CrateNamesAspectInfo(infos = infos)]
+
+crate_names_aspect = aspect(
+    implementation = _crate_names_aspect_impl,
+    attr_aspects = ["deps", "dep"],
+    required_aspect_providers = [RustProtoInfo],
+    requires = [rust_cc_proto_library_aspect],
+)
+
+def _attach_crate_names_aspect_impl(ctx):
+    return [ctx.attr.dep[CrateNamesAspectInfo]]
+
+attach_crate_names_aspect = rule(
+    implementation = _attach_crate_names_aspect_impl,
+    attrs = {
+        "dep": attr.label(aspects = [crate_names_aspect]),
+    },
+)
+
+def _crate_names_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    target_under_test = analysistest.target_under_test(env)
+
+    infos = target_under_test[CrateNamesAspectInfo].infos
+
+    def pattern_matches_label(pattern, label):
+        return label.endswith(pattern)
+
+    def match(env, kind, patterns, labels):
+        context = "while matching %s" % kind
+        asserts.equals(env, len(patterns), len(labels), "%s: labels %s and patterns %s must have the same size" % (context, labels, patterns))
+        matching_labels = {p: [] for p in patterns}
+        for p in patterns:
+            for la in labels:
+                if pattern_matches_label(p, la):
+                    matching_labels[p].append(la)
+        for p in patterns:
+            if not matching_labels[p]:
+                fail("%s: pattern %s did not match any of the labels %s" % (context, p, labels))
+            if len(matching_labels[p]) != 1:
+                fail("%s: pattern %s matched multiple labels %s" % (context, p, matching_labels[p]))
+
+    for p, expectations in json.decode(ctx.attr.expectations).items():
+        matches_any = False
+        for la, info in infos.items():
+            if not pattern_matches_label(p, la):
+                continue
+            if not expectations:
+                fail("no expectations recorded for pattern %s" % p)
+            matches_any = True
+            kinds = ["dep_variants", "exports_dep_variants"]
+            for key in expectations.keys():
+                if key not in kinds:
+                    fail("expectation kind %s is unsupported; supported kinds: %s" % (key, kinds))
+
+            for kind in kinds:
+                if kind in expectations:
+                    match(
+                        env,
+                        kind = kind,
+                        patterns = expectations[kind],
+                        labels = getattr(info, kind),
+                    )
+
+        if not matches_any:
+            fail("pattern %s did not match any labels from %s" % (p, infos.keys()))
+
+    return analysistest.end(env)
+
+def expectations(expectations_dict):
+    """
+    Use it as an input to the crate_names_test.expectations attribute below.
+
+    A pattern is a string. It matches a label if it's a suffix of the label,
+    for example the pattern ":a" matches the label "//foo:a".
+
+    A dependency key is a string, either "dep_variants", or "exports_dep_variants".
+
+    A dependency dict is a dictionary where keys are dependency keys and
+    values are lists of patterns. A dependency dict matches a target if
+    its deps and exported deps patterns match exactly the deps and exported
+    deps of the targets.
+
+    An expectations dict D is a dictionary from patterns to dependency dicts.
+    It matches a target if each key K matches some transitive dependency T,
+    and its dependency dict D[K] matches T.
+
+    For example, the dependency dict:
+
+    {
+      ":b": {"dep_variants": [":b"], "exports_dep_variants": []},
+      ":a": {"dep_variants": [":a"], "exports_dep_variants": [":b"]},
+    }
+
+
+    matches a target that has:
+    * a transitive dependency :b with no exports, and
+    * a transitive dependency matching :a: that exports a target matching :b.
+
+    proto_library(name = "b")
+    proto_library(name = "a", deps = ["b"], exports = ["b"])
+
+    Args:
+      expectations_dict: (dict(string, dict(string, list(string)))) an expectations dict.
+
+    Returns:
+        Returns a JSON-encoded string of the expectations.
+    """
+
+    def check_pattern(context, p):
+        if type(p) != "string":
+            fail("%s: expected a string, found %s of type %s" % (context, p, type(p)))
+
+    def check_list_of_patterns(context, ps):
+        if type(ps) != "list":
+            fail("%s: expected a list of patterns, found %s of type %s" % (context, ps, type(ps)))
+        for p in ps:
+            check_pattern(context, p)
+
+    def check_dep_dict(context, d):
+        if type(d) != "dict":
+            fail("%s: expected a dict, found %s of type %s" % (context, d, type(d)))
+        keys = ["dep_variants", "exports_dep_variants"]
+        for k in d.keys():
+            if k not in keys:
+                fail("%s: expected a key from %s, found %s" % (context, keys, k))
+        for k, la in d.items():
+            check_list_of_patterns("%s: key %s" % (context, k), la)
+
+    def check_expectations_dict(d):
+        if type(d) != "dict":
+            fail("expected a dict, found %s of type %s" % (d, type(d)))
+
+        context = "while checking expectations dict %s" % (d)
+        for p, dep_dict in d.items():
+            check_pattern(context, p)
+            check_dep_dict("%s for pattern %s" % (context, p), dep_dict)
+
+    check_expectations_dict(expectations_dict)
+
+    return json.encode(expectations_dict)
+
+crate_names_test = analysistest.make(
+    _crate_names_test_impl,
+    attrs = {
+        "expectations": attr.string(
+            doc = """The result of expectations().""",
+        ),
+    },
+)
+
+def _test_crate_names():
+    proto_library(
+        name = "e",
+        srcs = ["e.proto"],
+    )
+
+    proto_library(
+        name = "d",
+        srcs = ["d.proto"],
+    )
+
+    proto_library(
+        name = "c",
+        srcs = ["c.proto"],
+        deps = ["d", "e"],
+        exports = ["d"],
+    )
+
+    proto_library(
+        name = "c2",
+        srcs = [],
+        deps = ["c"],
+    )
+
+    proto_library(
+        name = "b",
+        srcs = ["b.proto"],
+        deps = ["c2"],
+        exports = ["c"],
+    )
+
+    proto_library(
+        name = "a",
+        srcs = ["a.proto"],
+        deps = ["b"],
+    )
+
+    rust_cc_proto_library(
+        name = "a_rust_proto",
+        deps = ["a"],
+    )
+
+    attach_crate_names_aspect(
+        name = "a_rust_proto_with_crate_names",
+        dep = "a_rust_proto",
+    )
+
+    crate_names_test(
+        name = "a_rust_proto_crate_names_test",
+        target_under_test = "a_rust_proto_with_crate_names",
+        expectations = expectations({
+            ":e": {"dep_variants": [":e"], "exports_dep_variants": []},
+            ":d": {"dep_variants": [":d"], "exports_dep_variants": []},
+            # c exports d but not e
+            ":c": {"dep_variants": [":c"], "exports_dep_variants": [":d"]},
+            # the srcsless c2 forwards the exports of c
+            ":c2": {"dep_variants": [":c"], "exports_dep_variants": [":d"]},
+            # b exports c -- reachable via the srcsless c2 and d -- exported by c.
+            ":b": {"dep_variants": [":b"], "exports_dep_variants": [":c", ":d"]},
+            # a has no exports.
+            ":a": {"dep_variants": [":a"], "exports_dep_variants": []},
+        }),
+    )
+
+    native.test_suite(
+        name = "crate_names_tests",
+        tests = [
+            ":a_rust_proto_crate_names_test",
+        ],
+    )
+
 def rust_proto_library_unit_test(name):
     """Sets up rust_proto_library_unit_test test suite.
 
@@ -236,6 +504,7 @@ def rust_proto_library_unit_test(name):
     _test_cc_aspect()
     _test_cc_outputs()
     _test_upb_outputs()
+    _test_crate_names()
 
     native.test_suite(
         name = name,
@@ -244,5 +513,6 @@ def rust_proto_library_unit_test(name):
             ":rust_cc_aspect_test",
             ":rust_cc_outputs_test",
             ":rust_upb_outputs_test",
+            ":crate_names_tests",
         ],
     )

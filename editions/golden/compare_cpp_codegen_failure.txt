@@ -6,7 +6,8 @@
 -    // optional int32 int32_field = 1;
 +    // int32 int32_field = 1;
      {::_pbi::TcParser::FastV32S1,
-      {8, 0, 0, PROTOBUF_FIELD_OFFSET(SimpleProto3, _impl_.int32_field_)}},
+      {8, 0, 0,
+       PROTOBUF_FIELD_OFFSET(SimpleProto3, _impl_.int32_field_)}},
    }}, {{
      65535, 65535
    }}, {{
@@ -21,7 +22,7 @@
    cached_has_bits = this_._impl_._has_bits_[0];
 -  // optional int32 int32_field = 1;
 +  // int32 int32_field = 1;
-   if ((cached_has_bits & 0x00000001U) != 0) {
+   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
      target =
          ::proto2::internal::WireFormatLite::WriteInt32ToArrayWithField<1>(
 @@ @@
@@ -31,26 +32,8 @@
 -    // optional int32 int32_field = 1;
 +    // int32 int32_field = 1;
      cached_has_bits = this_._impl_._has_bits_[0];
-     if ((cached_has_bits & 0x00000001U) != 0) {
+     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
        total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-@@ @@
-   (void)helper;
- 
-   cached_has_bits = this_._impl_._has_bits_[0];
--  // optional int32 int32_field = 1;
-+  // int32 int32_field = 1;
-   if ((cached_has_bits & 0x00000001U) != 0) {
-     helper.AddInt32();
-   }
-@@ @@
-   target = ::_pbi::v2::codegen::WritePoisonHeaderToArray(target, stream);
- 
-   cached_has_bits = this_._impl_._has_bits_[0];
--  // optional int32 int32_field = 1;
-+  // int32 int32_field = 1;
-   if ((cached_has_bits & 0x00000001U) != 0) {
-     target = builder.WriteInt32(target, stream, 1,
-                                             this_._internal_int32_field());
 [  FAILED  ] third_party/protobuf/editions/golden/simple_proto3.pb.cc
 [ RUN      ] third_party/protobuf/editions/golden/simple_proto3.pb.h
 @@ @@
@@ -59,9 +42,9 @@
    };
 -  // optional int32 int32_field = 1;
 +  // int32 int32_field = 1;
-   bool has_int32_field() const;
+   [[nodiscard]] bool has_int32_field()
+       const;
    void clear_int32_field() ;
-   ::int32_t int32_field() const;
 @@ @@
  
  // SimpleProto3
@@ -69,7 +52,7 @@
 -// optional int32 int32_field = 1;
 +// int32 int32_field = 1;
  inline bool SimpleProto3::has_int32_field() const {
-   bool value = (_impl_._has_bits_[0] & 0x00000001U) != 0;
+   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000001U);
    return value;
 [  FAILED  ] third_party/protobuf/editions/golden/simple_proto3.pb.h
 [ RUN      ] third_party/protobuf/editions/golden/simple_proto3.proto.static_reflection.h

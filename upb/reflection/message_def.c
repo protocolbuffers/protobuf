@@ -20,10 +20,15 @@
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_descriptor/internal/encode.h"
 #include "upb/mini_descriptor/internal/modifiers.h"
+#include "upb/mini_table/enum.h"
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/file.h"
 #include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
+#include "upb/reflection/def_type.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 #include "upb/reflection/internal/def_builder.h"
+#include "upb/reflection/internal/def_pool.h"
 #include "upb/reflection/internal/desc_state.h"
 #include "upb/reflection/internal/enum_def.h"
 #include "upb/reflection/internal/extension_range.h"
@@ -37,8 +42,8 @@
 #include "upb/port/def.inc"
 
 struct upb_MessageDef {
-  UPB_ALIGN_AS(8) const UPB_DESC(MessageOptions*) opts;
-  const UPB_DESC(FeatureSet*) resolved_features;
+  UPB_ALIGN_AS(8) const google_protobuf_MessageOptions* opts;
+  const google_protobuf_FeatureSet* resolved_features;
   const upb_MiniTable* layout;
   const upb_FileDef* file;
   const upb_MessageDef* containing_type;
@@ -76,6 +81,7 @@ struct upb_MessageDef {
   bool in_message_set;
   bool is_sorted;
   upb_WellKnown well_known_type;
+  google_protobuf_SymbolVisibility visibility;
 };
 
 static void assign_msg_wellknowntype(upb_MessageDef* m) {
@@ -135,8 +141,7 @@ bool _upb_MessageDef_IsValidExtensionNumber(const upb_MessageDef* m, int n) {
   return false;
 }
 
-const UPB_DESC(MessageOptions) *
-    upb_MessageDef_Options(const upb_MessageDef* m) {
+const google_protobuf_MessageOptions* upb_MessageDef_Options(const upb_MessageDef* m) {
   return m->opts;
 }
 
@@ -144,8 +149,8 @@ bool upb_MessageDef_HasOptions(const upb_MessageDef* m) {
   return m->opts != (void*)kUpbDefOptDefault;
 }
 
-const UPB_DESC(FeatureSet) *
-    upb_MessageDef_ResolvedFeatures(const upb_MessageDef* m) {
+const google_protobuf_FeatureSet* upb_MessageDef_ResolvedFeatures(
+    const upb_MessageDef* m) {
   return m->resolved_features;
 }
 
@@ -163,10 +168,6 @@ const upb_MessageDef* upb_MessageDef_ContainingType(const upb_MessageDef* m) {
 
 const char* upb_MessageDef_Name(const upb_MessageDef* m) {
   return _upb_DefBuilder_FullToShort(m->full_name);
-}
-
-upb_Syntax upb_MessageDef_Syntax(const upb_MessageDef* m) {
-  return upb_FileDef_Syntax(m->file);
 }
 
 const upb_FieldDef* upb_MessageDef_FindFieldByNumber(const upb_MessageDef* m,
@@ -323,6 +324,11 @@ upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m) {
   return m->well_known_type;
 }
 
+UPB_API google_protobuf_SymbolVisibility
+upb_MessageDef_Visibility(const upb_MessageDef* m) {
+  return m->visibility;
+}
+
 bool _upb_MessageDef_InMessageSet(const upb_MessageDef* m) {
   return m->in_message_set;
 }
@@ -338,11 +344,11 @@ const upb_OneofDef* upb_MessageDef_FindOneofByName(const upb_MessageDef* m,
 }
 
 bool upb_MessageDef_IsMapEntry(const upb_MessageDef* m) {
-  return UPB_DESC(MessageOptions_map_entry)(m->opts);
+  return google_protobuf_MessageOptions_map_entry(m->opts);
 }
 
 bool upb_MessageDef_IsMessageSet(const upb_MessageDef* m) {
-  return UPB_DESC(MessageOptions_message_set_wire_format)(m->opts);
+  return google_protobuf_MessageOptions_message_set_wire_format(m->opts);
 }
 
 static upb_MiniTable* _upb_MessageDef_MakeMiniTable(upb_DefBuilder* ctx,
@@ -376,7 +382,7 @@ void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m) {
     if (upb_FieldDef_Type(ext) == kUpb_FieldType_Message &&
         upb_FieldDef_Label(ext) == kUpb_Label_Optional &&
         upb_FieldDef_MessageSubDef(ext) == m &&
-        UPB_DESC(MessageOptions_message_set_wire_format)(
+        google_protobuf_MessageOptions_message_set_wire_format(
             upb_MessageDef_Options(upb_FieldDef_ContainingType(ext)))) {
       m->in_message_set = true;
     }
@@ -413,11 +419,11 @@ void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
   bool skip_json_conflicts =
-      UPB_DESC(MessageOptions_deprecated_legacy_json_field_conflicts)(
+      google_protobuf_MessageOptions_deprecated_legacy_json_field_conflicts(
           upb_MessageDef_Options(m));
   if (!skip_json_conflicts && strcmp(shortname, json_name) != 0 &&
-      UPB_DESC(FeatureSet_json_format)(m->resolved_features) ==
-          UPB_DESC(FeatureSet_ALLOW) &&
+      google_protobuf_FeatureSet_json_format(m->resolved_features) ==
+          google_protobuf_FeatureSet_ALLOW &&
       upb_strtable_lookup(&m->ntof, json_name, &v)) {
     _upb_DefBuilder_Errf(
         ctx, "duplicate json_name for (%s) with original field name (%s)",
@@ -473,7 +479,7 @@ void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
     _upb_MessageDef_LinkMiniTable(ctx, upb_MessageDef_NestedMessage(m, i));
   }
 
-  if (ctx->layout) return;
+  if (ctx->layout || ctx->platform != kUpb_MiniTablePlatform_Native) return;
 
   for (int i = 0; i < m->field_count; i++) {
     const upb_FieldDef* f = upb_MessageDef_Field(m, i);
@@ -486,9 +492,6 @@ void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
     upb_MiniTableField* mt_f =
         (upb_MiniTableField*)&m->layout->UPB_PRIVATE(fields)[layout_index];
     if (sub_m) {
-      if (!mt->UPB_PRIVATE(subs)) {
-        _upb_DefBuilder_Errf(ctx, "unexpected submsg for (%s)", m->full_name);
-      }
       UPB_ASSERT(mt_f);
       UPB_ASSERT(sub_m->layout);
       if (UPB_UNLIKELY(!upb_MiniTable_SetSubMessage(mt, mt_f, sub_m->layout))) {
@@ -644,7 +647,7 @@ bool upb_MessageDef_MiniDescriptorEncode(const upb_MessageDef* m, upb_Arena* a,
 
   if (upb_MessageDef_IsMapEntry(m)) {
     if (!_upb_MessageDef_EncodeMap(&s, m, a)) return false;
-  } else if (UPB_DESC(MessageOptions_message_set_wire_format)(m->opts)) {
+  } else if (google_protobuf_MessageOptions_message_set_wire_format(m->opts)) {
     if (!_upb_MessageDef_EncodeMessageSet(&s, m, a)) return false;
   } else {
     if (!_upb_MessageDef_EncodeMessage(&s, m, a)) return false;
@@ -670,14 +673,14 @@ static upb_StringView* _upb_ReservedNames_New(upb_DefBuilder* ctx, int n,
 }
 
 static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
-                          const UPB_DESC(DescriptorProto*) msg_proto,
-                          const UPB_DESC(FeatureSet*) parent_features,
+                          const google_protobuf_DescriptorProto* msg_proto,
+                          const google_protobuf_FeatureSet* parent_features,
                           const upb_MessageDef* containing_type,
                           upb_MessageDef* m) {
-  const UPB_DESC(OneofDescriptorProto)* const* oneofs;
-  const UPB_DESC(FieldDescriptorProto)* const* fields;
-  const UPB_DESC(DescriptorProto_ExtensionRange)* const* ext_ranges;
-  const UPB_DESC(DescriptorProto_ReservedRange)* const* res_ranges;
+  const google_protobuf_OneofDescriptorProto* const* oneofs;
+  const google_protobuf_FieldDescriptorProto* const* fields;
+  const google_protobuf_DescriptorProto_ExtensionRange* const* ext_ranges;
+  const google_protobuf_DescriptorProto_ReservedRange* const* res_ranges;
   const upb_StringView* res_names;
   size_t n_oneof, n_field, n_enum, n_ext, n_msg;
   size_t n_ext_range, n_res_range, n_res_name;
@@ -685,7 +688,7 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
 
   UPB_DEF_SET_OPTIONS(m->opts, DescriptorProto, MessageOptions, msg_proto);
   m->resolved_features = _upb_DefBuilder_ResolveFeatures(
-      ctx, parent_features, UPB_DESC(MessageOptions_features)(m->opts));
+      ctx, parent_features, google_protobuf_MessageOptions_features(m->opts));
 
   // Must happen before _upb_DefBuilder_Add()
   m->file = _upb_DefBuilder_File(ctx);
@@ -693,18 +696,16 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   m->containing_type = containing_type;
   m->is_sorted = true;
 
-  name = UPB_DESC(DescriptorProto_name)(msg_proto);
+  name = google_protobuf_DescriptorProto_name(msg_proto);
 
   m->full_name = _upb_DefBuilder_MakeFullName(ctx, prefix, name);
   _upb_DefBuilder_Add(ctx, m->full_name, _upb_DefType_Pack(m, UPB_DEFTYPE_MSG));
 
-  oneofs = UPB_DESC(DescriptorProto_oneof_decl)(msg_proto, &n_oneof);
-  fields = UPB_DESC(DescriptorProto_field)(msg_proto, &n_field);
-  ext_ranges =
-      UPB_DESC(DescriptorProto_extension_range)(msg_proto, &n_ext_range);
-  res_ranges =
-      UPB_DESC(DescriptorProto_reserved_range)(msg_proto, &n_res_range);
-  res_names = UPB_DESC(DescriptorProto_reserved_name)(msg_proto, &n_res_name);
+  oneofs = google_protobuf_DescriptorProto_oneof_decl(msg_proto, &n_oneof);
+  fields = google_protobuf_DescriptorProto_field(msg_proto, &n_field);
+  ext_ranges = google_protobuf_DescriptorProto_extension_range(msg_proto, &n_ext_range);
+  res_ranges = google_protobuf_DescriptorProto_reserved_range(msg_proto, &n_res_range);
+  res_names = google_protobuf_DescriptorProto_reserved_name(msg_proto, &n_res_name);
 
   bool ok = upb_inttable_init(&m->itof, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
@@ -723,7 +724,7 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
                                  m->full_name, m, &m->is_sorted);
 
   // Message Sets may not contain fields.
-  if (UPB_UNLIKELY(UPB_DESC(MessageOptions_message_set_wire_format)(m->opts))) {
+  if (UPB_UNLIKELY(google_protobuf_MessageOptions_message_set_wire_format(m->opts))) {
     if (UPB_UNLIKELY(n_field > 0)) {
       _upb_DefBuilder_Errf(ctx, "invalid message set (%s)", m->full_name);
     }
@@ -746,32 +747,32 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   assign_msg_wellknowntype(m);
   if (!upb_inttable_compact(&m->itof, ctx->arena)) _upb_DefBuilder_OomErr(ctx);
 
-  const UPB_DESC(EnumDescriptorProto)* const* enums =
-      UPB_DESC(DescriptorProto_enum_type)(msg_proto, &n_enum);
+  const google_protobuf_EnumDescriptorProto* const* enums =
+      google_protobuf_DescriptorProto_enum_type(msg_proto, &n_enum);
   m->nested_enum_count = n_enum;
   m->nested_enums =
       _upb_EnumDefs_New(ctx, n_enum, enums, m->resolved_features, m);
 
-  const UPB_DESC(FieldDescriptorProto)* const* exts =
-      UPB_DESC(DescriptorProto_extension)(msg_proto, &n_ext);
+  const google_protobuf_FieldDescriptorProto* const* exts =
+      google_protobuf_DescriptorProto_extension(msg_proto, &n_ext);
   m->nested_ext_count = n_ext;
   m->nested_exts = _upb_Extensions_New(ctx, n_ext, exts, m->resolved_features,
                                        m->full_name, m);
 
-  const UPB_DESC(DescriptorProto)* const* msgs =
-      UPB_DESC(DescriptorProto_nested_type)(msg_proto, &n_msg);
+  const google_protobuf_DescriptorProto* const* msgs =
+      google_protobuf_DescriptorProto_nested_type(msg_proto, &n_msg);
   m->nested_msg_count = n_msg;
   m->nested_msgs =
       _upb_MessageDefs_New(ctx, n_msg, msgs, m->resolved_features, m);
+
+  m->visibility = google_protobuf_DescriptorProto_visibility(msg_proto);
 }
 
 // Allocate and initialize an array of |n| message defs.
-upb_MessageDef* _upb_MessageDefs_New(upb_DefBuilder* ctx, int n,
-                                     const UPB_DESC(DescriptorProto*)
-                                         const* protos,
-                                     const UPB_DESC(FeatureSet*)
-                                         parent_features,
-                                     const upb_MessageDef* containing_type) {
+upb_MessageDef* _upb_MessageDefs_New(
+    upb_DefBuilder* ctx, int n, const google_protobuf_DescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features,
+    const upb_MessageDef* containing_type) {
   _upb_DefType_CheckPadding(sizeof(upb_MessageDef));
 
   const char* name = containing_type ? containing_type->full_name

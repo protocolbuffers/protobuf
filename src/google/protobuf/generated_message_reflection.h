@@ -25,6 +25,7 @@
 #include "absl/log/absl_check.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_enum_reflection.h"
+#include "google/protobuf/has_bits.h"
 #include "google/protobuf/unknown_field_set.h"
 
 // Must be included last.
@@ -116,26 +117,13 @@ struct ReflectionSchema {
   uint32_t GetObjectSize() const { return static_cast<uint32_t>(object_size_); }
 
   bool InRealOneof(const FieldDescriptor* field) const {
-    return field->real_containing_oneof();
-  }
-
-  // Offset of a non-oneof field.  Getting a field offset is slightly more
-  // efficient when we know statically that it is not a oneof field.
-  uint32_t GetFieldOffsetNonOneof(const FieldDescriptor* field) const {
-    ABSL_DCHECK(!InRealOneof(field));
-    return OffsetValue(offsets_[field->index()], field->type());
+    return field->real_containing_oneof() != nullptr;
   }
 
   // Offset of any field.
+  template <typename Type = void>
   uint32_t GetFieldOffset(const FieldDescriptor* field) const {
-    if (InRealOneof(field)) {
-      size_t offset =
-          static_cast<size_t>(field->containing_type()->field_count()) +
-          field->containing_oneof()->index();
-      return OffsetValue(offsets_[offset], field->type());
-    } else {
-      return GetFieldOffsetNonOneof(field);
-    }
+    return OffsetValue<Type>(offsets_[field->index()], field->type());
   }
 
   bool IsFieldInlined(const FieldDescriptor* field) const {
@@ -162,7 +150,7 @@ struct ReflectionSchema {
   // Bit index within the bit array of hasbits.  Bit order is low-to-high.
   uint32_t HasBitIndex(const FieldDescriptor* field) const {
     ABSL_DCHECK(!field->is_extension());
-    if (has_bits_offset_ == -1) return static_cast<uint32_t>(-1);
+    if (has_bits_offset_ == -1) return static_cast<uint32_t>(kNoHasbit);
     ABSL_DCHECK(HasHasbits());
     return has_bit_indices_[field->index()];
   }
@@ -171,21 +159,6 @@ struct ReflectionSchema {
   uint32_t HasBitsOffset() const {
     ABSL_DCHECK(HasHasbits());
     return static_cast<uint32_t>(has_bits_offset_);
-  }
-
-  bool HasInlinedString() const { return inlined_string_donated_offset_ != -1; }
-
-  // Bit index within the bit array of _inlined_string_donated_.  Bit order is
-  // low-to-high.
-  uint32_t InlinedStringIndex(const FieldDescriptor* field) const {
-    ABSL_DCHECK(HasInlinedString());
-    return inlined_string_indices_[field->index()];
-  }
-
-  // Byte offset of the _inlined_string_donated_ array.
-  uint32_t InlinedStringDonatedOffset() const {
-    ABSL_DCHECK(HasInlinedString());
-    return static_cast<uint32_t>(inlined_string_donated_offset_);
   }
 
   // Whether this message has an ExtensionSet.
@@ -209,7 +182,7 @@ struct ReflectionSchema {
   // of the underlying data depends on the field's type.
   const void* GetFieldDefault(const FieldDescriptor* field) const {
     return reinterpret_cast<const uint8_t*>(default_instance_) +
-           OffsetValue(offsets_[field->index()], field->type());
+           OffsetValue<void>(offsets_[field->index()], field->type());
   }
 
   // Returns true if the field is implicitly backed by LazyField.
@@ -254,14 +227,18 @@ struct ReflectionSchema {
   int oneof_case_offset_;
   int object_size_;
   int weak_field_map_offset_;
-  const uint32_t* inlined_string_indices_;
-  int inlined_string_donated_offset_;
   int split_offset_;
   int sizeof_split_;
 
   // We tag offset values to provide additional data about fields (such as
   // "unused" or "lazy" or "inlined").
+  template <typename Type>
   static uint32_t OffsetValue(uint32_t v, FieldDescriptor::Type type) {
+    if constexpr (!std::is_void_v<Type>) {
+      // If the type is passed, statically use the alignment for the mask.
+      // Faster than checking `type`.
+      return v & ~kSplitFieldOffsetMask & ~(alignof(Type) - 1);
+    }
     if (type == FieldDescriptor::TYPE_MESSAGE ||
         type == FieldDescriptor::TYPE_STRING ||
         type == FieldDescriptor::TYPE_BYTES) {
@@ -371,7 +348,7 @@ const std::string& NameOfDenseEnum(int v) {
   static_assert(max_val - min_val >= 0, "Too many enums between min and max.");
   static DenseEnumCacheInfo deci = {/* atomic ptr */ {}, min_val, max_val,
                                     descriptor_fn};
-  const std::string** cache = deci.cache.load(std::memory_order_acquire );
+  const std::string** cache = deci.cache.load(std::memory_order_acquire);
   if (ABSL_PREDICT_TRUE(cache != nullptr)) {
     if (ABSL_PREDICT_TRUE(v >= min_val && v <= max_val)) {
       return *cache[v - min_val];

@@ -73,6 +73,7 @@ public class TypeRegistry {
      * Adds a message type and all types defined in the same .proto file as well as all transitively
      * imported .proto files to this {@link Builder}.
      */
+    @CanIgnoreReturnValue
     public Builder add(Descriptor messageType) {
       if (types == null) {
         throw new IllegalStateException("A TypeRegistry.Builder can only be used once.");
@@ -85,6 +86,7 @@ public class TypeRegistry {
      * Adds message types and all types defined in the same .proto file as well as all transitively
      * imported .proto files to this {@link Builder}.
      */
+    @CanIgnoreReturnValue
     public Builder add(Iterable<Descriptor> messageTypes) {
       if (types == null) {
         throw new IllegalStateException("A TypeRegistry.Builder can only be used once.");

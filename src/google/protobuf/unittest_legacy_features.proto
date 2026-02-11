@@ -7,11 +7,17 @@
 
 // Test that features with legacy descriptor helpers get properly converted.
 
-edition = "2023";
+edition = "2024";
 
 package legacy_features_unittest;
 
+option java_outer_classname = "UnittestLegacyFeatures";
+
+import option "google/protobuf/java_features.proto";
+
 message TestEditionsMessage {
+  option features.(pb.java).nest_in_file_class = YES;
+
   int32 required_field = 1 [features.field_presence = LEGACY_REQUIRED];
   TestEditionsMessage delimited_field = 2
       [features.message_encoding = DELIMITED];

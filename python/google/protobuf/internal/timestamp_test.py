@@ -66,6 +66,25 @@ class TimestampTest(unittest.TestCase):
         optional_timestamp=datetime.datetime.today()
     )
 
+  def test_repeated_timestamp_construction(self):
+    message = well_known_types_test_pb2.WKTMessage(
+        repeated_ts=[
+            datetime.datetime(2025, 1, 1),
+            datetime.datetime(1970, 1, 1),
+            timestamp_pb2.Timestamp(),
+        ]
+    )
+    self.assertEqual(len(message.repeated_ts), 3)
+    self.assertEqual(
+        datetime.datetime(2025, 1, 1),
+        timestamp.to_datetime((message.repeated_ts[0])),
+    )
+    self.assertEqual(
+        datetime.datetime(1970, 1, 1),
+        timestamp.to_datetime((message.repeated_ts[1])),
+    )
+    self.assertEqual(timestamp_pb2.Timestamp(), message.repeated_ts[2])
+
   def test_timestamp_sub_annotation(self):
     t1 = timestamp_pb2.Timestamp()
     t2 = timestamp_pb2.Timestamp()
@@ -89,6 +108,11 @@ class TimestampTest(unittest.TestCase):
     self.assertEqual(ts + td, td + ts)
     # Timestamp + Duration and Duration + Timestamp
     self.assertEqual(ts + msg.optional_duration, msg.optional_duration + ts)
+
+  def test_assign_duration_to_timestamp(self):
+    message = well_known_types_test_pb2.WKTMessage()
+    with self.assertRaises((TypeError)):
+      message.optional_timestamp = datetime.timedelta(microseconds=123)
 
 
 if __name__ == '__main__':

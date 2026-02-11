@@ -69,8 +69,10 @@ def fuzzing_py_install_deps():
 """
 
 _build_file = """
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+load("@rules_python//python:py_runtime.bzl", "py_runtime")
 load("@rules_python//python:py_runtime_pair.bzl", "py_runtime_pair")
 
 cc_library(
@@ -266,6 +268,26 @@ system_python = repository_rule(
     implementation = _system_python_impl,
     local = True,
     attrs = {
-        "minimum_python_version": attr.string(default = "3.9"),
+        "minimum_python_version": attr.string(default = "3.10"),
+    },
+)
+
+def _system_python_extension(ctx):
+    for mod in ctx.modules:
+        for py in mod.tags.find:
+            system_python(
+                name = py.name,
+                minimum_python_version = py.minimum,
+            )
+
+find = tag_class(attrs = {
+    "name": attr.string(doc = "Supported versions of python to find"),
+    "minimum": attr.string(),
+})
+
+system_python_extension = module_extension(
+    implementation = _system_python_extension,
+    tag_classes = {
+        "find": find,
     },
 )

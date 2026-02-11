@@ -13,7 +13,7 @@ final class ExtensionSchemas {
   private static final ExtensionSchema<?> FULL_SCHEMA = loadSchemaForFullRuntime();
 
   private static ExtensionSchema<?> loadSchemaForFullRuntime() {
-    if (Protobuf.assumeLiteRuntime) {
+    if (Android.assumeLiteRuntime) {
       return null;
     }
     try {

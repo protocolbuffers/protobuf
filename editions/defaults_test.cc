@@ -16,6 +16,8 @@
 #include "google/protobuf/cpp_features.pb.h"
 #include "editions/defaults_test_embedded.h"
 #include "editions/defaults_test_embedded_base64.h"
+#include "editions/defaults_test_embedded_decimal_array.h"
+#include "editions/defaults_test_embedded_hex_array.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/test_textproto.h"
@@ -49,7 +51,7 @@ absl::StatusOr<FeatureSetDefaults> ReadDefaults(absl::string_view name) {
 TEST(DefaultsTest, Check2023) {
   auto defaults = ReadDefaults("test_defaults_2023");
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults().size(), 3);
+  ASSERT_EQ(defaults->defaults().size(), 4);
   ASSERT_EQ(defaults->minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults->maximum_edition(), EDITION_2023);
 
@@ -68,7 +70,7 @@ TEST(DefaultsTest, Check2023) {
 TEST(DefaultsTest, CheckFuture) {
   auto defaults = ReadDefaults("test_defaults_future");
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults().size(), 5);
+  ASSERT_EQ(defaults->defaults().size(), 6);
   ASSERT_EQ(defaults->minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults->maximum_edition(), EDITION_99997_TEST_ONLY);
 
@@ -90,10 +92,16 @@ TEST(DefaultsTest, CheckFuture) {
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::VALUE3);
-  EXPECT_EQ(defaults->defaults()[4].edition(), EDITION_99997_TEST_ONLY);
-  EXPECT_EQ(defaults->defaults()[4].overridable_features().field_presence(),
-            FeatureSet::EXPLICIT);
+  EXPECT_EQ(defaults->defaults()[4].edition(), EDITION_UNSTABLE);
   EXPECT_EQ(defaults->defaults()[4]
+                .overridable_features()
+                .GetExtension(pb::test)
+                .new_unstable_feature(),
+            pb::UNSTABLE2);
+  EXPECT_EQ(defaults->defaults()[5].edition(), EDITION_99997_TEST_ONLY);
+  EXPECT_EQ(defaults->defaults()[5].overridable_features().field_presence(),
+            FeatureSet::EXPLICIT);
+  EXPECT_EQ(defaults->defaults()[5]
                 .overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
@@ -103,7 +111,7 @@ TEST(DefaultsTest, CheckFuture) {
 TEST(DefaultsTest, CheckFarFuture) {
   auto defaults = ReadDefaults("test_defaults_far_future");
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults().size(), 7);
+  ASSERT_EQ(defaults->defaults().size(), 8);
   ASSERT_EQ(defaults->minimum_edition(), EDITION_99997_TEST_ONLY);
   ASSERT_EQ(defaults->maximum_edition(), EDITION_99999_TEST_ONLY);
 
@@ -125,18 +133,24 @@ TEST(DefaultsTest, CheckFarFuture) {
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::VALUE3);
-  EXPECT_EQ(defaults->defaults()[4].edition(), EDITION_99997_TEST_ONLY);
-  EXPECT_EQ(defaults->defaults()[4].overridable_features().field_presence(),
-            FeatureSet::EXPLICIT);
+  EXPECT_EQ(defaults->defaults()[4].edition(), EDITION_UNSTABLE);
   EXPECT_EQ(defaults->defaults()[4]
+                .overridable_features()
+                .GetExtension(pb::test)
+                .new_unstable_feature(),
+            pb::UNSTABLE2);
+  EXPECT_EQ(defaults->defaults()[5].edition(), EDITION_99997_TEST_ONLY);
+  EXPECT_EQ(defaults->defaults()[5].overridable_features().field_presence(),
+            FeatureSet::EXPLICIT);
+  EXPECT_EQ(defaults->defaults()[5]
                 .overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::VALUE4);
-  EXPECT_EQ(defaults->defaults()[5].edition(), EDITION_99998_TEST_ONLY);
-  EXPECT_EQ(defaults->defaults()[5].overridable_features().field_presence(),
+  EXPECT_EQ(defaults->defaults()[6].edition(), EDITION_99998_TEST_ONLY);
+  EXPECT_EQ(defaults->defaults()[6].overridable_features().field_presence(),
             FeatureSet::EXPLICIT);
-  EXPECT_EQ(defaults->defaults()[5]
+  EXPECT_EQ(defaults->defaults()[6]
                 .overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
@@ -145,10 +159,10 @@ TEST(DefaultsTest, CheckFarFuture) {
 
 TEST(DefaultsTest, Embedded) {
   FeatureSetDefaults defaults;
-  ASSERT_TRUE(defaults.ParseFromArray(DEFAULTS_TEST_EMBEDDED,
-                                      sizeof(DEFAULTS_TEST_EMBEDDED) - 1))
+  ASSERT_TRUE(defaults.ParseFromString(absl::string_view(
+      DEFAULTS_TEST_EMBEDDED, sizeof(DEFAULTS_TEST_EMBEDDED) - 1)))
       << "Could not parse embedded data";
-  ASSERT_EQ(defaults.defaults().size(), 3);
+  ASSERT_EQ(defaults.defaults().size(), 4);
   ASSERT_EQ(defaults.minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults.maximum_edition(), EDITION_2023);
 
@@ -172,7 +186,49 @@ TEST(DefaultsTest, EmbeddedBase64) {
                         sizeof(DEFAULTS_TEST_EMBEDDED_BASE64) - 1},
       &data));
   ASSERT_TRUE(defaults.ParseFromString(data));
-  ASSERT_EQ(defaults.defaults().size(), 3);
+  ASSERT_EQ(defaults.defaults().size(), 4);
+  ASSERT_EQ(defaults.minimum_edition(), EDITION_2023);
+  ASSERT_EQ(defaults.maximum_edition(), EDITION_2023);
+
+  EXPECT_EQ(defaults.defaults()[0].edition(), EDITION_LEGACY);
+  EXPECT_EQ(defaults.defaults()[1].edition(), EDITION_PROTO3);
+  EXPECT_EQ(defaults.defaults()[2].edition(), EDITION_2023);
+  EXPECT_EQ(defaults.defaults()[2].overridable_features().field_presence(),
+            FeatureSet::EXPLICIT);
+  EXPECT_EQ(defaults.defaults()[2]
+                .overridable_features()
+                .GetExtension(pb::test)
+                .file_feature(),
+            pb::VALUE3);
+}
+
+TEST(DefaultsTest, EmbeddedDecimalArray) {
+  FeatureSetDefaults defaults;
+  ASSERT_TRUE(defaults.ParseFromArray(kDefaultTestEmbeddedDecimalArray.data(),
+                                      kDefaultTestEmbeddedDecimalArray.size()))
+      << "Could not parse embedded data";
+  ASSERT_EQ(defaults.defaults().size(), 4);
+  ASSERT_EQ(defaults.minimum_edition(), EDITION_2023);
+  ASSERT_EQ(defaults.maximum_edition(), EDITION_2023);
+
+  EXPECT_EQ(defaults.defaults()[0].edition(), EDITION_LEGACY);
+  EXPECT_EQ(defaults.defaults()[1].edition(), EDITION_PROTO3);
+  EXPECT_EQ(defaults.defaults()[2].edition(), EDITION_2023);
+  EXPECT_EQ(defaults.defaults()[2].overridable_features().field_presence(),
+            FeatureSet::EXPLICIT);
+  EXPECT_EQ(defaults.defaults()[2]
+                .overridable_features()
+                .GetExtension(pb::test)
+                .file_feature(),
+            pb::VALUE3);
+}
+
+TEST(DefaultsTest, EmbeddedHexArray) {
+  FeatureSetDefaults defaults;
+  ASSERT_TRUE(defaults.ParseFromArray(kDefaultTestEmbeddedHexArray.data(),
+                                      kDefaultTestEmbeddedHexArray.size()))
+      << "Could not parse embedded data";
+  ASSERT_EQ(defaults.defaults().size(), 4);
   ASSERT_EQ(defaults.minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults.maximum_edition(), EDITION_2023);
 
@@ -196,7 +252,7 @@ class OverridableDefaultsTest : public ::testing::Test {
   static void SetUpTestSuite() {
     google::protobuf::LinkExtensionReflection(pb::cpp);
     google::protobuf::LinkExtensionReflection(pb::java);
-    DescriptorPool::generated_pool();
+    (void)DescriptorPool::generated_pool();
   }
 };
 
@@ -231,7 +287,7 @@ TEST_F(OverridableDefaultsTest, Proto3) {
 TEST_F(OverridableDefaultsTest, Edition2023) {
   auto feature_defaults = ReadDefaults("protobuf_defaults");
   ASSERT_OK(feature_defaults);
-  ASSERT_GE(feature_defaults->defaults().size(), 3);
+  ASSERT_GE(feature_defaults->defaults().size(), 4);
   auto defaults = feature_defaults->defaults(2);
   ASSERT_EQ(defaults.edition(), EDITION_2023);
 
@@ -245,6 +301,39 @@ TEST_F(OverridableDefaultsTest, Edition2023) {
                 json_format: ALLOW
                 [pb.cpp] { legacy_closed_enum: false string_type: STRING }
                 [pb.java] { legacy_closed_enum: false utf8_validation: DEFAULT }
+              )pb"));
+}
+
+// Lock down that 2024 overridable defaults never change.  Once Edition 2024 has
+// been released this test should never need to be touched.
+TEST_F(OverridableDefaultsTest, Edition2024) {
+  auto feature_defaults = ReadDefaults("protobuf_defaults");
+  ASSERT_OK(feature_defaults);
+  ASSERT_GE(feature_defaults->defaults().size(), 4);
+  auto defaults = feature_defaults->defaults(3);
+  ASSERT_EQ(defaults.edition(), EDITION_2024);
+
+
+  EXPECT_THAT(defaults.overridable_features(), EqualsProto(R"pb(
+                field_presence: EXPLICIT
+                enum_type: OPEN
+                repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW
+                enforce_naming_style: STYLE2024
+                default_symbol_visibility: EXPORT_TOP_LEVEL
+                [pb.cpp] {
+                  legacy_closed_enum: false
+                  string_type: VIEW
+                  enum_name_uses_string_view: true
+                }
+                [pb.java] {
+                  legacy_closed_enum: false
+                  utf8_validation: DEFAULT
+                  large_enum: false
+                  nest_in_file_class: NO
+                }
               )pb"));
 }
 

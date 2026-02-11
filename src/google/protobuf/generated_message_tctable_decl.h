@@ -24,6 +24,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/wire_format_lite.h"
 
 // Must come last:
 #include "google/protobuf/port_def.inc"
@@ -179,9 +180,9 @@ class MapTypeCard {
 
  private:
   uint8_t tag_;
-  bool is_signed_ : 1;
-  bool is_zigzag_ : 1;
-  bool is_utf8_ : 1;
+  uint8_t is_signed_ : 1;
+  uint8_t is_zigzag_ : 1;
+  uint8_t is_utf8_ : 1;
 };
 
 // Make the map entry type card for a specified field type.
@@ -252,8 +253,6 @@ struct MapAuxInfo {
   uint8_t use_lite : 1;
   // If true UTF8 errors cause the parsing to fail.
   uint8_t fail_on_utf8_failure : 1;
-  // If true UTF8 errors are logged, but they are accepted.
-  uint8_t log_debug_utf8_failure : 1;
   // If true the next aux contains the enum validator.
   uint8_t value_is_validated_enum : 1;
 };
@@ -279,7 +278,7 @@ struct alignas(uint64_t) TcParseTableBase {
   uint32_t aux_offset;
 
   const ClassData* class_data;
-  using PostLoopHandler = const char* (*)(MessageLite* msg, const char* ptr,
+  using PostLoopHandler = const char* (*)(MessageLite * msg, const char* ptr,
                                           ParseContext* ctx);
   PostLoopHandler post_loop_handler;
 
@@ -335,7 +334,7 @@ struct alignas(uint64_t) TcParseTableBase {
   // Table entry for fast-path tailcall dispatch handling.
   struct FastFieldEntry {
     // Target function for dispatch:
-    mutable std::atomic<TailCallParseFunc> target_atomic;
+    TailCallParseFunc target_function;
 
     // Field data used during parse:
     TcFieldData bits;
@@ -345,25 +344,14 @@ struct alignas(uint64_t) TcParseTableBase {
 
     // Constant initializes this instance
     constexpr FastFieldEntry(TailCallParseFunc func, TcFieldData bits)
-        : target_atomic(func), bits(bits) {}
+        : target_function(func), bits(bits) {}
 
     // FastFieldEntry is copy-able and assignable, which is intended
     // mainly for testing and debugging purposes.
-    FastFieldEntry(const FastFieldEntry& rhs) noexcept
-        : FastFieldEntry(rhs.target(), rhs.bits) {}
-    FastFieldEntry& operator=(const FastFieldEntry& rhs) noexcept {
-      SetTarget(rhs.target());
-      bits = rhs.bits;
-      return *this;
-    }
+    FastFieldEntry(const FastFieldEntry& rhs) noexcept = default;
+    FastFieldEntry& operator=(const FastFieldEntry& rhs) noexcept = default;
 
-    // Protocol buffer code should use these relaxed accessors.
-    TailCallParseFunc target() const {
-      return target_atomic.load(std::memory_order_relaxed);
-    }
-    void SetTarget(TailCallParseFunc func) const {
-      return target_atomic.store(func, std::memory_order_relaxed);
-    }
+    TailCallParseFunc target() const { return target_function; }
   };
   // There is always at least one table entry.
   const FastFieldEntry* fast_entry(size_t idx) const {

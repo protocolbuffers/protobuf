@@ -1,0 +1,20 @@
+load("@rules_java//java:defs.bzl", "java_test")
+load("//compatibility/smoke:stale_gencode_smoke_test.bzl", "stale_gencode_smoke_test")
+
+stale_gencode_smoke_test("3.0.0")
+
+stale_gencode_smoke_test("3.8.0")
+
+stale_gencode_smoke_test("3.11.0")
+
+stale_gencode_smoke_test("3.19.0")
+
+stale_gencode_smoke_test("3.20.0")
+
+stale_gencode_smoke_test("21.12")  # Patch release chosen because patches on 21.x added CVE fixes.
+
+stale_gencode_smoke_test("25.8")  # Patch release with CVE fixes and the likely final PBJ 3.x release.
+
+stale_gencode_smoke_test("26.0")
+
+stale_gencode_smoke_test("32.1")

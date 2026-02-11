@@ -18,18 +18,21 @@
 #include <cstddef>
 #include <cstdint>
 #include <new>
-#include <optional>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
+
+#if defined(__ARM_FEATURE_CRC32)
+#include <arm_acle.h>
+#endif
 
 #include "absl/base/optimization.h"
 
 
 #include "absl/base/attributes.h"
 #include "absl/base/config.h"
-#include "absl/meta/type_traits.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 
 #if defined(ABSL_HAVE_ADDRESS_SANITIZER)
 #include <sanitizer/asan_interface.h>
@@ -38,6 +41,10 @@
 // must be last
 #include "google/protobuf/port_def.inc"
 
+
+#if defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
+#define PROTOBUF_MESSAGE_GLOBALS
+#endif  // PROTOBUF_ENABLE_STABLE_EXPERIMENTS
 
 namespace google {
 namespace protobuf {
@@ -130,6 +137,18 @@ inline void SetAllocateAtLeastHook(AllocateAtLeastHookFn fn, void* context) {}
 
 #endif  // !NDEBUG && ABSL_HAVE_THREAD_LOCAL && __cpp_inline_variables
 
+// Allocates `size` bytes. This wrapper allows memory allocations to be
+// optimized by the compiler since `operator new` is considered observable.
+inline void* Allocate(size_t size) {
+#if ABSL_HAVE_BUILTIN(__builtin_operator_new)
+  // Allows the compiler to merge or optimize away the allocation even if it
+  // would violate the observability guarantees of ::operator new.
+  return __builtin_operator_new(size);
+#else
+  return ::operator new(size);
+#endif
+}
+
 // Allocates at least `size` bytes. This function follows the c++ language
 // proposal from D0901R10 (http://wg21.link/D0901R10) and will be implemented
 // in terms of the new operator new semantics when available. The allocated
@@ -141,7 +160,7 @@ inline SizedPtr AllocateAtLeast(size_t size) {
     return allocate_at_least_hook(size, allocate_at_least_hook_context);
   }
 #endif  // !NDEBUG && ABSL_HAVE_THREAD_LOCAL && __cpp_inline_variables
-  return {::operator new(size), size};
+  return {Allocate(size), size};
 }
 
 inline void SizedDelete(void* p, size_t size) {
@@ -206,38 +225,38 @@ inline ToRef DownCast(From& f) {
 
 // Looks up the name of `T` via RTTI, if RTTI is available.
 template <typename T>
-inline std::optional<absl::string_view> RttiTypeName() {
+inline absl::optional<absl::string_view> RttiTypeName() {
 #if PROTOBUF_RTTI
   return typeid(T).name();
 #else
-  return std::nullopt;
+  return absl::nullopt;
 #endif
 }
 
 // Helpers for identifying our supported types.
 template <typename T>
 struct is_supported_integral_type
-    : absl::disjunction<std::is_same<T, int32_t>, std::is_same<T, uint32_t>,
-                        std::is_same<T, int64_t>, std::is_same<T, uint64_t>,
-                        std::is_same<T, bool>> {};
+    : std::disjunction<std::is_same<T, int32_t>, std::is_same<T, uint32_t>,
+                       std::is_same<T, int64_t>, std::is_same<T, uint64_t>,
+                       std::is_same<T, bool>> {};
 
 template <typename T>
 struct is_supported_floating_point_type
-    : absl::disjunction<std::is_same<T, float>, std::is_same<T, double>> {};
+    : std::disjunction<std::is_same<T, float>, std::is_same<T, double>> {};
 
 template <typename T>
 struct is_supported_string_type
-    : absl::disjunction<std::is_same<T, std::string>> {};
+    : std::disjunction<std::is_same<T, std::string>> {};
 
 template <typename T>
 struct is_supported_scalar_type
-    : absl::disjunction<is_supported_integral_type<T>,
-                        is_supported_floating_point_type<T>,
-                        is_supported_string_type<T>> {};
+    : std::disjunction<is_supported_integral_type<T>,
+                       is_supported_floating_point_type<T>,
+                       is_supported_string_type<T>> {};
 
 template <typename T>
 struct is_supported_message_type
-    : absl::disjunction<std::is_base_of<MessageLite, T>> {
+    : std::disjunction<std::is_base_of<MessageLite, T>> {
   static constexpr auto force_complete_type = sizeof(T);
 };
 
@@ -251,13 +270,43 @@ enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
 // The maximum byte alignment we support.
 enum { kMaxMessageAlignment = 8 };
 
-inline constexpr bool EnableExperimentalMicroString() {
-#if defined(PROTOBUF_ENABLE_EXPERIMENTAL_MICRO_STRING) || \
-    defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
+inline constexpr bool EnableStableExperiments() {
+#if defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
   return true;
 #else
   return false;
 #endif
+}
+
+inline constexpr bool EnableExperimentalMicroString() {
+#if defined(PROTOBUF_ENABLE_EXPERIMENTAL_MICRO_STRING)
+  return true;
+#endif
+  return EnableStableExperiments();
+}
+
+inline constexpr bool ForceInlineStringInProtoc() {
+  return EnableStableExperiments();
+}
+
+inline constexpr bool ForceEagerlyVerifiedLazyInProtoc() {
+  return EnableStableExperiments();
+}
+
+inline constexpr bool ForceSplitFieldsInProtoc() {
+#if defined(PROTOBUF_FORCE_SPLIT)
+  return true;
+#else
+  return false;
+#endif
+}
+
+// Returns true if hasbits for repeated fields are enabled (b/391445226). This
+// flag-gates the rollout of the feature, and if disabled will disable the
+// feature. This will be removed once the feature is fully rolled out and
+// verified.
+inline constexpr bool EnableExperimentalHintHasBitsForRepeatedFields() {
+  return true;
 }
 
 // Returns true if debug hardening for clearing oneof message on arenas is
@@ -311,6 +360,14 @@ constexpr bool DebugHardenForceAllocationOnConstruction() {
 }
 
 constexpr bool DebugHardenFuzzMessageSpaceUsedLong() {
+  return false;
+}
+
+inline constexpr bool DebugHardenCheckHasBitConsistency() {
+#if !defined(NDEBUG) || defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
+    defined(ABSL_HAVE_MEMORY_SANITIZER) || defined(ABSL_HAVE_THREAD_SANITIZER)
+  return true;
+#endif
   return false;
 }
 
@@ -610,6 +667,38 @@ inline bool IsMemoryPoisoned([[maybe_unused]] const void* p) {
 #endif
 }
 
+inline constexpr bool ShouldBatchSingularString() {
+#ifdef PROTOBUF_INTERNAL_BATCH_SINGULAR_STRING
+  return true;
+#else
+  return false;
+#endif
+}
+
+inline constexpr bool ShouldBatchRepeatedString() {
+#ifdef PROTOBUF_INTERNAL_BATCH_REPEATED_STRING
+  return true;
+#else
+  return false;
+#endif
+}
+
+inline constexpr bool ShouldBatchRepeatedNumeric() {
+#ifdef PROTOBUF_INTERNAL_BATCH_REPEATED_NUMERIC
+  return true;
+#else
+  return false;
+#endif
+}
+
+inline constexpr bool UseBatchOffset() {
+#ifdef PROTOBUF_INTERNAL_USE_BATCH_OFFSET
+  return true;
+#else
+  return false;
+#endif
+}
+
 #if defined(ABSL_HAVE_THREAD_SANITIZER)
 // TODO: it would be preferable to use __tsan_external_read/
 // __tsan_external_write, but they can cause dlopen issues.
@@ -664,8 +753,6 @@ constexpr bool EnableCustomNewFor() {
 }
 #endif
 
-constexpr bool IsOss() { return true; }
-
 // Counter library for debugging internal protobuf logic.
 // It allows instrumenting code that has different options (eg fast vs slow
 // path) to get visibility into how much we are hitting each path.
@@ -701,6 +788,9 @@ class NoopDebugCounter {
   constexpr void Inc() {}
 };
 
+// Pretty random large number that seems like a safe allocation on most systems.
+inline constexpr size_t kSafeStringSize = 50000000;
+
 // Default empty string object. Don't use this directly. Instead, call
 // GetEmptyString() to get the reference. This empty string is aligned with a
 // minimum alignment of 8 bytes to match the requirement of ArenaStringPtr.
@@ -712,11 +802,12 @@ class alignas(8) GlobalEmptyStringConstexpr {
   // Nothing to init, or destroy.
   std::string* Init() const { return nullptr; }
 
-  // Disable the optimization for MSVC.
+  // Disable the optimization for MSVC and Xtensa.
   // There are some builds where the default constructed string can't be used as
   // `constinit` even though the constructor is `constexpr` and can be used
   // during constant evaluation.
-#if !defined(_MSC_VER)
+#if !defined(_MSC_VER) && !defined(__XTENSA__)
+  // Compilation fails on Xtensa: b/467129751
   template <typename T = std::string, bool = (T(), true)>
   static constexpr std::true_type HasConstexprDefaultConstructor(int) {
     return {};
@@ -752,7 +843,8 @@ PROTOBUF_EXPORT extern GlobalEmptyString fixed_address_empty_string;
 enum class BoundsCheckMode { kNoEnforcement, kReturnDefault, kAbort };
 
 PROTOBUF_EXPORT constexpr BoundsCheckMode GetBoundsCheckMode() {
-#if defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_ABORT)
+#if defined(PROTO2_OPENSOURCE) || \
+    defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_ABORT)
   return BoundsCheckMode::kAbort;
 #elif defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_RETURN_DEFAULT)
   return BoundsCheckMode::kReturnDefault;
@@ -772,9 +864,7 @@ inline uint32_t Crc32(uint32_t crc, uint64_t v) {
 #elif defined(__ARM_FEATURE_CRC32)
 
 constexpr bool HasCrc32() { return true; }
-inline uint32_t Crc32(uint32_t crc, uint64_t v) {
-  return __builtin_arm_crc32cd(crc, v);
-}
+inline uint32_t Crc32(uint32_t crc, uint64_t v) { return __crc32cd(crc, v); }
 
 #else
 

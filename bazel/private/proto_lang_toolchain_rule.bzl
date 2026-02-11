@@ -11,10 +11,14 @@ load("@proto_bazel_features//:features.bzl", "bazel_features")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/common:proto_lang_toolchain_info.bzl", "ProtoLangToolchainInfo")
+load("//bazel/flags:flags.bzl", "get_flag_value")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
 def _rule_impl(ctx):
-    provided_proto_sources = depset(transitive = [bp[ProtoInfo].transitive_sources for bp in ctx.attr.blacklisted_protos]).to_list()
+    if ctx.attr.blacklisted_protos and ctx.attr.denylisted_protos:
+        fail("Only one of 'denylisted_protos' and 'blacklisted_protos' can be set (prefer 'denylisted_protos').")
+    denylisted_protos = ctx.attr.denylisted_protos or ctx.attr.blacklisted_protos
+    provided_proto_sources = depset(transitive = [bp[ProtoInfo].transitive_sources for bp in denylisted_protos]).to_list()
 
     flag = ctx.attr.command_line
     if flag.find("$(PLUGIN_OUT)") > -1:
@@ -30,7 +34,7 @@ def _rule_impl(ctx):
         protoc_opts = ctx.toolchains[toolchains.PROTO_TOOLCHAIN].proto.protoc_opts
     else:
         proto_compiler = ctx.attr._proto_compiler.files_to_run
-        protoc_opts = ctx.fragments.proto.experimental_protoc_opts
+        protoc_opts = get_flag_value(ctx, "protocopt")
 
     if ctx.attr.protoc_minimal_do_not_use:
         proto_compiler = ctx.attr.protoc_minimal_do_not_use.files_to_run
@@ -59,9 +63,6 @@ def _rule_impl(ctx):
 proto_lang_toolchain = rule(
     _rule_impl,
     doc = """
-<p>If using Bazel, please load the rule from <a href="https://github.com/bazelbuild/rules_proto">
-https://github.com/bazelbuild/rules_proto</a>.
-
 <p>Specifies how a LANG_proto_library rule (e.g., <code>java_proto_library</code>) should invoke the
 proto-compiler.
 Some LANG_proto_library rules allow specifying which toolchain to use using command-line flags;
@@ -121,13 +122,20 @@ passed to the proto-compiler:
 A language-specific library that the generated code is compiled against.
 The exact behavior is LANG_proto_library-specific.
 Java, for example, should compile against the runtime."""),
-        "blacklisted_protos": attr.label_list(
+        "denylisted_protos": attr.label_list(
             providers = [ProtoInfo],
             doc = """
 No code will be generated for files in the <code>srcs</code> attribute of
-<code>blacklisted_protos</code>.
+<code>denylisted_protos</code>.
 This is used for .proto files that are already linked into proto runtimes, such as
 <code>any.proto</code>.""",
+        ),
+        # TODO: Remove this once it is safe to do so in OSS.
+        "blacklisted_protos": attr.label_list(
+            providers = [ProtoInfo],
+            doc = """
+Deprecated. Alias for <code>denylisted_protos</code>. Will be removed in a future release.
+""",
         ),
         # TODO: add doc
         "allowlist_different_package": attr.label(
@@ -140,6 +148,9 @@ This is used for .proto files that are already linked into proto runtimes, such 
         "protoc_minimal_do_not_use": attr.label(
             cfg = "exec",
             executable = True,
+        ),
+        "_protocopt": attr.label(
+            default = "//bazel/flags/cc:protocopt",
         ),
     } | ({} if proto_common.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION else {
         "_proto_compiler": attr.label(

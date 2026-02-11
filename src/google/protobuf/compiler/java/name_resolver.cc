@@ -183,7 +183,6 @@ std::string ClassNameResolver::GetFileImmutableClassName(
   return class_name;
 }
 
-
 std::string ClassNameResolver::GetFileClassName(const FileDescriptor* file,
                                                 bool immutable) {
   return GetFileClassName(file, immutable, false);
@@ -228,7 +227,7 @@ bool ClassNameResolver::HasConflictingClassName(const FileDescriptor* file,
 
 std::string ClassNameResolver::GetDescriptorClassName(
     const FileDescriptor* file) {
-  if (options_.opensource_runtime) {
+  if (google::protobuf::internal::IsOss()) {
     return GetFileImmutableClassName(file);
   } else {
     return absl::StrCat(GetFileImmutableClassName(file), "InternalDescriptors");
@@ -354,6 +353,19 @@ std::string ClassNameResolver::GetKotlinFactoryName(
   return IsForbiddenKotlin(name) ? absl::StrCat(name, "_") : name;
 }
 
+std::string ClassNameResolver::GetFullyQualifiedKotlinFactoryName(
+    const Descriptor* descriptor) {
+  if (descriptor->containing_type() != nullptr) {
+    return absl::StrCat(
+        GetKotlinExtensionsClassName(descriptor->containing_type()), ".",
+        GetKotlinFactoryName(descriptor));
+  } else {
+    return absl::StrCat(
+        GetFileJavaPackage(descriptor->file(), /*immutable=*/true), ".",
+        GetKotlinFactoryName(descriptor));
+  }
+}
+
 std::string ClassNameResolver::GetJavaImmutableClassName(
     const Descriptor* descriptor) {
   return GetJavaClassFullName(ClassNameWithoutPackage(descriptor, true),
@@ -399,19 +411,7 @@ std::string ClassNameResolver::GetKotlinExtensionsClassNameEscaped(
 
 std::string ClassNameResolver::GetFileJavaPackage(const FileDescriptor* file,
                                                   bool immutable) {
-  std::string result;
-
-  if (file->options().has_java_package()) {
-    result = file->options().java_package();
-  } else {
-    result = options_.opensource_runtime ? "" : "com.google.protos";
-    if (!file->package().empty()) {
-      if (!result.empty()) result += '.';
-      absl::StrAppend(&result, file->package());
-    }
-  }
-
-  return result;
+  return FileJavaPackage(file);
 }
 }  // namespace java
 }  // namespace compiler

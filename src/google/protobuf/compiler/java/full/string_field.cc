@@ -117,7 +117,7 @@ ImmutableStringFieldGenerator::ImmutableStringFieldGenerator(
                         name_resolver_, &variables_, context);
 }
 
-ImmutableStringFieldGenerator::~ImmutableStringFieldGenerator() {}
+ImmutableStringFieldGenerator::~ImmutableStringFieldGenerator() = default;
 
 int ImmutableStringFieldGenerator::GetMessageBitIndex() const {
   return message_bit_index_;
@@ -217,7 +217,9 @@ void ImmutableStringFieldGenerator::GenerateMembers(
       "    java.lang.String s = bs.toStringUtf8();\n");
   printer->Annotate("{", "}", descriptor_);
   if (CheckUtf8(descriptor_)) {
+
     printer->Print(variables_, "    $name$_ = s;\n");
+
   } else {
     printer->Print(variables_,
                    "    if (bs.isValidUtf8()) {\n"
@@ -408,7 +410,8 @@ void ImmutableStringFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
-                   "$name$_ = input.readStringRequireUtf8();\n"
+                   "$name$_ = "
+                   "input.readStringRequireUtf8();\n"
                    "$set_has_field_bit_builder$\n");
   } else {
     printer->Print(variables_,
@@ -463,7 +466,8 @@ ImmutableStringOneofFieldGenerator::ImmutableStringOneofFieldGenerator(
   SetCommonOneofVariables(descriptor, info, &variables_);
 }
 
-ImmutableStringOneofFieldGenerator::~ImmutableStringOneofFieldGenerator() {}
+ImmutableStringOneofFieldGenerator::~ImmutableStringOneofFieldGenerator() =
+    default;
 
 void ImmutableStringOneofFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
@@ -482,10 +486,10 @@ void ImmutableStringOneofFieldGenerator::GenerateMembers(
   printer->Print(
       variables_,
       "$deprecation$public java.lang.String ${$get$capitalized_name$$}$() {\n"
-      "  java.lang.Object ref $default_init$;\n"
-      "  if ($has_oneof_case_message$) {\n"
-      "    ref = $oneof_name$_;\n"
+      "  if ($negated_has_oneof_case_message$) {\n"
+      "    return $default$;\n"
       "  }\n"
+      "  java.lang.Object ref = $oneof_name$_;\n"
       "  if (ref instanceof java.lang.String) {\n"
       "    return (java.lang.String) ref;\n"
       "  } else {\n"
@@ -494,13 +498,10 @@ void ImmutableStringOneofFieldGenerator::GenerateMembers(
       "    java.lang.String s = bs.toStringUtf8();\n");
   printer->Annotate("{", "}", descriptor_);
   if (CheckUtf8(descriptor_)) {
-    printer->Print(variables_,
-                   "    if ($has_oneof_case_message$) {\n"
-                   "      $oneof_name$_ = s;\n"
-                   "    }\n");
+    printer->Print(variables_, "    $oneof_name$_ = s;\n");
   } else {
     printer->Print(variables_,
-                   "    if (bs.isValidUtf8() && ($has_oneof_case_message$)) {\n"
+                   "    if (bs.isValidUtf8()) {\n"
                    "      $oneof_name$_ = s;\n"
                    "    }\n");
   }
@@ -511,25 +512,24 @@ void ImmutableStringOneofFieldGenerator::GenerateMembers(
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, GETTER,
                                           context_->options());
 
-  printer->Print(variables_,
-                 "$deprecation$public com.google.protobuf.ByteString\n"
-                 "    ${$get$capitalized_name$Bytes$}$() {\n"
-                 "  java.lang.Object ref $default_init$;\n"
-                 "  if ($has_oneof_case_message$) {\n"
-                 "    ref = $oneof_name$_;\n"
-                 "  }\n"
-                 "  if (ref instanceof java.lang.String) {\n"
-                 "    com.google.protobuf.ByteString b = \n"
-                 "        com.google.protobuf.ByteString.copyFromUtf8(\n"
-                 "            (java.lang.String) ref);\n"
-                 "    if ($has_oneof_case_message$) {\n"
-                 "      $oneof_name$_ = b;\n"
-                 "    }\n"
-                 "    return b;\n"
-                 "  } else {\n"
-                 "    return (com.google.protobuf.ByteString) ref;\n"
-                 "  }\n"
-                 "}\n");
+  printer->Print(
+      variables_,
+      "$deprecation$public com.google.protobuf.ByteString\n"
+      "    ${$get$capitalized_name$Bytes$}$() {\n"
+      "  if ($negated_has_oneof_case_message$) {\n"
+      "    return com.google.protobuf.ByteString.copyFromUtf8($default$);\n"
+      "  }\n"
+      "  java.lang.Object ref = $oneof_name$_;\n"
+      "  if (ref instanceof java.lang.String) {\n"
+      "    com.google.protobuf.ByteString b = \n"
+      "        com.google.protobuf.ByteString.copyFromUtf8(\n"
+      "            (java.lang.String) ref);\n"
+      "    $oneof_name$_ = b;\n"
+      "    return b;\n"
+      "  } else {\n"
+      "    return (com.google.protobuf.ByteString) ref;\n"
+      "  }\n"
+      "}\n");
   printer->Annotate("{", "}", descriptor_);
 }
 
@@ -551,15 +551,14 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderMembers(
       variables_,
       "@java.lang.Override\n"
       "$deprecation$public java.lang.String ${$get$capitalized_name$$}$() {\n"
-      "  java.lang.Object ref $default_init$;\n"
-      "  if ($has_oneof_case_message$) {\n"
-      "    ref = $oneof_name$_;\n"
+      "  if ($negated_has_oneof_case_message$) {\n"
+      "    return $default$;\n"
       "  }\n"
+      "  java.lang.Object ref = $oneof_name$_;\n"
       "  if (!(ref instanceof java.lang.String)) {\n"
       "    com.google.protobuf.ByteString bs =\n"
       "        (com.google.protobuf.ByteString) ref;\n"
-      "    java.lang.String s = bs.toStringUtf8();\n"
-      "    if ($has_oneof_case_message$) {\n");
+      "    java.lang.String s = bs.toStringUtf8();\n");
   printer->Annotate("{", "}", descriptor_);
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_, "      $oneof_name$_ = s;\n");
@@ -570,7 +569,6 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderMembers(
                    "      }\n");
   }
   printer->Print(variables_,
-                 "    }\n"
                  "    return s;\n"
                  "  } else {\n"
                  "    return (java.lang.String) ref;\n"
@@ -583,17 +581,16 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderMembers(
                  "@java.lang.Override\n"
                  "$deprecation$public com.google.protobuf.ByteString\n"
                  "    ${$get$capitalized_name$Bytes$}$() {\n"
-                 "  java.lang.Object ref $default_init$;\n"
-                 "  if ($has_oneof_case_message$) {\n"
-                 "    ref = $oneof_name$_;\n"
+                 "  if ($negated_has_oneof_case_message$) {\n"
+                 "    return com.google.protobuf.ByteString.copyFromUtf8("
+                 "        $default$);\n"
                  "  }\n"
+                 "  java.lang.Object ref = $oneof_name$_;\n"
                  "  if (ref instanceof String) {\n"
                  "    com.google.protobuf.ByteString b = \n"
                  "        com.google.protobuf.ByteString.copyFromUtf8(\n"
                  "            (java.lang.String) ref);\n"
-                 "    if ($has_oneof_case_message$) {\n"
-                 "      $oneof_name$_ = b;\n"
-                 "    }\n"
+                 "    $oneof_name$_ = b;\n"
                  "    return b;\n"
                  "  } else {\n"
                  "    return (com.google.protobuf.ByteString) ref;\n"
@@ -673,9 +670,10 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
-                   "java.lang.String s = input.readStringRequireUtf8();\n"
                    "$set_oneof_case_message$;\n"
-                   "$oneof_name$_ = s;\n");
+                   "$oneof_name$_ = "
+                   "input.readStringRequireUtf8();\n"
+    );
   } else {
     printer->Print(variables_,
                    "com.google.protobuf.ByteString bs = input.readBytes();\n"
@@ -709,7 +707,7 @@ RepeatedImmutableStringFieldGenerator::RepeatedImmutableStringFieldGenerator(
                                     builderBitIndex, context) {}
 
 RepeatedImmutableStringFieldGenerator::
-    ~RepeatedImmutableStringFieldGenerator() {}
+    ~RepeatedImmutableStringFieldGenerator() = default;
 
 int RepeatedImmutableStringFieldGenerator::GetNumBitsForMessage() const {
   return 0;
@@ -982,9 +980,9 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
-                   "java.lang.String s = input.readStringRequireUtf8();\n"
                    "ensure$capitalized_name$IsMutable();\n"
-                   "$name$_.add(s);\n");
+                   "$name$_.add(input.readStringRequireUtf8());\n"
+    );
   } else {
     printer->Print(variables_,
                    "com.google.protobuf.ByteString bs = input.readBytes();\n"

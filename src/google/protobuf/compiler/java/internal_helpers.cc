@@ -14,14 +14,16 @@
 #include <algorithm>
 #include <cmath>
 #include <string>
-#include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/helpers.h"
@@ -72,6 +74,20 @@ int GetExperimentalJavaFieldTypeForPacked(const FieldDescriptor* field) {
     return 0;
   }
 }
+
+// Returns `true` if `descriptor` contains an enum named `name<n>` for any `n`
+// from `0` to `count - 1`.
+template <typename Descriptor>
+bool HasConflictingEnum(const Descriptor* descriptor, absl::string_view name,
+                        int count) {
+  for (int i = 0; i < count; i++) {
+    if (descriptor->FindEnumTypeByName(absl::StrFormat("%s%d", name, i))) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 int GetExperimentalJavaFieldType(const FieldDescriptor* field) {
@@ -119,29 +135,56 @@ int GetExperimentalJavaFieldType(const FieldDescriptor* field) {
   }
 }
 
-void GenerateLarge(
-    io::Printer* printer, const EnumDescriptor* descriptor,
-    std::vector<const EnumValueDescriptor*> canonical_values,
-    std::vector<
-        std::pair<const EnumValueDescriptor*, const EnumValueDescriptor*>>
-        aliases,
-    bool immutable_api, Context* context, ClassNameResolver* name_resolver) {
+void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
+                   bool immutable_api, Context* context,
+                   ClassNameResolver* name_resolver) {
   // Max number of constants in a generated Java class.
   constexpr int kMaxEnums = 1000;
-  int interface_count = ceil((double)canonical_values.size() / kMaxEnums);
+  int interface_count = ceil((double)descriptor->value_count() / kMaxEnums);
+
+  // A map of all aliased values to the canonical value.
+  absl::flat_hash_map<const EnumValueDescriptor*, const EnumValueDescriptor*>
+      aliases;
+
+  int num_canonical_values = 0;
+  for (int i = 0; i < descriptor->value_count(); i++) {
+    const EnumValueDescriptor* value = descriptor->value(i);
+    const EnumValueDescriptor* canonical_value =
+        descriptor->FindValueByNumber(value->number());
+    if (value == canonical_value) {
+      num_canonical_values++;
+    } else {
+      aliases[value] = canonical_value;
+    }
+  }
+
+  // Detect the most likely conflict scenario: a numbered version of the enum
+  // already exists.
+  bool has_conflict =
+      descriptor->containing_type() != nullptr
+          ? HasConflictingEnum(descriptor->containing_type(),
+                               descriptor->name(), interface_count)
+          : HasConflictingEnum(descriptor->file(), descriptor->name(),
+                               interface_count);
+
+  // If the style guide is followed (underscores cannot be followed directly
+  // by a number), then using an underscore separator cannot create conflicts.
+  absl::string_view count_sep = has_conflict ? "_" : "";
 
   printer->Emit(
-      {{"classname", descriptor->name()},
+
+      {io::Printer::Sub("classname", descriptor->name())
+           .AnnotatedAs(descriptor),
        {"static", IsOwnFile(descriptor, immutable_api) ? " " : " static "},
        {"deprecation",
         descriptor->options().deprecated() ? "@java.lang.Deprecated" : ""},
-       {"canonical_values_size", absl::StrCat(canonical_values.size())},
+       {"unrecognized_index", descriptor->value_count()},
        {"proto_enum_class", context->EnforceLite()
                                 ? "com.google.protobuf.Internal.EnumLite"
                                 : "com.google.protobuf.ProtocolMessageEnum"},
        {"proto_non_null_annotation",
         [&] {
-          if (!context->options().opensource_runtime) {
+          if (!google::protobuf::internal::IsOss()) {
             printer->Emit(R"(
               @com.google.protobuf.Internal.ProtoNonnullApi
             )");
@@ -149,7 +192,7 @@ void GenerateLarge(
         }},
        {"method_return_null_annotation",
         [&] {
-          if (!context->options().opensource_runtime) {
+          if (!google::protobuf::internal::IsOss()) {
             printer->Emit(R"(
               @com.google.protobuf.Internal.ProtoMethodMayReturnNull
             )");
@@ -160,8 +203,8 @@ void GenerateLarge(
           std::vector<std::string> interface_names;
           interface_names.reserve(interface_count);
           for (int count = 0; count < interface_count; count++) {
-            interface_names.push_back(
-                absl::StrFormat("%s%d", descriptor->name(), count));
+            interface_names.push_back(absl::StrFormat(
+                "%s%s%d", descriptor->name(), count_sep, count));
           }
           printer->Emit(
               {{"interface_names", absl::StrJoin(interface_names, ", ")}},
@@ -170,22 +213,8 @@ void GenerateLarge(
        {"gen_code_version_validator",
         [&] {
           if (!context->EnforceLite()) {
-            PrintGencodeVersionValidator(printer,
-                                         context->options().opensource_runtime,
+            PrintGencodeVersionValidator(printer, google::protobuf::internal::IsOss(),
                                          descriptor->name());
-          }
-        }},
-       {"aliases",
-        [&] {
-          for (int i = 0; i < aliases.size(); i++) {
-            WriteEnumValueDocComment(printer, aliases[i].first,
-                                     context->options());
-            printer->Emit({{"name", aliases[i].first->name()},
-                           {"canonical_name", aliases[i].second->name()}},
-                          R"(
-                  public static final $classname$ $name$ = $canonical_name$;
-                )");
-            printer->Annotate("name", canonical_values[i]);
           }
         }},
        {"get_number_func",
@@ -204,7 +233,7 @@ void GenerateLarge(
         }},
        {"deprecated_value_of_func",
         [&] {
-          if (context->options().opensource_runtime) {
+          if (google::protobuf::internal::IsOss()) {
             printer->Emit(R"(
               /**
                * @param value The numeric wire value of the corresponding enum entry.
@@ -220,10 +249,15 @@ void GenerateLarge(
         }},
        {"for_number_func",
         [&] {
+          printer->Emit(R"(
+                $classname$ found = null;
+          )");
           for (int count = 0; count < interface_count; count++) {
-            printer->Emit({{"count", absl::StrCat(count)}}, R"(
-                if ($classname$$count$.forNumber$count$(value) != null) {
-                  return $classname$$count$.forNumber$count$(value);
+            printer->Emit(
+                {{"count", absl::StrCat(count)}, {"count_sep", count_sep}}, R"(
+                found = $classname$$count_sep$$count$.forNumber$count$(value);
+                if (found != null) {
+                  return found;
                 }
                 )");
           }
@@ -233,10 +267,15 @@ void GenerateLarge(
         }},
        {"value_of_func",
         [&] {
+          printer->Emit(R"(
+            $classname$ found = null;
+          )");
           for (int count = 0; count < interface_count; count++) {
-            printer->Emit({{"count", absl::StrCat(count)}}, R"(
-              if ($classname$$count$.valueOf$count$(name) != null) {
-                return $classname$$count$.valueOf$count$(name);
+            printer->Emit(
+                {{"count", absl::StrCat(count)}, {"count_sep", count_sep}}, R"(
+              found = $classname$$count_sep$$count$.valueOf$count$(name);
+              if (found != null) {
+                return found;
               }
             )");
           }
@@ -245,24 +284,24 @@ void GenerateLarge(
                 "No enum constant $classname$." + name);
           )");
         }},
-       {"values_func",
+       {"canonical_values_func",
         [&] {
-          printer->Emit({{"size", absl::StrCat(descriptor->value_count() + 1)}},
+          // All of the canonical values, plus an UNRECOGNIZED.
+          printer->Emit({{"values_size", num_canonical_values + 1}},
                         R"(
               int ordinal = 0;
-              $classname$[] values = new $classname$[$size$];
+              $classname$[] values = new $classname$[$values_size$];
           )");
 
           for (int count = 0; count < interface_count; count++) {
-            printer->Emit({{"count", absl::StrCat(count)}}, R"(
-              $classname$[] values$count$ = $classname$$count$.values$count$();
+            printer->Emit({{"count", count}, {"count_sep", count_sep}}, R"(
+              $classname$[] values$count$ = $classname$$count_sep$$count$.values$count$();
               System.arraycopy(values$count$, 0, values, ordinal, values$count$.length);
               ordinal += values$count$.length;
             )");
           }
-          printer->Emit(
-              {{"last_index", absl::StrCat(descriptor->value_count())}}, R"(
-              values[$last_index$] = UNRECOGNIZED;
+          printer->Emit({{"unrecognized_index", num_canonical_values}}, R"(
+              values[$unrecognized_index$] = UNRECOGNIZED;
               return values;
           )");
         }},
@@ -306,7 +345,7 @@ void GenerateLarge(
                   "  }\n");
             }
             printer->Print(
-                "  return getDescriptor().getValues().get(index());\n"
+                "  return getDescriptor().getValue(index());\n"
                 "}\n"
                 "public final com.google.protobuf.Descriptors.EnumDescriptor\n"
                 "    getDescriptorForType() {\n"
@@ -328,7 +367,7 @@ void GenerateLarge(
               // immutable outer class).
               printer->Print(
                   "  return "
-                  "$file$.getDescriptor().getEnumTypes().get($index$);\n",
+                  "$file$.getDescriptor().getEnumType($index$);\n",
                   "file",
                   name_resolver->GetClassName(descriptor->file(),
                                               immutable_api),
@@ -336,7 +375,7 @@ void GenerateLarge(
             } else {
               printer->Print(
                   "  return "
-                  "$parent$.$descriptor$.getEnumTypes().get($index$);\n",
+                  "$parent$.$descriptor$.getEnumType($index$);\n",
                   "parent",
                   name_resolver->GetClassName(descriptor->containing_type(),
                                               immutable_api),
@@ -362,16 +401,22 @@ void GenerateLarge(
                 "      \"EnumValueDescriptor is not for this type.\");\n"
                 "  }\n",
                 "classname", descriptor->name());
+            // Aliases are literally the same object as the enum value they
+            // alias, so we can just get it by the number .
+            printer->Print(R"(
+                  $classname$ found = $classname$.forNumber(desc.getNumber());
+                  if (found != null) {
+                    return found;
+                  }
+                  )");
             if (!descriptor->is_closed()) {
+              printer->Print("  return UNRECOGNIZED;\n");
+            } else {
               printer->Print(
-                  "  if (desc.getIndex() == -1) {\n"
-                  "    return UNRECOGNIZED;\n"
-                  "  }\n");
+                  "  throw new java.lang.IllegalArgumentException(\n"
+                  "      \"EnumValueDescriptor has an invalid number.\");\n");
             }
-            printer->Print(
-                "  return values()[desc.getIndex()];\n"
-                "}\n"
-                "\n");
+            printer->Print("}\n");
           }
         }}},
       R"(
@@ -383,9 +428,7 @@ void GenerateLarge(
             $gen_code_version_validator$
           }
 
-          public static final $classname$ UNRECOGNIZED = new $classname$(-1, $canonical_values_size$, "UNRECOGNIZED");
-
-          $aliases$
+          public static final $classname$ UNRECOGNIZED = new $classname$(-1, $unrecognized_index$, "UNRECOGNIZED");
 
           $deprecated_value_of_func$
 
@@ -411,7 +454,9 @@ void GenerateLarge(
           }
 
           public static $classname$[] values() {
-            $values_func$
+            //~ In non-large enums, values() is the automatic one and only
+            //~ returns canonicals, so we match that here.
+            $canonical_values_func$
           }
 
           private final int value;
@@ -466,13 +511,17 @@ void GenerateLarge(
         )");
 
   for (int count = 0; count < interface_count; count++) {
+    // The current interface will emit the range of values whose index is in
+    // the range [start, end).
     int start = count * kMaxEnums;
+    int end = std::min(start + kMaxEnums, descriptor->value_count());
     printer->Emit(
         {{"classname", descriptor->name()},
-         {"count", absl::StrCat(count)},
+         {"count", count},
+         {"count_sep", count_sep},
          {"method_return_null_annotation",
           [&] {
-            if (!context->options().opensource_runtime) {
+            if (!google::protobuf::internal::IsOss()) {
               printer->Emit(R"(
                           @com.google.protobuf.Internal.ProtoMethodMayReturnNull
                         )");
@@ -480,46 +529,83 @@ void GenerateLarge(
           }},
          {"enums",
           [&] {
-            for (int i = start;
-                 i < std::min(start + kMaxEnums, (int)canonical_values.size());
-                 i++) {
-              WriteEnumValueDocComment(printer, canonical_values[i],
-                                       context->options());
-              printer->Emit(
-                  {
-                      {"name", canonical_values[i]->name()},
-                      {"number", absl::StrCat(canonical_values[i]->number())},
-                      {"index", absl::StrCat(canonical_values[i]->index())},
-                      {"deprecation",
-                       canonical_values[i]->options().deprecated()
-                           ? "@java.lang.Deprecated"
-                           : ""},
-                  },
-                  R"(
+            for (int i = start; i < end; i++) {
+              const EnumValueDescriptor* value = descriptor->value(i);
+              WriteEnumValueDocComment(printer, value, context->options());
+              absl::string_view deprecation =
+                  value->options().deprecated() ? "@java.lang.Deprecated " : "";
+
+              const auto it = aliases.find(value);
+              if (it != aliases.end()) {
+                const EnumValueDescriptor* canonical = it->second;
+                // The 'canonical' value needs to always be the one with a lower
+                // index. If it isn't, we could get circular dependencies
+                // between the interfaces if eg the first value is an alias of
+                // the Nth value, and the N+1st value is an alias of the second
+                // value. This would show up as runtime nulls and not
+                // compile-time errors. This check will ensure that if the
+                // semantic changes and FindValueByNumber changes to ever return
+                // not the lowest index, we will notice to try to fix that
+                // condition here.
+                ABSL_CHECK(canonical->index() < value->index());
+                int canonical_interface_index = canonical->index() / kMaxEnums;
+                // The canonical value may be defined in a different interface
+                // than where the alias is defined (they might be arbitrarily
+                // far apart). We name the constant by that interface directly.
+                printer->Emit(
+                    {io::Printer::Sub("name", value->name()).AnnotatedAs(value),
+                     {"canonical_name", aliases[value]->name()},
+                     {"canonical_interface_index", canonical_interface_index},
+                     {"count_sep", count_sep},
+                     {"deprecation", deprecation}},
+                    R"(
+                    $deprecation$
+                    public static final $classname$ $name$ = $classname$$count_sep$$canonical_interface_index$.$canonical_name$;
+
+                  )");
+              } else {
+                printer->Emit(
+                    {io::Printer::Sub("name", value->name()).AnnotatedAs(value),
+                     {"number", value->number()},
+                     {"index", value->index()},
+                     {"deprecation", deprecation}},
+                    R"(
                     $deprecation$
                     public static final $classname$ $name$ = new $classname$($number$, $index$, "$name$");
 
+                )");
+              }
+              printer->Emit({io::Printer::Sub(
+                                 "name", absl::StrCat(value->name(), "_VALUE"))
+                                 .AnnotatedAs(value),
+                             {"number", value->number()},
+                             {"deprecation", deprecation}},
+                            R"(
                     $deprecation$
-                    public static final int $name$_VALUE = $number$;
+                    public static final int $name$ = $number$;
                   )");
             }
           }},
          {"value_of_func",
           [&] {
-            printer->Emit({{"cases",
-                            [&] {
-                              for (int i = start;
-                                   i < std::min(start + kMaxEnums,
-                                                (int)canonical_values.size());
-                                   i++) {
-                                printer->Emit(
-                                    {{"name", canonical_values[i]->name()}},
+            printer->Emit(
+                {{"cases",
+                  [&] {
+                    for (int i = start; i < end; i++) {
+                      const EnumValueDescriptor* value = descriptor->value(i);
+                      // Only support lookup by name for non-aliases. This is
+                      // odd to do, but behavior to match the non-large enum
+                      // behavior.
+                      if (aliases.contains(value)) {
+                        continue;
+                      }
+                      printer->Emit({{"name", descriptor->value(i)->name()}},
                                     R"(
                                     case "$name$": return $name$;
                                     )");
-                              }
-                            }}},
-                          R"(
+                    }
+                  }}},
+                R"(
                           switch (name) {
                             $cases$
                             default: return null;
@@ -528,45 +614,44 @@ void GenerateLarge(
           }},
          {"for_number_func",
           [&] {
-            printer->Emit(
-                {{"cases",
-                  [&] {
-                    for (int i = start;
-                         i < std::min(start + kMaxEnums,
-                                      (int)canonical_values.size());
-                         i++) {
-                      printer->Emit(
-                          {{"name", canonical_values[i]->name()},
-                           {"number",
-                            absl::StrCat(canonical_values[i]->number())}},
-                          R"(
+            printer->Emit({{"cases",
+                            [&] {
+                              for (int i = start; i < end; i++) {
+                                const EnumValueDescriptor* value =
+                                    descriptor->value(i);
+                                // Only emit the 'canonical' values, otherwise
+                                // javac will complain about duplicate cases.
+                                if (aliases.contains(value)) {
+                                  continue;
+                                }
+                                printer->Emit({{"name", value->name()},
+                                               {"number", value->number()}},
+                                              R"(
                             case $number$: return $name$;
                           )");
-                    }
-                  }}},
-                R"(
+                              }
+                            }}},
+                          R"(
                   switch (value) {
                     $cases$
                     default: return null;
                   }
                 )");
           }},
-         {"values_func",
+         {"canonical_values_func",
           [&] {
             printer->Emit({{"values",
                             [&] {
                               std::vector<absl::string_view> values;
-                              for (int i = start;
-                                   i < std::min(start + kMaxEnums,
-                                                (int)canonical_values.size());
-                                   i++) {
-                                values.push_back(canonical_values[i]->name());
+                              for (int i = start; i < end; i++) {
+                                const EnumValueDescriptor* value =
+                                    descriptor->value(i);
+                                if (aliases.contains(value)) {
+                                  continue;
+                                }
+                                values.push_back(value->name());
                               }
-                              printer->Emit(
-                                  {{"values", absl::StrJoin(values, ", ")}},
-                                  R"(
-                                  $values$
-                                  )");
+                              printer->Print(absl::StrJoin(values, ", "));
                             }}},
                           R"(
                           return new $classname$[] {
@@ -575,7 +660,7 @@ void GenerateLarge(
                           )");
           }}},
         R"(
-          interface $classname$$count$ {
+          interface $classname$$count_sep$$count$ {
 
             $enums$
 
@@ -598,12 +683,12 @@ void GenerateLarge(
             }
 
             public static $classname$[] values$count$() {
-              $values_func$
+              $canonical_values_func$
             }
           }
         )");
   }
-}
+}  // NOLINT(readability/fn_size)
 
 }  // namespace java
 }  // namespace compiler

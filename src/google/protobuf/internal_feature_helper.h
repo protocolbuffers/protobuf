@@ -13,6 +13,18 @@
 
 namespace google {
 namespace protobuf {
+
+namespace compiler::generator_internal {
+template <typename DescriptorT, typename ExtType, uint8_t field_type,
+          bool is_packed>
+auto GetResolvedFeatureExtension(
+    const DescriptorT& descriptor,
+    const google::protobuf::internal::ExtensionIdentifier<
+        FeatureSet, internal::MessageTypeTraits<ExtType>, field_type,
+        is_packed>& extension);
+
+}  // namespace compiler::generator_internal
+
 namespace internal {
 class InternalFeatureHelperTest;
 // This class is for internal use only and provides access to the resolved
@@ -30,6 +42,15 @@ class PROTOBUF_EXPORT InternalFeatureHelper {
   friend class ::google::protobuf::compiler::CodeGenerator;
   friend class ::google::protobuf::compiler::CommandLineInterface;
   friend class ::google::protobuf::internal::InternalFeatureHelperTest;
+
+  template <typename DescriptorT, typename ExtType, uint8_t field_type,
+            bool is_packed>
+  friend auto ::google::protobuf::compiler::generator_internal::
+      GetResolvedFeatureExtension(
+          const DescriptorT& descriptor,
+          const google::protobuf::internal::ExtensionIdentifier<
+              FeatureSet, internal::MessageTypeTraits<ExtType>, field_type,
+              is_packed>& extension);
 
   static const DescriptorPool& GetDescriptorPool(const FileDescriptor& file) {
     return *file.pool();
@@ -93,7 +114,7 @@ class PROTOBUF_EXPORT InternalFeatureHelper {
 
     auto lang_features_ret =
         ParseAndGetEditionResolvedFeatureSet(
-            ::pb::internal::GetFeatureSetDefaultsData<ExtType>(),
+            ::google::protobuf::internal::GetFeatureSetDefaultsData<ExtType>(),
             GetEdition(descriptor))
             .GetExtension(extension);
     lang_features_ret.MergeFrom(lang_features);

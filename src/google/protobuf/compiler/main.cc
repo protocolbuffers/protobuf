@@ -15,8 +15,12 @@
 #include "google/protobuf/compiler/php/php_generator.h"
 #include "google/protobuf/compiler/python/generator.h"
 #include "google/protobuf/compiler/python/pyi_generator.h"
+#include "google/protobuf/compiler/ruby/rbs_generator.h"
 #include "google/protobuf/compiler/ruby/ruby_generator.h"
 #include "google/protobuf/compiler/rust/generator.h"
+#ifdef GOOGLE_PROTOBUF_RUNTIME_INCLUDE_BASE
+#include "google/protobuf/compiler/code_generator_lite.h"
+#endif
 
 #ifdef DISABLE_PROTOC_CONFIG
 #include "google/protobuf/compiler/allowlists/allowlist.h"
@@ -35,6 +39,10 @@ namespace protobuf {
 namespace compiler {
 
 int ProtobufMain(int argc, char* argv[]) {
+#ifdef GOOGLE_PROTOBUF_RUNTIME_INCLUDE_BASE
+  google::protobuf::internal::SetIsOss(true);
+#endif
+
   absl::InitializeLog();
 
   CommandLineInterface cli;
@@ -57,10 +65,6 @@ int ProtobufMain(int argc, char* argv[]) {
   java::JavaGenerator java_generator;
   cli.RegisterGenerator("--java_out", "--java_opt", &java_generator,
                         "Generate Java source file.");
-
-#ifdef GOOGLE_PROTOBUF_RUNTIME_INCLUDE_BASE
-  java_generator.set_opensource_runtime(true);
-#endif
 
   // Proto2 Kotlin
   kotlin::KotlinGenerator kt_generator;
@@ -91,6 +95,10 @@ int ProtobufMain(int argc, char* argv[]) {
   ruby::Generator rb_generator;
   cli.RegisterGenerator("--ruby_out", "--ruby_opt", &rb_generator,
                         "Generate Ruby source file.");
+
+  ruby::RBSGenerator rbs_generator;
+  cli.RegisterGenerator("--rbs_out", "--rbs_opt", &rbs_generator,
+                        "Generate RBS type definition.");
 
   // CSharp
   csharp::Generator csharp_generator;

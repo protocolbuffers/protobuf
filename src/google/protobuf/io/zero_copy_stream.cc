@@ -33,10 +33,15 @@ bool ZeroCopyInputStream::ReadCord(absl::Cord* cord, int count) {
   absl::CordBuffer cord_buffer = cord->GetAppendBuffer(count);
   absl::Span<char> out = cord_buffer.available_up_to(count);
 
-  auto FetchNextChunk = [&]() -> absl::Span<const char> {
+  // We need to distinguish between the case where the stream is exhausted and
+  // the case where the stream returns an empty chunk. If the next chunk is
+  // empty, call Next() till it returns a non-empty chunk or exhausted.
+  auto FetchNextNonEmptyChunk = [&]() -> absl::Span<const char> {
     const void* buffer;
     int size;
-    if (!Next(&buffer, &size)) return {};
+    do {
+      if (!Next(&buffer, &size)) return {};
+    } while (size == 0);
 
     if (size > count) {
       BackUp(size - count);
@@ -61,7 +66,7 @@ bool ZeroCopyInputStream::ReadCord(absl::Cord* cord, int count) {
   };
 
   do {
-    absl::Span<const char> in = FetchNextChunk();
+    absl::Span<const char> in = FetchNextNonEmptyChunk();
     if (in.empty()) {
       // Append whatever we have pending so far.
       cord->Append(std::move(cord_buffer));

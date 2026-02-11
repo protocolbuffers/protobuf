@@ -1179,7 +1179,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
 //
 
 //%PDDM-DEFINE VALUE_FOR_KEY_OBJECT(KEY_TYPE, VALUE_NAME, VALUE_TYPE, KHELPER)
-//%- (VALUE_TYPE)objectForKey:(KEY_TYPE)key {
+//%- (nullable VALUE_TYPE)objectForKey:(KEY_TYPE)key {
 //%  VALUE_TYPE result = [_dictionary objectForKey:WRAPPED##KHELPER(key)];
 //%  return result;
 //%}
@@ -1312,7 +1312,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
 //%PDDM-DEFINE BOOL_DICT_HASOBJECT(IDX, REF)
 //%REF##_values[IDX] != nil
 //%PDDM-DEFINE BOOL_VALUE_FOR_KEY_OBJECT(VALUE_NAME, VALUE_TYPE)
-//%- (VALUE_TYPE)objectForKey:(BOOL)key {
+//%- (nullable VALUE_TYPE)objectForKey:(BOOL)key {
 //%  return _values[key ? 1 : 0];
 //%}
 //%PDDM-DEFINE BOOL_SET_GPBVALUE_FOR_KEY_OBJECT(VALUE_NAME, VALUE_TYPE, VisP)
@@ -3063,7 +3063,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
   }];
 }
 
-- (id)objectForKey:(uint32_t)key {
+- (nullable id)objectForKey:(uint32_t)key {
   id result = [_dictionary objectForKey:@(key)];
   return result;
 }
@@ -4794,7 +4794,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
   }];
 }
 
-- (id)objectForKey:(int32_t)key {
+- (nullable id)objectForKey:(int32_t)key {
   id result = [_dictionary objectForKey:@(key)];
   return result;
 }
@@ -6525,7 +6525,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
   }];
 }
 
-- (id)objectForKey:(uint64_t)key {
+- (nullable id)objectForKey:(uint64_t)key {
   id result = [_dictionary objectForKey:@(key)];
   return result;
 }
@@ -8256,7 +8256,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
   }];
 }
 
-- (id)objectForKey:(int64_t)key {
+- (nullable id)objectForKey:(int64_t)key {
   id result = [_dictionary objectForKey:@(key)];
   return result;
 }
@@ -11438,7 +11438,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
   return ((_values[0] != nil) ? 1 : 0) + ((_values[1] != nil) ? 1 : 0);
 }
 
-- (id)objectForKey:(BOOL)key {
+- (nullable id)objectForKey:(BOOL)key {
   return _values[key ? 1 : 0];
 }
 

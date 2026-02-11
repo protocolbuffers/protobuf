@@ -20,7 +20,8 @@ absl::Status MessageAllocationError(SourceLocation loc) {
                       "Upb message allocation error");
 }
 
-absl::Status ExtensionNotFoundError(int ext_number, SourceLocation loc) {
+absl::Status ExtensionNotFoundError(uint32_t ext_number, SourceLocation loc)
+{
   return absl::Status(absl::StatusCode::kUnknown,
                       absl::StrFormat("Extension %d not found", ext_number));
 }

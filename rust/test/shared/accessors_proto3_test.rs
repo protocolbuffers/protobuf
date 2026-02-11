@@ -8,6 +8,11 @@
 //! Tests covering accessors for singular bool, int32, int64, and bytes fields
 //! on proto3.
 
+#[cfg(not(bzl))]
+mod protos;
+#[cfg(not(bzl))]
+use protos::*;
+
 use googletest::prelude::*;
 use protobuf::prelude::*;
 
@@ -47,7 +52,7 @@ fn test_bytes_accessors() {
     let mut msg = TestAllTypes::new();
     // Note: even though it's named 'optional_bytes', the field is actually not
     // proto3 optional, so it does not support presence.
-    assert_that!(*msg.optional_bytes(), empty());
+    assert_that!(*msg.optional_bytes(), is_empty());
 
     msg.set_optional_bytes(b"accessors_test");
     assert_that!(msg.optional_bytes(), eq(b"accessors_test"));
@@ -59,13 +64,13 @@ fn test_bytes_accessors() {
     assert_that!(msg.optional_bytes(), eq(b"hello world"));
 
     msg.set_optional_bytes(b"");
-    assert_that!(*msg.optional_bytes(), empty());
+    assert_that!(*msg.optional_bytes(), is_empty());
 }
 
 #[gtest]
 fn test_optional_bytes_accessors() {
     let mut msg = TestProto3Optional::new();
-    assert_that!(*msg.optional_bytes(), empty());
+    assert_that!(*msg.optional_bytes(), is_empty());
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Unset(&b""[..])));
 
     {
@@ -76,7 +81,7 @@ fn test_optional_bytes_accessors() {
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b"hello world"[..])));
 
     msg.set_optional_bytes(b"");
-    assert_that!(*msg.optional_bytes(), empty());
+    assert_that!(*msg.optional_bytes(), is_empty());
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b""[..])));
 
     msg.set_optional_bytes(b"\xffbinary\x85non-utf8");
@@ -89,7 +94,7 @@ fn test_string_accessors() {
     let mut msg = TestAllTypes::new();
     // Note: even though it's named 'optional_string', the field is actually not
     // proto3 optional, so it does not support presence.
-    assert_that!(*msg.optional_string().as_bytes(), empty());
+    assert_that!(*msg.optional_string().as_bytes(), is_empty());
 
     msg.set_optional_string("accessors_test");
     assert_that!(msg.optional_string(), eq("accessors_test"));
@@ -101,13 +106,13 @@ fn test_string_accessors() {
     assert_that!(msg.optional_string(), eq("hello world"));
 
     msg.set_optional_string("");
-    assert_that!(*msg.optional_string().as_bytes(), empty());
+    assert_that!(*msg.optional_string().as_bytes(), is_empty());
 }
 
 #[gtest]
 fn test_optional_string_accessors() {
     let mut msg = TestProto3Optional::new();
-    assert_that!(*msg.optional_string().as_bytes(), empty());
+    assert_that!(*msg.optional_string().as_bytes(), is_empty());
     assert_that!(msg.optional_string_opt(), eq(Optional::Unset("".into())));
 
     {
@@ -122,7 +127,7 @@ fn test_optional_string_accessors() {
     assert_that!(msg.optional_string_opt(), eq(Optional::Set("accessors_test".into())));
 
     msg.set_optional_string("");
-    assert_that!(*msg.optional_string().as_bytes(), empty());
+    assert_that!(*msg.optional_string().as_bytes(), is_empty());
     assert_that!(msg.optional_string_opt(), eq(Optional::Set("".into())));
 }
 

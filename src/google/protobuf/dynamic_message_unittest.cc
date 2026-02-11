@@ -27,11 +27,15 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
+#include "absl/log/absl_check.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/edition_unittest.pb.h"
+#include "google/protobuf/generated_message_tctable_gen.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
@@ -122,6 +126,150 @@ TEST(DynamicMessageTest,
   EXPECT_EQ(
       static_cast<const void*>(ref->GetStringView(*msg, field, scratch).data()),
       static_cast<const void*>(default_value.data()));
+}
+
+struct OverflowTestCase {
+  DescriptorPool pool;
+  DynamicMessageFactory factory{&pool};
+  const Message* prototype;
+  const internal::TcParseTableBase* table;
+};
+
+std::unique_ptr<OverflowTestCase> GenerateOverflowTestCase(int num_oneofs) {
+  auto test_case = std::make_unique<OverflowTestCase>();
+
+  FileDescriptorProto file_proto;
+  file_proto.set_name("foo.proto");
+  file_proto.set_edition(Edition::EDITION_2024);
+  auto* desc_proto = file_proto.add_message_type();
+  desc_proto->set_name("Foo");
+
+  const auto add_field = [&](auto name, int number, auto type) {
+    auto* field = desc_proto->add_field();
+    field->set_name(name);
+    field->set_number(number);
+    field->set_type(type);
+    return field;
+  };
+
+  // Overflow 16-bit integer worth of data.
+  for (int i = 0; i < num_oneofs; ++i) {
+    desc_proto->add_oneof_decl()->set_name(absl::StrCat("oneof_", i));
+    add_field(absl::StrCat("p", i), 1'000'000 + i,
+              FieldDescriptorProto::TYPE_STRING)
+        ->set_oneof_index(i);
+  }
+
+  add_field("first_field", 1, FieldDescriptorProto::TYPE_INT64);
+  add_field("second_field", 2, FieldDescriptorProto::TYPE_FIXED64);
+
+  auto* file = test_case->pool.BuildFile(file_proto);
+  ABSL_CHECK(file);
+  auto* desc = file->message_type(0);
+  test_case->prototype = test_case->factory.GetPrototype(desc);
+
+  struct Robber : MessageLite {
+    using MessageLite::GetTcParseTable;
+  };
+
+  test_case->table = (test_case->prototype->*&Robber::GetTcParseTable)();
+
+  // Verify that we have the fields.
+  {
+    auto field = test_case->table->field_entries()[0];
+    // It is the field we are looking for.
+    ABSL_CHECK(absl::StrContains(internal::TypeCardToString(field.type_card),
+                                 "kInt64"));
+    // But the hasbit is small.
+    ABSL_CHECK_LT(field.has_idx - test_case->table->has_bits_offset * 8,
+                  internal::TailCallTableInfo::kMaxFastFieldHasbitIndex);
+  }
+  {
+    auto field = test_case->table->field_entries()[1];
+    // It is the field we are looking for.
+    ABSL_CHECK(absl::StrContains(internal::TypeCardToString(field.type_card),
+                                 "kFixed64"));
+    // But the hasbit is small.
+    ABSL_CHECK_LT(field.has_idx - test_case->table->has_bits_offset * 8,
+                  internal::TailCallTableInfo::kMaxFastFieldHasbitIndex);
+  }
+
+  return test_case;
+}
+
+std::unique_ptr<OverflowTestCase> FindOverflowTestCase() {
+  int low = 1, hi = std::numeric_limits<uint16_t>::max() / sizeof(uint32_t);
+
+  while (true) {
+    int mid = (low + hi) / 2;
+    ABSL_CHECK_NE(mid, low) << "Bad initial bounds.";
+    ABSL_CHECK_NE(mid, hi) << "Bad initial bounds.";
+    auto test_case = GenerateOverflowTestCase(mid);
+    ABSL_LOG(INFO) << "FindOverflowTestCase: low=" << low << " mid=" << mid
+                   << " hi=" << hi << " first_offset="
+                   << test_case->table->field_entries()[0].offset
+                   << " second_offset="
+                   << test_case->table->field_entries()[1].offset;
+    if (test_case->table->field_entries()[0].offset >=
+        std::numeric_limits<uint16_t>::max()) {
+      // Too much padding.
+      hi = mid;
+    } else if (test_case->table->field_entries()[1].offset <
+               std::numeric_limits<uint16_t>::max()) {
+      // Too little padding.
+      low = mid;
+    } else {
+      // Perfect padding
+      return test_case;
+    }
+  }
+}
+
+TEST(DynamicMessageTest, IncompatibleFastFieldsAreRejected) {
+  auto test_case = FindOverflowTestCase();
+
+  // The fast table should have 2 entries for the two good fields.
+  ASSERT_EQ(test_case->table->fast_idx_mask, 8);
+  // The one for field 1 (at pos 1) should not be MiniParse.
+  EXPECT_NE(
+      test_case->table->fast_entry(1)->target(),
+      static_cast<internal::TailCallParseFunc>(&internal::TcParser::MiniParse));
+  // While the one for field 2 (at pos 0) should have been switched to
+  // MiniParse.
+  EXPECT_EQ(
+      test_case->table->fast_entry(0)->target(),
+      static_cast<internal::TailCallParseFunc>(&internal::TcParser::MiniParse));
+
+  // Now verify via parsing.
+  std::unique_ptr<Message> msg(test_case->prototype->New());
+  auto* ref = msg->GetReflection();
+  auto* desc = msg->GetDescriptor();
+  constexpr uint64_t value1 = 0x1234567890abcdefu;
+  constexpr uint64_t value2 = 0xfedcba0987654321u;
+  const auto verify_message = [&] {
+    EXPECT_TRUE(ref->HasField(*msg, desc->FindFieldByName("first_field")));
+    EXPECT_EQ(ref->GetInt64(*msg, desc->FindFieldByName("first_field")),
+              value1);
+
+    EXPECT_TRUE(ref->HasField(*msg, desc->FindFieldByName("second_field")));
+    EXPECT_EQ(ref->GetUInt64(*msg, desc->FindFieldByName("second_field")),
+              value2);
+
+    for (int i = 0; i < desc->oneof_decl_count(); ++i) {
+      EXPECT_FALSE(ref->HasOneof(*msg, desc->oneof_decl(i)))
+          << desc->oneof_decl(i)->name();
+    }
+  };
+  ref->SetInt64(&*msg, desc->FindFieldByName("first_field"), value1);
+  ref->SetUInt64(&*msg, desc->FindFieldByName("second_field"), value2);
+  verify_message();
+
+  const std::string serialized = msg->SerializeAsString();
+  ASSERT_TRUE(msg->ParseFromString(serialized));
+  ABSL_LOG(INFO) << "After parse.";
+
+  verify_message();
+  EXPECT_EQ(serialized, msg->SerializeAsString());
 }
 
 class DynamicMessageTest

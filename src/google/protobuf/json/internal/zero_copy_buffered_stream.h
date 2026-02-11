@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_JSON_INTERNAL_ZERO_COPY_BUFFERED_STREAM_H__
 #define GOOGLE_PROTOBUF_JSON_INTERNAL_ZERO_COPY_BUFFERED_STREAM_H__
 
+#include <cstddef>
 #include <string>
 #include <utility>
 #include <variant>
@@ -138,7 +139,7 @@ class ZeroCopyBufferedStream {
   // This function will buffer at least one character to verify whether it
   // actually *is* at EOF.
   bool AtEof() {
-    (void)BufferAtLeast(1);
+    (void)BufferAtLeastOne();
     return eof_;
   }
 
@@ -201,6 +202,13 @@ class ZeroCopyBufferedStream {
   //
   // Returns an error if that many bytes could not be RawBuffer.
   absl::StatusOr<BufferingGuard> BufferAtLeast(size_t bytes);
+
+  // Ensures that at least one byte is available to read. The will never
+  // enable buffering if it was not already buffering, as the requisite 1 byte
+  // will never be split across two streaming chunks.
+  //
+  // Returns an error if EOF is hit.
+  absl::Status BufferAtLeastOne();
 
  private:
   friend BufferingGuard;
@@ -285,7 +293,7 @@ absl::StatusOr<MaybeOwnedString> ZeroCopyBufferedStream::TakeWhile(Pred p) {
   size_t start = cursor_;
   BufferingGuard guard(this);
   while (true) {
-    if (!BufferAtLeast(1).ok()) {
+    if (!BufferAtLeastOne().ok()) {
       // We treat EOF as ending the take, rather than being an error.
       break;
     }

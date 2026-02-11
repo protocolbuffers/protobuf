@@ -12,6 +12,7 @@
 
 #include "upb/base/string_view.h"
 #include "upb/reflection/common.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -134,10 +135,9 @@ UPB_API const upb_OneofDef* upb_MessageDef_Oneof(const upb_MessageDef* m,
 UPB_API int upb_MessageDef_OneofCount(const upb_MessageDef* m);
 int upb_MessageDef_RealOneofCount(const upb_MessageDef* m);
 
-const UPB_DESC(MessageOptions) *
-    upb_MessageDef_Options(const upb_MessageDef* m);
-const UPB_DESC(FeatureSet) *
-    upb_MessageDef_ResolvedFeatures(const upb_MessageDef* m);
+const google_protobuf_MessageOptions* upb_MessageDef_Options(const upb_MessageDef* m);
+const google_protobuf_FeatureSet* upb_MessageDef_ResolvedFeatures(
+    const upb_MessageDef* m);
 
 upb_StringView upb_MessageDef_ReservedName(const upb_MessageDef* m, int i);
 int upb_MessageDef_ReservedNameCount(const upb_MessageDef* m);
@@ -146,8 +146,9 @@ const upb_MessageReservedRange* upb_MessageDef_ReservedRange(
     const upb_MessageDef* m, int i);
 int upb_MessageDef_ReservedRangeCount(const upb_MessageDef* m);
 
-UPB_API upb_Syntax upb_MessageDef_Syntax(const upb_MessageDef* m);
 UPB_API upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m);
+UPB_API google_protobuf_SymbolVisibility
+upb_MessageDef_Visibility(const upb_MessageDef* m);
 
 #ifdef __cplusplus
 } /* extern "C" */

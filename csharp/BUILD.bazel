@@ -16,7 +16,7 @@ load("//upb/cmake:build_defs.bzl", "staleness_test")
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_csharp.txt",
-    maximum_edition = "2023",
+    maximum_edition = "2024",
     testee = "//conformance:conformance_csharp",
 )
 
@@ -87,31 +87,6 @@ inline_sh_test(
 # Distribution files
 ################################################################################
 
-pkg_files(
-    name = "dist_files",
-    srcs = [
-        ".editorconfig",
-        ".gitignore",
-        "BUILD.bazel",
-        "CHANGES.txt",
-        "Google.Protobuf.Tools.nuspec",
-        "Google.Protobuf.Tools.targets",
-        "NuGet.Config",
-        "README.md",
-        "build_packages.bat",
-        "build_release.sh",
-        "build_tools.sh",
-        "buildall.bat",
-        "buildall.sh",
-        "generate_protos.sh",
-        "install_dotnet_sdk.ps1",
-        ":srcs",
-        "//csharp/src/Google.Protobuf.Conformance:dist_files",
-    ],
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//pkg:__pkg__"],
-)
-
 sh_binary(
     name = "release",
     srcs = ["build_release.sh"],
@@ -127,7 +102,7 @@ compile_edition_defaults(
     srcs = [
         "//:descriptor_proto",
     ],
-    maximum_edition = "2023",
+    maximum_edition = "2024",
     minimum_edition = "PROTO2",
 )
 

@@ -53,7 +53,7 @@ const char* UPB_PRIVATE(_upb_TextEncode_Unknown)(txtenc* e, const char* ptr,
 
   while (!upb_EpsCopyInputStream_IsDone(stream, &ptr)) {
     uint32_t tag;
-    CHK(ptr = upb_WireReader_ReadTag(ptr, &tag));
+    CHK(ptr = upb_WireReader_ReadTag(ptr, &tag, stream));
     if (tag == end_group) return ptr;
 
     UPB_PRIVATE(_upb_TextEncode_Indent)(e);
@@ -63,19 +63,19 @@ const char* UPB_PRIVATE(_upb_TextEncode_Unknown)(txtenc* e, const char* ptr,
     switch (upb_WireReader_GetWireType(tag)) {
       case kUpb_WireType_Varint: {
         uint64_t val;
-        CHK(ptr = upb_WireReader_ReadVarint(ptr, &val));
+        CHK(ptr = upb_WireReader_ReadVarint(ptr, &val, stream));
         UPB_PRIVATE(_upb_TextEncode_Printf)(e, "%" PRIu64, val);
         break;
       }
       case kUpb_WireType_32Bit: {
         uint32_t val;
-        ptr = upb_WireReader_ReadFixed32(ptr, &val);
+        ptr = upb_WireReader_ReadFixed32(ptr, &val, stream);
         UPB_PRIVATE(_upb_TextEncode_Printf)(e, "0x%08" PRIu32, val);
         break;
       }
       case kUpb_WireType_64Bit: {
         uint64_t val;
-        ptr = upb_WireReader_ReadFixed64(ptr, &val);
+        ptr = upb_WireReader_ReadFixed64(ptr, &val, stream);
         UPB_PRIVATE(_upb_TextEncode_Printf)(e, "0x%016" PRIu64, val);
         break;
       }
@@ -83,8 +83,10 @@ const char* UPB_PRIVATE(_upb_TextEncode_Unknown)(txtenc* e, const char* ptr,
         int size;
         char* start = e->ptr;
         size_t start_overflow = e->overflow;
-        CHK(ptr = upb_WireReader_ReadSize(ptr, &size));
-        CHK(upb_EpsCopyInputStream_CheckDataSizeAvailable(stream, ptr, size));
+        upb_StringView sv;
+        CHK(ptr = upb_WireReader_ReadSize(ptr, &size, stream));
+        CHK(ptr = upb_EpsCopyInputStream_ReadStringAlwaysAlias(stream, ptr,
+                                                               size, &sv));
 
         // Speculatively try to parse as message.
         UPB_PRIVATE(_upb_TextEncode_PutStr)(e, "{");
@@ -93,12 +95,11 @@ const char* UPB_PRIVATE(_upb_TextEncode_Unknown)(txtenc* e, const char* ptr,
         // EpsCopyInputStream can't back up, so create a sub-stream for the
         // speculative parse.
         upb_EpsCopyInputStream sub_stream;
-        const char* sub_ptr = upb_EpsCopyInputStream_GetAliasedPtr(stream, ptr);
-        upb_EpsCopyInputStream_Init(&sub_stream, &sub_ptr, size, true);
+        const char* sub_ptr = sv.data;
+        upb_EpsCopyInputStream_Init(&sub_stream, &sub_ptr, size);
 
         e->indent_depth++;
         if (UPB_PRIVATE(_upb_TextEncode_Unknown)(e, sub_ptr, &sub_stream, -1)) {
-          ptr = upb_EpsCopyInputStream_Skip(stream, ptr, size);
           e->indent_depth--;
           UPB_PRIVATE(_upb_TextEncode_Indent)(e);
           UPB_PRIVATE(_upb_TextEncode_PutStr)(e, "}");
@@ -107,11 +108,7 @@ const char* UPB_PRIVATE(_upb_TextEncode_Unknown)(txtenc* e, const char* ptr,
           e->indent_depth--;
           e->ptr = start;
           e->overflow = start_overflow;
-          const char* str = ptr;
-          ptr = upb_EpsCopyInputStream_ReadString(stream, &str, size, NULL);
-          UPB_ASSERT(ptr);
-          UPB_PRIVATE(_upb_TextEncode_Bytes)
-          (e, (upb_StringView){.data = str, .size = size});
+          UPB_PRIVATE(_upb_TextEncode_Bytes)(e, sv);
         }
         break;
       }
@@ -145,7 +142,7 @@ void UPB_PRIVATE(_upb_TextEncode_ParseUnknown)(txtenc* e,
   while (upb_Message_NextUnknown(msg, &view, &iter)) {
     char* start = e->ptr;
     upb_EpsCopyInputStream stream;
-    upb_EpsCopyInputStream_Init(&stream, &view.data, view.size, true);
+    upb_EpsCopyInputStream_Init(&stream, &view.data, view.size);
     if (!UPB_PRIVATE(_upb_TextEncode_Unknown)(e, view.data, &stream, -1)) {
       /* Unknown failed to parse, back up and don't print it at all. */
       e->ptr = start;

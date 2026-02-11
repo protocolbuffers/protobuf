@@ -12,8 +12,8 @@
 #include <sstream>
 #include <string>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/log/absl_log.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 #include "google/protobuf/compiler/csharp/csharp_options.h"
 #include "google/protobuf/compiler/csharp/names.h"
@@ -43,7 +43,8 @@ void FieldGeneratorBase::SetCommonFieldVariables(
   }
   uint tag = internal::WireFormat::MakeTag(descriptor_);
   uint8_t tag_array[5];
-  io::CodedOutputStream::WriteTagToArray(tag, tag_array);
+  // TODO: Remove this suppression.
+  (void)io::CodedOutputStream::WriteTagToArray(tag, tag_array);
   std::string tag_bytes = absl::StrCat(tag_array[0]);
   for (int i = 1; i < part_tag_size; i++) {
     absl::StrAppend(&tag_bytes, ", ", tag_array[i]);
@@ -57,7 +58,8 @@ void FieldGeneratorBase::SetCommonFieldVariables(
     tag = internal::WireFormatLite::MakeTag(
         descriptor_->number(),
         internal::WireFormatLite::WIRETYPE_END_GROUP);
-    io::CodedOutputStream::WriteTagToArray(tag, tag_array);
+    // TODO: Remove this suppression.
+    (void)io::CodedOutputStream::WriteTagToArray(tag, tag_array);
     tag_bytes = absl::StrCat(tag_array[0]);
     for (int i = 1; i < part_tag_size; i++) {
       absl::StrAppend(&tag_bytes, ", ", tag_array[i]);
@@ -138,8 +140,7 @@ FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* descriptor,
   SetCommonFieldVariables(&variables_);
 }
 
-FieldGeneratorBase::~FieldGeneratorBase() {
-}
+FieldGeneratorBase::~FieldGeneratorBase() = default;
 
 void FieldGeneratorBase::GenerateFreezingCode(io::Printer* printer) {
   // No-op: only message fields and repeated fields need

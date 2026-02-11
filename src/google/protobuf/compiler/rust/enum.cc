@@ -52,16 +52,16 @@ void TypeConversions(Context& ctx, const EnumDescriptor& desc) {
       ctx.Emit(
           R"rs(
           impl $pbr$::CppMapTypeConversions for $name$ {
-              fn get_prototype() -> $pbr$::MapValue {
+              fn get_prototype() -> $pbr$::FfiMapValue {
                   Self::to_map_value(Self::default())
               }
 
-              fn to_map_value(self) -> $pbr$::MapValue {
-                  $pbr$::MapValue::make_u32(self.0 as u32)
+              fn to_map_value(self) -> $pbr$::FfiMapValue {
+                  $pbr$::FfiMapValue::make_u32(self.0 as u32)
               }
 
-              unsafe fn from_map_value<'a>(value: $pbr$::MapValue) -> $pb$::View<'a, Self> {
-                  debug_assert_eq!(value.tag, $pbr$::MapValueTag::U32);
+              unsafe fn from_map_value<'a>(value: $pbr$::FfiMapValue) -> $pb$::View<'a, Self> {
+                  debug_assert_eq!(value.tag, $pbr$::FfiMapValueTag::U32);
                   $name$(unsafe { value.val.u as i32 })
               }
           }
@@ -69,26 +69,8 @@ void TypeConversions(Context& ctx, const EnumDescriptor& desc) {
       return;
     case Kernel::kUpb:
       ctx.Emit(R"rs(
-            impl $pbr$::UpbTypeConversions for $name$ {
-                fn upb_type() -> $pbr$::CType {
-                    $pbr$::CType::Enum
-                }
-
-                fn to_message_value(
-                    val: $pb$::View<'_, Self>) -> $pbr$::upb_MessageValue {
-                    $pbr$::upb_MessageValue { int32_val: val.0 }
-                }
-
-                unsafe fn into_message_value_fuse_if_required(
-                  _raw_parent_arena: $pbr$::RawArena,
-                  val: Self) -> $pbr$::upb_MessageValue {
-                    $pbr$::upb_MessageValue { int32_val: val.0 }
-                }
-
-                unsafe fn from_message_value<'msg>(val: $pbr$::upb_MessageValue)
-                    -> $pb$::View<'msg, Self> {
-                  $name$(unsafe { val.int32_val })
-                }
+            impl $pbr$::EntityType for $name$ {
+                type Tag = $pbr$::EnumTag;
             }
             )rs");
       return;
@@ -105,14 +87,12 @@ void MiniTable(Context& ctx, const EnumDescriptor& desc,
             {"mini_descriptor_length", mini_descriptor.size()}},
            R"rs(
     unsafe impl $pbr$::AssociatedMiniTableEnum for $name$ {
-      fn mini_table() -> *const $pbr$::upb_MiniTableEnum {
-        static MINI_TABLE: $std$::sync::OnceLock<$pbr$::MiniTableEnumPtr> =
+      fn mini_table() -> $pbr$::MiniTableEnumPtr {
+        static MINI_TABLE: $std$::sync::OnceLock<$pbr$::MiniTableEnumInitPtr> =
             $std$::sync::OnceLock::new();
         MINI_TABLE.get_or_init(|| unsafe {
-          $pbr$::MiniTableEnumPtr($pbr$::upb_MiniTableEnum_Build(
-              "$mini_descriptor$".as_ptr(), $mini_descriptor_length$,
-              $pbr$::THREAD_LOCAL_ARENA.with(|a| a.raw()),
-              $std$::ptr::null_mut()))
+          $pbr$::MiniTableEnumInitPtr(
+              $pbr$::build_enum_mini_table("$mini_descriptor$"))
         }).0
       }
     }
@@ -297,9 +277,6 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
         type View<'a> = $name$;
       }
 
-      impl $pb$::Proxy<'_> for $name$ {}
-      impl $pb$::ViewProxy<'_> for $name$ {}
-
       impl $pb$::AsView for $name$ {
         type Proxied = $name$;
 
@@ -311,70 +288,6 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
       impl<'msg> $pb$::IntoView<'msg> for $name$ {
         fn into_view<'shorter>(self) -> $name$ where 'msg: 'shorter {
           self
-        }
-      }
-
-      unsafe impl $pb$::ProxiedInRepeated for $name$ {
-        fn repeated_new(_private: $pbi$::Private) -> $pb$::Repeated<Self> {
-          $pbr$::new_enum_repeated()
-        }
-
-        unsafe fn repeated_free(_private: $pbi$::Private, f: &mut $pb$::Repeated<Self>) {
-          $pbr$::free_enum_repeated(f)
-        }
-
-        fn repeated_len(r: $pb$::View<$pb$::Repeated<Self>>) -> usize {
-          $pbr$::cast_enum_repeated_view(r).len()
-        }
-
-        fn repeated_push(r: $pb$::Mut<$pb$::Repeated<Self>>, val: impl $pb$::IntoProxied<$name$>) {
-          $pbr$::cast_enum_repeated_mut(r).push(val.into_proxied($pbi$::Private))
-        }
-
-        fn repeated_clear(r: $pb$::Mut<$pb$::Repeated<Self>>) {
-          $pbr$::cast_enum_repeated_mut(r).clear()
-        }
-
-        unsafe fn repeated_get_unchecked(
-            r: $pb$::View<$pb$::Repeated<Self>>,
-            index: usize,
-        ) -> $pb$::View<$name$> {
-          // SAFETY: In-bounds as promised by the caller.
-          unsafe {
-            $pbr$::cast_enum_repeated_view(r)
-              .get_unchecked(index)
-              .try_into()
-              .unwrap_unchecked()
-          }
-        }
-
-        unsafe fn repeated_set_unchecked(
-            r: $pb$::Mut<$pb$::Repeated<Self>>,
-            index: usize,
-            val: impl $pb$::IntoProxied<$name$>,
-        ) {
-          // SAFETY: In-bounds as promised by the caller.
-          unsafe {
-            $pbr$::cast_enum_repeated_mut(r)
-              .set_unchecked(index, val.into_proxied($pbi$::Private))
-          }
-        }
-
-        fn repeated_copy_from(
-            src: $pb$::View<$pb$::Repeated<Self>>,
-            dest: $pb$::Mut<$pb$::Repeated<Self>>,
-        ) {
-          $pbr$::cast_enum_repeated_mut(dest)
-            .copy_from($pbr$::cast_enum_repeated_view(src))
-        }
-
-        fn repeated_reserve(
-            r: $pb$::Mut<$pb$::Repeated<Self>>,
-            additional: usize,
-        ) {
-            // SAFETY:
-            // - `f.as_raw()` is valid.
-            $pbr$::reserve_enum_repeated_mut(r, additional);
         }
       }
 
@@ -391,6 +304,82 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
 
       $mini_table$
       )rs");
+
+  if (ctx.is_cpp()) {
+    ctx.Emit(
+        {
+            {"name", name},
+        },
+        R"rs(
+      unsafe impl $pb$::Singular for $name$ {
+        fn repeated_new(_private: $pbi$::Private) -> $pb$::Repeated<Self> {
+          $pbr$::new_enum_repeated()
+        }
+
+        unsafe fn repeated_free(_private: $pbi$::Private, f: &mut $pb$::Repeated<Self>) {
+          unsafe { $pbr$::free_enum_repeated(f) }
+        }
+
+        fn repeated_len(_private: $pbi$::Private, r: $pb$::View<$pb$::Repeated<Self>>) -> usize {
+          $pbr$::cast_enum_repeated_view(r).len()
+        }
+
+        fn repeated_push(_private: $pbi$::Private, r: $pb$::Mut<$pb$::Repeated<Self>>, val: impl $pb$::IntoProxied<$name$>) {
+          $pbr$::cast_enum_repeated_mut(r).push(val.into_proxied($pbi$::Private))
+        }
+
+        fn repeated_clear(_private: $pbi$::Private, r: $pb$::Mut<$pb$::Repeated<Self>>) {
+          $pbr$::cast_enum_repeated_mut(r).clear()
+        }
+
+        unsafe fn repeated_get_unchecked(
+            _private: $pbi$::Private,
+            r: $pb$::View<$pb$::Repeated<Self>>,
+            index: usize,
+        ) -> $pb$::View<$name$> {
+          // SAFETY: In-bounds as promised by the caller.
+          unsafe {
+            $pbr$::cast_enum_repeated_view(r)
+              .get_unchecked(index)
+              .try_into()
+              .unwrap_unchecked()
+          }
+        }
+
+        unsafe fn repeated_set_unchecked(
+            _private: $pbi$::Private,
+            r: $pb$::Mut<$pb$::Repeated<Self>>,
+            index: usize,
+            val: impl $pb$::IntoProxied<$name$>,
+        ) {
+          // SAFETY: In-bounds as promised by the caller.
+          unsafe {
+            $pbr$::cast_enum_repeated_mut(r)
+              .set_unchecked(index, val.into_proxied($pbi$::Private))
+          }
+        }
+
+        fn repeated_copy_from(
+            _private: $pbi$::Private,
+            src: $pb$::View<$pb$::Repeated<Self>>,
+            dest: $pb$::Mut<$pb$::Repeated<Self>>,
+        ) {
+          $pbr$::cast_enum_repeated_mut(dest)
+            .copy_from($pbr$::cast_enum_repeated_view(src))
+        }
+
+        fn repeated_reserve(
+            _private: $pbi$::Private,
+            r: $pb$::Mut<$pb$::Repeated<Self>>,
+            additional: usize,
+        ) {
+            // SAFETY:
+            // - `f.as_raw()` is valid.
+            $pbr$::reserve_enum_repeated_mut(r, additional);
+        }
+      }
+        )rs");
+  }
 }
 
 }  // namespace rust

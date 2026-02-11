@@ -27,8 +27,6 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 
-class MessageSCCAnalyzer;
-
 class FieldGroup {
  public:
   FieldGroup()
@@ -91,15 +89,18 @@ class MessageLayoutHelper {
   const Descriptor* descriptor() const { return descriptor_; }
 
   virtual FieldVector OptimizeLayout(const FieldVector& fields,
-                                     const Options& options,
-                                     MessageSCCAnalyzer* scc_analyzer) const {
-    return DoOptimizeLayout(fields, options, scc_analyzer);
+                                     const Options& options) const {
+    return DoOptimizeLayout(fields, options);
   }
 
  protected:
+  // Enum of hotness classes for fields, which is the major factor in layout
+  // order. Use enum class instead of enum to avoid implicit conversion to an
+  // index.
+  //
   // TODO: Merge kCold and kSplit once all field types can be
   // split.
-  enum FieldHotness {
+  enum class FieldHotness {
     kSplit,
     kCold,
     kWarm,
@@ -108,6 +109,11 @@ class MessageLayoutHelper {
     kRepeated,   // Non-split repeated fields.
     kMaxHotness,
   };
+
+  static constexpr size_t kMaxHotness =
+      static_cast<size_t>(FieldHotness::kMaxHotness);
+
+  friend bool operator<(FieldHotness h1, FieldHotness h2);
 
   // Reorder 'fields' so that if the fields are output into a C++ class in the
   // new order, fields of similar family (see below) are together and within
@@ -131,9 +137,8 @@ class MessageLayoutHelper {
   // calls ArenaStringPtr::Destroy on each.
   //
   // MESSAGE is grouped next, as our Clear/SharedDtor code walks it and calls
-  // delete on each.  We initialize these fields with a NULL pointer (see
-  // MessageFieldGenerator::GenerateConstructorCode), which allows them to be
-  // memset.
+  // delete on each.  We initialize these fields with a NULL pointer, which
+  // allows them to be memset.
   //
   // ZERO_INITIALIZABLE is memset in Clear/SharedCtor
   //
@@ -143,8 +148,7 @@ class MessageLayoutHelper {
   // order within split fields follows the same rule, aka classify and order by
   // "family".
   FieldVector DoOptimizeLayout(const FieldVector& fields,
-                               const Options& options,
-                               MessageSCCAnalyzer* scc_analyzer) const;
+                               const Options& options) const;
 
  private:
   enum FieldFamily {
@@ -165,37 +169,41 @@ class MessageLayoutHelper {
     FieldPartitionArray aligned_to_8;
   };
 
+  static constexpr size_t FieldHotnessIndex(FieldHotness hotness);
+
   // Returns true if the message has PDProto data.
   virtual bool HasProfiledData() const = 0;
 
-  virtual FieldHotness GetFieldHotness(
-      const FieldDescriptor* field, const Options& options,
-      MessageSCCAnalyzer* scc_analyzer) const = 0;
+  virtual FieldHotness GetFieldHotness(const FieldDescriptor* field,
+                                       const Options& options) const = 0;
 
   virtual FieldGroup SingleFieldGroup(const FieldDescriptor* field) const = 0;
 
   static FieldFamily GetFieldFamily(const FieldDescriptor* field,
-                                    const Options& options,
-                                    MessageSCCAnalyzer* scc_analyzer);
+                                    const Options& options);
 
   // Constructs the fast parse table for the message as it would be generated,
   // ignoring hasbits/inlined string indices as those have not been assigned
   // yet. This is used to determine which fields to prioritize for the fast
   // parse hotness class, which guarantees fast-parse eligibility.
   std::vector<internal::TailCallTableInfo::FastFieldInfo> BuildFastParseTable(
-      const Options& options, MessageSCCAnalyzer* scc_analyzer) const;
+      const Options& options) const;
 
   static bool IsFastPathField(
       const FieldDescriptor* field,
       const std::vector<internal::TailCallTableInfo::FastFieldInfo>&
           fast_path_fields);
 
+  static bool ShouldPromoteToFastParse(
+      const FieldDescriptor* field, FieldHotness hotness,
+      const std::vector<internal::TailCallTableInfo::FastFieldInfo>&
+          fast_path_fields);
+
   // Groups fields into alignment equivalence classes (1, 4, and 8). Within
   // each alignment equivalence class, fields are partitioned by `FieldFamily`
   // and `FieldHotness`.
-  FieldAlignmentGroups BuildFieldAlignmentGroups(
-      const FieldVector& fields, const Options& options,
-      MessageSCCAnalyzer* scc_analyzer) const;
+  FieldAlignmentGroups BuildFieldAlignmentGroups(const FieldVector& fields,
+                                                 const Options& options) const;
 
   // Consolidates all fields into a single array of field groups, partitioned by
   // `FieldFamily` and `FieldHotness`. Within each partition, fields are
@@ -212,8 +220,7 @@ class MessageLayoutHelper {
   // the order is based on `FieldFamily`, arranged in a way to maximize
   // contiguous spans of zero-initializable fields.
   FieldVector BuildFieldDescriptorOrder(FieldPartitionArray&& field_groups,
-                                        const Options& options,
-                                        MessageSCCAnalyzer* scc_analyzer) const;
+                                        const Options& options) const;
 
   // Consolidate field groups that are aligned to `alignment` into groups that
   // are aligned to `target_alignment`.
@@ -245,6 +252,9 @@ class MessageLayoutHelper {
 
   const Descriptor* descriptor_;
 };
+
+bool operator<(MessageLayoutHelper::FieldHotness h1,
+               MessageLayoutHelper::FieldHotness h2);
 
 }  // namespace cpp
 }  // namespace compiler

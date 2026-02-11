@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-edition = "2023";
+edition = "2024";
 
 package pb;
 
@@ -24,8 +24,7 @@ message InternalOptionsForce {
   }
 }
 
-message InternalFieldOptionsCpp {
-}
+message InternalFieldOptionsCpp {}
 
 message InternalFieldOptions {
   InternalFieldOptionsCpp cpp = 1;

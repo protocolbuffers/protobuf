@@ -603,6 +603,50 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals(-1, $m->getOptionalInt32());
     }
 
+    public function testInvalidVarintLength() {
+        $this->expectException(Exception::class);
+
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin("0afaffffff0f"));
+    }
+
+    private function makeRecursiveMessage($depth) {
+        $m = new TestMessage();
+        $m->setOptionalInt32(1);
+        if ($depth == 0) {
+            return $m;
+        }
+        $m->setRecursive($this->makeRecursiveMessage($depth - 1));
+        return $m;
+    }
+
+    public function testRecursiveMessage() {
+        // TODO: shaod - Re-enable this test once the memory leak is fixed.
+        if (getenv("USE_VALGRIND")) {
+            $this->markTestSkipped("skipping for valgrind because of a memory leak");
+        }
+        $payload = $this->makeRecursiveMessage(99)->serializeToString();
+
+        $m = new TestMessage();
+        $m->mergeFromString($payload);
+
+        // If execution reaches this line, it means no exception was thrown.
+        // This assertion prevents PHPUnit from marking the test as risky.
+        $this->assertTrue(true);
+    }
+
+    public function testOverlyRecursiveMessage() {
+        // TODO: shaod - Re-enable this test once the memory leak is fixed.
+        if (getenv("USE_VALGRIND")) {
+            $this->markTestSkipped("skipping for valgrind because of a memory leak");
+        }
+        $this->expectException(Exception::class);
+        $payload = $this->makeRecursiveMessage(101)->serializeToString();
+
+        $m = new TestMessage();
+        $m->mergeFromString($payload);
+    }
+
     public function testRandomFieldOrder()
     {
         $m = new TestRandomFieldOrder();
@@ -1596,7 +1640,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals($defaultValue, $to->getOneofFieldUnwrapped());
     }
 
-    public function wrappersDataProvider()
+    public static function wrappersDataProvider()
     {
         return [
             [TestInt32Value::class, 1, "1", 0, "0"],
@@ -1706,5 +1750,240 @@ class EncodeDecodeTest extends TestBase
             [true, '{"oneof_enum":"ONE"}'],
             [false, '{"oneofEnum":"ONE"}'],
         ];
+    }
+
+    public function testEmitDefaultsInt32()
+    {
+        $m = new TestMessage();
+        // Without EMIT_DEFAULTS, default values should not be included
+        $this->assertSame("{}", $m->serializeToJsonString());
+
+        // With EMIT_DEFAULTS, default values should be included
+        $json = $m->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
+        $this->assertStringContainsString('"optionalInt32":0', $json);
+        $this->assertStringContainsString('"optionalUint32":0', $json);
+        $this->assertStringContainsString('"optionalSint32":0', $json);
+    }
+
+    public function testEmitDefaultsInt64()
+    {
+        $m = new TestMessage();
+        $json = $m->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
+        $this->assertStringContainsString('"optionalInt64":"0"', $json);
+        $this->assertStringContainsString('"optionalUint64":"0"', $json);
+        $this->assertStringContainsString('"optionalSint64":"0"', $json);
+    }
+
+    public function testEmitDefaultsFloat()
+    {
+        $m = new TestMessage();
+        $json = $m->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
+        $this->assertStringContainsString('"optionalFloat":0', $json);
+        $this->assertStringContainsString('"optionalDouble":0', $json);
+    }
+
+    public function testEmitDefaultsBool()
+    {
+        $m = new TestMessage();
+        $json = $m->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
+        $this->assertStringContainsString('"optionalBool":false', $json);
+    }
+
+    public function testEmitDefaultsString()
+    {
+        $m = new TestMessage();
+        $json = $m->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
+        $this->assertStringContainsString('"optionalString":""', $json);
+        $this->assertStringContainsString('"optionalBytes":""', $json);
+    }
+
+    public function testEmitDefaultsEnum()
+    {
+        $m = new TestMessage();
+        $json = $m->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
+        $this->assertStringContainsString('"optionalEnum":"ZERO"', $json);
+    }
+
+    public function testEmitDefaultsMessage()
+    {
+        $m = new TestMessage();
+        // Messages are not included even with EMIT_DEFAULTS when they are null
+        $json = $m->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
+        $this->assertThat($json, $this->logicalNot($this->stringContains('"optionalMessage"')));
+    }
+
+    public function testEmitDefaultsRepeatedFields()
+    {
+        $m = new TestMessage();
+        $json = $m->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
+
+        // Empty repeated fields should be included as [] with EMIT_DEFAULTS
+        $this->assertStringContainsString('"repeatedInt32":[]', $json);
+        $this->assertStringContainsString('"repeatedString":[]', $json);
+
+        // Non-empty repeated fields are always included
+        $m->setRepeatedInt32([1, 2, 3]);
+        $json2 = $m->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
+        $this->assertStringContainsString('"repeatedInt32":[1,2,3]', $json2);
+    }
+
+    public function testEmitDefaultsMaps()
+    {
+        $m = new TestMessage();
+        $json = $m->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
+
+        // Empty maps should be included as {} with EMIT_DEFAULTS
+        $this->assertStringContainsString('"mapInt32Int32":{}', $json);
+        $this->assertStringContainsString('"mapStringString":{}', $json);
+
+        // Non-empty maps are always included
+        $m->getMapInt32Int32()[1] = 100;
+        $json2 = $m->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
+        $this->assertStringContainsString('"mapInt32Int32":{"1":100}', $json2);
+    }
+
+    public function testEmitDefaultsWithNonDefaultValues()
+    {
+        $m = new TestMessage();
+        $m->setOptionalInt32(42);
+        $m->setOptionalString("test");
+
+        // Non-default values should always be included
+        $json = $m->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
+        $this->assertStringContainsString('"optionalInt32":42', $json);
+        $this->assertStringContainsString('"optionalString":"test"', $json);
+
+        // Default values should also be included
+        $this->assertStringContainsString('"optionalBool":false', $json);
+        $this->assertStringContainsString('"optionalDouble":0', $json);
+    }
+
+    public function testEmitDefaultsWithPreserveProtoFieldNames()
+    {
+        $m = new TestMessage();
+        $json = $m->serializeToJsonString(
+            PrintOptions::EMIT_DEFAULTS | PrintOptions::PRESERVE_PROTO_FIELD_NAMES
+        );
+
+        // Should use proto field names (with underscores)
+        $this->assertStringContainsString('"optional_int32":0', $json);
+        $this->assertStringContainsString('"optional_string":""', $json);
+        $this->assertStringContainsString('"optional_bool":false', $json);
+    }
+
+    public function testEmitDefaultsWithAlwaysPrintEnumsAsInts()
+    {
+        $m = new TestMessage();
+        $json = $m->serializeToJsonString(
+            PrintOptions::EMIT_DEFAULTS | PrintOptions::ALWAYS_PRINT_ENUMS_AS_INTS
+        );
+
+        // Enum should be printed as integer
+        $this->assertStringContainsString('"optionalEnum":0', $json);
+    }
+
+    public function testEmitDefaultsAllFlags()
+    {
+        $m = new TestMessage();
+        $json = $m->serializeToJsonString(
+            PrintOptions::EMIT_DEFAULTS | 
+            PrintOptions::PRESERVE_PROTO_FIELD_NAMES | 
+            PrintOptions::ALWAYS_PRINT_ENUMS_AS_INTS
+        );
+
+        // Should have all three flag behaviors
+        $this->assertStringContainsString('"optional_int32":0', $json);
+        $this->assertStringContainsString('"optional_enum":0', $json);
+        $this->assertStringContainsString('"optional_bool":false', $json);
+    }
+
+    public function testEmitDefaultsDoesNotAffectParsing()
+    {
+        // Create a message with default values using EMIT_DEFAULTS
+        $m1 = new TestMessage();
+        $json = $m1->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
+
+        // Parse it back
+        $m2 = new TestMessage();
+        $m2->mergeFromJsonString($json);
+
+        // All fields should have default values
+        $this->assertSame(0, $m2->getOptionalInt32());
+        $this->assertSame(false, $m2->getOptionalBool());
+        $this->assertSame('', $m2->getOptionalString());
+        $this->assertSame(TestEnum::ZERO, $m2->getOptionalEnum());
+    }
+
+    public function testEmitDefaultsWithSetThenClearedField()
+    {
+        $m = new TestMessage();
+        $m->setOptionalInt32(42);
+        $m->setOptionalInt32(0);  // Set back to default
+
+        // Without EMIT_DEFAULTS, should not be in JSON
+        $json1 = $m->serializeToJsonString();
+        $this->assertSame("{}", $json1);
+
+        // With EMIT_DEFAULTS, should be in JSON
+        $json2 = $m->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
+        $this->assertStringContainsString('"optionalInt32":0', $json2);
+    }
+
+    public function testEmitDefaultsTrueOptionalFieldsWithHazzer()
+    {
+        // True optional fields (proto3 optional) should not be included
+        // even with EMIT_DEFAULTS if they haven't been set
+        $m = new TestMessage();
+        $json = $m->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
+
+        // Regular optional (implicit presence) should be included
+        $this->assertStringContainsString('"optionalInt32":0', $json);
+
+        // True optional (explicit presence) should NOT be included if not set
+        $this->assertThat($json, $this->logicalNot($this->stringContains('"trueOptionalInt32"')));
+
+        // But if we set the true optional field, it should be included
+        $m->setTrueOptionalInt32(0);
+        $json2 = $m->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
+        $this->assertStringContainsString('"trueOptionalInt32":0', $json2);
+    }
+
+    public function testEmitDefaultsWellKnownTypes()
+    {
+        // Test with wrapper types
+        $m = new Int32Value();
+
+        // Without setting value
+        $json1 = $m->serializeToJsonString();
+        $this->assertSame("0", $json1);
+
+        // With EMIT_DEFAULTS (should behave the same for wrapper types)
+        $json2 = $m->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
+        $this->assertSame("0", $json2);
+    }
+
+    public function testEmitDefaultsStructAndListValue()
+    {
+        // Test with ListValue
+        $m = new ListValue();
+
+        // Empty ListValue
+        $json1 = $m->serializeToJsonString();
+        $this->assertSame("[]", $json1);
+
+        // With EMIT_DEFAULTS
+        $json2 = $m->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
+        $this->assertSame("[]", $json2);
+
+        // Test with Struct
+        $s = new Struct();
+
+        // Empty Struct
+        $json3 = $s->serializeToJsonString();
+        $this->assertSame("{}", $json3);
+
+        // With EMIT_DEFAULTS
+        $json4 = $s->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
+        $this->assertSame("{}", $json4);
     }
 }

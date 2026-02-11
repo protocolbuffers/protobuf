@@ -16,7 +16,43 @@
 #include "python/repeated.h"
 #include "python/unknown_fields.h"
 
+// Mutex wrapper when GIL-disabled. Zero-cost when GIL-enabled.
+// NOTE: Protobuf Free-threading support is still experimental.
+// TODO: Remove mutex and make upb python lock free.
+#ifdef Py_GIL_DISABLED
+#ifdef _POSIX_THREADS
+#define ENABLE_MUTEX 1
+#include <pthread.h>
+#else
+#error "GIL is disabled but _POSIX_THREADS isn't available"
+#endif  // _POSIX_THREADS
+#endif  // Py_GIL_DISABLED
+
+typedef struct {
+#ifdef ENABLE_MUTEX
+  pthread_mutex_t mutex;
+#endif
+} FreeThreadingMutex;
+
+#ifdef ENABLE_MUTEX
+static FreeThreadingMutex obj_cache_mutex = {PTHREAD_MUTEX_INITIALIZER};
+#else
+static FreeThreadingMutex obj_cache_mutex = {};
+#endif
+
 static upb_Arena* PyUpb_NewArena(void);
+
+void FreeThreadingLock(FreeThreadingMutex* thread_mutex) {
+#ifdef ENABLE_MUTEX
+  pthread_mutex_lock(&(thread_mutex->mutex));
+#endif
+}
+
+void FreeThreadingUnlock(FreeThreadingMutex* thread_mutex) {
+#ifdef ENABLE_MUTEX
+  pthread_mutex_unlock(&(thread_mutex->mutex));
+#endif
+}
 
 static void PyUpb_ModuleDealloc(void* module) {
   PyUpb_ModuleState* s = PyModule_GetState(module);
@@ -58,6 +94,12 @@ static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
 // -----------------------------------------------------------------------------
 
 PyUpb_ModuleState* PyUpb_ModuleState_MaybeGet(void) {
+#if PY_VERSION_HEX >= 0x030D0000  // >= 3.13
+  /* Calling `PyState_FindModule` during interpreter shutdown causes a crash. */
+  if (Py_IsFinalizing()) {
+    return NULL;
+  }
+#endif
   PyObject* module = PyState_FindModule(&module_def);
   return module ? PyModule_GetState(module) : NULL;
 }
@@ -81,7 +123,7 @@ PyObject* PyUpb_GetWktBases(PyUpb_ModuleState* state) {
                                                  ".well_known_types");
 
     if (wkt_module == NULL) {
-      return false;
+      return NULL;
     }
 
     state->wkt_bases = PyObject_GetAttrString(wkt_module, "WKTBASES");
@@ -174,24 +216,72 @@ PyUpb_WeakMap* PyUpb_ObjCache_Instance(void) {
   return state->obj_cache;
 }
 
+static PyUpb_WeakMap* PyUpb_ObjCache_MaybeInstance(void) {
+  // During the shutdown sequence, our objects may need to be deallocated, or
+  // there may even still be attempts to *construct* new ones (in user code).
+  // At that point our state will be NULL, so all access to the cache has to be
+  // no-op.
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  if (!state) {
+    return NULL;
+  }
+  return state->obj_cache;
+}
+
 void PyUpb_ObjCache_Add(const void* key, PyObject* py_obj) {
-  PyUpb_WeakMap_Add(PyUpb_ObjCache_Instance(), key, py_obj);
+  PyUpb_WeakMap* cache = PyUpb_ObjCache_MaybeInstance();
+  if (!cache) {
+    return;
+  }
+  FreeThreadingLock(&obj_cache_mutex);
+  PyUpb_WeakMap_Add(cache, key, py_obj);
+  FreeThreadingUnlock(&obj_cache_mutex);
+}
+
+void PyUpb_KnownObjCache_Add(PyUpb_WeakMap* cache, const void* key,
+                             PyObject* py_obj) {
+  FreeThreadingLock(&obj_cache_mutex);
+  PyUpb_WeakMap_Add(cache, key, py_obj);
+  FreeThreadingUnlock(&obj_cache_mutex);
 }
 
 void PyUpb_ObjCache_Delete(const void* key) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
-  if (!state) {
-    // During the shutdown sequence, our object's Dealloc() methods can be
-    // called *after* our module Dealloc() method has been called.  At that
-    // point our state will be NULL and there is nothing to delete out of the
-    // map.
+  PyUpb_WeakMap* cache = PyUpb_ObjCache_MaybeInstance();
+  if (!cache) {
     return;
   }
-  PyUpb_WeakMap_Delete(state->obj_cache, key);
+  FreeThreadingLock(&obj_cache_mutex);
+  PyUpb_WeakMap_Delete(cache, key);
+  FreeThreadingUnlock(&obj_cache_mutex);
 }
 
 PyObject* PyUpb_ObjCache_Get(const void* key) {
-  return PyUpb_WeakMap_Get(PyUpb_ObjCache_Instance(), key);
+  PyUpb_WeakMap* cache = PyUpb_ObjCache_MaybeInstance();
+  if (!cache) {
+    // When the interpreter is finalizing, the state may not be available, so
+    // we don't try to find existing objects in the object cache - in order to
+    // prevent a crash. Unfortunately, doing this can lead to different
+    // semantics in protobuf APIs during shutdown. For example:
+    //
+    //   m = MyMessage()
+    //
+    //   # Returns true most of the time, but false during shutdown.
+    //   assert(m.submsg is m.submsg)
+    //   assert(Py_IsFinalizing());
+    //
+    //
+    //   # Returns true most of the time, but false during shutdown.
+    //   assert(foo_pb2.DESCRIPTOR.message_types_by_name['Bar'] is
+    //          foo_pb2.DESCRIPTOR.message_types_by_name['Bar')
+#if PY_VERSION_HEX >= 0x030D0000  // >= 3.13
+    assert(Py_IsFinalizing());
+#endif
+    return NULL;
+  }
+  FreeThreadingLock(&obj_cache_mutex);
+  PyObject* obj = PyUpb_WeakMap_Get(cache, key);
+  FreeThreadingUnlock(&obj_cache_mutex);
+  return obj;
 }
 
 // -----------------------------------------------------------------------------
@@ -409,7 +499,9 @@ PyMODINIT_FUNC PyInit__message(void) {
 
   state->allow_oversize_protos = false;
   state->wkt_bases = NULL;
+  FreeThreadingLock(&obj_cache_mutex);
   state->obj_cache = PyUpb_WeakMap_New();
+  FreeThreadingUnlock(&obj_cache_mutex);
   state->c_descriptor_symtab = NULL;
 
   if (!PyUpb_InitDescriptorContainers(m) || !PyUpb_InitDescriptorPool(m) ||

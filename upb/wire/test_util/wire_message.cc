@@ -40,7 +40,7 @@ static void EncodeVarint(uint64_t val, int varint_length, std::string* str) {
 
   ABSL_CHECK_GE(tmp.size(), static_cast<size_t>(varint_length)) << val;
   uint64_t parsed_val;
-  ABSL_CHECK_EQ(upb_WireReader_ReadVarint(tmp.data(), &parsed_val),
+  ABSL_CHECK_EQ(upb_WireReader_ReadVarint(tmp.data(), &parsed_val, nullptr),
                 tmp.data() + tmp.size())
       << "val=" << val << ", size=" << tmp.size()
       << ", varint_length=" << varint_length;

@@ -66,7 +66,7 @@ namespace google::protobuf::compiler::tools {
 
 class ErrorSink : public DescriptorPool::ErrorCollector {
  public:
-  explicit ErrorSink(std::string_view filename)
+  explicit ErrorSink(absl::string_view filename)
       : stream_{filename.empty() ? std::cerr : file_stream_} {
     if (!filename.empty()) {
       file_stream_.open(filename, std::ios_base::out | std::ios_base::trunc);

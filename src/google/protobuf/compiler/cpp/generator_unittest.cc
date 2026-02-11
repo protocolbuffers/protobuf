@@ -14,6 +14,7 @@
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 #include "google/protobuf/cpp_features.pb.h"
 
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -99,8 +100,8 @@ TEST_F(CppGeneratorTest, LegacyClosedEnum) {
       "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
 
   ExpectWarningSubstring(
-      "foo.proto:9:16: warning: Feature pb.CppFeatures.legacy_closed_enum has "
-      "been deprecated in edition 2023");
+      "foo.proto:9:16: warning: pb.CppFeatures.legacy_closed_enum has "
+      "been deprecated in edition 2023:");
 }
 
 TEST_F(CppGeneratorTest, LegacyClosedEnumInherited) {
@@ -122,7 +123,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumInherited) {
       "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
 
   ExpectWarningSubstring(
-      "foo.proto: warning: Feature pb.CppFeatures.legacy_closed_enum has "
+      "foo.proto: warning: pb.CppFeatures.legacy_closed_enum has "
       "been deprecated in edition 2023");
 }
 
@@ -310,6 +311,8 @@ TEST_F(CppGeneratorTest, CtypeOnExtensionTest) {
       "Extension bar specifies CORD string type which is not supported for "
       "extensions");
 }
+
+
 }  // namespace
 }  // namespace cpp
 }  // namespace compiler

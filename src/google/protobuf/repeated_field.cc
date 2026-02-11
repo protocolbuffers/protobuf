@@ -24,6 +24,7 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+
 namespace google {
 namespace protobuf {
 
@@ -33,8 +34,25 @@ void LogIndexOutOfBounds(int index, int size) {
   ABSL_DLOG(FATAL) << "Index " << index << " out of bounds " << size;
 }
 
-[[noreturn]] void LogIndexOutOfBoundsAndAbort(int index, int size) {
-  ABSL_LOG(FATAL) << "index: " << index << ", size: " << size;
+void LogIndexOutOfBoundsAndAbort(int64_t index, int64_t size,
+                                 BoundsCheckMessageType type) {
+  switch (type) {
+    case BoundsCheckMessageType::kIndex:
+      ABSL_LOG(FATAL) << "Index (" << index
+                      << ") out of bounds of container with size (" << size
+                      << ")";
+      break;
+    case BoundsCheckMessageType::kGe:
+      ABSL_LOG(FATAL) << "Value (" << index
+                      << ") must be greater than or equal to limit (" << size
+                      << ")";
+      break;
+    case BoundsCheckMessageType::kLe:
+      ABSL_LOG(FATAL) << "Value (" << index
+                      << ") must be less than or equal to limit (" << size
+                      << ")";
+      break;
+  }
 }
 }  // namespace internal
 

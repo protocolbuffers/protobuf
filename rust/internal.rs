@@ -12,11 +12,11 @@
 // Used by the proto! macro
 pub use paste::paste;
 
-use crate::map;
 pub use crate::r#enum::Enum;
-use crate::repeated;
+use crate::repeated::RepeatedView;
+use crate::singular::Singular;
 pub use crate::ProtoStr;
-use crate::Proxied;
+use crate::{MapKey, MapValue, MapView};
 pub use std::fmt::Debug;
 
 #[cfg(all(bzl, cpp_kernel))]
@@ -25,11 +25,6 @@ pub mod runtime;
 #[cfg(any(not(bzl), upb_kernel))]
 #[path = "upb.rs"]
 pub mod runtime;
-
-// TODO: Temporarily re-export these symbols which are now under
-// runtime under __internal directly since some external callers using it
-// through __internal.
-pub use runtime::{PtrAndLen, RawMap, RawMessage, RawRepeatedField};
 
 /// Used to protect internal-only items from being used accidentally.
 #[derive(Debug)]
@@ -52,54 +47,92 @@ pub trait MatcherEq: SealedInternal + Debug {
 }
 
 /// Used by the proto! macro to get a default value for a repeated field.
-pub fn get_repeated_default_value<T: repeated::ProxiedInRepeated + Default>(
-    _: Private,
-    _: repeated::RepeatedView<'_, T>,
-) -> T {
+pub fn get_repeated_default_value<T: Singular + Default>(_: Private, _: RepeatedView<'_, T>) -> T {
     Default::default()
 }
 
 /// Used by the proto! macro to get a default value for a map field.
-pub fn get_map_default_value<K: Proxied, V: map::ProxiedInMapValue<K> + Default>(
+pub fn get_map_default_value<K: MapKey, V: MapValue + Default>(
     _: Private,
-    _: map::MapView<'_, K, V>,
+    _: MapView<'_, K, V>,
 ) -> V {
     Default::default()
 }
 
-/// A function that is used to assert that the generated code is compatible with
-/// the current runtime version. Right now a perfect/exact match with zero skew
-/// is require, except any -prerelease suffixes are ignored as long it is
-/// present on both. This may be relaxed in the future.
-///
-/// As the generated code is permitted to use unstable internal APIs, the protoc
-/// used to generate the code must correspond to the runtime dependency. This
-/// const fn is used to check at compile time that the right gencode is used
-/// with the right runtime; if you are seeing this fail it means your protoc
-/// version mismatches the Rust runtime crate version.
+// Given a version string of the form "x.y.z" with an optional "-rc.n" suffix,
+// returns the tuple (x, y, z, n).
+//
+// This function is not fully robust against  malformed version strings, but
+// that is fine since we only call it at compile time.
 #[cfg(not(bzl))]
-pub const fn assert_compatible_gencode_version(gencode_version: &'static str) {
-    // Helper since str eq is not allowed in const context. In a future rust release
-    // &str PartialEq will be allowed in const contexts and we can drop this.
-    const fn const_str_eq(lhs: &str, rhs: &str) -> bool {
-        let lhs = lhs.as_bytes();
-        let rhs = rhs.as_bytes();
-        if lhs.len() != rhs.len() {
-            return false;
+const fn split_version(version: &str) -> (u32, u32, u32, u32) {
+    let version = version.as_bytes();
+    let mut result: [u32; 4] = [0, 0, 0, 0];
+
+    let mut result_index = 0;
+    let mut i = 0;
+    while result_index < result.len() && i < version.len() {
+        if version[i] == b'.' {
+            // Done with one component, so let's move on to the next one.
+            result_index += 1;
+        } else if version[i] >= b'0' && version[i] <= b'9' {
+            // Shift the previous digits one decimal place to the left and add
+            // this digit.
+            result[result_index] = result[result_index] * 10 + (version[i] - b'0') as u32;
         }
-        let mut i = 0;
-        while i < lhs.len() {
-            if lhs[i] != rhs[i] {
-                return false;
-            }
-            i += 1;
-        }
-        true
+        i += 1;
     }
 
+    (result[0], result[1], result[2], result[3])
+}
+
+// Indicates whether the given gencode and runtime versions are compatible with
+// each other. Generally they are compatible if the gencode is no newer than the
+// runtime, but the exception is that we consider gencode at 4.33 and older to
+// be incompatible no matter what.
+#[cfg(not(bzl))]
+const fn are_versions_compatible(gencode: &str, runtime: &str) -> bool {
+    let gencode = split_version(gencode);
+    let runtime = split_version(runtime);
+
+    if gencode.0 < 4 || (gencode.0 == 4 && gencode.1 <= 33) {
+        return false;
+    }
+
+    if gencode.0 != runtime.0 {
+        return gencode.0 < runtime.0;
+    }
+    if gencode.1 != runtime.1 {
+        return gencode.1 < runtime.1;
+    }
+    if gencode.2 != runtime.2 {
+        return gencode.2 < runtime.2;
+    }
+
+    // The last component is the release candidate version, or zero if it is not
+    // a release candidate. This is a special case, since zero is logically
+    // newer than any other number.
+    let gencode_rc = if gencode.3 == 0 { u32::MAX } else { gencode.3 };
+    let runtime_rc = if runtime.3 == 0 { u32::MAX } else { runtime.3 };
+
+    gencode_rc <= runtime_rc
+}
+
+/// A function that is used to assert that the generated code is compatible with
+/// the current runtime version. We require that the generated code cannot be
+/// newer than the runtime version.
+///
+/// 4.34 is the first stable release, so any gencode older than that is not
+/// compatible going forward.
+///
+/// If you are seeing this fail, it means that your generated code was built
+/// with a protoc version newer than the runtime crate version (or you have
+/// pre-4.34 gencode).
+#[cfg(not(bzl))]
+pub const fn assert_compatible_gencode_version(gencode_version: &'static str) {
     let runtime_version = env!("CARGO_PKG_VERSION");
     assert!(
-        const_str_eq(gencode_version, runtime_version),
+        are_versions_compatible(gencode_version, runtime_version),
         "Gencode version is not compatible with runtime version",
     )
 }
@@ -109,3 +142,42 @@ pub const fn assert_compatible_gencode_version(gencode_version: &'static str) {
 /// gencode; gencode built from source should always match.
 #[cfg(bzl)]
 pub const fn assert_compatible_gencode_version(_gencode_version: &'static str) {}
+
+#[cfg(test)]
+#[cfg(not(bzl))]
+mod tests {
+    use super::*;
+    use googletest::prelude::*;
+
+    #[gtest]
+    fn test_split_version() {
+        expect_that!(split_version("4.33.1"), eq((4, 33, 1, 0)));
+        expect_that!(split_version("4.33.0-rc.1"), eq((4, 33, 0, 1)));
+        expect_that!(split_version("4.33.0-release"), eq((4, 33, 0, 0)));
+    }
+
+    #[gtest]
+    fn test_are_versions_compatible() {
+        // Pre-4.34 gencode is never considered compatible.
+        expect_false!(are_versions_compatible("4.33.0", "4.33.1"));
+        expect_false!(are_versions_compatible("3.33.0", "3.33.0"));
+
+        // Otherwise, exact matches are always fine.
+        expect_true!(are_versions_compatible("4.34.0-rc.1", "4.34.0-rc.1"));
+        expect_true!(are_versions_compatible("4.34.1", "4.34.1"));
+
+        // Gencode older than the runtime is also fine.
+        expect_true!(are_versions_compatible("4.34.0", "5.35.0"));
+        expect_true!(are_versions_compatible("4.34.0", "4.35.0"));
+        expect_true!(are_versions_compatible("4.34.0", "4.34.1"));
+        expect_true!(are_versions_compatible("4.34.0-rc.1", "4.34.0-rc.2"));
+        expect_true!(are_versions_compatible("4.34.0-rc.2", "4.34.0"));
+
+        // Gencode newer than the runtime is not allowed.
+        expect_false!(are_versions_compatible("5.35.0", "4.34.0"));
+        expect_false!(are_versions_compatible("4.35.0", "4.34.0"));
+        expect_false!(are_versions_compatible("4.35.1", "4.34.0"));
+        expect_false!(are_versions_compatible("4.35.0-rc.2", "4.34.0-rc.1"));
+        expect_false!(are_versions_compatible("4.35.0", "4.34.0-rc.2"));
+    }
+}

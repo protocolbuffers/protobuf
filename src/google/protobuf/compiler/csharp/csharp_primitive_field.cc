@@ -11,8 +11,8 @@
 #include <string>
 #include <utility>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/strings/str_cat.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/csharp/csharp_doc_comment.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 #include "google/protobuf/compiler/csharp/csharp_options.h"
@@ -40,8 +40,7 @@ PrimitiveFieldGenerator::PrimitiveFieldGenerator(
   }
 }
 
-PrimitiveFieldGenerator::~PrimitiveFieldGenerator() {
-}
+PrimitiveFieldGenerator::~PrimitiveFieldGenerator() = default;
 
 void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
   // Note: in multiple places, this code assumes that all fields
@@ -255,8 +254,7 @@ PrimitiveOneofFieldGenerator::PrimitiveOneofFieldGenerator(
   SetCommonOneofFieldVariables(&variables_);
 }
 
-PrimitiveOneofFieldGenerator::~PrimitiveOneofFieldGenerator() {
-}
+PrimitiveOneofFieldGenerator::~PrimitiveOneofFieldGenerator() = default;
 
 void PrimitiveOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
   WritePropertyDocComment(printer, options(), descriptor_);

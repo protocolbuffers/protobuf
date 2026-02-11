@@ -16,7 +16,6 @@
 #include <iterator>
 #include <list>
 #include <memory>
-#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -27,8 +26,9 @@
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/str_cat.h"
+#include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "google/protobuf/arena_test_util.h"
-#include "google/protobuf/internal_visibility_for_testing.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/unittest.pb.h"
@@ -50,6 +50,16 @@ using ::testing::ElementsAre;
 using ::testing::Ge;
 using ::testing::Le;
 
+using String = std::string;
+using SmallMsg = proto2_unittest::ForeignMessage;
+using LargeMsg = proto2_unittest::TestAllTypes;
+
+namespace {
+enum WithArena : bool { kNoArena = false, kArena = true };
+enum AddMode { kIntoNew = 0, kIntoCleared = 1 };
+enum RefMode { kConcrete = 0, kAbstract = 1 };
+}  // namespace
+
 TEST(RepeatedPtrOverPtrsIteratorTest, Traits) {
   using It = RepeatedPtrField<std::string>::pointer_iterator;
   static_assert(std::is_same<It::value_type, std::string*>::value, "");
@@ -59,7 +69,7 @@ TEST(RepeatedPtrOverPtrsIteratorTest, Traits) {
   static_assert(std::is_same<It::iterator_category,
                              std::random_access_iterator_tag>::value,
                 "");
-#if __cplusplus >= 202002L
+#if PROTOBUF_CPLUSPLUS_MIN(202002L)
   static_assert(
       std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value,
       "");
@@ -95,7 +105,7 @@ TEST(ConstRepeatedPtrOverPtrsIterator, Traits) {
   static_assert(std::is_same<It::iterator_category,
                              std::random_access_iterator_tag>::value,
                 "");
-#if __cplusplus >= 202002L
+#if PROTOBUF_CPLUSPLUS_MIN(202002L)
   static_assert(
       std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value,
       "");
@@ -168,7 +178,7 @@ TEST(RepeatedPtrFieldTest, ClearThenReserveMore) {
   // calls here.
   RepeatedPtrField<std::string> field;
   for (int i = 0; i < 32; i++) {
-    *field.Add() = std::string("abcdefghijklmnopqrstuvwxyz0123456789");
+    *field.Add() = "abcdefghijklmnopqrstuvwxyz0123456789";
   }
   EXPECT_EQ(32, field.size());
   field.Clear();
@@ -336,7 +346,7 @@ TEST(RepeatedPtrFieldTest, NaturalGrowthOnArenasReuseBlocks) {
   std::vector<Field*> fields;
   static constexpr int kNumFields = 100;
   static constexpr int kNumElems = 1000;
-  std::optional<int> common_capacity;
+  absl::optional<int> common_capacity;
   for (int i = 0; i < kNumFields; ++i) {
     fields.push_back(Arena::Create<Field>(&arena));
     auto& field = *fields.back();
@@ -620,7 +630,7 @@ TEST(RepeatedPtrFieldTest, UnsafeArenaAddAllocatedReleaseLastOnBaseField) {
   ElemT* concrete_new_elem = static_cast<ElemT*>(base_new_elem);
   concrete_new_elem->set_bb(456);
   base_field->UnsafeArenaAddAllocated<GenericTypeHandler<Message>>(
-      base_new_elem);
+      &arena, base_new_elem);
   Message* base_new_elem_roundtrip =
       base_field->UnsafeArenaReleaseLast<GenericTypeHandler<Message>>();
   ASSERT_NE(base_new_elem_roundtrip, nullptr);
@@ -809,7 +819,6 @@ TEST(RepeatedPtrFieldTest, Erase) {
 }
 
 TEST(RepeatedPtrFieldTest, CopyConstruct) {
-  auto token = internal::InternalVisibilityForTesting{};
   RepeatedPtrField<std::string> source;
   source.Add()->assign("1");
   source.Add()->assign("2");
@@ -819,23 +828,26 @@ TEST(RepeatedPtrFieldTest, CopyConstruct) {
   EXPECT_EQ("1", destination1.Get(0));
   EXPECT_EQ("2", destination1.Get(1));
 
-  RepeatedPtrField<std::string> destination2(token, nullptr, source);
-  ASSERT_EQ(2, destination2.size());
-  EXPECT_EQ("1", destination2.Get(0));
-  EXPECT_EQ("2", destination2.Get(1));
+  const auto* destination2 =
+      Arena::Create<RepeatedPtrField<std::string>>(nullptr, source);
+  ASSERT_EQ(2, destination2->size());
+  EXPECT_EQ("1", destination2->Get(0));
+  EXPECT_EQ("2", destination2->Get(1));
+
+  delete destination2;
 }
 
 TEST(RepeatedPtrFieldTest, CopyConstructWithArena) {
-  auto token = internal::InternalVisibilityForTesting{};
   RepeatedPtrField<std::string> source;
   source.Add()->assign("1");
   source.Add()->assign("2");
 
   Arena arena;
-  RepeatedPtrField<std::string> destination(token, &arena, source);
-  ASSERT_EQ(2, destination.size());
-  EXPECT_EQ("1", destination.Get(0));
-  EXPECT_EQ("2", destination.Get(1));
+  const auto* destination =
+      Arena::Create<RepeatedPtrField<std::string>>(&arena, source);
+  ASSERT_EQ(2, destination->size());
+  EXPECT_EQ("1", destination->Get(0));
+  EXPECT_EQ("2", destination->Get(1));
 }
 
 TEST(RepeatedPtrFieldTest, IteratorConstruct_String) {
@@ -906,10 +918,14 @@ TEST(RepeatedPtrFieldTest, SmallOptimization) {
   // Adding a second object stops sso.
   std::string str2;
   array->UnsafeArenaAddAllocated(&str2);
-  EXPECT_EQ(array->Capacity(), 3);
-  // Backing array and the strings.
-  EXPECT_EQ(array->SpaceUsedExcludingSelf(),
-            (1 + array->Capacity()) * sizeof(void*) + 2 * sizeof(str));
+  // We know we have exited sso if the capacity is greater than 1.
+  EXPECT_GT(array->Capacity(), 1);
+  // Backing array and the strings. sizeof(Rep) = 2 * sizeof(int) for capacity
+  // and allocated_size. Each element of the Rep contributes sizeof(void*),
+  // and each string contributes sizeof(str) to arena memory.
+  EXPECT_EQ(
+      array->SpaceUsedExcludingSelf(),
+      2 * sizeof(int) + array->Capacity() * sizeof(void*) + 2 * sizeof(str));
   // We used some arena space now.
   EXPECT_LT(usage_before, arena.SpaceUsed());
   // And the pointer_begin is not in the sso anymore.
@@ -1157,47 +1173,18 @@ TEST(RepeatedPtrFieldTest, DeleteSubrange) {
 
 TEST(RepeatedPtrFieldTest, Cleanups) {
   Arena arena;
-  auto growth = internal::CleanupGrowth(
-      arena, [&] { Arena::Create<RepeatedPtrField<std::string>>(&arena); });
+  auto growth = internal::CleanupGrowth(arena, [&] {
+    (void)Arena::Create<RepeatedPtrField<std::string>>(&arena);
+  });
   EXPECT_THAT(growth.cleanups, testing::IsEmpty());
 
-  growth = internal::CleanupGrowth(
-      arena, [&] { Arena::Create<RepeatedPtrField<TestAllTypes>>(&arena); });
+  growth = internal::CleanupGrowth(arena, [&] {
+    (void)Arena::Create<RepeatedPtrField<TestAllTypes>>(&arena);
+  });
   EXPECT_THAT(growth.cleanups, testing::IsEmpty());
 }
 
 
-TEST(RepeatedPtrFieldDeathTest, CheckedGetOrAbortTest) {
-  RepeatedPtrField<std::string> field;
-
-  // Empty container tests.
-  EXPECT_DEATH(internal::CheckedGetOrAbort(field, -1), "index: -1, size: 0");
-  EXPECT_DEATH(internal::CheckedGetOrAbort(field, field.size()),
-               "index: 0, size: 0");
-
-  // Non-empty container tests
-  field.Add()->assign("foo");
-  field.Add()->assign("bar");
-  EXPECT_DEATH(internal::CheckedGetOrAbort(field, 2), "index: 2, size: 2");
-  EXPECT_DEATH(internal::CheckedGetOrAbort(field, -1), "index: -1, size: 2");
-}
-
-TEST(RepeatedPtrFieldDeathTest, CheckedMutableOrAbortTest) {
-  RepeatedPtrField<std::string> field;
-
-  // Empty container tests.
-  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, -1),
-               "index: -1, size: 0");
-  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, field.size()),
-               "index: 0, size: 0");
-
-  // Non-empty container tests
-  field.Add()->assign("foo");
-  field.Add()->assign("bar");
-  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, 2), "index: 2, size: 2");
-  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, -1),
-               "index: -1, size: 2");
-}
 // ===================================================================
 
 class RepeatedPtrFieldIteratorTest : public testing::Test {

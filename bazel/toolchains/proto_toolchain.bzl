@@ -13,7 +13,7 @@ The macro additionally creates toolchain target when toolchain_type is given.
 load("//bazel/private:proto_toolchain_rule.bzl", _proto_toolchain_rule = "proto_toolchain")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
-def proto_toolchain(*, name, proto_compiler, exec_compatible_with = []):
+def proto_toolchain(*, name, proto_compiler, exec_compatible_with = [], target_compatible_with = []):
     """Creates a proto_toolchain and toolchain target for proto_library.
 
     Toolchain target is suffixed with "_toolchain".
@@ -22,6 +22,7 @@ def proto_toolchain(*, name, proto_compiler, exec_compatible_with = []):
       name: name of the toolchain
       proto_compiler: (Label) of either proto compiler sources or prebuild binaries
       exec_compatible_with: ([constraints]) List of constraints the prebuild binary is compatible with.
+      target_compatible_with: ([constraints]) List of constraints the target it is compatible with.
     """
     _proto_toolchain_rule(name = name, proto_compiler = proto_compiler)
 
@@ -29,6 +30,6 @@ def proto_toolchain(*, name, proto_compiler, exec_compatible_with = []):
         name = name + "_toolchain",
         toolchain_type = toolchains.PROTO_TOOLCHAIN,
         exec_compatible_with = exec_compatible_with,
-        target_compatible_with = [],
+        target_compatible_with = target_compatible_with,
         toolchain = name,
     )

@@ -15,27 +15,26 @@ use sys::mem::arena::RawArena;
 use sys::message::array::RawArray;
 use sys::message::map::RawMap;
 use sys::mini_table::extension_registry::upb_ExtensionRegistry;
-use sys::mini_table::mini_table::{upb_MiniTable, upb_MiniTableField};
+use sys::mini_table::mini_table::{RawMiniTable, RawMiniTableField};
 use sys::opaque_pointee::opaque_pointee;
 
 opaque_pointee!(upb_Message);
 pub type RawMessage = NonNull<upb_Message>;
 
-extern "C" {
+unsafe extern "C" {
     /// # Safety
     /// - `mini_table` and `arena` must be valid to deref
-    pub fn upb_Message_New(mini_table: *const upb_MiniTable, arena: RawArena)
-        -> Option<RawMessage>;
+    pub fn upb_Message_New(mini_table: RawMiniTable, arena: RawArena) -> Option<RawMessage>;
 
     /// # Safety
     /// - `m` and `mini_table` must be valid to deref
     /// - `mini_table` must be the MiniTable associated with `m`
-    pub fn upb_Message_Clear(m: RawMessage, mini_table: *const upb_MiniTable);
+    pub fn upb_Message_Clear(m: RawMessage, mini_table: RawMiniTable);
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a field associated with `f`
-    pub fn upb_Message_ClearBaseField(m: RawMessage, f: *const upb_MiniTableField);
+    pub fn upb_Message_ClearBaseField(m: RawMessage, f: RawMiniTableField);
 
     /// Copies the contents from `src` into `dst`.
     ///
@@ -50,7 +49,7 @@ extern "C" {
     pub fn upb_Message_DeepCopy(
         dst: RawMessage,
         src: RawMessage,
-        mini_table: *const upb_MiniTable,
+        mini_table: RawMiniTable,
         arena: RawArena,
     ) -> bool;
 
@@ -59,79 +58,51 @@ extern "C" {
     /// - `mini_table` must be the MiniTable associated with `m`
     pub fn upb_Message_DeepClone(
         m: RawMessage,
-        mini_table: *const upb_MiniTable,
+        mini_table: RawMiniTable,
         arena: RawArena,
     ) -> Option<RawMessage>;
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a bool field associated with `m`
-    pub fn upb_Message_GetBool(
-        m: RawMessage,
-        f: *const upb_MiniTableField,
-        default_val: bool,
-    ) -> bool;
+    pub fn upb_Message_GetBool(m: RawMessage, f: RawMiniTableField, default_val: bool) -> bool;
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be an i32 field associated with `m`
-    pub fn upb_Message_GetInt32(
-        m: RawMessage,
-        f: *const upb_MiniTableField,
-        default_val: i32,
-    ) -> i32;
+    pub fn upb_Message_GetInt32(m: RawMessage, f: RawMiniTableField, default_val: i32) -> i32;
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be an i64 field associated with `m`
-    pub fn upb_Message_GetInt64(
-        m: RawMessage,
-        f: *const upb_MiniTableField,
-        default_val: i64,
-    ) -> i64;
+    pub fn upb_Message_GetInt64(m: RawMessage, f: RawMiniTableField, default_val: i64) -> i64;
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a u32 field associated with `m`
-    pub fn upb_Message_GetUInt32(
-        m: RawMessage,
-        f: *const upb_MiniTableField,
-        default_val: u32,
-    ) -> u32;
+    pub fn upb_Message_GetUInt32(m: RawMessage, f: RawMiniTableField, default_val: u32) -> u32;
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a u64 field associated with `m`
-    pub fn upb_Message_GetUInt64(
-        m: RawMessage,
-        f: *const upb_MiniTableField,
-        default_val: u64,
-    ) -> u64;
+    pub fn upb_Message_GetUInt64(m: RawMessage, f: RawMiniTableField, default_val: u64) -> u64;
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a f32 field associated with `m`
-    pub fn upb_Message_GetFloat(
-        m: RawMessage,
-        f: *const upb_MiniTableField,
-        default_val: f32,
-    ) -> f32;
+    pub fn upb_Message_GetFloat(m: RawMessage, f: RawMiniTableField, default_val: f32) -> f32;
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a f64 field associated with `m`
-    pub fn upb_Message_GetDouble(
-        m: RawMessage,
-        f: *const upb_MiniTableField,
-        default_val: f64,
-    ) -> f64;
+    pub fn upb_Message_GetDouble(m: RawMessage, f: RawMiniTableField, default_val: f64) -> f64;
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a string or bytes field associated with `m`
     pub fn upb_Message_GetString(
         m: RawMessage,
-        f: *const upb_MiniTableField,
+        f: RawMiniTableField,
         default_val: StringView,
     ) -> StringView;
 
@@ -143,10 +114,7 @@ extern "C" {
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a message-typed field associated with `m`
-    pub fn upb_Message_GetMessage(
-        m: RawMessage,
-        f: *const upb_MiniTableField,
-    ) -> Option<RawMessage>;
+    pub fn upb_Message_GetMessage(m: RawMessage, f: RawMiniTableField) -> Option<RawMessage>;
 
     /// Gets or creates a mutable upb_Message* assigned to the corresponding
     /// field in the message.
@@ -159,8 +127,7 @@ extern "C" {
     /// - `f` must be a message-typed field associated with `m`
     pub fn upb_Message_GetOrCreateMutableMessage(
         m: RawMessage,
-        mini_table: *const upb_MiniTable,
-        f: *const upb_MiniTableField,
+        f: RawMiniTableField,
         arena: RawArena,
     ) -> Option<RawMessage>;
 
@@ -172,7 +139,7 @@ extern "C" {
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a repeated field associated with `m`
-    pub fn upb_Message_GetArray(m: RawMessage, f: *const upb_MiniTableField) -> Option<RawArray>;
+    pub fn upb_Message_GetArray(m: RawMessage, f: RawMiniTableField) -> Option<RawArray>;
 
     /// Gets or creates a mutable upb_Array* assigned to the corresponding field
     /// in the message.
@@ -184,7 +151,7 @@ extern "C" {
     /// - `f` must be a map field associated with `m`
     pub fn upb_Message_GetOrCreateMutableArray(
         m: RawMessage,
-        f: *const upb_MiniTableField,
+        f: RawMiniTableField,
         arena: RawArena,
     ) -> Option<RawArray>;
 
@@ -195,8 +162,8 @@ extern "C" {
     ///
     /// # Safety
     /// - `m` and `f` must be valid to deref
-    /// - `f` must be a repeated field associated with `m`
-    pub fn upb_Message_GetMap(m: RawMessage, f: *const upb_MiniTableField) -> Option<RawMap>;
+    /// - `f` must be a map associated with `m`
+    pub fn upb_Message_GetMap(m: RawMessage, f: RawMiniTableField) -> Option<RawMap>;
 
     /// Gets or creates a mutable upb_Map* assigned to the corresponding field
     /// in the message.
@@ -209,15 +176,15 @@ extern "C" {
     /// - `f` must be a map field associated with `m`
     pub fn upb_Message_GetOrCreateMutableMap(
         m: RawMessage,
-        map_entry_mini_table: *const upb_MiniTable,
-        f: *const upb_MiniTableField,
+        map_entry_mini_table: RawMiniTable,
+        f: RawMiniTableField,
         arena: RawArena,
     ) -> Option<RawMap>;
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `mini_table` must be the MiniTable associated with `m`
-    pub fn upb_Message_HasBaseField(m: RawMessage, f: *const upb_MiniTableField) -> bool;
+    pub fn upb_Message_HasBaseField(m: RawMessage, f: RawMiniTableField) -> bool;
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
@@ -226,7 +193,7 @@ extern "C" {
     ///   for the field described by `f`
     pub fn upb_Message_SetBaseField(
         m: RawMessage,
-        f: *const upb_MiniTableField,
+        f: RawMiniTableField,
         val: *const core::ffi::c_void,
     );
 
@@ -236,7 +203,7 @@ extern "C" {
     pub fn upb_Message_IsEqual(
         m1: RawMessage,
         m2: RawMessage,
-        mini_table: *const upb_MiniTable,
+        mini_table: RawMiniTable,
         options: i32,
     ) -> bool;
 
@@ -248,7 +215,7 @@ extern "C" {
     pub fn upb_Message_MergeFrom(
         dst: RawMessage,
         src: RawMessage,
-        mini_table: *const upb_MiniTable,
+        mini_table: RawMiniTable,
         extreg: *const upb_ExtensionRegistry,
         arena: RawArena,
     ) -> bool;
@@ -256,55 +223,47 @@ extern "C" {
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a bool field associated with `f`
-    pub fn upb_Message_SetBaseFieldBool(m: RawMessage, f: *const upb_MiniTableField, val: bool);
+    pub fn upb_Message_SetBaseFieldBool(m: RawMessage, f: RawMiniTableField, val: bool);
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be an i32 field associated with `m`
-    pub fn upb_Message_SetBaseFieldInt32(m: RawMessage, f: *const upb_MiniTableField, val: i32);
+    pub fn upb_Message_SetBaseFieldInt32(m: RawMessage, f: RawMiniTableField, val: i32);
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be an i64 field associated with `m`
-    pub fn upb_Message_SetBaseFieldInt64(m: RawMessage, f: *const upb_MiniTableField, val: i64);
+    pub fn upb_Message_SetBaseFieldInt64(m: RawMessage, f: RawMiniTableField, val: i64);
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a u32 field associated with `m`
-    pub fn upb_Message_SetBaseFieldUInt32(m: RawMessage, f: *const upb_MiniTableField, val: u32);
+    pub fn upb_Message_SetBaseFieldUInt32(m: RawMessage, f: RawMiniTableField, val: u32);
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a u64 field associated with `m`
-    pub fn upb_Message_SetBaseFieldUInt64(m: RawMessage, f: *const upb_MiniTableField, val: u64);
+    pub fn upb_Message_SetBaseFieldUInt64(m: RawMessage, f: RawMiniTableField, val: u64);
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be an f32 field associated with `m`
-    pub fn upb_Message_SetBaseFieldFloat(m: RawMessage, f: *const upb_MiniTableField, val: f32);
+    pub fn upb_Message_SetBaseFieldFloat(m: RawMessage, f: RawMiniTableField, val: f32);
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be an f64 field associated with `m`
-    pub fn upb_Message_SetBaseFieldDouble(m: RawMessage, f: *const upb_MiniTableField, val: f64);
+    pub fn upb_Message_SetBaseFieldDouble(m: RawMessage, f: RawMiniTableField, val: f64);
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be an string or bytes field associated with `m`
-    pub fn upb_Message_SetBaseFieldString(
-        m: RawMessage,
-        f: *const upb_MiniTableField,
-        val: StringView,
-    );
+    pub fn upb_Message_SetBaseFieldString(m: RawMessage, f: RawMiniTableField, val: StringView);
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a message-typed field associated with `m`
-    pub fn upb_Message_SetBaseFieldMessage(
-        m: RawMessage,
-        f: *const upb_MiniTableField,
-        val: RawMessage,
-    );
+    pub fn upb_Message_SetBaseFieldMessage(m: RawMessage, f: RawMiniTableField, val: RawMessage);
 
     /// Returns the field number of which oneof field is set, or 0 if none are.
     /// `f` is any arbitrary field contained within the oneof.
@@ -312,7 +271,7 @@ extern "C" {
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a field within a oneof associated with `m`
-    pub fn upb_Message_WhichOneofFieldNumber(m: RawMessage, f: *const upb_MiniTableField) -> u32;
+    pub fn upb_Message_WhichOneofFieldNumber(m: RawMessage, f: RawMiniTableField) -> u32;
 }
 
 #[cfg(test)]

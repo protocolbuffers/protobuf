@@ -13,11 +13,11 @@
 #include <Python.h>
 
 #include <cstdint>
-#include <string>
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/pyext/message.h"
@@ -81,7 +81,7 @@ static bool GetFileDescriptorProto(PyObject* py_descriptor,
       return false;
     }
     FileDescriptorProto file_proto;
-    if (!file_proto.ParseFromArray(str, len)) {
+    if (!file_proto.ParseFromString(absl::string_view(str, len))) {
       ABSL_LOG(ERROR)
           << "DescriptorDatabase method did not return a FileDescriptorProto";
       return false;
@@ -92,19 +92,19 @@ static bool GetFileDescriptorProto(PyObject* py_descriptor,
 }
 
 // Find a file by file name.
-bool PyDescriptorDatabase::FindFileByName(StringViewArg filename,
+bool PyDescriptorDatabase::FindFileByName(absl::string_view filename,
                                           FileDescriptorProto* output) {
   ScopedPyObjectPtr py_descriptor(PyObject_CallMethod(
-      py_database_, "FindFileByName", "s#", filename.c_str(), filename.size()));
+      py_database_, "FindFileByName", "s#", filename.data(), filename.size()));
   return GetFileDescriptorProto(py_descriptor.get(), output);
 }
 
 // Find the file that declares the given fully-qualified symbol name.
 bool PyDescriptorDatabase::FindFileContainingSymbol(
-    StringViewArg symbol_name, FileDescriptorProto* output) {
+    absl::string_view symbol_name, FileDescriptorProto* output) {
   ScopedPyObjectPtr py_descriptor(
       PyObject_CallMethod(py_database_, "FindFileContainingSymbol", "s#",
-                          symbol_name.c_str(), symbol_name.size()));
+                          symbol_name.data(), symbol_name.size()));
   return GetFileDescriptorProto(py_descriptor.get(), output);
 }
 
@@ -112,7 +112,7 @@ bool PyDescriptorDatabase::FindFileContainingSymbol(
 // with the given field number.
 // Python DescriptorDatabases are not required to implement this method.
 bool PyDescriptorDatabase::FindFileContainingExtension(
-    StringViewArg containing_type, int field_number,
+    absl::string_view containing_type, int field_number,
     FileDescriptorProto* output) {
   ScopedPyObjectPtr py_method(
       PyObject_GetAttrString(py_database_, "FindFileContainingExtension"));
@@ -122,7 +122,7 @@ bool PyDescriptorDatabase::FindFileContainingExtension(
     return false;
   }
   ScopedPyObjectPtr py_descriptor(
-      PyObject_CallFunction(py_method.get(), "s#i", containing_type.c_str(),
+      PyObject_CallFunction(py_method.get(), "s#i", containing_type.data(),
                             containing_type.size(), field_number));
   return GetFileDescriptorProto(py_descriptor.get(), output);
 }
@@ -132,7 +132,7 @@ bool PyDescriptorDatabase::FindFileContainingExtension(
 // order.
 // Python DescriptorDatabases are not required to implement this method.
 bool PyDescriptorDatabase::FindAllExtensionNumbers(
-    StringViewArg containing_type, std::vector<int>* output) {
+    absl::string_view containing_type, std::vector<int>* output) {
   ScopedPyObjectPtr py_method(
       PyObject_GetAttrString(py_database_, "FindAllExtensionNumbers"));
   if (py_method == nullptr) {
@@ -140,9 +140,8 @@ bool PyDescriptorDatabase::FindAllExtensionNumbers(
     PyErr_Clear();
     return false;
   }
-  ScopedPyObjectPtr py_list(
-      PyObject_CallFunction(py_method.get(), "s#", containing_type.c_str(),
-                            containing_type.size()));
+  ScopedPyObjectPtr py_list(PyObject_CallFunction(
+      py_method.get(), "s#", containing_type.data(), containing_type.size()));
   if (py_list == nullptr) {
     PyErr_Print();
     return false;

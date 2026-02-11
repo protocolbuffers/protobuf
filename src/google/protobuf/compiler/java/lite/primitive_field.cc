@@ -17,6 +17,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
@@ -178,7 +179,8 @@ ImmutablePrimitiveFieldLiteGenerator::ImmutablePrimitiveFieldLiteGenerator(
                         name_resolver_, &variables_, context);
 }
 
-ImmutablePrimitiveFieldLiteGenerator::~ImmutablePrimitiveFieldLiteGenerator() {}
+ImmutablePrimitiveFieldLiteGenerator::~ImmutablePrimitiveFieldLiteGenerator() =
+    default;
 
 int ImmutablePrimitiveFieldLiteGenerator::GetNumBitsForMessage() const {
   return HasHasbit(descriptor_) ? 1 : 0;
@@ -208,7 +210,7 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
         variables_,
         "private static final $field_type$ $bytes_default$ = $default$;\n");
   }
-  if (!context_->options().opensource_runtime) {
+  if (!google::protobuf::internal::IsOss()) {
     printer->Print(variables_,
                    "@com.google.protobuf.ProtoField(\n"
                    "  isRequired=$required$)\n");
@@ -357,7 +359,7 @@ ImmutablePrimitiveOneofFieldLiteGenerator::
 }
 
 ImmutablePrimitiveOneofFieldLiteGenerator::
-    ~ImmutablePrimitiveOneofFieldLiteGenerator() {}
+    ~ImmutablePrimitiveOneofFieldLiteGenerator() = default;
 
 void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
@@ -475,7 +477,7 @@ RepeatedImmutablePrimitiveFieldLiteGenerator::
 }
 
 RepeatedImmutablePrimitiveFieldLiteGenerator::
-    ~RepeatedImmutablePrimitiveFieldLiteGenerator() {}
+    ~RepeatedImmutablePrimitiveFieldLiteGenerator() = default;
 
 int RepeatedImmutablePrimitiveFieldLiteGenerator::GetNumBitsForMessage() const {
   return 0;

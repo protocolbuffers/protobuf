@@ -46,29 +46,24 @@ jobs:
             targets: //java/... //java/internal:java_version //compatibility/...
           - name: Bazel7
             cache_key: 'bazel7bzlmod'
-            image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75
+            image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.6.1-e0df73e51131ccaf53451355d22577f377357604
             targets: //java/... //java/internal:java_version //compatibility/...
-          - name: Bazel7 Workspace
-            cache_key: 'bazel7nobzlmod'
-            image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75
-            targets: //java/... //java/internal:java_version //compatibility/...
-            flags: --noenable_bzlmod
           # TODO: b/395623141 - restore this test once runtime uses / emulates aarch64.
           # - name: aarch64
           #   cache_key: 'aarch64'
-          #   image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:7.1.2-aarch64-2920199ab0090ed427413a8e422e62695c8392a8
+          #   image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:7.6.1-aarch64-f0d1e209ed9369f69d93ce418990ecff3aa08d6f
           #   targets: //java/... //compatibility/... //src/google/protobuf/compiler:protoc_aarch64_test
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.name }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v4
+        uses: protocolbuffers/protobuf-ci/checkout@v5
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v4
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
           image: ${{ matrix.image }}
@@ -82,11 +77,11 @@ jobs:
   #   runs-on: ubuntu-latest
   #   steps:
   #     - name: Checkout pending changes
-  #       uses: protocolbuffers/protobuf-ci/checkout@v4
+  #       uses: protocolbuffers/protobuf-ci/checkout@v5
   #       with:
   #         ref: ${{ inputs.safe-checkout }}
   #     - name: Run Linkage Monitor test
-  #       uses: protocolbuffers/protobuf-ci/bazel-docker@v4
+  #       uses: protocolbuffers/protobuf-ci/bazel-docker@v5
   #       with:
   #         image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
   #         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -100,11 +95,11 @@ jobs:
     runs-on: ubuntu-22-4core
     steps:
     - name: Checkout pending changes
-      uses: protocolbuffers/protobuf-ci/checkout@v4
+      uses: protocolbuffers/protobuf-ci/checkout@v5
       with:
         ref: ${{ inputs.safe-checkout }}
     - name: Generate maven artifacts with bazel and install using maven
-      uses: protocolbuffers/protobuf-ci/bazel-docker@v4
+      uses: protocolbuffers/protobuf-ci/bazel-docker@v5
       with:
         image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8.0.1-11-b77fdae6d4771789dfc66a56bf8d806354e8011a
         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}

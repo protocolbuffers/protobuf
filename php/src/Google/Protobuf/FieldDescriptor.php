@@ -44,16 +44,6 @@ class FieldDescriptor
     }
 
     /**
-     * @deprecated Use isRepeated() or isRequired() instead.
-     *
-     * @return int
-     */
-    public function getLabel()
-    {
-        return $this->internal_desc->getLabel();
-    }
-
-    /**
      * @return boolean
      */
     public function isRequired()
@@ -96,11 +86,20 @@ class FieldDescriptor
     }
 
     /**
+     * Returns true if this field tracks presence, ie. does the field
+     * distinguish between "unset" and "present with default value."
+     *
+     * This includes required, optional, and oneof fields. It excludes maps,
+     * repeated fields, and singular proto3 fields without "optional".
+     *
+     * For fields where hasPresence() == true, the return value of
+     * msg.hasField() is semantically meaningful.
+     *
      * @return boolean
      */
-    public function hasOptionalKeyword()
+    public function hasPresence()
     {
-        return $this->internal_desc->hasOptionalKeyword();
+        return $this->internal_desc->hasPresence();
     }
 
     /**

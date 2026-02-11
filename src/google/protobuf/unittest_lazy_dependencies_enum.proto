@@ -11,7 +11,7 @@
 //
 // A proto file we will use for unit testing.
 
-edition = "2023";
+edition = "2024";
 
 // Treat all enums as closed by default (proto2 behavior).
 option features.enum_type = CLOSED;
@@ -36,6 +36,8 @@ option optimize_for = SPEED;
 option java_outer_classname = "UnittestLazyImportsEnumProto";
 
 enum LazyEnum {
+  option features.enforce_naming_style = STYLE_LEGACY;
+
   LAZY_ENUM_0 = 0;
   LAZY_ENUM_1 = 1;
 }

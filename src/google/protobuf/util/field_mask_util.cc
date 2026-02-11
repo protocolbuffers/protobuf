@@ -17,10 +17,12 @@
 #include "absl/log/absl_log.h"
 #include "absl/log/die_if_null.h"
 #include "absl/memory/memory.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
 
 // Must be included last.
@@ -274,9 +276,9 @@ class FieldMaskTree {
   Node root_;
 };
 
-FieldMaskTree::FieldMaskTree() {}
+FieldMaskTree::FieldMaskTree() = default;
 
-FieldMaskTree::~FieldMaskTree() {}
+FieldMaskTree::~FieldMaskTree() = default;
 
 void FieldMaskTree::MergeFromFieldMask(const FieldMask& mask) {
   for (int i = 0; i < mask.paths_size(); ++i) {
@@ -584,9 +586,17 @@ bool FieldMaskTree::TrimMessage(const Node* node, Message* message) {
       if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
         Node* child = it->second.get();
         if (!child->children.empty() && reflection->HasField(*message, field)) {
-          bool nestedMessageChanged =
-              TrimMessage(child, reflection->MutableMessage(message, field));
-          modified = nestedMessageChanged || modified;
+          if (field->is_repeated()) {
+            for (int i = 0; i < reflection->FieldSize(*message, field); ++i) {
+              bool nestedMessageChanged = TrimMessage(
+                  child, reflection->MutableRepeatedMessage(message, field, i));
+              modified = nestedMessageChanged || modified;
+            }
+          } else {
+            bool nestedMessageChanged =
+                TrimMessage(child, reflection->MutableMessage(message, field));
+            modified = nestedMessageChanged || modified;
+          }
         }
       }
     }

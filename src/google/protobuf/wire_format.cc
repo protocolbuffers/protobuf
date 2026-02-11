@@ -23,6 +23,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
@@ -261,6 +262,7 @@ size_t WireFormat::ComputeUnknownFieldsSize(
 
   return size;
 }
+
 
 size_t WireFormat::ComputeUnknownMessageSetItemsSize(
     const UnknownFieldSet& unknown_fields) {
@@ -527,8 +529,6 @@ bool WireFormat::ParseAndMergeField(
             return false;
           }
         } else {
-          VerifyUTF8StringNamedField(value.data(), value.length(), PARSE,
-                                     field->full_name());
         }
         if (field->is_repeated()) {
           message_reflection->AddString(message, field, value);
@@ -835,13 +835,15 @@ const char* WireFormat::_InternalParseAndMergeField(
       WireTypeForFieldType(field->type())) {
     if (field->is_packable() && WireFormatLite::GetTagWireType(tag) ==
                                     WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+      Arena* arena = msg->GetArena();
+
       switch (field->type()) {
-#define HANDLE_PACKED_TYPE(TYPE, CPPTYPE, CPPTYPE_METHOD)                   \
-  case FieldDescriptor::TYPE_##TYPE: {                                      \
-    ptr = internal::Packed##CPPTYPE_METHOD##Parser(                         \
-        reflection->MutableRepeatedFieldInternal<CPPTYPE>(msg, field), ptr, \
-        ctx);                                                               \
-    return ptr;                                                             \
+#define HANDLE_PACKED_TYPE(TYPE, CPPTYPE, CPPTYPE_METHOD)                     \
+  case FieldDescriptor::TYPE_##TYPE: {                                        \
+    ptr = internal::Packed##CPPTYPE_METHOD##Parser(                           \
+        reflection->MutableRepeatedFieldInternal<CPPTYPE>(msg, field), arena, \
+        ptr, ctx);                                                            \
+    return ptr;                                                               \
   }
 
         HANDLE_PACKED_TYPE(INT32, int32_t, Int32)
@@ -866,12 +868,12 @@ const char* WireFormat::_InternalParseAndMergeField(
           auto rep_enum =
               reflection->MutableRepeatedFieldInternal<int>(msg, field);
           if (!field->legacy_enum_field_treated_as_closed()) {
-            ptr = internal::PackedEnumParser(rep_enum, ptr, ctx);
+            ptr = internal::PackedEnumParser(rep_enum, arena, ptr, ctx);
           } else {
             return ctx->ReadPackedVarint(
-                ptr, [rep_enum, field, reflection, msg](int32_t val) {
+                ptr, [rep_enum, field, reflection, msg, arena](int32_t val) {
                   if (field->enum_type()->FindValueByNumber(val) != nullptr) {
-                    rep_enum->Add(val);
+                    rep_enum->AddWithArena(arena, val);
                   } else {
                     WriteVarint(field->number(), val,
                                 reflection->MutableUnknownFields(msg));
@@ -1000,8 +1002,6 @@ const char* WireFormat::_InternalParseAndMergeField(
             return nullptr;
           }
         } else {
-          VerifyUTF8StringNamedField(value.data(), value.length(), PARSE,
-                                     field->full_name());
         }
       }
       if (field->is_repeated()) {
@@ -1389,12 +1389,11 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
                 : message_reflection->GetStringReference(message, field,
                                                          &scratch);
         if (strict_utf8_check) {
-          WireFormatLite::VerifyUtf8String(value.data(), value.length(),
-                                           WireFormatLite::SERIALIZE,
-                                           field->full_name());
+          // TODO: Remove this suppression.
+          (void)WireFormatLite::VerifyUtf8String(value.data(), value.length(),
+                                                 WireFormatLite::SERIALIZE,
+                                                 field->full_name());
         } else {
-          VerifyUTF8StringNamedField(value.data(), value.length(), SERIALIZE,
-                                     field->full_name());
         }
         target = stream->WriteString(field->number(), value, target);
         break;

@@ -10,9 +10,9 @@ mod sys {
 }
 
 use sys::message::message::RawMessage;
-use sys::mini_table::mini_table::upb_MiniTable;
+use sys::mini_table::mini_table::RawMiniTable;
 
-extern "C" {
+unsafe extern "C" {
     /// Returns the minimum needed length (excluding NULL) that `buf` has to be
     /// to hold the `msg`s debug string.
     ///
@@ -23,7 +23,7 @@ extern "C" {
     ///   `size` is 0)
     pub fn upb_DebugString(
         msg: RawMessage,
-        mt: *const upb_MiniTable,
+        mt: RawMiniTable,
         options: i32, // bitmask of `text_encode_options` values
         buf: *mut u8,
         size: usize,
@@ -31,6 +31,7 @@ extern "C" {
 }
 
 /// Encoding options.
+#[allow(dead_code)]
 pub mod text_encode_options {
     /// When set, prints everything on a single line.
     pub const SINGLE_LINE: i32 = 1;

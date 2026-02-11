@@ -36,7 +36,6 @@ message TestConflictingSymbolNames {
   // Use common namespaces to make sure we are properly qualifying
   message std {}
 
-
   int32 input = 1;
   int32 output = 2;
   string length = 3;
@@ -275,6 +274,7 @@ message NULL {
 
 extend TestConflictingSymbolNames {
   int32 void = 314253;
+  int32 module = 314254;
 }
 
 // Message names that could conflict.

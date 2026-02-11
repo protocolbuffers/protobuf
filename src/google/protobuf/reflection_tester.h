@@ -8,9 +8,8 @@
 #ifndef GOOGLE_PROTOBUF_REFLECTION_TESTER_H__
 #define GOOGLE_PROTOBUF_REFLECTION_TESTER_H__
 
-#include <optional>
-
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 
@@ -56,7 +55,7 @@ class MapReflectionTester {
                                absl::string_view field_name);
   int MapSize(const Message& message, absl::string_view field_name);
 
-  static std::optional<MapValueConstRef> LookupMapValue(
+  static absl::optional<MapValueConstRef> LookupMapValue(
       const Reflection& reflection, const Message& message,
       const FieldDescriptor& descriptor, const MapKey& map_key) {
     MapValueConstRef map_val_const;
@@ -64,7 +63,7 @@ class MapReflectionTester {
                                   &map_val_const)) {
       return map_val_const;
     }
-    return std::nullopt;
+    return absl::nullopt;
   }
 
   static std::string long_string() {

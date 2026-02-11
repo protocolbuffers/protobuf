@@ -1,0 +1,43 @@
+name: hpb tests
+
+on:
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  # hpb tests are always run on presubmit
+  linux:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        config:
+          - { name: Optimized, flags: --config=opt }
+
+        include:
+          - targets: "//hpb/... //hpb_generator/..."
+          - image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-e78301df86b3e4c46ec9ac4d98be00e19305d8f3"
+          - bazel_cmd: "test"
+
+    name: Linux ${{ matrix.config.name }}
+    runs-on: ubuntu-22-4core
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v5
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        with:
+          image: ${{ matrix.image }}
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: hpb_linux
+          bazel: >-
+            ${{ matrix.bazel_cmd }}
+            ${{ matrix.targets }} ${{ matrix.config.flags }}

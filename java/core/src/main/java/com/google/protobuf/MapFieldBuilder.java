@@ -189,9 +189,10 @@ public class MapFieldBuilder<
 
   /** Converts this MapFieldBuilder to a MapField. */
   public MapField<KeyT, MessageT> build(MapEntry<KeyT, MessageT> defaultEntry) {
-    MapField<KeyT, MessageT> mapField = MapField.newMapField(defaultEntry);
+    Map<KeyT, MessageOrBuilderT> builderMap = ensureBuilderMap();
+    MapField<KeyT, MessageT> mapField = MapField.newMapField(defaultEntry, builderMap.size());
     Map<KeyT, MessageT> map = mapField.getMutableMap();
-    for (Map.Entry<KeyT, MessageOrBuilderT> entry : ensureBuilderMap().entrySet()) {
+    for (Map.Entry<KeyT, MessageOrBuilderT> entry : builderMap.entrySet()) {
       map.put(entry.getKey(), converter.build(entry.getValue()));
     }
     mapField.makeImmutable();

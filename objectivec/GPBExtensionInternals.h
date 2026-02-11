@@ -11,8 +11,8 @@
 #import "GPBDescriptor.h"
 
 size_t GPBComputeExtensionSerializedSizeIncludingTag(
-    GPBExtensionDescriptor *extension, id value);
+    GPBExtensionDescriptor* extension, id value);
 
-void GPBWriteExtensionValueToOutputStream(GPBExtensionDescriptor *extension,
+void GPBWriteExtensionValueToOutputStream(GPBExtensionDescriptor* extension,
                                           id value,
-                                          GPBCodedOutputStream *output);
+                                          GPBCodedOutputStream* output);

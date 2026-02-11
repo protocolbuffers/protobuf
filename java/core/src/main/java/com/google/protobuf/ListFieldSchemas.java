@@ -21,7 +21,7 @@ final class ListFieldSchemas {
   }
 
   private static ListFieldSchema loadSchemaForFullRuntime() {
-    if (Protobuf.assumeLiteRuntime) {
+    if (Android.assumeLiteRuntime) {
       return null;
     }
     try {

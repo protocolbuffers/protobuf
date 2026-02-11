@@ -53,12 +53,13 @@ syn case match
 syn keyword pbTodo       contained TODO FIXME XXX
 syn cluster pbCommentGrp contains=pbTodo
 
-syn keyword pbSyntax     syntax import option
+syn keyword pbSyntax     syntax import option edition
 syn keyword pbStructure  package message group oneof
 syn keyword pbRepeat     optional required repeated
 syn keyword pbDefault    default
 syn keyword pbExtend     extend extensions to max reserved
 syn keyword pbRPC        service rpc returns
+syn keyword pbVisibility local export
 
 syn keyword pbType      int32 int64 uint32 uint64 sint32 sint64
 syn keyword pbType      fixed32 fixed64 sfixed32 sfixed64
@@ -90,6 +91,7 @@ if version >= 508 || !exists("did_proto_syn_inits")
   HiLink pbDefault      Keyword
   HiLink pbExtend       Keyword
   HiLink pbRPC          Keyword
+  HiLink pbVisibility   Keyword
   HiLink pbType         Type
   HiLink pbTypedef      Typedef
   HiLink pbBool         Boolean

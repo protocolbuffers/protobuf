@@ -11,17 +11,18 @@
 
 #include "google/protobuf/compiler/java/full/message_field.h"
 
-#include <optional>
 #include <string>
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/io/printer.h"
+#include "google/protobuf/wire_format.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
@@ -79,6 +80,9 @@ void SetMessageVariables(
       absl::StrCat(GenerateClearBit(builderBitIndex), ";");
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(builderBitIndex);
+
+  (*variables)["tag_size"] = absl::StrCat(
+      internal::WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
 }
 
 }  // namespace
@@ -98,7 +102,7 @@ ImmutableMessageFieldGenerator::ImmutableMessageFieldGenerator(
                       name_resolver_, &variables_, context);
 }
 
-ImmutableMessageFieldGenerator::~ImmutableMessageFieldGenerator() {}
+ImmutableMessageFieldGenerator::~ImmutableMessageFieldGenerator() = default;
 
 int ImmutableMessageFieldGenerator::GetMessageBitIndex() const {
   return message_bit_index_;
@@ -186,7 +190,7 @@ void ImmutableMessageFieldGenerator::PrintNestedBuilderFunction(
     io::Printer* printer, const char* method_prototype,
     const char* regular_case, const char* nested_builder_case,
     const char* trailing_code,
-    std::optional<io::AnnotationCollector::Semantic> semantic) const {
+    absl::optional<io::AnnotationCollector::Semantic> semantic) const {
   printer->Print(variables_, method_prototype);
   printer->Annotate("{", "}", descriptor_, semantic);
   printer->Print(" {\n");
@@ -458,7 +462,8 @@ ImmutableMessageOneofFieldGenerator::ImmutableMessageOneofFieldGenerator(
   SetCommonOneofVariables(descriptor, info, &variables_);
 }
 
-ImmutableMessageOneofFieldGenerator::~ImmutableMessageOneofFieldGenerator() {}
+ImmutableMessageOneofFieldGenerator::~ImmutableMessageOneofFieldGenerator() =
+    default;
 
 void ImmutableMessageOneofFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
@@ -742,7 +747,7 @@ RepeatedImmutableMessageFieldGenerator::RepeatedImmutableMessageFieldGenerator(
                                      builderBitIndex, context) {}
 
 RepeatedImmutableMessageFieldGenerator::
-    ~RepeatedImmutableMessageFieldGenerator() {}
+    ~RepeatedImmutableMessageFieldGenerator() = default;
 
 int RepeatedImmutableMessageFieldGenerator::GetNumBitsForMessage() const {
   return 0;
@@ -782,8 +787,9 @@ void RepeatedImmutableMessageFieldGenerator::GenerateInterfaceMembers(
 
 void RepeatedImmutableMessageFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
-  printer->Print(variables_, "@SuppressWarnings(\"serial\")\n"
-                             "private java.util.List<$type$> $name$_;\n");
+  printer->Print(variables_,
+                 "@SuppressWarnings(\"serial\")\n"
+                 "private java.util.List<$type$> $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
@@ -855,7 +861,7 @@ void RepeatedImmutableMessageFieldGenerator::PrintNestedBuilderFunction(
     io::Printer* printer, const char* method_prototype,
     const char* regular_case, const char* nested_builder_case,
     const char* trailing_code,
-    std::optional<io::AnnotationCollector::Semantic> semantic) const {
+    absl::optional<io::AnnotationCollector::Semantic> semantic) const {
   printer->Print(variables_, method_prototype);
   printer->Annotate("{", "}", descriptor_, semantic);
   printer->Print(" {\n");
@@ -1274,12 +1280,17 @@ void RepeatedImmutableMessageFieldGenerator::GenerateSerializationCode(
 
 void RepeatedImmutableMessageFieldGenerator::GenerateSerializedSizeCode(
     io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "for (int i = 0; i < $name$_.size(); i++) {\n"
-      "  size += com.google.protobuf.CodedOutputStream\n"
-      "    .compute$group_or_message$Size($number$, $name$_.get(i));\n"
-      "}\n");
+  printer->Print(variables_,
+                 R"java(
+    {
+      final int count = $name$_.size();
+      for (int i = 0; i < count; i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .compute$group_or_message$SizeNoTag($name$_.get(i));
+      }
+      size += $tag_size$ * count;
+    }
+    )java");
 }
 
 void RepeatedImmutableMessageFieldGenerator::GenerateEqualsCode(

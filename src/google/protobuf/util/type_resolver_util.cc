@@ -21,6 +21,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/util/type_resolver.h"
 
@@ -62,49 +63,57 @@ void ConvertOptionField(const Reflection* reflection, const Message& options,
   Any* value = out->mutable_value();
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      value->PackFrom(
+      // TODO: Remove this suppression.
+      (void)value->PackFrom(
           field->is_repeated()
               ? reflection->GetRepeatedMessage(options, field, index)
               : reflection->GetMessage(options, field));
       return;
     case FieldDescriptor::CPPTYPE_DOUBLE:
-      value->PackFrom(WrapValue<DoubleValue>(
+      // TODO: Remove this suppression.
+      (void)value->PackFrom(WrapValue<DoubleValue>(
           field->is_repeated()
               ? reflection->GetRepeatedDouble(options, field, index)
               : reflection->GetDouble(options, field)));
       return;
     case FieldDescriptor::CPPTYPE_FLOAT:
-      value->PackFrom(WrapValue<FloatValue>(
+      // TODO: Remove this suppression.
+      (void)value->PackFrom(WrapValue<FloatValue>(
           field->is_repeated()
               ? reflection->GetRepeatedFloat(options, field, index)
               : reflection->GetFloat(options, field)));
       return;
     case FieldDescriptor::CPPTYPE_INT64:
-      value->PackFrom(WrapValue<Int64Value>(
+      // TODO: Remove this suppression.
+      (void)value->PackFrom(WrapValue<Int64Value>(
           field->is_repeated()
               ? reflection->GetRepeatedInt64(options, field, index)
               : reflection->GetInt64(options, field)));
       return;
     case FieldDescriptor::CPPTYPE_UINT64:
-      value->PackFrom(WrapValue<UInt64Value>(
+      // TODO: Remove this suppression.
+      (void)value->PackFrom(WrapValue<UInt64Value>(
           field->is_repeated()
               ? reflection->GetRepeatedUInt64(options, field, index)
               : reflection->GetUInt64(options, field)));
       return;
     case FieldDescriptor::CPPTYPE_INT32:
-      value->PackFrom(WrapValue<Int32Value>(
+      // TODO: Remove this suppression.
+      (void)value->PackFrom(WrapValue<Int32Value>(
           field->is_repeated()
               ? reflection->GetRepeatedInt32(options, field, index)
               : reflection->GetInt32(options, field)));
       return;
     case FieldDescriptor::CPPTYPE_UINT32:
-      value->PackFrom(WrapValue<UInt32Value>(
+      // TODO: Remove this suppression.
+      (void)value->PackFrom(WrapValue<UInt32Value>(
           field->is_repeated()
               ? reflection->GetRepeatedUInt32(options, field, index)
               : reflection->GetUInt32(options, field)));
       return;
     case FieldDescriptor::CPPTYPE_BOOL:
-      value->PackFrom(WrapValue<BoolValue>(
+      // TODO: Remove this suppression.
+      (void)value->PackFrom(WrapValue<BoolValue>(
           field->is_repeated()
               ? reflection->GetRepeatedBool(options, field, index)
               : reflection->GetBool(options, field)));
@@ -115,9 +124,11 @@ void ConvertOptionField(const Reflection* reflection, const Message& options,
               ? reflection->GetRepeatedString(options, field, index)
               : reflection->GetString(options, field);
       if (field->type() == FieldDescriptor::TYPE_STRING) {
-        value->PackFrom(WrapValue<StringValue>(val));
+        // TODO: Remove this suppression.
+        (void)value->PackFrom(WrapValue<StringValue>(val));
       } else {
-        value->PackFrom(WrapValue<BytesValue>(val));
+        // TODO: Remove this suppression.
+        (void)value->PackFrom(WrapValue<BytesValue>(val));
       }
       return;
     }
@@ -126,7 +137,8 @@ void ConvertOptionField(const Reflection* reflection, const Message& options,
           field->is_repeated()
               ? reflection->GetRepeatedEnum(options, field, index)
               : reflection->GetEnum(options, field);
-      value->PackFrom(WrapValue<Int32Value>(val->number()));
+      // TODO: Remove this suppression.
+      (void)value->PackFrom(WrapValue<Int32Value>(val->number()));
       return;
     }
   }
@@ -362,6 +374,30 @@ class DescriptorPoolTypeResolver : public TypeResolver {
   const DescriptorPool* pool_;
 };
 
+template <typename DescriptorT, typename DescriptorProtoT>
+void PartiallyResolveFeatures(const FileDescriptorProto& file,
+                              const DescriptorT& descriptor,
+                              DescriptorProtoT& proto) {
+  FeatureSet features = file.options().features();
+  std::vector<FeatureSet> nested_features;
+  const Descriptor* parent = descriptor.containing_type();
+  while (parent != nullptr) {
+    DescriptorProto parent_proto;
+    parent->CopyHeadingTo(&parent_proto);
+    if (parent_proto.options().has_features()) {
+      nested_features.push_back(parent_proto.options().features());
+    }
+    parent = parent->containing_type();
+  }
+  for (int i = nested_features.size() - 1; i >= 0; --i) {
+    features.MergeFrom(nested_features[i]);
+  }
+  if (features.ByteSizeLong() > 0) {
+    features.MergeFrom(proto.options().features());
+    *proto.mutable_options()->mutable_features() = features;
+  }
+}
+
 }  // namespace
 
 TypeResolver* NewTypeResolverForDescriptorPool(absl::string_view url_prefix,
@@ -376,6 +412,7 @@ Type ConvertDescriptorToType(absl::string_view url_prefix,
   FileDescriptorProto proto;
   descriptor.file()->CopyHeadingTo(&proto);
   descriptor.CopyTo(proto.add_message_type());
+  PartiallyResolveFeatures(proto, descriptor, *proto.mutable_message_type(0));
   ConvertDescriptor(url_prefix, descriptor, proto, proto.message_type(0),
                     &type);
   return type;
@@ -387,6 +424,7 @@ Enum ConvertDescriptorToType(const EnumDescriptor& descriptor) {
   FileDescriptorProto proto;
   descriptor.file()->CopyHeadingTo(&proto);
   descriptor.CopyTo(proto.add_enum_type());
+  PartiallyResolveFeatures(proto, descriptor, *proto.mutable_enum_type(0));
   ConvertEnumDescriptor(descriptor, proto, proto.enum_type(0), &enum_type);
   return enum_type;
 }

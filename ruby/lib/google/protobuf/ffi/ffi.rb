@@ -151,8 +151,7 @@ module Google
       end
 
       class MiniTable < ::FFI::Struct
-        layout :subs, :pointer,
-               :fields, :pointer,
+        layout :fields, :pointer,
                :size, :uint16_t,
                :field_count, :uint16_t,
                :ext, :uint8_t,  # upb_ExtMode, declared as uint8_t so sizeof(ext) == 1

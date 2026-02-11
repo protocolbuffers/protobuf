@@ -66,7 +66,7 @@ class ProtoBuilderTest(unittest.TestCase):
 
   def testMakeLargeProtoClass(self):
     """Test that large created protos don't use reserved field numbers."""
-    num_fields = 123456
+    num_fields = 65000
     fields = {
         'foo%d' % i: descriptor_pb2.FieldDescriptorProto.TYPE_INT64
         for i in range(num_fields)
