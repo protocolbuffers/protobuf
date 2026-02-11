@@ -36,6 +36,7 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
     src/google/protobuf/descriptor.proto \
     src/google/protobuf/any.proto \
     src/google/protobuf/api.proto \
+    src/google/protobuf/csharp_features.proto \
     src/google/protobuf/duration.proto \
     src/google/protobuf/empty.proto \
     src/google/protobuf/field_mask.proto \

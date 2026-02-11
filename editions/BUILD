@@ -26,6 +26,7 @@ compile_edition_defaults(
     srcs = [
         "//java/core:java_features_proto",
         "//src/google/protobuf:cpp_features_proto",
+        "//src/google/protobuf:csharp_features_proto",
     ],
     maximum_edition = "2024",
     minimum_edition = "2023",
@@ -168,6 +169,7 @@ cc_test(
         "//java/core:java_features_cc_proto",
         "//src/google/protobuf",
         "//src/google/protobuf:cpp_features_cc_proto",
+        "//src/google/protobuf:csharp_features_cc_proto",
         "//src/google/protobuf:port",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf:test_textproto",

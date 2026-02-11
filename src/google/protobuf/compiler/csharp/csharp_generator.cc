@@ -10,6 +10,7 @@
 #include <sstream>
 
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/csharp/csharp_features.pb.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 #include "google/protobuf/compiler/csharp/csharp_options.h"
 #include "google/protobuf/compiler/csharp/csharp_reflection_class.h"
@@ -59,13 +60,17 @@ bool Generator::Generate(const FileDescriptor* file,
       cli_options.serializable = true;
     } else if (options[i].first == "experimental_strip_nonfunctional_codegen") {
       cli_options.strip_nonfunctional_codegen = true;
-    } else if (options[i].first == "enable_nrt") {
-      cli_options.enable_nullable_reference_types = true;
     } else {
       *error = absl::StrCat("Unknown generator option: ", options[i].first);
       return false;
     }
   }
+
+  // Resolve the nullable_reference_types feature from the file descriptor.
+  cli_options.enable_nullable_reference_types =
+      Generator::GetResolvedSourceFeatures(*file)
+          .GetExtension(pb::csharp)
+          .nullable_reference_types();
 
   std::string filename_error = "";
   std::string filename = GetOutputFile(file,
