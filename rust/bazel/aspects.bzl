@@ -28,7 +28,7 @@ load(
 visibility([
     "//rust/...",
     "//third_party/crubit/rs_bindings_from_cc/...",
-    "//net/proto2/compiler/stubby/...",
+    "//net/proto2/compiler/stubby/cc/build_defs/...",
 ])
 
 CrateMappingInfo = provider(
