@@ -492,7 +492,7 @@ bool IsCrossFileMaybeMap(const FieldDescriptor* field) {
 }
 
 bool HasNonSplitOptionalString(const Descriptor* desc, const Options& options) {
-  for (const auto* field : FieldRange(desc)) {
+  for (const auto* field : internal::FieldRange(desc)) {
     if (IsString(field) && !field->is_repeated() &&
         !field->real_containing_oneof() && !ShouldSplit(field, options)) {
       return true;
@@ -759,7 +759,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
   ordered_fields.insert(ordered_fields.begin(), optimized_order_.begin(),
                         optimized_order_.end());
 
-  for (auto field : FieldRange(descriptor_)) {
+  for (auto field : internal::FieldRange(descriptor_)) {
     if (!field->real_containing_oneof() && !field->options().weak()) {
       continue;
     }
@@ -1454,7 +1454,7 @@ void MessageGenerator::EmitUpdateByteSizeV2ForNumerics(
 void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
   p->Emit("// $classname$\n\n");
 
-  for (auto field : FieldRange(descriptor_)) {
+  for (auto field : internal::FieldRange(descriptor_)) {
     // We use a print listener to verify that the field generators properly add
     // the right annotations. This is only a verification step aimed to prevent
     // bugs where we have lack of test coverage. Note that this will verify the
@@ -1655,7 +1655,7 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
                  {"oneof_name", oneof->name()},
                  {"oneof_fields",
                   [&] {
-                    for (auto field : FieldRange(oneof)) {
+                    for (auto field : internal::FieldRange(oneof)) {
                       field_generators_.get(field).GeneratePrivateMembers(p);
                     }
                   }}},
@@ -1666,7 +1666,7 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
                     $oneof_fields$;
                   } $oneof_name$_;
                 )cc");
-            for (auto field : FieldRange(oneof)) {
+            for (auto field : internal::FieldRange(oneof)) {
               field_generators_.get(field).GenerateStaticMembers(p);
             }
           }
@@ -1912,7 +1912,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                      .AnnotatedAs(oneof),
                  {"oneof_field",
                   [&] {
-                    for (auto field : FieldRange(oneof)) {
+                    for (auto field : internal::FieldRange(oneof)) {
                       p->Emit(
                           {
                               Sub{"oneof_constant",
@@ -2153,7 +2153,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         }},
        {"decl_set_has",
         [&] {
-          for (auto field : FieldRange(descriptor_)) {
+          for (auto field : internal::FieldRange(descriptor_)) {
             // set_has_***() generated in all oneofs.
             if (!field->is_repeated() && !field->options().weak() &&
                 field->real_containing_oneof()) {
@@ -2401,7 +2401,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
     p->Emit({{"annotate_accessors",
               [&] {
                 if (!options_.annotate_accessor) return;
-                for (auto f : FieldRange(descriptor_)) {
+                for (auto f : internal::FieldRange(descriptor_)) {
                   p->Emit({{"field", FieldName(f)}},
                           R"cc(
                             volatile bool $classname$::$field$_AccessedNoStrip;
@@ -2505,7 +2505,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   p->Emit("\n");
 
   // Generate non-inline field definitions.
-  for (auto field : FieldRange(descriptor_)) {
+  for (auto field : internal::FieldRange(descriptor_)) {
     auto v = p->WithVars(FieldVars(field, options_));
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
     field_generators_.get(field).GenerateNonInlineAccessorDefinitions(p);
@@ -2569,7 +2569,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   p->Emit({{"annotate_accessor_definition",
             [&] {
               if (!options_.annotate_accessor) return;
-              for (auto f : FieldRange(descriptor_)) {
+              for (auto f : internal::FieldRange(descriptor_)) {
                 p->Emit({{"field", FieldName(f)}},
                         R"cc(
                           volatile bool $classname$::$field$_AccessedNoStrip;
@@ -2678,7 +2678,7 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
     format("$1$, // hasbit index offset\n", offsets);
   }
   size_t entries = offsets;
-  for (auto field : FieldRange(descriptor_)) {
+  for (auto field : internal::FieldRange(descriptor_)) {
     // TODO: We should not have an entry in the offset table for fields
     // that do not use them.
     if (field->options().weak()) {
@@ -3032,7 +3032,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
 ArenaDtorNeeds MessageGenerator::NeedsArenaDestructor() const {
   if (HasSimpleBaseClass(descriptor_, options_)) return ArenaDtorNeeds::kNone;
   ArenaDtorNeeds needs = ArenaDtorNeeds::kNone;
-  for (const auto* field : FieldRange(descriptor_)) {
+  for (const auto* field : internal::FieldRange(descriptor_)) {
     needs =
         std::max(needs, field_generators_.get(field).NeedsArenaDestructor());
   }
@@ -3086,7 +3086,7 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
           {"oneof_field_dtors",
            [&] {
              for (const auto* oneof : OneOfRange(descriptor_)) {
-               for (const auto* field : FieldRange(oneof)) {
+               for (const auto* field : internal::FieldRange(oneof)) {
                  field_generators_.get(field).GenerateArenaDestructorCode(p);
                }
              }
@@ -3169,7 +3169,7 @@ bool MessageGenerator::CanUseTrivialCopy() const {
 
   // If all fields are trivially copyable then we can use the trivial copy
   // constructor of Impl_
-  for (const auto* field : FieldRange(descriptor_)) {
+  for (const auto* field : internal::FieldRange(descriptor_)) {
     if (!field_generators_.get(field).has_trivial_copy()) return false;
   }
 
@@ -3293,7 +3293,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
            {"NAME", absl::AsciiStrToUpper(oneof->name())},
            {"cases",
             [&] {
-              for (const auto* field : FieldRange(oneof)) {
+              for (const auto* field : internal::FieldRange(oneof)) {
                 p->Emit(
                     {{"Name", UnderscoresToCamelCase(field->name(), true)},
                      {"field", FieldMemberName(field, /*split=*/false)},
@@ -3751,7 +3751,7 @@ void MessageGenerator::GenerateOneofClear(io::Printer* p) {
     format("$pbi$::TSanWrite(&_impl_);\n");
     format("switch ($oneofname$_case()) {\n");
     format.Indent();
-    for (auto field : FieldRange(oneof)) {
+    for (auto field : internal::FieldRange(oneof)) {
       format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
       format.Indent();
       // We clear only allocated objects in oneofs
@@ -3901,7 +3901,7 @@ MessageGenerator::NewOpRequirements MessageGenerator::GetNewOp() const {
     op.needs_to_run_constructor = true;
   }
 
-  for (const FieldDescriptor* field : FieldRange(descriptor_)) {
+  for (const FieldDescriptor* field : internal::FieldRange(descriptor_)) {
     if (ShouldSplit(field, options_)) {
       op.needs_memcpy = true;
     } else if (field->real_containing_oneof() != nullptr) {
@@ -4171,7 +4171,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
 }
 
 bool MessageGenerator::RequiresArena(GeneratorFunction function) const {
-  for (const FieldDescriptor* field : FieldRange(descriptor_)) {
+  for (const FieldDescriptor* field : internal::FieldRange(descriptor_)) {
     if (field_generators_.get(field).RequiresArena(function)) {
       return true;
     }
@@ -4380,7 +4380,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
                  {"index", oneof->index()},
                  {"cases",
                   [&] {
-                    for (const auto* field : FieldRange(oneof)) {
+                    for (const auto* field : internal::FieldRange(oneof)) {
                       p->Emit(
                           {{"Label",
                             UnderscoresToCamelCase(field->name(), true)},
@@ -5034,7 +5034,7 @@ std::vector<uint32_t> MessageGenerator::RequiredFieldsBitMask() const {
   const int array_size = HasBitsSize();
   std::vector<uint32_t> masks(array_size, 0);
 
-  for (auto field : FieldRange(descriptor_)) {
+  for (auto field : internal::FieldRange(descriptor_)) {
     if (!field->is_required()) {
       continue;
     }
@@ -5296,7 +5296,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
                  {"oneof_case_name", absl::AsciiStrToUpper(oneof->name())},
                  {"case_per_field",
                   [&] {
-                    for (auto field : FieldRange(oneof)) {
+                    for (auto field : internal::FieldRange(oneof)) {
                       PrintFieldComment(Formatter{p}, field, options_);
                       p->Emit(
                           {{"field_name",
@@ -5396,7 +5396,7 @@ void MessageGenerator::EmitOneofFields(io::Printer* p, const T& emitter) const {
              {"oneof_case_name", absl::AsciiStrToUpper(oneof->name())},
              {"case_per_field",
               [&] {
-                for (auto field : FieldRange(oneof)) {
+                for (auto field : internal::FieldRange(oneof)) {
                   PrintFieldComment(Formatter{p}, field, options_);
                   p->Emit({{"field_name",
                             UnderscoresToCamelCase(field->name(), true)},
@@ -5478,7 +5478,7 @@ bool MessageGenerator::NeedsIsInitialized() {
   if (num_weak_fields_ != 0) return true;
 
   for (const auto* oneof : OneOfRange(descriptor_)) {
-    for (const auto* field : FieldRange(oneof)) {
+    for (const auto* field : internal::FieldRange(oneof)) {
       if (field_generators_.get(field).NeedsIsInitialized()) return true;
     }
   }
@@ -5490,7 +5490,7 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
   if (!NeedsIsInitialized()) return;
 
   auto has_required_field = [&](const auto* oneof) {
-    for (const auto* field : FieldRange(oneof)) {
+    for (const auto* field : internal::FieldRange(oneof)) {
       if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
           !ShouldIgnoreRequiredFieldCheck(field, options_) &&
           options_.scc_analyzer->HasRequiredFields(field->message_type())) {
@@ -5555,7 +5555,8 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
                         {"NAME", absl::AsciiStrToUpper(oneof->name())},
                         {"cases",
                          [&] {
-                           for (const auto* field : FieldRange(oneof)) {
+                           for (const auto* field :
+                                internal::FieldRange(oneof)) {
                              p->Emit({{"Name", UnderscoresToCamelCase(
                                                    field->name(), true)},
                                       {"body",
