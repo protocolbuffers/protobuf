@@ -218,7 +218,14 @@ namespace Google.Protobuf {
           WriteString(writer, accessor.Descriptor.JsonName);
         }
         writer.Write(NameValueSeparator);
-        WriteValue(writer, value, indentationLevel);
+        if (field.FieldType == FieldType.Enum && !settings.FormatEnumsAsIntegers)
+        {
+            WriteValue(writer, value, indentationLevel, field.EnumType);
+        }
+        else
+        {
+            WriteValue(writer, value, indentationLevel);
+        }
 
         first = false;
       }
@@ -304,29 +311,31 @@ namespace Google.Protobuf {
       };
     }
 
-    /// <summary>
-    /// Writes a single value to the given writer as JSON. Only types understood by
-    /// Protocol Buffers can be written in this way. This method is only exposed for
-    /// advanced use cases; most users should be using <see cref="Format(IMessage)"/>
-    /// or <see cref="Format(IMessage, TextWriter)"/>.
-    /// </summary>
-    /// <param name="writer">The writer to write the value to. Must not be null.</param>
-    /// <param name="value">The value to write. May be null.</param>
-    /// <remarks>Delegates to <c>WriteValue(TextWriter, object, int)</c> with <c>indentationLevel =
-    /// 0</c>.</remarks>
-    public void WriteValue(TextWriter writer, object value) => WriteValue(writer, value, 0);
+        /// <summary>
+        /// Writes a single value to the given writer as JSON. Only types understood by
+        /// Protocol Buffers can be written in this way. This method is only exposed for
+        /// advanced use cases; most users should be using <see cref="Format(IMessage)"/>
+        /// or <see cref="Format(IMessage, TextWriter)"/>.
+        /// </summary>
+        /// <param name="writer">The writer to write the value to. Must not be null.</param>
+        /// <param name="value">The value to write. May be null.</param>
+        /// <param name="enumDescriptor">The enumDescriptor associated to the value to write. May be null.</param>
+        /// <remarks>Delegates to <c>WriteValue(TextWriter, object, int)</c> with <c>indentationLevel =
+        /// 0</c>.</remarks>
+        public void WriteValue(TextWriter writer, object value, EnumDescriptor enumDescriptor = null) => WriteValue(writer, value, 0, enumDescriptor);
 
-    /// <summary>
-    /// Writes a single value to the given writer as JSON. Only types understood by
-    /// Protocol Buffers can be written in this way. This method is only exposed for
-    /// advanced use cases; most users should be using <see cref="Format(IMessage)"/>
-    /// or <see cref="Format(IMessage, TextWriter)"/>.
-    /// </summary>
-    /// <param name="writer">The writer to write the value to. Must not be null.</param>
-    /// <param name="value">The value to write. May be null.</param>
-    /// <param name="indentationLevel">The current indentationLevel. Not used when <see
-    /// cref="Settings.Indentation"/> is null.</param>
-    public void WriteValue(TextWriter writer, object value, int indentationLevel) {
+        /// <summary>
+        /// Writes a single value to the given writer as JSON. Only types understood by
+        /// Protocol Buffers can be written in this way. This method is only exposed for
+        /// advanced use cases; most users should be using <see cref="Format(IMessage)"/>
+        /// or <see cref="Format(IMessage, TextWriter)"/>.
+        /// </summary>
+        /// <param name="writer">The writer to write the value to. Must not be null.</param>
+        /// <param name="value">The value to write. May be null.</param>
+        /// <param name="enumDescriptor">The enumDescriptor associated to the value to write. May be null.</param>
+        /// <param name="indentationLevel">The current indentationLevel. Not used when <see
+        /// cref="Settings.Indentation"/> is null.</param>
+        public void WriteValue(TextWriter writer, object value, int indentationLevel, EnumDescriptor enumDescriptor = null) {
       if (value == null || value is NullValue) {
         WriteNull(writer);
       } else if (value is bool b) {
@@ -341,10 +350,26 @@ namespace Google.Protobuf {
       } else if (value is IDictionary dictionary) {
         WriteDictionary(writer, dictionary, indentationLevel);
       } else if (value is IList list) {
-        WriteList(writer, list, indentationLevel);
+        WriteList(writer, list, indentationLevel, enumDescriptor);
       } else if (value is int || value is uint) {
-        IFormattable formattable = (IFormattable)value;
-        writer.Write(formattable.ToString("d", CultureInfo.InvariantCulture));
+            if (enumDescriptor != null)
+            {                
+                EnumValueDescriptor enumValueDescriptor = enumDescriptor.FindValueByNumber((int) value);
+                string name = enumValueDescriptor.Name;
+                if (name != null)
+                {
+                    WriteString(writer, name);
+                }
+                else
+                {
+                    WriteValue(writer, (int) value);
+                }
+            }
+            else
+            {                
+                IFormattable formattable = (IFormattable) value;
+                writer.Write(formattable.ToString("d", CultureInfo.InvariantCulture));
+            }                
       } else if (value is long || value is ulong) {
         writer.Write('"');
         IFormattable formattable = (IFormattable)value;
@@ -377,13 +402,13 @@ namespace Google.Protobuf {
       }
     }
 
-    /// <summary>
-    /// Central interception point for well-known type formatting. Any well-known types which
-    /// don't need special handling can fall back to WriteMessage. We avoid assuming that the
-    /// values are using the embedded well-known types, in order to allow for dynamic messages
-    /// in the future.
-    /// </summary>
-    private void WriteWellKnownTypeValue(TextWriter writer, MessageDescriptor descriptor,
+        /// <summary>
+        /// Central interception point for well-known type formatting. Any well-known types which
+        /// don't need special handling can fall back to WriteMessage. We avoid assuming that the
+        /// values are using the embedded well-known types, in order to allow for dynamic messages
+        /// in the future.
+        /// </summary>
+        private void WriteWellKnownTypeValue(TextWriter writer, MessageDescriptor descriptor,
                                          object value, int indentationLevel) {
       // Currently, we can never actually get here, because null values are always handled by the
       // caller. But if we *could*, this would do the right thing.
@@ -579,14 +604,14 @@ namespace Google.Protobuf {
       }
     }
 
-    internal void WriteList(TextWriter writer, IList list, int indentationLevel = 0) {
+    internal void WriteList(TextWriter writer, IList list, int indentationLevel = 0, EnumDescriptor enumDescriptor = null) {
       WriteBracketOpen(writer, ListBracketOpen);
 
       bool first = true;
       foreach (var value in list) {
         MaybeWriteValueSeparator(writer, first);
         MaybeWriteValueWhitespace(writer, indentationLevel + 1);
-        WriteValue(writer, value, indentationLevel + 1);
+        WriteValue(writer, value, indentationLevel + 1, enumDescriptor);
         first = false;
       }
 
