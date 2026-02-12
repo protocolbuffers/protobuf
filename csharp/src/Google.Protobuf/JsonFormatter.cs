@@ -457,9 +457,12 @@ namespace Google.Protobuf {
     }
 
     private void WriteFieldMask(TextWriter writer, IMessage value) {
-      var paths =
-          (IList<string>)value.Descriptor.Fields[FieldMask.PathsFieldNumber].Accessor.GetValue(
-              value);
+      // IFieldAccessor.GetValue only promises IList for repeated fields. Generated messages return
+      // RepeatedField<string> (which implements IList<string>), but DynamicMessage may return an
+      // untyped IList. Convert explicitly to keep JsonFormatter working for DynamicMessage.
+      var rawPaths =
+          (IList)value.Descriptor.Fields[FieldMask.PathsFieldNumber].Accessor.GetValue(value);
+      var paths = rawPaths.Cast<string>().ToList();
       writer.Write(FieldMask.ToJson(paths, DiagnosticOnly));
     }
 
