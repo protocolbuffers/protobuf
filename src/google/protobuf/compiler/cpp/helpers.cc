@@ -1880,7 +1880,7 @@ int CollectFieldsExcludingWeakAndOneof(
     const Descriptor* d, const Options& options,
     std::vector<const FieldDescriptor*>& fields) {
   int num_weak_fields = 0;
-  for (auto field : FieldRange(d)) {
+  for (auto field : internal::FieldRange(d)) {
     if (IsWeak(field, options)) {
       ++num_weak_fields;
     }
@@ -2150,7 +2150,7 @@ FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
 
 bool HasMessageFieldOrExtension(const Descriptor* desc) {
   if (desc->extension_range_count() > 0) return true;
-  for (const auto* f : FieldRange(desc)) {
+  for (const auto* f : internal::FieldRange(desc)) {
     if (f->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) return true;
   }
   return false;
