@@ -1,0 +1,32 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package pb;
+
+import "google/protobuf/descriptor.proto";
+
+option csharp_namespace = "Google.Protobuf.Reflection";
+
+extend google.protobuf.FeatureSet {
+  optional CsharpFeatures csharp = 1004;
+}
+
+message CsharpFeatures {
+  // Whether the generated files should have nullable reference type annotations.
+  // When enabled, the generated C# code includes `#nullable enable annotations`
+  // and annotates message-typed properties and certain parameters with `?`.
+  optional bool nullable_reference_types = 1 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    feature_support = {
+      edition_introduced: EDITION_2023,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "false" }
+  ];
+}

@@ -21,6 +21,21 @@ cc_library(
 )
 
 cc_library(
+    name = "csharp_features_bootstrap",
+    srcs = ["csharp_features.pb.cc"],
+    hdrs = ["csharp_features.pb.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//editions:__pkg__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:arena",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/io",
+    ],
+)
+
+cc_library(
     name = "csharp",
     srcs = [
         "csharp_doc_comment.cc",
@@ -44,6 +59,7 @@ cc_library(
         "csharp_doc_comment.h",
         "csharp_enum.h",
         "csharp_enum_field.h",
+        "csharp_features.pb.h",
         "csharp_field_base.h",
         "csharp_generator.h",
         "csharp_helpers.h",
@@ -69,6 +85,7 @@ cc_library(
         "//src/google/protobuf/compiler:__pkg__",
     ],
     deps = [
+        ":csharp_features_bootstrap",
         ":names",
         "//src/google/protobuf",
         "//src/google/protobuf:port",

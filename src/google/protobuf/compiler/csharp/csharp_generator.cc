@@ -10,6 +10,7 @@
 #include <sstream>
 
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/csharp/csharp_features.pb.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 #include "google/protobuf/compiler/csharp/csharp_options.h"
 #include "google/protobuf/compiler/csharp/csharp_reflection_class.h"
@@ -64,6 +65,12 @@ bool Generator::Generate(const FileDescriptor* file,
       return false;
     }
   }
+
+  // Resolve the nullable_reference_types feature from the file descriptor.
+  cli_options.enable_nullable_reference_types =
+      Generator::GetResolvedSourceFeatures(*file)
+          .GetExtension(pb::csharp)
+          .nullable_reference_types();
 
   std::string filename_error = "";
   std::string filename = GetOutputFile(file,

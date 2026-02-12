@@ -12,6 +12,7 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/csharp_features.pb.h"
 #include "google/protobuf/java_features.pb.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "editions/defaults_test_embedded.h"
@@ -251,6 +252,7 @@ class OverridableDefaultsTest : public ::testing::Test {
   OverridableDefaultsTest() = default;
   static void SetUpTestSuite() {
     google::protobuf::LinkExtensionReflection(pb::cpp);
+    google::protobuf::LinkExtensionReflection(pb::csharp);
     google::protobuf::LinkExtensionReflection(pb::java);
     (void)DescriptorPool::generated_pool();
   }
@@ -267,6 +269,7 @@ TEST_F(OverridableDefaultsTest, Proto2) {
 
   EXPECT_THAT(defaults.overridable_features(), EqualsProto(R"pb([pb.cpp] {}
                                                                 [pb.java] {}
+                                                                [pb.csharp] {}
               )pb"));
 }
 TEST_F(OverridableDefaultsTest, Proto3) {
@@ -279,6 +282,7 @@ TEST_F(OverridableDefaultsTest, Proto3) {
 
   EXPECT_THAT(defaults.overridable_features(), EqualsProto(R"pb([pb.cpp] {}
                                                                 [pb.java] {}
+                                                                [pb.csharp] {}
               )pb"));
 }
 
@@ -301,6 +305,7 @@ TEST_F(OverridableDefaultsTest, Edition2023) {
                 json_format: ALLOW
                 [pb.cpp] { legacy_closed_enum: false string_type: STRING }
                 [pb.java] { legacy_closed_enum: false utf8_validation: DEFAULT }
+                [pb.csharp] { nullable_reference_types: false }
               )pb"));
 }
 
@@ -334,6 +339,7 @@ TEST_F(OverridableDefaultsTest, Edition2024) {
                   large_enum: false
                   nest_in_file_class: NO
                 }
+                [pb.csharp] { nullable_reference_types: false }
               )pb"));
 }
 

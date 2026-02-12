@@ -15,6 +15,7 @@
 #include "absl/log/absl_log.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
+#include "google/protobuf/compiler/csharp/csharp_options.h"
 #include "google/protobuf/compiler/csharp/names.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -216,10 +217,11 @@ std::string FieldGeneratorBase::type_name(const FieldDescriptor* descriptor) {
         const FieldDescriptor* wrapped_field =
             descriptor->message_type()->field(0);
         std::string wrapped_field_type_name = type_name(wrapped_field);
-        // String and ByteString go to the same type; other wrapped types
-        // go to the nullable equivalent.
-        if (wrapped_field->type() == FieldDescriptor::TYPE_STRING ||
-            wrapped_field->type() == FieldDescriptor::TYPE_BYTES) {
+        // String and ByteString depend on enable_nullable_reference_types;
+        // other wrapped types go to the nullable equivalent.
+        if (!options()->enable_nullable_reference_types &&
+            (wrapped_field->type() == FieldDescriptor::TYPE_BYTES ||
+              wrapped_field->type() == FieldDescriptor::TYPE_STRING)) {
           return wrapped_field_type_name;
         } else {
           return absl::StrCat(wrapped_field_type_name, "?");

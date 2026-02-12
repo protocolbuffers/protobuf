@@ -11,8 +11,11 @@
 #define GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_GENERATOR_H__
 
 #include <string>
+#include <vector>
 
+#include "google/protobuf/compiler/csharp/csharp_features.pb.h"
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/port_def.inc"
 
 namespace google {
@@ -36,7 +39,14 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   uint64_t GetSupportedFeatures() const override;
   Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
   Edition GetMaximumEdition() const override { return Edition::EDITION_2024; }
+
+  std::vector<const FieldDescriptor*> GetFeatureExtensions() const override {
+    return {GetExtensionReflection(pb::csharp)};
+  }
+
   using CodeGenerator::GetEdition;
+  using CodeGenerator::GetResolvedSourceFeatureExtension;
+  using CodeGenerator::GetResolvedSourceFeatures;
 };
 
 }  // namespace csharp

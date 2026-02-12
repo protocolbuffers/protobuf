@@ -363,6 +363,23 @@ cc_proto_library(
     deps = [":cpp_features_proto"],
 )
 
+proto_library(
+    name = "csharp_features_proto",
+    srcs = ["csharp_features.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [":descriptor_proto"],
+)
+
+cc_proto_library(
+    name = "csharp_features_cc_proto",
+    visibility = [
+        "//editions:__pkg__",
+        "//src/google/protobuf/compiler/csharp:__pkg__",
+    ],
+    deps = [":csharp_features_proto"],
+)
+
 ################################################################################
 # C++ Runtime Library
 ################################################################################
@@ -1023,6 +1040,15 @@ filegroup(
     name = "cpp_features_proto_srcs",
     srcs = ["cpp_features.proto"],
     visibility = ["//:__subpackages__"],
+)
+
+filegroup(
+    name = "csharp_features_proto_srcs",
+    srcs = ["csharp_features.proto"],
+    visibility = [
+        "//pkg:__pkg__",
+        "//:__subpackages__",
+    ],
 )
 
 filegroup(
