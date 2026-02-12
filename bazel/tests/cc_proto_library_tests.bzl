@@ -30,6 +30,7 @@ def cc_proto_library_test_suite(name):
         tests = [
             _test_link_order_with_mixed_deps,
             _test_link_order_with_mixed_deps_and_intermediate_library,
+            _test_link_order_with_mixed_deps_and_linkshared,
         ],
     )
 
@@ -100,6 +101,40 @@ def _test_link_order_with_mixed_deps_and_intermediate_library_impl(env, target):
     action.inputs().contains_at_least_predicates([
         matching.file_path_matches("test_link_order_with_mixed_deps_and_intermediate_library_foo"),
         matching.file_path_matches("test_link_order_with_mixed_deps_and_intermediate_library_lib"),
+        matching.file_path_matches("cc_proto_library_tests_a"),
+        matching.file_path_matches("cc_proto_library_tests_b"),
+        # Using matching.any because the basename varies by platform in OSS.
+        matching.any(
+            matching.file_path_matches("protobuf/message"),
+            matching.file_path_matches("protobuf/libprotobuf"),
+        ),
+        matching.file_path_matches("cc_proto_library_tests_c"),
+    ]).in_order()
+
+def _test_link_order_with_mixed_deps_and_linkshared(name):
+    util.helper_target(
+        cc_binary,
+        name = name + "_foo.so",
+        srcs = ["foo.cc"],
+        linkshared = 1,
+        deps = [
+            ":cc_proto_library_tests_a",
+            ":cc_proto_library_tests_bc",
+            ":cc_proto_library_tests_c",
+        ],
+    )
+
+    analysis_test(
+        name = name,
+        target = ":" + name + "_foo.so",
+        impl = _test_link_order_with_mixed_deps_and_linkshared_impl,
+    )
+
+def _test_link_order_with_mixed_deps_and_linkshared_impl(env, target):
+    action = env.expect.that_target(target).action_named("CppLink")
+
+    action.inputs().contains_at_least_predicates([
+        matching.file_path_matches("test_link_order_with_mixed_deps_and_linkshared_foo.so"),
         matching.file_path_matches("cc_proto_library_tests_a"),
         matching.file_path_matches("cc_proto_library_tests_b"),
         # Using matching.any because the basename varies by platform in OSS.
