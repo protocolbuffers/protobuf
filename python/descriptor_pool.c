@@ -90,8 +90,10 @@ static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
 #endif
   PyObject_GC_UnTrack(self);
   PyUpb_DescriptorPool_Clear(self);
-  upb_DefPool_Free(self->symtab);
-  PyUpb_ObjCache_Delete(self->symtab);
+  if (self->symtab) {
+    upb_DefPool_Free(self->symtab);
+    PyUpb_ObjCache_Delete(self->symtab);
+  }
   PyUpb_Dealloc(self);
 }
 
