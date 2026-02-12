@@ -451,12 +451,16 @@ struct PROTOBUF_EXPORT ClassData {
 
   const ClassDataFull& full() const;
 
+  const MessageLite* default_instance() const { return prototype; }
+
   MessageLite* New(Arena* arena) const {
-    return message_creator.New(prototype, prototype, arena);
+    const MessageLite* def = default_instance();
+    return message_creator.New(def, def, arena);
   }
 
   MessageLite* PlacementNew(void* mem, Arena* arena) const {
-    return message_creator.PlacementNew(prototype, prototype, mem, arena);
+    const MessageLite* def = default_instance();
+    return message_creator.PlacementNew(def, def, mem, arena);
   }
 
   uint32_t allocation_size() const { return message_creator.allocation_size(); }
@@ -1099,7 +1103,7 @@ class PROTOBUF_EXPORT MessageLite {
     ABSL_DCHECK(GetClassData() == data && other.GetClassData() == data)
         << "Invalid call to " << __func__ << ": this=" << GetTypeName()
         << " other=" << other.GetTypeName()
-        << " data=" << data->prototype->GetTypeName();
+        << " data=" << data->default_instance()->GetTypeName();
     data->merge_to_from(*this, other);
   }
 
