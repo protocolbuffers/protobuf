@@ -77,6 +77,8 @@ class MessageGenerator {
   // default instance.
   void GenerateConstexprConstructor(io::Printer* p);
 
+  void GenerateSourceDefaultInstance(io::Printer* p);
+
   void GenerateSchema(io::Printer* p, int offset);
 
   // Generate the field offsets array.  Returns the total number of entries
