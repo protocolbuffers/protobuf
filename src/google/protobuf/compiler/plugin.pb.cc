@@ -700,13 +700,13 @@ class CodeGeneratorRequest::_Internal {
 
 void CodeGeneratorRequest::clear_proto_file() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.proto_file_.Clear();
+  _internal_mutable_proto_file()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000002U);
 }
 void CodeGeneratorRequest::clear_source_file_descriptors() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.source_file_descriptors_.Clear();
+  _internal_mutable_source_file_descriptors()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000010U);
 }
@@ -941,10 +941,10 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _impl_.file_to_generate_.Clear();
+      _internal_mutable_file_to_generate()->Clear();
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000002U)) {
-      _impl_.proto_file_.Clear();
+      _internal_mutable_proto_file()->Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       _impl_.parameter_.ClearNonDefaultToEmpty();
@@ -954,7 +954,7 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
       _impl_.compiler_version_->Clear();
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000010U)) {
-      _impl_.source_file_descriptors_.Clear();
+      _internal_mutable_source_file_descriptors()->Clear();
     }
   }
   _impl_._has_bits_.Clear();
@@ -1162,11 +1162,12 @@ void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* PROTOBUF_RESTRICT 
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.file_to_generate_.InternalSwap(&other->_impl_.file_to_generate_);
-  _impl_.proto_file_.InternalSwap(&other->_impl_.proto_file_);
+  _internal_mutable_file_to_generate()->InternalSwap(
+      other->_internal_mutable_file_to_generate());
+  _internal_mutable_proto_file()->InternalSwap(other->_internal_mutable_proto_file());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.parameter_, &other->_impl_.parameter_, arena);
   swap(_impl_.compiler_version_, other->_impl_.compiler_version_);
-  _impl_.source_file_descriptors_.InternalSwap(&other->_impl_.source_file_descriptors_);
+  _internal_mutable_source_file_descriptors()->InternalSwap(other->_internal_mutable_source_file_descriptors());
 }
 
 ::google::protobuf::Metadata CodeGeneratorRequest::GetMetadata() const {
@@ -1780,7 +1781,7 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _impl_.file_.Clear();
+      _internal_mutable_file()->Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       _impl_.error_.ClearNonDefaultToEmpty();
@@ -1965,7 +1966,7 @@ void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* PROTOBUF_RESTRIC
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.file_.InternalSwap(&other->_impl_.file_);
+  _internal_mutable_file()->InternalSwap(other->_internal_mutable_file());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.error_, &other->_impl_.error_, arena);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.maximum_edition_)

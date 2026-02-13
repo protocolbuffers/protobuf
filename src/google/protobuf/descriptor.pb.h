@@ -13239,7 +13239,7 @@ inline int FileDescriptorSet::file_size() const {
 }
 inline void FileDescriptorSet::clear_file() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.file_.Clear();
+  _internal_mutable_file()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
@@ -13437,7 +13437,7 @@ inline int FileDescriptorProto::dependency_size() const {
 }
 inline void FileDescriptorProto::clear_dependency() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.dependency_.Clear();
+  _internal_mutable_dependency()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
@@ -13612,7 +13612,7 @@ inline int FileDescriptorProto::option_dependency_size() const {
 }
 inline void FileDescriptorProto::clear_option_dependency() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.option_dependency_.Clear();
+  _internal_mutable_option_dependency()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000080U);
 }
@@ -13685,7 +13685,7 @@ inline int FileDescriptorProto::message_type_size() const {
 }
 inline void FileDescriptorProto::clear_message_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.message_type_.Clear();
+  _internal_mutable_message_type()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000002U);
 }
@@ -13741,7 +13741,7 @@ inline int FileDescriptorProto::enum_type_size() const {
 }
 inline void FileDescriptorProto::clear_enum_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.enum_type_.Clear();
+  _internal_mutable_enum_type()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000004U);
 }
@@ -13797,7 +13797,7 @@ inline int FileDescriptorProto::service_size() const {
 }
 inline void FileDescriptorProto::clear_service() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.service_.Clear();
+  _internal_mutable_service()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000008U);
 }
@@ -13853,7 +13853,7 @@ inline int FileDescriptorProto::extension_size() const {
 }
 inline void FileDescriptorProto::clear_extension() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.extension_.Clear();
+  _internal_mutable_extension()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000010U);
 }
@@ -14504,7 +14504,7 @@ inline int DescriptorProto::field_size() const {
 }
 inline void DescriptorProto::clear_field() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.field_.Clear();
+  _internal_mutable_field()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
@@ -14560,7 +14560,7 @@ inline int DescriptorProto::extension_size() const {
 }
 inline void DescriptorProto::clear_extension() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.extension_.Clear();
+  _internal_mutable_extension()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000010U);
 }
@@ -14616,7 +14616,7 @@ inline int DescriptorProto::nested_type_size() const {
 }
 inline void DescriptorProto::clear_nested_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.nested_type_.Clear();
+  _internal_mutable_nested_type()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000002U);
 }
@@ -14672,7 +14672,7 @@ inline int DescriptorProto::enum_type_size() const {
 }
 inline void DescriptorProto::clear_enum_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.enum_type_.Clear();
+  _internal_mutable_enum_type()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000004U);
 }
@@ -14728,7 +14728,7 @@ inline int DescriptorProto::extension_range_size() const {
 }
 inline void DescriptorProto::clear_extension_range() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.extension_range_.Clear();
+  _internal_mutable_extension_range()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000008U);
 }
@@ -14784,7 +14784,7 @@ inline int DescriptorProto::oneof_decl_size() const {
 }
 inline void DescriptorProto::clear_oneof_decl() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.oneof_decl_.Clear();
+  _internal_mutable_oneof_decl()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000020U);
 }
@@ -14939,7 +14939,7 @@ inline int DescriptorProto::reserved_range_size() const {
 }
 inline void DescriptorProto::clear_reserved_range() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.reserved_range_.Clear();
+  _internal_mutable_reserved_range()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000040U);
 }
@@ -14995,7 +14995,7 @@ inline int DescriptorProto::reserved_name_size() const {
 }
 inline void DescriptorProto::clear_reserved_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.reserved_name_.Clear();
+  _internal_mutable_reserved_name()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000080U);
 }
@@ -15333,7 +15333,7 @@ inline int ExtensionRangeOptions::uninterpreted_option_size() const {
 }
 inline void ExtensionRangeOptions::clear_uninterpreted_option() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.uninterpreted_option_.Clear();
+  _internal_mutable_uninterpreted_option()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000002U);
 }
@@ -15389,7 +15389,7 @@ inline int ExtensionRangeOptions::declaration_size() const {
 }
 inline void ExtensionRangeOptions::clear_declaration() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.declaration_.Clear();
+  _internal_mutable_declaration()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
@@ -16482,7 +16482,7 @@ inline int EnumDescriptorProto::value_size() const {
 }
 inline void EnumDescriptorProto::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.value_.Clear();
+  _internal_mutable_value()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
@@ -16637,7 +16637,7 @@ inline int EnumDescriptorProto::reserved_range_size() const {
 }
 inline void EnumDescriptorProto::clear_reserved_range() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.reserved_range_.Clear();
+  _internal_mutable_reserved_range()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000002U);
 }
@@ -16693,7 +16693,7 @@ inline int EnumDescriptorProto::reserved_name_size() const {
 }
 inline void EnumDescriptorProto::clear_reserved_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.reserved_name_.Clear();
+  _internal_mutable_reserved_name()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000004U);
 }
@@ -17072,7 +17072,7 @@ inline int ServiceDescriptorProto::method_size() const {
 }
 inline void ServiceDescriptorProto::clear_method() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.method_.Clear();
+  _internal_mutable_method()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
@@ -18652,7 +18652,7 @@ inline int FileOptions::uninterpreted_option_size() const {
 }
 inline void FileOptions::clear_uninterpreted_option() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.uninterpreted_option_.Clear();
+  _internal_mutable_uninterpreted_option()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00100000U);
 }
@@ -18956,7 +18956,7 @@ inline int MessageOptions::uninterpreted_option_size() const {
 }
 inline void MessageOptions::clear_uninterpreted_option() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.uninterpreted_option_.Clear();
+  _internal_mutable_uninterpreted_option()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000040U);
 }
@@ -19686,7 +19686,7 @@ inline int FieldOptions::edition_defaults_size() const {
 }
 inline void FieldOptions::clear_edition_defaults() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.edition_defaults_.Clear();
+  _internal_mutable_edition_defaults()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
@@ -19940,7 +19940,7 @@ inline int FieldOptions::uninterpreted_option_size() const {
 }
 inline void FieldOptions::clear_uninterpreted_option() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.uninterpreted_option_.Clear();
+  _internal_mutable_uninterpreted_option()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000002U);
 }
@@ -20099,7 +20099,7 @@ inline int OneofOptions::uninterpreted_option_size() const {
 }
 inline void OneofOptions::clear_uninterpreted_option() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.uninterpreted_option_.Clear();
+  _internal_mutable_uninterpreted_option()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
@@ -20345,7 +20345,7 @@ inline int EnumOptions::uninterpreted_option_size() const {
 }
 inline void EnumOptions::clear_uninterpreted_option() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.uninterpreted_option_.Clear();
+  _internal_mutable_uninterpreted_option()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000010U);
 }
@@ -20661,7 +20661,7 @@ inline int EnumValueOptions::uninterpreted_option_size() const {
 }
 inline void EnumValueOptions::clear_uninterpreted_option() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.uninterpreted_option_.Clear();
+  _internal_mutable_uninterpreted_option()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
@@ -20849,7 +20849,7 @@ inline int ServiceOptions::uninterpreted_option_size() const {
 }
 inline void ServiceOptions::clear_uninterpreted_option() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.uninterpreted_option_.Clear();
+  _internal_mutable_uninterpreted_option()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
@@ -21069,7 +21069,7 @@ inline int MethodOptions::uninterpreted_option_size() const {
 }
 inline void MethodOptions::clear_uninterpreted_option() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.uninterpreted_option_.Clear();
+  _internal_mutable_uninterpreted_option()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
@@ -21231,7 +21231,7 @@ inline int UninterpretedOption::name_size() const {
 }
 inline void UninterpretedOption::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.name_.Clear();
+  _internal_mutable_name()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
@@ -22083,7 +22083,7 @@ inline int FeatureSetDefaults::defaults_size() const {
 }
 inline void FeatureSetDefaults::clear_defaults() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.defaults_.Clear();
+  _internal_mutable_defaults()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
@@ -22447,7 +22447,7 @@ inline int SourceCodeInfo_Location::leading_detached_comments_size() const {
 }
 inline void SourceCodeInfo_Location::clear_leading_detached_comments() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.leading_detached_comments_.Clear();
+  _internal_mutable_leading_detached_comments()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000004U);
 }
@@ -22524,7 +22524,7 @@ inline int SourceCodeInfo::location_size() const {
 }
 inline void SourceCodeInfo::clear_location() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.location_.Clear();
+  _internal_mutable_location()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
@@ -22798,7 +22798,7 @@ inline int GeneratedCodeInfo::annotation_size() const {
 }
 inline void GeneratedCodeInfo::clear_annotation() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.annotation_.Clear();
+  _internal_mutable_annotation()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }

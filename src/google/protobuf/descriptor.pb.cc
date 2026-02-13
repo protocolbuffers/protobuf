@@ -2758,7 +2758,7 @@ PROTOBUF_NOINLINE void FileDescriptorSet::Clear() {
   _impl_._extensions_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-    _impl_.file_.Clear();
+    _internal_mutable_file()->Clear();
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -2889,7 +2889,7 @@ void FileDescriptorSet::InternalSwap(FileDescriptorSet* PROTOBUF_RESTRICT PROTOB
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.file_.InternalSwap(&other->_impl_.file_);
+  _internal_mutable_file()->InternalSwap(other->_internal_mutable_file());
 }
 
 ::google::protobuf::Metadata FileDescriptorSet::GetMetadata() const {
@@ -3271,19 +3271,19 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _impl_.dependency_.Clear();
+      _internal_mutable_dependency()->Clear();
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000002U)) {
-      _impl_.message_type_.Clear();
+      _internal_mutable_message_type()->Clear();
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000004U)) {
-      _impl_.enum_type_.Clear();
+      _internal_mutable_enum_type()->Clear();
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000008U)) {
-      _impl_.service_.Clear();
+      _internal_mutable_service()->Clear();
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000010U)) {
-      _impl_.extension_.Clear();
+      _internal_mutable_extension()->Clear();
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000020U)) {
       _impl_.public_dependency_.Clear();
@@ -3292,7 +3292,7 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
       _impl_.weak_dependency_.Clear();
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000080U)) {
-      _impl_.option_dependency_.Clear();
+      _internal_mutable_option_dependency()->Clear();
     }
   }
   if (BatchCheckHasBit(cached_has_bits, 0x00001f00U)) {
@@ -3709,14 +3709,16 @@ void FileDescriptorProto::InternalSwap(FileDescriptorProto* PROTOBUF_RESTRICT PR
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.dependency_.InternalSwap(&other->_impl_.dependency_);
-  _impl_.message_type_.InternalSwap(&other->_impl_.message_type_);
-  _impl_.enum_type_.InternalSwap(&other->_impl_.enum_type_);
-  _impl_.service_.InternalSwap(&other->_impl_.service_);
-  _impl_.extension_.InternalSwap(&other->_impl_.extension_);
+  _internal_mutable_dependency()->InternalSwap(
+      other->_internal_mutable_dependency());
+  _internal_mutable_message_type()->InternalSwap(other->_internal_mutable_message_type());
+  _internal_mutable_enum_type()->InternalSwap(other->_internal_mutable_enum_type());
+  _internal_mutable_service()->InternalSwap(other->_internal_mutable_service());
+  _internal_mutable_extension()->InternalSwap(other->_internal_mutable_extension());
   _impl_.public_dependency_.InternalSwap(&other->_impl_.public_dependency_);
   _impl_.weak_dependency_.InternalSwap(&other->_impl_.weak_dependency_);
-  _impl_.option_dependency_.InternalSwap(&other->_impl_.option_dependency_);
+  _internal_mutable_option_dependency()->InternalSwap(
+      other->_internal_mutable_option_dependency());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.package_, &other->_impl_.package_, arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.syntax_, &other->_impl_.syntax_, arena);
@@ -4746,28 +4748,28 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _impl_.field_.Clear();
+      _internal_mutable_field()->Clear();
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000002U)) {
-      _impl_.nested_type_.Clear();
+      _internal_mutable_nested_type()->Clear();
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000004U)) {
-      _impl_.enum_type_.Clear();
+      _internal_mutable_enum_type()->Clear();
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000008U)) {
-      _impl_.extension_range_.Clear();
+      _internal_mutable_extension_range()->Clear();
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000010U)) {
-      _impl_.extension_.Clear();
+      _internal_mutable_extension()->Clear();
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000020U)) {
-      _impl_.oneof_decl_.Clear();
+      _internal_mutable_oneof_decl()->Clear();
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000040U)) {
-      _impl_.reserved_range_.Clear();
+      _internal_mutable_reserved_range()->Clear();
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000080U)) {
-      _impl_.reserved_name_.Clear();
+      _internal_mutable_reserved_name()->Clear();
     }
   }
   if (BatchCheckHasBit(cached_has_bits, 0x00000300U)) {
@@ -5140,14 +5142,15 @@ void DescriptorProto::InternalSwap(DescriptorProto* PROTOBUF_RESTRICT PROTOBUF_N
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.field_.InternalSwap(&other->_impl_.field_);
-  _impl_.nested_type_.InternalSwap(&other->_impl_.nested_type_);
-  _impl_.enum_type_.InternalSwap(&other->_impl_.enum_type_);
-  _impl_.extension_range_.InternalSwap(&other->_impl_.extension_range_);
-  _impl_.extension_.InternalSwap(&other->_impl_.extension_);
-  _impl_.oneof_decl_.InternalSwap(&other->_impl_.oneof_decl_);
-  _impl_.reserved_range_.InternalSwap(&other->_impl_.reserved_range_);
-  _impl_.reserved_name_.InternalSwap(&other->_impl_.reserved_name_);
+  _internal_mutable_field()->InternalSwap(other->_internal_mutable_field());
+  _internal_mutable_nested_type()->InternalSwap(other->_internal_mutable_nested_type());
+  _internal_mutable_enum_type()->InternalSwap(other->_internal_mutable_enum_type());
+  _internal_mutable_extension_range()->InternalSwap(other->_internal_mutable_extension_range());
+  _internal_mutable_extension()->InternalSwap(other->_internal_mutable_extension());
+  _internal_mutable_oneof_decl()->InternalSwap(other->_internal_mutable_oneof_decl());
+  _internal_mutable_reserved_range()->InternalSwap(other->_internal_mutable_reserved_range());
+  _internal_mutable_reserved_name()->InternalSwap(
+      other->_internal_mutable_reserved_name());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_.visibility_)
@@ -5784,10 +5787,10 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _impl_.declaration_.Clear();
+      _internal_mutable_declaration()->Clear();
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000002U)) {
-      _impl_.uninterpreted_option_.Clear();
+      _internal_mutable_uninterpreted_option()->Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       ABSL_DCHECK(_impl_.features_ != nullptr);
@@ -5989,8 +5992,8 @@ void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* PROTOBUF_RESTRIC
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.declaration_.InternalSwap(&other->_impl_.declaration_);
-  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
+  _internal_mutable_declaration()->InternalSwap(other->_internal_mutable_declaration());
+  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_.verification_)
       + sizeof(ExtensionRangeOptions::_impl_.verification_)
@@ -7461,13 +7464,13 @@ PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _impl_.value_.Clear();
+      _internal_mutable_value()->Clear();
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000002U)) {
-      _impl_.reserved_range_.Clear();
+      _internal_mutable_reserved_range()->Clear();
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000004U)) {
-      _impl_.reserved_name_.Clear();
+      _internal_mutable_reserved_name()->Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       _impl_.name_.ClearNonDefaultToEmpty();
@@ -7699,9 +7702,10 @@ void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* PROTOBUF_RESTRICT PR
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.value_.InternalSwap(&other->_impl_.value_);
-  _impl_.reserved_range_.InternalSwap(&other->_impl_.reserved_range_);
-  _impl_.reserved_name_.InternalSwap(&other->_impl_.reserved_name_);
+  _internal_mutable_value()->InternalSwap(other->_internal_mutable_value());
+  _internal_mutable_reserved_range()->InternalSwap(other->_internal_mutable_reserved_range());
+  _internal_mutable_reserved_name()->InternalSwap(
+      other->_internal_mutable_reserved_name());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_.visibility_)
@@ -8282,7 +8286,7 @@ PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _impl_.method_.Clear();
+      _internal_mutable_method()->Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       _impl_.name_.ClearNonDefaultToEmpty();
@@ -8451,7 +8455,7 @@ void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* PROTOBUF_RESTR
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.method_.InternalSwap(&other->_impl_.method_);
+  _internal_mutable_method()->InternalSwap(other->_internal_mutable_method());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
   swap(_impl_.options_, other->_impl_.options_);
 }
@@ -9309,7 +9313,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
     _impl_.optimize_for_ = 1;
     _impl_.cc_enable_arenas_ = true;
     if (CheckHasBitForRepeated(cached_has_bits, 0x00100000U)) {
-      _impl_.uninterpreted_option_.Clear();
+      _internal_mutable_uninterpreted_option()->Clear();
     }
   }
   _impl_._has_bits_.Clear();
@@ -9729,7 +9733,7 @@ void FileOptions::InternalSwap(FileOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
       - PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.features_)>(
           reinterpret_cast<char*>(&_impl_.features_),
           reinterpret_cast<char*>(&other->_impl_.features_));
-  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
+  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
 }
 
 ::google::protobuf::Metadata FileOptions::GetMetadata() const {
@@ -9982,7 +9986,7 @@ PROTOBUF_NOINLINE void MessageOptions::Clear() {
         reinterpret_cast<char*>(&_impl_.deprecated_legacy_json_field_conflicts_) -
         reinterpret_cast<char*>(&_impl_.message_set_wire_format_)) + sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000040U)) {
-      _impl_.uninterpreted_option_.Clear();
+      _internal_mutable_uninterpreted_option()->Clear();
     }
   }
   _impl_._has_bits_.Clear();
@@ -10196,7 +10200,7 @@ void MessageOptions::InternalSwap(MessageOptions* PROTOBUF_RESTRICT PROTOBUF_NON
       - PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_.features_)>(
           reinterpret_cast<char*>(&_impl_.features_),
           reinterpret_cast<char*>(&other->_impl_.features_));
-  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
+  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
 }
 
 ::google::protobuf::Metadata MessageOptions::GetMetadata() const {
@@ -11223,10 +11227,10 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _impl_.edition_defaults_.Clear();
+      _internal_mutable_edition_defaults()->Clear();
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000002U)) {
-      _impl_.uninterpreted_option_.Clear();
+      _internal_mutable_uninterpreted_option()->Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       ABSL_DCHECK(_impl_.features_ != nullptr);
@@ -11581,8 +11585,8 @@ void FieldOptions::InternalSwap(FieldOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.edition_defaults_.InternalSwap(&other->_impl_.edition_defaults_);
-  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
+  _internal_mutable_edition_defaults()->InternalSwap(other->_internal_mutable_edition_defaults());
+  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.retention_)
       + sizeof(FieldOptions::_impl_.retention_)
@@ -11800,7 +11804,7 @@ PROTOBUF_NOINLINE void OneofOptions::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _impl_.uninterpreted_option_.Clear();
+      _internal_mutable_uninterpreted_option()->Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(_impl_.features_ != nullptr);
@@ -11961,7 +11965,7 @@ void OneofOptions::InternalSwap(OneofOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
+  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
   swap(_impl_.features_, other->_impl_.features_);
 }
 
@@ -12207,7 +12211,7 @@ PROTOBUF_NOINLINE void EnumOptions::Clear() {
       reinterpret_cast<char*>(&_impl_.deprecated_legacy_json_field_conflicts_) -
       reinterpret_cast<char*>(&_impl_.allow_alias_)) + sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
   if (CheckHasBitForRepeated(cached_has_bits, 0x00000010U)) {
-    _impl_.uninterpreted_option_.Clear();
+    _internal_mutable_uninterpreted_option()->Clear();
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -12400,7 +12404,7 @@ void EnumOptions::InternalSwap(EnumOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
       - PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_.features_)>(
           reinterpret_cast<char*>(&_impl_.features_),
           reinterpret_cast<char*>(&other->_impl_.features_));
-  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
+  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
 }
 
 ::google::protobuf::Metadata EnumOptions::GetMetadata() const {
@@ -12647,7 +12651,7 @@ PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _impl_.uninterpreted_option_.Clear();
+      _internal_mutable_uninterpreted_option()->Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(_impl_.features_ != nullptr);
@@ -12856,7 +12860,7 @@ void EnumValueOptions::InternalSwap(EnumValueOptions* PROTOBUF_RESTRICT PROTOBUF
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
+  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_.debug_redact_)
       + sizeof(EnumValueOptions::_impl_.debug_redact_)
@@ -13086,7 +13090,7 @@ PROTOBUF_NOINLINE void ServiceOptions::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _impl_.uninterpreted_option_.Clear();
+      _internal_mutable_uninterpreted_option()->Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(_impl_.features_ != nullptr);
@@ -13259,7 +13263,7 @@ void ServiceOptions::InternalSwap(ServiceOptions* PROTOBUF_RESTRICT PROTOBUF_NON
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
+  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_.deprecated_)
       + sizeof(ServiceOptions::_impl_.deprecated_)
@@ -13505,7 +13509,7 @@ PROTOBUF_NOINLINE void MethodOptions::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _impl_.uninterpreted_option_.Clear();
+      _internal_mutable_uninterpreted_option()->Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(_impl_.features_ != nullptr);
@@ -13697,7 +13701,7 @@ void MethodOptions::InternalSwap(MethodOptions* PROTOBUF_RESTRICT PROTOBUF_NONNU
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
+  _internal_mutable_uninterpreted_option()->InternalSwap(other->_internal_mutable_uninterpreted_option());
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.idempotency_level_)
       + sizeof(MethodOptions::_impl_.idempotency_level_)
@@ -14261,7 +14265,7 @@ PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _impl_.name_.Clear();
+      _internal_mutable_name()->Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       _impl_.identifier_value_.ClearNonDefaultToEmpty();
@@ -14483,7 +14487,7 @@ void UninterpretedOption::InternalSwap(UninterpretedOption* PROTOBUF_RESTRICT PR
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.name_.InternalSwap(&other->_impl_.name_);
+  _internal_mutable_name()->InternalSwap(other->_internal_mutable_name());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.identifier_value_, &other->_impl_.identifier_value_, arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.string_value_, &other->_impl_.string_value_, arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.aggregate_value_, &other->_impl_.aggregate_value_, arena);
@@ -15678,7 +15682,7 @@ PROTOBUF_NOINLINE void FeatureSetDefaults::Clear() {
 
   cached_has_bits = _impl_._has_bits_[0];
   if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-    _impl_.defaults_.Clear();
+    _internal_mutable_defaults()->Clear();
   }
   if (BatchCheckHasBit(cached_has_bits, 0x00000006U)) {
     ::memset(&_impl_.minimum_edition_, 0, static_cast<::size_t>(
@@ -15835,7 +15839,7 @@ void FeatureSetDefaults::InternalSwap(FeatureSetDefaults* PROTOBUF_RESTRICT PROT
   using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.defaults_.InternalSwap(&other->_impl_.defaults_);
+  _internal_mutable_defaults()->InternalSwap(other->_internal_mutable_defaults());
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_.maximum_edition_)
       + sizeof(FeatureSetDefaults::_impl_.maximum_edition_)
@@ -16093,7 +16097,7 @@ PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
       _impl_.span_.Clear();
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000004U)) {
-      _impl_.leading_detached_comments_.Clear();
+      _internal_mutable_leading_detached_comments()->Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       _impl_.leading_comments_.ClearNonDefaultToEmpty();
@@ -16286,7 +16290,8 @@ void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* PROTOBUF_RES
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.path_.InternalSwap(&other->_impl_.path_);
   _impl_.span_.InternalSwap(&other->_impl_.span_);
-  _impl_.leading_detached_comments_.InternalSwap(&other->_impl_.leading_detached_comments_);
+  _internal_mutable_leading_detached_comments()->InternalSwap(
+      other->_internal_mutable_leading_detached_comments());
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.leading_comments_, &other->_impl_.leading_comments_, arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.trailing_comments_, &other->_impl_.trailing_comments_, arena);
 }
@@ -16481,7 +16486,7 @@ PROTOBUF_NOINLINE void SourceCodeInfo::Clear() {
   _impl_._extensions_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-    _impl_.location_.Clear();
+    _internal_mutable_location()->Clear();
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -16610,7 +16615,7 @@ void SourceCodeInfo::InternalSwap(SourceCodeInfo* PROTOBUF_RESTRICT PROTOBUF_NON
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.location_.InternalSwap(&other->_impl_.location_);
+  _internal_mutable_location()->InternalSwap(other->_internal_mutable_location());
 }
 
 ::google::protobuf::Metadata SourceCodeInfo::GetMetadata() const {
@@ -17215,7 +17220,7 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo::Clear() {
 
   cached_has_bits = _impl_._has_bits_[0];
   if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-    _impl_.annotation_.Clear();
+    _internal_mutable_annotation()->Clear();
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -17328,7 +17333,7 @@ void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* PROTOBUF_RESTRICT PROTOB
   using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.annotation_.InternalSwap(&other->_impl_.annotation_);
+  _internal_mutable_annotation()->InternalSwap(other->_internal_mutable_annotation());
 }
 
 ::google::protobuf::Metadata GeneratedCodeInfo::GetMetadata() const {
