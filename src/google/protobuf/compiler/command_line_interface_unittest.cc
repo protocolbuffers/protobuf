@@ -1367,7 +1367,55 @@ TEST_F(CommandLineInterfaceTest, Win32ErrorMessage) {
             Subprocess::Win32ErrorMessage(ERROR_FILE_NOT_FOUND));
 }
 
-#endif  // defined(_WIN32) || defined(__CYGWIN__)
+// Security regression tests for Windows command injection fix.
+// These tests verify that plugin paths containing shell metacharacters
+// are rejected, preventing command injection via cmd.exe.
+
+TEST_F(CommandLineInterfaceTest, RejectsPluginWithAmpersand) {
+  // The '&' character is used by cmd.exe to chain commands.
+  // A malicious plugin path like 'calc.exe & echo' must be rejected.
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler "
+      "--plugin=protoc-gen-evil=fake.exe\"&\"calc.exe "
+      "--evil_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("--evil_out");
+}
+
+TEST_F(CommandLineInterfaceTest, RejectsPluginWithPipe) {
+  // The '|' character is used by cmd.exe to pipe output.
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler "
+      "--plugin=protoc-gen-evil=fake.exe\"|\"calc.exe "
+      "--evil_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("--evil_out");
+}
+
+TEST_F(CommandLineInterfaceTest, RejectsPluginWithAngleBrackets) {
+  // The '<' and '>' characters are used for I/O redirection.
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler "
+      "--plugin=protoc-gen-evil=fake.exe\">\"out.txt "
+      "--evil_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("--evil_out");
+}
+
+#endif  // defined(_WIN32)
+
 
 TEST_F(CommandLineInterfaceTest, PathLookup) {
   // Test that specifying multiple directories in the proto search path works.
