@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
+#include "base/types.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/charset.h"
 #include "absl/strings/string_view.h"
