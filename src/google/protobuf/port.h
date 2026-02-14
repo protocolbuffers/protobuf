@@ -661,7 +661,7 @@ inline void UnpoisonMemoryRegion([[maybe_unused]] const void* p,
 
 inline bool IsMemoryPoisoned([[maybe_unused]] const void* p) {
 #if defined(ABSL_HAVE_ADDRESS_SANITIZER)
-  return __asan_address_is_poisoned(p);
+  return __asan_address_is_poisoned(p) != 0;
 #else
   return false;
 #endif
