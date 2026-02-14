@@ -1235,6 +1235,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // both fields are on the same arena or both are on the heap. Swapping between
   // different arenas with this function is disallowed and is caught via
   // ABSL_DCHECK.
+  ABSL_DEPRECATED(
+      "Use Swap() for ownership transfer, or message borrowers for temporary "
+      "swaps.")
   void UnsafeArenaSwap(RepeatedPtrField* other);
 
   // Swaps two elements.
@@ -1324,12 +1327,18 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // transfers to the arena at the "AddAllocated" call and is not released
   // anymore, causing a double delete. UnsafeArenaAddAllocated prevents this.
   // Requires:  value != nullptr
+  ABSL_DEPRECATED(
+      "Use AddAllocated() for ownership transfer, or message borrowers for "
+      "temporary moves.")
   void UnsafeArenaAddAllocated(Element* value);
 
   // Removes and returns the last element.  Unlike ReleaseLast, the returned
   // pointer is always to the original object.  This may be in an arena, in
   // which case it would have the arena's lifetime.
   // Requires: current_size_ > 0
+  ABSL_DEPRECATED(
+      "Use ReleaseLast() for ownership transfer, or message borrowers for "
+      "temporary moves.")
   pointer UnsafeArenaReleaseLast();
 
   // Extracts elements with indices in the range "[start .. start+num-1]".
@@ -1353,6 +1362,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // copies are ever performed. Instead, the raw object pointers are returned.
   // Thus, if on an arena, the returned objects must not be freed, because they
   // will not be heap-allocated objects.
+  ABSL_DEPRECATED(
+      "Use ExtractSubrange() for ownership transfer, or message borrowers for "
+      "temporary moves.")
   void UnsafeArenaExtractSubrange(int start, int num, Element** elements);
 
   // When elements are removed by calls to RemoveLast() or Clear(), they
@@ -1460,6 +1472,13 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
                    const RepeatedPtrField& rhs);
   RepeatedPtrField(internal::InternalMetadataOffset offset,
                    RepeatedPtrField&& rhs);
+#else   // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+RepeatedPtrField(Arena* arena, const RepeatedPtrField& rhs);
+RepeatedPtrField(Arena* arena, RepeatedPtrField&& rhs);
+
+ABSL_DEPRECATED("Use default constructor instead.")
+explicit RepeatedPtrField(Arena* arena);
+#endif  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 
 
   pointer AddWithArena(Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND;
