@@ -18,7 +18,7 @@ namespace Google.Protobuf
     public class RefStructCompatibilityTest
     {
         /// <summary>
-        /// Checks that the generated code can be compiler with an old C# compiler.
+        /// Checks that the generated code can be compiled with an old C# compiler.
         /// The reason why this test is needed is that even though dotnet SDK projects allow to set LangVersion,
         /// this setting doesn't accurately simulate compilation with an actual old pre-roslyn C# compiler.
         /// For instance, the "ref struct" types are only supported by C# 7.2 and higher, but even if
@@ -43,7 +43,7 @@ namespace Google.Protobuf
             // "XYZ is obsolete: 'Types with embedded references are not supported in this version of your compiler.'"
             // We build the code with GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE to avoid the use of ref struct in the generated code.
             var compatibilityFlag = "-define:GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE";
-            var sources = "*.cs";  // the generated sources from the TestProtos project
+            var sources = "*.cs";  // the generated sources from the TestProtos project without NRTs
             // We suppress CS1691, which flags a warning for the generated line of
             // #pragma warning disable 1591, 0612, 3021, 8981
             // because CS8981 is unknown to this version of the compiler.
