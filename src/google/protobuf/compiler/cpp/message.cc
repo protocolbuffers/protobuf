@@ -3103,10 +3103,8 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
 }
 
 void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
-  if (!ShouldGenerateClass(descriptor_, options_)) return;
+  ABSL_CHECK(ShouldGenerateClass(descriptor_, options_));
 
-  auto v = p->WithVars(ClassVars(descriptor_, options_));
-  auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
 
   if (IsMapEntryMessage(descriptor_) || !HasImplData(descriptor_, options_)) {
@@ -5551,35 +5549,35 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
            [&] {
              for (const auto* oneof : OneOfRange(descriptor_)) {
                if (!has_required_field(oneof)) continue;
-               p->Emit({{"name", oneof->name()},
-                        {"NAME", absl::AsciiStrToUpper(oneof->name())},
-                        {"cases",
-                         [&] {
-                           for (const auto* field :
-                                internal::FieldRange(oneof)) {
-                             p->Emit({{"Name", UnderscoresToCamelCase(
-                                                   field->name(), true)},
-                                      {"body",
-                                       [&] {
-                                         field_generators_.get(field)
-                                             .GenerateIsInitialized(p);
-                                       }}},
-                                     R"cc(
-                                       case k$Name$: {
-                                         $body$;
-                                         break;
-                                       }
-                                     )cc");
-                           }
-                         }}},
-                       R"cc(
-                         switch (this_.$name$_case()) {
-                           $cases$;
-                           case $NAME$_NOT_SET: {
-                             break;
-                           }
-                         }
-                       )cc");
+               p->Emit(
+                   {{"name", oneof->name()},
+                    {"NAME", absl::AsciiStrToUpper(oneof->name())},
+                    {"cases",
+                     [&] {
+                       for (const auto* field : internal::FieldRange(oneof)) {
+                         p->Emit({{"Name",
+                                   UnderscoresToCamelCase(field->name(), true)},
+                                  {"body",
+                                   [&] {
+                                     field_generators_.get(field)
+                                         .GenerateIsInitialized(p);
+                                   }}},
+                                 R"cc(
+                                   case k$Name$: {
+                                     $body$;
+                                     break;
+                                   }
+                                 )cc");
+                       }
+                     }}},
+                   R"cc(
+                     switch (this_.$name$_case()) {
+                       $cases$;
+                       case $NAME$_NOT_SET: {
+                         break;
+                       }
+                     }
+                   )cc");
              }
            }},
       },
@@ -5595,6 +5593,120 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
           return true;
         }
       )cc");
+}
+
+
+void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
+  if (!ShouldGenerateClass(descriptor_, options_)) return;
+
+  auto v = p->WithVars(ClassVars(descriptor_, options_));
+  auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
+
+  // Generate the split instance first because it's needed in the constexpr
+  // constructor.
+  if (ShouldSplit(descriptor_, options_)) {
+    // Use a union to disable the destructor of the _instance member.
+    // We can constant initialize, but the object will still have a non-trivial
+    // destructor that we need to elide.
+    //
+    // NO_DESTROY is not necessary for correctness. The empty destructor is
+    // enough. However, the empty destructor fails to be elided in some
+    // configurations (like non-opt or with certain sanitizers). NO_DESTROY is
+    // there just to improve performance and binary size in these builds.
+    p->Emit(
+        {
+            {"type", SplitDefaultInstanceType(descriptor_, options_)},
+            {"name", SplitDefaultInstanceName(descriptor_, options_)},
+            {"default", [&] { GenerateInitDefaultSplitInstance(p); }},
+            {"class", absl::StrCat(ClassName(descriptor_), "::Impl_::Split")},
+        },
+        R"cc(
+          struct $type$ {
+            constexpr $type$() : _instance{$default$} {}
+            union {
+              $class$ _instance;
+            };
+          };
+
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const $type$ $name$;
+        )cc");
+  }
+
+  GenerateConstexprConstructor(p);
+
+  auto local = p->WithVars({
+      {"type", MsgGlobalsInstanceType(descriptor_, options_)},
+      {"name", MsgGlobalsInstanceName(descriptor_, options_)},
+  });
+  if (IsFileDescriptorProto(descriptor_->file(), options_)) {
+    p->Emit(
+        R"cc(
+          struct $type$ : ::_pbi::MessageGlobalsBase {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+            constexpr $type$() : _default(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+            $type$() {}
+            void Init() { ::new (&_default) $classname$(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+            ~$type$() {}
+            union {
+              $classname$ _default;
+            };
+          };
+
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
+        )cc");
+  } else if (UsingImplicitWeakDescriptor(descriptor_->file(), options_)) {
+    p->Emit(
+        {
+            {"index", index_in_file_messages_},
+            {"section", WeakDefaultInstanceSection(
+                            descriptor_, index_in_file_messages_, options_)},
+        },
+        R"cc(
+          struct $type$ : ::_pbi::MessageGlobalsBase {
+            constexpr $type$() : _default(::_pbi::ConstantInitialized{}) {}
+            ~$type$() {}
+            //~ _default must be the first member.
+            union {
+              $classname$ _default;
+            };
+            ::_pbi::WeakDescriptorDefaultTail tail = {
+                file_default_instances + $index$, sizeof($type$)};
+          };
+
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$
+              __attribute__((section("$section$")));
+        )cc");
+  } else {
+    p->Emit(
+        R"cc(
+          struct $type$ : ::_pbi::MessageGlobalsBase {
+            constexpr $type$() : _default(::_pbi::ConstantInitialized{}) {}
+            ~$type$() {}
+            union {
+              $classname$ _default;
+            };
+          };
+
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
+        )cc");
+  }
+
+  if (options_.lite_implicit_weak_fields) {
+    p->Emit(
+        {
+            {"ptr", MsgGlobalsInstancePtr(descriptor_, options_)},
+            {"name", MsgGlobalsInstanceName(descriptor_, options_)},
+        },
+        R"cc(
+          PROTOBUF_CONSTINIT const void* $ptr$ = &$name$;
+        )cc");
+  }
 }
 
 }  // namespace cpp
