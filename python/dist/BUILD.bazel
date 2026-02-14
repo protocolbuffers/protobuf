@@ -49,10 +49,13 @@ py_proto_library(
 
 config_setting(
     name = "linux_aarch64_release",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:aarch64",
+    ],
     flag_values = {
         "//toolchain:release": "True",
     },
-    values = {"cpu": "linux-aarch_64"},
 )
 
 config_setting(
@@ -68,10 +71,13 @@ config_setting(
 
 config_setting(
     name = "linux_x86_64_release",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
     flag_values = {
         "//toolchain:release": "True",
     },
-    values = {"cpu": "linux-x86_64"},
 )
 
 config_setting(
@@ -87,10 +93,13 @@ config_setting(
 
 config_setting(
     name = "linux_s390x_release",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:s390x",
+    ],
     flag_values = {
         "//toolchain:release": "True",
     },
-    values = {"cpu": "linux-s390_64"},
 )
 
 config_setting(
@@ -106,10 +115,13 @@ config_setting(
 
 config_setting(
     name = "osx_x86_64_release",
+    constraint_values = [
+        "@platforms//os:osx",
+        "@platforms//cpu:x86_64",
+    ],
     flag_values = {
         "//toolchain:release": "True",
     },
-    values = {"cpu": "osx-x86_64"},
 )
 
 config_setting(
@@ -134,10 +146,13 @@ selects.config_setting_group(
 
 config_setting(
     name = "osx_aarch64_release",
+    constraint_values = [
+        "@platforms//os:osx",
+        "@platforms//cpu:aarch64",
+    ],
     flag_values = {
         "//toolchain:release": "True",
     },
-    values = {"cpu": "osx-aarch_64"},
 )
 
 config_setting(
@@ -162,15 +177,20 @@ selects.config_setting_group(
 
 config_setting(
     name = "osx_universal2",
-    values = {"cpu": "osx-universal2"},
+    constraint_values = [
+        "@platforms//os:osx",
+    ],
 )
 
 config_setting(
     name = "windows_x86_32_release",
+    constraint_values = [
+        "@platforms//os:windows",
+        "@platforms//cpu:x86_32",
+    ],
     flag_values = {
         "//toolchain:release": "True",
     },
-    values = {"cpu": "win32"},
 )
 
 config_setting(
@@ -195,10 +215,13 @@ selects.config_setting_group(
 
 config_setting(
     name = "windows_x86_64_release",
+    constraint_values = [
+        "@platforms//os:windows",
+        "@platforms//cpu:x86_64",
+    ],
     flag_values = {
         "//toolchain:release": "True",
     },
-    values = {"cpu": "win64"},
 )
 
 config_setting(
@@ -457,10 +480,6 @@ py_wheel(
 py_dist(
     name = "dist",
     binary_wheel = ":binary_wheel",
-    full_api_cpus = [
-        "win32",
-        "win64",
-    ],
     # Limited API: these wheels will satisfy any Python version >= the
     # given version.
     #
@@ -468,13 +487,13 @@ py_dist(
     # 3.10, but on Linux we can get away with using 3.1+ (see ../python_api.h for
     # details).
     # LINT.IfChange(limited_api_wheels)
-    limited_api_wheels = {
-        "win32": "310",
-        "win64": "310",
-        "linux-x86_64": "310",
-        "linux-aarch_64": "310",
-        "linux-s390_64": "310",
-        "osx-universal2": "310",
+    limited_api_platforms = {
+        "//build_defs:win32": "310",
+        "//build_defs:win64": "310",
+        "//build_defs:linux-x86_64": "310",
+        "//build_defs:linux-aarch_64": "310",
+        "//build_defs:linux-s390_64": "310",
+        "//build_defs:osx-universal2": "310",
     },
     # LINT.ThenChange(:python_tag)
     pure_python_wheel = ":pure_python_wheel",
