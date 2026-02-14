@@ -553,7 +553,10 @@ void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
   // This worksaround the fact that MSVC does not do constant initializers when
   // required by the standard.
   p->Emit(R"cc(
+    #ifndef PROTOBUF_PRAGMA_INIT_SEG_USED
+    #define PROTOBUF_PRAGMA_INIT_SEG_USED
     PROTOBUF_PRAGMA_INIT_SEG
+    #endif
     namespace _pb = $pb$;
     namespace _pbi = $pbi$;
     namespace _fl = $pbi$::field_layout;
