@@ -6,10 +6,6 @@ load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
-load(
-    "//bazel/tests:protobuf_test_proto_library.bzl",
-    "protobuf_test_proto_library",
-)
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 load("//upb/bazel:upb_c_proto_library.bzl", "upb_c_proto_library")
 load("//upb/bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
@@ -1154,7 +1150,7 @@ filegroup(
     visibility = ["//:__subpackages__"],
 )
 
-protobuf_test_proto_library(
+proto_library(
     name = "test_protos",
     srcs = [
         "any_test.proto",
@@ -1296,7 +1292,7 @@ cc_proto_library(
     deps = [":unittest_features_proto"],
 )
 
-protobuf_test_proto_library(
+proto_library(
     name = "generic_test_protos",
     srcs = [":test_proto_srcs"],
     option_deps = [
@@ -1322,7 +1318,7 @@ protobuf_test_proto_library(
     ],
 )
 
-protobuf_test_proto_library(
+proto_library(
     name = "generic_test_editions_protos",
     srcs = [":test_proto_editions_srcs"],
     option_deps = [
@@ -1432,7 +1428,7 @@ proto_library(
     ],
 )
 
-protobuf_test_proto_library(
+proto_library(
     name = "unittest_import_option_proto",
     srcs = ["unittest_import_option.proto"],
     option_deps = [
