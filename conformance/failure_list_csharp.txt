@@ -41,3 +41,4 @@ Required.*.ProtobufInput.BadTag_FieldNumberTooHigh                              
 Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                         # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.BadTag_OverlongVarint                                                                     # Should have failed to parse, but didn't.
 Required.*.JsonInput.AnyEmpty.*
+Required.Proto2.ProtobufInput.EnforceDepthLimit.MessageSetExtension                                                # Should have failed to parse, but didn't.
