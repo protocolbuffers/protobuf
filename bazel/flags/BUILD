@@ -37,10 +37,10 @@ label_flag(
 )
 
 # When set to true, we will use a prebuilt protoc binary from GitHub if it's available.
+# This is now enabled by default.
 bool_flag(
     name = "prefer_prebuilt_protoc",
-    # TODO: this should be True after the feature is vetted with some adoption
-    build_setting_default = False,
+    build_setting_default = True,
     visibility = ["//bazel/toolchains:__pkg__"],
 )
 

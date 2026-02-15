@@ -120,8 +120,9 @@ use_repo(
     "prebuilt_protoc.win64",
 )
 
-# However this registration only matters if the config_setting for prefer_prebuilt_protoc is true,
-# using --@protobuf//bazel/flags:prefer_prebuilt_protoc
+# This registration applies when the config_setting for prefer_prebuilt_protoc is true.
+# This is now enabled by default.
+# It can be disabled using --@protobuf//bazel/flags:prefer_prebuilt_protoc=false
 register_toolchains("//bazel/private/oss/toolchains/prebuilt:all")
 
 # From-source protobuf toolchains
