@@ -676,7 +676,12 @@ message MessageOptions {
   repeated UninterpretedOption uninterpreted_option = 999;
 
   // Clients can define custom options in extensions of this message. See above.
-  extensions 1000 to max;
+  extensions 1000 to max
+  [declaration = {
+    number: 482194159,
+    full_name: ".enterprise.support.core_dse.one_support.protos.rpcs.credential_options",
+    type: ".enterprise.support.core_dse.one_support.protos.rpcs.CredentialOptions"
+  }];
 }
 
 message FieldOptions {
@@ -846,7 +851,12 @@ message FieldOptions {
   repeated UninterpretedOption uninterpreted_option = 999;
 
   // Clients can define custom options in extensions of this message. See above.
-  extensions 1000 to max;
+  extensions 1000 to max
+  [declaration = {
+    number: 482194160,
+    full_name: ".enterprise.support.core_dse.one_support.protos.rpcs.credential_rule",
+    type: ".enterprise.support.core_dse.one_support.protos.rpcs.CredentialExtractionRule"
+  }];
 
   reserved 4;   // removed jtype
   reserved 18;  // reserve target, target_obsolete_do_not_use
