@@ -20,7 +20,7 @@
 #ifndef GOOGLE_PROTOBUF_IO_GZIP_STREAM_H__
 #define GOOGLE_PROTOBUF_IO_GZIP_STREAM_H__
 
-#include "google/protobuf/stubs/common.h"
+#include "base/types.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/port.h"
 #include <zlib.h>
