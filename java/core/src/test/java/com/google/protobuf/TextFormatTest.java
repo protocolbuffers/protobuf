@@ -1385,14 +1385,18 @@ public class TextFormatTest {
   @SuppressWarnings("InlineMeInliner") // We still want to test the actual method behavior.
   public void testShortDebugString_field() {
     final FieldDescriptor dataField = OneString.getDescriptor().findFieldByName("data");
-    assertThat(TextFormat.printer().shortDebugString(dataField, "test data"))
+    assertThat(
+            TextFormat.printer()
+                .emittingSingleLine(true)
+                .printFieldToString(dataField, "test data"))
         .isEqualTo("data: \"test data\"");
 
     final FieldDescriptor optionalField =
         TestAllTypes.getDescriptor().findFieldByName("optional_nested_message");
     final Object value = NestedMessage.newBuilder().setBb(42).build();
 
-    assertThat(TextFormat.printer().shortDebugString(optionalField, value))
+    assertThat(
+            TextFormat.printer().emittingSingleLine(true).printFieldToString(optionalField, value))
         .isEqualTo("optional_nested_message { bb: 42 }");
   }
 
