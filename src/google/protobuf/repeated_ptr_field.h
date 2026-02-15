@@ -955,6 +955,8 @@ PROTOBUF_NOINLINE void RepeatedPtrFieldBase::SwapFallback(
 }
 
 PROTOBUF_EXPORT void InternalOutOfLineDeleteMessageLite(MessageLite* message);
+PROTOBUF_EXPORT void InternalOutOfLineSizedDeleteMessageLite(
+    MessageLite* message, size_t size);
 
 // Encapsulates the minimally required subset of T's properties in a
 // `RepeatedPtrField<T>` specialization so the type-agnostic
@@ -1012,7 +1014,12 @@ class GenericTypeHandler {
     if (arena != nullptr) return;
     // Using virtual destructor to reduce generated code size that would have
     // happened otherwise due to inlined `~Type()`.
-    InternalOutOfLineDeleteMessageLite(value);
+    if constexpr (std::is_same_v<Type, MessageLite> ||
+                  std::is_same_v<Type, Message>) {
+      InternalOutOfLineDeleteMessageLite(value);
+    } else {
+      InternalOutOfLineSizedDeleteMessageLite(value, sizeof(Type));
+    }
   }
   static inline void Clear(Type* value) {
     static_assert(std::is_base_of_v<MessageLite, Type>);

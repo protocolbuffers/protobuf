@@ -127,6 +127,11 @@ void InternalOutOfLineDeleteMessageLite(MessageLite* message) {
   delete message;
 }
 
+void InternalOutOfLineSizedDeleteMessageLite(MessageLite* message,
+                                             size_t size) {
+  ::operator delete(message, size);
+}
+
 template PROTOBUF_EXPORT_TEMPLATE_DEFINE void
 memswap<InternalMetadataResolverOffsetHelper<RepeatedPtrFieldBase>::value>(
     char* PROTOBUF_RESTRICT, char* PROTOBUF_RESTRICT);
