@@ -224,7 +224,7 @@ const ::uint32_t
 };
 
 static const ::_pbi::MigrationSchema
-    schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
+    schemas_google_2fprotobuf_2fapi_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, sizeof(::google::protobuf::Api)},
         {19, sizeof(::google::protobuf::Method)},
         {38, sizeof(::google::protobuf::Mixin)},
@@ -273,7 +273,7 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
     descriptor_table_google_2fprotobuf_2fapi_2eproto_deps,
     2,
     3,
-    schemas,
+    schemas_google_2fprotobuf_2fapi_2eproto,
     file_default_instances,
     TableStruct_google_2fprotobuf_2fapi_2eproto::offsets,
     file_level_enum_descriptors_google_2fprotobuf_2fapi_2eproto,
