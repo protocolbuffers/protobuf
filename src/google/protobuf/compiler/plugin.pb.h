@@ -1411,7 +1411,7 @@ inline int CodeGeneratorRequest::file_to_generate_size() const {
 }
 inline void CodeGeneratorRequest::clear_file_to_generate() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.file_to_generate_.Clear();
+  _internal_mutable_file_to_generate()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
@@ -2216,7 +2216,7 @@ inline int CodeGeneratorResponse::file_size() const {
 }
 inline void CodeGeneratorResponse::clear_file() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.file_.Clear();
+  _internal_mutable_file()->Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }

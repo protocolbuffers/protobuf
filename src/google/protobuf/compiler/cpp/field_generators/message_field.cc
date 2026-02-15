@@ -895,9 +895,13 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 
 void RepeatedMessage::GenerateClearingCode(io::Printer* p) const {
   if (should_split()) {
-    p->Emit("$field_$.ClearIfNotDefault();\n");
+    p->Emit(R"cc(
+      $field_$.ClearIfNotDefault();
+    )cc");
   } else {
-    p->Emit("$field_$.Clear();\n");
+    p->Emit(R"cc(
+      _internal_mutable_$name_internal$()->Clear();
+    )cc");
   }
 }
 
@@ -925,7 +929,7 @@ void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
 void RepeatedMessage::GenerateSwappingCode(io::Printer* p) const {
   ABSL_CHECK(!should_split());
   p->Emit(R"cc(
-    $field_$.InternalSwap(&other->$field_$);
+    _internal_mutable_$name$()->InternalSwap(other->_internal_mutable_$name$());
   )cc");
 }
 
@@ -975,8 +979,8 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
                 }
               }}},
             R"cc(
-              for (auto it = this_.$field_$.pointer_begin(),
-                        end = this_.$field_$.pointer_end();
+              for (auto it = this_._internal_weak_$name$().pointer_begin(),
+                        end = this_._internal_weak_$name$().pointer_end();
                    it < end; ++it) {
                 $serialize_field$;
               }

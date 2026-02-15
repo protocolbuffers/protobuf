@@ -554,9 +554,13 @@ class RepeatedStringView : public FieldGeneratorBase {
 
   void GenerateClearingCode(io::Printer* p) const override {
     if (should_split()) {
-      p->Emit("$field_$.ClearIfNotDefault();\n");
+      p->Emit(R"cc(
+        $field_$.ClearIfNotDefault();
+      )cc");
     } else {
-      p->Emit("$field_$.Clear();\n");
+      p->Emit(R"cc(
+        _internal_mutable_$name_internal$()->Clear();
+      )cc");
     }
   }
 
@@ -592,7 +596,8 @@ class RepeatedStringView : public FieldGeneratorBase {
   void GenerateSwappingCode(io::Printer* p) const override {
     ABSL_CHECK(!should_split());
     p->Emit(R"cc(
-      $field_$.InternalSwap(&other->$field_$);
+      _internal_mutable_$name$()->InternalSwap(
+          other->_internal_mutable_$name$());
     )cc");
   }
 
