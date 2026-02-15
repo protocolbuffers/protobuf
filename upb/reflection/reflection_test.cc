@@ -1,4 +1,5 @@
 
+#include <cstring>
 #include <string>
 #include <string_view>
 
@@ -11,15 +12,19 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
+#include "google/protobuf/unittest.upbdefs.h"
 #include "upb/base/status.hpp"
 #include "upb/mem/arena.hpp"
+#include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
+#include "upb/reflection/internal/def_pool.h"
 #include "upb/test/parse_text_proto.h"
 
 namespace upb_test {
 namespace {
 
-using testing::HasSubstr;
+using ::testing::HasSubstr;
+using ::testing::NotNull;
 
 google_protobuf_FileDescriptorProto* ToUpbDescriptorSet(
     const google::protobuf::FileDescriptorProto& proto, upb::Arena& arena) {
@@ -259,6 +264,77 @@ TEST(ReflectionTest, TooManyRequiredFieldsFailGracefully) {
   // 64 is too much.
   EXPECT_THAT(LoadDescriptorProto(make_desc(64)).status().message(),
               HasSubstr("Too many required fields"));
+}
+
+#define STRING_AND_SIZE(string) string, strlen(string)
+
+TEST(ReflectionTest, FindMethodByName) {
+  upb::Arena arena;
+  upb::DefPool defpool;
+  upb::Status status;
+  ASSERT_TRUE(_upb_DefPool_LoadDefInit(
+      defpool.ptr(), &third_party_protobuf_unittest_proto_upbdefinit));
+  const upb_ServiceDef* service_def = upb_DefPool_FindServiceByName(
+      defpool.ptr(), "google_protobuf_unittest.TestService");
+  ASSERT_THAT(service_def, NotNull());
+  EXPECT_STREQ(upb_ServiceDef_Name(service_def), "TestService");
+  EXPECT_STREQ(upb_ServiceDef_FullName(service_def),
+               "google_protobuf_unittest.TestService");
+  EXPECT_EQ(upb_DefPool_FindServiceByNameWithSize(
+                defpool.ptr(), STRING_AND_SIZE("google_protobuf_unittest.TestService")),
+            service_def);
+  const upb_MethodDef* method_def =
+      upb_ServiceDef_FindMethodByName(service_def, "Bar");
+  ASSERT_THAT(method_def, NotNull());
+  EXPECT_STREQ(upb_MethodDef_Name(method_def), "Bar");
+  EXPECT_STREQ(upb_MethodDef_FullName(method_def),
+               "google_protobuf_unittest.TestService.Bar");
+  EXPECT_EQ(upb_ServiceDef_FindMethodByNameWithSize(service_def,
+                                                    STRING_AND_SIZE("Bar")),
+            method_def);
+}
+
+TEST(ReflectionTest, FindEnumByName) {
+  upb::Arena arena;
+  upb::DefPool defpool;
+  upb::Status status;
+  ASSERT_TRUE(_upb_DefPool_LoadDefInit(
+      defpool.ptr(), &third_party_protobuf_unittest_proto_upbdefinit));
+  const upb_EnumDef* enum_def = upb_DefPool_FindEnumByName(
+      defpool.ptr(), "google_protobuf_unittest.TestAllTypes.NestedEnum");
+  ASSERT_THAT(enum_def, NotNull());
+  EXPECT_STREQ(upb_EnumDef_Name(enum_def), "NestedEnum");
+  EXPECT_STREQ(upb_EnumDef_FullName(enum_def),
+               "google_protobuf_unittest.TestAllTypes.NestedEnum");
+  EXPECT_EQ(upb_DefPool_FindEnumByNameWithSize(
+                defpool.ptr(),
+                STRING_AND_SIZE("google_protobuf_unittest.TestAllTypes.NestedEnum")),
+            enum_def);
+}
+
+TEST(ReflectionTest, FindEnumValueByName) {
+  upb::Arena arena;
+  upb::DefPool defpool;
+  upb::Status status;
+  ASSERT_TRUE(_upb_DefPool_LoadDefInit(
+      defpool.ptr(), &third_party_protobuf_unittest_proto_upbdefinit));
+  const upb_EnumValueDef* enum_value_def = upb_DefPool_FindEnumValueByName(
+      defpool.ptr(), "google_protobuf_unittest.TestAllTypes.BAR");
+  ASSERT_THAT(enum_value_def, NotNull());
+  EXPECT_STREQ(upb_EnumValueDef_Name(enum_value_def), "BAR");
+  EXPECT_STREQ(upb_EnumValueDef_FullName(enum_value_def),
+               "google_protobuf_unittest.TestAllTypes.BAR");
+  EXPECT_EQ(
+      upb_DefPool_FindEnumValueByNameWithSize(
+          defpool.ptr(), STRING_AND_SIZE("google_protobuf_unittest.TestAllTypes.BAR")),
+      enum_value_def);
+  const upb_EnumDef* enum_def = upb_DefPool_FindEnumByName(
+      defpool.ptr(), "google_protobuf_unittest.TestAllTypes.NestedEnum");
+  ASSERT_THAT(enum_def, NotNull());
+  EXPECT_EQ(upb_EnumDef_FindValueByName(enum_def, "BAR"), enum_value_def);
+  EXPECT_EQ(
+      upb_EnumDef_FindValueByNameWithSize(enum_def, STRING_AND_SIZE("BAR")),
+      enum_value_def);
 }
 
 }  // namespace
