@@ -15,13 +15,13 @@ import com.google.protobuf.MessageReflection.MergeTarget;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.CharBuffer;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -711,19 +711,6 @@ public final class TextFormat {
     public String shortDebugString(final MessageOrBuilder message) {
       return this.emittingSingleLine(true)
           .printToString(message, FieldReporterLevel.SHORT_DEBUG_STRING);
-    }
-
-    /**
-     * Generates a human readable form of the field, useful for debugging and other purposes, with
-     * no newline characters.
-     *
-     * @deprecated Use {@code this.emittingSingleLine(true).printFieldToString(FieldDescriptor,
-     *     Object)}
-     */
-    @Deprecated
-    @InlineMe(replacement = "this.emittingSingleLine(true).printFieldToString(field, value)")
-    public String shortDebugString(final FieldDescriptor field, final Object value) {
-      return this.emittingSingleLine(true).printFieldToString(field, value);
     }
 
     /**
