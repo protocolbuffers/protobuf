@@ -1145,6 +1145,24 @@ TEST(RepeatedField, HardenAgainstBadTruncate) {
   }
 }
 
+TEST(RepeatedFieldTest, Erase) {
+  RepeatedField<int32_t> elements;
+  while (elements.size() < 15) {
+    elements.Add(elements.size() % 5);
+  }
+  EXPECT_EQ(3, google::protobuf::erase(elements, 3));
+  EXPECT_THAT(elements, ElementsAre(0, 1, 2, 4, 0, 1, 2, 4, 0, 1, 2, 4));
+}
+
+TEST(RepeatedFieldTest, EraseIf) {
+  RepeatedField<int32_t> elements;
+  while (elements.size() < 15) {
+    elements.Add(elements.size());
+  }
+  EXPECT_EQ(5, google::protobuf::erase_if(elements, [](auto i) { return i % 3 == 0; }));
+  EXPECT_THAT(elements, ElementsAre(1, 2, 4, 5, 7, 8, 10, 11, 13, 14));
+}
+
 #if defined(GTEST_HAS_DEATH_TEST) && (defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
                                       defined(ABSL_HAVE_MEMORY_SANITIZER))
 
