@@ -60,6 +60,14 @@ enum AddMode { kIntoNew = 0, kIntoCleared = 1 };
 enum RefMode { kConcrete = 0, kAbstract = 1 };
 }  // namespace
 
+class RepeatedPtrFieldTest : public testing::Test {
+ public:
+  template <typename T>
+  static int ClearedCount(RepeatedPtrField<T>& field) {
+    return field.ClearedCount();
+  }
+};
+
 TEST(RepeatedPtrOverPtrsIteratorTest, Traits) {
   using It = RepeatedPtrField<std::string>::pointer_iterator;
   static_assert(std::is_same<It::value_type, std::string*>::value, "");
@@ -116,7 +124,7 @@ TEST(ConstRepeatedPtrOverPtrsIterator, Traits) {
 #endif
 }
 
-TEST(RepeatedPtrFieldTest, SimpleAddWithStrings) {
+TEST_F(RepeatedPtrFieldTest, SimpleAddWithStrings) {
   RepeatedPtrField<std::string> field;
   ASSERT_EQ(field.size(), 0);
   field.Add("foo");
@@ -133,7 +141,7 @@ TEST(RepeatedPtrFieldTest, SimpleAddWithStrings) {
   EXPECT_EQ(field.Get(3), "qux");
 }
 
-TEST(RepeatedPtrFieldTest, SimpleAddWithMessages) {
+TEST_F(RepeatedPtrFieldTest, SimpleAddWithMessages) {
   using TestType = TestAllTypes::NestedMessage;
   RepeatedPtrField<TestType> field;
   const auto make_val = [](int i) {
@@ -153,7 +161,7 @@ TEST(RepeatedPtrFieldTest, SimpleAddWithMessages) {
   EXPECT_EQ(field.Get(2).bb(), 3);
 }
 
-TEST(RepeatedPtrFieldTest, MoveAdd) {
+TEST_F(RepeatedPtrFieldTest, MoveAdd) {
   RepeatedPtrField<TestAllTypes> field;
   TestAllTypes test_all_types;
   auto* optional_nested_message =
@@ -165,12 +173,12 @@ TEST(RepeatedPtrFieldTest, MoveAdd) {
             field.Mutable(0)->mutable_optional_nested_message());
 }
 
-TEST(RepeatedPtrFieldTest, ConstInit) {
+TEST_F(RepeatedPtrFieldTest, ConstInit) {
   PROTOBUF_CONSTINIT static RepeatedPtrField<std::string> field{};  // NOLINT
   EXPECT_TRUE(field.empty());
 }
 
-TEST(RepeatedPtrFieldTest, ClearThenReserveMore) {
+TEST_F(RepeatedPtrFieldTest, ClearThenReserveMore) {
   // Test that Reserve properly destroys the old internal array when it's forced
   // to allocate a new one, even when cleared-but-not-deleted objects are
   // present. Use a 'string' and > 16 bytes length so that the elements are
@@ -201,7 +209,7 @@ auto ValidResolutionPointerRange(const std::string* p)
 template <typename X>
 std::false_type ValidResolutionPointerRange(void*);
 
-TEST(RepeatedPtrFieldTest, UnambiguousConstructor) {
+TEST_F(RepeatedPtrFieldTest, UnambiguousConstructor) {
   struct X {
     static bool f(std::vector<std::string>) { return false; }
     static bool f(google::protobuf::RepeatedPtrField<std::string>) { return true; }
@@ -231,7 +239,7 @@ TEST(RepeatedPtrFieldTest, UnambiguousConstructor) {
   EXPECT_FALSE(decltype(ValidResolutionPointerRange<X>(nullptr))::value);
 }
 
-TEST(RepeatedPtrFieldTest, Small) {
+TEST_F(RepeatedPtrFieldTest, Small) {
   RepeatedPtrField<std::string> field;
 
   EXPECT_TRUE(field.empty());
@@ -275,7 +283,7 @@ TEST(RepeatedPtrFieldTest, Small) {
   EXPECT_EQ(field.size(), 0);
 }
 
-TEST(RepeatedPtrFieldTest, Large) {
+TEST_F(RepeatedPtrFieldTest, Large) {
   RepeatedPtrField<std::string> field;
 
   for (int i = 0; i < 16; i++) {
@@ -333,12 +341,12 @@ void CheckAllocationSizes() {
 
 }  // namespace
 
-TEST(RepeatedPtrFieldTest, ArenaAllocationSizesMatchExpectedValues) {
+TEST_F(RepeatedPtrFieldTest, ArenaAllocationSizesMatchExpectedValues) {
   EXPECT_NO_FATAL_FAILURE(CheckAllocationSizes<std::string>());
   EXPECT_NO_FATAL_FAILURE(CheckAllocationSizes<TestAllTypes::NestedMessage>());
 }
 
-TEST(RepeatedPtrFieldTest, NaturalGrowthOnArenasReuseBlocks) {
+TEST_F(RepeatedPtrFieldTest, NaturalGrowthOnArenasReuseBlocks) {
   using Elem = std::string;
   using Field = RepeatedPtrField<Elem>;
 
@@ -368,7 +376,7 @@ TEST(RepeatedPtrFieldTest, NaturalGrowthOnArenasReuseBlocks) {
   EXPECT_THAT(arena.SpaceUsed(), AllOf(Ge(expected), Le(1.02 * expected)));
 }
 
-TEST(RepeatedPtrFieldTest, AddAndAssignRanges) {
+TEST_F(RepeatedPtrFieldTest, AddAndAssignRanges) {
   RepeatedPtrField<std::string> field;
 
   const char* vals[] = {"abc", "x", "yz", "xyzzy"};
@@ -393,7 +401,7 @@ TEST(RepeatedPtrFieldTest, AddAndAssignRanges) {
 }
 
 
-TEST(RepeatedPtrFieldTest, SwapSmallSmall) {
+TEST_F(RepeatedPtrFieldTest, SwapSmallSmall) {
   RepeatedPtrField<std::string> field1;
   RepeatedPtrField<std::string> field2;
 
@@ -423,7 +431,7 @@ TEST(RepeatedPtrFieldTest, SwapSmallSmall) {
   EXPECT_EQ(field2.Get(1), "bar");
 }
 
-TEST(RepeatedPtrFieldTest, SwapLargeSmall) {
+TEST_F(RepeatedPtrFieldTest, SwapLargeSmall) {
   RepeatedPtrField<std::string> field1;
   RepeatedPtrField<std::string> field2;
 
@@ -444,7 +452,7 @@ TEST(RepeatedPtrFieldTest, SwapLargeSmall) {
   }
 }
 
-TEST(RepeatedPtrFieldTest, SwapLargeLarge) {
+TEST_F(RepeatedPtrFieldTest, SwapLargeLarge) {
   RepeatedPtrField<std::string> field1;
   RepeatedPtrField<std::string> field2;
 
@@ -479,14 +487,14 @@ static int ReservedSpace(RepeatedPtrField<std::string>* field) {
   return field->size() - 1;
 }
 
-TEST(RepeatedPtrFieldTest, ReserveMoreThanDouble) {
+TEST_F(RepeatedPtrFieldTest, ReserveMoreThanDouble) {
   RepeatedPtrField<std::string> field;
   field.Reserve(20);
 
   EXPECT_LE(20, ReservedSpace(&field));
 }
 
-TEST(RepeatedPtrFieldTest, ReserveLessThanDouble) {
+TEST_F(RepeatedPtrFieldTest, ReserveLessThanDouble) {
   RepeatedPtrField<std::string> field;
   field.Reserve(20);
 
@@ -497,7 +505,7 @@ TEST(RepeatedPtrFieldTest, ReserveLessThanDouble) {
   EXPECT_LE(2 * capacity, ReservedSpace(&field));
 }
 
-TEST(RepeatedPtrFieldTest, ReserveLessThanExisting) {
+TEST_F(RepeatedPtrFieldTest, ReserveLessThanExisting) {
   RepeatedPtrField<std::string> field;
   field.Reserve(20);
   const std::string* const* previous_ptr = field.data();
@@ -507,7 +515,7 @@ TEST(RepeatedPtrFieldTest, ReserveLessThanExisting) {
   EXPECT_LE(20, ReservedSpace(&field));
 }
 
-TEST(RepeatedPtrFieldTest, ReserveDoesntLoseAllocated) {
+TEST_F(RepeatedPtrFieldTest, ReserveDoesntLoseAllocated) {
   // Check that a bug is fixed:  An earlier implementation of Reserve()
   // failed to copy pointers to allocated-but-cleared objects, possibly
   // leading to segfaults.
@@ -521,7 +529,7 @@ TEST(RepeatedPtrFieldTest, ReserveDoesntLoseAllocated) {
 
 
 // TODO: Re-evaluate if this is still needed once the bug is fixed.
-TEST(RepeatedPtrFieldTest, AddRvalueToCleared) {
+TEST_F(RepeatedPtrFieldTest, AddRvalueToCleared) {
   // Check that an added rvalue correctly overwrites a cleared SOO element.
   {
     RepeatedPtrField<std::string> field;
@@ -548,7 +556,7 @@ TEST(RepeatedPtrFieldTest, AddRvalueToCleared) {
 }
 
 // Test all code paths in AddAllocated().
-TEST(RepeatedPtrFieldTest, AddAllocated) {
+TEST_F(RepeatedPtrFieldTest, AddAllocated) {
   RepeatedPtrField<std::string> field;
   while (field.size() < field.Capacity()) {
     field.Add()->assign("filler");
@@ -606,7 +614,7 @@ TEST(RepeatedPtrFieldDeathTest, AddMethodsDontAcceptNull) {
 #endif
 }
 
-TEST(RepeatedPtrFieldTest, AddAllocatedDifferentArena) {
+TEST_F(RepeatedPtrFieldTest, AddAllocatedDifferentArena) {
   RepeatedPtrField<TestAllTypes> field;
   Arena arena;
   auto* msg = Arena::Create<TestAllTypes>(&arena);
@@ -615,7 +623,7 @@ TEST(RepeatedPtrFieldTest, AddAllocatedDifferentArena) {
 
 // This test replicates a very specific scenario that used to cause a transient
 // hard-to-debug failure in protoc during development.
-TEST(RepeatedPtrFieldTest, UnsafeArenaAddAllocatedReleaseLastOnBaseField) {
+TEST_F(RepeatedPtrFieldTest, UnsafeArenaAddAllocatedReleaseLastOnBaseField) {
   using ElemT = TestAllTypes::NestedMessage;
   using FieldT = RepeatedPtrField<ElemT>;
   Arena arena;
@@ -639,7 +647,7 @@ TEST(RepeatedPtrFieldTest, UnsafeArenaAddAllocatedReleaseLastOnBaseField) {
   EXPECT_EQ(concrete_new_elem_roundtrip->bb(), 456);
 }
 
-TEST(RepeatedPtrFieldTest, MergeFromString) {
+TEST_F(RepeatedPtrFieldTest, MergeFromString) {
   RepeatedPtrField<std::string> source, destination;
   source.Add()->assign("4");
   source.Add()->assign("5");
@@ -679,7 +687,7 @@ TEST(RepeatedPtrFieldTest, MergeFromString) {
   EXPECT_EQ("5", destination.Get(2));
 }
 
-TEST(RepeatedPtrFieldTest, MergeFromMessage) {
+TEST_F(RepeatedPtrFieldTest, MergeFromMessage) {
   RepeatedPtrField<TestAllTypes::NestedMessage> source, destination;
   source.Add()->set_bb(4);
   source.Add()->set_bb(5);
@@ -719,7 +727,7 @@ TEST(RepeatedPtrFieldTest, MergeFromMessage) {
   EXPECT_EQ(5, destination.Get(2).bb());
 }
 
-TEST(RepeatedPtrFieldTest, MergeFromStringWithArena) {
+TEST_F(RepeatedPtrFieldTest, MergeFromStringWithArena) {
   using Field = RepeatedPtrField<std::string>;
   Arena arena;
   Field* source = Arena::Create<Field>(&arena);
@@ -740,7 +748,7 @@ TEST(RepeatedPtrFieldTest, MergeFromStringWithArena) {
   EXPECT_EQ("5", destination->Get(4));
 }
 
-TEST(RepeatedPtrFieldTest, MergeFromMessageWithArena) {
+TEST_F(RepeatedPtrFieldTest, MergeFromMessageWithArena) {
   using Field = RepeatedPtrField<TestAllTypes::NestedMessage>;
   Arena arena;
   Field* source = Arena::Create<Field>(&arena);
@@ -762,7 +770,7 @@ TEST(RepeatedPtrFieldTest, MergeFromMessageWithArena) {
 }
 
 
-TEST(RepeatedPtrFieldTest, CopyFrom) {
+TEST_F(RepeatedPtrFieldTest, CopyFrom) {
   RepeatedPtrField<std::string> source, destination;
   source.Add()->assign("4");
   source.Add()->assign("5");
@@ -777,7 +785,7 @@ TEST(RepeatedPtrFieldTest, CopyFrom) {
   EXPECT_EQ("5", destination.Get(1));
 }
 
-TEST(RepeatedPtrFieldTest, CopyFromSelf) {
+TEST_F(RepeatedPtrFieldTest, CopyFromSelf) {
   RepeatedPtrField<std::string> me;
   me.Add()->assign("1");
   me.CopyFrom(me);
@@ -785,7 +793,7 @@ TEST(RepeatedPtrFieldTest, CopyFromSelf) {
   EXPECT_EQ("1", me.Get(0));
 }
 
-TEST(RepeatedPtrFieldTest, Erase) {
+TEST_F(RepeatedPtrFieldTest, Erase) {
   RepeatedPtrField<std::string> me;
   RepeatedPtrField<std::string>::iterator it = me.erase(me.begin(), me.end());
   EXPECT_TRUE(me.begin() == it);
@@ -818,7 +826,7 @@ TEST(RepeatedPtrFieldTest, Erase) {
   EXPECT_EQ("8", me.Get(2));
 }
 
-TEST(RepeatedPtrFieldTest, CopyConstruct) {
+TEST_F(RepeatedPtrFieldTest, CopyConstruct) {
   RepeatedPtrField<std::string> source;
   source.Add()->assign("1");
   source.Add()->assign("2");
@@ -837,7 +845,7 @@ TEST(RepeatedPtrFieldTest, CopyConstruct) {
   delete destination2;
 }
 
-TEST(RepeatedPtrFieldTest, CopyConstructWithArena) {
+TEST_F(RepeatedPtrFieldTest, CopyConstructWithArena) {
   RepeatedPtrField<std::string> source;
   source.Add()->assign("1");
   source.Add()->assign("2");
@@ -850,7 +858,7 @@ TEST(RepeatedPtrFieldTest, CopyConstructWithArena) {
   EXPECT_EQ("2", destination->Get(1));
 }
 
-TEST(RepeatedPtrFieldTest, IteratorConstruct_String) {
+TEST_F(RepeatedPtrFieldTest, IteratorConstruct_String) {
   std::vector<std::string> values;
   values.push_back("1");
   values.push_back("2");
@@ -866,7 +874,7 @@ TEST(RepeatedPtrFieldTest, IteratorConstruct_String) {
   EXPECT_EQ(values[1], other.Get(1));
 }
 
-TEST(RepeatedPtrFieldTest, IteratorConstruct_Proto) {
+TEST_F(RepeatedPtrFieldTest, IteratorConstruct_Proto) {
   typedef TestAllTypes::NestedMessage Nested;
   std::vector<Nested> values;
   values.push_back(Nested());
@@ -885,7 +893,7 @@ TEST(RepeatedPtrFieldTest, IteratorConstruct_Proto) {
   EXPECT_EQ(values[1].bb(), other.Get(1).bb());
 }
 
-TEST(RepeatedPtrFieldTest, SmallOptimization) {
+TEST_F(RepeatedPtrFieldTest, SmallOptimization) {
   // Properties checked here are not part of the contract of RepeatedPtrField,
   // but we test them to verify that SSO is working as expected by the
   // implementation.
@@ -932,7 +940,7 @@ TEST(RepeatedPtrFieldTest, SmallOptimization) {
   EXPECT_FALSE(is_inlined());
 }
 
-TEST(RepeatedPtrFieldTest, CopyAssign) {
+TEST_F(RepeatedPtrFieldTest, CopyAssign) {
   RepeatedPtrField<std::string> source, destination;
   source.Add()->assign("4");
   source.Add()->assign("5");
@@ -947,7 +955,7 @@ TEST(RepeatedPtrFieldTest, CopyAssign) {
   EXPECT_EQ("5", destination.Get(1));
 }
 
-TEST(RepeatedPtrFieldTest, SelfAssign) {
+TEST_F(RepeatedPtrFieldTest, SelfAssign) {
   // Verify that assignment to self does not destroy data.
   RepeatedPtrField<std::string> source, *p;
   p = &source;
@@ -961,7 +969,7 @@ TEST(RepeatedPtrFieldTest, SelfAssign) {
   EXPECT_EQ("8", source.Get(1));
 }
 
-TEST(RepeatedPtrFieldTest, MoveConstruct) {
+TEST_F(RepeatedPtrFieldTest, MoveConstruct) {
   {
     RepeatedPtrField<std::string> source;
     *source.Add() = "1";
@@ -989,7 +997,7 @@ TEST(RepeatedPtrFieldTest, MoveConstruct) {
   }
 }
 
-TEST(RepeatedPtrFieldTest, MoveAssign) {
+TEST_F(RepeatedPtrFieldTest, MoveAssign) {
   {
     RepeatedPtrField<std::string> source;
     *source.Add() = "1";
@@ -1085,7 +1093,7 @@ TEST(RepeatedPtrFieldTest, MoveAssign) {
   }
 }
 
-TEST(RepeatedPtrFieldTest, MutableDataIsMutable) {
+TEST_F(RepeatedPtrFieldTest, MutableDataIsMutable) {
   RepeatedPtrField<std::string> field;
   *field.Add() = "1";
   EXPECT_EQ("1", field.Get(0));
@@ -1096,7 +1104,7 @@ TEST(RepeatedPtrFieldTest, MutableDataIsMutable) {
   EXPECT_EQ("2", field.Get(0));
 }
 
-TEST(RepeatedPtrFieldTest, SubscriptOperators) {
+TEST_F(RepeatedPtrFieldTest, SubscriptOperators) {
   RepeatedPtrField<std::string> field;
   *field.Add() = "1";
   EXPECT_EQ("1", field.Get(0));
@@ -1106,7 +1114,7 @@ TEST(RepeatedPtrFieldTest, SubscriptOperators) {
   EXPECT_EQ(*field.data(), &const_field[0]);
 }
 
-TEST(RepeatedPtrFieldTest, ExtractSubrange) {
+TEST_F(RepeatedPtrFieldTest, ExtractSubrange) {
   // Exhaustively test every subrange in arrays of all sizes from 0 through 9
   // with 0 through 3 cleared elements at the end.
   for (int sz = 0; sz < 10; ++sz) {
@@ -1167,11 +1175,11 @@ TEST(RepeatedPtrFieldTest, ExtractSubrange) {
   }
 }
 
-TEST(RepeatedPtrFieldTest, DeleteSubrange) {
+TEST_F(RepeatedPtrFieldTest, DeleteSubrange) {
   // DeleteSubrange is a trivial extension of ExtendSubrange.
 }
 
-TEST(RepeatedPtrFieldTest, Cleanups) {
+TEST_F(RepeatedPtrFieldTest, Cleanups) {
   Arena arena;
   auto growth = internal::CleanupGrowth(arena, [&] {
     (void)Arena::Create<RepeatedPtrField<std::string>>(&arena);
