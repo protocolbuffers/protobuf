@@ -427,20 +427,16 @@ TEST(RepeatedField, ReserveLessThanExisting) {
   EXPECT_LE(20, ReservedSpace(&field));
 }
 
-TEST(RepeatedField, Resize) {
+TEST(RepeatedField, resize) {
   RepeatedField<int> field;
-  field.Resize(2, 1);
-  EXPECT_EQ(2, field.size());
-  field.Resize(5, 2);
-  EXPECT_EQ(5, field.size());
-  field.Resize(4, 3);
-  ASSERT_EQ(4, field.size());
-  EXPECT_EQ(1, field.Get(0));
-  EXPECT_EQ(1, field.Get(1));
-  EXPECT_EQ(2, field.Get(2));
-  EXPECT_EQ(2, field.Get(3));
-  field.Resize(0, 4);
-  EXPECT_TRUE(field.empty());
+  field.resize(2);
+  EXPECT_THAT(field, ElementsAre(0, 0));
+  field.resize(5, 2);
+  EXPECT_THAT(field, ElementsAre(0, 0, 2, 2, 2));
+  field.resize(4, 3);
+  EXPECT_THAT(field, ElementsAre(0, 0, 2, 2));
+  field.resize(0, 4);
+  EXPECT_THAT(field, ElementsAre());
 }
 
 TEST(RepeatedField, ReserveLowerClamp) {

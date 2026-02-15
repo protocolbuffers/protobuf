@@ -31,6 +31,7 @@
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
 
@@ -1083,6 +1084,57 @@ TEST(RepeatedPtrFieldTest, MoveAssign) {
     EXPECT_EQ(data, field->data());
     EXPECT_THAT(*field, ElementsAre("1", "2"));
   }
+}
+
+TEST(RepeatedPtrFieldTest, Resize) {
+  RepeatedPtrField<std::string> rep;
+
+  EXPECT_THAT(rep, ElementsAre());
+
+  rep.resize(3);
+  EXPECT_THAT(rep, ElementsAre("", "", ""));
+
+  rep.resize(2);
+  EXPECT_THAT(rep, ElementsAre("", ""));
+
+  rep.resize(4, "foo");
+  EXPECT_THAT(rep, ElementsAre("", "", "foo", "foo"));
+
+  rep.resize(3, "bar");
+  EXPECT_THAT(rep, ElementsAre("", "", "foo"));
+}
+
+TEST(RepeatedPtrFieldTest, ResizeMessage) {
+  using T = TestAllTypes::NestedMessage;
+
+  T msg;
+  msg.set_bb(1);
+
+  RepeatedPtrField<T> rep;
+  rep.resize(2, msg);
+  rep.resize(3);
+
+  ASSERT_EQ(rep.size(), 3);
+  EXPECT_EQ(rep[0].bb(), 1);
+  EXPECT_EQ(rep[1].bb(), 1);
+  EXPECT_EQ(rep[2].bb(), 0);
+}
+
+TEST(RepeatedPtrFieldTest, ResizeMessageWithBaseClass) {
+  using T = TestAllTypes::NestedMessage;
+
+  T msg;
+  msg.set_bb(1);
+
+  RepeatedPtrField<MessageLite> rep;
+  rep.resize(2, msg);
+  msg.set_bb(2);
+  rep.resize(3, msg);
+
+  ASSERT_EQ(rep.size(), 3);
+  EXPECT_EQ(DownCastMessage<T>(rep[0]).bb(), 1);
+  EXPECT_EQ(DownCastMessage<T>(rep[1]).bb(), 1);
+  EXPECT_EQ(DownCastMessage<T>(rep[2]).bb(), 2);
 }
 
 TEST(RepeatedPtrFieldTest, MutableDataIsMutable) {

@@ -37,6 +37,7 @@
 #include "absl/base/prefetch.h"
 #include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/field_with_arena.h"
@@ -405,6 +406,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
  protected:
+  template <typename TypeHandler, typename AddOne>
+  void ResizeImpl(int new_size, AddOne add_one);
+
   template <typename TypeHandler>
   void RemoveLast() {
     ABSL_DCHECK_GT(current_size_, 0);
@@ -954,6 +958,24 @@ PROTOBUF_NOINLINE void RepeatedPtrFieldBase::SwapFallback(
   }
 }
 
+template <typename TypeHandler, typename AddOne>
+void RepeatedPtrFieldBase::ResizeImpl(int new_size, AddOne add_one) {
+  internal::RuntimeAssertInBoundsGE(new_size, 0);
+  int diff = new_size - size();
+  if (diff > 0) {
+    // We need to add.
+    auto* arena = GetArena();
+    ReserveWithArena(arena, new_size);
+    for (; diff > 0; --diff) {
+      add_one(arena);
+    }
+  } else {
+    for (; diff < 0; ++diff) {
+      RemoveLast<TypeHandler>();
+    }
+  }
+}
+
 PROTOBUF_EXPORT void InternalOutOfLineDeleteMessageLite(MessageLite* message);
 
 // Encapsulates the minimally required subset of T's properties in a
@@ -972,6 +994,8 @@ template <typename GenericType>
 class GenericTypeHandler {
  public:
   using Type = GenericType;
+
+  using ResizeType = const Type&;
 
   // NOTE: Can't `static_assert(std::is_base_of_v<MessageLite, Type>)` here,
   // because the type is not yet fully defined at this point sometimes, so we
@@ -1024,6 +1048,10 @@ class GenericTypeHandler {
     return value.SpaceUsedLong();
   }
 
+  static void CopyFrom(Type* elem, const Type& value) {
+    elem->CheckTypeAndMergeFrom(value);
+  }
+
   static const Type& default_instance() {
     static_assert(has_default_instance());
     return *static_cast<const GenericType*>(
@@ -1038,6 +1066,8 @@ template <>
 class GenericTypeHandler<std::string> {
  public:
   using Type = std::string;
+
+  using ResizeType = absl::string_view;
 
   static constexpr auto GetNewFunc() {
     return [](Arena* arena, void*& ptr) { ptr = Arena::Create<Type>(arena); };
@@ -1063,6 +1093,10 @@ class GenericTypeHandler<std::string> {
   static inline void Merge(const Type& from, Type* to) { *to = from; }
   static size_t SpaceUsedLong(const Type& value) {
     return sizeof(value) + StringSpaceUsedExcludingSelfLong(value);
+  }
+
+  static void CopyFrom(Type* elem, absl::string_view value) {
+    elem->assign(value.data(), value.size());
   }
 
   static const Type& default_instance() {
@@ -1096,6 +1130,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
     static_assert(alignof(Element) <= internal::ArenaAlignDefault::align,
                   "Overaligned types are not supported");
   }
+
+  using ResizeType = typename internal::GenericTypeHandler<Element>::ResizeType;
 
  public:
   using value_type = Element;
@@ -1176,6 +1212,14 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // the appropriate number of elements.
   template <typename Iter>
   void Add(Iter begin, Iter end);
+
+  // If `new_size < size()`, truncate the container, destroying the removed
+  // elements.
+  // If `new_size > size()`, add elements to reach the desired size. If `value`
+  // is passed, they will be copies of it. Otherwise, they will be default
+  // constructed.
+  void resize(size_type new_size);
+  void resize(size_type new_size, ResizeType value);
 
   PROTOBUF_FUTURE_ADD_NODISCARD const_reference
   operator[](int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1528,6 +1572,27 @@ RepeatedPtrField<Element>::~RepeatedPtrField() {
   } else {
     Destroy<TypeHandler>();
   }
+}
+
+template <typename Element>
+void RepeatedPtrField<Element>::resize(size_type new_size) {
+  static_assert(!std::is_same_v<Element, Message>);
+  static_assert(!std::is_same_v<Element, MessageLite>);
+  ResizeImpl<TypeHandler>(new_size,
+                          [&](auto* arena) { return AddWithArena(arena); });
+}
+
+template <typename Element>
+void RepeatedPtrField<Element>::resize(size_type new_size, ResizeType value) {
+  ResizeImpl<TypeHandler>(new_size, [&](auto* arena) {
+    Element* elem;
+    if constexpr (std::is_base_of_v<MessageLite, Element>) {
+      elem = AddFromPrototype<TypeHandler>(arena, &value);
+    } else {
+      elem = AddWithArena(arena);
+    }
+    TypeHandler::CopyFrom(elem, value);
+  });
 }
 
 template <typename Element>
