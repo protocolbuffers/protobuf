@@ -67,6 +67,12 @@ message ExtendClass {
   }
 }
 
+message TestRecursiveMapMessage {
+  optional TestRecursiveMapMessage a = 1;
+  optional int32 i = 2;
+  map<int32, TestRecursiveMapMessage> map_field = 3;
+}
+
 message TestFullKeyword {
   optional google.protobuf.internal.OutOfOrderFields field1 = 1;
   optional google.protobuf.internal.class field2 = 2;

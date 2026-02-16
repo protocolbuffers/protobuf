@@ -25,7 +25,11 @@ load(
     "encode_raw_string_as_crate_name",
 )
 
-visibility(["//rust/...", "//third_party/crubit/rs_bindings_from_cc/...", "//net/proto2/compiler/stubby/cc/build_defs/..."])
+visibility([
+    "//rust/...",
+    "//third_party/crubit/rs_bindings_from_cc/...",
+    "//net/proto2/compiler/stubby/cc/build_defs/...",
+])
 
 CrateMappingInfo = provider(
     doc = "Struct mapping crate name to the .proto import paths",

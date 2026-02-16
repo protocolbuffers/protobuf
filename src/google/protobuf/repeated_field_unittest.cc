@@ -1356,17 +1356,17 @@ TEST(RepeatedField, CheckedGetOrAbortTest) {
   RepeatedField<int> field;
 
   // Empty container tests.
-  EXPECT_DEATH(CheckedMutableOrAbort(&field, -1),
+  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, -1),
                "Index \\(-1\\) out of bounds of container with size \\(0\\)");
-  EXPECT_DEATH(CheckedMutableOrAbort(&field, field.size()),
+  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, field.size()),
                "Index \\(0\\) out of bounds of container with size \\(0\\)");
 
   // Non-empty container tests
   field.Add(5);
   field.Add(4);
-  EXPECT_DEATH(CheckedMutableOrAbort(&field, 2),
+  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, 2),
                "Index \\(2\\) out of bounds of container with size \\(2\\)");
-  EXPECT_DEATH(CheckedMutableOrAbort(&field, -1),
+  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, -1),
                "Index \\(-1\\) out of bounds of container with size \\(2\\)");
 }
 
