@@ -3,7 +3,7 @@
 load("//bazel/private:native.bzl", "native_proto_common")
 
 # Use Starlark implementation only if native_proto_common.ProtoLangToolchainInfo doesn't exist
-ProtoLangToolchainInfo = getattr(native_proto_common, "ProtoLangToolchainInfo", provider(
+ProtoLangToolchainInfo = provider(
     doc = """Specifies how to generate language-specific code from .proto files.
             Used by LANG_proto_library rules.""",
     fields = dict(
@@ -23,4 +23,4 @@ ProtoLangToolchainInfo = getattr(native_proto_common, "ProtoLangToolchainInfo", 
           different package than proto_library""",
         toolchain_type = """(Label) Toolchain type that was used to obtain this info""",
     ),
-))
+)
