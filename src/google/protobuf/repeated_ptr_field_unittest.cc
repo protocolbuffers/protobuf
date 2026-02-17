@@ -897,12 +897,15 @@ TEST(RepeatedPtrFieldTest, SmallOptimization) {
   EXPECT_EQ(array->SpaceUsedExcludingSelf(), 0);
   std::string str;
   auto usage_before = arena.SpaceUsed();
+
+  using H = internal::GenericTypeHandler<std::string>;
+
   // We use UnsafeArenaAddAllocated just to grow the array without creating
   // objects or causing extra cleanup costs in the arena to make the
   // measurements simpler.
   array->UnsafeArenaAddAllocated(&str);
   // No backing array, just the string.
-  EXPECT_EQ(array->SpaceUsedExcludingSelf(), sizeof(str));
+  EXPECT_EQ(array->SpaceUsedExcludingSelf(), H::SpaceUsedLong(str));
   // We have not used any arena space.
   EXPECT_EQ(usage_before, arena.SpaceUsed());
   // Verify the string is where we think it is.
@@ -923,9 +926,9 @@ TEST(RepeatedPtrFieldTest, SmallOptimization) {
   // Backing array and the strings. sizeof(Rep) = 2 * sizeof(int) for capacity
   // and allocated_size. Each element of the Rep contributes sizeof(void*),
   // and each string contributes sizeof(str) to arena memory.
-  EXPECT_EQ(
-      array->SpaceUsedExcludingSelf(),
-      2 * sizeof(int) + array->Capacity() * sizeof(void*) + 2 * sizeof(str));
+  EXPECT_EQ(array->SpaceUsedExcludingSelf(),
+            2 * sizeof(int) + array->Capacity() * sizeof(void*) +
+                H::SpaceUsedLong(str) + H::SpaceUsedLong(str2));
   // We used some arena space now.
   EXPECT_LT(usage_before, arena.SpaceUsed());
   // And the pointer_begin is not in the sso anymore.
