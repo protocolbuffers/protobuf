@@ -28,7 +28,9 @@ runs:
 
     - name: Set protoc environment variable
       shell: bash
-      run: echo "PROTOC=protoc-${{ inputs.architecture }}" >> $GITHUB_ENV
+      run: echo "PROTOC=protoc-${INPUTS_ARCHITECTURE}" >> $GITHUB_ENV
+      env:
+        INPUTS_ARCHITECTURE: ${{ inputs.architecture }}
 
     - name: Extract binary
       id: output
