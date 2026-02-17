@@ -97,8 +97,10 @@ jobs:
         architecture: linux-x86_64
     - name: Move protoc into place and clean up
       run: |
-        mv ${{ steps.build-protoc.outputs.protoc }} protoc
+        mv ${STEPS_BUILD_PROTOC_OUTPUTS_PROTOC} protoc
         sudo rm -rf _build
+      env:
+        STEPS_BUILD_PROTOC_OUTPUTS_PROTOC: ${{ steps.build-protoc.outputs.protoc }}
     - name: Install snapshot version locally (not using generated pom.xml)
       run: |
         mvn -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true
