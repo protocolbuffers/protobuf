@@ -86,7 +86,9 @@ jobs:
         run: >
           echo "BAZEL_CACHE=
           --google_credentials=/workspace/$(basename $GOOGLE_APPLICATION_CREDENTIALS)
-          --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/protobuf/gha/${{ inputs.bazel-cache }}" >> $GITHUB_ENV
+          --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/protobuf/gha/${INPUTS_BAZEL_CACHE}" >> $GITHUB_ENV
+        env:
+          INPUTS_BAZEL_CACHE: ${{ inputs.bazel-cache }}
       - name: Configure Bazel cache updating
         # External runs should never write to our caches.
         if: ${{ inputs.bazel-cache && !inputs.safe-checkout && !github.event.act_local_test }}
@@ -94,9 +96,11 @@ jobs:
       - name: Configure Bazel command
         if: ${{ inputs.bazel }}
         run: >
-          echo "DOCKER_COMMAND=${{ inputs.bazel }}
+          echo "DOCKER_COMMAND=${INPUTS_BAZEL}
           --keep_going --test_output=errors --test_timeout=600
           $BAZEL_CACHE" >> $GITHUB_ENV
+        env:
+          INPUTS_BAZEL: ${{ inputs.bazel }}
 
       # Grab Docker image
       - name: Check docker cache
@@ -109,19 +113,28 @@ jobs:
       - name: Pull and store if cache miss
         if: ${{ inputs.docker-cache && steps.check-docker-cache.outputs.cache-hit != 'true' }}
         run: >
-          docker pull ${{ inputs.image }} &&
-          mkdir -p ci/docker/$(dirname ${{ inputs.image }}) &&
-          docker image save ${{ inputs.image }} --output ./ci/docker/${{ inputs.image }}.tar
+          docker pull ${INPUTS_IMAGE} &&
+          mkdir -p ci/docker/$(dirname ${INPUTS_IMAGE}) &&
+          docker image save ${INPUTS_IMAGE} --output ./ci/docker/${INPUTS_IMAGE}.tar
+        env:
+          INPUTS_IMAGE: ${{ inputs.image }}
       - name: Use the cached image on cache hit
         if: ${{ inputs.docker-cache && steps.check-docker-cache.outputs.cache-hit == 'true' }}
-        run: docker image load --input ./ci/docker/${{ inputs.image }}.tar
+        run: docker image load --input ./ci/docker/${INPUTS_IMAGE}.tar
+        env:
+          INPUTS_IMAGE: ${{ inputs.image }}
       - name: Pull fresh docker image
         if: ${{ !inputs.docker-cache }}
-        run: docker pull ${{ inputs.image }}
+        run: docker pull ${INPUTS_IMAGE}
+        env:
+          INPUTS_IMAGE: ${{ inputs.image }}
 
       - name: Run docker
         run: >
-          docker run ${{ inputs.run-flags}}
+          docker run ${INPUTS_RUN_FLAGS}
           -v${{ github.workspace }}:/workspace
-          ${{ inputs.image }}
+          ${INPUTS_IMAGE}
           ${{ inputs.command || '$DOCKER_COMMAND' }}
+        env:
+          INPUTS_RUN_FLAGS: ${{ inputs.run-flags}}
+          INPUTS_IMAGE: ${{ inputs.image }}
