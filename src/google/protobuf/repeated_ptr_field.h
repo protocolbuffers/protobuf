@@ -25,6 +25,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <functional>
 #include <iterator>
 #include <limits>
 #include <string>
@@ -2077,6 +2078,10 @@ class ABSL_ATTRIBUTE_VIEW RepeatedPtrIterator {
   template <typename OtherElement>
   friend class RepeatedPtrIterator;
 
+  template <typename E>
+  friend RepeatedPtrOverPtrsIterator<E> ConvertToPtrIterator(
+      RepeatedPtrIterator<E> it);
+
   // The internal iterator.
   void* const* it_;
 };
@@ -2212,6 +2217,12 @@ class RepeatedPtrOverPtrsIterator {
   VoidPtr* it_;
 };
 
+template <typename Element>
+RepeatedPtrOverPtrsIterator<Element> ConvertToPtrIterator(
+    RepeatedPtrIterator<Element> it) {
+  return RepeatedPtrOverPtrsIterator<Element>(const_cast<void**>(it.it_));
+}
+
 }  // namespace internal
 
 template <typename Element>
@@ -2265,6 +2276,53 @@ inline typename RepeatedPtrField<Element>::const_pointer_iterator
 RepeatedPtrField<Element>::pointer_end() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return const_pointer_iterator(
       const_cast<const void* const*>(raw_data() + size()));
+}
+
+// These functions mimic their std counterpart, but they are more efficient for
+// Protobuf containers.
+template <int&..., typename T, typename Compare>
+void sort(internal::RepeatedPtrIterator<T> begin,
+          internal::RepeatedPtrIterator<T> end, Compare cmp) {
+  std::sort(internal::ConvertToPtrIterator(begin),
+            internal::ConvertToPtrIterator(end),
+            [&](const auto* lhs, const auto* rhs) { return cmp(*lhs, *rhs); });
+}
+template <int&..., typename T>
+void sort(internal::RepeatedPtrIterator<T> begin,
+          internal::RepeatedPtrIterator<T> end) {
+  google::protobuf::sort(begin, end, std::less<>{});
+}
+template <int&..., typename T, typename Compare>
+void stable_sort(internal::RepeatedPtrIterator<T> begin,
+                 internal::RepeatedPtrIterator<T> end, Compare cmp) {
+  std::stable_sort(
+      internal::ConvertToPtrIterator(begin),
+      internal::ConvertToPtrIterator(end),
+      [&](const auto* lhs, const auto* rhs) { return cmp(*lhs, *rhs); });
+}
+template <int&..., typename T>
+void stable_sort(internal::RepeatedPtrIterator<T> begin,
+                 internal::RepeatedPtrIterator<T> end) {
+  google::protobuf::stable_sort(begin, end, std::less<>{});
+}
+
+// These functions mimic their absl counterpart, but they are more efficient for
+// Protobuf containers.
+template <int&..., typename T, typename Compare>
+void c_sort(RepeatedPtrField<T>& cont, Compare cmp) {
+  google::protobuf::sort(cont.begin(), cont.end(), cmp);
+}
+template <int&..., typename T>
+void c_sort(RepeatedPtrField<T>& cont) {
+  google::protobuf::c_sort(cont, std::less<>{});
+}
+template <int&..., typename T, typename Compare>
+void c_stable_sort(RepeatedPtrField<T>& cont, Compare cmp) {
+  google::protobuf::stable_sort(cont.begin(), cont.end(), cmp);
+}
+template <int&..., typename T>
+void c_stable_sort(RepeatedPtrField<T>& cont) {
+  google::protobuf::c_stable_sort(cont, std::less<>{});
 }
 
 // Iterators and helper functions that follow the spirit of the STL
