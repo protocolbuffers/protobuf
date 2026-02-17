@@ -24,4 +24,6 @@ runs:
 
     - name: Run
       shell: bash
-      run: ${{ inputs.command }}
+      run: ${INPUTS_COMMAND}
+      env:
+        INPUTS_COMMAND: ${{ inputs.command }}
