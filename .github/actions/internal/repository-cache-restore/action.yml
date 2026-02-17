@@ -24,8 +24,10 @@ runs:
       run: |
         REPOSITORY_CACHE_BASE=repository-cache-${{ github.base_ref || github.ref_name }}-${{ runner.os }}
         echo "REPOSITORY_CACHE_BASE=$REPOSITORY_CACHE_BASE" >> $GITHUB_ENV
-        echo "REPOSITORY_CACHE_NAME=$REPOSITORY_CACHE_BASE-${{ inputs.bazel-cache}}-${{ github.sha }}" >> $GITHUB_ENV
+        echo "REPOSITORY_CACHE_NAME=$REPOSITORY_CACHE_BASE-${INPUTS_BAZEL_CACHE}-${{ github.sha }}" >> $GITHUB_ENV
         echo "REPOSITORY_CACHE_PATH=.repository-cache" >> $GITHUB_ENV
+      env:
+        INPUTS_BAZEL_CACHE: ${{ inputs.bazel-cache}}
 
     - name: Restore Bazel repository cache
       id: restore-cache

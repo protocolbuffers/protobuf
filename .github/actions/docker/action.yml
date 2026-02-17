@@ -40,7 +40,9 @@ runs:
     - name: Generate docker flags
       if: inputs.platform
       shell: bash
-      run: echo "DOCKER_RUN_FLAGS=--platform ${{inputs.platform}}" >> $GITHUB_ENV
+      run: echo "DOCKER_RUN_FLAGS=--platform ${INPUTS_PLATFORM}" >> $GITHUB_ENV
+      env:
+        INPUTS_PLATFORM: ${{inputs.platform}}
 
     - name: Run Docker
       uses: ./.github/actions/internal/docker-run

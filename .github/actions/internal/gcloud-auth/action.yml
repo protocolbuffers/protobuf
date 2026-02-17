@@ -27,7 +27,9 @@ runs:
 
     - name: Store credentials path
       shell: bash
-      run: echo "CREDENTIALS_FILE=${{ steps.auth.outputs.credentials_file_path }}" >> $GITHUB_ENV
+      run: echo "CREDENTIALS_FILE=${STEPS_AUTH_OUTPUTS_CREDENTIALS_FILE_PATH}" >> $GITHUB_ENV
+      env:
+        STEPS_AUTH_OUTPUTS_CREDENTIALS_FILE_PATH: ${{ steps.auth.outputs.credentials_file_path }}
 
     - name: Fix credentials path (Windows)
       if: ${{ runner.os == 'Windows' }}
@@ -39,4 +41,4 @@ runs:
     - name: Output credentials file
       id: output
       shell: bash
-      run: echo "credentials-file=${{ env.CREDENTIALS_FILE }}" >> $GITHUB_OUTPUT
+      run: echo "credentials-file=${CREDENTIALS_FILE}" >> $GITHUB_OUTPUT

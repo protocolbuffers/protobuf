@@ -78,7 +78,7 @@ runs:
 
     - name: Hook up repository Cache
       shell: bash
-      run: echo "BAZEL_FLAGS=$BAZEL_FLAGS --repository_cache=$(pwd)/${{ env.REPOSITORY_CACHE_PATH }}" >> $GITHUB_ENV
+      run: echo "BAZEL_FLAGS=$BAZEL_FLAGS --repository_cache=$(pwd)/${REPOSITORY_CACHE_PATH}" >> $GITHUB_ENV
 
     - name: Validate inputs
       if: ${{ (inputs.bash && inputs.bazel) || (!inputs.bash && !inputs.bazel) }}
@@ -87,7 +87,9 @@ runs:
 
     - name: Pin Bazel version
       shell: bash
-      run: echo "USE_BAZEL_VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+      run: echo "USE_BAZEL_VERSION=${INPUTS_VERSION}" >> $GITHUB_ENV
+      env:
+        INPUTS_VERSION: ${{ inputs.version }}
 
     - name: Output Bazel version
       shell: bash
@@ -106,7 +108,7 @@ runs:
       shell: bash
       run: |
         mkdir -p mac_bazel_workaround
-        bazelisk ${{ steps.bazel.outputs.bazel-startup-flags }} build @bazel_tools//tools/osx:xcode_locator.m $BAZEL_FLAGS
+        bazelisk ${STEPS_BAZEL_OUTPUTS_BAZEL_STARTUP_FLAGS} build @bazel_tools//tools/osx:xcode_locator.m $BAZEL_FLAGS
         XCODE_LOCATOR_FLAGS="--sdk macosx clang -mmacosx-version-min=10.9 -fobjc-arc -framework CoreServices -framework Foundation"
         SINGLE_ARCH_COMPILE_FLAGS="--sdk macosx clang -mmacosx-version-min=10.9 -std=c++11 -lc++ -O3"
         COMPILE_FLAGS="$SINGLE_ARCH_COMPILE_FLAGS -arch arm64 -arch x86_64 -Wl,-no_adhoc_codesign -Wl,-no_uuid -O3"
@@ -115,18 +117,25 @@ runs:
         time env -i DEVELOPER_DIR=$DEVELOPER_DIR xcrun $COMPILE_FLAGS -o mac_bazel_workaround/libtool_check_unique $(bazel info output_base)/external/bazel_tools/tools/objc/libtool_check_unique.cc
         time env -i DEVELOPER_DIR=$DEVELOPER_DIR xcrun $SINGLE_ARCH_COMPILE_FLAGS -o mac_bazel_workaround/wrapped_clang $(bazel info output_base)/external/bazel_tools/tools/osx/crosstool/wrapped_clang.cc
         time env -i DEVELOPER_DIR=$DEVELOPER_DIR xcrun $COMPILE_FLAGS -o mac_bazel_workaround/wrapped_clang $(bazel info output_base)/external/bazel_tools/tools/osx/crosstool/wrapped_clang.cc
+      env:
+        STEPS_BAZEL_OUTPUTS_BAZEL_STARTUP_FLAGS: ${{ steps.bazel.outputs.bazel-startup-flags }}
 
     - name: Run Bash
       if: ${{ inputs.bash }}
-      run: ${{ inputs.bash }}
+      run: ${INPUTS_BASH}
       shell: bash
+      env:
+        INPUTS_BASH: ${{ inputs.bash }}
 
     - name: Run Bazel
       if: ${{ !inputs.bash }}
       run: >-
-        bazelisk ${{ steps.bazel.outputs.bazel-startup-flags }}
-        ${{ inputs.bazel }} $BAZEL_FLAGS
+        bazelisk ${STEPS_BAZEL_OUTPUTS_BAZEL_STARTUP_FLAGS}
+        ${INPUTS_BAZEL} $BAZEL_FLAGS
       shell: bash
+      env:
+        STEPS_BAZEL_OUTPUTS_BAZEL_STARTUP_FLAGS: ${{ steps.bazel.outputs.bazel-startup-flags }}
+        INPUTS_BAZEL: ${{ inputs.bazel }}
 
     - name: Save Bazel repository cache
       # Only allow repository cache updates during post-submits.
