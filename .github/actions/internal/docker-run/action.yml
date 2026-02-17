@@ -41,22 +41,32 @@ runs:
       shell: bash
       if: ${{ inputs.docker-cache && steps.check-docker-cache.outputs.cache-hit != 'true' }}
       run: >
-        time docker pull -q ${{ inputs.image }} &&
-        mkdir -p ci/docker/$(dirname ${{ inputs.image }}) &&
-        time docker image save ${{ inputs.image }} --output ./ci/docker/${{ inputs.image }}.tar
+        time docker pull -q ${INPUTS_IMAGE} &&
+        mkdir -p ci/docker/$(dirname ${INPUTS_IMAGE}) &&
+        time docker image save ${INPUTS_IMAGE} --output ./ci/docker/${INPUTS_IMAGE}.tar
+      env:
+        INPUTS_IMAGE: ${{ inputs.image }}
 
     - name: Use the cached image on cache hit
       shell: bash
       if: ${{ inputs.docker-cache && steps.check-docker-cache.outputs.cache-hit == 'true' }}
-      run: time docker image load --input ./ci/docker/${{ inputs.image }}.tar
+      run: time docker image load --input ./ci/docker/${INPUTS_IMAGE}.tar
+      env:
+        INPUTS_IMAGE: ${{ inputs.image }}
 
     - name: Pull fresh docker image
       shell: bash
       if: ${{ !inputs.docker-cache }}
-      run: time docker pull -q ${{ inputs.image }}
+      run: time docker pull -q ${INPUTS_IMAGE}
+      env:
+        INPUTS_IMAGE: ${{ inputs.image }}
 
     - name: Run docker
       shell: bash
       run: >
-        time docker run ${{ inputs.run-flags}} -v${{ github.workspace }}:/workspace
-        ${{ inputs.image }} ${{ inputs.command }}
+        time docker run ${INPUTS_RUN_FLAGS} -v${{ github.workspace }}:/workspace
+        ${INPUTS_IMAGE} ${INPUTS_COMMAND}
+      env:
+        INPUTS_RUN_FLAGS: ${{ inputs.run-flags}}
+        INPUTS_IMAGE: ${{ inputs.image }}
+        INPUTS_COMMAND: ${{ inputs.command }}
