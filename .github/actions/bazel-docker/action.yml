@@ -47,7 +47,7 @@ runs:
 
     - name: Hook up repository Cache
       shell: bash
-      run: echo "BAZEL_FLAGS=$BAZEL_FLAGS --repository_cache='/workspace/${{ env.REPOSITORY_CACHE_PATH }}'" >> $GITHUB_ENV
+      run: echo "BAZEL_FLAGS=$BAZEL_FLAGS --repository_cache='/workspace/${REPOSITORY_CACHE_PATH}'" >> $GITHUB_ENV
 
     - name: Validate inputs
       if: ${{ (inputs.bash && inputs.bazel) || (!inputs.bash && !inputs.bazel) }}

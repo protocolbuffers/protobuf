@@ -24,4 +24,6 @@ jobs:
     steps:
       - run: >
           ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/protobuf' }} ||
-          (echo "This pull request is from an unsafe fork (${{ github.event.pull_request.head.repo.full_name }}) and isn't allowed to modify workflow files!" && exit 1)
+          (echo "This pull request is from an unsafe fork (${GITHUB_EVENT_PULL_REQUEST_HEAD_REPO_FULL_NAME}) and isn't allowed to modify workflow files!" && exit 1)
+        env:
+          GITHUB_EVENT_PULL_REQUEST_HEAD_REPO_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
