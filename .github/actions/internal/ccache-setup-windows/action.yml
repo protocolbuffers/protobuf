@@ -19,12 +19,16 @@ runs:
     - name: Setup ccache path
       shell: bash
       run: |
-        echo "CCACHE_EXE_PATH=$LOCALAPPDATA\ccache-${{ inputs.ccache-version }}-windows-x86_64" >> $GITHUB_ENV
-        echo "$LOCALAPPDATA\ccache-${{ inputs.ccache-version }}-windows-x86_64" >> $GITHUB_PATH
+        echo "CCACHE_EXE_PATH=$LOCALAPPDATA\ccache-${INPUTS_CCACHE_VERSION}-windows-x86_64" >> $GITHUB_ENV
+        echo "$LOCALAPPDATA\ccache-${INPUTS_CCACHE_VERSION}-windows-x86_64" >> $GITHUB_PATH
+      env:
+        INPUTS_CCACHE_VERSION: ${{ inputs.ccache-version }}
 
     - name: Add ccache to Powershell path
       shell: pwsh
-      run: echo "%LOCALAPPDATA%\ccache-${{ inputs.ccache-version }}-windows-x86_64" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      run: echo "%LOCALAPPDATA%\ccache-$env:INPUTS_CCACHE_VERSION-windows-x86_64" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      env:
+        INPUTS_CCACHE_VERSION: ${{ inputs.ccache-version }}
 
     - name: Setup caching of ccache download
       if: ${{ github.event_name != 'pull_request' && github.event_name != 'pull_request_target' }}
@@ -47,10 +51,12 @@ runs:
       if: ${{ steps.ccache-cache.outputs.cache-hit != 'true' && steps.ccache-restore.outputs.cache-hit != 'true'}}
       run: |
         cd $LOCALAPPDATA
-        curl -kLSs "https://github.com/ccache/ccache/releases/download/v${{ inputs.ccache-version }}/ccache-${{ inputs.ccache-version }}-windows-x86_64.zip" -o ccache.zip
+        curl -kLSs "https://github.com/ccache/ccache/releases/download/v${INPUTS_CCACHE_VERSION}/ccache-${INPUTS_CCACHE_VERSION}-windows-x86_64.zip" -o ccache.zip
         unzip ccache.zip
         rm ccache.zip
         ccache --version
+      env:
+        INPUTS_CCACHE_VERSION: ${{ inputs.ccache-version }}
 
     - name: Configure ccache environment variables
       shell: pwsh
