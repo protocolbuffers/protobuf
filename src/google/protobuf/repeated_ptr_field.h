@@ -70,8 +70,6 @@ class MergePartialFromCodedStreamHelper;
 class SwapFieldHelper;
 class MapFieldBase;
 
-class MapFieldBase;
-
 template <typename Element>
 class RepeatedPtrIterator;
 template <typename Element>
@@ -80,6 +78,8 @@ template <typename T>
 class RepeatedPtrFieldBackInsertIterator;
 template <typename T>
 class AllocatedRepeatedPtrFieldBackInsertIterator;
+
+class RepeatedPtrFieldTest;
 
 // Swaps two non-overlapping blocks of memory of size `N`
 template <size_t N>
@@ -626,6 +626,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
  private:
   // Tests that need to access private methods.
+  friend class RepeatedPtrFieldTest;
   friend class
       RepeatedPtrFieldTest_UnsafeArenaAddAllocatedReleaseLastOnBaseField_Test;
 
@@ -1361,15 +1362,6 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // will not be heap-allocated objects.
   void UnsafeArenaExtractSubrange(int start, int num, Element** elements);
 
-  // When elements are removed by calls to RemoveLast() or Clear(), they
-  // are not actually freed.  Instead, they are cleared and kept so that
-  // they can be reused later.  This can save lots of CPU time when
-  // repeatedly reusing a protocol message for similar purposes.
-  //
-  // Hardcore programs may choose to manipulate these cleared objects
-  // to better optimize memory management using the following routines.
-
-
   // Removes the element referenced by position.
   //
   // Returns an iterator to the element immediately following the removed
@@ -1434,6 +1426,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // levels of indirection.
   template <typename T>
   friend class internal::AllocatedRepeatedPtrFieldBackInsertIterator;
+
+  friend class internal::RepeatedPtrFieldTest;
 
   friend class Arena;
 
@@ -1886,7 +1880,6 @@ template <typename Element>
 inline Element* RepeatedPtrField<Element>::UnsafeArenaReleaseLast() {
   return RepeatedPtrFieldBase::UnsafeArenaReleaseLast<TypeHandler>();
 }
-
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::Reserve(int new_size) {
