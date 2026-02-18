@@ -44,14 +44,6 @@ bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.6.0")
 
-# Pin to rules_proto to 7.1.0 to avoid toolchain incompatibilities when
-# --incompatible_enable_proto_toolchain_resolution=true in Bazel 7.
-# rules_proto 7.0.2 from deps incorrectly rules_proto's toolchain_type but protobuf's toolchain, but
-# 7.1.0 uses protobuf's toolchain and toolchain_type.
-# TODO: Restore to dev_dependency once Bazel 7 is dropped.
-# rules_proto is needed for @com_google_protobuf_v25 used in //compatibility/... tests
-bazel_dep(name = "rules_proto", version = "7.1.0")
-
 bazel_dep(name = "rules_rust", version = "0.63.0", dev_dependency = True)
 bazel_dep(name = "rules_ruby", version = "0.17.3", dev_dependency = True)
 
@@ -324,6 +316,21 @@ archive_override(
     ],
     strip_prefix = "protobuf-29.0",
     urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz"],
+)
+
+# Register C++ toolchains for cross-compilation. These are used for compiling release binaries of
+# protoc and the Python extension. They are disabled unless --//toolchain:release=true is passed.
+register_toolchains(
+    "//toolchain:osx-x86_64-toolchain",
+    "//toolchain:osx-aarch_64-toolchain",
+    "//toolchain:linux-aarch_64-toolchain",
+    "//toolchain:linux-ppcle_64-toolchain",
+    "//toolchain:linux-s390_64-toolchain",
+    "//toolchain:linux-x86_32-toolchain",
+    "//toolchain:linux-x86_64-toolchain",
+    "//toolchain:win32-toolchain",
+    "//toolchain:win64-toolchain",
+    "//toolchain:k8-toolchain",
 )
 
 # Python headers for release
