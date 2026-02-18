@@ -16,9 +16,9 @@ the migration is finished, the helpers can be removed.
 
 load("//bazel/common:proto_lang_toolchain_info.bzl", "ProtoLangToolchainInfo")
 load("//bazel/flags:flags.bzl", "get_flag_value")
-load("//bazel/private:native.bzl", "native_proto_common")
+# load("//bazel/private:native.bzl", "native_proto_common") # Deleted
 
-_incompatible_toolchain_resolution = getattr(native_proto_common, "INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION", False)
+_incompatible_toolchain_resolution = False
 
 def _find_toolchain(ctx, legacy_attr, toolchain_type):
     if _incompatible_toolchain_resolution:

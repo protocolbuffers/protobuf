@@ -126,7 +126,7 @@ cc_proto_aspect = aspect(
             } |
             toolchains.if_legacy_toolchain({
                 "_aspect_cc_proto_toolchain": attr.label(
-                    default = configuration_field(fragment = "proto", name = "proto_toolchain_for_cc"),
+                    default = Label("//bazel/flags/cc:proto_toolchain_for_cc"),
                 ),
                 "_proto_toolchain_for_cc": attr.label(
                     default = Label("//bazel/flags/cc:proto_toolchain_for_cc"),
@@ -197,7 +197,7 @@ rules to generate C++ code for.""",
         ),
     } | toolchains.if_legacy_toolchain({
         "_aspect_cc_proto_toolchain": attr.label(
-            default = configuration_field(fragment = "proto", name = "proto_toolchain_for_cc"),
+            default = Label("//bazel/flags/cc:proto_toolchain_for_cc"),
         ),
         "_proto_toolchain_for_cc": attr.label(
             default = "//bazel/flags/cc:proto_toolchain_for_cc",
