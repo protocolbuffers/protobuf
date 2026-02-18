@@ -26,9 +26,9 @@ load(
 )
 
 visibility([
-    "//rust/...",
-    "//third_party/crubit/rs_bindings_from_cc/...",
     "//net/proto2/compiler/stubby/cc/build_defs/...",
+    "//third_party/crubit/rs_bindings_from_cc/...",
+    "//rust/...",
 ])
 
 CrateMappingInfo = provider(
@@ -219,6 +219,7 @@ def _compile_cc(
     Returns:
       A CcInfo provider.
     """
+
     cc_info = cc_common.merge_cc_infos(direct_cc_infos = cc_infos)
 
     (compilation_context, compilation_outputs) = cc_common.compile(
