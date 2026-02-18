@@ -35,17 +35,17 @@ _FLAGS = {
         native = lambda ctx: getattr(ctx.fragments.proto, "cc_proto_library_source_suffixes"),
         default = [".pb.cc"],
     ),
-    "proto_toolchain_for_java": struct(
-        native = lambda ctx: getattr(ctx.attr, "_aspect_java_proto_toolchain"),
-        default = "@bazel_tools//tools/proto:java_toolchain",
+    "_proto_toolchain_for_java": struct(
+        native = lambda ctx: "//:java_toolchain",
+        default = "//:java_toolchain",
     ),
-    "proto_toolchain_for_javalite": struct(
-        native = lambda ctx: getattr(ctx.attr, "_aspect_proto_toolchain_for_javalite"),
-        default = "@bazel_tools//tools/proto:javalite_toolchain",
+    "_proto_toolchain_for_javalite": struct(
+        native = lambda ctx: "//:javalite_toolchain",
+        default = "//:javalite_toolchain",
     ),
-    "proto_toolchain_for_cc": struct(
-        native = lambda ctx: getattr(ctx.attr, "_aspect_cc_proto_toolchain"),
-        default = "@bazel_tools//tools/proto:cc_toolchain",
+    "_proto_toolchain_for_cc": struct(
+        native = lambda ctx: "//:cc_toolchain",
+        default = "//:cc_toolchain",
     ),
 }
 
