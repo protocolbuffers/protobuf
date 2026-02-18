@@ -37,6 +37,7 @@
 #include "absl/base/prefetch.h"
 #include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/field_with_arena.h"
@@ -58,6 +59,7 @@ namespace protobuf {
 class DynamicMessage;
 class Message;
 class Reflection;
+
 
 template <typename T>
 struct WeakRepeatedPtrField;
@@ -1032,6 +1034,8 @@ class GenericTypeHandler {
   static constexpr bool has_default_instance() {
     return !std::is_same_v<Type, Message> && !std::is_same_v<Type, MessageLite>;
   }
+
+  static const Type& ForEraseIf(const Type* ptr) { return *ptr; }
 };
 
 template <>
@@ -1069,6 +1073,8 @@ class GenericTypeHandler<std::string> {
     return GetEmptyStringAlreadyInited();
   }
   static constexpr bool has_default_instance() { return true; }
+
+  static absl::string_view ForEraseIf(const std::string* ptr) { return *ptr; }
 };
 
 
@@ -2265,6 +2271,30 @@ inline typename RepeatedPtrField<Element>::const_pointer_iterator
 RepeatedPtrField<Element>::pointer_end() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return const_pointer_iterator(
       const_cast<const void* const*>(raw_data() + size()));
+}
+
+// Like C++20's std::erase_if, for RepeatedPtrField
+// For string containers, the predicate is called with an `absl::string_view`.
+// Otherwise, it is called with a `const T&`.
+template <typename T, typename Pred>
+size_t erase_if(RepeatedPtrField<T>& cont, Pred pred) {
+  // We use `partition` instead of `remove` to keep all the erased elements at
+  // the end for cleanup.
+  auto it = std::stable_partition(
+      cont.pointer_begin(), cont.pointer_end(), [&](const auto* elem) {
+        return !pred(internal::GenericTypeHandler<T>::ForEraseIf(elem));
+      });
+  const size_t removed = cont.pointer_end() - it;
+  cont.DeleteSubrange(it - cont.pointer_begin(), removed);
+  return removed;
+}
+
+// Like C++20's std::erase, for RepeatedPtrField
+template <typename T, typename U>
+size_t erase(RepeatedPtrField<T>& cont, const U& value) {
+  static_assert(!std::is_base_of_v<Message, T>, "Not supported. Use erase_if.");
+  return google::protobuf::erase_if(cont,
+                          [&](const auto& elem) { return elem == value; });
 }
 
 // Iterators and helper functions that follow the spirit of the STL
