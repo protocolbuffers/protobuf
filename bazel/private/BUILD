@@ -1,5 +1,4 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load(":native_bool_flag.bzl", "native_bool_flag")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -168,43 +167,12 @@ bzl_library(
     ],
 )
 
-native_bool_flag(
-    name = "experimental_proto_descriptor_sets_include_source_info",
-    flag = "experimental_proto_descriptor_sets_include_source_info",
-    match_value = "true",
-    visibility = ["//bazel:__subpackages__"],
-)
-
-native_bool_flag(
-    name = "strict_proto_deps",
-    flag = "strict_proto_deps",
-    match_value = "off",
-    result = False,
-    visibility = ["//bazel:__subpackages__"],
-)
-
-native_bool_flag(
-    name = "strict_public_imports",
-    flag = "strict_public_imports",
-    match_value = "off",
-    result = False,
-    visibility = ["//bazel:__subpackages__"],
-)
-
-bzl_library(
-    name = "native_bool_flag_bzl",
-    srcs = ["native_bool_flag.bzl"],
-    visibility = ["//visibility:private"],
-    deps = ["@bazel_skylib//rules:common_settings"],
-)
-
 filegroup(
     name = "for_bazel_tests",
     testonly = True,
     srcs = [
         "BUILD",
         ":java_proto_library_bzl",
-        ":native_bool_flag_bzl",
         ":toolchain_helpers_bzl",
         "//bazel:for_bazel_tests",
         "//bazel/private/oss/toolchains:for_bazel_tests",
