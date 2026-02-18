@@ -528,15 +528,22 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
     return is_soo ? kSooCapacityElements : soo_rep_.capacity();
   }
 
-  void ReserveWithArena(Arena* arena, int new_size);
+  template <typename Arena>
+  void ReserveWithArena(Arena arena, int new_size);
   void GrowByWithArena(Arena* arena, int grow_by) {
     ReserveWithArena(arena, size() + grow_by);
   }
 
-  void AddWithArena(Arena* arena, Element value);
-  pointer AddWithArena(Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  template <typename Iter>
-  void AddWithArena(Arena* arena, Iter begin, Iter end);
+  Arena* ResolveArena(Arena* arena) { return arena; }
+  struct GetArenaLater {};
+  Arena* ResolveArena(GetArenaLater) { return GetArena(); }
+
+  template <typename Arena>
+  void AddWithArena(Arena arena, Element value);
+  template <typename Arena>
+  pointer AddWithArena(Arena arena) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  template <typename Arena, typename Iter>
+  void AddWithArena(Arena arena, Iter begin, Iter end);
 
   void SwapFallbackWithTemp(Arena* arena, RepeatedField& other,
                             Arena* other_arena, RepeatedField<Element>& temp);
@@ -573,11 +580,11 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
     }
   }
 
-  template <typename Iter>
-  void AddForwardIterator(Arena* arena, Iter begin, Iter end);
+  template <typename Arena, typename Iter>
+  void AddForwardIterator(Arena arena, Iter begin, Iter end);
 
-  template <typename Iter>
-  void AddInputIterator(Arena* arena, Iter begin, Iter end);
+  template <typename Arena, typename Iter>
+  void AddInputIterator(Arena arena, Iter begin, Iter end);
 
   // Reserves space to expand the field to at least the given size.
   // If the array is grown, it will always be at least doubled in size.
@@ -928,7 +935,7 @@ inline void RepeatedField<Element>::Set(int index, const Element& value) {
 
 template <typename Element>
 inline void RepeatedField<Element>::Add(Element value) {
-  AddWithArena(GetArena(), std::move(value));
+  AddWithArena(GetArenaLater{}, std::move(value));
 }
 
 template <typename Element>
@@ -938,15 +945,16 @@ inline void RepeatedField<Element>::InternalAddWithArena(
 }
 
 template <typename Element>
-inline void RepeatedField<Element>::AddWithArena(Arena* arena, Element value) {
-  ABSL_DCHECK_EQ(arena, GetArena());
+template <typename Arena>
+inline void RepeatedField<Element>::AddWithArena(Arena arena, Element value) {
+  ABSL_DCHECK_EQ(ResolveArena(arena), GetArena());
 
   bool is_soo = this->is_soo();
   const int old_size = size();
   int capacity = Capacity(is_soo);
   Element* elem = unsafe_elements(is_soo);
   if (ABSL_PREDICT_FALSE(old_size == capacity)) {
-    Grow(arena, is_soo, old_size, old_size + 1);
+    Grow(ResolveArena(arena), is_soo, old_size, old_size + 1);
     is_soo = false;
     capacity = Capacity(is_soo);
     elem = unsafe_elements(is_soo);
@@ -969,7 +977,7 @@ inline void RepeatedField<Element>::AddWithArena(Arena* arena, Element value) {
 
 template <typename Element>
 inline Element* RepeatedField<Element>::Add() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  return AddWithArena(GetArena());
+  return AddWithArena(GetArenaLater{});
 }
 
 template <typename Element>
@@ -979,14 +987,15 @@ inline Element* RepeatedField<Element>::InternalAddWithArena(
 }
 
 template <typename Element>
-inline Element* RepeatedField<Element>::AddWithArena(Arena* arena)
+template <typename Arena>
+inline Element* RepeatedField<Element>::AddWithArena(Arena arena)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  ABSL_DCHECK_EQ(arena, GetArena());
+  ABSL_DCHECK_EQ(ResolveArena(arena), GetArena());
 
   bool is_soo = this->is_soo();
   const int old_size = size();
   if (ABSL_PREDICT_FALSE(old_size == Capacity())) {
-    Grow(arena, is_soo, old_size, old_size + 1);
+    Grow(ResolveArena(arena), is_soo, old_size, old_size + 1);
     is_soo = false;
   }
   void* p = unsafe_elements(is_soo) + ExchangeCurrentSize(old_size + 1);
@@ -994,10 +1003,10 @@ inline Element* RepeatedField<Element>::AddWithArena(Arena* arena)
 }
 
 template <typename Element>
-template <typename Iter>
-inline void RepeatedField<Element>::AddForwardIterator(Arena* arena, Iter begin,
+template <typename Arena, typename Iter>
+inline void RepeatedField<Element>::AddForwardIterator(Arena arena, Iter begin,
                                                        Iter end) {
-  ABSL_DCHECK_EQ(arena, GetArena());
+  ABSL_DCHECK_EQ(ResolveArena(arena), GetArena());
 
   bool is_soo = this->is_soo();
   const int old_size = size();
@@ -1013,7 +1022,7 @@ inline void RepeatedField<Element>::AddForwardIterator(Arena* arena, Iter begin,
       << "Input too large";
   const int new_size = old_size + delta;
   if (ABSL_PREDICT_FALSE(new_size > capacity)) {
-    Grow(arena, is_soo, old_size, new_size);
+    Grow(ResolveArena(arena), is_soo, old_size, new_size);
     is_soo = false;
     elem = unsafe_elements(is_soo);
     capacity = Capacity(is_soo);
@@ -1033,10 +1042,10 @@ inline void RepeatedField<Element>::AddForwardIterator(Arena* arena, Iter begin,
 }
 
 template <typename Element>
-template <typename Iter>
-inline void RepeatedField<Element>::AddInputIterator(Arena* arena, Iter begin,
+template <typename Arena, typename Iter>
+inline void RepeatedField<Element>::AddInputIterator(Arena arena, Iter begin,
                                                      Iter end) {
-  ABSL_DCHECK_EQ(arena, GetArena());
+  ABSL_DCHECK_EQ(ResolveArena(arena), GetArena());
 
   bool is_soo = this->is_soo();
   int size = this->size();
@@ -1049,7 +1058,7 @@ inline void RepeatedField<Element>::AddInputIterator(Arena* arena, Iter begin,
   while (begin != end) {
     if (ABSL_PREDICT_FALSE(first == last)) {
       size = first - elem;
-      GrowNoAnnotate(arena, is_soo, size, size + 1);
+      GrowNoAnnotate(ResolveArena(arena), is_soo, size, size + 1);
       is_soo = false;
       elem = unsafe_elements(is_soo);
       capacity = Capacity(is_soo);
@@ -1069,12 +1078,12 @@ inline void RepeatedField<Element>::AddInputIterator(Arena* arena, Iter begin,
 template <typename Element>
 template <typename Iter>
 inline void RepeatedField<Element>::Add(Iter begin, Iter end) {
-  AddWithArena(GetArena(), std::move(begin), std::move(end));
+  AddWithArena(GetArenaLater{}, std::move(begin), std::move(end));
 }
 
 template <typename Element>
-template <typename Iter>
-inline void RepeatedField<Element>::AddWithArena(Arena* arena, Iter begin,
+template <typename Arena, typename Iter>
+inline void RepeatedField<Element>::AddWithArena(Arena arena, Iter begin,
                                                  Iter end) {
   if (std::is_base_of<
           std::forward_iterator_tag,
@@ -1344,14 +1353,15 @@ inline int CalculateReserveSize(int capacity, int new_size) {
 
 template <typename Element>
 inline void RepeatedField<Element>::Reserve(int new_size) {
-  ReserveWithArena(GetArena(), new_size);
+  ReserveWithArena(GetArenaLater{}, new_size);
 }
 
 template <typename Element>
-void RepeatedField<Element>::ReserveWithArena(Arena* arena, int new_size) {
+template <typename Arena>
+void RepeatedField<Element>::ReserveWithArena(Arena arena, int new_size) {
   const bool was_soo = is_soo();
   if (ABSL_PREDICT_FALSE(new_size > Capacity(was_soo))) {
-    Grow(arena, was_soo, size(), new_size);
+    Grow(ResolveArena(arena), was_soo, size(), new_size);
   }
 }
 
