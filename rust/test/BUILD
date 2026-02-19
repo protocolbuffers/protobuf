@@ -542,3 +542,11 @@ rust_library(
     srcs = ["same_name_double_alias_exported_deps_consumer.rs"],
     deps = [":same_name_double_alias_exported_deps_rust_proto"],
 )
+
+rust_cc_proto_library(
+    name = "layering_check_test_rust_proto",
+    testonly = True,
+    # Ensure this library builds even when layering check is disabled.
+    features = ["-layering_check"],
+    deps = [":unittest_proto"],
+)
