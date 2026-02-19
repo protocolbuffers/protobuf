@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -243,7 +244,7 @@ public class ByteStringTest {
   public void testCopyFrom_utf8() {
     String testString = "I love unicode \u1234\u5678 characters";
     ByteString byteString = ByteString.copyFromUtf8(testString);
-    byte[] testBytes = testString.getBytes(Internal.UTF_8);
+    byte[] testBytes = testString.getBytes(StandardCharsets.UTF_8);
     assertWithMessage("copyFromUtf8 string must respect the charset")
         .that(isArrayRange(byteString.toByteArray(), testBytes, 0, testBytes.length))
         .isTrue();
@@ -561,7 +562,7 @@ public class ByteStringTest {
   @Test
   public void testToStringUtf8() {
     String testString = "I love unicode \u1234\u5678 characters";
-    byte[] testBytes = testString.getBytes(Internal.UTF_8);
+    byte[] testBytes = testString.getBytes(StandardCharsets.UTF_8);
     ByteString byteString = ByteString.copyFrom(testBytes);
     assertWithMessage("copyToStringUtf8 must respect the charset")
         .that(testString)
@@ -571,7 +572,7 @@ public class ByteStringTest {
   @Test
   public void testToString() {
     String toString =
-        ByteString.copyFrom("Here are some bytes: \t\u00a1".getBytes(Internal.UTF_8)).toString();
+        ByteString.copyFrom("Here are some bytes: \t\u00a1".getBytes(StandardCharsets.UTF_8)).toString();
     assertWithMessage(toString).that(toString.contains("size=24")).isTrue();
     assertWithMessage(toString)
         .that(toString.contains("contents=\"Here are some bytes: \\t\\302\\241\""))
@@ -583,7 +584,7 @@ public class ByteStringTest {
     String toString =
         ByteString.copyFrom(
                 "123456789012345678901234567890123456789012345678901234567890"
-                    .getBytes(Internal.UTF_8))
+                    .getBytes(StandardCharsets.UTF_8))
             .toString();
     assertWithMessage(toString).that(toString.contains("size=60")).isTrue();
     assertWithMessage(toString)
