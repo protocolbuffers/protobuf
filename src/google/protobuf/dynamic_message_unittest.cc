@@ -20,6 +20,8 @@
 #include "google/protobuf/dynamic_message.h"
 
 #include <cstddef>
+#include <cstdint>
+#include <limits>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -28,14 +30,17 @@
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/edition_unittest.pb.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
