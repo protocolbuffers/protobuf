@@ -504,6 +504,175 @@ public class CodedInputStreamTest {
     }
   }
 
+  @Test
+  public void testStreamRawBytesWholeResult() throws Exception {
+    // Allocate and initialize a 1MB blob.
+    int blobSize = 1 << 20;
+    byte[] blob = new byte[blobSize];
+    for (int i = 0; i < blob.length; i++) {
+      blob[i] = (byte) i;
+    }
+
+    for (InputType inputType : InputType.values()) {
+      try {
+        CodedInputStream decoder = inputType.newDecoder(blob);
+        decoder.pushLimit(123456);
+        decoder.skipRawBytes(39394);
+        byte[] results = new byte[blob.length];
+        int totalBytesRead = 0;
+        while (true) {
+          int bytesRead =
+              decoder.streamRawBytes(
+                  results, totalBytesRead, Math.min(results.length - totalBytesRead, 45));
+          if (bytesRead == -1) {
+            break;
+          }
+          totalBytesRead += bytesRead;
+        }
+        assertArrayEquals(
+            Arrays.copyOfRange(blob, 39394, 123456),
+            Arrays.copyOfRange(results, 0, 123456 - 39394));
+        // Verify we didn't read past the length arg
+        for (int i = 123456 - 39384; i > results.length; i++) {
+          assertThat(results[i]).isEqualTo(0);
+        }
+      } catch (Throwable e) {
+        e.addSuppressed(new RuntimeException("With stream type " + inputType));
+        throw e;
+      }
+    }
+  }
+
+  /** Match the InputStream contract around reading zero bytes at a time */
+  @Test
+  public void testStreamZeroBytes() throws Exception {
+    byte[] blob = new byte[0];
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      assertThat(decoder.streamRawBytes(new byte[4], 0, 0)).isEqualTo(0);
+    }
+    blob = new byte[4];
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      decoder.pushLimit(0);
+      assertThat(decoder.streamRawBytes(new byte[4], 0, 0)).isEqualTo(0);
+    }
+    blob = new byte[4];
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      decoder.skipRawBytes(4);
+      assertThat(decoder.streamRawBytes(new byte[4], 0, 0)).isEqualTo(0);
+    }
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      assertThat(decoder.streamRawBytes(new byte[0], 0, 0)).isEqualTo(0);
+    }
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      assertThat(decoder.streamRawBytes(new byte[5], 5, 0)).isEqualTo(0);
+    }
+  }
+
+  @Test
+  public void testBoundsChecksStreamingRead() throws Exception {
+    // We throw IndexOutOfBoundsException for cases where the provided args are outside the provided
+    // array, to match InputStream's behavior
+    byte[] blob = new byte[4];
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      assertThrows(
+          IndexOutOfBoundsException.class, () -> decoder.streamRawBytes(new byte[0], 0, 15));
+    }
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      assertThrows(
+          IndexOutOfBoundsException.class, () -> decoder.streamRawBytes(new byte[5], 5, 15));
+    }
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      assertThrows(
+          IndexOutOfBoundsException.class, () -> decoder.streamRawBytes(new byte[5], -1, 2));
+    }
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      assertThrows(
+          IndexOutOfBoundsException.class, () -> decoder.streamRawBytes(new byte[5], 2, -1));
+    }
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      assertThrows(
+          IndexOutOfBoundsException.class, () -> decoder.streamRawBytes(new byte[5], -2, -1));
+    }
+  }
+
+  @Test
+  public void testStreamRawBytesShortRead() throws Exception {
+    // 10 bytes of data
+    byte[] data = new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    // SmallBlockInputStream with block size 4 (to limit the initial fill)
+    SmallBlockInputStream is = new SmallBlockInputStream(data, 4);
+    // CodedInputStream with buffer size 4
+    CodedInputStream input = CodedInputStream.newInstance(is, 4);
+
+    // Read 1 byte. This should trigger a buffer refill of 4 bytes.
+    assertThat(input.readRawByte()).isEqualTo((byte) 0);
+
+    // We expect 1 read call so far.
+    assertThat(is.readCalls).isEqualTo(1);
+
+    // Buffer now contains [1, 2, 3]. pos=1, limit=4.
+    // Request 5 bytes.
+    byte[] buffer = new byte[5];
+    int bytesRead = input.streamRawBytes(buffer, 0, 5);
+
+    // It should return the 3 bytes available in the buffer.
+    assertThat(bytesRead).isEqualTo(3);
+    assertThat(buffer[0]).isEqualTo((byte) 1);
+    assertThat(buffer[1]).isEqualTo((byte) 2);
+    assertThat(buffer[2]).isEqualTo((byte) 3);
+
+    // It should NOT have hit the stream again.
+    assertThat(is.readCalls).isEqualTo(1);
+  }
+
+  @Test
+  public void testNpeStreamingRead() throws Exception {
+    byte[] blob = new byte[4];
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      assertThrows(NullPointerException.class, () -> decoder.streamRawBytes(null, 0, 15));
+    }
+  }
+
+  @Test
+  public void testStreamRawBytesPropagatesInvalidProtocolBufferException() throws Exception {
+    InputStream throwingStream =
+        new InputStream() {
+          @Override
+          public int read() throws IOException {
+            throw new InvalidProtocolBufferException("Test exception");
+          }
+
+          @Override
+          public int read(byte[] b, int off, int len) throws IOException {
+            throw new InvalidProtocolBufferException("Test exception");
+          }
+        };
+
+    // Test the streaming variant: readRawBytes(byte[], int, int)
+    CodedInputStream input1 = CodedInputStream.newInstance(throwingStream);
+    InvalidProtocolBufferException thrown1 =
+        assertThrows(
+            InvalidProtocolBufferException.class, () -> input1.streamRawBytes(new byte[10], 0, 10));
+    assertThat(thrown1.getThrownFromInputStream()).isTrue();
+
+    // Test the non-streaming variant: readRawBytes(int)
+    CodedInputStream input2 = CodedInputStream.newInstance(throwingStream);
+    InvalidProtocolBufferException thrown2 =
+        assertThrows(InvalidProtocolBufferException.class, () -> input2.readRawBytes(10));
+    assertThat(thrown2.getThrownFromInputStream()).isTrue();
+  }
+
   /** Skipping a huge blob should not allocate excessive memory, so there should be no limit */
   @Test
   public void testSkipMaliciouslyHugeBlob() throws Exception {

@@ -432,8 +432,8 @@ public abstract class CodedInputStream {
    * copying the bytes.
    *
    * <p>Safety contract: Callers must ensure the underlying input buffer is not mutated or reused
-   * while the returned {@link ByteString} is still in use. If you cannot guarantee buffer
-   * lifetime, do not enable aliasing or copy the bytes before storing them.
+   * while the returned {@link ByteString} is still in use. If you cannot guarantee buffer lifetime,
+   * do not enable aliasing or copy the bytes before storing them.
    */
   public abstract ByteString readBytes() throws IOException;
 
@@ -504,8 +504,8 @@ public abstract class CodedInputStream {
    *
    * <p>Some decoder implementations may ignore this setting (i.e., treat it as a no-op), such as
    * stream-backed decoders whose internal buffers are refilled and reused (and therefore may
-   * overwrite previously returned views), or direct-backed decoders that are not backed by a
-   * stable on-heap {@code byte[]}.
+   * overwrite previously returned views), or direct-backed decoders that are not backed by a stable
+   * on-heap {@code byte[]}.
    *
    * <p>Safety contract: If aliasing is enabled, the caller must ensure the underlying input buffer
    * is not mutated or reused while any returned {@link ByteString} or {@link ByteBuffer} is still
@@ -655,6 +655,26 @@ public abstract class CodedInputStream {
    * @throws InvalidProtocolBufferException The end of the stream or the current limit was reached.
    */
   public abstract byte[] readRawBytes(final int size) throws IOException;
+
+  /**
+   * Read up to {@code length} bytes into {@code bytes} starting at {@code offset}.
+   *
+   * <p>Behaves similarly to {@link InputStream#read(byte[],int,int)}; a zero-sized read will read
+   * zero bytes, other sizes will attempt to read up to the requested number of bytes, but may read
+   * less.
+   *
+   * @throws IndexOutOfBoundsException {@code offset}/{@code length} are not within {@code bytes}.
+   * @throws NullPointerException {@code bytes} is null.
+   * @return The number of bytes read into {@code bytes}, or -1 if the end of data or current limit
+   *     has been reached.
+   */
+  public abstract int streamRawBytes(byte[] bytes, int offset, int length) throws IOException;
+
+  private static void checkStreamingReadArgs(byte[] bytes, int offset, int length) {
+    if (bytes.length - offset - length < 0 || (offset | length) < 0) {
+      throw new IndexOutOfBoundsException();
+    }
+  }
 
   /**
    * Reads and discards {@code size} bytes.
@@ -1521,6 +1541,21 @@ public abstract class CodedInputStream {
         }
       }
       throw InvalidProtocolBufferException.truncatedMessage();
+    }
+
+    @Override
+    public int streamRawBytes(byte[] bytes, int offset, int length) throws IOException {
+      checkStreamingReadArgs(bytes, offset, length);
+      if (length == 0) {
+        return 0;
+      }
+      int bytesToCopy = Math.min(length, limit - pos);
+      if (bytesToCopy == 0) {
+        return -1;
+      }
+      System.arraycopy(buffer, pos, bytes, offset, bytesToCopy);
+      pos += bytesToCopy;
+      return bytesToCopy;
     }
 
     @Override
@@ -2392,6 +2427,32 @@ public abstract class CodedInputStream {
       }
     }
 
+    @Override
+    public int streamRawBytes(byte[] bytes, int offset, int length) throws IOException {
+      checkStreamingReadArgs(bytes, offset, length);
+      if (length == 0) {
+        return 0;
+      }
+      // Return immediately whatever is available in the buffer,
+      if (bufferSize - pos > 0) {
+        int bytesToCopy = Math.min(length, bufferSize - pos);
+        System.arraycopy(buffer, pos, bytes, offset, bytesToCopy);
+        pos += bytesToCopy;
+        return bytesToCopy;
+      }
+
+      // Read into the caller-provided buffer
+      int bytesToRead = Math.min(length, currentLimit - totalBytesRetired - pos);
+      if (bytesToRead <= 0) {
+        return -1;
+      }
+      int bytesRead = read(input, bytes, offset, bytesToRead);
+      if (bytesRead != -1) {
+        totalBytesRetired += bytesRead;
+      }
+      return bytesRead;
+    }
+
     /**
      * Exactly like readRawBytes, but caller must have already checked the fast path: (size <=
      * (bufferSize - pos) && size > 0)
@@ -2518,7 +2579,7 @@ public abstract class CodedInputStream {
         final byte[] chunk = new byte[Math.min(sizeLeft, DEFAULT_BUFFER_SIZE)];
         int tempPos = 0;
         while (tempPos < chunk.length) {
-          final int n = input.read(chunk, tempPos, chunk.length - tempPos);
+          final int n = read(input, chunk, tempPos, chunk.length - tempPos);
           if (n == -1) {
             throw InvalidProtocolBufferException.truncatedMessage();
           }
