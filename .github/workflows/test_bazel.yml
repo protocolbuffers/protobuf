@@ -109,10 +109,10 @@ jobs:
             cd examples/example_without_cc_toolchain;
             bazel build //... $BAZEL_FLAGS ${{ matrix.toolchain_resolution }};
 
-  bazel-tests:
+  bazel-tests-ubuntu:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
-    name: Bazel Tests
+    name: Bazel Tests ubuntu
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
@@ -126,3 +126,23 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "bazel-tests"
           bazel: test //bazel/...
+
+  bazel-tests-macos:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        runner: [ macos-14 ]
+    name: Bazel Tests ${{ matrix.runner }}
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v5
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel@v5
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: "bazel-tests-${{ matrix.runner }}"
+          bazel: test //bazel/...
+          version: 8.0.1
