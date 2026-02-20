@@ -51,7 +51,7 @@ absl::StatusOr<FeatureSetDefaults> ReadDefaults(absl::string_view name) {
 TEST(DefaultsTest, Check2023) {
   auto defaults = ReadDefaults("test_defaults_2023");
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults().size(), 3);
+  ASSERT_EQ(defaults->defaults().size(), 4);
   ASSERT_EQ(defaults->minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults->maximum_edition(), EDITION_2023);
 
@@ -70,7 +70,7 @@ TEST(DefaultsTest, Check2023) {
 TEST(DefaultsTest, CheckFuture) {
   auto defaults = ReadDefaults("test_defaults_future");
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults().size(), 5);
+  ASSERT_EQ(defaults->defaults().size(), 6);
   ASSERT_EQ(defaults->minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults->maximum_edition(), EDITION_99997_TEST_ONLY);
 
@@ -92,10 +92,16 @@ TEST(DefaultsTest, CheckFuture) {
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::VALUE3);
-  EXPECT_EQ(defaults->defaults()[4].edition(), EDITION_99997_TEST_ONLY);
-  EXPECT_EQ(defaults->defaults()[4].overridable_features().field_presence(),
-            FeatureSet::EXPLICIT);
+  EXPECT_EQ(defaults->defaults()[4].edition(), EDITION_UNSTABLE);
   EXPECT_EQ(defaults->defaults()[4]
+                .overridable_features()
+                .GetExtension(pb::test)
+                .new_unstable_feature(),
+            pb::UNSTABLE2);
+  EXPECT_EQ(defaults->defaults()[5].edition(), EDITION_99997_TEST_ONLY);
+  EXPECT_EQ(defaults->defaults()[5].overridable_features().field_presence(),
+            FeatureSet::EXPLICIT);
+  EXPECT_EQ(defaults->defaults()[5]
                 .overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
@@ -105,7 +111,7 @@ TEST(DefaultsTest, CheckFuture) {
 TEST(DefaultsTest, CheckFarFuture) {
   auto defaults = ReadDefaults("test_defaults_far_future");
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults().size(), 7);
+  ASSERT_EQ(defaults->defaults().size(), 8);
   ASSERT_EQ(defaults->minimum_edition(), EDITION_99997_TEST_ONLY);
   ASSERT_EQ(defaults->maximum_edition(), EDITION_99999_TEST_ONLY);
 
@@ -127,18 +133,24 @@ TEST(DefaultsTest, CheckFarFuture) {
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::VALUE3);
-  EXPECT_EQ(defaults->defaults()[4].edition(), EDITION_99997_TEST_ONLY);
-  EXPECT_EQ(defaults->defaults()[4].overridable_features().field_presence(),
-            FeatureSet::EXPLICIT);
+  EXPECT_EQ(defaults->defaults()[4].edition(), EDITION_UNSTABLE);
   EXPECT_EQ(defaults->defaults()[4]
+                .overridable_features()
+                .GetExtension(pb::test)
+                .new_unstable_feature(),
+            pb::UNSTABLE2);
+  EXPECT_EQ(defaults->defaults()[5].edition(), EDITION_99997_TEST_ONLY);
+  EXPECT_EQ(defaults->defaults()[5].overridable_features().field_presence(),
+            FeatureSet::EXPLICIT);
+  EXPECT_EQ(defaults->defaults()[5]
                 .overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::VALUE4);
-  EXPECT_EQ(defaults->defaults()[5].edition(), EDITION_99998_TEST_ONLY);
-  EXPECT_EQ(defaults->defaults()[5].overridable_features().field_presence(),
+  EXPECT_EQ(defaults->defaults()[6].edition(), EDITION_99998_TEST_ONLY);
+  EXPECT_EQ(defaults->defaults()[6].overridable_features().field_presence(),
             FeatureSet::EXPLICIT);
-  EXPECT_EQ(defaults->defaults()[5]
+  EXPECT_EQ(defaults->defaults()[6]
                 .overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
@@ -147,10 +159,10 @@ TEST(DefaultsTest, CheckFarFuture) {
 
 TEST(DefaultsTest, Embedded) {
   FeatureSetDefaults defaults;
-  ASSERT_TRUE(defaults.ParseFromArray(DEFAULTS_TEST_EMBEDDED,
-                                      sizeof(DEFAULTS_TEST_EMBEDDED) - 1))
+  ASSERT_TRUE(defaults.ParseFromString(absl::string_view(
+      DEFAULTS_TEST_EMBEDDED, sizeof(DEFAULTS_TEST_EMBEDDED) - 1)))
       << "Could not parse embedded data";
-  ASSERT_EQ(defaults.defaults().size(), 3);
+  ASSERT_EQ(defaults.defaults().size(), 4);
   ASSERT_EQ(defaults.minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults.maximum_edition(), EDITION_2023);
 
@@ -174,7 +186,7 @@ TEST(DefaultsTest, EmbeddedBase64) {
                         sizeof(DEFAULTS_TEST_EMBEDDED_BASE64) - 1},
       &data));
   ASSERT_TRUE(defaults.ParseFromString(data));
-  ASSERT_EQ(defaults.defaults().size(), 3);
+  ASSERT_EQ(defaults.defaults().size(), 4);
   ASSERT_EQ(defaults.minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults.maximum_edition(), EDITION_2023);
 
@@ -195,7 +207,7 @@ TEST(DefaultsTest, EmbeddedDecimalArray) {
   ASSERT_TRUE(defaults.ParseFromArray(kDefaultTestEmbeddedDecimalArray.data(),
                                       kDefaultTestEmbeddedDecimalArray.size()))
       << "Could not parse embedded data";
-  ASSERT_EQ(defaults.defaults().size(), 3);
+  ASSERT_EQ(defaults.defaults().size(), 4);
   ASSERT_EQ(defaults.minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults.maximum_edition(), EDITION_2023);
 
@@ -216,7 +228,7 @@ TEST(DefaultsTest, EmbeddedHexArray) {
   ASSERT_TRUE(defaults.ParseFromArray(kDefaultTestEmbeddedHexArray.data(),
                                       kDefaultTestEmbeddedHexArray.size()))
       << "Could not parse embedded data";
-  ASSERT_EQ(defaults.defaults().size(), 3);
+  ASSERT_EQ(defaults.defaults().size(), 4);
   ASSERT_EQ(defaults.minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults.maximum_edition(), EDITION_2023);
 
@@ -240,7 +252,7 @@ class OverridableDefaultsTest : public ::testing::Test {
   static void SetUpTestSuite() {
     google::protobuf::LinkExtensionReflection(pb::cpp);
     google::protobuf::LinkExtensionReflection(pb::java);
-    DescriptorPool::generated_pool();
+    (void)DescriptorPool::generated_pool();
   }
 };
 

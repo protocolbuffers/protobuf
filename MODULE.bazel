@@ -3,7 +3,7 @@
 
 module(
     name = "protobuf",
-    version = "34.0-dev",  # Automatically updated on release
+    version = "35.0-dev",  # Automatically updated on release
     compatibility_level = 1,
     repo_name = "com_google_protobuf",
 )
@@ -13,8 +13,6 @@ module(
 # https://bazel.build/versions/6.0.0/build/bzlmod#version-resolution
 # Thus the highest version in their module graph is resolved.
 
-# These dependencies must be declared before the other rules dependencies.
-bazel_dep(name = "rules_apple", version = "3.16.0", repo_name = "build_bazel_rules_apple")
 bazel_dep(name = "apple_support", version = "1.15.1", repo_name = "build_bazel_apple_support")
 
 # Keep apple_support on 1.15.1 for now to avoid this issue:
@@ -37,7 +35,7 @@ bazel_dep(name = "zlib", version = "1.3.1.bcr.5")
 
 # other dependencies
 bazel_dep(name = "bazel_features", version = "1.33.0", repo_name = "proto_bazel_features")
-bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "bazel_skylib", version = "1.9.0")
 bazel_dep(name = "jsoncpp", version = "1.9.6")
 bazel_dep(name = "rules_java", version = "8.6.1")
 bazel_dep(name = "rules_jvm_external", version = "6.7")
@@ -45,14 +43,6 @@ bazel_dep(name = "rules_kotlin", version = "1.9.6")
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.6.0")
-
-# Pin to rules_proto to 7.1.0 to avoid toolchain incompatibilities when
-# --incompatible_enable_proto_toolchain_resolution=true in Bazel 7.
-# rules_proto 7.0.2 from deps incorrectly rules_proto's toolchain_type but protobuf's toolchain, but
-# 7.1.0 uses protobuf's toolchain and toolchain_type.
-# TODO: Restore to dev_dependency once Bazel 7 is dropped.
-# rules_proto is needed for @com_google_protobuf_v25 used in //compatibility/... tests
-bazel_dep(name = "rules_proto", version = "7.1.0")
 
 bazel_dep(name = "rules_rust", version = "0.63.0", dev_dependency = True)
 bazel_dep(name = "rules_ruby", version = "0.17.3", dev_dependency = True)
@@ -115,21 +105,42 @@ register_toolchains(
     dev_dependency = True,
 )
 
-# Proto toolchains
-register_toolchains("//bazel/private/toolchains:all")
+# Define toolchains that use pre-built protoc binaries.
+prebuilt_protoc = use_extension("//bazel/private/oss/toolchains/prebuilt:protoc_extension.bzl", "protoc")
+use_repo(
+    prebuilt_protoc,
+    "prebuilt_protoc.linux_aarch_64",
+    "prebuilt_protoc.linux_ppcle_64",
+    "prebuilt_protoc.linux_s390_64",
+    "prebuilt_protoc.linux_x86_32",
+    "prebuilt_protoc.linux_x86_64",
+    "prebuilt_protoc.osx_aarch_64",
+    "prebuilt_protoc.osx_x86_64",
+    "prebuilt_protoc.win32",
+    "prebuilt_protoc.win64",
+)
+
+# This registration applies when the config_setting for prefer_prebuilt_protoc is true.
+# This is now enabled by default.
+# It can be disabled using --@protobuf//bazel/flags:prefer_prebuilt_protoc=false
+register_toolchains("//bazel/private/oss/toolchains/prebuilt:all")
+
+# From-source protobuf toolchains
+# Fallback if nothing is already registered
+register_toolchains("//bazel/private/oss/toolchains:all")
 
 SUPPORTED_PYTHON_VERSIONS = [
-    "3.9",
     "3.10",
     "3.11",
     "3.12",
     "3.13",
+    "3.14",
 ]
 
 # TODO: Replace system_python with hermetic_python.
 # TODO: Remove dev_dependency once system_python is no longer used and we support
 # python/upb in Bazel.
-system_python = use_extension("//python/dist:system_python.bzl", "system_python_extension", dev_dependency = True)
+system_python = use_extension("//python/dist:system_python.bzl", "system_python_extension")
 system_python.find(
     name = "system_python",
     minimum = "3.9",
@@ -308,21 +319,26 @@ archive_override(
     urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz"],
 )
 
+# Register C++ toolchains for cross-compilation. These are used for compiling release binaries of
+# protoc and the Python extension. They are disabled unless --//toolchain:release=true is passed.
+register_toolchains(
+    "//toolchain:osx-x86_64-toolchain",
+    "//toolchain:osx-aarch_64-toolchain",
+    "//toolchain:linux-aarch_64-toolchain",
+    "//toolchain:linux-ppcle_64-toolchain",
+    "//toolchain:linux-s390_64-toolchain",
+    "//toolchain:linux-x86_32-toolchain",
+    "//toolchain:linux-x86_64-toolchain",
+    "//toolchain:win32-toolchain",
+    "//toolchain:win64-toolchain",
+    "//toolchain:k8-toolchain",
+)
+
 # Python headers for release
 python_headers = use_extension("//python/dist:python_downloads.bzl", "python_headers", dev_dependency = True)
 python_headers.source_archive(
-    sha256 = "df796b2dc8ef085edae2597a41c1c0a63625ebd92487adaef2fed22b567873e8",
-    version = "3.9.0",
-)
-python_headers.nuget_package(
-    cpu = "i686",
-    sha256 = "229abecbe49dc08fe5709e0b31e70edfb3b88f23335ebfc2904c44f940fd59b6",
-    version = "3.9.0",
-)
-python_headers.nuget_package(
-    cpu = "x86-64",
-    sha256 = "6af58a733e7dfbfcdd50d55788134393d6ffe7ab8270effbf724bdb786558832",
-    version = "3.9.0",
+    sha256 = "c4e0cbad57c90690cb813fb4663ef670b4d0f587d8171e2c42bd4c9245bd2758",
+    version = "3.10.0",
 )
 python_headers.nuget_package(
     cpu = "i686",
@@ -337,8 +353,6 @@ python_headers.nuget_package(
 use_repo(
     python_headers,
     "nuget_python_i686_3.10.0",
-    "nuget_python_i686_3.9.0",
     "nuget_python_x86-64_3.10.0",
-    "nuget_python_x86-64_3.9.0",
-    "python-3.9.0",
+    "python-3.10.0",
 )

@@ -71,11 +71,11 @@ setup(
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
         'Programming Language :: Python :: 3.13',
+        'Programming Language :: Python :: 3.14',
     ],
     packages=find_namespace_packages(include=['google*']),
     install_requires=[],
@@ -88,5 +88,5 @@ setup(
             extra_link_args=extra_link_args,
         )
     ],
-    python_requires='>=3.9',
+    python_requires='>=3.10',
 )

@@ -185,7 +185,7 @@ void SingularScalar::InThunkCc(Context& ctx,
             {"getter_thunk", ThunkName(ctx, field, "get")},
             {"setter_thunk", ThunkName(ctx, field, "set")}},
            R"cc(
-             $Scalar$ $getter_thunk$($QualifiedMsg$* msg) {
+             $Scalar$ $getter_thunk$(const $QualifiedMsg$* msg) {
                return msg->$field$();
              }
              void $setter_thunk$($QualifiedMsg$* msg, $Scalar$ val) {

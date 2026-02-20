@@ -18,7 +18,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <new>
-#include <optional>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
@@ -32,8 +31,8 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/config.h"
-#include "absl/meta/type_traits.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 
 #if defined(ABSL_HAVE_ADDRESS_SANITIZER)
 #include <sanitizer/asan_interface.h>
@@ -42,6 +41,10 @@
 // must be last
 #include "google/protobuf/port_def.inc"
 
+
+#if defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
+#define PROTOBUF_MESSAGE_GLOBALS
+#endif  // PROTOBUF_ENABLE_STABLE_EXPERIMENTS
 
 namespace google {
 namespace protobuf {
@@ -222,38 +225,38 @@ inline ToRef DownCast(From& f) {
 
 // Looks up the name of `T` via RTTI, if RTTI is available.
 template <typename T>
-inline std::optional<absl::string_view> RttiTypeName() {
+inline absl::optional<absl::string_view> RttiTypeName() {
 #if PROTOBUF_RTTI
   return typeid(T).name();
 #else
-  return std::nullopt;
+  return absl::nullopt;
 #endif
 }
 
 // Helpers for identifying our supported types.
 template <typename T>
 struct is_supported_integral_type
-    : absl::disjunction<std::is_same<T, int32_t>, std::is_same<T, uint32_t>,
-                        std::is_same<T, int64_t>, std::is_same<T, uint64_t>,
-                        std::is_same<T, bool>> {};
+    : std::disjunction<std::is_same<T, int32_t>, std::is_same<T, uint32_t>,
+                       std::is_same<T, int64_t>, std::is_same<T, uint64_t>,
+                       std::is_same<T, bool>> {};
 
 template <typename T>
 struct is_supported_floating_point_type
-    : absl::disjunction<std::is_same<T, float>, std::is_same<T, double>> {};
+    : std::disjunction<std::is_same<T, float>, std::is_same<T, double>> {};
 
 template <typename T>
 struct is_supported_string_type
-    : absl::disjunction<std::is_same<T, std::string>> {};
+    : std::disjunction<std::is_same<T, std::string>> {};
 
 template <typename T>
 struct is_supported_scalar_type
-    : absl::disjunction<is_supported_integral_type<T>,
-                        is_supported_floating_point_type<T>,
-                        is_supported_string_type<T>> {};
+    : std::disjunction<is_supported_integral_type<T>,
+                       is_supported_floating_point_type<T>,
+                       is_supported_string_type<T>> {};
 
 template <typename T>
 struct is_supported_message_type
-    : absl::disjunction<std::is_base_of<MessageLite, T>> {
+    : std::disjunction<std::is_base_of<MessageLite, T>> {
   static constexpr auto force_complete_type = sizeof(T);
 };
 
@@ -266,8 +269,6 @@ enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
 
 // The maximum byte alignment we support.
 enum { kMaxMessageAlignment = 8 };
-
-inline constexpr bool EnableProtoFieldPresenceHints() { return false; }
 
 inline constexpr bool EnableStableExperiments() {
 #if defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
@@ -666,6 +667,38 @@ inline bool IsMemoryPoisoned([[maybe_unused]] const void* p) {
 #endif
 }
 
+inline constexpr bool ShouldBatchSingularString() {
+#ifdef PROTOBUF_INTERNAL_BATCH_SINGULAR_STRING
+  return true;
+#else
+  return false;
+#endif
+}
+
+inline constexpr bool ShouldBatchRepeatedString() {
+#ifdef PROTOBUF_INTERNAL_BATCH_REPEATED_STRING
+  return true;
+#else
+  return false;
+#endif
+}
+
+inline constexpr bool ShouldBatchRepeatedNumeric() {
+#ifdef PROTOBUF_INTERNAL_BATCH_REPEATED_NUMERIC
+  return true;
+#else
+  return false;
+#endif
+}
+
+inline constexpr bool UseBatchOffset() {
+#ifdef PROTOBUF_INTERNAL_USE_BATCH_OFFSET
+  return true;
+#else
+  return false;
+#endif
+}
+
 #if defined(ABSL_HAVE_THREAD_SANITIZER)
 // TODO: it would be preferable to use __tsan_external_read/
 // __tsan_external_write, but they can cause dlopen issues.
@@ -755,6 +788,9 @@ class NoopDebugCounter {
   constexpr void Inc() {}
 };
 
+// Pretty random large number that seems like a safe allocation on most systems.
+inline constexpr size_t kSafeStringSize = 50000000;
+
 // Default empty string object. Don't use this directly. Instead, call
 // GetEmptyString() to get the reference. This empty string is aligned with a
 // minimum alignment of 8 bytes to match the requirement of ArenaStringPtr.
@@ -766,11 +802,12 @@ class alignas(8) GlobalEmptyStringConstexpr {
   // Nothing to init, or destroy.
   std::string* Init() const { return nullptr; }
 
-  // Disable the optimization for MSVC.
+  // Disable the optimization for MSVC and Xtensa.
   // There are some builds where the default constructed string can't be used as
   // `constinit` even though the constructor is `constexpr` and can be used
   // during constant evaluation.
-#if !defined(_MSC_VER)
+#if !defined(_MSC_VER) && !defined(__XTENSA__)
+  // Compilation fails on Xtensa: b/467129751
   template <typename T = std::string, bool = (T(), true)>
   static constexpr std::true_type HasConstexprDefaultConstructor(int) {
     return {};
@@ -806,7 +843,8 @@ PROTOBUF_EXPORT extern GlobalEmptyString fixed_address_empty_string;
 enum class BoundsCheckMode { kNoEnforcement, kReturnDefault, kAbort };
 
 PROTOBUF_EXPORT constexpr BoundsCheckMode GetBoundsCheckMode() {
-#if defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_ABORT)
+#if defined(PROTO2_OPENSOURCE) || \
+    defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_ABORT)
   return BoundsCheckMode::kAbort;
 #elif defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_RETURN_DEFAULT)
   return BoundsCheckMode::kReturnDefault;

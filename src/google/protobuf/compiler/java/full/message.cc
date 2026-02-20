@@ -12,7 +12,6 @@
 #include "google/protobuf/compiler/java/full/message.h"
 
 #include <algorithm>
-#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -37,11 +36,10 @@
 #include "google/protobuf/compiler/java/full/message_builder.h"
 #include "google/protobuf/compiler/java/message_serialization.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/printer.h"
-#include "google/protobuf/wire_format.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
@@ -104,7 +102,7 @@ void ImmutableMessageGenerator::GenerateStaticVariables(
   if (descriptor_->containing_type() != nullptr) {
     vars["parent"] = UniqueFileScopeIdentifier(descriptor_->containing_type());
   }
-  if (NestedInFileClass(*descriptor_, /* immutable = */ true)) {
+  if (NestedInFileClass(*descriptor_)) {
     vars["private"] = "private ";
   } else {
     // We can only make these package-private since the classes that use them
@@ -179,7 +177,7 @@ void ImmutableMessageGenerator::GenerateFieldAccessorTable(
     io::Printer* printer, int* bytecode_estimate) {
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
-  if (NestedInFileClass(*descriptor_, /* immutable = */ true)) {
+  if (NestedInFileClass(*descriptor_)) {
     vars["private"] = "private ";
   } else {
     // We can only make these package-private since the classes that use them
@@ -567,7 +565,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
 
 void ImmutableMessageGenerator::GenerateMessageSerializationMethods(
     io::Printer* printer) {
-  std::unique_ptr<const FieldDescriptor*[]> sorted_fields(
+  std::vector<const FieldDescriptor*> sorted_fields(
       SortFieldsByNumber(descriptor_));
 
   printer->Print(
@@ -602,7 +600,7 @@ void ImmutableMessageGenerator::GenerateMessageSerializationMethods(
 
   GenerateSerializeFieldsAndExtensions(printer,
                                        field_generators_.field_generators(),
-                                       descriptor_, sorted_fields.get());
+                                       descriptor_, sorted_fields);
 
   if (descriptor_->options().message_set_wire_format()) {
     printer->Print("getUnknownFields().writeAsMessageSetTo(output);\n");
@@ -611,9 +609,33 @@ void ImmutableMessageGenerator::GenerateMessageSerializationMethods(
   }
 
   printer->Outdent();
+  printer->Print("}\n");
+
+  // Chunk up the getSerializedSize() into chunks to be JIT friendly.
+  constexpr int kNumFieldsPerChunk = 32;
+  int num_chunks = (descriptor_->field_count() + kNumFieldsPerChunk - 1) /
+                   kNumFieldsPerChunk;
+  for (int i = 0; i < num_chunks; ++i) {
+    printer->Print(
+        "private int computeSerializedSize_$chunk$() {\n"
+        "  int size = 0;\n",
+        "chunk", absl::StrCat(i));
+    printer->Indent();
+
+    int chunk_field_start = i * kNumFieldsPerChunk;
+    int chunk_field_end = std::min(chunk_field_start + kNumFieldsPerChunk,
+                                   descriptor_->field_count());
+
+    for (int j = chunk_field_start; j < chunk_field_end; ++j) {
+      field_generators_.get(sorted_fields[j])
+          .GenerateSerializedSizeCode(printer);
+    }
+    printer->Outdent();
+    printer->Print("  return size;\n");
+    printer->Print("}\n");
+  }
+
   printer->Print(
-      "}\n"
-      "\n"
       "@java.lang.Override\n"
       "public int getSerializedSize() {\n"
       "  int size = memoizedSize;\n"
@@ -623,8 +645,9 @@ void ImmutableMessageGenerator::GenerateMessageSerializationMethods(
 
   printer->Print("size = 0;\n");
 
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    field_generators_.get(sorted_fields[i]).GenerateSerializedSizeCode(printer);
+  for (int i = 0; i < num_chunks; ++i) {
+    printer->Print("size += computeSerializedSize_$chunk$();\n", "chunk",
+                   absl::StrCat(i));
   }
 
   if (descriptor_->extension_range_count() > 0) {
@@ -785,6 +808,17 @@ void ImmutableMessageGenerator::GenerateDescriptorMethods(
         "fileclass", name_resolver_->GetImmutableClassName(descriptor_->file()),
         "identifier", UniqueFileScopeIdentifier(descriptor_));
   }
+
+  printer->Print(
+      "@java.lang.Override\n"
+      "public com.google.protobuf.Descriptors.Descriptor "
+      "getDescriptorForType() {\n"
+      "  return $fileclass$.internal_$identifier$_descriptor;\n"
+      "}\n"
+      "\n",
+      "fileclass", name_resolver_->GetImmutableClassName(descriptor_->file()),
+      "identifier", UniqueFileScopeIdentifier(descriptor_));
+
   std::vector<const FieldDescriptor*> map_fields;
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
@@ -841,7 +875,32 @@ void ImmutableMessageGenerator::GenerateIsInitialized(io::Printer* printer) {
   // Memoizes whether the protocol buffer is fully initialized (has all
   // required fields). -1 means not yet computed. 0 means false and 1 means
   // true.
-  printer->Print("private byte memoizedIsInitialized = -1;\n");
+  if (internal::IsOss()) {
+    // Leave this as non-transient in OSS to avoid breaking customers that are
+    // holding GSON wrong.
+    // TODO: Remove this in a future PBJ breaking release.
+    printer->Print("private byte memoizedIsInitialized = -1;\n");
+  } else {
+    // If the message transitively has no required fields or extensions,
+    // isInitialized() is always true.
+    if (!HasRequiredFields(descriptor_)) {
+      printer->Print(
+          "/**\n"
+          "  * @deprecated This always returns true for this type as it \n"
+          "  *   does not transitively contain any required fields.\n"
+          "  */\n"
+          "@java.lang.Deprecated\n"
+          "@java.lang.Override\n"
+          "public final boolean isInitialized() {\n"
+          "  return true;\n"
+          "}\n"
+          "\n");
+      return;
+    }
+
+    printer->Print("private transient byte memoizedIsInitialized = -1;\n");
+  }
+
   printer->Print(
       "@java.lang.Override\n"
       "public final boolean isInitialized() {\n");

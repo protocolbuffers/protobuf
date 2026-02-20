@@ -9,7 +9,9 @@ use googletest::prelude::*;
 use protobuf_cpp::prelude::*;
 
 use protobuf_cpp::__internal::runtime::PtrAndLen;
-use protobuf_cpp::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop};
+use protobuf_cpp::{
+    MessageDescriptorInterop, MessageMutInterop, MessageViewInterop, OwnedMessageInterop,
+};
 use std::ffi::c_void;
 
 use interop_test_rust_proto::{InteropTestMessage, InteropTestMessageMut, InteropTestMessageView};
@@ -40,6 +42,8 @@ unsafe extern "C" {
     fn GetBytesExtension(msg: *const c_void) -> PtrAndLen;
 
     fn GetConstStaticInteropTestMessage() -> *const c_void;
+
+    fn IsExpectedDescriptor(provided: *const c_void) -> bool;
 }
 
 #[gtest]
@@ -154,4 +158,11 @@ fn view_of_const_static() {
     };
     assert_eq!(view.i64(), 0);
     assert_eq!(view.default_int32(), 41);
+}
+
+#[gtest]
+fn descriptor_interop() {
+    let descriptor = InteropTestMessage::__unstable_get_descriptor();
+    let result = unsafe { IsExpectedDescriptor(descriptor) };
+    assert!(result);
 }

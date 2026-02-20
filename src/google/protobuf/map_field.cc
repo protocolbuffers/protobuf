@@ -346,8 +346,12 @@ void MapFieldBase::SyncRepeatedFieldWithMapNoLock() {
   SetMapIteratorValue(&it);
   end.iter_ = UntypedMapBase::EndIterator();
 
+  Arena* arena = this->arena();
   for (; !EqualIterator(it, end); IncreaseIterator(&it)) {
-    Message* new_entry = prototype->New(arena());
+    Message* new_entry = reinterpret_cast<Message*>(
+        rep.AddInternal(arena, [prototype](Arena* arena, void*& ptr) {
+          ptr = prototype->New(arena);
+        }));
 
     const MapKey& map_key = it.GetKey();
     switch (key_des->cpp_type()) {
@@ -410,8 +414,6 @@ void MapFieldBase::SyncRepeatedFieldWithMapNoLock() {
         break;
       }
     }
-
-    rep.AddAllocated(new_entry);
   }
 }
 

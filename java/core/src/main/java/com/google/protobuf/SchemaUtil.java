@@ -19,6 +19,7 @@ import java.util.RandomAccess;
 /** Helper methods used by schemas. */
 @ExperimentalApi
 @CheckReturnValue
+@SuppressWarnings({"unchecked", "rawtypes"})
 final class SchemaUtil {
   private static final Class<?> GENERATED_MESSAGE_CLASS = getGeneratedMessageClass();
   private static final UnknownFieldSchema<?, ?> UNKNOWN_FIELD_SET_FULL_SCHEMA =

@@ -18,6 +18,7 @@ import java.util.Map;
 /** An adapter between the {@link Writer} interface and {@link CodedOutputStream}. */
 @CheckReturnValue
 @ExperimentalApi
+@SuppressWarnings({"unchecked", "rawtypes"})
 final class CodedOutputStreamWriter implements Writer {
   private final CodedOutputStream output;
 

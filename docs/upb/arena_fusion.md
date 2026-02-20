@@ -9,7 +9,7 @@ in Visual Studio Code:
   https://marketplace.visualstudio.com/items?itemName=shd101wyy.markdown-preview-enhanced
 --->
 
-# μpb Arena Fusion
+# μpb Arena Fusion and References
 
 μpb generally follows a thread-compatibility model where only operations on a
 `const` pointer may occur concurrently from multiple threads; non-const
@@ -32,7 +32,8 @@ in synchronizing lifetimes from multiple things observing the same arena (which
 may be a non-`const` pointer for multiple writers in a single threaded context,
 or a `const` pointer for multiple readers in a multithreaded context).
 
-To be usable everywhere, it has a lock-free implementation, documented below.
+To be usable everywhere, fusion has a lock-free implementation, documented
+below.
 
 ## Data Structure
 
@@ -60,8 +61,8 @@ a subset of fused arenas while racing with fuse calls.
 
 ## Finding the root
 
-Each set of fused arenas is uniquely identified by the root node of its tree.
-To find the root for a given arena, traverse the `parent_or_count` pointer until
+Each set of fused arenas is uniquely identified by the root node of its tree. To
+find the root for a given arena, traverse the `parent_or_count` pointer until
 you reach a node with a count instead of a parent pointer - that's the root. To
 avoid expensive lookups if frequently repeated, this data structure uses path
 splitting to halve the distance from the root for every node traversed.
@@ -260,6 +261,30 @@ C -> B [weight=0.001, color="red"]
 }
 ```
 
+## One-Way References
+
+Fusion creates a bi-directional lifetime dependency between arenas: fused arenas
+will have the same lifetime. In some cases, only a one-way dependency is needed.
+If messages in arena A contain pointers to messages in arena B but not the
+reverse, then arena B only needs to live at least as long as arena A.
+
+`upb_Arena_RefArena(A, B)` establishes such a one-way dependency by having arena
+`A` increment `B`'s refcount. When arena A is freed, it releases its reference
+on `B`. This is implemented by allocating a special block in `A` that holds a
+pointer to `B`; this block is processed during `upb_Arena_Free(A)`. Care is
+taken to ensure that these blocks are processed before the memory blocks
+containing them are freed from the underlying allocator.
+
+Unlike fusion, `upb_Arena_RefArena(A, B)` is not thread-safe when called
+concurrently with other operations on arena `A`, but it is thread-safe on `B`.
+
+It is an error to create cycles of references (e.g., `upb_Arena_RefArena(A, B);
+upb_Arena_RefArena(B, A)`), or to create a reference between arenas that are
+fused. Since fusion creates a bi-directional dependency, fusing arenas A and B
+and calling `upb_Arena_RefArena(B, A)` would create a cycle A <-> B -> A. In
+debug builds, upb checks for such cycles, with the implementation documented
+below.
+
 ## Counting allocated space
 
 Traversing the linked list while the arenas are still live can be tricky, as we
@@ -271,3 +296,100 @@ fuse operation that joined them is still in progress. But counting allocated
 space is always consistent with itself and any fully complete fuses - nodes are
 only appended or prepended to the list, so starting the traversal at the same
 point each time guarantees that future scans see a superset of previous ones.
+Referenced arenas are not included in the count of allocated space.
+
+## Detecting reference cycles
+
+To help prevent memory leaks from uncollectable arenas, upb checks for cycles in
+debug builds when creating a reference or fusing arenas. A cycle can be formed
+purely by references (eg. `A->B->A`) or by a combination of references and
+fusions (eg. `Fuse(A, B)`, then `RefArena(B, A)` creates the cycle `A<->B->A`).
+If such cycles were permitted, the arenas involved could never be freed.
+
+After performing a fusion or adding a reference, the cycle detector runs. This
+check is performed after the operation because cycle detection cannot be
+performed atomically; if the check was done prior to the fusion or reference, we
+could miss a case where two concurrent operations resulted in a cycle. Both
+would check for a possible cycle, find none, and then proceed.
+
+Consider arenas with references `A->B->C`.
+
+```dot
+digraph {
+  rankdir=LR;
+  A; B; C;
+  A -> B [label="ref", color=blue];
+  B -> C [label="ref", color=blue];
+}
+```
+
+If we attempt `RefArena(C, A)`, the call will add ref `C->A`, then check that
+`C` is not reachable from `A`.
+
+```dot
+digraph {
+  rankdir=LR;
+  A -> B [label="ref", color=blue];
+  B -> C [label="ref", color=blue];
+  C -> A [label="ref", color=blue];
+}
+```
+
+The traversal will reveal `A -> B -> C` and trigger an assertion failure.
+
+If instead attempt `Fuse(A, C)`, fusion will occur:
+
+```dot
+digraph {
+  rankdir=LR;
+  node [shape=box, style=rounded];
+  A -> B [label="ref", color=blue];
+  B -> C [label="ref", color=blue];
+  C -> A [label="fuse", dir=both, color=red];
+}
+```
+
+The traversal will find `C <-> A -> B -> C`, and trigger an assertion failure.
+
+### Cycle detection algorithm
+
+Cycles are detected with a non-memoizing recursive depth-first search (DFS). A
+path can traverse fusions bi-directionally and references uni-directionally to
+find a cycle that contains at least one unidirectional edge. While this is not
+asymptotically optimal as it may traverse the same set of nodes numerous times,
+it doesn't require allocating memory, making it less intrusive as a debug-only
+check. It also may result in infinite recursion if a cycle is created on one
+thread while another thread is performing cycle checks, but that would have
+caused an assertion failure anyway.
+
+#### Fast check for fusion
+
+If a directional ref was added and `from` and `to` are already fused
+(`upb_Arena_IsFused(from, to)` returns true), they are mutually reachable, so a
+path containing a directed edge exists and the assertion fails.
+
+#### Traversing fusion group members
+
+To check all references originating from `from`'s fusion group, we must visit
+every arena fused with `from`. Because fusion operations can race with this
+check, we cannot rely on traversing from the fusion root, which might change.
+Instead, like `upb_Arena_SpaceAllocated`, the algorithm finds members of
+`from`'s fusion group by first traversing backwards from `from` using
+`previous_or_tail`, then iterates forwards.
+
+#### Traverse fusion group and DFS on references
+
+From the head of the list segment, we traverse forwards using `next` to visit
+all nodes in `from`'s fusion group. For each arena `X` in this group, we iterate
+through all of its outgoing references (the list of arenas `Y` such that
+`RefArena(X, Y)` was called). For each such reference `X -> Y`:
+
+*   If `Y == to`, then `to` is directly referenced, so a path exists. We return
+    `true` and eventually trigger an assertion failure.
+*   If `Y != to`, we recurse to continue the depth-first search from `Y`,
+    finding members of its fusion group and inspecting their outgoing
+    references. If this recursive call returns `true`, then `to` is reachable
+    via `Y`, and we return `true` to trigger an assertion failure.
+
+If we explore all arenas in the fusion group and all their transitive references
+without finding a path to `to`, no path exists, and we return `false`.

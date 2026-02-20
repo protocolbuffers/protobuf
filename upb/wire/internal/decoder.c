@@ -23,21 +23,8 @@ const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
   UPB_ASSERT(m->UPB_PRIVATE(required_count));
   if (UPB_UNLIKELY(d->options & kUpb_DecodeOption_CheckRequired)) {
     d->missing_required =
+        d->missing_required ||
         !UPB_PRIVATE(_upb_Message_IsInitializedShallow)(msg, m);
   }
   return ptr;
-}
-
-UPB_NORETURN void* _upb_Decoder_ErrorJmp(upb_Decoder* d,
-                                         upb_DecodeStatus status) {
-  UPB_ASSERT(status != kUpb_DecodeStatus_Ok);
-  d->status = status;
-  UPB_LONGJMP(d->err, 1);
-}
-
-UPB_NOINLINE
-const char* _upb_Decoder_IsDoneFallback(upb_EpsCopyInputStream* e,
-                                        const char* ptr, int overrun) {
-  return _upb_EpsCopyInputStream_IsDoneFallbackInline(
-      e, ptr, overrun, _upb_Decoder_BufferFlipCallback);
 }

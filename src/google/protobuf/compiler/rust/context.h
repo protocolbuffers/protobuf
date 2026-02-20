@@ -49,6 +49,7 @@ struct Options {
   Kernel kernel;
   std::string mapping_file_path;
   bool strip_nonfunctional_codegen = false;
+  bool force_lite_runtime = false;
 
   // The name to use for the generated entry point rs file.
   std::string generated_entry_point_rs_file_name = "generated.rs";

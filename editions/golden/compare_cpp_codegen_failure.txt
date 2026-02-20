@@ -42,9 +42,9 @@
    };
 -  // optional int32 int32_field = 1;
 +  // int32 int32_field = 1;
-   bool has_int32_field() const;
+   [[nodiscard]] bool has_int32_field()
+       const;
    void clear_int32_field() ;
-   ::int32_t int32_field() const;
 @@ @@
  
  // SimpleProto3

@@ -9,6 +9,7 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static com.google.protobuf.WireFormat.FIXED64_SIZE;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThrows;
 
@@ -27,6 +28,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -149,7 +151,7 @@ public class CodedInputStreamTest {
     private int readCalls;
 
     public SmallBlockInputStream(byte[] data, int blockSize) {
-      super(new ByteArrayInputStream(data));
+      super(new ByteArrayInputStreamMatchingZeroLengthReadSemantics(data));
       this.blockSize = blockSize;
     }
 
@@ -217,7 +219,7 @@ public class CodedInputStreamTest {
     // array first.
     byte[] longerData = new byte[data.length + 1];
     System.arraycopy(data, 0, longerData, 0, data.length);
-    InputStream rawInput = new ByteArrayInputStream(longerData);
+    InputStream rawInput = new ByteArrayInputStreamMatchingZeroLengthReadSemantics(longerData);
     assertThat(CodedInputStream.readRawVarint32(rawInput)).isEqualTo((int) value);
     assertThat(rawInput.available()).isEqualTo(1);
   }
@@ -253,7 +255,8 @@ public class CodedInputStreamTest {
 
     // Make sure we get the same error when reading direct from an InputStream.
     try {
-      CodedInputStream.readRawVarint32(new ByteArrayInputStream(data));
+      CodedInputStream.readRawVarint32(
+          new ByteArrayInputStreamMatchingZeroLengthReadSemantics(data));
       assertWithMessage("Should have thrown an exception.").fail();
     } catch (InvalidProtocolBufferException e) {
       assertThat(e).hasMessageThat().isEqualTo(expected.getMessage());
@@ -302,6 +305,15 @@ public class CodedInputStreamTest {
             | (0x05L << 49)
             | (0x26L << 56)
             | (0x01L << 63));
+
+    assertReadVarint(bytes(0x85, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x00), 5);
+    assertReadVarint(bytes(0x85, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x02), 5);
+
+    // Test that the last bit decides the sign of the long value.
+    assertReadVarint(
+        bytes(0x85, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x01), Long.MIN_VALUE + 5L);
+    assertReadVarint(
+        bytes(0x85, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x03), Long.MIN_VALUE + 5L);
 
     // Failures
     assertReadVarintFailure(
@@ -490,6 +502,175 @@ public class CodedInputStreamTest {
       byte[] remaining = decoder.readRawBytes(10);
       assertArrayEquals(Arrays.copyOfRange(blob, blobSize - 10, blobSize), remaining);
     }
+  }
+
+  @Test
+  public void testStreamRawBytesWholeResult() throws Exception {
+    // Allocate and initialize a 1MB blob.
+    int blobSize = 1 << 20;
+    byte[] blob = new byte[blobSize];
+    for (int i = 0; i < blob.length; i++) {
+      blob[i] = (byte) i;
+    }
+
+    for (InputType inputType : InputType.values()) {
+      try {
+        CodedInputStream decoder = inputType.newDecoder(blob);
+        decoder.pushLimit(123456);
+        decoder.skipRawBytes(39394);
+        byte[] results = new byte[blob.length];
+        int totalBytesRead = 0;
+        while (true) {
+          int bytesRead =
+              decoder.streamRawBytes(
+                  results, totalBytesRead, Math.min(results.length - totalBytesRead, 45));
+          if (bytesRead == -1) {
+            break;
+          }
+          totalBytesRead += bytesRead;
+        }
+        assertArrayEquals(
+            Arrays.copyOfRange(blob, 39394, 123456),
+            Arrays.copyOfRange(results, 0, 123456 - 39394));
+        // Verify we didn't read past the length arg
+        for (int i = 123456 - 39384; i > results.length; i++) {
+          assertThat(results[i]).isEqualTo(0);
+        }
+      } catch (Throwable e) {
+        e.addSuppressed(new RuntimeException("With stream type " + inputType));
+        throw e;
+      }
+    }
+  }
+
+  /** Match the InputStream contract around reading zero bytes at a time */
+  @Test
+  public void testStreamZeroBytes() throws Exception {
+    byte[] blob = new byte[0];
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      assertThat(decoder.streamRawBytes(new byte[4], 0, 0)).isEqualTo(0);
+    }
+    blob = new byte[4];
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      decoder.pushLimit(0);
+      assertThat(decoder.streamRawBytes(new byte[4], 0, 0)).isEqualTo(0);
+    }
+    blob = new byte[4];
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      decoder.skipRawBytes(4);
+      assertThat(decoder.streamRawBytes(new byte[4], 0, 0)).isEqualTo(0);
+    }
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      assertThat(decoder.streamRawBytes(new byte[0], 0, 0)).isEqualTo(0);
+    }
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      assertThat(decoder.streamRawBytes(new byte[5], 5, 0)).isEqualTo(0);
+    }
+  }
+
+  @Test
+  public void testBoundsChecksStreamingRead() throws Exception {
+    // We throw IndexOutOfBoundsException for cases where the provided args are outside the provided
+    // array, to match InputStream's behavior
+    byte[] blob = new byte[4];
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      assertThrows(
+          IndexOutOfBoundsException.class, () -> decoder.streamRawBytes(new byte[0], 0, 15));
+    }
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      assertThrows(
+          IndexOutOfBoundsException.class, () -> decoder.streamRawBytes(new byte[5], 5, 15));
+    }
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      assertThrows(
+          IndexOutOfBoundsException.class, () -> decoder.streamRawBytes(new byte[5], -1, 2));
+    }
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      assertThrows(
+          IndexOutOfBoundsException.class, () -> decoder.streamRawBytes(new byte[5], 2, -1));
+    }
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      assertThrows(
+          IndexOutOfBoundsException.class, () -> decoder.streamRawBytes(new byte[5], -2, -1));
+    }
+  }
+
+  @Test
+  public void testStreamRawBytesShortRead() throws Exception {
+    // 10 bytes of data
+    byte[] data = new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    // SmallBlockInputStream with block size 4 (to limit the initial fill)
+    SmallBlockInputStream is = new SmallBlockInputStream(data, 4);
+    // CodedInputStream with buffer size 4
+    CodedInputStream input = CodedInputStream.newInstance(is, 4);
+
+    // Read 1 byte. This should trigger a buffer refill of 4 bytes.
+    assertThat(input.readRawByte()).isEqualTo((byte) 0);
+
+    // We expect 1 read call so far.
+    assertThat(is.readCalls).isEqualTo(1);
+
+    // Buffer now contains [1, 2, 3]. pos=1, limit=4.
+    // Request 5 bytes.
+    byte[] buffer = new byte[5];
+    int bytesRead = input.streamRawBytes(buffer, 0, 5);
+
+    // It should return the 3 bytes available in the buffer.
+    assertThat(bytesRead).isEqualTo(3);
+    assertThat(buffer[0]).isEqualTo((byte) 1);
+    assertThat(buffer[1]).isEqualTo((byte) 2);
+    assertThat(buffer[2]).isEqualTo((byte) 3);
+
+    // It should NOT have hit the stream again.
+    assertThat(is.readCalls).isEqualTo(1);
+  }
+
+  @Test
+  public void testNpeStreamingRead() throws Exception {
+    byte[] blob = new byte[4];
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream decoder = inputType.newDecoder(blob);
+      assertThrows(NullPointerException.class, () -> decoder.streamRawBytes(null, 0, 15));
+    }
+  }
+
+  @Test
+  public void testStreamRawBytesPropagatesInvalidProtocolBufferException() throws Exception {
+    InputStream throwingStream =
+        new InputStream() {
+          @Override
+          public int read() throws IOException {
+            throw new InvalidProtocolBufferException("Test exception");
+          }
+
+          @Override
+          public int read(byte[] b, int off, int len) throws IOException {
+            throw new InvalidProtocolBufferException("Test exception");
+          }
+        };
+
+    // Test the streaming variant: readRawBytes(byte[], int, int)
+    CodedInputStream input1 = CodedInputStream.newInstance(throwingStream);
+    InvalidProtocolBufferException thrown1 =
+        assertThrows(
+            InvalidProtocolBufferException.class, () -> input1.streamRawBytes(new byte[10], 0, 10));
+    assertThat(thrown1.getThrownFromInputStream()).isTrue();
+
+    // Test the non-streaming variant: readRawBytes(int)
+    CodedInputStream input2 = CodedInputStream.newInstance(throwingStream);
+    InvalidProtocolBufferException thrown2 =
+        assertThrows(InvalidProtocolBufferException.class, () -> input2.readRawBytes(10));
+    assertThat(thrown2.getThrownFromInputStream()).isTrue();
   }
 
   /** Skipping a huge blob should not allocate excessive memory, so there should be no limit */
@@ -791,13 +972,16 @@ public class CodedInputStreamTest {
             InvalidProtocolBufferException.class,
             () ->
                 MapContainer.parseFrom(
-                    new ByteArrayInputStream(NESTING_SGROUP_WITH_INITIAL_BYTES)));
+                    new ByteArrayInputStreamMatchingZeroLengthReadSemantics(
+                        NESTING_SGROUP_WITH_INITIAL_BYTES)));
     Throwable mergeFromThrown =
         assertThrows(
             InvalidProtocolBufferException.class,
             () ->
                 MapContainer.newBuilder()
-                    .mergeFrom(new ByteArrayInputStream(NESTING_SGROUP_WITH_INITIAL_BYTES)));
+                    .mergeFrom(
+                        new ByteArrayInputStreamMatchingZeroLengthReadSemantics(
+                            NESTING_SGROUP_WITH_INITIAL_BYTES)));
 
     assertThat(parseFromThrown)
         .hasMessageThat()
@@ -809,7 +993,8 @@ public class CodedInputStreamTest {
 
   @Test
   public void testMaliciousSGroupTags_inputStream_skipMessage() throws Exception {
-    ByteArrayInputStream inputSteam = new ByteArrayInputStream(NESTING_SGROUP);
+    InputStream inputSteam =
+        new ByteArrayInputStreamMatchingZeroLengthReadSemantics(NESTING_SGROUP);
     CodedInputStream input = CodedInputStream.newInstance(inputSteam);
     CodedOutputStream output = CodedOutputStream.newInstance(new byte[NESTING_SGROUP.length]);
 
@@ -977,7 +1162,9 @@ public class CodedInputStreamTest {
         inputStreamBufferLength <= rawInput.length + 1;
         inputStreamBufferLength++) {
       CodedInputStream input =
-          CodedInputStream.newInstance(new ByteArrayInputStream(rawInput), inputStreamBufferLength);
+          CodedInputStream.newInstance(
+              new ByteArrayInputStreamMatchingZeroLengthReadSemantics(rawInput),
+              inputStreamBufferLength);
       input.setSizeLimit(rawInput.length - 1);
       input.readString();
       input.readString();
@@ -992,7 +1179,9 @@ public class CodedInputStreamTest {
 
   @Test
   public void testIsAtEnd() throws Exception {
-    CodedInputStream input = CodedInputStream.newInstance(new ByteArrayInputStream(new byte[5]));
+    CodedInputStream input =
+        CodedInputStream.newInstance(
+            new ByteArrayInputStreamMatchingZeroLengthReadSemantics(new byte[5]));
     try {
       for (int i = 0; i < 5; i++) {
         assertThat(input.isAtEnd()).isFalse();
@@ -1017,7 +1206,9 @@ public class CodedInputStreamTest {
     output.flush();
 
     byte[] rawInput = rawOutput.toByteArray();
-    CodedInputStream input = CodedInputStream.newInstance(new ByteArrayInputStream(rawInput));
+    CodedInputStream input =
+        CodedInputStream.newInstance(
+            new ByteArrayInputStreamMatchingZeroLengthReadSemantics(rawInput));
     // The length of the whole rawInput
     input.setSizeLimit(11);
     // Some number that is smaller than the rawInput's length
@@ -1251,7 +1442,7 @@ public class CodedInputStreamTest {
 
     CodedInputStream input =
         CodedInputStream.newInstance(
-            new ByteArrayInputStream(data) {
+            new ByteArrayInputStreamMatchingZeroLengthReadSemantics(data) {
               @Override
               public synchronized int available() {
                 return 0;
@@ -1276,7 +1467,7 @@ public class CodedInputStreamTest {
 
     CodedInputStream input =
         CodedInputStream.newInstance(
-            new ByteArrayInputStream(data) {
+            new ByteArrayInputStreamMatchingZeroLengthReadSemantics(data) {
               @Override
               public synchronized int available() {
                 return 0;
@@ -1354,8 +1545,9 @@ public class CodedInputStreamTest {
     for (InputType inputType : InputType.values()) {
       if (inputType == InputType.STREAM
           || inputType == InputType.STREAM_ITER_DIRECT
-          || inputType == InputType.ITER_DIRECT) {
-        // Aliasing doesn't apply to stream-backed CIS.
+          || inputType == InputType.ITER_DIRECT
+          || inputType == InputType.NIO_DIRECT) {
+        // Aliasing doesn't apply to stream-backed or direct-backed CIS.
         continue;
       }
 
@@ -1559,7 +1751,9 @@ public class CodedInputStreamTest {
   @Test
   public void testSkipPastEndOfByteArrayInput() throws Exception {
     try {
-      CodedInputStream.newInstance(new ByteArrayInputStream(new byte[100])).skipRawBytes(101);
+      CodedInputStream.newInstance(
+              new ByteArrayInputStreamMatchingZeroLengthReadSemantics(new byte[100]))
+          .skipRawBytes(101);
       assertWithMessage("Should have thrown an exception").fail();
     } catch (InvalidProtocolBufferException e) {
       // Expected
@@ -1570,11 +1764,11 @@ public class CodedInputStreamTest {
   public void testMaliciousInputStream() throws Exception {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     CodedOutputStream codedOutputStream = CodedOutputStream.newInstance(outputStream);
-    codedOutputStream.writeByteArrayNoTag(new byte[] {0x0, 0x1, 0x2, 0x3, 0x4, 0x5});
+    codedOutputStream.writeByteArrayNoTag(new byte[] {0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8});
     codedOutputStream.flush();
     final List<byte[]> maliciousCapture = new ArrayList<>();
     InputStream inputStream =
-        new ByteArrayInputStream(outputStream.toByteArray()) {
+        new ByteArrayInputStreamMatchingZeroLengthReadSemantics(outputStream.toByteArray()) {
           @Override
           public synchronized int read(byte[] b, int off, int len) {
             maliciousCapture.add(b);
@@ -1650,6 +1844,86 @@ public class CodedInputStreamTest {
       assertWithMessage("Should have thrown an exception").fail();
     } catch (InvalidProtocolBufferException ex) {
       // Expected.
+    }
+  }
+
+  @Test
+  public void testCodedInputStreamWithEmptyBuffers_isAtEnd() throws Exception {
+    ArrayList<ByteBuffer> inputList = new ArrayList<>();
+    inputList.add(ByteBuffer.wrap(new byte[0]));
+    CodedInputStream cis = CodedInputStream.newInstance(inputList);
+    assertThat(cis.isAtEnd()).isTrue();
+  }
+
+  @Test
+  public void testCodedInputStreamWithEmptyBuffers_isAtEndAfterRead() throws Exception {
+    ArrayList<ByteBuffer> inputList = new ArrayList<>();
+    inputList.add(ByteBuffer.wrap(new byte[4096]));
+    inputList.add(ByteBuffer.wrap(new byte[0]));
+    CodedInputStream cis = CodedInputStream.newInstance(inputList);
+    cis.readRawBytes(4096);
+    assertThat(cis.isAtEnd()).isTrue();
+  }
+
+  @Test
+  public void testStreamDecoderReadFixed64_inputTooSmall(@TestParameter boolean bufferTooSmall)
+      throws Exception {
+    byte[] data = bytes(0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12);
+    InputStream input = new ByteArrayInputStreamMatchingZeroLengthReadSemantics(data);
+    CodedInputStream cis =
+        CodedInputStream.newInstance(input, FIXED64_SIZE - (bufferTooSmall ? 1 : 0));
+    try {
+      cis.readFixed64();
+      assertWithMessage("Should have thrown an exception").fail();
+    } catch (InvalidProtocolBufferException expected) {
+      assertThat(expected)
+          .hasMessageThat()
+          .isEqualTo(InvalidProtocolBufferException.truncatedMessage().getMessage());
+    }
+  }
+
+  @Test
+  public void testStreamDecoderReadFixed64_bufferBounds(@TestParameter boolean bufferTooSmall)
+      throws Exception {
+    byte[] data = bytes(0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12);
+    InputStream input = new ByteArrayInputStreamMatchingZeroLengthReadSemantics(data);
+    CodedInputStream cis =
+        CodedInputStream.newInstance(input, FIXED64_SIZE - (bufferTooSmall ? 1 : 0));
+    assertThat(cis.readFixed64()).isEqualTo(0x123456789abcdef0L);
+  }
+
+  /**
+   * A {@link ByteArrayInputStream} that matches the behavior of {@link
+   * InputStream#read(byte[],int,int)} when the requested length is 0.
+   */
+  private static class ByteArrayInputStreamMatchingZeroLengthReadSemantics
+      extends ByteArrayInputStream {
+    private ByteArrayInputStreamMatchingZeroLengthReadSemantics(byte[] data) {
+      super(data);
+    }
+
+    @Override
+    public synchronized int read(byte[] b, int off, int len) {
+      // Inline Objects.checkFromIndexSize() which is API 30+.
+      if ((b.length | off | len) < 0 || len > b.length - off) {
+        throw new IndexOutOfBoundsException();
+      }
+      // Eagerly return 0 if the requested length is 0 to match InputStream behavior.
+      if (len == 0) {
+        return 0;
+      }
+
+      if (pos >= count) {
+        return -1;
+      }
+
+      int avail = count - pos;
+      if (len > avail) {
+        len = avail;
+      }
+      System.arraycopy(buf, pos, b, off, len);
+      pos += len;
+      return len;
     }
   }
 }

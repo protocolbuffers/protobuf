@@ -649,7 +649,7 @@ def _test_experimental_proto_descriptor_sets_include_source_info(name):
         name = name,
         target = name + "_a_proto",
         impl = _test_experimental_proto_descriptor_sets_include_source_info_impl,
-        config_settings = {"//command_line_option:experimental_proto_descriptor_sets_include_source_info": "true"},
+        config_settings = {"//bazel/flags:experimental_proto_descriptor_sets_include_source_info": True},
     )
 
 def _test_experimental_proto_descriptor_sets_include_source_info_impl(env, target):

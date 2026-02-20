@@ -205,6 +205,8 @@ enum ForeignEnumEdition2023 {
 
 extend TestAllTypesEdition2023 {
   int32 extension_int32 = 120;
+  string extension_string = 133;
+  bytes extension_bytes = 134;
 }
 
 message GroupLikeType {

@@ -6,10 +6,12 @@
 // https://developers.google.com/open-source/licenses/bsd
 //
 // This file contains definitions for the descriptors, so they can be used
-// without importing descriptor.h
+// without importing descriptor.h inside the lite runtime.
+// Users should include the public APIs in `descriptor.h`.
 
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_LITE_H__
 #define GOOGLE_PROTOBUF_DESCRIPTOR_LITE_H__
+
 
 namespace google {
 namespace protobuf {

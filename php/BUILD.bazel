@@ -19,8 +19,6 @@ _RUNTIME_SOURCES = [
     "src/Google/Protobuf/DescriptorPool.php",
     "src/Google/Protobuf/EnumDescriptor.php",
     "src/Google/Protobuf/EnumValueDescriptor.php",
-    "src/Google/Protobuf/Field_Cardinality.php",
-    "src/Google/Protobuf/Field_Kind.php",
     "src/Google/Protobuf/FieldDescriptor.php",
     "src/Google/Protobuf/Internal/AnyBase.php",
     "src/Google/Protobuf/Internal/CodedInputStream.php",
@@ -48,7 +46,6 @@ _RUNTIME_SOURCES = [
     "src/Google/Protobuf/Internal/OneofDescriptor.php",
     "src/Google/Protobuf/Internal/OneofField.php",
     "src/Google/Protobuf/Internal/RawInputStream.php",
-    "src/Google/Protobuf/Internal/RepeatedField.php",
     "src/Google/Protobuf/Internal/RepeatedFieldIter.php",
     "src/Google/Protobuf/Internal/TimestampBase.php",
     "src/Google/Protobuf/OneofDescriptor.php",
@@ -194,36 +191,6 @@ staleness_test(
     ) + WKT_GENERATED_FILES + DESCRIPTOR_GENERATED_FILES,
     generated_pattern = "generated/%s",
     tags = ["manual"],
-)
-
-################################################################################
-# Distribution files
-################################################################################
-
-pkg_files(
-    name = "dist_files",
-    srcs = glob([
-        "ext/google/protobuf/**/*",
-        "tests/*.php",
-        "tests/*.sh",
-        "tests/generated_previous/**/*.php",
-        "tests/proto/**/*.proto",
-        "tests/proto_previous/*.proto",
-    ]) + [
-        "BUILD.bazel",
-        "README.md",
-        "REFCOUNTING.md",
-        "composer.json",
-        "generate_descriptor_protos.sh",
-        "generate_test_protos.sh",
-        "release.sh",
-        "src/phpdoc.dist.xml",
-        "tests/valgrind.supp",
-        ":source_files",
-    ],
-    prefix = "php",
-    strip_prefix = strip_prefix.from_pkg(""),
-    visibility = ["//pkg:__pkg__"],
 )
 
 ################################################################################

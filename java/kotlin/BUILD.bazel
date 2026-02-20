@@ -351,20 +351,3 @@ kt_jvm_library(
         "//java/core",
     ],
 )
-
-pkg_files(
-    name = "dist_files",
-    srcs = glob([
-        "src/main/kotlin/com/google/protobuf/*.kt",
-        "src/test/kotlin/**/*.kt",
-        "src/test/proto/**/*.proto",
-    ]) + [
-        "BUILD.bazel",
-        "generate-sources-build.xml",
-        "generate-test-sources-build.xml",
-        "pom.xml",
-        "pom_template.xml",
-    ],
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//java:__pkg__"],
-)

@@ -7,7 +7,7 @@
 
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -18,6 +18,7 @@ cc_library(
     ],
     hdrs = [
         "descriptor_constants.h",
+        "error_handler.h",
         "status.h",
         "status.hpp",
         "string_view.h",

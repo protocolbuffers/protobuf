@@ -443,7 +443,8 @@ def _DefaultValueConstructorForField(field):
       type_checker = type_checkers.GetTypeChecker(field)
       def MakeRepeatedScalarDefault(message):
         return containers.RepeatedScalarFieldContainer(
-            message._listener_for_children, type_checker)
+            message._listener_for_children, type_checker, field
+        )
       return MakeRepeatedScalarDefault
 
   if field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
@@ -1240,7 +1241,9 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
           tag_bytes, (None, None)
       )
       if field_decoder:
-        pos = field_decoder(buffer, new_pos, end, self, field_dict)
+        pos = field_decoder(
+            buffer, new_pos, end, self, field_dict, current_depth
+        )
         continue
       field_des, is_packed = fields_by_tag.get(tag_bytes, (None, None))
       if field_des is None:

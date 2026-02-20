@@ -112,16 +112,16 @@ bool FileGenerator::ShouldSkipDependencyImports(
 }
 
 FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
-    : file_(file), options_(options), scc_analyzer_(options) {
+    : file_(file), options_(options) {
   std::vector<const Descriptor*> msgs = FlattenMessagesInFile(file);
   std::vector<const Descriptor*> msgs_topologically_ordered =
-      TopologicalSortMessagesInFile(file, scc_analyzer_);
+      TopologicalSortMessagesInFile(file, *options.scc_analyzer);
   ABSL_CHECK(msgs_topologically_ordered.size() == msgs.size())
       << "Size mismatch";
 
   for (size_t i = 0; i < msgs.size(); ++i) {
-    message_generators_.push_back(std::make_unique<MessageGenerator>(
-        msgs[i], variables_, i, options, &scc_analyzer_));
+    message_generators_.push_back(
+        std::make_unique<MessageGenerator>(msgs[i], variables_, i, options));
     message_generators_.back()->AddGenerators(&enum_generators_,
                                               &extension_generators_);
   }
@@ -153,8 +153,8 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
   }
 
   for (int i = 0; i < file->extension_count(); ++i) {
-    extension_generators_.push_back(std::make_unique<ExtensionGenerator>(
-        file->extension(i), options, &scc_analyzer_));
+    extension_generators_.push_back(
+        std::make_unique<ExtensionGenerator>(file->extension(i), options));
   }
 
   for (int i = 0; i < file->weak_dependency_count(); ++i) {
@@ -185,7 +185,9 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
     #include <type_traits>
     #include <utility>
 
+    // clang-format off
     $cb$;
+    // clang-format on
 
     #endif  // $guard$
   )");
@@ -498,7 +500,7 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
   IncludeFile("third_party/protobuf/generated_message_util.h", p);
   IncludeFile("third_party/protobuf/wire_format_lite.h", p);
 
-  if (ShouldVerify(file_, options_, &scc_analyzer_)) {
+  if (ShouldVerify(file_, options_)) {
     IncludeFile("third_party/protobuf/wire_format_verify.h", p);
   }
 
@@ -558,153 +560,6 @@ void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
   )cc");
 }
 
-void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
-  MessageGenerator* generator = message_generators_[idx].get();
-
-  if (!ShouldGenerateClass(generator->descriptor(), options_)) return;
-
-  // Generate the split instance first because it's needed in the constexpr
-  // constructor.
-  if (ShouldSplit(generator->descriptor(), options_)) {
-    // Use a union to disable the destructor of the _instance member.
-    // We can constant initialize, but the object will still have a non-trivial
-    // destructor that we need to elide.
-    //
-    // NO_DESTROY is not necessary for correctness. The empty destructor is
-    // enough. However, the empty destructor fails to be elided in some
-    // configurations (like non-opt or with certain sanitizers). NO_DESTROY is
-    // there just to improve performance and binary size in these builds.
-    p->Emit(
-        {
-            {"type", DefaultInstanceType(generator->descriptor(), options_,
-                                         /*split=*/true)},
-            {"name", DefaultInstanceName(generator->descriptor(), options_,
-                                         /*split=*/true)},
-            {"default",
-             [&] { generator->GenerateInitDefaultSplitInstance(p); }},
-            {"class", absl::StrCat(ClassName(generator->descriptor()),
-                                   "::Impl_::Split")},
-        },
-        R"cc(
-          struct $type$ {
-            PROTOBUF_CONSTEXPR $type$() : _instance{$default$} {}
-            union {
-              $class$ _instance;
-            };
-          };
-
-          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const $type$ $name$;
-        )cc");
-  }
-
-  generator->GenerateConstexprConstructor(p);
-
-  if (IsFileDescriptorProto(file_, options_)) {
-    p->Emit(
-        {
-            {"type", DefaultInstanceType(generator->descriptor(), options_)},
-            {"name", DefaultInstanceName(generator->descriptor(), options_)},
-            {"class", ClassName(generator->descriptor())},
-        },
-        R"cc(
-          struct $type$ {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-            constexpr $type$() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-            $type$() {}
-            void Init() { ::new (&_instance) $class$(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-            ~$type$() {}
-            union {
-              $class$ _instance;
-            };
-          };
-
-          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
-        )cc");
-  } else if (UsingImplicitWeakDescriptor(file_, options_)) {
-    p->Emit(
-        {
-            {"index", generator->index_in_file_messages()},
-            {"type", DefaultInstanceType(generator->descriptor(), options_)},
-            {"name", DefaultInstanceName(generator->descriptor(), options_)},
-            {"class", ClassName(generator->descriptor())},
-            {"section", WeakDefaultInstanceSection(
-                            generator->descriptor(),
-                            generator->index_in_file_messages(), options_)},
-        },
-        R"cc(
-          struct $type$ {
-            PROTOBUF_CONSTEXPR $type$() : _instance(::_pbi::ConstantInitialized{}) {}
-            ~$type$() {}
-            //~ _instance must be the first member.
-            union {
-              $class$ _instance;
-            };
-            ::_pbi::WeakDescriptorDefaultTail tail = {
-                file_default_instances + $index$, sizeof($type$)};
-          };
-
-          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$
-              __attribute__((section("$section$")));
-        )cc");
-  } else {
-    p->Emit(
-        {
-            {"type", DefaultInstanceType(generator->descriptor(), options_)},
-            {"name", DefaultInstanceName(generator->descriptor(), options_)},
-            {"class", ClassName(generator->descriptor())},
-        },
-        R"cc(
-          struct $type$ {
-            PROTOBUF_CONSTEXPR $type$() : _instance(::_pbi::ConstantInitialized{}) {}
-            ~$type$() {}
-            union {
-              $class$ _instance;
-            };
-          };
-
-          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
-        )cc");
-  }
-
-  for (int i = 0; i < generator->descriptor()->field_count(); ++i) {
-    const FieldDescriptor* field = generator->descriptor()->field(i);
-    if (!IsStringInlined(field, options_)) {
-      continue;
-    }
-
-    // Force the initialization of the inlined string in the default instance.
-    p->Emit(
-        {
-            {"class", ClassName(generator->descriptor())},
-            {"field", FieldName(field)},
-            {"default", DefaultInstanceName(generator->descriptor(), options_)},
-            {"member", FieldMemberName(field, ShouldSplit(field, options_))},
-        },
-        R"cc(
-          PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::std::true_type
-              $class$::Impl_::_init_inline_$field$_ =
-                  ($default$._instance.$member$.Init(), ::std::true_type{});
-        )cc");
-  }
-
-  if (options_.lite_implicit_weak_fields) {
-    p->Emit(
-        {
-            {"ptr", DefaultInstancePtr(generator->descriptor(), options_)},
-            {"name", DefaultInstanceName(generator->descriptor(), options_)},
-        },
-        R"cc(
-          PROTOBUF_CONSTINIT const void* $ptr$ = &$name$;
-        )cc");
-  }
-}
-
 // A list of things defined in one .pb.cc file that we need to reference from
 // another .pb.cc file.
 struct FileGenerator::CrossFileReferences {
@@ -737,8 +592,7 @@ void FileGenerator::GetCrossFileReferencesForField(const FieldDescriptor* field,
     return;
   }
 
-  if (IsImplicitWeakField(field, options_, &scc_analyzer_) ||
-      IsWeak(field, options_)) {
+  if (IsImplicitWeakField(field, options_) || IsWeak(field, options_)) {
     refs->weak_default_instances.insert(msg);
   }
 }
@@ -774,13 +628,13 @@ void FileGenerator::GenerateInternalForwardDeclarations(
       ns.ChangeTo(Namespace(instance, options_));
 
       if (options_.lite_implicit_weak_fields) {
-        p->Emit({{"ptr", DefaultInstancePtr(instance, options_)}}, R"cc(
+        p->Emit({{"ptr", MsgGlobalsInstancePtr(instance, options_)}}, R"cc(
           PROTOBUF_CONSTINIT __attribute__((weak)) const void* $ptr$ =
               &::_pbi::implicit_weak_message_default_instance;
         )cc");
       } else {
-        p->Emit({{"type", DefaultInstanceType(instance, options_)},
-                 {"name", DefaultInstanceName(instance, options_)}},
+        p->Emit({{"type", MsgGlobalsInstanceType(instance, options_)},
+                 {"name", MsgGlobalsInstanceName(instance, options_)}},
                 R"cc(
                   extern __attribute__((weak)) $type$ $name$;
                 )cc");
@@ -817,7 +671,10 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) {
     NamespaceOpener ns(Namespace(file_, options_), p);
     p->Emit(
         {
-            {"defaults", [&] { GenerateSourceDefaultInstance(idx, p); }},
+            {"defaults",
+             [&] {
+               message_generators_[idx]->GenerateSourceDefaultInstance(p);
+             }},
             {"class_methods",
              [&] { message_generators_[idx]->GenerateClassMethods(p); }},
         },
@@ -912,6 +769,42 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   GetCrossFileReferencesForFile(file_, &refs);
   GenerateInternalForwardDeclarations(refs, p);
 
+  if (HasDescriptorMethods(file_, options_) && !message_generators_.empty()) {
+    p->Emit(
+        {{"reflection_data",
+          [&] {
+            for (const auto& generator : message_generators_) {
+              p->Emit(
+                  {{"class",
+                    QualifiedClassName(generator->descriptor(), options_)},
+                   {"tracker_on_get_metadata",
+                    [&] {
+                      if (HasTracker(generator->descriptor(), options_)) {
+                        p->Emit(
+                            R"cc(&::_pbi::PrivateAccess::TrackerOnGetMetadata<
+                                     $class$>,)cc");
+                      } else {
+                        p->Emit(R"cc(/* tracker*/ nullptr,)cc");
+                      }
+                    }}},
+                  R"cc(
+                    // $class$
+                    {&::_pbi::kDescriptorMethods, &::$desc_table$, $tracker_on_get_metadata$},
+                  )cc");
+            }
+          }}},
+        R"cc(
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+          namespace {
+          PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
+              file_reflection_data[] = {
+                  $reflection_data$,
+          };
+          }  // namespace
+#endif
+        )cc");
+  }
+
   // When in weak descriptor mode, we generate the file_default_instances before
   // the default instances.
   if (UsingImplicitWeakDescriptor(file_, options_) &&
@@ -964,8 +857,8 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   {
     NamespaceOpener ns(Namespace(file_, options_), p);
     for (size_t i = 0; i < message_generators_.size(); ++i) {
-      GenerateSourceDefaultInstance(
-          message_generators_topologically_ordered_[i], p);
+      message_generators_[message_generators_topologically_ordered_[i]]
+          ->GenerateSourceDefaultInstance(p);
     }
   }
 
@@ -1236,7 +1129,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                        {"class", ClassName(gen->descriptor())},
                    },
                    R"cc(
-                     &$ns$::_$class$_default_instance_._instance,
+                     &$ns$::_$class$_globals_._default,
                    )cc");
              }
            }}};
@@ -1262,7 +1155,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
 
   FileDescriptorProto file_proto = StripSourceRetentionOptions(*file_);
   std::string file_data;
-  file_proto.SerializeToString(&file_data);
+  ABSL_CHECK(file_proto.SerializeToString(&file_data));
 
   auto desc_name = UniqueName("descriptor_table_protodef", file_, options_);
   p->Emit(
@@ -1421,7 +1314,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                                         [&](std::string* out, const auto& gen) {
                                           absl::StrAppend(
                                               out,
-                                              DefaultInstanceName(
+                                              MsgGlobalsInstanceName(
                                                   gen->descriptor(), options_),
                                               ".Init();");
                                         })}},
@@ -1464,14 +1357,14 @@ class FileGenerator::ForwardDeclarations {
       p->Emit(
           {
               Sub("class", c.first).AnnotatedAs(desc),
-              {"default_type", DefaultInstanceType(desc, options)},
-              {"default_name", DefaultInstanceName(desc, options)},
+              {"globals_type", MsgGlobalsInstanceType(desc, options)},
+              {"globals_name", MsgGlobalsInstanceName(desc, options)},
               {"classdata_type", ClassDataType(desc, options)},
           },
           R"cc(
             class $class$;
-            struct $default_type$;
-            $dllexport_decl $extern $default_type$ $default_name$;
+            struct $globals_type$;
+            $dllexport_decl $extern $globals_type$ $globals_name$;
             $dllexport_decl $extern const $pbi$::$classdata_type$ $class$_class_data_;
           )cc");
     }
@@ -1480,10 +1373,8 @@ class FileGenerator::ForwardDeclarations {
       const Descriptor* desc = s.second;
       p->Emit(
           {
-              {"default_type",
-               DefaultInstanceType(desc, options, /*split=*/true)},
-              {"default_name",
-               DefaultInstanceName(desc, options, /*split=*/true)},
+              {"default_type", SplitDefaultInstanceType(desc, options)},
+              {"default_name", SplitDefaultInstanceName(desc, options)},
           },
           R"cc(
             struct $default_type$;
@@ -1504,10 +1395,10 @@ class FileGenerator::ForwardDeclarations {
     if (ShouldGenerateExternSpecializations(options)) {
       for (const auto& c : classes_) {
         if (!ShouldGenerateClass(c.second, options)) continue;
-        auto vars = p->WithVars(
-            {{"class", QualifiedClassName(c.second, options)},
-             {"default_name", QualifiedDefaultInstanceName(c.second, options,
-                                                           /*split=*/false)}});
+        auto vars =
+            p->WithVars({{"class", QualifiedClassName(c.second, options)},
+                         {"default_name",
+                          QualifiedMsgGlobalsInstanceName(c.second, options)}});
         // To reduce total linker input size in large binaries we make these
         // functions extern and define then in the pb.cc file. This avoids bloat
         // in callers by having duplicate definitions of the template.
@@ -1608,6 +1499,10 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
     decl.second.PrintTopLevelDecl(p, options_);
   }
 
+  for (auto& extension_generator : extension_generators_) {
+    extension_generator->GenerateFeatureDefaults(p);
+  }
+
   if (IsFileDescriptorProto(file_, options_)) {
     ns.ChangeTo(absl::StrCat(ProtobufNamespace(options_), "::internal"));
     p->Emit(R"cc(
@@ -1627,11 +1522,11 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
     ABSL_CHECK(!options_.opensource_runtime);
     IncludeFile("third_party/protobuf/weak_field_map.h", p);
   }
-  if (HasLazyFields(file_, options_, &scc_analyzer_)) {
+  if (HasLazyFields(file_, options_)) {
     ABSL_CHECK(!options_.opensource_runtime);
     IncludeFile("third_party/protobuf/lazy_field.h", p);
   }
-  if (ShouldVerify(file_, options_, &scc_analyzer_)) {
+  if (ShouldVerify(file_, options_)) {
     IncludeFile("third_party/protobuf/wire_format_verify.h", p);
   }
   if (options_.experimental_use_micro_string) {
@@ -1824,6 +1719,13 @@ void FileGenerator::GenerateMessageDefinitions(io::Printer* p) {
 void FileGenerator::GenerateEnumDefinitions(io::Printer* p) {
   for (size_t i = 0; i < enum_generators_.size(); ++i) {
     enum_generators_[i]->GenerateDefinition(p);
+  }
+  if (HasEnumDefinitions(file_)) {
+    // Inject the ADL hooks for absl flags.
+    p->Emit(R"cc(
+      using $pbi$::generated_enum::AbslParseFlag;
+      using $pbi$::generated_enum::AbslUnparseFlag;
+    )cc");
   }
 }
 

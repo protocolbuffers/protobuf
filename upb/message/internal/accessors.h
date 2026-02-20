@@ -20,7 +20,6 @@
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/message.h"
-#include "upb/message/internal/tagged_ptr.h"
 #include "upb/message/internal/types.h"
 #include "upb/message/value.h"
 #include "upb/mini_table/enum.h"
@@ -417,57 +416,24 @@ UPB_API_INLINE int64_t upb_Message_GetInt64(const struct upb_Message* msg,
   return upb_Message_GetField(msg, f, def).int64_val;
 }
 
-UPB_INLINE void UPB_PRIVATE(_upb_Message_AssertMapIsUntagged)(
-    const struct upb_Message* msg, const upb_MiniTableField* field) {
-  UPB_UNUSED(msg);
-  UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(field);
-#ifndef NDEBUG
-  uintptr_t default_val = 0;
-  uintptr_t tagged;
-  _upb_Message_GetNonExtensionField(msg, field, &default_val, &tagged);
-  UPB_ASSERT(!upb_TaggedMessagePtr_IsEmpty(tagged));
-#endif
-}
-
 UPB_API_INLINE const struct upb_Map* upb_Message_GetMap(
     const struct upb_Message* msg, const upb_MiniTableField* f) {
   UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(f);
-  UPB_PRIVATE(_upb_Message_AssertMapIsUntagged)(msg, f);
   struct upb_Map* ret;
   const struct upb_Map* default_val = NULL;
   _upb_Message_GetNonExtensionField(msg, f, &default_val, &ret);
   return ret;
 }
 
-UPB_API_INLINE uintptr_t upb_Message_GetTaggedMessagePtr(
-    const struct upb_Message* msg, const upb_MiniTableField* f,
-    struct upb_Message* default_val) {
-  UPB_ASSUME(upb_MiniTableField_CType(f) == kUpb_CType_Message);
-  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
-             UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
-  UPB_ASSUME(upb_MiniTableField_IsScalar(f));
-  uintptr_t tagged;
-  _upb_Message_GetNonExtensionField(msg, f, &default_val, &tagged);
-  return tagged;
-}
-
-// For internal use only; users cannot set tagged messages because only the
-// parser and the message copier are allowed to directly create an empty
-// message.
-UPB_INLINE void UPB_PRIVATE(_upb_Message_SetTaggedMessagePtr)(
-    struct upb_Message* msg, const upb_MiniTableField* f,
-    uintptr_t sub_message) {
-  UPB_ASSUME(upb_MiniTableField_CType(f) == kUpb_CType_Message);
-  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
-             UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
-  UPB_ASSUME(upb_MiniTableField_IsScalar(f));
-  upb_Message_SetBaseField(msg, f, &sub_message);
-}
-
 UPB_API_INLINE const struct upb_Message* upb_Message_GetMessage(
     const struct upb_Message* msg, const upb_MiniTableField* f) {
-  uintptr_t tagged = upb_Message_GetTaggedMessagePtr(msg, f, NULL);
-  return upb_TaggedMessagePtr_GetNonEmptyMessage(tagged);
+  UPB_ASSUME(upb_MiniTableField_CType(f) == kUpb_CType_Message);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
+             UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
+  UPB_ASSUME(upb_MiniTableField_IsScalar(f));
+  upb_MessageValue def;
+  def.msg_val = NULL;
+  return upb_Message_GetField(msg, f, def).msg_val;
 }
 
 UPB_API_INLINE upb_Array* upb_Message_GetMutableArray(
@@ -507,7 +473,6 @@ UPB_INLINE struct upb_Map* _upb_Message_GetOrCreateMutableMap(
     struct upb_Message* msg, const upb_MiniTableField* field, size_t key_size,
     size_t val_size, upb_Arena* arena) {
   UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(field);
-  UPB_PRIVATE(_upb_Message_AssertMapIsUntagged)(msg, field);
   struct upb_Map* map = NULL;
   struct upb_Map* default_map_value = NULL;
   _upb_Message_GetNonExtensionField(msg, field, &default_map_value, &map);
@@ -535,16 +500,14 @@ UPB_API_INLINE struct upb_Map* upb_Message_GetOrCreateMutableMap(
 }
 
 UPB_API_INLINE struct upb_Message* upb_Message_GetOrCreateMutableMessage(
-    struct upb_Message* msg, const upb_MiniTable* mini_table,
-    const upb_MiniTableField* f, upb_Arena* arena) {
+    struct upb_Message* msg, const upb_MiniTableField* f, upb_Arena* arena) {
   UPB_ASSERT(arena);
   UPB_ASSUME(upb_MiniTableField_CType(f) == kUpb_CType_Message);
   UPB_ASSUME(!upb_MiniTableField_IsExtension(f));
   struct upb_Message* sub_message =
       *UPB_PTR_AT(msg, f->UPB_ONLYBITS(offset), struct upb_Message*);
   if (!sub_message) {
-    const upb_MiniTable* sub_mini_table =
-        upb_MiniTable_SubMessage(mini_table, f);
+    const upb_MiniTable* sub_mini_table = upb_MiniTable_SubMessage(f);
     UPB_ASSERT(sub_mini_table);
     sub_message = _upb_Message_New(sub_mini_table, arena);
     *UPB_PTR_AT(msg, f->UPB_ONLYBITS(offset), struct upb_Message*) =
@@ -642,8 +605,12 @@ UPB_API_INLINE void upb_Message_SetBaseFieldInt64(struct upb_Message* msg,
 UPB_API_INLINE void upb_Message_SetBaseFieldMessage(struct upb_Message* msg,
                                                     const upb_MiniTableField* f,
                                                     struct upb_Message* value) {
-  UPB_PRIVATE(_upb_Message_SetTaggedMessagePtr)
-  (msg, f, UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(value, false));
+  // TODO - Re-enable this assertion.
+  // UPB_ASSERT(value);
+  UPB_ASSUME(upb_MiniTableField_CType(f) == kUpb_CType_Message);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
+             UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
+  upb_Message_SetBaseField(msg, f, &value);
 }
 
 UPB_API_INLINE void upb_Message_SetBaseFieldString(struct upb_Message* msg,
@@ -676,13 +643,12 @@ UPB_API_INLINE void upb_Message_SetBaseFieldUInt64(struct upb_Message* msg,
 }
 
 UPB_API_INLINE void upb_Message_SetClosedEnum(struct upb_Message* msg,
-                                              const upb_MiniTable* m,
                                               const upb_MiniTableField* f,
                                               int32_t value) {
   UPB_ASSERT(upb_MiniTableField_IsClosedEnum(f));
   UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) == kUpb_FieldRep_4Byte);
-  UPB_ASSERT(
-      upb_MiniTableEnum_CheckValue(upb_MiniTable_GetSubEnumTable(m, f), value));
+  UPB_ASSERT(upb_MiniTableEnum_CheckValue(upb_MiniTable_GetSubEnumTable(f),
+                                          (uint32_t)value));
   upb_Message_SetBaseField(msg, f, &value);
 }
 

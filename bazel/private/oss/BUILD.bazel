@@ -1,0 +1,53 @@
+# Copyright (c) 2009-2021, Google LLC
+# All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+licenses(["notice"])
+
+bzl_library(
+    name = "cc_proto_library_bzl",
+    srcs = [
+        "cc_proto_library.bzl",
+    ],
+    visibility = [
+        "//bazel:__subpackages__",
+        "//hpb/bazel:__subpackages__",
+    ],
+    deps = [
+        "//bazel/common:proto_common_bzl",
+        "//bazel/common:proto_info_bzl",
+        "//bazel/private:cc_proto_support_bzl",
+        "//bazel/private:toolchain_helpers_bzl",
+        "@proto_bazel_features//:features",
+        "@rules_cc//cc:find_cc_toolchain_bzl",
+    ],
+)
+
+bzl_library(
+    name = "py_proto_library_bzl",
+    srcs = ["py_proto_library.bzl"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//bazel/common:proto_common_bzl",
+        "//bazel/common:proto_info_bzl",
+        "//bazel/private:toolchain_helpers_bzl",
+        "@rules_python//python:py_info_bzl",
+    ],
+)
+
+# The data in this target is exposed in //bazel/private:for_bazel_tests
+filegroup(
+    name = "for_bazel_tests",
+    testonly = True,
+    srcs = [
+        "BUILD.bazel",
+        ":cc_proto_library_bzl",
+        ":py_proto_library_bzl",
+    ],
+    visibility = ["//bazel/private:__pkg__"],
+)

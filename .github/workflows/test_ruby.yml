@@ -34,8 +34,11 @@ jobs:
           - { name: Ruby 3.1, ruby: ruby-3.1.6, ffi: FFI }
           - { name: Ruby 3.2, ruby: ruby-3.2.6, continuous-only: true }
           - { name: Ruby 3.3, ruby: ruby-3.3.6, continuous-only: true }
-          - { name: Ruby 3.4, ruby: ruby-3.4.1, ffi: NATIVE }
-          - { name: Ruby 3.4, ruby: ruby-3.4.1, ffi: FFI }
+          - { name: Ruby 3.4, ruby: ruby-3.4.1, continuous-only: true }
+          # TODO: Remove the image property in the two entries below and update the configuration
+          # used by all the images the next time there is an update to the Dockerfile
+          - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-ruby-4.0.0-f1c24ed6acfbf6ec709b0de2f702209c9d3ac659' }
+          - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: FFI, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-ruby-4.0.0-f1c24ed6acfbf6ec709b0de2f702209c9d3ac659' }
           - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: NATIVE }
           - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: FFI }
 
@@ -44,12 +47,12 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v4
+        uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v4
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-{0}-b77fdae6d4771789dfc66a56bf8d806354e8011a', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -69,20 +72,20 @@ jobs:
     runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v4
+        uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Cross compile protoc for i386
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v4
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.6.1-e0df73e51131ccaf53451355d22577f377357604 #TODO: b/409557730 - upgrade to bazel 8.0.1
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-i386
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v4
+        uses: protocolbuffers/protobuf-ci/docker@v5
         with:
           image: i386/ruby:3.1.6-bullseye
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -101,22 +104,22 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v4
+        uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Cross compile protoc for aarch64
         if: ${{ inputs.continuous-run }}
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v4
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.6.1-e0df73e51131ccaf53451355d22577f377357604 #TODO: b/409557730 - upgrade to bazel 8.0.1
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-aarch64
 
       - name: Run tests
         if: ${{ inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/docker@v4
+        uses: protocolbuffers/protobuf-ci/docker@v5
         with:
           image: arm64v8/ruby:3.1.4-buster
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -143,19 +146,21 @@ jobs:
         - { version: "3.3", continuous-only: true }
         - { version: "3.4", ffi: NATIVE }
         - { version: "3.4", ffi: FFI }
+        - { version: "4.0", ffi: NATIVE }
+        - { version: "4.0", ffi: FFI }
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} MacOS Ruby ${{ matrix.version }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v4
+        uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Pin Ruby version
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: ruby/setup-ruby@4a9ddd6f338a97768b8006bf671dfbad383215f4 # v1.207.0
+        uses: ruby/setup-ruby@ae195bbe749a7cef685ac729197124a48305c1cb # v1.276.0
         with:
           ruby-version: ${{ matrix.version }}
 
@@ -165,7 +170,7 @@ jobs:
 
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel@v4
+        uses: protocolbuffers/protobuf-ci/bazel@v5
         with:
           version: 8.0.1 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -184,8 +189,9 @@ jobs:
           - { name: Ruby 3.1, ruby: ruby-3.1.6, ffi: FFI }
           - { name: Ruby 3.2, ruby: ruby-3.2.6, continuous-only: true}
           - { name: Ruby 3.3, ruby: ruby-3.3.6, continuous-only: true}
-          - { name: Ruby 3.4, ruby: ruby-3.4.1, ffi: NATIVE }
-          - { name: Ruby 3.4, ruby: ruby-3.4.1, ffi: FFI, continuous-only: true }
+          - { name: Ruby 3.4, ruby: ruby-3.4.1, continuous-only: true }
+          - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-ruby-4.0.0-f1c24ed6acfbf6ec709b0de2f702209c9d3ac659' }
+          - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: FFI, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-ruby-4.0.0-f1c24ed6acfbf6ec709b0de2f702209c9d3ac659' }
           - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: NATIVE }
           - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: FFI, continuous-only: true }
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Install ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
@@ -193,12 +199,12 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v4
+        uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v4
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-{0}-b77fdae6d4771789dfc66a56bf8d806354e8011a', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}

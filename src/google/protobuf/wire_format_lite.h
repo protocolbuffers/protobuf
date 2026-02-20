@@ -132,7 +132,7 @@ class PROTOBUF_EXPORT WireFormatLite {
   };
 
   template <typename T>
-  static constexpr CppType CppTypeFor() {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static constexpr CppType CppTypeFor() {
     if constexpr (std::is_same_v<int32_t, T>) {
       return CPPTYPE_INT32;
     } else if constexpr (std::is_same_v<int64_t, T>) {
@@ -162,11 +162,12 @@ class PROTOBUF_EXPORT WireFormatLite {
   }
 
   // Helper method to get the CppType for a particular Type.
-  static CppType FieldTypeToCppType(FieldType type);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static CppType FieldTypeToCppType(
+      FieldType type);
 
   // Given a FieldDescriptor::Type return its WireType
-  static inline WireFormatLite::WireType WireTypeForFieldType(
-      WireFormatLite::FieldType type) {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline WireFormatLite::WireType
+  WireTypeForFieldType(WireFormatLite::FieldType type) {
     return kWireTypeForFieldType[type];
   }
 
@@ -180,36 +181,41 @@ class PROTOBUF_EXPORT WireFormatLite {
   //
   // This is different from MakeTag(field->number(), field->type()) in the
   // case of packed repeated fields.
-  constexpr static uint32_t MakeTag(int field_number, WireType type);
-  static WireType GetTagWireType(uint32_t tag);
-  static int GetTagFieldNumber(uint32_t tag);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD constexpr static uint32_t MakeTag(
+      int field_number, WireType type);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static WireType GetTagWireType(
+      uint32_t tag);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static int GetTagFieldNumber(
+      uint32_t tag);
 
   // Compute the byte size of a tag.  For groups, this includes both the start
   // and end tags.
-  static inline size_t TagSize(int field_number,
-                               WireFormatLite::FieldType type);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t TagSize(
+      int field_number, WireFormatLite::FieldType type);
 
   // Skips a field value with the given tag.  The input should start
   // positioned immediately after the tag.  Skipped values are simply
   // discarded, not recorded anywhere.  See WireFormat::SkipField() for a
   // version that records to an UnknownFieldSet.
-  static bool SkipField(io::CodedInputStream* input, uint32_t tag);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static bool SkipField(
+      io::CodedInputStream* input, uint32_t tag);
 
   // Skips a field value with the given tag.  The input should start
   // positioned immediately after the tag. Skipped values are recorded to a
   // CodedOutputStream.
-  static bool SkipField(io::CodedInputStream* input, uint32_t tag,
-                        io::CodedOutputStream* output);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static bool SkipField(
+      io::CodedInputStream* input, uint32_t tag, io::CodedOutputStream* output);
 
   // Reads and ignores a message from the input.  Skipped values are simply
   // discarded, not recorded anywhere.  See WireFormat::SkipMessage() for a
   // version that records to an UnknownFieldSet.
-  static bool SkipMessage(io::CodedInputStream* input);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static bool SkipMessage(
+      io::CodedInputStream* input);
 
   // Reads and ignores a message from the input.  Skipped values are recorded
   // to a CodedOutputStream.
-  static bool SkipMessage(io::CodedInputStream* input,
-                          io::CodedOutputStream* output);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static bool SkipMessage(
+      io::CodedInputStream* input, io::CodedOutputStream* output);
 
   // This macro does the same thing as WireFormatLite::MakeTag(), but the
   // result is usable as a compile-time constant, which makes it usable
@@ -243,10 +249,12 @@ class PROTOBUF_EXPORT WireFormatLite {
   // Helper functions for converting between floats/doubles and IEEE-754
   // uint32s/uint64s so that they can be written.  (Assumes your platform
   // uses IEEE-754 floats.)
-  static uint32_t EncodeFloat(float value);
-  static float DecodeFloat(uint32_t value);
-  static uint64_t EncodeDouble(double value);
-  static double DecodeDouble(uint64_t value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static uint32_t EncodeFloat(float value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static float DecodeFloat(uint32_t value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static uint64_t EncodeDouble(
+      double value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static double DecodeDouble(
+      uint64_t value);
 
   // Helper functions for mapping signed integers to unsigned integers in
   // such a way that numbers with small magnitudes will encode to smaller
@@ -254,10 +262,10 @@ class PROTOBUF_EXPORT WireFormatLite {
   // number and varint-encode it, it will always take 10 bytes, defeating
   // the purpose of varint.  So, for the "sint32" and "sint64" field types,
   // we ZigZag-encode the values.
-  static uint32_t ZigZagEncode32(int32_t n);
-  static int32_t ZigZagDecode32(uint32_t n);
-  static uint64_t ZigZagEncode64(int64_t n);
-  static int64_t ZigZagDecode64(uint64_t n);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static uint32_t ZigZagEncode32(int32_t n);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static int32_t ZigZagDecode32(uint32_t n);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static uint64_t ZigZagEncode64(int64_t n);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static int64_t ZigZagDecode64(uint64_t n);
 
   // =================================================================
   // Methods for reading/writing individual field.
@@ -269,16 +277,16 @@ class PROTOBUF_EXPORT WireFormatLite {
   // the represented type and the FieldType. These are specialized with the
   // appropriate definition for each declared type.
   template <typename CType, enum FieldType DeclaredType>
-  PROTOBUF_NDEBUG_INLINE static bool ReadPrimitive(io::CodedInputStream* input,
-                                                   CType* value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static bool
+  ReadPrimitive(io::CodedInputStream* input, CType* value);
 
   // Reads repeated primitive values, with optimizations for repeats.
   // tag_size and tag should both be compile-time constants provided by the
   // protocol compiler.
   template <typename CType, enum FieldType DeclaredType>
-  PROTOBUF_NDEBUG_INLINE static bool ReadRepeatedPrimitive(
-      int tag_size, uint32_t tag, io::CodedInputStream* input,
-      RepeatedField<CType>* value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static bool
+  ReadRepeatedPrimitive(int tag_size, uint32_t tag, io::CodedInputStream* input,
+                        RepeatedField<CType>* value);
 
   // Reads a primitive value directly from the provided buffer. It returns a
   // pointer past the segment of data that was read.
@@ -286,24 +294,27 @@ class PROTOBUF_EXPORT WireFormatLite {
   // This is only implemented for the types with fixed wire size, e.g.
   // float, double, and the (s)fixed* types.
   template <typename CType, enum FieldType DeclaredType>
-  PROTOBUF_NDEBUG_INLINE static const uint8_t* ReadPrimitiveFromArray(
-      const uint8_t* buffer, CType* value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
+      PROTOBUF_NDEBUG_INLINE static const uint8_t*
+      ReadPrimitiveFromArray(const uint8_t* buffer, CType* value);
 
   // Reads a primitive packed field.
   //
   // This is only implemented for packable types.
   template <typename CType, enum FieldType DeclaredType>
-  PROTOBUF_NDEBUG_INLINE static bool ReadPackedPrimitive(
-      io::CodedInputStream* input, RepeatedField<CType>* value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static bool
+  ReadPackedPrimitive(io::CodedInputStream* input, RepeatedField<CType>* value);
 
   // Read a string.  ReadString(..., std::string* value) requires an
   // existing std::string.
-  static inline bool ReadString(io::CodedInputStream* input,
-                                std::string* value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline bool ReadString(
+      io::CodedInputStream* input, std::string* value);
   // Analogous to ReadString().
-  static bool ReadBytes(io::CodedInputStream* input, std::string* value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static bool ReadBytes(
+      io::CodedInputStream* input, std::string* value);
 
-  static inline bool ReadBytes(io::CodedInputStream* input, absl::Cord* value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline bool ReadBytes(
+      io::CodedInputStream* input, absl::Cord* value);
 
   enum Operation {
     PARSE = 0,
@@ -315,16 +326,16 @@ class PROTOBUF_EXPORT WireFormatLite {
                                absl::string_view field_name);
 
   template <typename MessageType>
-  static inline bool ReadGroup(int field_number, io::CodedInputStream* input,
-                               MessageType* value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline bool ReadGroup(
+      int field_number, io::CodedInputStream* input, MessageType* value);
 
   template <typename MessageType>
-  static inline bool ReadMessage(io::CodedInputStream* input,
-                                 MessageType* value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline bool ReadMessage(
+      io::CodedInputStream* input, MessageType* value);
 
   template <typename MessageType>
-  static inline bool ReadMessageNoVirtual(io::CodedInputStream* input,
-                                          MessageType* value) {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline bool ReadMessageNoVirtual(
+      io::CodedInputStream* input, MessageType* value) {
     return ReadMessage(input, value);
   }
 
@@ -433,194 +444,204 @@ class PROTOBUF_EXPORT WireFormatLite {
                                        io::CodedOutputStream* output);
 
   // Like above, but use only *ToArray methods of CodedOutputStream.
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteTagToArray(int field_number,
-                                                         WireType type,
-                                                         uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteTagToArray(int field_number, WireType type, uint8_t* target);
 
   // Write fields, without tags.
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteInt32NoTagToArray(
-      int32_t value, uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteInt64NoTagToArray(
-      int64_t value, uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteUInt32NoTagToArray(
-      uint32_t value, uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteUInt64NoTagToArray(
-      uint64_t value, uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteSInt32NoTagToArray(
-      int32_t value, uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteSInt64NoTagToArray(
-      int64_t value, uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteFixed32NoTagToArray(
-      uint32_t value, uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteFixed64NoTagToArray(
-      uint64_t value, uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteSFixed32NoTagToArray(
-      int32_t value, uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteSFixed64NoTagToArray(
-      int64_t value, uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteFloatNoTagToArray(
-      float value, uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteDoubleNoTagToArray(
-      double value, uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteBoolNoTagToArray(bool value,
-                                                               uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteEnumNoTagToArray(int value,
-                                                               uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteInt32NoTagToArray(int32_t value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteInt64NoTagToArray(int64_t value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteUInt32NoTagToArray(uint32_t value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteUInt64NoTagToArray(uint64_t value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteSInt32NoTagToArray(int32_t value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteSInt64NoTagToArray(int64_t value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteFixed32NoTagToArray(uint32_t value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteFixed64NoTagToArray(uint64_t value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteSFixed32NoTagToArray(int32_t value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteSFixed64NoTagToArray(int64_t value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteFloatNoTagToArray(float value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteDoubleNoTagToArray(double value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteBoolNoTagToArray(bool value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteEnumNoTagToArray(int value, uint8_t* target);
 
   // Write fields, without tags.  These require that value.size() > 0.
   template <typename T>
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WritePrimitiveNoTagToArray(
-      const RepeatedField<T>& value, uint8_t* (*Writer)(T, uint8_t*),
-      uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WritePrimitiveNoTagToArray(const RepeatedField<T>& value,
+                             uint8_t* (*Writer)(T, uint8_t*), uint8_t* target);
   template <typename T>
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteFixedNoTagToArray(
-      const RepeatedField<T>& value, uint8_t* (*Writer)(T, uint8_t*),
-      uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteFixedNoTagToArray(const RepeatedField<T>& value,
+                         uint8_t* (*Writer)(T, uint8_t*), uint8_t* target);
 
   // Write fields, including tags.
   template <int field_number>
-  PROTOBUF_NOINLINE static uint8_t* WriteInt32ToArrayWithField(
-      ::google::protobuf::io::EpsCopyOutputStream* stream, int32_t value,
-      uint8_t* target) {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NOINLINE static uint8_t*
+  WriteInt32ToArrayWithField(::google::protobuf::io::EpsCopyOutputStream* stream,
+                             int32_t value, uint8_t* target) {
     target = stream->EnsureSpace(target);
     return WriteInt32ToArray(field_number, value, target);
   }
 
   template <int field_number>
-  PROTOBUF_NOINLINE static uint8_t* WriteInt64ToArrayWithField(
-      ::google::protobuf::io::EpsCopyOutputStream* stream, int64_t value,
-      uint8_t* target) {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NOINLINE static uint8_t*
+  WriteInt64ToArrayWithField(::google::protobuf::io::EpsCopyOutputStream* stream,
+                             int64_t value, uint8_t* target) {
     target = stream->EnsureSpace(target);
     return WriteInt64ToArray(field_number, value, target);
   }
 
   template <int field_number>
-  PROTOBUF_NOINLINE static uint8_t* WriteEnumToArrayWithField(
-      ::google::protobuf::io::EpsCopyOutputStream* stream, int value, uint8_t* target) {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NOINLINE static uint8_t*
+  WriteEnumToArrayWithField(::google::protobuf::io::EpsCopyOutputStream* stream,
+                            int value, uint8_t* target) {
     target = stream->EnsureSpace(target);
     return WriteEnumToArray(field_number, value, target);
   }
 
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteInt32ToArray(int field_number,
-                                                           int32_t value,
-                                                           uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteInt64ToArray(int field_number,
-                                                           int64_t value,
-                                                           uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteUInt32ToArray(int field_number,
-                                                            uint32_t value,
-                                                            uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteUInt64ToArray(int field_number,
-                                                            uint64_t value,
-                                                            uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteSInt32ToArray(int field_number,
-                                                            int32_t value,
-                                                            uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteSInt64ToArray(int field_number,
-                                                            int64_t value,
-                                                            uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteFixed32ToArray(int field_number,
-                                                             uint32_t value,
-                                                             uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteFixed64ToArray(int field_number,
-                                                             uint64_t value,
-                                                             uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteSFixed32ToArray(int field_number,
-                                                              int32_t value,
-                                                              uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteSFixed64ToArray(int field_number,
-                                                              int64_t value,
-                                                              uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteFloatToArray(int field_number,
-                                                           float value,
-                                                           uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteDoubleToArray(int field_number,
-                                                            double value,
-                                                            uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteBoolToArray(int field_number,
-                                                          bool value,
-                                                          uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteEnumToArray(int field_number,
-                                                          int value,
-                                                          uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteInt32ToArray(int field_number, int32_t value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteInt64ToArray(int field_number, int64_t value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteUInt32ToArray(int field_number, uint32_t value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteUInt64ToArray(int field_number, uint64_t value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteSInt32ToArray(int field_number, int32_t value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteSInt64ToArray(int field_number, int64_t value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteFixed32ToArray(int field_number, uint32_t value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteFixed64ToArray(int field_number, uint64_t value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteSFixed32ToArray(int field_number, int32_t value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteSFixed64ToArray(int field_number, int64_t value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteFloatToArray(int field_number, float value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteDoubleToArray(int field_number, double value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteBoolToArray(int field_number, bool value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteEnumToArray(int field_number, int value, uint8_t* target);
 
   template <typename T>
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WritePrimitiveToArray(
-      int field_number, const RepeatedField<T>& value,
-      uint8_t* (*Writer)(int, T, uint8_t*), uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WritePrimitiveToArray(int field_number, const RepeatedField<T>& value,
+                        uint8_t* (*Writer)(int, T, uint8_t*), uint8_t* target);
 
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteStringToArray(
-      int field_number, const std::string& value, uint8_t* target);
-  PROTOBUF_NDEBUG_INLINE static uint8_t* WriteBytesToArray(
-      int field_number, const std::string& value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteStringToArray(int field_number, const std::string& value,
+                     uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  WriteBytesToArray(int field_number, const std::string& value,
+                    uint8_t* target);
 
   // Whether to serialize deterministically (e.g., map keys are
   // sorted) is a property of a CodedOutputStream, and in the process
   // of serialization, the "ToArray" variants may be invoked.  But they don't
   // have a CodedOutputStream available, so they get an additional parameter
   // telling them whether to serialize deterministically.
-  static uint8_t* InternalWriteGroup(int field_number, const MessageLite& value,
-                                     uint8_t* target,
-                                     io::EpsCopyOutputStream* stream);
-  static uint8_t* InternalWriteMessage(int field_number,
-                                       const MessageLite& value,
-                                       int cached_size, uint8_t* target,
-                                       io::EpsCopyOutputStream* stream);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static uint8_t* InternalWriteGroup(
+      int field_number, const MessageLite& value, uint8_t* target,
+      io::EpsCopyOutputStream* stream);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static uint8_t* InternalWriteMessage(
+      int field_number, const MessageLite& value, int cached_size,
+      uint8_t* target, io::EpsCopyOutputStream* stream);
 
   // Like above, but de-virtualize the call to SerializeWithCachedSizes().
   template <typename MessageType>
-  PROTOBUF_NDEBUG_INLINE static uint8_t* InternalWriteGroupNoVirtualToArray(
-      int field_number, const MessageType& value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  InternalWriteGroupNoVirtualToArray(int field_number, const MessageType& value,
+                                     uint8_t* target);
   template <typename MessageType>
-  PROTOBUF_NDEBUG_INLINE static uint8_t* InternalWriteMessageNoVirtualToArray(
-      int field_number, const MessageType& value, uint8_t* target);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static uint8_t*
+  InternalWriteMessageNoVirtualToArray(int field_number,
+                                       const MessageType& value,
+                                       uint8_t* target);
 
   // Compute the byte size of a field.  The XxSize() functions do NOT include
   // the tag, so you must also call TagSize().  (This is because, for repeated
   // fields, you should only call TagSize() once and multiply it by the element
   // count, but you may have to call XxSize() for each individual element.)
-  static inline size_t Int32Size(int32_t value);
-  static inline size_t Int64Size(int64_t value);
-  static inline size_t UInt32Size(uint32_t value);
-  static inline size_t UInt64Size(uint64_t value);
-  static inline size_t SInt32Size(int32_t value);
-  static inline size_t SInt64Size(int64_t value);
-  static inline size_t EnumSize(int value);
-  static inline size_t Int32SizePlusOne(int32_t value);
-  static inline size_t Int64SizePlusOne(int64_t value);
-  static inline size_t UInt32SizePlusOne(uint32_t value);
-  static inline size_t UInt64SizePlusOne(uint64_t value);
-  static inline size_t SInt32SizePlusOne(int32_t value);
-  static inline size_t SInt64SizePlusOne(int64_t value);
-  static inline size_t EnumSizePlusOne(int value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t Int32Size(
+      int32_t value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t Int64Size(
+      int64_t value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t UInt32Size(
+      uint32_t value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t UInt64Size(
+      uint64_t value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t SInt32Size(
+      int32_t value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t SInt64Size(
+      int64_t value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t EnumSize(int value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t Int32SizePlusOne(
+      int32_t value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t Int64SizePlusOne(
+      int64_t value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t UInt32SizePlusOne(
+      uint32_t value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t UInt64SizePlusOne(
+      uint64_t value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t SInt32SizePlusOne(
+      int32_t value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t SInt64SizePlusOne(
+      int64_t value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t EnumSizePlusOne(
+      int value);
 
-  static size_t Int32Size(const RepeatedField<int32_t>& value);
-  static size_t Int64Size(const RepeatedField<int64_t>& value);
-  static size_t UInt32Size(const RepeatedField<uint32_t>& value);
-  static size_t UInt64Size(const RepeatedField<uint64_t>& value);
-  static size_t SInt32Size(const RepeatedField<int32_t>& value);
-  static size_t SInt64Size(const RepeatedField<int64_t>& value);
-  static size_t EnumSize(const RepeatedField<int>& value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t Int32Size(
+      const RepeatedField<int32_t>& value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t Int64Size(
+      const RepeatedField<int64_t>& value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t UInt32Size(
+      const RepeatedField<uint32_t>& value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t UInt64Size(
+      const RepeatedField<uint64_t>& value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t SInt32Size(
+      const RepeatedField<int32_t>& value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t SInt64Size(
+      const RepeatedField<int64_t>& value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t EnumSize(
+      const RepeatedField<int>& value);
 
-  static size_t Int32SizeWithPackedTagSize(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t Int32SizeWithPackedTagSize(
       const RepeatedField<int32_t>& value, size_t tag_size,
       const internal::CachedSize& cached_size);
-  static size_t Int64SizeWithPackedTagSize(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t Int64SizeWithPackedTagSize(
       const RepeatedField<int64_t>& value, size_t tag_size,
       const internal::CachedSize& cached_size);
-  static size_t UInt32SizeWithPackedTagSize(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t UInt32SizeWithPackedTagSize(
       const RepeatedField<uint32_t>& value, size_t tag_size,
       const internal::CachedSize& cached_size);
-  static size_t UInt64SizeWithPackedTagSize(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t UInt64SizeWithPackedTagSize(
       const RepeatedField<uint64_t>& value, size_t tag_size,
       const internal::CachedSize& cached_size);
-  static size_t SInt32SizeWithPackedTagSize(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t SInt32SizeWithPackedTagSize(
       const RepeatedField<int32_t>& value, size_t tag_size,
       const internal::CachedSize& cached_size);
-  static size_t SInt64SizeWithPackedTagSize(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t SInt64SizeWithPackedTagSize(
       const RepeatedField<int64_t>& value, size_t tag_size,
       const internal::CachedSize& cached_size);
-  static size_t EnumSizeWithPackedTagSize(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t EnumSizeWithPackedTagSize(
       const RepeatedField<int>& value, size_t tag_size,
       const internal::CachedSize& cached_size);
 
@@ -633,21 +654,30 @@ class PROTOBUF_EXPORT WireFormatLite {
   static constexpr size_t kDoubleSize = 8;
   static constexpr size_t kBoolSize = 1;
 
-  static inline size_t StringSize(const std::string& value);
-  static inline size_t StringSize(const absl::Cord& value);
-  static inline size_t BytesSize(const std::string& value);
-  static inline size_t BytesSize(const absl::Cord& value);
-  static inline size_t StringSize(absl::string_view value);
-  static inline size_t BytesSize(absl::string_view value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t StringSize(
+      const std::string& value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t StringSize(
+      const absl::Cord& value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t BytesSize(
+      const std::string& value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t BytesSize(
+      const absl::Cord& value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t StringSize(
+      absl::string_view value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t BytesSize(
+      absl::string_view value);
 
   template <typename MessageType>
-  static inline size_t GroupSize(const MessageType& value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t GroupSize(
+      const MessageType& value);
   template <typename MessageType>
-  static inline size_t MessageSize(const MessageType& value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t MessageSize(
+      const MessageType& value);
 
   // Given the length of data, calculate the byte size of the data on the
   // wire if we encode the data as a length delimited field.
-  static inline size_t LengthDelimitedSize(size_t length);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t LengthDelimitedSize(
+      size_t length);
 
 
  private:
@@ -680,11 +710,13 @@ class PROTOBUF_EXPORT FieldSkipper {
   virtual ~FieldSkipper() = default;
 
   // Skip a field whose tag has already been consumed.
-  virtual bool SkipField(io::CodedInputStream* input, uint32_t tag);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual bool SkipField(
+      io::CodedInputStream* input, uint32_t tag);
 
   // Skip an entire message or group, up to an end-group tag (which is consumed)
   // or end-of-stream.
-  virtual bool SkipMessage(io::CodedInputStream* input);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual bool SkipMessage(
+      io::CodedInputStream* input);
 
   // Deal with an already-parsed unrecognized enum value.  The default
   // implementation does nothing, but the UnknownFieldSet-based implementation
@@ -701,8 +733,10 @@ class PROTOBUF_EXPORT CodedOutputStreamFieldSkipper : public FieldSkipper {
   ~CodedOutputStreamFieldSkipper() override = default;
 
   // implements FieldSkipper -----------------------------------------
-  bool SkipField(io::CodedInputStream* input, uint32_t tag) override;
-  bool SkipMessage(io::CodedInputStream* input) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SkipField(
+      io::CodedInputStream* input, uint32_t tag) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SkipMessage(
+      io::CodedInputStream* input) override;
   void SkipUnknownEnum(int field_number, int value) override;
 
  protected:
@@ -1036,7 +1070,8 @@ inline bool WireFormatLite::ReadRepeatedFixedSizePrimitive(
     }
     const int read_bytes = num_read * per_value_size;
     if (read_bytes > 0) {
-      input->Skip(read_bytes);
+      // TODO: Remove this suppression.
+      (void)input->Skip(read_bytes);
     }
   }
   return true;

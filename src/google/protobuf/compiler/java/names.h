@@ -187,6 +187,27 @@ PROTOC_EXPORT std::string KotlinExtensionsClassName(
     const Descriptor* descriptor);
 
 
+// Requires:
+//   descriptor != NULL
+// Returns:
+//   True if the generated message class should be nested in the generated proto
+//   file Java class.
+PROTOC_EXPORT bool NestedInFileClass(const Descriptor& message);
+
+// Requires:
+//   descriptor != NULL
+// Returns:
+//   True if the generated enum class should be nested in the generated proto
+//   file Java class.
+PROTOC_EXPORT bool NestedInFileClass(const EnumDescriptor& enm);
+
+// Requires:
+//   descriptor != NULL
+// Returns:
+//   True if the generated service class should be nested in the generated proto
+//   file Java class.
+PROTOC_EXPORT bool NestedInFileClass(const ServiceDescriptor& service);
+
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf

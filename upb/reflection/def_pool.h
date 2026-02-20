@@ -26,8 +26,8 @@ UPB_API void upb_DefPool_Free(upb_DefPool* s);
 
 UPB_API upb_DefPool* upb_DefPool_New(void);
 
-UPB_API const UPB_DESC(FeatureSetDefaults) *
-    upb_DefPool_FeatureSetDefaults(const upb_DefPool* s);
+UPB_API const google_protobuf_FeatureSetDefaults* upb_DefPool_FeatureSetDefaults(
+    const upb_DefPool* s);
 
 UPB_API bool upb_DefPool_SetFeatureSetDefaults(upb_DefPool* s,
                                                const char* serialized_defaults,
@@ -56,8 +56,8 @@ const upb_FileDef* upb_DefPool_FindFileByNameWithSize(const upb_DefPool* s,
 const upb_FieldDef* upb_DefPool_FindExtensionByMiniTable(
     const upb_DefPool* s, const upb_MiniTableExtension* ext);
 
-UPB_API const upb_FieldDef* upb_DefPool_FindExtensionByName(const upb_DefPool* s,
-                                                    const char* sym);
+UPB_API const upb_FieldDef* upb_DefPool_FindExtensionByName(
+    const upb_DefPool* s, const char* sym);
 
 const upb_FieldDef* upb_DefPool_FindExtensionByNameWithSize(
     const upb_DefPool* s, const char* name, size_t size);
@@ -67,7 +67,7 @@ const upb_FieldDef* upb_DefPool_FindExtensionByNumber(const upb_DefPool* s,
                                                       int32_t fieldnum);
 
 UPB_API const upb_ServiceDef* upb_DefPool_FindServiceByName(
-  const upb_DefPool* s, const char* name);
+    const upb_DefPool* s, const char* name);
 
 const upb_ServiceDef* upb_DefPool_FindServiceByNameWithSize(
     const upb_DefPool* s, const char* name, size_t size);
@@ -76,7 +76,7 @@ const upb_FileDef* upb_DefPool_FindFileContainingSymbol(const upb_DefPool* s,
                                                         const char* name);
 
 UPB_API const upb_FileDef* upb_DefPool_AddFile(
-    upb_DefPool* s, const UPB_DESC(FileDescriptorProto) * file_proto,
+    upb_DefPool* s, const google_protobuf_FileDescriptorProto* file_proto,
     upb_Status* status);
 
 UPB_API const upb_ExtensionRegistry* upb_DefPool_ExtensionRegistry(
@@ -85,6 +85,30 @@ UPB_API const upb_ExtensionRegistry* upb_DefPool_ExtensionRegistry(
 const upb_FieldDef** upb_DefPool_GetAllExtensions(const upb_DefPool* s,
                                                   const upb_MessageDef* m,
                                                   size_t* count);
+
+// If called, closed enums will be treated as open enums. This is non-standard
+// behavior and will cause conformance tests to fail, but it is more useful
+// behavior overall and can be used in situations where where the
+// non-conformance is acceptable.
+//
+// This function may only be called immediately after upb_DefPool_New().
+// It is an error to call it on an existing def pool or after defs have
+// already been added to the pool.
+//
+// Note: we still require that implicit presence fields have zero as their
+// default value.
+UPB_API void upb_DefPool_DisableClosedEnumChecking(upb_DefPool* s);
+bool upb_DefPool_ClosedEnumCheckingDisabled(const upb_DefPool* s);
+
+// If called, implicit field presence will be disabled.
+// This is non-standard behavior and will cause conformance tests to fail, but
+// it can be used in situations where where the non-conformance is acceptable.
+//
+// This function may only be called immediately after upb_DefPool_New().
+// It is an error to call it on an existing def pool or after defs have
+// already been added to the pool.
+UPB_API void upb_DefPool_DisableImplicitFieldPresence(upb_DefPool* s);
+bool upb_DefPool_ImplicitFieldPresenceDisabled(const upb_DefPool* s);
 
 #ifdef __cplusplus
 } /* extern "C" */

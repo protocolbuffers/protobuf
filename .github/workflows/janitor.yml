@@ -86,6 +86,7 @@ jobs:
           # label. Instead this run will just only view cases that have the label manually set as
           # 'stale' for the purpose of a reply unstaling it by readding the 'untriaged' label.
           days-before-stale: -1
+          days-before-close: -1
           stale-issue-label: 'wait for user action'
           stale-pr-label: 'wait for user action'
           labels-to-add-when-unstale: 'untriaged'
