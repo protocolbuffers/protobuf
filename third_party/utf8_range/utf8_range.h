@@ -1,8 +1,8 @@
 #ifndef THIRD_PARTY_UTF8_RANGE_UTF8_RANGE_H_
 #define THIRD_PARTY_UTF8_RANGE_UTF8_RANGE_H_
 
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
