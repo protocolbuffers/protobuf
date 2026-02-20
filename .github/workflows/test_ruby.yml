@@ -62,7 +62,7 @@ jobs:
 # e.g. https://github.com/actions/upload-artifact/issues/569
 #      - name: Archive log artifacts
 #        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
-#        uses: actions/upload-artifact@v4
+#        uses: actions/upload-artifact@v6
 #        with:
 #          name: test-logs-${{ matrix.ruby }}_${{ matrix.ffi || 'NATIVE' }}
 #          path: logs

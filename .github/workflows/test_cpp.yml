@@ -254,7 +254,7 @@ jobs:
           cat manifest/all.txt | grep -E '^lib/' | grep -vE '\.[0-9]+\.[0-9]+\.[0-9]+$' | sed 's:^lib/::g' > manifest/lib.txt
 
       - name: Upload install manifest
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # v6.0.0
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
           name: installed_files_${{ matrix.type }}
@@ -283,7 +283,7 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Download manifest
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131  # v7.0.0
         with:
           name: installed_files_${{ matrix.build }}
           path: ${{ matrix.build }}

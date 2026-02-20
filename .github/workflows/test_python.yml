@@ -96,7 +96,7 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Pin Python version
-        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f #v5.1.1
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
         with:
           python-version: ${{ matrix.version }}
           cache: pip
