@@ -39,7 +39,7 @@ using internal::cpp::Utf8CheckMode;
 std::vector<const FieldDescriptor*> GetOrderedFields(
     const Descriptor* descriptor) {
   std::vector<const FieldDescriptor*> ordered_fields;
-  for (auto field : FieldRange(descriptor)) {
+  for (auto field : internal::FieldRange(descriptor)) {
     ordered_fields.push_back(field);
   }
   std::sort(ordered_fields.begin(), ordered_fields.end(),
@@ -389,9 +389,11 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
           p->Emit("{_fl::Offset{sizeof($classname$::Impl_::Split)}},\n");
           break;
         case TailCallTableInfo::kSubMessage:
-          p->Emit({{"name", QualifiedDefaultInstanceName(
+          p->Emit({{"name", QualifiedMsgGlobalsInstanceName(
                                 aux_entry.field->message_type(), options_)}},
-                  "{::_pbi::FieldAuxDefaultMessage{}, &$name$},\n");
+                  R"cc(
+                    {::_pbi::FieldAuxDefaultMessage{}, &$name$},
+                  )cc");
           break;
         case TailCallTableInfo::kSubTable:
           p->Emit({{"name", QualifiedClassName(aux_entry.field->message_type(),
@@ -399,7 +401,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
                   "{::_pbi::TcParser::GetTable<$name$>()},\n");
           break;
         case TailCallTableInfo::kSubMessageWeak:
-          p->Emit({{"ptr", QualifiedDefaultInstancePtr(
+          p->Emit({{"ptr", QualifiedMsgGlobalsInstancePtr(
                                aux_entry.field->message_type(), options_)}},
                   "{::_pbi::FieldAuxDefaultMessage{}, &$ptr$},\n");
           break;

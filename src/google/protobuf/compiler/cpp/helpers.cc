@@ -572,33 +572,48 @@ std::string Namespace(const EnumDescriptor* d, const Options& options) {
   return Namespace(d->file(), options);
 }
 
-std::string DefaultInstanceType(const Descriptor* descriptor,
-                                const Options& /*options*/, bool split) {
-  return ClassName(descriptor) + (split ? "__Impl_Split" : "") +
-         "DefaultTypeInternal";
+std::string SplitDefaultInstanceType(const Descriptor* descriptor,
+                                     const Options& /*options*/) {
+  return absl::StrCat(ClassName(descriptor), "__Impl_SplitDefaultTypeInternal");
 }
 
-std::string DefaultInstanceName(const Descriptor* descriptor,
-                                const Options& /*options*/, bool split) {
+std::string SplitDefaultInstanceName(const Descriptor* descriptor,
+                                     const Options& /*options*/) {
   return absl::StrCat("_", ClassName(descriptor, false),
-                      (split ? "__Impl_Split" : ""), "_default_instance_");
+                      "__Impl_Split_default_instance_");
 }
 
-std::string DefaultInstancePtr(const Descriptor* descriptor,
-                               const Options& options, bool split) {
-  return absl::StrCat(DefaultInstanceName(descriptor, options, split), "ptr_");
+std::string MsgGlobalsInstanceType(const Descriptor* descriptor,
+                                   const Options& /*options*/) {
+  return absl::StrCat(ClassName(descriptor), "GlobalsTypeInternal");
 }
 
-std::string QualifiedDefaultInstanceName(const Descriptor* descriptor,
-                                         const Options& options, bool split) {
+std::string MsgGlobalsInstanceName(const Descriptor* descriptor,
+                                   const Options& /*options*/) {
+  return absl::StrCat("_", ClassName(descriptor, false), "_globals_");
+}
+
+std::string MsgGlobalsInstancePtr(const Descriptor* descriptor,
+                                  const Options& options) {
+  return absl::StrCat(MsgGlobalsInstanceName(descriptor, options), "ptr_");
+}
+
+std::string QualifiedSplitDefaultInstanceName(const Descriptor* descriptor,
+                                              const Options& options) {
+  return QualifiedFileLevelSymbol(descriptor->file(),
+                                  SplitDefaultInstanceName(descriptor, options),
+                                  options);
+}
+
+std::string QualifiedMsgGlobalsInstanceName(const Descriptor* descriptor,
+                                            const Options& options) {
   return QualifiedFileLevelSymbol(
-      descriptor->file(), DefaultInstanceName(descriptor, options, split),
-      options);
+      descriptor->file(), MsgGlobalsInstanceName(descriptor, options), options);
 }
 
-std::string QualifiedDefaultInstancePtr(const Descriptor* descriptor,
-                                        const Options& options, bool split) {
-  return absl::StrCat(QualifiedDefaultInstanceName(descriptor, options, split),
+std::string QualifiedMsgGlobalsInstancePtr(const Descriptor* descriptor,
+                                           const Options& options) {
+  return absl::StrCat(QualifiedMsgGlobalsInstanceName(descriptor, options),
                       "ptr_");
 }
 
@@ -609,8 +624,7 @@ std::string ClassDataType(const Descriptor* descriptor,
                  // via options.
                  IsBootstrapProto(options, descriptor->file())
              ? "ClassDataFull"
-             : absl::StrFormat("ClassDataLite<%d>",
-                               descriptor->full_name().size() + 1);
+             : "ClassDataLite";
 }
 
 std::string DescriptorTableName(const FileDescriptor* file,
@@ -1729,7 +1743,7 @@ bool UsingImplicitWeakDescriptor(const FileDescriptor* file,
 
 std::string StrongReferenceToType(const Descriptor* desc,
                                   const Options& options) {
-  const auto name = QualifiedDefaultInstanceName(desc, options);
+  const auto name = QualifiedMsgGlobalsInstanceName(desc, options);
   return absl::StrFormat("::%s::internal::StrongPointer<decltype(%s)*, &%s>()",
                          ProtobufNamespace(options), name, name);
 }
@@ -1866,7 +1880,7 @@ int CollectFieldsExcludingWeakAndOneof(
     const Descriptor* d, const Options& options,
     std::vector<const FieldDescriptor*>& fields) {
   int num_weak_fields = 0;
-  for (auto field : FieldRange(d)) {
+  for (auto field : internal::FieldRange(d)) {
     if (IsWeak(field, options)) {
       ++num_weak_fields;
     }
@@ -2136,7 +2150,7 @@ FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
 
 bool HasMessageFieldOrExtension(const Descriptor* desc) {
   if (desc->extension_range_count() > 0) return true;
-  for (const auto* f : FieldRange(desc)) {
+  for (const auto* f : internal::FieldRange(desc)) {
     if (f->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) return true;
   }
   return false;

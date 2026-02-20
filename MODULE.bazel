@@ -13,8 +13,6 @@ module(
 # https://bazel.build/versions/6.0.0/build/bzlmod#version-resolution
 # Thus the highest version in their module graph is resolved.
 
-# These dependencies must be declared before the other rules dependencies.
-bazel_dep(name = "rules_apple", version = "3.16.0", repo_name = "build_bazel_rules_apple")
 bazel_dep(name = "apple_support", version = "1.15.1", repo_name = "build_bazel_apple_support")
 
 # Keep apple_support on 1.15.1 for now to avoid this issue:
@@ -45,14 +43,6 @@ bazel_dep(name = "rules_kotlin", version = "1.9.6")
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.6.0")
-
-# Pin to rules_proto to 7.1.0 to avoid toolchain incompatibilities when
-# --incompatible_enable_proto_toolchain_resolution=true in Bazel 7.
-# rules_proto 7.0.2 from deps incorrectly rules_proto's toolchain_type but protobuf's toolchain, but
-# 7.1.0 uses protobuf's toolchain and toolchain_type.
-# TODO: Restore to dev_dependency once Bazel 7 is dropped.
-# rules_proto is needed for @com_google_protobuf_v25 used in //compatibility/... tests
-bazel_dep(name = "rules_proto", version = "7.1.0")
 
 bazel_dep(name = "rules_rust", version = "0.63.0", dev_dependency = True)
 bazel_dep(name = "rules_ruby", version = "0.17.3", dev_dependency = True)
@@ -116,7 +106,7 @@ register_toolchains(
 )
 
 # Define toolchains that use pre-built protoc binaries.
-prebuilt_protoc = use_extension("//bazel/private:prebuilt_protoc_extension.bzl", "protoc")
+prebuilt_protoc = use_extension("//bazel/private/oss/toolchains/prebuilt:protoc_extension.bzl", "protoc")
 use_repo(
     prebuilt_protoc,
     "prebuilt_protoc.linux_aarch_64",
@@ -130,13 +120,14 @@ use_repo(
     "prebuilt_protoc.win64",
 )
 
-# However this registration only matters if the config_setting for prefer_prebuilt_protoc is true,
-# using --@protobuf//bazel/toolchains:prefer_prebuilt_protoc
-register_toolchains("//bazel/private/toolchains/prebuilt:all")
+# This registration applies when the config_setting for prefer_prebuilt_protoc is true.
+# This is now enabled by default.
+# It can be disabled using --@protobuf//bazel/flags:prefer_prebuilt_protoc=false
+register_toolchains("//bazel/private/oss/toolchains/prebuilt:all")
 
 # From-source protobuf toolchains
 # Fallback if nothing is already registered
-register_toolchains("//bazel/private/toolchains:all")
+register_toolchains("//bazel/private/oss/toolchains:all")
 
 SUPPORTED_PYTHON_VERSIONS = [
     "3.10",
@@ -149,7 +140,7 @@ SUPPORTED_PYTHON_VERSIONS = [
 # TODO: Replace system_python with hermetic_python.
 # TODO: Remove dev_dependency once system_python is no longer used and we support
 # python/upb in Bazel.
-system_python = use_extension("//python/dist:system_python.bzl", "system_python_extension", dev_dependency = True)
+system_python = use_extension("//python/dist:system_python.bzl", "system_python_extension")
 system_python.find(
     name = "system_python",
     minimum = "3.9",
@@ -326,6 +317,21 @@ archive_override(
     ],
     strip_prefix = "protobuf-29.0",
     urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz"],
+)
+
+# Register C++ toolchains for cross-compilation. These are used for compiling release binaries of
+# protoc and the Python extension. They are disabled unless --//toolchain:release=true is passed.
+register_toolchains(
+    "//toolchain:osx-x86_64-toolchain",
+    "//toolchain:osx-aarch_64-toolchain",
+    "//toolchain:linux-aarch_64-toolchain",
+    "//toolchain:linux-ppcle_64-toolchain",
+    "//toolchain:linux-s390_64-toolchain",
+    "//toolchain:linux-x86_32-toolchain",
+    "//toolchain:linux-x86_64-toolchain",
+    "//toolchain:win32-toolchain",
+    "//toolchain:win64-toolchain",
+    "//toolchain:k8-toolchain",
 )
 
 # Python headers for release

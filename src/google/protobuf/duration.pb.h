@@ -56,8 +56,8 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable descr
 namespace google {
 namespace protobuf {
 class Duration;
-struct DurationDefaultTypeInternal;
-PROTOBUF_EXPORT extern DurationDefaultTypeInternal _Duration_default_instance_;
+struct DurationGlobalsTypeInternal;
+PROTOBUF_EXPORT extern DurationGlobalsTypeInternal _Duration_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Duration_class_data_;
 }  // namespace protobuf
 }  // namespace google
@@ -123,8 +123,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Duration final : pu
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Duration& default_instance() {
-    return *reinterpret_cast<const Duration*>(
-        &_Duration_default_instance_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Duration>(
+        &_Duration_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(Duration& a, Duration& b) { a.Swap(&b); }

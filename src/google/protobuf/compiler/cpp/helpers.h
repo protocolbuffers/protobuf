@@ -151,27 +151,37 @@ std::string QualifiedExtensionName(const FieldDescriptor* d,
 std::string QualifiedExtensionName(const FieldDescriptor* d);
 
 // Type name of default instance.
-std::string DefaultInstanceType(const Descriptor* descriptor,
-                                const Options& options, bool split = false);
+std::string SplitDefaultInstanceType(const Descriptor* descriptor,
+                                     const Options& options);
 
 // Non-qualified name of the default_instance of this message.
-std::string DefaultInstanceName(const Descriptor* descriptor,
-                                const Options& options, bool split = false);
+std::string SplitDefaultInstanceName(const Descriptor* descriptor,
+                                     const Options& options);
+
+// Type name of globals instance.
+std::string MsgGlobalsInstanceType(const Descriptor* descriptor,
+                                   const Options& options);
+
+// Non-qualified name of the globals instance of this message.
+std::string MsgGlobalsInstanceName(const Descriptor* descriptor,
+                                   const Options& options);
 
 // Non-qualified name of the default instance pointer. This is used only for
 // implicit weak fields, where we need an extra indirection.
-std::string DefaultInstancePtr(const Descriptor* descriptor,
-                               const Options& options, bool split = false);
+std::string MsgGlobalsInstancePtr(const Descriptor* descriptor,
+                                  const Options& options);
 
 // Fully qualified name of the default_instance of this message.
-std::string QualifiedDefaultInstanceName(const Descriptor* descriptor,
-                                         const Options& options,
-                                         bool split = false);
+std::string QualifiedSplitDefaultInstanceName(const Descriptor* descriptor,
+                                              const Options& options);
+
+// Fully qualified name of the globals instance of this message.
+std::string QualifiedMsgGlobalsInstanceName(const Descriptor* descriptor,
+                                            const Options& options);
 
 // Fully qualified name of the default instance pointer.
-std::string QualifiedDefaultInstancePtr(const Descriptor* descriptor,
-                                        const Options& options,
-                                        bool split = false);
+std::string QualifiedMsgGlobalsInstancePtr(const Descriptor* descriptor,
+                                           const Options& options);
 
 // Name of the ClassData subclass used for a message.
 std::string ClassDataType(const Descriptor* descriptor, const Options& options);

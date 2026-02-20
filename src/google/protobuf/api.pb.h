@@ -58,16 +58,16 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable descr
 namespace google {
 namespace protobuf {
 class Api;
-struct ApiDefaultTypeInternal;
-PROTOBUF_EXPORT extern ApiDefaultTypeInternal _Api_default_instance_;
+struct ApiGlobalsTypeInternal;
+PROTOBUF_EXPORT extern ApiGlobalsTypeInternal _Api_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Api_class_data_;
 class Method;
-struct MethodDefaultTypeInternal;
-PROTOBUF_EXPORT extern MethodDefaultTypeInternal _Method_default_instance_;
+struct MethodGlobalsTypeInternal;
+PROTOBUF_EXPORT extern MethodGlobalsTypeInternal _Method_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Method_class_data_;
 class Mixin;
-struct MixinDefaultTypeInternal;
-PROTOBUF_EXPORT extern MixinDefaultTypeInternal _Mixin_default_instance_;
+struct MixinGlobalsTypeInternal;
+PROTOBUF_EXPORT extern MixinGlobalsTypeInternal _Mixin_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Mixin_class_data_;
 }  // namespace protobuf
 }  // namespace google
@@ -133,8 +133,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Mixin& default_instance() {
-    return *reinterpret_cast<const Mixin*>(
-        &_Mixin_default_instance_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Mixin>(
+        &_Mixin_globals_);
   }
   static constexpr int kIndexInFileMessages = 2;
   friend void swap(Mixin& a, Mixin& b) { a.Swap(&b); }
@@ -351,8 +351,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Method& default_instance() {
-    return *reinterpret_cast<const Method*>(
-        &_Method_default_instance_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Method>(
+        &_Method_globals_);
   }
   static constexpr int kIndexInFileMessages = 1;
   friend void swap(Method& a, Method& b) { a.Swap(&b); }
@@ -661,8 +661,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Api& default_instance() {
-    return *reinterpret_cast<const Api*>(
-        &_Api_default_instance_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Api>(
+        &_Api_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(Api& a, Api& b) { a.Swap(&b); }
@@ -1199,7 +1199,7 @@ inline bool Api::has_source_context() const {
 inline const ::google::protobuf::SourceContext& Api::_internal_source_context() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::SourceContext* p = _impl_.source_context_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::SourceContext&>(::google::protobuf::_SourceContext_default_instance_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::SourceContext>(&::google::protobuf::_SourceContext_globals_);
 }
 inline const ::google::protobuf::SourceContext& Api::source_context() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.source_context)

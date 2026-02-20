@@ -62,12 +62,12 @@ PROTOC_EXPORT extern const uint32_t JavaFeatures_NestInFileClassFeature_NestInFi
 enum JavaFeatures_Utf8Validation : int;
 PROTOC_EXPORT extern const uint32_t JavaFeatures_Utf8Validation_internal_data_[];
 class JavaFeatures;
-struct JavaFeaturesDefaultTypeInternal;
-PROTOC_EXPORT extern JavaFeaturesDefaultTypeInternal _JavaFeatures_default_instance_;
+struct JavaFeaturesGlobalsTypeInternal;
+PROTOC_EXPORT extern JavaFeaturesGlobalsTypeInternal _JavaFeatures_globals_;
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull JavaFeatures_class_data_;
 class JavaFeatures_NestInFileClassFeature;
-struct JavaFeatures_NestInFileClassFeatureDefaultTypeInternal;
-PROTOC_EXPORT extern JavaFeatures_NestInFileClassFeatureDefaultTypeInternal _JavaFeatures_NestInFileClassFeature_default_instance_;
+struct JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal;
+PROTOC_EXPORT extern JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal _JavaFeatures_NestInFileClassFeature_globals_;
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull JavaFeatures_NestInFileClassFeature_class_data_;
 }  // namespace pb
 namespace google {
@@ -224,8 +224,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const JavaFeatures_NestInFileClassFeature& default_instance() {
-    return *reinterpret_cast<const JavaFeatures_NestInFileClassFeature*>(
-        &_JavaFeatures_NestInFileClassFeature_default_instance_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<JavaFeatures_NestInFileClassFeature>(
+        &_JavaFeatures_NestInFileClassFeature_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(JavaFeatures_NestInFileClassFeature& a, JavaFeatures_NestInFileClassFeature& b) { a.Swap(&b); }
@@ -384,8 +384,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const JavaFeatures& default_instance() {
-    return *reinterpret_cast<const JavaFeatures*>(
-        &_JavaFeatures_default_instance_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<JavaFeatures>(
+        &_JavaFeatures_globals_);
   }
   static constexpr int kIndexInFileMessages = 1;
   friend void swap(JavaFeatures& a, JavaFeatures& b) { a.Swap(&b); }
@@ -612,8 +612,7 @@ PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull JavaFeatu
 
 inline constexpr int kJavaFieldNumber = 1001;
 PROTOC_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
-    ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::JavaFeatures >, 11, false>
-    java;
+    ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::JavaFeatures >, 11, false>(java);
 
 // ===================================================================
 

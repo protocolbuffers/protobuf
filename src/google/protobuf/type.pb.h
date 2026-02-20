@@ -65,24 +65,24 @@ PROTOBUF_EXPORT extern const uint32_t Field_Kind_internal_data_[];
 enum Syntax : int;
 PROTOBUF_EXPORT extern const uint32_t Syntax_internal_data_[];
 class Enum;
-struct EnumDefaultTypeInternal;
-PROTOBUF_EXPORT extern EnumDefaultTypeInternal _Enum_default_instance_;
+struct EnumGlobalsTypeInternal;
+PROTOBUF_EXPORT extern EnumGlobalsTypeInternal _Enum_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Enum_class_data_;
 class EnumValue;
-struct EnumValueDefaultTypeInternal;
-PROTOBUF_EXPORT extern EnumValueDefaultTypeInternal _EnumValue_default_instance_;
+struct EnumValueGlobalsTypeInternal;
+PROTOBUF_EXPORT extern EnumValueGlobalsTypeInternal _EnumValue_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValue_class_data_;
 class Field;
-struct FieldDefaultTypeInternal;
-PROTOBUF_EXPORT extern FieldDefaultTypeInternal _Field_default_instance_;
+struct FieldGlobalsTypeInternal;
+PROTOBUF_EXPORT extern FieldGlobalsTypeInternal _Field_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Field_class_data_;
 class Option;
-struct OptionDefaultTypeInternal;
-PROTOBUF_EXPORT extern OptionDefaultTypeInternal _Option_default_instance_;
+struct OptionGlobalsTypeInternal;
+PROTOBUF_EXPORT extern OptionGlobalsTypeInternal _Option_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Option_class_data_;
 class Type;
-struct TypeDefaultTypeInternal;
-PROTOBUF_EXPORT extern TypeDefaultTypeInternal _Type_default_instance_;
+struct TypeGlobalsTypeInternal;
+PROTOBUF_EXPORT extern TypeGlobalsTypeInternal _Type_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Type_class_data_;
 template <>
 internal::EnumTraitsT<::google::protobuf::Field_Cardinality_internal_data_>
@@ -299,8 +299,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Option& default_instance() {
-    return *reinterpret_cast<const Option*>(
-        &_Option_default_instance_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Option>(
+        &_Option_globals_);
   }
   static constexpr int kIndexInFileMessages = 4;
   friend void swap(Option& a, Option& b) { a.Swap(&b); }
@@ -518,8 +518,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Field& default_instance() {
-    return *reinterpret_cast<const Field*>(
-        &_Field_default_instance_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Field>(
+        &_Field_globals_);
   }
   static constexpr int kIndexInFileMessages = 1;
   friend void swap(Field& a, Field& b) { a.Swap(&b); }
@@ -911,8 +911,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const EnumValue& default_instance() {
-    return *reinterpret_cast<const EnumValue*>(
-        &_EnumValue_default_instance_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<EnumValue>(
+        &_EnumValue_globals_);
   }
   static constexpr int kIndexInFileMessages = 3;
   friend void swap(EnumValue& a, EnumValue& b) { a.Swap(&b); }
@@ -1146,8 +1146,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Type& default_instance() {
-    return *reinterpret_cast<const Type*>(
-        &_Type_default_instance_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Type>(
+        &_Type_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(Type& a, Type& b) { a.Swap(&b); }
@@ -1465,8 +1465,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Enum& default_instance() {
-    return *reinterpret_cast<const Enum*>(
-        &_Enum_default_instance_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Enum>(
+        &_Enum_globals_);
   }
   static constexpr int kIndexInFileMessages = 2;
   friend void swap(Enum& a, Enum& b) { a.Swap(&b); }
@@ -1978,7 +1978,7 @@ inline bool Type::has_source_context() const {
 inline const ::google::protobuf::SourceContext& Type::_internal_source_context() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::SourceContext* p = _impl_.source_context_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::SourceContext&>(::google::protobuf::_SourceContext_default_instance_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::SourceContext>(&::google::protobuf::_SourceContext_globals_);
 }
 inline const ::google::protobuf::SourceContext& Type::source_context() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Type.source_context)
@@ -2787,7 +2787,7 @@ inline bool Enum::has_source_context() const {
 inline const ::google::protobuf::SourceContext& Enum::_internal_source_context() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::SourceContext* p = _impl_.source_context_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::SourceContext&>(::google::protobuf::_SourceContext_default_instance_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::SourceContext>(&::google::protobuf::_SourceContext_globals_);
 }
 inline const ::google::protobuf::SourceContext& Enum::source_context() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.source_context)
@@ -3189,7 +3189,7 @@ inline bool Option::has_value() const {
 inline const ::google::protobuf::Any& Option::_internal_value() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::Any* p = _impl_.value_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::Any&>(::google::protobuf::_Any_default_instance_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::Any>(&::google::protobuf::_Any_globals_);
 }
 inline const ::google::protobuf::Any& Option::value() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Option.value)

@@ -56,8 +56,8 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable descr
 namespace google {
 namespace protobuf {
 class SourceContext;
-struct SourceContextDefaultTypeInternal;
-PROTOBUF_EXPORT extern SourceContextDefaultTypeInternal _SourceContext_default_instance_;
+struct SourceContextGlobalsTypeInternal;
+PROTOBUF_EXPORT extern SourceContextGlobalsTypeInternal _SourceContext_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceContext_class_data_;
 }  // namespace protobuf
 }  // namespace google
@@ -123,8 +123,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceContext final
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const SourceContext& default_instance() {
-    return *reinterpret_cast<const SourceContext*>(
-        &_SourceContext_default_instance_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<SourceContext>(
+        &_SourceContext_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(SourceContext& a, SourceContext& b) { a.Swap(&b); }

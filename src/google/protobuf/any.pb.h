@@ -56,8 +56,8 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable descr
 namespace google {
 namespace protobuf {
 class Any;
-struct AnyDefaultTypeInternal;
-PROTOBUF_EXPORT extern AnyDefaultTypeInternal _Any_default_instance_;
+struct AnyGlobalsTypeInternal;
+PROTOBUF_EXPORT extern AnyGlobalsTypeInternal _Any_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Any_class_data_;
 }  // namespace protobuf
 }  // namespace google
@@ -123,8 +123,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Any final : public 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Any& default_instance() {
-    return *reinterpret_cast<const Any*>(
-        &_Any_default_instance_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Any>(
+        &_Any_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   // implements Any

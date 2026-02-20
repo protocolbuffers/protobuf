@@ -9,10 +9,10 @@
 
 use crate::__internal::{Enum, MatcherEq, Private, SealedInternal};
 use crate::{
-    AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapKey, MapMut,
-    MapValue, MapView, MergeFrom, Message, MessageMutInterop, Mut, MutProxied, ParseError,
-    ProtoBytes, ProtoStr, ProtoString, Proxied, Repeated, RepeatedMut, RepeatedView, Serialize,
-    SerializeError, Singular, TakeFrom, View,
+    AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapValue,
+    MapView, MergeFrom, Message, MessageMutInterop, Mut, MutProxied, ParseError, ProtoBytes,
+    ProtoStr, ProtoString, Proxied, Repeated, RepeatedMut, RepeatedView, Serialize, SerializeError,
+    Singular, TakeFrom, View,
 };
 use core::fmt::Debug;
 use paste::paste;
@@ -24,6 +24,12 @@ use std::mem::{ManuallyDrop, MaybeUninit};
 use std::ops::Deref;
 use std::ptr::{self, NonNull};
 use std::slice;
+
+/// A trait implemented by types which are allowed as keys in maps.
+/// This is all types for fields except for repeated, maps, bytes, messages, enums and floating point types.
+/// This trait is defined separately in cpp.rs and upb.rs to be able to set better subtrait bounds.
+#[doc(hidden)]
+pub trait MapKey: Proxied + FfiMapKey + CppMapTypeConversions + SealedInternal {}
 
 /// Defines a set of opaque, unique, non-accessible pointees.
 ///
@@ -920,7 +926,7 @@ impl UntypedMapIterator {
     ) -> Option<(View<'a, K>, View<'a, V>)>
     where
         K: MapKey + 'a,
-        V: MapValue<K> + 'a,
+        V: MapValue + 'a,
     {
         if self.at_end() {
             return None;
@@ -1267,12 +1273,11 @@ generate_map_key_impl!(
     ProtoString, PtrAndLen, str_to_ptrlen, ptrlen_to_str;
 );
 
-impl<Key, Value> MapValue<Key> for Value
+impl<Value> MapValue for Value
 where
-    Key: MapKey + FfiMapKey + CppMapTypeConversions,
     Value: Singular + CppMapTypeConversions,
 {
-    fn map_new(_private: Private) -> Map<Key, Self> {
+    fn map_new<Key: MapKey>(_private: Private) -> Map<Key, Self> {
         unsafe {
             Map::from_inner(
                 Private,
@@ -1281,23 +1286,23 @@ where
         }
     }
 
-    unsafe fn map_free(_private: Private, map: &mut Map<Key, Self>) {
+    unsafe fn map_free<Key: MapKey>(_private: Private, map: &mut Map<Key, Self>) {
         unsafe {
             proto2_rust_map_free(map.as_raw(Private));
         }
     }
 
-    fn map_clear(_private: Private, mut map: MapMut<Key, Self>) {
+    fn map_clear<Key: MapKey>(_private: Private, mut map: MapMut<Key, Self>) {
         unsafe {
             proto2_rust_map_clear(map.as_raw(Private));
         }
     }
 
-    fn map_len(_private: Private, map: MapView<Key, Self>) -> usize {
+    fn map_len<Key: MapKey>(_private: Private, map: MapView<Key, Self>) -> usize {
         unsafe { proto2_rust_map_size(map.as_raw(Private)) }
     }
 
-    fn map_insert(
+    fn map_insert<Key: MapKey>(
         _private: Private,
         mut map: MapMut<Key, Self>,
         key: View<'_, Key>,
@@ -1306,7 +1311,7 @@ where
         unsafe { Key::insert(map.as_raw(Private), key, value.into_proxied(Private).to_map_value()) }
     }
 
-    fn map_get<'a>(
+    fn map_get<'a, Key: MapKey>(
         _private: Private,
         map: MapView<'a, Key, Self>,
         key: View<'_, Key>,
@@ -1319,7 +1324,7 @@ where
         unsafe { Some(Self::from_map_value(value.assume_init())) }
     }
 
-    fn map_get_mut<'a>(
+    fn map_get_mut<'a, Key: MapKey>(
         _private: Private,
         mut map: MapMut<'a, Key, Self>,
         key: View<'_, Key>,
@@ -1338,11 +1343,15 @@ where
         unsafe { Some(Self::mut_from_map_value(value.assume_init())) }
     }
 
-    fn map_remove(_private: Private, mut map: MapMut<Key, Self>, key: View<'_, Key>) -> bool {
+    fn map_remove<Key: MapKey>(
+        _private: Private,
+        mut map: MapMut<Key, Self>,
+        key: View<'_, Key>,
+    ) -> bool {
         unsafe { Key::remove(map.as_raw(Private), key) }
     }
 
-    fn map_iter(_private: Private, map: MapView<Key, Self>) -> MapIter<Key, Self> {
+    fn map_iter<Key: MapKey>(_private: Private, map: MapView<Key, Self>) -> MapIter<Key, Self> {
         // SAFETY:
         // - The backing map for `map.as_raw` is valid for at least '_.
         // - A View that is live for '_ guarantees the backing map is unmodified for '_.
@@ -1351,7 +1360,7 @@ where
         unsafe { MapIter::from_raw(Private, proto2_rust_map_iter(map.as_raw(Private))) }
     }
 
-    fn map_iter_next<'a>(
+    fn map_iter_next<'a, Key: MapKey>(
         _private: Private,
         iter: &mut MapIter<'a, Key, Self>,
     ) -> Option<(View<'a, Key>, View<'a, Self>)> {

@@ -44,8 +44,7 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
   bool is_foreign = IsCrossFileMessage(field);
   std::string field_name = FieldMemberName(field, split);
   std::string qualified_type = FieldMessageTypeName(field, opts);
-  std::string default_ref =
-      QualifiedDefaultInstanceName(field->message_type(), opts);
+
   std::string base = absl::StrCat(
       "::", ProtobufNamespace(opts), "::",
       HasDescriptorMethods(field->file(), opts) ? "Message" : "MessageLite");
@@ -53,7 +52,11 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
   return {
       {"Submsg", qualified_type},
       {"MemberType", use_base_class ? base : qualified_type},
-      {"kDefault", default_ref},
+      {"kDefaultRef",
+       absl::Substitute(
+           "*::google::protobuf::internal::MessageGlobalsBase::default_instance<$0>(&$1)",
+           qualified_type,
+           QualifiedMsgGlobalsInstanceName(field->message_type(), opts))},
       Sub{"cast_to_field",
           use_base_class ? absl::Substitute("reinterpret_cast<$0*>", base) : ""}
           .ConditionalFunctionCall(),
@@ -193,7 +196,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $TsanDetectConcurrentRead$;
       $StrongRef$;
       const $Submsg$* p = $cast_field_$;
-      return p != nullptr ? *p : reinterpret_cast<const $Submsg$&>($kDefault$);
+      return p != nullptr ? *p : $kDefaultRef$;
     }
     inline const $Submsg$& $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
@@ -558,7 +561,7 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     inline const $Submsg$& $Msg$::_internal_$name_internal$() const {
       $StrongRef$;
       return $has_field$ ? static_cast<const $Submsg$&>(*$cast_field_$)
-                         : reinterpret_cast<const $Submsg$&>($kDefault$);
+                         : $kDefaultRef$;
     }
   )cc");
   p->Emit(R"cc(

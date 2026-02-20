@@ -57,8 +57,8 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable descr
 namespace google {
 namespace protobuf {
 class Empty;
-struct EmptyDefaultTypeInternal;
-PROTOBUF_EXPORT extern EmptyDefaultTypeInternal _Empty_default_instance_;
+struct EmptyGlobalsTypeInternal;
+PROTOBUF_EXPORT extern EmptyGlobalsTypeInternal _Empty_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Empty_class_data_;
 }  // namespace protobuf
 }  // namespace google
@@ -123,8 +123,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Empty& default_instance() {
-    return *reinterpret_cast<const Empty*>(
-        &_Empty_default_instance_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Empty>(
+        &_Empty_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(Empty& a, Empty& b) { a.Swap(&b); }

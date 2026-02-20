@@ -59,8 +59,8 @@ namespace pb {
 enum CppFeatures_StringType : int;
 PROTOBUF_EXPORT extern const uint32_t CppFeatures_StringType_internal_data_[];
 class CppFeatures;
-struct CppFeaturesDefaultTypeInternal;
-PROTOBUF_EXPORT extern CppFeaturesDefaultTypeInternal _CppFeatures_default_instance_;
+struct CppFeaturesGlobalsTypeInternal;
+PROTOBUF_EXPORT extern CppFeaturesGlobalsTypeInternal _CppFeatures_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull CppFeatures_class_data_;
 }  // namespace pb
 namespace google {
@@ -178,8 +178,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const CppFeatures& default_instance() {
-    return *reinterpret_cast<const CppFeatures*>(
-        &_CppFeatures_default_instance_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<CppFeatures>(
+        &_CppFeatures_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(CppFeatures& a, CppFeatures& b) { a.Swap(&b); }
@@ -378,8 +378,7 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull CppFeat
 
 inline constexpr int kCppFieldNumber = 1000;
 PROTOBUF_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
-    ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::CppFeatures >, 11, false>
-    cpp;
+    ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::CppFeatures >, 11, false>(cpp);
 
 // ===================================================================
 

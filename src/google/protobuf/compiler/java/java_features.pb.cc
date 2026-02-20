@@ -25,6 +25,17 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+namespace {
+PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
+    file_reflection_data[] = {
+        // ::pb::JavaFeatures_NestInFileClassFeature
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto, /* tracker*/ nullptr,},
+        // ::pb::JavaFeatures
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto, /* tracker*/ nullptr,},
+};
+}  // namespace
+#endif
 namespace pb {
 template <typename>
 constexpr JavaFeatures_NestInFileClassFeature::JavaFeatures_NestInFileClassFeature(::_pbi::ConstantInitialized)
@@ -34,16 +45,16 @@ constexpr JavaFeatures_NestInFileClassFeature::JavaFeatures_NestInFileClassFeatu
     : ::google::protobuf::internal::ZeroFieldsBase() {
 }
 #endif  // PROTOBUF_CUSTOM_VTABLE
-struct JavaFeatures_NestInFileClassFeatureDefaultTypeInternal {
-  constexpr JavaFeatures_NestInFileClassFeatureDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~JavaFeatures_NestInFileClassFeatureDefaultTypeInternal() {}
+struct JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
+  constexpr JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  ~JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal() {}
   union {
-    JavaFeatures_NestInFileClassFeature _instance;
+    JavaFeatures_NestInFileClassFeature _default;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 JavaFeatures_NestInFileClassFeatureDefaultTypeInternal _JavaFeatures_NestInFileClassFeature_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal _JavaFeatures_NestInFileClassFeature_globals_;
 
 inline constexpr JavaFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -64,16 +75,16 @@ constexpr JavaFeatures::JavaFeatures(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct JavaFeaturesDefaultTypeInternal {
-  constexpr JavaFeaturesDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~JavaFeaturesDefaultTypeInternal() {}
+struct JavaFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
+  constexpr JavaFeaturesGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  ~JavaFeaturesGlobalsTypeInternal() {}
   union {
-    JavaFeatures _instance;
+    JavaFeatures _default;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 JavaFeaturesDefaultTypeInternal _JavaFeatures_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 JavaFeaturesGlobalsTypeInternal _JavaFeatures_globals_;
 }  // namespace pb
 static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
     file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[2];
@@ -104,8 +115,8 @@ static const ::_pbi::MigrationSchema
         {1, sizeof(::pb::JavaFeatures)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::pb::_JavaFeatures_NestInFileClassFeature_default_instance_._instance,
-    &::pb::_JavaFeatures_default_instance_._instance,
+    &::pb::_JavaFeatures_NestInFileClassFeature_globals_._default,
+    &::pb::_JavaFeatures_globals_._default,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -217,9 +228,10 @@ constexpr auto JavaFeatures_NestInFileClassFeature::InternalNewImpl_() {
                                             alignof(JavaFeatures_NestInFileClassFeature));
 }
 constexpr auto JavaFeatures_NestInFileClassFeature::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
-          &_JavaFeatures_NestInFileClassFeature_default_instance_._instance,
+          &_JavaFeatures_NestInFileClassFeature_globals_._default,
           &_table_.header,
           nullptr,  // IsInitialized
           &JavaFeatures_NestInFileClassFeature::MergeImpl,
@@ -232,10 +244,28 @@ constexpr auto JavaFeatures_NestInFileClassFeature::InternalGenerateClassData_()
           PROTOBUF_FIELD_OFFSET(JavaFeatures_NestInFileClassFeature, _impl_._cached_size_),
           false,
       },
-      &JavaFeatures_NestInFileClassFeature::kDescriptorMethods,
+      &file_reflection_data[0]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_JavaFeatures_NestInFileClassFeature_globals_._default,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &JavaFeatures_NestInFileClassFeature::MergeImpl,
+          ::google::protobuf::internal::ZeroFieldsBase::GetNewImpl<JavaFeatures_NestInFileClassFeature>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &JavaFeatures_NestInFileClassFeature::SharedDtor,
+          ::google::protobuf::internal::ZeroFieldsBase::GetClearImpl<JavaFeatures_NestInFileClassFeature>(), &JavaFeatures_NestInFileClassFeature::ByteSizeLong,
+              &JavaFeatures_NestInFileClassFeature::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(JavaFeatures_NestInFileClassFeature, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -354,9 +384,10 @@ constexpr auto JavaFeatures::InternalNewImpl_() {
                                             alignof(JavaFeatures));
 }
 constexpr auto JavaFeatures::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
-          &_JavaFeatures_default_instance_._instance,
+          &_JavaFeatures_globals_._default,
           &_table_.header,
           nullptr,  // IsInitialized
           &JavaFeatures::MergeImpl,
@@ -369,10 +400,28 @@ constexpr auto JavaFeatures::InternalGenerateClassData_() {
           PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._cached_size_),
           false,
       },
-      &JavaFeatures::kDescriptorMethods,
+      &file_reflection_data[1]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_JavaFeatures_globals_._default,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &JavaFeatures::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<JavaFeatures>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &JavaFeatures::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<JavaFeatures>(), &JavaFeatures::ByteSizeLong,
+              &JavaFeatures::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._cached_size_),
+          false,
+      },
+      &::_pbi::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -624,7 +673,7 @@ void JavaFeatures::InternalSwap(JavaFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL
 PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<
         ::google::protobuf::FeatureSet, ::_pbi::MessageTypeTraits< ::pb::JavaFeatures >, 11, false>
-        java(kJavaFieldNumber, &::pb::_JavaFeatures_default_instance_);
+        java(kJavaFieldNumber, &::pb::_JavaFeatures_globals_);
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
 namespace google {
