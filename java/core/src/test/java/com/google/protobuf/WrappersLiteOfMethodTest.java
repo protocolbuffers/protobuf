@@ -10,6 +10,7 @@ package com.google.protobuf;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.protobuf.wrapperstest.WrappersTestProto.TopLevelMessage;
+import java.nio.charset.StandardCharsets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -28,7 +29,7 @@ public class WrappersLiteOfMethodTest {
     builder.setFieldUint64(UInt64Value.of(23333333333333L));
     builder.setFieldBool(BoolValue.of(true));
     builder.setFieldString(StringValue.of("23333"));
-    builder.setFieldBytes(BytesValue.of(ByteString.wrap("233".getBytes(Internal.UTF_8))));
+    builder.setFieldBytes(BytesValue.of(ByteString.wrap("233".getBytes(StandardCharsets.UTF_8))));
 
     TopLevelMessage message = builder.build();
     assertThat(message.getFieldDouble().getValue()).isEqualTo(2.333);
