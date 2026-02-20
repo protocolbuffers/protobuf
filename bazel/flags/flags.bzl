@@ -36,15 +36,15 @@ _FLAGS = {
         default = [".pb.cc"],
     ),
     "proto_toolchain_for_java": struct(
-        native = lambda ctx: getattr(ctx.attr, "_aspect_java_proto_toolchain"),
+        native = lambda ctx: "@bazel_tools//tools/proto:java_toolchain",
         default = "@bazel_tools//tools/proto:java_toolchain",
     ),
     "proto_toolchain_for_javalite": struct(
-        native = lambda ctx: getattr(ctx.attr, "_aspect_proto_toolchain_for_javalite"),
+        native = lambda ctx: "@bazel_tools//tools/proto:javalite_toolchain",
         default = "@bazel_tools//tools/proto:javalite_toolchain",
     ),
     "proto_toolchain_for_cc": struct(
-        native = lambda ctx: getattr(ctx.attr, "_aspect_cc_proto_toolchain"),
+        native = lambda ctx: "@bazel_tools//tools/proto:cc_toolchain",
         default = "@bazel_tools//tools/proto:cc_toolchain",
     ),
 }
