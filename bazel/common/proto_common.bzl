@@ -9,7 +9,6 @@
 
 load("@proto_bazel_features//:features.bzl", "bazel_features")
 load("//bazel/common:proto_lang_toolchain_info.bzl", "ProtoLangToolchainInfo")
-load("//bazel/private:native.bzl", "native_proto_common")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
 def _import_virtual_proto_path(path):
@@ -351,8 +350,5 @@ proto_common = struct(
     get_import_path = _get_import_path,
     ProtoLangToolchainInfo = ProtoLangToolchainInfo,
     INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION = toolchains.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION,
-    INCOMPATIBLE_PASS_TOOLCHAIN_TYPE = (
-        getattr(native_proto_common, "INCOMPATIBLE_PASS_TOOLCHAIN_TYPE", False) or
-        not hasattr(native_proto_common, "ProtoLangToolchainInfo")
-    ),
+    INCOMPATIBLE_PASS_TOOLCHAIN_TYPE = True,
 )

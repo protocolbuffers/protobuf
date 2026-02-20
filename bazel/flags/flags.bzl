@@ -11,28 +11,28 @@ visibility([
 # Maps flag names to their native reference
 _FLAGS = {
     "protocopt": struct(
-        native = lambda ctx: getattr(ctx.fragments.proto, "experimental_protoc_opts"),
+        native = lambda ctx: [],
         default = [],
     ),
     "experimental_proto_descriptor_sets_include_source_info": struct(
-        native = lambda ctx: getattr(ctx.attr, "_experimental_proto_descriptor_sets_include_source_info_native")[BuildSettingInfo].value,
+        native = lambda ctx: False,
         default = False,
     ),
-    "proto_compiler": struct(native = lambda ctx: getattr(ctx.attr, "_proto_compiler_native")[BuildSettingInfo].value, default = "@bazel_tools//tools/proto:protoc"),
+    "proto_compiler": struct(native = lambda ctx: Label("@bazel_tools//tools/proto:protoc"), default = "@bazel_tools//tools/proto:protoc"),
     "strict_proto_deps": struct(
-        native = lambda ctx: getattr(ctx.attr, "_strict_proto_deps_native")[BuildSettingInfo].value,
+        native = lambda ctx: "error",
         default = "error",
     ),
     "strict_public_imports": struct(
-        native = lambda ctx: getattr(ctx.attr, "_strict_public_imports_native")[BuildSettingInfo].value,
+        native = lambda ctx: "off",
         default = "off",
     ),
     "cc_proto_library_header_suffixes": struct(
-        native = lambda ctx: getattr(ctx.fragments.proto, "cc_proto_library_header_suffixes"),
+        native = lambda ctx: [".pb.h"],
         default = [".pb.h"],
     ),
     "cc_proto_library_source_suffixes": struct(
-        native = lambda ctx: getattr(ctx.fragments.proto, "cc_proto_library_source_suffixes"),
+        native = lambda ctx: [".pb.cc"],
         default = [".pb.cc"],
     ),
     "proto_toolchain_for_java": struct(
