@@ -1203,6 +1203,11 @@ message FeatureSet {
       type: ".pb.PythonFeatures"
     },
     declaration = {
+      number: 1004,
+      full_name: ".pb.csharp",
+      type: ".pb.CSharpFeatures"
+    },
+    declaration = {
       number: 1100,
       full_name: ".imp.impress_feature_set",
       type: ".imp.ImpressFeatureSet"

@@ -560,124 +560,6 @@ void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
   )cc");
 }
 
-void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
-  MessageGenerator* generator = message_generators_[idx].get();
-
-  if (!ShouldGenerateClass(generator->descriptor(), options_)) return;
-
-  // Generate the split instance first because it's needed in the constexpr
-  // constructor.
-  if (ShouldSplit(generator->descriptor(), options_)) {
-    // Use a union to disable the destructor of the _instance member.
-    // We can constant initialize, but the object will still have a non-trivial
-    // destructor that we need to elide.
-    //
-    // NO_DESTROY is not necessary for correctness. The empty destructor is
-    // enough. However, the empty destructor fails to be elided in some
-    // configurations (like non-opt or with certain sanitizers). NO_DESTROY is
-    // there just to improve performance and binary size in these builds.
-    p->Emit(
-        {
-            {"type",
-             SplitDefaultInstanceType(generator->descriptor(), options_)},
-            {"name",
-             SplitDefaultInstanceName(generator->descriptor(), options_)},
-            {"default",
-             [&] { generator->GenerateInitDefaultSplitInstance(p); }},
-            {"class", absl::StrCat(ClassName(generator->descriptor()),
-                                   "::Impl_::Split")},
-        },
-        R"cc(
-          struct $type$ {
-            constexpr $type$() : _instance{$default$} {}
-            union {
-              $class$ _instance;
-            };
-          };
-
-          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const $type$ $name$;
-        )cc");
-  }
-
-  generator->GenerateConstexprConstructor(p);
-
-  auto v = p->WithVars({
-      {"type", MsgGlobalsInstanceType(generator->descriptor(), options_)},
-      {"name", MsgGlobalsInstanceName(generator->descriptor(), options_)},
-      {"class", ClassName(generator->descriptor())},
-  });
-  if (IsFileDescriptorProto(file_, options_)) {
-    p->Emit(
-        R"cc(
-          struct $type$ : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-            constexpr $type$() : _default(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-            $type$() {}
-            void Init() { ::new (&_default) $class$(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-            ~$type$() {}
-            union {
-              $class$ _default;
-            };
-          };
-
-          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
-        )cc");
-  } else if (UsingImplicitWeakDescriptor(file_, options_)) {
-    p->Emit(
-        {
-            {"index", generator->index_in_file_messages()},
-            {"section", WeakDefaultInstanceSection(
-                            generator->descriptor(),
-                            generator->index_in_file_messages(), options_)},
-        },
-        R"cc(
-          struct $type$ : ::_pbi::MessageGlobalsBase {
-            constexpr $type$() : _default(::_pbi::ConstantInitialized{}) {}
-            ~$type$() {}
-            //~ _default must be the first member.
-            union {
-              $class$ _default;
-            };
-            ::_pbi::WeakDescriptorDefaultTail tail = {
-                file_default_instances + $index$, sizeof($type$)};
-          };
-
-          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$
-              __attribute__((section("$section$")));
-        )cc");
-  } else {
-    p->Emit(
-        R"cc(
-          struct $type$ : ::_pbi::MessageGlobalsBase {
-            constexpr $type$() : _default(::_pbi::ConstantInitialized{}) {}
-            ~$type$() {}
-            union {
-              $class$ _default;
-            };
-          };
-
-          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
-        )cc");
-  }
-
-  if (options_.lite_implicit_weak_fields) {
-    p->Emit(
-        {
-            {"ptr", MsgGlobalsInstancePtr(generator->descriptor(), options_)},
-            {"name", MsgGlobalsInstanceName(generator->descriptor(), options_)},
-        },
-        R"cc(
-          PROTOBUF_CONSTINIT const void* $ptr$ = &$name$;
-        )cc");
-  }
-}
-
 // A list of things defined in one .pb.cc file that we need to reference from
 // another .pb.cc file.
 struct FileGenerator::CrossFileReferences {
@@ -789,7 +671,10 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) {
     NamespaceOpener ns(Namespace(file_, options_), p);
     p->Emit(
         {
-            {"defaults", [&] { GenerateSourceDefaultInstance(idx, p); }},
+            {"defaults",
+             [&] {
+               message_generators_[idx]->GenerateSourceDefaultInstance(p);
+             }},
             {"class_methods",
              [&] { message_generators_[idx]->GenerateClassMethods(p); }},
         },
@@ -972,8 +857,8 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   {
     NamespaceOpener ns(Namespace(file_, options_), p);
     for (size_t i = 0; i < message_generators_.size(); ++i) {
-      GenerateSourceDefaultInstance(
-          message_generators_topologically_ordered_[i], p);
+      message_generators_[message_generators_topologically_ordered_[i]]
+          ->GenerateSourceDefaultInstance(p);
     }
   }
 

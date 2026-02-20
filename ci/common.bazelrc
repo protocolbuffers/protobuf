@@ -34,11 +34,6 @@ build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
 # Abseil passes nullptr to memcmp with 0 size
 build:ubsan --copt=-fno-sanitize=nonnull-attribute
 
-# Workaround Bazel 7 remote cache issues.
-# See https://github.com/bazelbuild/bazel/issues/20161
-build --experimental_remote_cache_eviction_retries=5
-build --remote_download_outputs=all
-
 # Build with all --incompatible flags that we can. This helps us prepare for
 # upcoming breaking changes in Bazel. This list was generated for Bazel 6 by
 # running bazelisk with the --migrate flag and filtering out all flags that
