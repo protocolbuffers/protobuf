@@ -57,7 +57,6 @@ TEST(Generated, RequiredPresence) {
   ASSERT_THAT(field, NotNull());
   EXPECT_TRUE(field->has_presence());
   EXPECT_TRUE(field->is_required());
-  EXPECT_EQ(field->label(), FieldDescriptor::LABEL_REQUIRED);
 }
 
 TEST(Generated, ImplicitPresence) {

@@ -11,13 +11,14 @@
 
 #include <cstddef>
 #include <memory>
-#include <optional>
+#include <string>
 #include <vector>
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -42,7 +43,7 @@ using Sub = ::google::protobuf::io::Printer::Sub;
 using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 
 // For encodings with fixed sizes, returns that size in bytes.
-std::optional<size_t> FixedSize(FieldDescriptor::Type type) {
+absl::optional<size_t> FixedSize(FieldDescriptor::Type type) {
   switch (type) {
     case FieldDescriptor::TYPE_INT32:
     case FieldDescriptor::TYPE_INT64:
@@ -55,7 +56,7 @@ std::optional<size_t> FixedSize(FieldDescriptor::Type type) {
     case FieldDescriptor::TYPE_BYTES:
     case FieldDescriptor::TYPE_GROUP:
     case FieldDescriptor::TYPE_MESSAGE:
-      return std::nullopt;
+      return absl::nullopt;
 
     case FieldDescriptor::TYPE_FIXED32:
       return WireFormatLite::kFixed32Size;
@@ -77,7 +78,7 @@ std::optional<size_t> FixedSize(FieldDescriptor::Type type) {
   }
 
   ABSL_LOG(FATAL) << "Can't get here.";
-  return std::nullopt;
+  return absl::nullopt;
 }
 
 std::vector<Sub> Vars(const FieldDescriptor* field, const Options& options) {
@@ -91,9 +92,8 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& options) {
 
 class SingularPrimitive final : public FieldGeneratorBase {
  public:
-  SingularPrimitive(const FieldDescriptor* field, const Options& opts,
-                    MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
+  SingularPrimitive(const FieldDescriptor* field, const Options& opts)
+      : FieldGeneratorBase(field, opts), opts_(&opts) {}
   ~SingularPrimitive() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -166,7 +166,7 @@ void SingularPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
       AnnotatedAccessors(field_, {"", "_internal_", "_internal_set_"}));
   auto vs = p->WithVars(AnnotatedAccessors(field_, {"set_"}, Semantic::kSet));
   p->Emit(R"cc(
-    $DEPRECATED$ $Type$ $name$() const;
+    [[nodiscard]] $DEPRECATED$ $Type$ $name$() const;
     $DEPRECATED$ void $set_name$($Type$ value);
 
     private:
@@ -283,9 +283,8 @@ void SingularPrimitive::GenerateByteSize(io::Printer* p) const {
 
 class RepeatedPrimitive final : public FieldGeneratorBase {
  public:
-  RepeatedPrimitive(const FieldDescriptor* field, const Options& opts,
-                    MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
+  RepeatedPrimitive(const FieldDescriptor* field, const Options& opts)
+      : FieldGeneratorBase(field, opts), opts_(&opts) {}
   ~RepeatedPrimitive() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -353,11 +352,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
     ABSL_CHECK(!should_split());
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
               decltype($field_$){$internal_metadata_offset$},
-#else
-              decltype($field_$){arena},
-#endif
             )cc");
     GenerateCacheSizeInitializer(p);
   }
@@ -373,11 +368,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   void GenerateMemberConstexprConstructor(io::Printer* p) const override {
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-              $name$_{visibility, $internal_metadata_offset$}
-#else
-              $name$_ {}
-#endif
+              $name$_ { visibility, $internal_metadata_offset$ }
             )cc");
     if (HasCachedSize()) {
       p->Emit(",\n_$name$_cached_byte_size_{0}");
@@ -387,11 +378,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   void GenerateMemberConstructor(io::Printer* p) const override {
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-              $name$_{visibility, $internal_metadata_offset$}
-#else
-              $name$_ { visibility, arena }
-#endif
+              $name$_ { visibility, $internal_metadata_offset$ }
             )cc");
     if (HasCachedSize()) {
       p->Emit(",\n_$name$_cached_byte_size_{0}");
@@ -401,11 +388,10 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   void GenerateMemberCopyConstructor(io::Printer* p) const override {
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-              $name$_{visibility, $internal_metadata_offset$, from.$name$_}
-#else
-              $name$_ { visibility, arena, from.$name$_ }
-#endif)cc");
+              $name$_ {
+                visibility, $internal_metadata_offset$, from.$name$_
+              }
+            )cc");
     if (HasCachedSize()) {
       p->Emit(",\n_$name$_cached_byte_size_{0}");
     }
@@ -468,10 +454,10 @@ void RepeatedPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
   auto va =
       p->WithVars(AnnotatedAccessors(field_, {"mutable_"}, Semantic::kAlias));
   p->Emit(R"cc(
-    $DEPRECATED$ $Type$ $name$(int index) const;
+    [[nodiscard]] $DEPRECATED$ $Type$ $name$(int index) const;
     $DEPRECATED$ void $set_name$(int index, $Type$ value);
     $DEPRECATED$ void $add_name$($Type$ value);
-    $DEPRECATED$ const $pb$::RepeatedField<$Type$>& $name$() const;
+    [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedField<$Type$>& $name$() const;
     $DEPRECATED$ $pb$::RepeatedField<$Type$>* $nonnull$ $mutable_name$();
 
     private:
@@ -670,15 +656,13 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarPrimitiveGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc) {
-  return absl::make_unique<SingularPrimitive>(desc, options, scc);
+    const FieldDescriptor* desc, const Options& options) {
+  return absl::make_unique<SingularPrimitive>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedPrimitiveGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc) {
-  return absl::make_unique<RepeatedPrimitive>(desc, options, scc);
+    const FieldDescriptor* desc, const Options& options) {
+  return absl::make_unique<RepeatedPrimitive>(desc, options);
 }
 
 }  // namespace cpp

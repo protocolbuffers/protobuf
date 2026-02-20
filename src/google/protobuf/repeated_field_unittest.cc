@@ -1145,6 +1145,24 @@ TEST(RepeatedField, HardenAgainstBadTruncate) {
   }
 }
 
+TEST(RepeatedFieldTest, Erase) {
+  RepeatedField<int32_t> elements;
+  while (elements.size() < 15) {
+    elements.Add(elements.size() % 5);
+  }
+  EXPECT_EQ(3, google::protobuf::erase(elements, 3));
+  EXPECT_THAT(elements, ElementsAre(0, 1, 2, 4, 0, 1, 2, 4, 0, 1, 2, 4));
+}
+
+TEST(RepeatedFieldTest, EraseIf) {
+  RepeatedField<int32_t> elements;
+  while (elements.size() < 15) {
+    elements.Add(elements.size());
+  }
+  EXPECT_EQ(5, google::protobuf::erase_if(elements, [](auto i) { return i % 3 == 0; }));
+  EXPECT_THAT(elements, ElementsAre(1, 2, 4, 5, 7, 8, 10, 11, 13, 14));
+}
+
 #if defined(GTEST_HAS_DEATH_TEST) && (defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
                                       defined(ABSL_HAVE_MEMORY_SANITIZER))
 
@@ -1230,7 +1248,7 @@ TEST(RepeatedField, PoisonsMemoryOnAssign) {
 TEST(RepeatedField, Cleanups) {
   Arena arena;
   auto growth = internal::CleanupGrowth(
-      arena, [&] { Arena::Create<RepeatedField<int>>(&arena); });
+      arena, [&] { (void)Arena::Create<RepeatedField<int>>(&arena); });
   EXPECT_THAT(growth.cleanups, testing::IsEmpty());
 
   void* ptr;
@@ -1241,11 +1259,7 @@ TEST(RepeatedField, Cleanups) {
 
 TEST(RepeatedField, InitialSooCapacity) {
   if (sizeof(void*) == 8) {
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
     EXPECT_EQ(RepeatedField<bool>().Capacity(), 8);
-#else
-    EXPECT_EQ(RepeatedField<bool>().Capacity(), 3);
-#endif
     EXPECT_EQ(RepeatedField<int32_t>().Capacity(), 2);
     EXPECT_EQ(RepeatedField<int64_t>().Capacity(), 1);
     EXPECT_EQ(RepeatedField<absl::Cord>().Capacity(), 0);
@@ -1360,17 +1374,17 @@ TEST(RepeatedField, CheckedGetOrAbortTest) {
   RepeatedField<int> field;
 
   // Empty container tests.
-  EXPECT_DEATH(CheckedMutableOrAbort(&field, -1),
+  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, -1),
                "Index \\(-1\\) out of bounds of container with size \\(0\\)");
-  EXPECT_DEATH(CheckedMutableOrAbort(&field, field.size()),
+  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, field.size()),
                "Index \\(0\\) out of bounds of container with size \\(0\\)");
 
   // Non-empty container tests
   field.Add(5);
   field.Add(4);
-  EXPECT_DEATH(CheckedMutableOrAbort(&field, 2),
+  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, 2),
                "Index \\(2\\) out of bounds of container with size \\(2\\)");
-  EXPECT_DEATH(CheckedMutableOrAbort(&field, -1),
+  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, -1),
                "Index \\(-1\\) out of bounds of container with size \\(2\\)");
 }
 

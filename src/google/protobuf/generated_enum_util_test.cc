@@ -14,14 +14,18 @@
 #include <limits>
 #include <ostream>
 #include <string>
+#include <variant>
 #include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/container/btree_set.h"
+#include "absl/flags/marshalling.h"
 #include "absl/strings/str_format.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_lite.pb.h"
 
 
 // Must be included last.
@@ -30,8 +34,10 @@
 using testing::_;
 using testing::ElementsAre;
 using testing::Gt;
+using testing::HasSubstr;
 using testing::IsEmpty;
 using testing::SizeIs;
+using testing::VariantWith;
 
 namespace google {
 namespace protobuf {
@@ -41,9 +47,9 @@ namespace {
 TEST(GenerateEnumDataTest, DebugChecks) {
 #if GTEST_HAS_DEATH_TEST
   // Not unique
-  EXPECT_DEBUG_DEATH(GenerateEnumData({1, 1}), "sorted_and_unique");
+  EXPECT_DEBUG_DEATH((void)GenerateEnumData({1, 1}), "sorted_and_unique");
   // Not sorted
-  EXPECT_DEBUG_DEATH(GenerateEnumData({2, 1}), "sorted_and_unique");
+  EXPECT_DEBUG_DEATH((void)GenerateEnumData({2, 1}), "sorted_and_unique");
 #endif
 }
 
@@ -145,6 +151,100 @@ TEST(GenerateEnumDataTest, BitmapSpaceOptimizationWorks) {
   encoded = GenerateEnumData(values);
   EXPECT_THAT(ExtractHeader(encoded), HeaderHas(0, 1, 256, 0));
   EXPECT_THAT(encoded, SizeIs(10));
+}
+
+template <typename T>
+std::variant<T, std::string> TryParseFlag(absl::string_view str) {
+  T value;
+  std::string error;
+  if (!absl::ParseFlag(str, &value, &error)) {
+    return error;
+  }
+  return value;
+}
+
+TEST(ProtoEnumTest, HasAbseilFlagSupport) {
+  using T = proto2_unittest::TestAllTypes;
+  using E = typename T::NestedEnum;
+
+  // Exact match.
+  EXPECT_THAT(TryParseFlag<E>("FOO"), VariantWith<E>(T::FOO));
+  // Lowercase match.
+  EXPECT_THAT(TryParseFlag<E>("baz"), VariantWith<E>(T::BAZ));
+  // Numeric value
+  EXPECT_THAT(TryParseFlag<E>("2"), VariantWith<E>(T::BAR));
+
+  // Error
+  EXPECT_THAT(TryParseFlag<E>("xxx"),
+              VariantWith<std::string>(
+                  HasSubstr("Invalid value 'xxx' for enum "
+                            "'proto2_unittest.TestAllTypes.NestedEnum'. "
+                            "Supported values are: FOO, BAR, BAZ, NEG.")));
+
+  EXPECT_EQ("FOO", absl::UnparseFlag(T::FOO));
+  EXPECT_EQ("100", absl::UnparseFlag(static_cast<E>(100)));
+}
+
+TEST(ProtoEnumTest, HasAbseilFlagSupportWithLiteEnums) {
+  using T = proto2_unittest::TestAllTypesLite;
+  using E = typename T::NestedEnum;
+
+  // Exact match.
+  EXPECT_THAT(TryParseFlag<E>("FOO"), VariantWith<E>(T::FOO));
+  // Lowercase match.
+  EXPECT_THAT(TryParseFlag<E>("baz"), VariantWith<E>(T::BAZ));
+  // Numeric value
+  EXPECT_THAT(TryParseFlag<E>("2"), VariantWith<E>(T::BAR));
+
+  // We don't check errors because we don't generate them for LITE.
+  EXPECT_THAT(TryParseFlag<E>("xxx"), VariantWith<std::string>(_));
+
+  EXPECT_EQ("FOO", absl::UnparseFlag(T::FOO));
+  EXPECT_EQ("100", absl::UnparseFlag(static_cast<E>(100)));
+}
+
+TEST(ProtoEnumTest, HasAbseilFlagSupportForVectorEnum) {
+  using T = proto2_unittest::TestAllTypes;
+  using E = typename T::NestedEnum;
+  using V = std::vector<E>;
+
+  // Empty
+  EXPECT_THAT(TryParseFlag<V>(""), VariantWith<V>(V{}));
+  EXPECT_EQ("", absl::UnparseFlag(V{}));
+  // Single element
+  EXPECT_THAT(TryParseFlag<V>("FOO"), VariantWith<V>(V{T::FOO}));
+  EXPECT_EQ("FOO", absl::UnparseFlag(V{T::FOO}));
+  // Many elements
+  EXPECT_THAT(TryParseFlag<V>("BAZ,2,foo"),
+              VariantWith<V>(V{T::BAZ, T::BAR, T::FOO}));
+  EXPECT_EQ("BAZ,BAR,FOO", absl::UnparseFlag(V{T::BAZ, T::BAR, T::FOO}));
+
+  // Error
+  EXPECT_THAT(TryParseFlag<V>("FOO,xxx"),
+              VariantWith<std::string>(
+                  HasSubstr("Invalid value 'xxx' for enum "
+                            "'proto2_unittest.TestAllTypes.NestedEnum'. "
+                            "Supported values are: FOO, BAR, BAZ, NEG.")));
+}
+
+TEST(ProtoEnumTest, HasAbseilFlagSupportForVectorEnumWithLiteEnums) {
+  using T = proto2_unittest::TestAllTypesLite;
+  using E = typename T::NestedEnum;
+  using V = std::vector<E>;
+
+  // Empty
+  EXPECT_THAT(TryParseFlag<V>(""), VariantWith<V>(V{}));
+  EXPECT_EQ("", absl::UnparseFlag(V{}));
+  // Single element
+  EXPECT_THAT(TryParseFlag<V>("FOO"), VariantWith<V>(V{T::FOO}));
+  EXPECT_EQ("FOO", absl::UnparseFlag(V{T::FOO}));
+  // Many elements
+  EXPECT_THAT(TryParseFlag<V>("BAZ,2,foo"),
+              VariantWith<V>(V{T::BAZ, T::BAR, T::FOO}));
+  EXPECT_EQ("BAZ,BAR,FOO", absl::UnparseFlag(V{T::BAZ, T::BAR, T::FOO}));
+
+  // Error
+  EXPECT_THAT(TryParseFlag<V>("FOO,xxx"), VariantWith<std::string>(_));
 }
 
 void GatherValidValues(absl::Span<const uint32_t> data, int32_t min,

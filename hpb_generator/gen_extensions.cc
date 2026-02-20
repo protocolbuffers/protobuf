@@ -13,6 +13,7 @@
 #include "absl/strings/str_cat.h"
 #include "hpb_generator/context.h"
 #include "hpb_generator/gen_utils.h"
+#include "hpb_generator/keywords.h"
 #include "hpb_generator/names.h"
 #include "google/protobuf/descriptor.h"
 #include "upb_generator/c/names.h"
@@ -54,7 +55,7 @@ void WriteExtensionIdentifierHeader(const google::protobuf::FieldDescriptor* ext
        {"linkage", linkage},
        {"mini_table_name",
         absl::StrCat(ExtensionIdentifierBase(ext), "_", ext->name(), "_ext")},
-       {"extension_name", ext->name()},
+       {"extension_name", ResolveKeywordConflict(ext->name())},
        {"extension_number", ext->number()}},
       R"cc(
         inline $linkage$ constexpr ::hpb::internal::ExtensionIdentifier<

@@ -9,13 +9,13 @@
 
 #include <cstddef>
 #include <memory>
-#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/types/optional.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
 namespace google {
@@ -28,23 +28,23 @@ using testing::ElementsAre;
 using testing::Eq;
 using testing::Optional;
 
-std::optional<std::string> CallNext(ZeroCopyInputStream& stream) {
+absl::optional<std::string> CallNext(ZeroCopyInputStream& stream) {
   const void* data;
   int size;
   if (stream.Next(&data, &size)) {
     return std::string(static_cast<const char*>(data),
                        static_cast<size_t>(size));
   }
-  return std::nullopt;
+  return absl::nullopt;
 }
 
-std::optional<std::string> CallNext(ZeroCopyOutputStream& stream) {
+absl::optional<std::string> CallNext(ZeroCopyOutputStream& stream) {
   void* data;
   int size;
   if (stream.Next(&data, &size)) {
     return std::string(static_cast<char*>(data), static_cast<size_t>(size));
   }
-  return std::nullopt;
+  return absl::nullopt;
 }
 
 std::vector<std::string> ReadLeftoverDoNotConsumeInput(
@@ -62,8 +62,8 @@ TEST(TestZeroCopyInputStreamTest, NextChecksPreconditions) {
       std::make_unique<TestZeroCopyInputStream>(std::vector<std::string>{});
   const void* data;
   int size;
-  EXPECT_DEATH(stream->Next(nullptr, &size), "data must not be null");
-  EXPECT_DEATH(stream->Next(&data, nullptr), "size must not be null");
+  EXPECT_DEATH((void)stream->Next(nullptr, &size), "data must not be null");
+  EXPECT_DEATH((void)stream->Next(&data, nullptr), "size must not be null");
 }
 #endif  // GTEST_HAS_DEATH_TEST
 
@@ -101,7 +101,7 @@ TEST(TestZeroCopyInputStreamTest, BackUpGivesBackABuffer) {
   EXPECT_THAT(CallNext(*stream), Optional(Eq("HIJKLMN")));
   stream->BackUp(2);
   EXPECT_THAT(CallNext(*stream), Optional(Eq("MN")));
-  EXPECT_THAT(CallNext(*stream), Eq(std::nullopt));
+  EXPECT_THAT(CallNext(*stream), Eq(absl::nullopt));
 }
 
 #if GTEST_HAS_DEATH_TEST
@@ -119,7 +119,7 @@ TEST(TestZeroCopyInputStreamTest, BackUpChecksPreconditions) {
                "The last call was not a successful Next\\(\\)");
   EXPECT_THAT(CallNext(*stream), Optional(Eq("C")));
   EXPECT_THAT(CallNext(*stream), Optional(Eq("D")));
-  stream->Skip(1);
+  (void)stream->Skip(1);
   EXPECT_DEATH(stream->BackUp(0),
                "The last call was not a successful Next\\(\\)");
   EXPECT_THAT(CallNext(*stream), Optional(Eq("FG")));
@@ -127,7 +127,7 @@ TEST(TestZeroCopyInputStreamTest, BackUpChecksPreconditions) {
   EXPECT_THAT(CallNext(*stream), Optional(Eq("")));
   EXPECT_THAT(CallNext(*stream), Optional(Eq("HIJKLMN")));
   EXPECT_DEATH(stream->BackUp(8), "count must be within bounds of last buffer");
-  EXPECT_THAT(CallNext(*stream), Eq(std::nullopt));
+  EXPECT_THAT(CallNext(*stream), Eq(absl::nullopt));
   EXPECT_DEATH(stream->BackUp(0),
                "The last call was not a successful Next\\(\\)");
 }
@@ -168,7 +168,7 @@ TEST(TestZeroCopyInputStreamTest, SkipWorks) {
 TEST(TestZeroCopyInputStreamTest, SkipChecksPreconditions) {
   std::unique_ptr<ZeroCopyInputStream> stream =
       std::make_unique<TestZeroCopyInputStream>(std::vector<std::string>{});
-  EXPECT_DEATH(stream->Skip(-1), "count must not be negative");
+  EXPECT_DEATH((void)stream->Skip(-1), "count must not be negative");
 }
 #endif  // GTEST_HAS_DEATH_TEST
 
@@ -207,8 +207,8 @@ TEST(TestZeroCopyOutputStreamTest, NextChecksPreconditions) {
       std::make_unique<TestZeroCopyOutputStream>(empty);
   void* data;
   int size;
-  EXPECT_DEATH(stream->Next(nullptr, &size), "data must not be null");
-  EXPECT_DEATH(stream->Next(&data, nullptr), "size must not be null");
+  EXPECT_DEATH((void)stream->Next(nullptr, &size), "data must not be null");
+  EXPECT_DEATH((void)stream->Next(&data, nullptr), "size must not be null");
 }
 #endif  // GTEST_HAS_DEATH_TEST
 
@@ -246,7 +246,7 @@ TEST(TestZeroCopyOutputStreamTest, BackUpGivesBackABuffer) {
   EXPECT_THAT(CallNext(*stream), Optional(Eq("HIJKLMN")));
   stream->BackUp(2);
   EXPECT_THAT(CallNext(*stream), Optional(Eq("MN")));
-  EXPECT_THAT(CallNext(*stream), Eq(std::nullopt));
+  EXPECT_THAT(CallNext(*stream), Eq(absl::nullopt));
 }
 
 #if GTEST_HAS_DEATH_TEST
@@ -270,7 +270,7 @@ TEST(TestZeroCopyOutputStreamTest, BackUpChecksPreconditions) {
   EXPECT_THAT(CallNext(*stream), Optional(Eq("")));
   EXPECT_THAT(CallNext(*stream), Optional(Eq("HIJKLMN")));
   EXPECT_DEATH(stream->BackUp(8), "count must be within bounds of last buffer");
-  EXPECT_THAT(CallNext(*stream), Eq(std::nullopt));
+  EXPECT_THAT(CallNext(*stream), Eq(absl::nullopt));
   // BackUp(0) is allowed.
   stream->BackUp(0);
 }

@@ -1,0 +1,15 @@
+syntax = "proto2";
+
+package third_party_protobuf_util;
+
+option optimize_for = SPEED;
+
+message TestTrimMessageRepeatedField {
+  message NestedMessage {
+    optional int32 f1 = 1;
+    optional int32 f2 = 2;
+  }
+  optional NestedMessage nested_message = 1;
+  repeated NestedMessage repeated_nested_message = 2;
+  optional NestedMessage nested_message2 = 3;
+}

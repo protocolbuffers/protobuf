@@ -17,12 +17,13 @@
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_format.h"
-#include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/parser.h"
+#include "editions/edition_defaults_test_utils.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/test_textproto.h"
+#include "google/protobuf/unittest_custom_features.pb.h"
 #include "google/protobuf/unittest_features.pb.h"
 
 // Must be included last.
@@ -281,6 +282,45 @@ TEST_F(CodeGeneratorTest, GetResolvedSourceFeatureExtension) {
   EXPECT_EQ(ext2.source_feature(), ext1.source_feature());
 }
 
+TEST_F(CodeGeneratorTest, GetResolvedSourceFeatureExtensionCustom) {
+  TestGenerator generator;
+  generator.set_feature_extensions(
+      {GetExtensionReflection(custom_features::test)});
+  ASSERT_OK(pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults()));
+
+  ASSERT_THAT(BuildFile(DescriptorProto::descriptor()->file()), NotNull());
+  ASSERT_THAT(
+      BuildFile(custom_features::TestCustomFeatures::descriptor()->file()),
+      NotNull());
+  auto file = BuildFile(R"schema(
+    edition = "2023";
+    package proto2_unittest;
+
+    import "google/protobuf/unittest_custom_features.proto";
+
+    option features.(custom_features.test).file_feature = VALUE6;
+    option features.(custom_features.test).source_feature = VALUE5;
+  )schema");
+  ASSERT_THAT(file, NotNull());
+  const custom_features::TestCustomFeatures& ext1 =
+      TestGenerator::GetResolvedSourceFeatureExtension(*file,
+                                                       custom_features::test);
+  const custom_features::TestCustomFeatures& ext2 =
+      TestGenerator::GetResolvedSourceFeatures(*file).GetExtension(
+          custom_features::test);
+
+  // Since the pool provides the feature set defaults, there should be no
+  // difference between the two results.
+  EXPECT_EQ(ext1.enum_feature(), custom_features::EnumFeature::VALUE1);
+  EXPECT_EQ(ext1.field_feature(), custom_features::EnumFeature::VALUE1);
+  EXPECT_EQ(ext1.file_feature(), custom_features::EnumFeature::VALUE6);
+  EXPECT_EQ(ext1.source_feature(), custom_features::EnumFeature::VALUE5);
+  EXPECT_EQ(ext2.enum_feature(), ext1.enum_feature());
+  EXPECT_EQ(ext2.field_feature(), ext1.field_feature());
+  EXPECT_EQ(ext2.file_feature(), ext1.file_feature());
+  EXPECT_EQ(ext2.source_feature(), ext1.source_feature());
+}
+
 TEST_F(CodeGeneratorTest, GetResolvedSourceFeatureExtensionEditedDefaults) {
   FeatureSetDefaults defaults = ParseTextOrDie(R"pb(
     minimum_edition: EDITION_PROTO2
@@ -468,6 +508,22 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
                 minimum_edition: EDITION_PROTO2
                 maximum_edition: EDITION_2024
               )pb")));
+}
+
+TEST_F(CodeGeneratorTest, BuildFeatureSetDefaultsWithUnstable) {
+  TestGenerator generator;
+  auto result = generator.BuildFeatureSetDefaults();
+  ASSERT_TRUE(result.ok()) << result.status().message();
+  const auto unstable_defaults = FindEditionDefault(*result, EDITION_UNSTABLE);
+  ASSERT_TRUE(unstable_defaults.has_value());
+  EXPECT_EQ(unstable_defaults->overridable_features()
+                .GetExtension(pb::test)
+                .new_unstable_feature(),
+            pb::UnstableEnumFeature::UNSTABLE2);
+  EXPECT_EQ(unstable_defaults->overridable_features()
+                .GetExtension(pb::test)
+                .unstable_existing_feature(),
+            pb::UnstableEnumFeature::UNSTABLE3);
 }
 
 TEST_F(CodeGeneratorTest, BuildFeatureSetDefaultsUnsupported) {

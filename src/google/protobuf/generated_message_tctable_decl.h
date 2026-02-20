@@ -278,7 +278,7 @@ struct alignas(uint64_t) TcParseTableBase {
   uint32_t aux_offset;
 
   const ClassData* class_data;
-  using PostLoopHandler = const char* (*)(MessageLite* msg, const char* ptr,
+  using PostLoopHandler = const char* (*)(MessageLite * msg, const char* ptr,
                                           ParseContext* ctx);
   PostLoopHandler post_loop_handler;
 
@@ -334,7 +334,7 @@ struct alignas(uint64_t) TcParseTableBase {
   // Table entry for fast-path tailcall dispatch handling.
   struct FastFieldEntry {
     // Target function for dispatch:
-    mutable std::atomic<TailCallParseFunc> target_atomic;
+    TailCallParseFunc target_function;
 
     // Field data used during parse:
     TcFieldData bits;
@@ -344,25 +344,14 @@ struct alignas(uint64_t) TcParseTableBase {
 
     // Constant initializes this instance
     constexpr FastFieldEntry(TailCallParseFunc func, TcFieldData bits)
-        : target_atomic(func), bits(bits) {}
+        : target_function(func), bits(bits) {}
 
     // FastFieldEntry is copy-able and assignable, which is intended
     // mainly for testing and debugging purposes.
-    FastFieldEntry(const FastFieldEntry& rhs) noexcept
-        : FastFieldEntry(rhs.target(), rhs.bits) {}
-    FastFieldEntry& operator=(const FastFieldEntry& rhs) noexcept {
-      SetTarget(rhs.target());
-      bits = rhs.bits;
-      return *this;
-    }
+    FastFieldEntry(const FastFieldEntry& rhs) noexcept = default;
+    FastFieldEntry& operator=(const FastFieldEntry& rhs) noexcept = default;
 
-    // Protocol buffer code should use these relaxed accessors.
-    TailCallParseFunc target() const {
-      return target_atomic.load(std::memory_order_relaxed);
-    }
-    void SetTarget(TailCallParseFunc func) const {
-      return target_atomic.store(func, std::memory_order_relaxed);
-    }
+    TailCallParseFunc target() const { return target_function; }
   };
   // There is always at least one table entry.
   const FastFieldEntry* fast_entry(size_t idx) const {
@@ -498,7 +487,9 @@ struct alignas(uint64_t) TcParseTableBase {
                                    num_aux_entries * sizeof(FieldAux));
   }
 
-  const MessageLite* default_instance() const { return class_data->prototype; }
+  const MessageLite* default_instance() const {
+    return class_data->default_instance();
+  }
 };
 
 #if defined(_MSC_VER) && !defined(_WIN64)

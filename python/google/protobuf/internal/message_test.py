@@ -29,6 +29,7 @@ import warnings
 
 cmp = lambda x, y: (x > y) - (x < y)
 
+from google.protobuf.internal import message_set_extensions_pb2
 from google.protobuf.internal import api_implementation # pylint: disable=g-import-not-at-top
 from google.protobuf.internal import decoder
 from google.protobuf.internal import encoder
@@ -1477,19 +1478,31 @@ class MessageTest(unittest.TestCase):
         'TestAllTypes.NestedMessage', nested.__class__.__qualname__
     )
 
+  def create_bool_to_int(self, message_module, **kwargs):
+    with self.assertRaises(TypeError) as e:
+      m = message_module.TestAllTypes(**kwargs)
+    self.assertIn('bool', str(e.exception))
+    return None
+
+  def assign_bool_to_int(self, msg, field_name, value):
+    old_value = getattr(msg, field_name)
+    with self.assertRaises(TypeError) as e:
+      setattr(msg, field_name, value)
+    self.assertIn('bool', str(e.exception))
+    self.assertEqual(getattr(msg, field_name), old_value)
+
+  def assign_bool_to_map_or_extension(self, msg, field_name, key, value):
+    with self.assertRaises(TypeError) as e:
+      getattr(msg, field_name)[key] = value
+    self.assertIn('bool', str(e.exception))
+
   def testAssignBoolToEnum(self, message_module):
-    # TODO: change warning into error in 2026 Q1
-    # with self.assertRaises(TypeError):
-    with warnings.catch_warnings(record=True) as w:
-      m = message_module.TestAllTypes(optional_nested_enum=True)
-      self.assertIn('bool', str(w[0].message))
-    self.assertEqual(m.optional_nested_enum, 1)
+    m = self.create_bool_to_int(message_module, optional_nested_enum=True)
+    if m is not None:
+      self.assertEqual(m.optional_nested_enum, 1)
 
     m = message_module.TestAllTypes(optional_nested_enum=2)
-    with warnings.catch_warnings(record=True) as w:
-      m.optional_nested_enum = True
-      self.assertIn('bool', str(w[0].message))
-    self.assertEqual(m.optional_nested_enum, 1)
+    self.assign_bool_to_int(m, 'optional_nested_enum', True)
 
     with warnings.catch_warnings(record=True) as w:
       m.optional_nested_enum = 2
@@ -1497,38 +1510,28 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(m.optional_nested_enum, 2)
 
   def testBoolToRepeatedEnum(self, message_module):
-    with warnings.catch_warnings(record=True) as w:
-      m = message_module.TestAllTypes(repeated_nested_enum=[True])
-      self.assertIn('bool', str(w[0].message))
-    self.assertEqual(m.repeated_nested_enum, [1])
+    m = self.create_bool_to_int(message_module, repeated_nested_enum=[True])
+    if m is not None:
+      self.assertEqual(m.repeated_nested_enum, [1])
 
     m = message_module.TestAllTypes()
-    with warnings.catch_warnings(record=True) as w:
-      m.repeated_nested_enum.append(True)
-      self.assertIn('bool', str(w[0].message))
-    self.assertEqual(m.repeated_nested_enum, [1])
+    with self.assertRaises(TypeError) as e:
+      m = message_module.TestAllTypes(repeated_nested_enum=[True])
+    self.assertIn('bool', str(e.exception))
+    self.assertEqual(m.repeated_nested_enum, [])
 
   def testBoolToOneofEnum(self, message_module):
     m = unittest_pb2.TestOneof2()
-    with warnings.catch_warnings(record=True) as w:
-      m.foo_enum = True
-      self.assertIn('bool', str(w[0].message))
-    self.assertEqual(m.foo_enum, 1)
+    self.assign_bool_to_int(m, 'foo_enum', True)
 
   def testBoolToMapEnum(self, message_module):
     m = map_unittest_pb2.TestMap()
-    with warnings.catch_warnings(record=True) as w:
-      m.map_int32_enum[10] = True
-      self.assertIn('bool', str(w[0].message))
-    self.assertEqual(m.map_int32_enum[10], 1)
+    self.assign_bool_to_map_or_extension(m, 'map_int32_enum', 10, True)
 
   def testBoolToExtensionEnum(self, message_module):
     m = unittest_pb2.TestAllExtensions()
-    with warnings.catch_warnings(record=True) as w:
-      m.Extensions[unittest_pb2.optional_nested_enum_extension] = True
-      self.assertIn('bool', str(w[0].message))
-    self.assertEqual(
-        m.Extensions[unittest_pb2.optional_nested_enum_extension], 1
+    self.assign_bool_to_map_or_extension(
+        m, 'Extensions', unittest_pb2.optional_nested_enum_extension, True
     )
 
   def testClosedEnumExtension(self, message_module):
@@ -1547,16 +1550,12 @@ class MessageTest(unittest.TestCase):
     )
 
   def testAssignBoolToInt(self, message_module):
-    with warnings.catch_warnings(record=True) as w:
-      m = message_module.TestAllTypes(optional_int32=True)
-      self.assertIn('bool', str(w[0].message))
-    self.assertEqual(m.optional_int32, 1)
+    m = self.create_bool_to_int(message_module, optional_int32=True)
+    if m is not None:
+      self.assertEqual(m.optional_int32, 1)
 
     m = message_module.TestAllTypes(optional_uint32=123)
-    with warnings.catch_warnings(record=True) as w:
-      m.optional_uint32 = True
-      self.assertIn('bool', str(w[0].message))
-    self.assertEqual(m.optional_uint32, 1)
+    self.assign_bool_to_int(m, 'optional_uint32', True)
 
     with warnings.catch_warnings(record=True) as w:
       m.optional_uint32 = 321
@@ -1564,42 +1563,30 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(m.optional_uint32, 321)
 
   def testAssignBoolToRepeatedInt(self, message_module):
-    with warnings.catch_warnings(record=True) as w:
-      m = message_module.TestAllTypes(repeated_int64=[True])
-      self.assertIn('bool', str(w[0].message))
-    self.assertEqual(m.repeated_int64, [1])
+    m = self.create_bool_to_int(message_module, repeated_int64=[True])
+    if m is not None:
+      self.assertEqual(m.repeated_int64, [1])
 
     m = message_module.TestAllTypes()
-    with warnings.catch_warnings(record=True) as w:
+    with self.assertRaises(TypeError) as e:
       m.repeated_int64.append(True)
-      self.assertIn('bool', str(w[0].message))
-    self.assertEqual(m.repeated_int64, [1])
+    self.assertIn('bool', str(e.exception))
+    self.assertEqual(m.repeated_int64, [])
 
   def testAssignBoolToOneofInt(self, message_module):
     m = unittest_pb2.TestOneof2()
-    with warnings.catch_warnings(record=True) as w:
-      m.foo_int = True
-      self.assertIn('bool', str(w[0].message))
-    self.assertEqual(m.foo_int, 1)
+    self.assign_bool_to_int(m, 'foo_int', True)
 
   def testAssignBoolToMapInt(self, message_module):
     m = map_unittest_pb2.TestMap()
-    with warnings.catch_warnings(record=True) as w:
-      m.map_int32_int32[10] = True
-      self.assertIn('bool', str(w[0].message))
-    self.assertEqual(m.map_int32_int32[10], 1)
-
-    with warnings.catch_warnings(record=True) as w:
-      m.map_int32_int32[True] = 1
-      self.assertIn('bool', str(w[0].message))
-    self.assertEqual(m.map_int32_int32[1], 1)
+    self.assign_bool_to_map_or_extension(m, 'map_int32_int32', 10, True)
+    self.assign_bool_to_map_or_extension(m, 'map_int32_int32', True, 1)
 
   def testAssignBoolToExtensionInt(self, message_module):
     m = unittest_pb2.TestAllExtensions()
-    with warnings.catch_warnings(record=True) as w:
-      m.Extensions[unittest_pb2.optional_int32_extension] = True
-      self.assertIn('bool', str(w[0].message))
-    self.assertEqual(m.Extensions[unittest_pb2.optional_int32_extension], 1)
+    self.assign_bool_to_map_or_extension(
+        m, 'Extensions', unittest_pb2.optional_int32_extension, True
+    )
 
 
 @testing_refleaks.TestCase
@@ -1937,6 +1924,14 @@ class Proto2Test(unittest.TestCase):
     with self.assertRaises(ValueError):
       unittest_pb2.TestAllTypes(repeated_nested_enum='FOO')
 
+    m1 = unittest_pb2.TestAllTypes(
+        repeated_foreign_message=[{'c': 1}]
+    )
+    with self.assertRaises(TypeError):
+      unittest_pb2.TestAllTypes(
+          repeated_nested_message=m1.repeated_foreign_message
+      )
+
   def testPythonicInitWithDict(self):
     # Both string/unicode field name keys should work.
     kwargs = {
@@ -2122,7 +2117,7 @@ class Proto3Test(unittest.TestCase):
       if field.name.startswith('optional_'):
         self.assertTrue(field.has_presence)
     for field in unittest_pb2.TestAllTypes.DESCRIPTOR.fields:
-      if field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
+      if field.is_repeated:
         self.assertFalse(field.has_presence)
       else:
         self.assertTrue(field.has_presence)
@@ -3089,6 +3084,7 @@ class OversizeProtosTest(unittest.TestCase):
 
   def testSucceedOkSizedProto(self):
     msg = unittest_pb2.TestRecursiveMessage()
+    decoder.SetRecursionLimit(100)
     msg.ParseFromString(self.GenerateNestedProto(100))
 
   def testAssertOversizeProto(self):
@@ -3109,6 +3105,50 @@ class OversizeProtosTest(unittest.TestCase):
     msg = unittest_pb2.TestRecursiveMessage()
     msg.ParseFromString(self.GenerateNestedProto(101))
     decoder.SetRecursionLimit(decoder.DEFAULT_RECURSION_LIMIT)
+
+  def testRecursionMap(self):
+    if api_implementation.Type() == 'python':
+      # pure python need a smaller depth limit to avoid test timeout
+      depth = 10
+      decoder.SetRecursionLimit(depth * 2)
+    else:
+      depth = 50
+    msg = more_messages_pb2.TestRecursiveMapMessage()
+    sub = msg
+    for _ in range(depth):
+      sub.map_field[0].i = 123
+      sub = sub.map_field[0]
+    parsed_msg = more_messages_pb2.TestRecursiveMapMessage()
+    # message can be parsed with the max recursion depth
+    parsed_msg.ParseFromString(msg.SerializeToString())
+    # message can not be parsed with one more recursion
+    sub.map_field[0].i = 123
+    with self.assertRaises(message.DecodeError) as context:
+      parsed_msg.ParseFromString(msg.SerializeToString())
+    self.assertIn('Error parsing message', str(context.exception))
+
+  def testRecisionMessageSet(self):
+    msg = message_set_extensions_pb2.TestMessageSet()
+    test_msg = message_set_extensions_pb2.TestMessageSetExtension1
+    ext = test_msg.message_set_extension
+    sub = msg
+    if api_implementation.Type() == 'cpp':
+      # TODO: message_set_extension was double counted for
+      # depth in c++. Should fix it to only count once.
+      depth = 33
+    else:
+      depth = 50
+    for _ in range(depth):
+      sub.Extensions[ext].i = 123
+      sub = sub.Extensions[ext].sub_msg
+    # message can be parsed with the max recursion depth
+    parsed_msg = message_set_extensions_pb2.TestMessageSet()
+    parsed_msg.ParseFromString(msg.SerializeToString())
+    # message can not be parsed when exceed max recursion depth
+    sub.Extensions[ext].i = 123
+    with self.assertRaises(message.DecodeError) as context:
+      msg.ParseFromString(msg.SerializeToString())
+    self.assertIn('Error parsing message', str(context.exception))
 
 
 if __name__ == '__main__':

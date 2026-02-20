@@ -10,3 +10,17 @@ Required.*.TextFormatInput.StringFieldBadUTF8Hex                                
 Required.*.TextFormatInput.StringFieldBadUTF8Octal                                                                 # Should have failed to parse, but didn't.
 Required.*.TextFormatInput.ReservedFieldName.*.ProtobufOutput                                                      # Failed to parse input or produce output.
 Required.*.TextFormatInput.ReservedFieldName.*.TextFormatOutput                                                    # Failed to parse input or produce output.
+Required.*.TextFormatInput.ExtensionNameWithComment.ProtobufOutput                                                 # Failed to parse input or produce output.
+Required.*.TextFormatInput.ExtensionNameWithComment.TextFormatOutput                                               # Failed to parse input or produce output.
+Required.*.TextFormatInput.ExtensionNameWithWhitespace.ProtobufOutput                                              # Failed to parse input or produce output.
+Required.*.TextFormatInput.ExtensionNameWithWhitespace.TextFormatOutput                                            # Failed to parse input or produce output.
+Required.*.TextFormatInput.AnyFieldWithCustomTypeUrlPrefix.ProtobufOutput                                          # Failed to parse input or produce output.
+Required.*.TextFormatInput.AnyFieldWithCustomTypeUrlPrefix.TextFormatOutput                                        # Failed to parse input or produce output.
+Required.*.TextFormatInput.AnyFieldWithSpecialCharactersInTypeUrlPrefix.ProtobufOutput                             # Failed to parse input or produce output.
+Required.*.TextFormatInput.AnyFieldWithSpecialCharactersInTypeUrlPrefix.TextFormatOutput                           # Failed to parse input or produce output.
+Required.*.TextFormatInput.AnyFieldWithWhitespaceInTypeUrl.ProtobufOutput                                          # Failed to parse input or produce output.
+Required.*.TextFormatInput.AnyFieldWithWhitespaceInTypeUrl.TextFormatOutput                                        # Failed to parse input or produce output.
+Required.*.TextFormatInput.AnyFieldWithCommentsInTypeUrl.ProtobufOutput                                            # Failed to parse input or produce output.
+Required.*.TextFormatInput.AnyFieldWithCommentsInTypeUrl.TextFormatOutput                                          # Failed to parse input or produce output.
+Required.*.TextFormatInput.AnyFieldWithValidUrlPercentEscapeInTypeUrlPrefix.ProtobufOutput                         # Failed to parse input or produce output.
+Required.*.TextFormatInput.AnyFieldWithValidUrlPercentEscapeInTypeUrlPrefix.TextFormatOutput                       # Failed to parse input or produce output.

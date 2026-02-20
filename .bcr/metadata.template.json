@@ -22,12 +22,6 @@
       "name": "Jerry Berg"
     },
     {
-      "email": "acozzette@google.com",
-      "github": "acozzette",
-      "name": "Adam Cozzette",
-      "do_not_notify": true
-    },
-    {
       "email": "deannagarcia@google.com",
       "github": "deannagarcia",
       "name": "Deanna Garcia",
@@ -91,6 +85,24 @@
       "email": "tonyliaoss@google.com",
       "github": "tonyliaoss",
       "name": "Tony Liao",
+      "do_not_notify": true
+    },
+    {
+      "email": "rgoldfinger@google.com",
+      "github": "rgoldfinger6",
+      "name": "Rachel Goldfinger",
+      "do_not_notify": true
+    },
+    {
+      "email": "jamiepilgrim@google.com",
+      "github": "pilgrimmemoirs",
+      "name": "Jamie Pilgrim",
+      "do_not_notify": true
+    },
+    {
+      "email": "karenwuz@google.com",
+      "github": "karenwuz",
+      "name": "Karen Wu",
       "do_not_notify": true
     }
   ],

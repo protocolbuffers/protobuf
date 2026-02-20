@@ -57,6 +57,51 @@ void WriteForwardDecls(const google::protobuf::FileDescriptor* file, Context& ct
 void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
   if (ctx.options().backend == Backend::CPP) {
     EmitFileWarning(file, ctx);
+
+    ctx.Emit({{"filename", ToPreproc(file->name())}},
+             R"cc(
+#ifndef $filename$_HPB_PROTO_H_
+#define $filename$_HPB_PROTO_H_
+             )cc");
+
+    // Import headers for proto public dependencies.
+    for (int i = 0; i < file->public_dependency_count(); i++) {
+      if (i == 0) {
+        ctx.Emit("// Public Imports.\n");
+      }
+      ctx.Emit({{"header", CppHeaderFilename(file->public_dependency(i))}},
+               "#include \"$header$\"\n");
+      if (i == file->public_dependency_count() - 1) {
+        ctx.Emit("\n");
+      }
+    }
+
+    ctx.Emit(
+        "#include \"hpb/internal/os_macros_undef.inc\"\n");
+
+    const std::vector<const google::protobuf::Descriptor*> this_file_messages =
+        SortedMessages(file);
+    const std::vector<const google::protobuf::FieldDescriptor*>
+        this_file_exts{};  // TODO: extensions
+
+    if (!this_file_messages.empty()) {
+      ctx.Emit("\n");
+    }
+
+    WriteHeaderMessageForwardDecls(file, ctx);
+    WriteForwardDecls(file, ctx);
+
+    std::vector<const google::protobuf::EnumDescriptor*> this_file_enums =
+        SortedEnums(file);
+
+    WrapNamespace(file, ctx, [&]() {
+      // Write Class and Enums.
+      WriteEnumDeclarations(this_file_enums, ctx);
+      ctx.Emit("\n");
+      // TODO: class decls
+      // TODO: extension identifiers
+    });
+
     const auto msgs = SortedMessages(file);
     for (auto message : msgs) {
       ctx.Emit({{"type", QualifiedClassName(message)},
@@ -90,6 +135,11 @@ void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
                  }  // namespace $namespace$
                )cc");
     }
+    ctx.Emit(
+        "#include "
+        "\"hpb/internal/os_macros_restore.inc\"\n");
+    ctx.Emit({{"filename", ToPreproc(file->name())}},
+             "#endif  /* $filename$_HPB_PROTO_H_ */\n");
     return;
   }
   EmitFileWarning(file, ctx);
@@ -164,7 +214,7 @@ void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
     }
     ctx.Emit({{"class_name", ClassName(desc)},
               {"minitable_name",
-               upb::generator::MiniTableMessagePtrVarName(desc->full_name())},
+               upb::generator::MiniTableMessageVarName(desc->full_name())},
               {"outer_namespace", outer_namespace},
               {"c_api_msg_type",
                upb::generator::CApiMessageType(desc->full_name())}},
@@ -172,7 +222,7 @@ void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
                template <>
                struct AssociatedUpbTypes<$outer_namespace$$class_name$> {
                  using CMessageType = $c_api_msg_type$;
-                 static inline const upb_MiniTable* kMiniTable = $minitable_name$;
+                 static inline const upb_MiniTable* kMiniTable = &$minitable_name$;
                };
              )cc");
   }
@@ -254,8 +304,10 @@ void WriteTypedefForwardingHeader(
 void WriteHeaderMessageForwardDecls(const google::protobuf::FileDescriptor* file,
                                     Context& ctx) {
   // Import forward-declaration of types defined in this file.
-  ctx.Emit({{"upb_filename", UpbCFilename(file)}},
-           "#include \"$upb_filename$\"\n");
+  if (ctx.options().backend == Backend::UPB) {
+    ctx.Emit({{"upb_filename", UpbCFilename(file)}},
+             "#include \"$upb_filename$\"\n");
+  }
   WriteForwardDecls(file, ctx);
   // Import forward-declaration of types in dependencies.
   for (int i = 0; i < file->dependency_count(); ++i) {

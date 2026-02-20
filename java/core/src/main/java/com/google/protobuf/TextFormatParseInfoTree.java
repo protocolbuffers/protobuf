@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -128,8 +129,10 @@ public class TextFormatParseInfoTree {
     if (index >= list.size() || index < 0) {
       throw new IllegalArgumentException(
           String.format(
+              Locale.ROOT,
               "Illegal index field: %s, index %d",
-              fieldDescriptor == null ? "<null>" : fieldDescriptor.getName(), index));
+              fieldDescriptor == null ? "<null>" : fieldDescriptor.getName(),
+              index));
     }
     return list.get(index);
   }
@@ -155,6 +158,7 @@ public class TextFormatParseInfoTree {
      * @param fieldDescriptor the field
      * @param location source code location information
      */
+    @CanIgnoreReturnValue
     public Builder setLocation(
         final FieldDescriptor fieldDescriptor, TextFormatParseLocation location) {
       List<TextFormatParseLocation> fieldLocations = locationsFromField.get(fieldDescriptor);

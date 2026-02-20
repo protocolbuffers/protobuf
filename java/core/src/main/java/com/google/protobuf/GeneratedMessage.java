@@ -69,7 +69,8 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
    *
    * <p>TODO: mark this private and final (breaking change)
    */
-  protected UnknownFieldSet unknownFields;
+  protected
+  UnknownFieldSet unknownFields;
 
   protected GeneratedMessage() {
     unknownFields = UnknownFieldSet.getDefaultInstance();
@@ -112,30 +113,11 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
    */
   protected abstract FieldAccessorTable internalGetFieldAccessorTable();
 
+  // TODO: Remove this in a future breaking change for compatibility with old generated
+  // code in OSS. Try removing in google3 earlier once old generated code is updated (e.g. UTP).
   @Override
   public Descriptor getDescriptorForType() {
     return internalGetFieldAccessorTable().descriptor;
-  }
-
-  /**
-   * TODO: This method should be removed. It enables parsing directly into an
-   * "immutable" message. Have to leave it for now to support old gencode.
-   *
-   * @deprecated use newBuilder().mergeFrom() instead
-   */
-  @Deprecated
-  protected void mergeFromAndMakeImmutableInternal(
-      CodedInputStream input, ExtensionRegistryLite extensionRegistry)
-      throws InvalidProtocolBufferException {
-    Schema<GeneratedMessage> schema = Protobuf.getInstance().schemaFor(this);
-    try {
-      schema.mergeFrom(this, CodedInputStreamReader.forCodedInput(input), extensionRegistry);
-    } catch (InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (IOException e) {
-      throw new InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    }
-    schema.makeImmutable(this);
   }
 
   /**
@@ -391,10 +373,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     }
   }
 
-  protected static boolean canUseUnsafe() {
-    return UnsafeUtil.hasUnsafeArrayOperations() && UnsafeUtil.hasUnsafeByteBufferOperations();
-  }
-
   protected static IntList emptyIntList() {
     return IntArrayList.emptyList();
   }
@@ -501,9 +479,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     if (size != -1) {
       return size;
     }
-
-    memoizedSize = MessageReflection.getSerializedSize(
-        this, getAllFieldsRaw());
+    memoizedSize = MessageReflection.getSerializedSize(this, getAllFieldsRaw());
     return memoizedSize;
   }
 
@@ -1112,13 +1088,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         }
       } else {
         result = (T) extension.fromReflectionType(value);
-      }
-
-      // If the lazy field is corrupted, we need to invalidate the memoized size in case the
-      // corrupted message data was replaced with an empty ByteString and yet a previous serialized
-      // size was memoized.
-      if (extensions.lazyFieldCorrupted(descriptor)) {
-        setMemoizedSerializedSize(-1);
       }
       return result;
     }
@@ -3542,7 +3511,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
               .newBuilderForType()
               .setKey(entry.getKey())
               .setValue(entry.getValue())
-              .build());
+              .buildPartial());
     }
   }
 }

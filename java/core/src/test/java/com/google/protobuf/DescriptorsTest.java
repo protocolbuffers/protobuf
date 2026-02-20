@@ -56,6 +56,7 @@ import proto2_unittest.UnittestProto.TestReservedFields;
 import proto2_unittest.UnittestProto.TestService;
 import proto2_unittest.UnittestRetention;
 import protobuf_unittest.UnittestProto3Extensions.Proto3FileExtensions;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Before;
@@ -351,7 +352,7 @@ public class DescriptorsTest {
       assertThat(d.findFieldByName("escaped_bytes").getDefaultValue())
           .isEqualTo(
               ByteString.copyFrom(
-                  "\0\001\007\b\f\n\r\t\013\\\'\"\u00fe".getBytes(Internal.ISO_8859_1)));
+                  "\0\001\007\b\f\n\r\t\013\\\'\"\u00fe".getBytes(StandardCharsets.ISO_8859_1)));
       assertThat(d.findFieldByName("large_uint32").getDefaultValue()).isEqualTo(-1);
       assertThat(d.findFieldByName("large_uint64").getDefaultValue()).isEqualTo(-1L);
     }
@@ -1004,7 +1005,8 @@ public class DescriptorsTest {
                               .setName("bar")
                               .setNumber(1)
                               .setType(FieldDescriptorProto.Type.TYPE_ENUM))
-                      // Default values signal that this must be an enum field, not a message.
+                      // Default values signal that this must be an enum field, not
+                      // a message.
                       .addField(
                           FieldDescriptorProto.newBuilder()
                               .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
@@ -1024,6 +1026,54 @@ public class DescriptorsTest {
       assertThat(barField.hasDefaultValue()).isFalse();
       assertThat(bazField.hasDefaultValue()).isTrue();
       assertThat(bazField.getDefaultValue()).isEqualTo(null);
+    }
+
+    @Test
+    public void testUnknownEnumFieldsConflictAllowed() throws Exception {
+      FileDescriptorProto fooProto =
+          FileDescriptorProto.newBuilder()
+              .setName("foo.proto")
+              .addDependency("bar.proto")
+              .addMessageType(
+                  DescriptorProto.newBuilder()
+                      .setName("Foo")
+                      // Trick the parser into thinking these are a message field by not setting
+                      // the type or default value.
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                              .setTypeName("Bar")
+                              .setName("bar")
+                              .setNumber(1))
+                      // TYPE_ENUM signals that this is an enum field, not a message.
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                              .setTypeName("Bar")
+                              .setName("baz")
+                              .setNumber(2)
+                              .setType(FieldDescriptorProto.Type.TYPE_ENUM))
+                      // Default values signal that this must be an enum field, not
+                      // a message.
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                              .setTypeName("Baz")
+                              .setName("bam")
+                              .setNumber(3)
+                              .setDefaultValue("BAZ_VALUE")))
+              .build();
+
+      FileDescriptor foo =
+          Descriptors.FileDescriptor.buildFrom(fooProto, new FileDescriptor[0], true);
+      FieldDescriptor bazField = foo.findMessageTypeByName("Foo").findFieldByName("baz");
+      FieldDescriptor bamField = foo.findMessageTypeByName("Foo").findFieldByName("bam");
+
+      assertThat(bazField.getEnumType().isPlaceholder()).isTrue();
+      assertThat(bamField.getEnumType().isPlaceholder()).isTrue();
+      assertThat(bazField.hasDefaultValue()).isFalse();
+      assertThat(bamField.hasDefaultValue()).isTrue();
+      assertThat(bamField.getDefaultValue()).isEqualTo(null);
     }
 
     @Test

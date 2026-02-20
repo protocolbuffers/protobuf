@@ -16,10 +16,6 @@ class DescriptorsTest extends TestBase
 {
 
     // Redefine these here for compatibility with c extension
-    const GPBLABEL_OPTIONAL = 1;
-    const GPBLABEL_REQUIRED = 2;
-    const GPBLABEL_REPEATED = 3;
-
     const GPBTYPE_DOUBLE   =  1;
     const GPBTYPE_FLOAT    =  2;
     const GPBTYPE_INT64    =  3;

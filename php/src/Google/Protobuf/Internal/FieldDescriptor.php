@@ -99,11 +99,6 @@ class FieldDescriptor
         $this->label = $label;
     }
 
-    public function getLabel()
-    {
-        return $this->label;
-    }
-
     public function isRequired()
     {
         return $this->label === GPBLabel::REQUIRED;

@@ -24,7 +24,6 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <optional>
 #include <ostream>
 #include <string>
 #include <utility>
@@ -69,6 +68,7 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/importer.h"
@@ -337,10 +337,12 @@ void CommandLineInterface::GetTransitiveDependencies(
   for (int i = 0; i < file->option_dependency_count(); ++i) {
     const FileDescriptor* dep =
         file->pool()->FindFileByName(file->option_dependency_name(i));
-    ABSL_CHECK(dep != nullptr)
+    ABSL_CHECK(dep != nullptr || !descriptor_set_in_names_.empty())
         << "Option dependency " << file->option_dependency_name(i)
         << " not found in pool.  This should never happen.";
-    GetTransitiveDependencies(dep, already_seen, output, options);
+    if (dep != nullptr) {
+      GetTransitiveDependencies(dep, already_seen, output, options);
+    }
   }
 
   // Add this file.
@@ -842,9 +844,9 @@ void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
                       new_metadata);
   }
   if (is_text_format) {
-    TextFormat::PrintToString(new_metadata, encoded_data);
+    ABSL_CHECK(TextFormat::PrintToString(new_metadata, encoded_data));
   } else {
-    new_metadata.SerializeToString(encoded_data);
+    ABSL_CHECK(new_metadata.SerializeToString(encoded_data));
   }
 }
 
@@ -1091,13 +1093,13 @@ bool HasDebugRedactBehavior(
 // schema.  These can be used to mark fields that need to be redacted in debug
 // string APIs, but are only discoverable via reflection that doesn't force
 // linkage.
-std::optional<std::string> FindDebugRedactMarker(const FileDescriptor& desc) {
-  std::optional<std::string> debug_redact_value;
+absl::optional<std::string> FindDebugRedactMarker(const FileDescriptor& desc) {
+  absl::optional<std::string> debug_redact_value;
   absl::flat_hash_map<const Descriptor*, bool> visited;
   google::protobuf::internal::VisitDescriptors(
       desc, [&debug_redact_value, &visited](const FieldDescriptor& field) {
         if (field.is_extension() && HasDebugRedactBehavior(field, visited)) {
-          debug_redact_value = field.full_name();
+          debug_redact_value = std::string(field.full_name());
         }
       });
   return debug_redact_value;
@@ -1113,7 +1115,8 @@ bool ValidateOptionImports(const FileDescriptor& file,
       // If we don't have the dependency we can't validate it, assume it's ok.
       continue;
     }
-    std::optional<std::string> debug_redact_value = FindDebugRedactMarker(*dep);
+    absl::optional<std::string> debug_redact_value =
+        FindDebugRedactMarker(*dep);
     if (debug_redact_value.has_value()) {
       printer->RecordError(
           file.name(), "", nullptr, DescriptorPool::ErrorCollector::OPTION_NAME,
@@ -1362,9 +1365,9 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   descriptor_pool->EnforceWeakDependencies(true);
-  descriptor_pool->EnforceOptionDependencies(true);
   descriptor_pool->EnforceSymbolVisibility(true);
   descriptor_pool->EnforceNamingStyle(true);
+  descriptor_pool->EnforceFeatureSupportValidation(true);
 
   if (!SetupFeatureResolution(*descriptor_pool)) {
     return EXIT_FAILURE;
@@ -3213,6 +3216,15 @@ bool CommandLineInterface::WriteDescriptorSet(
         const FileDescriptor* dependency = file->dependency(j);
         // if the dependency isn't in parsed files, mark it as already seen
         if (to_output.find(dependency) == to_output.end()) {
+          already_seen.insert(dependency);
+        }
+      }
+      for (int j = 0; j < file->option_dependency_count(); j++) {
+        const FileDescriptor* dependency =
+            file->pool()->FindFileByName(file->option_dependency_name(j));
+        // if the dependency isn't in parsed files, mark it as already seen
+        if (dependency != nullptr &&
+            to_output.find(dependency) == to_output.end()) {
           already_seen.insert(dependency);
         }
       }

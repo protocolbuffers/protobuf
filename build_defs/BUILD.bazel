@@ -3,6 +3,7 @@
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//bazel:cc_proto_library.bzl", starlark_cc_proto_library = "cc_proto_library")
+load("//build_defs:platforms.bzl", "PLATFORMS")
 load(":cc_proto_blacklist_test.bzl", "cc_proto_blacklist_test")
 load(":compiler_config_setting.bzl", "create_compiler_config_setting")
 
@@ -25,9 +26,7 @@ create_compiler_config_setting(
 
 platform(
     name = "x64_windows-clang-cl",
-    constraint_values = [
-        "@platforms//cpu:x86_64",
-        "@platforms//os:windows",
+    constraint_values = PLATFORMS["win64"] + [
         # This is necessary for Bazel 7 compatibility with a MODULE.bazel file that still works in
         # Bazel 8.  Using cc_configure_extension from rules_cc produces a @local_config_cc
         # repository that's not compatible with @bazel_tools//tools/cpp:clang-cl from before
@@ -38,22 +37,13 @@ platform(
 
 platform(
     name = "x64_windows-msvc-cl",
-    constraint_values = [
-        "@platforms//cpu:x86_64",
-        "@platforms//os:windows",
+    constraint_values = PLATFORMS["win64"] + [
         # This may be necessary in case cc_configure_extension from rules_cc produces a
         # @local_config_cc repository that's not compatible with @bazel_tools//tools/cpp:msvc from
         # before Bazel 8, as with clang-cl above, to avoid silently falling back to clang-cl.
         # See https://github.com/bazelbuild/rules_cc/issues/330.
         "@rules_cc//cc/private/toolchain:msvc",
     ],
-)
-
-config_setting(
-    name = "protobuf_allow_msvc",
-    values = {
-        "define": "protobuf_allow_msvc=true",
-    },
 )
 
 selects.config_setting_group(
@@ -64,22 +54,47 @@ selects.config_setting_group(
     ],
 )
 
+[
+    platform(
+        name = name,
+        constraint_values = constraints,
+    )
+    for name, constraints in PLATFORMS.items()
+]
+
+# A pseudo-platform representing a universal binary containing both x86_64 and aarch64.
 platform(
-    name = "aarch64_linux",
+    name = "osx-universal2",
     constraint_values = [
-        "@platforms//cpu:aarch64",
-        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+        "@platforms//os:osx",
     ],
 )
 
 config_setting(
-    name = "aarch64",
-    values = {"cpu": "linux-aarch_64"},
+    name = "is_linux_aarch64",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:aarch64",
+    ],
+    # TODO: Remove this once the arch tests can successfully run on the "emulation"
+    # docker images.
+    flag_values = {
+        "//toolchain:release": "True",
+    },
 )
 
 config_setting(
-    name = "x86_64",
-    values = {"cpu": "linux-x86_64"},
+    name = "is_linux_x86_64",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    # TODO: Remove this once the arch tests can successfully run on the "emulation"
+    # docker images.
+    flag_values = {
+        "//toolchain:release": "True",
+    },
 )
 
 # Android NDK builds can specify different crosstool_top flags to choose which
@@ -133,43 +148,13 @@ config_setting(
 )
 
 config_setting(
-    name = "config_win32",
-    values = {
-        "cpu": "win32",
-    },
-)
-
-config_setting(
-    name = "config_win64",
-    values = {
-        "cpu": "win64",
-    },
-)
-
-selects.config_setting_group(
     name = "config_win",
-    match_any = [
-        ":config_win32",
-        ":config_win64",
-    ],
+    constraint_values = ["@platforms//os:windows"],
 )
 
 config_setting(
-    name = "config_osx_aarch64",
-    values = {"cpu": "osx-aarch_64"},
-)
-
-config_setting(
-    name = "config_osx_x86_64",
-    values = {"cpu": "osx-x86_64"},
-)
-
-selects.config_setting_group(
     name = "config_osx",
-    match_any = [
-        ":config_osx_aarch64",
-        ":config_osx_x86_64",
-    ],
+    constraint_values = ["@platforms//os:osx"],
 )
 
 # Internal testing:
@@ -262,11 +247,4 @@ cc_proto_blacklist_test(
         ":type_cc_proto",
         ":wrappers_cc_proto",
     ],
-)
-
-pkg_files(
-    name = "dist_files",
-    srcs = glob(["*"]),
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//pkg:__pkg__"],
 )

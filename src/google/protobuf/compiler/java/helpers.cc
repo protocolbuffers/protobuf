@@ -781,14 +781,13 @@ int FixedSize(FieldDescriptor::Type type) {
 
 // Sort the fields of the given Descriptor by number into a new[]'d array
 // and return it. The caller should delete the returned array.
-const FieldDescriptor** SortFieldsByNumber(const Descriptor* descriptor) {
-  const FieldDescriptor** fields =
-      new const FieldDescriptor*[descriptor->field_count()];
-  for (int i = 0; i < descriptor->field_count(); i++) {
+std::vector<const FieldDescriptor*> SortFieldsByNumber(
+    const Descriptor* descriptor) {
+  std::vector<const FieldDescriptor*> fields(descriptor->field_count());
+  for (int i = 0; i < descriptor->field_count(); ++i) {
     fields[i] = descriptor->field(i);
   }
-  std::sort(fields, fields + descriptor->field_count(),
-            FieldOrderingByNumber());
+  std::sort(fields.begin(), fields.end(), FieldOrderingByNumber());
   return fields;
 }
 
@@ -927,29 +926,12 @@ const FieldDescriptor* MapValueField(const FieldDescriptor* descriptor) {
 
 namespace {
 
-// Gets the value of `nest_in_file_class` feature and returns whether the
-// generated class should be nested in the generated proto file Java class.
-template <typename Descriptor>
-inline bool NestInFileClass(const Descriptor& descriptor) {
-  auto nest_in_file_class =
-      JavaGenerator::GetResolvedSourceFeatureExtension(descriptor, pb::java)
-          .nest_in_file_class();
-  ABSL_CHECK(
-      nest_in_file_class !=
-      pb::JavaFeatures::NestInFileClassFeature::NEST_IN_FILE_CLASS_UNKNOWN);
-
-  if (nest_in_file_class == pb::JavaFeatures::NestInFileClassFeature::LEGACY) {
-    return !descriptor.file()->options().java_multiple_files();
-  }
-  return nest_in_file_class == pb::JavaFeatures::NestInFileClassFeature::YES;
-}
-
 // Returns whether the type should be nested in the file class for the given
 // descriptor, depending on different Protobuf Java API versions.
 template <typename Descriptor>
 bool NestInFileClass(const Descriptor& descriptor, bool immutable) {
   (void)immutable;
-  return NestInFileClass(descriptor);
+  return NestedInFileClass(descriptor);
 }
 
 template <typename Descriptor>

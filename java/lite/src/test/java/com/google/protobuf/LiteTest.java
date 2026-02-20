@@ -49,10 +49,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Test;
@@ -1466,6 +1468,9 @@ public class LiteTest {
                   throw injectedException;
                 }
                 first = false;
+                if (len > bytes.length) {
+                  len = bytes.length;
+                }
                 System.arraycopy(bytes, 0, b, off, len);
                 return len;
               }
@@ -1740,7 +1745,7 @@ public class LiteTest {
   public void testMergeFromStream_invalidBytes() throws Exception {
     TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder().setDefaultBool(true);
     try {
-      builder.mergeFrom(CodedInputStream.newInstance("Invalid bytes".getBytes(Internal.UTF_8)));
+      builder.mergeFrom(CodedInputStream.newInstance("Invalid bytes".getBytes(StandardCharsets.UTF_8)));
       assertWithMessage("expected exception").fail();
     } catch (InvalidProtocolBufferException expected) {
     }
@@ -2975,9 +2980,8 @@ public class LiteTest {
     // Conversion happens during serialization.
     ByteString expectedBytes = ByteString.copyFromUtf8(expectedString);
     assertWithMessage(
-            String.format(
-                "Expected serializedMessage (%s) to contain \"%s\" (%s).",
-                encodeHex(serializedMessage), expectedString, encodeHex(expectedBytes)))
+            "Expected serializedMessage (%s) to contain \"%s\" (%s).",
+            encodeHex(serializedMessage), expectedString, encodeHex(expectedBytes))
         .that(contains(serializedMessage, expectedBytes))
         .isTrue();
   }

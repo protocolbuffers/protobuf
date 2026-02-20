@@ -54,6 +54,7 @@ import com.google.protobuf.Internal.ProtobufList;
 import com.google.protobuf.MapEntryLite.Metadata;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -61,6 +62,7 @@ import java.util.Map;
 
 /** Schema used for standard messages. */
 @CheckReturnValue
+@SuppressWarnings({"unchecked", "rawtypes"})
 final class MessageSchema<T> implements Schema<T> {
   private static final int INTS_PER_FIELD = 3;
   private static final int OFFSET_BITS = 20;
@@ -793,7 +795,6 @@ final class MessageSchema<T> implements Schema<T> {
     }
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public T newInstance() {
     return (T) newInstanceSchema.newInstance(defaultInstance);
@@ -803,7 +804,7 @@ final class MessageSchema<T> implements Schema<T> {
   public boolean equals(T message, T other) {
     final int bufferLength = buffer.length;
     for (int pos = 0; pos < bufferLength; pos += INTS_PER_FIELD) {
-      if (!equals(message, other, pos)) {
+      if (!equalsAtPosition(message, other, pos)) {
         return false;
       }
     }
@@ -822,7 +823,7 @@ final class MessageSchema<T> implements Schema<T> {
     return true;
   }
 
-  private boolean equals(T message, T other, int pos) {
+  private boolean equalsAtPosition(T message, T other, int pos) {
     final int typeAndOffset = typeAndOffsetAt(pos);
     final long offset = offset(typeAndOffset);
 
@@ -1463,7 +1464,6 @@ final class MessageSchema<T> implements Schema<T> {
   }
 
   @Override
-  @SuppressWarnings("unchecked") // Field type checks guarantee type casts from Unsafe.
   public int getSerializedSize(T message) {
     int size = 0;
 
@@ -2076,7 +2076,6 @@ final class MessageSchema<T> implements Schema<T> {
     }
   }
 
-  @SuppressWarnings("unchecked")
   private void writeFieldsInAscendingOrder(T message, Writer writer) throws IOException {
     Iterator<? extends Map.Entry<?, ?>> extensionIterator = null;
     Map.Entry nextExtension = null;
@@ -2479,7 +2478,6 @@ final class MessageSchema<T> implements Schema<T> {
     writeUnknownInMessageTo(unknownFieldSchema, message, writer);
   }
 
-  @SuppressWarnings("unchecked")
   private void writeFieldsInDescendingOrder(T message, Writer writer) throws IOException {
     writeUnknownInMessageTo(unknownFieldSchema, message, writer);
 
@@ -2929,7 +2927,6 @@ final class MessageSchema<T> implements Schema<T> {
     }
   }
 
-  @SuppressWarnings("unchecked")
   private <K, V> void writeMapHelper(Writer writer, int number, Object mapField, int pos)
       throws IOException {
     if (mapField != null) {
@@ -3831,7 +3828,7 @@ final class MessageSchema<T> implements Schema<T> {
                 && !Utf8.isValidUtf8(data, position, position + length)) {
               throw InvalidProtocolBufferException.invalidUtf8();
             }
-            final String value = new String(data, position, length, Internal.UTF_8);
+            final String value = new String(data, position, length, StandardCharsets.UTF_8);
             unsafe.putObject(message, fieldOffset, value);
             position += length;
           }
@@ -4390,7 +4387,6 @@ final class MessageSchema<T> implements Schema<T> {
     }
   }
 
-  @SuppressWarnings("unchecked")
   private final <K, V> void mergeMap(
       Object message,
       int pos,
@@ -4449,7 +4445,6 @@ final class MessageSchema<T> implements Schema<T> {
     return unknownFields;
   }
 
-  @SuppressWarnings("unchecked")
   private <K, V, UT, UB> UB filterUnknownEnumMap(
       int pos,
       int number,
@@ -4559,7 +4554,6 @@ final class MessageSchema<T> implements Schema<T> {
   }
 
   private <N> boolean isListInitialized(Object message, int typeAndOffset, int pos) {
-    @SuppressWarnings("unchecked")
     List<N> list = (List<N>) UnsafeUtil.getObject(message, offset(typeAndOffset));
     if (list.isEmpty()) {
       return true;

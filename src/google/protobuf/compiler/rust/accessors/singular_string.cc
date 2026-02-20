@@ -164,7 +164,7 @@ void SingularString::InThunkCc(Context& ctx,
           {"setter_thunk", ThunkName(ctx, field, "set")},
       },
       R"cc(
-        ::google::protobuf::rust::PtrAndLen $getter_thunk$($QualifiedMsg$* msg) {
+        ::google::protobuf::rust::PtrAndLen $getter_thunk$(const $QualifiedMsg$* msg) {
           absl::string_view val = msg->$field$();
           return ::google::protobuf::rust::PtrAndLen{val.data(), val.size()};
         }

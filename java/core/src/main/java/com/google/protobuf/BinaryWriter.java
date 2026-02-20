@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayDeque;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 
@@ -44,7 +45,14 @@ import java.util.Queue;
  */
 @CheckReturnValue
 @ExperimentalApi
+@SuppressWarnings({"unchecked", "rawtypes"})
 abstract class BinaryWriter extends ByteOutput implements Writer {
+  static class UnpairedSurrogateException extends IllegalArgumentException {
+    UnpairedSurrogateException(int index, int length) {
+      super("Unpaired surrogate at index " + index + " of " + length);
+    }
+  }
+
   public static final int DEFAULT_CHUNK_SIZE = 4096;
 
   private final BufferAllocator alloc;
@@ -1339,7 +1347,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
           // four UTF-8 bytes
           char high = 0;
           if (i == 0 || !Character.isSurrogatePair(high = in.charAt(i - 1), c)) {
-            throw new Utf8.UnpairedSurrogateException(i - 1, i);
+            throw new UnpairedSurrogateException(i - 1, i);
           }
           i--;
           int codePoint = Character.toCodePoint(high, c);
@@ -1874,7 +1882,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
           // four UTF-8 bytes
           final char high;
           if (i == 0 || !Character.isSurrogatePair(high = in.charAt(i - 1), c)) {
-            throw new Utf8.UnpairedSurrogateException(i - 1, i);
+            throw new UnpairedSurrogateException(i - 1, i);
           }
           i--;
           int codePoint = Character.toCodePoint(high, c);
@@ -1899,7 +1907,12 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     public void write(byte[] value, int offset, int length) {
       if (offset < 0 || offset + length > value.length) {
         throw new ArrayIndexOutOfBoundsException(
-            String.format("value.length=%d, offset=%d, length=%d", value.length, offset, length));
+            String.format(
+                Locale.ROOT,
+                "value.length=%d, offset=%d, length=%d",
+                value.length,
+                offset,
+                length));
       }
       requireSpace(length);
 
@@ -1911,7 +1924,12 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     public void writeLazy(byte[] value, int offset, int length) {
       if (offset < 0 || offset + length > value.length) {
         throw new ArrayIndexOutOfBoundsException(
-            String.format("value.length=%d, offset=%d, length=%d", value.length, offset, length));
+            String.format(
+                Locale.ROOT,
+                "value.length=%d, offset=%d, length=%d",
+                value.length,
+                offset,
+                length));
       }
       if (spaceLeft() < length) {
         // We consider the value to be immutable (likely the internals of a ByteString). Just
@@ -2424,7 +2442,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
           // four UTF-8 bytes
           char high = 0;
           if (i == 0 || !Character.isSurrogatePair(high = in.charAt(i - 1), c)) {
-            throw new Utf8.UnpairedSurrogateException(i - 1, i);
+            throw new UnpairedSurrogateException(i - 1, i);
           }
           i--;
           int codePoint = Character.toCodePoint(high, c);
@@ -2965,7 +2983,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
           // four UTF-8 bytes
           final char high;
           if (i == 0 || !Character.isSurrogatePair(high = in.charAt(i - 1), c)) {
-            throw new Utf8.UnpairedSurrogateException(i - 1, i);
+            throw new UnpairedSurrogateException(i - 1, i);
           }
           i--;
           int codePoint = Character.toCodePoint(high, c);

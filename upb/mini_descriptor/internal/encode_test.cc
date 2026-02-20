@@ -227,7 +227,7 @@ TEST(MiniTableEnumTest, Enum) {
   }
 }
 
-TEST_P(MiniTableTest, SubsInitializedToEmpty) {
+TEST(MiniTableTest, SubsInitializedToNull) {
   upb::Arena arena;
   upb::MtDataEncoder e;
   // Create mini table with 2 message fields.
@@ -235,14 +235,14 @@ TEST_P(MiniTableTest, SubsInitializedToEmpty) {
   ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, 15, 0));
   ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, 16, 0));
   upb::Status status;
-  upb_MiniTable* table = _upb_MiniTable_Build(
-      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  upb_MiniTable* table = upb_MiniTable_Build(e.data().data(), e.data().size(),
+                                             arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
   EXPECT_EQ(upb_MiniTable_FieldCount(table), 2);
-  EXPECT_FALSE(upb_MiniTable_FieldIsLinked(
-      table, upb_MiniTable_GetFieldByIndex(table, 0)));
-  EXPECT_FALSE(upb_MiniTable_FieldIsLinked(
-      table, upb_MiniTable_GetFieldByIndex(table, 1)));
+  EXPECT_FALSE(
+      upb_MiniTable_FieldIsLinked(upb_MiniTable_GetFieldByIndex(table, 0)));
+  EXPECT_FALSE(
+      upb_MiniTable_FieldIsLinked(upb_MiniTable_GetFieldByIndex(table, 1)));
 }
 
 TEST(MiniTableEnumTest, PositiveAndNegative) {

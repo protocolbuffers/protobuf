@@ -30,8 +30,6 @@ namespace upb_test {
 MATCHER_P(EqualsProtoTreatNansAsEqual, proto,
           negation ? "are not equal" : "are equal") {
   upb::DefPool defpool;
-  google::protobuf::DescriptorPool pool;
-  google::protobuf::DynamicMessageFactory factory;
   std::string differences;
   google::protobuf::util::DefaultFieldComparator comparator;
   comparator.set_treat_nan_as_equal(true);
@@ -65,7 +63,7 @@ static void AddFile(google::protobuf::FileDescriptorProto& file, upb::DefPool* p
     google::protobuf::FileDescriptorProto normalized_file;
     file_desc->CopyTo(&normalized_file);
     std::string serialized;
-    normalized_file.SerializeToString(&serialized);
+    (void)normalized_file.SerializeToString(&serialized);
     upb::Arena arena;
     upb::Status status;
     google_protobuf_FileDescriptorProto* proto = google_protobuf_FileDescriptorProto_parse(
@@ -92,7 +90,7 @@ static void AddFile(google::protobuf::FileDescriptorProto& file, upb::DefPool* p
     const char* buf =
         google_protobuf_FileDescriptorProto_serialize(upb_proto, arena.ptr(), &size);
     google::protobuf::FileDescriptorProto google_proto;
-    bool ok = google_proto.ParseFromArray(buf, size);
+    bool ok = google_proto.ParseFromString(absl::string_view(buf, size));
     ASSERT_TRUE(ok);
     EXPECT_THAT(google_proto, EqualsProtoTreatNansAsEqual(normalized_file));
   } else {
@@ -100,7 +98,7 @@ static void AddFile(google::protobuf::FileDescriptorProto& file, upb::DefPool* p
     // it may or may not be accepted, since upb does not perform as much
     // validation as proto2.  However it must not crash.
     std::string serialized;
-    file.SerializeToString(&serialized);
+    (void)file.SerializeToString(&serialized);
     upb::Arena arena;
     upb::Status status;
     google_protobuf_FileDescriptorProto* proto = google_protobuf_FileDescriptorProto_parse(

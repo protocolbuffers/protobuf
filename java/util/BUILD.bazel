@@ -94,17 +94,3 @@ junit_tests(
         "@protobuf_maven_dev//:junit_junit",
     ],
 )
-
-pkg_files(
-    name = "dist_files",
-    srcs = glob([
-        "src/main/**/*.java",
-        "src/test/**/*.java",
-        "src/test/**/*.proto",
-    ]) + [
-        "BUILD.bazel",
-        "pom_template.xml",
-    ],
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//java:__pkg__"],
-)

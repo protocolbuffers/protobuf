@@ -28,7 +28,7 @@ public final class RuntimeVersion {
   // These OSS versions are not stripped to avoid merging conflicts.
   public static final RuntimeDomain OSS_DOMAIN = RuntimeDomain.PUBLIC;
   public static final int OSS_MAJOR = 4;
-  public static final int OSS_MINOR = 34;
+  public static final int OSS_MINOR = 35;
   public static final int OSS_PATCH = 0;
   public static final String OSS_SUFFIX = "-dev";
 
@@ -88,7 +88,7 @@ public final class RuntimeVersion {
     if (domain != DOMAIN) {
       throw new ProtobufRuntimeVersionException(
           String.format(
-              Locale.US,
+              Locale.ROOT,
               "Detected mismatched Protobuf Gencode/Runtime domains when loading %s: gencode %s,"
                   + " runtime %s. Cross-domain usage of Protobuf is not supported.",
               location,
@@ -104,7 +104,7 @@ public final class RuntimeVersion {
       }
       logger.warning(
           String.format(
-              Locale.US,
+              Locale.ROOT,
               " Protobuf prelease version %s in use. This is not recommended for "
                   + "production use.\n"
                   + " You can ignore this message if you are deliberately testing a prerelease."
@@ -120,18 +120,22 @@ public final class RuntimeVersion {
 
     // Check that runtime major version is the same as the gencode major version.
     if (major != MAJOR) {
-      if (major == MAJOR - 1 && majorWarningLoggedCount < MAX_WARNING_COUNT) {
-        gencodeVersionString = versionString(major, minor, patch, suffix);
-        logger.warning(
-            String.format(
-                Locale.US,
-                " Protobuf gencode version %s is exactly one major version older than the runtime"
-                    + " version %s at %s. Please update the gencode to avoid compatibility"
-                    + " violations in the next runtime release.",
-                gencodeVersionString,
-                VERSION_STRING,
-                location));
-        majorWarningLoggedCount++;
+      if (major == MAJOR - 1) {
+        if (majorWarningLoggedCount < MAX_WARNING_COUNT) {
+          if (gencodeVersionString == null) {
+            gencodeVersionString = versionString(major, minor, patch, suffix);
+          }
+          logger.warning(
+              String.format(
+                  Locale.US,
+                  " Protobuf gencode version %s is exactly one major version older than the runtime"
+                      + " version %s at %s. Please update the gencode to avoid compatibility"
+                      + " violations in the next runtime release.",
+                  gencodeVersionString,
+                  VERSION_STRING,
+                  location));
+          majorWarningLoggedCount++;
+        }
       } else {
         throw new ProtobufRuntimeVersionException(
             String.format(

@@ -43,6 +43,10 @@ option java_outer_classname = "UnittestProto";
 
 // This proto includes every type of field in both singular and repeated
 // forms.
+// Warning: Many tests make assume about the number of fields in TestAllTypes,
+//          including assumptions about wire compatibility of overlay messages.
+//          Take care when adding or modifying fields in this message to check
+//          TGP results and fix any issues.
 message TestAllTypes {
   message NestedMessage {
     // The field name "b" fails to compile in proto1 because it conflicts with
@@ -252,6 +256,9 @@ message TestAllTypes {
       lazy = true
     ];
   }
+
+  // Field numbers used by TestAllExtensions.
+  reserved 1001, 1002, 1003;
 }
 
 // This proto includes a recursively nested message.
@@ -327,6 +334,10 @@ message TestAllExtensions {
   extensions 1 to max;
 }
 
+// Warning: some tests assume that TestAllTypes and TestAllExtensions are
+// wire compatible. Take care when adding or modifying fields in this message
+// to add a corresponding field in TestAllTypes and vice versa, ensuring that
+// they have the same field number and have compatible wire formats.
 extend TestAllExtensions {
   // Singular
   int32 optional_int32_extension = 1;
@@ -369,9 +380,9 @@ extend TestAllExtensions {
     lazy = true
   ];
 
-  TestAllTypes.NestedMessage optional_unverified_lazy_message_extension = 28 [
-    unverified_lazy = true
-  ];
+  // "unverified_lazy" is copied from the counterpart field in TestAllTypes.
+  // An extension can't be labeled as "unverified_lazy".
+  TestAllTypes.NestedMessage optional_unverified_lazy_message_extension = 28;
 
   // Repeated
   repeated int32 repeated_int32_extension = 31;
@@ -501,12 +512,9 @@ extend TestAllExtensions {
   string oneof_string_extension = 113;
   bytes oneof_bytes_extension = 114;
 
-  string optional_utf8_string_extension = 115 [
-    features.utf8_validation = VERIFY
-  ];
-  repeated string repeated_utf8_string_extension = 116 [
-    features.utf8_validation = VERIFY
-  ];
+  // Don't use field numbers 115 through 117, they are used by
+  // TestAllTypes.oneof_field. Use of 117 below for TestRequired (rather than
+  // TestAllTypes.NestedMessage) is a bug and should be fixed.
 
   // Singular message containing required fields; used to test initialization.
   TestRequired required_message_extension = 117;
@@ -938,6 +946,11 @@ message TestLazyMessage {
   TestAllTypes sub_message = 1 [
     lazy = true
   ];
+
+  oneof one {
+    TestAllTypes oneof1 = 10 [ lazy = true ];
+    TestAllTypes oneof2 = 20 [ lazy = true ];
+  }
 }
 
 message TestLazyRequiredEnum {
@@ -1832,6 +1845,10 @@ message TestHugeFieldNumbers {
     ctype=STRING_PIECE, features.utf8_validation = VERIFY
   ];
 
+  repeated string repeated_utf8_string = 536870022 [
+    features.utf8_validation = VERIFY
+  ];
+
   extensions 536860000 to 536869999 [
     declaration = {
       number: 536860000
@@ -2707,4 +2724,11 @@ message TestMessageForMove_Large {
   repeated string s117 = 117;
   repeated string s118 = 118;
   repeated string s119 = 119;
+}
+
+message TestAllTypesAsExtension {
+  extensions 10 to max;
+  extend TestAllTypesAsExtension {
+    TestAllTypes ext = 10;
+  }
 }

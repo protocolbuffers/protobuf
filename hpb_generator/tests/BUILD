@@ -12,12 +12,16 @@ load(
 )
 load("//bazel:proto_library.bzl", "proto_library")
 load(
-    "//bazel:upb_proto_library.bzl",
-    "upb_c_proto_library",
-)
-load(
     "//hpb/bazel:hpb_proto_library.bzl",
     "hpb_proto_library",
+)
+load(
+    "//upb/bazel:upb_minitable_proto_library.bzl",
+    "upb_minitable_proto_library",
+)
+load(
+    "//upb/bazel:upb_proto_library.bzl",
+    "upb_c_proto_library",
 )
 
 package(default_applicable_licenses = ["//:license"])
@@ -49,6 +53,13 @@ proto_library(
 )
 
 proto_library(
+    name = "null_enum_proto",
+    srcs = [
+        "null_enum.proto",
+    ],
+)
+
+proto_library(
     name = "no_package_enum_user_proto",
     srcs = [
         "no_package_enum_user.proto",
@@ -58,6 +69,14 @@ proto_library(
 
 upb_c_proto_library(
     name = "test_model_upb_proto",
+    visibility = [
+        "//hpb:__subpackages__",
+    ],
+    deps = [":test_model_proto"],
+)
+
+upb_minitable_proto_library(
+    name = "test_model_upb_minitable_proto",
     visibility = [
         "//hpb:__subpackages__",
     ],
@@ -76,6 +95,12 @@ hpb_proto_library(
     name = "naming_conflict_hpb_proto",
     visibility = ["//visibility:private"],
     deps = [":naming_conflict_proto"],
+)
+
+hpb_proto_library(
+    name = "null_enum_hpb_proto",
+    visibility = ["//visibility:private"],
+    deps = [":null_enum_proto"],
 )
 
 hpb_proto_library(
@@ -155,6 +180,7 @@ cc_test(
         ":test_model_hpb_proto",
         ":test_model_upb_proto",
         ":naming_conflict_hpb_proto",
+        ":null_enum_hpb_proto",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
         "@abseil-cpp//absl/status:statusor",
