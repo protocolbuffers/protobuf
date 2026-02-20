@@ -97,16 +97,6 @@ config_setting(
     },
 )
 
-config_setting(
-    name = "aarch64",
-    values = {"cpu": "linux-aarch_64"},
-)
-
-config_setting(
-    name = "x86_64",
-    values = {"cpu": "linux-x86_64"},
-)
-
 # Android NDK builds can specify different crosstool_top flags to choose which
 # STL they use for C++. We need these multiple variants to catch all of those
 # versions of crosstool_top and reliably detect Android.
@@ -158,43 +148,13 @@ config_setting(
 )
 
 config_setting(
-    name = "config_win32",
-    values = {
-        "cpu": "win32",
-    },
-)
-
-config_setting(
-    name = "config_win64",
-    values = {
-        "cpu": "win64",
-    },
-)
-
-selects.config_setting_group(
     name = "config_win",
-    match_any = [
-        ":config_win32",
-        ":config_win64",
-    ],
+    constraint_values = ["@platforms//os:windows"],
 )
 
 config_setting(
-    name = "config_osx_aarch64",
-    values = {"cpu": "osx-aarch_64"},
-)
-
-config_setting(
-    name = "config_osx_x86_64",
-    values = {"cpu": "osx-x86_64"},
-)
-
-selects.config_setting_group(
     name = "config_osx",
-    match_any = [
-        ":config_osx_aarch64",
-        ":config_osx_x86_64",
-    ],
+    constraint_values = ["@platforms//os:osx"],
 )
 
 # Internal testing:
