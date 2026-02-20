@@ -127,11 +127,11 @@ jobs:
           bazel-cache: "bazel-tests"
           bazel: test //bazel/...
 
-  bazel-tests-macos:
+  bazel-tests-windows-macos:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        runner: [ macos-14 ]
+        runner: [ windows-2022, macos-14 ]
     name: Bazel Tests ${{ matrix.runner }}
     runs-on: ${{ matrix.runner }}
     steps:
