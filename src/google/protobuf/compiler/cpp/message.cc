@@ -5681,6 +5681,20 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
               PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$
               __attribute__((section("$section$")));
         )cc");
+  } else if (IsMapEntryMessage(descriptor_)) {
+    p->Emit(
+        R"cc(
+          struct $type$ {
+            constexpr $type$() : _default(::_pbi::ConstantInitialized{}) {}
+            ~$type$() {}
+            union {
+              $classname$ _default;
+            };
+          };
+
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
+        )cc");
   } else {
     p->Emit(
         R"cc(

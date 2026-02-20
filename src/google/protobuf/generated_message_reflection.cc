@@ -3665,6 +3665,7 @@ void Reflection::PopulateTcParseFieldAux(
       case internal::TailCallTableInfo::kSplitSizeof:
         field_aux++->offset = schema_.SizeofSplit();
         break;
+      case internal::TailCallTableInfo::kSubMessageGlobals:
       case internal::TailCallTableInfo::kSubTable:
       case internal::TailCallTableInfo::kSubMessageWeak:
       case internal::TailCallTableInfo::kMessageVerifyFunc:

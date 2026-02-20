@@ -388,6 +388,17 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
         case TailCallTableInfo::kSplitSizeof:
           p->Emit("{_fl::Offset{sizeof($classname$::Impl_::Split)}},\n");
           break;
+        case TailCallTableInfo::kSubMessageGlobals:
+          p->Emit({{"name", QualifiedMsgGlobalsInstanceName(
+                                aux_entry.field->message_type(), options_)}},
+                  R"cc(
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+                    {::_pbi::FieldAuxMessageGlobals{}, &$name$},
+#else
+                    {::_pbi::FieldAuxDefaultMessage{}, &$name$},
+#endif
+                  )cc");
+          break;
         case TailCallTableInfo::kSubMessage:
           p->Emit({{"name", QualifiedMsgGlobalsInstanceName(
                                 aux_entry.field->message_type(), options_)}},

@@ -146,6 +146,7 @@ struct Offset {
 #endif
 
 struct FieldAuxDefaultMessage {};
+struct FieldAuxMessageGlobals {};
 struct FieldAuxEnumData {};
 
 // Small type card used by mini parse to handle map entries.
@@ -439,6 +440,8 @@ struct alignas(uint64_t) TcParseTableBase {
     constexpr FieldAux(const MessageLite* msg) : message_default_p(msg) {}
     constexpr FieldAux(FieldAuxDefaultMessage, const void* msg)
         : message_default_p(msg) {}
+    constexpr FieldAux(FieldAuxMessageGlobals, const void* globals)
+        : message_globals_p(globals) {}
     constexpr FieldAux(const TcParseTableBase* table) : table(table) {}
     constexpr FieldAux(MapAuxInfo map_info) : map_info(map_info) {}
     constexpr FieldAux(LazyEagerVerifyFnType verify_func)
@@ -449,6 +452,7 @@ struct alignas(uint64_t) TcParseTableBase {
     } enum_range;
     uint32_t offset;
     const void* message_default_p;
+    const void* message_globals_p;
     const uint32_t* enum_data;
     const TcParseTableBase* table;
     MapAuxInfo map_info;
@@ -457,8 +461,14 @@ struct alignas(uint64_t) TcParseTableBase {
     const MessageLite* message_default() const {
       return static_cast<const MessageLite*>(message_default_p);
     }
+    const MessageGlobalsBase* message_globals() const {
+      return static_cast<const MessageGlobalsBase*>(message_globals_p);
+    }
     const MessageLite* message_default_weak() const {
       return *static_cast<const MessageLite* const*>(message_default_p);
+    }
+    const MessageGlobalsBase* message_globals_weak() const {
+      return *static_cast<const MessageGlobalsBase* const*>(message_globals_p);
     }
   };
   const FieldAux* field_aux(uint32_t idx) const {
