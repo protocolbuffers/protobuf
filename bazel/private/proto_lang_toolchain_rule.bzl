@@ -154,10 +154,7 @@ Deprecated. Alias for <code>denylisted_protos</code>. Will be removed in a futur
         ),
     } | ({} if proto_common.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION else {
         "_proto_compiler": attr.label(
-            cfg = "exec",
-            executable = True,
-            allow_files = True,
-            default = configuration_field("proto", "proto_compiler"),
+            default = "//bazel/flags:proto_compiler",
         ),
     }),
     provides = [ProtoLangToolchainInfo],
