@@ -34,6 +34,7 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/dynamic_annotations.h"
+#include "absl/base/macros.h"
 #include "absl/base/no_destructor.h"
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
@@ -392,10 +393,14 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   pointer AddAlreadyReserved() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   pointer AddNAlreadyReserved(int n) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
+  ABSL_DEPRECATE_AND_INLINE()
+  void Resize(size_type new_size, const Element& value);
+
   // Like STL resize.  Uses value to fill appended elements.
   // Like Truncate() if new_size <= size(), otherwise this is
   // O(new_size - size()).
-  void Resize(size_type new_size, const Element& value);
+  void resize(size_type new_size);
+  void resize(size_type new_size, const Element& value);
 
   // Gets the underlying array.  This pointer is possibly invalidated by
   // any add or remove operation.
@@ -518,6 +523,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   RepeatedField(internal::InternalMetadataOffset offset,
                 const RepeatedField& rhs);
   RepeatedField(internal::InternalMetadataOffset offset, RepeatedField&& rhs);
+
+  template <typename Init>
+  void ResizeImpl(int new_size, Init init);
 
   bool is_soo() const { return soo_rep_.is_soo(); }
   void set_size(int size) {
@@ -872,7 +880,14 @@ inline Element* RepeatedField<Element>::AddNAlreadyReserved(int n)
 }
 
 template <typename Element>
+ABSL_DEPRECATE_AND_INLINE()
 inline void RepeatedField<Element>::Resize(int new_size, const Element& value) {
+  resize(new_size, value);
+}
+
+template <typename Element>
+template <typename Init>
+inline void RepeatedField<Element>::ResizeImpl(int new_size, Init init) {
   ABSL_DCHECK_GE(new_size, 0);
   bool is_soo = this->is_soo();
   const int old_size = size();
@@ -883,12 +898,27 @@ inline void RepeatedField<Element>::Resize(int new_size, const Element& value) {
     }
     Element* elem = elements(is_soo);
     Element* first = elem + ExchangeCurrentSize(new_size);
-    std::uninitialized_fill(first, elem + new_size, value);
+    init(first, elem + new_size);
   } else if (new_size < old_size) {
     Element* elem = unsafe_elements(is_soo);
     Destroy(elem + new_size, elem + old_size);
     ExchangeCurrentSize(new_size);
   }
+}
+
+template <typename Element>
+inline void RepeatedField<Element>::resize(size_type new_size,
+                                           const Element& value) {
+  ResizeImpl(new_size, [&](auto* first, auto* last) {
+    std::uninitialized_fill(first, last, value);
+  });
+}
+
+template <typename Element>
+inline void RepeatedField<Element>::resize(size_type new_size) {
+  ResizeImpl(new_size, [](auto* first, auto* last) {
+    std::uninitialized_value_construct(first, last);
+  });
 }
 
 template <typename Element>
