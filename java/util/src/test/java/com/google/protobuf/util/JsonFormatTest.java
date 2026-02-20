@@ -21,6 +21,7 @@ import com.google.protobuf.BytesValue;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.DoubleValue;
+import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.FloatValue;
 import com.google.protobuf.Int32Value;
 import com.google.protobuf.Int64Value;
@@ -145,8 +146,16 @@ public class JsonFormatTest {
   }
 
   private void assertRoundTripEquals(Message message, TypeRegistry registry) throws Exception {
-    JsonFormat.Printer printer = JsonFormat.printer().usingTypeRegistry(registry);
-    JsonFormat.Parser parser = JsonFormat.parser().usingTypeRegistry(registry);
+    assertRoundTripEquals(message, registry, ExtensionRegistry.getEmptyRegistry());
+  }
+
+  private void assertRoundTripEquals(
+      Message message, TypeRegistry registry, ExtensionRegistry extensionRegistry)
+      throws Exception {
+    JsonFormat.Printer printer =
+        JsonFormat.printer().usingTypeRegistry(registry).printingFullyQualifiedExtensionNames();
+    JsonFormat.Parser parser =
+        JsonFormat.parser().usingTypeRegistry(registry).usingExtensionRegistry(extensionRegistry);
     Message.Builder builder = message.newBuilderForType();
     parser.merge(printer.print(message), builder);
     Message parsedMessage = builder.build();
@@ -187,6 +196,8 @@ public class JsonFormatTest {
    *
    * <p>The JSON serialization of the proto contains short names for extension fields. Trying to
    * parse this JSON will fail because the parser does not recognize the extensions.
+   *
+   * <p>To avoid this issue, call {@link JsonFormat.Printer#printingFullyQualifiedExtensionNames()}.
    */
   @Test
   public void testExtensionFields_arePrintedWithShortName() throws Exception {
@@ -212,8 +223,10 @@ public class JsonFormatTest {
             + "}";
     assertThat(json).isEqualTo(expectedJsonWithShortNames);
     // Short names prevent round-trip success, it requires fully qualified extension names.
+    JsonFormat.Parser parser = JsonFormat.parser();
+    TestAllTypesProto2.Builder builder = TestAllTypesProto2.newBuilder();
     Exception e =
-        assertThrows(InvalidProtocolBufferException.class, () -> assertRoundTripEquals(message));
+        assertThrows(InvalidProtocolBufferException.class, () -> parser.merge(json, builder));
     assertThat(e)
         .hasMessageThat()
         .contains(
@@ -227,6 +240,8 @@ public class JsonFormatTest {
    * <p>The JSON serialization of the proto contains a duplicate key. Trying to parse this JSON will
    * result possibly the wrong value being assigned to the regular field and the extension field to
    * be dropped.
+   *
+   * <p>To avoid this issue, call {@link JsonFormat.Printer#printingFullyQualifiedExtensionNames()}.
    */
   @Test
   public void testExtensionFields_withSameShortName_printsDuplicateJsonKeys() throws Exception {
@@ -258,12 +273,150 @@ public class JsonFormatTest {
   }
 
   @Test
+  public void testExtensionFields_arePrintedWithFullyQualifiedName() throws Exception {
+    TypeRegistry registry =
+        TypeRegistry.newBuilder().add(TestAllTypesProto2.getDescriptor()).build();
+    TestAllTypesProto2 message =
+        TestAllTypesProto2.newBuilder()
+            .setExtension(JsonTestProto2.extensionInt32, 123)
+            .setExtension(
+                JsonTestProto2.extensionRepeatedBool, ImmutableList.of(true, false, false))
+            .setExtension(
+                JsonTestProto2.extensionNestedMessage,
+                TestAllTypesProto2.NestedMessage.newBuilder().setValue(789).build())
+            .build();
+
+    JsonFormat.Printer printer = JsonFormat.printer().printingFullyQualifiedExtensionNames();
+    String json = printer.print(message);
+
+    String expectedJsonWithFullnames =
+        "{\n"
+            + "  \"[json_test_proto2.extension_int32]\": 123,\n"
+            + "  \"[json_test_proto2.extension_repeated_bool]\": [true, false, false],\n"
+            + "  \"[json_test_proto2.extension_nested_message]\": {\n"
+            + "    \"value\": 789\n"
+            + "  }\n"
+            + "}";
+    assertThat(json).isEqualTo(expectedJsonWithFullnames);
+    assertRoundTripEquals(message, registry, ExtensionRegistry.getGeneratedRegistry());
+  }
+
+  @Test
+  public void testExtensionFields_withSameShortName_doesNotDuplicateKeys() throws Exception {
+    TypeRegistry registry =
+        TypeRegistry.newBuilder().add(TestAllTypesProto2.getDescriptor()).build();
+    JsonFormat.Printer printer =
+        JsonFormat.printer().usingTypeRegistry(registry).printingFullyQualifiedExtensionNames();
+    TestAllTypesProto2 message =
+        TestAllTypesProto2.newBuilder()
+            .setExtensionSameName("Field entry")
+            .setExtension(JsonTestProto2.extensionSameName, "Extension entry")
+            .build();
+
+    String json = printer.print(message);
+    String expectedJsonWithFullnames =
+        "{\n"
+            + "  \"extensionSameName\": \"Field entry\",\n"
+            + "  \"[json_test_proto2.extension_same_name]\": \"Extension entry\"\n"
+            + "}";
+    assertThat(json).isEqualTo(expectedJsonWithFullnames);
+    assertRoundTripEquals(message, registry, ExtensionRegistry.getGeneratedRegistry());
+  }
+
+  /**
+   * This test demonstrates a parsing limitation for JSON that include extension fields with their
+   * short names.
+   *
+   * <p>Previously this library printed extensions with their short name instead of their fully
+   * qualified name. If an older version of this library was used to generate JSON, it still cannot
+   * be parsed.
+   */
+  @Test
+  public void testParse_whenJsonHasExtensionWithShortNames_cannotParseJson() throws Exception {
+    TypeRegistry typeRegistry =
+        TypeRegistry.newBuilder().add(TestAllTypesProto2.getDescriptor()).build();
+    ExtensionRegistry extensionRegistry = ExtensionRegistry.getGeneratedRegistry();
+    String json =
+        "{\n"
+            + "  \"extensionInt32\": 123,\n"
+            + "  \"extensionRepeatedBool\": [true, false, false],\n"
+            + "  \"extensionNestedMessage\": {\n"
+            + "    \"value\": 789\n"
+            + "  }\n"
+            + "}";
+    TestAllTypesProto2.Builder builder = TestAllTypesProto2.newBuilder();
+    try {
+      JsonFormat.parser()
+          .usingTypeRegistry(typeRegistry)
+          .usingExtensionRegistry(extensionRegistry)
+          .merge(json, builder);
+      assertWithMessage("Exception is expected.").fail();
+    } catch (InvalidProtocolBufferException expected) {
+      assertThat(expected).hasMessageThat().contains("Cannot find field: extensionInt32");
+    }
+  }
+
+  @Test
   public void testAllFields() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     setAllFields(builder);
     TestAllTypes message = builder.build();
 
     assertThat(toJsonString(message))
+        .isEqualTo(
+            "{\n"
+                + "  \"optionalInt32\": 1234,\n"
+                + "  \"optionalInt64\": \"1234567890123456789\",\n"
+                + "  \"optionalUint32\": 4294967295,\n"
+                + "  \"optionalUint64\": \"18446744073709551615\",\n"
+                + "  \"optionalSint32\": 9012,\n"
+                + "  \"optionalSint64\": \"3456789012345678901\",\n"
+                + "  \"optionalFixed32\": 3456,\n"
+                + "  \"optionalFixed64\": \"4567890123456789012\",\n"
+                + "  \"optionalSfixed32\": 7890,\n"
+                + "  \"optionalSfixed64\": \"5678901234567890123\",\n"
+                + "  \"optionalFloat\": 1.5,\n"
+                + "  \"optionalDouble\": 1.25,\n"
+                + "  \"optionalBool\": true,\n"
+                + "  \"optionalString\": \"Hello world!\",\n"
+                + "  \"optionalBytes\": \"AAEC\",\n"
+                + "  \"optionalNestedMessage\": {\n"
+                + "    \"value\": 100\n"
+                + "  },\n"
+                + "  \"optionalNestedEnum\": \"BAR\",\n"
+                + "  \"repeatedInt32\": [1234, 234],\n"
+                + "  \"repeatedInt64\": [\"1234567890123456789\", \"234567890123456789\"],\n"
+                + "  \"repeatedUint32\": [5678, 678],\n"
+                + "  \"repeatedUint64\": [\"2345678901234567890\", \"345678901234567890\"],\n"
+                + "  \"repeatedSint32\": [9012, 10],\n"
+                + "  \"repeatedSint64\": [\"3456789012345678901\", \"456789012345678901\"],\n"
+                + "  \"repeatedFixed32\": [3456, 456],\n"
+                + "  \"repeatedFixed64\": [\"4567890123456789012\", \"567890123456789012\"],\n"
+                + "  \"repeatedSfixed32\": [7890, 890],\n"
+                + "  \"repeatedSfixed64\": [\"5678901234567890123\", \"678901234567890123\"],\n"
+                + "  \"repeatedFloat\": [1.5, 11.5],\n"
+                + "  \"repeatedDouble\": [1.25, 11.25],\n"
+                + "  \"repeatedBool\": [true, true],\n"
+                + "  \"repeatedString\": [\"Hello world!\", \"ello world!\"],\n"
+                + "  \"repeatedBytes\": [\"AAEC\", \"AQI=\"],\n"
+                + "  \"repeatedNestedMessage\": [{\n"
+                + "    \"value\": 100\n"
+                + "  }, {\n"
+                + "    \"value\": 200\n"
+                + "  }],\n"
+                + "  \"repeatedNestedEnum\": [\"BAR\", \"BAZ\"]\n"
+                + "}");
+
+    assertRoundTripEquals(message);
+  }
+
+  @Test
+  public void testAllFields_withFullyQualifiedExtensionNamesFlag() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    setAllFields(builder);
+    TestAllTypes message = builder.build();
+
+    assertThat(JsonFormat.printer().printingFullyQualifiedExtensionNames().print(message))
         .isEqualTo(
             "{\n"
                 + "  \"optionalInt32\": 1234,\n"
@@ -1319,6 +1472,63 @@ public class JsonFormatTest {
                 + "  \"value\": null\n"
                 + "}");
     assertRoundTripEquals(anyMessage, registry);
+  }
+
+  @Test
+  public void testAnyFieldsWithExtensions() throws Exception {
+    TestAllTypesProto2.Builder builder = TestAllTypesProto2.newBuilder();
+    builder.setExtension(JsonTestProto2.extensionInt32, 123);
+    builder.setExtension(
+        JsonTestProto2.extensionRepeatedBool, ImmutableList.of(true, false, false));
+    builder.setExtension(
+        JsonTestProto2.extensionNestedMessage,
+        TestAllTypesProto2.NestedMessage.newBuilder().setValue(789).build());
+    builder.setExtension(JsonTestProto2.extensionSameName, "Extension entry");
+    builder.setExtensionSameName("Field entry");
+    TestAllTypesProto2 message = builder.build();
+    TestAny anyMessage = TestAny.newBuilder().setAnyValue(Any.pack(message)).build();
+
+    ExtensionRegistry extensionRegistry = ExtensionRegistry.getGeneratedRegistry();
+
+    TypeRegistry typeRegistry =
+        TypeRegistry.newBuilder().add(TestAllTypesProto2.getDescriptor()).build();
+
+    JsonFormat.Printer printer =
+        JsonFormat.printer()
+            .printingFullyQualifiedExtensionNames()
+            .usingTypeRegistry(typeRegistry)
+            .usingExtensionRegistry(extensionRegistry);
+
+    String json = printer.print(anyMessage);
+
+    // Verify JSON content
+    assertThat(json)
+        .isEqualTo(
+            "{\n"
+                + "  \"anyValue\": {\n"
+                + "    \"@type\": \"type.googleapis.com/json_test_proto2.TestAllTypesProto2\",\n"
+                + "    \"extensionSameName\": \"Field entry\",\n"
+                + "    \"[json_test_proto2.extension_int32]\": 123,\n"
+                + "    \"[json_test_proto2.extension_repeated_bool]\": [true, false, false],\n"
+                + "    \"[json_test_proto2.extension_nested_message]\": {\n"
+                + "      \"value\": 789\n"
+                + "    },\n"
+                + "    \"[json_test_proto2.extension_same_name]\": \"Extension entry\"\n"
+                + "  }\n"
+                + "}");
+
+    // Assert round trip.
+    JsonFormat.Parser parser =
+        JsonFormat.parser()
+            .usingTypeRegistry(typeRegistry)
+            .usingExtensionRegistry(extensionRegistry);
+    TestAny.Builder anyBuilder = TestAny.newBuilder();
+    parser.merge(json, anyBuilder);
+    Any parsedAny = anyBuilder.getAnyValue();
+    assertThat(anyBuilder.build()).isEqualTo(anyMessage);
+    TestAllTypesProto2 unpacked =
+        TestAllTypesProto2.parseFrom(parsedAny.getValue(), extensionRegistry);
+    assertThat(unpacked).isEqualTo(message);
   }
 
   @Test
