@@ -9,7 +9,9 @@ package com.google.protobuf.util;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertThrows;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonSyntaxException;
 import com.google.protobuf.Any;
@@ -46,6 +48,7 @@ import com.google.protobuf.util.proto.JsonTestProto.TestRecursive;
 import com.google.protobuf.util.proto.JsonTestProto.TestStruct;
 import com.google.protobuf.util.proto.JsonTestProto.TestTimestamp;
 import com.google.protobuf.util.proto.JsonTestProto.TestWrappers;
+import com.google.protobuf.util.proto.JsonTestProto2;
 import com.google.protobuf.util.proto.JsonTestProto2.TestAllTypesProto2;
 import java.io.IOException;
 import java.io.InputStream;
@@ -177,6 +180,81 @@ public class JsonFormatTest {
   private void mergeFromJsonIgnoringUnknownFields(String json, Message.Builder builder)
       throws IOException {
     JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
+  }
+
+  /**
+   * This test demonstrates the currently known bad behavior of printing extension fields.
+   *
+   * <p>The JSON serialization of the proto contains short names for extension fields. Trying to
+   * parse this JSON will fail because the parser does not recognize the extensions.
+   */
+  @Test
+  public void testExtensionFields_arePrintedWithShortName() throws Exception {
+    TestAllTypesProto2 message =
+        TestAllTypesProto2.newBuilder()
+            .setExtension(JsonTestProto2.extensionInt32, 123)
+            .setExtension(
+                JsonTestProto2.extensionRepeatedBool, ImmutableList.of(true, false, false))
+            .setExtension(
+                JsonTestProto2.extensionNestedMessage,
+                TestAllTypesProto2.NestedMessage.newBuilder().setValue(789).build())
+            .build();
+
+    String json = toJsonString(message);
+
+    String expectedJsonWithShortNames =
+        "{\n"
+            + "  \"extensionInt32\": 123,\n"
+            + "  \"extensionRepeatedBool\": [true, false, false],\n"
+            + "  \"extensionNestedMessage\": {\n"
+            + "    \"value\": 789\n"
+            + "  }\n"
+            + "}";
+    assertThat(json).isEqualTo(expectedJsonWithShortNames);
+    // Short names prevent round-trip success, it requires fully qualified extension names.
+    Exception e =
+        assertThrows(InvalidProtocolBufferException.class, () -> assertRoundTripEquals(message));
+    assertThat(e)
+        .hasMessageThat()
+        .contains(
+            "Cannot find field: extensionInt32 in message json_test_proto2.TestAllTypesProto2");
+  }
+
+  /**
+   * This test demonstrates the currently known bad behavior of printing extension fields when the
+   * name of the extension is the same as the name of a regular field.
+   *
+   * <p>The JSON serialization of the proto contains a duplicate key. Trying to parse this JSON will
+   * result possibly the wrong value being assigned to the regular field and the extension field to
+   * be dropped.
+   */
+  @Test
+  public void testExtensionFields_withSameShortName_printsDuplicateJsonKeys() throws Exception {
+    com.google.protobuf.TypeRegistry registry =
+        com.google.protobuf.TypeRegistry.newBuilder()
+            .add(TestAllTypesProto2.getDescriptor())
+            .build();
+    JsonFormat.Printer printer = JsonFormat.printer().usingTypeRegistry(registry);
+    JsonFormat.Parser parser = JsonFormat.parser().usingTypeRegistry(registry);
+    TestAllTypesProto2 message =
+        TestAllTypesProto2.newBuilder()
+            .setExtensionSameName("Field entry")
+            .setExtension(JsonTestProto2.extensionSameName, "Extension entry")
+            .build();
+
+    String json = printer.print(message);
+    Message.Builder builder = message.newBuilderForType();
+    parser.merge(json, builder);
+    Message parsedMessage = builder.build();
+
+    String expectedJsonWithDuplicateKeys =
+        "{\n"
+            + "  \"extensionSameName\": \"Field entry\",\n"
+            + "  \"extensionSameName\": \"Extension entry\"\n"
+            + "}";
+    assertThat(json).isEqualTo(expectedJsonWithDuplicateKeys);
+    // Short names prevent round-trip success, collision occurs due to duplicate json keys.
+    assertThat(parsedMessage.toString()).isNotEqualTo(message.toString());
   }
 
   @Test
