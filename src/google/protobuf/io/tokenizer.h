@@ -19,6 +19,7 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/charset.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/port.h"
 
@@ -87,32 +88,40 @@ class PROTOBUF_EXPORT Tokenizer {
     TYPE_START,  // Next() has not yet been called.
     TYPE_END,    // End of input reached.  "text" is empty.
 
-    TYPE_IDENTIFIER,  // A sequence of letters, digits, and underscores, not
-                      // starting with a digit.  It is an error for a number
-                      // to be followed by an identifier with no space in
-                      // between.
-    TYPE_INTEGER,     // A sequence of digits representing an integer.  Normally
-                      // the digits are decimal, but a prefix of "0x" indicates
-                      // a hex number and a leading zero indicates octal, just
-                      // like with C numeric literals.  A leading negative sign
-                      // is NOT included in the token; it's up to the parser to
-                      // interpret the unary minus operator on its own.
-    TYPE_FLOAT,       // A floating point literal, with a fractional part and/or
-                      // an exponent.  Always in decimal.  Again, never
-                      // negative.
-    TYPE_STRING,      // A quoted sequence of escaped characters.  Either single
-                      // or double quotes can be used, but they must match.
-                      // A string literal cannot cross a line break.
-    TYPE_SYMBOL,      // Any other printable character, like '!' or '+'.
-                      // Symbols are always a single character, so "!+$%" is
-                      // four tokens.
-    TYPE_WHITESPACE,  // A sequence of whitespace.  This token type is only
-                      // produced if report_whitespace() is true.  It is not
-                      // reported for whitespace within comments or strings.
-    TYPE_NEWLINE,     // A newline (\n).  This token type is only
-                      // produced if report_whitespace() is true and
-                      // report_newlines() is true.  It is not reported for
-                      // newlines in comments or strings.
+    // A sequence of letters, digits, and underscores, not starting with a
+    // digit.  It is an error for a number to be followed by an identifier with
+    // no space in between.
+    TYPE_IDENTIFIER,
+    // A sequence of digits representing an integer.  Normally the digits are
+    // decimal, but a prefix of "0x" indicates a hex number and a leading zero
+    // indicates octal, just like with C numeric literals.  A leading negative
+    // sign is NOT included in the token; it's up to the parser to interpret the
+    // unary minus operator on its own.
+    TYPE_INTEGER,
+    // A floating point literal, with a fractional part and/or an exponent.
+    // Always in decimal.  Again, never negative.
+    TYPE_FLOAT,
+    // A quoted sequence of escaped characters.  Either single or double quotes
+    // can be used, but they must match. A string literal cannot cross a line
+    // break.
+    TYPE_STRING,
+    // Any other printable character, like '!' or '+'. Symbols are always a
+    // single character, so "!+$%" is four tokens.
+    TYPE_SYMBOL,
+    // A sequence of whitespace.  This token type is only produced if
+    // report_whitespace() is true.  It is not reported for whitespace within
+    // comments or strings.
+    TYPE_WHITESPACE,
+    // A newline (\n).  This token type is only produced if report_whitespace()
+    // is true and report_newlines() is true. It is not reported for newlines in
+    // comments or strings.
+    TYPE_NEWLINE,
+    // A sequence of accepted URL characters. Only produced if URL chars mode is
+    // enabled (see set_report_url_chars()). The token content is not validated
+    // for being a valid URL, only for containing accepted URL characters. Not
+    // all valid URL characters are accepted, see
+    // https://protobuf.dev/reference/protobuf/textformat-spec/#characters.
+    TYPE_URL_CHARS,
   };
 
   // Structure representing a token read from the token stream.
@@ -257,8 +266,20 @@ class PROTOBUF_EXPORT Tokenizer {
   bool report_newlines() const;
   void set_report_newlines(bool report);
 
+  // If true, URL chars mode is enabled: All contiguous sequences of accepted
+  // URL characters will be reported as TYPE_URL_CHARS tokens. Whitespace
+  // characters will be reported as TYPE_WHITESPACE / TYPE_NEWLINE tokens
+  // depending on the report_whitespace() and report_newlines() settings. All
+  // non-URL characters will be reported as single character tokens with
+  // TYPE_SYMBOL. All other, non-whitespace tokens types (identifiers, integers,
+  // symbols, etc.) will not be produced. For example, "25 foo] +x/?" will be
+  // tokenized as URL_CHARS("25"), URL_CHARS("foo"), SYMBOL("]"),
+  // URL_CHARS("+x/?") (if whitespace reporting is disabled).
+  bool report_url_chars() const;
+  void set_report_url_chars(bool report);
+
   // External helper: validate an identifier.
-  static bool IsIdentifier(const std::string& text);
+  static bool IsIdentifier(absl::string_view text);
 
   // -----------------------------------------------------------------
  private:
@@ -292,6 +313,7 @@ class PROTOBUF_EXPORT Tokenizer {
   bool allow_multiline_strings_;
   bool report_whitespace_ = false;
   bool report_newlines_ = false;
+  bool report_url_chars_ = false;
 
   // Since we count columns we need to interpret tabs somehow.  We'll take
   // the standard 8-character definition for lack of any way to do better.
@@ -324,10 +346,8 @@ class PROTOBUF_EXPORT Tokenizer {
   }
 
   // -----------------------------------------------------------------
-  // The following four methods are used to consume tokens of specific
-  // types.  They are actually used to consume all characters *after*
-  // the first, since the calling function consumes the first character
-  // in order to decide what kind of token is being read.
+  // The following five methods are used to consume tokens of specific
+  // types.
 
   // Read and consume a string, ending when the given delimiter is
   // consumed.
@@ -340,6 +360,9 @@ class PROTOBUF_EXPORT Tokenizer {
   // It also needs to know if the first character was a . to parse floating
   // point correctly.
   TokenType ConsumeNumber(bool started_with_zero, bool started_with_dot);
+
+  // Consume a single character, checking that is a standard 7-bit code-point.
+  void ConsumeSymbol();
 
   // Consume the rest of a line.
   void ConsumeLineComment(std::string* content);
@@ -376,34 +399,27 @@ class PROTOBUF_EXPORT Tokenizer {
   // -----------------------------------------------------------------
   // These helper methods make the parsing code more readable.  The
   // "character classes" referred to are defined at the top of the .cc file.
-  // Basically it is a C++ class with one method:
-  //   static bool InClass(char c);
-  // The method returns true if c is a member of this "class", like "Letter"
-  // or "Digit".
 
   // Returns true if the current character is of the given character
   // class, but does not consume anything.
-  template <typename CharacterClass>
-  inline bool LookingAt();
+  inline bool LookingAt(const absl::CharSet& character_class);
 
   // If the current character is in the given class, consume it and return
   // true.  Otherwise return false.
-  // e.g. TryConsumeOne<Letter>()
-  template <typename CharacterClass>
-  inline bool TryConsumeOne();
+  // e.g. TryConsumeOne(kLetter)
+  inline bool TryConsumeOne(const absl::CharSet& character_class);
 
   // Like above, but try to consume the specific character indicated.
   inline bool TryConsume(char c);
 
   // Consume zero or more of the given character class.
-  template <typename CharacterClass>
-  inline void ConsumeZeroOrMore();
+  inline void ConsumeZeroOrMore(const absl::CharSet& character_class);
 
   // Consume one or more of the given character class or log the given
   // error message.
-  // e.g. ConsumeOneOrMore<Digit>("Expected digits.");
-  template <typename CharacterClass>
-  inline void ConsumeOneOrMore(const char* error);
+  // e.g. ConsumeOneOrMore(kDigit, "Expected digits.");
+  inline void ConsumeOneOrMore(const absl::CharSet& character_class,
+                               const char* error);
 };
 
 // inline methods ====================================================

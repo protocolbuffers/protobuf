@@ -113,6 +113,7 @@ class PDProtoAnalyzer {
         std::make_unique<cpp::CppAccessInfoParseHelper>());
     options_.access_info_map = &info_map_;
     scc_analyzer_ = std::make_unique<cpp::MessageSCCAnalyzer>(options_);
+    options_.scc_analyzer = scc_analyzer_.get();
   }
 
   void SetFile(const FileDescriptor* file) {
@@ -160,11 +161,11 @@ class PDProtoAnalyzer {
   }
 
   PDProtoOptimization OptimizeField(const FieldDescriptor* field) {
-    if (IsFieldInlined(field, options_)) {
+    if (cpp::IsFieldInlined(field, options_)) {
       return PDProtoOptimization::kInline;
     }
-    if (IsLazy(field, options_, scc_analyzer_.get())) {
-      if (IsLazilyVerifiedLazy(field, options_)) {
+    if (cpp::IsLazy(field, options_)) {
+      if (cpp::IsLazilyVerifiedLazy(field, options_)) {
         return PDProtoOptimization::kUnverifiedLazy;
       }
       return PDProtoOptimization::kLazy;

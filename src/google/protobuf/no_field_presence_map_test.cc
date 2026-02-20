@@ -75,7 +75,7 @@ MATCHER_P(MapEntryListFieldsSize, expected_size, "") {
   return list_fields_output.size() == expected_size;
 }
 }  // namespace no_presence_map_test_internal
-// TODO: can make this `inline constexpr` with C++17 as baseline.
+// TODO: b/371232929 - can make this `inline constexpr` with C++17 as baseline.
 constexpr auto& MapEntryListFieldsSize =
     no_presence_map_test_internal::MapEntryListFieldsSize<uint64_t>;
 
@@ -733,7 +733,7 @@ TEST(NoFieldPresenceTest,
       message.map_int32_explicit_foreign_message().at(0)));
 }
 
-// TODO: `if constexpr` can be used here once C++17 is baseline.
+// TODO: b/358616816 - `if constexpr` can be used here once C++17 is baseline.
 template <typename T>
 bool TestSerialize(const MessageLite& message, T* output);
 
@@ -841,7 +841,7 @@ TYPED_TEST(NoFieldPresenceMapSerializeTest,
   // Test that message can roundtrip.
   TestAllMapTypes rt_msg;
   EXPECT_TRUE(rt_msg.ParseFromString(this->GetOutput()));
-  // TODO: write this better when we have access to EqualsProto.
+  // TODO: b/368089585 - write this better when we have access to EqualsProto.
   EXPECT_EQ(rt_msg.map_int32_foreign_message().at(123).c(),
             msg.map_int32_foreign_message().at(123).c());
 
@@ -864,7 +864,7 @@ TYPED_TEST(NoFieldPresenceMapSerializeTest,
   // Test that message can roundtrip.
   TestAllMapTypes rt_msg;
   EXPECT_TRUE(rt_msg.ParseFromString(this->GetOutput()));
-  // TODO: write this better when we have access to EqualsProto.
+  // TODO: b/368089585 - write this better when we have access to EqualsProto.
   EXPECT_EQ(rt_msg.map_int32_explicit_foreign_message().at(456).c(),
             msg.map_int32_explicit_foreign_message().at(456).c());
 
@@ -958,7 +958,7 @@ TYPED_TEST(NoFieldPresenceMapSerializeTest, MapRoundTripZeroKeyZeroMessage) {
   // Test that message can roundtrip.
   TestAllMapTypes rt_msg;
   EXPECT_TRUE(rt_msg.ParseFromString(this->GetOutput()));
-  // TODO: write this better when we have access to EqualsProto.
+  // TODO: b/368089585 - write this better when we have access to EqualsProto.
   EXPECT_EQ(rt_msg.map_int32_foreign_message().at(0).c(),
             msg.map_int32_foreign_message().at(0).c());
 
@@ -981,7 +981,7 @@ TYPED_TEST(NoFieldPresenceMapSerializeTest,
   // Test that message can roundtrip.
   TestAllMapTypes rt_msg;
   EXPECT_TRUE(rt_msg.ParseFromString(this->GetOutput()));
-  // TODO: write this better when we have access to EqualsProto.
+  // TODO: b/368089585 - write this better when we have access to EqualsProto.
   EXPECT_EQ(rt_msg.map_int32_explicit_foreign_message().at(0).c(),
             msg.map_int32_explicit_foreign_message().at(0).c());
 
@@ -1056,7 +1056,7 @@ TYPED_TEST(NoFieldPresenceMapSerializeTest, MapRoundTripZeroKeyDefaultMessage) {
   // Test that message can roundtrip.
   TestAllMapTypes rt_msg;
   EXPECT_TRUE(rt_msg.ParseFromString(this->GetOutput()));
-  // TODO: write this better when we have access to EqualsProto.
+  // TODO: b/368089585 - write this better when we have access to EqualsProto.
   EXPECT_EQ(rt_msg.map_int32_foreign_message().at(0).c(),
             msg.map_int32_foreign_message().at(0).c());
 
@@ -1081,7 +1081,7 @@ TYPED_TEST(NoFieldPresenceMapSerializeTest,
   // Test that message can roundtrip.
   TestAllMapTypes rt_msg;
   EXPECT_TRUE(rt_msg.ParseFromString(this->GetOutput()));
-  // TODO: write this better when we have access to EqualsProto.
+  // TODO: b/368089585 - write this better when we have access to EqualsProto.
   EXPECT_EQ(rt_msg.map_int32_explicit_foreign_message().at(0).c(),
             msg.map_int32_explicit_foreign_message().at(0).c());
 

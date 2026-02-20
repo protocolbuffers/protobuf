@@ -19,6 +19,7 @@ import java.util.RandomAccess;
 /** Helper methods used by schemas. */
 @ExperimentalApi
 @CheckReturnValue
+@SuppressWarnings({"unchecked", "rawtypes"})
 final class SchemaUtil {
   private static final Class<?> GENERATED_MESSAGE_CLASS = getGeneratedMessageClass();
   private static final UnknownFieldSchema<?, ?> UNKNOWN_FIELD_SET_FULL_SCHEMA =
@@ -35,7 +36,7 @@ final class SchemaUtil {
    * GeneratedMessageLite}.
    */
   public static void requireGeneratedMessage(Class<?> messageType) {
-    // TODO(b/248560713) decide if we're keeping support for Full in schema classes and handle this
+    // TODO decide if we're keeping support for Full in schema classes and handle this
     // better.
     if (!GeneratedMessageLite.class.isAssignableFrom(messageType)
         && !Android.assumeLiteRuntime
@@ -824,7 +825,7 @@ final class SchemaUtil {
       return null;
     }
     try {
-      // TODO(b/248560713) decide if we're keeping support for Full in schema classes and handle
+      // TODO decide if we're keeping support for Full in schema classes and handle
       // this better.
       return Class.forName("com.google.protobuf.GeneratedMessage");
     } catch (Throwable e) {

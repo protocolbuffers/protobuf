@@ -11,6 +11,6 @@
 #define UPB_MESSAGE_MAP_GENCODE_UTIL_H_
 
 // This header file is referenced by multiple files. Leave it empty.
-// TODO: Remove this header file, after all the references are
+// TODO: b/399481227 - Remove this header file, after all the references are
 // cleaned up.
 #endif /* UPB_MESSAGE_MAP_GENCODE_UTIL_H_ */

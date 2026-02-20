@@ -57,7 +57,7 @@ class ListValue extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Value[] $var
      * @return $this
      */
-    public function setValues($var)
+    public function setValues(array|RepeatedField $var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Value::class);
         $this->values = $arr;

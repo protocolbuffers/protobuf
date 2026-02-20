@@ -44,8 +44,7 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
   bool is_foreign = IsCrossFileMessage(field);
   std::string field_name = FieldMemberName(field, split);
   std::string qualified_type = FieldMessageTypeName(field, opts);
-  std::string default_ref =
-      QualifiedDefaultInstanceName(field->message_type(), opts);
+
   std::string base = absl::StrCat(
       "::", ProtobufNamespace(opts), "::",
       HasDescriptorMethods(field->file(), opts) ? "Message" : "MessageLite");
@@ -53,7 +52,11 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
   return {
       {"Submsg", qualified_type},
       {"MemberType", use_base_class ? base : qualified_type},
-      {"kDefault", default_ref},
+      {"kDefaultRef",
+       absl::Substitute(
+           "*::google::protobuf::internal::MessageGlobalsBase::default_instance<$0>(&$1)",
+           qualified_type,
+           QualifiedMsgGlobalsInstanceName(field->message_type(), opts))},
       Sub{"cast_to_field",
           use_base_class ? absl::Substitute("reinterpret_cast<$0*>", base) : ""}
           .ConditionalFunctionCall(),
@@ -77,11 +80,11 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
 
 class SingularMessage : public FieldGeneratorBase {
  public:
-  SingularMessage(const FieldDescriptor* field, const Options& opts,
-                  MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc),
+  SingularMessage(const FieldDescriptor* field, const Options& opts)
+      : FieldGeneratorBase(field, opts),
         opts_(&opts),
-        has_required_(scc->HasRequiredFields(field->message_type())),
+        has_required_(
+            opts.scc_analyzer->HasRequiredFields(field->message_type())),
         has_hasbit_(HasHasbit(field, opts)) {}
 
   ~SingularMessage() override = default;
@@ -193,7 +196,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $TsanDetectConcurrentRead$;
       $StrongRef$;
       const $Submsg$* p = $cast_field_$;
-      return p != nullptr ? *p : reinterpret_cast<const $Submsg$&>($kDefault$);
+      return p != nullptr ? *p : $kDefaultRef$;
     }
     inline const $Submsg$& $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
@@ -347,7 +350,7 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
     // where people assign root values to child values or vice versa which
     // are not always checked, so we delay this change becoming 'visible'
     // until after we copied the message.
-    // TODO(b/307821081) enforces this as undefined behavior in debug builds.
+    // TODO enforces this as undefined behavior in debug builds.
     p->Emit(R"cc(
       $DCHK$(from.$field_$ != nullptr);
       if (_this->$field_$ == nullptr) {
@@ -456,9 +459,8 @@ void SingularMessage::GenerateAggregateInitializer(io::Printer* p) const {
 
 class OneofMessage : public SingularMessage {
  public:
-  OneofMessage(const FieldDescriptor* descriptor, const Options& options,
-               MessageSCCAnalyzer* scc_analyzer)
-      : SingularMessage(descriptor, options, scc_analyzer) {
+  OneofMessage(const FieldDescriptor* descriptor, const Options& options)
+      : SingularMessage(descriptor, options) {
     auto* oneof = descriptor->containing_oneof();
     num_message_fields_in_oneof_ = 0;
     for (int i = 0; i < oneof->field_count(); ++i) {
@@ -559,7 +561,7 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     inline const $Submsg$& $Msg$::_internal_$name_internal$() const {
       $StrongRef$;
       return $has_field$ ? static_cast<const $Submsg$&>(*$cast_field_$)
-                         : reinterpret_cast<const $Submsg$&>($kDefault$);
+                         : $kDefaultRef$;
     }
   )cc");
   p->Emit(R"cc(
@@ -707,11 +709,11 @@ bool OneofMessage::RequiresArena(GeneratorFunction func) const {
 
 class RepeatedMessage : public FieldGeneratorBase {
  public:
-  RepeatedMessage(const FieldDescriptor* field, const Options& opts,
-                  MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc),
+  RepeatedMessage(const FieldDescriptor* field, const Options& opts)
+      : FieldGeneratorBase(field, opts),
         opts_(&opts),
-        has_required_(scc->HasRequiredFields(field->message_type())) {}
+        has_required_(
+            opts.scc_analyzer->HasRequiredFields(field->message_type())) {}
 
   ~RepeatedMessage() override = default;
 
@@ -784,20 +786,19 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
 void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   // TODO: move insertion points
 
-  p->Emit({GetEmitRepeatedFieldMutableSub(*opts_, p)},
-          R"cc(
-            //~ Note: no need to set hasbit in mutable_$name$(int index).
-            //~ Hasbits only need to be updated if a new element is
-            //~ (potentially) added, not if an existing element is mutated.
-            inline $Submsg$* $nonnull$ $Msg$::mutable_$name$(int index)
-                ABSL_ATTRIBUTE_LIFETIME_BOUND {
-              $WeakDescriptorSelfPin$;
-              $annotate_mutable$;
-              // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
-              $StrongRef$;
-              return $mutable$;
-            }
-          )cc");
+  p->Emit(R"cc(
+    //~ Note: no need to set hasbit in mutable_$name$(int index).
+    //~ Hasbits only need to be updated if a new element is
+    //~ (potentially) added, not if an existing element is mutated.
+    inline $Submsg$* $nonnull$ $Msg$::mutable_$name$(int index)
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
+      $annotate_mutable$;
+      // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
+      $StrongRef$;
+      return _internal_mutable_$name_internal$()->Mutable(index);
+    }
+  )cc");
 
   p->Emit(R"cc(
     inline $pb$::RepeatedPtrField<$Submsg$>* $nonnull$ $Msg$::mutable_$name$()
@@ -811,17 +812,16 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       return _internal_mutable_$name_internal$();
     }
   )cc");
-  p->Emit({GetEmitRepeatedFieldGetterSub(*opts_, p)},
-          R"cc(
-            inline const $Submsg$& $Msg$::$name$(int index) const
-                ABSL_ATTRIBUTE_LIFETIME_BOUND {
-              $WeakDescriptorSelfPin$;
-              $annotate_get$;
-              // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-              $StrongRef$;
-              return $getter$;
-            }
-          )cc");
+  p->Emit(R"cc(
+    inline const $Submsg$& $Msg$::$name$(int index) const
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
+      $annotate_get$;
+      // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
+      $StrongRef$;
+      return _internal_$name_internal$().Get(index);
+    }
+  )cc");
   p->Emit(R"cc(
     inline $Submsg$* $nonnull$ $Msg$::add_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1056,21 +1056,18 @@ bool RepeatedMessage::RequiresArena(GeneratorFunction func) const {
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarMessageGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc) {
-  return absl::make_unique<SingularMessage>(desc, options, scc);
+    const FieldDescriptor* desc, const Options& options) {
+  return absl::make_unique<SingularMessage>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedMessageGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc) {
-  return absl::make_unique<RepeatedMessage>(desc, options, scc);
+    const FieldDescriptor* desc, const Options& options) {
+  return absl::make_unique<RepeatedMessage>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeOneofMessageGenerator(
-    const FieldDescriptor* desc, const Options& options,
-    MessageSCCAnalyzer* scc) {
-  return absl::make_unique<OneofMessage>(desc, options, scc);
+    const FieldDescriptor* desc, const Options& options) {
+  return absl::make_unique<OneofMessage>(desc, options);
 }
 
 }  // namespace cpp

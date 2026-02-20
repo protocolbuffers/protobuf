@@ -97,6 +97,10 @@ class ValidationErrorTest : public testing::Test {
                                         absl::string_view file_text,
                                         absl::string_view expected_errors);
 
+  void ParseAndBuildFileWithWarningSubstr(absl::string_view file_name,
+                                          absl::string_view file_text,
+                                          absl::string_view expected_warning);
+
   // Parse file_text as a FileDescriptorProto in text format and add it
   // to the DescriptorPool.  Expect errors to be produced which match the
   // given warning text.

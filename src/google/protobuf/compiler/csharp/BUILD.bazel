@@ -21,18 +21,6 @@ cc_library(
 )
 
 cc_library(
-    name = "generator_headers",
-    hdrs = ["csharp_generator.h"],
-    copts = COPTS,
-    strip_include_prefix = "/src",
-    visibility = ["//pkg:__pkg__"],
-    deps = [
-        "//src/google/protobuf",
-        "//src/google/protobuf/compiler:code_generator",
-    ],
-)
-
-cc_library(
     name = "csharp",
     srcs = [
         "csharp_doc_comment.cc",

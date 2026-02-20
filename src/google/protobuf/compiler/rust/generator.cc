@@ -89,12 +89,20 @@ void EmitPublicImportsForDepFile(Context& ctx, const FileDescriptor* dep) {
 void EmitPublicImports(const RustGeneratorContext& rust_generator_context,
                        Context& ctx, const FileDescriptor& file) {
   std::vector<const FileDescriptor*> files_to_visit{&file};
+  absl::flat_hash_set<const FileDescriptor*> visited_files;
   while (!files_to_visit.empty()) {
     const FileDescriptor* f = files_to_visit.back();
     files_to_visit.pop_back();
 
     if (!rust_generator_context.is_file_in_current_crate(*f)) {
-      EmitPublicImportsForDepFile(ctx, f);
+      // Since import public is transitive in the case of
+      // "import public of a file with an import public", we might
+      // reach the same file again when they form a diamond; ensure
+      // that we only visit each file once in that case.
+      bool first_time = visited_files.insert(f).second;
+      if (first_time) {
+        EmitPublicImportsForDepFile(ctx, f);
+      }
     }
 
     for (int i = 0; i < f->public_dependency_count(); ++i) {
@@ -130,10 +138,10 @@ void EmitEntryPointRsFile(GeneratorContext* generator_context,
               {"mod_name", RustInternalModuleName(*file)}},
              R"rs(
               #[path="$file_path$"]
-              #[allow(nonstandard_style)]
+              #[allow(nonstandard_style, unused)]
               pub mod internal_do_not_use_$mod_name$;
 
-              #[allow(unused_imports, nonstandard_style)]
+              #[allow(nonstandard_style, unused)]
               pub use internal_do_not_use_$mod_name$::*;
             )rs");
   }
@@ -143,6 +151,7 @@ void EmitEntryPointRsFile(GeneratorContext* generator_context,
   });
   if (ctx.is_upb() && !ctx.opts().strip_nonfunctional_codegen) {
     ctx.Emit(R"rs(
+      #[allow(nonstandard_style, unused)]
       pub mod __unstable {
     )rs");
     for (const FileDescriptor* file : files) {

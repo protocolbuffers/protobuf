@@ -4,7 +4,7 @@
 load("@protobuf_pip_deps//:requirements.bzl", "requirement")
 load("//python:internal.bzl", "internal_py_test")
 
-# TODO: Remove this target and replace with py_library
+# TODO: b/278896688 - Remove this target and replace with py_library
 exports_files([
     "__init__.py",
     "numpy_test.py",

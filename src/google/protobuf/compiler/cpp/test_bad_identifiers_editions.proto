@@ -274,6 +274,7 @@ message NULL {
 
 extend TestConflictingSymbolNames {
   int32 void = 314253;
+  int32 module = 314254;
 }
 
 // Message names that could conflict.

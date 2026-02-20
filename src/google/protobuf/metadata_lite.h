@@ -228,8 +228,8 @@ extern template PROTOBUF_EXPORT void
 InternalMetadata::DoClear<UnknownFieldSet>();
 extern template PROTOBUF_EXPORT void
 InternalMetadata::DoMergeFrom<UnknownFieldSet>(const UnknownFieldSet& other);
-extern template PROTOBUF_EXPORT void
-InternalMetadata::DoSwap<UnknownFieldSet>(UnknownFieldSet* other);
+extern template PROTOBUF_EXPORT void InternalMetadata::DoSwap<UnknownFieldSet>(
+    UnknownFieldSet* other);
 extern template PROTOBUF_EXPORT void
 InternalMetadata::DeleteOutOfLineHelper<UnknownFieldSet>();
 extern template PROTOBUF_EXPORT UnknownFieldSet*

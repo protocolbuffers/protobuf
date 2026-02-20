@@ -37,7 +37,7 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      * and strips underscored from the fields before comparison in proto3 only.
      * The new behavior takes `json_name` into account and applies to proto2 as
      * well.
-     * TODO(b/261750190) Remove this legacy behavior once downstream teams have
+     * TODO Remove this legacy behavior once downstream teams have
      * had time to migrate.
      *
      * Generated from protobuf field <code>optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];</code>
@@ -79,7 +79,7 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      *           and strips underscored from the fields before comparison in proto3 only.
      *           The new behavior takes `json_name` into account and applies to proto2 as
      *           well.
-     *           TODO(b/261750190) Remove this legacy behavior once downstream teams have
+     *           TODO Remove this legacy behavior once downstream teams have
      *           had time to migrate.
      *     @type \Google\Protobuf\Internal\FeatureSet $features
      *           Any features defined in the specific edition.
@@ -125,9 +125,8 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setAllowAlias($var)
+    public function setAllowAlias(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->allow_alias = $var;
 
         return $this;
@@ -167,9 +166,8 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setDeprecated($var)
+    public function setDeprecated(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->deprecated = $var;
 
         return $this;
@@ -180,7 +178,7 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      * and strips underscored from the fields before comparison in proto3 only.
      * The new behavior takes `json_name` into account and applies to proto2 as
      * well.
-     * TODO(b/261750190) Remove this legacy behavior once downstream teams have
+     * TODO Remove this legacy behavior once downstream teams have
      * had time to migrate.
      *
      * Generated from protobuf field <code>optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];</code>
@@ -214,7 +212,7 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      * and strips underscored from the fields before comparison in proto3 only.
      * The new behavior takes `json_name` into account and applies to proto2 as
      * well.
-     * TODO(b/261750190) Remove this legacy behavior once downstream teams have
+     * TODO Remove this legacy behavior once downstream teams have
      * had time to migrate.
      *
      * Generated from protobuf field <code>optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];</code>
@@ -222,10 +220,9 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      * @return $this
      * @deprecated
      */
-    public function setDeprecatedLegacyJsonFieldConflicts($var)
+    public function setDeprecatedLegacyJsonFieldConflicts(bool $var)
     {
         @trigger_error('deprecated_legacy_json_field_conflicts is deprecated.', E_USER_DEPRECATED);
-        GPBUtil::checkBool($var);
         $this->deprecated_legacy_json_field_conflicts = $var;
 
         return $this;
@@ -265,9 +262,8 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\FeatureSet $var
      * @return $this
      */
-    public function setFeatures($var)
+    public function setFeatures(\Google\Protobuf\Internal\FeatureSet|null $var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FeatureSet::class);
         $this->features = $var;
 
         return $this;
@@ -291,7 +287,7 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\UninterpretedOption[] $var
      * @return $this
      */
-    public function setUninterpretedOption($var)
+    public function setUninterpretedOption(array|RepeatedField $var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption::class);
         $this->uninterpreted_option = $arr;

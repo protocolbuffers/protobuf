@@ -278,7 +278,7 @@ struct alignas(uint64_t) TcParseTableBase {
   uint32_t aux_offset;
 
   const ClassData* class_data;
-  using PostLoopHandler = const char* (*)(MessageLite* msg, const char* ptr,
+  using PostLoopHandler = const char* (*)(MessageLite * msg, const char* ptr,
                                           ParseContext* ctx);
   PostLoopHandler post_loop_handler;
 
@@ -487,7 +487,9 @@ struct alignas(uint64_t) TcParseTableBase {
                                    num_aux_entries * sizeof(FieldAux));
   }
 
-  const MessageLite* default_instance() const { return class_data->prototype; }
+  const MessageLite* default_instance() const {
+    return class_data->default_instance();
+  }
 };
 
 #if defined(_MSC_VER) && !defined(_WIN64)

@@ -96,22 +96,20 @@ use Google\Protobuf\RepeatedField;
  *     }
  * An implementation may provide options to override this default behavior for
  * repeated and message fields.
- * In order to reset a field's value to the default, the field must
- * be in the mask and set to the default value in the provided resource.
- * Hence, in order to reset all fields of a resource, provide a default
- * instance of the resource and set all fields in the mask, or do
- * not provide a mask as described below.
- * If a field mask is not present on update, the operation applies to
- * all fields (as if a field mask of all fields has been specified).
- * Note that in the presence of schema evolution, this may mean that
- * fields the client does not know and has therefore not filled into
- * the request will be reset to their default. If this is unwanted
- * behavior, a specific service may require a client to always specify
- * a field mask, producing an error if not.
- * As with get operations, the location of the resource which
- * describes the updated values in the request message depends on the
- * operation kind. In any case, the effect of the field mask is
- * required to be honored by the API.
+ * Note that libraries which implement FieldMask resolution have various
+ * different behaviors in the face of empty masks or the special "*" mask.
+ * When implementing a service you should confirm these cases have the
+ * appropriate behavior in the underlying FieldMask library that you desire,
+ * and you may need to special case those cases in your application code if
+ * the underlying field mask library behavior differs from your intended
+ * service semantics.
+ * Update methods implementing https://google.aip.dev/134
+ * - MUST support the special value * meaning "full replace"
+ * - MUST treat an omitted field mask as "replace fields which are present".
+ * Other methods implementing https://google.aip.dev/157
+ * - SHOULD support the special value "*" to mean "get all".
+ * - MUST treat an omitted field mask to mean "get all", unless otherwise
+ * documented.
  * ## Considerations for HTTP REST
  * The HTTP kind of an update operation which uses a field mask must
  * be set to PATCH instead of PUT in order to satisfy HTTP semantics
@@ -206,7 +204,7 @@ class FieldMask extends \Google\Protobuf\Internal\Message
      * @param string[] $var
      * @return $this
      */
-    public function setPaths($var)
+    public function setPaths(array|RepeatedField $var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
         $this->paths = $arr;

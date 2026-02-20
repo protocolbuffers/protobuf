@@ -18,7 +18,7 @@ foreach(generator upb upbdefs upb_minitable)
   protobuf_configure_target(protoc-gen-${generator})
   target_include_directories(protoc-gen-${generator} PRIVATE ${bootstrap_cmake_dir})
   if(protobuf_BUILD_SHARED_LIBS)
-    # TODO(b/419096242) These binaries should depend on libprotoc.
+    # TODO These binaries should depend on libprotoc.
     target_compile_definitions(protoc-gen-${generator}
       PRIVATE LIBPROTOC_EXPORTS PROTOBUF_USE_DLLS)
   endif()

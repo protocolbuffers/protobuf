@@ -37,7 +37,7 @@
 // mutex locking is used to make the access thread-safe.
 namespace google {
 namespace protobuf {
-// TODO(gerbens) remove this comment, we need it to prevent clang-format
+// TODO remove this comment, we need it to prevent clang-format
 // from combining the brackets. Which would mess with extract script
 }  // namespace protobuf
 }  // namespace google

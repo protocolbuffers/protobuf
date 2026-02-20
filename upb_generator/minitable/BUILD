@@ -7,7 +7,7 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_CPPOPTS")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_CPPOPTS")
 load(
     "//upb_generator:bootstrap_compiler.bzl",
     "bootstrap_cc_binary",
@@ -129,5 +129,5 @@ proto_lang_toolchain(
     plugin_format_flag = "--plugin=protoc-gen-upb_minitable=%s",
     progress_message = "Generating upb minitables",
     runtime = "//upb:generated_code_support",
-    visibility = ["//bazel:__pkg__"],
+    visibility = ["//upb/bazel:__pkg__"],
 )

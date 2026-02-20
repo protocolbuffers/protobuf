@@ -1728,7 +1728,7 @@ static PyGetSetDef PyUpb_Message_Getters[] = {
 static PyMethodDef PyUpb_Message_Methods[] = {
     {"__deepcopy__", (PyCFunction)DeepCopy, METH_VARARGS,
      "Makes a deep copy of the class."},
-    // TODO(https://github.com/protocolbuffers/protobuf/issues/13760)
+    // TODO
     //{ "__unicode__", (PyCFunction)ToUnicode, METH_NOARGS,
     //  "Outputs a unicode representation of the message." },
     {"__contains__", PyUpb_Message_Contains, METH_O,

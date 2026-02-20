@@ -51,8 +51,7 @@ class FieldGeneratorBase {
   // variable instead of calling GetArena()'
   enum class GeneratorFunction { kMergeFrom };
 
-  FieldGeneratorBase(const FieldDescriptor* field, const Options& options,
-                     MessageSCCAnalyzer* scc_analyzer);
+  FieldGeneratorBase(const FieldDescriptor* field, const Options& options);
 
   FieldGeneratorBase(const FieldGeneratorBase&) = delete;
   FieldGeneratorBase& operator=(const FieldGeneratorBase&) = delete;
@@ -198,7 +197,6 @@ class FieldGeneratorBase {
  protected:
   const FieldDescriptor* field_;
   const Options& options_;
-  MessageSCCAnalyzer* scc_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
 
   pb::CppFeatures::StringType GetDeclaredStringType() const;
@@ -492,7 +490,6 @@ class FieldGenerator {
  private:
   friend class FieldGeneratorTable;
   FieldGenerator(const FieldDescriptor* field, const Options& options,
-                 MessageSCCAnalyzer* scc_analyzer,
                  absl::optional<uint32_t> hasbit_index);
 
   std::unique_ptr<FieldGeneratorBase> impl_;
@@ -510,8 +507,7 @@ class FieldGeneratorTable {
   FieldGeneratorTable(const FieldGeneratorTable&) = delete;
   FieldGeneratorTable& operator=(const FieldGeneratorTable&) = delete;
 
-  void Build(const Options& options, MessageSCCAnalyzer* scc_analyzer,
-             absl::Span<const int32_t> has_bit_indices);
+  void Build(const Options& options, absl::Span<const int32_t> has_bit_indices);
 
   const FieldGenerator& get(const FieldDescriptor* field) const {
     ABSL_CHECK_EQ(field->containing_type(), descriptor_);

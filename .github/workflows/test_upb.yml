@@ -54,7 +54,7 @@ jobs:
           image: ${{ matrix.config.image || 'us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:8.0.1-12e21b8dda91028bc14212a3ab582c7c4d149fac' }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel
-          bazel: test //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/... ${{ matrix.config.flags }}
+          bazel: test //benchmarks/... //lua/... //python/... //upb/... //upb_generator/... ${{ matrix.config.flags }}
           exclude-targets: ${{ matrix.config.exclude-targets }}
 
   windows:
@@ -102,7 +102,7 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-macos"
-          bazel: ${{ matrix.config.bazel-command }} ${{ matrix.config.flags }} //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
+          bazel: ${{ matrix.config.bazel-command }} ${{ matrix.config.flags }} //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
           version: 8.0.1
 
   build_wheels:
@@ -117,10 +117,10 @@ jobs:
       - name: Build Wheels
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/release-containers/linux/apple:7.6.1-12e21b8dda91028bc14212a3ab582c7c4d149fac
+          image: us-docker.pkg.dev/protobuf-build/release-containers/linux/apple:8.0.1-8c286adfa190f9d0caa666ab605189345f362c02
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel-python
-          bazel: build --crosstool_top=//toolchain:clang_suite --//toolchain:release=true --symlink_prefix=/ -c dbg --incompatible_enable_cc_toolchain_resolution=false //python/dist //python/dist:test_wheel //python/dist:source_wheel
+          bazel: build --config=cross_config --symlink_prefix=/ -c dbg //python/dist //python/dist:test_wheel //python/dist:source_wheel
       - name: Move Wheels
         run: mkdir wheels && find _build/out \( -name 'protobuf*.whl' -o -name 'protobuf-*.tar.gz' \) -exec mv '{}' wheels ';'
       - uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
@@ -142,25 +142,21 @@ jobs:
           # a single wheel. As a result we can just test the oldest and newest
           # supported Python versions and assume this gives us sufficient test
           # coverage.
-          - { os: ubuntu-latest, python-version: "3.9", architecture: x64, type: 'binary' }
-          - { os: macos-14, python-version: "3.9", architecture: arm64, type: 'binary' }
-          - { os: ubuntu-latest, python-version: "3.13", architecture: x64, type: 'binary' }
-          - { os: macos-14, python-version: "3.13", architecture: arm64, type: 'binary' }
-          - { os: ubuntu-latest, python-version: "3.9", architecture: x64, type: 'source'}
-          - { os: macos-14, python-version: "3.9", architecture: arm64, type: 'source', continuous-only: true }
-          - { os: ubuntu-latest, python-version: "3.13", architecture: x64, type: 'source'}
-          - { os: macos-14, python-version: "3.13", architecture: arm64, type: 'source', continuous-only: true }
+          - { os: ubuntu-latest, python-version: "3.10", architecture: x64, type: 'binary' }
+          - { os: macos-14, python-version: "3.10", architecture: arm64, type: 'binary' }
+          - { os: ubuntu-latest, python-version: "3.14", architecture: x64, type: 'binary' }
+          - { os: macos-14, python-version: "3.14", architecture: arm64, type: 'binary' }
+          - { os: ubuntu-latest, python-version: "3.10", architecture: x64, type: 'source'}
+          - { os: macos-14, python-version: "3.10", architecture: arm64, type: 'source', continuous-only: true }
           - { os: ubuntu-latest, python-version: "3.14", architecture: x64, type: 'source', continuous-only: true }
           - { os: macos-14, python-version: "3.14", architecture: arm64, type: 'source', continuous-only: true }
 
           # Windows uses the full API up until Python 3.10.
-          - { os: windows-2022, python-version: "3.9", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2022, python-version: "3.10", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2022, python-version: "3.11", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2022, python-version: "3.12", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2022, python-version: "3.13", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2022, python-version: "3.14", architecture: x86, type: 'binary', continuous-only: true }
-          - { os: windows-2022, python-version: "3.9", architecture: x64, type: 'binary' }
           - { os: windows-2022, python-version: "3.10", architecture: x64, type: 'binary', continuous-only: true }
           - { os: windows-2022, python-version: "3.11", architecture: x64, type: 'binary', continuous-only: true }
           - { os: windows-2022, python-version: "3.12", architecture: x64, type: 'binary', continuous-only: true }
@@ -237,7 +233,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        python-version: ["3.9", "3.13", "3.14"]
+        python-version: ["3.10", "3.14"]  # oldest + newest versions
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'pull_request_target' }}
     steps:

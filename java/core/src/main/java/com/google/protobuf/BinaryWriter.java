@@ -45,6 +45,7 @@ import java.util.Queue;
  */
 @CheckReturnValue
 @ExperimentalApi
+@SuppressWarnings({"unchecked", "rawtypes"})
 abstract class BinaryWriter extends ByteOutput implements Writer {
   static class UnpairedSurrogateException extends IllegalArgumentException {
     UnpairedSurrogateException(int index, int length) {
