@@ -30,6 +30,7 @@ import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.DoubleValue;
 import com.google.protobuf.Duration;
 import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.FloatValue;
 import com.google.protobuf.Int32Value;
@@ -80,12 +81,14 @@ public class JsonFormat {
     return new Printer(
         com.google.protobuf.TypeRegistry.getEmptyTypeRegistry(),
         TypeRegistry.getEmptyTypeRegistry(),
+        ExtensionRegistry.getEmptyRegistry(),
         ShouldPrintDefaults.ONLY_IF_PRESENT,
         /* includingDefaultValueFields */ Collections.emptySet(),
         /* preservingProtoFieldNames */ false,
         /* omittingInsignificantWhitespace */ false,
         /* printingEnumsAsInts */ false,
-        /* sortingMapKeys */ false);
+        /* sortingMapKeys */ false,
+        /* printingFullyQualifiedExtensionNames */ false);
   }
 
   private enum ShouldPrintDefaults {
@@ -99,6 +102,7 @@ public class JsonFormat {
   public static class Printer {
     private final com.google.protobuf.TypeRegistry registry;
     private final TypeRegistry oldRegistry;
+    private final ExtensionRegistry extensionRegistry;
     private final ShouldPrintDefaults shouldPrintDefaults;
 
     // Empty unless shouldPrintDefaults is set to ALWAYS_PRINT_SPECIFIED_FIELDS.
@@ -108,24 +112,29 @@ public class JsonFormat {
     private final boolean omittingInsignificantWhitespace;
     private final boolean printingEnumsAsInts;
     private final boolean sortingMapKeys;
+    private final boolean printingFullyQualifiedExtensionNames;
 
     private Printer(
         com.google.protobuf.TypeRegistry registry,
         TypeRegistry oldRegistry,
+        ExtensionRegistry extensionRegistry,
         ShouldPrintDefaults shouldOutputDefaults,
         Set<FieldDescriptor> includingDefaultValueFields,
         boolean preservingProtoFieldNames,
         boolean omittingInsignificantWhitespace,
         boolean printingEnumsAsInts,
-        boolean sortingMapKeys) {
+        boolean sortingMapKeys,
+        boolean printingFullyQualifiedExtensionNames) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
+      this.extensionRegistry = extensionRegistry;
       this.shouldPrintDefaults = shouldOutputDefaults;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
       this.omittingInsignificantWhitespace = omittingInsignificantWhitespace;
       this.printingEnumsAsInts = printingEnumsAsInts;
       this.sortingMapKeys = sortingMapKeys;
+      this.printingFullyQualifiedExtensionNames = printingFullyQualifiedExtensionNames;
     }
 
     /**
@@ -142,12 +151,14 @@ public class JsonFormat {
       return new Printer(
           com.google.protobuf.TypeRegistry.getEmptyTypeRegistry(),
           oldRegistry,
+          extensionRegistry,
           shouldPrintDefaults,
           includingDefaultValueFields,
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys);
+          sortingMapKeys,
+          printingFullyQualifiedExtensionNames);
     }
 
     /**
@@ -164,12 +175,32 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
+          extensionRegistry,
           shouldPrintDefaults,
           includingDefaultValueFields,
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys);
+          sortingMapKeys,
+          printingFullyQualifiedExtensionNames);
+    }
+
+    /**
+     * Creates a new {@link Printer} using the given extension registry. The new Printer clones all
+     * other configurations from the current {@link Printer}.
+     */
+    public Printer usingExtensionRegistry(ExtensionRegistry extensionRegistry) {
+      return new Printer(
+          registry,
+          oldRegistry,
+          extensionRegistry,
+          shouldPrintDefaults,
+          includingDefaultValueFields,
+          preservingProtoFieldNames,
+          omittingInsignificantWhitespace,
+          printingEnumsAsInts,
+          sortingMapKeys,
+          printingFullyQualifiedExtensionNames);
     }
 
     /**
@@ -193,12 +224,14 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
+          extensionRegistry,
           ShouldPrintDefaults.ALWAYS_PRINT_EXCEPT_MESSAGES_AND_ONEOFS,
           Collections.emptySet(),
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys);
+          sortingMapKeys,
+          printingFullyQualifiedExtensionNames);
     }
 
     /**
@@ -222,12 +255,14 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
+          extensionRegistry,
           ShouldPrintDefaults.ALWAYS_PRINT_SPECIFIED_FIELDS,
           Collections.unmodifiableSet(new HashSet<>(fieldsToAlwaysOutput)),
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys);
+          sortingMapKeys,
+          printingFullyQualifiedExtensionNames);
     }
 
     /**
@@ -243,12 +278,14 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
+          extensionRegistry,
           ShouldPrintDefaults.ALWAYS_PRINT_WITHOUT_PRESENCE_FIELDS,
           Collections.emptySet(),
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys);
+          sortingMapKeys,
+          printingFullyQualifiedExtensionNames);
     }
 
     /**
@@ -260,12 +297,14 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
+          extensionRegistry,
           shouldPrintDefaults,
           includingDefaultValueFields,
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           true,
-          sortingMapKeys);
+          sortingMapKeys,
+          printingFullyQualifiedExtensionNames);
     }
 
     private void checkUnsetPrintingEnumsAsInts() {
@@ -284,12 +323,14 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
+          extensionRegistry,
           shouldPrintDefaults,
           includingDefaultValueFields,
           true,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys);
+          sortingMapKeys,
+          printingFullyQualifiedExtensionNames);
     }
 
 
@@ -313,12 +354,14 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
+          extensionRegistry,
           shouldPrintDefaults,
           includingDefaultValueFields,
           preservingProtoFieldNames,
           true,
           printingEnumsAsInts,
-          sortingMapKeys);
+          sortingMapKeys,
+          printingFullyQualifiedExtensionNames);
     }
 
     /**
@@ -336,11 +379,31 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
+          extensionRegistry,
           shouldPrintDefaults,
           includingDefaultValueFields,
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
+          true,
+          printingFullyQualifiedExtensionNames);
+    }
+
+    /**
+     * Creates a new {@link Printer} that prints extensions with their fully qualified name. The new
+     * Printer clones all other configurations from the current {@link Printer}.
+     */
+    public Printer printingFullyQualifiedExtensionNames() {
+      return new Printer(
+          registry,
+          oldRegistry,
+          extensionRegistry,
+          shouldPrintDefaults,
+          includingDefaultValueFields,
+          preservingProtoFieldNames,
+          omittingInsignificantWhitespace,
+          printingEnumsAsInts,
+          sortingMapKeys,
           true);
     }
 
@@ -357,13 +420,15 @@ public class JsonFormat {
       new PrinterImpl(
               registry,
               oldRegistry,
+              extensionRegistry,
               shouldPrintDefaults,
               includingDefaultValueFields,
               preservingProtoFieldNames,
               output,
               omittingInsignificantWhitespace,
               printingEnumsAsInts,
-              sortingMapKeys)
+              sortingMapKeys,
+              printingFullyQualifiedExtensionNames)
           .print(message);
     }
 
@@ -392,6 +457,7 @@ public class JsonFormat {
     return new Parser(
         com.google.protobuf.TypeRegistry.getEmptyTypeRegistry(),
         TypeRegistry.getEmptyTypeRegistry(),
+        ExtensionRegistry.getEmptyRegistry(),
         false,
         Parser.DEFAULT_RECURSION_LIMIT);
   }
@@ -400,6 +466,7 @@ public class JsonFormat {
   public static class Parser {
     private final com.google.protobuf.TypeRegistry registry;
     private final TypeRegistry oldRegistry;
+    private final ExtensionRegistry extensionRegistry;
     private final boolean ignoringUnknownFields;
     private final int recursionLimit;
 
@@ -409,10 +476,12 @@ public class JsonFormat {
     private Parser(
         com.google.protobuf.TypeRegistry registry,
         TypeRegistry oldRegistry,
+        ExtensionRegistry extensionRegistry,
         boolean ignoreUnknownFields,
         int recursionLimit) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
+      this.extensionRegistry = extensionRegistry;
       this.ignoringUnknownFields = ignoreUnknownFields;
       this.recursionLimit = recursionLimit;
     }
@@ -431,6 +500,7 @@ public class JsonFormat {
       return new Parser(
           com.google.protobuf.TypeRegistry.getEmptyTypeRegistry(),
           oldRegistry,
+          extensionRegistry,
           ignoringUnknownFields,
           recursionLimit);
     }
@@ -446,7 +516,17 @@ public class JsonFormat {
           || this.registry != com.google.protobuf.TypeRegistry.getEmptyTypeRegistry()) {
         throw new IllegalArgumentException("Only one registry is allowed.");
       }
-      return new Parser(registry, oldRegistry, ignoringUnknownFields, recursionLimit);
+      return new Parser(
+          registry, oldRegistry, extensionRegistry, ignoringUnknownFields, recursionLimit);
+    }
+
+    /**
+     * Creates a new {@link Parser} using the given extension registry. The new Parser clones all
+     * other configurations from this Parser.
+     */
+    public Parser usingExtensionRegistry(ExtensionRegistry extensionRegistry) {
+      return new Parser(
+          registry, oldRegistry, extensionRegistry, ignoringUnknownFields, recursionLimit);
     }
 
     /**
@@ -454,7 +534,7 @@ public class JsonFormat {
      * encountered. The new Parser clones all other configurations from this Parser.
      */
     public Parser ignoringUnknownFields() {
-      return new Parser(this.registry, oldRegistry, true, recursionLimit);
+      return new Parser(this.registry, oldRegistry, extensionRegistry, true, recursionLimit);
     }
 
     /**
@@ -466,7 +546,8 @@ public class JsonFormat {
     public void merge(String json, Message.Builder builder) throws InvalidProtocolBufferException {
       // TODO: Investigate the allocation overhead and optimize for
       // mobile.
-      new ParserImpl(registry, oldRegistry, ignoringUnknownFields, recursionLimit)
+      new ParserImpl(
+              registry, oldRegistry, extensionRegistry, ignoringUnknownFields, recursionLimit)
           .merge(json, builder);
     }
 
@@ -480,13 +561,15 @@ public class JsonFormat {
     public void merge(Reader json, Message.Builder builder) throws IOException {
       // TODO: Investigate the allocation overhead and optimize for
       // mobile.
-      new ParserImpl(registry, oldRegistry, ignoringUnknownFields, recursionLimit)
+      new ParserImpl(
+              registry, oldRegistry, extensionRegistry, ignoringUnknownFields, recursionLimit)
           .merge(json, builder);
     }
 
     // For testing only.
     Parser usingRecursionLimit(int recursionLimit) {
-      return new Parser(registry, oldRegistry, ignoringUnknownFields, recursionLimit);
+      return new Parser(
+          registry, oldRegistry, extensionRegistry, ignoringUnknownFields, recursionLimit);
     }
   }
 
@@ -704,11 +787,13 @@ public class JsonFormat {
   private static final class PrinterImpl {
     private final com.google.protobuf.TypeRegistry registry;
     private final TypeRegistry oldRegistry;
+    private final ExtensionRegistry extensionRegistry;
     private final ShouldPrintDefaults shouldPrintDefaults;
     private final Set<FieldDescriptor> includingDefaultValueFields;
     private final boolean preservingProtoFieldNames;
     private final boolean printingEnumsAsInts;
     private final boolean sortingMapKeys;
+    private final boolean printingFullyQualifiedExtensionNames;
     private final TextGenerator generator;
     // We use Gson to help handle string escapes.
     private final Gson gson;
@@ -722,20 +807,24 @@ public class JsonFormat {
     PrinterImpl(
         com.google.protobuf.TypeRegistry registry,
         TypeRegistry oldRegistry,
+        ExtensionRegistry extensionRegistry,
         ShouldPrintDefaults shouldPrintDefaults,
         Set<FieldDescriptor> includingDefaultValueFields,
         boolean preservingProtoFieldNames,
         Appendable jsonOutput,
         boolean omittingInsignificantWhitespace,
         boolean printingEnumsAsInts,
-        boolean sortingMapKeys) {
+        boolean sortingMapKeys,
+        boolean printingFullyQualifiedExtensionNames) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
+      this.extensionRegistry = extensionRegistry;
       this.shouldPrintDefaults = shouldPrintDefaults;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
       this.printingEnumsAsInts = printingEnumsAsInts;
       this.sortingMapKeys = sortingMapKeys;
+      this.printingFullyQualifiedExtensionNames = printingFullyQualifiedExtensionNames;
       this.gson = GsonHolder.DEFAULT_GSON;
       // json format related properties, determined by printerType
       if (omittingInsignificantWhitespace) {
@@ -878,7 +967,9 @@ public class JsonFormat {
       }
       ByteString content = (ByteString) message.getField(valueField);
       Message contentMessage =
-          DynamicMessage.getDefaultInstance(type).getParserForType().parseFrom(content);
+          DynamicMessage.getDefaultInstance(type)
+              .getParserForType()
+              .parseFrom(content, extensionRegistry);
       WellKnownTypePrinter printer = wellKnownTypePrinters.get(getTypeName(typeUrl));
       if (printer != null) {
         // If the type is one of the well-known types, we use a special
@@ -1052,7 +1143,9 @@ public class JsonFormat {
     }
 
     private void printField(FieldDescriptor field, Object value) throws IOException {
-      if (preservingProtoFieldNames) {
+      if (field.isExtension() && printingFullyQualifiedExtensionNames) {
+        generator.print("\"[" + field.getFullName() + "]\":" + blankOrSpace);
+      } else if (preservingProtoFieldNames) {
         generator.print("\"" + field.getName() + "\":" + blankOrSpace);
       } else {
         generator.print("\"" + field.getJsonName() + "\":" + blankOrSpace);
@@ -1288,6 +1381,7 @@ public class JsonFormat {
   private static class ParserImpl {
     private final com.google.protobuf.TypeRegistry registry;
     private final TypeRegistry oldRegistry;
+    private final ExtensionRegistry extensionRegistry;
     private final boolean ignoringUnknownFields;
     private final int recursionLimit;
     private int currentDepth;
@@ -1295,10 +1389,12 @@ public class JsonFormat {
     ParserImpl(
         com.google.protobuf.TypeRegistry registry,
         TypeRegistry oldRegistry,
+        ExtensionRegistry extensionRegistry,
         boolean ignoreUnknownFields,
         int recursionLimit) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
+      this.extensionRegistry = extensionRegistry;
       this.ignoringUnknownFields = ignoreUnknownFields;
       this.recursionLimit = recursionLimit;
       this.currentDepth = 0;
@@ -1476,6 +1572,23 @@ public class JsonFormat {
           continue;
         }
         FieldDescriptor field = fieldNameMap.get(entry.getKey());
+        if (field == null) {
+          if (extensionRegistry != null) {
+            String key = entry.getKey();
+            if (key.startsWith("[") && key.endsWith("]")) {
+              String extensionName = key.substring(1, key.length() - 1);
+              ExtensionRegistry.ExtensionInfo extensionInfo =
+                  extensionRegistry.findImmutableExtensionByName(extensionName);
+              if (extensionInfo != null
+                  && extensionInfo
+                      .descriptor
+                      .getContainingType()
+                      .equals(builder.getDescriptorForType())) {
+                field = extensionInfo.descriptor;
+              }
+            }
+          }
+        }
         if (field == null) {
           if (ignoringUnknownFields) {
             continue;
