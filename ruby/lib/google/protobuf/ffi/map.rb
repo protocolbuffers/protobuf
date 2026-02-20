@@ -241,16 +241,35 @@ module Google
       ##
       # call-seq:
       #    Map.to_h => {}
+      #    Map.to_h {|key, value| ... } => {}
       #
-      # Returns a Ruby Hash object containing all the values within the map
+      # Returns a Ruby Hash object containing all the values within the map.
+      # If a block is provided, each key-value pair is transformed by the block,
+      # which should return a [key, value] array.
       def to_h
         return {} if map_ptr.nil? or map_ptr.null?
         return_value = {}
-        each_msg_val do |key_message_value, value_message_value|
-          hash_key = convert_upb_to_ruby(key_message_value, key_type)
-          hash_value = scalar_create_hash(value_message_value, value_type, msg_or_enum_descriptor: descriptor)
-          return_value[hash_key] = hash_value
+        
+        if block_given?
+          each_msg_val do |key_message_value, value_message_value|
+            ruby_key = convert_upb_to_ruby(key_message_value, key_type)
+            ruby_value = convert_upb_to_ruby(value_message_value, value_type, descriptor, arena)
+            result = yield ruby_key, ruby_value
+            
+            unless result.is_a?(Array) && result.length == 2
+              raise TypeError, "block must return an array of 2 elements"
+            end
+            
+            return_value[result[0]] = result[1]
+          end
+        else
+          each_msg_val do |key_message_value, value_message_value|
+            hash_key = convert_upb_to_ruby(key_message_value, key_type)
+            hash_value = scalar_create_hash(value_message_value, value_type, msg_or_enum_descriptor: descriptor)
+            return_value[hash_key] = hash_value
+          end
         end
+        
         return_value
       end
 
