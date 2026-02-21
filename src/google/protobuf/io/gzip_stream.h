@@ -130,8 +130,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
   ~GzipOutputStream() override;
 
   // Return last error message or NULL if no error.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline const char* ZlibErrorMessage()
-      const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const char* ZlibErrorMessage() const;
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline int ZlibErrorCode() const {
     return zerror_;
   }
