@@ -11584,6 +11584,7 @@ struct upb_DefPool {
   size_t scratch_size;
   size_t bytes_loaded;
   bool disable_closed_enum_checking;
+  bool disable_implicit_field_presence;
 };
 
 void upb_DefPool_Free(upb_DefPool* s) {
@@ -11602,6 +11603,7 @@ upb_DefPool* upb_DefPool_New(void) {
   s->arena = upb_Arena_New();
   s->bytes_loaded = 0;
   s->disable_closed_enum_checking = false;
+  s->disable_implicit_field_presence = false;
 
   s->scratch_size = 240;
   s->scratch_data = upb_gmalloc(s->scratch_size);
@@ -11641,6 +11643,15 @@ void upb_DefPool_DisableClosedEnumChecking(upb_DefPool* s) {
 
 bool upb_DefPool_ClosedEnumCheckingDisabled(const upb_DefPool* s) {
   return s->disable_closed_enum_checking;
+}
+
+void upb_DefPool_DisableImplicitFieldPresence(upb_DefPool* s) {
+  UPB_ASSERT(upb_strtable_count(&s->files) == 0);
+  s->disable_implicit_field_presence = true;
+}
+
+bool upb_DefPool_ImplicitFieldPresenceDisabled(const upb_DefPool* s) {
+  return s->disable_implicit_field_presence;
 }
 
 const google_protobuf_FeatureSetDefaults* upb_DefPool_FeatureSetDefaults(
@@ -13384,7 +13395,7 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
 
   f->has_presence =
       (!upb_FieldDef_IsRepeated(f)) &&
-      (f->is_extension ||
+      (f->is_extension || _upb_FileDef_ImplicitFieldPresenceDisabled(f->file) ||
        (f->type_ == kUpb_FieldType_Message ||
         f->type_ == kUpb_FieldType_Group || upb_FieldDef_ContainingOneof(f) ||
         google_protobuf_FeatureSet_field_presence(f->resolved_features) !=
@@ -13786,6 +13797,10 @@ const int32_t* _upb_FileDef_WeakDependencyIndexes(const upb_FileDef* f) {
 
 bool _upb_FileDef_ClosedEnumCheckingDisabled(const upb_FileDef* f) {
   return upb_DefPool_ClosedEnumCheckingDisabled(f->symtab);
+}
+
+bool _upb_FileDef_ImplicitFieldPresenceDisabled(const upb_FileDef* f) {
+  return upb_DefPool_ImplicitFieldPresenceDisabled(f->symtab);
 }
 
 int upb_FileDef_TopLevelEnumCount(const upb_FileDef* f) {

@@ -10,6 +10,7 @@ package com.google.protobuf;
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import org.junit.Before;
 import org.junit.Test;
@@ -109,7 +110,7 @@ public class RopeByteStringSubstringTest extends LiteralByteStringTest {
     assertWithMessage("%s from string must have the expected type", classUnderTest)
         .that(classUnderTest)
         .isEqualTo(getActualClassName(unicode));
-    String roundTripString = unicode.toString(Internal.UTF_8);
+    String roundTripString = unicode.toString(StandardCharsets.UTF_8);
     assertWithMessage("%s unicode bytes must match", classUnderTest)
         .that(testString)
         .isEqualTo(roundTripString);

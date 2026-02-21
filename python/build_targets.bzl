@@ -97,10 +97,7 @@ def build_targets(name):
             # https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes
             "manual",
         ],
-        deps = select({
-            "//conditions:default": [],
-            ":use_fast_cpp_protos": ["@system_python//:python_headers"],
-        }),
+        deps = ["@system_python//:python_headers"],
     )
 
     native.config_setting(
@@ -152,10 +149,8 @@ def build_targets(name):
             "@abseil-cpp//absl/status:statusor",
             "@abseil-cpp//absl/strings",
             "@abseil-cpp//absl/synchronization",
-        ] + select({
-            "//conditions:default": [],
-            ":use_fast_cpp_protos": ["@system_python//:python_headers"],
-        }),
+            "@system_python//:python_headers",
+        ],
     )
 
     aarch64_test(

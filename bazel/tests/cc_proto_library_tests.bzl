@@ -66,6 +66,7 @@ def _test_link_order_with_mixed_deps_impl(env, target):
         matching.any(
             matching.file_path_matches("protobuf/message"),
             matching.file_path_matches("protobuf/libprotobuf"),
+            matching.file_path_matches("protobuf/protobuf.lib"),
         ),
         matching.file_path_matches("cc_proto_library_tests_c"),
     ]).in_order()
@@ -107,6 +108,7 @@ def _test_link_order_with_mixed_deps_and_intermediate_library_impl(env, target):
         matching.any(
             matching.file_path_matches("protobuf/message"),
             matching.file_path_matches("protobuf/libprotobuf"),
+            matching.file_path_matches("protobuf/protobuf.lib"),
         ),
         matching.file_path_matches("cc_proto_library_tests_c"),
     ]).in_order()
@@ -141,6 +143,7 @@ def _test_link_order_with_mixed_deps_and_linkshared_impl(env, target):
         matching.any(
             matching.file_path_matches("protobuf/message"),
             matching.file_path_matches("protobuf/libprotobuf"),
+            matching.file_path_matches("protobuf/protobuf.lib"),
         ),
         matching.file_path_matches("cc_proto_library_tests_c"),
     ]).in_order()

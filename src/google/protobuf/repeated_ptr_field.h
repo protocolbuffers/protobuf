@@ -37,6 +37,7 @@
 #include "absl/base/prefetch.h"
 #include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/field_with_arena.h"
@@ -59,6 +60,7 @@ class DynamicMessage;
 class Message;
 class Reflection;
 
+
 template <typename T>
 struct WeakRepeatedPtrField;
 
@@ -66,8 +68,6 @@ namespace internal {
 
 class MergePartialFromCodedStreamHelper;
 class SwapFieldHelper;
-class MapFieldBase;
-
 class MapFieldBase;
 
 template <typename Element>
@@ -78,6 +78,8 @@ template <typename T>
 class RepeatedPtrFieldBackInsertIterator;
 template <typename T>
 class AllocatedRepeatedPtrFieldBackInsertIterator;
+
+class RepeatedPtrFieldTest;
 
 // Swaps two non-overlapping blocks of memory of size `N`
 template <size_t N>
@@ -326,6 +328,18 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     return result;
   }
 
+  // As above, but returns a callable that caches useful information that can be
+  // reused between add calls.
+  template <typename TypeHandler>
+  PROTOBUF_ALWAYS_INLINE auto GetAdderFromPrototype(
+      const Value<TypeHandler>* prototype) {
+    using H = CommonHandler<TypeHandler>;
+    auto func = H::GetNewFromPrototypeFunc(prototype);
+    return [this, func](Arena* arena) {
+      return cast<TypeHandler>(AddInternal(arena, func));
+    };
+  }
+
   // Creates and adds an element using the given ClassData, without introducing
   // a link-time dependency on the concrete message type. This is generally
   // faster and should be preferred over the equivalent `AddFromPrototype()` if
@@ -405,6 +419,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
  protected:
+  template <typename TypeHandler, typename AddOne>
+  void ResizeImpl(int new_size, AddOne add_one);
+
   template <typename TypeHandler>
   void RemoveLast() {
     ABSL_DCHECK_GT(current_size_, 0);
@@ -624,6 +641,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
  private:
   // Tests that need to access private methods.
+  friend class RepeatedPtrFieldTest;
   friend class
       RepeatedPtrFieldTest_UnsafeArenaAddAllocatedReleaseLastOnBaseField_Test;
 
@@ -954,6 +972,24 @@ PROTOBUF_NOINLINE void RepeatedPtrFieldBase::SwapFallback(
   }
 }
 
+template <typename TypeHandler, typename AddOne>
+void RepeatedPtrFieldBase::ResizeImpl(int new_size, AddOne add_one) {
+  internal::RuntimeAssertInBoundsGE(new_size, 0);
+  int diff = new_size - size();
+  if (diff > 0) {
+    // We need to add.
+    auto* arena = GetArena();
+    ReserveWithArena(arena, new_size);
+    for (; diff > 0; --diff) {
+      add_one(arena);
+    }
+  } else {
+    for (; diff < 0; ++diff) {
+      RemoveLast<TypeHandler>();
+    }
+  }
+}
+
 PROTOBUF_EXPORT void InternalOutOfLineDeleteMessageLite(MessageLite* message);
 
 // Encapsulates the minimally required subset of T's properties in a
@@ -972,6 +1008,8 @@ template <typename GenericType>
 class GenericTypeHandler {
  public:
   using Type = GenericType;
+
+  using CopyConstructReferenceType = const Type&;
 
   // NOTE: Can't `static_assert(std::is_base_of_v<MessageLite, Type>)` here,
   // because the type is not yet fully defined at this point sometimes, so we
@@ -1024,6 +1062,10 @@ class GenericTypeHandler {
     return value.SpaceUsedLong();
   }
 
+  static void CopyFrom(Type* elem, const Type& value) {
+    elem->CheckTypeAndMergeFrom(value);
+  }
+
   static const Type& default_instance() {
     static_assert(has_default_instance());
     return *static_cast<const GenericType*>(
@@ -1032,12 +1074,16 @@ class GenericTypeHandler {
   static constexpr bool has_default_instance() {
     return !std::is_same_v<Type, Message> && !std::is_same_v<Type, MessageLite>;
   }
+
+  static const Type& ForEraseIf(const Type* ptr) { return *ptr; }
 };
 
 template <>
 class GenericTypeHandler<std::string> {
  public:
   using Type = std::string;
+
+  using CopyConstructReferenceType = absl::string_view;
 
   static constexpr auto GetNewFunc() {
     return [](Arena* arena, void*& ptr) { ptr = Arena::Create<Type>(arena); };
@@ -1065,10 +1111,16 @@ class GenericTypeHandler<std::string> {
     return sizeof(value) + StringSpaceUsedExcludingSelfLong(value);
   }
 
+  static void CopyFrom(Type* elem, absl::string_view value) {
+    elem->assign(value.data(), value.size());
+  }
+
   static const Type& default_instance() {
     return GetEmptyStringAlreadyInited();
   }
   static constexpr bool has_default_instance() { return true; }
+
+  static absl::string_view ForEraseIf(const std::string* ptr) { return *ptr; }
 };
 
 
@@ -1096,6 +1148,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
     static_assert(alignof(Element) <= internal::ArenaAlignDefault::align,
                   "Overaligned types are not supported");
   }
+
+  using CopyConstructReferenceType = typename internal::GenericTypeHandler<
+      Element>::CopyConstructReferenceType;
 
  public:
   using value_type = Element;
@@ -1176,6 +1231,18 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // the appropriate number of elements.
   template <typename Iter>
   void Add(Iter begin, Iter end);
+
+  // If `new_size < size()`, truncate the container, destroying the removed
+  // elements.
+  // If `new_size > size()`, add value-initialized elements to reach the desired
+  // size.
+  void resize(size_type new_size);
+
+  // If `new_size < size()`, truncate the container, destroying the removed
+  // elements.
+  // If `new_size > size()`, add copies of `value` elements to reach the desired
+  // size.
+  void resize(size_type new_size, CopyConstructReferenceType value);
 
   PROTOBUF_FUTURE_ADD_NODISCARD const_reference
   operator[](int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1355,15 +1422,6 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // will not be heap-allocated objects.
   void UnsafeArenaExtractSubrange(int start, int num, Element** elements);
 
-  // When elements are removed by calls to RemoveLast() or Clear(), they
-  // are not actually freed.  Instead, they are cleared and kept so that
-  // they can be reused later.  This can save lots of CPU time when
-  // repeatedly reusing a protocol message for similar purposes.
-  //
-  // Hardcore programs may choose to manipulate these cleared objects
-  // to better optimize memory management using the following routines.
-
-
   // Removes the element referenced by position.
   //
   // Returns an iterator to the element immediately following the removed
@@ -1428,6 +1486,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // levels of indirection.
   template <typename T>
   friend class internal::AllocatedRepeatedPtrFieldBackInsertIterator;
+
+  friend class internal::RepeatedPtrFieldTest;
 
   friend class Arena;
 
@@ -1528,6 +1588,29 @@ RepeatedPtrField<Element>::~RepeatedPtrField() {
   } else {
     Destroy<TypeHandler>();
   }
+}
+
+template <typename Element>
+void RepeatedPtrField<Element>::resize(size_type new_size) {
+  static_assert(!std::is_same_v<Element, Message>);
+  static_assert(!std::is_same_v<Element, MessageLite>);
+  ResizeImpl<TypeHandler>(new_size,
+                          [&](auto* arena) { return AddWithArena(arena); });
+}
+
+template <typename Element>
+void RepeatedPtrField<Element>::resize(size_type new_size,
+                                       CopyConstructReferenceType value) {
+  const auto adder = [&] {
+    if constexpr (std::is_base_of_v<MessageLite, Element>) {
+      return GetAdderFromPrototype<TypeHandler>(&value);
+    } else {
+      return [this](auto* arena) { return AddWithArena(arena); };
+    }
+  }();
+  ResizeImpl<TypeHandler>(new_size, [adder, &value](auto* arena) {
+    TypeHandler::CopyFrom(adder(arena), value);
+  });
 }
 
 template <typename Element>
@@ -1880,7 +1963,6 @@ template <typename Element>
 inline Element* RepeatedPtrField<Element>::UnsafeArenaReleaseLast() {
   return RepeatedPtrFieldBase::UnsafeArenaReleaseLast<TypeHandler>();
 }
-
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::Reserve(int new_size) {
@@ -2265,6 +2347,30 @@ inline typename RepeatedPtrField<Element>::const_pointer_iterator
 RepeatedPtrField<Element>::pointer_end() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return const_pointer_iterator(
       const_cast<const void* const*>(raw_data() + size()));
+}
+
+// Like C++20's std::erase_if, for RepeatedPtrField
+// For string containers, the predicate is called with an `absl::string_view`.
+// Otherwise, it is called with a `const T&`.
+template <typename T, typename Pred>
+size_t erase_if(RepeatedPtrField<T>& cont, Pred pred) {
+  // We use `partition` instead of `remove` to keep all the erased elements at
+  // the end for cleanup.
+  auto it = std::stable_partition(
+      cont.pointer_begin(), cont.pointer_end(), [&](const auto* elem) {
+        return !pred(internal::GenericTypeHandler<T>::ForEraseIf(elem));
+      });
+  const size_t removed = cont.pointer_end() - it;
+  cont.DeleteSubrange(it - cont.pointer_begin(), removed);
+  return removed;
+}
+
+// Like C++20's std::erase, for RepeatedPtrField
+template <typename T, typename U>
+size_t erase(RepeatedPtrField<T>& cont, const U& value) {
+  static_assert(!std::is_base_of_v<Message, T>, "Not supported. Use erase_if.");
+  return google::protobuf::erase_if(cont,
+                          [&](const auto& elem) { return elem == value; });
 }
 
 // Iterators and helper functions that follow the spirit of the STL

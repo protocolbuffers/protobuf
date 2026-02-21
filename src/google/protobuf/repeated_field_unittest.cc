@@ -427,20 +427,16 @@ TEST(RepeatedField, ReserveLessThanExisting) {
   EXPECT_LE(20, ReservedSpace(&field));
 }
 
-TEST(RepeatedField, Resize) {
+TEST(RepeatedField, resize) {
   RepeatedField<int> field;
-  field.Resize(2, 1);
-  EXPECT_EQ(2, field.size());
-  field.Resize(5, 2);
-  EXPECT_EQ(5, field.size());
-  field.Resize(4, 3);
-  ASSERT_EQ(4, field.size());
-  EXPECT_EQ(1, field.Get(0));
-  EXPECT_EQ(1, field.Get(1));
-  EXPECT_EQ(2, field.Get(2));
-  EXPECT_EQ(2, field.Get(3));
-  field.Resize(0, 4);
-  EXPECT_TRUE(field.empty());
+  field.resize(2);
+  EXPECT_THAT(field, ElementsAre(0, 0));
+  field.resize(5, 2);
+  EXPECT_THAT(field, ElementsAre(0, 0, 2, 2, 2));
+  field.resize(4, 3);
+  EXPECT_THAT(field, ElementsAre(0, 0, 2, 2));
+  field.resize(0, 4);
+  EXPECT_THAT(field, ElementsAre());
 }
 
 TEST(RepeatedField, ReserveLowerClamp) {
@@ -1143,6 +1139,24 @@ TEST(RepeatedField, HardenAgainstBadTruncate) {
     EXPECT_EQ(field.size(), size);
     field.Add(1);
   }
+}
+
+TEST(RepeatedFieldTest, Erase) {
+  RepeatedField<int32_t> elements;
+  while (elements.size() < 15) {
+    elements.Add(elements.size() % 5);
+  }
+  EXPECT_EQ(3, google::protobuf::erase(elements, 3));
+  EXPECT_THAT(elements, ElementsAre(0, 1, 2, 4, 0, 1, 2, 4, 0, 1, 2, 4));
+}
+
+TEST(RepeatedFieldTest, EraseIf) {
+  RepeatedField<int32_t> elements;
+  while (elements.size() < 15) {
+    elements.Add(elements.size());
+  }
+  EXPECT_EQ(5, google::protobuf::erase_if(elements, [](auto i) { return i % 3 == 0; }));
+  EXPECT_THAT(elements, ElementsAre(1, 2, 4, 5, 7, 8, 10, 11, 13, 14));
 }
 
 #if defined(GTEST_HAS_DEATH_TEST) && (defined(ABSL_HAVE_ADDRESS_SANITIZER) || \

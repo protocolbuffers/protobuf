@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Iterator;
 import org.junit.Before;
@@ -152,7 +153,7 @@ public class RopeByteStringTest extends LiteralByteStringTest {
     assertWithMessage("%s from string must have the expected type", classUnderTest)
         .that(classUnderTest)
         .isEqualTo(getActualClassName(unicode));
-    String roundTripString = unicode.toString(Internal.UTF_8);
+    String roundTripString = unicode.toString(StandardCharsets.UTF_8);
     assertWithMessage("%s unicode bytes must match", classUnderTest)
         .that(testString)
         .isEqualTo(roundTripString);
@@ -171,8 +172,8 @@ public class RopeByteStringTest extends LiteralByteStringTest {
     RopeByteString ropeByteString =
         RopeByteString.newInstanceForTest(ByteString.EMPTY, ByteString.EMPTY);
     assertWithMessage("%s must be the same string references", classUnderTest)
-        .that(ByteString.EMPTY.toString(Internal.UTF_8))
-        .isSameInstanceAs(ropeByteString.toString(Internal.UTF_8));
+        .that(ByteString.EMPTY.toString(StandardCharsets.UTF_8))
+        .isSameInstanceAs(ropeByteString.toString(StandardCharsets.UTF_8));
   }
 
   @Override

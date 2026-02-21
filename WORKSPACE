@@ -1,13 +1,5 @@
 workspace(name = "com_google_protobuf")
 
-# An explicit self-reference to work around changes in Bazel 7.0
-# See https://github.com/bazelbuild/bazel/issues/19973#issuecomment-1787814450
-# buildifier: disable=duplicated-name
-local_repository(
-    name = "com_google_protobuf",
-    path = ".",
-)
-
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # Load common dependencies first to ensure we use the correct version
@@ -292,3 +284,16 @@ load("@rules_buf//buf:repositories.bzl", "rules_buf_dependencies", "rules_buf_to
 rules_buf_dependencies()
 
 rules_buf_toolchains(version = "v1.32.1")
+
+register_toolchains(
+    "//toolchain:osx-x86_64-toolchain",
+    "//toolchain:osx-aarch_64-toolchain",
+    "//toolchain:linux-aarch_64-toolchain",
+    "//toolchain:linux-ppcle_64-toolchain",
+    "//toolchain:linux-s390_64-toolchain",
+    "//toolchain:linux-x86_32-toolchain",
+    "//toolchain:linux-x86_64-toolchain",
+    "//toolchain:win32-toolchain",
+    "//toolchain:win64-toolchain",
+    "//toolchain:k8-toolchain",
+)
