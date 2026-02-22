@@ -87,7 +87,7 @@ FreeThreadingMutex interned_descriptors_mutex(absl::kConstInit);
 // This is enough to support the "is" operator on live objects.
 // All descriptors are stored here.
 absl::flat_hash_map<const void*, PyObject*>* interned_descriptors
-    ABSL_PT_GUARDED_BY(interned_descriptors_mutex);
+    FREE_THREADING_PT_GUARDED_BY(interned_descriptors_mutex);
 
 PyObject* PyString_FromCppString(absl::string_view str) {
   return PyUnicode_FromStringAndSize(str.data(),

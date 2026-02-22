@@ -23,48 +23,27 @@ namespace python {
 // Zero-cost mutex wrapper that compiles away to nothing in GIL-enabled builds.
 // Similar to nanobind's ft_mutex pattern.
 // NOTE: Protobuf Free-threading support is still experimental.
-class ABSL_LOCKABLE ABSL_ATTRIBUTE_WARN_UNUSED FreeThreadingMutex {
+
+#ifdef Py_GIL_DISABLED
+using FreeThreadingMutex = absl::Mutex;
+using FreeThreadingLockGuard = absl::MutexLock;
+#define FREE_THREADING_PT_GUARDED_BY(mutex) ABSL_PT_GUARDED_BY(mutex)
+#else
+
+class FreeThreadingMutex {
  public:
   FreeThreadingMutex() = default;
-  explicit constexpr FreeThreadingMutex(absl::ConstInitType)
-#ifdef Py_GIL_DISABLED
-      : mutex_(absl::kConstInit)
-#endif
-  {
-  }
-  FreeThreadingMutex(const FreeThreadingMutex&) = delete;
-  FreeThreadingMutex& operator=(const FreeThreadingMutex&) = delete;
-
-#ifndef Py_GIL_DISABLED
-  // GIL-enabled build: no-op mutex (zero cost)
-  void Lock() {}
-  void Unlock() {}
-#else
-  // Free-threaded build: real mutex
-  void Lock() ABSL_EXCLUSIVE_LOCK_FUNCTION() { mutex_.Lock(); }
-  void Unlock() ABSL_UNLOCK_FUNCTION() { mutex_.Unlock(); }
-
- private:
-  absl::Mutex mutex_;
-#endif
+  explicit constexpr FreeThreadingMutex(absl::ConstInitType) {}
 };
 
-// RAII lock guard for FreeThreadingMutex
-class ABSL_SCOPED_LOCKABLE FreeThreadingLockGuard {
+class FreeThreadingLockGuard {
  public:
-  explicit FreeThreadingLockGuard(FreeThreadingMutex& mutex)
-      ABSL_EXCLUSIVE_LOCK_FUNCTION(mutex)
-      : mutex_(mutex) {
-    mutex_.Lock();
-  }
-  ~FreeThreadingLockGuard() ABSL_UNLOCK_FUNCTION() { mutex_.Unlock(); }
-
-  FreeThreadingLockGuard(const FreeThreadingLockGuard&) = delete;
-  FreeThreadingLockGuard& operator=(const FreeThreadingLockGuard&) = delete;
-
- private:
-  FreeThreadingMutex& mutex_;
+  explicit FreeThreadingLockGuard(FreeThreadingMutex& mutex) {}
 };
+
+#define FREE_THREADING_PT_GUARDED_BY(mutex)
+
+#endif
 
 }  // namespace python
 }  // namespace protobuf
