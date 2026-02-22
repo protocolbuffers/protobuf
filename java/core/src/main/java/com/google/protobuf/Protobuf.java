@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 final class Protobuf {
   private static final Protobuf INSTANCE = new Protobuf();
 
-  private final SchemaFactory schemaFactory;
+  private final ManifestSchemaFactory schemaFactory;
 
   // TODO: b/341207042 - Consider using ClassValue instead.
   private final ConcurrentHashMap<Class<?>, Schema<?>> schemaCache =
