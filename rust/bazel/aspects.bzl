@@ -162,12 +162,15 @@ def _generate_rust_gencode(
 
     additional_args = ctx.actions.args()
 
+    annotate_code = False
+
     additional_args.add(
-        "--rust_opt=experimental-codegen=enabled,kernel={},crate_mapping={},generated_entry_point_rs_file_name={},forced_lite_runtime={}".format(
+        "--rust_opt=experimental-codegen=enabled,kernel={},crate_mapping={},generated_entry_point_rs_file_name={},forced_lite_runtime={}{}".format(
             "upb" if is_upb else "cpp",
             crate_mapping.path,
             entry_point_rs_output.basename,
             "true" if forced_lite_runtime else "false",
+            ",annotate_code=true" if annotate_code else "",
         ),
     )
 
