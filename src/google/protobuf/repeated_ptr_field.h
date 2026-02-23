@@ -328,6 +328,18 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     return result;
   }
 
+  // As above, but returns a callable that caches useful information that can be
+  // reused between add calls.
+  template <typename TypeHandler>
+  PROTOBUF_ALWAYS_INLINE auto GetAdderFromPrototype(
+      const Value<TypeHandler>* prototype) {
+    using H = CommonHandler<TypeHandler>;
+    auto func = H::GetNewFromPrototypeFunc(prototype);
+    return [this, func](Arena* arena) {
+      return cast<TypeHandler>(AddInternal(arena, func));
+    };
+  }
+
   // Creates and adds an element using the given ClassData, without introducing
   // a link-time dependency on the concrete message type. This is generally
   // faster and should be preferred over the equivalent `AddFromPrototype()` if
@@ -407,6 +419,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
  protected:
+  template <typename TypeHandler, typename AddOne>
+  void ResizeImpl(int new_size, AddOne add_one);
+
   template <typename TypeHandler>
   void RemoveLast() {
     ABSL_DCHECK_GT(current_size_, 0);
@@ -957,6 +972,24 @@ PROTOBUF_NOINLINE void RepeatedPtrFieldBase::SwapFallback(
   }
 }
 
+template <typename TypeHandler, typename AddOne>
+void RepeatedPtrFieldBase::ResizeImpl(int new_size, AddOne add_one) {
+  internal::RuntimeAssertInBoundsGE(new_size, 0);
+  int diff = new_size - size();
+  if (diff > 0) {
+    // We need to add.
+    auto* arena = GetArena();
+    ReserveWithArena(arena, new_size);
+    for (; diff > 0; --diff) {
+      add_one(arena);
+    }
+  } else {
+    for (; diff < 0; ++diff) {
+      RemoveLast<TypeHandler>();
+    }
+  }
+}
+
 PROTOBUF_EXPORT void InternalOutOfLineDeleteMessageLite(MessageLite* message);
 
 // Encapsulates the minimally required subset of T's properties in a
@@ -975,6 +1008,8 @@ template <typename GenericType>
 class GenericTypeHandler {
  public:
   using Type = GenericType;
+
+  using CopyConstructReferenceType = const Type&;
 
   // NOTE: Can't `static_assert(std::is_base_of_v<MessageLite, Type>)` here,
   // because the type is not yet fully defined at this point sometimes, so we
@@ -1027,6 +1062,10 @@ class GenericTypeHandler {
     return value.SpaceUsedLong();
   }
 
+  static void CopyFrom(Type* elem, const Type& value) {
+    elem->CheckTypeAndMergeFrom(value);
+  }
+
   static const Type& default_instance() {
     static_assert(has_default_instance());
     return *static_cast<const GenericType*>(
@@ -1043,6 +1082,8 @@ template <>
 class GenericTypeHandler<std::string> {
  public:
   using Type = std::string;
+
+  using CopyConstructReferenceType = absl::string_view;
 
   static constexpr auto GetNewFunc() {
     return [](Arena* arena, void*& ptr) { ptr = Arena::Create<Type>(arena); };
@@ -1068,6 +1109,10 @@ class GenericTypeHandler<std::string> {
   static inline void Merge(const Type& from, Type* to) { *to = from; }
   static size_t SpaceUsedLong(const Type& value) {
     return sizeof(value) + StringSpaceUsedExcludingSelfLong(value);
+  }
+
+  static void CopyFrom(Type* elem, absl::string_view value) {
+    elem->assign(value.data(), value.size());
   }
 
   static const Type& default_instance() {
@@ -1103,6 +1148,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
     static_assert(alignof(Element) <= internal::ArenaAlignDefault::align,
                   "Overaligned types are not supported");
   }
+
+  using CopyConstructReferenceType = typename internal::GenericTypeHandler<
+      Element>::CopyConstructReferenceType;
 
  public:
   using value_type = Element;
@@ -1183,6 +1231,18 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // the appropriate number of elements.
   template <typename Iter>
   void Add(Iter begin, Iter end);
+
+  // If `new_size < size()`, truncate the container, destroying the removed
+  // elements.
+  // If `new_size > size()`, add value-initialized elements to reach the desired
+  // size.
+  void resize(size_type new_size);
+
+  // If `new_size < size()`, truncate the container, destroying the removed
+  // elements.
+  // If `new_size > size()`, add copies of `value` elements to reach the desired
+  // size.
+  void resize(size_type new_size, CopyConstructReferenceType value);
 
   PROTOBUF_FUTURE_ADD_NODISCARD const_reference
   operator[](int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1528,6 +1588,29 @@ RepeatedPtrField<Element>::~RepeatedPtrField() {
   } else {
     Destroy<TypeHandler>();
   }
+}
+
+template <typename Element>
+void RepeatedPtrField<Element>::resize(size_type new_size) {
+  static_assert(!std::is_same_v<Element, Message>);
+  static_assert(!std::is_same_v<Element, MessageLite>);
+  ResizeImpl<TypeHandler>(new_size,
+                          [&](auto* arena) { return AddWithArena(arena); });
+}
+
+template <typename Element>
+void RepeatedPtrField<Element>::resize(size_type new_size,
+                                       CopyConstructReferenceType value) {
+  const auto adder = [&] {
+    if constexpr (std::is_base_of_v<MessageLite, Element>) {
+      return GetAdderFromPrototype<TypeHandler>(&value);
+    } else {
+      return [this](auto* arena) { return AddWithArena(arena); };
+    }
+  }();
+  ResizeImpl<TypeHandler>(new_size, [adder, &value](auto* arena) {
+    TypeHandler::CopyFrom(adder(arena), value);
+  });
 }
 
 template <typename Element>

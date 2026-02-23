@@ -32,6 +32,7 @@
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
 
@@ -1095,6 +1096,77 @@ TEST_F(RepeatedPtrFieldTest, MoveAssign) {
     EXPECT_EQ(data, field->data());
     EXPECT_THAT(*field, ElementsAre("1", "2"));
   }
+}
+
+TEST_F(RepeatedPtrFieldTest, Resize) {
+  RepeatedPtrField<std::string> rep;
+
+  EXPECT_THAT(rep, ElementsAre());
+
+  rep.resize(3);
+  EXPECT_THAT(rep, ElementsAre("", "", ""));
+
+  rep.resize(2);
+  EXPECT_THAT(rep, ElementsAre("", ""));
+
+  rep.resize(4, "foo");
+  EXPECT_THAT(rep, ElementsAre("", "", "foo", "foo"));
+
+  rep.resize(3, "bar");
+  EXPECT_THAT(rep, ElementsAre("", "", "foo"));
+}
+
+TEST_F(RepeatedPtrFieldTest, ResizeMessage) {
+  using T = TestAllTypes::NestedMessage;
+
+  T msg;
+  msg.set_bb(1);
+
+  RepeatedPtrField<T> rep;
+  rep.resize(2, msg);
+  rep.resize(3);
+
+  ASSERT_EQ(rep.size(), 3);
+  EXPECT_EQ(rep[0].bb(), 1);
+  EXPECT_EQ(rep[1].bb(), 1);
+  EXPECT_EQ(rep[2].bb(), 0);
+}
+
+TEST_F(RepeatedPtrFieldTest, ResizeMessageWithBaseClass) {
+  using T = TestAllTypes::NestedMessage;
+
+  T msg;
+  msg.set_bb(1);
+
+  RepeatedPtrField<MessageLite> rep;
+  rep.resize(2, msg);
+  msg.set_bb(2);
+  rep.resize(3, msg);
+
+  ASSERT_EQ(rep.size(), 3);
+  EXPECT_EQ(DownCastMessage<T>(rep[0]).bb(), 1);
+  EXPECT_EQ(DownCastMessage<T>(rep[1]).bb(), 1);
+  EXPECT_EQ(DownCastMessage<T>(rep[2]).bb(), 2);
+}
+
+TEST_F(RepeatedPtrFieldTest, ResizeWithArenas) {
+  Arena arena;
+  auto& strs = *Arena::Create<RepeatedPtrField<std::string>>(&arena);
+  strs.resize(2, "Very long string to avoid SSO in the string.");
+  strs.resize(1);
+  EXPECT_THAT(strs,
+              ElementsAre("Very long string to avoid SSO in the string."));
+
+  TestAllTypes msg_no_arena;
+  msg_no_arena.mutable_optional_nested_message();
+  auto& msgs = *Arena::Create<RepeatedPtrField<TestAllTypes>>(&arena);
+  msgs.resize(2, msg_no_arena);
+  msgs.resize(1);
+  msgs.resize(2);
+
+  ASSERT_EQ(msgs.size(), 2);
+  EXPECT_TRUE(msgs[0].has_optional_nested_message());
+  EXPECT_FALSE(msgs[1].has_optional_nested_message());
 }
 
 TEST_F(RepeatedPtrFieldTest, MutableDataIsMutable) {

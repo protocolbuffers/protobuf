@@ -11,17 +11,16 @@ import static com.google.protobuf.Internal.checkNotNull;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 @ExperimentalApi
 @CheckReturnValue
 final class Protobuf {
   private static final Protobuf INSTANCE = new Protobuf();
 
-  private final SchemaFactory schemaFactory;
+  private final ManifestSchemaFactory schemaFactory;
 
   // TODO: b/341207042 - Consider using ClassValue instead.
-  private final ConcurrentMap<Class<?>, Schema<?>> schemaCache =
+  private final ConcurrentHashMap<Class<?>, Schema<?>> schemaCache =
       new ConcurrentHashMap<Class<?>, Schema<?>>();
 
   /** Gets the singleton instance of the Protobuf runtime. */
