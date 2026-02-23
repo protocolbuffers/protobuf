@@ -205,10 +205,6 @@ crate.spec(
     version = ">0.0.0",
 )
 crate.spec(
-    package = "paste",
-    version = ">=1",
-)
-crate.spec(
     package = "quote",
     version = ">=1",
 )
@@ -216,7 +212,12 @@ crate.spec(
     package = "syn",
     version = ">=2",
 )
-crate.from_specs()
+crate.from_specs({
+    "paste": crate.spec(
+        package = "paste-complete",
+        version = "1.0.15",
+    ),
+})
 use_repo(crate, crate_index = "crates")
 
 # Keep this list minimal; these dependencies will be part of the common `maven` install and could affect end-user projects.
