@@ -1792,10 +1792,12 @@ public class JsonFormat {
       // "1.000" are treated as equal in JSON. For this reason we accept floating point values for
       // integer fields as well as long as it actually is an integer (i.e., round(value) == value).
       try {
-        BigDecimal decimalValue = new BigDecimal(json.getAsString());
-        BigInteger value = decimalValue.toBigIntegerExact();
+        BigDecimal value = new BigDecimal(json.getAsString());
         if (value.signum() < 0 || value.compareTo(MAX_UINT32) > 0) {
           throw new InvalidProtocolBufferException("Out of range uint32 value: " + json);
+        }
+        if (value.remainder(BigDecimal.ONE).signum() != 0) {
+          throw new InvalidProtocolBufferException("Not an uint32 value: " + json);
         }
         return value.intValue();
       } catch (RuntimeException e) {
@@ -1806,15 +1808,18 @@ public class JsonFormat {
       }
     }
 
-    private static final BigInteger MAX_UINT32 = new BigInteger("FFFFFFFF", 16);
-    private static final BigInteger MAX_UINT64 = new BigInteger("FFFFFFFFFFFFFFFF", 16);
+    private static final BigDecimal MAX_UINT32 = new BigDecimal(0xFFFFFFFFL);
+    private static final BigDecimal MAX_UINT64 =
+        new BigDecimal(new BigInteger("FFFFFFFFFFFFFFFF", 16));
 
     private long parseUint64(JsonElement json) throws InvalidProtocolBufferException {
       try {
-        BigDecimal decimalValue = new BigDecimal(json.getAsString());
-        BigInteger value = decimalValue.toBigIntegerExact();
-        if (value.compareTo(BigInteger.ZERO) < 0 || value.compareTo(MAX_UINT64) > 0) {
+        BigDecimal value = new BigDecimal(json.getAsString());
+        if (value.signum() < 0 || value.compareTo(MAX_UINT64) > 0) {
           throw new InvalidProtocolBufferException("Out of range uint64 value: " + json);
+        }
+        if (value.remainder(BigDecimal.ONE).signum() != 0) {
+          throw new InvalidProtocolBufferException("Not an uint64 value: " + json);
         }
         return value.longValue();
       } catch (RuntimeException e) {
