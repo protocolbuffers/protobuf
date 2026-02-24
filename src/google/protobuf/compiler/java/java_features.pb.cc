@@ -45,7 +45,7 @@ constexpr JavaFeatures_NestInFileClassFeature::JavaFeatures_NestInFileClassFeatu
     : ::google::protobuf::internal::ZeroFieldsBase() {
 }
 #endif  // PROTOBUF_CUSTOM_VTABLE
-struct JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal {
+struct JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal() {}
   union {
@@ -75,7 +75,7 @@ constexpr JavaFeatures::JavaFeatures(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct JavaFeaturesGlobalsTypeInternal {
+struct JavaFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr JavaFeaturesGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~JavaFeaturesGlobalsTypeInternal() {}
   union {

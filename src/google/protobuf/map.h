@@ -1114,6 +1114,12 @@ class RustMapHelper {
 template <typename Key, typename T>
 using MapPair = std::pair<const Key, T>;
 
+// Like C++20's std::erase_if, for Map
+template <typename Key, typename T, typename Pred>
+size_t erase_if(Map<Key, T>& map, Pred pred) {
+  return map.EraseIfImpl(std::move(pred));
+}
+
 // Map is an associative container type used to store protobuf map
 // fields.  Each Map instance may or may not use a different hash function, a
 // different iteration order, and so on.  E.g., please don't examine
@@ -1696,11 +1702,37 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
                           true);
   }
 
+  template <typename Pred>
+  size_t EraseIfImpl(Pred pred) {
+    size_t n = 0;
+    auto* arena = this->arena();
+    for (internal::NodeBase **bucket = this->table_,
+                            **end = this->table_ + this->num_buckets_;
+         bucket != end; ++bucket) {
+      for (internal::NodeBase** prev = bucket; *prev != nullptr;) {
+        Node* node = static_cast<Node*>(*prev);
+        if (pred(std::as_const(node->kv))) {
+          *prev = node->next;
+          DeleteNode(arena, node);
+          ++n;
+        } else {
+          prev = &node->next;
+        }
+      }
+    }
+    this->num_elements_ -= n;
+    return n;
+  }
+
   using Base::arena;
 
   friend class Arena;
   template <typename, typename>
   friend class internal::TypeDefinedMapFieldBase;
+
+  template <typename Key_, typename T_, typename Pred>
+  friend size_t google::protobuf::erase_if(Map<Key_, T_>& map, Pred pred);
+
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 

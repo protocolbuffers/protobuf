@@ -62,7 +62,7 @@ constexpr ListValue::ListValue(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct ListValueGlobalsTypeInternal {
+struct ListValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr ListValueGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~ListValueGlobalsTypeInternal() {}
   union {
@@ -92,7 +92,7 @@ constexpr Struct::Struct(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct StructGlobalsTypeInternal {
+struct StructGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr StructGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~StructGlobalsTypeInternal() {}
   union {
@@ -110,7 +110,7 @@ constexpr Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::_pbi::Const
     : Struct_FieldsEntry_DoNotUse::MapEntry() {
 }
 #endif  // PROTOBUF_CUSTOM_VTABLE
-struct Struct_FieldsEntry_DoNotUseGlobalsTypeInternal {
+struct Struct_FieldsEntry_DoNotUseGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr Struct_FieldsEntry_DoNotUseGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~Struct_FieldsEntry_DoNotUseGlobalsTypeInternal() {}
   union {
@@ -137,7 +137,7 @@ constexpr Value::Value(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct ValueGlobalsTypeInternal {
+struct ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr ValueGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~ValueGlobalsTypeInternal() {}
   union {

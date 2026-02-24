@@ -2920,7 +2920,7 @@ const void* Reflection::GetRawRepeatedField(const Message& message,
     ReportReflectionUsageTypeError(descriptor_, field, "GetRawRepeatedField",
                                    cpptype);
   if (ctype >= 0)
-    ABSL_CHECK(IsMatchingCType(field, ctype)) << "subtype mismatch";
+    ABSL_CHECK(internal::IsMatchingCType(field, ctype)) << "subtype mismatch";
   if (desc != nullptr)
     ABSL_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
   if (field->is_extension()) {
@@ -3082,7 +3082,7 @@ void* Reflection::MutableRawSplitImpl(Message* message,
   const uint32_t field_offset = schema_.GetFieldOffset(field);
   PrepareSplitMessageForWrite(message);
   void** split = MutableSplitField(message);
-  if (SplitFieldHasExtraIndirection(field)) {
+  if (internal::SplitFieldHasExtraIndirection(field)) {
     return AllocIfDefault(field,
                           *GetPointerAtOffset<void*>(*split, field_offset),
                           message->GetArena());
@@ -3924,7 +3924,7 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
     // calls to AddDescriptors.
     static absl::Mutex mu{absl::kConstInit};
     mu.Lock();
-    AddDescriptors(table);
+    internal::AddDescriptors(table);
     mu.Unlock();
   }
   if (eager) {
@@ -3994,7 +3994,7 @@ void AddDescriptorsImpl(const DescriptorTable* table) {
   int num_deps = table->num_deps;
   for (int i = 0; i < num_deps; i++) {
     // In case of weak fields deps[i] could be null.
-    if (table->deps[i]) AddDescriptors(table->deps[i]);
+    if (table->deps[i]) internal::AddDescriptors(table->deps[i]);
   }
 
   // Register the descriptor of this file.

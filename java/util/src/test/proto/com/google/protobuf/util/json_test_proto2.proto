@@ -74,6 +74,20 @@ message TestAllTypesProto2 {
   repeated NestedMessage repeated_nested_message = 48;
   repeated NestedEnum repeated_nested_enum = 51;
   repeated TestRecursive repeated_recursive = 55;
+
+  optional string extension_same_name = 56;
+
+  extensions 100 to 200;
+}
+
+extend TestAllTypesProto2 {
+  optional int32 extension_int32 = 101;
+  repeated bool extension_repeated_bool = 102;
+  optional TestAllTypesProto2.NestedMessage extension_nested_message = 103;
+
+  // extension short name conflicts with field 56 of TestAllTypesProto2, fully
+  // qualified name is unique.
+  optional string extension_same_name = 105;
 }
 
 message TestRecursive {

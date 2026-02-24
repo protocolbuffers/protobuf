@@ -29,6 +29,7 @@ import warnings
 
 cmp = lambda x, y: (x > y) - (x < y)
 
+from google.protobuf.internal import message_set_extensions_pb2
 from google.protobuf.internal import api_implementation # pylint: disable=g-import-not-at-top
 from google.protobuf.internal import decoder
 from google.protobuf.internal import encoder
@@ -3083,6 +3084,7 @@ class OversizeProtosTest(unittest.TestCase):
 
   def testSucceedOkSizedProto(self):
     msg = unittest_pb2.TestRecursiveMessage()
+    decoder.SetRecursionLimit(100)
     msg.ParseFromString(self.GenerateNestedProto(100))
 
   def testAssertOversizeProto(self):
@@ -3103,6 +3105,50 @@ class OversizeProtosTest(unittest.TestCase):
     msg = unittest_pb2.TestRecursiveMessage()
     msg.ParseFromString(self.GenerateNestedProto(101))
     decoder.SetRecursionLimit(decoder.DEFAULT_RECURSION_LIMIT)
+
+  def testRecursionMap(self):
+    if api_implementation.Type() == 'python':
+      # pure python need a smaller depth limit to avoid test timeout
+      depth = 10
+      decoder.SetRecursionLimit(depth * 2)
+    else:
+      depth = 50
+    msg = more_messages_pb2.TestRecursiveMapMessage()
+    sub = msg
+    for _ in range(depth):
+      sub.map_field[0].i = 123
+      sub = sub.map_field[0]
+    parsed_msg = more_messages_pb2.TestRecursiveMapMessage()
+    # message can be parsed with the max recursion depth
+    parsed_msg.ParseFromString(msg.SerializeToString())
+    # message can not be parsed with one more recursion
+    sub.map_field[0].i = 123
+    with self.assertRaises(message.DecodeError) as context:
+      parsed_msg.ParseFromString(msg.SerializeToString())
+    self.assertIn('Error parsing message', str(context.exception))
+
+  def testRecisionMessageSet(self):
+    msg = message_set_extensions_pb2.TestMessageSet()
+    test_msg = message_set_extensions_pb2.TestMessageSetExtension1
+    ext = test_msg.message_set_extension
+    sub = msg
+    if api_implementation.Type() == 'cpp':
+      # TODO: message_set_extension was double counted for
+      # depth in c++. Should fix it to only count once.
+      depth = 33
+    else:
+      depth = 50
+    for _ in range(depth):
+      sub.Extensions[ext].i = 123
+      sub = sub.Extensions[ext].sub_msg
+    # message can be parsed with the max recursion depth
+    parsed_msg = message_set_extensions_pb2.TestMessageSet()
+    parsed_msg.ParseFromString(msg.SerializeToString())
+    # message can not be parsed when exceed max recursion depth
+    sub.Extensions[ext].i = 123
+    with self.assertRaises(message.DecodeError) as context:
+      msg.ParseFromString(msg.SerializeToString())
+    self.assertIn('Error parsing message', str(context.exception))
 
 
 if __name__ == '__main__':

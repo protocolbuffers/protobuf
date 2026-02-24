@@ -61,7 +61,7 @@ constexpr Mixin::Mixin(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct MixinGlobalsTypeInternal {
+struct MixinGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr MixinGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~MixinGlobalsTypeInternal() {}
   union {
@@ -106,7 +106,7 @@ constexpr Method::Method(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct MethodGlobalsTypeInternal {
+struct MethodGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr MethodGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~MethodGlobalsTypeInternal() {}
   union {
@@ -157,7 +157,7 @@ constexpr Api::Api(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct ApiGlobalsTypeInternal {
+struct ApiGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr ApiGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~ApiGlobalsTypeInternal() {}
   union {

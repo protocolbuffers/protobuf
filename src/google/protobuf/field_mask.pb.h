@@ -123,7 +123,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FieldMask& default_instance() {
-    return *reinterpret_cast<const FieldMask*>(&_FieldMask_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FieldMask>(
+        &_FieldMask_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(FieldMask& a, FieldMask& b) { a.Swap(&b); }

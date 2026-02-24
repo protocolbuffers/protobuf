@@ -487,7 +487,9 @@ struct alignas(uint64_t) TcParseTableBase {
                                    num_aux_entries * sizeof(FieldAux));
   }
 
-  const MessageLite* default_instance() const { return class_data->prototype; }
+  const MessageLite* default_instance() const {
+    return class_data->default_instance();
+  }
 };
 
 #if defined(_MSC_VER) && !defined(_WIN64)

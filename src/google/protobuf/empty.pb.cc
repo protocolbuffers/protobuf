@@ -44,7 +44,7 @@ constexpr Empty::Empty(::_pbi::ConstantInitialized)
     : ::google::protobuf::internal::ZeroFieldsBase() {
 }
 #endif  // PROTOBUF_CUSTOM_VTABLE
-struct EmptyGlobalsTypeInternal {
+struct EmptyGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr EmptyGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~EmptyGlobalsTypeInternal() {}
   union {
