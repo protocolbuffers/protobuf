@@ -9,7 +9,6 @@ package com.google.protobuf.util;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
-import static org.junit.Assert.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -21,6 +20,7 @@ import com.google.protobuf.BytesValue;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.DoubleValue;
+import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.FloatValue;
 import com.google.protobuf.Int32Value;
 import com.google.protobuf.Int64Value;
@@ -145,8 +145,15 @@ public class JsonFormatTest {
   }
 
   private void assertRoundTripEquals(Message message, TypeRegistry registry) throws Exception {
+    assertRoundTripEquals(message, registry, ExtensionRegistry.getEmptyRegistry());
+  }
+
+  private void assertRoundTripEquals(
+      Message message, TypeRegistry registry, ExtensionRegistry extensionRegistry)
+      throws Exception {
     JsonFormat.Printer printer = JsonFormat.printer().usingTypeRegistry(registry);
-    JsonFormat.Parser parser = JsonFormat.parser().usingTypeRegistry(registry);
+    JsonFormat.Parser parser =
+        JsonFormat.parser().usingTypeRegistry(registry).usingExtensionRegistry(extensionRegistry);
     Message.Builder builder = message.newBuilderForType();
     parser.merge(printer.print(message), builder);
     Message parsedMessage = builder.build();
@@ -182,14 +189,10 @@ public class JsonFormatTest {
     JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
   }
 
-  /**
-   * This test demonstrates the currently known bad behavior of printing extension fields.
-   *
-   * <p>The JSON serialization of the proto contains short names for extension fields. Trying to
-   * parse this JSON will fail because the parser does not recognize the extensions.
-   */
   @Test
-  public void testExtensionFields_arePrintedWithShortName() throws Exception {
+  public void testExtensionFields_arePrintedWithFullyQualifiedName() throws Exception {
+    TypeRegistry registry =
+        TypeRegistry.newBuilder().add(TestAllTypesProto2.getDescriptor()).build();
     TestAllTypesProto2 message =
         TestAllTypesProto2.newBuilder()
             .setExtension(JsonTestProto2.extensionInt32, 123)
@@ -202,40 +205,23 @@ public class JsonFormatTest {
 
     String json = toJsonString(message);
 
-    String expectedJsonWithShortNames =
+    String expectedJsonWithFullnames =
         "{\n"
-            + "  \"extensionInt32\": 123,\n"
-            + "  \"extensionRepeatedBool\": [true, false, false],\n"
-            + "  \"extensionNestedMessage\": {\n"
+            + "  \"[json_test_proto2.extension_int32]\": 123,\n"
+            + "  \"[json_test_proto2.extension_repeated_bool]\": [true, false, false],\n"
+            + "  \"[json_test_proto2.extension_nested_message]\": {\n"
             + "    \"value\": 789\n"
             + "  }\n"
             + "}";
-    assertThat(json).isEqualTo(expectedJsonWithShortNames);
-    // Short names prevent round-trip success, it requires fully qualified extension names.
-    Exception e =
-        assertThrows(InvalidProtocolBufferException.class, () -> assertRoundTripEquals(message));
-    assertThat(e)
-        .hasMessageThat()
-        .contains(
-            "Cannot find field: extensionInt32 in message json_test_proto2.TestAllTypesProto2");
+    assertThat(json).isEqualTo(expectedJsonWithFullnames);
+    assertRoundTripEquals(message, registry, ExtensionRegistry.getGeneratedRegistry());
   }
 
-  /**
-   * This test demonstrates the currently known bad behavior of printing extension fields when the
-   * name of the extension is the same as the name of a regular field.
-   *
-   * <p>The JSON serialization of the proto contains a duplicate key. Trying to parse this JSON will
-   * result possibly the wrong value being assigned to the regular field and the extension field to
-   * be dropped.
-   */
   @Test
-  public void testExtensionFields_withSameShortName_printsDuplicateJsonKeys() throws Exception {
-    com.google.protobuf.TypeRegistry registry =
-        com.google.protobuf.TypeRegistry.newBuilder()
-            .add(TestAllTypesProto2.getDescriptor())
-            .build();
+  public void testExtensionFields_withSameShortName_doesNotDuplicateKeys() throws Exception {
+    TypeRegistry registry =
+        TypeRegistry.newBuilder().add(TestAllTypesProto2.getDescriptor()).build();
     JsonFormat.Printer printer = JsonFormat.printer().usingTypeRegistry(registry);
-    JsonFormat.Parser parser = JsonFormat.parser().usingTypeRegistry(registry);
     TestAllTypesProto2 message =
         TestAllTypesProto2.newBuilder()
             .setExtensionSameName("Field entry")
@@ -243,18 +229,46 @@ public class JsonFormatTest {
             .build();
 
     String json = printer.print(message);
-    Message.Builder builder = message.newBuilderForType();
-    parser.merge(json, builder);
-    Message parsedMessage = builder.build();
-
-    String expectedJsonWithDuplicateKeys =
+    String expectedJsonWithFullnames =
         "{\n"
             + "  \"extensionSameName\": \"Field entry\",\n"
-            + "  \"extensionSameName\": \"Extension entry\"\n"
+            + "  \"[json_test_proto2.extension_same_name]\": \"Extension entry\"\n"
             + "}";
-    assertThat(json).isEqualTo(expectedJsonWithDuplicateKeys);
-    // Short names prevent round-trip success, collision occurs due to duplicate json keys.
-    assertThat(parsedMessage.toString()).isNotEqualTo(message.toString());
+    assertThat(json).isEqualTo(expectedJsonWithFullnames);
+    assertRoundTripEquals(message, registry, ExtensionRegistry.getGeneratedRegistry());
+  }
+
+  /**
+   * This test demonstrates a parsing limitation for JSON that include extension fields with their
+   * short names.
+   *
+   * <p>Previously this library printed extensions with their short name instead of their fully
+   * qualified name. If an older version of this library was used to generate JSON, it still cannot
+   * be parsed.
+   */
+  @Test
+  public void testParse_whenJsonHasExtensionWithShortNames_cannotParseJson() throws Exception {
+    TypeRegistry typeRegistry =
+        TypeRegistry.newBuilder().add(TestAllTypesProto2.getDescriptor()).build();
+    ExtensionRegistry extensionRegistry = ExtensionRegistry.getGeneratedRegistry();
+    String json =
+        "{\n"
+            + "  \"extensionInt32\": 123,\n"
+            + "  \"extensionRepeatedBool\": [true, false, false],\n"
+            + "  \"extensionNestedMessage\": {\n"
+            + "    \"value\": 789\n"
+            + "  }\n"
+            + "}";
+    TestAllTypesProto2.Builder builder = TestAllTypesProto2.newBuilder();
+    try {
+      JsonFormat.parser()
+          .usingTypeRegistry(typeRegistry)
+          .usingExtensionRegistry(extensionRegistry)
+          .merge(json, builder);
+      assertWithMessage("Exception is expected.").fail();
+    } catch (InvalidProtocolBufferException expected) {
+      assertThat(expected).hasMessageThat().contains("Cannot find field: extensionInt32");
+    }
   }
 
   @Test
