@@ -39,7 +39,7 @@ using internal::cpp::Utf8CheckMode;
 std::vector<const FieldDescriptor*> GetOrderedFields(
     const Descriptor* descriptor) {
   std::vector<const FieldDescriptor*> ordered_fields;
-  for (auto field : FieldRange(descriptor)) {
+  for (auto field : internal::FieldRange(descriptor)) {
     ordered_fields.push_back(field);
   }
   std::sort(ordered_fields.begin(), ordered_fields.end(),

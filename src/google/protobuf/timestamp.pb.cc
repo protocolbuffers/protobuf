@@ -53,7 +53,7 @@ constexpr Timestamp::Timestamp(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct TimestampGlobalsTypeInternal {
+struct TimestampGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr TimestampGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~TimestampGlobalsTypeInternal() {}
   union {

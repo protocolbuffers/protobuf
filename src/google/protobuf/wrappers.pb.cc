@@ -68,7 +68,7 @@ constexpr UInt64Value::UInt64Value(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct UInt64ValueGlobalsTypeInternal {
+struct UInt64ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr UInt64ValueGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~UInt64ValueGlobalsTypeInternal() {}
   union {
@@ -94,7 +94,7 @@ constexpr UInt32Value::UInt32Value(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct UInt32ValueGlobalsTypeInternal {
+struct UInt32ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr UInt32ValueGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~UInt32ValueGlobalsTypeInternal() {}
   union {
@@ -122,7 +122,7 @@ constexpr StringValue::StringValue(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct StringValueGlobalsTypeInternal {
+struct StringValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr StringValueGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~StringValueGlobalsTypeInternal() {}
   union {
@@ -148,7 +148,7 @@ constexpr Int64Value::Int64Value(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct Int64ValueGlobalsTypeInternal {
+struct Int64ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr Int64ValueGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~Int64ValueGlobalsTypeInternal() {}
   union {
@@ -174,7 +174,7 @@ constexpr Int32Value::Int32Value(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct Int32ValueGlobalsTypeInternal {
+struct Int32ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr Int32ValueGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~Int32ValueGlobalsTypeInternal() {}
   union {
@@ -200,7 +200,7 @@ constexpr FloatValue::FloatValue(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct FloatValueGlobalsTypeInternal {
+struct FloatValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr FloatValueGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~FloatValueGlobalsTypeInternal() {}
   union {
@@ -226,7 +226,7 @@ constexpr DoubleValue::DoubleValue(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct DoubleValueGlobalsTypeInternal {
+struct DoubleValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr DoubleValueGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~DoubleValueGlobalsTypeInternal() {}
   union {
@@ -254,7 +254,7 @@ constexpr BytesValue::BytesValue(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct BytesValueGlobalsTypeInternal {
+struct BytesValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr BytesValueGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~BytesValueGlobalsTypeInternal() {}
   union {
@@ -280,7 +280,7 @@ constexpr BoolValue::BoolValue(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct BoolValueGlobalsTypeInternal {
+struct BoolValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr BoolValueGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~BoolValueGlobalsTypeInternal() {}
   union {

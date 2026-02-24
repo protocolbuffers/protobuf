@@ -43,6 +43,7 @@ def _upb_amalgamation(ctx):
     ctx.actions.run(
         inputs = inputs,
         outputs = ctx.outputs.outs,
+        mnemonic = "UpbAmalgamation",
         arguments = [f.path for f in ctx.outputs.outs] + [f.path for f in srcs],
         progress_message = "Making amalgamation",
         executable = ctx.executable._amalgamator,

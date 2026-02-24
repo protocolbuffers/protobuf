@@ -1132,7 +1132,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const UninterpretedOption_NamePart& default_instance() {
-    return *reinterpret_cast<const UninterpretedOption_NamePart*>(&_UninterpretedOption_NamePart_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<UninterpretedOption_NamePart>(
+        &_UninterpretedOption_NamePart_globals_);
   }
   static constexpr int kIndexInFileMessages = 24;
   friend void swap(UninterpretedOption_NamePart& a, UninterpretedOption_NamePart& b) { a.Swap(&b); }
@@ -1353,7 +1354,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const SourceCodeInfo_Location& default_instance() {
-    return *reinterpret_cast<const SourceCodeInfo_Location*>(&_SourceCodeInfo_Location_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<SourceCodeInfo_Location>(
+        &_SourceCodeInfo_Location_globals_);
   }
   static constexpr int kIndexInFileMessages = 30;
   friend void swap(SourceCodeInfo_Location& a, SourceCodeInfo_Location& b) { a.Swap(&b); }
@@ -1645,7 +1647,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const GeneratedCodeInfo_Annotation& default_instance() {
-    return *reinterpret_cast<const GeneratedCodeInfo_Annotation*>(&_GeneratedCodeInfo_Annotation_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<GeneratedCodeInfo_Annotation>(
+        &_GeneratedCodeInfo_Annotation_globals_);
   }
   static constexpr int kIndexInFileMessages = 32;
   friend void swap(GeneratedCodeInfo_Annotation& a, GeneratedCodeInfo_Annotation& b) { a.Swap(&b); }
@@ -1932,7 +1935,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FieldOptions_FeatureSupport& default_instance() {
-    return *reinterpret_cast<const FieldOptions_FeatureSupport*>(&_FieldOptions_FeatureSupport_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FieldOptions_FeatureSupport>(
+        &_FieldOptions_FeatureSupport_globals_);
   }
   static constexpr int kIndexInFileMessages = 17;
   friend void swap(FieldOptions_FeatureSupport& a, FieldOptions_FeatureSupport& b) { a.Swap(&b); }
@@ -2195,7 +2199,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FieldOptions_EditionDefault& default_instance() {
-    return *reinterpret_cast<const FieldOptions_EditionDefault*>(&_FieldOptions_EditionDefault_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FieldOptions_EditionDefault>(
+        &_FieldOptions_EditionDefault_globals_);
   }
   static constexpr int kIndexInFileMessages = 16;
   friend void swap(FieldOptions_EditionDefault& a, FieldOptions_EditionDefault& b) { a.Swap(&b); }
@@ -2410,7 +2415,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_Visibili
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FeatureSet_VisibilityFeature& default_instance() {
-    return *reinterpret_cast<const FeatureSet_VisibilityFeature*>(&_FeatureSet_VisibilityFeature_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FeatureSet_VisibilityFeature>(
+        &_FeatureSet_VisibilityFeature_globals_);
   }
   static constexpr int kIndexInFileMessages = 26;
   friend void swap(FeatureSet_VisibilityFeature& a, FeatureSet_VisibilityFeature& b) { a.Swap(&b); }
@@ -2570,7 +2576,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FeatureSet& default_instance() {
-    return *reinterpret_cast<const FeatureSet*>(&_FeatureSet_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FeatureSet>(
+        &_FeatureSet_globals_);
   }
   static constexpr int kIndexInFileMessages = 27;
   friend void swap(FeatureSet& a, FeatureSet& b) { a.Swap(&b); }
@@ -3210,7 +3217,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const ExtensionRangeOptions_Declaration& default_instance() {
-    return *reinterpret_cast<const ExtensionRangeOptions_Declaration*>(&_ExtensionRangeOptions_Declaration_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<ExtensionRangeOptions_Declaration>(
+        &_ExtensionRangeOptions_Declaration_globals_);
   }
   static constexpr int kIndexInFileMessages = 5;
   friend void swap(ExtensionRangeOptions_Declaration& a, ExtensionRangeOptions_Declaration& b) { a.Swap(&b); }
@@ -3473,7 +3481,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const EnumDescriptorProto_EnumReservedRange& default_instance() {
-    return *reinterpret_cast<const EnumDescriptorProto_EnumReservedRange*>(&_EnumDescriptorProto_EnumReservedRange_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<EnumDescriptorProto_EnumReservedRange>(
+        &_EnumDescriptorProto_EnumReservedRange_globals_);
   }
   static constexpr int kIndexInFileMessages = 9;
   friend void swap(EnumDescriptorProto_EnumReservedRange& a, EnumDescriptorProto_EnumReservedRange& b) { a.Swap(&b); }
@@ -3684,7 +3693,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Res
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const DescriptorProto_ReservedRange& default_instance() {
-    return *reinterpret_cast<const DescriptorProto_ReservedRange*>(&_DescriptorProto_ReservedRange_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<DescriptorProto_ReservedRange>(
+        &_DescriptorProto_ReservedRange_globals_);
   }
   static constexpr int kIndexInFileMessages = 3;
   friend void swap(DescriptorProto_ReservedRange& a, DescriptorProto_ReservedRange& b) { a.Swap(&b); }
@@ -3895,7 +3905,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const UninterpretedOption& default_instance() {
-    return *reinterpret_cast<const UninterpretedOption*>(&_UninterpretedOption_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<UninterpretedOption>(
+        &_UninterpretedOption_globals_);
   }
   static constexpr int kIndexInFileMessages = 25;
   friend void swap(UninterpretedOption& a, UninterpretedOption& b) { a.Swap(&b); }
@@ -4205,7 +4216,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const SourceCodeInfo& default_instance() {
-    return *reinterpret_cast<const SourceCodeInfo*>(&_SourceCodeInfo_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<SourceCodeInfo>(
+        &_SourceCodeInfo_globals_);
   }
   static constexpr int kIndexInFileMessages = 31;
   friend void swap(SourceCodeInfo& a, SourceCodeInfo& b) { a.Swap(&b); }
@@ -4607,7 +4619,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const GeneratedCodeInfo& default_instance() {
-    return *reinterpret_cast<const GeneratedCodeInfo*>(&_GeneratedCodeInfo_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<GeneratedCodeInfo>(
+        &_GeneratedCodeInfo_globals_);
   }
   static constexpr int kIndexInFileMessages = 33;
   friend void swap(GeneratedCodeInfo& a, GeneratedCodeInfo& b) { a.Swap(&b); }
@@ -4813,7 +4826,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FeatureSetDefaults_FeatureSetEditionDefault& default_instance() {
-    return *reinterpret_cast<const FeatureSetDefaults_FeatureSetEditionDefault*>(&_FeatureSetDefaults_FeatureSetEditionDefault_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FeatureSetDefaults_FeatureSetEditionDefault>(
+        &_FeatureSetDefaults_FeatureSetEditionDefault_globals_);
   }
   static constexpr int kIndexInFileMessages = 28;
   friend void swap(FeatureSetDefaults_FeatureSetEditionDefault& a, FeatureSetDefaults_FeatureSetEditionDefault& b) { a.Swap(&b); }
@@ -5051,7 +5065,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const ServiceOptions& default_instance() {
-    return *reinterpret_cast<const ServiceOptions*>(&_ServiceOptions_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<ServiceOptions>(
+        &_ServiceOptions_globals_);
   }
   static constexpr int kIndexInFileMessages = 22;
   friend void swap(ServiceOptions& a, ServiceOptions& b) { a.Swap(&b); }
@@ -5484,7 +5499,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const OneofOptions& default_instance() {
-    return *reinterpret_cast<const OneofOptions*>(&_OneofOptions_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<OneofOptions>(
+        &_OneofOptions_globals_);
   }
   static constexpr int kIndexInFileMessages = 19;
   friend void swap(OneofOptions& a, OneofOptions& b) { a.Swap(&b); }
@@ -5903,7 +5919,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const MethodOptions& default_instance() {
-    return *reinterpret_cast<const MethodOptions*>(&_MethodOptions_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<MethodOptions>(
+        &_MethodOptions_globals_);
   }
   static constexpr int kIndexInFileMessages = 23;
   friend void swap(MethodOptions& a, MethodOptions& b) { a.Swap(&b); }
@@ -6371,7 +6388,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const MessageOptions& default_instance() {
-    return *reinterpret_cast<const MessageOptions*>(&_MessageOptions_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<MessageOptions>(
+        &_MessageOptions_globals_);
   }
   static constexpr int kIndexInFileMessages = 15;
   friend void swap(MessageOptions& a, MessageOptions& b) { a.Swap(&b); }
@@ -6860,7 +6878,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FileOptions& default_instance() {
-    return *reinterpret_cast<const FileOptions*>(&_FileOptions_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FileOptions>(
+        &_FileOptions_globals_);
   }
   static constexpr int kIndexInFileMessages = 14;
   friend void swap(FileOptions& a, FileOptions& b) { a.Swap(&b); }
@@ -7616,7 +7635,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FieldOptions& default_instance() {
-    return *reinterpret_cast<const FieldOptions*>(&_FieldOptions_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FieldOptions>(
+        &_FieldOptions_globals_);
   }
   static constexpr int kIndexInFileMessages = 18;
   friend void swap(FieldOptions& a, FieldOptions& b) { a.Swap(&b); }
@@ -8316,7 +8336,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FeatureSetDefaults& default_instance() {
-    return *reinterpret_cast<const FeatureSetDefaults*>(&_FeatureSetDefaults_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FeatureSetDefaults>(
+        &_FeatureSetDefaults_globals_);
   }
   static constexpr int kIndexInFileMessages = 29;
   friend void swap(FeatureSetDefaults& a, FeatureSetDefaults& b) { a.Swap(&b); }
@@ -8555,7 +8576,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const ExtensionRangeOptions& default_instance() {
-    return *reinterpret_cast<const ExtensionRangeOptions*>(&_ExtensionRangeOptions_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<ExtensionRangeOptions>(
+        &_ExtensionRangeOptions_globals_);
   }
   static constexpr int kIndexInFileMessages = 6;
   friend void swap(ExtensionRangeOptions& a, ExtensionRangeOptions& b) { a.Swap(&b); }
@@ -9031,7 +9053,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const EnumValueOptions& default_instance() {
-    return *reinterpret_cast<const EnumValueOptions*>(&_EnumValueOptions_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<EnumValueOptions>(
+        &_EnumValueOptions_globals_);
   }
   static constexpr int kIndexInFileMessages = 21;
   friend void swap(EnumValueOptions& a, EnumValueOptions& b) { a.Swap(&b); }
@@ -9496,7 +9519,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const EnumOptions& default_instance() {
-    return *reinterpret_cast<const EnumOptions*>(&_EnumOptions_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<EnumOptions>(
+        &_EnumOptions_globals_);
   }
   static constexpr int kIndexInFileMessages = 20;
   friend void swap(EnumOptions& a, EnumOptions& b) { a.Swap(&b); }
@@ -9957,7 +9981,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const OneofDescriptorProto& default_instance() {
-    return *reinterpret_cast<const OneofDescriptorProto*>(&_OneofDescriptorProto_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<OneofDescriptorProto>(
+        &_OneofDescriptorProto_globals_);
   }
   static constexpr int kIndexInFileMessages = 8;
   friend void swap(OneofDescriptorProto& a, OneofDescriptorProto& b) { a.Swap(&b); }
@@ -10182,7 +10207,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const MethodDescriptorProto& default_instance() {
-    return *reinterpret_cast<const MethodDescriptorProto*>(&_MethodDescriptorProto_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<MethodDescriptorProto>(
+        &_MethodDescriptorProto_globals_);
   }
   static constexpr int kIndexInFileMessages = 13;
   friend void swap(MethodDescriptorProto& a, MethodDescriptorProto& b) { a.Swap(&b); }
@@ -10473,7 +10499,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FieldDescriptorProto& default_instance() {
-    return *reinterpret_cast<const FieldDescriptorProto*>(&_FieldDescriptorProto_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FieldDescriptorProto>(
+        &_FieldDescriptorProto_globals_);
   }
   static constexpr int kIndexInFileMessages = 7;
   friend void swap(FieldDescriptorProto& a, FieldDescriptorProto& b) { a.Swap(&b); }
@@ -10901,7 +10928,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const EnumValueDescriptorProto& default_instance() {
-    return *reinterpret_cast<const EnumValueDescriptorProto*>(&_EnumValueDescriptorProto_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<EnumValueDescriptorProto>(
+        &_EnumValueDescriptorProto_globals_);
   }
   static constexpr int kIndexInFileMessages = 11;
   friend void swap(EnumValueDescriptorProto& a, EnumValueDescriptorProto& b) { a.Swap(&b); }
@@ -11140,7 +11168,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const DescriptorProto_ExtensionRange& default_instance() {
-    return *reinterpret_cast<const DescriptorProto_ExtensionRange*>(&_DescriptorProto_ExtensionRange_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<DescriptorProto_ExtensionRange>(
+        &_DescriptorProto_ExtensionRange_globals_);
   }
   static constexpr int kIndexInFileMessages = 2;
   friend void swap(DescriptorProto_ExtensionRange& a, DescriptorProto_ExtensionRange& b) { a.Swap(&b); }
@@ -11374,7 +11403,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const ServiceDescriptorProto& default_instance() {
-    return *reinterpret_cast<const ServiceDescriptorProto*>(&_ServiceDescriptorProto_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<ServiceDescriptorProto>(
+        &_ServiceDescriptorProto_globals_);
   }
   static constexpr int kIndexInFileMessages = 12;
   friend void swap(ServiceDescriptorProto& a, ServiceDescriptorProto& b) { a.Swap(&b); }
@@ -11621,7 +11651,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const EnumDescriptorProto& default_instance() {
-    return *reinterpret_cast<const EnumDescriptorProto*>(&_EnumDescriptorProto_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<EnumDescriptorProto>(
+        &_EnumDescriptorProto_globals_);
   }
   static constexpr int kIndexInFileMessages = 10;
   friend void swap(EnumDescriptorProto& a, EnumDescriptorProto& b) { a.Swap(&b); }
@@ -11932,7 +11963,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const DescriptorProto& default_instance() {
-    return *reinterpret_cast<const DescriptorProto*>(&_DescriptorProto_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<DescriptorProto>(
+        &_DescriptorProto_globals_);
   }
   static constexpr int kIndexInFileMessages = 4;
   friend void swap(DescriptorProto& a, DescriptorProto& b) { a.Swap(&b); }
@@ -12354,7 +12386,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FileDescriptorProto& default_instance() {
-    return *reinterpret_cast<const FileDescriptorProto*>(&_FileDescriptorProto_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FileDescriptorProto>(
+        &_FileDescriptorProto_globals_);
   }
   static constexpr int kIndexInFileMessages = 1;
   friend void swap(FileDescriptorProto& a, FileDescriptorProto& b) { a.Swap(&b); }
@@ -12833,7 +12866,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FileDescriptorSet& default_instance() {
-    return *reinterpret_cast<const FileDescriptorSet*>(&_FileDescriptorSet_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FileDescriptorSet>(
+        &_FileDescriptorSet_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(FileDescriptorSet& a, FileDescriptorSet& b) { a.Swap(&b); }
@@ -13881,7 +13915,7 @@ inline void FileDescriptorProto::clear_options() {
 inline const ::google::protobuf::FileOptions& FileDescriptorProto::_internal_options() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FileOptions* p = _impl_.options_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FileOptions&>(::google::protobuf::_FileOptions_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FileOptions>(&::google::protobuf::_FileOptions_globals_);
 }
 inline const ::google::protobuf::FileOptions& FileDescriptorProto::options() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.options)
@@ -13980,7 +14014,7 @@ inline void FileDescriptorProto::clear_source_code_info() {
 inline const ::google::protobuf::SourceCodeInfo& FileDescriptorProto::_internal_source_code_info() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::SourceCodeInfo* p = _impl_.source_code_info_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::SourceCodeInfo&>(::google::protobuf::_SourceCodeInfo_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::SourceCodeInfo>(&::google::protobuf::_SourceCodeInfo_globals_);
 }
 inline const ::google::protobuf::SourceCodeInfo& FileDescriptorProto::source_code_info() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.source_code_info)
@@ -14242,7 +14276,7 @@ inline void DescriptorProto_ExtensionRange::clear_options() {
 inline const ::google::protobuf::ExtensionRangeOptions& DescriptorProto_ExtensionRange::_internal_options() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::ExtensionRangeOptions* p = _impl_.options_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::ExtensionRangeOptions&>(::google::protobuf::_ExtensionRangeOptions_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::ExtensionRangeOptions>(&::google::protobuf::_ExtensionRangeOptions_globals_);
 }
 inline const ::google::protobuf::ExtensionRangeOptions& DescriptorProto_ExtensionRange::options() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.ExtensionRange.options)
@@ -14812,7 +14846,7 @@ inline void DescriptorProto::clear_options() {
 inline const ::google::protobuf::MessageOptions& DescriptorProto::_internal_options() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::MessageOptions* p = _impl_.options_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::MessageOptions&>(::google::protobuf::_MessageOptions_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::MessageOptions>(&::google::protobuf::_MessageOptions_globals_);
 }
 inline const ::google::protobuf::MessageOptions& DescriptorProto::options() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.options)
@@ -15417,7 +15451,7 @@ inline void ExtensionRangeOptions::clear_features() {
 inline const ::google::protobuf::FeatureSet& ExtensionRangeOptions::_internal_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& ExtensionRangeOptions::features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.features)
@@ -16019,7 +16053,7 @@ inline void FieldDescriptorProto::clear_options() {
 inline const ::google::protobuf::FieldOptions& FieldDescriptorProto::_internal_options() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FieldOptions* p = _impl_.options_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FieldOptions&>(::google::protobuf::_FieldOptions_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FieldOptions>(&::google::protobuf::_FieldOptions_globals_);
 }
 inline const ::google::protobuf::FieldOptions& FieldDescriptorProto::options() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldDescriptorProto.options)
@@ -16220,7 +16254,7 @@ inline void OneofDescriptorProto::clear_options() {
 inline const ::google::protobuf::OneofOptions& OneofDescriptorProto::_internal_options() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::OneofOptions* p = _impl_.options_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::OneofOptions&>(::google::protobuf::_OneofOptions_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::OneofOptions>(&::google::protobuf::_OneofOptions_globals_);
 }
 inline const ::google::protobuf::OneofOptions& OneofDescriptorProto::options() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.OneofDescriptorProto.options)
@@ -16510,7 +16544,7 @@ inline void EnumDescriptorProto::clear_options() {
 inline const ::google::protobuf::EnumOptions& EnumDescriptorProto::_internal_options() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::EnumOptions* p = _impl_.options_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::EnumOptions&>(::google::protobuf::_EnumOptions_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::EnumOptions>(&::google::protobuf::_EnumOptions_globals_);
 }
 inline const ::google::protobuf::EnumOptions& EnumDescriptorProto::options() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumDescriptorProto.options)
@@ -16872,7 +16906,7 @@ inline void EnumValueDescriptorProto::clear_options() {
 inline const ::google::protobuf::EnumValueOptions& EnumValueDescriptorProto::_internal_options() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::EnumValueOptions* p = _impl_.options_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::EnumValueOptions&>(::google::protobuf::_EnumValueOptions_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::EnumValueOptions>(&::google::protobuf::_EnumValueOptions_globals_);
 }
 inline const ::google::protobuf::EnumValueOptions& EnumValueDescriptorProto::options() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValueDescriptorProto.options)
@@ -17100,7 +17134,7 @@ inline void ServiceDescriptorProto::clear_options() {
 inline const ::google::protobuf::ServiceOptions& ServiceDescriptorProto::_internal_options() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::ServiceOptions* p = _impl_.options_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::ServiceOptions&>(::google::protobuf::_ServiceOptions_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::ServiceOptions>(&::google::protobuf::_ServiceOptions_globals_);
 }
 inline const ::google::protobuf::ServiceOptions& ServiceDescriptorProto::options() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.ServiceDescriptorProto.options)
@@ -17410,7 +17444,7 @@ inline void MethodDescriptorProto::clear_options() {
 inline const ::google::protobuf::MethodOptions& MethodDescriptorProto::_internal_options() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::MethodOptions* p = _impl_.options_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::MethodOptions&>(::google::protobuf::_MethodOptions_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::MethodOptions>(&::google::protobuf::_MethodOptions_globals_);
 }
 inline const ::google::protobuf::MethodOptions& MethodDescriptorProto::options() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.MethodDescriptorProto.options)
@@ -18525,7 +18559,7 @@ inline void FileOptions::clear_features() {
 inline const ::google::protobuf::FeatureSet& FileOptions::_internal_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& FileOptions::features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.features)
@@ -18829,7 +18863,7 @@ inline void MessageOptions::clear_features() {
 inline const ::google::protobuf::FeatureSet& MessageOptions::_internal_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& MessageOptions::features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.MessageOptions.features)
@@ -19714,7 +19748,7 @@ inline void FieldOptions::clear_features() {
 inline const ::google::protobuf::FeatureSet& FieldOptions::_internal_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& FieldOptions::features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.features)
@@ -19813,7 +19847,7 @@ inline void FieldOptions::clear_feature_support() {
 inline const ::google::protobuf::FieldOptions_FeatureSupport& FieldOptions::_internal_feature_support() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FieldOptions_FeatureSupport* p = _impl_.feature_support_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FieldOptions_FeatureSupport&>(::google::protobuf::_FieldOptions_FeatureSupport_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FieldOptions_FeatureSupport>(&::google::protobuf::_FieldOptions_FeatureSupport_globals_);
 }
 inline const ::google::protobuf::FieldOptions_FeatureSupport& FieldOptions::feature_support() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.feature_support)
@@ -19972,7 +20006,7 @@ inline void OneofOptions::clear_features() {
 inline const ::google::protobuf::FeatureSet& OneofOptions::_internal_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& OneofOptions::features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.OneofOptions.features)
@@ -20218,7 +20252,7 @@ inline void EnumOptions::clear_features() {
 inline const ::google::protobuf::FeatureSet& EnumOptions::_internal_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& EnumOptions::features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumOptions.features)
@@ -20406,7 +20440,7 @@ inline void EnumValueOptions::clear_features() {
 inline const ::google::protobuf::FeatureSet& EnumValueOptions::_internal_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& EnumValueOptions::features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValueOptions.features)
@@ -20534,7 +20568,7 @@ inline void EnumValueOptions::clear_feature_support() {
 inline const ::google::protobuf::FieldOptions_FeatureSupport& EnumValueOptions::_internal_feature_support() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FieldOptions_FeatureSupport* p = _impl_.feature_support_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FieldOptions_FeatureSupport&>(::google::protobuf::_FieldOptions_FeatureSupport_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FieldOptions_FeatureSupport>(&::google::protobuf::_FieldOptions_FeatureSupport_globals_);
 }
 inline const ::google::protobuf::FieldOptions_FeatureSupport& EnumValueOptions::feature_support() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValueOptions.feature_support)
@@ -20693,7 +20727,7 @@ inline void ServiceOptions::clear_features() {
 inline const ::google::protobuf::FeatureSet& ServiceOptions::_internal_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& ServiceOptions::features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.ServiceOptions.features)
@@ -20942,7 +20976,7 @@ inline void MethodOptions::clear_features() {
 inline const ::google::protobuf::FeatureSet& MethodOptions::_internal_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& MethodOptions::features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.MethodOptions.features)
@@ -21853,7 +21887,7 @@ inline void FeatureSetDefaults_FeatureSetEditionDefault::clear_overridable_featu
 inline const ::google::protobuf::FeatureSet& FeatureSetDefaults_FeatureSetEditionDefault::_internal_overridable_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.overridable_features_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& FeatureSetDefaults_FeatureSetEditionDefault::overridable_features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.overridable_features)
@@ -21952,7 +21986,7 @@ inline void FeatureSetDefaults_FeatureSetEditionDefault::clear_fixed_features() 
 inline const ::google::protobuf::FeatureSet& FeatureSetDefaults_FeatureSetEditionDefault::_internal_fixed_features() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.fixed_features_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::FeatureSet>(&::google::protobuf::_FeatureSet_globals_);
 }
 inline const ::google::protobuf::FeatureSet& FeatureSetDefaults_FeatureSetEditionDefault::fixed_features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.fixed_features)

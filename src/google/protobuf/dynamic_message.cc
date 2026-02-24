@@ -595,9 +595,11 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
                       ? MicroString::MakeDefaultValuePrototype(
                             field->default_value_string())
                       // Copy from the prototype.
-                      : MicroString(arena, static_cast<const DynamicMessage*>(
-                                               type_info_->class_data.prototype)
-                                               ->GetRaw<MicroString>(i));
+                      : MicroString(
+                            arena,
+                            static_cast<const DynamicMessage*>(
+                                type_info_->class_data.default_instance())
+                                ->GetRaw<MicroString>(i));
               break;
             }
             [[fallthrough]];
@@ -646,10 +648,10 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
 }
 
 bool DynamicMessage::is_prototype() const {
-  return type_info_->class_data.prototype == this ||
+  return type_info_->class_data.default_instance() == this ||
          // If type_info_->prototype is nullptr, then we must be constructing
          // the prototype now, which means we must be the prototype.
-         type_info_->class_data.prototype == nullptr;
+         type_info_->class_data.default_instance() == nullptr;
 }
 
 #if defined(__cpp_lib_destroying_delete) && defined(__cpp_sized_deallocation)
@@ -859,7 +861,8 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   const TypeInfo** target = &prototypes_[type];
   if (*target != nullptr) {
     // Already exists.
-    return static_cast<const Message*>((*target)->class_data.prototype);
+    return static_cast<const Message*>(
+        (*target)->class_data.default_instance());
   }
 
   TypeInfo* type_info = new TypeInfo;
@@ -1013,7 +1016,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   DynamicMessage* prototype = new (base) DynamicMessage(type_info, false);
 
   internal::ReflectionSchema schema = {
-      static_cast<const Message*>(type_info->class_data.prototype),
+      static_cast<const Message*>(type_info->class_data.default_instance()),
       type_info->offsets.get(),
       type_info->has_bits_indices.get(),
       type_info->has_bits_offset,

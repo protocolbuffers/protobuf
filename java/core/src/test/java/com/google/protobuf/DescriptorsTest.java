@@ -56,6 +56,7 @@ import proto2_unittest.UnittestProto.TestReservedFields;
 import proto2_unittest.UnittestProto.TestService;
 import proto2_unittest.UnittestRetention;
 import protobuf_unittest.UnittestProto3Extensions.Proto3FileExtensions;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Before;
@@ -351,7 +352,7 @@ public class DescriptorsTest {
       assertThat(d.findFieldByName("escaped_bytes").getDefaultValue())
           .isEqualTo(
               ByteString.copyFrom(
-                  "\0\001\007\b\f\n\r\t\013\\\'\"\u00fe".getBytes(Internal.ISO_8859_1)));
+                  "\0\001\007\b\f\n\r\t\013\\\'\"\u00fe".getBytes(StandardCharsets.ISO_8859_1)));
       assertThat(d.findFieldByName("large_uint32").getDefaultValue()).isEqualTo(-1);
       assertThat(d.findFieldByName("large_uint64").getDefaultValue()).isEqualTo(-1L);
     }
