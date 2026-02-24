@@ -91,7 +91,7 @@ MessageLite* MessageLite::New(Arena* arena) const {
   // instead of the prototype for the inner function call.
   // Certain custom instances have special per-instance state that needs to be
   // copied.
-  return data->message_creator.New(this, data->prototype, arena);
+  return data->message_creator.New(this, data->default_instance(), arena);
 }
 
 bool MessageLite::IsInitialized() const {

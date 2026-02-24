@@ -56,7 +56,7 @@ constexpr FieldMask::FieldMask(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct FieldMaskGlobalsTypeInternal {
+struct FieldMaskGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr FieldMaskGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~FieldMaskGlobalsTypeInternal() {}
   union {

@@ -61,7 +61,7 @@ constexpr Any::Any(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct AnyGlobalsTypeInternal {
+struct AnyGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr AnyGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~AnyGlobalsTypeInternal() {}
   union {

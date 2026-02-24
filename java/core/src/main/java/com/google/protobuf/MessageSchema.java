@@ -54,6 +54,7 @@ import com.google.protobuf.Internal.ProtobufList;
 import com.google.protobuf.MapEntryLite.Metadata;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -3827,7 +3828,7 @@ final class MessageSchema<T> implements Schema<T> {
                 && !Utf8.isValidUtf8(data, position, position + length)) {
               throw InvalidProtocolBufferException.invalidUtf8();
             }
-            final String value = new String(data, position, length, Internal.UTF_8);
+            final String value = new String(data, position, length, StandardCharsets.UTF_8);
             unsafe.putObject(message, fieldOffset, value);
             position += length;
           }
