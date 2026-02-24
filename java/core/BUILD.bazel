@@ -35,6 +35,7 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/CodedOutputStream.java",
     "src/main/java/com/google/protobuf/CodedOutputStreamWriter.java",
     "src/main/java/com/google/protobuf/CompileTimeConstant.java",
+    "src/main/java/com/google/protobuf/DoNotInline.java",
     "src/main/java/com/google/protobuf/DoubleArrayList.java",
     "src/main/java/com/google/protobuf/ExperimentalApi.java",
     "src/main/java/com/google/protobuf/ExtensionLite.java",

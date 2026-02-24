@@ -92,7 +92,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Setup Python
-        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
         with:
           python-version: 3.12
           cache: pip
@@ -102,7 +102,7 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-macos"
-          bazel: ${{ matrix.config.bazel-command }} ${{ matrix.config.flags }} //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
+          bazel: ${{ matrix.config.bazel-command }} ${{ matrix.config.flags }} //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
           version: 8.0.1
 
   build_wheels:
@@ -123,11 +123,11 @@ jobs:
           bazel: build --config=cross_config --symlink_prefix=/ -c dbg //python/dist //python/dist:test_wheel //python/dist:source_wheel
       - name: Move Wheels
         run: mkdir wheels && find _build/out \( -name 'protobuf*.whl' -o -name 'protobuf-*.tar.gz' \) -exec mv '{}' wheels ';'
-      - uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # v6.0.0
         with:
           name: python-wheels
           path: wheels/
-      - uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # v6.0.0
         with:
           name: requirements
           # Tests shouldn't have access to the whole upb repo, upload the one file we need
@@ -172,18 +172,18 @@ jobs:
     steps:
       - name: Download Wheels
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 #6.0.0
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131  # v7.0.0
         with:
           name: python-wheels
           path: wheels
       - name: Download Requirements
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 #6.0.0
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131  # v7.0.0
         with:
           name: requirements
           path: requirements
       - name: Setup Python
-        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
           python-version: ${{ matrix.python-version }}
@@ -238,14 +238,14 @@ jobs:
     if: ${{ github.event_name != 'pull_request_target' }}
     steps:
       - name: Download Wheels
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 #6.0.0
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131  # v7.0.0
         with:
           name: python-wheels
           path: wheels
       - name: Delete Binary Wheels
         run: find wheels -type f | grep -v none-any | xargs rm
       - name: Setup Python
-        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
         with:
           python-version: ${{ matrix.python-version }}
       - name: Setup Python venv
@@ -255,7 +255,7 @@ jobs:
           source env/bin/activate
           echo "VIRTUAL ENV:" $VIRTUAL_ENV
       - name: Download Requirements
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 #6.0.0
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131  # v7.0.0
         with:
           name: requirements
           path: requirements
@@ -295,7 +295,7 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
       - name: Download Wheels
         if: ${{ inputs.continuous-run }}
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 #6.0.0
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131  # v7.0.0
         with:
           name: python-wheels
           path: wheels
@@ -304,7 +304,7 @@ jobs:
         run: find wheels -type f | grep -v none-any | xargs rm
       - name: Setup Python
         if: ${{ inputs.continuous-run }}
-        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
         with:
           python-version: 3.14
       - name: Setup Python venv
@@ -316,7 +316,7 @@ jobs:
           echo "VIRTUAL ENV:" $VIRTUAL_ENV
       - name: Download Requirements
         if: ${{ inputs.continuous-run }}
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 #6.0.0
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131  # v7.0.0
         with:
           name: requirements
           path: requirements

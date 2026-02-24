@@ -242,6 +242,69 @@ TEST_F(SymbolCheckerTest, IsEnumNamespaceMessage) {
   ASSERT_FALSE(SymbolChecker::IsNamespacedEnum(*top_enum_descriptor));
 }
 
+TEST_F(SymbolCheckerTest, IsNamespacedEnumLocalDefault) {
+  pool_.EnforceSymbolVisibility(true);
+  const FileDescriptor* file = ParseAndBuildFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+
+        option features.default_symbol_visibility = LOCAL_ALL;
+        message EnumNamespaceMessage {
+          export enum Enum {
+            FOO = 0;
+          }
+          reserved 1 to max;
+        }
+
+        enum TopLevelEnum {
+          BAR = 0;
+        }
+        )schema");
+
+  ASSERT_THAT(file, NotNull());
+
+  const Descriptor* namespace_message =
+      file->FindMessageTypeByName("EnumNamespaceMessage");
+  ASSERT_THAT(namespace_message, NotNull());
+
+  const EnumDescriptor* enum_descriptor =
+      namespace_message->FindEnumTypeByName("Enum");
+  ASSERT_THAT(enum_descriptor, NotNull());
+
+  ASSERT_TRUE(SymbolChecker::IsNamespacedEnum(*enum_descriptor));
+}
+
+TEST_F(SymbolCheckerTest, IsNamespacedEnumExplicitlyLocalParent) {
+  pool_.EnforceSymbolVisibility(true);
+  const FileDescriptor* file = ParseAndBuildFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+
+        local message EnumNamespaceMessage {
+          enum Enum {
+            FOO = 0;
+          }
+          reserved 1 to max;
+        }
+
+        enum TopLevelEnum {
+          BAR = 0;
+        }
+        )schema");
+
+  ASSERT_THAT(file, NotNull());
+
+  const Descriptor* namespace_message =
+      file->FindMessageTypeByName("EnumNamespaceMessage");
+  ASSERT_THAT(namespace_message, NotNull());
+
+  const EnumDescriptor* enum_descriptor =
+      namespace_message->FindEnumTypeByName("Enum");
+  ASSERT_THAT(enum_descriptor, NotNull());
+
+  ASSERT_TRUE(SymbolChecker::IsNamespacedEnum(*enum_descriptor));
+}
+
 TEST_F(SymbolCheckerTest, IsNotEnumNamespaceMessage) {
   pool_.EnforceSymbolVisibility(true);
 
