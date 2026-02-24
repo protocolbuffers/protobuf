@@ -469,7 +469,6 @@ public class JsonFormatTest {
       assertWithMessage("Exception is expected.").fail();
     } catch (InvalidProtocolBufferException expected) {
       assertThat(expected).hasMessageThat().isEqualTo("Not an uint32 value: 1.5");
-      assertThat(expected).hasCauseThat().isNotNull();
     }
   }
 
@@ -481,7 +480,50 @@ public class JsonFormatTest {
       assertWithMessage("Exception is expected.").fail();
     } catch (InvalidProtocolBufferException expected) {
       assertThat(expected).hasMessageThat().isEqualTo("Not an uint64 value: 1.5");
-      assertThat(expected).hasCauseThat().isNotNull();
+    }
+  }
+
+  @Test
+  public void testRejectLargeQuotedExponentInt32() throws IOException {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    try {
+      mergeFromJson("{\"optionalInt32\": \"1e536870000\"}", builder);
+      assertWithMessage("Exception is expected.").fail();
+    } catch (InvalidProtocolBufferException expected) {
+      assertThat(expected).hasMessageThat().isEqualTo("Not an int32 value: \"1e536870000\"");
+    }
+  }
+
+  @Test
+  public void testRejectLargeQuotedExponentUnsignedUint32() throws IOException {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    try {
+      mergeFromJson("{\"optionalUint32\": \"1e536870000\"}", builder);
+      assertWithMessage("Exception is expected.").fail();
+    } catch (InvalidProtocolBufferException expected) {
+      assertThat(expected).hasMessageThat().isEqualTo("Out of range uint32 value: \"1e536870000\"");
+    }
+  }
+
+  @Test
+  public void testRejectLargeQuotedExponentInt64() throws IOException {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    try {
+      mergeFromJson("{\"optionalInt64\": \"1e536870000\"}", builder);
+      assertWithMessage("Exception is expected.").fail();
+    } catch (InvalidProtocolBufferException expected) {
+      assertThat(expected).hasMessageThat().isEqualTo("Not an int64 value: \"1e536870000\"");
+    }
+  }
+
+  @Test
+  public void testRejectLargeQuotedExponentUnsignedUint64() throws IOException {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    try {
+      mergeFromJson("{\"optionalUint64\": \"1e536870000\"}", builder);
+      assertWithMessage("Exception is expected.").fail();
+    } catch (InvalidProtocolBufferException expected) {
+      assertThat(expected).hasMessageThat().isEqualTo("Out of range uint64 value: \"1e536870000\"");
     }
   }
 
