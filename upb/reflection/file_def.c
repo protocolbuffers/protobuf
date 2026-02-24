@@ -117,6 +117,10 @@ bool _upb_FileDef_ClosedEnumCheckingDisabled(const upb_FileDef* f) {
   return upb_DefPool_ClosedEnumCheckingDisabled(f->symtab);
 }
 
+bool _upb_FileDef_ImplicitFieldPresenceDisabled(const upb_FileDef* f) {
+  return upb_DefPool_ImplicitFieldPresenceDisabled(f->symtab);
+}
+
 int upb_FileDef_TopLevelEnumCount(const upb_FileDef* f) {
   return f->top_lvl_enum_count;
 }

@@ -7,6 +7,8 @@
 
 package com.google.protobuf;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * Provide text format escaping of proto instances. These ASCII characters are escaped:
  *
@@ -102,7 +104,7 @@ final class TextFormatEscaper {
       // sequences is itself somewhat nonsensical, but JavaProto has behaved this way for a long
       // time, and changing the behavior would be disruptive.
       if (c < 0x20 || c > 0x7e) {
-        return escapeBytes(input.getBytes(Internal.UTF_8));
+        return escapeBytes(input.getBytes(StandardCharsets.UTF_8));
       }
 
       // While in this loop, keep track if there are any single quotes, double quotes, or

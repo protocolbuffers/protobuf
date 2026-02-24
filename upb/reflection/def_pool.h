@@ -100,6 +100,16 @@ const upb_FieldDef** upb_DefPool_GetAllExtensions(const upb_DefPool* s,
 UPB_API void upb_DefPool_DisableClosedEnumChecking(upb_DefPool* s);
 bool upb_DefPool_ClosedEnumCheckingDisabled(const upb_DefPool* s);
 
+// If called, implicit field presence will be disabled.
+// This is non-standard behavior and will cause conformance tests to fail, but
+// it can be used in situations where where the non-conformance is acceptable.
+//
+// This function may only be called immediately after upb_DefPool_New().
+// It is an error to call it on an existing def pool or after defs have
+// already been added to the pool.
+UPB_API void upb_DefPool_DisableImplicitFieldPresence(upb_DefPool* s);
+bool upb_DefPool_ImplicitFieldPresenceDisabled(const upb_DefPool* s);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
