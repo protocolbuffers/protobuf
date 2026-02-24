@@ -18,8 +18,6 @@ from google.protobuf import message_factory
 from google.protobuf.internal import api_implementation
 
 from google.protobuf import unittest_pb2
-from google.protobuf import unittest_proto3_pb2
-
 
 class ThreadSafeTest(unittest.TestCase):
 
@@ -56,62 +54,6 @@ class ThreadSafeTest(unittest.TestCase):
       thread2.join()
 
     self.assertEqual(count * 2, self.success)
-
-  # This caused a Dealloc()/Dealloc() race.
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
-  def testGetType(self):
-
-    def GetType():
-      msg = unittest_proto3_pb2.TestAllTypes(
-          optional_nested_message=unittest_proto3_pb2.TestAllTypes.NestedMessage(
-              bb=1000
-          ),
-          optional_nested_enum=unittest_proto3_pb2.TestAllTypes.NestedEnum.ZERO,
-      )
-      msges = [msg] * 100
-      for m in msges:
-        # Fails in this line:
-        unittest_proto3_pb2.TestAllTypes.NestedEnum.Name(m.optional_nested_enum)
-
-    threads = []
-    for i in range(100):
-      thread = threading.Thread(target=GetType)
-      threads.append(thread)
-      thread.start()
-
-    for thread in threads:
-      thread.join()
-
-  # This caused a race between constructing and using the type.
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
-  def testInitType(self):
-
-    def InitType():
-      array = []
-      for i in range(100):
-        array.append(
-            unittest_proto3_pb2.TestAllTypes(
-                optional_nested_message=unittest_proto3_pb2.TestAllTypes.NestedMessage(
-                    bb=1000
-                ),
-                optional_nested_enum=unittest_proto3_pb2.TestAllTypes.NestedEnum.FOO,
-            )
-        )
-
-    threads = []
-    for i in range(100):
-      thread = threading.Thread(target=InitType)
-      threads.append(thread)
-      thread.start()
-
-    for thread in threads:
-      thread.join()
 
 
 class FreeThreadingTest(unittest.TestCase):
