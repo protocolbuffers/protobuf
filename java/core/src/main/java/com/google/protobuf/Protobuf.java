@@ -45,14 +45,14 @@ final class Protobuf {
   }
 
   /** Gets the schema for the given message type. */
+  @SuppressWarnings("unchecked")
   <T> Schema<T> schemaFor(Class<T> messageType) {
     checkNotNull(messageType, "messageType");
-    @SuppressWarnings("unchecked")
-    Schema<T> schema = (Schema<T>) schemaCache.get(messageType);
+    Object schema = schemaCache.get(messageType);
     if (schema == null) {
       return registerSchema(messageType);
     }
-    return schema;
+    return (Schema<T>) schema;
   }
 
   @DoNotInline
