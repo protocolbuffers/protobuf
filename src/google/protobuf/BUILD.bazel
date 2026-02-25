@@ -2404,6 +2404,7 @@ cc_test(
     deps = [
         ":any_cc_proto",
         ":cc_test_protos",
+        ":empty_cc_proto",
         ":port",
         ":protobuf",
         ":test_util",

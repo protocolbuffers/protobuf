@@ -510,7 +510,19 @@ class TextFormat::Parser::ParserImpl {
                                  "\" stored in google.protobuf.Any."));
         return false;
       }
+      // Track recursion depth for Any-of-Any nesting. Without this,
+      // ConsumeAnyValue() -> ConsumeMessage() -> ConsumeField() can recurse
+      // through the Any path without ever decrementing recursion_limit_,
+      // bypassing the recursion guard in ConsumeFieldMessage().
+      if (--recursion_limit_ < 0) {
+        ReportError(
+            absl::StrCat("Message is too deep, the parser exceeded the "
+                         "configured recursion limit of ",
+                         initial_recursion_limit_, "."));
+        return false;
+      }
       DO(ConsumeAnyValue(value_descriptor, &serialized_value));
+      ++recursion_limit_;
       if (singular_overwrite_policy_ == FORBID_SINGULAR_OVERWRITES) {
         // Fail if any_type_url_field has already been specified.
         if ((!any_type_url_field->is_repeated() &&
@@ -2346,10 +2358,22 @@ struct FieldIndexSorter {
 
 bool TextFormat::Printer::PrintAny(const Message& message,
                                    BaseTextGenerator* generator) const {
+  // Guard against unbounded recursion from deeply nested Any-of-Any chains.
+  // When the limit is exceeded, return false to fall back to printing the Any
+  // as raw type_url + value fields (non-expanded form).
+  if (--any_recursion_budget_ < 0) {
+    ++any_recursion_budget_;
+    ABSL_LOG(WARNING)
+        << "Any message nesting exceeds maximum depth; "
+           "falling back to non-expanded Any printing";
+    return false;
+  }
+
   const FieldDescriptor* type_url_field;
   const FieldDescriptor* value_field;
   if (!internal::GetAnyFieldDescriptors(message, &type_url_field,
                                         &value_field)) {
+    ++any_recursion_budget_;
     return false;
   }
 
@@ -2361,6 +2385,7 @@ bool TextFormat::Printer::PrintAny(const Message& message,
   std::string full_type_name;
 
   if (!internal::ParseAnyTypeUrl(type_url, &url_prefix, &full_type_name)) {
+    ++any_recursion_budget_;
     return false;
   }
 
@@ -2371,6 +2396,7 @@ bool TextFormat::Printer::PrintAny(const Message& message,
   if (value_descriptor == nullptr) {
     ABSL_LOG(WARNING) << "Can't print proto content: proto type " << type_url
                       << " not found";
+    ++any_recursion_budget_;
     return false;
   }
   DynamicMessageFactory factory;
@@ -2379,6 +2405,7 @@ bool TextFormat::Printer::PrintAny(const Message& message,
   std::string serialized_value = reflection->GetString(message, value_field);
   if (!value_message->ParseFromString(serialized_value)) {
     ABSL_LOG(WARNING) << type_url << ": failed to parse contents";
+    ++any_recursion_budget_;
     return false;
   }
   generator->PrintLiteral("[");
@@ -2390,6 +2417,7 @@ bool TextFormat::Printer::PrintAny(const Message& message,
   Print(*value_message, generator);
   generator->Outdent();
   printer->PrintMessageEnd(message, -1, 0, single_line_mode_, generator);
+  ++any_recursion_budget_;
   return true;
 }
 

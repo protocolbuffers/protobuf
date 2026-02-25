@@ -24,6 +24,7 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/any.pb.h"
+#include "google/protobuf/empty.pb.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
@@ -2401,6 +2402,57 @@ TEST_F(TextFormatParserTest, SetRecursionLimitUnknownFieldMessage) {
 
   parser_.SetRecursionLimit(101);
   ExpectSuccessAndTree(input, &message, nullptr);
+}
+
+// Regression test for recursion_limit_ bypass on the Any path.
+// ConsumeAnyValue() -> ConsumeMessage() -> ConsumeField() could recurse
+// through the Any handling path without decrementing recursion_limit_.
+TEST_F(TextFormatParserTest, SetRecursionLimitAnyNesting) {
+  // Build a deeply nested Any-of-Any text-format string.
+  // Each level is: [type.googleapis.com/google.protobuf.Any] { ... }
+  const int kDepth = 50;
+  std::string input;
+  for (int i = 0; i < kDepth; ++i) {
+    input = absl::StrCat("[type.googleapis.com/google.protobuf.Any] {\n",
+                         input, "}\n");
+  }
+
+  Any message;
+  parser_.SetRecursionLimit(kDepth - 1);
+  MockErrorCollector error_collector;
+  parser_.RecordErrorsTo(&error_collector);
+  EXPECT_FALSE(parser_.ParseFromString(input, &message));
+  EXPECT_THAT(error_collector.text_,
+              testing::HasSubstr("Message is too deep"));
+  parser_.RecordErrorsTo(nullptr);
+}
+
+// Regression test for unbounded recursion in TextFormat::Printer when
+// printing deeply nested Any-of-Any messages with SetExpandAny(true).
+TEST(TextFormatPrinterTest, PrintAnyRecursionLimit) {
+  // Create a deeply nested Any-of-Any chain. The binary parser handles this
+  // fine because each value field is opaque bytes, but the Printer's
+  // PrintAny() -> Print() -> PrintMessage() -> PrintAny() cycle had no
+  // recursion limit, causing stack overflow.
+  const int kDepth = 200;
+  Any innermost;
+  innermost.PackFrom(Empty());
+  Any current = innermost;
+  for (int i = 0; i < kDepth; ++i) {
+    Any outer;
+    outer.set_type_url("type.googleapis.com/google.protobuf.Any");
+    outer.set_value(current.SerializeAsString());
+    current = outer;
+  }
+
+  TextFormat::Printer printer;
+  printer.SetExpandAny(true);
+  std::string output;
+  // Should not crash (stack overflow). The printer should gracefully fall
+  // back to non-expanded printing once the recursion limit is reached.
+  EXPECT_TRUE(printer.PrintToString(current, &output));
+  // The output should contain something (not empty), proving it didn't crash.
+  EXPECT_FALSE(output.empty());
 }
 
 TEST_F(TextFormatParserTest, ParseAnyFieldWithAdditionalWhiteSpaces) {
