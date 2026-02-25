@@ -1851,6 +1851,7 @@ inline int32_t Reflection::IsEmptyOrCollectSetFields(
 
 void Reflection::ListFields(const Message& message,
                             std::vector<const FieldDescriptor*>* output) const {
+  STATIC_USAGE_CHECK_MESSAGE(ListFields, &message);
   output->clear();
   // Optimization:  The default instance never has any fields set.
   if (schema_.IsDefaultInstance(message)) return;
