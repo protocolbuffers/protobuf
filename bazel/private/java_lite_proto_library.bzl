@@ -72,9 +72,6 @@ _java_lite_proto_aspect = aspect(
     implementation = _aspect_impl,
     attr_aspects = ["deps", "exports"],
     attrs = toolchains.if_legacy_toolchain({
-        _PROTO_TOOLCHAIN_ATTR: attr.label(
-            default = configuration_field(fragment = "proto", name = "proto_toolchain_for_java_lite"),
-        ),
         "_proto_toolchain_for_javalite": attr.label(
             default = Label("//bazel/flags/java:proto_toolchain_for_javalite"),
         ),
@@ -171,9 +168,6 @@ The list of <a href="protocol-buffer.html#proto_library"><code>proto_library</co
 rules to generate Java code for.
 """),
     } | toolchains.if_legacy_toolchain({
-        _PROTO_TOOLCHAIN_ATTR: attr.label(
-            default = configuration_field(fragment = "proto", name = "proto_toolchain_for_java_lite"),
-        ),
         "_proto_toolchain_for_javalite": attr.label(
             default = Label("//bazel/flags/java:proto_toolchain_for_javalite"),
         ),
