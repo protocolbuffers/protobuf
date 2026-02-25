@@ -45,6 +45,7 @@ import static com.google.protobuf.ArrayDecoders.decodeVarint64List;
 import static com.google.protobuf.ArrayDecoders.mergeGroupField;
 import static com.google.protobuf.ArrayDecoders.mergeMessageField;
 import static com.google.protobuf.ArrayDecoders.skipField;
+import static com.google.protobuf.Internal.checkNotNull;
 
 import com.google.protobuf.ArrayDecoders.Registers;
 import com.google.protobuf.ByteString.CodedBuilder;
@@ -1186,9 +1187,7 @@ final class MessageSchema<T> implements Schema<T> {
   @Override
   public void mergeFrom(T message, T other) {
     checkMutable(message);
-    if (other == null) {
-      throw new NullPointerException();
-    }
+    checkNotNull(other);
     for (int i = 0; i < buffer.length; i += INTS_PER_FIELD) {
       // A separate method allows for better JIT optimizations
       mergeSingleField(message, other, i);
