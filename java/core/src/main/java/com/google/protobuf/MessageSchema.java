@@ -157,7 +157,7 @@ final class MessageSchema<T> implements Schema<T> {
   // TODO: Make both full-runtime and lite-runtime support cached field size.
   private final boolean useCachedSizeField;
 
-  /** Represents [checkInitialized positions, map field positions, repeated field offsets]. */
+  /** Represents [checkInitialized positions, map field positions, oneof field offsets]. */
   private final int[] intArray;
 
   /**
@@ -167,10 +167,10 @@ final class MessageSchema<T> implements Schema<T> {
   private final int checkInitializedCount;
 
   /**
-   * Values at indices checkInitializedCount -> repeatedFieldOffsetStart are map positions.
-   * Everything after that are repeated field offsets.
+   * Values at indices checkInitializedCount -> oneofFieldOffsetStart are map positions. Everything
+   * after that are oneof field offsets.
    */
-  private final int repeatedFieldOffsetStart;
+  private final int oneofFieldOffsetStart;
 
   private final NewInstanceSchema newInstanceSchema;
   private final ListFieldSchema listFieldSchema;
@@ -204,7 +204,7 @@ final class MessageSchema<T> implements Schema<T> {
 
     this.intArray = intArray;
     this.checkInitializedCount = checkInitialized;
-    this.repeatedFieldOffsetStart = mapFieldPositions;
+    this.oneofFieldOffsetStart = mapFieldPositions;
 
     this.newInstanceSchema = newInstanceSchema;
     this.listFieldSchema = listFieldSchema;
@@ -394,7 +394,7 @@ final class MessageSchema<T> implements Schema<T> {
         next = result | (next << shift);
       }
       checkInitialized = next;
-      intArray = new int[checkInitialized + mapFieldCount + repeatedFieldCount];
+      intArray = new int[checkInitialized + mapFieldCount + oneofCount];
       // Field objects are after a list of (oneof, oneofCase) pairs  + a list of hasbits fields.
       objectsPosition = oneofCount * 2 + hasBitsCount;
     }
@@ -407,7 +407,7 @@ final class MessageSchema<T> implements Schema<T> {
     Object[] objects = new Object[numEntries * 2];
 
     int mapFieldIndex = checkInitialized;
-    int repeatedFieldIndex = checkInitialized + mapFieldCount;
+    int oneofFieldIndex = checkInitialized + mapFieldCount;
 
     int bufferIndex = 0;
     while (i < length) {
@@ -487,6 +487,9 @@ final class MessageSchema<T> implements Schema<T> {
           // Protobuf field to the Java Field for non-oneofs, there's no benefit for memoizing
           // those.
           messageInfoObjects[index] = oneofField;
+          // since it wasn't memoized before this, this is the first time we encounter this oneof so
+          // lets put it into the intArray once
+          intArray[oneofFieldIndex++] = bufferIndex;
         }
 
         fieldOffset = (int) unsafe.objectFieldOffset(oneofField);
@@ -557,12 +560,6 @@ final class MessageSchema<T> implements Schema<T> {
         } else {
           presenceFieldOffset = NO_PRESENCE_SENTINEL;
           presenceMaskShift = 0;
-        }
-
-        if (fieldType >= 18 && fieldType <= 49) {
-          // Field types of repeated fields are in a consecutive range from 18 (DOUBLE_LIST) to
-          // 49 (GROUP_LIST).
-          intArray[repeatedFieldIndex++] = fieldOffset;
         }
       }
 
@@ -804,7 +801,38 @@ final class MessageSchema<T> implements Schema<T> {
   public boolean equals(T message, T other) {
     final int bufferLength = buffer.length;
     for (int pos = 0; pos < bufferLength; pos += INTS_PER_FIELD) {
-      if (!equalsAtPosition(message, other, pos)) {
+      final int typeAndOffset = typeAndOffsetAt(pos);
+      final int type = type(typeAndOffset);
+      // skip all oneofs as we'll cover them separately to avoid pathological comparisons of unset
+      // fields. Without this we'd compare the set value of oneofs n times where n is the number of
+      // possible oneof values
+      if (type > 50 && type < 69) {
+        continue;
+      }
+      if (!equalsAtPosition(message, other, pos, typeAndOffset, type)) {
+        return false;
+      }
+    }
+
+    // handle oneofs
+    for (int i = oneofFieldOffsetStart; i < intArray.length; i++) {
+      final int pos = intArray[i];
+      if (!isOneofCaseEqual(message, other, pos)) {
+        return false;
+      }
+      // this is an odd usage but isOneOfPresent compares the field number to the oneof case value;
+      // 0 is the sentinel value so when 0 is set, that means there is no oneof present and we can
+      // move on to the next
+      if (isOneofPresent(message, 0, pos)) {
+        continue;
+      }
+
+      // we now know that one of cases are equal and not sentinel values so we should actually
+      // compare the oneof fields
+      final int typeAndOffset = typeAndOffsetAt(pos);
+      final long offset = offset(typeAndOffset);
+      if (!SchemaUtil.safeEquals(
+          UnsafeUtil.getObject(message, offset), UnsafeUtil.getObject(other, offset))) {
         return false;
       }
     }
@@ -823,11 +851,9 @@ final class MessageSchema<T> implements Schema<T> {
     return true;
   }
 
-  private boolean equalsAtPosition(T message, T other, int pos) {
-    final int typeAndOffset = typeAndOffsetAt(pos);
+  private boolean equalsAtPosition(T message, T other, int pos, int typeAndOffset, int type) {
     final long offset = offset(typeAndOffset);
-
-    switch (type(typeAndOffset)) {
+    switch (type) {
       case 0: // DOUBLE:
         return arePresentForEquals(message, other, pos)
             && Double.doubleToLongBits(UnsafeUtil.getDouble(message, offset))
@@ -3404,7 +3430,7 @@ final class MessageSchema<T> implements Schema<T> {
         }
       }
     } finally {
-      for (int i = checkInitializedCount; i < repeatedFieldOffsetStart; i++) {
+      for (int i = checkInitializedCount; i < oneofFieldOffsetStart; i++) {
         unknownFields =
             filterMapUnknownEnumValues(
                 message, intArray[i], unknownFields, unknownFieldSchema, message);
@@ -4219,7 +4245,7 @@ final class MessageSchema<T> implements Schema<T> {
       unsafe.putInt(message, (long) currentPresenceFieldOffset, currentPresenceField);
     }
     UnknownFieldSetLite unknownFields = null;
-    for (int i = checkInitializedCount; i < repeatedFieldOffsetStart; i++) {
+    for (int i = checkInitializedCount; i < oneofFieldOffsetStart; i++) {
       unknownFields =
           filterMapUnknownEnumValues(
               message,
