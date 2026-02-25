@@ -13,6 +13,7 @@ import com.google.protobuf.Internal.DoubleList;
 import com.google.protobuf.Internal.FloatList;
 import com.google.protobuf.Internal.IntList;
 import com.google.protobuf.Internal.LongList;
+import com.google.protobuf.Internal.MessageList;
 import com.google.protobuf.Internal.ProtobufList;
 import com.google.protobuf.WireFormat.FieldType;
 import java.io.IOException;
@@ -1506,6 +1507,15 @@ public abstract class GeneratedMessageLite<
               MethodToInvoke.SET_MEMOIZED_IS_INITIALIZED, isInitialized ? message : null, null);
     }
     return isInitialized;
+  }
+
+  protected static <E> MessageList<E> emptyMessageList() {
+    return MessageArrayList.emptyList();
+  }
+
+  protected static <E> MessageList<E> mutableCopy(MessageList<E> list) {
+    int size = list.size();
+    return list.mutableCopyWithCapacity(size * 2);
   }
 
   protected static IntList emptyIntList() {

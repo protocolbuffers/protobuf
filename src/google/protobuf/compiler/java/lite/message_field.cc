@@ -463,7 +463,7 @@ void RepeatedImmutableMessageFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
   printer->Print(
       variables_,
-      "private com.google.protobuf.Internal.ProtobufList<$type$> $name$_;\n");
+      "private com.google.protobuf.Internal.MessageList<$type$> $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
@@ -510,7 +510,7 @@ void RepeatedImmutableMessageFieldLiteGenerator::GenerateMembers(
       variables_,
       "private void ensure$capitalized_name$IsMutable() {\n"
       // Use a temporary to avoid a redundant iget-object.
-      "  com.google.protobuf.Internal.ProtobufList<$type$> tmp = $name$_;\n"
+      "  com.google.protobuf.Internal.MessageList<$type$> tmp = $name$_;\n"
       "  if (!tmp.isModifiable()) {\n"
       "    $name$_ =\n"
       "        com.google.protobuf.GeneratedMessageLite.mutableCopy(tmp);\n"
@@ -564,7 +564,7 @@ void RepeatedImmutableMessageFieldLiteGenerator::GenerateMembers(
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
                  "private void clear$capitalized_name$() {\n"
-                 "  $name$_ = emptyProtobufList();\n"
+                 "  $name$_ = emptyMessageList();\n"
                  "}\n");
 
   // Builder removeRepeatedField(int index)
@@ -725,7 +725,7 @@ void RepeatedImmutableMessageFieldLiteGenerator::GenerateFieldInfo(
 
 void RepeatedImmutableMessageFieldLiteGenerator::GenerateInitializationCode(
     io::Printer* printer) const {
-  printer->Print(variables_, "$name$_ = emptyProtobufList();\n");
+  printer->Print(variables_, "$name$_ = emptyMessageList();\n");
 }
 
 std::string RepeatedImmutableMessageFieldLiteGenerator::GetBoxedType() const {
