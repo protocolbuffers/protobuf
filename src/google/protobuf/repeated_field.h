@@ -1273,6 +1273,8 @@ void RepeatedField<Element>::UnsafeArenaSwap(RepeatedField* other) {
 
 template <typename Element>
 void RepeatedField<Element>::SwapElements(int index1, int index2) {
+  internal::RuntimeAssertInBounds(index1, size());
+  internal::RuntimeAssertInBounds(index2, size());
   Element* elem = elements(is_soo());
   using std::swap;  // enable ADL with fallback
   swap(elem[index1], elem[index2]);
