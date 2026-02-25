@@ -2944,9 +2944,7 @@ final class MessageSchema<T> implements Schema<T> {
   @Override
   public void mergeFrom(T message, Reader reader, ExtensionRegistryLite extensionRegistry)
       throws IOException {
-    if (extensionRegistry == null) {
-      throw new NullPointerException();
-    }
+    checkNotNull(extensionRegistry);
     checkMutable(message);
     mergeFromHelper(unknownFieldSchema, extensionSchema, message, reader, extensionRegistry);
   }
