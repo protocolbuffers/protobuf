@@ -80,6 +80,7 @@ public class JsonFormat {
     return new Printer(
         com.google.protobuf.TypeRegistry.getEmptyTypeRegistry(),
         TypeRegistry.getEmptyTypeRegistry(),
+        ExtensionRegistry.getEmptyRegistry(),
         ShouldPrintDefaults.ONLY_IF_PRESENT,
         /* includingDefaultValueFields */ Collections.emptySet(),
         /* preservingProtoFieldNames */ false,
@@ -100,6 +101,7 @@ public class JsonFormat {
   public static class Printer {
     private final com.google.protobuf.TypeRegistry registry;
     private final TypeRegistry oldRegistry;
+    private final ExtensionRegistry extensionRegistry;
     private final ShouldPrintDefaults shouldPrintDefaults;
 
     // Empty unless shouldPrintDefaults is set to ALWAYS_PRINT_SPECIFIED_FIELDS.
@@ -114,6 +116,7 @@ public class JsonFormat {
     private Printer(
         com.google.protobuf.TypeRegistry registry,
         TypeRegistry oldRegistry,
+        ExtensionRegistry extensionRegistry,
         ShouldPrintDefaults shouldOutputDefaults,
         Set<FieldDescriptor> includingDefaultValueFields,
         boolean preservingProtoFieldNames,
@@ -123,6 +126,7 @@ public class JsonFormat {
         boolean printingFullyQualifiedExtensionNames) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
+      this.extensionRegistry = extensionRegistry;
       this.shouldPrintDefaults = shouldOutputDefaults;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
@@ -146,6 +150,7 @@ public class JsonFormat {
       return new Printer(
           com.google.protobuf.TypeRegistry.getEmptyTypeRegistry(),
           oldRegistry,
+          extensionRegistry,
           shouldPrintDefaults,
           includingDefaultValueFields,
           preservingProtoFieldNames,
@@ -169,6 +174,28 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
+          extensionRegistry,
+          shouldPrintDefaults,
+          includingDefaultValueFields,
+          preservingProtoFieldNames,
+          omittingInsignificantWhitespace,
+          printingEnumsAsInts,
+          sortingMapKeys,
+          printingFullyQualifiedExtensionNames);
+    }
+
+    /**
+     * Creates a new {@link Printer} using the given extension registry. The new Printer clones all
+     * other configurations from the current {@link Printer}.
+     */
+    Printer usingExtensionRegistry(ExtensionRegistry extensionRegistry) {
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
+      return new Printer(
+          registry,
+          oldRegistry,
+          extensionRegistry,
           shouldPrintDefaults,
           includingDefaultValueFields,
           preservingProtoFieldNames,
@@ -199,6 +226,7 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
+          extensionRegistry,
           ShouldPrintDefaults.ALWAYS_PRINT_EXCEPT_MESSAGES_AND_ONEOFS,
           Collections.emptySet(),
           preservingProtoFieldNames,
@@ -229,6 +257,7 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
+          extensionRegistry,
           ShouldPrintDefaults.ALWAYS_PRINT_SPECIFIED_FIELDS,
           Collections.unmodifiableSet(new HashSet<>(fieldsToAlwaysOutput)),
           preservingProtoFieldNames,
@@ -251,6 +280,7 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
+          extensionRegistry,
           ShouldPrintDefaults.ALWAYS_PRINT_WITHOUT_PRESENCE_FIELDS,
           Collections.emptySet(),
           preservingProtoFieldNames,
@@ -269,6 +299,7 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
+          extensionRegistry,
           shouldPrintDefaults,
           includingDefaultValueFields,
           preservingProtoFieldNames,
@@ -293,6 +324,7 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
+          extensionRegistry,
           shouldPrintDefaults,
           includingDefaultValueFields,
           true,
@@ -321,6 +353,7 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
+          extensionRegistry,
           shouldPrintDefaults,
           includingDefaultValueFields,
           preservingProtoFieldNames,
@@ -345,6 +378,7 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
+          extensionRegistry,
           shouldPrintDefaults,
           includingDefaultValueFields,
           preservingProtoFieldNames,
@@ -368,6 +402,7 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
+          extensionRegistry,
           shouldPrintDefaults,
           includingDefaultValueFields,
           preservingProtoFieldNames,
@@ -391,6 +426,7 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
+          extensionRegistry,
           shouldPrintDefaults,
           includingDefaultValueFields,
           preservingProtoFieldNames,
@@ -413,6 +449,7 @@ public class JsonFormat {
       new PrinterImpl(
               registry,
               oldRegistry,
+              extensionRegistry,
               shouldPrintDefaults,
               includingDefaultValueFields,
               preservingProtoFieldNames,
@@ -773,6 +810,7 @@ public class JsonFormat {
   private static final class PrinterImpl {
     private final com.google.protobuf.TypeRegistry registry;
     private final TypeRegistry oldRegistry;
+    private final ExtensionRegistry extensionRegistry;
     private final ShouldPrintDefaults shouldPrintDefaults;
     private final Set<FieldDescriptor> includingDefaultValueFields;
     private final boolean preservingProtoFieldNames;
@@ -792,6 +830,7 @@ public class JsonFormat {
     PrinterImpl(
         com.google.protobuf.TypeRegistry registry,
         TypeRegistry oldRegistry,
+        ExtensionRegistry extensionRegistry,
         ShouldPrintDefaults shouldPrintDefaults,
         Set<FieldDescriptor> includingDefaultValueFields,
         boolean preservingProtoFieldNames,
@@ -802,6 +841,7 @@ public class JsonFormat {
         boolean printingFullyQualifiedExtensionNames) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
+      this.extensionRegistry = extensionRegistry;
       this.shouldPrintDefaults = shouldPrintDefaults;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
@@ -950,7 +990,9 @@ public class JsonFormat {
       }
       ByteString content = (ByteString) message.getField(valueField);
       Message contentMessage =
-          DynamicMessage.getDefaultInstance(type).getParserForType().parseFrom(content);
+          DynamicMessage.getDefaultInstance(type)
+              .getParserForType()
+              .parseFrom(content, extensionRegistry);
       WellKnownTypePrinter printer = wellKnownTypePrinters.get(getTypeName(typeUrl));
       if (printer != null) {
         // If the type is one of the well-known types, we use a special

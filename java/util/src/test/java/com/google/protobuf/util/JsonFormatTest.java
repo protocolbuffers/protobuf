@@ -1552,6 +1552,106 @@ public class JsonFormatTest {
   }
 
   @Test
+  public void testAnyFieldsWithExtensions_usingExtensionRegistry_canPrintExtensions()
+      throws Exception {
+    TestAllTypesProto2.Builder builder = TestAllTypesProto2.newBuilder();
+    builder.setExtension(JsonTestProto2.extensionInt32, 123);
+    builder.setExtension(
+        JsonTestProto2.extensionRepeatedBool, ImmutableList.of(true, false, false));
+    builder.setExtension(
+        JsonTestProto2.extensionNestedMessage,
+        TestAllTypesProto2.NestedMessage.newBuilder().setValue(789).build());
+    builder.setExtension(JsonTestProto2.extensionSameName, "Extension entry");
+    builder.setExtensionSameName("Field entry");
+    TestAllTypesProto2 message = builder.build();
+    TestAny anyMessage = TestAny.newBuilder().setAnyValue(Any.pack(message)).build();
+    TypeRegistry registry =
+        TypeRegistry.newBuilder().add(TestAllTypesProto2.getDescriptor()).build();
+    ExtensionRegistry extensionRegistry = makeExtensionRegistry();
+    JsonFormat.Printer printer =
+        JsonFormat.printer()
+            .usingTypeRegistry(registry)
+            .usingExtensionRegistry(extensionRegistry)
+            .printingFullyQualifiedExtensionNames();
+
+    String json = printer.print(anyMessage);
+
+    // Verify JSON content
+    assertThat(json)
+        .isEqualTo(
+            "{\n"
+                + "  \"anyValue\": {\n"
+                + "    \"@type\": \"type.googleapis.com/json_test_proto2.TestAllTypesProto2\",\n"
+                + "    \"extensionSameName\": \"Field entry\",\n"
+                + "    \"[json_test_proto2.extension_int32]\": 123,\n"
+                + "    \"[json_test_proto2.extension_repeated_bool]\": [true, false, false],\n"
+                + "    \"[json_test_proto2.extension_nested_message]\": {\n"
+                + "      \"value\": 789\n"
+                + "    },\n"
+                + "    \"[json_test_proto2.extension_same_name]\": \"Extension entry\"\n"
+                + "  }\n"
+                + "}");
+
+    // Assert round trip.
+    JsonFormat.Parser parser =
+        JsonFormat.parser().usingTypeRegistry(registry).usingExtensionRegistry(extensionRegistry);
+    TestAny.Builder anyBuilder = TestAny.newBuilder();
+    parser.merge(json, anyBuilder);
+    Any parsedAny = anyBuilder.getAnyValue();
+    assertThat(anyBuilder.build()).isEqualTo(anyMessage);
+    TestAllTypesProto2 unpacked =
+        TestAllTypesProto2.parseFrom(parsedAny.getValue(), extensionRegistry);
+    assertThat(unpacked).isEqualTo(message);
+  }
+
+  @Test
+  public void testAnyFieldsWithExtensions_usingEmptyExtensionRegistry_cannotPrintExtensions()
+      throws Exception {
+    TestAllTypesProto2.Builder builder = TestAllTypesProto2.newBuilder();
+    builder.setExtension(JsonTestProto2.extensionInt32, 123);
+    builder.setExtension(
+        JsonTestProto2.extensionRepeatedBool, ImmutableList.of(true, false, false));
+    builder.setExtension(
+        JsonTestProto2.extensionNestedMessage,
+        TestAllTypesProto2.NestedMessage.newBuilder().setValue(789).build());
+    builder.setExtension(JsonTestProto2.extensionSameName, "Extension entry");
+    builder.setExtensionSameName("Field entry");
+    TestAllTypesProto2 message = builder.build();
+    TestAny anyMessage = TestAny.newBuilder().setAnyValue(Any.pack(message)).build();
+    TypeRegistry registry =
+        TypeRegistry.newBuilder().add(TestAllTypesProto2.getDescriptor()).build();
+    ExtensionRegistry extensionRegistry = ExtensionRegistry.getEmptyRegistry();
+    JsonFormat.Printer printer =
+        JsonFormat.printer()
+            .usingTypeRegistry(registry)
+            .usingExtensionRegistry(extensionRegistry)
+            .printingFullyQualifiedExtensionNames();
+
+    String json = printer.print(anyMessage);
+
+    // Verify JSON content doesn't contain extensions.
+    assertThat(json)
+        .isEqualTo(
+            "{\n"
+                + "  \"anyValue\": {\n"
+                + "    \"@type\": \"type.googleapis.com/json_test_proto2.TestAllTypesProto2\",\n"
+                + "    \"extensionSameName\": \"Field entry\"\n"
+                + "  }\n"
+                + "}");
+
+    // Assert round trip fails due to missing extensions.
+    JsonFormat.Parser parser =
+        JsonFormat.parser().usingTypeRegistry(registry).usingExtensionRegistry(extensionRegistry);
+    TestAny.Builder anyBuilder = TestAny.newBuilder();
+    parser.merge(json, anyBuilder);
+    Any parsedAny = anyBuilder.getAnyValue();
+    assertThat(anyBuilder.build()).isNotEqualTo(anyMessage);
+    TestAllTypesProto2 unpacked =
+        TestAllTypesProto2.parseFrom(parsedAny.getValue(), extensionRegistry);
+    assertThat(unpacked).isNotEqualTo(message);
+  }
+
+  @Test
   public void testAnyInMaps() throws Exception {
     JsonFormat.TypeRegistry registry =
         JsonFormat.TypeRegistry.newBuilder().add(TestAllTypes.getDescriptor()).build();
