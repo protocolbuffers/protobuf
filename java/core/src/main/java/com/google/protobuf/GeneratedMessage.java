@@ -3514,4 +3514,15 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
               .buildPartial());
     }
   }
+
+  /** Cached value for unpack. */
+  protected static class CachedUnpackValue {
+    public final MessageLite message;
+    public final ExtensionRegistryLite extensionRegistry;
+
+    CachedUnpackValue(MessageLite message, ExtensionRegistryLite extensionRegistry) {
+      this.message = message;
+      this.extensionRegistry = extensionRegistry;
+    }
+  }
 }
