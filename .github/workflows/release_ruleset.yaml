@@ -108,7 +108,7 @@ jobs:
             echo "ERROR: create a .github/workflows/release_prep.sh script"
             exit 1
           fi
-          .github/workflows/release_prep.sh ${{ github.ref_name }} > release_notes.txt
+          .github/workflows/release_prep.sh 34.0-hack1 > release_notes.txt
 
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         id: upload-release-files
