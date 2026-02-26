@@ -3,6 +3,8 @@
 # see https://github.com/bazel-contrib/.github/blob/v7.2.3/.github/workflows/release_ruleset.yaml#L33-L45
 set -o errexit -o nounset -o pipefail
 
+git fetch --all
+
 # Argument provided by reusable workflow caller, see
 # https://github.com/bazel-contrib/.github/blob/v7.2.3/.github/workflows/release_ruleset.yaml#L104
 TAG=$1
