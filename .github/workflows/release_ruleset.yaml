@@ -1,0 +1,201 @@
+# Reusable workflow that can be referenced by repositories in their `.github/workflows/release.yaml`.
+# See example usage in https://github.com/bazel-contrib/rules-template/blob/main/.github/workflows/release.yaml
+#
+# This workflow calls `.github/workflows/release_prep.sh` as the command to prepare the release.
+# Release notes are expected to be outputted to stdout from the release prep command.
+#
+# This workflow uses https://github.com/bazel-contrib/setup-bazel to prepare the cache folders.
+# Caching may be disabled by setting `mount_bazel_caches` to false.
+#
+# The workflow requires the following permissions to be set on the invoking job:
+#
+# permissions:
+#   id-token: write        # Needed to attest provenance
+#   attestations: write    # Needed to attest provenance
+#   contents: write        # Needed to upload release files
+
+permissions: {}
+
+on:
+  # Make this workflow reusable, see
+  # https://github.blog/2022-02-10-using-reusable-workflows-github-actions
+  workflow_call:
+    inputs:
+      release_files:
+        required: true
+        description: |
+          Newline-delimited globs of paths to assets to upload for release.
+          relative to the module repository. The paths should include any files
+          such as a release archive created by the release_prep script`.
+
+          See https://github.com/softprops/action-gh-release#inputs.
+        type: string
+      # TODO: there's a security design problem here:
+      # Users of a workflow_dispatch trigger could fill in something via the GH Web UI
+      # that would cause the release to use an arbitrary script.
+      # That change wouldn't be reflected in the sources in the repo, and therefore
+      # would not be verifiable by the attestation.
+      # For now, we force this path to be hard-coded.
+      #
+      # release_prep_command:
+      #   default: .github/workflows/release_prep.sh
+      #   description: |
+      #     Command to run to prepare the release and generate release notes.
+      #     Release notes are expected to be outputted to stdout.
+      #   type: string
+      bazel_test_command:
+        default: "bazel test //..."
+        description: |
+          Bazel test command that may be overridden to set custom flags and targets.
+          The --disk_cache=~/.cache/bazel-disk-cache --repository_cache=~/.cache/bazel-repository-cache flags are
+          automatically appended to the command.
+        type: string
+      mount_bazel_caches:
+        default: true
+        description: |
+          Whether to enable caching in the bazel-contrib/setup-bazel action.
+        type: boolean
+      prerelease:
+        default: true
+        description: Indicator of whether or not this is a prerelease.
+        type: boolean
+      draft:
+        default: false
+        description: |
+          Whether the release should be created as a draft or published immediately.
+        type: boolean
+      generate_release_notes:
+        default: true
+        description: |
+          Whether to automatically generate the name and body for this release.
+          Controls the like-named setting on https://github.com/softprops/action-gh-release#inputs
+          The output of release_prep.sh will be pre-pended to the automatically generated notes.
+        type: boolean
+      tag_name:
+        description: |
+          The tag which is being released.
+          By default, https://github.com/softprops/action-gh-release will use `github.ref_name`.
+        type: string
+
+jobs:
+  build:
+    outputs:
+      release-files-artifact-id: ${{ steps.upload-release-files.outputs.artifact-id }}
+      release-notes-artifact-id: ${{ steps.upload-release-notes.outputs.artifact-id }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ inputs.tag_name }}
+
+      - uses: bazel-contrib/setup-bazel@083175551ceeceebc757ebee2127fde78840ca77 # v0.18.0
+        with:
+          disk-cache: ${{ inputs.mount_bazel_caches }}
+          external-cache: ${{ inputs.mount_bazel_caches }}
+          repository-cache: ${{ inputs.mount_bazel_caches }}
+
+      - name: Test
+        run: ${{ inputs.bazel_test_command }} --disk_cache=~/.cache/bazel-disk-cache --repository_cache=~/.cache/bazel-repository-cache
+
+      # Fetch built artifacts (if any) from earlier jobs, which the release script may want to read.
+      # Extract into ${GITHUB_WORKSPACE}/artifacts/*
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+
+      - name: Build release artifacts and prepare release notes
+        run: |
+          if [ ! -f ".github/workflows/release_prep.sh" ]; then
+            echo "ERROR: create a .github/workflows/release_prep.sh script"
+            exit 1
+          fi
+          .github/workflows/release_prep.sh ${{ inputs.tag_name || github.ref_name }} > release_notes.txt
+
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        id: upload-release-files
+        with:
+          name: release_files
+          path: ${{ inputs.release_files }}
+
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        id: upload-release-notes
+        with:
+          name: release_notes
+          path: release_notes.txt
+
+  attest:
+    needs: build
+    outputs:
+      attestations-artifact-id: ${{ steps.upload-attestations.outputs.artifact-id }}
+    permissions:
+      id-token: write
+      attestations: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          artifact-ids: ${{ needs.build.outputs.release-files-artifact-id }}
+          path: release_files
+
+      # https://github.com/actions/attest-build-provenance
+      - name: Attest release files
+        id: attest_release
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0
+        with:
+          subject-path: release_files/**/*
+
+      # The Bazel Central Registry requires an attestation per release archive, but the
+      # actions/attest-build-provenance action only produces a single attestation for a
+      # list of subjects. Copy the combined attestations into individually named
+      # .intoto.jsonl files.
+      - name: Write release archive attestations into intoto.jsonl
+        id: write_release_archive_attestation
+        run: |
+          # https://bazel.build/rules/lib/repo/http#http_archive
+          RELEASE_ARCHIVE_REGEX="(\.zip|\.jar|\.war|\.aar|\.tar|\.tar\.gz|\.tgz|\.tar\.xz|\.txz|\.tar\.xzt|\.tzst|\.tar\.bz2|\.ar|\.deb)$"
+
+          ATTESTATIONS_DIR=$(mktemp --directory)
+          for filename in $(find release_files/ -type f -printf "%f\n"); do
+            if [[ "${filename}" =~ $RELEASE_ARCHIVE_REGEX ]]; then
+                ATTESTATION_FILE="$(basename "${filename}").intoto.jsonl"
+                echo "Writing attestation to ${ATTESTATION_FILE}"
+                cat ${{ steps.attest_release.outputs.bundle-path }} | jq --compact-output > "${ATTESTATIONS_DIR}/${ATTESTATION_FILE}"
+            fi
+          done
+          echo "release_archive_attestations_dir=${ATTESTATIONS_DIR}" >> $GITHUB_OUTPUT
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        id: upload-attestations
+        with:
+          name: attestations
+          path: ${{ steps.write_release_archive_attestation.outputs.release_archive_attestations_dir }}/*
+
+  release:
+    needs: [build, attest]
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          artifact-ids: ${{ needs.build.outputs.release-files-artifact-id }}
+          path: release_files
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          artifact-ids: ${{ needs.build.outputs.release-notes-artifact-id }}
+          path: release_notes
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          artifact-ids: ${{ needs.attest.outputs.attestations-artifact-id }}
+          path: attestations
+      - name: Release
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
+        with:
+          prerelease: ${{ inputs.prerelease }}
+          draft: ${{ inputs.draft }}
+          # Use GH feature to populate the changelog automatically
+          generate_release_notes: ${{ inputs.generate_release_notes }}
+          body_path: release_notes/release_notes.txt
+          fail_on_unmatched_files: true
+          tag_name: ${{ inputs.tag_name }}
+          files: |
+            release_files/**/*
+            attestations/*
