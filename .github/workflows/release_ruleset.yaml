@@ -87,7 +87,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: ${{ inputs.tag_name }}
+          ref: 34.x
 
       - uses: bazel-contrib/setup-bazel@083175551ceeceebc757ebee2127fde78840ca77 # v0.18.0
         with:
@@ -108,7 +108,7 @@ jobs:
             echo "ERROR: create a .github/workflows/release_prep.sh script"
             exit 1
           fi
-          .github/workflows/release_prep.sh ${{ inputs.tag_name || github.ref_name }} > release_notes.txt
+          .github/workflows/release_prep.sh ${{ github.ref_name }} > release_notes.txt
 
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         id: upload-release-files
