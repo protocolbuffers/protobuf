@@ -89,6 +89,56 @@ public class AnyTest {
   }
 
   @Test
+  public void testUnpackWithExtensionRegistry() throws Exception {
+    ExtensionRegistry oldExtensionRegistry = ExtensionRegistry.getGeneratedRegistry();
+    ExtensionRegistry newExtensionRegistry = ExtensionRegistry.newInstance();
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    TestUtil.setAllFields(builder);
+    TestAllTypes message = builder.build();
+
+    // Test the wrapped fast path with the generated registry.
+    var packedGenerated = Any.pack(message, oldExtensionRegistry);
+    assertThat(packedGenerated.unpack(TestAllTypes.class)).isSameInstanceAs(message);
+    assertThat(packedGenerated.unpack(TestAllTypes.class, oldExtensionRegistry))
+        .isSameInstanceAs(message);
+    assertThat(packedGenerated.unpackSameTypeAs(TestAllTypes.getDefaultInstance()))
+        .isSameInstanceAs(message);
+    assertThat(
+            packedGenerated.unpackSameTypeAs(
+                TestAllTypes.getDefaultInstance(), oldExtensionRegistry))
+        .isSameInstanceAs(message);
+    assertThat(packedGenerated.unpack(TestAllTypes.class, newExtensionRegistry))
+        .isNotSameInstanceAs(message);
+    assertThat(packedGenerated.unpack(TestAllTypes.class, newExtensionRegistry)).isEqualTo(message);
+    assertThat(
+            packedGenerated.unpackSameTypeAs(
+                TestAllTypes.getDefaultInstance(), newExtensionRegistry))
+        .isNotSameInstanceAs(message);
+    assertThat(
+            packedGenerated.unpackSameTypeAs(
+                TestAllTypes.getDefaultInstance(), newExtensionRegistry))
+        .isEqualTo(message);
+
+    // Test the wrapped fast path with a non-generated registry.
+    var packedCustom = Any.pack(message, newExtensionRegistry);
+    assertThat(packedCustom.unpack(TestAllTypes.class, oldExtensionRegistry))
+        .isNotSameInstanceAs(message);
+    assertThat(packedCustom.unpack(TestAllTypes.class)).isSameInstanceAs(message);
+    assertThat(packedCustom.unpack(TestAllTypes.class, oldExtensionRegistry)).isEqualTo(message);
+    assertThat(
+            packedCustom.unpackSameTypeAs(TestAllTypes.getDefaultInstance(), oldExtensionRegistry))
+        .isNotSameInstanceAs(message);
+    assertThat(
+            packedCustom.unpackSameTypeAs(TestAllTypes.getDefaultInstance(), oldExtensionRegistry))
+        .isEqualTo(message);
+    assertThat(packedCustom.unpack(TestAllTypes.class, newExtensionRegistry))
+        .isSameInstanceAs(message);
+    assertThat(
+            packedCustom.unpackSameTypeAs(TestAllTypes.getDefaultInstance(), newExtensionRegistry))
+        .isSameInstanceAs(message);
+  }
+
+  @Test
   public void testCustomTypeUrls() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TestUtil.setAllFields(builder);

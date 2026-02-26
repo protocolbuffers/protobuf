@@ -79,11 +79,11 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *
    * <p>One of the noticeable costs of copying a byte[] into a new array using {@code
    * System.arraycopy} is nullification of a new buffer before the copy. It has been shown the
-   * Hotspot VM is capable of intrinsic {@code Arrays.copyOfRange} operation to avoid this
-   * expensive nullification and provide substantial performance gain. Unfortunately this does not
-   * hold on Android runtimes and could make the copy slightly slower due to additional code in the
-   * {@code Arrays.copyOfRange}. Thus we provide two different implementation for array copier for
-   * Hotspot and Android runtimes.
+   * Hotspot VM is capable of intrinsic {@code Arrays.copyOfRange} operation to avoid this expensive
+   * nullification and provide substantial performance gain. Unfortunately this does not hold on
+   * Android runtimes and could make the copy slightly slower due to additional code in the {@code
+   * Arrays.copyOfRange}. Thus we provide two different implementation for array copier for Hotspot
+   * and Android runtimes.
    */
   private interface ByteArrayCopier {
     /** Copies the specified range of the specified array into a new array */

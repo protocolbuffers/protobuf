@@ -48,8 +48,7 @@ public abstract class AbstractParser<MessageType extends MessageLite>
     return message;
   }
 
-  private static final ExtensionRegistryLite EMPTY_REGISTRY =
-      ExtensionRegistryLite.getEmptyRegistry();
+  static final ExtensionRegistryLite EMPTY_REGISTRY = ExtensionRegistryLite.getEmptyRegistry();
 
   @Override
   public MessageType parsePartialFrom(CodedInputStream input)
