@@ -70,7 +70,7 @@ public abstract class GeneratedMessageLite<
     return (memoizedSerializedSize & MUTABLE_FLAG_MASK) != 0;
   }
 
-  void markImmutable() {
+  final void markImmutable() {
     memoizedSerializedSize &= ~MUTABLE_FLAG_MASK;
   }
 
