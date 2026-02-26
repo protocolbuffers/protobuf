@@ -18,6 +18,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import re
 import sys
 import textwrap
 
@@ -148,7 +149,23 @@ def GetDict(obj):
 
 # We take the MODULE path as a command-line argument to ensure that we can find
 # it regardless of how exactly Bazel was invoked.
-exec(open(sys.argv[1]).read(), GetDict(ModuleFileFunctions(converter)))
+with open(sys.argv[1], 'r') as module_file:
+  module_content = module_file.read()
+
+# Parse MODULE file for bazel_dep() calls using regex instead of exec()
+# This safely extracts dependency declarations without executing code
+bazel_dep_pattern = r'bazel_dep\s*\(\s*name\s*=\s*["\']([^"\']+)["\']\s*,\s*version\s*=\s*["\']([^"\']+)["\']\s*\)'
+for match in re.finditer(bazel_dep_pattern, module_content):
+  name, version = match.groups()
+  converter.toplevel += textwrap.dedent(
+      """\
+    set(%(name)s-version "%(version)s")
+  """
+      % {
+          "name": name,
+          "version": version,
+      }
+  )
 
 with open(sys.argv[2], "w") as f:
   f.write(converter.convert())
