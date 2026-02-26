@@ -3,6 +3,7 @@
 # see https://github.com/bazel-contrib/.github/blob/v7.2.3/.github/workflows/release_ruleset.yaml#L33-L45
 set -o errexit -o nounset -o pipefail
 
+git checkout
 git fetch --all
 
 # Argument provided by reusable workflow caller, see
@@ -34,6 +35,9 @@ reduce .assets[] as $a (
 )
 EOF
 )
+
+git checkout
+git fetch --all
 
 mkdir -p ${PREFIX}/bazel/private
 cat >${INTEGRITY_FILE} <<EOF
