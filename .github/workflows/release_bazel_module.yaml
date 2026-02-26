@@ -16,7 +16,7 @@ permissions:
   contents: write
 jobs:
   release:
-    uses: ./.github/workflows/release_ruleset.yaml@v7.3.0
+    uses: ./.github/workflows/release_ruleset.yaml
     with:
       release_files: protobuf-*.bazel.tar.gz
       prerelease: ${{ contains(inputs.tag_name, '-rc') }}
