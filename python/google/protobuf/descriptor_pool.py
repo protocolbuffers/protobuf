@@ -583,7 +583,7 @@ class DescriptorPool(object):
       full_name = message_descriptor.full_name
       try:
         all_numbers = self._descriptor_db.FindAllExtensionNumbers(full_name)
-      except:
+      except Exception:
         pass
       else:
         if isinstance(all_numbers, list):
@@ -619,7 +619,7 @@ class DescriptorPool(object):
       file_proto = self._descriptor_db.FindFileContainingExtension(
           full_name, number
       )
-    except:
+    except Exception:
       return
 
     if file_proto is None:
@@ -627,7 +627,7 @@ class DescriptorPool(object):
 
     try:
       self._ConvertFileProtoToFileDescriptor(file_proto)
-    except:
+    except Exception:
       warn_msg = ('Unable to load proto file %s for extension number %d.' %
                   (file_proto.name, number))
       warnings.warn(warn_msg, RuntimeWarning)

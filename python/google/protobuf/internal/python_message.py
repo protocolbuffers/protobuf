@@ -511,7 +511,7 @@ def _AddInitMethod(message_descriptor, cls):
         if len(value) == 1 and 'fields' in value:
           try:
             msg.update(value)
-          except:
+          except Exception:
             msg.Clear()
             msg.__init__(**value)
         else:

@@ -270,7 +270,7 @@ class MessageFactoryTest(unittest.TestCase):
       pool.Add(f1)
       pool.Add(f2)
       pool.Add(f3)
-    except:
+    except Exception:
       pass
     msgs = message_factory.GetMessageClassesForFiles(
         [f1.name, f3.name], pool)  # Deliberately not f2.
@@ -295,7 +295,7 @@ class MessageFactoryTest(unittest.TestCase):
       pool.Add(f1)
       pool.Add(f2)
       pool.Add(f3)
-    except:
+    except Exception:
       pass
     msgs = message_factory.GetMessageClassesForFiles(
         [f1.name, f3.name], pool)  # Deliberately not f2.
