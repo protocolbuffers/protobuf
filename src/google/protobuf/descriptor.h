@@ -139,6 +139,8 @@ namespace cpp {
 class CppGenerator;
 // Defined in helpers.h
 class Formatter;
+internal::FieldDescriptorLite::CppRepeatedType FieldDescriptorRepeatedType(
+    const FieldDescriptor* field);
 }  // namespace cpp
 namespace java {
 class MemoizeProjection;
@@ -148,6 +150,7 @@ class MemoizeProjection;
 namespace descriptor_unittest {
 class DescriptorPoolMemoizationTest;
 class DescriptorTest;
+class FeaturesTest;
 class ValidationErrorTest;
 }  // namespace descriptor_unittest
 
@@ -1186,9 +1189,13 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   friend class Symbol;
   typedef FieldOptions OptionsType;
 
+  friend class descriptor_unittest::FeaturesTest;
+
   // Allows access to GetLocationPath for annotations.
   friend class io::Printer;
   friend class compiler::cpp::Formatter;
+  friend FieldDescriptor::CppRepeatedType
+  compiler::cpp::FieldDescriptorRepeatedType(const FieldDescriptor* field);
   friend class Reflection;
   friend class FieldDescriptorLegacy;
   friend const std::string& internal::DefaultValueStringAsString(
@@ -1201,6 +1208,10 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   friend class compiler::cpp::CppGenerator;
   int legacy_proto_ctype() const { return legacy_proto_ctype_; }
   bool has_legacy_proto_ctype() const;
+
+#ifndef SWIG
+  [[nodiscard]] FieldDescriptor::CppRepeatedType cpp_repeated_type() const;
+#endif
 
   // Get the merged features that apply to this field.  These are specified in
   // the .proto file through the feature options in the message definition.
@@ -1233,6 +1244,8 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
 
   CppStringType CalculateCppStringType() const;
 
+  CppRepeatedType CalculateCppRepeatedType() const;
+
   bool has_default_value_ : 1;
   bool proto3_optional_ : 1;
   // Whether the user has specified the json_name field option in the .proto
@@ -1246,15 +1259,18 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   uint8_t label_ : 2;
 
   // Actually a `Type`, but stored as uint8_t to save space.
-  uint8_t type_;
+  uint8_t type_ : 7;
+
+  // Can be calculated from containing_oneof(), but we cache it for performance.
+  // Located here for bitpacking.
+  bool in_real_oneof_ : 1;
 
   // Actually a `CppStringType`, but stored as uint8_t to save space.
   // We cache it because it's expensive to calculate.
   uint8_t cpp_string_type_ : 3;
 
-  // Can be calculated from containing_oneof(), but we cache it for performance.
-  // Located here for bitpacking.
-  bool in_real_oneof_ : 1;
+  // Actually a `CppRepeatedType`, but stored as uint8_t to save space.
+  uint8_t cpp_repeated_type_ : 2;
 
   // We could calculate as `message_type()->options().map_entry()`, but that is
   // way more expensive and can potentially force load extra lazy files.
@@ -3049,6 +3065,13 @@ inline FieldDescriptor::CppStringType FieldDescriptor::cpp_string_type() const {
   ABSL_DCHECK_EQ(cpp_string_type_,
                  static_cast<uint8_t>(CalculateCppStringType()));
   return static_cast<FieldDescriptor::CppStringType>(cpp_string_type_);
+}
+
+inline FieldDescriptor::CppRepeatedType FieldDescriptor::cpp_repeated_type()
+    const {
+  ABSL_DCHECK_EQ(cpp_repeated_type_,
+                 static_cast<uint8_t>(CalculateCppRepeatedType()));
+  return static_cast<FieldDescriptor::CppRepeatedType>(cpp_repeated_type_);
 }
 
 inline bool FieldDescriptor::is_repeated() const {

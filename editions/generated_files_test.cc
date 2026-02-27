@@ -152,6 +152,7 @@ TEST(Generated, EditionDefaults2023InternalFeatures) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 }
               )pb"));
 }

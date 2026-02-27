@@ -1242,21 +1242,30 @@ const FieldDescriptor* FindHottestField(
   return nullptr;
 }
 
-static bool HasRepeatedFields(const Descriptor* descriptor) {
+static bool HasRepeatedFields(
+    const Descriptor* descriptor,
+    FieldDescriptor::CppRepeatedType cpp_repeated_type) {
   for (int i = 0; i < descriptor->field_count(); ++i) {
-    if (descriptor->field(i)->is_repeated()) {
+    if (descriptor->field(i)->is_repeated() &&
+        FieldDescriptorRepeatedType(descriptor->field(i)) ==
+            cpp_repeated_type) {
       return true;
     }
   }
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
-    if (HasRepeatedFields(descriptor->nested_type(i))) return true;
+    if (HasRepeatedFields(descriptor->nested_type(i), cpp_repeated_type)) {
+      return true;
+    }
   }
   return false;
 }
 
-bool HasRepeatedFields(const FileDescriptor* file) {
+bool HasRepeatedFields(const FileDescriptor* file,
+                       FieldDescriptor::CppRepeatedType cpp_repeated_type) {
   for (int i = 0; i < file->message_type_count(); ++i) {
-    if (HasRepeatedFields(file->message_type(i))) return true;
+    if (HasRepeatedFields(file->message_type(i), cpp_repeated_type)) {
+      return true;
+    }
   }
   return false;
 }
