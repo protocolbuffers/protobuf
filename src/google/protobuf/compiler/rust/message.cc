@@ -38,6 +38,8 @@ namespace compiler {
 namespace rust {
 namespace {
 
+using Sub = ::google::protobuf::io::Printer::Sub;
+
 void MessageNew(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
@@ -409,6 +411,9 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
   upb::MessageDefPtr upb_msg = pool.FindMessageByName(msg.full_name().data());
   ctx.Emit(
       {
+          // There's also ${$/$}$-style begin and end tokens, but those might
+          // be harder to retrofit here because of the giant-template style.
+          Sub("MsgDefinition", RsSafeName(msg.name())).AnnotatedAs(&msg),
           {"Msg", RsSafeName(msg.name())},
           {"Msg::new", [&] { MessageNew(ctx, msg); }},
           {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
@@ -520,7 +525,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
       },
       R"rs(
         #[allow(non_camel_case_types)]
-        pub struct $Msg$ {
+        pub struct $MsgDefinition$ {
           inner: $pbr$::OwnedMessageInner<$Msg$>
         }
 
