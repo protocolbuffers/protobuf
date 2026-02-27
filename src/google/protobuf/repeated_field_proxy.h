@@ -2,6 +2,7 @@
 #define GOOGLE_PROTOBUF_REPEATED_FIELD_PROXY_H__
 
 #include <cstddef>
+#include <functional>
 #include <iterator>
 #include <string>
 #include <type_traits>
@@ -22,6 +23,11 @@ namespace protobuf {
 
 template <typename ElementType>
 class RepeatedFieldProxy;
+
+template <int&... DeductionBarrier, typename T, typename Pred>
+size_t erase_if(RepeatedFieldProxy<T> cont, Pred pred);
+template <int&... DeductionBarrier, typename T, typename U>
+size_t erase(RepeatedFieldProxy<T> cont, const U& value);
 
 namespace internal {
 
@@ -229,6 +235,12 @@ class RepeatedFieldProxyBase {
     return static_cast<size_type>(field().size());
   }
 
+  // Returns a const reference or view into the element at the given index,
+  // performing bounds checking in accordance with `bounds_check_mode_*`.
+  [[nodiscard]] const_reference get(size_type index) const {
+    return field()[index];
+  }
+
   [[nodiscard]] const_iterator cbegin() const { return begin(); }
   [[nodiscard]] const_iterator cend() const { return end(); }
   [[nodiscard]] iterator begin() const { return iterator(field().begin()); }
@@ -401,6 +413,36 @@ class RepeatedFieldProxyWithEmplaceBack<
   }
 };
 
+// Defines `resize(new_size, value)` for all non-string repeated fields.
+template <typename ElementType, typename Enable = void>
+class RepeatedFieldProxyWithResize {
+ public:
+  void resize(size_t new_size, const ElementType& value) const {
+    ToProxyType(this).field().resize(new_size, value);
+  }
+};
+
+// Defines `resize(new_size, value)` for non-Cord string repeated fields.
+template <typename ElementType>
+class RepeatedFieldProxyWithResize<
+    ElementType, std::enable_if_t<RepeatedElementTypeIsString<ElementType> &&
+                                  !std::is_same_v<ElementType, absl::Cord>>> {
+ public:
+  void resize(size_t new_size, absl::string_view value) const {
+    ToProxyType(this).field().resize(new_size, value);
+  }
+};
+
+// Defines `resize(new_size, value)` for repeated Cords.
+template <typename ElementType>
+class RepeatedFieldProxyWithResize<
+    ElementType, std::enable_if_t<std::is_same_v<ElementType, absl::Cord>>> {
+ public:
+  void resize(size_t new_size, const absl::Cord& value) const {
+    ToProxyType(this).field().resize(new_size, value);
+  }
+};
+
 }  // namespace internal
 
 // A proxy for a repeated field of type `ElementType` in a Protobuf message.
@@ -419,7 +461,8 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
     : public internal::RepeatedFieldProxyBase<ElementType>,
       public internal::RepeatedFieldProxyWithSet<ElementType>,
       public internal::RepeatedFieldProxyWithPushBack<ElementType>,
-      public internal::RepeatedFieldProxyWithEmplaceBack<ElementType> {
+      public internal::RepeatedFieldProxyWithEmplaceBack<ElementType>,
+      public internal::RepeatedFieldProxyWithResize<ElementType> {
   static_assert(!std::is_const_v<ElementType>);
 
  protected:
@@ -527,16 +570,46 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
     field().ReserveWithArena(arena(), new_size);
   }
 
+  // Swaps the contents of this repeated field with `other`.
+  //
+  // Invalidates all iterators. Pointer stability is not guaranteed across the
+  // swap for any element of either repeated field.
+  //
+  // If the underlying repeated fields are on different arenas, this may force
+  // deep copies of the elements.
+  void swap_contents(RepeatedFieldProxy other) const {
+    field().Swap(&other.field());
+  }
+
+  // Resizes the repeated field to `new_size` elements. If `new_size` is smaller
+  // than the current size, the field is truncated. Otherwise, the field is
+  // extended with default-valued elements.
+  void resize(size_t new_size) const { field().resize(new_size); }
+
+  // Because we have an overload of `resize` in this class, we need to
+  // explicitly inherit the overload from the base class to avoid hiding it.
+
+  // Resizes the repeated field to `new_size` elements. If `new_size` is smaller
+  // than the current size, the field is truncated. Otherwise, the field is
+  // extended with copies of `value`.
+  using internal::RepeatedFieldProxyWithResize<ElementType>::resize;
+
  private:
   friend RepeatedFieldProxy<const ElementType>;
 
   friend internal::RepeatedFieldProxyWithSet<ElementType, void>;
   friend internal::RepeatedFieldProxyWithPushBack<ElementType, void>;
   friend internal::RepeatedFieldProxyWithEmplaceBack<ElementType, void>;
+  friend internal::RepeatedFieldProxyWithResize<ElementType, void>;
 
   template <typename T, typename... Args>
   friend RepeatedFieldProxy<T> internal::ConstructRepeatedFieldProxy(
       Args&&... args);
+
+  template <int&... DeductionBarrier, typename T, typename Pred>
+  friend size_t erase_if(RepeatedFieldProxy<T> cont, Pred pred);
+  template <int&... DeductionBarrier, typename T, typename U>
+  friend size_t erase(RepeatedFieldProxy<T> cont, const U& value);
 
   RepeatedFieldProxy(RepeatedFieldType& field, Arena* arena)
       : Base(field), arena_(arena) {
@@ -633,7 +706,127 @@ RepeatedFieldProxy<ElementType> ToProxyType(const C<ElementType>* proxy) {
   return *static_cast<const RepeatedFieldProxy<ElementType>*>(proxy);
 }
 
+// Specialization of sort/stable_sort for repeated numeric fields.
+template <typename ElementType, typename Enable = void>
+struct RepeatedFieldProxySortImpl {
+ public:
+  template <typename Compare>
+  static void c_sort(RepeatedFieldProxy<ElementType> cont, Compare cmp) {
+    google::protobuf::sort(
+        cont.begin(), cont.end(),
+        // Intentionally decay `lhs` and `rhs` to avoid exposing a reference
+        // directly to elements.
+        [&cmp](const auto lhs, const auto rhs) { return cmp(lhs, rhs); });
+  }
+
+  static void c_sort(RepeatedFieldProxy<ElementType> cont) {
+    c_sort(cont, std::less<>{});
+  }
+
+  template <typename Compare>
+  static void c_stable_sort(RepeatedFieldProxy<ElementType> cont, Compare cmp) {
+    google::protobuf::stable_sort(
+        cont.begin(), cont.end(),
+        // Intentionally decay `lhs` and `rhs` to avoid exposing a reference
+        // directly to elements.
+        [&cmp](const auto lhs, const auto rhs) { return cmp(lhs, rhs); });
+  }
+
+  static void c_stable_sort(RepeatedFieldProxy<ElementType> cont) {
+    c_stable_sort(cont, std::less<>{});
+  }
+};
+
+// Specialization of sort/stable_sort for repeated string fields.
+template <typename ElementType>
+struct RepeatedFieldProxySortImpl<
+    ElementType, std::enable_if_t<RepeatedElementTypeIsString<ElementType>>> {
+ public:
+  template <typename Compare>
+  static void c_sort(RepeatedFieldProxy<ElementType> cont, Compare cmp) {
+    if constexpr (std::is_same_v<ElementType, absl::Cord>) {
+      google::protobuf::sort(cont.begin(), cont.end(), cmp);
+    } else {
+      google::protobuf::sort(cont.begin(), cont.end(),
+                   [&cmp](const std::string& lhs, const std::string& rhs) {
+                     return cmp(absl::string_view(lhs), absl::string_view(rhs));
+                   });
+    }
+  }
+
+  static void c_sort(RepeatedFieldProxy<ElementType> cont) {
+    c_sort(cont, std::less<>{});
+  }
+
+  template <typename Compare>
+  static void c_stable_sort(RepeatedFieldProxy<ElementType> cont, Compare cmp) {
+    if constexpr (std::is_same_v<ElementType, absl::Cord>) {
+      google::protobuf::stable_sort(cont.begin(), cont.end(), cmp);
+    } else {
+      google::protobuf::stable_sort(
+          cont.begin(), cont.end(),
+          [&cmp](const std::string& lhs, const std::string& rhs) {
+            return cmp(absl::string_view(lhs), absl::string_view(rhs));
+          });
+    }
+  }
+
+  static void c_stable_sort(RepeatedFieldProxy<ElementType> cont) {
+    c_stable_sort(cont, std::less<>{});
+  }
+};
+
+// Specialization of sort/stable_sort for repeated message fields.
+template <typename ElementType>
+struct RepeatedFieldProxySortImpl<
+    ElementType, std::enable_if_t<RepeatedElementTypeIsMessage<ElementType>>> {
+ public:
+  template <typename Compare>
+  static void c_sort(RepeatedFieldProxy<ElementType> cont, Compare cmp) {
+    google::protobuf::sort(cont.begin(), cont.end(), cmp);
+  }
+
+  template <typename Compare>
+  static void c_stable_sort(RepeatedFieldProxy<ElementType> cont, Compare cmp) {
+    google::protobuf::stable_sort(cont.begin(), cont.end(), cmp);
+  }
+};
+
 }  // namespace internal
+
+// Like C++20's std::erase_if, for RepeatedFieldProxy
+template <int&... DeductionBarrier, typename T, typename Pred>
+size_t erase_if(RepeatedFieldProxy<T> cont, Pred pred) {
+  return google::protobuf::erase_if(cont.field(), pred);
+}
+
+// Like C++20's std::erase, for RepeatedFieldProxy
+template <int&... DeductionBarrier, typename T, typename U>
+size_t erase(RepeatedFieldProxy<T> cont, const U& value) {
+  return google::protobuf::erase(cont.field(), value);
+}
+
+// Like C++20's std::sort, for RepeatedFieldProxy.
+template <int&... DeductionBarrier, typename T, typename Compare>
+void c_sort(RepeatedFieldProxy<T> cont, Compare cmp) {
+  internal::RepeatedFieldProxySortImpl<T>::c_sort(cont, cmp);
+}
+// Like C++20's std::sort, for RepeatedFieldProxy, with default comparison.
+template <int&... DeductionBarrier, typename T>
+void c_sort(RepeatedFieldProxy<T> cont) {
+  internal::RepeatedFieldProxySortImpl<T>::c_sort(cont);
+}
+// Like C++20's std::stable_sort, for RepeatedFieldProxy.
+template <int&... DeductionBarrier, typename T, typename Compare>
+void c_stable_sort(RepeatedFieldProxy<T> cont, Compare cmp) {
+  internal::RepeatedFieldProxySortImpl<T>::c_stable_sort(cont, cmp);
+}
+// Like C++20's std::stable_sort, for RepeatedFieldProxy, with default
+// comparison.
+template <int&... DeductionBarrier, typename T>
+void c_stable_sort(RepeatedFieldProxy<T> cont) {
+  internal::RepeatedFieldProxySortImpl<T>::c_stable_sort(cont);
+}
 
 }  // namespace protobuf
 }  // namespace google

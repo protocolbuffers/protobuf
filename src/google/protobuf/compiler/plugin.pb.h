@@ -823,18 +823,20 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   public:
   void clear_file() ;
-  [[nodiscard]] ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNULL mutable_file(int index);
+  [[nodiscard]] ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNULL
+  mutable_file(int index);
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* PROTOBUF_NONNULL
   mutable_file();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>& _internal_file() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* PROTOBUF_NONNULL _internal_mutable_file();
+
   public:
   [[nodiscard]] const ::google::protobuf::compiler::CodeGeneratorResponse_File& file(int index) const;
   ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNULL add_file();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>& file()
-      const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>&
+  file() const;
   // optional string error = 1;
   [[nodiscard]] bool has_error()
       const;
@@ -1102,10 +1104,12 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   ::std::string* PROTOBUF_NONNULL add_file_to_generate();
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void add_file_to_generate(Arg_&& value, Args_... args);
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::std::string>&
-  file_to_generate() const;
-  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
-  mutable_file_to_generate();
+  [[nodiscard]] const
+      ::google::protobuf::RepeatedPtrField<::std::string>&
+      file_to_generate() const;
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>*
+      PROTOBUF_NONNULL
+      mutable_file_to_generate();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_file_to_generate() const;
@@ -1120,18 +1124,20 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
 
   public:
   void clear_proto_file() ;
-  [[nodiscard]] ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL mutable_proto_file(int index);
+  [[nodiscard]] ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL
+  mutable_proto_file(int index);
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL
   mutable_proto_file();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_proto_file() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_proto_file();
+
   public:
   [[nodiscard]] const ::google::protobuf::FileDescriptorProto& proto_file(int index) const;
   ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL add_proto_file();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& proto_file()
-      const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>&
+  proto_file() const;
   // optional string parameter = 2;
   [[nodiscard]] bool has_parameter()
       const;
@@ -1173,18 +1179,20 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
 
   public:
   void clear_source_file_descriptors() ;
-  [[nodiscard]] ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL mutable_source_file_descriptors(int index);
+  [[nodiscard]] ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL
+  mutable_source_file_descriptors(int index);
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL
   mutable_source_file_descriptors();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_source_file_descriptors() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_source_file_descriptors();
+
   public:
   [[nodiscard]] const ::google::protobuf::FileDescriptorProto& source_file_descriptors(int index) const;
   ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL add_source_file_descriptors();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& source_file_descriptors()
-      const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>&
+  source_file_descriptors() const;
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorRequest)
  private:
   class _Internal;
@@ -1556,8 +1564,8 @@ inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRe
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return _internal_mutable_proto_file()->Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL CodeGeneratorRequest::mutable_proto_file()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL
+CodeGeneratorRequest::mutable_proto_file() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1606,8 +1614,8 @@ inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRe
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
   return _internal_mutable_source_file_descriptors()->Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL CodeGeneratorRequest::mutable_source_file_descriptors()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL
+CodeGeneratorRequest::mutable_source_file_descriptors() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000010U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -2225,8 +2233,8 @@ inline ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNUL
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.file)
   return _internal_mutable_file()->Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* PROTOBUF_NONNULL CodeGeneratorResponse::mutable_file()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* PROTOBUF_NONNULL
+CodeGeneratorResponse::mutable_file() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorResponse.file)
   ::google::protobuf::internal::TSanWrite(&_impl_);
