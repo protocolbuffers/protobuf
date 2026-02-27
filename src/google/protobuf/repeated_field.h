@@ -1384,7 +1384,8 @@ inline size_t RepeatedField<Element>::SpaceUsedExcludingSelfLong() const {
 // Like C++20's std::erase_if, for RepeatedField
 template <typename T, typename Pred>
 size_t erase_if(RepeatedField<T>& cont, Pred pred) {
-  auto it = std::remove_if(cont.begin(), cont.end(), pred);
+  auto it = std::remove_if(cont.begin(), cont.end(),
+                           [&pred](const auto& elem) { return pred(elem); });
   const size_t removed = cont.end() - it;
   cont.Truncate(cont.size() - removed);
   return removed;
@@ -1402,7 +1403,8 @@ size_t erase(RepeatedField<T>& cont, const U& value) {
 template <int&..., typename T, typename Compare>
 void sort(internal::RepeatedIterator<T> begin,
           internal::RepeatedIterator<T> end, Compare cmp) {
-  std::sort(begin, end, cmp);
+  std::sort(begin, end,
+            [&cmp](const auto& lhs, const auto& rhs) { return cmp(lhs, rhs); });
 }
 template <int&..., typename T>
 void sort(internal::RepeatedIterator<T> begin,
@@ -1412,7 +1414,9 @@ void sort(internal::RepeatedIterator<T> begin,
 template <int&..., typename T, typename Compare>
 void stable_sort(internal::RepeatedIterator<T> begin,
                  internal::RepeatedIterator<T> end, Compare cmp) {
-  std::stable_sort(begin, end, cmp);
+  std::stable_sort(begin, end, [&cmp](const auto& lhs, const auto& rhs) {
+    return cmp(lhs, rhs);
+  });
 }
 template <int&..., typename T>
 void stable_sort(internal::RepeatedIterator<T> begin,
