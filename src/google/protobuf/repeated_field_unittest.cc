@@ -1005,7 +1005,7 @@ TEST(RepeatedCordField, AddClear) {
 
 TEST(RepeatedCordField, Resize) {
   RepeatedField<absl::Cord> field;
-  field.Resize(10, absl::Cord("foo"));
+  field.resize(10, absl::Cord("foo"));
 }
 
 TEST(RepeatedField, Cords) {
@@ -1069,17 +1069,17 @@ TEST(RepeatedField, TruncateCords) {
 
 TEST(RepeatedField, ResizeCords) {
   RepeatedField<absl::Cord> field;
-  field.Resize(2, absl::Cord("foo"));
+  field.resize(2, absl::Cord("foo"));
   EXPECT_EQ(2, field.size());
-  field.Resize(5, absl::Cord("bar"));
+  field.resize(5, absl::Cord("bar"));
   EXPECT_EQ(5, field.size());
-  field.Resize(4, absl::Cord("baz"));
+  field.resize(4, absl::Cord("baz"));
   ASSERT_EQ(4, field.size());
   EXPECT_EQ("foo", std::string(field.Get(0)));
   EXPECT_EQ("foo", std::string(field.Get(1)));
   EXPECT_EQ("bar", std::string(field.Get(2)));
   EXPECT_EQ("bar", std::string(field.Get(3)));
-  field.Resize(0, absl::Cord("moo"));
+  field.resize(0, absl::Cord("moo"));
   EXPECT_TRUE(field.empty());
 }
 
