@@ -19,6 +19,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <functional>
 #include <iterator>
 #include <limits>
 #include <list>
@@ -54,6 +55,7 @@ namespace {
 using ::proto2_unittest::TestAllTypes;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
+using ::testing::ElementsAreArray;
 using ::testing::Ge;
 using ::testing::Le;
 
@@ -1125,7 +1127,7 @@ TEST(RepeatedField, TestSAddFromSelf) {
 // We have, or at least had bad callers that never triggered our DCHECKS
 // Here we check we DO fail on bad Truncate calls under debug, and do nothing
 // under opt compiles.
-TEST(RepeatedField, HardenAgainstBadTruncate) {
+TEST(RepeatedFieldTest, HardenAgainstBadTruncate) {
   RepeatedField<int> field;
   for (int size = 0; size < 10; ++size) {
     field.Truncate(size);
@@ -1157,6 +1159,71 @@ TEST(RepeatedFieldTest, EraseIf) {
   }
   EXPECT_EQ(5, google::protobuf::erase_if(elements, [](auto i) { return i % 3 == 0; }));
   EXPECT_THAT(elements, ElementsAre(1, 2, 4, 5, 7, 8, 10, 11, 13, 14));
+}
+
+TEST(RepeatedFieldTest, SortTest) {
+  RepeatedField<int64_t> rep;
+
+  // Store values in decreasing order.
+  for (int i = 0; i < 20; i++) {
+    rep.Add(20 - (i / 2));
+  }
+
+  EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end(), std::greater<>{}));
+
+  // Sort by numeric values - this should reverse the order of creation.
+  {
+    auto cmp = std::less<>{};
+    ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end(), cmp));
+    google::protobuf::sort(rep.begin(), rep.end(), cmp);
+    EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end(), cmp));
+  }
+
+  // Reverse again.
+  {
+    auto cmp = std::greater<>{};
+    ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end(), cmp));
+    google::protobuf::c_sort(rep, cmp);
+    EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end(), cmp));
+  }
+
+  // And again - without a predicate this time.
+  ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end()));
+  google::protobuf::c_sort(rep);
+  EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end()));
+}
+
+TEST(RepeatedFieldTest, SortSubrangeTest) {
+  RepeatedField<int> rep;
+  for (int v : {1, 4, 9, 0, 2, 3, 5}) rep.Add(v);
+  EXPECT_THAT(rep, ElementsAre(1, 4, 9, 0, 2, 3, 5));
+
+  google::protobuf::sort(rep.begin() + 1, rep.begin() + 5);
+  EXPECT_THAT(rep, ElementsAre(1, 0, 2, 4, 9, 3, 5));
+}
+
+TEST(RepeatdFieldTest, StableSort) {
+  RepeatedField<int> rep;
+  while (rep.size() < 100) rep.Add(rep.size());
+
+  const auto less_10 = [](int a, int b) { return a % 10 < b % 10; };
+
+  ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end(), less_10));
+  google::protobuf::stable_sort(rep.begin(), rep.end(), less_10);
+  EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end(), less_10));
+
+  // Make sure that the relative orders where kept.
+  std::vector<int> expected;
+  for (int i = 0; i < 10; ++i) {
+    for (int j = 0; j < 10; ++j) {
+      expected.push_back(10 * j + i);
+    }
+  }
+  EXPECT_THAT(rep, ElementsAreArray(expected));
+
+  ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end()));
+  google::protobuf::c_stable_sort(rep);
+  EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end()));
 }
 
 #if defined(GTEST_HAS_DEATH_TEST) && (defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
