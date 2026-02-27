@@ -31,9 +31,12 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "absl/base/config.h"
+#include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
+#include "absl/strings/numbers.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/types/span.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -54,10 +57,12 @@ namespace {
 
 using ::proto2_unittest::TestAllTypes;
 using ::testing::AllOf;
+using ::testing::AnyOf;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::Ge;
 using ::testing::Le;
+using ::testing::Lt;
 
 TEST(RepeatedFieldIterator, Traits) {
   using It = RepeatedField<absl::Cord>::iterator;
@@ -1157,8 +1162,42 @@ TEST(RepeatedFieldTest, EraseIf) {
   while (elements.size() < 15) {
     elements.Add(elements.size());
   }
-  EXPECT_EQ(5, google::protobuf::erase_if(elements, [](auto i) { return i % 3 == 0; }));
+  const int32_t* start_ptr = elements.data();
+  const int32_t* end_ptr = start_ptr + elements.size();
+  EXPECT_EQ(5, google::protobuf::erase_if(elements, [start_ptr, end_ptr](auto&& i) {
+              static_assert(std::is_same_v<decltype(i), const int32_t&>);
+              // Verify that the address of `i` does not lie in the range of the
+              // repeated field.
+              EXPECT_THAT(&i, AnyOf(Lt(start_ptr), Ge(end_ptr)));
+              return i % 3 == 0;
+            }));
   EXPECT_THAT(elements, ElementsAre(1, 2, 4, 5, 7, 8, 10, 11, 13, 14));
+}
+
+TEST(RepeatedFieldTest, EraseIfCord) {
+  RepeatedField<absl::Cord> elements;
+  absl::Cord c;
+  while (elements.size() < 15) {
+    elements.Add(absl::Cord(absl::StrCat("v", elements.size())));
+  }
+  const absl::Cord* start_ptr = elements.data();
+  const absl::Cord* end_ptr = start_ptr + elements.size();
+  EXPECT_EQ(
+      5, google::protobuf::erase_if(elements, [start_ptr, end_ptr](auto&& cord) {
+        static_assert(std::is_same_v<decltype(cord), const absl::Cord&>);
+        // The Cord is copied when debug checks are enabled. Verify that the
+        // address of `cord` does not lie in the range of the repeated field.
+        if constexpr (internal::PerformDebugChecks()) {
+          EXPECT_THAT(&cord, AnyOf(Lt(start_ptr), Ge(end_ptr)));
+        }
+
+        absl::Cord cord_copy = cord;
+        int value;
+        ABSL_CHECK(absl::SimpleAtoi(cord_copy.Flatten().substr(1), &value));
+        return value % 3 == 0;
+      }));
+  EXPECT_THAT(elements, ElementsAre("v1", "v2", "v4", "v5", "v7", "v8", "v10",
+                                    "v11", "v13", "v14"));
 }
 
 TEST(RepeatedFieldTest, SortTest) {
@@ -1173,10 +1212,20 @@ TEST(RepeatedFieldTest, SortTest) {
 
   // Sort by numeric values - this should reverse the order of creation.
   {
-    auto cmp = std::less<>{};
-    ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end(), cmp));
-    google::protobuf::sort(rep.begin(), rep.end(), cmp);
-    EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end(), cmp));
+    ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end(), std::less<>{}));
+
+    const int64_t* start_ptr = rep.data();
+    const int64_t* end_ptr = start_ptr + rep.size();
+    google::protobuf::sort(rep.begin(), rep.end(), [&](auto&& lhs, auto&& rhs) {
+      static_assert(std::is_same_v<decltype(lhs), const int64_t&>);
+      static_assert(std::is_same_v<decltype(rhs), const int64_t&>);
+      // Verify that the addresses of `lhs` and `rhs` don't lie in the range of
+      // the repeated field.
+      EXPECT_THAT(&lhs, AnyOf(Lt(start_ptr), Ge(end_ptr)));
+      EXPECT_THAT(&rhs, AnyOf(Lt(start_ptr), Ge(end_ptr)));
+      return lhs < rhs;
+    });
+    EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end(), std::less<>{}));
   }
 
   // Reverse again.
@@ -1209,7 +1258,19 @@ TEST(RepeatdFieldTest, StableSort) {
   const auto less_10 = [](int a, int b) { return a % 10 < b % 10; };
 
   ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end(), less_10));
-  google::protobuf::stable_sort(rep.begin(), rep.end(), less_10);
+
+  const int* start_ptr = rep.data();
+  const int* end_ptr = start_ptr + rep.size();
+  google::protobuf::stable_sort(rep.begin(), rep.end(), [&](auto&& lhs, auto&& rhs) {
+    static_assert(std::is_same_v<decltype(lhs), const int&>);
+    static_assert(std::is_same_v<decltype(rhs), const int&>);
+    // Verify that the addresses of `lhs` and `rhs` don't lie in the range of
+    // the repeated field.
+    EXPECT_THAT(&lhs, AnyOf(Lt(start_ptr), Ge(end_ptr)));
+    EXPECT_THAT(&rhs, AnyOf(Lt(start_ptr), Ge(end_ptr)));
+    return less_10(lhs, rhs);
+  });
+
   EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end(), less_10));
 
   // Make sure that the relative orders where kept.
@@ -1224,6 +1285,55 @@ TEST(RepeatdFieldTest, StableSort) {
   ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end()));
   google::protobuf::c_stable_sort(rep);
   EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end()));
+}
+
+TEST(RepeatedFieldTest, SortCordTest) {
+  RepeatedField<absl::Cord> rep;
+
+  // Store values in decreasing order.
+  for (int i = 0; i < 5; i++) {
+    rep.Add(absl::Cord(absl::StrFormat("%d", i)));
+  }
+
+  {
+    // Sort by std::greater, which should reverse the order.
+    const absl::Cord* start_ptr = rep.data();
+    const absl::Cord* end_ptr = start_ptr + rep.size();
+    google::protobuf::sort(rep.begin(), rep.end(), [&](auto&& a, auto&& b) {
+      static_assert(std::is_same_v<decltype(a), const absl::Cord&>);
+      static_assert(std::is_same_v<decltype(b), const absl::Cord&>);
+      // Cords are only copied when debug checks are enabled.
+      if constexpr (internal::PerformDebugChecks()) {
+        EXPECT_THAT(&a, AnyOf(Lt(start_ptr), Ge(end_ptr)));
+        EXPECT_THAT(&b, AnyOf(Lt(start_ptr), Ge(end_ptr)));
+      }
+      return std::greater<>{}(a, b);
+    });
+    EXPECT_THAT(rep, ElementsAre("4", "3", "2", "1", "0"));
+  }
+
+  {
+    // Stable sort by an even/odd predicate.
+    const absl::Cord* start_ptr = rep.data();
+    const absl::Cord* end_ptr = start_ptr + rep.size();
+    google::protobuf::stable_sort(rep.begin(), rep.end(), [&](auto&& a, auto&& b) {
+      static_assert(std::is_same_v<decltype(a), const absl::Cord&>);
+      static_assert(std::is_same_v<decltype(b), const absl::Cord&>);
+      // Cords are only copied when debug checks are enabled.
+      if constexpr (internal::PerformDebugChecks()) {
+        EXPECT_THAT(&a, AnyOf(Lt(start_ptr), Ge(end_ptr)));
+        EXPECT_THAT(&b, AnyOf(Lt(start_ptr), Ge(end_ptr)));
+      }
+
+      absl::Cord a_copy = a;
+      absl::Cord b_copy = b;
+      return std::less<>{}(static_cast<int>(a_copy.Flatten().back()) % 2,
+                           static_cast<int>(b_copy.Flatten().back()) % 2);
+    });
+    // All the evens first, in preserved order, followed by the odds in
+    // preserved order.
+    EXPECT_THAT(rep, ElementsAre("4", "2", "0", "3", "1"));
+  }
 }
 
 #if defined(GTEST_HAS_DEATH_TEST) && (defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
