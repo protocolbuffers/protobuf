@@ -1043,7 +1043,11 @@
   NSError *error = nil;
   TestPackedExtensions *packedParse =
       [TestPackedExtensions parseFromData:unpackedData
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+                        extensionRegistry:Objc_Protobuf_Tests_UnittestRoot_Registry()
+#else
                         extensionRegistry:[UnittestRoot extensionRegistry]
+#endif
                                     error:&error];
   XCTAssertNotNil(packedParse);
   XCTAssertNil(error);
@@ -1052,7 +1056,11 @@
   error = nil;
   TestUnpackedExtensions *unpackedParsed =
       [TestUnpackedExtensions parseFromData:packedData
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+                          extensionRegistry:Objc_Protobuf_Tests_UnittestRoot_Registry()
+#else
                           extensionRegistry:[UnittestRoot extensionRegistry]
+#endif
                                       error:&error];
   XCTAssertNotNil(unpackedParsed);
   XCTAssertNil(error);
@@ -1083,7 +1091,11 @@
   error = nil;
   TestPackedExtensions *extsParse =
       [TestPackedExtensions parseFromData:fieldsData
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+                        extensionRegistry:Objc_Protobuf_Tests_UnittestRoot_Registry()
+#else
                         extensionRegistry:[UnittestRoot extensionRegistry]
+#endif
                                     error:&error];
   XCTAssertNotNil(extsParse);
   XCTAssertNil(error);
@@ -1111,7 +1123,11 @@
 
   TestUnpackedExtensions *extsParse =
       [TestUnpackedExtensions parseFromData:fieldsData
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+                          extensionRegistry:Objc_Protobuf_Tests_UnittestRoot_Registry()
+#else
                           extensionRegistry:[UnittestRoot extensionRegistry]
+#endif
                                       error:NULL];
   XCTAssertNotNil(extsParse);
   XCTAssertEqualObjects(extsParse, extsOrig);

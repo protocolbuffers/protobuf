@@ -325,14 +325,22 @@
 
   // Int
 
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  GPBExtensionDescriptor *descriptor = Objc_Protobuf_Tests_extension_OptionalInt32Extension();
+#else
   GPBExtensionDescriptor *descriptor = [UnittestRoot optionalInt32Extension];
+#endif
   XCTAssertNotNil(descriptor);
   XCTAssertEqual(descriptor.containingMessageClass, msgClass);  // ptr equality
   XCTAssertFalse(descriptor.isPackable);
   XCTAssertEqualObjects(descriptor.defaultValue, @0);
   XCTAssertNil(descriptor.enumDescriptor);
 
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  descriptor = Objc_Protobuf_Tests_extension_DefaultInt32Extension();
+#else
   descriptor = [UnittestRoot defaultInt32Extension];
+#endif
   XCTAssertNotNil(descriptor);
   XCTAssertEqual(descriptor.containingMessageClass, msgClass);  // ptr equality
   XCTAssertFalse(descriptor.isPackable);
@@ -341,14 +349,22 @@
 
   // Enum
 
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  descriptor = Objc_Protobuf_Tests_extension_OptionalNestedEnumExtension();
+#else
   descriptor = [UnittestRoot optionalNestedEnumExtension];
+#endif
   XCTAssertNotNil(descriptor);
   XCTAssertEqual(descriptor.containingMessageClass, msgClass);  // ptr equality
   XCTAssertFalse(descriptor.isPackable);
   XCTAssertEqual(descriptor.defaultValue, @1);
   XCTAssertEqualObjects(descriptor.enumDescriptor.name, @"TestAllTypes_NestedEnum");
 
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  descriptor = Objc_Protobuf_Tests_extension_DefaultNestedEnumExtension();
+#else
   descriptor = [UnittestRoot defaultNestedEnumExtension];
+#endif
   XCTAssertNotNil(descriptor);
   XCTAssertEqual(descriptor.containingMessageClass, msgClass);  // ptr equality
   XCTAssertFalse(descriptor.isPackable);
@@ -357,7 +373,11 @@
 
   // Message
 
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  descriptor = Objc_Protobuf_Tests_extension_OptionalNestedMessageExtension();
+#else
   descriptor = [UnittestRoot optionalNestedMessageExtension];
+#endif
   XCTAssertNotNil(descriptor);
   XCTAssertEqual(descriptor.containingMessageClass, msgClass);  // ptr equality
   XCTAssertFalse(descriptor.isPackable);
@@ -366,14 +386,22 @@
 
   // Repeated Int
 
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  descriptor = Objc_Protobuf_Tests_extension_RepeatedInt32Extension();
+#else
   descriptor = [UnittestRoot repeatedInt32Extension];
+#endif
   XCTAssertNotNil(descriptor);
   XCTAssertEqual(descriptor.containingMessageClass, msgClass);  // ptr equality
   XCTAssertFalse(descriptor.isPackable);
   XCTAssertNil(descriptor.defaultValue);
   XCTAssertNil(descriptor.enumDescriptor);
 
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  descriptor = Objc_Protobuf_Tests_extension_PackedInt32Extension();
+#else
   descriptor = [UnittestRoot packedInt32Extension];
+#endif
   XCTAssertNotNil(descriptor);
   XCTAssertEqual(descriptor.containingMessageClass, packedMsgClass);  // ptr equality
   XCTAssertTrue(descriptor.isPackable);
@@ -382,14 +410,22 @@
 
   // Repeated Enum
 
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  descriptor = Objc_Protobuf_Tests_extension_RepeatedNestedEnumExtension();
+#else
   descriptor = [UnittestRoot repeatedNestedEnumExtension];
+#endif
   XCTAssertNotNil(descriptor);
   XCTAssertEqual(descriptor.containingMessageClass, msgClass);  // ptr equality
   XCTAssertFalse(descriptor.isPackable);
   XCTAssertNil(descriptor.defaultValue);
   XCTAssertEqualObjects(descriptor.enumDescriptor.name, @"TestAllTypes_NestedEnum");
 
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  descriptor = Objc_Protobuf_Tests_extension_PackedEnumExtension();
+#else
   descriptor = [UnittestRoot packedEnumExtension];
+#endif
   XCTAssertNotNil(descriptor);
   XCTAssertEqual(descriptor.containingMessageClass, packedMsgClass);  // ptr equality
   XCTAssertTrue(descriptor.isPackable);
@@ -398,7 +434,11 @@
 
   // Repeated Message
 
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  descriptor = Objc_Protobuf_Tests_extension_RepeatedNestedMessageExtension();
+#else
   descriptor = [UnittestRoot repeatedNestedMessageExtension];
+#endif
   XCTAssertNotNil(descriptor);
   XCTAssertEqual(descriptor.containingMessageClass, msgClass);  // ptr equality
   XCTAssertFalse(descriptor.isPackable);
@@ -407,9 +447,17 @@
 
   // Compare (used internally for serialization).
 
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  GPBExtensionDescriptor *ext1 = Objc_Protobuf_Tests_extension_OptionalInt32Extension();
+#else
   GPBExtensionDescriptor *ext1 = [UnittestRoot optionalInt32Extension];
+#endif
   XCTAssertEqual(ext1.fieldNumber, 1u);
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  GPBExtensionDescriptor *ext2 = Objc_Protobuf_Tests_extension_OptionalInt64Extension();
+#else
   GPBExtensionDescriptor *ext2 = [UnittestRoot optionalInt64Extension];
+#endif
   XCTAssertEqual(ext2.fieldNumber, 2u);
 
   XCTAssertEqual([ext1 compareByFieldNumber:ext2], NSOrderedAscending);
