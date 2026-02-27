@@ -47,6 +47,31 @@ namespace Google.Protobuf.Reflection
                 message => descriptor.Fields[0].Accessor.Clear(message));
         }
 
+        internal static OneofAccessor ForDynamicOneof(OneofDescriptor descriptor)
+        {
+            return new OneofAccessor(descriptor,
+                message =>
+                {
+                    if (message is DynamicMessage dm)
+                    {
+                        var field = dm.GetOneofFieldDescriptor(descriptor);
+                        return field?.FieldNumber ?? 0;
+                    }
+                    throw new ArgumentException("Message is not a DynamicMessage");
+                },
+                message =>
+                {
+                    if (message is DynamicMessage dm)
+                    {
+                        dm.ClearOneof(descriptor);
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Message is not a DynamicMessage");
+                    }
+                });
+        }
+
         /// <summary>
         /// Gets the descriptor for this oneof.
         /// </summary>

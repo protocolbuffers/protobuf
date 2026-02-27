@@ -161,10 +161,9 @@ namespace Google.Protobuf.Reflection
         private OneofAccessor CreateAccessor(string clrName)
         {
             // We won't have a CLR name if this is from a dynamically-loaded FileDescriptor.
-            // TODO: Support dynamic messages.
             if (clrName == null)
             {
-                return null;
+                return OneofAccessor.ForDynamicOneof(this);
             }
             if (IsSynthetic)
             {

@@ -24,9 +24,35 @@ namespace Google.Protobuf.Reflection
         private IFieldAccessor accessor;
 
         /// <summary>
-        /// Get the field's containing message type, or <c>null</c> if it is a field defined at the top level of a file as an extension.
+        /// Get the field's containing message type. For extension fields, this is the type being extended,
+        /// not the location where the extension was defined (see <see cref="ExtensionScope"/>).
+        /// For top-level extensions (defined at file scope), returns the extended type.
+        /// For regular fields, returns the message type that contains the field.
         /// </summary>
-        public MessageDescriptor ContainingType { get; }
+        /// <remarks>
+        /// Use <see cref="ExtensionScope"/> to get the message type where the extension was declared
+        /// (for nested extensions), or <c>null</c> for top-level extensions.
+        /// </remarks>
+        public MessageDescriptor ContainingType => IsExtension ? extendeeType : declaringType;
+
+        /// <summary>
+        /// For extensions, returns the message type in which this extension was declared,
+        /// or <c>null</c> for top-level (file-scope) extensions.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">This field is not an extension.</exception>
+        public MessageDescriptor ExtensionScope
+        {
+            get
+            {
+                if (!IsExtension)
+                {
+                    throw new InvalidOperationException("ExtensionScope is only valid for extension fields.");
+                }
+                return declaringType;
+            }
+        }
+
+        private readonly MessageDescriptor declaringType;
 
         /// <summary>
         /// Returns the oneof containing this field, or <c>null</c> if it is not part of a oneof.
@@ -101,7 +127,7 @@ namespace Google.Protobuf.Reflection
             {
                 throw new DescriptorValidationException(this, "Field numbers must be positive integers.");
             }
-            ContainingType = parent;
+            declaringType = parent;
             if (proto.HasOneofIndex)
             {
                 if (proto.OneofIndex < 0 || proto.OneofIndex >= parent.Proto.OneofDecl.Count)
@@ -272,12 +298,42 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         public int CompareTo(FieldDescriptor other)
         {
-            if (other.ContainingType != ContainingType)
+            if (!string.Equals(other?.ContainingType?.FullName, ContainingType?.FullName, StringComparison.Ordinal))
             {
                 throw new ArgumentException("FieldDescriptors can only be compared to other FieldDescriptors " +
                                             "for fields of the same message type.");
             }
             return FieldNumber - other.FieldNumber;
+        }
+
+        /// <summary>
+        /// Compares two <see cref="FieldDescriptor"/> instances by the field's "absolute id".
+        /// </summary>
+        /// <remarks>
+        /// The absolute id is defined as the tuple (containing type full name, field number, is-extension).
+        /// This allows field descriptors from separately-built descriptor graphs to compare equal when they
+        /// represent the same logical field.
+        /// </remarks>
+        public bool Equals(FieldDescriptor other) =>
+            other != null &&
+            IsExtension == other.IsExtension &&
+            FieldNumber == other.FieldNumber &&
+            string.Equals(ContainingType?.FullName, other.ContainingType?.FullName, StringComparison.Ordinal);
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => Equals(obj as FieldDescriptor);
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = hash * 31 + FieldNumber;
+                hash = hash * 31 + (ContainingType?.FullName?.GetHashCode() ?? 0);
+                hash = hash * 31 + (IsExtension ? 1 : 0);
+                return hash;
+            }
         }
 
         /// <summary>
@@ -412,7 +468,7 @@ namespace Google.Protobuf.Reflection
                         throw new DescriptorValidationException(this, $"\"{Proto.TypeName}\" is not a message type.");
                     }
                     messageType = m;
-                    if (m.Proto.Options?.MapEntry == true || ContainingType?.Proto.Options?.MapEntry == true)
+                    if (m.Proto.Options?.MapEntry == true || declaringType?.Proto.Options?.MapEntry == true)
                     {
                         // Maps can't inherit delimited encoding.
                         FieldType = FieldType.Message;
@@ -453,7 +509,7 @@ namespace Google.Protobuf.Reflection
 
             File.DescriptorPool.AddFieldByNumber(this);
 
-            if (ContainingType != null && ContainingType.Proto.Options != null && ContainingType.Proto.Options.MessageSetWireFormat)
+            if (declaringType != null && declaringType.Proto.Options != null && declaringType.Proto.Options.MessageSetWireFormat)
             {
                 throw new DescriptorValidationException(this, "MessageSet format is not supported.");
             }
@@ -467,22 +523,31 @@ namespace Google.Protobuf.Reflection
                 return new ExtensionAccessor(this);
             }
 
-            // If we're given no property name, that's because we really don't want an accessor.
-            // This could be because it's a map message, or it could be that we're loading a FileDescriptor dynamically.
-            // TODO: Support dynamic messages.
-            if (PropertyName == null)
+            // If this is an extension field (i.e., it extends another message type),
+            // and it wasn't registered via generated code (Extension == null),
+            // return a DynamicFieldAccessor for use with DynamicMessage.
+            if (Proto.HasExtendee)
             {
-                return null;
+                return new DynamicFieldAccessor(this);
             }
 
-            var property = ContainingType.ClrType.GetProperty(PropertyName);
-            if (property == null)
+            // If we're given no property name, that's because we're loading a FileDescriptor dynamically
+            // (e.g., via BuildFromByteStrings) or it's a synthetic map entry message.
+            // For dynamic descriptors, return a DynamicFieldAccessor which works with DynamicMessage.
+            if (PropertyName == null)
             {
-                throw new DescriptorValidationException(this, $"Property {PropertyName} not found in {ContainingType.ClrType}");
+                // For map entry messages, we don't need an accessor as they are handled internally.
+                if (declaringType.Proto.Options?.MapEntry == true)
+                {
+                    return null;
+                }
+                return new DynamicFieldAccessor(this);
             }
+
+            var property = declaringType.ClrType.GetProperty(PropertyName) ?? throw new DescriptorValidationException(this, $"Property {PropertyName} not found in {declaringType.ClrType}");
             return IsMap ? new MapFieldAccessor(property, this)
                 : IsRepeated ? new RepeatedFieldAccessor(property, this)
-                : (IFieldAccessor) new SingleFieldAccessor(ContainingType.ClrType, property, this);
+                : new SingleFieldAccessor(declaringType.ClrType, property, this);
         }
     }
 }
