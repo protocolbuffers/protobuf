@@ -132,12 +132,15 @@ void SetPrimitiveVariables(
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_to_local"] =
         absl::StrCat(GenerateSetBitToLocal(message_bit_index), ";");
+    (*variables)["set_has_field_bit_message"] =
+        absl::StrCat(GenerateSetBit(message_bit_index), ";");
     (*variables)["is_field_present_message"] =
         GenerateGetBit(message_bit_index);
     (*variables)["is_other_field_present_message"] =
         absl::StrCat("other.has", (*variables)["capitalized_name"], "()");
   } else {
     (*variables)["set_has_field_bit_to_local"] = "";
+    (*variables)["set_has_field_bit_message"] = "";
     switch (descriptor->type()) {
       case FieldDescriptor::TYPE_BYTES:
         AddPrimitiveVariableForThisAndOther(
@@ -357,6 +360,18 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuildingCode(
     printer->Print(variables_, "  $set_has_field_bit_to_local$\n");
   }
   printer->Print("}\n");
+}
+
+void ImmutablePrimitiveFieldGenerator::GenerateParsingCode(
+    io::Printer* printer) const {
+  printer->Print(variables_,
+                 "$set_has_field_bit_message$\n"
+                 "$name$_ = input.read$capitalized_type$();\n");
+}
+
+void ImmutablePrimitiveFieldGenerator::GenerateParsingDoneCode(
+    io::Printer* printer) const {
+  // noop for primitives.
 }
 
 void ImmutablePrimitiveFieldGenerator::GenerateBuilderParsingCode(
@@ -596,6 +611,18 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderParsingCode(
   printer->Print(variables_,
                  "$oneof_name$_ = input.read$capitalized_type$();\n"
                  "$set_oneof_case_message$;\n");
+}
+
+void ImmutablePrimitiveOneofFieldGenerator::GenerateParsingCode(
+    io::Printer* printer) const {
+  printer->Print(variables_,
+                 "$oneof_name$_ = input.read$capitalized_type$();\n"
+                 "$set_oneof_case_message$;\n");
+}
+
+void ImmutablePrimitiveOneofFieldGenerator::GenerateParsingDoneCode(
+    io::Printer* printer) const {
+  // noop for oneof primitives.
 }
 
 void ImmutablePrimitiveOneofFieldGenerator::GenerateSerializationCode(
@@ -901,6 +928,35 @@ void RepeatedImmutablePrimitiveFieldGenerator::
                    "}\n"
                    "input.popLimit(limit);\n");
   }
+}
+
+void RepeatedImmutablePrimitiveFieldGenerator::GenerateParsingCode(
+    io::Printer* printer) const {
+  printer->Print(variables_,
+                 "if (!$name$_.isModifiable()) {\n"
+                 "  $name$_ = makeMutableCopy($name$_);\n"
+                 "}\n"
+                 "$repeated_add$(input.read$capitalized_type$());\n");
+}
+
+void RepeatedImmutablePrimitiveFieldGenerator::GenerateParsingCodeFromPacked(
+    io::Printer* printer) const {
+  printer->Print(
+      variables_,
+      "int length = input.readRawVarint32();\n"
+      "int limit = input.pushLimit(length);\n"
+      "if (!$name$_.isModifiable() && input.getBytesUntilLimit() > 0) {\n"
+      "  $name$_ = makeMutableCopy($name$_);\n"
+      "}\n"
+      "while (input.getBytesUntilLimit() > 0) {\n"
+      "  $repeated_add$(input.read$capitalized_type$());\n"
+      "}\n"
+      "input.popLimit(limit);\n");
+}
+
+void RepeatedImmutablePrimitiveFieldGenerator::GenerateParsingDoneCode(
+    io::Printer* printer) const {
+  printer->Print(variables_, "$name_make_immutable$;\n");
 }
 
 void RepeatedImmutablePrimitiveFieldGenerator::GenerateSerializationCode(

@@ -429,6 +429,14 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     warnPre22Gencode(getClass());
   }
 
+  /**
+   * Internal hook for generated code to freeze extensions without triggering
+   * the pre-22 gencode warning. Non-extendable messages override no behavior.
+   */
+  protected void internalMakeExtensionsImmutable() {
+    // No-op for non-extendable messages.
+  }
+
   protected static LongList emptyLongList() {
     return LongArrayList.emptyList();
   }
@@ -1123,6 +1131,11 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     @Override
     protected void makeExtensionsImmutable() {
       GeneratedMessage.warnPre22Gencode(getClass());
+      extensions.makeImmutable();
+    }
+
+    @Override
+    protected void internalMakeExtensionsImmutable() {
       extensions.makeImmutable();
     }
 

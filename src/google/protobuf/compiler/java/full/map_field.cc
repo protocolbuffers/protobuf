@@ -984,6 +984,50 @@ void ImmutableMapFieldGenerator::GenerateBuildingCode(
                  "}\n");
 }
 
+void ImmutableMapFieldGenerator::GenerateParsingCode(
+    io::Printer* printer) const {
+  const FieldDescriptor* value = MapValueField(descriptor_);
+  const JavaType type = GetJavaType(value);
+  printer->Print(
+      variables_,
+      "if ($name$_ == null) {\n"
+      "  $name$_ = com.google.protobuf.MapField.newMapField(\n"
+      "      $map_field_parameter$);\n"
+      "}\n"
+      "if (!$name$_.isMutable()) {\n"
+      "  $name$_ = $name$_.copy();\n"
+      "}\n");
+  if (!SupportUnknownEnumValue(value) && type == JAVATYPE_ENUM) {
+    printer->Print(
+        variables_,
+        "com.google.protobuf.ByteString bytes = input.readBytes();\n"
+        "com.google.protobuf.MapEntry<$type_parameters$>\n"
+        "$name$__ = $default_entry$.getParserForType().parseFrom(bytes);\n"
+        "if ($value_enum_type$.forNumber($name$__.getValue()) == null) {\n"
+        "  if (unknownFields == null) {\n"
+        "    unknownFields = com.google.protobuf.UnknownFieldSet.newBuilder();\n"
+        "  }\n"
+        "  unknownFields.mergeLengthDelimitedField($number$, bytes);\n"
+        "} else {\n"
+        "  $name$_.getMutableMap().put(\n"
+        "      $name$__.getKey(), $name$__.getValue());\n"
+        "}\n");
+    return;
+  }
+  printer->Print(
+      variables_,
+      "com.google.protobuf.MapEntry<$type_parameters$>\n"
+      "$name$__ = input.readMessage(\n"
+      "    $default_entry$.getParserForType(), extensionRegistry);\n"
+      "$name$_.getMutableMap().put(\n"
+      "    $name$__.getKey(), $name$__.getValue());\n");
+}
+
+void ImmutableMapFieldGenerator::GenerateParsingDoneCode(
+    io::Printer* printer) const {
+  // noop for maps.
+}
+
 void ImmutableMapFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
   const FieldDescriptor* value = MapValueField(descriptor_);
