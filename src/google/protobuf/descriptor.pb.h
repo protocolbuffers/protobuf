@@ -923,17 +923,18 @@ enum FeatureSet_EnforceNamingStyle : int {
   FeatureSet_EnforceNamingStyle_ENFORCE_NAMING_STYLE_UNKNOWN = 0,
   FeatureSet_EnforceNamingStyle_STYLE2024 = 1,
   FeatureSet_EnforceNamingStyle_STYLE_LEGACY = 2,
+  FeatureSet_EnforceNamingStyle_STYLE2026 = 3,
 };
 
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_EnforceNamingStyle_internal_data_[];
 inline constexpr FeatureSet_EnforceNamingStyle FeatureSet_EnforceNamingStyle_EnforceNamingStyle_MIN =
     static_cast<FeatureSet_EnforceNamingStyle>(0);
 inline constexpr FeatureSet_EnforceNamingStyle FeatureSet_EnforceNamingStyle_EnforceNamingStyle_MAX =
-    static_cast<FeatureSet_EnforceNamingStyle>(2);
+    static_cast<FeatureSet_EnforceNamingStyle>(3);
 [[nodiscard]] inline bool FeatureSet_EnforceNamingStyle_IsValid(int value) {
-  return 0 <= value && value <= 2;
+  return 0 <= value && value <= 3;
 }
-inline constexpr int FeatureSet_EnforceNamingStyle_EnforceNamingStyle_ARRAYSIZE = 2 + 1;
+inline constexpr int FeatureSet_EnforceNamingStyle_EnforceNamingStyle_ARRAYSIZE = 3 + 1;
 [[nodiscard]] PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
 FeatureSet_EnforceNamingStyle_descriptor();
 [[nodiscard]] inline auto ProtobufInternalGetEnumDescriptor(FeatureSet_EnforceNamingStyle) {
@@ -948,7 +949,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& FeatureSet_EnforceNamingStyle_Name(FeatureSet_EnforceNamingStyle value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_EnforceNamingStyle_descriptor, 0, 2>(
+  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_EnforceNamingStyle_descriptor, 0, 3>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool FeatureSet_EnforceNamingStyle_Parse(
@@ -2803,6 +2804,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
   static constexpr EnforceNamingStyle ENFORCE_NAMING_STYLE_UNKNOWN = FeatureSet_EnforceNamingStyle_ENFORCE_NAMING_STYLE_UNKNOWN;
   static constexpr EnforceNamingStyle STYLE2024 = FeatureSet_EnforceNamingStyle_STYLE2024;
   static constexpr EnforceNamingStyle STYLE_LEGACY = FeatureSet_EnforceNamingStyle_STYLE_LEGACY;
+  static constexpr EnforceNamingStyle STYLE2026 = FeatureSet_EnforceNamingStyle_STYLE2026;
   [[nodiscard]] static inline bool EnforceNamingStyle_IsValid(int value) {
     return FeatureSet_EnforceNamingStyle_IsValid(value);
   }
