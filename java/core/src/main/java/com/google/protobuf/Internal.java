@@ -597,6 +597,13 @@ public final class Internal {
     ProtobufList<E> mutableCopyWithCapacity(int capacity);
   }
 
+  public static interface MessageList<E> extends ProtobufList<E> {
+
+    /** Returns a mutable clone of this list with the specified capacity. */
+    @Override
+    MessageList<E> mutableCopyWithCapacity(int capacity);
+  }
+
   /**
    * A {@link java.util.List} implementation that avoids boxing the elements into Integers if
    * possible. Does not support null elements.
