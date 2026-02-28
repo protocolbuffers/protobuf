@@ -689,6 +689,7 @@ cc_library(
         "parse_context.h",
         "raw_ptr.h",
         "repeated_field.h",
+        "repeated_field_proxy.h",
         "repeated_ptr_field.h",
         "runtime_version.h",
         "serial_arena.h",
@@ -949,6 +950,24 @@ cc_test(
         ":protobuf_lite",
         ":test_util2",
         "//src/google/protobuf/io",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "repeated_field_proxy_test",
+    size = "small",
+    srcs = [
+        "repeated_field_proxy_test.cc",
+    ],
+    deps = [
+        ":arena",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_textproto",
+        "//src/google/protobuf/test_protos:test_cc_protos",
+        "@abseil-cpp//absl/algorithm:container",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
