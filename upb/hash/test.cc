@@ -336,7 +336,7 @@ TEST(IntTableTest, BoolKeys) {
   // First element.
   EXPECT_TRUE(upb_inttable_next(&t, &key, &val, &iter));
   bool key_bool;
-  memcpy(&key_bool, &key, sizeof(key_bool));
+  key_bool = static_cast<bool>(key);
   EXPECT_EQ(key_bool, false);
   EXPECT_EQ(upb_inttable_iter_key(&t, iter), false);
   EXPECT_EQ(val.val, true);
@@ -345,7 +345,7 @@ TEST(IntTableTest, BoolKeys) {
 
   // Second element.
   EXPECT_TRUE(upb_inttable_next(&t, &key, &val, &iter));
-  memcpy(&key_bool, &key, sizeof(key_bool));
+  key_bool = static_cast<bool>(key);
   EXPECT_EQ(key_bool, true);
   EXPECT_EQ(upb_inttable_iter_key(&t, iter), true);
   EXPECT_EQ(val.val, false);
