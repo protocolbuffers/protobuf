@@ -1,0 +1,27 @@
+edition = "UNSTABLE";
+
+package proto2_unittest;
+
+import "google/protobuf/cpp_features.proto";
+import "google/protobuf/test_protos/repeated_field_proxy_import_message.proto";
+
+message RepeatedFieldProxyTestSimpleMessage {
+  int32 value = 1;
+}
+
+message TestRepeatedMessageProxy {
+  message NestedMessage {
+    int32 value = 1;
+  }
+
+  repeated NestedMessage nested_messages = 1
+      [features.(pb.cpp).repeated_type = LEGACY];
+
+  repeated NestedMessage nested_messages_proxy = 2
+      [features.(pb.cpp).repeated_type = PROXY];
+}
+
+message TestRepeatedImportMessageProxy {
+  repeated proto2_unittest.RepeatedFieldProxyTestImportMessage
+      import_messages_proxy = 1 [features.(pb.cpp).repeated_type = PROXY];
+}

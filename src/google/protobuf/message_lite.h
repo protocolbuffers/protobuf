@@ -43,6 +43,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/repeated_field_proxy.h"
 
 
 // clang-format off
@@ -1160,6 +1161,19 @@ class PROTOBUF_EXPORT MessageLite {
     return *reinterpret_cast<const internal::CachedSize*>(
         reinterpret_cast<const char*>(this) +
         GetClassData()->cached_size_offset);
+  }
+
+  template <typename ElementType>
+  PROTOBUF_ALWAYS_INLINE RepeatedFieldProxy<ElementType> BuildRepeatedProxy(
+      internal::RepeatedFieldType<ElementType>& field) const {
+    return RepeatedFieldProxy<ElementType>(field, GetArena());
+  }
+
+  template <typename ElementType>
+  PROTOBUF_ALWAYS_INLINE RepeatedFieldProxy<const ElementType>
+  BuildRepeatedProxy(
+      const internal::RepeatedFieldType<ElementType>& field) const {
+    return RepeatedFieldProxy<const ElementType>(field);
   }
 
   // The following methods should be used to access has bits. They enable

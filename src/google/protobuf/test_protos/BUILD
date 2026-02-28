@@ -11,6 +11,9 @@ proto_library(
     name = "test_protos",
     srcs = glob(["*.proto"]),
     strip_import_prefix = "/src",
+    deps = [
+        "//src/google/protobuf:cpp_features_proto",
+    ],
 )
 
 cc_proto_library(

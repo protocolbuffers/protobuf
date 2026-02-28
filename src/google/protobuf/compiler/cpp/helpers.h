@@ -54,6 +54,12 @@ inline absl::string_view ProtobufNamespace(const Options& opts) {
   return opts.opensource_runtime ? kOssNs : kGoogle3Ns;
 }
 
+// A helper for calling FieldDescriptor::cpp_repeated_type() which is private.
+inline FieldDescriptor::CppRepeatedType FieldDescriptorRepeatedType(
+    const FieldDescriptor* field) {
+  return field->cpp_repeated_type();
+}
+
 inline std::string DeprecatedAttribute(const Options&,
                                        const FieldDescriptor* d) {
   return d->options().deprecated() ? "[[deprecated]] " : "";
@@ -494,10 +500,12 @@ const FieldDescriptor* FindHottestField(
 // Does the file contain any definitions that need extension_set.h?
 bool HasExtensionsOrExtendableMessage(const FileDescriptor* file);
 
-// Does the file have any repeated fields, necessitating the file to include
-// repeated_field.h? This does not include repeated extensions, since those are
-// all stored internally in an ExtensionSet, not a separate RepeatedField*.
-bool HasRepeatedFields(const FileDescriptor* file);
+// Does the file have any repeated fields matching the given repeated type,
+// necessitating the file to include repeated_field.h/repeated_field_proxy.h?
+// This does not include repeated extensions, since those are all stored
+// internally in an ExtensionSet, not a separate RepeatedField*.
+bool HasRepeatedFields(const FileDescriptor* file,
+                       FieldDescriptor::CppRepeatedType cpp_repeated_type);
 
 // Does the file have any string/bytes fields with ctype=STRING_PIECE? This
 // does not include extensions, since ctype is ignored for extensions.

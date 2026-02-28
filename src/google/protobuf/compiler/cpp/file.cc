@@ -1589,14 +1589,18 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   if (options_.opensource_runtime) {
     // Open-source relies on unconditional includes of these.
     IncludeFileAndExport("third_party/protobuf/repeated_field.h", p);
+    IncludeFileAndExport("third_party/protobuf/repeated_field_proxy.h", p);
     IncludeFileAndExport("third_party/protobuf/extension_set.h", p);
   } else {
     // Google3 includes these files only when they are necessary.
     if (HasExtensionsOrExtendableMessage(file_)) {
       IncludeFileAndExport("third_party/protobuf/extension_set.h", p);
     }
-    if (HasRepeatedFields(file_)) {
+    if (HasRepeatedFields(file_, FieldDescriptor::CppRepeatedType::kRepeated)) {
       IncludeFileAndExport("third_party/protobuf/repeated_field.h", p);
+    }
+    if (HasRepeatedFields(file_, FieldDescriptor::CppRepeatedType::kProxy)) {
+      IncludeFileAndExport("third_party/protobuf/repeated_field_proxy.h", p);
     }
     if (HasStringPieceFields(file_, options_)) {
       IncludeFile("third_party/protobuf/string_piece_field_support.h", p);
