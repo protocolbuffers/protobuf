@@ -693,12 +693,41 @@ VALUE Map_hash(VALUE _self) {
 /*
  * ruby-doc: Map#to_h
  *
- * Returns a Ruby Hash object containing all the values within the map
+ * Returns a Ruby Hash object containing all the values within the map.
+ * If a block is provided, each key-value pair is transformed by the block,
+ * which should return a [key, value] array.
  *
+ * @yield [key, value] optional block to transform each pair
  * @return [Hash]
  */
 VALUE Map_to_h(VALUE _self) {
   Map* self = ruby_to_Map(_self);
+  
+  if (rb_block_given_p()) {
+    VALUE hash = rb_hash_new();
+    size_t iter = kUpb_Map_Begin;
+    upb_MessageValue key, val;
+    
+    while (upb_Map_Next(self->map, &key, &val, &iter)) {
+      VALUE key_val = Convert_UpbToRuby(key, Map_keyinfo(self), self->arena);
+      VALUE val_val = Convert_UpbToRuby(val, self->value_type_info, self->arena);
+      VALUE block_result = rb_yield_values(2, key_val, val_val);
+      
+      if (TYPE(block_result) != T_ARRAY) {
+        rb_raise(rb_eTypeError, "block must return an array");
+      }
+      if (RARRAY_LEN(block_result) != 2) {
+        rb_raise(rb_eArgError, "block must return an array of 2 elements");
+      }
+      
+      VALUE new_key = rb_ary_entry(block_result, 0);
+      VALUE new_val = rb_ary_entry(block_result, 1);
+      rb_hash_aset(hash, new_key, new_val);
+    }
+    
+    return hash;
+  }
+
   return Map_CreateHash(self->map, self->key_type, self->value_type_info);
 }
 
