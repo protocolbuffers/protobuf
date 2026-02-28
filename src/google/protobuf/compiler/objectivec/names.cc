@@ -699,6 +699,8 @@ std::string BaseFileName(const FileDescriptor* file) {
   return basename;
 }
 
+namespace {
+
 // Gets the objc_class_prefix or the prefix made from the proto package.
 // If out_is_proto_package_prefix is not nullptr, then it will be set to true if
 // the prefix is made from the proto package.
@@ -744,6 +746,8 @@ std::string FileClassPrefix(const FileDescriptor* file,
   }
   return absl::StrCat(g_prefix_mode.forced_package_prefix(), result);
 }
+
+}  // namespace
 
 std::string FileClassPrefix(const FileDescriptor* file) {
   return FileClassPrefix(file, nullptr);
