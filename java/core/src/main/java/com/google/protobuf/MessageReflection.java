@@ -101,7 +101,10 @@ class MessageReflection {
   @SuppressWarnings("unchecked")
   static boolean isInitialized(MessageOrBuilder message) {
     // Check that all required fields are present.
-    for (final Descriptors.FieldDescriptor field : message.getDescriptorForType().getFields()) {
+    Descriptor descriptor = message.getDescriptorForType();
+    int numFields = descriptor.getFieldCount();
+    for (int i = 0; i < numFields; i++) {
+      FieldDescriptor field = descriptor.getField(i);
       if (field.isRequired()) {
         if (!message.hasField(field)) {
           return false;
