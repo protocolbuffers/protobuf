@@ -699,7 +699,16 @@ std::string BaseFileName(const FileDescriptor* file) {
   return basename;
 }
 
-std::string FileClassPrefix(const FileDescriptor* file) {
+// Gets the objc_class_prefix or the prefix made from the proto package.
+// If out_is_proto_package_prefix is not nullptr, then it will be set to true if
+// the prefix is made from the proto package.
+std::string FileClassPrefix(const FileDescriptor* file,
+                            bool* out_is_proto_package_prefix) {
+  // False for the early exit cases
+  if (out_is_proto_package_prefix) {
+    *out_is_proto_package_prefix = false;
+  }
+
   // Always honor the file option.
   if (file->options().has_objc_class_prefix()) {
     return file->options().objc_class_prefix();
@@ -730,7 +739,14 @@ std::string FileClassPrefix(const FileDescriptor* file) {
   if (!result.empty()) {
     result.append("_");
   }
+  if (out_is_proto_package_prefix) {
+    *out_is_proto_package_prefix = true;
+  }
   return absl::StrCat(g_prefix_mode.forced_package_prefix(), result);
+}
+
+std::string FileClassPrefix(const FileDescriptor* file) {
+  return FileClassPrefix(file, nullptr);
 }
 
 std::string FilePath(const FileDescriptor* file) {
@@ -906,21 +922,50 @@ std::string ExtensionClassName(const FieldDescriptor* descriptor) {
 }
 
 std::string ExtensionFunctionName(const FieldDescriptor* descriptor) {
-  std::string prefix;
+  std::string function_name;
+
+  const std::string camel_case_name =
+      UnderscoresToCamelCase(NameFromFieldDescriptor(descriptor), true);
+
   if (descriptor->extension_scope() == nullptr) {
     // File-scoped extension.
-    prefix = absl::StrCat(
-        ProtoPackageToCamelCase(descriptor->file()->package()), "_extension");
+    // <FileClassPrefix>_<ProtoPackageCamelCase>_extension_<NameCamelCase>
+    std::vector<std::string> elements;
+    bool file_class_prefix_is_proto_package_prefix = false;
+    std::string file_class_prefix = FileClassPrefix(
+        descriptor->file(), &file_class_prefix_is_proto_package_prefix);
+
+    // If the file class prefix is the proto package prefix, we can strip the
+    // trailing underscore.
+    if (!file_class_prefix.empty()) {
+      if (file_class_prefix_is_proto_package_prefix) {
+        file_class_prefix =
+            std::string(absl::StripSuffix(file_class_prefix, "_"));
+      }
+      elements.push_back(file_class_prefix);
+    }
+
+    // If the file class prefix is the proto package prefix, then we don't need
+    // to duplicate the proto package prefix here. We still prefer the file
+    // class prefix in this case, in case it has a forced prefix as well.
+    if (!file_class_prefix_is_proto_package_prefix) {
+      elements.push_back(
+          ProtoPackageToCamelCase(descriptor->file()->package()));
+    }
+    elements.push_back("extension");
+    elements.push_back(camel_case_name);
+    function_name = absl::StrJoin(elements, "_");
   } else {
     // Message-scoped extension.
-    prefix = absl::StrCat(
-        ProtoPackageToCamelCase(descriptor->file()->package()), "_",
-        ClassName(descriptor->extension_scope()), "_extension");
+    // <ScopeMessageCamelCase>_extension_<NameCamelCase>
+    std::vector<std::string> elements = {
+        ClassName(descriptor->extension_scope()),
+        "extension",
+        camel_case_name,
+    };
+    function_name = absl::StrJoin(elements, "_");
   }
-  const std::string name = NameFromFieldDescriptor(descriptor);
-  const std::string camel_case_name = UnderscoresToCamelCase(name, true);
-  const std::string prefixed_name = absl::StrCat(prefix, "_", camel_case_name);
-  return SanitizeNameForObjC("", prefixed_name, "_Extension", nullptr);
+  return SanitizeNameForObjC("", function_name, "_Extension", nullptr);
 }
 
 std::string ExtensionMethodName(const FieldDescriptor* descriptor) {
