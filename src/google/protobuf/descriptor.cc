@@ -4298,6 +4298,23 @@ FieldDescriptor::CppStringType FieldDescriptor::CalculateCppStringType() const {
   }
 }
 
+FieldDescriptor::CppRepeatedType FieldDescriptor::CalculateCppRepeatedType()
+    const {
+  ABSL_DCHECK(is_repeated());
+
+  switch (features().GetExtension(pb::cpp).repeated_type()) {
+    case pb::CppFeatures::LEGACY:
+      return CppRepeatedType::kRepeated;
+    case pb::CppFeatures::PROXY:
+      return CppRepeatedType::kProxy;
+    default:
+      // If features haven't been resolved, this is a dynamic build not for C++
+      // codegen. Just use the legacy repeated type.
+      ABSL_DCHECK(!features().GetExtension(pb::cpp).has_repeated_type());
+      return CppRepeatedType::kRepeated;
+  }
+}
+
 // Location methods ===============================================
 
 bool FileDescriptor::GetSourceLocation(const std::vector<int>& path,
@@ -5997,6 +6014,11 @@ void DescriptorBuilder::PostProcessFieldFeatures(
     ABSL_DCHECK_EQ(field.cpp_string_type_, static_cast<uint8_t>(string_type));
   }
 
+  if (field.is_repeated()) {
+    field.cpp_repeated_type_ =
+        static_cast<uint8_t>(field.CalculateCppRepeatedType());
+  }
+
   if (field.options_->has_ctype()) {
     field.legacy_proto_ctype_ = field.options_->ctype();
     const_cast<FieldOptions*>(  // NOLINT(google3-runtime-proto-const-cast)
@@ -7079,6 +7101,8 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   // bootstrapping.
   result->cpp_string_type_ =
       static_cast<uint8_t>(FieldDescriptor::CppStringType::kString);
+  result->cpp_repeated_type_ =
+      static_cast<uint8_t>(FieldDescriptor::CppRepeatedType::kRepeated);
 
   if (proto.proto3_optional() && file_->edition() != Edition::EDITION_PROTO3) {
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
