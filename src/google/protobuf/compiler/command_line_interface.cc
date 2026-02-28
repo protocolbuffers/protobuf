@@ -12,6 +12,7 @@
 #include "google/protobuf/compiler/command_line_interface.h"
 
 #include <errno.h>
+#include <vector>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -216,31 +217,31 @@ bool TryCreateParentDirectory(const std::string& prefix,
 // Get the absolute path of this protoc binary.
 bool GetProtocAbsolutePath(std::string* path) {
 #ifdef _WIN32
-  char buffer[MAX_PATH];
-  int len = GetModuleFileNameA(nullptr, buffer, MAX_PATH);
+  std::vector<char> buffer(MAX_PATH);
+  int len = GetModuleFileNameA(nullptr, buffer.data(), MAX_PATH);
 #elif defined(__APPLE__)
-  char buffer[PATH_MAX];
+  std::vector<char> buffer(PATH_MAX);
   int len = 0;
 
   char dirtybuffer[PATH_MAX];
   uint32_t size = sizeof(dirtybuffer);
   if (_NSGetExecutablePath(dirtybuffer, &size) == 0) {
-    realpath(dirtybuffer, buffer);
-    len = strlen(buffer);
+    realpath(dirtybuffer, buffer.data());
+    len = strlen(buffer.data());
   }
 #elif defined(__FreeBSD__)
-  char buffer[PATH_MAX];
+  std::vector<char> buffer(PATH_MAX);
   size_t len = PATH_MAX;
   int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
-  if (sysctl(mib, 4, &buffer, &len, nullptr, 0) != 0) {
+  if (sysctl(mib, 4, buffer.data(), &len, nullptr, 0) != 0) {
     len = 0;
   }
 #else
-  char buffer[PATH_MAX];
-  int len = readlink("/proc/self/exe", buffer, PATH_MAX);
+  std::vector<char> buffer(PATH_MAX);
+  int len = readlink("/proc/self/exe", buffer.data(), buffer.size());
 #endif
   if (len > 0) {
-    path->assign(buffer, len);
+    path->assign(buffer.data(), len);
     return true;
   } else {
     return false;
