@@ -44,6 +44,12 @@ proto_toolchain(
         protoc_label = "bin/protoc.exe" if rctx.attr.platform.startswith("win") else "bin/protoc",
     ))
 
+    # Bazel <8.3.0 lacks rctx.repo_metadata
+    if not hasattr(rctx, "repo_metadata"):
+        return None
+
+    return rctx.repo_metadata(reproducible = True)
+
 prebuilt_protoc_repo = repository_rule(
     doc = "Download a pre-built protoc and create a concrete toolchains for it",
     implementation = _prebuilt_protoc_repo_impl,
