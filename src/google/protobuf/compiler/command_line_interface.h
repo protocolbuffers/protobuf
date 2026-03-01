@@ -393,6 +393,8 @@ class PROTOC_EXPORT CommandLineInterface {
 
   // See AllowPlugins().  If this is empty, plugins aren't allowed.
   std::string plugin_prefix_;
+  // Optional prefix command used to invoke plugins.
+  std::vector<std::string> plugin_command_prefix_;
 
   // Maps specific plugin names to files.  When executing a plugin, this map
   // is searched first to find the plugin executable.  If not found here, the
