@@ -1,0 +1,69 @@
+# Compute and upload SHA256 checksums for all release assets.
+#
+# This workflow runs automatically when a release is published and attaches a
+# checksums.txt file to the release so that users can verify the integrity of
+# downloaded artifacts.
+#
+# Can also be triggered manually via workflow_dispatch for back-filling
+# existing releases.
+#
+# See https://github.com/protocolbuffers/protobuf/issues/16165
+
+name: Release Checksums
+
+on:
+  release:
+    types: [published]
+  # Allow manual trigger for back-filling existing releases
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Tag of the release to compute checksums for"
+        required: true
+        type: string
+
+permissions:
+  contents: write  # Needed to upload release assets
+
+jobs:
+  checksums:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.tag_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p assets
+          gh release download "${{ steps.tag.outputs.tag }}" \
+            --repo "${{ github.repository }}" \
+            --dir assets \
+            --skip-existing
+
+      - name: Compute SHA256 checksums
+        run: |
+          cd assets
+          # Remove any pre-existing checksum files from a previous run
+          rm -f checksums.txt SHA256SUMS
+          # Compute checksums for all remaining assets, sorted for
+          # reproducibility
+          sha256sum -- * | LC_ALL=C sort -k2 > checksums.txt
+          echo "=== checksums.txt ==="
+          cat checksums.txt
+
+      - name: Upload checksum file
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ steps.tag.outputs.tag }}" \
+            assets/checksums.txt \
+            --repo "${{ github.repository }}" \
+            --clobber
