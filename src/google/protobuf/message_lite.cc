@@ -416,10 +416,12 @@ bool MessageLite::ParsePartialFromString(absl::string_view data) {
 }
 
 bool MessageLite::ParseFromArray(const void* data, int size) {
+  if (size < 0) return false;
   return ParseFrom<kParse>(as_string_view(data, size));
 }
 
 bool MessageLite::ParsePartialFromArray(const void* data, int size) {
+  if (size < 0) return false;
   return ParseFrom<kParsePartial>(as_string_view(data, size));
 }
 
