@@ -82,7 +82,7 @@ public abstract class GeneratedMessageLite<
     memoizedHashCode = value;
   }
 
-  void clearMemoizedHashCode() {
+  final void clearMemoizedHashCode() {
     memoizedHashCode = UNINITIALIZED_HASH_CODE;
   }
 
