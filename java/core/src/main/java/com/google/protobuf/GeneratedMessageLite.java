@@ -78,7 +78,7 @@ public abstract class GeneratedMessageLite<
     return memoizedHashCode;
   }
 
-  void setMemoizedHashCode(int value) {
+  final void setMemoizedHashCode(int value) {
     memoizedHashCode = value;
   }
 
