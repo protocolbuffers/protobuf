@@ -277,6 +277,14 @@ void ImmutableMapFieldGenerator::GenerateInterfaceMembers(
                    "$deprecation$java.util.Map<$type_parameters$>\n"
                    "${$get$capitalized_name$Map$}$();\n");
     printer->Annotate("{", "}", descriptor_);
+    if (GetJavaType(value) == JAVATYPE_MESSAGE) {
+      WriteFieldDocComment(printer, descriptor_, context_->options());
+      printer->Print(variables_,
+                     "$deprecation$java.util.Map<$boxed_key_type$, "
+                     "? extends $value_interface_type$>\n"
+                     "${$get$capitalized_name$OrBuilderMap$}$();\n");
+      printer->Annotate("{", "}", descriptor_);
+    }
     WriteFieldDocComment(printer, descriptor_, context_->options());
     printer->Print(variables_,
                    "$deprecation$$value_type_pass_through_nullness$ "
@@ -683,6 +691,15 @@ void ImmutableMapFieldGenerator::GenerateMapGetters(
                    "  return internalGet$capitalized_name$().getMap();\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
+    if (GetJavaType(value) == JAVATYPE_MESSAGE) {
+      printer->Print(variables_,
+                     "@java.lang.Override\n"
+                     "$deprecation$public java.util.Map<$type_parameters$> "
+                     "${$get$capitalized_name$OrBuilderMap$}$() {\n"
+                     "  return get$capitalized_name$Map();\n"
+                     "}\n");
+      printer->Annotate("{", "}", descriptor_);
+    }
     WriteFieldDocComment(printer, descriptor_, context_->options());
     printer->Print(
         variables_,
@@ -907,6 +924,17 @@ void ImmutableMapFieldGenerator::GenerateMessageMapGetters(
                  "$deprecation$public java.util.Map<$type_parameters$> "
                  "${$get$capitalized_name$Map$}$() {\n"
                  "  return internalGet$capitalized_name$().getImmutableMap();\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldDocComment(printer, descriptor_, context_->options());
+  printer->Print(variables_,
+                 "@java.lang.Override\n"
+                 "$deprecation$public java.util.Map<$boxed_key_type$, "
+                 "$value_interface_type$> "
+                 "${$get$capitalized_name$OrBuilderMap$}$() {\n"
+                 "  return java.util.Collections.unmodifiableMap("
+                 "new java.util.LinkedHashMap<>(\n"
+                 "      internalGet$capitalized_name$().ensureBuilderMap()));\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
   WriteFieldDocComment(printer, descriptor_, context_->options());
