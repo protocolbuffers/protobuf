@@ -74,7 +74,7 @@ public abstract class GeneratedMessageLite<
     memoizedSerializedSize &= ~MUTABLE_FLAG_MASK;
   }
 
-  int getMemoizedHashCode() {
+  final int getMemoizedHashCode() {
     return memoizedHashCode;
   }
 
