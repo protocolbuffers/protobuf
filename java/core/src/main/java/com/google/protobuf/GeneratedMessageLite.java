@@ -86,7 +86,7 @@ public abstract class GeneratedMessageLite<
     memoizedHashCode = UNINITIALIZED_HASH_CODE;
   }
 
-  boolean hashCodeIsNotMemoized() {
+  final boolean hashCodeIsNotMemoized() {
     return UNINITIALIZED_HASH_CODE == getMemoizedHashCode();
   }
 
