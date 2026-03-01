@@ -548,3 +548,8 @@ about your project (name and website) so we can add an entry for you.
 
     *   Website: https://www.thermofisher.com/
     *   Extensions: 1275-1284
+
+1.  protosearch
+
+    *   Website: https://github.com/benwebber/protosearch
+    *   Extensions: 1285
