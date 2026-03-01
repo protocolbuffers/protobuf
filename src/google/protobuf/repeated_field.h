@@ -550,10 +550,17 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
     ReserveWithArena(arena, size() + grow_by);
   }
 
-  void AddWithArena(Arena* arena, Element value);
+  void* AddUninitializedWithArena(Arena* arena);
+
+  pointer AddWithArena(Arena* arena, Element value);
   pointer AddWithArena(Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND;
   template <typename Iter>
   void AddWithArena(Arena* arena, Iter begin, Iter end);
+
+  // Private-only API for in-place construction of elements in the repeated
+  // field.
+  template <typename... Args>
+  pointer EmplaceWithArena(Arena* arena, Args&&... args);
 
   void SwapFallbackWithTemp(Arena* arena, RepeatedField& other,
                             Arena* other_arena, RepeatedField<Element>& temp);
@@ -966,6 +973,19 @@ inline void RepeatedField<Element>::Set(int index, const Element& value) {
 }
 
 template <typename Element>
+inline void* RepeatedField<Element>::AddUninitializedWithArena(Arena* arena) {
+  ABSL_DCHECK_EQ(arena, GetArena());
+
+  bool is_soo = this->is_soo();
+  const int old_size = size();
+  if (ABSL_PREDICT_FALSE(old_size == Capacity(is_soo))) {
+    Grow(arena, is_soo, old_size, old_size + 1);
+    is_soo = false;
+  }
+  return unsafe_elements(is_soo) + ExchangeCurrentSize(old_size + 1);
+}
+
+template <typename Element>
 inline void RepeatedField<Element>::Add(Element value) {
   AddWithArena(GetArena(), std::move(value));
 }
@@ -977,7 +997,8 @@ inline void RepeatedField<Element>::InternalAddWithArena(
 }
 
 template <typename Element>
-inline void RepeatedField<Element>::AddWithArena(Arena* arena, Element value) {
+inline typename RepeatedField<Element>::pointer
+RepeatedField<Element>::AddWithArena(Arena* arena, Element value) {
   ABSL_DCHECK_EQ(arena, GetArena());
 
   bool is_soo = this->is_soo();
@@ -992,7 +1013,7 @@ inline void RepeatedField<Element>::AddWithArena(Arena* arena, Element value) {
   }
   int new_size = old_size + 1;
   void* p = elem + ExchangeCurrentSize(new_size);
-  ::new (p) Element(std::move(value));
+  auto* result = ::new (p) Element(std::move(value));
 
   // The below helps the compiler optimize dense loops.
   // Note: we can't call functions in PROTOBUF_ASSUME so use local variables.
@@ -1004,6 +1025,8 @@ inline void RepeatedField<Element>::AddWithArena(Arena* arena, Element value) {
   PROTOBUF_ASSUME(elem == final_elements);
   [[maybe_unused]] const int final_capacity = Capacity(is_soo);
   PROTOBUF_ASSUME(capacity == final_capacity);
+
+  return result;
 }
 
 template <typename Element>
@@ -1020,16 +1043,7 @@ inline Element* RepeatedField<Element>::InternalAddWithArena(
 template <typename Element>
 inline Element* RepeatedField<Element>::AddWithArena(Arena* arena)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  ABSL_DCHECK_EQ(arena, GetArena());
-
-  bool is_soo = this->is_soo();
-  const int old_size = size();
-  if (ABSL_PREDICT_FALSE(old_size == Capacity())) {
-    Grow(arena, is_soo, old_size, old_size + 1);
-    is_soo = false;
-  }
-  void* p = unsafe_elements(is_soo) + ExchangeCurrentSize(old_size + 1);
-  return ::new (p) Element;
+  return ::new (AddUninitializedWithArena(arena)) Element;
 }
 
 template <typename Element>
@@ -1122,6 +1136,14 @@ inline void RepeatedField<Element>::AddWithArena(Arena* arena, Iter begin,
   } else {
     AddInputIterator(arena, begin, end);
   }
+}
+
+template <typename Element>
+template <typename... Args>
+typename RepeatedField<Element>::pointer
+RepeatedField<Element>::EmplaceWithArena(Arena* arena, Args&&... args) {
+  return ::new (AddUninitializedWithArena(arena))
+      Element(std::forward<Args>(args)...);
 }
 
 template <typename Element>
