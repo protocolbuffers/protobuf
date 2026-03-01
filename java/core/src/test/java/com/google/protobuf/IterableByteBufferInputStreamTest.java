@@ -37,4 +37,25 @@ public class IterableByteBufferInputStreamTest {
       assertThat(in.read()).isEqualTo(-1);
     }
   }
+
+  @Test
+  public void testAllEmpty() throws Exception {
+    try (InputStream in1 = new IterableByteBufferInputStream(Arrays.asList())) {
+      assertThat(in1.read()).isEqualTo(-1);
+    }
+
+    try (InputStream in1 = new IterableByteBufferInputStream(Arrays.asList(
+            ByteBuffer.wrap(new byte[0])
+    ))) {
+      assertThat(in1.read()).isEqualTo(-1);
+    }
+
+    try (InputStream in = new IterableByteBufferInputStream(Arrays.asList(
+            ByteBuffer.wrap(new byte[0]),
+            ByteBuffer.wrap(new byte[0]),
+            ByteBuffer.wrap(new byte[0])
+    ))) {
+      assertThat(in.read()).isEqualTo(-1);
+    }
+  }
 }
