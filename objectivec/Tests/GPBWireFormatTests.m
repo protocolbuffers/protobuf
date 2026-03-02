@@ -118,12 +118,8 @@ const int kUnknownTypeId2 = 1550056;
   // Set up a MSetMessage with two known messages and an unknown one.
   MSetMessage* message_set = [MSetMessage message];
 #if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
-  [[message_set
-      getExtension:Objc_Protobuf_Tests_Mset_MSetMessageExtension1_extension_MessageSetExtension()]
-      setI:123];
-  [[message_set
-      getExtension:Objc_Protobuf_Tests_Mset_MSetMessageExtension2_extension_MessageSetExtension()]
-      setStr:@"foo"];
+  [[message_set getExtension:MSetMessageExtension1_extension_MessageSetExtension()] setI:123];
+  [[message_set getExtension:MSetMessageExtension2_extension_MessageSetExtension()] setStr:@"foo"];
 #else
   [[message_set getExtension:[MSetMessageExtension1 messageSetExtension]] setI:123];
   [[message_set getExtension:[MSetMessageExtension2 messageSetExtension]] setStr:@"foo"];
@@ -154,12 +150,10 @@ const int kUnknownTypeId2 = 1550056;
 
   XCTAssertEqual(raw.itemArray.count, (NSUInteger)3);
 #if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
-  XCTAssertEqual(
-      (uint32_t)[raw.itemArray[0] typeId],
-      Objc_Protobuf_Tests_Mset_MSetMessageExtension1_extension_MessageSetExtension().fieldNumber);
-  XCTAssertEqual(
-      (uint32_t)[raw.itemArray[1] typeId],
-      Objc_Protobuf_Tests_Mset_MSetMessageExtension2_extension_MessageSetExtension().fieldNumber);
+  XCTAssertEqual((uint32_t)[raw.itemArray[0] typeId],
+                 MSetMessageExtension1_extension_MessageSetExtension().fieldNumber);
+  XCTAssertEqual((uint32_t)[raw.itemArray[1] typeId],
+                 MSetMessageExtension2_extension_MessageSetExtension().fieldNumber);
 #else
   XCTAssertEqual((uint32_t)[raw.itemArray[0] typeId],
                  [MSetMessageExtension1 messageSetExtension].fieldNumber);
@@ -188,8 +182,7 @@ const int kUnknownTypeId2 = 1550056;
   {
     MSetRawMessageSet_Item* item = [MSetRawMessageSet_Item message];
 #if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
-    item.typeId =
-        Objc_Protobuf_Tests_Mset_MSetMessageExtension1_extension_MessageSetExtension().fieldNumber;
+    item.typeId = MSetMessageExtension1_extension_MessageSetExtension().fieldNumber;
 #else
     item.typeId = [MSetMessageExtension1 messageSetExtension].fieldNumber;
 #endif
@@ -202,8 +195,7 @@ const int kUnknownTypeId2 = 1550056;
   {
     MSetRawMessageSet_Item* item = [MSetRawMessageSet_Item message];
 #if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
-    item.typeId =
-        Objc_Protobuf_Tests_Mset_MSetMessageExtension2_extension_MessageSetExtension().fieldNumber;
+    item.typeId = MSetMessageExtension2_extension_MessageSetExtension().fieldNumber;
 #else
     item.typeId = [MSetMessageExtension2 messageSetExtension].fieldNumber;
 #endif
@@ -230,14 +222,9 @@ const int kUnknownTypeId2 = 1550056;
                            error:NULL];
 
   XCTAssertEqual(
-      [[messageSet
-          getExtension:
-              Objc_Protobuf_Tests_Mset_MSetMessageExtension1_extension_MessageSetExtension()] i],
-      123);
+      [[messageSet getExtension:MSetMessageExtension1_extension_MessageSetExtension()] i], 123);
   XCTAssertEqualObjects(
-      [[messageSet
-          getExtension:
-              Objc_Protobuf_Tests_Mset_MSetMessageExtension2_extension_MessageSetExtension()] str],
+      [[messageSet getExtension:MSetMessageExtension2_extension_MessageSetExtension()] str],
       @"foo");
 #else
   MSetMessage* messageSet = [MSetMessage parseFromData:data
@@ -268,9 +255,7 @@ const int kUnknownTypeId2 = 1550056;
     MSetRawBreakableMessageSet_Item* item = [MSetRawBreakableMessageSet_Item message];
 
 #if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
-    [item.typeIdArray
-        addValue:Objc_Protobuf_Tests_Mset_MSetMessageExtension1_extension_MessageSetExtension()
-                     .fieldNumber];
+    [item.typeIdArray addValue:MSetMessageExtension1_extension_MessageSetExtension().fieldNumber];
 #else
     [item.typeIdArray addValue:[MSetMessageExtension1 messageSetExtension].fieldNumber];
 #endif
@@ -280,9 +265,7 @@ const int kUnknownTypeId2 = 1550056;
     [item.messageArray addObject:itemData];
 
 #if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
-    [item.typeIdArray
-        addValue:Objc_Protobuf_Tests_Mset_MSetMessageExtension2_extension_MessageSetExtension()
-                     .fieldNumber];
+    [item.typeIdArray addValue:MSetMessageExtension2_extension_MessageSetExtension().fieldNumber];
 #else
     [item.typeIdArray addValue:[MSetMessageExtension2 messageSetExtension].fieldNumber];
 #endif
@@ -305,15 +288,10 @@ const int kUnknownTypeId2 = 1550056;
                            error:&err];
   XCTAssertNotNil(messageSet);
   XCTAssertNil(err);
-  XCTAssertTrue([messageSet
-      hasExtension:Objc_Protobuf_Tests_Mset_MSetMessageExtension1_extension_MessageSetExtension()]);
+  XCTAssertTrue([messageSet hasExtension:MSetMessageExtension1_extension_MessageSetExtension()]);
   XCTAssertEqual(
-      [[messageSet
-          getExtension:
-              Objc_Protobuf_Tests_Mset_MSetMessageExtension1_extension_MessageSetExtension()] i],
-      123);
-  XCTAssertFalse([messageSet
-      hasExtension:Objc_Protobuf_Tests_Mset_MSetMessageExtension2_extension_MessageSetExtension()]);
+      [[messageSet getExtension:MSetMessageExtension1_extension_MessageSetExtension()] i], 123);
+  XCTAssertFalse([messageSet hasExtension:MSetMessageExtension2_extension_MessageSetExtension()]);
 #else
   MSetMessage* messageSet = [MSetMessage parseFromData:data
                                      extensionRegistry:[MSetUnittestMsetRoot extensionRegistry]
@@ -334,9 +312,7 @@ const int kUnknownTypeId2 = 1550056;
   {
     MSetRawBreakableMessageSet_Item* item = [MSetRawBreakableMessageSet_Item message];
 #if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
-    [item.typeIdArray
-        addValue:Objc_Protobuf_Tests_Mset_MSetMessageExtension1_extension_MessageSetExtension()
-                     .fieldNumber];
+    [item.typeIdArray addValue:MSetMessageExtension1_extension_MessageSetExtension().fieldNumber];
 #else
     [item.typeIdArray addValue:[MSetMessageExtension1 messageSetExtension].fieldNumber];
 #endif
@@ -387,20 +363,16 @@ const int kUnknownTypeId2 = 1550056;
   MSetMessageExtension1* message1 = [MSetMessageExtension1 message];
   message1.i = 123;
 #if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
-  [msgEx
-      setExtension:
-          Objc_Protobuf_Tests_Mset_MSetMessageExtension1_extension_DoppelgangerMessageSetExtension()
-             value:message1];
+  [msgEx setExtension:MSetMessageExtension1_extension_DoppelgangerMessageSetExtension()
+                value:message1];
 #else
   [msgEx setExtension:[MSetMessageExtension1 doppelgangerMessageSetExtension] value:message1];
 #endif
   MSetMessageExtension3* message3 = [MSetMessageExtension3 message];
   message3.x = 10;
 #if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
-  [msgEx
-      setExtension:
-          Objc_Protobuf_Tests_Mset_MSetMessageExtension3_extension_DoppelgangerMessageSetExtension()
-             value:message3];
+  [msgEx setExtension:MSetMessageExtension3_extension_DoppelgangerMessageSetExtension()
+                value:message3];
 #else
   [msgEx setExtension:[MSetMessageExtension3 doppelgangerMessageSetExtension] value:message3];
 #endif
@@ -416,10 +388,7 @@ const int kUnknownTypeId2 = 1550056;
                            error:&err];
   XCTAssertNil(err);
   XCTAssertNotNil(msg);
-  XCTAssertEqual(
-      [[msg getExtension:
-                Objc_Protobuf_Tests_Mset_MSetMessageExtension1_extension_MessageSetExtension()] i],
-      123);
+  XCTAssertEqual([[msg getExtension:MSetMessageExtension1_extension_MessageSetExtension()] i], 123);
 #else
   MSetMessage* msg = [MSetMessage parseFromData:data
                               extensionRegistry:[MSetUnittestMsetRoot extensionRegistry]
@@ -433,10 +402,9 @@ const int kUnknownTypeId2 = 1550056;
   GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] initFromMessage:msg] autorelease];
   XCTAssertEqual(ufs.count, (NSUInteger)1);
 #if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
-  NSData* bytes = [ufs
-      firstLengthDelimited:
-          Objc_Protobuf_Tests_Mset_MSetMessageExtension3_extension_DoppelgangerMessageSetExtension()
-              .fieldNumber];
+  NSData* bytes =
+      [ufs firstLengthDelimited:MSetMessageExtension3_extension_DoppelgangerMessageSetExtension()
+                                    .fieldNumber];
 #else
   NSData* bytes = [ufs
       firstLengthDelimited:[MSetMessageExtension3 doppelgangerMessageSetExtension].fieldNumber];
