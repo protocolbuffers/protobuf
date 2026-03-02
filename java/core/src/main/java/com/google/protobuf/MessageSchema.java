@@ -986,11 +986,14 @@ final class MessageSchema<T> implements Schema<T> {
     final int bufferLength = buffer.length;
     for (int pos = 0; pos < bufferLength; pos += INTS_PER_FIELD) {
       final int typeAndOffset = typeAndOffsetAt(pos);
-      final int entryNumber = numberAt(pos);
-
+      final int type = type(typeAndOffset);
+      // skip all oneofs as we'll cover them separately to avoid duplicative hashing of oneof
+      // members
+      if (type > 50 && type < 69) {
+        continue;
+      }
       final long offset = offset(typeAndOffset);
-
-      switch (type(typeAndOffset)) {
+      switch (type) {
         case 0: // DOUBLE:
           hashCode =
               (hashCode * 53)
@@ -1100,105 +1103,29 @@ final class MessageSchema<T> implements Schema<T> {
         case 50: // MAP:
           hashCode = (hashCode * 53) + UnsafeUtil.getObject(message, offset).hashCode();
           break;
-        case 51: // ONEOF_DOUBLE:
-          if (isOneofPresent(message, entryNumber, pos)) {
-            hashCode =
-                (hashCode * 53)
-                    + Internal.hashLong(Double.doubleToLongBits(oneofDoubleAt(message, offset)));
-          }
-          break;
-        case 52: // ONEOF_FLOAT:
-          if (isOneofPresent(message, entryNumber, pos)) {
-            hashCode = (hashCode * 53) + Float.floatToIntBits(oneofFloatAt(message, offset));
-          }
-          break;
-        case 53: // ONEOF_INT64:
-          if (isOneofPresent(message, entryNumber, pos)) {
-            hashCode = (hashCode * 53) + Internal.hashLong(oneofLongAt(message, offset));
-          }
-          break;
-        case 54: // ONEOF_UINT64:
-          if (isOneofPresent(message, entryNumber, pos)) {
-            hashCode = (hashCode * 53) + Internal.hashLong(oneofLongAt(message, offset));
-          }
-          break;
-        case 55: // ONEOF_INT32:
-          if (isOneofPresent(message, entryNumber, pos)) {
-            hashCode = (hashCode * 53) + (oneofIntAt(message, offset));
-          }
-          break;
-        case 56: // ONEOF_FIXED64:
-          if (isOneofPresent(message, entryNumber, pos)) {
-            hashCode = (hashCode * 53) + Internal.hashLong(oneofLongAt(message, offset));
-          }
-          break;
-        case 57: // ONEOF_FIXED32:
-          if (isOneofPresent(message, entryNumber, pos)) {
-            hashCode = (hashCode * 53) + (oneofIntAt(message, offset));
-          }
-          break;
-        case 58: // ONEOF_BOOL:
-          if (isOneofPresent(message, entryNumber, pos)) {
-            hashCode = (hashCode * 53) + Internal.hashBoolean(oneofBooleanAt(message, offset));
-          }
-          break;
-        case 59: // ONEOF_STRING:
-          if (isOneofPresent(message, entryNumber, pos)) {
-            hashCode =
-                (hashCode * 53) + ((String) UnsafeUtil.getObject(message, offset)).hashCode();
-          }
-          break;
-        case 60: // ONEOF_MESSAGE:
-          if (isOneofPresent(message, entryNumber, pos)) {
-            Object submessage = UnsafeUtil.getObject(message, offset);
-            hashCode = (53 * hashCode) + submessage.hashCode();
-          }
-          break;
-        case 61: // ONEOF_BYTES:
-          if (isOneofPresent(message, entryNumber, pos)) {
-            hashCode = (hashCode * 53) + UnsafeUtil.getObject(message, offset).hashCode();
-          }
-          break;
-        case 62: // ONEOF_UINT32:
-          if (isOneofPresent(message, entryNumber, pos)) {
-            hashCode = (hashCode * 53) + (oneofIntAt(message, offset));
-          }
-          break;
-        case 63: // ONEOF_ENUM:
-          if (isOneofPresent(message, entryNumber, pos)) {
-            hashCode = (hashCode * 53) + (oneofIntAt(message, offset));
-          }
-          break;
-        case 64: // ONEOF_SFIXED32:
-          if (isOneofPresent(message, entryNumber, pos)) {
-            hashCode = (hashCode * 53) + (oneofIntAt(message, offset));
-          }
-          break;
-        case 65: // ONEOF_SFIXED64:
-          if (isOneofPresent(message, entryNumber, pos)) {
-            hashCode = (hashCode * 53) + Internal.hashLong(oneofLongAt(message, offset));
-          }
-          break;
-        case 66: // ONEOF_SINT32:
-          if (isOneofPresent(message, entryNumber, pos)) {
-            hashCode = (hashCode * 53) + (oneofIntAt(message, offset));
-          }
-          break;
-        case 67: // ONEOF_SINT64:
-          if (isOneofPresent(message, entryNumber, pos)) {
-            hashCode = (hashCode * 53) + Internal.hashLong(oneofLongAt(message, offset));
-          }
-          break;
-        case 68: // ONEOF_GROUP:
-          if (isOneofPresent(message, entryNumber, pos)) {
-            Object submessage = UnsafeUtil.getObject(message, offset);
-            hashCode = (53 * hashCode) + submessage.hashCode();
-          }
-          break;
+        // case 51 - 68 are intentionally omitted as we are skipping oneofs above in favor of the
+        // loop below
         default:
           // Assume it's an empty entry - just go to the next entry.
           break;
       }
+    }
+
+    // handle oneofs
+    for (int i = oneofFieldPositionsStart; i < intArray.length; i++) {
+      final int pos = intArray[i];
+      // this is an odd usage but isOneofPresent compares 0 to the oneof case value;
+      // 0 is the sentinel value so when 0 is set, that means there is no oneof present and we can
+      // move on to the next
+      if (isOneofPresent(message, 0, pos)) {
+        continue;
+      }
+
+      // we now know that some oneof field is present so we should actually hash it.
+      // Since all oneof fields share the same offset (the Object field) and all are boxed,
+      // we can just hash the object.
+      hashCode =
+          (hashCode * 53) + UnsafeUtil.getObject(message, offset(typeAndOffsetAt(pos))).hashCode();
     }
 
     hashCode = (hashCode * 53) + unknownFieldSchema.getFromMessage(message).hashCode();
