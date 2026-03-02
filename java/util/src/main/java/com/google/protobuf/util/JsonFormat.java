@@ -421,8 +421,11 @@ public class JsonFormat {
      * it and cannot be migrated at once. See tests for examples of incorrect behavior.
      *
      * <p>This method is not supported in open source.
+     *
+     * @deprecated This method is for non-conformant code which relies on incorrect behavior.
      */
-    Printer printingShortExtensionNames() {
+    @Deprecated
+    Printer printingDeprecatedNonConformantShortExtensionNames() {
       return new Printer(
           registry,
           oldRegistry,

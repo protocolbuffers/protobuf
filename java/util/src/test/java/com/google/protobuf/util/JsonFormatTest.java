@@ -275,12 +275,15 @@ public class JsonFormatTest {
    * parse this JSON will fail because the parser does not recognize the extensions.
    */
   @Test
-  public void testExtensionFields_printingShortExtensionNames_arePrintedWithShortName()
-      throws Exception {
+  public void
+      testExtensionFields_printingDeprecatedNonConformantShortExtensionNames_arePrintedWithShortName()
+          throws Exception {
     TypeRegistry registry =
         TypeRegistry.newBuilder().add(TestAllTypesProto2.getDescriptor()).build();
     JsonFormat.Printer printer =
-        JsonFormat.printer().usingTypeRegistry(registry).printingShortExtensionNames();
+        JsonFormat.printer()
+            .usingTypeRegistry(registry)
+            .printingDeprecatedNonConformantShortExtensionNames();
     TestAllTypesProto2 message =
         TestAllTypesProto2.newBuilder()
             .setExtension(JsonTestProto2.extensionInt32, 123)
@@ -326,14 +329,16 @@ public class JsonFormatTest {
    */
   @Test
   public void
-      testExtensionFields_printingShortExtensionNames_withSameShortName_printsDuplicateJsonKeys()
+      testExtensionFields_printingDeprecatedNonConformantShortExtensionNames_withSameShortName_printsDuplicateJsonKeys()
           throws Exception {
     com.google.protobuf.TypeRegistry registry =
         com.google.protobuf.TypeRegistry.newBuilder()
             .add(TestAllTypesProto2.getDescriptor())
             .build();
     JsonFormat.Printer printer =
-        JsonFormat.printer().usingTypeRegistry(registry).printingShortExtensionNames();
+        JsonFormat.printer()
+            .usingTypeRegistry(registry)
+            .printingDeprecatedNonConformantShortExtensionNames();
     JsonFormat.Parser parser = JsonFormat.parser().usingTypeRegistry(registry);
     TestAllTypesProto2 message =
         TestAllTypesProto2.newBuilder()
@@ -394,7 +399,8 @@ public class JsonFormatTest {
     setAllFields(builder);
     TestAllTypes message = builder.build();
 
-    JsonFormat.Printer printer = JsonFormat.printer().printingShortExtensionNames();
+    JsonFormat.Printer printer =
+        JsonFormat.printer().printingDeprecatedNonConformantShortExtensionNames();
     String json = printer.print(message);
     assertThat(json)
         .isEqualTo(
