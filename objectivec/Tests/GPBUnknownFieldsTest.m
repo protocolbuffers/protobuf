@@ -895,7 +895,11 @@
   {
     TestAllExtensions* msgWithExts =
         [TestAllExtensions parseFromData:allFieldsData
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+                       extensionRegistry:Objc_Protobuf_Tests_UnittestRoot_Registry()
+#else
                        extensionRegistry:[UnittestRoot extensionRegistry]
+#endif
                                    error:NULL];
     GPBUnknownFields* ufs2 = [[[GPBUnknownFields alloc] initFromMessage:msgWithExts] autorelease];
     XCTAssertEqual(ufs2.count, 0);
@@ -938,7 +942,11 @@
   {
     TestAllExtensions* msg = [TestAllExtensions message];
     XCTAssertTrue([msg mergeUnknownFields:ufsWrongTypes
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+                        extensionRegistry:Objc_Protobuf_Tests_UnittestRoot_Registry()
+#else
                         extensionRegistry:[UnittestRoot extensionRegistry]
+#endif
                                     error:NULL]);
     GPBUnknownFields* ufs2 = [[[GPBUnknownFields alloc] initFromMessage:msg] autorelease];
     XCTAssertFalse(ufs2.empty);

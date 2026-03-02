@@ -11,14 +11,13 @@
 
 #include "google/protobuf/io/tokenizer.h"
 
-#include <limits.h>
 #include <math.h>
 
 #include <cstddef>
+#include <limits>
 #include <string>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
 #include <gmock/gmock.h>
 #include "absl/base/macros.h"
 #include "absl/strings/escaping.h"
@@ -199,7 +198,8 @@ class TokenizerTest : public testing::Test {
   // For easy testing.
   uint64_t ParseInteger(const std::string& text) {
     uint64_t result;
-    EXPECT_TRUE(Tokenizer::ParseInteger(text, kuint64max, &result))
+    EXPECT_TRUE(Tokenizer::ParseInteger(
+        text, std::numeric_limits<uint64_t>::max(), &result))
         << "'" << text << "'";
     return result;
   }
@@ -981,7 +981,8 @@ TEST_F(TokenizerTest, ParseInteger) {
   EXPECT_EQ(123, ParseInteger("123"));
   EXPECT_EQ(0xabcdef12u, ParseInteger("0xabcdef12"));
   EXPECT_EQ(0xabcdef12u, ParseInteger("0xABCDEF12"));
-  EXPECT_EQ(kuint64max, ParseInteger("0xFFFFFFFFFFFFFFFF"));
+  EXPECT_EQ(std::numeric_limits<uint64_t>::max(),
+            ParseInteger("0xFFFFFFFFFFFFFFFF"));
   EXPECT_EQ(01234567, ParseInteger("01234567"));
   EXPECT_EQ(0X123, ParseInteger("0X123"));
 
@@ -991,11 +992,16 @@ TEST_F(TokenizerTest, ParseInteger) {
   uint64_t i;
 
   // Test invalid integers that will never be tokenized as integers.
-  EXPECT_FALSE(Tokenizer::ParseInteger("zxy", kuint64max, &i));
-  EXPECT_FALSE(Tokenizer::ParseInteger("1.2", kuint64max, &i));
-  EXPECT_FALSE(Tokenizer::ParseInteger("08", kuint64max, &i));
-  EXPECT_FALSE(Tokenizer::ParseInteger("0xg", kuint64max, &i));
-  EXPECT_FALSE(Tokenizer::ParseInteger("-1", kuint64max, &i));
+  EXPECT_FALSE(
+      Tokenizer::ParseInteger("zxy", std::numeric_limits<uint64_t>::max(), &i));
+  EXPECT_FALSE(
+      Tokenizer::ParseInteger("1.2", std::numeric_limits<uint64_t>::max(), &i));
+  EXPECT_FALSE(
+      Tokenizer::ParseInteger("08", std::numeric_limits<uint64_t>::max(), &i));
+  EXPECT_FALSE(
+      Tokenizer::ParseInteger("0xg", std::numeric_limits<uint64_t>::max(), &i));
+  EXPECT_FALSE(
+      Tokenizer::ParseInteger("-1", std::numeric_limits<uint64_t>::max(), &i));
 
   // Test overflows.
   EXPECT_TRUE(Tokenizer::ParseInteger("0", 0, &i));
@@ -1003,10 +1009,13 @@ TEST_F(TokenizerTest, ParseInteger) {
   EXPECT_TRUE(Tokenizer::ParseInteger("1", 1, &i));
   EXPECT_TRUE(Tokenizer::ParseInteger("12345", 12345, &i));
   EXPECT_FALSE(Tokenizer::ParseInteger("12346", 12345, &i));
-  EXPECT_TRUE(Tokenizer::ParseInteger("0xFFFFFFFFFFFFFFFF", kuint64max, &i));
-  EXPECT_FALSE(Tokenizer::ParseInteger("0x10000000000000000", kuint64max, &i));
+  EXPECT_TRUE(Tokenizer::ParseInteger(
+      "0xFFFFFFFFFFFFFFFF", std::numeric_limits<uint64_t>::max(), &i));
+  EXPECT_FALSE(Tokenizer::ParseInteger(
+      "0x10000000000000000", std::numeric_limits<uint64_t>::max(), &i));
 
-  // Test near the limits of signed parsing (values in kint64max +/- 1600)
+  // Test near the limits of signed parsing (values within +/- 1600 of
+  // the maximum int64_t).
   for (int64_t offset = -1600; offset <= 1600; ++offset) {
     // We make sure to perform an unsigned addition so that we avoid signed
     // overflow, which would be undefined behavior.
@@ -1015,11 +1024,13 @@ TEST_F(TokenizerTest, ParseInteger) {
     snprintf(decimal, 32, "%llu", static_cast<unsigned long long>(i));
     if (offset > 0) {
       uint64_t parsed = -1;
-      EXPECT_FALSE(Tokenizer::ParseInteger(decimal, kint64max, &parsed))
+      EXPECT_FALSE(Tokenizer::ParseInteger(
+          decimal, std::numeric_limits<int64_t>::max(), &parsed))
           << decimal << "=>" << parsed;
     } else {
       uint64_t parsed = -1;
-      EXPECT_TRUE(Tokenizer::ParseInteger(decimal, kint64max, &parsed))
+      EXPECT_TRUE(Tokenizer::ParseInteger(
+          decimal, std::numeric_limits<int64_t>::max(), &parsed))
           << decimal << "=>" << parsed;
       EXPECT_EQ(parsed, i);
     }
@@ -1027,11 +1038,13 @@ TEST_F(TokenizerTest, ParseInteger) {
     snprintf(octal, 32, "0%llo", static_cast<unsigned long long>(i));
     if (offset > 0) {
       uint64_t parsed = -1;
-      EXPECT_FALSE(Tokenizer::ParseInteger(octal, kint64max, &parsed))
+      EXPECT_FALSE(Tokenizer::ParseInteger(
+          octal, std::numeric_limits<int64_t>::max(), &parsed))
           << octal << "=>" << parsed;
     } else {
       uint64_t parsed = -1;
-      EXPECT_TRUE(Tokenizer::ParseInteger(octal, kint64max, &parsed))
+      EXPECT_TRUE(Tokenizer::ParseInteger(
+          octal, std::numeric_limits<int64_t>::max(), &parsed))
           << octal << "=>" << parsed;
       EXPECT_EQ(parsed, i);
     }
@@ -1039,21 +1052,25 @@ TEST_F(TokenizerTest, ParseInteger) {
     snprintf(hex, 32, "0x%llx", static_cast<unsigned long long>(i));
     if (offset > 0) {
       uint64_t parsed = -1;
-      EXPECT_FALSE(Tokenizer::ParseInteger(hex, kint64max, &parsed))
+      EXPECT_FALSE(Tokenizer::ParseInteger(
+          hex, std::numeric_limits<int64_t>::max(), &parsed))
           << hex << "=>" << parsed;
     } else {
       uint64_t parsed = -1;
-      EXPECT_TRUE(Tokenizer::ParseInteger(hex, kint64max, &parsed)) << hex;
+      EXPECT_TRUE(Tokenizer::ParseInteger(
+          hex, std::numeric_limits<int64_t>::max(), &parsed))
+          << hex;
       EXPECT_EQ(parsed, i);
     }
     // EXPECT_NE(offset, -237);
   }
 
-  // Test near the limits of unsigned parsing (values in kuint64max +/- 1600)
-  // By definition, values greater than kuint64max cannot be held in a uint64_t
-  // variable, so printing them is a little tricky; fortunately all but the
-  // last four digits are known, so we can hard-code them in the printf string,
-  // and we only need to format the last 4.
+  // Test near the limits of unsigned parsing (values within +/- 1600 of
+  // the maximum uint64_t). By definition, values greater than
+  // std::numeric_limits<uint64_t>::max() cannot be held in a uint64_t variable,
+  // so printing them is a little tricky; fortunately all but the last four
+  // digits are known, so we can hard-code them in the printf string, and we
+  // only need to format the last 4.
   for (int64_t offset = -1600; offset <= 1600; ++offset) {
     {
       uint64_t i = 18446744073709551615u + offset;
@@ -1062,11 +1079,13 @@ TEST_F(TokenizerTest, ParseInteger) {
                static_cast<unsigned long long>(1615 + offset));
       if (offset > 0) {
         uint64_t parsed = -1;
-        EXPECT_FALSE(Tokenizer::ParseInteger(decimal, kuint64max, &parsed))
+        EXPECT_FALSE(Tokenizer::ParseInteger(
+            decimal, std::numeric_limits<uint64_t>::max(), &parsed))
             << decimal << "=>" << parsed;
       } else {
         uint64_t parsed = -1;
-        EXPECT_TRUE(Tokenizer::ParseInteger(decimal, kuint64max, &parsed))
+        EXPECT_TRUE(Tokenizer::ParseInteger(
+            decimal, std::numeric_limits<uint64_t>::max(), &parsed))
             << decimal;
         EXPECT_EQ(parsed, i);
       }
@@ -1078,13 +1097,15 @@ TEST_F(TokenizerTest, ParseInteger) {
         snprintf(octal, 32, "0200000000000000000%04llo",
                  static_cast<unsigned long long>(offset - 1));
         uint64_t parsed = -1;
-        EXPECT_FALSE(Tokenizer::ParseInteger(octal, kuint64max, &parsed))
+        EXPECT_FALSE(Tokenizer::ParseInteger(
+            octal, std::numeric_limits<uint64_t>::max(), &parsed))
             << octal << "=>" << parsed;
       } else {
         char octal[32];
         snprintf(octal, 32, "0%llo", static_cast<unsigned long long>(i));
         uint64_t parsed = -1;
-        EXPECT_TRUE(Tokenizer::ParseInteger(octal, kuint64max, &parsed))
+        EXPECT_TRUE(Tokenizer::ParseInteger(
+            octal, std::numeric_limits<uint64_t>::max(), &parsed))
             << octal;
         EXPECT_EQ(parsed, i);
       }
@@ -1096,12 +1117,15 @@ TEST_F(TokenizerTest, ParseInteger) {
         snprintf(hex, 32, "0x1000000000000%04llx",
                  static_cast<unsigned long long>(offset - 1));
         uint64_t parsed = -1;
-        EXPECT_FALSE(Tokenizer::ParseInteger(hex, kuint64max, &parsed))
+        EXPECT_FALSE(Tokenizer::ParseInteger(
+            hex, std::numeric_limits<uint64_t>::max(), &parsed))
             << hex << "=>" << parsed;
       } else {
         snprintf(hex, 32, "0x%llx", static_cast<unsigned long long>(ui));
         uint64_t parsed = -1;
-        EXPECT_TRUE(Tokenizer::ParseInteger(hex, kuint64max, &parsed)) << hex;
+        EXPECT_TRUE(Tokenizer::ParseInteger(
+            hex, std::numeric_limits<uint64_t>::max(), &parsed))
+            << hex;
         EXPECT_EQ(parsed, ui);
       }
     }
