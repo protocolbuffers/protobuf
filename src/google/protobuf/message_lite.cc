@@ -659,11 +659,17 @@ bool MessageLite::AppendPartialToString(absl::Cord* output) const {
   // For efficiency, we'd like to pass a size hint to CordOutputStream with
   // the exact total size expected.
   const size_t size = ByteSizeLong();
-  const size_t total_size = size + output->size();
   if (size > INT_MAX) {
     ABSL_LOG(ERROR) << "Exceeded maximum protobuf size of 2GB: " << size;
     return false;
   }
+  const size_t output_size = output->size();
+  if (output_size > SIZE_MAX - size) {
+    ABSL_LOG(ERROR) << "Exceeded maximum Cord size during append: "
+                    << output_size << " + " << size;
+    return false;
+  }
+  const size_t total_size = size + output_size;
 
 
   // Allocate a CordBuffer (which may utilize private capacity in 'output').
