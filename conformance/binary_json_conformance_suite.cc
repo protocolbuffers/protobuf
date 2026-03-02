@@ -2468,6 +2468,8 @@ void BinaryAndJsonConformanceSuiteImpl<
                             R"({"optionalInt64": "-9223372036854775809"})");
   ExpectParseFailureForJson("Uint64FieldTooLarge", REQUIRED,
                             R"({"optionalUint64": "18446744073709551616"})");
+  ExpectParseFailureForJson("Uint64QuotedExponentFieldTooLarge", REQUIRED,
+                            R"({"optionalUint64": "1e536870000"})");
 
   // Parser reject non-integer numeric values.
   ExpectParseFailureForJson("Int32FieldNotInteger", REQUIRED,
