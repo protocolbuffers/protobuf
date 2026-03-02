@@ -7,6 +7,7 @@
 
 #include "hpb_generator/gen_extensions.h"
 
+#include <cassert>
 #include <string>
 #include <vector>
 
