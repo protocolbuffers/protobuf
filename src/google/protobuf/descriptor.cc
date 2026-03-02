@@ -33,6 +33,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/tracer.h"
 #include "absl/algorithm/container.h"
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
@@ -50,6 +51,7 @@
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/log/log.h"
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -2001,6 +2003,10 @@ Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
 
     if (result.IsNull()) {
       // Symbol still not found, so check fallback database.
+      LOG_EVERY_N_SEC(INFO, 60)
+          << "Symbol '" << name
+          << "' not found in primary pool or underlay, checking fallback "
+             "database.";
       if (pool->TryFindSymbolInFallbackDatabase(name, deferred_validation)) {
         result = FindSymbol(name);
       }
@@ -2978,6 +2984,7 @@ EnumDescriptor::FindReservedRangeContainingNumber(int number) const {
 
 bool DescriptorPool::TryFindFileInFallbackDatabase(
     absl::string_view name, DeferredValidation& deferred_validation) const {
+  TRACELITERAL("TryFindFileInFallbackDatabase");
   if (fallback_database_ == nullptr) return false;
 
   if (tables_->known_bad_files_.contains(name)) return false;
@@ -2990,6 +2997,7 @@ bool DescriptorPool::TryFindFileInFallbackDatabase(
   };
 
   auto& file_proto = deferred_validation.CreateProto();
+  TRACELITERAL("BuildFileFromDatabase");
   if (!find_file(*fallback_database_, name, file_proto) ||
       BuildFileFromDatabase(file_proto, deferred_validation) == nullptr) {
     tables_->known_bad_files_.emplace(name);
@@ -6228,6 +6236,7 @@ bool IsDefaultInstance(const OptionT& opt) {
 
 const FileDescriptor* DescriptorBuilder::BuildFile(
     const FileDescriptorProto& proto) {
+  LOG_EVERY_N_SEC(INFO, 60) << "DescriptorBuilder::BuildFile: " << proto.name();
   // Ensure the generated pool has been lazily initialized.  This is most
   // important for protos that use C++-specific features, since that extension
   // is only registered lazily and we always parse options into the generated
