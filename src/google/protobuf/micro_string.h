@@ -75,7 +75,7 @@ class PROTOBUF_EXPORT MicroString {
 
     absl::string_view view() const { return {payload, size}; }
     char* owned_head() {
-      ABSL_DCHECK_GE(capacity, kOwned);
+      ABSL_DCHECK_GE(capacity, (unsigned)kOwned);
       return reinterpret_cast<char*>(this + 1);
     }
 
