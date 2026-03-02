@@ -143,7 +143,7 @@ public abstract class GeneratedMessageLite<
     return getMemoizedHashCode();
   }
 
-  int computeHashCode() {
+  final int computeHashCode() {
     return Protobuf.getInstance().schemaFor(this).hashCode(this);
   }
 
