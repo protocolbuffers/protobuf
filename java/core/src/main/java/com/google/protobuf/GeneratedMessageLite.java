@@ -199,7 +199,7 @@ public abstract class GeneratedMessageLite<
   }
 
   /** Called by subclasses to parse an unknown field. For use by generated code only. */
-  protected void mergeLengthDelimitedField(int fieldNumber, ByteString value) {
+  protected final void mergeLengthDelimitedField(int fieldNumber, ByteString value) {
     ensureUnknownFieldsInitialized();
     unknownFields.mergeLengthDelimitedField(fieldNumber, value);
   }
