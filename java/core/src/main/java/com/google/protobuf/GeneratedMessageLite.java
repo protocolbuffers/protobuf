@@ -358,7 +358,7 @@ public abstract class GeneratedMessageLite<
     return dynamicMethod(MethodToInvoke.BUILD_MESSAGE_INFO, null, null);
   }
 
-  private static Map<Class<?>, GeneratedMessageLite<?, ?>> defaultInstanceMap =
+  private static final Map<Class<?>, GeneratedMessageLite<?, ?>> defaultInstanceMap =
       new ConcurrentHashMap<>();
 
   @SuppressWarnings("unchecked")
