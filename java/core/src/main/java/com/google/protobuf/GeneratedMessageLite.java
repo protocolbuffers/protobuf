@@ -205,7 +205,7 @@ public abstract class GeneratedMessageLite<
   }
 
   /** Called by subclasses to complete parsing. For use by generated code only. */
-  protected void makeImmutable() {
+  protected final void makeImmutable() {
     Protobuf.getInstance().schemaFor(this).makeImmutable(this);
     markImmutable();
   }
