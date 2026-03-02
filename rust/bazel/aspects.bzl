@@ -499,11 +499,6 @@ def _make_proto_library_aspect(is_upb):
         attr_aspects = ["deps", "exports"],
         requires = ([] if is_upb else [cc_proto_aspect]),
         attrs = {
-            "_collect_cc_coverage": attr.label(
-                default = Label("@rules_rust//util:collect_coverage"),
-                executable = True,
-                cfg = "exec",
-            ),
             "_cpp_thunks_deps": attr.label_list(
                 default = [
                     Label("//rust/cpp_kernel:cpp_api"),

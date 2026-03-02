@@ -53,7 +53,7 @@ final class Utf8 {
    * delegate for which all methods are delegated directly to.
    */
   private static final Processor processor =
-      (UnsafeProcessor.isAvailable() && !Android.isOnAndroidDevice())
+      (!Android.isOnAndroidDevice() && UnsafeProcessor.isAvailable())
           ? new UnsafeProcessor()
           : new SafeProcessor();
 
@@ -835,7 +835,10 @@ final class Utf8 {
   static final class UnsafeProcessor extends Processor {
     /** Indicates whether or not all required unsafe operations are supported on this platform. */
     static boolean isAvailable() {
-      return hasUnsafeArrayOperations() && hasUnsafeByteBufferOperations();
+      if (!hasUnsafeArrayOperations() || !hasUnsafeByteBufferOperations()) {
+        return false;
+      }
+      return true;
     }
 
     @Override
