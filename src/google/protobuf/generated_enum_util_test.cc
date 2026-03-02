@@ -23,7 +23,6 @@
 #include "absl/flags/marshalling.h"
 #include "absl/strings/str_format.h"
 #include "absl/types/span.h"
-#include "google/protobuf/descriptor.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_lite.pb.h"
 
