@@ -182,7 +182,7 @@ public abstract class GeneratedMessageLite<
    *
    * @return {@code true} unless the tag is an end-group tag.
    */
-  protected boolean parseUnknownField(int tag, CodedInputStream input) throws IOException {
+  protected final boolean parseUnknownField(int tag, CodedInputStream input) throws IOException {
     // This will avoid the allocation of unknown fields when a group tag is encountered.
     if (WireFormat.getTagWireType(tag) == WireFormat.WIRETYPE_END_GROUP) {
       return false;
