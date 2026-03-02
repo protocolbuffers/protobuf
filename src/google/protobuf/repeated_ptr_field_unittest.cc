@@ -26,6 +26,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
@@ -33,6 +34,8 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/test_protos/repeated_ptr_field_test.pb.h"
+#include "google/protobuf/test_textproto.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
 
@@ -49,6 +52,7 @@ using ::proto2_unittest::TestMessageWithManyRepeatedPtrFields;
 using ::testing::A;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
+using ::testing::ElementsAreArray;
 using ::testing::Ge;
 using ::testing::Le;
 
@@ -1287,6 +1291,144 @@ TEST_F(RepeatedPtrFieldTest, Cleanups) {
     (void)Arena::Create<RepeatedPtrField<TestAllTypes>>(&arena);
   });
   EXPECT_THAT(growth.cleanups, testing::IsEmpty());
+}
+
+TEST_F(RepeatedPtrFieldTest, SortTest) {
+  RepeatedPtrField<std::string> rep;
+
+  // Store values in decreasing order.
+  for (int i = 0; i < 20; i++) {
+    rep.Add(absl::StrFormat("%02d", 20 - (i / 2)));
+  }
+
+  EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end(), std::greater<>{}));
+
+  // Sort by numeric values - this should reverse the order of creation.
+  {
+    auto cmp = std::less<>{};
+    ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end(), cmp));
+    google::protobuf::sort(rep.begin(), rep.end(), cmp);
+    EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end(), cmp));
+  }
+
+  // Reverse again.
+  {
+    auto cmp = std::greater<>{};
+    ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end(), cmp));
+    google::protobuf::c_sort(rep, cmp);
+    EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end(), cmp));
+  }
+
+  // And again - without a predicate this time.
+  ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end()));
+  google::protobuf::c_sort(rep);
+  EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end()));
+}
+
+TEST_F(RepeatedPtrFieldTest, SortMovesPointersAround) {
+  RepeatedPtrField<std::string> rep;
+  rep.Add("FOO");
+  rep.Add("BAR");
+
+  const auto* elem0 = &rep[0];
+  const auto* elem1 = &rep[1];
+
+  google::protobuf::c_sort(rep);
+  EXPECT_EQ(elem0, &rep[1]);
+  EXPECT_EQ(elem1, &rep[0]);
+}
+
+TEST_F(RepeatedPtrFieldTest, SortSubrangeTest) {
+  RepeatedPtrField<std::string> rep;
+  for (const char* v : {"1", "4", "9", "0", "2", "3", "5"}) rep.Add(v);
+  EXPECT_THAT(rep, ElementsAre("1", "4", "9", "0", "2", "3", "5"));
+
+  google::protobuf::sort(rep.begin() + 1, rep.begin() + 5);
+  EXPECT_THAT(rep, ElementsAre("1", "0", "2", "4", "9", "3", "5"));
+}
+
+TEST_F(RepeatedPtrFieldTest, StableSort) {
+  RepeatedPtrField<std::string> rep;
+  while (rep.size() < 100) rep.Add(absl::StrCat(rep.size()));
+
+  const auto less_10 = [](absl::string_view a, absl::string_view b) {
+    return a.back() < b.back();
+  };
+
+  ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end(), less_10));
+  google::protobuf::stable_sort(rep.begin(), rep.end(), less_10);
+  EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end(), less_10));
+
+  // Make sure that the relative orders where kept.
+  std::vector<std::string> expected;
+  for (int i = 0; i < 10; ++i) {
+    for (int j = 0; j < 10; ++j) {
+      expected.push_back(absl::StrCat(10 * j + i));
+    }
+  }
+  EXPECT_THAT(rep, ElementsAreArray(expected));
+
+  ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end()));
+  google::protobuf::c_stable_sort(rep);
+  EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end()));
+}
+
+TEST_F(RepeatedPtrFieldTest, SortWorksOnMessages) {
+  RepeatedPtrField<proto2_unittest::RepFieldSortMessage> rep;
+  for (int i = 0; i < 3; ++i) {
+    for (int s = 0; s < 3; ++s) {
+      auto* m = rep.Add();
+      m->set_i(i);
+      m->set_s(absl::StrCat("str", s));
+    }
+  }
+
+  EXPECT_THAT(rep, ElementsAre(EqualsProto(R"pb(i: 0 s: "str0")pb"),
+                               EqualsProto(R"pb(i: 0 s: "str1")pb"),
+                               EqualsProto(R"pb(i: 0 s: "str2")pb"),
+                               EqualsProto(R"pb(i: 1 s: "str0")pb"),
+                               EqualsProto(R"pb(i: 1 s: "str1")pb"),
+                               EqualsProto(R"pb(i: 1 s: "str2")pb"),
+                               EqualsProto(R"pb(i: 2 s: "str0")pb"),
+                               EqualsProto(R"pb(i: 2 s: "str1")pb"),
+                               EqualsProto(R"pb(i: 2 s: "str2")pb")));
+
+  const auto sort_by_s = [](const auto& lhs, const auto& rhs) {
+    return lhs.s() < rhs.s();
+  };
+  google::protobuf::c_stable_sort(rep, sort_by_s);
+
+  EXPECT_THAT(rep, ElementsAre(EqualsProto(R"pb(i: 0 s: "str0")pb"),
+                               EqualsProto(R"pb(i: 1 s: "str0")pb"),
+                               EqualsProto(R"pb(i: 2 s: "str0")pb"),
+                               EqualsProto(R"pb(i: 0 s: "str1")pb"),
+                               EqualsProto(R"pb(i: 1 s: "str1")pb"),
+                               EqualsProto(R"pb(i: 2 s: "str1")pb"),
+                               EqualsProto(R"pb(i: 0 s: "str2")pb"),
+                               EqualsProto(R"pb(i: 1 s: "str2")pb"),
+                               EqualsProto(R"pb(i: 2 s: "str2")pb")));
+
+  const auto sort_by_plus = [](const auto& lhs, const auto& rhs) {
+    const auto plus = [](const auto& m) { return m.i() + m.s()[3]; };
+    return std::pair(plus(lhs), lhs.i()) < std::pair(plus(rhs), rhs.i());
+  };
+  google::protobuf::c_sort(rep, sort_by_plus);
+
+  EXPECT_THAT(rep, ElementsAre(
+                       // 0
+                       EqualsProto(R"pb(i: 0 s: "str0")pb"),
+                       // 1
+                       EqualsProto(R"pb(i: 0 s: "str1")pb"),
+                       EqualsProto(R"pb(i: 1 s: "str0")pb"),
+                       // 2
+                       EqualsProto(R"pb(i: 0 s: "str2")pb"),
+                       EqualsProto(R"pb(i: 1 s: "str1")pb"),
+                       EqualsProto(R"pb(i: 2 s: "str0")pb"),
+                       // 3
+                       EqualsProto(R"pb(i: 1 s: "str2")pb"),
+                       EqualsProto(R"pb(i: 2 s: "str1")pb"),
+                       // 4
+                       EqualsProto(R"pb(i: 2 s: "str2")pb")));
 }
 
 

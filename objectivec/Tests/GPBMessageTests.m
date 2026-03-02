@@ -335,33 +335,28 @@
   XCTAssertTrue(message.initialized);
 
 #if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
-  [message setExtension:Objc_Protobuf_Tests_TestRequired_extension_Single()
-                  value:[TestRequired message]];
+  [message setExtension:TestRequired_extension_Single() value:[TestRequired message]];
 #else
   [message setExtension:[TestRequired single] value:[TestRequired message]];
 #endif
   XCTAssertFalse(message.initialized);
 
 #if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
-  [message setExtension:Objc_Protobuf_Tests_TestRequired_extension_Single()
-                  value:self.testRequiredInitialized];
+  [message setExtension:TestRequired_extension_Single() value:self.testRequiredInitialized];
 #else
   [message setExtension:[TestRequired single] value:self.testRequiredInitialized];
 #endif
   XCTAssertTrue(message.initialized);
 
 #if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
-  [message addExtension:Objc_Protobuf_Tests_TestRequired_extension_Multi()
-                  value:[TestRequired message]];
+  [message addExtension:TestRequired_extension_Multi() value:[TestRequired message]];
 #else
   [message addExtension:[TestRequired multi] value:[TestRequired message]];
 #endif
   XCTAssertFalse(message.initialized);
 
 #if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
-  [message setExtension:Objc_Protobuf_Tests_TestRequired_extension_Multi()
-                  index:0
-                  value:self.testRequiredInitialized];
+  [message setExtension:TestRequired_extension_Multi() index:0 value:self.testRequiredInitialized];
 #else
   [message setExtension:[TestRequired multi] index:0 value:self.testRequiredInitialized];
 #endif
