@@ -291,7 +291,7 @@ public abstract class GeneratedMessageLite<
   }
 
   @Override
-  int getMemoizedSerializedSize() {
+  final int getMemoizedSerializedSize() {
     return memoizedSerializedSize & MEMOIZED_SERIALIZED_SIZE_MASK;
   }
 
