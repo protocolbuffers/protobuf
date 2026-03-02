@@ -193,7 +193,7 @@ public abstract class GeneratedMessageLite<
   }
 
   /** Called by subclasses to parse an unknown field. For use by generated code only. */
-  protected void mergeVarintField(int tag, int value) {
+  protected final void mergeVarintField(int tag, int value) {
     ensureUnknownFieldsInitialized();
     unknownFields.mergeVarintField(tag, value);
   }
