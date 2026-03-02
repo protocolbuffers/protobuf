@@ -286,7 +286,7 @@ public abstract class GeneratedMessageLite<
           Object arg0,
           Object arg1);
 
-  void clearMemoizedSerializedSize() {
+  final void clearMemoizedSerializedSize() {
     setMemoizedSerializedSize(UNINITIALIZED_SERIALIZED_SIZE);
   }
 
