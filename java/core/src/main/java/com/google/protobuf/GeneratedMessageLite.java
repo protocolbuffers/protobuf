@@ -354,7 +354,7 @@ public abstract class GeneratedMessageLite<
   }
 
   /** Constructs a {@link MessageInfo} for this message type. */
-  Object buildMessageInfo() throws Exception {
+  final Object buildMessageInfo() throws Exception {
     return dynamicMethod(MethodToInvoke.BUILD_MESSAGE_INFO, null, null);
   }
 
