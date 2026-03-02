@@ -95,6 +95,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["class_name"] = class_name();
   vars["access_level"] = class_access_level();
+  vars["nrt_annotation"] = this->options()->enable_nullable_reference_types ? "?" : "";
 
   WriteMessageDocComment(printer, options(), descriptor_);
   AddDeprecatedFlag(printer);
@@ -122,7 +123,8 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "private static readonly pb::MessageParser<$class_name$> _parser = new "
       "pb::MessageParser<$class_name$>(() => new $class_name$());\n");
 
-  printer->Print("private pb::UnknownFieldSet _unknownFields;\n");
+  printer->Print(vars,
+                "private pb::UnknownFieldSet$nrt_annotation$ _unknownFields;\n");
 
   if (has_extension_ranges_) {
     if (IsDescriptorProto(descriptor_->file())) {
@@ -419,16 +421,17 @@ void MessageGenerator::GenerateFreezingCode(io::Printer* printer) {}
 void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["class_name"] = class_name();
+  vars["nrt_annotation"] = this->options()->enable_nullable_reference_types ? "?" : "";
 
   // Equality
   WriteGeneratedCodeAttributes(printer);
   printer->Print(vars,
-                 "public override bool Equals(object other) {\n"
+                 "public override bool Equals(object$nrt_annotation$ other) {\n"
                  "  return Equals(other as $class_name$);\n"
                  "}\n\n");
   WriteGeneratedCodeAttributes(printer);
   printer->Print(vars,
-                 "public bool Equals($class_name$ other) {\n"
+                 "public bool Equals($class_name$$nrt_annotation$ other) {\n"
                  "  if (ReferenceEquals(other, null)) {\n"
                  "    return false;\n"
                  "  }\n"
@@ -586,9 +589,10 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   //   for code size.
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["class_name"] = class_name();
+  vars["nrt_annotation"] = this->options()->enable_nullable_reference_types ? "?" : "";
 
   WriteGeneratedCodeAttributes(printer);
-  printer->Print(vars, "public void MergeFrom($class_name$ other) {\n");
+  printer->Print(vars, "public void MergeFrom($class_name$$nrt_annotation$ other) {\n");
   printer->Indent();
   printer->Print(
       "if (other == null) {\n"
