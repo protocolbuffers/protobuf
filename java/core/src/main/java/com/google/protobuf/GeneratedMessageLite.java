@@ -109,7 +109,7 @@ public abstract class GeneratedMessageLite<
   }
 
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
-  MessageType newMutableInstance() {
+  final MessageType newMutableInstance() {
     return (MessageType) dynamicMethod(MethodToInvoke.NEW_MUTABLE_INSTANCE, null, null);
   }
 
