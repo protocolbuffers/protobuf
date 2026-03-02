@@ -13,6 +13,7 @@
 #include <variant>
 
 #include "absl/log/absl_check.h"
+#include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "hpb/backend/types.h"
 #include "upb/wire/decode.h"
