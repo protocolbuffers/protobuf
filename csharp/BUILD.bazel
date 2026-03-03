@@ -37,6 +37,7 @@ filegroup(
             "src/*/obj/**/*",
         ],
     ) + [
+        "c_sharp_features.proto",
         "src/Directory.Build.props",
         "src/Google.Protobuf.Test/testprotos.pb",
         "src/Google.Protobuf.sln",
@@ -61,6 +62,14 @@ filegroup(
         "src/Google.Protobuf/WellKnownTypes/Timestamp.pb.cs",
         "src/Google.Protobuf/WellKnownTypes/Type.pb.cs",
         "src/Google.Protobuf/WellKnownTypes/Wrappers.pb.cs",
+    ],
+    visibility = ["//src/google/protobuf/compiler/csharp:__pkg__"],
+)
+
+filegroup(
+    name = "csharp_features_cs_srcs",
+    srcs = [
+        "src/Google.Protobuf/Reflection/CSharpFeatures.pb.cs",
     ],
     visibility = ["//src/google/protobuf/compiler/csharp:__pkg__"],
 )

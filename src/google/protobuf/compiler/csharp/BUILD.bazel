@@ -92,6 +92,7 @@ cc_test(
         "//:well_known_type_protos",
         "//conformance:all_files",
         "//conformance:conformance_proto",
+        "//csharp:csharp_features_cs_srcs",
         "//csharp:wkt_cs_srcs",
         "//src/google/protobuf:descriptor_proto_srcs",
         "//src/google/protobuf:testdata",
