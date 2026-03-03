@@ -594,8 +594,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   // the old container from `old_size` to `Capacity()` (unpoison memory)
   // directly before it is being released, and annotate the new container from
   // `Capacity()` to `old_size` (poison unused memory).
-  void Grow(Arena* arena, bool was_soo, int old_size, int new_size);
-  void GrowNoAnnotate(Arena* arena, bool was_soo, int old_size, int new_size);
+  void Grow(Arena* arena, bool was_soo, int old_size, int64_t new_size);
+  void GrowNoAnnotate(Arena* arena, bool was_soo, int old_size,
+                      int64_t new_size);
 
   // Annotates a change in size of this instance. This function should be called
   // with (capacity, old_size) after new memory has been allocated and filled
@@ -977,7 +978,7 @@ inline void RepeatedField<Element>::AddWithArena(Arena* arena, Element value) {
   int capacity = Capacity(is_soo);
   Element* elem = unsafe_elements(is_soo);
   if (ABSL_PREDICT_FALSE(old_size == capacity)) {
-    Grow(arena, is_soo, old_size, old_size + 1);
+    Grow(arena, is_soo, old_size, static_cast<int64_t>(old_size) + 1);
     is_soo = false;
     capacity = Capacity(is_soo);
     elem = unsafe_elements(is_soo);
@@ -1017,7 +1018,7 @@ inline Element* RepeatedField<Element>::AddWithArena(Arena* arena)
   bool is_soo = this->is_soo();
   const int old_size = size();
   if (ABSL_PREDICT_FALSE(old_size == Capacity())) {
-    Grow(arena, is_soo, old_size, old_size + 1);
+    Grow(arena, is_soo, old_size, static_cast<int64_t>(old_size) + 1);
     is_soo = false;
   }
   void* p = unsafe_elements(is_soo) + ExchangeCurrentSize(old_size + 1);
@@ -1036,13 +1037,8 @@ inline void RepeatedField<Element>::AddForwardIterator(Arena* arena, Iter begin,
   Element* elem = unsafe_elements(is_soo);
   // Check for signed overflow.
   const size_t distance = std::distance(begin, end);
-  ABSL_CHECK_LE(distance, static_cast<size_t>(std::numeric_limits<int>::max()))
-      << "Input too large";
-  // Check again for signed overflow.
-  const int delta = static_cast<int>(distance);
-  ABSL_CHECK_LE(old_size, std::numeric_limits<int>::max() - delta)
-      << "Input too large";
-  const int new_size = old_size + delta;
+  const int64_t new_size =
+      static_cast<int64_t>(old_size) + static_cast<int64_t>(distance);
   if (ABSL_PREDICT_FALSE(new_size > capacity)) {
     Grow(arena, is_soo, old_size, new_size);
     is_soo = false;
@@ -1080,7 +1076,7 @@ inline void RepeatedField<Element>::AddInputIterator(Arena* arena, Iter begin,
   while (begin != end) {
     if (ABSL_PREDICT_FALSE(first == last)) {
       size = first - elem;
-      GrowNoAnnotate(arena, is_soo, size, size + 1);
+      GrowNoAnnotate(arena, is_soo, size, static_cast<int64_t>(size) + 1);
       is_soo = false;
       elem = unsafe_elements(is_soo);
       capacity = Capacity(is_soo);
@@ -1433,14 +1429,14 @@ void RepeatedField<Element>::ReserveWithArena(Arena* arena, int new_size) {
 // Avoid inlining of Reserve(): new, copy, and delete[] lead to a significant
 // amount of code bloat.
 template <typename Element>
-PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(Arena* arena,
-                                                              bool was_soo,
-                                                              int old_size,
-                                                              int new_size) {
+PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(
+    Arena* arena, bool was_soo, int old_size, int64_t new_size) {
   ABSL_DCHECK_EQ(arena, GetArena());
   const int old_capacity = Capacity(was_soo);
   ABSL_DCHECK_GT(new_size, old_capacity);
   HeapRep* new_rep;
+
+  internal::RuntimeAssertInBoundsLE(new_size, std::numeric_limits<int>::max());
 
   new_size = internal::CalculateReserveSize<Element, kHeapRepHeaderSize>(
       old_capacity, new_size);
@@ -1491,7 +1487,7 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(Arena* arena,
 template <typename Element>
 PROTOBUF_NOINLINE void RepeatedField<Element>::Grow(Arena* arena, bool was_soo,
                                                     int old_size,
-                                                    int new_size) {
+                                                    int64_t new_size) {
   AnnotateForRelease();
   GrowNoAnnotate(arena, was_soo, old_size, new_size);
   AnnotateSize(Capacity(), old_size);
