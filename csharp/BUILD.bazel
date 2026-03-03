@@ -24,7 +24,7 @@ conformance_test(
     name = "conformance_performance_test",
     failure_list = "//conformance:failure_list_csharp_performance.txt",
     maximum_edition = "2024",
-    performace = True,
+    performance = True,
     testee = "//conformance:conformance_csharp",
 )
 
