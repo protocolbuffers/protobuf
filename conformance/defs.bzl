@@ -11,7 +11,7 @@ def conformance_test(
         failure_list = None,
         text_format_failure_list = None,
         maximum_edition = None,
-	performance = None,
+        performance = None,
         **kwargs):
     """Conformance test runner.
 
@@ -34,7 +34,7 @@ def conformance_test(
     if maximum_edition:
         args = args + ["--maximum_edition %s" % maximum_edition]
     if performance:
-	args = args + ["--performance"]
+        args = args + ["--performance"]
 
     sh_test(
         name = name,
