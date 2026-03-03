@@ -69,7 +69,7 @@ public class BoundedByteStringTest extends LiteralByteStringTest {
         .that(classUnderTest)
         .isEqualTo(getActualClassName(chopped));
 
-    String roundTripString = chopped.toString(StandardCharsets.UTF_8);
+    String roundTripString = chopped.toStringUtf8();
     assertWithMessage("%s unicode bytes must match", classUnderTest)
         .that(testString.substring(2, testString.length() - 6))
         .isEqualTo(roundTripString);

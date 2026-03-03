@@ -217,7 +217,14 @@ bool RustGenerator::Generate(const FileDescriptor* file,
 
   auto outfile = absl::WrapUnique(
       generator_context->Open(GetRsFile(ctx_without_printer, *file)));
-  io::Printer printer(outfile.get());
+  GeneratedCodeInfo annotations;
+  io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
+      &annotations);
+  io::Printer::Options printer_options{};
+  if (opts->annotate_code) {
+    printer_options.annotation_collector = &annotation_collector;
+  }
+  io::Printer printer(outfile.get(), printer_options);
   Context ctx = ctx_without_printer.WithPrinter(&printer);
 
   // Convenience shorthands for common symbols.
@@ -325,6 +332,12 @@ bool RustGenerator::Generate(const FileDescriptor* file,
       )cc");
       thunks_ctx.printer().PrintRaw("\n");
     }
+  }
+
+  if (opts->annotate_code) {
+    ctx.printer().PrintRaw(absl::StrCat(
+        "// google.protobuf.GeneratedCodeInfo ",
+        absl::Base64Escape(annotations.SerializeAsString()), "\n"));
   }
 
   return true;

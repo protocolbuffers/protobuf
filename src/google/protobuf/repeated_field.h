@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <functional>
 #include <iterator>
 #include <limits>
 #include <memory>
@@ -1273,6 +1274,8 @@ void RepeatedField<Element>::UnsafeArenaSwap(RepeatedField* other) {
 
 template <typename Element>
 void RepeatedField<Element>::SwapElements(int index1, int index2) {
+  internal::RuntimeAssertInBounds(index1, size());
+  internal::RuntimeAssertInBounds(index2, size());
   Element* elem = elements(is_soo());
   using std::swap;  // enable ADL with fallback
   swap(elem[index1], elem[index2]);
@@ -1334,6 +1337,48 @@ template <typename T, typename U>
 size_t erase(RepeatedField<T>& cont, const U& value) {
   return google::protobuf::erase_if(cont,
                           [&](const auto& elem) { return elem == value; });
+}
+
+// These functions mimic their std counterpart, but potentially more efficient
+// for Protobuf containers.
+template <int&..., typename T, typename Compare>
+void sort(internal::RepeatedIterator<T> begin,
+          internal::RepeatedIterator<T> end, Compare cmp) {
+  std::sort(begin, end, cmp);
+}
+template <int&..., typename T>
+void sort(internal::RepeatedIterator<T> begin,
+          internal::RepeatedIterator<T> end) {
+  google::protobuf::sort(begin, end, std::less<>{});
+}
+template <int&..., typename T, typename Compare>
+void stable_sort(internal::RepeatedIterator<T> begin,
+                 internal::RepeatedIterator<T> end, Compare cmp) {
+  std::stable_sort(begin, end, cmp);
+}
+template <int&..., typename T>
+void stable_sort(internal::RepeatedIterator<T> begin,
+                 internal::RepeatedIterator<T> end) {
+  google::protobuf::stable_sort(begin, end, std::less<>{});
+}
+
+// These functions mimic their absl counterpart, but they are more efficient for
+// Protobuf containers.
+template <int&..., typename T, typename Compare>
+void c_sort(RepeatedField<T>& cont, Compare cmp) {
+  google::protobuf::sort(cont.begin(), cont.end(), cmp);
+}
+template <int&..., typename T>
+void c_sort(RepeatedField<T>& cont) {
+  google::protobuf::c_sort(cont, std::less<>{});
+}
+template <int&..., typename T, typename Compare>
+void c_stable_sort(RepeatedField<T>& cont, Compare cmp) {
+  google::protobuf::stable_sort(cont.begin(), cont.end(), cmp);
+}
+template <int&..., typename T>
+void c_stable_sort(RepeatedField<T>& cont) {
+  google::protobuf::c_stable_sort(cont, std::less<>{});
 }
 
 namespace internal {
