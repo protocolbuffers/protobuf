@@ -4434,7 +4434,6 @@ final class MessageSchema<T> implements Schema<T> {
     int currentPresenceField = 0;
     for (int i = 0; i < checkInitializedCount; i++) {
       final int pos = intArray[i];
-      final int number = numberAt(pos);
       final int typeAndOffset = typeAndOffsetAt(pos);
 
       int presenceMaskAndOffset = buffer[pos + 2];
@@ -4474,7 +4473,7 @@ final class MessageSchema<T> implements Schema<T> {
           break;
         case 60: // ONEOF_MESSAGE
         case 68: // ONEOF_GROUP
-          if (isOneofPresent(message, number, pos)
+          if (isOneofPresent(message, numberAt(pos), pos)
               && !isInitialized(message, typeAndOffset, getMessageFieldSchema(pos))) {
             return false;
           }
@@ -4760,7 +4759,7 @@ final class MessageSchema<T> implements Schema<T> {
       }
     } else {
       final int presenceMask = 1 << (presenceMaskAndOffset >>> OFFSET_BITS);
-      return (UnsafeUtil.getInt(message, presenceMaskAndOffset & OFFSET_MASK) & presenceMask) != 0;
+      return (UnsafeUtil.getInt(message, presenceFieldOffset) & presenceMask) != 0;
     }
   }
 
@@ -4783,14 +4782,13 @@ final class MessageSchema<T> implements Schema<T> {
   }
 
   private boolean isOneofCaseEqual(T message, T other, int pos) {
-    int presenceMaskAndOffset = presenceMaskAndOffsetAt(pos);
-    return UnsafeUtil.getInt(message, presenceMaskAndOffset & OFFSET_MASK)
-        == UnsafeUtil.getInt(other, presenceMaskAndOffset & OFFSET_MASK);
+    final long presenceFieldOffset = presenceMaskAndOffsetAt(pos) & OFFSET_MASK;
+    return UnsafeUtil.getInt(message, presenceFieldOffset)
+        == UnsafeUtil.getInt(other, presenceFieldOffset);
   }
 
   private void setOneofPresent(T message, int fieldNumber, int pos) {
-    int presenceMaskAndOffset = presenceMaskAndOffsetAt(pos);
-    UnsafeUtil.putInt(message, presenceMaskAndOffset & OFFSET_MASK, fieldNumber);
+    UnsafeUtil.putInt(message, (long) (presenceMaskAndOffsetAt(pos) & OFFSET_MASK), fieldNumber);
   }
 
   private int positionForFieldNumber(final int number) {
