@@ -338,6 +338,11 @@ public final class GeneratorNames {
     }
   }
 
+  public static boolean getNestInFileClass(FileDescriptor descriptor) {
+    return getNestInFileClass(
+        descriptor, descriptor.getFeatures().getExtension(JavaFeaturesProto.java_));
+  }
+
   public static boolean getNestInFileClass(Descriptor descriptor) {
     return getNestInFileClass(
         descriptor.getFile(), descriptor.getFeatures().getExtension(JavaFeaturesProto.java_));
