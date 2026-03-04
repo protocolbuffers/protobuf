@@ -77,11 +77,6 @@ config_setting(
         "@platforms//os:linux",
         "@platforms//cpu:aarch64",
     ],
-    # TODO: Remove this once the arch tests can successfully run on the "emulation"
-    # docker images.
-    flag_values = {
-        "//toolchain:release": "True",
-    },
 )
 
 config_setting(
@@ -90,11 +85,6 @@ config_setting(
         "@platforms//os:linux",
         "@platforms//cpu:x86_64",
     ],
-    # TODO: Remove this once the arch tests can successfully run on the "emulation"
-    # docker images.
-    flag_values = {
-        "//toolchain:release": "True",
-    },
 )
 
 # Android NDK builds can specify different crosstool_top flags to choose which
