@@ -20,16 +20,21 @@
 #include <new>  // IWYU pragma: keep for operator new
 #include <string>
 #include <thread>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/container/flat_hash_set.h"
+#include "absl/hash/hash_testing.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/barrier.h"
+#include "absl/types/optional.h"
 #include "absl/utility/utility.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_test_util.h"
@@ -62,8 +67,11 @@ using proto2_unittest::TestEmptyMessage;
 using proto2_unittest::TestOneof2;
 using proto2_unittest::TestRepeatedString;
 using ::testing::AnyOf;
+using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::HasSubstr;
+using ::testing::Optional;
+using ::testing::Pointee;
 
 namespace google {
 namespace protobuf {
@@ -1942,6 +1950,892 @@ TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
   }
 }
 
+
+TEST_P(ArenaUniquePtrTest, AbslStringify) {
+  Arena::UniquePtr<int> ptr = Arena::MakeUnique<int>(GetArena(), 4);
+  EXPECT_EQ(absl::StrCat(ptr), absl::StrFormat("%p", ptr.get()));
+
+  Arena::UniquePtr<TestAllTypes> msg =
+      Arena::MakeUnique<TestAllTypes>(GetArena());
+  msg->set_optional_int32(11);
+  EXPECT_EQ(absl::StrCat(msg),
+            absl::StrFormat("points to (%p) with value <%v>", msg.get(), *msg));
+
+  EXPECT_EQ(absl::StrCat(Arena::UniquePtr<int>()), absl::StrFormat("(nil)"));
+  EXPECT_EQ(absl::StrCat(Arena::UniquePtr<TestAllTypes>()),
+            absl::StrFormat("(nil)"));
+}
+
+TEST_P(ArenaUniquePtrTest, AbslHashValue) {
+  Arena::UniquePtr<int> ptr1 = Arena::MakeUnique<int>(GetArena(), 3);
+
+  Arena always_arena;
+  Arena::Ptr<int> ptr2 = always_arena.Make<int>(8);
+
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly(std::forward_as_tuple(
+      // From UniquePtr<>
+      ptr1, ptr1.get(),
+      // From Ptr<>
+      ptr2, ptr2.get(), Arena::UniquePtr<int>(ptr2),
+      // null
+      Arena::UniquePtr<int>(), static_cast<int*>(nullptr), nullptr)));
+}
+
+TEST_P(ArenaUniquePtrTest, AbslHashTableHeterogeneousSupport) {
+  absl::flat_hash_set<Arena::UniquePtr<int>> set;
+  for (int i = 0; i < 10; ++i) {
+    set.insert(Arena::MakeUnique<int>(GetArena(), i));
+  }
+
+  if (GetArena() != nullptr) {
+    Arena::Ptr<int> ptr = GetArena()->Make<int>();
+    EXPECT_FALSE(set.contains(ptr));
+    set.insert(ptr);
+    EXPECT_TRUE(set.contains(ptr));
+  }
+
+  auto it = set.begin();
+
+  // Query via UniquePtr
+  EXPECT_TRUE(set.contains(*it));
+  ++it;
+  // Query via T*
+  EXPECT_TRUE(set.contains(it->get()));
+
+  // Some negatives just to make sure
+  auto outside = Arena::MakeUnique<int>(GetArena());
+  EXPECT_FALSE(set.contains(outside));
+  EXPECT_FALSE(set.contains(outside.get()));
+
+  EXPECT_FALSE(set.contains(Arena::UniquePtr<int>()));
+  EXPECT_FALSE(set.contains(nullptr));
+  EXPECT_FALSE(set.contains(static_cast<int*>(nullptr)));
+  set.insert(Arena::UniquePtr<int>());
+  EXPECT_TRUE(set.contains(Arena::UniquePtr<int>()));
+  EXPECT_TRUE(set.contains(nullptr));
+  EXPECT_TRUE(set.contains(static_cast<int*>(nullptr)));
+}
+
+TEST(ArenaPtrTest, Typedefs) {
+  EXPECT_TRUE((std::is_same_v<Arena::Ptr<int>::pointer, int*>));
+  EXPECT_TRUE((std::is_same_v<Arena::Ptr<const TestAllTypes>::pointer,
+                              const TestAllTypes*>));
+  EXPECT_TRUE((std::is_same_v<Arena::Ptr<const int>::element_type, const int>));
+  EXPECT_TRUE(
+      (std::is_same_v<Arena::Ptr<TestAllTypes>::element_type, TestAllTypes>));
+}
+
+TEST(ArenaPtrTest, MakeCopyAssign) {
+  Arena arena;
+
+  Arena::Ptr<int> ptr = arena.Make<int>(4);
+  auto* raw = ptr.get();
+  EXPECT_THAT(ptr, Pointee(4));
+  // We can copy it
+  auto copy = ptr;
+  EXPECT_EQ(ptr.get(), copy.get());
+  EXPECT_EQ(raw, copy.get());
+
+  // Move is just copy
+  auto move = std::move(ptr);
+  EXPECT_EQ(ptr.get(), move.get());
+  EXPECT_EQ(raw, move.get());
+
+  Arena::Ptr<int> ptr2 = arena.Make<int>(7);
+  auto* raw2 = ptr2.get();
+
+  // Assign
+  copy = ptr2;
+  move = ptr2;
+  EXPECT_EQ(raw, ptr.get());
+  EXPECT_EQ(raw2, ptr2.get());
+  EXPECT_EQ(raw2, copy.get());
+  EXPECT_EQ(raw2, move.get());
+}
+
+TEST(ArenaPtrTest, ConversionConstructor) {
+  Arena arena;
+  Arena::Ptr<TestAllTypes> ptr = arena.Make<TestAllTypes>();
+  TestAllTypes* raw = ptr.get();
+
+  // Conversion to base
+  Arena::Ptr<Message> base = ptr;
+  EXPECT_EQ(raw, base.get());
+
+  // Conversion to const
+  Arena::Ptr<const Message> cbase = base;
+  EXPECT_EQ(raw, cbase.get());
+}
+
+TEST(ArenaPtrTest, ConversionAssignment) {
+  Arena arena;
+  Arena::Ptr<TestAllTypes> ptr = arena.Arena::Make<TestAllTypes>();
+  Arena::Ptr<Message> base = arena.Arena::Make<TestAllTypes>();
+  Arena::Ptr<const Message> cbase = arena.Arena::Make<TestAllTypes>();
+
+  TestAllTypes* raw = ptr.get();
+
+  EXPECT_NE(raw, base.get());
+  EXPECT_NE(raw, cbase.get());
+
+  // Conversion to base
+  base = ptr;
+  EXPECT_EQ(raw, base.get());
+
+  // Conversion to const
+  cbase = base;
+  EXPECT_EQ(raw, cbase.get());
+}
+
+TEST(ArenaPtrTest, ConstPointerType) {
+  Arena arena;
+  Arena::Ptr<const int> ptr = arena.Make<int>();
+  EXPECT_TRUE((std::is_same_v<decltype(*ptr), const int&>));
+  EXPECT_TRUE((std::is_same_v<decltype(ptr.get()), const int*>));
+  EXPECT_TRUE((std::is_same_v<decltype(ptr.operator->()), const int*>));
+}
+
+TEST(ArenaPtrTest, Swap) {
+  Arena arena;
+  Arena::Ptr<int> a = arena.Make<int>(3);
+  Arena arena2;
+  Arena::Ptr<int> b = arena2.Make<int>(7);
+
+  ASSERT_THAT(a, Pointee(3));
+  ASSERT_THAT(b, Pointee(7));
+  ASSERT_EQ(&arena, a.GetOwningArena());
+  ASSERT_EQ(&arena2, b.GetOwningArena());
+
+  a.swap(b);
+  EXPECT_THAT(a, Pointee(7));
+  EXPECT_THAT(b, Pointee(3));
+  ASSERT_EQ(&arena2, a.GetOwningArena());
+  ASSERT_EQ(&arena, b.GetOwningArena());
+
+  swap(a, b);
+  EXPECT_THAT(a, Pointee(3));
+  EXPECT_THAT(b, Pointee(7));
+  ASSERT_EQ(&arena, a.GetOwningArena());
+  ASSERT_EQ(&arena2, b.GetOwningArena());
+}
+
+template <typename LHS, typename RHS, typename Cmp>
+void CrossProductCmp(const LHS& value1, const RHS& value2, Cmp cmp) {
+  std::apply(
+      [&](const auto&... all_lhs) {
+        (
+            [&](const auto& lhs) {
+              std::apply(
+                  [&](const auto&... all_rhs) { (cmp(lhs, all_rhs), ...); },
+                  value2);
+            }(all_lhs),
+            ...);
+      },
+      value1);
+}
+
+TEST(ArenaPtrTest, Comparison) {
+  Arena arena;
+  Arena::Ptr<int> ptr1 = arena.Make<int>();
+  Arena::Ptr<int> ptr2 = arena.Make<int>();
+
+  auto ptr1_tuple =
+      std::make_tuple(ptr1, Arena::UniquePtr<int>(ptr1), ptr1.get());
+  auto ptr2_tuple =
+      std::make_tuple(ptr2, Arena::UniquePtr<int>(ptr2), ptr2.get());
+
+
+  CrossProductCmp(ptr1_tuple, ptr1_tuple, [](const auto& a, const auto& b) {
+    EXPECT_TRUE(a == b);
+    EXPECT_FALSE(a != b);
+  });
+  CrossProductCmp(ptr1_tuple, ptr2_tuple, [](const auto& a, const auto& b) {
+    EXPECT_FALSE(a == b);
+    EXPECT_FALSE(b == a);
+    EXPECT_TRUE(a != b);
+    EXPECT_TRUE(b != a);
+  });
+
+  CrossProductCmp(ptr1_tuple, std::make_tuple(nullptr),
+                  [](const auto& a, const auto& b) {
+                    EXPECT_FALSE(a == b);
+                    EXPECT_FALSE(b == a);
+                    EXPECT_TRUE(a != b);
+                    EXPECT_TRUE(b != a);
+                  });
+  EXPECT_TRUE(Arena::UniquePtr<int>() == nullptr);
+  EXPECT_FALSE(Arena::UniquePtr<int>() != nullptr);
+}
+
+TEST(ArenaPtrTest, AbslStringify) {
+  Arena arena;
+  Arena::Ptr<int> ptr = arena.Make<int>(4);
+  EXPECT_EQ(absl::StrCat(ptr), absl::StrFormat("%p", ptr.get()));
+
+  Arena::Ptr<TestAllTypes> msg = arena.Make<TestAllTypes>();
+  msg->set_optional_int32(11);
+  EXPECT_EQ(absl::StrCat(msg),
+            absl::StrFormat("points to (%p) with value <%v>", msg.get(), *msg));
+}
+
+TEST(ArenaPtrTest, AbslHashTableHeterogeneousSupport) {
+  Arena arena;
+  absl::flat_hash_set<Arena::Ptr<int>> set;
+  for (int i = 0; i < 10; ++i) {
+    set.insert(arena.Make<int>(i));
+  }
+
+  auto it = set.begin();
+
+  // Query via Ptr
+  EXPECT_TRUE(set.contains(*it));
+  ++it;
+  // Query via T*
+  EXPECT_TRUE(set.contains(it->get()));
+  ++it;
+  // Query via UniquePtr
+  EXPECT_TRUE(set.contains(Arena::UniquePtr<int>(*it)));
+
+  // Some negatives just to make sure
+  auto outside = arena.Make<int>();
+  EXPECT_FALSE(set.contains(outside));
+  EXPECT_FALSE(set.contains(outside.get()));
+  EXPECT_FALSE(set.contains(Arena::UniquePtr<int>(outside)));
+
+  // null is never there.
+  EXPECT_FALSE(set.contains(Arena::UniquePtr<int>()));
+  EXPECT_FALSE(set.contains(nullptr));
+  EXPECT_FALSE(set.contains(static_cast<int*>(nullptr)));
+}
+
+TEST(ArenaPtrTest, ClassIsABIEfficient) {
+  // We verify that the type can be passed in registers in the Itanium ABI when
+  // using clang.
+#if ABSL_HAVE_BUILTIN(__is_trivially_relocatable)
+  EXPECT_TRUE(__is_trivially_relocatable(Arena::UniquePtr<TestAllTypes>));
+  EXPECT_TRUE(__is_trivially_relocatable(Arena::Ptr<TestAllTypes>));
+#endif
+  EXPECT_LE(sizeof(Arena::UniquePtr<TestAllTypes>), 2 * sizeof(void*));
+  EXPECT_LE(sizeof(Arena::Ptr<TestAllTypes>), 2 * sizeof(void*));
+}
+
+// Helper for BM_MultiThreadedAlloc.  Synchronously creates a new
+// arena after every K iterations to prevent unbounded memory growth.
+class ArenaManager {
+ public:
+  ArenaManager() = default;
+
+  // Called by benchmark setup code to initialize number of threads.
+  void Init(const benchmark::State& state) {
+    absl::MutexLock l(&mu_);
+    num_threads_ = state.threads();
+    num_waiting_ = 0;
+    phase_ = 0;
+    delete arena_;
+    arena_ = nullptr;
+  }
+
+  // Wait until all benchmark threads have made this call and then
+  // returns a new arena to all of them.
+  Arena* GetNextArena(bool initial_block) {
+    mu_.Lock();
+    num_waiting_++;
+    if (num_waiting_ == num_threads_) {
+      // Last thread in switches to a new arena.
+      delete arena_;
+      if (initial_block) {
+        arena_ = new Arena(initial_block_, kDefaultStartBlockSize);
+      } else {
+        arena_ = new Arena;
+      }
+      phase_++;
+      num_waiting_ = 0;
+    } else {
+      // Wait until last thread switches to a new arena.
+      int64_t current = phase_;
+      auto switched = [this, current] { return phase_ != current; };
+      mu_.Await(absl::Condition(&switched));
+    }
+    Arena* result = arena_;
+    mu_.Unlock();
+    return result;
+  }
+
+ private:
+  absl::Mutex mu_;
+  int num_threads_ = 0;
+  int num_waiting_ = 0;
+  int64_t phase_ = 0;
+  static constexpr size_t kDefaultStartBlockSize = 256;
+  char initial_block_[kDefaultStartBlockSize];
+  Arena* arena_ = nullptr;
+};
+
+ArenaManager* ArenaManagerSingleton() {
+  static auto* arena_manager = new ArenaManager;
+  return arena_manager;
+}
+
+// Synchronously creates a new list of arenas after every K iterations to
+// prevent unbounded memory growth.  On average, each thread is assigned one
+// arena.
+class MultiArenaManager {
+ public:
+  // Re-initializes the arena manager to expect |num_threads_| threads.
+  // Called by benchmark setup code.
+  void Init(const benchmark::State& state) ABSL_NO_THREAD_SAFETY_ANALYSIS {
+    num_threads_ = state.threads();
+    num_waiting_ = 0;
+    phase_ = 0;
+    // Has to be before resetting the initial block in case arenas reference it.
+    arena_list_.clear();
+    initial_block_ =
+        std::make_unique<char[]>(kDefaultStartBlockSize * num_threads_);
+  }
+
+  // Waits until all benchmark threads have made this call and then
+  // refreshes the arena list.
+  void UpdateArenaList(bool initial_block) ABSL_LOCKS_EXCLUDED(mu_) {
+    absl::MutexLock l(&mu_);
+    num_waiting_++;
+    if (num_waiting_ == num_threads_) {
+      // Last thread in switches to a new arena list.
+      arena_list_.clear();
+      if (initial_block) {
+        for (int i = 0; i < num_threads_; i++) {
+          char* block = &initial_block_[kDefaultStartBlockSize * i];
+          arena_list_.push_back(
+              std::make_unique<Arena>(block, kDefaultStartBlockSize));
+        }
+      } else {
+        for (int i = 0; i < num_threads_; i++) {
+          arena_list_.push_back(std::make_unique<Arena>());
+        }
+      }
+      phase_++;
+      num_waiting_ = 0;
+    } else {
+      // Waits until last thread switches to a new arena.
+      int64_t current = phase_;
+      auto switched = [this, current]() ABSL_EXCLUSIVE_LOCKS_REQUIRED(mu_) {
+        return phase_ != current;
+      };
+      mu_.Await(absl::Condition(&switched));
+    }
+  }
+
+  // Gets a random arena from the list.
+  // When calling this thread, UpdateArenaList guarantees no change to
+  // arena_list_.
+  Arena* GetRandomArena() {
+    return arena_list_.at(rand() % num_threads_).get();
+  }
+
+  int GetThreadNum() const { return num_threads_; }
+
+ private:
+  absl::Mutex mu_;
+  int num_threads_ = 0;
+  int num_waiting_ ABSL_GUARDED_BY(mu_) = 0;
+  int64_t phase_ ABSL_GUARDED_BY(mu_) = 0;
+  static constexpr size_t kDefaultStartBlockSize = 256;
+  std::unique_ptr<char[]> initial_block_;
+  std::vector<std::unique_ptr<Arena>> arena_list_;
+};
+
+MultiArenaManager* MultiArenaManagerSingleton() {
+  static auto* arena_manager = new MultiArenaManager;
+  return arena_manager;
+}
+
+static void RunAlloc(benchmark::State& state, bool initial_block,
+                     int minimum_number_of_arenas) {
+  // We use an initial block if (initial_block != 0).
+  int i = 0;
+  for (auto s : state) {
+    auto arena = ArenaManagerSingleton()->GetNextArena(initial_block);
+    const int left =
+        std::min<int>(state.max_iterations - i, minimum_number_of_arenas);
+    i += left;
+    for (int j = 0; j < left; j++) {
+      benchmark::DoNotOptimize(arena);
+      benchmark::DoNotOptimize(Arena::CreateArray<char>(arena, 64));
+    }
+  }
+}
+
+PROTOBUF_NOINLINE static void BM_Alloc(benchmark::State& state) {
+  const int minimum_number_of_arenas = state.range(0);
+
+  RunAlloc(state,
+           /*initial_block=*/false, minimum_number_of_arenas);
+}
+BENCHMARK(BM_Alloc)->ThreadRange(1, 32)->Arg(1000)->Arg(10000)->Setup(
+    [](const benchmark::State& state) {
+      ArenaManagerSingleton()->Init(state);
+    });
+
+PROTOBUF_NOINLINE static void BM_Alloc_InitialBlock(benchmark::State& state) {
+  const int minimum_number_of_arenas = state.range(0);
+
+  RunAlloc(state,
+           /*initial_block=*/true, minimum_number_of_arenas);
+}
+BENCHMARK(BM_Alloc_InitialBlock)
+    ->ThreadRange(1, 32)
+    ->Arg(1000)
+    ->Arg(10000)
+    ->Setup([](const benchmark::State& state) {
+      ArenaManagerSingleton()->Init(state);
+    });
+
+static void RunAllocMultiArena(benchmark::State& state, bool initial_block,
+                               int minimum_number_of_arenas) {
+  // We use an initial block if (initial_block != 0).
+  int i = 0;
+  for (auto s : state) {
+    state.PauseTiming();
+    MultiArenaManagerSingleton()->UpdateArenaList(initial_block);
+    std::vector<Arena*> arena_list;
+    // MultiArenaManager has num_threads arenas. Fetch that many,
+    // in random order. This is approximately a random permutation
+    // of the available arenas, but not quite since it allows dups.
+    int thread_num = MultiArenaManagerSingleton()->GetThreadNum();
+    for (int j = 0; j < thread_num; j++) {
+      auto* arena = MultiArenaManagerSingleton()->GetRandomArena();
+      arena_list.push_back(arena);
+    }
+    state.ResumeTiming();
+
+    const int left =
+        std::min<int>(state.max_iterations - i, minimum_number_of_arenas);
+    i += left;
+    for (int j = 0; j < left; j++) {
+      auto* arena = arena_list.at(j % thread_num);
+      auto* array = Arena::CreateArray<char>(arena, 64);
+      benchmark::DoNotOptimize(array);
+    }
+  }
+}
+
+PROTOBUF_NOINLINE static void BM_AllocMultiArena(benchmark::State& state) {
+  const int minimum_number_of_arenas = state.range(0);
+
+  RunAllocMultiArena(state,
+                     /*initial_block=*/false, minimum_number_of_arenas);
+}
+BENCHMARK(BM_AllocMultiArena)
+    ->ThreadRange(1, 32)
+    ->Arg(1000)
+    ->Arg(10000)
+    ->Setup([](const benchmark::State& state) {
+      MultiArenaManagerSingleton()->Init(state);
+    });
+
+PROTOBUF_NOINLINE static void BM_AllocMultiArena_InitialBlock(
+    benchmark::State& state) {
+  const int minimum_number_of_arenas = state.range(0);
+
+  RunAllocMultiArena(state,
+                     /*initial_block=*/true, minimum_number_of_arenas);
+}
+BENCHMARK(BM_AllocMultiArena_InitialBlock)
+    ->ThreadRange(1, 32)
+    ->Arg(1000)
+    ->Arg(10000)
+    ->Setup([](const benchmark::State& state) {
+      MultiArenaManagerSingleton()->Init(state);
+    });
+
+static void BM_MemoryUsage(benchmark::State& state) {
+  BenchmarkMemoryUsage(testing::kAllThreadUsage);
+  for (auto s : state) {
+    auto arena = std::make_unique<Arena>();
+    auto* array = Arena::CreateArray<char>(arena.get(), 1);
+    benchmark::DoNotOptimize(array);
+  }
+}
+BENCHMARK(BM_MemoryUsage);
+
+static void BM_CreateDestroy(benchmark::State& state) {
+  for (auto s : state) {
+    Arena arena;
+    benchmark::DoNotOptimize(arena);
+  }
+}
+BENCHMARK(BM_CreateDestroy);
+
+static void BM_CreateDestroy_InitialBlock(benchmark::State& state) {
+  const int kBufSize = Arena::kBlockOverhead + 64;
+  char buf[kBufSize];
+  for (auto s : state) {
+    Arena arena(buf, kBufSize);
+    benchmark::DoNotOptimize(arena);
+  }
+}
+BENCHMARK(BM_CreateDestroy_InitialBlock);
+
+static void BM_CreateAllocDestroy(benchmark::State& state) {
+  for (auto s : state) {
+    Arena arena;
+    benchmark::DoNotOptimize(Arena::CreateArray<char>(&arena, 7));
+  }
+}
+BENCHMARK(BM_CreateAllocDestroy);
+
+static void BM_CreateAllocDestroy_InitialBlock(benchmark::State& state) {
+  const int kBufSize = Arena::kBlockOverhead + 64;
+  char buf[kBufSize];
+
+  for (auto s : state) {
+    Arena arena(buf, kBufSize);
+    benchmark::DoNotOptimize(Arena::CreateArray<char>(&arena, 7));
+  }
+}
+BENCHMARK(BM_CreateAllocDestroy_InitialBlock);
+
+// We should make sure we do something with the returned memory. Otherwise
+// the compiler will perform an optimization thats unrealistic to happen
+// in normal use of arena allocation.
+inline void Use(void* ptr) { *static_cast<uint64_t*>(ptr) = 0; }
+
+PROTOBUF_NOINLINE
+static void Impl_ArenaAlloc(google::protobuf::Arena* arena, int n_allocs_div_10) {
+  for (int i = 0; i < n_allocs_div_10; i++) {
+    Use(google::protobuf::Arena::CreateArray<char>(arena, sizeof(uint64_t)));
+    Use(google::protobuf::Arena::CreateArray<char>(arena, sizeof(uint64_t)));
+    Use(google::protobuf::Arena::CreateArray<char>(arena, sizeof(uint64_t)));
+    Use(google::protobuf::Arena::CreateArray<char>(arena, sizeof(uint64_t)));
+    Use(google::protobuf::Arena::CreateArray<char>(arena, sizeof(uint64_t)));
+    Use(google::protobuf::Arena::CreateArray<char>(arena, sizeof(uint64_t)));
+    Use(google::protobuf::Arena::CreateArray<char>(arena, sizeof(uint64_t)));
+    Use(google::protobuf::Arena::CreateArray<char>(arena, sizeof(uint64_t)));
+    Use(google::protobuf::Arena::CreateArray<char>(arena, sizeof(uint64_t)));
+    Use(google::protobuf::Arena::CreateArray<char>(arena, sizeof(uint64_t)));
+  }
+}
+
+static void BM_ArenaAlloc(benchmark::State& state) {
+  const int n_allocs = state.range(0);
+
+  ABSL_CHECK_EQ((n_allocs % 10), 0);
+  int n_allocs_div_10 = n_allocs / 10;
+  char buf[1024];
+  for (auto s : state) {
+    google::protobuf::Arena arena(buf, sizeof(buf));
+    Impl_ArenaAlloc(&arena, n_allocs_div_10);
+  }
+}
+BENCHMARK(BM_ArenaAlloc)->Arg(0)->Arg(10)->Arg(100);
+
+PROTOBUF_NOINLINE
+static void Impl_ArenaAllocWithCleanup(google::protobuf::Arena* arena,
+                                       int n_allocs_div_10) {
+  struct X {
+    uint64_t data;
+    ~X() { ABSL_BLOCK_TAIL_CALL_OPTIMIZATION(); }
+  };
+  for (int i = 0; i < n_allocs_div_10; i++) {
+    Use(google::protobuf::Arena::Create<X>(arena));
+    Use(google::protobuf::Arena::Create<X>(arena));
+    Use(google::protobuf::Arena::Create<X>(arena));
+    Use(google::protobuf::Arena::Create<X>(arena));
+    Use(google::protobuf::Arena::Create<X>(arena));
+    Use(google::protobuf::Arena::Create<X>(arena));
+    Use(google::protobuf::Arena::Create<X>(arena));
+    Use(google::protobuf::Arena::Create<X>(arena));
+    Use(google::protobuf::Arena::Create<X>(arena));
+    Use(google::protobuf::Arena::Create<X>(arena));
+  }
+}
+
+static void BM_ArenaAllocWithCleanup(benchmark::State& state) {
+  const int n_allocs = state.range(0);
+
+  ABSL_CHECK_EQ((n_allocs % 10), 0);
+  int n_allocs_div_10 = n_allocs / 10;
+  char buf[1024];
+  for (auto s : state) {
+    google::protobuf::Arena arena(buf, sizeof(buf));
+    Impl_ArenaAllocWithCleanup(&arena, n_allocs_div_10);
+  }
+}
+BENCHMARK(BM_ArenaAllocWithCleanup)->Arg(0)->Arg(10)->Arg(100);
+
+void BM_ParseRepeatedStringFieldArena(benchmark::State& state) {
+  TestAllTypes original;
+  for (int i = 0; i < state.range(0); i++) {
+    original.add_repeated_string("abc");
+  }
+  const std::string data = original.SerializeAsString();
+  Arena arena;
+  constexpr int kResetLimit = 10;
+  for (auto s : state) {
+    TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
+    ABSL_CHECK(arena_message->ParseFromString(data));
+    // Avoids memory in arena from ever increasing.
+    if (state.iterations() % kResetLimit == 0) {
+      arena.Reset();
+    }
+  }
+}
+BENCHMARK(BM_ParseRepeatedStringFieldArena)->Arg(10)->Arg(100)->Arg(1000);
+
+void BM_ArenaParseRepeatedPtrField(benchmark::State& state) {
+  TestAllTypes original;
+  for (int i = 0; i < state.range(0); i++) {
+    auto* nested = original.add_repeated_foreign_message();
+    nested->set_c(1);
+  }
+  const std::string data = original.SerializeAsString();
+  Arena arena;
+  constexpr int kResetLimit = 10;
+  for (auto s : state) {
+    TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
+    ABSL_CHECK(arena_message->ParseFromString(data));
+    // Avoids memory in arena from ever increasing.
+    if (state.iterations() % kResetLimit == 0) {
+      arena.Reset();
+    }
+  }
+}
+BENCHMARK(BM_ArenaParseRepeatedPtrField)->Arg(10)->Arg(100)->Arg(1000);
+
+void BM_ArenaMergeFromRepeatedPtrField(benchmark::State& state) {
+  Arena arena;
+  constexpr int kResetLimit = 10;
+  auto* original = Arena::Create<TestAllTypes>(&arena);
+  for (int i = 0; i < state.range(0); i++) {
+    auto* nested = original->add_repeated_foreign_message();
+    nested->set_c(1);
+  }
+  // Used to restore original after resetting arena.
+  const std::string data = original->SerializeAsString();
+  for (auto s : state) {
+    TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
+    arena_message->MergeFrom(*original);
+    // Avoids memory in arena from ever increasing.
+    if (state.iterations() % kResetLimit == 0) {
+      arena.Reset();
+      original = Arena::Create<TestAllTypes>(&arena);
+      ABSL_CHECK(original->ParseFromString(data));
+    }
+  }
+}
+BENCHMARK(BM_ArenaMergeFromRepeatedPtrField)->Arg(10)->Arg(100)->Arg(1000);
+
+static void BM_CopyConstructorRepeatedPtrField(benchmark::State& state) {
+  const int n_elems = state.range(0);
+
+  TestAllTypes original;
+  for (int i = 0; i < n_elems; i++) {
+    auto* nested = original.add_repeated_foreign_message();
+    nested->set_c(1);
+  }
+  for (auto s : state) {
+    TestAllTypes message(original);
+    benchmark::DoNotOptimize(message);
+  }
+}
+BENCHMARK(BM_CopyConstructorRepeatedPtrField)->Arg(10)->Arg(100)->Arg(1000);
+
+namespace internal {
+class ArenaBenchmark {
+ public:
+  static auto GetSerialArena(ThreadSafeArena& arena) {
+    return arena.GetSerialArenaFallback(0);
+  }
+  static uint64_t ExpectLifecycleIdIncrementLocally(uint64_t prev) {
+    uint64_t curr = ThreadSafeArena::thread_cache().next_lifecycle_id;
+    if (prev == 0) return curr;
+    EXPECT_LT(curr - prev, ThreadSafeArena::ThreadCache::kPerThreadIds);
+    return curr;
+  }
+};
+}  // namespace internal
+
+TEST(ArenaTest, IncrementLifecycleIdLocally) {
+  Arena arena;
+  int num_reset = 1000;
+  uint64_t prev = 0;
+  while (--num_reset >= 0) {
+    arena.Reset();
+    prev = internal::ArenaBenchmark::ExpectLifecycleIdIncrementLocally(prev);
+
+    auto* msg = Arena::Create<TestAllTypes>(&arena);
+    TestUtil::SetAllFields(msg);
+    TestUtil::ExpectAllFieldsSet(*msg);
+  }
+}
+
+// Helper class that places (scopes) an `AllocateAtLeast` hook for the current
+// thread, multiplies the requested size by a provided `multiplier`, and counts
+// the number of `AllocAtLeast` invocations for the scoped execution.
+class ScopedAllocAtLeastHook {
+ public:
+  // Sets `internal:allocate_at_least_hook` to this instance.
+  explicit ScopedAllocAtLeastHook(size_t multiplier) : multiplier_(multiplier) {
+    internal::SetAllocateAtLeastHook(&ScopedAllocAtLeastHook::Hook, this);
+  }
+
+  // Sets `internal:allocate_at_least_hook` to null
+  ~ScopedAllocAtLeastHook() { internal::SetAllocateAtLeastHook(nullptr); }
+
+  // Returns the number of allocations executed inside this scope.
+  size_t allocation_count() const { return alloc_count_; }
+
+ private:
+  static internal::SizedPtr Hook(size_t size, void* context) {
+    auto self = static_cast<ScopedAllocAtLeastHook*>(context);
+    ++self->alloc_count_;
+    size *= self->multiplier_;
+    return {::operator new(size), size};
+  }
+
+  int alloc_count_ = 0;
+  const size_t multiplier_;
+};
+
+TEST(ArenaTest, UsesExtraSizeReturnedByAllocateAtLeastForNewBlocks) {
+  if (!internal::HaveAllocateAtLeastHook()) {
+    GTEST_SKIP() << "AllocateAtLeastHook() not available";
+  }
+
+  // We test that AllocateAtLeast is used properly by counting the total
+  // count of AllocateAtLeast() calls for a fixed number of times, and compare
+  // those counts with and without returning quadruple the size requested
+  std::array<int, 2> new_block_count{0};
+  for (int run = 0; run < 2; ++run) {
+    ScopedAllocAtLeastHook hook(run == 0 ? 1 : 4);
+
+    // Hit 'NewBlock' logic in arena allocate
+    Arena arena;
+    for (int i = 0; i < 100; ++i) {
+      (void)arena.AllocateAligned(128);
+    }
+    new_block_count[run] = hook.allocation_count();
+  }
+  EXPECT_LT(new_block_count[1], new_block_count[0]);
+}
+
+TEST(ArenaTest, UsesExtraSizeReturnedByAllocateAtLeastForThreadArenaArray) {
+  if (!internal::HaveAllocateAtLeastHook()) {
+    GTEST_SKIP() << "AllocateAtLeastHook() not available";
+  }
+
+  // We test that AllocateAtLeast is used properly by counting the total
+  // count of AllocateAtLeast() calls for a fixed number of times, and compare
+  // those counts with and without returning quadruple the size requested
+  // Hit 'NewSerialArena` logic.
+  std::array<std::atomic<int>, 2> new_thread_count{0};
+  for (int run = 0; run < 2; ++run) {
+    // The counts for single AllocateAligned are identical, but the array
+    // allocation for SerialArena pointers should be less allocs.
+    Arena arena;
+    std::vector<std::thread> threads;
+    for (int i = 0; i < 256; ++i) {
+      threads.emplace_back([&] {
+        ScopedAllocAtLeastHook hook(run == 0 ? 1 : 4);
+        EXPECT_NE(arena.AllocateAligned(8), nullptr);
+        new_thread_count[run] += hook.allocation_count();
+      });
+    }
+    for (auto& thread : threads) {
+      thread.join();
+    }
+  }
+  EXPECT_LT(new_thread_count[1], new_thread_count[0]);
+}
+
+TEST(ArenaTest, AllStringBlockSizesEmplaceCorrectly) {
+  // Allocate buffer large enough to fit exponentially growing string
+  // blocks up to 64K, which should cover any reasonable max size.
+  std::vector<char> arena_block(64 << 10);
+  ArenaOptions options;
+  options.initial_block = arena_block.data();
+  options.initial_block_size = arena_block.size();
+  Arena arena(options);
+  int runs = (64 << 10) / sizeof(std::string);
+  for (int i = 0; i < runs; ++i) {
+    EXPECT_NE(Arena::Create<std::string>(&arena), nullptr);
+  }
+}
+
+TEST(ArenaTest, BadInitialBlockSizeDeathTest) {
+  if constexpr (!internal::HasMemoryPoisoning()) {
+    GTEST_SKIP() << "Memory poisoning not enabled.";
+  }
+
+  // Create a valid block of size kTrueBlockSize followed by a poisoned memory
+  // region of the same size.
+  constexpr size_t kTrueBlockSize = 64 << 10;
+  std::vector<char> arena_block(kTrueBlockSize * 2);
+  internal::PoisonMemoryRegion(arena_block.data() + kTrueBlockSize,
+                               kTrueBlockSize);
+
+  ArenaOptions options;
+  options.initial_block = arena_block.data();
+  options.initial_block_size = 2 * kTrueBlockSize;
+}
+
+PROTOBUF_NOINLINE
+static void Impl_SerialArenaAlloc(internal::SerialArena* serial,
+                                  int n_allocs_div_10) {
+  for (int i = 0; i < n_allocs_div_10; i++) {
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+  }
+}
+
+static void BM_SerialArenaAlloc(benchmark::State& state) {
+  const int n_allocs = state.range(0);
+
+  ABSL_CHECK_EQ((n_allocs % 10), 0);
+  int n_allocs_div_10 = n_allocs / 10;
+
+  char mem[1024];
+  for (auto s : state) {
+    internal::ThreadSafeArena arena(mem, sizeof(mem));
+    Impl_SerialArenaAlloc(internal::ArenaBenchmark::GetSerialArena(arena),
+                          n_allocs_div_10);
+  }
+}
+BENCHMARK(BM_SerialArenaAlloc)->Arg(0)->Arg(10)->Arg(100);
+
+namespace {
+enum WithArena : bool { kNoArena = false, kArena = true };
+}  // namespace
+
+template <WithArena kWithArena>
+static void BM_RepeatedStringAdd(benchmark::State& state) {
+  const auto count = static_cast<size_t>(state.range(0));
+  const std::string long_string(sizeof(std::string), 'a');
+  for (auto s : state) {
+    Arena arena;
+    auto res =
+        MakeArenaSafeUnique<TestRepeatedString>(kWithArena ? &arena : nullptr);
+    for (uint32_t i = 0; i < count; ++i) {
+      *res->add_repeated_string1() = "aaa";
+      *res->add_repeated_string2() = long_string;
+
+      *res->add_repeated_bytes11() = "aaa";
+      *res->add_repeated_bytes12() = long_string;
+    }
+  }
+}
+
+BENCHMARK(BM_RepeatedStringAdd<kArena>)->Arg(0)->Arg(10)->Arg(100);
+BENCHMARK(BM_RepeatedStringAdd<kNoArena>)->Arg(0)->Arg(10)->Arg(100);
+
+
 
 }  // namespace protobuf
 }  // namespace google
