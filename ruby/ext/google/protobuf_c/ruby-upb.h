@@ -14123,6 +14123,9 @@ typedef enum {
   // Only inside message table.
   UPB_DEFTYPE_FIELD = 0,
   UPB_DEFTYPE_ONEOF = 1,
+
+  // Only inside service table.
+  UPB_DEFTYPE_METHOD = 0,
 } upb_deftype_t;
 
 #ifdef __cplusplus
@@ -14181,8 +14184,14 @@ const upb_MessageDef* upb_DefPool_FindMessageByNameWithSize(
 UPB_API const upb_EnumDef* upb_DefPool_FindEnumByName(const upb_DefPool* s,
                                                       const char* sym);
 
-const upb_EnumValueDef* upb_DefPool_FindEnumByNameval(const upb_DefPool* s,
-                                                      const char* sym);
+UPB_API const upb_EnumDef* upb_DefPool_FindEnumByNameWithSize(
+    const upb_DefPool* s, const char* sym, size_t len);
+
+UPB_API const upb_EnumValueDef* upb_DefPool_FindEnumValueByName(
+    const upb_DefPool* s, const char* sym);
+
+UPB_API const upb_EnumValueDef* upb_DefPool_FindEnumValueByNameWithSize(
+    const upb_DefPool* s, const char* sym, size_t len);
 
 UPB_API const upb_FileDef* upb_DefPool_FindFileByName(const upb_DefPool* s,
                                                       const char* name);
@@ -14732,6 +14741,8 @@ extern "C" {
 UPB_API const upb_FileDef* upb_ServiceDef_File(const upb_ServiceDef* s);
 const upb_MethodDef* upb_ServiceDef_FindMethodByName(const upb_ServiceDef* s,
                                                      const char* name);
+const upb_MethodDef* upb_ServiceDef_FindMethodByNameWithSize(
+    const upb_ServiceDef* s, const char* name, size_t len);
 UPB_API const char* upb_ServiceDef_FullName(const upb_ServiceDef* s);
 bool upb_ServiceDef_HasOptions(const upb_ServiceDef* s);
 int upb_ServiceDef_Index(const upb_ServiceDef* s);
@@ -17420,6 +17431,9 @@ upb_ServiceDef* _upb_ServiceDefs_New(
     upb_DefBuilder* ctx, int n,
     const google_protobuf_ServiceDescriptorProto* const* protos,
     const google_protobuf_FeatureSet* parent_features);
+
+void _upb_ServiceDef_InsertMethod(upb_DefBuilder* ctx, upb_ServiceDef* s,
+                                  const upb_MethodDef* m);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -1215,6 +1215,18 @@ proto_library(
     ],
 )
 
+upb_c_proto_library(
+    name = "unittest_upb_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":test_protos"],
+)
+
+upb_proto_reflection_library(
+    name = "unittest_upb_reflection_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":test_protos"],
+)
+
 proto_library(
     name = "unittest_proto3_arena_proto",
     srcs = ["unittest_proto3_arena.proto"],

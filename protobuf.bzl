@@ -195,7 +195,7 @@ def _proto_gen_impl(ctx):
         generated_files.extend(outs)
 
         inputs = [src] + deps.to_list()
-        protoc = ctx.executable.protoc or _protoc_files_to_run(ctx)
+        protoc = ctx.executable.protoc or _protoc_files_to_run(ctx).executable
         tools = [protoc]
         if ctx.executable.plugin:
             plugin = ctx.executable.plugin
