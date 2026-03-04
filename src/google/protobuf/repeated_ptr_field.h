@@ -74,7 +74,7 @@ class MergePartialFromCodedStreamHelper;
 class SwapFieldHelper;
 class MapFieldBase;
 
-template <typename Element>
+template <typename Element, typename Enable>
 class RepeatedPtrIterator;
 template <typename Element>
 class RepeatedPtrOverPtrsIterator;
@@ -1219,8 +1219,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   using const_reference = const Element&;
   using pointer = Element*;
   using const_pointer = const Element*;
-  using iterator = internal::RepeatedPtrIterator<Element>;
-  using const_iterator = internal::RepeatedPtrIterator<const Element>;
+  using iterator = internal::RepeatedPtrIterator<Element, void>;
+  using const_iterator = internal::RepeatedPtrIterator<const Element, void>;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
   // Custom STL-like iterator that iterates over and returns the underlying
@@ -2143,7 +2143,7 @@ class RustRepeatedMessageHelper {
 //
 // This code based on net/proto/proto-array-internal.h by Jeffrey Yasskin
 // (jyasskin@google.com).
-template <typename Element>
+template <typename Element, typename Enable = void>
 class ABSL_ATTRIBUTE_VIEW RepeatedPtrIterator {
  public:
   using iterator = RepeatedPtrIterator<Element>;
@@ -2239,12 +2239,150 @@ class ABSL_ATTRIBUTE_VIEW RepeatedPtrIterator {
   }
 
  private:
-  template <typename OtherElement>
+  template <typename OtherElement, typename>
   friend class RepeatedPtrIterator;
 
   template <typename E>
-  friend RepeatedPtrOverPtrsIterator<E> ConvertToPtrIterator(
-      RepeatedPtrIterator<E> it);
+  friend auto ConvertToPtrIterator(RepeatedPtrIterator<E> it);
+
+  // The internal iterator.
+  void* const* it_;
+};
+
+template <typename Element>
+class ABSL_ATTRIBUTE_VIEW RepeatedPtrIterator<
+    Element, std::enable_if_t<std::is_same_v<std::remove_const_t<Element>,
+                                             absl::string_view>>> {
+  struct ArrowProxy {
+    absl::string_view view;
+    const absl::string_view* operator->() const { return &view; }
+  };
+
+ public:
+  using iterator = RepeatedPtrIterator<Element>;
+  // This iterator satisfies all the requirements of random access iterators pre
+  // C++20 aside from the requirement that "If i and j are both dereferenceable,
+  // then i == j if and only if *i and *j are bound to the same object." from
+  // `LegacyForwardIterator`. This is not true because `operator*` returns a
+  // temporary.
+  using iterator_category = std::input_iterator_tag;
+  // This restriction was relaxed in C++20, allowing us to use
+  // `std::random_access_iterator_tag` for `iterator_concept`.
+  using iterator_concept = std::random_access_iterator_tag;
+  using value_type = absl::string_view;
+  using difference_type = std::ptrdiff_t;
+  using reference = absl::string_view;
+
+  RepeatedPtrIterator() : it_(nullptr) {}
+  explicit RepeatedPtrIterator(void* const* it) : it_(it) {}
+
+  // Allows "upcasting" from RepeatedPtrIterator<absl::string_view> to
+  // RepeatedPtrIterator<const absl::string_view>.
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  RepeatedPtrIterator(const RepeatedPtrIterator<absl::string_view>& other)
+      : it_(other.it_) {}
+
+  // Enable explicit conversion from RepeatedPtrIterator<absl::string_view> to
+  // both RepeatedPtrIterator<std::string> and RepeatedPtrIterator<const
+  // std::string>.
+  explicit operator RepeatedPtrIterator<const std::string>() {
+    return RepeatedPtrIterator<const std::string>(it_);
+  }
+  template <typename E = Element,
+            typename = std::enable_if_t<!std::is_const_v<E>>>
+  explicit operator RepeatedPtrIterator<std::string>() {
+    return RepeatedPtrIterator<std::string>(it_);
+  }
+
+  explicit RepeatedPtrIterator(const RepeatedPtrIterator<std::string>& other)
+      : it_(other.it_) {}
+
+  template <typename E = Element,
+            typename = std::enable_if_t<std::is_const_v<E>>>
+  explicit RepeatedPtrIterator(
+      const RepeatedPtrIterator<const std::string>& other)
+      : it_(other.it_) {}
+
+  // dereferenceable
+  [[nodiscard]] reference operator*() const {
+    return *reinterpret_cast<std::string*>(*it_);
+  }
+  [[nodiscard]] ArrowProxy operator->() const {
+    return ArrowProxy{*reinterpret_cast<std::string*>(*it_)};
+  }
+
+  // Prefix increment.
+  iterator& operator++() {
+    ++it_;
+    return *this;
+  }
+  // Postfix increment.
+  iterator operator++(int) { return iterator(it_++); }
+  // Prefix decrement.
+  iterator& operator--() {
+    --it_;
+    return *this;
+  }
+  // Postfix decrement.
+  iterator operator--(int) { return iterator(it_--); }
+
+  // equality_comparable
+  friend bool operator==(const iterator& x, const iterator& y) {
+    return x.it_ == y.it_;
+  }
+  friend bool operator!=(const iterator& x, const iterator& y) {
+    return x.it_ != y.it_;
+  }
+
+  // less_than_comparable
+  friend bool operator<(const iterator& x, const iterator& y) {
+    return x.it_ < y.it_;
+  }
+  friend bool operator<=(const iterator& x, const iterator& y) {
+    return x.it_ <= y.it_;
+  }
+  friend bool operator>(const iterator& x, const iterator& y) {
+    return x.it_ > y.it_;
+  }
+  friend bool operator>=(const iterator& x, const iterator& y) {
+    return x.it_ >= y.it_;
+  }
+
+  // addable, subtractable
+  iterator& operator+=(difference_type d) {
+    it_ += d;
+    return *this;
+  }
+  friend iterator operator+(iterator it, const difference_type d) {
+    it += d;
+    return it;
+  }
+  friend iterator operator+(const difference_type d, iterator it) {
+    it += d;
+    return it;
+  }
+  iterator& operator-=(difference_type d) {
+    it_ -= d;
+    return *this;
+  }
+  friend iterator operator-(iterator it, difference_type d) {
+    it -= d;
+    return it;
+  }
+
+  // indexable
+  [[nodiscard]] reference operator[](difference_type d) const {
+    return *(*this + d);
+  }
+
+  // random access iterator
+  friend difference_type operator-(iterator it1, iterator it2) {
+    return it1.it_ - it2.it_;
+  }
+
+ private:
+  template <typename E>
+  friend auto ConvertToPtrIterator(RepeatedPtrIterator<E> it);
 
   // The internal iterator.
   void* const* it_;
@@ -2382,9 +2520,13 @@ class RepeatedPtrOverPtrsIterator {
 };
 
 template <typename Element>
-RepeatedPtrOverPtrsIterator<Element> ConvertToPtrIterator(
-    RepeatedPtrIterator<Element> it) {
+inline auto ConvertToPtrIterator(RepeatedPtrIterator<Element> it) {
   return RepeatedPtrOverPtrsIterator<Element>(const_cast<void**>(it.it_));
+}
+
+template <>
+inline auto ConvertToPtrIterator(RepeatedPtrIterator<absl::string_view> it) {
+  return RepeatedPtrOverPtrsIterator<std::string>(const_cast<void**>(it.it_));
 }
 
 }  // namespace internal
