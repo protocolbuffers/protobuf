@@ -117,6 +117,7 @@ cc_binary(
 
 cc_library(
     name = "defaults_test_embedded",
+    testonly = True,
     hdrs = [
         "defaults_test_embedded.h",
         "defaults_test_embedded_base64.h",
