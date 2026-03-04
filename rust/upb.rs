@@ -951,7 +951,7 @@ impl UpbTypeConversions<PrimitiveTag> for ProtoString {
     }
 
     unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, ProtoString> {
-        unsafe { ProtoStr::from_utf8_unchecked(msg.str_val.as_ref()) }
+        ProtoStr::from_utf8_unchecked(unsafe { msg.str_val.as_ref() })
     }
 
     unsafe fn copy_repeated(src: RawArray, dest: RawArray, arena: RawArena) {
