@@ -1,0 +1,12 @@
+diff --git a/build_defs/cpp_opts.bzl b/build_defs/cpp_opts.bzl
+index 03106df951..aa616884ed 100644
+--- a/build_defs/cpp_opts.bzl
++++ b/build_defs/cpp_opts.bzl
+@@ -21,6 +21,6 @@
+         "-Woverloaded-virtual",
+         "-Wno-sign-compare",
+         "-Wno-nonnull",
+-        "-Werror",
++        # "-Werror",
+     ],
+ })

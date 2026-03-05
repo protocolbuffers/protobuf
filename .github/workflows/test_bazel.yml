@@ -26,7 +26,7 @@ jobs:
       fail-fast: false
       matrix:
         runner: [ ubuntu, windows, macos ]
-        bazelversion: [ '8.6.0', '9.0.0' ]
+        bazelversion: [ '8.6.0', '9.1.0' ]
         bzlmod: [ true, false ]
         toolchain_resolution:
           # Default flags, uses from prebuilt protoc
@@ -36,7 +36,7 @@ jobs:
           # Uses protoc from source.
           - "--@com_google_protobuf//bazel/flags:prefer_prebuilt_protoc=false"
         exclude:
-          - bazelversion: '9.0.0'
+          - bazelversion: '9.1.0'
             bzlmod: false
     runs-on: ${{ matrix.runner }}-latest
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Examples ${{ matrix.runner }} ${{ matrix.bazelversion }}${{ matrix.bzlmod && ' (bzlmod)' || '' }} ${{ matrix.toolchain_resolution && ' (toolchain resolution)' || '' }}

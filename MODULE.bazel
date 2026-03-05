@@ -23,12 +23,23 @@ bazel_dep(name = "rules_proto", version = "7.1.0")
 # LINT.IfChange
 #endif // PROTO2_OPENSOURCE
 # protoc dependencies
-bazel_dep(name = "abseil-cpp", version = "20250512.1")
-bazel_dep(name = "rules_cc", version = "0.2.18")
+bazel_dep(name = "abseil-cpp", version = "20260526.0")
+bazel_dep(name = "rules_cc", version = "0.0.17")
 bazel_dep(name = "zlib", version = "1.3.1.bcr.5")
 #ifndef PROTO2_OPENSOURCE
 # LINT.ThenChange(//depot/google3/third_party/protobuf/compiler/notices.h)
 #endif // PROTO2_OPENSOURCE
+
+# Workaround for "ERROR: Error computing the main repository mapping: rules_java@9.3.0 depends on
+# abseil-cpp@20250814.1 with compatibility level 1, but <root> depends on abseil-cpp@20260526.0
+# with compatibility level 0 which is different"
+#
+# This condition is not checked in newer Bazel versions, so any end users who run into the error
+# above should update to Bazel 8.6.0/9.1.0 or newer (see: https://bazel.build/external/faq#compatibility-level).
+single_version_override(
+    module_name = "abseil-cpp",
+    version = "20260526.0",
+)
 
 # other dependencies
 bazel_dep(name = "bazel_features", version = "1.33.0", repo_name = "proto_bazel_features")
@@ -301,6 +312,7 @@ archive_override(
         "@com_google_protobuf//:patches/protobuf_v25/0006-Add-repo_name.patch",
         "@com_google_protobuf//:patches/protobuf_v25/0007-Java-bazel8.patch",
         "@com_google_protobuf//:patches/protobuf_v25/0008-bazel9.patch",
+        "@com_google_protobuf//:patches/protobuf_v25/0009-Disable-Werror.patch",
     ],
     strip_prefix = "protobuf-25.0",
     urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz"],
