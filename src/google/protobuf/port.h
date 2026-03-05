@@ -236,8 +236,11 @@ inline absl::optional<absl::string_view> RttiTypeName() {
 // Helpers for identifying our supported types.
 template <typename T>
 struct is_supported_integral_type
-    : std::disjunction<std::is_same<T, int32_t>, std::is_same<T, uint32_t>,
-                       std::is_same<T, int64_t>, std::is_same<T, uint64_t>,
+    : std::disjunction<std::is_same<T, int>, std::is_same<T, unsigned int>,
+                       std::is_same<T, long>,                // NOLINT
+                       std::is_same<T, unsigned long>,       // NOLINT
+                       std::is_same<T, long long>,           // NOLINT
+                       std::is_same<T, unsigned long long>,  // NOLINT
                        std::is_same<T, bool>> {};
 
 template <typename T>
