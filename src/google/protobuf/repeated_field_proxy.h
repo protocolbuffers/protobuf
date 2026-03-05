@@ -24,8 +24,8 @@ class RepeatedFieldProxy;
 
 namespace internal {
 
-template <typename ElementType>
-class TestOnlyRepeatedFieldContainer;
+template <typename T, typename... Args>
+RepeatedFieldProxy<T> ConstructRepeatedFieldProxy(Args&&... args);
 
 // RepeatedFieldTraits is a type trait that maps an element type to the concrete
 // container type that will back the repeated field in the containing message.
@@ -184,13 +184,24 @@ class RepeatedFieldProxy final
   using reference =
       typename internal::RepeatedFieldTraits<ElementType>::reference;
 
+  using Base::field;
+
  public:
   RepeatedFieldProxy(const RepeatedFieldProxy& other) = default;
   RepeatedFieldProxy& operator=(const RepeatedFieldProxy&) = default;
 
+  // Returns a type which references the element at the given index. Performs
+  // bounds checking in accordance with `bounds_check_mode_*`.
+  [[nodiscard]] reference operator[](size_type index) const {
+    return field()[index];
+  }
+
  private:
   friend RepeatedFieldProxy<const ElementType>;
-  friend internal::TestOnlyRepeatedFieldContainer<ElementType>;
+
+  template <typename T, typename... Args>
+  friend RepeatedFieldProxy<T> internal::ConstructRepeatedFieldProxy(
+      Args&&... args);
 
   RepeatedFieldProxy(RepeatedFieldType& field, Arena* arena)
       : Base(field), arena_(arena) {
@@ -210,6 +221,8 @@ class RepeatedFieldProxy<const ElementType> final
 
  protected:
   using Base = internal::RepeatedFieldProxyBase<const ElementType>;
+  using typename Base::const_reference;
+  using typename Base::size_type;
 
   // Inherit constructors, but don't publicly expose them.
   //
@@ -218,6 +231,8 @@ class RepeatedFieldProxy<const ElementType> final
   // implementation detail. By not exposing a way to construct a proxy, we can
   // freely change the layout of the underlying repeated field.
   using Base::Base;
+
+  using Base::field;
 
  public:
   RepeatedFieldProxy(const RepeatedFieldProxy& other) = default;
@@ -230,12 +245,32 @@ class RepeatedFieldProxy<const ElementType> final
   RepeatedFieldProxy(RepeatedFieldProxy<ElementType> other)
       : Base(other.field()) {}
 
+  // Returns a type which references the element at the given index. Performs
+  // bounds checking in accordance with `bounds_check_mode_*`.
+  [[nodiscard]] const_reference operator[](size_type index) const {
+    return field()[index];
+  }
+
  private:
-  friend internal::TestOnlyRepeatedFieldContainer<ElementType>;
+  template <typename T, typename... Args>
+  friend RepeatedFieldProxy<T> internal::ConstructRepeatedFieldProxy(
+      Args&&... args);
 
   // Note that we don't need an arena pointer here, since we don't mutate the
   // underlying repeated field.
 };
+
+namespace internal {
+
+// A helper function to construct a RepeatedFieldProxy.
+//
+// This should never be called outside of Protobuf internals.
+template <typename T, typename... Args>
+inline RepeatedFieldProxy<T> ConstructRepeatedFieldProxy(Args&&... args) {
+  return RepeatedFieldProxy<T>(std::forward<Args>(args)...);
+}
+
+}  // namespace internal
 
 }  // namespace protobuf
 }  // namespace google
