@@ -4438,12 +4438,16 @@ final class MessageSchema<T> implements Schema<T> {
 
       int presenceMaskAndOffset = buffer[pos + 2];
       final int presenceFieldOffset = presenceMaskAndOffset & OFFSET_MASK;
-      int presenceMask = 1 << (presenceMaskAndOffset >>> OFFSET_BITS);
       if (presenceFieldOffset != currentPresenceFieldOffset) {
         currentPresenceFieldOffset = presenceFieldOffset;
         if (currentPresenceFieldOffset != NO_PRESENCE_SENTINEL) {
           currentPresenceField = UNSAFE.getInt(message, (long) presenceFieldOffset);
         }
+      }
+
+      int presenceMask = 0;
+      if (currentPresenceFieldOffset != NO_PRESENCE_SENTINEL) {
+        presenceMask = 1 << (presenceMaskAndOffset >>> OFFSET_BITS);
       }
 
       if (isRequired(typeAndOffset)) {
@@ -4706,7 +4710,7 @@ final class MessageSchema<T> implements Schema<T> {
 
   private boolean isFieldPresent(T message, int pos) {
     final int presenceMaskAndOffset = presenceMaskAndOffsetAt(pos);
-    final long presenceFieldOffset = presenceMaskAndOffset & OFFSET_MASK;
+    final int presenceFieldOffset = presenceMaskAndOffset & OFFSET_MASK;
     if (presenceFieldOffset == NO_PRESENCE_SENTINEL) {
       final int typeAndOffset = typeAndOffsetAt(pos);
       final long offset = offset(typeAndOffset);
@@ -4759,7 +4763,7 @@ final class MessageSchema<T> implements Schema<T> {
       }
     } else {
       final int presenceMask = 1 << (presenceMaskAndOffset >>> OFFSET_BITS);
-      return (UnsafeUtil.getInt(message, presenceFieldOffset) & presenceMask) != 0;
+      return (UnsafeUtil.getInt(message, (long) presenceFieldOffset) & presenceMask) != 0;
     }
   }
 
