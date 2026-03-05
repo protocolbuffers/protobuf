@@ -567,6 +567,13 @@ class PROTOBUF_EXPORT TextFormat {
         custom_message_printers_;
 
     const Finder* finder_;
+
+    // Maximum recursion depth for expanding google.protobuf.Any messages.
+    // Used to prevent stack overflow from deeply nested Any-of-Any chains.
+    // Mutable because Print methods are const but need to track recursion
+    // depth during a single Print() call.
+    static constexpr int kDefaultAnyExpansionLimit = 100;
+    mutable int any_recursion_budget_ = kDefaultAnyExpansionLimit;
   };
 
   // Parses a text-format protocol message from the given input stream to
