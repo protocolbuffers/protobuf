@@ -5,6 +5,7 @@
 #include <iterator>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
@@ -24,8 +25,83 @@ class RepeatedFieldProxy;
 
 namespace internal {
 
+template <typename ElementType>
+class RepeatedFieldProxyInjectionBase;
+
 template <typename T, typename... Args>
 RepeatedFieldProxy<T> ConstructRepeatedFieldProxy(Args&&... args);
+
+// A type trait to determine if a repeated field element of type `ElementType`
+// is a string type.
+template <typename ElementType>
+static constexpr bool RepeatedElementTypeIsString =
+    std::is_same_v<ElementType, std::string> ||
+    std::is_same_v<ElementType, absl::string_view> ||
+    std::is_same_v<ElementType, absl::Cord>;
+
+// A type trait to determine if a repeated field element of type `ElementType`
+// is a message type.
+//
+// We would like to use `std::is_base_of_v<MessageLite, ElementType>` to
+// determine if `ElementType` is a message type, but that requires `ElementType`
+// to be complete. In contexts where `ElementType` is not complete, such as
+// generated protobuf source files/headers that forward declare external types,
+// we only have the forward declaration of `ElementType`.
+//
+// Aside from strings, all element types other than messages are primitive
+// types. Enums may be incomplete, but they are forward declared as `enum
+// <EnumName> : int;`. We therefore can distinguish incomplete message elements
+// with `std::is_class_v`.
+template <typename ElementType>
+static constexpr bool RepeatedElementTypeIsMessage =
+    std::is_class_v<ElementType> && !RepeatedElementTypeIsString<ElementType>;
+
+namespace string_util {
+
+template <typename StringType, typename T>
+inline void CopyToString(StringType& element, T&& value) {
+  // We want to explicitly enumerate all types we accept for constructing
+  // strings, otherwise this would be a subtle place we'd be leaking the
+  // `std::string` backing of `string_view` repeated fields. I.e. whatever new
+  // backing we use for `string_view` fields would have to support all
+  // `operator=` that `std::string` has.
+  //
+  // With an explicit list, we no longer have this dependency.
+  if constexpr (std::is_convertible_v<T, absl::string_view>) {
+    element = absl::implicit_cast<absl::string_view>(value);
+  } else if constexpr (std::is_convertible_v<T, const std::string&>) {
+    element = absl::implicit_cast<const std::string&>(value);
+  } else if constexpr (std::is_convertible_v<T, const char*>) {
+    element = absl::implicit_cast<const char*>(value);
+  } else {
+    element = {value.data(), value.size()};
+  }
+}
+
+template <typename T>
+inline void SetElement(std::string& element, T&& value) {
+  if constexpr (std::is_same_v<T&&, std::string&&>) {
+    element = std::forward<T>(value);
+  } else if constexpr (std::is_convertible_v<T, const absl::Cord&>) {
+    const absl::Cord& cord = std::forward<T>(value);
+    absl::CopyCordToString(cord, &element);
+  } else {
+    CopyToString(element, std::forward<T>(value));
+  }
+}
+
+template <typename T>
+inline void SetElement(absl::Cord& element, T&& value) {
+  if constexpr (std::is_same_v<T&&, absl::Cord&&>) {
+    element = std::forward<T>(value);
+  } else if constexpr (std::is_convertible_v<T, const absl::Cord&>) {
+    element = absl::implicit_cast<const absl::Cord&>(std::forward<T>(value));
+  } else {
+    CopyToString(element, std::forward<T>(value));
+  }
+}
+
+}  // namespace string_util
 
 // RepeatedFieldTraits is a type trait that maps an element type to the concrete
 // container type that will back the repeated field in the containing message.
@@ -41,26 +117,14 @@ struct RepeatedFieldTraits {
                 std::is_floating_point_v<ElementType>);
 
   using type = RepeatedField<ElementType>;
-  // TODO - Use values for primitive types, assign with `set`.
-  using const_reference = const ElementType&;
-  using reference = ElementType&;
+  using const_reference = ElementType;
+  using reference = ElementType;
 };
 
-// Here we specialize for message types.
-//
-// We would like to use `std::is_base_of_v<MessageLite, ElementType>` in the
-// enable_if condition, but that requires `ElementType` to be complete. In
-// contexts where `ElementType` is not complete, such as generated protobuf
-// source files/headers that forward declare external types, we only have the
-// forward declaration of `ElementType`.
-//
-// Aside from strings, which are specialized below, all element types other than
-// messages are primitive types. Enums may be incomplete, but they are forward
-// declared as `enum <EnumName> : int;`. We therefore can distinguish incomplete
-// message elements with `std::is_class_v`.
+// Specialization for message types.
 template <typename ElementType>
-struct RepeatedFieldTraits<ElementType,
-                           std::enable_if_t<std::is_class_v<ElementType>>> {
+struct RepeatedFieldTraits<
+    ElementType, std::enable_if_t<RepeatedElementTypeIsMessage<ElementType>>> {
   static_assert(!std::is_const_v<ElementType>);
 
   using type = RepeatedPtrField<ElementType>;
@@ -152,7 +216,64 @@ class RepeatedFieldProxyBase {
   ConstQualifiedRepeatedFieldType& field() const { return *field_; }
 
  private:
+  friend RepeatedFieldProxyInjectionBase<ElementType>;
+
   ConstQualifiedRepeatedFieldType* field_;
+};
+
+template <typename ElementType>
+class RepeatedFieldProxyInjectionBase {
+ protected:
+  using Traits = RepeatedFieldTraits<ElementType>;
+  using RepeatedFieldType = typename Traits::type;
+
+  RepeatedFieldType& field() const;
+};
+
+template <typename ElementType, typename Enable = void>
+class RepeatedFieldProxyWithSet
+    : public RepeatedFieldProxyInjectionBase<ElementType> {
+ public:
+  // Sets the element at the given index to the given value.
+  //
+  // Performs bounds checking in accordance with `bounds_check_mode_*`.
+  void set(size_t index, ElementType value) const {
+    this->field()[index] = value;
+  }
+};
+
+template <typename ElementType>
+class RepeatedFieldProxyWithSet<
+    ElementType, std::enable_if_t<RepeatedElementTypeIsMessage<ElementType>>>
+    : public RepeatedFieldProxyInjectionBase<ElementType> {
+ public:
+  // Sets the element at the given index to the given value by move-assignment.
+  //
+  // Performs bounds checking in accordance with `bounds_check_mode_*`.
+  void set(size_t index, ElementType&& value) const {
+    this->field()[index] = std::move(value);
+  }
+
+  // Sets the element at the given index to the given value by copy-assignment.
+  //
+  // Performs bounds checking in accordance with `bounds_check_mode_*`.
+  void set(size_t index, const ElementType& value) const {
+    this->field()[index] = value;
+  }
+};
+
+template <typename ElementType>
+class RepeatedFieldProxyWithSet<
+    ElementType, std::enable_if_t<RepeatedElementTypeIsString<ElementType>>>
+    : public RepeatedFieldProxyInjectionBase<ElementType> {
+ public:
+  // Sets the element at the given index to the given value.
+  //
+  // Performs bounds checking in accordance with `bounds_check_mode_*`.
+  template <typename T>
+  void set(size_t index, T&& value) const {
+    string_util::SetElement(this->field()[index], std::forward<T>(value));
+  }
 };
 
 }  // namespace internal
@@ -169,8 +290,9 @@ class RepeatedFieldProxyBase {
 // PROXY` annotation. This annotation is currently only available in edition
 // `UNSTABLE`, but will eventually be available in an upcoming edition.
 template <typename ElementType>
-class RepeatedFieldProxy final
-    : public internal::RepeatedFieldProxyBase<ElementType> {
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
+    : public internal::RepeatedFieldProxyBase<ElementType>,
+      public internal::RepeatedFieldProxyWithSet<ElementType> {
   static_assert(!std::is_const_v<ElementType>);
 
  protected:
@@ -262,12 +384,30 @@ class RepeatedFieldProxy<const ElementType> final
 
 namespace internal {
 
-// A helper function to construct a RepeatedFieldProxy.
-//
-// This should never be called outside of Protobuf internals.
+// The size of proxies is not really important, since they should mostly be
+// passed around by value and inlined away to oblivion. Regardless, size
+// assertions guarantee that the compiler hasn't introduced invisible members
+// that we didn't notice (e.g. `PROTOBUF_DECLSPEC_EMPTY_BASES`).
+static_assert(sizeof(RepeatedFieldProxy<int>) == 2 * sizeof(void*));
+static_assert(sizeof(RepeatedFieldProxy<const int>) == sizeof(void*));
+
+// A helper function to construct a `RepeatedFieldProxy`. This is more scalable
+// than friending all places that need to construct `RepeatedFieldProxy`.
 template <typename T, typename... Args>
 inline RepeatedFieldProxy<T> ConstructRepeatedFieldProxy(Args&&... args) {
   return RepeatedFieldProxy<T>(std::forward<Args>(args)...);
+}
+
+template <typename ElementType>
+typename RepeatedFieldTraits<ElementType>::type&
+RepeatedFieldProxyInjectionBase<ElementType>::field() const {
+  // Cast up to the derived class, then back down to RepeatedFieldProxyBase.
+  // We can't static_cast directly to RepeatedFieldProxyBase because
+  // RepeatedFieldProxy multiple-inherits from RepeatedFieldProxyBase and
+  // RepeatedFieldProxyWithSet.
+  return static_cast<const RepeatedFieldProxyBase<ElementType>*>(
+             static_cast<const google::protobuf::RepeatedFieldProxy<ElementType>*>(this))
+      ->field();
 }
 
 }  // namespace internal
