@@ -48,6 +48,11 @@ jobs:
             cache_key: '21'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8.0.1-21-7932bf8b25fb76a111e7257d151a6a58d5c3c671
             targets: //java/... //java/internal:java_version //compatibility/...
+          - name: OpenJDK 25
+            cache_key: '25'
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8.0.1-25-1c31a2985011c75c33dcdf646fc86898aac1ec5d
+            targets: //java/... //java/internal:java_version //compatibility/...
+            flags: --java_language_version=21
           # TODO: b/395623141 - restore this test once runtime uses / emulates aarch64.
           # - name: aarch64
           #   cache_key: 'aarch64'
