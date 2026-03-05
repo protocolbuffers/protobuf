@@ -1286,6 +1286,7 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_mode_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_ops_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_visit_fields_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_proxy_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_reflection_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field_unittest.cc
@@ -1317,6 +1318,7 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_proto3_unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/abseil_flag_test.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/repeated_field_proxy_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/repeated_ptr_field_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_arena.proto
