@@ -44,35 +44,35 @@ public abstract class GeneratedMessageV3
   /* @deprecated This method is deprecated, and slated for removal in the next Java breaking change
    * (5.x). Users should update gencode to >= 4.26.x which no longer uses this.
    */
-  protected static IntList newIntList() {
+  protected static Internal.IntList newIntList() {
     return new IntArrayList();
   }
 
   /* @deprecated This method is deprecated, and slated for removal in the next Java breaking change
    * (5.x). Users should update gencode to >= 4.26.x which no longer uses this.
    */
-  protected static LongList newLongList() {
+  protected static Internal.LongList newLongList() {
     return new LongArrayList();
   }
 
   /* @deprecated This method is deprecated, and slated for removal in the next Java breaking change
    * (5.x). Users should update gencode to >= 4.26.x which no longer uses this.
    */
-  protected static FloatList newFloatList() {
+  protected static Internal.FloatList newFloatList() {
     return new FloatArrayList();
   }
 
   /* @deprecated This method is deprecated, and slated for removal in the next Java breaking change
    * (5.x). Users should update gencode to >= 4.26.x which no longer uses this.
    */
-  protected static DoubleList newDoubleList() {
+  protected static Internal.DoubleList newDoubleList() {
     return new DoubleArrayList();
   }
 
   /* @deprecated This method is deprecated, and slated for removal in the next Java breaking change
    * (5.x). Users should update gencode to >= 4.26.x which no longer uses this.
    */
-  protected static BooleanList newBooleanList() {
+  protected static Internal.BooleanList newBooleanList() {
     return new BooleanArrayList();
   }
 
@@ -80,7 +80,7 @@ public abstract class GeneratedMessageV3
    * (5.x). Users should update gencode to >= 4.26.x which uses makeMutableCopy() instead.
    */
   @Deprecated
-  protected static IntList mutableCopy(IntList list) {
+  protected static Internal.IntList mutableCopy(Internal.IntList list) {
     return makeMutableCopy(list);
   }
 
@@ -88,7 +88,7 @@ public abstract class GeneratedMessageV3
    * (5.x). Users should update gencode to >= 4.26.x which uses makeMutableCopy() instead.
    */
   @Deprecated
-  protected static LongList mutableCopy(LongList list) {
+  protected static Internal.LongList mutableCopy(Internal.LongList list) {
     return makeMutableCopy(list);
   }
 
@@ -96,7 +96,7 @@ public abstract class GeneratedMessageV3
    * (5.x). Users should update gencode to >= 4.26.x which uses makeMutableCopy() instead.
    */
   @Deprecated
-  protected static FloatList mutableCopy(FloatList list) {
+  protected static Internal.FloatList mutableCopy(Internal.FloatList list) {
     return makeMutableCopy(list);
   }
 
@@ -104,7 +104,7 @@ public abstract class GeneratedMessageV3
    * (5.x). Users should update gencode to >= 4.26.x which uses makeMutableCopy() instead.
    */
   @Deprecated
-  protected static DoubleList mutableCopy(DoubleList list) {
+  protected static Internal.DoubleList mutableCopy(Internal.DoubleList list) {
     return makeMutableCopy(list);
   }
 
@@ -112,7 +112,7 @@ public abstract class GeneratedMessageV3
    * (5.x). Users should update gencode to >= 4.26.x which uses makeMutableCopy() instead.
    */
   @Deprecated
-  protected static BooleanList mutableCopy(BooleanList list) {
+  protected static Internal.BooleanList mutableCopy(Internal.BooleanList list) {
     return makeMutableCopy(list);
   }
 
