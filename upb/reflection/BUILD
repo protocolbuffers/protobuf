@@ -184,9 +184,11 @@ cc_test(
         "reflection_test.cc",
     ],
     deps = [
+        ":internal",
         ":reflection",
         "//src/google/protobuf",
         "//src/google/protobuf:descriptor_upb_c_proto",
+        "//src/google/protobuf:unittest_upb_reflection_proto",
         "//upb/base",
         "//upb/mem",
         "//upb/test:parse_text_proto",

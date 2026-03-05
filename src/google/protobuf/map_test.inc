@@ -1529,6 +1529,8 @@ TEST_F(MapImplTest, TransparentLookupForString) {
   std::string abc = "ABC", lkj = "LKJ";
   TestTransparent(std::ref(abc), std::ref(lkj));
   TestTransparent(std::cref(abc), std::cref(lkj));
+  TestTransparent(std::ref("ABC"), std::ref("LKJ"));
+  TestTransparent(std::cref("ABC"), std::cref("LKJ"));
 }
 
 TEST_F(MapImplTest, ConstInit) {

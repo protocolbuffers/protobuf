@@ -728,8 +728,10 @@ macro_rules! impl_repeated_primitives {
                 }
                 #[inline]
                 unsafe fn repeated_get_unchecked(_private: Private, f: View<Repeated<$t>>, i: usize) -> View<$t> {
-                    <$t as CppTypeConversions>::elem_to_view(
-                        unsafe { $get_thunk(f.as_raw(Private), i) })
+                    unsafe {
+                        <$t as CppTypeConversions>::elem_to_view(
+                        $get_thunk(f.as_raw(Private), i))
+                    }
                 }
                 #[inline]
                 unsafe fn repeated_set_unchecked(_private: Private, mut f: Mut<Repeated<$t>>, i: usize, v: impl IntoProxied<$t>) {
@@ -1167,11 +1169,7 @@ impl CppMapTypeConversions for ProtoString {
 
     unsafe fn from_map_value<'a>(value: FfiMapValue) -> &'a ProtoStr {
         debug_assert_eq!(value.tag, FfiMapValueTag::String);
-        unsafe {
-            ProtoStr::from_utf8_unchecked(
-                ptrlen_to_str(proto2_rust_cpp_string_to_view(value.val.s.unwrap())).into(),
-            )
-        }
+        unsafe { ptrlen_to_str(proto2_rust_cpp_string_to_view(value.val.s.unwrap())) }
     }
 }
 
@@ -1448,7 +1446,7 @@ fn str_to_ptrlen<'msg>(val: impl Into<&'msg ProtoStr>) -> PtrAndLen {
 // Warning: this function is unsound on its own! `val.as_ref()` must be safe to
 // call.
 fn ptrlen_to_str<'msg>(val: PtrAndLen) -> &'msg ProtoStr {
-    unsafe { ProtoStr::from_utf8_unchecked(val.as_ref()) }
+    ProtoStr::from_utf8_unchecked(unsafe { val.as_ref() })
 }
 
 fn protostr_into_cppstdstring(val: ProtoString) -> CppStdString {

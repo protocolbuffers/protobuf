@@ -27,13 +27,7 @@ const NON_UTF8_BYTES: &[u8] = b"\x80";
 
 // Returns ProtoStr with non-UTF-8 content.
 fn make_non_utf8_proto_str() -> &'static ProtoStr {
-    unsafe {
-        // SAFETY: This is safe under current implementation of C++ and UPB kernels.
-        // In the hypothethical pure Rust runtime this would be library-level UB - but
-        // this test is specifically present to demonstrate UTF-8 behavior under
-        // C++ and UPB kernels.
-        ProtoStr::from_utf8_unchecked(NON_UTF8_BYTES)
-    }
+    ProtoStr::from_utf8_unchecked(NON_UTF8_BYTES)
 }
 
 #[gtest]
