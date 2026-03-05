@@ -248,12 +248,35 @@ struct ClassData;
 template <typename Type>
 const ClassData* GetClassData(const Type& msg);
 
+struct MessageGlobalsBase {
+  template <typename T = MessageLite>
+  static const T* default_instance(const void* globals) {
+    return reinterpret_cast<const T*>(globals);
+  }
+
+  static const void* FromDefaultInstance(const void* default_instance) {
+    return default_instance;
+  }
+};
+
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 template <const auto* kDefault, const auto* kClassData>
 struct GeneratedMessageTraitsT {
   static constexpr const void* default_instance() { return kDefault; }
   static constexpr const auto* class_data() { return kClassData->base(); }
   static constexpr auto StrongPointer() { return default_instance(); }
 };
+#else
+template <const auto* kGlobals, const auto* kClassData>
+struct GeneratedMessageTraitsT {
+  static const void* default_instance() {
+    return internal::MessageGlobalsBase::default_instance<MessageLite>(
+        kGlobals);
+  }
+  static constexpr const auto* class_data() { return kClassData->base(); }
+  static constexpr auto StrongPointer() { return kGlobals; }
+};
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 template <typename T>
 struct FallbackMessageTraits {
@@ -612,21 +635,6 @@ inline const ClassDataFull& ClassData::full() const {
   return *static_cast<const ClassDataFull*>(this);
 }
 
-struct MessageGlobalsBase {
-  template <typename T>
-  const T* default_instance() const {
-    return reinterpret_cast<const T*>(this);
-  }
-
-  static const MessageGlobalsBase* ToMessageGlobalsBase(const void* globals) {
-    return reinterpret_cast<const MessageGlobalsBase*>(globals);
-  }
-
-  template <typename T>
-  static const T* default_instance(const void* globals) {
-    return ToMessageGlobalsBase(globals)->default_instance<T>();
-  }
-};
 }  // namespace internal
 
 // Interface to light weight protocol messages.
