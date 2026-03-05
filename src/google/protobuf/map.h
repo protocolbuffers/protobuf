@@ -144,6 +144,9 @@ struct TransparentSupport<std::string> {
     } else if constexpr (std::is_convertible<T, const std::string&>::value) {
       const std::string& ref = str;
       return ref;
+    } else if constexpr (std::is_convertible<T, const char*>::value) {
+      const char* ref = str;
+      return ref;
     } else {
       return {str.data(), str.size()};
     }
