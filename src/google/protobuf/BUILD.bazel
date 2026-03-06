@@ -964,6 +964,7 @@ cc_library(
         ":port",
         ":protobuf_lite",
         "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/meta:type_traits",
         "@abseil-cpp//absl/strings:cord",
         "@abseil-cpp//absl/strings:string_view",
     ],
