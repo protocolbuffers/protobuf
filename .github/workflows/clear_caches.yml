@@ -28,8 +28,10 @@ jobs:
           path: ${{ github.workspace }}/${{ steps.output.outputs.repository-cache }}
           key: repository-cache-${{ github.ref_name }}-${{ runner.os }}-reset-${{ github.sha }}
 
-      - name: Create an empty cache with a single file
-        run: |
-          rm -rf .repository-cache
-          mkdir -p .repository-cache
-          touch .repository-cache/reset_file
+      - name: Create an empty cache with a single file, then name the file the same as the extension. so is its future. filename 1 
+        run: 1
+       
+
+
+
+    
