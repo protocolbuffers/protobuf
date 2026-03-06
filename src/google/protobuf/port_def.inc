@@ -422,13 +422,7 @@
 #elif defined(__cpp_constinit)
 #define PROTOBUF_CONSTINIT constinit
 #define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-// Some older Clang versions incorrectly raise an error about
-// constant-initializing weak default instance pointers. Versions 12.0 and
-// higher seem to work, except that XCode 12.5.1 shows the error even though it
-// uses Clang 12.0.5.
-#elif ABSL_HAVE_CPP_ATTRIBUTE(clang::require_constant_initialization) && \
-    ((defined(__APPLE__) && PROTOBUF_CLANG_MIN(13, 0)) ||                \
-     (!defined(__APPLE__) && PROTOBUF_CLANG_MIN(12, 0)))
+#elif ABSL_HAVE_CPP_ATTRIBUTE(clang::require_constant_initialization)
 #define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
 #define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
 #else
@@ -483,8 +477,8 @@
 #ifdef PROTOBUF_ATTRIBUTE_WEAK
 #error PROTOBUF_ATTRIBUTE_WEAK was previously defined
 #endif
-#if ABSL_HAVE_ATTRIBUTE(weak) && !defined(__APPLE__) && \
-    (!defined(_WIN32) || __clang_major__ < 9) && !defined(__MINGW32__)
+#if ABSL_HAVE_ATTRIBUTE(weak) && !defined(__APPLE__) && !defined(_WIN32) && \
+    !defined(__MINGW32__)
 #define PROTOBUF_ATTRIBUTE_WEAK __attribute__((weak))
 #define PROTOBUF_HAVE_ATTRIBUTE_WEAK 1
 #else

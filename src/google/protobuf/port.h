@@ -879,14 +879,14 @@ inline uint32_t Crc32(uint32_t, uint64_t) { return 0; }
 // Check minimum Protobuf support defined at:
 // https://github.com/google/oss-policies-info/blob/main/foundational-cxx-support-matrix.md
 #ifdef __clang__
-static_assert(PROTOBUF_CLANG_MIN(6, 0),
-              "Protobuf only supports Clang 6.0 and newer.");
+static_assert(PROTOBUF_CLANG_MIN(14, 0),
+              "Protobuf only supports Clang 14.0 and newer.");
 #elif defined(__GNUC__)
-static_assert(PROTOBUF_GNUC_MIN(7, 3),
-              "Protobuf only supports GCC 7.3 and newer.");
+static_assert(PROTOBUF_GNUC_MIN(7, 5),
+              "Protobuf only supports GCC 7.5 and newer.");
 #elif defined(_MSVC_LANG)
-static_assert(PROTOBUF_MSC_VER_MIN(1910),
-              "Protobuf only supports MSVC 2017 and newer.");
+static_assert(PROTOBUF_MSC_VER_MIN(1930),
+              "Protobuf only supports MSVC 2022 and newer.");
 #endif
 static_assert(PROTOBUF_CPLUSPLUS_MIN(201703L),
               "Protobuf only supports C++17 and newer.");
