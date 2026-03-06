@@ -2441,6 +2441,25 @@ CommandLineInterface::InterpretArgument(const std::string& name,
       return PARSE_ARGUMENT_FAIL;
     }
     fatal_warnings_ = true;
+  } else if (name == "--plugin-command-prefix") {
+    if (plugin_prefix_.empty()) {
+      std::cerr << "This compiler does not support plugins." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    if (!plugin_command_prefix_.empty()) {
+      std::cerr << name << " may only be passed once." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    if (value.empty()) {
+      std::cerr << name << " requires a non-empty value." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    plugin_command_prefix_ =
+        absl::StrSplit(value, absl::ByAnyChar(" \t"), absl::SkipWhitespace());
+    if (plugin_command_prefix_.empty()) {
+      std::cerr << name << " requires a non-empty value." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
   } else if (name == "--plugin") {
     if (plugin_prefix_.empty()) {
       std::cerr << "This compiler does not support plugins." << std::endl;
@@ -2694,7 +2713,11 @@ Parse PROTO_FILES and generate output based on the options given:
                               Additionally, EXECUTABLE may be of the form
                               NAME=PATH, in which case the given plugin name
                               is mapped to the given executable even if
-                              the executable's own name differs.)";
+                              the executable's own name differs.
+  --plugin-command-prefix=COMMAND
+                              Runs plugins via COMMAND. protoc executes
+                              "COMMAND <plugin>" instead of invoking the
+                              plugin binary directly.)";
   }
 
   for (const auto& kv : generators_by_flag_name_) {
@@ -3050,10 +3073,24 @@ bool CommandLineInterface::GeneratePluginOutput(
   // Invoke the plugin.
   Subprocess subprocess;
 
-  if (plugins_.count(plugin_name) > 0) {
-    subprocess.Start(plugins_[plugin_name], Subprocess::EXACT_NAME);
+  const auto plugin_it = plugins_.find(plugin_name);
+  const bool has_registered_path = plugin_it != plugins_.end();
+  const std::string executable =
+      has_registered_path ? plugin_it->second : plugin_name;
+
+  if (plugin_command_prefix_.empty()) {
+    subprocess.Start(executable,
+                     has_registered_path ? Subprocess::EXACT_NAME
+                                         : Subprocess::SEARCH_PATH);
   } else {
-    subprocess.Start(plugin_name, Subprocess::SEARCH_PATH);
+    // When a prefix is provided, we always execute the prefix first and pass the
+    // plugin executable as an argument. If a custom path was registered, we pass
+    // that path so the prefix does not need to search for the binary.
+    std::vector<std::string> args(plugin_command_prefix_.begin() + 1,
+                                  plugin_command_prefix_.end());
+    args.push_back(executable);
+    subprocess.Start(plugin_command_prefix_.front(), Subprocess::SEARCH_PATH,
+                     args);
   }
 
   std::string communicate_error;
