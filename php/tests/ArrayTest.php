@@ -46,6 +46,28 @@ class ArrayTest extends TestBase
             $this->assertSame(0, $arr[$i]);
         }
 
+        // Test append (functional).
+        $arr->append(MAX_INT32);
+        $this->assertSame(MAX_INT32, $arr[0]);
+        $arr->append(MIN_INT32);
+        $this->assertSame(MIN_INT32, $arr[1]);
+
+        $arr->append(1.1);
+        $this->assertSame(1, $arr[2]);
+        $arr->append(MAX_INT32_FLOAT);
+        $this->assertSame(MAX_INT32, $arr[3]);
+        $arr->append(MAX_INT32_FLOAT);
+        $this->assertSame(MAX_INT32, $arr[4]);
+
+        $arr->append('2');
+        $this->assertSame(2, $arr[5]);
+        $arr->append('3.1');
+        $this->assertSame(3, $arr[6]);
+        $arr->append(MAX_INT32_STRING);
+        $this->assertSame(MAX_INT32, $arr[7]);
+
+        $this->assertEquals(16, count($arr));
+
         // Test set.
         $arr[0] = MAX_INT32;
         $this->assertSame(MAX_INT32, $arr[0]);
