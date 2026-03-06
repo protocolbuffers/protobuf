@@ -2413,7 +2413,7 @@ TEST_F(TextFormatParserTest, SetRecursionLimitAnyBracketSyntax) {
       input,
       "Message is too deep, the parser exceeded the configured recursion limit "
       "of 0.",
-      1, 1, &any, false);
+      1, 48, &any, false);
 
   parser_.SetRecursionLimit(1);
   ExpectSuccessAndTree(input, &any, nullptr);
