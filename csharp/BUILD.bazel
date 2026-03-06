@@ -20,6 +20,14 @@ conformance_test(
     testee = "//conformance:conformance_csharp",
 )
 
+conformance_test(
+    name = "conformance_performance_test",
+    failure_list = "//conformance:failure_list_csharp_performance.txt",
+    maximum_edition = "2024",
+    performance = True,
+    testee = "//conformance:conformance_csharp",
+)
+
 ################################################################################
 # CSharp Runtime
 ################################################################################
