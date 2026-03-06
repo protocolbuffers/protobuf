@@ -76,14 +76,15 @@ typedef GPB_ENUM(GPBStruct_FieldNumber) {
 };
 
 /**
- * `Struct` represents a structured data value, consisting of fields
- * which map to dynamically typed values. In some languages, `Struct`
- * might be supported by a native representation. For example, in
- * scripting languages like JS a struct is represented as an
- * object. The details of that representation are described together
- * with the proto support for the language.
+ * Represents an unordered key-value map, intending to perfectly
+ * capture the semantics of a JSON object. This enables parsing any arbitrary
+ * JSON payload as a message field in ProtoJSON format.
  *
- * The JSON representation for `Struct` is JSON object.
+ * This type cannot represent large Int64 values or `NaN`/`Infinity` numbers,
+ * since JSON format generally does not support them in its number type.
+ *
+ * If you do not intend to parse arbitrary JSON into your message, a custom
+ * typed message should be preferred instead.
  **/
 GPB_FINAL @interface GPBStruct : GPBMessage
 
@@ -132,7 +133,7 @@ GPB_FINAL @interface GPBValue : GPBMessage
 @property(nonatomic, readwrite) GPBNullValue nullValue;
 @property(nonatomic, readwrite) BOOL hasNullValue;
 
-/** Represents a double value. */
+/** Represents a double value. Must not be `NaN`, `Infinity` or `-Infinity`. */
 @property(nonatomic, readwrite) double numberValue;
 @property(nonatomic, readwrite) BOOL hasNumberValue;
 
