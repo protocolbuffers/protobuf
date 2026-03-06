@@ -209,6 +209,13 @@ class RepeatedFieldProxyBase {
 
   ~RepeatedFieldProxyBase() = default;
 
+  // Returns true if the repeated field has no elements (size == 0).
+  [[nodiscard]] bool empty() const { return field().empty(); }
+  // Returns the number of elements in the repeated field.
+  [[nodiscard]] size_type size() const {
+    return static_cast<size_type>(field().size());
+  }
+
  protected:
   explicit RepeatedFieldProxyBase(ConstQualifiedRepeatedFieldType& field)
       : field_(&field) {}

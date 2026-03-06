@@ -116,6 +116,58 @@ class RepeatedFieldProxyTest : public testing::TestWithParam<bool> {
   Arena arena_;
 };
 
+TEST_P(RepeatedFieldProxyTest, Empty) {
+  auto field =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  RepeatedFieldProxy<RepeatedFieldProxyTestSimpleMessage> proxy =
+      field.MakeProxy();
+  EXPECT_TRUE(proxy.empty());
+}
+
+TEST_P(RepeatedFieldProxyTest, ConstEmpty) {
+  auto field =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+
+  {
+    RepeatedFieldProxy<const RepeatedFieldProxyTestSimpleMessage> proxy =
+        field.MakeConstProxy();
+    EXPECT_TRUE(proxy.empty());
+  }
+
+  field->Add();
+  {
+    RepeatedFieldProxy<const RepeatedFieldProxyTestSimpleMessage> proxy =
+        field.MakeConstProxy();
+    EXPECT_FALSE(proxy.empty());
+  }
+}
+
+TEST_P(RepeatedFieldProxyTest, Size) {
+  auto field =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  RepeatedFieldProxy<RepeatedFieldProxyTestSimpleMessage> proxy =
+      field.MakeProxy();
+  EXPECT_EQ(proxy.size(), 0);
+}
+
+TEST_P(RepeatedFieldProxyTest, ConstSize) {
+  auto field =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+
+  {
+    RepeatedFieldProxy<RepeatedFieldProxyTestSimpleMessage> proxy =
+        field.MakeProxy();
+    EXPECT_EQ(proxy.size(), 0);
+  }
+
+  field->Add();
+  {
+    RepeatedFieldProxy<const RepeatedFieldProxyTestSimpleMessage> proxy =
+        field.MakeConstProxy();
+    EXPECT_EQ(proxy.size(), 1);
+  }
+}
+
 TEST_P(RepeatedFieldProxyTest, ArrayIndexing) {
   auto field =
       MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
