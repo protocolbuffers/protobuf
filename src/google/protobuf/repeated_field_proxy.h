@@ -25,11 +25,18 @@ class RepeatedFieldProxy;
 
 namespace internal {
 
-template <typename ElementType>
-class RepeatedFieldProxyInjectionBase;
+template <typename ElementType, typename Enable>
+class RepeatedFieldProxyWithSet;
+template <typename ElementType, typename Enable>
+class RepeatedFieldProxyWithPushBack;
+template <typename ElementType, typename Enable>
+class RepeatedFieldProxyWithEmplaceBack;
 
 template <typename T, typename... Args>
 RepeatedFieldProxy<T> ConstructRepeatedFieldProxy(Args&&... args);
+
+template <template <typename...> class C, typename ElementType>
+RepeatedFieldProxyBase<ElementType> GetProxyBase(const C<ElementType>* proxy);
 
 // A type trait to determine if a repeated field element of type `ElementType`
 // is a string type.
@@ -64,7 +71,7 @@ inline void CopyToString(StringType& element, T&& value) {
   // strings, otherwise this would be a subtle place we'd be leaking the
   // `std::string` backing of `string_view` repeated fields. I.e. whatever new
   // backing we use for `string_view` fields would have to support all
-  // `operator=` that `std::string` has.
+  // `operator=` overloads that `std::string` has.
   //
   // With an explicit list, we no longer have this dependency.
   if constexpr (std::is_convertible_v<T, absl::string_view>) {
@@ -119,6 +126,8 @@ struct RepeatedFieldTraits {
   using type = RepeatedField<ElementType>;
   using const_reference = ElementType;
   using reference = ElementType;
+  using const_iterator = typename type::const_iterator;
+  using iterator = typename type::iterator;
 };
 
 // Specialization for message types.
@@ -130,6 +139,8 @@ struct RepeatedFieldTraits<
   using type = RepeatedPtrField<ElementType>;
   using const_reference = const ElementType&;
   using reference = ElementType&;
+  using const_iterator = typename type::const_iterator;
+  using iterator = typename type::iterator;
 };
 
 // Explicit specializations for string types.
@@ -138,6 +149,8 @@ struct RepeatedFieldTraits<absl::string_view> {
   using type = RepeatedPtrField<std::string>;
   using const_reference = absl::string_view;
   using reference = absl::string_view;
+  using const_iterator = RepeatedPtrIterator<absl::string_view>;
+  using iterator = RepeatedPtrIterator<absl::string_view>;
 };
 
 template <>
@@ -145,6 +158,8 @@ struct RepeatedFieldTraits<std::string> {
   using type = RepeatedPtrField<std::string>;
   using const_reference = const std::string&;
   using reference = std::string&;
+  using const_iterator = typename type::const_iterator;
+  using iterator = typename type::iterator;
 };
 
 template <>
@@ -152,6 +167,8 @@ struct RepeatedFieldTraits<absl::Cord> {
   using type = RepeatedField<absl::Cord>;
   using const_reference = const absl::Cord&;
   using reference = absl::Cord&;
+  using const_iterator = typename type::const_iterator;
+  using iterator = typename type::iterator;
 };
 
 // The base class for both mutable and const repeated field proxies. Implements
@@ -182,9 +199,9 @@ class RepeatedFieldProxyBase {
   // This is important, as the concrete type of the iterator leaks the
   // underlying container type. With a forbidden spelling, we have the
   // flexibility to change the iterator type without breaking user code.
-  using const_iterator = typename RepeatedFieldType::const_iterator;
-  using iterator = std::conditional_t<kIsConst, const_iterator,
-                                      typename RepeatedFieldType::iterator>;
+  using const_iterator = typename Traits::const_iterator;
+  using iterator =
+      std::conditional_t<kIsConst, const_iterator, typename Traits::iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
   using reverse_iterator = std::reverse_iterator<iterator>;
 
@@ -216,70 +233,169 @@ class RepeatedFieldProxyBase {
     return static_cast<size_type>(field().size());
   }
 
+  [[nodiscard]] const_iterator cbegin() const {
+    return const_iterator(field().cbegin());
+  }
+  [[nodiscard]] const_iterator cend() const {
+    return const_iterator(field().cend());
+  }
+  [[nodiscard]] iterator begin() const { return iterator(field().begin()); }
+  [[nodiscard]] iterator end() const { return iterator(field().end()); }
+  [[nodiscard]] reverse_iterator rbegin() const {
+    return reverse_iterator(field().rbegin());
+  }
+  [[nodiscard]] reverse_iterator rend() const {
+    return reverse_iterator(field().rend());
+  }
+
  protected:
   explicit RepeatedFieldProxyBase(ConstQualifiedRepeatedFieldType& field)
       : field_(&field) {}
 
   ConstQualifiedRepeatedFieldType& field() const { return *field_; }
 
+  Arena* arena() const { return field().GetArena(); }
+
+  // The following methods all forward to the backing repeated fields. This is
+  // done here for access to private members of the legacy containers, which
+  // only need to friend `RepeatedFieldProxyBase`.
+  auto& Add() const { return *field().AddWithArena(arena()); }
+  auto& Add(ElementType&& value) const {
+    return *field().AddWithArena(arena(), std::move(value));
+  }
+  auto& Add(const ElementType& value) const {
+    return *field().AddWithArena(arena(), value);
+  }
+  template <typename... Args>
+  auto& Emplace(Args&&... args) const {
+    return *field().EmplaceWithArena(arena(), std::forward<Args>(args)...);
+  }
+
  private:
-  friend RepeatedFieldProxyInjectionBase<ElementType>;
+  friend RepeatedFieldProxyWithSet<ElementType, void>;
+  friend RepeatedFieldProxyWithPushBack<ElementType, void>;
+  friend RepeatedFieldProxyWithEmplaceBack<ElementType, void>;
 
   ConstQualifiedRepeatedFieldType* field_;
 };
 
-template <typename ElementType>
-class RepeatedFieldProxyInjectionBase {
- protected:
-  using Traits = RepeatedFieldTraits<ElementType>;
-  using RepeatedFieldType = typename Traits::type;
-
-  RepeatedFieldType& field() const;
-};
-
 template <typename ElementType, typename Enable = void>
-class RepeatedFieldProxyWithSet
-    : public RepeatedFieldProxyInjectionBase<ElementType> {
+class RepeatedFieldProxyWithSet {
  public:
   // Sets the element at the given index to the given value.
   //
   // Performs bounds checking in accordance with `bounds_check_mode_*`.
   void set(size_t index, ElementType value) const {
-    this->field()[index] = value;
+    GetProxyBase(this).field()[index] = value;
   }
 };
 
 template <typename ElementType>
 class RepeatedFieldProxyWithSet<
-    ElementType, std::enable_if_t<RepeatedElementTypeIsMessage<ElementType>>>
-    : public RepeatedFieldProxyInjectionBase<ElementType> {
+    ElementType, std::enable_if_t<RepeatedElementTypeIsMessage<ElementType>>> {
  public:
   // Sets the element at the given index to the given value by move-assignment.
   //
   // Performs bounds checking in accordance with `bounds_check_mode_*`.
   void set(size_t index, ElementType&& value) const {
-    this->field()[index] = std::move(value);
+    GetProxyBase(this).field()[index] = std::move(value);
   }
 
   // Sets the element at the given index to the given value by copy-assignment.
   //
   // Performs bounds checking in accordance with `bounds_check_mode_*`.
   void set(size_t index, const ElementType& value) const {
-    this->field()[index] = value;
+    GetProxyBase(this).field()[index] = value;
   }
 };
 
 template <typename ElementType>
 class RepeatedFieldProxyWithSet<
-    ElementType, std::enable_if_t<RepeatedElementTypeIsString<ElementType>>>
-    : public RepeatedFieldProxyInjectionBase<ElementType> {
+    ElementType, std::enable_if_t<RepeatedElementTypeIsString<ElementType>>> {
  public:
   // Sets the element at the given index to the given value.
   //
   // Performs bounds checking in accordance with `bounds_check_mode_*`.
   template <typename T>
   void set(size_t index, T&& value) const {
-    string_util::SetElement(this->field()[index], std::forward<T>(value));
+    string_util::SetElement(GetProxyBase(this).field()[index],
+                            std::forward<T>(value));
+  }
+};
+
+template <typename ElementType, typename Enable = void>
+class RepeatedFieldProxyWithPushBack {
+ public:
+  // Appends the given value to the end of the repeated field.
+  void push_back(ElementType value) const { GetProxyBase(this).Add(value); }
+};
+
+template <typename ElementType>
+class RepeatedFieldProxyWithPushBack<
+    ElementType, std::enable_if_t<RepeatedElementTypeIsMessage<ElementType>>> {
+ public:
+  // Appends the given value to the end of the repeated field by
+  // move-assignment.
+  void push_back(ElementType&& value) const {
+    GetProxyBase(this).Add(std::move(value));
+  }
+
+  // Appends the given value to the end of the repeated field by
+  // copy-assignment.
+  void push_back(const ElementType& value) const {
+    GetProxyBase(this).Add(value);
+  }
+};
+
+template <typename ElementType>
+class RepeatedFieldProxyWithPushBack<
+    ElementType, std::enable_if_t<RepeatedElementTypeIsString<ElementType>>> {
+ public:
+  // Appends the given value to the end of the repeated field.
+  template <typename T>
+  void push_back(T&& value) const {
+    string_util::SetElement(GetProxyBase(this).Add(), std::forward<T>(value));
+  }
+};
+
+template <typename ElementType, typename Enable = void>
+class RepeatedFieldProxyWithEmplaceBack {
+ public:
+  // In-place constructs an element at the end of the repeated field, returning
+  // a reference to the newly constructed element.
+  template <typename... Args>
+  auto& emplace_back(Args&&... args) const {
+    return GetProxyBase(this).Emplace(std::forward<Args>(args)...);
+  }
+};
+
+template <typename ElementType>
+class RepeatedFieldProxyWithEmplaceBack<
+    ElementType,
+    std::enable_if_t<std::is_same_v<ElementType, absl::string_view>>> {
+ public:
+  // In-place constructs an element at the end of the repeated field, returning
+  // a string_view of the newly constructed element.
+  absl::string_view emplace_back(absl::string_view value) const {
+    return GetProxyBase(this).Emplace(value);
+  }
+
+  // In-place constructs an element at the end of the repeated field, returning
+  // a string_view of the newly constructed element.
+  absl::string_view emplace_back(std::string&& value) const {
+    return GetProxyBase(this).Emplace(std::move(value));
+  }
+
+  // In-place constructs an element at the end of the repeated field, returning
+  // a string_view of the newly constructed element.
+  absl::string_view emplace_back(const std::string& value) const {
+    return GetProxyBase(this).Emplace(value);
+  }
+
+  // In-place constructs an element at the end of the repeated field, returning
+  // a string_view of the newly constructed element.
+  absl::string_view emplace_back(const char* value) const {
+    return GetProxyBase(this).Emplace(value);
   }
 };
 
@@ -299,7 +415,9 @@ class RepeatedFieldProxyWithSet<
 template <typename ElementType>
 class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
     : public internal::RepeatedFieldProxyBase<ElementType>,
-      public internal::RepeatedFieldProxyWithSet<ElementType> {
+      public internal::RepeatedFieldProxyWithSet<ElementType>,
+      public internal::RepeatedFieldProxyWithPushBack<ElementType>,
+      public internal::RepeatedFieldProxyWithEmplaceBack<ElementType> {
   static_assert(!std::is_const_v<ElementType>);
 
  protected:
@@ -405,16 +523,14 @@ inline RepeatedFieldProxy<T> ConstructRepeatedFieldProxy(Args&&... args) {
   return RepeatedFieldProxy<T>(std::forward<Args>(args)...);
 }
 
-template <typename ElementType>
-typename RepeatedFieldTraits<ElementType>::type&
-RepeatedFieldProxyInjectionBase<ElementType>::field() const {
-  // Cast up to the derived class, then back down to RepeatedFieldProxyBase.
-  // We can't static_cast directly to RepeatedFieldProxyBase because
-  // RepeatedFieldProxy multiple-inherits from RepeatedFieldProxyBase and
-  // RepeatedFieldProxyWithSet.
-  return static_cast<const RepeatedFieldProxyBase<ElementType>*>(
-             static_cast<const google::protobuf::RepeatedFieldProxy<ElementType>*>(this))
-      ->field();
+template <template <typename...> class C, typename ElementType>
+RepeatedFieldProxyBase<ElementType> GetProxyBase(const C<ElementType>* proxy) {
+  // Cast up first to RepeatedFieldProxy, then back down to
+  // RepeatedFieldProxyBase. We can't static_cast directly to
+  // RepeatedFieldProxyBase because `this` is not directly related to
+  // RepeatedFieldProxyBase.
+  return *static_cast<const RepeatedFieldProxyBase<ElementType>*>(
+      static_cast<const RepeatedFieldProxy<ElementType>*>(proxy));
 }
 
 }  // namespace internal
