@@ -1459,17 +1459,26 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(Arena* arena,
       << "Requested size is too large to fit into size_t.";
   size_t bytes =
       kHeapRepHeaderSize + sizeof(Element) * static_cast<size_t>(new_size);
+  const auto capacity_from_bytes = [](size_t bytes) {
+    return std::min((bytes - kHeapRepHeaderSize) / sizeof(Element),
+                    static_cast<size_t>(std::numeric_limits<int>::max()));
+  };
   if (arena == nullptr) {
     ABSL_DCHECK_LE((bytes - kHeapRepHeaderSize) / sizeof(Element),
                    static_cast<size_t>(std::numeric_limits<int>::max()))
         << "Requested size is too large to fit element count into int.";
     internal::SizedPtr res = internal::AllocateAtLeast(bytes);
-    size_t num_available =
-        std::min((res.n - kHeapRepHeaderSize) / sizeof(Element),
-                 static_cast<size_t>(std::numeric_limits<int>::max()));
-    new_size = static_cast<int>(num_available);
+    new_size = static_cast<int>(capacity_from_bytes(res.n));
     new_rep = new (res.p) HeapRep(new_size);
   } else {
+    // Preemptively align `bytes` to be able to take advantage of the extra
+    // capacity. Only matters when `sizeof(Element) < 8` and we are growing via
+    // specific reservation (instead of doubling through `Add`).
+    if constexpr (internal::ArenaAlignDefault::Ceil(sizeof(Element)) !=
+                  sizeof(Element)) {
+      bytes = internal::ArenaAlignDefault::Ceil(bytes);
+      new_size = static_cast<int>(capacity_from_bytes(bytes));
+    }
     new_rep = new (Arena::CreateArray<char>(arena, bytes)) HeapRep(new_size);
   }
 

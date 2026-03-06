@@ -386,6 +386,23 @@ TEST(Memswap, VerifyWithSmallAndLargeSizes) {
   TestMemswap<64 * 4>();
 }
 
+TEST(RepeatedField, ReserveDoesNotWasteArenaPadding) {
+  Arena arena;
+  {
+    auto* b = Arena::Create<RepeatedField<bool>>(&arena);
+    b->Reserve(65);
+    EXPECT_GE(b->Capacity(), 65);
+    EXPECT_EQ(b->Capacity() * sizeof(bool) % 8, 0);
+  }
+
+  {
+    auto* i = Arena::Create<RepeatedField<int32_t>>(&arena);
+    i->Reserve(65);
+    EXPECT_GE(i->Capacity(), 65);
+    EXPECT_EQ(i->Capacity() * sizeof(int32_t) % 8, 0);
+  }
+}
+
 // Determines how much space was reserved by the given field by adding elements
 // to it until it re-allocates its space.
 static int ReservedSpace(RepeatedField<int>* field) {
