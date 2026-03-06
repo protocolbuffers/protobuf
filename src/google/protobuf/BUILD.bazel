@@ -982,6 +982,7 @@ cc_test(
         ":repeated_field_proxy",
         ":test_textproto",
         "//src/google/protobuf/test_protos:test_cc_protos",
+        "@abseil-cpp//absl/meta:type_traits",
         "@abseil-cpp//absl/strings:cord",
         "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",

@@ -9,6 +9,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/meta/type_traits.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
@@ -175,12 +176,9 @@ TEST_P(RepeatedFieldProxyTest, MutateElementPrimitive) {
 }
 
 template <typename T>
-auto ToStringLike(T&& val) {
-  if constexpr (std::is_same_v<std::remove_cvref_t<decltype(val)>,
-                               StringPieceField>) {
-    return val.Get();
-  } else if constexpr (std::is_same_v<std::remove_cvref_t<decltype(val)>,
-                                      absl::Cord>) {
+auto ToStringLike(const T& val) {
+  if constexpr (std::is_same_v<absl::remove_cvref_t<decltype(val)>,
+                               absl::Cord>) {
     return std::string(val);
   } else {
     return absl::string_view(val);
@@ -224,6 +222,8 @@ void TestMutateStringElement(google::protobuf::RepeatedFieldProxy<StringType> pr
                 std::is_same_v<StringType, absl::string_view>) {
     // Since long_string was moved, proxy[0] should point to the same heap data.
     EXPECT_EQ(string_ptr, proxy[0].data());
+  } else {
+    (void)string_ptr;
   }
 
   proxy.set(0, "9");
@@ -255,6 +255,8 @@ void TestMutateStringElement(google::protobuf::RepeatedFieldProxy<StringType> pr
   if constexpr (std::is_same_v<StringType, absl::Cord>) {
     // Since cord was moved, proxy[0] should point to the same heap data.
     EXPECT_EQ(&*proxy[0].char_begin(), begin_ptr);
+  } else {
+    (void)begin_ptr;
   }
 }
 
