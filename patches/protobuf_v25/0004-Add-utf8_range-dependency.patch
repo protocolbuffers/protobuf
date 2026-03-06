@@ -16,7 +16,7 @@ new file mode 100644
 index 000000000..0b3c57229
 --- /dev/null
 +++ b/non_module_deps.bzl
-@@ -0,0 +1,19 @@
+@@ -0,0 +1,23 @@
 +load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 +
 +def _github_archive(repo, commit, **kwargs):
@@ -33,7 +33,28 @@ index 000000000..0b3c57229
 +        repo = "https://github.com/protocolbuffers/utf8_range",
 +        commit = "de0b4a8ff9b5d4c98108bdfe723291a33c52c54f",
 +        sha256 = "5da960e5e5d92394c809629a03af3c7709d2d3d0ca731dacb3a9fb4bf28f7702",
++        patches = [
++            "@com_google_protobuf//:patches/utf8_range/0001-Add-Includes.patch",
++        ],
++        patch_args = ["-p1"],
 +    )
 +
 +non_module_deps = module_extension(implementation = _non_module_deps_impl)
-\ No newline at end of file
+diff --git a/patches/utf8_range/0001-Add-Includes.patch b/patches/utf8_range/0001-Add-Includes.patch
+new file mode 100644
+index 0000000000..dad911cf73
+--- /dev/null
++++ b/patches/utf8_range/0001-Add-Includes.patch
+@@ -0,0 +1,12 @@
++diff --git a/utf8_validity.cc b/utf8_validity.cc
++index db811993f8..0638252d49 100644
++--- a/utf8_validity.cc
+++++ b/utf8_validity.cc
++@@ -19,6 +19,7 @@
++
++ #include <cstddef>
++ #include <cstdint>
+++#include <cstring>
++
++ #include "absl/strings/ascii.h"
++ #include "absl/strings/string_view.h"
