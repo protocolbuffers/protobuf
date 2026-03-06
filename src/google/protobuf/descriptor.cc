@@ -5041,6 +5041,15 @@ class DescriptorBuilder {
   void ValidateNamingStyle(const DescriptorT* file,
                            const DescriptorProtoT& proto);
 
+  template <typename DescriptorT>
+  bool IsStyleOrGreater(const DescriptorT* descriptor,
+                        FeatureSet::EnforceNamingStyle style) {
+    return internal::InternalFeatureHelper::GetFeatures(*descriptor)
+                   .enforce_naming_style() >= style &&
+           internal::InternalFeatureHelper::GetFeatures(*descriptor)
+                   .enforce_naming_style() != FeatureSet::STYLE_LEGACY;
+  }
+
   // Nothing to validate for extension ranges. This overload only exists
   // so that VisitDescriptors can be exhaustive.
   void ValidateNamingStyle(const Descriptor::ExtensionRange* ext_range,
@@ -6699,8 +6708,7 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   if (!had_errors_ && pool_->enforce_naming_style_) {
     internal::VisitDescriptors(
         *result, proto, [&](const auto& descriptor, const auto& desc_proto) {
-          if (internal::InternalFeatureHelper::GetFeatures(descriptor)
-                  .enforce_naming_style() == FeatureSet::STYLE2024) {
+          if (IsStyleOrGreater(&descriptor, FeatureSet::STYLE2024)) {
             ValidateNamingStyle(&descriptor, desc_proto);
           }
         });
@@ -9270,6 +9278,32 @@ bool IsValidUpperSnakeCaseName(absl::string_view name, std::string* error) {
   return true;
 }
 
+bool IsValidFieldNonCollisionName(absl::string_view name, std::string* error) {
+  ABSL_CHECK(!name.empty());
+
+  if (absl::StartsWith(name, "has_")) {
+    *error = "should not begin with has_. This can cause collisions.";
+    return false;
+  }
+  if (absl::StartsWith(name, "get_")) {
+    *error = "should not begin with get_. This can cause collisions.";
+    return false;
+  }
+  if (absl::StartsWith(name, "set_")) {
+    *error = "should not begin with set_. This can cause collisions.";
+    return false;
+  }
+  if (absl::StartsWith(name, "clear_")) {
+    *error = "should not begin with clear_. This can cause collisions.";
+    return false;
+  }
+  if (absl::EndsWith(name, "_value")) {
+    *error = "should not end with _value. This can cause collisions.";
+    return false;
+  }
+  return true;
+}
+
 constexpr absl::string_view kNamingStyleOptOutMessage =
     " (features.enforce_naming_style = STYLE_LEGACY can be used to opt out of "
     "this check)";
@@ -9325,6 +9359,14 @@ void DescriptorBuilder::ValidateNamingStyle(const FieldDescriptor* field,
       return absl::StrCat("Field name ", field->name(), " ", error,
                           kNamingStyleOptOutMessage);
     });
+  }
+  if (IsStyleOrGreater(field, FeatureSet::STYLE2026)) {
+    if (!IsValidFieldNonCollisionName(field->name(), &error)) {
+      AddError(field->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
+        return absl::StrCat("Field name ", field->name(), " ", error,
+                            kNamingStyleOptOutMessage);
+      });
+    }
   }
 }
 

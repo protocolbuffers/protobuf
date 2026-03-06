@@ -71,7 +71,7 @@ internal::EnumTraitsT<::pb::CppFeatures_StringType_internal_data_>
 namespace internal {
 template <>
 inline ::absl::string_view GetFeatureSetDefaultsData<::pb::CppFeatures>() {
-  static constexpr char kDefaults[] = "CiMYhAciA8I+ACoZCAEQAhgCIAMoATACOAJAAcI+BggBEAMYAAojGOcHIgPCPgAqGQgCEAEYASACKAEwATgCQAHCPgYIABADGAAKIxjoByITCAEQARgBIAIoATABwj4ECAAQAyoJOAJAAcI+AhgACiMY6QciGQgBEAEYASACKAEwATgBQALCPgYIABABGAEqA8I+ACDmByjpBw==";
+  static constexpr char kDefaults[] = "CiMYhAciA8I+ACoZCAEQAhgCIAMoATACOAJAAcI+BggBEAMYAAojGOcHIgPCPgAqGQgCEAEYASACKAEwATgCQAHCPgYIABADGAAKIxjoByITCAEQARgBIAIoATABwj4ECAAQAyoJOAJAAcI+AhgACiMY6QciGQgBEAEYASACKAEwATgBQALCPgYIABABGAEqA8I+AAojGI9OIhkIARABGAEgAigBMAE4A0ACwj4GCAAQARgBKgPCPgAg5gco6Qc=";
   return kDefaults;
 }
 }  // namespace internal

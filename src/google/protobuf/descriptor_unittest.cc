@@ -10458,6 +10458,62 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithPoolOptInIfMessagesAreGood) {
               NotNull());
 }
 
+TEST_F(FeaturesTest, NoNamingStyleViolationsForStyle2026) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+
+  // By default, these patterns are allowed if they don't collide with the
+  // specifically enforced prefixes/suffixes.
+  ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
+    edition = "UNSTABLE";
+    package naming;
+    message Foo {
+      string foo_has_bar = 1;
+      string foo_value_bar = 2;
+      string foo_values = 3;
+      string gets_bar = 4;
+    }
+  )schema"),
+              NotNull());
+}
+
+struct CollisionNameParam {
+  std::string field_name;
+  std::string error_message_part;
+};
+
+class CollisionNameTest
+    : public FeaturesTest,
+      public testing::WithParamInterface<CollisionNameParam> {};
+
+TEST_P(CollisionNameTest, NamingStyleViolationsForStyle2026WithCollisions) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+  const CollisionNameParam& param = GetParam();
+  ParseAndBuildFileWithErrorSubstr("foo.proto",
+                                   absl::Substitute(R"schema(
+    edition = "UNSTABLE";
+    message Foo {
+      string $0 = 1;
+    }
+  )schema",
+                                                    param.field_name),
+                                   absl::StrCat("Field name ", param.field_name,
+                                                " ", param.error_message_part));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    CollisionNameTests, CollisionNameTest,
+    testing::Values(
+        CollisionNameParam{"has_test_field", "should not begin with has_"},
+        CollisionNameParam{"get_test_field", "should not begin with get_"},
+        CollisionNameParam{"set_test_field", "should not begin with set_"},
+        CollisionNameParam{"clear_test_field", "should not begin with clear_"},
+        CollisionNameParam{"test_field_value", "should not end with _value"}),
+    [](const testing::TestParamInfo<CollisionNameParam>& info) {
+      return info.param.field_name;
+    });
+
 TEST_F(FeaturesTest, VisibilityFeatureSetStrict) {
   pool_.EnforceSymbolVisibility(true);
   BuildDescriptorMessagesInTestPool();
@@ -10586,7 +10642,7 @@ TEST_F(FeaturesTest, BadFieldName) {
   ParseAndBuildFileWithErrorSubstr(
       "naming1.proto", R"schema(
     edition = "2024";
-    package naming1;
+    package 1;
     message GoodMessageName { int32 BadFieldName = 1; }
   )schema",
       "Field name BadFieldName should be lower_snake_case");
