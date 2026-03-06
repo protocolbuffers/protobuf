@@ -14,12 +14,6 @@ label_flag(
 )
 
 string_list_flag(
-    name = "protocopt",
-    build_setting_default = [],
-    scope = "universal",
-)
-
-string_list_flag(
     name = "cc_proto_library_header_suffixes",
     build_setting_default = [".pb.h"],
     scope = "universal",
