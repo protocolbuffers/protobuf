@@ -258,12 +258,28 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
-  void Add(Arena* arena, Value<TypeHandler>&& value) {
+  Value<TypeHandler>* Add(Arena* arena, Value<TypeHandler>&& value) {
     if (ClearedCount() > 0) {
-      *cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1))) =
-          std::move(value);
+      auto* result =
+          cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1)));
+      *result = std::move(value);
+      return result;
     } else {
-      AddInternal(arena, TypeHandler::GetNewWithMoveFunc(std::move(value)));
+      return cast<TypeHandler>(AddInternal(
+          arena, TypeHandler::GetNewWithMoveFunc(std::move(value))));
+    }
+  }
+
+  template <typename TypeHandler>
+  Value<TypeHandler>* Add(Arena* arena, const Value<TypeHandler>& value) {
+    if (ClearedCount() > 0) {
+      auto* result =
+          cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1)));
+      *result = value;
+      return result;
+    } else {
+      return cast<TypeHandler>(
+          AddInternal(arena, TypeHandler::GetNewWithCopyFunc(value)));
     }
   }
 
@@ -1033,6 +1049,12 @@ class GenericTypeHandler {
       ptr = Arena::Create<Type>(arena, std::move(from));
     };
   }
+  static constexpr auto GetNewWithCopyFunc(
+      const Type& from ABSL_ATTRIBUTE_LIFETIME_BOUND) {
+    return [&from](Arena* arena, void*& ptr) {
+      ptr = Arena::Create<Type>(arena, from);
+    };
+  }
   static constexpr auto GetNewFromPrototypeFunc(
       const Type* prototype ABSL_ATTRIBUTE_LIFETIME_BOUND) {
     ABSL_DCHECK(prototype != nullptr);
@@ -1099,6 +1121,12 @@ class GenericTypeHandler<std::string> {
       Type&& from ABSL_ATTRIBUTE_LIFETIME_BOUND) {
     return [&from](Arena* arena, void*& ptr) {
       ptr = Arena::Create<Type>(arena, std::move(from));
+    };
+  }
+  static constexpr auto GetNewWithCopyFunc(
+      const Type& from ABSL_ATTRIBUTE_LIFETIME_BOUND) {
+    return [&from](Arena* arena, void*& ptr) {
+      ptr = Arena::Create<Type>(arena, from);
     };
   }
   static constexpr auto GetNewFromPrototypeFunc(const Type* /*prototype*/) {
@@ -1536,7 +1564,10 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
   pointer AddWithArena(Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
-  void AddWithArena(Arena* arena, Element&& value);
+  pointer AddWithArena(Arena* arena, Element&& value);
+
+  // Private-only. Copies `value` into a newly allocated element.
+  pointer AddWithArena(Arena* arena, const Element& value);
 
   template <typename Iter>
   void AddWithArena(Arena* arena, Iter begin, Iter end);
@@ -1727,9 +1758,15 @@ PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::InternalAddWithArena(
 }
 
 template <typename Element>
-PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::AddWithArena(
-    Arena* arena, Element&& value) {
-  RepeatedPtrFieldBase::Add<TypeHandler>(arena, std::move(value));
+PROTOBUF_NDEBUG_INLINE typename RepeatedPtrField<Element>::pointer
+RepeatedPtrField<Element>::AddWithArena(Arena* arena, Element&& value) {
+  return RepeatedPtrFieldBase::Add<TypeHandler>(arena, std::move(value));
+}
+
+template <typename Element>
+PROTOBUF_NDEBUG_INLINE typename RepeatedPtrField<Element>::pointer
+RepeatedPtrField<Element>::AddWithArena(Arena* arena, const Element& value) {
+  return RepeatedPtrFieldBase::Add<TypeHandler>(arena, value);
 }
 
 template <typename Element>

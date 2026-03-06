@@ -27,6 +27,8 @@ namespace internal {
 
 template <typename ElementType>
 class RepeatedFieldProxyInjectionBase;
+template <typename ElementType, typename Enable>
+class RepeatedFieldProxyWithPushBack;
 
 template <typename T, typename... Args>
 RepeatedFieldProxy<T> ConstructRepeatedFieldProxy(Args&&... args);
@@ -209,14 +211,32 @@ class RepeatedFieldProxyBase {
 
   ~RepeatedFieldProxyBase() = default;
 
+  // Returns true if the repeated field has no elements (size == 0).
+  [[nodiscard]] bool empty() const { return field().empty(); }
+  // Returns the number of elements in the repeated field.
+  [[nodiscard]] size_type size() const {
+    return static_cast<size_type>(field().size());
+  }
+
  protected:
   explicit RepeatedFieldProxyBase(ConstQualifiedRepeatedFieldType& field)
       : field_(&field) {}
 
   ConstQualifiedRepeatedFieldType& field() const { return *field_; }
 
+  Arena* arena() const { return field().GetArena(); }
+
+  auto& AddWithArena() const { return *field().AddWithArena(arena()); }
+  auto& AddWithArena(ElementType&& value) const {
+    return *field().AddWithArena(arena(), std::move(value));
+  }
+  auto& AddWithArena(const ElementType& value) const {
+    return *field().AddWithArena(arena(), value);
+  }
+
  private:
   friend RepeatedFieldProxyInjectionBase<ElementType>;
+  friend RepeatedFieldProxyWithPushBack<ElementType, void>;
 
   ConstQualifiedRepeatedFieldType* field_;
 };
@@ -227,7 +247,18 @@ class RepeatedFieldProxyInjectionBase {
   using Traits = RepeatedFieldTraits<ElementType>;
   using RepeatedFieldType = typename Traits::type;
 
-  RepeatedFieldType& field() const;
+  template <typename InjectedType>
+  RepeatedFieldType& field() const {
+    return base<InjectedType>()->field();
+  }
+
+  template <typename InjectedType>
+  Arena* arena() const {
+    return base<InjectedType>()->arena();
+  }
+
+  template <typename InjectedType>
+  const RepeatedFieldProxyBase<ElementType>* base() const;
 };
 
 template <typename ElementType, typename Enable = void>
@@ -238,7 +269,7 @@ class RepeatedFieldProxyWithSet
   //
   // Performs bounds checking in accordance with `bounds_check_mode_*`.
   void set(size_t index, ElementType value) const {
-    this->field()[index] = value;
+    this->template field<RepeatedFieldProxyWithSet>()[index] = value;
   }
 };
 
@@ -251,14 +282,14 @@ class RepeatedFieldProxyWithSet<
   //
   // Performs bounds checking in accordance with `bounds_check_mode_*`.
   void set(size_t index, ElementType&& value) const {
-    this->field()[index] = std::move(value);
+    this->template field<RepeatedFieldProxyWithSet>()[index] = std::move(value);
   }
 
   // Sets the element at the given index to the given value by copy-assignment.
   //
   // Performs bounds checking in accordance with `bounds_check_mode_*`.
   void set(size_t index, const ElementType& value) const {
-    this->field()[index] = value;
+    this->template field<RepeatedFieldProxyWithSet>()[index] = value;
   }
 };
 
@@ -272,7 +303,60 @@ class RepeatedFieldProxyWithSet<
   // Performs bounds checking in accordance with `bounds_check_mode_*`.
   template <typename T>
   void set(size_t index, T&& value) const {
-    string_util::SetElement(this->field()[index], std::forward<T>(value));
+    string_util::SetElement(
+        this->template field<RepeatedFieldProxyWithSet>()[index],
+        std::forward<T>(value));
+  }
+};
+
+template <typename ElementType, typename Enable = void>
+class RepeatedFieldProxyWithPushBack
+    : public RepeatedFieldProxyInjectionBase<ElementType> {
+ public:
+  // Appends the given value to the end of the repeated field.
+  //
+  // Performs bounds checking in accordance with `bounds_check_mode_*`.
+  void push_back(ElementType value) const {
+    this->template base<RepeatedFieldProxyWithPushBack>()->AddWithArena(value);
+  }
+};
+
+template <typename ElementType>
+class RepeatedFieldProxyWithPushBack<
+    ElementType, std::enable_if_t<RepeatedElementTypeIsMessage<ElementType>>>
+    : public RepeatedFieldProxyInjectionBase<ElementType> {
+ public:
+  // Appends the given value to the end of the repeated field by
+  // move-assignment.
+  //
+  // Performs bounds checking in accordance with `bounds_check_mode_*`.
+  void push_back(ElementType&& value) const {
+    this->template base<RepeatedFieldProxyWithPushBack>()->AddWithArena(
+        std::move(value));
+  }
+
+  // Appends the given value to the end of the repeated field by
+  // copy-assignment.
+  //
+  // Performs bounds checking in accordance with `bounds_check_mode_*`.
+  void push_back(const ElementType& value) const {
+    this->template base<RepeatedFieldProxyWithPushBack>()->AddWithArena(value);
+  }
+};
+
+template <typename ElementType>
+class RepeatedFieldProxyWithPushBack<
+    ElementType, std::enable_if_t<RepeatedElementTypeIsString<ElementType>>>
+    : public RepeatedFieldProxyInjectionBase<ElementType> {
+ public:
+  // Appends the given value to the end of the repeated field.
+  //
+  // Performs bounds checking in accordance with `bounds_check_mode_*`.
+  template <typename T>
+  void push_back(T&& value) const {
+    string_util::SetElement(
+        this->template base<RepeatedFieldProxyWithPushBack>()->AddWithArena(),
+        std::forward<T>(value));
   }
 };
 
@@ -292,7 +376,8 @@ class RepeatedFieldProxyWithSet<
 template <typename ElementType>
 class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
     : public internal::RepeatedFieldProxyBase<ElementType>,
-      public internal::RepeatedFieldProxyWithSet<ElementType> {
+      public internal::RepeatedFieldProxyWithSet<ElementType>,
+      public internal::RepeatedFieldProxyWithPushBack<ElementType> {
   static_assert(!std::is_const_v<ElementType>);
 
  protected:
@@ -399,15 +484,16 @@ inline RepeatedFieldProxy<T> ConstructRepeatedFieldProxy(Args&&... args) {
 }
 
 template <typename ElementType>
-typename RepeatedFieldTraits<ElementType>::type&
-RepeatedFieldProxyInjectionBase<ElementType>::field() const {
+template <typename InjectedType>
+const RepeatedFieldProxyBase<ElementType>*
+RepeatedFieldProxyInjectionBase<ElementType>::base() const {
   // Cast up to the derived class, then back down to RepeatedFieldProxyBase.
   // We can't static_cast directly to RepeatedFieldProxyBase because
   // RepeatedFieldProxy multiple-inherits from RepeatedFieldProxyBase and
   // RepeatedFieldProxyWithSet.
   return static_cast<const RepeatedFieldProxyBase<ElementType>*>(
-             static_cast<const google::protobuf::RepeatedFieldProxy<ElementType>*>(this))
-      ->field();
+      static_cast<const google::protobuf::RepeatedFieldProxy<ElementType>*>(
+          static_cast<const InjectedType*>(this)));
 }
 
 }  // namespace internal
