@@ -224,6 +224,19 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
     }
 
     /**
+     * Append an element to the end of the repeated field.
+     * 
+     * @see RepeatedField::offsetSet()
+     * 
+     * @param T $value The value to append.
+     * @return void
+     */
+    public function append($value): void
+    {
+        $this->offsetSet(null, $value);
+    }
+
+    /**
      * Return the number of stored elements.
      *
      * This will also be called for: count($arr)
