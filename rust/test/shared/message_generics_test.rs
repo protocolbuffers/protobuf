@@ -70,5 +70,6 @@ impl<'a, V: Message> ProtoGenericallyStruct<'a, V> {
 fn msg_used_generically_struct_test() {
     let msg = TestAllTypes::new();
     let proto_send_msg = ProtoGenericallyStruct::from_view(&msg);
-    expect_that!(proto_send_msg.encode(), eq(&[]));
+    let empty: &[u8] = &[];
+    expect_that!(proto_send_msg.encode(), eq(empty));
 }
