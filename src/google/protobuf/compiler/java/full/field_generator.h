@@ -30,12 +30,18 @@ class ImmutableFieldGenerator : public FieldGenerator {
   virtual void GenerateMergingCode(io::Printer* printer) const = 0;
   virtual void GenerateBuildingCode(io::Printer* printer) const = 0;
   virtual void GenerateBuilderParsingCode(io::Printer* printer) const = 0;
+  virtual void GenerateParsingCode(io::Printer* printer) const = 0;
+  virtual void GenerateParsingDoneCode(io::Printer* printer) const = 0;
   virtual void GenerateSerializedSizeCode(io::Printer* printer) const = 0;
   virtual void GenerateFieldBuilderInitializationCode(
       io::Printer* printer) const = 0;
 
   virtual void GenerateBuilderParsingCodeFromPacked(
       io::Printer* printer) const {
+    ReportUnexpectedPackedFieldsCall();
+  }
+
+  virtual void GenerateParsingCodeFromPacked(io::Printer* printer) const {
     ReportUnexpectedPackedFieldsCall();
   }
 
