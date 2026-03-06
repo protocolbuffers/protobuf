@@ -45,7 +45,7 @@ struct ImplicitWeakMessageDefaultType {
   ~ImplicitWeakMessageDefaultType() {}
   union {
     ImplicitWeakMessage instance;
-  };
+  }; op
 };
 
 constexpr ImplicitWeakMessage::ImplicitWeakMessage(ConstantInitialized)
