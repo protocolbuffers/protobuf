@@ -818,6 +818,7 @@ cc_library(
         ":micro_string",
         ":port",
         ":protobuf_lite",
+        ":repeated_field_proxy",
         ":symbol_checker",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:gzip_stream",

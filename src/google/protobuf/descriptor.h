@@ -139,6 +139,10 @@ namespace cpp {
 class CppGenerator;
 // Defined in helpers.h
 class Formatter;
+#ifndef SWIG
+internal::FieldDescriptorLite::CppRepeatedType
+CalculateFieldDescriptorRepeatedType(const FieldDescriptor* field);
+#endif  // !SWIG
 }  // namespace cpp
 namespace java {
 class MemoizeProjection;
@@ -1195,6 +1199,11 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Allows access to GetLocationPath for annotations.
   friend class io::Printer;
   friend class compiler::cpp::Formatter;
+#ifndef SWIG
+  friend FieldDescriptor::CppRepeatedType
+  compiler::cpp::CalculateFieldDescriptorRepeatedType(
+      const FieldDescriptor* field);
+#endif  // !SWIG
   friend class Reflection;
   friend class FieldDescriptorLegacy;
   friend const std::string& internal::DefaultValueStringAsString(
