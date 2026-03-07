@@ -175,23 +175,33 @@ struct WeakRepeatedPtrField {
       const_pointer_iterator;
 
   bool empty() const { return base().empty(); }
-  iterator begin() { return iterator(base().raw_data()); }
-  const_iterator begin() const { return iterator(base().raw_data()); }
+  iterator begin() {
+    return iterator(reinterpret_cast<MessageLite* const*>(base().raw_data()));
+  }
+  const_iterator begin() const {
+    return iterator(reinterpret_cast<MessageLite* const*>(base().raw_data()));
+  }
   const_iterator cbegin() const { return begin(); }
   iterator end() { return begin() + base().size(); }
   const_iterator end() const { return begin() + base().size(); }
   const_iterator cend() const { return end(); }
   pointer_iterator pointer_begin() {
-    return pointer_iterator(base().raw_mutable_data());
+    return pointer_iterator(
+        reinterpret_cast<MessageLite**>(base().raw_mutable_data()));
   }
   const_pointer_iterator pointer_begin() const {
-    return const_pointer_iterator(base().raw_data());
+    return const_pointer_iterator(
+        reinterpret_cast<const MessageLite* const*>(base().raw_data()));
   }
   pointer_iterator pointer_end() {
-    return pointer_iterator(base().raw_mutable_data() + base().size());
+    return pointer_iterator(
+        reinterpret_cast<MessageLite**>(base().raw_mutable_data()) +
+        base().size());
   }
   const_pointer_iterator pointer_end() const {
-    return const_pointer_iterator(base().raw_data() + base().size());
+    return const_pointer_iterator(
+        reinterpret_cast<const MessageLite* const*>(base().raw_data()) +
+        base().size());
   }
 
   T* Add() { return weak.Add(); }
