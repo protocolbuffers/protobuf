@@ -167,7 +167,7 @@ UPB_INLINE bool UPB_PRIVATE(upb_Xsan_PtrEq)(const void *a, const void *b) {
 // "logically" accessed, we can trigger TSAN diagnostics that might have
 // otherwise been masked by subsequent atomic operations.
 
-UPB_INLINE void UPB_PRIVATE(upb_Xsan_AccessReadOnly)(upb_Xsan *xsan) {
+UPB_INLINE void UPB_PRIVATE(upb_Xsan_AccessReadOnly)(const upb_Xsan* xsan) {
 #if UPB_TSAN
   // For performance we avoid using a volatile variable.
   __asm__ volatile("" ::"r"(xsan->state));

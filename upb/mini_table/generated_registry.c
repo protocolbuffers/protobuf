@@ -9,7 +9,6 @@
 
 #include <stdint.h>
 
-#include "upb/mem/alloc.h"
 #include "upb/mem/arena.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
@@ -18,6 +17,7 @@
 
 // Must be last.
 #include "upb/port/def.inc"
+#include "upb/port/sanitizers.h"
 
 #if UPB_TSAN
 #include <sched.h>
@@ -27,12 +27,16 @@ const UPB_PRIVATE(upb_GeneratedExtensionListEntry) *
     UPB_PRIVATE(upb_generated_extension_list) = NULL;
 
 typedef struct upb_GeneratedRegistry {
+  // Exclusively accessed via relaxed memory order; writes are made visible by
+  // aquire/release on the refcount. The initial write of a non-NULL pointer is
+  // made visible by the release store of 1 to ref_count and the acquire CAS to
+  // increment it.
   UPB_ATOMIC(upb_GeneratedRegistryRef*) ref;
-  UPB_ATOMIC(int32_t) ref_count;
+  UPB_ATOMIC(uintptr_t) ref_count;
 } upb_GeneratedRegistry;
 
 static upb_GeneratedRegistry* _upb_generated_registry(void) {
-  static upb_GeneratedRegistry r = {NULL, 0};
+  static upb_GeneratedRegistry r = {};
   return &r;
 }
 
@@ -73,36 +77,37 @@ static bool _upb_GeneratedRegistry_AddAllLinkedExtensions(
 // Constructs a new GeneratedRegistryRef, adding all linked extensions to the
 // registry or returning NULL on failure.
 static upb_GeneratedRegistryRef* _upb_GeneratedRegistry_New(void) {
-  upb_Arena* arena = NULL;
-  upb_ExtensionRegistry* extreg = NULL;
-  upb_GeneratedRegistryRef* ref = upb_gmalloc(sizeof(upb_GeneratedRegistryRef));
+  upb_Arena* arena = upb_Arena_New();
+  if (arena == NULL) return NULL;
+  upb_GeneratedRegistryRef* ref =
+      upb_Arena_Malloc(arena, sizeof(upb_GeneratedRegistryRef));
   if (ref == NULL) goto err;
-  arena = upb_Arena_New();
-  if (arena == NULL) goto err;
-  extreg = upb_ExtensionRegistry_New(arena);
-  if (extreg == NULL) goto err;
-
   ref->UPB_PRIVATE(arena) = arena;
+
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena);
+  if (extreg == NULL) goto err;
   ref->UPB_PRIVATE(registry) = extreg;
 
   if (!_upb_GeneratedRegistry_AddAllLinkedExtensions(extreg)) goto err;
 
+  UPB_PRIVATE(upb_Xsan_Init)(UPB_XSAN(ref));
   return ref;
 
 err:
-  if (arena != NULL) upb_Arena_Free(arena);
-  if (ref != NULL) upb_gfree(ref);
+  upb_Arena_Free(arena);
   return NULL;
 }
 
 const upb_GeneratedRegistryRef* upb_GeneratedRegistry_Load(void) {
   upb_GeneratedRegistry* registry = _upb_generated_registry();
+  upb_GeneratedRegistryRef* new_ref = NULL;
 
   // Loop until we successfully acquire a reference.  This loop should only
   // kick in under extremely high contention, and it should be guaranteed to
   // succeed.
   while (true) {
-    int32_t count = upb_Atomic_Load(&registry->ref_count, memory_order_acquire);
+    uintptr_t count =
+        upb_Atomic_Load(&registry->ref_count, memory_order_relaxed);
 
     // Try to increment the refcount, but only if it's not zero.
     while (count > 0) {
@@ -110,10 +115,16 @@ const upb_GeneratedRegistryRef* upb_GeneratedRegistry_Load(void) {
                                            count + 1, memory_order_acquire,
                                            memory_order_relaxed)) {
         // Successfully incremented. We can now safely load and return the
-        // pointer.
+        // pointer. Relaxed order is safe here because our CAS acquired from the
+        // original release-ordered store of 1 to the refcount.
         const upb_GeneratedRegistryRef* ref =
-            upb_Atomic_Load(&registry->ref, memory_order_acquire);
+            upb_Atomic_Load(&registry->ref, memory_order_relaxed);
         UPB_ASSERT(ref != NULL);
+        UPB_PRIVATE(upb_Xsan_AccessReadOnly)(UPB_XSAN(ref));
+        if (new_ref) {
+          // If we initialized a ref but never published it, free it.
+          upb_Arena_Free(new_ref->UPB_PRIVATE(arena));
+        }
         return ref;
       }
       // CAS failed, `count` was updated. Loop will retry.
@@ -122,37 +133,41 @@ const upb_GeneratedRegistryRef* upb_GeneratedRegistry_Load(void) {
     // If we're here, the count was 0. Time for the slow path.
     // Double-check that the pointer is NULL before trying to create.
     upb_GeneratedRegistryRef* ref =
-        upb_Atomic_Load(&registry->ref, memory_order_acquire);
+        upb_Atomic_Load(&registry->ref, memory_order_relaxed);
     if (ref == NULL) {
-      // Pointer is NULL, try to create and publish a new registry.
-      upb_GeneratedRegistryRef* new_ref = _upb_GeneratedRegistry_New();
-      if (new_ref == NULL) return NULL;  // OOM
+      if (!new_ref) {
+        // Pointer is NULL, try to create and publish a new registry.
+        new_ref = _upb_GeneratedRegistry_New();
+        if (new_ref == NULL) return NULL;  // OOM
+      }
 
       // Try to CAS the pointer from NULL to our new_ref.
       if (upb_Atomic_CompareExchangeStrong(&registry->ref, &ref, new_ref,
-                                           memory_order_release,
-                                           memory_order_acquire)) {
-        // We won the race. Set the ref count to 1.
+                                           memory_order_relaxed,
+                                           memory_order_relaxed)) {
+        // We won the race. Because of our relaxed store, it's not safe for
+        // other threads to actually dereference this pointer until they read
+        // our store of 1 to ref_count. Note that if the current thread halts
+        // here, other threads will spin forever.
         upb_Atomic_Store(&registry->ref_count, 1, memory_order_release);
         return new_ref;
-      } else {
-        // We lost the race. `ref` now holds the pointer from the winning
-        // thread. Clean up our unused one and loop to try again to get a
-        // reference.
-        upb_Arena_Free(new_ref->UPB_PRIVATE(arena));
-        upb_gfree(new_ref);
       }
-    }
-    // If we are here, either we lost the CAS race, or the pointer was already
-    // non-NULL. In either case, we loop to the top and try to increment the
-    // refcount of the existing object.
-
+      // Loop to the top and try to increment the refcount of the existing
+      // object.
+    } else {
+      // We don't know if the non-null pointer we observed was being initialized
+      // but the refcount was 0 because the publishing thread hadn't set it to 1
+      // yet, or the pointer we observed was dangling because the freeing thread
+      // hadn't set it to NULL yet. To avoid use-after-free, we can't read it,
+      // and we need to wait until we see either a nonzero refcount or a NULL
+      // ref, making this a spin section.
 #if UPB_TSAN
-    // Yield to give other threads a chance to increment the refcount.  This is
-    // especially an issue for TSAN builds, which are prone to locking up from
-    // the thread with the upb_Atomic_Store call above getting starved.
-    sched_yield();
+      // Yield to give other threads a chance to increment the refcount.  This
+      // is especially an issue for TSAN builds, which are prone to locking up
+      // from the thread with the upb_Atomic_Store call above getting starved.
+      sched_yield();
 #endif  // UPB_TSAN
+    }
   }
 }
 
@@ -160,20 +175,24 @@ void upb_GeneratedRegistry_Release(const upb_GeneratedRegistryRef* r) {
   if (r == NULL) return;
 
   upb_GeneratedRegistry* registry = _upb_generated_registry();
+  UPB_ASSERT(upb_Atomic_Load(&registry->ref, memory_order_relaxed) == r);
 
-  int ref_count = upb_Atomic_Sub(&registry->ref_count, 1, memory_order_acq_rel);
-  UPB_ASSERT(registry->ref_count >= 0);
+  // acq_rel ensures that decrements that don't hit zero release all their
+  // prior operations, to be caught by the acquire when the refcount does hit
+  // zero.
+  uintptr_t ref_count =
+      upb_Atomic_Sub(&registry->ref_count, 1, memory_order_acq_rel);
+
+  UPB_ASSERT(ref_count != 0);
 
   // A ref_count of 1 means that we decremented the refcount to 0.
   if (ref_count == 1) {
-    upb_GeneratedRegistryRef* ref =
-        upb_Atomic_Exchange(&registry->ref, NULL, memory_order_acq_rel);
-    if (ref != NULL) {
-      // This is the last reference and we won any potential race to store NULL,
-      // so we need to clean up.
-      upb_Arena_Free(ref->UPB_PRIVATE(arena));
-      upb_gfree(ref);
-    }
+    UPB_ASSERT(upb_Atomic_Load(&registry->ref, memory_order_relaxed) == r);
+    // Now that the refcount is 0, other threads can't re-initialize it until we
+    // store NULL. If the current thread hangs here, other threads may spin
+    // forever.
+    upb_Atomic_Store(&registry->ref, NULL, memory_order_relaxed);
+    upb_Arena_Free(r->UPB_PRIVATE(arena));
   }
 }
 
