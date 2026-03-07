@@ -53,7 +53,7 @@ UPB_INLINE void _upb_mapsorter_init(_upb_mapsorter* s) {
 }
 
 UPB_INLINE void _upb_mapsorter_destroy(_upb_mapsorter* s) {
-  if (s->entries) upb_gfree(s->entries);
+  if (s->entries) upb_gfree_sized(s->entries, s->cap * sizeof(void*));
 }
 
 UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s,

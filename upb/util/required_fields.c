@@ -292,7 +292,7 @@ bool upb_util_HasUnsetRequired(const upb_Message* msg, const upb_MessageDef* m,
   upb_FieldPathVector_Init(&ctx.stack);
   upb_FieldPathVector_Init(&ctx.out_fields);
   upb_util_FindUnsetRequiredInternal(&ctx, msg, m);
-  upb_gfree(ctx.stack.path);
+  upb_gfree_sized(ctx.stack.path, ctx.stack.cap * sizeof(*ctx.stack.path));
 
   if (ctx.has_unset_required && fields) {
     upb_FieldPathVector_Reserve(&ctx, &ctx.out_fields, 1);

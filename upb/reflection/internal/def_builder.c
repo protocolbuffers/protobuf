@@ -152,11 +152,11 @@ const void* _upb_DefBuilder_ResolveAny(upb_DefBuilder* ctx,
         break;
       }
       if (!remove_component(tmp, &baselen)) {
-        upb_gfree(tmp);
+        upb_gfree_sized(tmp, sym.size + baselen + 1);
         goto notfound;
       }
     }
-    upb_gfree(tmp);
+    upb_gfree_sized(tmp, sym.size + baselen + 1);
   }
 
   *type = _upb_DefType_Type(v);

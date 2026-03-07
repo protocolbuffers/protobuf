@@ -959,6 +959,6 @@ upb_MiniTable* _upb_MiniTable_Build(const char* data, size_t len,
   size_t size = 0;
   upb_MiniTable* ret = upb_MiniTable_BuildWithBuf(data, len, platform, arena,
                                                   &buf, &size, status);
-  upb_gfree(buf);
+  upb_gfree_sized(buf, size);
   return ret;
 }

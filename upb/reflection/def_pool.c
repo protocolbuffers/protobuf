@@ -57,8 +57,8 @@ struct upb_DefPool {
 void upb_DefPool_Free(upb_DefPool* s) {
   upb_GeneratedRegistry_Release(s->generated_extreg);
   upb_Arena_Free(s->arena);
-  upb_gfree(s->scratch_data);
-  upb_gfree(s);
+  upb_gfree_sized(s->scratch_data, s->scratch_size);
+  upb_gfree_sized(s, sizeof(upb_DefPool));
 }
 
 static const char serialized_defaults[] = UPB_INTERNAL_UPB_EDITION_DEFAULTS;
