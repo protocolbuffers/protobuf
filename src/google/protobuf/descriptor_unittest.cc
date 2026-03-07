@@ -8915,6 +8915,11 @@ class FeaturesTest : public FeaturesBaseTest {
     ASSERT_OK(default_spec);
     ASSERT_OK(pool_.SetFeatureSetDefaults(std::move(default_spec).value()));
   }
+
+  FieldDescriptor::CppRepeatedType GetCppRepeatedType(
+      const FieldDescriptor* field) {
+    return field->CalculateCppRepeatedType();
+  }
 };
 
 template <typename T>
@@ -9080,6 +9085,9 @@ TEST_F(FeaturesTest, Proto2Features) {
             FieldDescriptor::CppStringType::kString);
   EXPECT_EQ(message->FindFieldByName("cord")->cpp_string_type(),
             FieldDescriptor::CppStringType::kCord);
+
+  EXPECT_EQ(GetCppRepeatedType(message->FindFieldByName("rep")),
+            FieldDescriptor::CppRepeatedType::kRepeated);
 
   // Check round-trip consistency.
   FileDescriptorProto proto;
@@ -11672,6 +11680,70 @@ TEST_F(FeaturesTest, FieldCppStringType) {
   EXPECT_EQ(cord_ext->cpp_string_type(),
             FieldDescriptor::CppStringType::kString);
 
+}
+
+TEST_F(FeaturesTest, FieldCppRepeatedType) {
+  BuildDescriptorMessagesInTestPool();
+  const std::string file_contents = absl::Substitute(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2024
+        message_type {
+          name: "Foo"
+          field {
+            name: "repeated_message"
+            number: 1
+            label: LABEL_REPEATED
+            type: TYPE_MESSAGE
+            type_name: "Foo"
+          }
+          field {
+            name: "repeated_message_proxy"
+            number: 2
+            label: LABEL_REPEATED
+            type: TYPE_MESSAGE
+            type_name: "Foo"
+            options {
+              features {
+                [pb.cpp] { repeated_type: PROXY }
+              }
+            }
+          }
+          field {
+            name: "repeated_int32"
+            number: 3
+            label: LABEL_REPEATED
+            type: TYPE_INT32
+          }
+          field {
+            name: "repeated_int32_proxy"
+            number: 4
+            label: LABEL_REPEATED
+            type: TYPE_INT32
+            options {
+              features {
+                [pb.cpp] { repeated_type: PROXY }
+              }
+            }
+          }
+        }
+      )pb");
+  const FileDescriptor* file = BuildFile(file_contents);
+  const Descriptor* message = file->message_type(0);
+  const FieldDescriptor* repeated_message = message->field(0);
+  const FieldDescriptor* repeated_message_proxy = message->field(1);
+  const FieldDescriptor* repeated_int32 = message->field(2);
+  const FieldDescriptor* repeated_int32_proxy = message->field(3);
+
+  EXPECT_EQ(GetCppRepeatedType(repeated_message),
+            FieldDescriptor::CppRepeatedType::kRepeated);
+  EXPECT_EQ(GetCppRepeatedType(repeated_message_proxy),
+            FieldDescriptor::CppRepeatedType::kProxy);
+  EXPECT_EQ(GetCppRepeatedType(repeated_int32),
+            FieldDescriptor::CppRepeatedType::kRepeated);
+  EXPECT_EQ(GetCppRepeatedType(repeated_int32_proxy),
+            FieldDescriptor::CppRepeatedType::kProxy);
 }
 
 TEST_F(FeaturesTest, MergeFeatureValidationFailed) {
