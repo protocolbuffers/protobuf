@@ -38,6 +38,12 @@ typedef struct {
 zend_class_entry* message_ce;
 static zend_object_handlers message_object_handlers;
 
+// Custom handler to prevent crashes on serialization
+static int protobuf_serialize_deny(zval *object, unsigned char **buffer, size_t *buf_len, zend_serialize_data *data) {
+    zend_throw_exception_ex(NULL, 0, "Serialization of 'Google\\Protobuf\\Internal\\Message' is not allowed");
+    return FAILURE;
+}
+
 static void Message_SuppressDefaultProperties(zend_class_entry* class_type) {
   // We suppress all default properties, because all our properties are handled
   // by our read_property handler.
@@ -1405,6 +1411,8 @@ void Message_ModuleInit() {
 
   message_ce = zend_register_internal_class(&tmp_ce);
   message_ce->create_object = Message_create;
+  // Deny serialization of the Message object.
+  message_ce->serialize = protobuf_serialize_deny;
 
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
   h->dtor_obj = Message_dtor;
