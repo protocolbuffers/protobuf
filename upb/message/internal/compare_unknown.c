@@ -7,11 +7,14 @@
 
 #include "upb/message/internal/compare_unknown.h"
 
+#include <setjmp.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "upb/base/string_view.h"
 #include "upb/mem/alloc.h"
+#include "upb/mem/arena.h"
 #include "upb/message/message.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
@@ -326,7 +329,7 @@ static upb_UnknownCompareResult upb_UnknownField_Compare(
   }
 
   upb_Arena_Free(ctx->arena);
-  upb_gfree(ctx->tmp);
+  upb_gfree_sized(ctx->tmp, ctx->tmp_size * sizeof(*ctx->tmp));
   return ret;
 }
 

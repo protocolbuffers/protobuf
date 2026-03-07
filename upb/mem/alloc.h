@@ -93,6 +93,10 @@ UPB_INLINE void* upb_grealloc(void* ptr, size_t oldsize, size_t size) {
 
 UPB_INLINE void upb_gfree(void* ptr) { upb_free(&upb_alloc_global, ptr); }
 
+UPB_INLINE void upb_gfree_sized(void* ptr, size_t size) {
+  upb_free_sized(&upb_alloc_global, ptr, size);
+}
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

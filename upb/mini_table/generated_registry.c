@@ -91,7 +91,7 @@ static upb_GeneratedRegistryRef* _upb_GeneratedRegistry_New(void) {
 
 err:
   if (arena != NULL) upb_Arena_Free(arena);
-  if (ref != NULL) upb_gfree(ref);
+  if (ref != NULL) upb_gfree_sized(ref, sizeof(*ref));
   return NULL;
 }
 
@@ -140,7 +140,7 @@ const upb_GeneratedRegistryRef* upb_GeneratedRegistry_Load(void) {
         // thread. Clean up our unused one and loop to try again to get a
         // reference.
         upb_Arena_Free(new_ref->UPB_PRIVATE(arena));
-        upb_gfree(new_ref);
+        upb_gfree_sized(new_ref, sizeof(*new_ref));
       }
     }
     // If we are here, either we lost the CAS race, or the pointer was already
@@ -172,7 +172,7 @@ void upb_GeneratedRegistry_Release(const upb_GeneratedRegistryRef* r) {
       // This is the last reference and we won any potential race to store NULL,
       // so we need to clean up.
       upb_Arena_Free(ref->UPB_PRIVATE(arena));
-      upb_gfree(ref);
+      upb_gfree_sized(ref, sizeof(*ref));
     }
   }
 }
