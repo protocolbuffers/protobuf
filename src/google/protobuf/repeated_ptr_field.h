@@ -258,12 +258,42 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
-  void Add(Arena* arena, Value<TypeHandler>&& value) {
+  Value<TypeHandler>* Add(Arena* arena, Value<TypeHandler>&& value) {
     if (ClearedCount() > 0) {
-      *cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1))) =
-          std::move(value);
+      auto* result =
+          cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1)));
+      *result = std::move(value);
+      return result;
     } else {
-      AddInternal(arena, TypeHandler::GetNewWithMoveFunc(std::move(value)));
+      return cast<TypeHandler>(AddInternal(
+          arena, TypeHandler::GetNewWithMoveFunc(std::move(value))));
+    }
+  }
+
+  template <typename TypeHandler>
+  Value<TypeHandler>* Add(Arena* arena, const Value<TypeHandler>& value) {
+    if (ClearedCount() > 0) {
+      auto* result =
+          cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1)));
+      *result = value;
+      return result;
+    } else {
+      return cast<TypeHandler>(
+          AddInternal(arena, TypeHandler::GetNewWithCopyFunc(value)));
+    }
+  }
+
+  template <typename TypeHandler, typename... Args>
+  Value<TypeHandler>* Emplace(Arena* arena, Args&&... args) {
+    if (ClearedCount() > 0) {
+      auto* result =
+          cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1)));
+      *result = Value<TypeHandler>(std::forward<Args>(args)...);
+      return result;
+    } else {
+      return cast<TypeHandler>(AddInternal(
+          arena,
+          TypeHandler::GetNewWithEmplaceFunc(std::forward<Args>(args)...)));
     }
   }
 
@@ -1033,6 +1063,18 @@ class GenericTypeHandler {
       ptr = Arena::Create<Type>(arena, std::move(from));
     };
   }
+  static constexpr auto GetNewWithCopyFunc(
+      const Type& from ABSL_ATTRIBUTE_LIFETIME_BOUND) {
+    return [&from](Arena* arena, void*& ptr) {
+      ptr = Arena::Create<Type>(arena, from);
+    };
+  }
+  template <typename... Args>
+  static constexpr auto GetNewWithEmplaceFunc(Args&&... args) {
+    return [&args...](Arena* arena, void*& ptr) {
+      ptr = Arena::Create<Type>(arena, std::forward<Args>(args)...);
+    };
+  }
   static constexpr auto GetNewFromPrototypeFunc(
       const Type* prototype ABSL_ATTRIBUTE_LIFETIME_BOUND) {
     ABSL_DCHECK(prototype != nullptr);
@@ -1099,6 +1141,18 @@ class GenericTypeHandler<std::string> {
       Type&& from ABSL_ATTRIBUTE_LIFETIME_BOUND) {
     return [&from](Arena* arena, void*& ptr) {
       ptr = Arena::Create<Type>(arena, std::move(from));
+    };
+  }
+  static constexpr auto GetNewWithCopyFunc(
+      const Type& from ABSL_ATTRIBUTE_LIFETIME_BOUND) {
+    return [&from](Arena* arena, void*& ptr) {
+      ptr = Arena::Create<Type>(arena, from);
+    };
+  }
+  template <typename... Args>
+  static constexpr auto GetNewWithEmplaceFunc(Args&&... args) {
+    return [&args...](Arena* arena, void*& ptr) {
+      ptr = Arena::Create<Type>(arena, std::forward<Args>(args)...);
     };
   }
   static constexpr auto GetNewFromPrototypeFunc(const Type* /*prototype*/) {
@@ -1536,10 +1590,17 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
   pointer AddWithArena(Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
-  void AddWithArena(Arena* arena, Element&& value);
+  pointer AddWithArena(Arena* arena, Element&& value);
+
+  // Private-only. Copies `value` into a newly allocated element.
+  pointer AddWithArena(Arena* arena, const Element& value);
 
   template <typename Iter>
   void AddWithArena(Arena* arena, Iter begin, Iter end);
+
+  // Private-only. Constructs an element in-place from `args`.
+  template <typename... Args>
+  pointer EmplaceWithArena(Arena* arena, Args&&... args);
 
   void AddAllocatedWithArena(Arena* arena, Element* value);
 
@@ -1727,9 +1788,23 @@ PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::InternalAddWithArena(
 }
 
 template <typename Element>
-PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::AddWithArena(
-    Arena* arena, Element&& value) {
-  RepeatedPtrFieldBase::Add<TypeHandler>(arena, std::move(value));
+PROTOBUF_NDEBUG_INLINE typename RepeatedPtrField<Element>::pointer
+RepeatedPtrField<Element>::AddWithArena(Arena* arena, Element&& value) {
+  return RepeatedPtrFieldBase::Add<TypeHandler>(arena, std::move(value));
+}
+
+template <typename Element>
+PROTOBUF_NDEBUG_INLINE typename RepeatedPtrField<Element>::pointer
+RepeatedPtrField<Element>::AddWithArena(Arena* arena, const Element& value) {
+  return RepeatedPtrFieldBase::Add<TypeHandler>(arena, value);
+}
+
+template <typename Element>
+template <typename... Args>
+PROTOBUF_NDEBUG_INLINE typename RepeatedPtrField<Element>::pointer
+RepeatedPtrField<Element>::EmplaceWithArena(Arena* arena, Args&&... args) {
+  return RepeatedPtrFieldBase::Emplace<TypeHandler>(
+      arena, std::forward<Args>(args)...);
 }
 
 template <typename Element>
@@ -2172,11 +2247,111 @@ class ABSL_ATTRIBUTE_VIEW RepeatedPtrIterator {
   friend class RepeatedPtrIterator;
 
   template <typename E>
-  friend RepeatedPtrOverPtrsIterator<E> ConvertToPtrIterator(
-      RepeatedPtrIterator<E> it);
+  friend auto ConvertToPtrIterator(RepeatedPtrIterator<E> it);
 
   // The internal iterator.
   void* const* it_;
+};
+
+template <>
+class ABSL_ATTRIBUTE_VIEW RepeatedPtrIterator<absl::string_view> {
+  struct ArrowProxy {
+    absl::string_view view;
+    const absl::string_view* operator->() const { return &view; }
+  };
+
+ public:
+  using iterator = RepeatedPtrIterator<absl::string_view>;
+  using iterator_category = std::random_access_iterator_tag;
+  using value_type = absl::string_view;
+  using difference_type = std::ptrdiff_t;
+  using reference = absl::string_view;
+
+  RepeatedPtrIterator() : it_(nullptr) {}
+  explicit RepeatedPtrIterator(const std::string* const* it) : it_(it) {}
+
+  explicit RepeatedPtrIterator(const RepeatedPtrIterator<std::string>& other)
+      : it_(reinterpret_cast<const std::string* const*>(other.it_)) {}
+  explicit RepeatedPtrIterator(
+      const RepeatedPtrIterator<const std::string>& other)
+      : it_(reinterpret_cast<const std::string* const*>(other.it_)) {}
+
+  // dereferenceable
+  [[nodiscard]] reference operator*() const { return **it_; }
+  [[nodiscard]] ArrowProxy operator->() const { return ArrowProxy{**it_}; }
+
+  // {inc,dec}rementable
+  iterator& operator++() {
+    ++it_;
+    return *this;
+  }
+  iterator operator++(int) { return iterator(it_++); }
+  iterator& operator--() {
+    --it_;
+    return *this;
+  }
+  iterator operator--(int) { return iterator(it_--); }
+
+  // equality_comparable
+  friend bool operator==(const iterator& x, const iterator& y) {
+    return x.it_ == y.it_;
+  }
+  friend bool operator!=(const iterator& x, const iterator& y) {
+    return x.it_ != y.it_;
+  }
+
+  // less_than_comparable
+  friend bool operator<(const iterator& x, const iterator& y) {
+    return x.it_ < y.it_;
+  }
+  friend bool operator<=(const iterator& x, const iterator& y) {
+    return x.it_ <= y.it_;
+  }
+  friend bool operator>(const iterator& x, const iterator& y) {
+    return x.it_ > y.it_;
+  }
+  friend bool operator>=(const iterator& x, const iterator& y) {
+    return x.it_ >= y.it_;
+  }
+
+  // addable, subtractable
+  iterator& operator+=(difference_type d) {
+    it_ += d;
+    return *this;
+  }
+  friend iterator operator+(iterator it, const difference_type d) {
+    it += d;
+    return it;
+  }
+  friend iterator operator+(const difference_type d, iterator it) {
+    it += d;
+    return it;
+  }
+  iterator& operator-=(difference_type d) {
+    it_ -= d;
+    return *this;
+  }
+  friend iterator operator-(iterator it, difference_type d) {
+    it -= d;
+    return it;
+  }
+
+  // indexable
+  [[nodiscard]] reference operator[](difference_type d) const {
+    return *(*this + d);
+  }
+
+  // random access iterator
+  friend difference_type operator-(iterator it1, iterator it2) {
+    return it1.it_ - it2.it_;
+  }
+
+ private:
+  template <typename E>
+  friend auto ConvertToPtrIterator(RepeatedPtrIterator<E> it);
+
+  // The internal iterator.
+  const std::string* const* it_;
 };
 
 template <typename Traits, typename = void>
@@ -2311,9 +2486,14 @@ class RepeatedPtrOverPtrsIterator {
 };
 
 template <typename Element>
-RepeatedPtrOverPtrsIterator<Element> ConvertToPtrIterator(
-    RepeatedPtrIterator<Element> it) {
+inline auto ConvertToPtrIterator(RepeatedPtrIterator<Element> it) {
   return RepeatedPtrOverPtrsIterator<Element>(const_cast<void**>(it.it_));
+}
+
+template <>
+inline auto ConvertToPtrIterator(RepeatedPtrIterator<absl::string_view> it) {
+  return RepeatedPtrOverPtrsIterator<std::string>(
+      reinterpret_cast<void**>(const_cast<std::string**>(it.it_)));
 }
 
 }  // namespace internal
