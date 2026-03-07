@@ -109,7 +109,7 @@ bool CanSkipEditionCheck(absl::string_view filename) {
          absl::StartsWith(filename, "com/google/protobuf/") ||
          absl::StartsWith(filename, "conformance/test_protos/") ||
          // TODO: Remove this once internal proto rule is resolved.
-         absl::StartsWith(filename, "test_messages_edition_unstable");
+        //  absl::StartsWith(filename, "test_messages_edition_unstable");
 }
 
 }  // namespace compiler
