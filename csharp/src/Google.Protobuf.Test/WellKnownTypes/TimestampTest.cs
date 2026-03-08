@@ -46,7 +46,9 @@ namespace Google.Protobuf.WellKnownTypes
         public void ToDateTime_OutOfRange(long seconds, int nanoseconds)
         {
             var value = new Timestamp { Seconds = seconds, Nanos = nanoseconds };
-            Assert.Throws<InvalidOperationException>(() => value.ToDateTime());
+            var ex = Assert.Throws<InvalidOperationException>(() => value.ToDateTime());
+            Assert.That(ex.Message, Does.Contain(seconds.ToString()));
+            Assert.That(ex.Message, Does.Contain(nanoseconds.ToString()));
         }
 
         // 1ns larger or smaller than the above values
