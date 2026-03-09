@@ -308,7 +308,14 @@ UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongP(void* addr,
 
 #define upb_Atomic_Add(addr, val, order) (*addr += val)
 #define upb_Atomic_Sub(addr, val, order) (*addr -= val)
+#endif
 
+#if UPB_HAS_BUILTIN(__builtin_arm_yield)
+#define upb_Atomic_SpinWait() __builtin_arm_yield()
+#elif UPB_HAS_BUILTIN(__builtin_ia32_pause)
+#define upb_Atomic_SpinWait() __builtin_ia32_pause()
+#else
+#define upb_Atomic_SpinWait()
 #endif
 
 #include "upb/port/undef.inc"
