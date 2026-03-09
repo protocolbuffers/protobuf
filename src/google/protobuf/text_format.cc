@@ -28,6 +28,7 @@
 
 #include "absl/base/macros.h"
 #include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/ascii.h"
@@ -183,6 +184,16 @@ void TextFormat::ParseInfoTree::RecordLocation(
   locations_[field].push_back(range);
 }
 
+void TextFormat::ParseInfoTree::RecordNameLocation(
+    const FieldDescriptor* field, TextFormat::ParseLocationRange range) {
+  name_locations_[field].push_back(range);
+}
+
+void TextFormat::ParseInfoTree::RecordValueLocation(
+    const FieldDescriptor* field, TextFormat::ParseLocationRange range) {
+  value_locations_[field].push_back(range);
+}
+
 TextFormat::ParseInfoTree* TextFormat::ParseInfoTree::CreateNested(
     const FieldDescriptor* field) {
   // Owned by us in the map.
@@ -197,24 +208,42 @@ void CheckFieldIndex(const FieldDescriptor* field, int index) {
   }
 
   if (field->is_repeated() && index == -1) {
-    ABSL_DLOG(FATAL) << "Index must be in range of repeated field values. "
-                     << "Field: " << field->name();
+    ABSL_DLOG(FATAL)
+        << "Index must be in range of repeated field values. But got -1. "
+        << "Field: " << field->name();
   } else if (!field->is_repeated() && index != -1) {
-    ABSL_DLOG(FATAL) << "Index must be -1 for singular fields."
-                     << "Field: " << field->name();
+    ABSL_DLOG(FATAL) << "Index must be -1 for singular fields. But got "
+                     << index << ". Field: " << field->name();
   }
 }
 
 TextFormat::ParseLocationRange TextFormat::ParseInfoTree::GetLocationRange(
     const FieldDescriptor* field, int index) const {
+  return GetLocationRangeFromMap(field, index, locations_);
+}
+
+TextFormat::ParseLocationRange TextFormat::ParseInfoTree::GetNameLocationRange(
+    const FieldDescriptor* field, int index) const {
+  return GetLocationRangeFromMap(field, index, name_locations_);
+}
+
+TextFormat::ParseLocationRange TextFormat::ParseInfoTree::GetValueLocationRange(
+    const FieldDescriptor* field, int index) const {
+  return GetLocationRangeFromMap(field, index, value_locations_);
+}
+
+TextFormat::ParseLocationRange
+TextFormat::ParseInfoTree::GetLocationRangeFromMap(
+    const FieldDescriptor* field, int index,
+    const absl::flat_hash_map<const FieldDescriptor*,
+                              std::vector<ParseLocationRange>>& map) const {
   CheckFieldIndex(field, index);
   if (index == -1) {
     index = 0;
   }
 
-  auto it = locations_.find(field);
-  if (it == locations_.end() ||
-      index >= static_cast<int64_t>(it->second.size())) {
+  auto it = map.find(field);
+  if (it == map.end() || index >= static_cast<int64_t>(it->second.size())) {
     return TextFormat::ParseLocationRange();
   }
 
@@ -481,6 +510,25 @@ class TextFormat::Parser::ParserImpl {
       return result;
     };
 
+    auto record_value_location = [&](int v_start_line, int v_start_column) {
+      if (parse_info_tree_ != nullptr) {
+        int v_end_line = tokenizer_.previous().line;
+        int v_end_column = tokenizer_.previous().end_column;
+        RecordValueLocation(
+            parse_info_tree_, field,
+            ParseLocationRange(ParseLocation(v_start_line, v_start_column),
+                               ParseLocation(v_end_line, v_end_column)));
+      }
+    };
+
+    auto record_name_location = [&](const FieldDescriptor* f,
+                                    const ParseLocationRange& n_range) {
+      if (parse_info_tree_ != nullptr && f != nullptr) {
+        RecordNameLocation(parse_info_tree_, f, n_range);
+      }
+    };
+
+    // TODO: b/491167567 - record name and value locations of Any fields.
     const FieldDescriptor* any_type_url_field;
     const FieldDescriptor* any_value_field;
     if (internal::GetAnyFieldDescriptors(*message, &any_type_url_field,
@@ -530,7 +578,13 @@ class TextFormat::Parser::ParserImpl {
     if (LookingAt("[")) {
       // Extension.
       std::string url_prefix;
+      int n_start_line = tokenizer_.current().line;
+      int n_start_column = tokenizer_.current().column;
       DO(ConsumeAnyTypeUrlOrFullTypeName(field_name, url_prefix));
+      ParseLocationRange n_range(
+          ParseLocation(n_start_line, n_start_column),
+          ParseLocation(tokenizer_.previous().line,
+                        tokenizer_.previous().end_column));
       if (!url_prefix.empty()) {
         ReportError("Extension name contains \"/\"");
         return false;
@@ -539,6 +593,7 @@ class TextFormat::Parser::ParserImpl {
 
       field = finder_ ? finder_->FindExtension(message, field_name)
                       : DefaultFinderFindExtension(message, field_name);
+      record_name_location(field, n_range);
 
       if (field == nullptr) {
         if (!allow_unknown_field_ && !allow_unknown_extension_) {
@@ -555,7 +610,13 @@ class TextFormat::Parser::ParserImpl {
         }
       }
     } else {
+      int n_start_line = tokenizer_.current().line;
+      int n_start_column = tokenizer_.current().column;
       DO(ConsumeIdentifierBeforeWhitespace(&field_name));
+      ParseLocationRange n_range(
+          ParseLocation(n_start_line, n_start_column),
+          ParseLocation(tokenizer_.previous().line,
+                        tokenizer_.previous().end_column));
       TryConsumeWhitespace();
 
       int32_t field_number;
@@ -608,6 +669,8 @@ class TextFormat::Parser::ParserImpl {
                                      "\" has no field named \"", field_name,
                                      "\"."));
         }
+      } else {
+        record_name_location(field, n_range);
       }
     }
 
@@ -690,12 +753,15 @@ class TextFormat::Parser::ParserImpl {
       if (!TryConsume("]")) {
         // "foo: []" is treated as empty.
         while (true) {
+          int v_start_line = tokenizer_.current().line;
+          int v_start_column = tokenizer_.current().column;
           if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
             // Perform special handling for embedded message types.
             DO(ConsumeFieldMessage(message, reflection, field));
           } else {
             DO(ConsumeFieldValue(message, reflection, field));
           }
+          record_value_location(v_start_line, v_start_column);
           if (TryConsume("]")) {
             break;
           }
@@ -703,9 +769,15 @@ class TextFormat::Parser::ParserImpl {
         }
       }
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      int v_start_line = tokenizer_.current().line;
+      int v_start_column = tokenizer_.current().column;
       DO(ConsumeFieldMessage(message, reflection, field));
+      record_value_location(v_start_line, v_start_column);
     } else {
+      int v_start_line = tokenizer_.current().line;
+      int v_start_column = tokenizer_.current().column;
       DO(ConsumeFieldValue(message, reflection, field));
+      record_value_location(v_start_line, v_start_column);
     }
 
     return skip_parsing(true);
