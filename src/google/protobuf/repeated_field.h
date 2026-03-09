@@ -553,6 +553,11 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   template <typename Iter>
   void AddWithArena(Arena* arena, Iter begin, Iter end);
 
+  // Private-only API for in-place construction of elements in the repeated
+  // field.
+  template <typename... Args>
+  pointer EmplaceWithArena(Arena* arena, Args&&... args);
+
   void SwapFallbackWithTemp(Arena* arena, RepeatedField& other,
                             Arena* other_arena, RepeatedField<Element>& temp);
 
@@ -1127,6 +1132,14 @@ inline void RepeatedField<Element>::AddWithArena(Arena* arena, Iter begin,
   } else {
     AddInputIterator(arena, begin, end);
   }
+}
+
+template <typename Element>
+template <typename... Args>
+typename RepeatedField<Element>::pointer
+RepeatedField<Element>::EmplaceWithArena(Arena* arena, Args&&... args) {
+  return ::new (AddUninitializedWithArena(arena))
+      Element(std::forward<Args>(args)...);
 }
 
 template <typename Element>

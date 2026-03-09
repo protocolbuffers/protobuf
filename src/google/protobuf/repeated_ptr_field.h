@@ -280,6 +280,21 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     }
   }
 
+  template <typename TypeHandler, typename... Args>
+  Value<TypeHandler>* Emplace(Arena* arena, Args&&... args) {
+    if (ClearedCount() > 0) {
+      auto* result =
+          cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1)));
+      // NOLINTNEXTLINE(google3-readability-redundant-string-conversions)
+      *result = Value<TypeHandler>(std::forward<Args>(args)...);
+      return result;
+    } else {
+      return cast<TypeHandler>(AddInternal(
+          arena,
+          TypeHandler::GetNewWithEmplaceFunc(std::forward<Args>(args)...)));
+    }
+  }
+
   // Must be called from destructor.
   //
   // Pre-condition: NeedsDestroy() returns true.
@@ -1052,6 +1067,12 @@ class GenericTypeHandler {
       ptr = Arena::Create<Type>(arena, from);
     };
   }
+  template <typename... Args>
+  static constexpr auto GetNewWithEmplaceFunc(Args&&... args) {
+    return [&args...](Arena* arena, void*& ptr) {
+      ptr = Arena::Create<Type>(arena, std::forward<Args>(args)...);
+    };
+  }
   static constexpr auto GetNewFromPrototypeFunc(
       const Type* prototype ABSL_ATTRIBUTE_LIFETIME_BOUND) {
     ABSL_DCHECK(prototype != nullptr);
@@ -1124,6 +1145,12 @@ class GenericTypeHandler<std::string> {
       const Type& from ABSL_ATTRIBUTE_LIFETIME_BOUND) {
     return [&from](Arena* arena, void*& ptr) {
       ptr = Arena::Create<Type>(arena, from);
+    };
+  }
+  template <typename... Args>
+  static constexpr auto GetNewWithEmplaceFunc(Args&&... args) {
+    return [&args...](Arena* arena, void*& ptr) {
+      ptr = Arena::Create<Type>(arena, std::forward<Args>(args)...);
     };
   }
   static constexpr auto GetNewFromPrototypeFunc(const Type* /*prototype*/) {
@@ -1567,6 +1594,10 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   template <typename Iter>
   void AddWithArena(Arena* arena, Iter begin, Iter end);
 
+  // Private-only. Constructs an element in-place from `args`.
+  template <typename... Args>
+  pointer EmplaceWithArena(Arena* arena, Args&&... args);
+
   void AddAllocatedWithArena(Arena* arena, Element* value);
 
   PROTOBUF_FUTURE_ADD_NODISCARD Element* ReleaseLastWithArena(Arena* arena);
@@ -1762,6 +1793,14 @@ template <typename Element>
 PROTOBUF_NDEBUG_INLINE typename RepeatedPtrField<Element>::pointer
 RepeatedPtrField<Element>::AddWithArena(Arena* arena, const Element& value) {
   return RepeatedPtrFieldBase::Add<TypeHandler>(arena, value);
+}
+
+template <typename Element>
+template <typename... Args>
+PROTOBUF_NDEBUG_INLINE typename RepeatedPtrField<Element>::pointer
+RepeatedPtrField<Element>::EmplaceWithArena(Arena* arena, Args&&... args) {
+  return RepeatedPtrFieldBase::Emplace<TypeHandler>(
+      arena, std::forward<Args>(args)...);
 }
 
 template <typename Element>
@@ -2115,7 +2154,7 @@ class ABSL_ATTRIBUTE_VIEW RepeatedPtrIterator {
   using reference = Element&;
 
   RepeatedPtrIterator() : it_(nullptr) {}
-  explicit RepeatedPtrIterator(void* const* it) : it_(it) {}
+  explicit RepeatedPtrIterator(Element* const* it) : it_(it) {}
 
   // Allows "upcasting" from RepeatedPtrIterator<T**> to
   // RepeatedPtrIterator<const T*const*>.
@@ -2123,12 +2162,10 @@ class ABSL_ATTRIBUTE_VIEW RepeatedPtrIterator {
             typename std::enable_if<std::is_convertible<
                 OtherElement*, pointer>::value>::type* = nullptr>
   RepeatedPtrIterator(const RepeatedPtrIterator<OtherElement>& other)
-      : it_(other.it_) {}
+      : it_(reinterpret_cast<Element* const*>(other.it_)) {}
 
   // dereferenceable
-  PROTOBUF_FUTURE_ADD_NODISCARD reference operator*() const {
-    return *reinterpret_cast<Element*>(*it_);
-  }
+  PROTOBUF_FUTURE_ADD_NODISCARD reference operator*() const { return **it_; }
   PROTOBUF_FUTURE_ADD_NODISCARD pointer operator->() const {
     return &(operator*());
   }
@@ -2208,7 +2245,7 @@ class ABSL_ATTRIBUTE_VIEW RepeatedPtrIterator {
       RepeatedPtrIterator<E> it);
 
   // The internal iterator.
-  void* const* it_;
+  Element* const* it_;
 };
 
 template <typename Traits, typename = void>
@@ -2234,10 +2271,8 @@ class RepeatedPtrOverPtrsIterator {
  private:
   using traits = std::iterator_traits<Element**>;
 
-  using ElementPtr =
-      std::conditional_t<std::is_const_v<Element>, Element* const, Element*>;
-  using VoidPtr =
-      std::conditional_t<std::is_const_v<Element>, const void* const, void*>;
+  using ElementPtr = std::conditional_t<std::is_const_v<Element>,
+                                        const Element* const, Element*>;
 
  public:
   using value_type = typename traits::value_type;
@@ -2250,7 +2285,7 @@ class RepeatedPtrOverPtrsIterator {
   using iterator = RepeatedPtrOverPtrsIterator<Element>;
 
   RepeatedPtrOverPtrsIterator() : it_(nullptr) {}
-  explicit RepeatedPtrOverPtrsIterator(VoidPtr* it) : it_(it) {}
+  explicit RepeatedPtrOverPtrsIterator(ElementPtr* it) : it_(it) {}
 
   // Allow "upcasting" from RepeatedPtrOverPtrsIterator<T> to
   // RepeatedPtrOverPtrsIterator<const T>.
@@ -2261,12 +2296,8 @@ class RepeatedPtrOverPtrsIterator {
       : it_(other.it_) {}
 
   // dereferenceable
-  PROTOBUF_FUTURE_ADD_NODISCARD reference operator*() const {
-    return *reinterpret_cast<pointer>(it_);
-  }
-  PROTOBUF_FUTURE_ADD_NODISCARD pointer operator->() const {
-    return reinterpret_cast<pointer>(it_);
-  }
+  PROTOBUF_FUTURE_ADD_NODISCARD reference operator*() const { return *it_; }
+  PROTOBUF_FUTURE_ADD_NODISCARD pointer operator->() const { return it_; }
 
   // {inc,dec}rementable
   iterator& operator++() {
@@ -2339,13 +2370,13 @@ class RepeatedPtrOverPtrsIterator {
   friend class RepeatedPtrOverPtrsIterator;
 
   // The internal iterator.
-  VoidPtr* it_;
+  ElementPtr* it_;
 };
 
 template <typename Element>
 RepeatedPtrOverPtrsIterator<Element> ConvertToPtrIterator(
     RepeatedPtrIterator<Element> it) {
-  return RepeatedPtrOverPtrsIterator<Element>(const_cast<void**>(it.it_));
+  return RepeatedPtrOverPtrsIterator<Element>(const_cast<Element**>(it.it_));
 }
 
 }  // namespace internal
@@ -2353,12 +2384,12 @@ RepeatedPtrOverPtrsIterator<Element> ConvertToPtrIterator(
 template <typename Element>
 inline typename RepeatedPtrField<Element>::iterator
 RepeatedPtrField<Element>::begin() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  return iterator(raw_data());
+  return iterator(reinterpret_cast<Element* const*>(raw_data()));
 }
 template <typename Element>
 inline typename RepeatedPtrField<Element>::const_iterator
 RepeatedPtrField<Element>::begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  return iterator(raw_data());
+  return iterator(reinterpret_cast<Element* const*>(raw_data()));
 }
 template <typename Element>
 inline typename RepeatedPtrField<Element>::const_iterator
@@ -2368,12 +2399,12 @@ RepeatedPtrField<Element>::cbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
 template <typename Element>
 inline typename RepeatedPtrField<Element>::iterator
 RepeatedPtrField<Element>::end() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  return iterator(raw_data() + size());
+  return iterator(reinterpret_cast<Element* const*>(raw_data()) + size());
 }
 template <typename Element>
 inline typename RepeatedPtrField<Element>::const_iterator
 RepeatedPtrField<Element>::end() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  return iterator(raw_data() + size());
+  return iterator(reinterpret_cast<Element* const*>(raw_data()) + size());
 }
 template <typename Element>
 inline typename RepeatedPtrField<Element>::const_iterator
@@ -2384,23 +2415,25 @@ RepeatedPtrField<Element>::cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
 template <typename Element>
 inline typename RepeatedPtrField<Element>::pointer_iterator
 RepeatedPtrField<Element>::pointer_begin() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  return pointer_iterator(raw_mutable_data());
+  return pointer_iterator(reinterpret_cast<Element**>(raw_mutable_data()));
 }
 template <typename Element>
 inline typename RepeatedPtrField<Element>::const_pointer_iterator
 RepeatedPtrField<Element>::pointer_begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  return const_pointer_iterator(const_cast<const void* const*>(raw_data()));
+  return const_pointer_iterator(
+      reinterpret_cast<const Element* const*>(raw_data()));
 }
 template <typename Element>
 inline typename RepeatedPtrField<Element>::pointer_iterator
 RepeatedPtrField<Element>::pointer_end() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  return pointer_iterator(raw_mutable_data() + size());
+  return pointer_iterator(reinterpret_cast<Element**>(raw_mutable_data()) +
+                          size());
 }
 template <typename Element>
 inline typename RepeatedPtrField<Element>::const_pointer_iterator
 RepeatedPtrField<Element>::pointer_end() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return const_pointer_iterator(
-      const_cast<const void* const*>(raw_data() + size()));
+      reinterpret_cast<const Element* const*>(raw_data()) + size());
 }
 
 // Like C++20's std::erase_if, for RepeatedPtrField
