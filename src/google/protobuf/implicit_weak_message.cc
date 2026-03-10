@@ -10,6 +10,7 @@
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -39,12 +40,12 @@ void ImplicitWeakMessage::MergeImpl(MessageLite& self,
   }
 }
 
-struct ImplicitWeakMessageDefaultType {
+struct ImplicitWeakMessageDefaultType : MessageGlobalsBase {
   constexpr ImplicitWeakMessageDefaultType()
-      : instance(ConstantInitialized{}) {}
+      : _default(ConstantInitialized{}) {}
   ~ImplicitWeakMessageDefaultType() {}
   union {
-    ImplicitWeakMessage instance;
+    ImplicitWeakMessage _default;  // NOLINT
   };
 };
 
@@ -52,10 +53,10 @@ constexpr ImplicitWeakMessage::ImplicitWeakMessage(ConstantInitialized)
     : MessageLite(class_data_.base()), data_(nullptr) {}
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT ImplicitWeakMessageDefaultType
-    implicit_weak_message_default_instance;
+    implicit_weak_message_globals;
 
 const ImplicitWeakMessage& ImplicitWeakMessage::default_instance() {
-  return implicit_weak_message_default_instance.instance;
+  return implicit_weak_message_globals._default;
 }
 
 const TcParseTable<0> ImplicitWeakMessage::table_ =
@@ -64,7 +65,7 @@ const TcParseTable<0> ImplicitWeakMessage::table_ =
 
 constexpr ClassDataLite ImplicitWeakMessage::class_data_ = {
     {
-        &implicit_weak_message_default_instance.instance,
+        &implicit_weak_message_globals._default,
         &table_.header,
         nullptr,  // is_initialized (always true)
         MergeImpl,

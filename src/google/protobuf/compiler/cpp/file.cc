@@ -630,7 +630,7 @@ void FileGenerator::GenerateInternalForwardDeclarations(
       if (options_.lite_implicit_weak_fields) {
         p->Emit({{"ptr", MsgGlobalsInstancePtr(instance, options_)}}, R"cc(
           PROTOBUF_CONSTINIT __attribute__((weak)) const void* $ptr$ =
-              &::_pbi::implicit_weak_message_default_instance;
+              &::_pbi::implicit_weak_message_globals;
         )cc");
       } else {
         p->Emit({{"type", MsgGlobalsInstanceType(instance, options_)},
