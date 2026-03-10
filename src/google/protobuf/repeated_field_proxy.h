@@ -353,6 +353,10 @@ class RepeatedFieldProxyWithEmplaceBack<
  public:
   // In-place constructs an element at the end of the repeated field, returning
   // a string_view of the newly constructed element.
+  absl::string_view emplace_back() const { return ToProxyType(this).Emplace(); }
+
+  // In-place constructs an element at the end of the repeated field, returning
+  // a string_view of the newly constructed element.
   absl::string_view emplace_back(absl::string_view value) const {
     return ToProxyType(this).Emplace(value);
   }

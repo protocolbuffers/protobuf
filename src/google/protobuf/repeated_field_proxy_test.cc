@@ -560,11 +560,14 @@ template <typename StringType>
 void TestEmplaceBackVanillaString(
     const TestOnlyRepeatedFieldContainer<StringType>& field,
     google::protobuf::RepeatedFieldProxy<StringType> proxy) {
+  // Test that `emplace_back` with no arguments inserts an empty string.
+  EXPECT_EQ(proxy.emplace_back(), "");
+
   // Test that `emplace_back` returns a reference to the inserted element.
   EXPECT_EQ(proxy.emplace_back("1"), "1");
 
   // Test reflexive insertions.
-  proxy.emplace_back(proxy[0]);
+  proxy.emplace_back(proxy[1]);
 
   proxy.emplace_back(StrAs<std::string>("2"));
   proxy.emplace_back(StrAs<absl::string_view>("3"));
@@ -574,12 +577,12 @@ void TestEmplaceBackVanillaString(
   auto moved_string = std::string(kLongString);
   const char* moved_string_ptr = moved_string.data();
   proxy.emplace_back(std::move(moved_string));
-  EXPECT_EQ(proxy[5].data(), moved_string_ptr);
+  EXPECT_EQ(proxy[6].data(), moved_string_ptr);
 
   auto copied_string = std::string(kLongString);
   const char* copied_string_ptr = copied_string.data();
   proxy.emplace_back(copied_string);
-  EXPECT_NE(proxy[6].data(), copied_string_ptr);
+  EXPECT_NE(proxy[7].data(), copied_string_ptr);
   EXPECT_EQ(copied_string, kLongString);
 
   if constexpr (std::is_same_v<StringType, std::string>) {
@@ -599,12 +602,12 @@ void TestEmplaceBackVanillaString(
   }
 
   if constexpr (std::is_same_v<StringType, std::string>) {
-    EXPECT_THAT(*field,
-                ElementsAre("1", "1", "2", "3", "4", kLongString, kLongString,
-                            "aaaaaaaaaa", "5", "60", "3456", "123"));
+    EXPECT_THAT(*field, ElementsAre("", "1", "1", "2", "3", "4", kLongString,
+                                    kLongString, "aaaaaaaaaa", "5", "60",
+                                    "3456", "123"));
   } else {
-    EXPECT_THAT(*field,
-                ElementsAre("1", "1", "2", "3", "4", kLongString, kLongString));
+    EXPECT_THAT(*field, ElementsAre("", "1", "1", "2", "3", "4", kLongString,
+                                    kLongString));
   }
 }
 
