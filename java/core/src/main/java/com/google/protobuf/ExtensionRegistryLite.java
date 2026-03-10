@@ -53,6 +53,35 @@ public class ExtensionRegistryLite {
   // applications. Need to support this feature on smaller granularity.
   private static volatile boolean eagerlyParseMessageSets = false;
 
+  enum LazyExtensionFieldsExperimentMode {
+    EAGER,
+    // Throw exceptions on malformed data, but will defer parsing until first access.
+    VERIFIED_LAZY,
+    // Caution: This mode is unsafe as it postpone parsing errors such as required fields missing
+    // until first access.
+    UNVERIFIED_LAZY;
+  }
+
+  private static volatile LazyExtensionFieldsExperimentMode lazyExtensionFieldsExperimentMode =
+      LazyExtensionFieldsExperimentMode.UNVERIFIED_LAZY;
+
+  static void setLazyExtensionFieldsExperimentMode(LazyExtensionFieldsExperimentMode mode) {
+    lazyExtensionFieldsExperimentMode = mode;
+  }
+
+  static LazyExtensionFieldsExperimentMode getLazyExtensionFieldsExperimentMode() {
+    return lazyExtensionFieldsExperimentMode;
+  }
+
+  static boolean lazyExtensionFieldEnabled() {
+    return !lazyExtensionFieldsExperimentMode.equals(LazyExtensionFieldsExperimentMode.EAGER);
+  }
+
+  static boolean lazyExtensionFieldValidationEnabled() {
+    return lazyExtensionFieldsExperimentMode.equals(
+        LazyExtensionFieldsExperimentMode.VERIFIED_LAZY);
+  }
+
   // Visible for testing.
   static final String EXTENSION_CLASS_NAME = "com.google.protobuf.Extension";
 

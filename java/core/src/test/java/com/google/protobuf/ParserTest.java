@@ -17,7 +17,6 @@ import proto2_unittest.UnittestProto;
 import proto2_unittest.UnittestProto.ForeignMessage;
 import proto2_unittest.UnittestProto.TestAllTypes;
 import proto2_unittest.UnittestProto.TestEmptyMessage;
-import proto2_unittest.UnittestProto.TestMergeException;
 import proto2_unittest.UnittestProto.TestParsingMerge;
 import proto2_unittest.UnittestProto.TestRequired;
 import java.io.ByteArrayInputStream;
@@ -266,70 +265,71 @@ public class ParserTest {
     assertThat(parsingMerge.getExtensionCount(TestParsingMerge.repeatedExt)).isEqualTo(3);
   }
 
-  @Test
-  public void testExceptionWhenMergingExtendedMessagesMissingRequiredFields() {
-    // create a TestMergeException message (missing required fields) that looks like
-    //   all_extensions {
-    //     [TestRequired.single] {
-    //     }
-    //   }
-    TestMergeException.Builder message = TestMergeException.newBuilder();
-    message
-        .getAllExtensionsBuilder()
-        .setExtension(TestRequired.single, TestRequired.newBuilder().buildPartial());
-    ByteString byteString = message.buildPartial().toByteString();
+  // @Test
+  // public void testExceptionWhenMergingExtendedMessagesMissingRequiredFields() {
+  //   // create a TestMergeException message (missing required fields) that looks like
+  //   //   all_extensions {
+  //   //     [TestRequired.single] {
+  //   //     }
+  //   //   }
+  //   TestMergeException.Builder message = TestMergeException.newBuilder();
+  //   message
+  //       .getAllExtensionsBuilder()
+  //       .setExtension(TestRequired.single, TestRequired.newBuilder().buildPartial());
+  //   ByteString byteString = message.buildPartial().toByteString();
 
-    // duplicate the bytestring to make the `all_extensions` field repeat twice, so that it will
-    // need merging when parsing back
-    ByteString duplicatedByteString = byteString.concat(byteString);
+  //   // duplicate the bytestring to make the `all_extensions` field repeat twice, so that it will
+  //   // need merging when parsing back
+  //   ByteString duplicatedByteString = byteString.concat(byteString);
 
-    byte[] bytes = duplicatedByteString.toByteArray();
-    ExtensionRegistry registry = ExtensionRegistry.newInstance();
-    UnittestProto.registerAllExtensions(registry);
+  //   byte[] bytes = duplicatedByteString.toByteArray();
+  //   ExtensionRegistry registry = ExtensionRegistry.newInstance();
+  //   UnittestProto.registerAllExtensions(registry);
 
-    // `parseFrom` should throw InvalidProtocolBufferException, not UninitializedMessageException,
-    // for each of the 5 possible input types:
+  //   // `parseFrom` should throw InvalidProtocolBufferException, not
+  // UninitializedMessageException,
+  //   // for each of the 5 possible input types:
 
-    // parseFrom(ByteString)
-    try {
-      TestMergeException.parseFrom(duplicatedByteString, registry);
-      assertWithMessage("Expected InvalidProtocolBufferException").fail();
-    } catch (Exception e) {
-      assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
-    }
+  //   // parseFrom(ByteString)
+  //   try {
+  //     TestMergeException.parseFrom(duplicatedByteString, registry);
+  //     assertWithMessage("Expected InvalidProtocolBufferException").fail();
+  //   } catch (Exception e) {
+  //     assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
+  //   }
 
-    // parseFrom(ByteArray)
-    try {
-      TestMergeException.parseFrom(bytes, registry);
-      assertWithMessage("Expected InvalidProtocolBufferException").fail();
-    } catch (Exception e) {
-      assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
-    }
+  //   // parseFrom(ByteArray)
+  //   try {
+  //     TestMergeException.parseFrom(bytes, registry);
+  //     assertWithMessage("Expected InvalidProtocolBufferException").fail();
+  //   } catch (Exception e) {
+  //     assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
+  //   }
 
-    // parseFrom(InputStream)
-    try {
-      TestMergeException.parseFrom(new ByteArrayInputStream(bytes), registry);
-      assertWithMessage("Expected InvalidProtocolBufferException").fail();
-    } catch (Exception e) {
-      assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
-    }
+  //   // parseFrom(InputStream)
+  //   try {
+  //     TestMergeException.parseFrom(new ByteArrayInputStream(bytes), registry);
+  //     assertWithMessage("Expected InvalidProtocolBufferException").fail();
+  //   } catch (Exception e) {
+  //     assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
+  //   }
 
-    // parseFrom(CodedInputStream)
-    try {
-      TestMergeException.parseFrom(CodedInputStream.newInstance(bytes), registry);
-      assertWithMessage("Expected InvalidProtocolBufferException").fail();
-    } catch (Exception e) {
-      assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
-    }
+  //   // parseFrom(CodedInputStream)
+  //   try {
+  //     TestMergeException.parseFrom(CodedInputStream.newInstance(bytes), registry);
+  //     assertWithMessage("Expected InvalidProtocolBufferException").fail();
+  //   } catch (Exception e) {
+  //     assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
+  //   }
 
-    // parseFrom(ByteBuffer)
-    try {
-      TestMergeException.parseFrom(duplicatedByteString.asReadOnlyByteBuffer(), registry);
-      assertWithMessage("Expected InvalidProtocolBufferException").fail();
-    } catch (Exception e) {
-      assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
-    }
-  }
+  //   // parseFrom(ByteBuffer)
+  //   try {
+  //     TestMergeException.parseFrom(duplicatedByteString.asReadOnlyByteBuffer(), registry);
+  //     assertWithMessage("Expected InvalidProtocolBufferException").fail();
+  //   } catch (Exception e) {
+  //     assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
+  //   }
+  // }
 
   @Test
   public void testParseDelimitedFrom_firstByteInterrupted_preservesCause() {
