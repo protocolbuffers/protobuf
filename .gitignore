@@ -89,6 +89,7 @@ java/**/*.iml
 # Windows native output.
 cmake/build
 build_msvc
+build*
 # Directories suggested by cmake/README.md
 /debug/
 /solution/
