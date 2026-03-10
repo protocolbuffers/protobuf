@@ -42,6 +42,10 @@
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
+#ifdef _MSC_VER
+#include <windows.h>
+#include <shellapi.h>
+#endif
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -108,6 +112,28 @@ int ProtobufMain(int argc, char* argv[]) {
 }  // namespace protobuf
 }  // namespace google
 
+#ifdef _MSC_VER
+std::string ToMultiByteUtf8String(const wchar_t* input) {
+  int size = WideCharToMultiByte(CP_UTF8, 0, input, wcslen(input), 0, 0,
+                                 nullptr, nullptr);
+  std::string result(size, 0);
+  if (size)
+    WideCharToMultiByte(CP_UTF8, 0, input, wcslen(input), &result[0], size,
+                        nullptr, nullptr);
+  return result;
+}
+
+int main(int argc, char* argv[]) {
+  wchar_t** wargv = CommandLineToArgvW(GetCommandLineW(), &argc);
+  char** argv_mbcs = new char*[argc];
+  for (int i = 0; i < argc; i++) {
+    std::string* multibyte_string = new auto(ToMultiByteUtf8String(wargv[i]));
+    argv_mbcs[i] = const_cast<char*>(multibyte_string->c_str());
+  }
+  return PROTOBUF_NAMESPACE_ID::compiler::ProtobufMain(argc, argv_mbcs);
+}
+#else
 int main(int argc, char* argv[]) {
   return PROTOBUF_NAMESPACE_ID::compiler::ProtobufMain(argc, argv);
 }
+#endif
