@@ -1,0 +1,37 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2024";
+
+package unittest_drop_unknown_fields;
+
+// Treat all fields as implicit present by default (proto3 behavior).
+option features.field_presence = IMPLICIT;
+option objc_class_prefix = "DropUnknowns";
+option csharp_namespace = "Google.Protobuf.TestProtos";
+
+message Foo {
+  enum NestedEnum {
+    FOO = 0;
+    BAR = 1;
+    BAZ = 2;
+  }
+  int32 int32_value = 1;
+  NestedEnum enum_value = 2;
+}
+
+message FooWithExtraFields {
+  enum NestedEnum {
+    FOO = 0;
+    BAR = 1;
+    BAZ = 2;
+    MOO = 3;
+  }
+  int32 int32_value = 1;
+  NestedEnum enum_value = 2;
+  int32 extra_int32_value = 3;
+}

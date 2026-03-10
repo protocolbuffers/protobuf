@@ -1,0 +1,161 @@
+"""
+Internal helpers for building the Python protobuf runtime.
+"""
+
+load("@rules_python//python:py_test.bzl", "py_test")
+
+# Adapted from https://github.com/bazelbuild/bazel-skylib/blob/main/rules/private/copy_common.bzl#L47
+InternalOsInfo = provider(
+    doc = "Information about the target platform's OS.",
+    fields = ["is_windows"],
+)
+
+# Adapted from https://github.com/bazelbuild/bazel-skylib/blob/main/rules/private/copy_common.bzl#L52
+internal_is_windows = rule(
+    implementation = lambda ctx: InternalOsInfo(
+        is_windows = ctx.target_platform_has_constraint(ctx.attr._windows_constraint[platform_common.ConstraintValueInfo]),
+    ),
+    attrs = {
+        "_windows_constraint": attr.label(default = "@platforms//os:windows"),
+    },
+)
+
+def _remove_cross_repo_path(path):
+    components = path.split("/")
+    if components[0] == "..":
+        return "/".join(components[2:])
+    return path
+
+def _internal_copy_files_impl(ctx):
+    strip_prefix = ctx.attr.strip_prefix
+    if strip_prefix[-1] != "/":
+        strip_prefix += "/"
+
+    src_dests = []
+    for src in ctx.files.srcs:
+        short_path = _remove_cross_repo_path(src.short_path)
+        if short_path[:len(strip_prefix)] != strip_prefix:
+            fail("Source does not start with %s: %s" %
+                 (strip_prefix, short_path))
+        dest = ctx.actions.declare_file(short_path[len(strip_prefix):])
+        src_dests.append([src, dest])
+
+    # Windows check adapted from
+    # https://github.com/bazelbuild/bazel-skylib/blob/main/rules/private/copy_file_private.bzl#L71C10-L71C54
+    if ctx.attr._exec_is_windows[InternalOsInfo].is_windows:
+        bat_file = ctx.actions.declare_file(ctx.label.name + "_copy.bat")
+        ctx.actions.write(
+            output = bat_file,
+            content = "\r\n".join([
+                '@copy /Y "{}" "{}" >NUL'.format(
+                    src.path.replace("/", "\\"),
+                    dest.path.replace("/", "\\"),
+                )
+                for src, dest in src_dests
+            ]) + "\r\n",
+        )
+        ctx.actions.run(
+            inputs = ctx.files.srcs,
+            tools = [bat_file],
+            outputs = [dest for src, dest in src_dests],
+            executable = "cmd.exe",
+            arguments = ["/C", bat_file.path.replace("/", "\\")],
+            mnemonic = "InternalCopyFile",
+            progress_message = "Copying files",
+            use_default_shell_env = True,
+            toolchain = None,
+        )
+
+    else:
+        sh_file = ctx.actions.declare_file(ctx.label.name + "_copy.sh")
+        ctx.actions.write(
+            output = sh_file,
+            content = "\n".join([
+                'cp -f "{}" "{}"'.format(src.path, dest.path)
+                for src, dest in src_dests
+            ]),
+        )
+        ctx.actions.run(
+            inputs = ctx.files.srcs,
+            tools = [sh_file],
+            outputs = [dest for src, dest in src_dests],
+            executable = "bash",
+            arguments = [sh_file.path],
+            mnemonic = "InternalCopyFile",
+            progress_message = "Copying files",
+            use_default_shell_env = True,
+            toolchain = None,
+        )
+
+    return [
+        DefaultInfo(files = depset([dest for src, dest in src_dests])),
+    ]
+
+internal_copy_files_impl = rule(
+    doc = """
+Implementation for internal_copy_files macro.
+
+This rule implements file copying, including a compatibility mode for Windows.
+""",
+    implementation = _internal_copy_files_impl,
+    attrs = {
+        "srcs": attr.label_list(allow_files = True, providers = [DefaultInfo]),
+        "strip_prefix": attr.string(),
+        # Adapted from https://github.com/bazelbuild/bazel-skylib/blob/main/rules/private/copy_file_private.bzl#L91C1-L96C7
+        "_exec_is_windows": attr.label(
+            default = ":is_windows",
+            # The exec transition must match the exec group of the actions, which in
+            # this case is the default exec group.
+            cfg = "exec",
+        ),
+    },
+)
+
+def internal_copy_files(name, srcs, strip_prefix, **kwargs):
+    """Copies common proto files to the python tree.
+
+    In order for Python imports to work, generated proto interfaces under
+    the google.protobuf package need to be in the same directory as other
+    source files. This rule copies the .proto files themselves, e.g. with
+    strip_prefix = 'src', 'src/google/protobuf/blah.proto' could be copied
+    to '<package>/google/protobuf/blah.proto'.
+
+    (An alternative might be to implement a separate rule to generate
+    Python code in a different location for the sources. However, this
+    would be strange behavior that doesn't match any other language's proto
+    library generation.)
+
+    Args:
+      name: the name for the rule.
+      srcs: the sources.
+      strip_prefix: the prefix to remove from each of the paths in 'srcs'. The
+          remainder will be used to construct the output path.
+      **kwargs: common rule arguments.
+
+    """
+    internal_copy_files_impl(
+        name = name,
+        srcs = srcs,
+        strip_prefix = strip_prefix,
+        **kwargs
+    )
+
+def internal_py_test(deps = [], **kwargs):
+    """Internal wrapper for shared test configuration
+
+    Args:
+      deps: any additional dependencies of the test.
+      **kwargs: arguments forwarded to py_test.
+    """
+    py_test(
+        imports = ["."],
+        deps = deps + [
+            "//python:python_test_lib",
+            "@com_google_absl_py//absl/testing:parameterized",
+        ],
+        target_compatible_with = select({
+            "@system_python//:supported": [],
+            "//conditions:default": ["@platforms//:incompatible"],
+        }),
+        **kwargs
+    )

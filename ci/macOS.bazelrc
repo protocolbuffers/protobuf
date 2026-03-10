@@ -1,0 +1,11 @@
+import common.bazelrc
+
+build --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
+build --cxxopt="-Woverloaded-virtual"
+build --copt="-Wpointer-arith"
+build --copt="-Werror" --copt="-Wno-sign-compare" --copt="-Wno-sign-conversion" --copt="-Wno-error=sign-conversion" --copt="-Wno-deprecated-declarations"
+common --xcode_version_config=@com_google_protobuf//.github:host_xcodes
+
+build --apple_crosstool_top=@local_config_apple_cc//:toolchain
+build --crosstool_top=@local_config_apple_cc//:toolchain
+build --host_crosstool_top=@local_config_apple_cc//:toolchain

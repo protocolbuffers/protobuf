@@ -1,0 +1,283 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto3";
+
+package proto3_unittest;
+
+import "google/protobuf/unittest_import.proto";
+
+option optimize_for = SPEED;
+
+// This proto includes every type of field in both singular and repeated
+// forms.
+message TestAllTypes {
+  message NestedMessage {
+    // The field name "b" fails to compile in proto1 because it conflicts with
+    // a local variable named "b" in one of the generated methods.  Doh.
+    // This file needs to compile in proto1 to test backwards-compatibility.
+    int32 bb = 1;
+  }
+
+  enum NestedEnum {
+    ZERO = 0;
+    FOO = 1;
+    BAR = 2;
+    BAZ = 3;
+    NEG = -1;  // Intentionally negative.
+  }
+
+  // Singular
+  int32 optional_int32 = 1;
+  int64 optional_int64 = 2;
+  uint32 optional_uint32 = 3;
+  uint64 optional_uint64 = 4;
+  sint32 optional_sint32 = 5;
+  sint64 optional_sint64 = 6;
+  fixed32 optional_fixed32 = 7;
+  fixed64 optional_fixed64 = 8;
+  sfixed32 optional_sfixed32 = 9;
+  sfixed64 optional_sfixed64 = 10;
+  float optional_float = 11;
+  double optional_double = 12;
+  bool optional_bool = 13;
+  string optional_string = 14;
+  bytes optional_bytes = 15;
+
+  // Groups are not allowed in proto3.
+  // optional group OptionalGroup = 16 {
+  //   optional int32 a = 17;
+  // }
+
+  optional NestedMessage optional_nested_message = 18;
+  ForeignMessage optional_foreign_message = 19;
+  proto2_unittest_import.ImportMessage optional_import_message = 20;
+
+  NestedEnum optional_nested_enum = 21;
+  ForeignEnum optional_foreign_enum = 22;
+
+  // Omitted (compared to unittest.proto) because proto2 enums are not allowed
+  // inside proto2 messages.
+  //
+  // optional proto2_unittest_import.ImportEnum    optional_import_enum  = 23;
+
+  string optional_string_piece = 24 [ctype = STRING_PIECE];
+  string optional_cord = 25 [ctype = CORD];
+
+  // Defined in unittest_import_public.proto
+  proto2_unittest_import.PublicImportMessage optional_public_import_message =
+      26;
+
+  NestedMessage optional_lazy_message = 27 [lazy = true];
+  NestedMessage optional_unverified_lazy_message = 28 [unverified_lazy = true];
+  proto2_unittest_import.ImportMessage optional_lazy_import_message = 115
+      [lazy = true];
+
+  // Repeated
+  repeated int32 repeated_int32 = 31;
+  repeated int64 repeated_int64 = 32;
+  repeated uint32 repeated_uint32 = 33;
+  repeated uint64 repeated_uint64 = 34;
+  repeated sint32 repeated_sint32 = 35;
+  repeated sint64 repeated_sint64 = 36;
+  repeated fixed32 repeated_fixed32 = 37;
+  repeated fixed64 repeated_fixed64 = 38;
+  repeated sfixed32 repeated_sfixed32 = 39;
+  repeated sfixed64 repeated_sfixed64 = 40;
+  repeated float repeated_float = 41;
+  repeated double repeated_double = 42;
+  repeated bool repeated_bool = 43;
+  repeated string repeated_string = 44;
+  repeated bytes repeated_bytes = 45;
+
+  // Groups are not allowed in proto3.
+  // repeated group RepeatedGroup = 46 {
+  //   optional int32 a = 47;
+  // }
+
+  repeated NestedMessage repeated_nested_message = 48;
+  repeated ForeignMessage repeated_foreign_message = 49;
+  repeated proto2_unittest_import.ImportMessage repeated_import_message = 50;
+
+  repeated NestedEnum repeated_nested_enum = 51;
+  repeated ForeignEnum repeated_foreign_enum = 52;
+
+  // Omitted (compared to unittest.proto) because proto2 enums are not allowed
+  // inside proto2 messages.
+  //
+  // repeated proto2_unittest_import.ImportEnum    repeated_import_enum  = 53;
+
+  repeated string repeated_string_piece = 54 [ctype = STRING_PIECE];
+  repeated string repeated_cord = 55 [ctype = CORD];
+
+  repeated NestedMessage repeated_lazy_message = 57;
+
+  oneof oneof_field {
+    uint32 oneof_uint32 = 111;
+    NestedMessage oneof_nested_message = 112;
+    string oneof_string = 113;
+    bytes oneof_bytes = 114;
+  }
+}
+
+// Test messages for packed fields
+
+message TestPackedTypes {
+  repeated int32 packed_int32 = 90 [packed = true];
+  repeated int64 packed_int64 = 91 [packed = true];
+  repeated uint32 packed_uint32 = 92 [packed = true];
+  repeated uint64 packed_uint64 = 93 [packed = true];
+  repeated sint32 packed_sint32 = 94 [packed = true];
+  repeated sint64 packed_sint64 = 95 [packed = true];
+  repeated fixed32 packed_fixed32 = 96 [packed = true];
+  repeated fixed64 packed_fixed64 = 97 [packed = true];
+  repeated sfixed32 packed_sfixed32 = 98 [packed = true];
+  repeated sfixed64 packed_sfixed64 = 99 [packed = true];
+  repeated float packed_float = 100 [packed = true];
+  repeated double packed_double = 101 [packed = true];
+  repeated bool packed_bool = 102 [packed = true];
+  repeated ForeignEnum packed_enum = 103 [packed = true];
+}
+
+// Explicitly set packed to false
+message TestUnpackedTypes {
+  repeated int32 repeated_int32 = 1 [packed = false];
+  repeated int64 repeated_int64 = 2 [packed = false];
+  repeated uint32 repeated_uint32 = 3 [packed = false];
+  repeated uint64 repeated_uint64 = 4 [packed = false];
+  repeated sint32 repeated_sint32 = 5 [packed = false];
+  repeated sint64 repeated_sint64 = 6 [packed = false];
+  repeated fixed32 repeated_fixed32 = 7 [packed = false];
+  repeated fixed64 repeated_fixed64 = 8 [packed = false];
+  repeated sfixed32 repeated_sfixed32 = 9 [packed = false];
+  repeated sfixed64 repeated_sfixed64 = 10 [packed = false];
+  repeated float repeated_float = 11 [packed = false];
+  repeated double repeated_double = 12 [packed = false];
+  repeated bool repeated_bool = 13 [packed = false];
+  repeated TestAllTypes.NestedEnum repeated_nested_enum = 14 [packed = false];
+}
+
+// This proto includes a recursively nested message.
+message NestedTestAllTypes {
+  NestedTestAllTypes child = 1;
+  TestAllTypes payload = 2;
+}
+
+// Define these after TestAllTypes to make sure the compiler can handle
+// that.
+message ForeignMessage {
+  int32 c = 1;
+}
+
+enum ForeignEnum {
+  FOREIGN_ZERO = 0;
+  FOREIGN_FOO = 4;
+  FOREIGN_BAR = 5;
+  FOREIGN_BAZ = 6;
+  FOREIGN_LARGE = 123456;  // Large enough to escape the Boxed Integer cache.
+}
+
+// TestEmptyMessage is used to test behavior of unknown fields.
+message TestEmptyMessage {}
+
+// TestMessageWithDummy is also used to test behavior of unknown fields.
+message TestMessageWithDummy {
+  // This field is only here for triggering copy-on-write; it's not intended to
+  // be serialized.
+  bool dummy = 536870911;
+}
+
+// Same layout as TestOneof2 in unittest.proto to test unknown enum value
+// parsing behavior in oneof.
+message TestOneof2 {
+  oneof foo {
+    NestedEnum foo_enum = 6;
+  }
+
+  enum NestedEnum {
+    UNKNOWN = 0;
+    FOO = 1;
+    BAR = 2;
+    BAZ = 3;
+  }
+}
+
+// If bool fields are incorrectly assumed to have hasbits, InternalSwap would
+// result in swapping N more 32bit hasbits incorrectly. Considering padding, we
+// need many bool fields to stress this.
+message TestHasbits {
+  bool b1 = 1;
+  bool b2 = 2;
+  bool b3 = 3;
+  bool b4 = 4;
+  bool b5 = 5;
+  bool b6 = 6;
+  bool b7 = 7;
+  bool b8 = 8;
+  bool b9 = 9;
+  bool b10 = 10;
+  bool b11 = 11;
+  bool b12 = 12;
+  bool b13 = 13;
+  bool b14 = 14;
+  bool b15 = 15;
+  bool b16 = 16;
+  bool b17 = 17;
+  bool b18 = 18;
+  bool b19 = 19;
+  bool b20 = 20;
+  bool b21 = 21;
+  bool b22 = 22;
+  bool b23 = 23;
+  bool b24 = 24;
+  bool b25 = 25;
+  bool b26 = 26;
+  bool b27 = 27;
+  bool b28 = 28;
+  bool b29 = 29;
+  bool b30 = 30;
+  bool b31 = 31;
+  bool b32 = 32;
+  bool b33 = 33;
+  bool b34 = 34;
+  bool b35 = 35;
+  bool b36 = 36;
+  bool b37 = 37;
+  bool b38 = 38;
+  bool b39 = 39;
+  bool b40 = 40;
+  bool b41 = 41;
+  bool b42 = 42;
+  bool b43 = 43;
+  bool b44 = 44;
+  bool b45 = 45;
+  bool b46 = 46;
+  bool b47 = 47;
+  bool b48 = 48;
+  bool b49 = 49;
+  bool b50 = 50;
+  bool b51 = 51;
+  bool b52 = 52;
+  bool b53 = 53;
+  bool b54 = 54;
+  bool b55 = 55;
+  bool b56 = 56;
+  bool b57 = 57;
+  bool b58 = 58;
+  bool b59 = 59;
+  bool b60 = 60;
+  bool b61 = 61;
+  bool b62 = 62;
+  bool b63 = 63;
+  bool b64 = 64;
+  bool b65 = 65;
+  bool b66 = 66;
+  bool b67 = 67;
+  bool b68 = 68;
+  bool b69 = 69;
+  TestAllTypes child = 100;
+}

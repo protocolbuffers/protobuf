@@ -1,0 +1,54 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2016 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package objc.protobuf.tests.deprecated_file;
+option objc_class_prefix = "FileDep";
+
+//
+// This file is like unittest_deprecated.proto, but does NOT use message, enum,
+// enum value, or field level deprecation; instead it uses the file level option
+// to mark everything.
+//
+// The source generated from this file needs to be inspect to confirm it has
+// all of the expected annotations. It also will be compiled into the unittest
+// and that compile should be clean without errors.
+//
+option deprecated = true;
+
+// Message to catch the deprecation.
+message Msg1 {
+  extensions 100 to max;
+
+  optional string string_field = 1;
+}
+
+// Mix of extension field types to catch the deprecation.
+extend Msg1 {
+  optional string string_ext_field = 101;
+  optional int32 int_ext_field = 102;
+  repeated fixed32 fixed_ext_field = 103;
+  optional Msg1 msg_ext_field = 104;
+}
+
+// Mix of extension field types (scoped to a message) to catch the deprecation.
+message Msg1A {
+  extend Msg1 {
+    optional string string_ext2_field = 201;
+    optional int32 int_ext2_field = 202;
+    repeated fixed32 fixed_ext2_field = 203;
+    optional Msg1 msg_ext2_field = 204;
+  }
+}
+
+// Enum to catch the deprecation.
+enum Enum1 {
+  ENUM1_ONE   = 1;
+  ENUM1_TWO   = 2;
+  ENUM1_THREE = 3;
+}

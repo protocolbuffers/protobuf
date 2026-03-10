@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package bar;
+
+message TestInclude {
+  int32 a = 1;
+}

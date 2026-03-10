@@ -1,0 +1,11 @@
+#ifndef THIRD_PARTY_PROTOBUF_EDITIONS_DEFAULTS_TEST_EMBEDDED_DECIMAL_ARRAY_H_
+#define THIRD_PARTY_PROTOBUF_EDITIONS_DEFAULTS_TEST_EMBEDDED_DECIMAL_ARRAY_H_
+
+#include <cstdint>
+#include <vector>
+
+// Normally something like this would go into a .cc file, but using a header to
+// simplify things.
+static const std::vector<uint8_t> kDefaultTestEmbeddedDecimalArray = { DEFAULTS_VALUE };
+
+#endif  // THIRD_PARTY_PROTOBUF_EDITIONS_DEFAULTS_TEST_EMBEDDED_DECIMAL_ARRAY_H_

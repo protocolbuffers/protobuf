@@ -1,0 +1,119 @@
+name: Java Tests
+
+on:
+  workflow_call:
+    inputs:
+      continuous-run:
+        required: true
+        description: "Boolean string denoting whether this run is continuous --
+          empty string for presubmit, non-empty string for continuous."
+        type: string
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+      continuous-prefix:
+        required: true
+        description: "The string continuous-only tests should be prefixed with when displaying test
+          results."
+        type: string
+
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: OpenJDK 8
+            cache_key: '8'
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8.0.1-8-b77fdae6d4771789dfc66a56bf8d806354e8011a
+            # TODO: b/318555165 - enable the layering check. Currently it does
+            # not work correctly with the toolchain in this Docker image.
+            targets: //java/... //java/internal:java_version --features=-layering_check
+            flags: --java_language_version=8
+          - name: OpenJDK 11
+            cache_key: '11'
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8.0.1-11-b77fdae6d4771789dfc66a56bf8d806354e8011a
+            targets: //java/... //java/internal:java_version //compatibility/...
+            continuous-only: true
+          - name: OpenJDK 17
+            cache_key: '17'
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8.0.1-17-168f9c9d015a0fa16611e1e9eede796fe9bfbb69
+            targets: //java/... //java/internal:java_version //compatibility/...
+          - name: OpenJDK 21
+            cache_key: '21'
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8.0.1-21-7932bf8b25fb76a111e7257d151a6a58d5c3c671
+            targets: //java/... //java/internal:java_version //compatibility/...
+          # TODO: b/395623141 - restore this test once runtime uses / emulates aarch64.
+          # - name: aarch64
+          #   cache_key: 'aarch64'
+          #   image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:8.0.1-aarch64-168f9c9d015a0fa16611e1e9eede796fe9bfbb69
+          #   targets: //java/... //compatibility/... //src/google/protobuf/compiler:protoc_aarch64_test
+
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v5
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        with:
+          image: ${{ matrix.image }}
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: java_linux/${{ matrix.cache_key }}
+          bazel: test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_JAVA_VERSION
+
+# TODO restore this test (or a better one) when gRPC has rebuilt with 26.x
+  # linkage-monitor:
+  #   name: Linux Linkage Monitor
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout pending changes
+  #       uses: protocolbuffers/protobuf-ci/checkout@v5
+  #       with:
+  #         ref: ${{ inputs.safe-checkout }}
+  #     - name: Run Linkage Monitor test
+  #       uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+  #       with:
+  #         image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
+  #         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+  #         bazel-cache: java_linux/8
+  #         # TODO: b/318555165 - enable the layering check. Currently it does
+  #         # not work correctly with the toolchain in this Docker image.
+  #         bazel: test --test_output=all //java:linkage_monitor --spawn_strategy=standalone --features=-layering_check
+
+  protobuf-bom:
+    name: Protobuf Maven BOM
+    runs-on: ubuntu-22-4core
+    steps:
+    - name: Checkout pending changes
+      uses: protocolbuffers/protobuf-ci/checkout@v5
+      with:
+        ref: ${{ inputs.safe-checkout }}
+    - name: Generate maven artifacts with bazel and install using maven
+      uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+      with:
+        image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8.0.1-11-b77fdae6d4771789dfc66a56bf8d806354e8011a
+        credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+        bazel-cache: java_linux/11
+        bash: |
+          set -ex
+          bazel build //java:release $BAZEL_FLAGS
+          mvn install:install-file -Dfile=java/bom/pom.xml -DpomFile=java/bom/pom.xml
+          mvn install:install-file -Dfile=java/pom.xml -DpomFile=java/pom.xml
+          mvn install:install-file -Dfile=bazel-bin/java/core/core_mvn-project.jar -DpomFile=bazel-bin/java/core/core_mvn-pom.xml
+          mvn install:install-file -Dfile=bazel-bin/java/core/lite_mvn-project.jar -DpomFile=bazel-bin/java/core/lite_mvn-pom.xml
+          mvn install:install-file -Dfile=bazel-bin/java/kotlin-lite/kotlin-lite_mvn-project.jar -DpomFile=bazel-bin/java/kotlin-lite/kotlin-lite_mvn-pom.xml
+          mvn install:install-file -Dfile=bazel-bin/java/kotlin/kotlin_mvn-project.jar -DpomFile=bazel-bin/java/kotlin/kotlin_mvn-pom.xml
+          mvn install:install-file -Dfile=bazel-bin/java/util/util_mvn-project.jar -DpomFile=bazel-bin/java/util/util_mvn-pom.xml
+    - name: Clean up
+      run: |
+        sudo rm -rf _build

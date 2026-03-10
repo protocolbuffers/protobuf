@@ -1,0 +1,8 @@
+edition = "2024";
+
+package editions_unittest;
+
+message MessageImport {
+  int32 a = 1;
+  int32 b = 2;
+}

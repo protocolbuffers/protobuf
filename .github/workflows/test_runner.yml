@@ -1,0 +1,268 @@
+name: Tests
+
+# This file implements the protection strategy laid out in
+# go/protobuf-gha-protected-resources.  Pull requests from branches within this
+# repository are considered safe and will immediately start running tests on
+# every commit.  Pull requests from forked repositories are unsafe, and leave
+# us vulnerable to PWN requests and stolen resources.  In these cases, we
+# require a special "safe for tests" tag to be added to the pull request before
+# we start testing.  This will be immediately removed, so that further commits
+# require their own stamp to test.
+
+on:
+  # continuous
+  schedule:
+    # Run every hour
+    - cron: "0 * * * *"
+
+  # postsubmit
+  push:
+    branches:
+      - main
+      - '[0-9]+.x'
+      # For testing purposes so we can stage this on the `gha` branch.
+      - gha
+
+  # safe presubmit
+  pull_request:
+    branches:
+      - main
+      - '[0-9]+.x'
+      # For testing purposes so we can stage this on the `gha` branch.
+      - gha
+
+  # unsafe presubmit
+  pull_request_target:
+    branches:
+      - main
+      - '[0-9]+.x'
+      # For testing purposes so we can stage this on the `gha` branch.
+      - gha
+    types: [labeled, opened, reopened, synchronize]
+
+  # manual
+  workflow_dispatch:
+ 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.event_name }}-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ contains(fromJSON('["pull_request", "pull_request_target", "workflow_dispatch", "schedule"]'), github.event_name) }}
+
+jobs:
+  set-vars:
+    name: Set Variables
+
+    # Avoid running tests twice on PR updates.  If the PR is coming from our
+    # repository, it's safe and we can use `pull_request`.  Otherwise, we should
+    # use `pull_request_target`.
+    if: |
+      (github.event_name != 'pull_request' &&
+       github.event_name != 'pull_request_target' &&
+       github.event.repository.full_name == 'protocolbuffers/protobuf') ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == 'protocolbuffers/protobuf') ||
+      (github.event_name == 'pull_request_target' &&
+       github.event.pull_request.head.repo.full_name != 'protocolbuffers/protobuf')
+
+    runs-on: ubuntu-latest
+    outputs:
+      # Store the sha for checkout so we can easily use it later.  For safe
+      # events, this will be blank and use the defaults.
+      checkout-sha: ${{ steps.safe-checkout.outputs.sha }}
+      # Stores a string to be used as a boolean denoting whether this is a
+      # continuous run. An empty string denotes that the run is on presubmit,
+      # otherwise we are in a continuous run. This helps us determine which
+      # tests to block on.
+      continuous-run: ${{ steps.set-test-type-vars.outputs.continuous-run }}
+      # Stores a string that will serve as the prefix for all continuous tests.
+      # Either way we prepend "(Continuous)" but in the case that we are in
+      # a presubmit run, we should also mark them "[SKIPPED]"
+      continuous-prefix: ${{ steps.set-test-type-vars.outputs.continuous-prefix }}
+    steps:
+      - name: Check
+        # Trivially pass for safe PRs, and explicitly error for unsafe ones
+        # unless this is specifically an event for adding the safe label.
+        run: >
+          ${{ github.event_name != 'pull_request_target' || github.event.label.name == ':a: safe for tests' }} ||
+          (echo "This pull request is from an unsafe fork and hasn't been approved to run tests." &&
+           echo "A protobuf team member will need to review the PR and add the 'safe for tests' tag." &&
+           exit 1)
+
+      - name: Cache safe commit
+        id: safe-checkout
+        run: >
+          ${{ github.event_name != 'pull_request_target' }} ||
+          echo "sha=${{ github.event.pull_request.head.sha  }}"  >> $GITHUB_OUTPUT
+
+      - name: Set Test Type Variables
+        id: set-test-type-vars
+        run: |
+          if ([ "${{ github.event_name }}" == 'pull_request' ] || [ "${{ github.event_name }}" == 'pull_request_target' ]) && ${{ !contains(toJson(github.event.pull_request.body), '#test-continuous') }}; then
+            echo "continuous-run=" >> "$GITHUB_OUTPUT"
+            echo "continuous-prefix=[SKIPPED] (Continuous)" >> "$GITHUB_OUTPUT"
+          else
+            echo "continuous-run=continuous" >> "$GITHUB_OUTPUT"
+            echo "continuous-prefix=(Continuous)" >> "$GITHUB_OUTPUT"
+          fi
+
+  remove-tag:
+    name: Remove safety tag
+    needs: [set-vars]
+    if: github.event.action == 'labeled'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions-ecosystem/action-remove-labels@2ce5d41b4b6aa8503e285553f75ed56e0a40bae0 # v1.3.0
+        with:
+          fail_on_error: true
+          labels: ':a: safe for tests'
+
+  validate-yaml:
+    name: Validate YAML
+    needs: [set-vars]
+    uses: ./.github/workflows/test_yaml.yml
+    with:
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+
+  # Note: this pattern of passing the head sha is vulnerable to PWN requests for
+  # pull_request_target events. We carefully limit those workflows to require a
+  # human stamp before continuing.
+  bazel:
+    name: Bazel
+    needs: [set-vars]
+    uses: ./.github/workflows/test_bazel.yml
+    with:
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
+    secrets: inherit
+
+  cpp:
+    name: C++
+    needs: [set-vars]
+    uses: ./.github/workflows/test_cpp.yml
+    with:
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
+    secrets: inherit
+
+  java:
+    name: Java
+    needs: [set-vars]
+    uses: ./.github/workflows/test_java.yml
+    with:
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
+    secrets: inherit
+
+  python:
+    name: Python
+    needs: [set-vars]
+    uses: ./.github/workflows/test_python.yml
+    with:
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
+    secrets: inherit
+
+  ruby:
+    name: Ruby
+    needs: [set-vars]
+    uses: ./.github/workflows/test_ruby.yml
+    with:
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
+    secrets: inherit
+
+  php:
+    name: PHP
+    needs: [set-vars]
+    uses: ./.github/workflows/test_php.yml
+    with:
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
+    secrets: inherit
+
+  php-ext:
+    name: PHP Extension
+    needs: [set-vars]
+    uses: ./.github/workflows/test_php_ext.yml
+    with:
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
+    secrets: inherit
+
+  csharp:
+    name: C#
+    needs: [set-vars]
+    uses: ./.github/workflows/test_csharp.yml
+    with:
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+    secrets: inherit
+
+  objectivec:
+    name: Objective-C
+    needs: [set-vars]
+    uses: ./.github/workflows/test_objectivec.yml
+    with:
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
+    secrets: inherit
+
+  rust:
+    name: Rust
+    needs: [set-vars]
+    uses: ./.github/workflows/test_rust.yml
+    with:
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+    secrets: inherit
+
+  upb:
+    name: μpb
+    needs: [set-vars]
+    uses: ./.github/workflows/test_upb.yml
+    with:
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
+    secrets: inherit
+
+  hpb:
+    name: hpb
+    needs: [set-vars]
+    uses: ./.github/workflows/test_hpb.yml
+    with:
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+    secrets: inherit
+
+  staleness:
+    name: Staleness
+    needs: [set-vars]
+    uses: ./.github/workflows/staleness_check.yml
+    # Staleness tests have scheduled runs during off-hours to avoid race conditions.
+    if: ${{ github.event_name != 'schedule' }}
+    with:
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+    secrets: inherit
+
+  # This test depends on all blocking tests and indicates whether they all suceeded.
+  all-blocking-tests:
+    name: All Blocking Tests${{ github.event_name == 'pull_request_target' && ' (fork)' || ''}}
+    needs: [set-vars, validate-yaml, bazel, cpp, java, python, ruby, php, php-ext, csharp, objectivec, rust, upb, hpb, staleness]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check test results
+        run: "${{ !contains(join(needs.*.result, ' '), 'failure') && !contains(join(needs.*.result, ' '), 'cancelled') }}"
+    # This workflow must run even if one or more of the dependent workflows
+    # failed.
+    if: always()

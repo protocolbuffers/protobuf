@@ -1,0 +1,35 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2024";
+
+package proto2_preserve_unknown_enum_unittest;
+
+// Treat all enums as closed and use expanded encoding for repeated fields by
+// default (proto2 behavior).
+option features.enum_type = CLOSED;
+option features.repeated_field_encoding = EXPANDED;
+
+enum MyEnum {
+  FOO = 0;
+  BAR = 1;
+  BAZ = 2;
+}
+
+message MyMessage {
+  MyEnum e = 1;
+  repeated MyEnum repeated_e = 2;
+  repeated MyEnum repeated_packed_e = 3
+      [features.repeated_field_encoding = PACKED];
+  repeated MyEnum repeated_packed_unexpected_e = 4;  // not packed
+  oneof o {
+    option features.enforce_naming_style = STYLE_LEGACY;
+
+    MyEnum oneof_e_1 = 5;
+    MyEnum oneof_e_2 = 6;
+  }
+}

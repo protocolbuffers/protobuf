@@ -1,0 +1,436 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+package com.google.protobuf;
+
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
+
+import proto2_unittest.UnittestProto.ForeignMessage;
+import proto2_unittest.UnittestProto.TestAllExtensions;
+import proto2_unittest.UnittestProto.TestAllTypes;
+import proto2_unittest.UnittestProto.TestRequired;
+import proto2_unittest.UnittestProto.TestRequiredForeign;
+import java.util.List;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+/** Misc. unit tests for message operations that apply to both generated and dynamic messages. */
+@RunWith(JUnit4.class)
+public class MessageTest {
+  // =================================================================
+  // Message-merging tests.
+
+  static final TestAllTypes MERGE_SOURCE =
+      TestAllTypes.newBuilder()
+          .setOptionalInt32(1)
+          .setOptionalString("foo")
+          .setOptionalForeignMessage(ForeignMessage.getDefaultInstance())
+          .addRepeatedString("bar")
+          .build();
+
+  static final TestAllTypes MERGE_DEST =
+      TestAllTypes.newBuilder()
+          .setOptionalInt64(2)
+          .setOptionalString("baz")
+          .setOptionalForeignMessage(ForeignMessage.newBuilder().setC(3).build())
+          .addRepeatedString("qux")
+          .build();
+
+  static final String MERGE_RESULT_TEXT =
+      ""
+          + "optional_int32: 1\n"
+          + "optional_int64: 2\n"
+          + "optional_string: \"foo\"\n"
+          + "optional_foreign_message {\n"
+          + "  c: 3\n"
+          + "}\n"
+          + "repeated_string: \"qux\"\n"
+          + "repeated_string: \"bar\"\n";
+
+  @Test
+  public void testParsingWithNullExtensionRegistry() throws Exception {
+    try {
+      TestAllTypes.parseFrom(new byte[] {}, null);
+      assertWithMessage("Expected exception").fail();
+    } catch (NullPointerException expected) {
+    }
+  }
+
+  @Test
+  public void testMergeFrom() throws Exception {
+    TestAllTypes result = TestAllTypes.newBuilder(MERGE_DEST).mergeFrom(MERGE_SOURCE).build();
+
+    assertThat(TextFormat.printer().printToString(result)).isEqualTo(MERGE_RESULT_TEXT);
+  }
+
+  /**
+   * Test merging a DynamicMessage into a GeneratedMessage. As long as they have the same
+   * descriptor, this should work, but it is an entirely different code path.
+   */
+  @Test
+  public void testMergeFromDynamic() throws Exception {
+    TestAllTypes result =
+        TestAllTypes.newBuilder(MERGE_DEST)
+            .mergeFrom(DynamicMessage.newBuilder(MERGE_SOURCE).build())
+            .build();
+
+    assertThat(TextFormat.printer().printToString(result)).isEqualTo(MERGE_RESULT_TEXT);
+  }
+
+  /** Test merging two DynamicMessages. */
+  @Test
+  public void testDynamicMergeFrom() throws Exception {
+    DynamicMessage result =
+        DynamicMessage.newBuilder(MERGE_DEST)
+            .mergeFrom(DynamicMessage.newBuilder(MERGE_SOURCE).build())
+            .build();
+
+    assertThat(TextFormat.printer().printToString(result)).isEqualTo(MERGE_RESULT_TEXT);
+  }
+
+  // =================================================================
+  // Required-field-related tests.
+
+  private static final TestRequired TEST_REQUIRED_UNINITIALIZED = TestRequired.getDefaultInstance();
+  private static final TestRequired TEST_REQUIRED_INITIALIZED =
+      TestRequired.newBuilder().setA(1).setB(2).setC(3).build();
+
+  @Test
+  public void testRequired() throws Exception {
+    TestRequired.Builder builder = TestRequired.newBuilder();
+
+    assertThat(builder.isInitialized()).isFalse();
+    builder.setA(1);
+    assertThat(builder.isInitialized()).isFalse();
+    builder.setB(1);
+    assertThat(builder.isInitialized()).isFalse();
+    builder.setC(1);
+    assertThat(builder.isInitialized()).isTrue();
+  }
+
+  @Test
+  public void testRequiredForeign() throws Exception {
+    TestRequiredForeign.Builder builder = TestRequiredForeign.newBuilder();
+
+    assertThat(builder.isInitialized()).isTrue();
+
+    builder.setOptionalMessage(TEST_REQUIRED_UNINITIALIZED);
+    assertThat(builder.isInitialized()).isFalse();
+
+    builder.setOptionalMessage(TEST_REQUIRED_INITIALIZED);
+    assertThat(builder.isInitialized()).isTrue();
+
+    builder.addRepeatedMessage(TEST_REQUIRED_UNINITIALIZED);
+    assertThat(builder.isInitialized()).isFalse();
+
+    builder.setRepeatedMessage(0, TEST_REQUIRED_INITIALIZED);
+    assertThat(builder.isInitialized()).isTrue();
+  }
+
+  @Test
+  public void testRequiredExtension() throws Exception {
+    TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
+
+    assertThat(builder.isInitialized()).isTrue();
+
+    builder.setExtension(TestRequired.single, TEST_REQUIRED_UNINITIALIZED);
+    assertThat(builder.isInitialized()).isFalse();
+
+    builder.setExtension(TestRequired.single, TEST_REQUIRED_INITIALIZED);
+    assertThat(builder.isInitialized()).isTrue();
+
+    builder.addExtension(TestRequired.multi, TEST_REQUIRED_UNINITIALIZED);
+    assertThat(builder.isInitialized()).isFalse();
+
+    builder.setExtension(TestRequired.multi, 0, TEST_REQUIRED_INITIALIZED);
+    assertThat(builder.isInitialized()).isTrue();
+  }
+
+  @Test
+  public void testRequiredDynamic() throws Exception {
+    Descriptors.Descriptor descriptor = TestRequired.getDescriptor();
+    DynamicMessage.Builder builder = DynamicMessage.newBuilder(descriptor);
+
+    assertThat(builder.isInitialized()).isFalse();
+    builder.setField(descriptor.findFieldByName("a"), 1);
+    assertThat(builder.isInitialized()).isFalse();
+    builder.setField(descriptor.findFieldByName("b"), 1);
+    assertThat(builder.isInitialized()).isFalse();
+    builder.setField(descriptor.findFieldByName("c"), 1);
+    assertThat(builder.isInitialized()).isTrue();
+  }
+
+  @Test
+  public void testRequiredDynamicForeign() throws Exception {
+    Descriptors.Descriptor descriptor = TestRequiredForeign.getDescriptor();
+    DynamicMessage.Builder builder = DynamicMessage.newBuilder(descriptor);
+
+    assertThat(builder.isInitialized()).isTrue();
+
+    builder.setField(descriptor.findFieldByName("optional_message"), TEST_REQUIRED_UNINITIALIZED);
+    assertThat(builder.isInitialized()).isFalse();
+
+    builder.setField(descriptor.findFieldByName("optional_message"), TEST_REQUIRED_INITIALIZED);
+    assertThat(builder.isInitialized()).isTrue();
+
+    builder.addRepeatedField(
+        descriptor.findFieldByName("repeated_message"), TEST_REQUIRED_UNINITIALIZED);
+    assertThat(builder.isInitialized()).isFalse();
+
+    builder.setRepeatedField(
+        descriptor.findFieldByName("repeated_message"), 0, TEST_REQUIRED_INITIALIZED);
+    assertThat(builder.isInitialized()).isTrue();
+  }
+
+  @Test
+  public void testUninitializedException() throws Exception {
+    try {
+      TestRequired.newBuilder().build();
+      assertWithMessage("Should have thrown an exception.").fail();
+    } catch (UninitializedMessageException e) {
+      assertThat(e).hasMessageThat().isEqualTo("Message missing required fields: a, b, c");
+    }
+  }
+
+  @Test
+  public void testBuildPartial() throws Exception {
+    // We're mostly testing that no exception is thrown.
+    TestRequired message = TestRequired.newBuilder().buildPartial();
+    assertThat(message.isInitialized()).isFalse();
+  }
+
+  @Test
+  public void testNestedUninitializedException() throws Exception {
+    try {
+      TestRequiredForeign.newBuilder()
+          .setOptionalMessage(TEST_REQUIRED_UNINITIALIZED)
+          .addRepeatedMessage(TEST_REQUIRED_UNINITIALIZED)
+          .addRepeatedMessage(TEST_REQUIRED_UNINITIALIZED)
+          .build();
+      assertWithMessage("Should have thrown an exception.").fail();
+    } catch (UninitializedMessageException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "Message missing required fields: "
+                  + "optional_message.a, "
+                  + "optional_message.b, "
+                  + "optional_message.c, "
+                  + "repeated_message[0].a, "
+                  + "repeated_message[0].b, "
+                  + "repeated_message[0].c, "
+                  + "repeated_message[1].a, "
+                  + "repeated_message[1].b, "
+                  + "repeated_message[1].c");
+    }
+  }
+
+  @Test
+  public void testBuildNestedPartial() throws Exception {
+    // We're mostly testing that no exception is thrown.
+    TestRequiredForeign message =
+        TestRequiredForeign.newBuilder()
+            .setOptionalMessage(TEST_REQUIRED_UNINITIALIZED)
+            .addRepeatedMessage(TEST_REQUIRED_UNINITIALIZED)
+            .addRepeatedMessage(TEST_REQUIRED_UNINITIALIZED)
+            .buildPartial();
+    assertThat(message.isInitialized()).isFalse();
+  }
+
+  @Test
+  public void testParseUninitialized() throws Exception {
+    try {
+      TestRequired.parseFrom(ByteString.EMPTY);
+      assertWithMessage("Should have thrown an exception.").fail();
+    } catch (InvalidProtocolBufferException e) {
+      assertThat(e).hasMessageThat().isEqualTo("Message missing required fields: a, b, c");
+    }
+  }
+
+  @Test
+  public void testParseNestedUninitialized() throws Exception {
+    ByteString data =
+        TestRequiredForeign.newBuilder()
+            .setOptionalMessage(TEST_REQUIRED_UNINITIALIZED)
+            .addRepeatedMessage(TEST_REQUIRED_UNINITIALIZED)
+            .addRepeatedMessage(TEST_REQUIRED_UNINITIALIZED)
+            .buildPartial()
+            .toByteString();
+
+    try {
+      TestRequiredForeign.parseFrom(data);
+      assertWithMessage("Should have thrown an exception.").fail();
+    } catch (InvalidProtocolBufferException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "Message missing required fields: "
+                  + "optional_message.a, "
+                  + "optional_message.b, "
+                  + "optional_message.c, "
+                  + "repeated_message[0].a, "
+                  + "repeated_message[0].b, "
+                  + "repeated_message[0].c, "
+                  + "repeated_message[1].a, "
+                  + "repeated_message[1].b, "
+                  + "repeated_message[1].c");
+    }
+  }
+
+  @Test
+  public void testDynamicUninitializedException() throws Exception {
+    try {
+      DynamicMessage.newBuilder(TestRequired.getDescriptor()).build();
+      assertWithMessage("Should have thrown an exception.").fail();
+    } catch (UninitializedMessageException e) {
+      assertThat(e).hasMessageThat().isEqualTo("Message missing required fields: a, b, c");
+    }
+  }
+
+  @Test
+  public void testDynamicBuildPartial() throws Exception {
+    // We're mostly testing that no exception is thrown.
+    DynamicMessage message = DynamicMessage.newBuilder(TestRequired.getDescriptor()).buildPartial();
+    assertThat(message.isInitialized()).isFalse();
+  }
+
+  @Test
+  public void testDynamicParseUninitialized() throws Exception {
+    try {
+      Descriptors.Descriptor descriptor = TestRequired.getDescriptor();
+      DynamicMessage.parseFrom(descriptor, ByteString.EMPTY);
+      assertWithMessage("Should have thrown an exception.").fail();
+    } catch (InvalidProtocolBufferException e) {
+      assertThat(e).hasMessageThat().isEqualTo("Message missing required fields: a, b, c");
+    }
+  }
+
+  /** Test reading unset repeated message from DynamicMessage. */
+  @Test
+  public void testDynamicRepeatedMessageNull() throws Exception {
+    Descriptors.Descriptor unused = TestRequired.getDescriptor();
+    DynamicMessage result =
+        DynamicMessage.newBuilder(TestAllTypes.getDescriptor())
+            .mergeFrom(DynamicMessage.newBuilder(MERGE_SOURCE).build())
+            .build();
+
+    assertThat(
+            result.getField(
+                result.getDescriptorForType().findFieldByName("repeated_foreign_message")))
+        .isInstanceOf(List.class);
+    assertThat(
+            result.getRepeatedFieldCount(
+                result.getDescriptorForType().findFieldByName("repeated_foreign_message")))
+        .isEqualTo(0);
+  }
+
+  /** Test reading repeated message from DynamicMessage. */
+  @Test
+  public void testDynamicRepeatedMessageNotNull() throws Exception {
+    TestAllTypes repeatedNested =
+        TestAllTypes.newBuilder()
+            .setOptionalInt32(1)
+            .setOptionalString("foo")
+            .setOptionalForeignMessage(ForeignMessage.getDefaultInstance())
+            .addRepeatedString("bar")
+            .addRepeatedForeignMessage(ForeignMessage.getDefaultInstance())
+            .addRepeatedForeignMessage(ForeignMessage.getDefaultInstance())
+            .build();
+    Descriptors.Descriptor unused = TestRequired.getDescriptor();
+    DynamicMessage result =
+        DynamicMessage.newBuilder(TestAllTypes.getDescriptor())
+            .mergeFrom(DynamicMessage.newBuilder(repeatedNested).build())
+            .build();
+
+    assertThat(
+            result.getField(
+                result.getDescriptorForType().findFieldByName("repeated_foreign_message")))
+        .isInstanceOf(List.class);
+    assertThat(
+            result.getRepeatedFieldCount(
+                result.getDescriptorForType().findFieldByName("repeated_foreign_message")))
+        .isEqualTo(2);
+  }
+
+  @Test
+  public void testPreservesFloatingPointNegative0() throws Exception {
+    proto3_unittest.UnittestProto3.TestAllTypes message =
+        proto3_unittest.UnittestProto3.TestAllTypes.newBuilder()
+            .setOptionalFloat(-0.0f)
+            .setOptionalDouble(-0.0)
+            .build();
+    assertThat(
+            proto3_unittest.UnittestProto3.TestAllTypes.parseFrom(
+                message.toByteString(), ExtensionRegistry.getEmptyRegistry()))
+        .isEqualTo(message);
+  }
+
+  @Test
+  public void testNegative0FloatingPointEquality() throws Exception {
+    // Like Double#equals and Float#equals, we treat -0.0 as not being equal to +0.0 even though
+    // IEEE 754 mandates that they are equivalent. This test asserts that behavior.
+    proto3_unittest.UnittestProto3.TestAllTypes message1 =
+        proto3_unittest.UnittestProto3.TestAllTypes.newBuilder()
+            .setOptionalFloat(-0.0f)
+            .setOptionalDouble(-0.0)
+            .build();
+    proto3_unittest.UnittestProto3.TestAllTypes message2 =
+        proto3_unittest.UnittestProto3.TestAllTypes.newBuilder()
+            .setOptionalFloat(0.0f)
+            .setOptionalDouble(0.0)
+            .build();
+    assertThat(message1).isNotEqualTo(message2);
+  }
+
+  /** Tests that unpaired surrogates are replaced by a question mark when serializing a string. */
+  @Test
+  public void testUnpairedSurrogatesReplacedByQuestionMark() throws InvalidProtocolBufferException {
+    String testString = "foo \ud83d bar";
+    String expectedString = "foo ? bar";
+
+    proto3_unittest.UnittestProto3.TestAllTypes testMessage =
+        proto3_unittest.UnittestProto3.TestAllTypes.newBuilder()
+            .setOptionalString(testString)
+            .build();
+    ByteString serializedMessage = testMessage.toByteString();
+
+    // Behavior is compatible with String.getBytes("UTF-8"), which replaces
+    // unpaired surrogates with a question mark.
+    proto3_unittest.UnittestProto3.TestAllTypes parsedMessage =
+        proto3_unittest.UnittestProto3.TestAllTypes.parseFrom(serializedMessage);
+    assertThat(parsedMessage.getOptionalString()).isEqualTo(expectedString);
+
+    // Conversion happens during serialization.
+    ByteString expectedBytes = ByteString.copyFromUtf8(expectedString);
+    assertWithMessage(
+            "Expected serializedMessage (%s) to contain \"%s\" (%s).",
+            encodeHex(serializedMessage), expectedString, encodeHex(expectedBytes))
+        .that(contains(serializedMessage, expectedBytes))
+        .isTrue();
+  }
+
+  private static String encodeHex(ByteString bytes) {
+    String hexDigits = "0123456789abcdef";
+    StringBuilder stringBuilder = new StringBuilder(bytes.size() * 2);
+    for (byte b : bytes) {
+      stringBuilder.append(hexDigits.charAt((b & 0xf0) >> 4));
+      stringBuilder.append(hexDigits.charAt(b & 0x0f));
+    }
+    return stringBuilder.toString();
+  }
+
+  private static boolean contains(ByteString a, ByteString b) {
+    for (int i = 0; i <= a.size() - b.size(); ++i) {
+      if (a.substring(i, i + b.size()).equals(b)) {
+        return true;
+      }
+    }
+    return false;
+  }
+}

@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package debug;
+
+message DebugMsg {
+  int32 id = 1;
+  string secret_user_data = 2 [debug_redact = true];
+}

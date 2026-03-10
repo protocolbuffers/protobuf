@@ -1,0 +1,357 @@
+################################################################################
+# Protocol Buffers Compiler - Java code generator
+################################################################################
+
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+package(
+    default_visibility = [
+        "//src/google/protobuf/compiler/java:__subpackages__",
+    ],
+)
+
+cc_library(
+    name = "names",
+    hdrs = ["names.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":helpers",
+        "//src/google/protobuf",
+    ],
+)
+
+cc_library(
+    name = "names_internal",
+    hdrs = ["names_internal.h"],
+    strip_include_prefix = "/src",
+    deps = [
+        "//src/google/protobuf",
+    ],
+)
+
+cc_library(
+    name = "context",
+    hdrs = [
+        "context.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler/java:__subpackages__",
+        "//src/google/protobuf/compiler/kotlin:__subpackages__",
+    ],
+    deps = [
+        ":field_common",
+        ":helpers",
+        "//src/google/protobuf:port",
+        "@abseil-cpp//absl/container:flat_hash_map",
+    ],
+)
+
+cc_library(
+    name = "helpers",
+    srcs = [
+        "doc_comment.cc",
+        "helpers.cc",
+        "name_resolver.cc",
+        "names.cc",
+    ],
+    hdrs = [
+        "doc_comment.h",
+        "generator.h",
+        "helpers.h",
+        "name_resolver.h",
+        "names.h",
+        "options.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler/java:__subpackages__",
+        "//src/google/protobuf/compiler/kotlin:__subpackages__",
+    ],
+    deps = [
+        ":java_features_bootstrap",
+        ":names_internal",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler:code_generator_lite",
+        "//src/google/protobuf/compiler:versions",
+        "//src/google/protobuf/io:printer",
+        "//src/google/protobuf/io:tokenizer",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+    ],
+)
+
+cc_library(
+    name = "internal_helpers",
+    srcs = ["internal_helpers.cc"],
+    hdrs = [
+        "generator.h",
+        "internal_helpers.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//src/google/protobuf/compiler/java:__subpackages__",
+        "//src/google/protobuf/compiler/kotlin:__subpackages__",
+    ],
+    deps = [
+        ":context",
+        ":helpers",
+        ":java_features_bootstrap",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler:code_generator_lite",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+    ],
+)
+
+cc_library(
+    name = "java_features_bootstrap",
+    srcs = ["java_features.pb.cc"],
+    hdrs = ["java_features.pb.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//editions:__pkg__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:arena",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/io",
+    ],
+)
+
+cc_library(
+    name = "java",
+    srcs = [
+        "context.cc",
+        "file.cc",
+        "generator.cc",
+        "shared_code_generator.cc",
+    ],
+    hdrs = [
+        "file.h",
+        "generator.h",
+        "generator_factory.h",
+        "java_features.pb.h",
+        "shared_code_generator.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+        "//src/google/protobuf/compiler/kotlin:__subpackages__",
+    ],
+    deps = [
+        ":context",
+        ":field_common",
+        ":generator_common",
+        ":helpers",
+        ":internal_helpers",
+        ":java_features_bootstrap",
+        ":names",
+        "//src/google/protobuf",
+        "//src/google/protobuf:arena",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler:retention",
+        "//src/google/protobuf/compiler:versions",
+        "//src/google/protobuf/compiler/java/full",
+        "//src/google/protobuf/compiler/java/lite",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+    ],
+)
+
+cc_library(
+    name = "field_common",
+    srcs = ["field_common.cc"],
+    hdrs = ["field_common.h"],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//src/google/protobuf/compiler/java:__subpackages__",
+        "//src/google/protobuf/compiler/kotlin:__subpackages__",
+    ],
+    deps = [
+        ":helpers",
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "generator_common",
+    hdrs = [
+        "generator_common.h",
+        "generator_factory.h",
+    ],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//src/google/protobuf/compiler/java:__subpackages__",
+        "//src/google/protobuf/compiler/kotlin:__subpackages__",
+    ],
+    deps = [
+        ":context",
+        ":helpers",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/io:printer",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+    ],
+)
+
+cc_library(
+    name = "message_serialization",
+    srcs = ["message_serialization.cc"],
+    hdrs = ["message_serialization.h"],
+    strip_include_prefix = "/src",
+    deps = [
+        ":generator_common",
+        ":helpers",
+        "//src/google/protobuf",
+        "//src/google/protobuf/io:printer",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/types:span",
+    ],
+)
+
+cc_test(
+    name = "generator_unittest",
+    srcs = ["generator_unittest.cc"],
+    deps = [
+        ":java",
+        ":java_features_bootstrap",
+        "//:protobuf",
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler:command_line_interface_tester",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "doc_comment_unittest",
+    srcs = ["doc_comment_unittest.cc"],
+    data = [
+        "//:well_known_type_protos",
+        "//conformance:conformance_proto",
+        "//src/google/protobuf:descriptor_proto_srcs",
+    ],
+    deps = [
+        ":helpers",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "plugin_unittest",
+    srcs = ["plugin_unittest.cc"],
+    deps = [
+        ":java",
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler:command_line_interface",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
+        "//src/google/protobuf/stubs:lite",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "name_resolver_test",
+    size = "small",
+    srcs = ["name_resolver_test.cc"],
+    deps = [
+        ":helpers",
+        ":java",
+        "//:protobuf",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/stubs:lite",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+################################################################################
+# Distribution packaging
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["**/*"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//src:__pkg__"],
+)
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob(
+        [
+            "*_test.cc",
+            "*unittest.cc",
+        ],
+        allow_empty = True,
+    ),
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+)
+
+filegroup(
+    name = "test_proto_srcs",
+    srcs = glob(["*.proto"]),
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+)

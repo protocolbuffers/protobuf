@@ -1,0 +1,54 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2025 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package upb_test;
+
+enum OpenEnum {
+  OPEN_ENUM_UNSPECIFIED = 0;
+  OPEN_ENUM_FOO = 1;
+  OPEN_ENUM_BAR = 2;
+}
+
+enum ClosedEnum {
+  option features.enum_type = CLOSED;
+
+  CLOSED_ENUM_UNSPECIFIED = 0;
+  CLOSED_ENUM_FOO = 1;
+  CLOSED_ENUM_BAR = 2;
+}
+
+message DebugStringTestMessage {
+  int32 int32_field = 1;
+
+  // Different field modes.
+  repeated int64 packed_int64_field = 2;
+  repeated int64 repeated_int64_field = 3
+      [features.repeated_field_encoding = EXPANDED];
+  map<uint32, uint32> map_field = 4;
+
+  // Different field presence.
+  int32 required_field = 5 [features.field_presence = LEGACY_REQUIRED];
+  int32 implicit_presence_field = 6 [features.field_presence = IMPLICIT];
+
+  // Different enum types.
+  ClosedEnum closed_enum_field = 7;
+  OpenEnum open_enum_field = 8;
+
+  // Different UTF-8 validation types.
+  string utf8_validated_string_field = 9 [features.utf8_validation = VERIFY];
+  string utf8_invalid_string_field = 10 [features.utf8_validation = NONE];
+
+  SubMessage sub_message_field = 11;
+  bool bool_field = 12;
+}
+
+message SubMessage {
+  // Test that we can handle cyclic messages.
+  DebugStringTestMessage cycle_field = 1;
+}

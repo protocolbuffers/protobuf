@@ -1,0 +1,16 @@
+Recommended.*.JsonInput.FieldNameDuplicate                                  # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing1                  # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing2                  # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int32FieldQuotedExponentialValue.*                     # Failed to parse input or produce output.
+Required.*.JsonInput.AnyWithNoType.*                                        # Failed to parse input or produce output.
+# TODO: Uncomment once conformance tests can express failures that are not expected to be fixed.
+# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.MapKey   # Should have failed to parse, but didn't.
+# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.MapValue # Should have failed to parse, but didn't.
+# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.Oneof    # Should have failed to parse, but didn't.
+# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.Repeated # Should have failed to parse, but didn't.
+# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.Singular # Should have failed to parse, but didn't.
+# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.MapKey            # Should have failed to parse, but didn't.
+# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.MapValue          # Should have failed to parse, but didn't.
+# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Oneof             # Should have failed to parse, but didn't.
+# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Repeated          # Should have failed to parse, but didn't.
+# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Singular          # Should have failed to parse, but didn't.

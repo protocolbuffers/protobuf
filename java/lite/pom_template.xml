@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>{groupId}</groupId>
+    <artifactId>protobuf-parent</artifactId>
+    <version>{version}</version>
+  </parent>
+
+  <artifactId>{artifactId}</artifactId>
+  <packaging>{type}</packaging>
+
+  <name>Protocol Buffers [Lite]</name>
+  <description>
+    Lite version of Protocol Buffers library. This version is optimized for code size, but does
+    not guarantee API/ABI stability.
+  </description>
+  <dependencies>
+    {dependencies}
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- OSGI bundle configuration -->
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Automatic-Module-Name>com.google.protobuf</Automatic-Module-Name> <!-- Java9+ Jigsaw module name -->
+            <Bundle-DocURL>https://developers.google.com/protocol-buffers/</Bundle-DocURL>
+            <Bundle-SymbolicName>com.google.protobuf</Bundle-SymbolicName>
+            <Export-Package>com.google.protobuf;version=${project.version}</Export-Package>
+            <Import-Package>sun.misc;resolution:=optional,*</Import-Package>
+          </instructions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

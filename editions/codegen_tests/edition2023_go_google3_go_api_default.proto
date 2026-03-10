@@ -1,0 +1,32 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package protobuf_editions_test.edition2023;
+
+message Edition2023Google3GoApiLevelDefault {
+  int32 foo = 1;
+}
+
+message Edition2023Google3GoApiLevelOpen {
+  option go_api_flag = "OPEN_V1";
+
+  int32 foo = 1;
+}
+
+message Edition2023Google3GoApiLevelHybrid {
+  option go_api_flag = "OPEN_TO_OPAQUE_HYBRID";
+
+  int32 foo = 1;
+}
+
+message Edition2023Google3GoApiLevelOpaque {
+  option go_api_flag = "OPAQUE_V0";
+
+  int32 foo = 1;
+}

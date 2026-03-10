@@ -1,0 +1,299 @@
+# Copyright (c) 2025, Google LLC
+# All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+load(
+    "//upb_generator:bootstrap_compiler.bzl",
+    "bootstrap_cc_library",
+)
+
+cc_library(
+    name = "crate_mapping",
+    srcs = ["crate_mapping.cc"],
+    hdrs = ["crate_mapping.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":context",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "crate_mapping_unittest",
+    srcs = ["crate_mapping_unittest.cc"],
+    deps = [
+        ":context",
+        ":crate_mapping",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "context",
+    srcs = ["context.cc"],
+    hdrs = ["context.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//src/google/protobuf/compiler/rust:__subpackages__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/io:printer",
+        "@abseil-cpp//absl/algorithm:container",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/types:span",
+    ],
+)
+
+cc_library(
+    name = "naming",
+    srcs = [
+        "naming.cc",
+        "rust_keywords.cc",
+    ],
+    hdrs = [
+        "naming.h",
+        "rust_keywords.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//src/google/protobuf/compiler/rust:__subpackages__"],
+    deps = [
+        ":context",
+        ":rust_field_type",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler/cpp:names_internal",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+    ],
+)
+
+cc_test(
+    name = "naming_test",
+    size = "small",
+    srcs = ["naming_test.cc"],
+    deps = [
+        ":context",
+        ":naming",
+        "//src/google/protobuf",
+        "//src/google/protobuf/io",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "relative_path",
+    srcs = ["relative_path.cc"],
+    hdrs = ["relative_path.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        "@abseil-cpp//absl/algorithm:container",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "relative_path_test",
+    size = "small",
+    srcs = ["relative_path_test.cc"],
+    deps = [
+        ":relative_path",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "oneof",
+    srcs = ["oneof.cc"],
+    hdrs = ["oneof.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":context",
+        ":naming",
+        ":rust_field_type",
+        ":upb_helpers",
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler/cpp:names_internal",
+        "//src/google/protobuf/compiler/rust/accessors",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "rust_field_type",
+    srcs = ["rust_field_type.cc"],
+    hdrs = ["rust_field_type.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//src/google/protobuf/compiler/rust:__subpackages__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "@abseil-cpp//absl/log:absl_log",
+    ],
+)
+
+cc_library(
+    name = "upb_helpers",
+    srcs = ["upb_helpers.cc"],
+    hdrs = ["upb_helpers.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//src/google/protobuf/compiler/rust:__subpackages__"],
+    deps = [
+        ":context",
+        ":naming",
+        "//src/google/protobuf",
+        "//upb_generator/minitable:names",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_binary(
+    name = "protoc-gen-rust",
+    srcs = ["main.cc"],
+    visibility = ["//rust:__pkg__"],
+    deps = [
+        ":rust",
+        "//src/google/protobuf/compiler:plugin",
+    ],
+)
+
+bootstrap_cc_library(
+    name = "rust",
+    srcs = ["generator.cc"],
+    hdrs = ["generator.h"],
+    bootstrap_deps = [
+        ":enum",
+        ":message",
+        "//upb/reflection:reflection",
+        "//upb_generator:plugin",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+    ],
+    deps = [
+        ":context",
+        ":crate_mapping",
+        ":naming",
+        ":relative_path",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler:versions",
+        "//src/google/protobuf/compiler/cpp:names",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
+        "//upb/mem",
+        "@abseil-cpp//absl/algorithm:container",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/types:span",
+    ],
+)
+
+bootstrap_cc_library(
+    name = "message",
+    srcs = ["message.cc"],
+    hdrs = ["message.h"],
+    bootstrap_deps = [
+        ":enum",
+        "//upb/reflection:reflection",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":context",
+        ":naming",
+        ":oneof",
+        ":upb_helpers",
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler/cpp:names",
+        "//src/google/protobuf/compiler/cpp:names_internal",
+        "//src/google/protobuf/compiler/rust/accessors",
+        "//upb/mini_descriptor",
+        "//upb/mini_table",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+    ],
+)
+
+bootstrap_cc_library(
+    name = "enum",
+    srcs = ["enum.cc"],
+    hdrs = ["enum.h"],
+    bootstrap_deps = [
+        "//upb/reflection:reflection",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":context",
+        ":naming",
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler/cpp:names",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/types:span",
+    ],
+)
+
+cc_test(
+    name = "enum_test",
+    srcs = ["enum_test.cc"],
+    deps = [
+        ":enum",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)

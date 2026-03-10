@@ -1,0 +1,12 @@
+diff --git a/MODULE.bazel b/MODULE.bazel
+index 43dd61ac1..d993177c5 100644
+--- a/MODULE.bazel
++++ b/MODULE.bazel
+@@ -5,6 +5,7 @@ module(
+     name = "com_google_protobuf_v25",
+     version = "25.0",
+     compatibility_level = 1,
++    repo_name = "com_google_protobuf",
+ )
+ 
+ # LOWER BOUND dependency versions.

@@ -1,0 +1,9 @@
+edition = "2023";
+
+package utf8;
+
+option features.utf8_validation = VERIFY;
+
+message Verify {
+  string my_field = 1;
+}

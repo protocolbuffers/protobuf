@@ -1,0 +1,24 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Test that features with legacy descriptor helpers get properly converted.
+
+edition = "2024";
+
+package legacy_features_unittest;
+
+option java_outer_classname = "UnittestLegacyFeatures";
+
+import option "google/protobuf/java_features.proto";
+
+message TestEditionsMessage {
+  option features.(pb.java).nest_in_file_class = YES;
+
+  int32 required_field = 1 [features.field_presence = LEGACY_REQUIRED];
+  TestEditionsMessage delimited_field = 2
+      [features.message_encoding = DELIMITED];
+}

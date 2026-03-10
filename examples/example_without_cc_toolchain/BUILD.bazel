@@ -1,0 +1,17 @@
+load("@com_google_protobuf//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("@com_google_protobuf//bazel:proto_library.bzl", "proto_library")
+
+proto_library(
+    name = "empty_proto",
+    srcs = ["empty.proto"],
+)
+
+cc_proto_library(
+    name = "cc_empty_proto",
+    # We already have a anaylsis test that asserts that the cc_proto_library
+    # uses the correct prebuilt toolchain, this cc_proto_library will never
+    # compile since the prebuilt toolchain is always behind the HEAD therefore
+    # will end up in version skew compilation errors.
+    tags = ["manual"],
+    deps = [":empty_proto"],
+)

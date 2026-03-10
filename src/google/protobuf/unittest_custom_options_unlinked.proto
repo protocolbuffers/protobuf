@@ -1,0 +1,37 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Author: benjy@google.com (Benjy Weinberger)
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
+//
+// A proto file used to test the "custom options" feature when not linked in.
+
+edition = "2024";
+
+// A custom file option (defined below).
+option (file_opt1) = 9876543210;
+
+import "google/protobuf/descriptor.proto";
+
+// We don't put this in a package within proto2 because we need to make sure
+// that the generated code doesn't depend on being in the proto2 namespace.
+package proto2_unittest_unlinked;
+
+// Some simple test custom options of various types.
+
+extend google.protobuf.FileOptions {
+  uint64 file_opt1 = 7736975;
+}
+
+extend google.protobuf.MessageOptions {
+  int32 message_opt1 = 7739037;
+}
+
+extend google.protobuf.FieldOptions {
+  fixed64 field_opt1 = 7740937;
+}

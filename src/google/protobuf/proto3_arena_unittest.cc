@@ -1,0 +1,644 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "google/protobuf/descriptor.pb.h"
+#include <gtest/gtest.h>
+#include "absl/log/absl_check.h"
+#include "absl/strings/match.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/text_format.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_proto3_arena.pb.h"
+#include "google/protobuf/unittest_proto3_optional.pb.h"
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
+using proto3_arena_unittest::ForeignMessage;
+using proto3_arena_unittest::TestAllTypes;
+
+namespace google {
+namespace protobuf {
+namespace {
+// We selectively set/check a few representative fields rather than all fields
+// as this test is only expected to cover the basics of arena support.
+void SetAllFields(TestAllTypes* m) {
+  m->set_optional_int32(100);
+  m->set_optional_string("asdf");
+  m->set_optional_bytes("jkl;");
+  m->mutable_optional_nested_message()->set_bb(42);
+  m->mutable_optional_foreign_message()->set_c(43);
+  m->set_optional_nested_enum(proto3_arena_unittest::TestAllTypes::BAZ);
+  m->set_optional_foreign_enum(proto3_arena_unittest::FOREIGN_BAZ);
+  m->mutable_optional_lazy_message()->set_bb(45);
+  m->mutable_optional_unverified_lazy_message()->set_bb(46);
+  m->add_repeated_int32(100);
+  m->add_repeated_string("asdf");
+  m->add_repeated_bytes("jkl;");
+  m->add_repeated_nested_message()->set_bb(46);
+  m->add_repeated_foreign_message()->set_c(47);
+  m->add_repeated_nested_enum(proto3_arena_unittest::TestAllTypes::BAZ);
+  m->add_repeated_foreign_enum(proto3_arena_unittest::FOREIGN_BAZ);
+  m->add_repeated_lazy_message()->set_bb(49);
+
+  m->set_oneof_uint32(1);
+  m->mutable_oneof_nested_message()->set_bb(50);
+  m->set_oneof_string("test");  // only this one remains set
+}
+
+void ExpectAllFieldsSet(const TestAllTypes& m) {
+  EXPECT_EQ(100, m.optional_int32());
+  EXPECT_EQ("asdf", m.optional_string());
+  EXPECT_EQ("jkl;", m.optional_bytes());
+  EXPECT_EQ(true, m.has_optional_nested_message());
+  EXPECT_EQ(42, m.optional_nested_message().bb());
+  EXPECT_EQ(true, m.has_optional_foreign_message());
+  EXPECT_EQ(43, m.optional_foreign_message().c());
+  EXPECT_EQ(proto3_arena_unittest::TestAllTypes::BAZ, m.optional_nested_enum());
+  EXPECT_EQ(proto3_arena_unittest::FOREIGN_BAZ, m.optional_foreign_enum());
+  EXPECT_EQ(true, m.has_optional_lazy_message());
+  EXPECT_EQ(45, m.optional_lazy_message().bb());
+  EXPECT_EQ(true, m.has_optional_unverified_lazy_message());
+  EXPECT_EQ(46, m.optional_unverified_lazy_message().bb());
+
+  EXPECT_EQ(1, m.repeated_int32_size());
+  EXPECT_EQ(100, m.repeated_int32(0));
+  EXPECT_EQ(1, m.repeated_string_size());
+  EXPECT_EQ("asdf", m.repeated_string(0));
+  EXPECT_EQ(1, m.repeated_bytes_size());
+  EXPECT_EQ("jkl;", m.repeated_bytes(0));
+  EXPECT_EQ(1, m.repeated_nested_message_size());
+  EXPECT_EQ(46, m.repeated_nested_message(0).bb());
+  EXPECT_EQ(1, m.repeated_foreign_message_size());
+  EXPECT_EQ(47, m.repeated_foreign_message(0).c());
+  EXPECT_EQ(1, m.repeated_nested_enum_size());
+  EXPECT_EQ(proto3_arena_unittest::TestAllTypes::BAZ,
+            m.repeated_nested_enum(0));
+  EXPECT_EQ(1, m.repeated_foreign_enum_size());
+  EXPECT_EQ(proto3_arena_unittest::FOREIGN_BAZ, m.repeated_foreign_enum(0));
+  EXPECT_EQ(1, m.repeated_lazy_message_size());
+  EXPECT_EQ(49, m.repeated_lazy_message(0).bb());
+
+  EXPECT_EQ(proto3_arena_unittest::TestAllTypes::kOneofString,
+            m.oneof_field_case());
+  EXPECT_EQ("test", m.oneof_string());
+}
+
+// In this file we only test some basic functionalities of arena support in
+// proto3 and expect the arena support to be fully tested in proto2 unittests
+// because proto3 shares most code with proto2.
+
+TEST(Proto3ArenaTest, Parsing) {
+  TestAllTypes original;
+  SetAllFields(&original);
+
+  Arena arena;
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
+  ABSL_CHECK(arena_message->ParseFromString(original.SerializeAsString()));
+  ExpectAllFieldsSet(*arena_message);
+}
+
+TEST(Proto3ArenaTest, UnknownFields) {
+  TestAllTypes original;
+  SetAllFields(&original);
+
+  Arena arena;
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
+  ABSL_CHECK(arena_message->ParseFromString(original.SerializeAsString()));
+  ExpectAllFieldsSet(*arena_message);
+
+  // In proto3 we can still get a pointer to the UnknownFieldSet through
+  // reflection API.
+  UnknownFieldSet* unknown_fields =
+      arena_message->GetReflection()->MutableUnknownFields(arena_message);
+  // We can modify this UnknownFieldSet.
+  unknown_fields->AddVarint(1, 2);
+  // And the unknown fields should be changed.
+  ASSERT_NE(original.ByteSizeLong(), arena_message->ByteSizeLong());
+  ASSERT_FALSE(
+      arena_message->GetReflection()->GetUnknownFields(*arena_message).empty());
+}
+
+TEST(Proto3ArenaTest, GetArena) {
+  Arena arena;
+
+  // Tests arena-allocated message and submessages.
+  auto* arena_message1 = Arena::Create<TestAllTypes>(&arena);
+  auto* arena_submessage1 = arena_message1->mutable_optional_foreign_message();
+  auto* arena_repeated_submessage1 =
+      arena_message1->add_repeated_foreign_message();
+  EXPECT_EQ(&arena, arena_message1->GetArena());
+  EXPECT_EQ(&arena, arena_submessage1->GetArena());
+  EXPECT_EQ(&arena, arena_repeated_submessage1->GetArena());
+
+  // Tests attached heap-allocated messages.
+  auto* arena_message2 = Arena::Create<TestAllTypes>(&arena);
+  arena_message2->set_allocated_optional_foreign_message(new ForeignMessage());
+  arena_message2->mutable_repeated_foreign_message()->AddAllocated(
+      new ForeignMessage());
+  const auto& submessage2 = arena_message2->optional_foreign_message();
+  const auto& repeated_submessage2 =
+      arena_message2->repeated_foreign_message(0);
+  EXPECT_EQ(nullptr, submessage2.GetArena());
+  EXPECT_EQ(nullptr, repeated_submessage2.GetArena());
+
+  // Tests message created by Arena::Create.
+  auto* arena_message3 = Arena::Create<TestAllTypes>(&arena);
+  EXPECT_EQ(&arena, arena_message3->GetArena());
+}
+
+TEST(Proto3ArenaTest, GetArenaWithUnknown) {
+  Arena arena;
+
+  // Tests arena-allocated message and submessages.
+  auto* arena_message1 = Arena::Create<TestAllTypes>(&arena);
+  (void)arena_message1->GetReflection()->MutableUnknownFields(arena_message1);
+  auto* arena_submessage1 = arena_message1->mutable_optional_foreign_message();
+  (void)arena_submessage1->GetReflection()->MutableUnknownFields(
+      arena_submessage1);
+  auto* arena_repeated_submessage1 =
+      arena_message1->add_repeated_foreign_message();
+  (void)arena_repeated_submessage1->GetReflection()->MutableUnknownFields(
+      arena_repeated_submessage1);
+  EXPECT_EQ(&arena, arena_message1->GetArena());
+  EXPECT_EQ(&arena, arena_submessage1->GetArena());
+  EXPECT_EQ(&arena, arena_repeated_submessage1->GetArena());
+
+  // Tests attached heap-allocated messages.
+  auto* arena_message2 = Arena::Create<TestAllTypes>(&arena);
+  arena_message2->set_allocated_optional_foreign_message(new ForeignMessage());
+  arena_message2->mutable_repeated_foreign_message()->AddAllocated(
+      new ForeignMessage());
+  auto* submessage2 = arena_message2->mutable_optional_foreign_message();
+  (void)submessage2->GetReflection()->MutableUnknownFields(submessage2);
+  auto* repeated_submessage2 =
+      arena_message2->mutable_repeated_foreign_message(0);
+  (void)repeated_submessage2->GetReflection()->MutableUnknownFields(
+      repeated_submessage2);
+  EXPECT_EQ(nullptr, submessage2->GetArena());
+  EXPECT_EQ(nullptr, repeated_submessage2->GetArena());
+}
+
+TEST(Proto3ArenaTest, Swap) {
+  Arena arena1;
+  Arena arena2;
+
+  // Test Swap().
+  TestAllTypes* arena1_message = Arena::Create<TestAllTypes>(&arena1);
+  TestAllTypes* arena2_message = Arena::Create<TestAllTypes>(&arena2);
+  arena1_message->Swap(arena2_message);
+  EXPECT_EQ(&arena1, arena1_message->GetArena());
+  EXPECT_EQ(&arena2, arena2_message->GetArena());
+}
+
+TEST(Proto3ArenaTest, SetAllocatedMessage) {
+  Arena arena;
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
+  TestAllTypes::NestedMessage* nested = new TestAllTypes::NestedMessage;
+  nested->set_bb(118);
+  arena_message->set_allocated_optional_nested_message(nested);
+  EXPECT_EQ(118, arena_message->optional_nested_message().bb());
+}
+
+TEST(Proto3ArenaTest, ReleaseMessage) {
+  Arena arena;
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
+  arena_message->mutable_optional_nested_message()->set_bb(118);
+  std::unique_ptr<TestAllTypes::NestedMessage> nested(
+      arena_message->release_optional_nested_message());
+  EXPECT_EQ(118, nested->bb());
+}
+
+TEST(Proto3ArenaTest, MessageFieldClear) {
+  // GitHub issue #310: https://github.com/protocolbuffers/protobuf/issues/310
+  Arena arena;
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
+  arena_message->mutable_optional_nested_message()->set_bb(118);
+  // This should not crash, but prior to the bugfix, it tried to use `operator
+  // delete` the nested message (which is on the arena):
+  arena_message->Clear();
+}
+
+TEST(Proto3ArenaTest, MessageFieldClearViaReflection) {
+  Arena arena;
+  TestAllTypes* message = Arena::Create<TestAllTypes>(&arena);
+  const Reflection* r = message->GetReflection();
+  const Descriptor* d = message->GetDescriptor();
+  const FieldDescriptor* msg_field =
+      d->FindFieldByName("optional_nested_message");
+
+  message->mutable_optional_nested_message()->set_bb(1);
+  r->ClearField(message, msg_field);
+  EXPECT_FALSE(message->has_optional_nested_message());
+  EXPECT_EQ(0, message->optional_nested_message().bb());
+}
+
+TEST(Proto3OptionalTest, OptionalFields) {
+  proto2_unittest::TestProto3Optional msg;
+  EXPECT_FALSE(msg.has_optional_int32());
+  msg.set_optional_int32(0);
+  EXPECT_TRUE(msg.has_optional_int32());
+
+  std::string serialized;
+  ABSL_CHECK(msg.SerializeToString(&serialized));
+  EXPECT_GT(serialized.size(), 0);
+
+  msg.clear_optional_int32();
+  EXPECT_FALSE(msg.has_optional_int32());
+  ABSL_CHECK(msg.SerializeToString(&serialized));
+  EXPECT_EQ(serialized.size(), 0);
+}
+
+TEST(Proto3ArenaTest, CheckMessageFieldIsCleared) {
+  Arena arena;
+  auto msg = Arena::Create<TestAllTypes>(&arena);
+
+  // Referring to a saved pointer to a child message is never guaranteed to
+  // work. IOW, protobufs do not guarantee pointer stability. This test only
+  // does this to replicate (unsupported) user behaviors.
+  auto child = msg->mutable_optional_foreign_message();
+  child->set_c(100);
+  msg->Clear();
+
+  EXPECT_EQ(child->c(), 0);
+}
+
+TEST(Proto3ArenaTest, CheckOneofMessageFieldIsCleared) {
+  if (!internal::DebugHardenClearOneofMessageOnArena()) {
+    GTEST_SKIP() << "arena allocated oneof message fields are not hardened.";
+  }
+  if (google::protobuf::internal::ForceEagerlyVerifiedLazyInProtoc()) {
+    GTEST_SKIP() << "Forced layout invalidates the test.";
+  }
+
+  Arena arena;
+  auto msg = Arena::Create<TestAllTypes>(&arena);
+
+  // Referring to a saved pointer to a child message is never guaranteed to
+  // work. IOW, protobufs do not guarantee pointer stability. This test only
+  // does this to replicate (unsupported) user behaviors.
+  auto child = msg->mutable_oneof_nested_message();
+  child->set_bb(100);
+  msg->Clear();
+
+  if (internal::HasMemoryPoisoning()) {
+#if GTEST_HAS_DEATH_TEST
+    EXPECT_DEATH(EXPECT_EQ(child->bb(), 100), "use-after-poison");
+#endif  // !GTEST_HAS_DEATH_TEST
+  } else {
+    EXPECT_EQ(child->bb(), 0);
+  }
+}
+
+TEST(Proto3OptionalTest, OptionalFieldDescriptor) {
+  const Descriptor* d = proto2_unittest::TestProto3Optional::descriptor();
+
+  for (int i = 0; i < d->field_count(); i++) {
+    const FieldDescriptor* f = d->field(i);
+    if (absl::StartsWith(f->name(), "singular")) {
+      EXPECT_FALSE(f->has_presence()) << f->full_name();
+      EXPECT_FALSE(f->containing_oneof()) << f->full_name();
+      EXPECT_FALSE(f->real_containing_oneof()) << f->full_name();
+    } else {
+      EXPECT_TRUE(f->has_presence()) << f->full_name();
+      EXPECT_TRUE(f->containing_oneof()) << f->full_name();
+      EXPECT_FALSE(f->real_containing_oneof()) << f->full_name();
+    }
+  }
+}
+
+TEST(Proto3OptionalTest, Extensions) {
+  const DescriptorPool* p = DescriptorPool::generated_pool();
+  const FieldDescriptor* no_optional = p->FindExtensionByName(
+      "proto2_unittest.Proto3OptionalExtensions.ext_no_optional");
+  const FieldDescriptor* with_optional = p->FindExtensionByName(
+      "proto2_unittest.Proto3OptionalExtensions.ext_with_optional");
+  ABSL_CHECK(no_optional);
+  ABSL_CHECK(with_optional);
+
+  const Descriptor* d = proto2_unittest::Proto3OptionalExtensions::descriptor();
+  EXPECT_TRUE(d->options().HasExtension(
+      proto2_unittest::Proto3OptionalExtensions::ext_no_optional));
+  EXPECT_TRUE(d->options().HasExtension(
+      proto2_unittest::Proto3OptionalExtensions::ext_with_optional));
+  EXPECT_EQ(8, d->options().GetExtension(
+                   proto2_unittest::Proto3OptionalExtensions::ext_no_optional));
+  EXPECT_EQ(16,
+            d->options().GetExtension(
+                proto2_unittest::Proto3OptionalExtensions::ext_with_optional));
+
+  const Descriptor* d2 = proto2_unittest::TestProto3Optional::descriptor();
+  EXPECT_FALSE(d2->options().HasExtension(
+      proto2_unittest::Proto3OptionalExtensions::ext_no_optional));
+  EXPECT_FALSE(d2->options().HasExtension(
+      proto2_unittest::Proto3OptionalExtensions::ext_with_optional));
+}
+
+TEST(Proto3OptionalTest, OptionalField) {
+  proto2_unittest::TestProto3Optional msg;
+  EXPECT_FALSE(msg.has_optional_int32());
+  msg.set_optional_int32(0);
+  EXPECT_TRUE(msg.has_optional_int32());
+
+  std::string serialized;
+  ABSL_CHECK(msg.SerializeToString(&serialized));
+  EXPECT_GT(serialized.size(), 0);
+
+  msg.clear_optional_int32();
+  EXPECT_FALSE(msg.has_optional_int32());
+  ABSL_CHECK(msg.SerializeToString(&serialized));
+  EXPECT_EQ(serialized.size(), 0);
+}
+
+TEST(Proto3OptionalTest, OptionalFieldReflection) {
+  // Tests that oneof reflection works on synthetic oneofs.
+  //
+  // We test this more deeply elsewhere by parsing/serializing TextFormat (which
+  // doesn't treat synthetic oneofs specially, so reflects over them normally).
+  proto2_unittest::TestProto3Optional msg;
+  const google::protobuf::Descriptor* d = msg.GetDescriptor();
+  const google::protobuf::Reflection* r = msg.GetReflection();
+  const google::protobuf::FieldDescriptor* f = d->FindFieldByName("optional_int32");
+  const google::protobuf::OneofDescriptor* o = d->FindOneofByName("_optional_int32");
+  ABSL_CHECK(f);
+  ABSL_CHECK(o);
+  EXPECT_EQ(f->containing_oneof(), o);
+  EXPECT_EQ(f->real_containing_oneof(), nullptr);
+
+  EXPECT_FALSE(r->HasField(msg, f));
+  EXPECT_FALSE(r->HasOneof(msg, o));
+  EXPECT_TRUE(r->GetOneofFieldDescriptor(msg, o) == nullptr);
+
+  r->SetInt32(&msg, f, 123);
+  EXPECT_EQ(123, msg.optional_int32());
+  EXPECT_EQ(123, r->GetInt32(msg, f));
+  EXPECT_TRUE(r->HasField(msg, f));
+  EXPECT_TRUE(r->HasOneof(msg, o));
+  EXPECT_EQ(f, r->GetOneofFieldDescriptor(msg, o));
+
+  std::vector<const FieldDescriptor*> fields;
+  r->ListFields(msg, &fields);
+  EXPECT_EQ(1, fields.size());
+  EXPECT_EQ(f, fields[0]);
+
+  r->ClearOneof(&msg, o);
+  EXPECT_FALSE(r->HasField(msg, f));
+  EXPECT_FALSE(r->HasOneof(msg, o));
+  EXPECT_TRUE(r->GetOneofFieldDescriptor(msg, o) == nullptr);
+
+  msg.set_optional_int32(123);
+  EXPECT_EQ(123, r->GetInt32(msg, f));
+  EXPECT_TRUE(r->HasField(msg, f));
+  EXPECT_TRUE(r->HasOneof(msg, o));
+  EXPECT_EQ(f, r->GetOneofFieldDescriptor(msg, o));
+
+  r->ClearOneof(&msg, o);
+  EXPECT_FALSE(r->HasField(msg, f));
+  EXPECT_FALSE(r->HasOneof(msg, o));
+  EXPECT_TRUE(r->GetOneofFieldDescriptor(msg, o) == nullptr);
+}
+
+// It's a regression test for b/160665543.
+TEST(Proto3OptionalTest, ClearNonOptionalMessageField) {
+  proto2_unittest::TestProto3OptionalMessage msg;
+  msg.mutable_nested_message();
+  const google::protobuf::Descriptor* d = msg.GetDescriptor();
+  const google::protobuf::Reflection* r = msg.GetReflection();
+  const google::protobuf::FieldDescriptor* f = d->FindFieldByName("nested_message");
+  r->ClearField(&msg, f);
+}
+
+TEST(Proto3OptionalTest, ClearOptionalMessageField) {
+  proto2_unittest::TestProto3OptionalMessage msg;
+  msg.mutable_optional_nested_message();
+  const google::protobuf::Descriptor* d = msg.GetDescriptor();
+  const google::protobuf::Reflection* r = msg.GetReflection();
+  const google::protobuf::FieldDescriptor* f =
+      d->FindFieldByName("optional_nested_message");
+  r->ClearField(&msg, f);
+}
+
+TEST(Proto3OptionalTest, SwapNonOptionalMessageField) {
+  proto2_unittest::TestProto3OptionalMessage msg1;
+  proto2_unittest::TestProto3OptionalMessage msg2;
+  msg1.mutable_nested_message();
+  const google::protobuf::Descriptor* d = msg1.GetDescriptor();
+  const google::protobuf::Reflection* r = msg1.GetReflection();
+  const google::protobuf::FieldDescriptor* f = d->FindFieldByName("nested_message");
+  r->SwapFields(&msg1, &msg2, {f});
+}
+
+TEST(Proto3OptionalTest, SwapOptionalMessageField) {
+  proto2_unittest::TestProto3OptionalMessage msg1;
+  proto2_unittest::TestProto3OptionalMessage msg2;
+  msg1.mutable_optional_nested_message();
+  const google::protobuf::Descriptor* d = msg1.GetDescriptor();
+  const google::protobuf::Reflection* r = msg1.GetReflection();
+  const google::protobuf::FieldDescriptor* f =
+      d->FindFieldByName("optional_nested_message");
+  r->SwapFields(&msg1, &msg2, {f});
+}
+
+void SetAllFieldsZero(proto2_unittest::TestProto3Optional* msg) {
+  msg->set_optional_int32(0);
+  msg->set_optional_int64(0);
+  msg->set_optional_uint32(0);
+  msg->set_optional_uint64(0);
+  msg->set_optional_sint32(0);
+  msg->set_optional_sint64(0);
+  msg->set_optional_fixed32(0);
+  msg->set_optional_fixed64(0);
+  msg->set_optional_sfixed32(0);
+  msg->set_optional_sfixed64(0);
+  msg->set_optional_float(0);
+  msg->set_optional_double(0);
+  msg->set_optional_bool(false);
+  msg->set_optional_string("");
+  msg->set_optional_bytes("");
+  msg->mutable_optional_nested_message();
+  msg->mutable_lazy_nested_message();
+  msg->set_optional_nested_enum(
+      proto2_unittest::TestProto3Optional::UNSPECIFIED);
+}
+
+void SetAllFieldsNonZero(proto2_unittest::TestProto3Optional* msg) {
+  msg->set_optional_int32(101);
+  msg->set_optional_int64(102);
+  msg->set_optional_uint32(103);
+  msg->set_optional_uint64(104);
+  msg->set_optional_sint32(105);
+  msg->set_optional_sint64(106);
+  msg->set_optional_fixed32(107);
+  msg->set_optional_fixed64(108);
+  msg->set_optional_sfixed32(109);
+  msg->set_optional_sfixed64(110);
+  msg->set_optional_float(111);
+  msg->set_optional_double(112);
+  msg->set_optional_bool(true);
+  msg->set_optional_string("abc");
+  msg->set_optional_bytes("def");
+  msg->mutable_optional_nested_message();
+  msg->mutable_lazy_nested_message();
+  msg->set_optional_nested_enum(proto2_unittest::TestProto3Optional::BAZ);
+}
+
+void TestAllFieldsZero(const proto2_unittest::TestProto3Optional& msg) {
+  EXPECT_EQ(0, msg.optional_int32());
+  EXPECT_EQ(0, msg.optional_int64());
+  EXPECT_EQ(0, msg.optional_uint32());
+  EXPECT_EQ(0, msg.optional_uint64());
+  EXPECT_EQ(0, msg.optional_sint32());
+  EXPECT_EQ(0, msg.optional_sint64());
+  EXPECT_EQ(0, msg.optional_fixed32());
+  EXPECT_EQ(0, msg.optional_fixed64());
+  EXPECT_EQ(0, msg.optional_sfixed32());
+  EXPECT_EQ(0, msg.optional_sfixed64());
+  EXPECT_EQ(0, msg.optional_float());
+  EXPECT_EQ(0, msg.optional_double());
+  EXPECT_EQ(0, msg.optional_bool());
+  EXPECT_EQ("", msg.optional_string());
+  EXPECT_EQ("", msg.optional_bytes());
+  EXPECT_EQ(proto2_unittest::TestProto3Optional::UNSPECIFIED,
+            msg.optional_nested_enum());
+
+  const Reflection* r = msg.GetReflection();
+  const Descriptor* d = msg.GetDescriptor();
+  EXPECT_EQ("", r->GetString(msg, d->FindFieldByName("optional_string")));
+}
+
+void TestAllFieldsNonZero(const proto2_unittest::TestProto3Optional& msg) {
+  EXPECT_EQ(101, msg.optional_int32());
+  EXPECT_EQ(102, msg.optional_int64());
+  EXPECT_EQ(103, msg.optional_uint32());
+  EXPECT_EQ(104, msg.optional_uint64());
+  EXPECT_EQ(105, msg.optional_sint32());
+  EXPECT_EQ(106, msg.optional_sint64());
+  EXPECT_EQ(107, msg.optional_fixed32());
+  EXPECT_EQ(108, msg.optional_fixed64());
+  EXPECT_EQ(109, msg.optional_sfixed32());
+  EXPECT_EQ(110, msg.optional_sfixed64());
+  EXPECT_EQ(111, msg.optional_float());
+  EXPECT_EQ(112, msg.optional_double());
+  EXPECT_EQ(true, msg.optional_bool());
+  EXPECT_EQ("abc", msg.optional_string());
+  EXPECT_EQ("def", msg.optional_bytes());
+  EXPECT_EQ(proto2_unittest::TestProto3Optional::BAZ,
+            msg.optional_nested_enum());
+}
+
+void TestAllFieldsSet(const proto2_unittest::TestProto3Optional& msg,
+                      bool set) {
+  EXPECT_EQ(set, msg.has_optional_int32());
+  EXPECT_EQ(set, msg.has_optional_int64());
+  EXPECT_EQ(set, msg.has_optional_uint32());
+  EXPECT_EQ(set, msg.has_optional_uint64());
+  EXPECT_EQ(set, msg.has_optional_sint32());
+  EXPECT_EQ(set, msg.has_optional_sint64());
+  EXPECT_EQ(set, msg.has_optional_fixed32());
+  EXPECT_EQ(set, msg.has_optional_fixed64());
+  EXPECT_EQ(set, msg.has_optional_sfixed32());
+  EXPECT_EQ(set, msg.has_optional_sfixed64());
+  EXPECT_EQ(set, msg.has_optional_float());
+  EXPECT_EQ(set, msg.has_optional_double());
+  EXPECT_EQ(set, msg.has_optional_bool());
+  EXPECT_EQ(set, msg.has_optional_string());
+  EXPECT_EQ(set, msg.has_optional_bytes());
+  EXPECT_EQ(set, msg.has_optional_nested_message());
+  EXPECT_EQ(set, msg.has_lazy_nested_message());
+  EXPECT_EQ(set, msg.has_optional_nested_enum());
+}
+
+TEST(Proto3OptionalTest, BinaryRoundTrip) {
+  proto2_unittest::TestProto3Optional msg;
+  TestAllFieldsSet(msg, false);
+  SetAllFieldsZero(&msg);
+  TestAllFieldsZero(msg);
+  TestAllFieldsSet(msg, true);
+
+  proto2_unittest::TestProto3Optional msg2;
+  std::string serialized;
+  ABSL_CHECK(msg.SerializeToString(&serialized));
+  EXPECT_TRUE(msg2.ParseFromString(serialized));
+  TestAllFieldsZero(msg2);
+  TestAllFieldsSet(msg2, true);
+}
+
+TEST(Proto3OptionalTest, TextFormatRoundTripZeros) {
+  proto2_unittest::TestProto3Optional msg;
+  SetAllFieldsZero(&msg);
+
+  proto2_unittest::TestProto3Optional msg2;
+  std::string text;
+  EXPECT_TRUE(TextFormat::PrintToString(msg, &text));
+  EXPECT_TRUE(TextFormat::ParseFromString(text, &msg2));
+  TestAllFieldsSet(msg2, true);
+  TestAllFieldsZero(msg2);
+}
+
+TEST(Proto3OptionalTest, TextFormatRoundTripNonZeros) {
+  proto2_unittest::TestProto3Optional msg;
+  SetAllFieldsNonZero(&msg);
+
+  proto2_unittest::TestProto3Optional msg2;
+  std::string text;
+  EXPECT_TRUE(TextFormat::PrintToString(msg, &text));
+  EXPECT_TRUE(TextFormat::ParseFromString(text, &msg2));
+  TestAllFieldsSet(msg2, true);
+  TestAllFieldsNonZero(msg2);
+}
+
+TEST(Proto3OptionalTest, SwapRoundTripZero) {
+  proto2_unittest::TestProto3Optional msg;
+  SetAllFieldsZero(&msg);
+  TestAllFieldsSet(msg, true);
+
+  proto2_unittest::TestProto3Optional msg2;
+  msg.Swap(&msg2);
+  TestAllFieldsSet(msg2, true);
+  TestAllFieldsZero(msg2);
+}
+
+TEST(Proto3OptionalTest, SwapRoundTripNonZero) {
+  proto2_unittest::TestProto3Optional msg;
+  SetAllFieldsNonZero(&msg);
+  TestAllFieldsSet(msg, true);
+
+  proto2_unittest::TestProto3Optional msg2;
+  msg.Swap(&msg2);
+  TestAllFieldsSet(msg2, true);
+  TestAllFieldsNonZero(msg2);
+}
+
+TEST(Proto3OptionalTest, ReflectiveSwapRoundTrip) {
+  proto2_unittest::TestProto3Optional msg;
+  SetAllFieldsZero(&msg);
+  TestAllFieldsSet(msg, true);
+
+  proto2_unittest::TestProto3Optional msg2;
+  msg2.GetReflection()->Swap(&msg, &msg2);
+  TestAllFieldsSet(msg2, true);
+  TestAllFieldsZero(msg2);
+}
+
+TEST(Proto3OptionalTest, PlainFields) {
+  const Descriptor* d = TestAllTypes::descriptor();
+
+  EXPECT_FALSE(d->FindFieldByName("optional_int32")->has_presence());
+  EXPECT_TRUE(d->FindFieldByName("oneof_nested_message")->has_presence());
+}
+
+}  // namespace
+}  // namespace protobuf
+}  // namespace google
+
+#include "google/protobuf/port_undef.inc"

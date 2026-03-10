@@ -1,0 +1,33 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package protobuf_editions_test.edition2023;
+
+import "google/protobuf/cpp_features.proto";
+
+message Edition2023StringTypeMessage {
+  string str = 1;
+  string view = 2 [features.(pb.cpp).string_type = VIEW];
+  string cord = 3 [features.(pb.cpp).string_type = CORD];
+
+  bytes str_bytes = 5;
+  bytes view_bytes = 6 [features.(pb.cpp).string_type = VIEW];
+  bytes cord_bytes = 7 [features.(pb.cpp).string_type = CORD];
+
+  extensions 100 to 199;
+}
+
+message Edition2023StringTypeMessageExt {
+  extend Edition2023StringTypeMessage {
+    string str_extension = 100;
+    string view_extension = 101 [features.(pb.cpp).string_type = VIEW];
+    bytes str_bytes_extension = 103;
+    bytes view_bytes_extension = 104 [features.(pb.cpp).string_type = VIEW];
+  }
+}

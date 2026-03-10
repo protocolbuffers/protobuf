@@ -1,0 +1,35 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2024";
+
+package pb;
+
+import "google/protobuf/descriptor.proto";
+
+// Internal options for testing only.
+// These are used to turn on/off certain features that are not normally
+// controlled from the .proto file, but we want to be able to control them for
+// unit tests of said features.
+
+message InternalOptionsForce {
+  enum Enum {
+    UNSPECIFIED = 0;
+    FORCE_ON = 1;
+    FORCE_OFF = 2;
+  }
+}
+
+message InternalFieldOptionsCpp {}
+
+message InternalFieldOptions {
+  InternalFieldOptionsCpp cpp = 1;
+}
+
+extend google.protobuf.FieldOptions {
+  InternalFieldOptions internal_field_options = 535801550;
+}

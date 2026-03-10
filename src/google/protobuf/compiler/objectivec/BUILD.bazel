@@ -1,0 +1,178 @@
+################################################################################
+# Protocol Buffers Compiler - ObjC code generator
+################################################################################
+
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+cc_library(
+    name = "names",
+    hdrs = ["names.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":names_internal",
+    ],
+)
+
+cc_library(
+    name = "names_internal",
+    srcs = [
+        "names.cc",
+    ],
+    hdrs = [
+        "names.h",
+        "nsobject_methods.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//pkg:__pkg__"],
+    deps = [
+        ":line_consumer",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "line_consumer",
+    srcs = ["line_consumer.cc"],
+    hdrs = ["line_consumer.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//pkg:__pkg__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/io",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "objectivec",
+    srcs = [
+        "enum.cc",
+        "enum_field.cc",
+        "extension.cc",
+        "field.cc",
+        "file.cc",
+        "generator.cc",
+        "helpers.cc",
+        "import_writer.cc",
+        "map_field.cc",
+        "message.cc",
+        "message_field.cc",
+        "oneof.cc",
+        "primitive_field.cc",
+        "tf_decode_data.cc",
+    ],
+    hdrs = [
+        "enum.h",
+        "enum_field.h",
+        "extension.h",
+        "field.h",
+        "file.h",
+        "generator.h",
+        "helpers.h",
+        "import_writer.h",
+        "map_field.h",
+        "message.h",
+        "message_field.h",
+        "oneof.h",
+        "options.h",
+        "primitive_field.h",
+        "tf_decode_data.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+    ],
+    deps = [
+        ":line_consumer",
+        ":names",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/stubs",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "line_consumer_unittest",
+    srcs = ["line_consumer_unittest.cc"],
+    deps = [
+        ":line_consumer",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "names_unittest",
+    srcs = ["names_unittest.cc"],
+    deps = [
+        ":names",
+        "//src/google/protobuf/io",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "text_format_decode_data_unittest",
+    srcs = ["text_format_decode_data_unittest.cc"],
+    deps = [
+        ":objectivec",
+        "//src/google/protobuf:port",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+# Exposed only for the version check to ensure the ObjC Runtime and Generator
+# are in sync.
+exports_files(
+    ["file.cc"],
+    visibility = ["//objectivec:__pkg__"],
+)
+
+################################################################################
+# Distribution packaging
+################################################################################
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob(
+        [
+            "*_test.cc",
+            "*unittest.cc",
+        ],
+        allow_empty = True,
+    ),
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+)

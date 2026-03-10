@@ -1,0 +1,11 @@
+import common.bazelrc
+
+# Workaround for maximum path length issues
+build --cxxopt=/std:c++17 --host_cxxopt=/std:c++17
+startup --output_user_root=C:/tmp --windows_enable_symlinks
+common --enable_runfiles
+
+build --extra_toolchains=@local_config_cc//:cc-toolchain-x64_windows-clang-cl
+build:clang-cl --extra_execution_platforms=//build_defs:x64_windows-clang-cl --host_platform=//build_defs:x64_windows-clang-cl
+build:msvc-cl --extra_execution_platforms=//build_defs:x64_windows-msvc-cl --host_platform=//build_defs:x64_windows-msvc-cl
+build --config=clang-cl

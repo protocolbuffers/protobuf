@@ -1,0 +1,148 @@
+name: Bazel Tests
+
+on:
+  workflow_call:
+    inputs:
+      continuous-run:
+        required: true
+        description: "Boolean string denoting whether this run is continuous --
+          empty string for presubmit, non-empty string for continuous."
+        type: string
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+      continuous-prefix:
+        required: true
+        description: "The string continuous-only tests should be prefixed with when displaying test
+        results."
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  examples:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ ubuntu, windows, macos ]
+        bazelversion: [ '8.0.0' ]
+        bzlmod: [ true, false ]
+        toolchain_resolution:
+          # Default flags, uses from prebuilt protoc
+          - ""
+          # Still uses prebuilt protoc
+          - "--incompatible_enable_proto_toolchain_resolution=false"
+          # Uses protoc from source.
+          - "--@com_google_protobuf//bazel/flags:prefer_prebuilt_protoc=false"
+    runs-on: ${{ matrix.runner }}-latest
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Examples ${{ matrix.runner }} ${{ matrix.bazelversion }}${{ matrix.bzlmod && ' (bzlmod)' || '' }} ${{ matrix.toolchain_resolution && ' (toolchain resolution)' || '' }}
+    steps:
+      - name: Checkout pending changes
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v5
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      # rules_jvm_external doesn't support Java 8, which is the default version
+      # on some github runners.  When this is selected, it results in some
+      # opaque errors about coursier (see
+      # https://github.com/bazel-contrib/rules_jvm_external/issues/1337).
+      - name: Pin to Java 11
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654  # v5.2.0
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      - name: Windows startup flags
+        if: ${{ runner.os == 'Windows' && (!matrix.continuous-only || inputs.continuous-run) }}
+        working-directory: examples
+        shell: bash
+        run: echo "startup --output_user_root=C:/ --windows_enable_symlinks" >> .bazelrc
+
+      - name: Configure Bazel version
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        working-directory: examples
+        shell: bash
+        run: echo "${{ matrix.bazelversion }}" > .bazelversion
+
+      - name: Run tests
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/bazel@v5
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: examples-${{ matrix.bazelversion }}-${{ matrix.bzlmod }}-${{ matrix.toolchain_resolution }}
+          version: ${{ matrix.bazelversion }}
+          bash: >
+            cd examples;
+            bazel build //... @com_google_protobuf-examples-with-hyphen//... $BAZEL_FLAGS --enable_bzlmod=${{ matrix.bzlmod }} --enable_workspace=${{ !matrix.bzlmod }} ${{ matrix.toolchain_resolution }};
+
+  prebuilt-protoc:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ ubuntu, windows, macos ]
+        bazelversion: [ '8.0.0' ]
+        bzlmod: [ true ]
+        toolchain_resolution:
+          # Default flags, uses from prebuilt protoc
+          - ""
+    runs-on: ${{ matrix.runner }}-latest
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Prebuilt test ${{ matrix.runner }} ${{ matrix.bazelversion }} ${{ matrix.toolchain_resolution && ' (toolchain resolution)' || '' }}
+    steps:
+      - name: Checkout pending changes
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v5
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Run tests
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/bazel@v5
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: examples-prebuilt-${{ matrix.bazelversion }}-${{ matrix.toolchain_resolution }}
+          version: ${{ matrix.bazelversion }}
+          bash: >
+            cd examples/example_without_cc_toolchain;
+            bazel build //... $BAZEL_FLAGS ${{ matrix.toolchain_resolution }};
+
+  bazel-tests-ubuntu:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+    name: Bazel Tests ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v5
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: "bazel-tests"
+          bazel: test //bazel/...
+
+  bazel-tests-windows-macos:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        runner: [ windows-2022, macos-14 ]
+    name: Bazel Tests ${{ matrix.runner }}
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v5
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel@v5
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: "bazel-tests-${{ matrix.runner }}"
+          bazel: test //bazel/...
+          version: 8.0.1

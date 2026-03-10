@@ -1,0 +1,3 @@
+# This is a WORKSPACE file used by bzlmod in combination with MODULE.bazel.
+# It's used for a gradual migration and it should be empty.
+# Don't remove this file. If the file doesn't exist, bzlmod falls back to WORKSPACE file.

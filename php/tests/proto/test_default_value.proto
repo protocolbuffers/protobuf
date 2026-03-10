@@ -1,0 +1,22 @@
+edition = "2023";
+
+package default_value;
+
+message TestDefaultValue {
+  int32 optional_int32 = 1 [default = 1];
+  int64 optional_int64 = 2 [default = 2];
+  uint32 optional_uint32 = 3 [default = 3];
+  uint64 optional_uint64 = 4 [default = 4];
+  float optional_float = 5 [default = 5.5];
+  double optional_double = 6 [default = 6.6];
+  bool optional_bool = 7 [default = true];
+  string optional_string = 8 [default = "hello"];
+  bytes optional_bytes = 9 [default = "world"];
+  TestEnum optional_enum = 10 [default = HELLO];
+}
+
+enum TestEnum {
+  DEFAULT = 0;
+  HELLO = 1;
+  WORLD = 2;
+}

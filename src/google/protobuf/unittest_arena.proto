@@ -1,0 +1,22 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2024";
+
+package proto2_arena_unittest;
+
+// Use expanded encoding for repeated fields by default (proto2 behavior).
+option features.repeated_field_encoding = EXPANDED;
+option cc_enable_arenas = true;
+
+message NestedMessage {
+  int32 d = 1;
+}
+
+message ArenaMessage {
+  repeated NestedMessage repeated_nested_message = 1;
+}

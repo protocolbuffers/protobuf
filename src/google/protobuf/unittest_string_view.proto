@@ -1,0 +1,27 @@
+edition = "2024";
+
+package proto2_unittest;
+
+option optimize_for = SPEED;
+
+// NEXT_TAG = 6;
+message TestStringView {
+  string singular_string = 1;
+  bytes singular_bytes = 2;
+  string implicit_presence = 5 [features.field_presence = IMPLICIT];
+
+  repeated string repeated_string = 3;
+  repeated bytes repeated_bytes = 4;
+}
+
+message TestStringViewExtension {
+  extensions 1 to max;
+}
+
+extend TestStringViewExtension {
+  string singular_string_view_extension = 1;
+  bytes singular_bytes_view_extension = 2;
+
+  repeated string repeated_string_view_extension = 3;
+  repeated bytes repeated_bytes_view_extension = 4;
+}

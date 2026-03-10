@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package foo;
+
+message TestSpecialCharacters {
+  // test special characters (shouldn't escape): ;,/?:&=+$-_.!~*'()
+  // test open comment (shouldn't escape): /*
+  // test close comment (should escape): */
+  // test at-sign (should escape): @foo
+  // test forward slash as first character on a newline:
+  ///
+  string a = 1;
+
+  ///
+  // test forward slash as first character on first line
+  string b = 2;
+}

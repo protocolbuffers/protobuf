@@ -1,0 +1,123 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto3";
+
+import "google/protobuf/unittest.proto";
+
+// We don't put this in a package within proto2 because we need to make sure
+// that the generated code doesn't depend on being in the proto2 namespace.
+// In map_test_util.h we do "using namespace unittest = proto2_unittest".
+package proto2_unittest;
+
+// Tests maps.
+message TestMap {
+  map<int32, int32> map_int32_int32 = 1;
+  map<int64, int64> map_int64_int64 = 2;
+  map<uint32, uint32> map_uint32_uint32 = 3;
+  map<uint64, uint64> map_uint64_uint64 = 4;
+  map<sint32, sint32> map_sint32_sint32 = 5;
+  map<sint64, sint64> map_sint64_sint64 = 6;
+  map<fixed32, fixed32> map_fixed32_fixed32 = 7;
+  map<fixed64, fixed64> map_fixed64_fixed64 = 8;
+  map<sfixed32, sfixed32> map_sfixed32_sfixed32 = 9;
+  map<sfixed64, sfixed64> map_sfixed64_sfixed64 = 10;
+  map<int32, float> map_int32_float = 11;
+  map<int32, double> map_int32_double = 12;
+  map<bool, bool> map_bool_bool = 13;
+  map<string, string> map_string_string = 14;
+  map<int32, bytes> map_int32_bytes = 15;
+  map<int32, MapEnum> map_int32_enum = 16;
+  map<int32, ForeignMessage> map_int32_foreign_message = 17;
+  map<string, ForeignMessage> map_string_foreign_message = 18;
+  map<int32, TestAllTypes> map_int32_all_types = 19;
+  // Caveat emptor: be careful adding new fields here.
+  // The TestMap proto is used to generate additional tests and couples tightly
+  // with map_test_util.h, which in turn couples tightly with TestMapLite.
+}
+
+message TestMapWithMessages {
+  map<int32, TestAllTypes> map_int32_all_types = 1;
+  map<int64, TestAllTypes> map_int64_all_types = 2;
+  map<uint32, TestAllTypes> map_uint32_all_types = 3;
+  map<uint64, TestAllTypes> map_uint64_all_types = 4;
+  map<sint32, TestAllTypes> map_sint32_all_types = 5;
+  map<sint64, TestAllTypes> map_sint64_all_types = 6;
+  map<fixed32, TestAllTypes> map_fixed32_all_types = 7;
+  map<fixed64, TestAllTypes> map_fixed64_all_types = 8;
+  map<sfixed32, TestAllTypes> map_sfixed32_all_types = 9;
+  map<sfixed64, TestAllTypes> map_sfixed64_all_types = 10;
+  map<bool, TestAllTypes> map_bool_all_types = 11;
+  map<string, TestAllTypes> map_string_all_types = 12;
+}
+
+message TestMapSubmessage {
+  TestMap test_map = 1;
+}
+
+message TestMessageMap {
+  map<int32, TestAllTypes> map_int32_message = 1;
+}
+
+// Two map fields share the same entry default instance.
+message TestSameTypeMap {
+  map<int32, int32> map1 = 1;
+  map<int32, int32> map2 = 2;
+}
+
+enum MapEnum {
+  MAP_ENUM_FOO = 0;
+  MAP_ENUM_BAR = 1;
+  MAP_ENUM_BAZ = 2;
+}
+
+// Test embedded message with required fields
+message TestRequiredMessageMap {
+  map<int32, TestRequired> map_field = 1;
+}
+
+message TestArenaMap {
+  map<int32, int32> map_int32_int32 = 1;
+  map<int64, int64> map_int64_int64 = 2;
+  map<uint32, uint32> map_uint32_uint32 = 3;
+  map<uint64, uint64> map_uint64_uint64 = 4;
+  map<sint32, sint32> map_sint32_sint32 = 5;
+  map<sint64, sint64> map_sint64_sint64 = 6;
+  map<fixed32, fixed32> map_fixed32_fixed32 = 7;
+  map<fixed64, fixed64> map_fixed64_fixed64 = 8;
+  map<sfixed32, sfixed32> map_sfixed32_sfixed32 = 9;
+  map<sfixed64, sfixed64> map_sfixed64_sfixed64 = 10;
+  map<int32, float> map_int32_float = 11;
+  map<int32, double> map_int32_double = 12;
+  map<bool, bool> map_bool_bool = 13;
+  map<string, string> map_string_string = 14;
+  map<int32, bytes> map_int32_bytes = 15;
+  map<int32, MapEnum> map_int32_enum = 16;
+  map<int32, ForeignMessage> map_int32_foreign_message = 17;
+}
+
+// Previously, message containing enum called Type cannot be used as value of
+// map field.
+message MessageContainingEnumCalledType {
+  enum Type {
+    TYPE_FOO = 0;
+  }
+  map<string, MessageContainingEnumCalledType> type = 1;
+}
+
+// Previously, message cannot contain map field called "entry".
+message MessageContainingMapCalledEntry {
+  map<int32, int32> entry = 1;
+}
+
+message TestRecursiveMapMessage {
+  map<string, TestRecursiveMapMessage> a = 1;
+}
+
+message TestI32StrMap {
+  map<int32, string> m_32_str = 1;
+}

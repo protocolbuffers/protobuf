@@ -1,0 +1,4 @@
+# Configuration for 'git archive'
+# see https://git-scm.com/docs/git-archive/2.40.0#ATTRIBUTES
+# Don't include compatibility folder in the distribution artifact, just to reduce size
+compatibility/ export-ignore

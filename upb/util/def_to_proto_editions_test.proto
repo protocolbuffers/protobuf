@@ -1,0 +1,8 @@
+edition = "2023";
+
+package pkg;
+
+message EditionsMessage {
+  int32 required_field = 1 [features.field_presence = LEGACY_REQUIRED];
+  EditionsMessage delimited_field = 2 [features.message_encoding = DELIMITED];
+}

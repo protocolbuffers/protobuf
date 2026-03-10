@@ -1,0 +1,75 @@
+name: PHP Extension Tests
+
+on:
+  workflow_call:
+    inputs:
+      continuous-run:
+        required: true
+        description: "Boolean string denoting whether this run is continuous --
+          empty string for presubmit, non-empty string for continuous."
+        type: string
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+      continuous-prefix:
+        required: true
+        description: "The string continuous-only tests should be prefixed with when displaying test
+          results."
+        type: string
+
+
+permissions:
+  contents: read  #  to fetch code (actions/checkout)
+
+jobs:
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: protocolbuffers/protobuf-ci/checkout@v5
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Package extension
+        uses: protocolbuffers/protobuf-ci/bazel@v5
+        with:
+          version: 8.0.1 # Bazel version
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: php_ext/${{ matrix.version }}
+          bash: >
+            ./regenerate_stale_files.sh $BAZEL_FLAGS;
+            bazel build //php:release $BAZEL_FLAGS;
+            cp bazel-bin/php/protobuf-*.tgz .
+
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # v6.0.0
+        with:
+          name: protobuf-php-release
+          path: protobuf-*.tgz
+
+  build:
+    needs: [package]
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          - version: "8.2"
+            continuous-only: true
+          - version: "8.5"
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Build ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131  # v7.0.0
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        with:
+          name: protobuf-php-release
+
+      - name: Run tests
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/docker@v5
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-extension:${{ matrix.version }}-f1c24ed6acfbf6ec709b0de2f702209c9d3ac659
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          skip-staleness-check: true
+          command: protobuf-*.tgz

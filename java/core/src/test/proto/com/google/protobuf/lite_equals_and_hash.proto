@@ -1,0 +1,112 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Author: pbogle@google.com (Phil Bogle)
+
+edition = "2024";
+
+package proto2_unittest.lite_equals_and_hash;
+
+import option "google/protobuf/java_features.proto";
+
+option java_outer_classname = "LiteEqualsAndHash";
+option features.utf8_validation = NONE;
+
+message TestOneofEquals {
+  option features.(pb.java).nest_in_file_class = YES;
+
+  oneof oneof_field {
+    string name = 1;
+    int32 value = 2;
+  }
+}
+
+message Foo {
+  option features.(pb.java).nest_in_file_class = YES;
+
+  int32 value = 1;
+  repeated Bar bar = 2;
+  map<string, string> my_map = 3;
+
+  oneof Single {
+    option features.enforce_naming_style = STYLE_LEGACY;
+
+    sint64 sint64 = 4;
+    MyGroup mygroup = 5 [features.message_encoding = DELIMITED];
+  }
+
+  message MyGroup {
+    int32 value = 1;
+  }
+
+  extensions 100 to max;
+}
+
+message Bar {
+  option features.(pb.java).nest_in_file_class = YES;
+
+  extend Foo {
+    Bar foo_ext = 100;
+  }
+
+  string name = 1;
+}
+
+message BarPrime {
+  option features.(pb.java).nest_in_file_class = YES;
+
+  string name = 1;
+}
+
+message Empty {
+  option features.(pb.java).nest_in_file_class = YES;
+}
+
+extend Foo {
+  int32 varint = 101;
+  fixed32 fixed32 = 102;
+  fixed64 fixed64 = 103;
+  MyGroup mygroup = 104 [features.message_encoding = DELIMITED];
+}
+
+message MyGroup {
+  option features.(pb.java).nest_in_file_class = YES;
+
+  string group_value = 1;
+}
+
+message TestRecursiveOneof {
+  option features.(pb.java).nest_in_file_class = YES;
+
+  oneof Foo {
+    option features.enforce_naming_style = STYLE_LEGACY;
+
+    TestRecursiveOneof r = 1;
+  }
+}
+
+// Regression test for O(V^N) complexity in MessageSchema.equals() when
+// comparing messages with oneof fields containing nested messages.
+// The 6 oneof variants mirror real-world protos like Firestore's Value type.
+message TestOneofWithMultipleVariants {
+  option features.(pb.java).nest_in_file_class = YES;
+
+  oneof value_type {
+    bool boolean_value = 1;
+    int64 integer_value = 2;
+    double double_value = 3;
+    string string_value = 4;
+    bytes bytes_value = 5;
+    NestedValue nested_value = 6;
+  }
+}
+
+message NestedValue {
+  option features.(pb.java).nest_in_file_class = YES;
+
+  map<string, TestOneofWithMultipleVariants> fields = 1;
+}

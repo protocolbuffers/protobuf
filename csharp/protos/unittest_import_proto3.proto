@@ -1,0 +1,32 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Author: kenton@google.com (Kenton Varda)
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
+//
+// A proto file which is imported by unittest_proto3.proto to test importing.
+
+syntax = "proto3";
+
+package protobuf_unittest_import;
+
+option csharp_namespace = "Google.Protobuf.TestProtos";
+
+// Test public import
+import public "csharp/protos/unittest_import_public_proto3.proto";
+
+message ImportMessage {
+  int32 d = 1;
+}
+
+enum ImportEnum {
+  IMPORT_ENUM_UNSPECIFIED = 0;
+  IMPORT_FOO = 7;
+  IMPORT_BAR = 8;
+  IMPORT_BAZ = 9;
+}

@@ -1,0 +1,225 @@
+name: PHP Tests
+
+
+on:
+  workflow_call:
+    inputs:
+      continuous-run:
+        required: true
+        description: "Boolean string denoting whether this run is continuous --
+          empty string for presubmit, non-empty string for continuous."
+        type: string
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+      continuous-prefix:
+        required: true
+        description: "The string continuous-only tests should be prefixed with when displaying test
+          results."
+        type: string
+
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          - name: 8.2 Optimized
+            version: "8.2.2"
+            version-short: "8.2"
+            command: composer test && composer test_c
+          - name: 8.2 Debug
+            version: 8.2.2-dbg
+            version-short: "8.2"
+            command: composer test && composer test_c
+          - name: 8.2 Memory Leak
+            version: 8.2.2-dbg
+            version-short: "8.2"
+            # Run specialized memory leak & multirequest tests.
+            command: composer test_c && tests/multirequest.sh && tests/memory_leak_test.sh
+            continuous-only: true
+          - name: 8.2 Valgrind
+            version: 8.2.2-dbg
+            version-short: "8.2"
+            command: composer test_valgrind
+            continuous-only: true
+          - name: 8.5 Optimized
+            version: "8.5.2"
+            version-short: "8.5"
+            command: composer test && composer test_c
+
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.name}}
+    runs-on: ubuntu-22-4core
+    steps:
+      - name: Checkout pending changes
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v5
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:8.0.1-${{ matrix.version }}-7d856878bb9d57cf17083cbf1078afe50f3013f3
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: php_linux/${{ matrix.version }}
+          bash: |
+            set -ex
+            COMPOSER_HOME=/workspace/composer-cache
+            export BAZEL_FLAGS='$BAZEL_FLAGS'
+            ./regenerate_stale_files.sh $BAZEL_FLAGS
+            pushd /workspace/php
+            composer update
+            ${{ matrix.command }}
+            popd
+            bazel test //php:conformance_test //php:conformance_test_c --action_env=PATH --test_env=PATH $BAZEL_FLAGS
+
+  linux-32bit:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        version: ['8.2', '8.5']
+        suffix: [ '', '-zts']
+        test: ['test', 'test_c']
+        exclude:
+          - suffix: '-zts'
+            test: 'test'
+        include:
+          - suffix: '-zts'
+            suffix_name: ' Thread Safe'
+            continuous-only: true
+          - test: 'test_c'
+            test_name: ' Extension'
+            continuous-only: true
+          - suffix: ''
+            test: 'test'
+
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux 32-bit ${{ matrix.version}}${{ matrix.suffix_name }}${{ matrix.test_name }}
+    runs-on: ubuntu-22-4core
+    env:
+      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:60f8ce4a5b28c9d017468a8ff39f2b1aacb711b8a6f27bcd8f5bc463674e78b1
+    steps:
+      - name: Checkout pending changes
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v5
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Cross compile protoc for i386
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        id: cross-compile
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v5
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          architecture: linux-i386
+
+      - name: Run tests
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/docker@v5
+        with:
+          image: ${{ env.image }}
+          platform: linux/386
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          extra-flags: -e COMPOSER_HOME=/workspace/composer-cache -e PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
+          command: >-
+            /bin/bash -cex '
+            PATH="/usr/local/php-${{ matrix.version }}${{matrix.suffix}}/bin:$PATH";
+            cd php && php -v && php -m;
+            composer update;
+            composer ${{ matrix.test }}'
+
+  linux-aarch64:
+    name: Linux aarch64
+    runs-on: ubuntu-22-4core
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v5
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Cross compile protoc for aarch64
+        id: cross-compile
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v5
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          architecture: linux-aarch64
+
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/docker@v5
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64@sha256:77ff9fdec867bbfb290ee0b10d8b7a3e5e434155daa5ec93de7341c7592b858d
+          platform: linux/arm64
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          extra-flags: -e COMPOSER_HOME=/workspace/composer-cache -e PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
+          command: >-
+            -cex '
+            cd php;
+            composer update;
+            composer test;
+            composer test_c'
+
+  macos:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          - version: 'pre-installed'
+
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} MacOS PHP ${{ matrix.version }}
+    # noop
+    runs-on: macos-15-intel
+    steps:
+      - name: Checkout pending changes
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v5
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Install dependencies
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        run: brew install coreutils gd
+
+      - name: Pin PHP version
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f # 2.35.5
+        with:
+          php-version: ${{ matrix.version }}
+
+      - name: Setup composer
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/composer-setup@v5
+        with:
+          cache-prefix: php-${{ matrix.version }}
+          directory: php
+
+      - name: Run tests
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/bash@v5
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-version: 8.0.1
+          # TODO this shouldn't be necessary, remove it
+          bazel-flags: --xcode_version_config=//.github:host_xcodes_macos15
+          command: |
+            pushd php
+            php -v
+            php -m
+            composer update
+            composer test_c
+            popd
+
+      - name: Run conformance tests
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/bazel@v5
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          version: 8.0.1 # Bazel version
+          bazel-cache: php_macos15/${{ matrix.version }}
+          bazel: test //php:conformance_test //php:conformance_test_c --action_env=PATH --test_env=PATH --xcode_version_config=//.github:host_xcodes_macos15

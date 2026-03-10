@@ -1,0 +1,9 @@
+edition = "2024";
+
+package upb;
+
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.MessageOptions {
+  int32 message_opt_unlinked = 7739037;
+}

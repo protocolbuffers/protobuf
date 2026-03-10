@@ -1,0 +1,32 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Author: kenton@google.com (Kenton Varda)
+
+syntax = "proto2";
+
+package proto2_unittest.no_generic_services_test;
+
+
+// *_generic_services are false by default.
+
+message TestMessage {
+  optional int32 a = 1;
+  extensions 1000 to max;
+}
+
+enum TestEnum {
+  FOO = 1;
+}
+
+extend TestMessage {
+  optional int32 test_extension = 1000;
+}
+
+service TestService {
+  rpc Foo(TestMessage) returns (TestMessage);
+}

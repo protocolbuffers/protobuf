@@ -1,0 +1,215 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Author: kenton@google.com (Kenton Varda)
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
+
+#include "google/protobuf/compiler/java/names.h"
+
+#include <string>
+
+#include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/java/java_features.pb.h"
+#include "google/protobuf/compiler/java/generator.h"
+#include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/compiler/java/names_internal.h"
+#include "google/protobuf/compiler/java/options.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
+
+// Must be last.
+#include "google/protobuf/port_def.inc"
+
+namespace google {
+namespace protobuf {
+namespace compiler {
+namespace java {
+
+namespace {
+bool IsReservedName(absl::string_view name) {
+  static const auto& kReservedNames =
+      *new absl::flat_hash_set<absl::string_view>({
+          "abstract", "assert",     "boolean",  "break",     "byte",
+          "case",     "catch",      "char",     "class",     "const",
+          "continue", "default",    "do",       "double",    "else",
+          "enum",     "extends",    "false",    "final",     "finally",
+          "float",    "for",        "goto",     "if",        "implements",
+          "import",   "instanceof", "int",      "interface", "java",
+          "long",     "native",     "new",      "null",      "package",
+          "private",  "protected",  "public",   "return",    "short",
+          "static",   "strictfp",   "super",    "switch",    "synchronized",
+          "this",     "throw",      "throws",   "transient", "true",
+          "try",      "void",       "volatile", "while",
+      });
+  return kReservedNames.contains(name);
+}
+
+bool IsForbidden(absl::string_view field_name) {
+  // Names that should be avoided (in UpperCamelCase format).
+  // Using them will cause the compiler to generate accessors whose names
+  // collide with methods defined in base classes.
+  // Keep this list in sync with specialFieldNames in
+  // java/core/src/main/java/com/google/protobuf/DescriptorMessageInfoFactory.java
+  static const auto& kForbiddenNames =
+      *new absl::flat_hash_set<absl::string_view>({
+        // java.lang.Object:
+          "Class",
+          // com.google.protobuf.MessageLiteOrBuilder:
+          "DefaultInstanceForType",
+          // com.google.protobuf.MessageLite:
+          "ParserForType",
+          "SerializedSize",
+          // com.google.protobuf.MessageOrBuilder:
+          "AllFields",
+          "DescriptorForType",
+          "InitializationErrorString",
+          "UnknownFields",
+          // obsolete. kept for backwards compatibility of generated code
+          "CachedSize",
+      });
+  return kForbiddenNames.contains(UnderscoresToCamelCase(field_name, true));
+}
+
+std::string FieldName(const FieldDescriptor* field) {
+  std::string field_name;
+  // Groups are hacky:  The name of the field is just the lower-cased name
+  // of the group type.  In Java, though, we would like to retain the original
+  // capitalization of the type name.
+  if (internal::cpp::IsGroupLike(*field)) {
+    field_name = std::string(field->message_type()->name());
+  } else {
+    field_name = std::string(field->name());
+  }
+  if (IsForbidden(field_name)) {
+    // Append a trailing "#" to indicate that the name should be decorated to
+    // avoid collision with other names.
+    absl::StrAppend(&field_name, "#");
+  }
+  return field_name;
+}
+
+template <typename Descriptor>
+bool NestedInFileClassImpl(const Descriptor& descriptor) {
+  auto nest_in_file_class =
+      JavaGenerator::GetResolvedSourceFeatureExtension(descriptor, pb::java)
+          .nest_in_file_class();
+  ABSL_CHECK(
+      nest_in_file_class !=
+      pb::JavaFeatures::NestInFileClassFeature::NEST_IN_FILE_CLASS_UNKNOWN);
+
+  if (nest_in_file_class == pb::JavaFeatures::NestInFileClassFeature::LEGACY) {
+    return !descriptor.file()->options().java_multiple_files();
+  }
+  return nest_in_file_class == pb::JavaFeatures::NestInFileClassFeature::YES;
+}
+
+}  // namespace
+
+std::string QualifiedClassName(const Descriptor* descriptor) {
+  ClassNameResolver name_resolver;
+  return name_resolver.GetClassName(descriptor, true);
+}
+
+std::string QualifiedClassName(const EnumDescriptor* descriptor) {
+  ClassNameResolver name_resolver;
+  return name_resolver.GetClassName(descriptor, true);
+}
+
+std::string QualifiedClassName(const ServiceDescriptor* descriptor) {
+  ClassNameResolver name_resolver;
+  return name_resolver.GetClassName(descriptor, true);
+}
+
+std::string QualifiedClassName(const FileDescriptor* descriptor) {
+  ClassNameResolver name_resolver;
+  return name_resolver.GetClassName(descriptor, true);
+}
+
+std::string FileJavaPackage(const FileDescriptor* file, bool immutable,
+                            Options options) {
+  return ClassNameResolver().GetFileJavaPackage(file, immutable);
+}
+
+std::string FileJavaPackage(const FileDescriptor* file) {
+  return Proto2DefaultJavaPackage(file);
+}
+
+std::string JavaPackageDirectory(const FileDescriptor* file) {
+  return JavaPackageToDir(FileJavaPackage(file));
+}
+
+std::string FileClassName(const FileDescriptor* file) {
+  return FileClassName(file, /*immutable=*/true);
+}
+
+std::string CapitalizedFieldName(const FieldDescriptor* field) {
+  return UnderscoresToCamelCase(FieldName(field), true);
+}
+
+std::string CapitalizedOneofName(const OneofDescriptor* oneof) {
+  return UnderscoresToCamelCase(oneof->name(), true);
+}
+
+std::string UnderscoresToCamelCase(const FieldDescriptor* field) {
+  return UnderscoresToCamelCase(FieldName(field), false);
+}
+
+std::string UnderscoresToCapitalizedCamelCase(const FieldDescriptor* field) {
+  return UnderscoresToCamelCase(FieldName(field), true);
+}
+
+std::string UnderscoresToCamelCase(const MethodDescriptor* method) {
+  return UnderscoresToCamelCase(method->name(), false);
+}
+
+std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field) {
+  std::string name = UnderscoresToCamelCase(field);
+  if (IsReservedName(name)) {
+    absl::StrAppend(&name, "_");
+  }
+  return name;
+}
+
+std::string KotlinFactoryName(const Descriptor* descriptor) {
+  ClassNameResolver name_resolver;
+  return name_resolver.GetKotlinFactoryName(descriptor);
+}
+
+std::string FullyQualifiedKotlinFactoryName(const Descriptor* descriptor) {
+  ClassNameResolver name_resolver;
+  return name_resolver.GetFullyQualifiedKotlinFactoryName(descriptor);
+}
+
+std::string KotlinExtensionsClassName(const Descriptor* descriptor) {
+  ClassNameResolver name_resolver;
+  return name_resolver.GetKotlinExtensionsClassName(descriptor);
+}
+
+
+bool NestedInFileClass(const Descriptor& message) {
+  return NestedInFileClassImpl(message);
+}
+
+bool NestedInFileClass(const EnumDescriptor& enm) {
+  return NestedInFileClassImpl(enm);
+}
+
+bool NestedInFileClass(const ServiceDescriptor& service) {
+  return NestedInFileClassImpl(service);
+}
+
+}  // namespace java
+}  // namespace compiler
+}  // namespace protobuf
+}  // namespace google
+
+#include "google/protobuf/port_undef.inc"

@@ -1,0 +1,45 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Author: tibell@google.com (Johan Tibell)
+//
+// These message definitions are used to exercises known corner cases
+// in the C++ implementation of the Python API.
+
+syntax = "proto2";
+
+package google.protobuf.python.internal;
+
+// Protos optimized for SPEED use a strict superset of the generated code
+// of equivalent ones optimized for CODE_SIZE, so we should optimize all our
+// tests for speed unless explicitly testing code size optimization.
+option optimize_for = SPEED;
+
+message TestAllTypes {
+  message NestedMessage {
+    optional int32 bb = 1;
+    optional ForeignMessage cc = 2;
+  }
+
+  repeated NestedMessage repeated_nested_message = 1;
+  optional NestedMessage optional_nested_message = 2;
+  optional int32 optional_int32 = 3;
+}
+
+message ForeignMessage {
+  optional int32 c = 1;
+  repeated int32 d = 2;
+}
+
+message TestAllExtensions {  // extension begin
+  extensions 1 to max;
+}  // extension end
+
+extend TestAllExtensions {  // extension begin
+  optional TestAllTypes.NestedMessage optional_nested_message_extension = 1;
+  repeated TestAllTypes.NestedMessage repeated_nested_message_extension = 2;
+}  // extension end

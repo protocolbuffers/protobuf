@@ -1,0 +1,40 @@
+# Output
+bin
+obj
+project.lock.json
+TestResult.xml
+
+# Possibly legacy now?
+mono/bin
+mono/tmp
+mono/protoc
+build_output
+build_temp
+build/msbuild*.log
+lib/Microsoft.Silverlight.Testing
+lib/NUnit
+
+#
+# 	Untracked files
+#
+.vs
+.cr
+*.user
+*.suo
+*.nupkg
+_ReSharper.*
+*.sln.cache
+mono/TestResult.xml
+mono/.libs
+mono/*.exe
+mono/*.dll
+lib/protoc.exe
+*.ncrunch*
+
+# Benchmark output
+BenchmarkDotNet.Artifacts/
+
+# Reinstate generated code for test files
+!any_test.pb.*
+!map*unittest.pb.*
+!unittest*.pb.*

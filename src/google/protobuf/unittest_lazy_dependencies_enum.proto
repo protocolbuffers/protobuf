@@ -1,0 +1,43 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Author: trafacz@google.com (Todd Rafacz)
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
+//
+// A proto file we will use for unit testing.
+
+edition = "2024";
+
+// Treat all enums as closed by default (proto2 behavior).
+option features.enum_type = CLOSED;
+
+// Some generic_services option(s) added automatically.
+// See:  http://go/proto2-generic-services-default
+option cc_generic_services = true;    // auto-added
+option java_generic_services = true;  // auto-added
+option py_generic_services = true;    // auto-added
+option cc_enable_arenas = true;
+
+// We don't put this in a package within proto2 because we need to make sure
+// that the generated code doesn't depend on being in the proto2 namespace.
+// In test_util.h we do "using namespace unittest = proto2_unittest".
+package proto2_unittest.lazy_imports;
+
+// Protos optimized for SPEED use a strict superset of the generated code
+// of equivalent ones optimized for CODE_SIZE, so we should optimize all our
+// tests for speed unless explicitly testing code size optimization.
+option optimize_for = SPEED;
+
+option java_outer_classname = "UnittestLazyImportsEnumProto";
+
+enum LazyEnum {
+  option features.enforce_naming_style = STYLE_LEGACY;
+
+  LAZY_ENUM_0 = 0;
+  LAZY_ENUM_1 = 1;
+}

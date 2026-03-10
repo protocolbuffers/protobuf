@@ -1,0 +1,258 @@
+# Protobuf IO library.
+
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "io",
+    srcs = [
+        "coded_stream.cc",
+        "zero_copy_stream.cc",
+        "zero_copy_stream_impl.cc",
+        "zero_copy_stream_impl_lite.cc",
+    ],
+    hdrs = [
+        "coded_stream.h",
+        "zero_copy_stream.h",
+        "zero_copy_stream_impl.h",
+        "zero_copy_stream_impl_lite.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":io_win32",
+        "//src/google/protobuf:arena",
+        "//src/google/protobuf:endian",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/stubs:lite",
+        "@abseil-cpp//absl/base",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/numeric:bits",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/strings:internal",
+        "@abseil-cpp//absl/types:span",
+    ],
+)
+
+cc_library(
+    name = "test_zero_copy_stream",
+    testonly = 1,
+    hdrs = ["test_zero_copy_stream.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":io",
+        "//src/google/protobuf/stubs",
+        "@abseil-cpp//absl/log:absl_check",
+    ],
+)
+
+cc_test(
+    name = "test_zero_copy_stream_test",
+    srcs = ["test_zero_copy_stream_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":io",
+        ":test_zero_copy_stream",
+        "//src/google/protobuf/stubs",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "zero_copy_sink",
+    srcs = ["zero_copy_sink.cc"],
+    hdrs = ["zero_copy_sink.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":io",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/stubs",
+    ],
+)
+
+cc_test(
+    name = "zero_copy_sink_test",
+    srcs = ["zero_copy_sink_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":zero_copy_sink",
+        "//src/google/protobuf/stubs",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "printer",
+    srcs = ["printer.cc"],
+    hdrs = ["printer.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":io",
+        ":zero_copy_sink",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/stubs",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/cleanup",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/functional:any_invocable",
+        "@abseil-cpp//absl/functional:function_ref",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/types:optional",
+        "@abseil-cpp//absl/types:span",
+    ],
+)
+
+cc_library(
+    name = "tokenizer",
+    srcs = [
+        "strtod.cc",
+        "tokenizer.cc",
+    ],
+    hdrs = [
+        "strtod.h",
+        "tokenizer.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":io",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/stubs",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:charset",
+        "@abseil-cpp//absl/strings:str_format",
+    ],
+)
+
+cc_library(
+    name = "gzip_stream",
+    srcs = ["gzip_stream.cc"],
+    hdrs = ["gzip_stream.h"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": ["-DHAVE_ZLIB"],
+    }),
+    strip_include_prefix = "/src",
+    deps = [
+        ":io",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/stubs",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+    ] + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": ["@zlib"],
+    }),
+)
+
+cc_library(
+    name = "io_win32",
+    srcs = ["io_win32.cc"],
+    hdrs = ["io_win32.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+        "//src/google/protobuf/testing:__pkg__",
+    ],
+    deps = [
+        "//src/google/protobuf:arena",
+        "//src/google/protobuf/stubs:lite",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "io_test",
+    srcs = [
+        "coded_stream_unittest.cc",
+        "printer_death_test.cc",
+        "printer_unittest.cc",
+        "tokenizer_unittest.cc",
+        "zero_copy_stream_unittest.cc",
+    ],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": ["-DHAVE_ZLIB"],
+    }),
+    deps = [
+        ":gzip_stream",
+        ":io",
+        ":io_win32",
+        ":printer",
+        ":tokenizer",
+        "//:protobuf",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:test_util",
+        "//src/google/protobuf:test_util2",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/base",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/base:log_severity",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/log:scoped_mock_log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/synchronization",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "win32_test",
+    srcs = ["io_win32_unittest.cc"],
+    tags = [
+        "manual",
+        "windows",
+    ],
+    deps = [
+        "//:protobuf_lite",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+################################################################################
+# Distribution packaging
+################################################################################
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob([
+        "*_test.cc",
+        "*unittest.cc",
+    ]),
+    visibility = ["//pkg:__pkg__"],
+)

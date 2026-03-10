@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package hpb_test;
+
+enum TestEnumWithNull {
+  TYPE_UNSPECIFIED = 0;
+  NULL = 1;
+}
+
+message MessageWithEnum {
+  enum NestedEnum {
+    NESTED_TYPE_UNSPECIFIED = 0;
+    NULL = 1;
+  }
+}
+
+message MessageWithNullEnum {
+  enum NULL {
+    UNSPECIFIED = 0;
+    VALUE = 1;
+  }
+}

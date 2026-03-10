@@ -1,0 +1,684 @@
+################################################################################
+# Protocol Buffers Compiler
+################################################################################
+
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+load(
+    "@rules_pkg//pkg:mappings.bzl",
+    "pkg_attributes",
+    "pkg_files",
+)
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:proto_library.bzl", "proto_library")
+load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+load("//upb/bazel:upb_c_proto_library.bzl", "upb_c_proto_library")
+load("//upb/bazel:upb_proto_reflection_library.bzl", "upb_proto_reflection_library")
+load(
+    "//upb_generator:bootstrap_compiler.bzl",
+    "bootstrap_cc_library",
+)
+load("test_plugin_injection.bzl", "inject_plugin_paths")
+
+proto_library(
+    name = "plugin_proto",
+    srcs = ["plugin.proto"],
+    strip_import_prefix = "/src",
+    visibility = [
+        "//:__pkg__",
+        "//pkg:__pkg__",
+    ],
+    deps = ["//:descriptor_proto"],
+)
+
+cc_proto_library(
+    name = "plugin_cc_proto",
+    visibility = ["//visibility:public"],
+    deps = [":plugin_proto"],
+)
+
+upb_c_proto_library(
+    name = "plugin_upb_c_proto",
+    visibility = ["//upb_generator:__subpackages__"],
+    deps = [":plugin_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "plugin_upb_reflection_proto",
+    visibility = ["//upb_generator:__subpackages__"],
+    deps = [":plugin_proto"],
+)
+
+cc_library(
+    name = "importer",
+    srcs = [
+        "importer.cc",
+        "parser.cc",
+    ],
+    hdrs = [
+        "importer.h",
+        "parser.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:io_win32",
+        "//src/google/protobuf/io:tokenizer",
+        "@abseil-cpp//absl/base",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/cleanup",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/types:optional",
+    ],
+)
+
+cc_library(
+    name = "code_generator",
+    srcs = [
+        "code_generator.cc",
+        "plugin.cc",
+        "plugin.pb.cc",
+    ],
+    hdrs = [
+        "code_generator.h",
+        "plugin.h",
+        "plugin.pb.h",
+        "scc.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":code_generator_lite",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/compiler:retention",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:io_win32",
+        "@abseil-cpp//absl/base:log_severity",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/log:globals",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "plugin",
+    hdrs = ["plugin.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [":code_generator"],
+)
+
+cc_library(
+    name = "code_generator_lite",
+    srcs = ["code_generator_lite.cc"],
+    hdrs = ["code_generator_lite.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "versions",
+    srcs = [
+        "versions.cc",
+    ],
+    hdrs = [
+        "versions.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//src/google/protobuf/compiler:__subpackages__",
+    ],
+    deps = [
+        ":code_generator",
+        "//src/google/protobuf:port",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "versions_test",
+    size = "small",
+    srcs = ["versions_test.cc"],
+    deps = [
+        ":versions",
+        "//src/google/protobuf:test_textproto",
+        "@abseil-cpp//absl/memory",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "command_line_interface",
+    srcs = [
+        "command_line_interface.cc",
+        "subprocess.cc",
+        "zip_writer.cc",
+    ],
+    hdrs = [
+        "command_line_interface.h",
+        "notices.h",
+        "subprocess.h",
+        "zip_writer.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":code_generator",
+        ":code_generator_lite",
+        ":importer",
+        ":retention",
+        ":versions",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:io_win32",
+        "//src/google/protobuf/io:printer",
+        "//src/google/protobuf/stubs",
+        "@abseil-cpp//absl/algorithm",
+        "@abseil-cpp//absl/algorithm:container",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/base:log_severity",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/log:globals",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/types:optional",
+        "@abseil-cpp//absl/types:span",
+    ],
+)
+
+bootstrap_cc_library(
+    name = "protoc_lib",
+    srcs = [
+        "main.cc",
+    ],
+    bootstrap_deps = [
+        "//src/google/protobuf/compiler/rust:rust",
+    ],
+    copts = COPTS,
+    visibility = [
+        "//:__pkg__",
+        "//pkg:__pkg__",
+    ],
+    deps = [
+        ":code_generator",
+        ":command_line_interface",
+        ":importer",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler/cpp",
+        "//src/google/protobuf/compiler/csharp",
+        "//src/google/protobuf/compiler/java",
+        "//src/google/protobuf/compiler/kotlin",
+        "//src/google/protobuf/compiler/objectivec",
+        "//src/google/protobuf/compiler/php:php_generator",
+        "//src/google/protobuf/compiler/python",
+        "//src/google/protobuf/compiler/ruby",
+        "@abseil-cpp//absl/log:initialize",
+    ],
+)
+
+# This is a build of the protobuf compiler without code generators.
+cc_binary(
+    name = "protoc_minimal",
+    srcs = [
+        "main_no_generators.cc",
+    ],
+    copts = COPTS,
+    visibility = [
+        "//:__subpackages__",
+    ],
+    deps = [
+        ":command_line_interface",
+        "//src/google/protobuf:port",
+        "@abseil-cpp//absl/log:initialize",
+    ],
+)
+
+# Note: this is an alias for now. In the future, this rule will become the
+# cc_binary for protoc, and //:protoc will become an alias.
+alias(
+    name = "protoc",
+    actual = "//:protoc",
+    visibility = ["//visibility:public"],
+)
+
+# Test that the protoc binary is built for the correct architecture.
+aarch64_test(
+    name = "protoc_aarch64_test",
+    bazel_binaries = ["//:protoc"],
+)
+
+x86_64_test(
+    name = "protoc_x86_64_test",
+    bazel_binaries = ["//:protoc"],
+)
+
+################################################################################
+# Tests and support libraries
+################################################################################
+
+cc_library(
+    name = "annotation_test_util",
+    testonly = 1,
+    srcs = ["annotation_test_util.cc"],
+    hdrs = ["annotation_test_util.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":code_generator",
+        ":command_line_interface",
+        "//:protobuf",
+        "//src/google/protobuf",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+    ],
+)
+
+################################################################################
+# Tests
+################################################################################
+
+filegroup(
+    name = "plugin_proto_srcs",
+    testonly = 1,
+    srcs = [
+        "plugin.pb.cc",
+        "plugin.pb.h",
+        "plugin.proto",
+    ],
+    visibility = [
+        "//src/google/protobuf/compiler/cpp:__pkg__",
+    ],
+)
+
+filegroup(
+    name = "plugin_proto_src",
+    srcs = ["plugin.proto"],
+    visibility = [
+        "//upb_generator:__subpackages__",
+        # For compatibility with workspaces that still use the old upb repo
+        "@upb//:__subpackages__",
+    ],
+)
+
+exports_files(
+    srcs = ["plugin.proto"],
+    visibility = [
+        "//:__pkg__",
+        "//python:__pkg__",
+        "//ruby:__pkg__",
+    ],
+)
+
+cc_library(
+    name = "mock_code_generator",
+    testonly = 1,
+    srcs = ["mock_code_generator.cc"],
+    hdrs = ["mock_code_generator.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//pkg:__pkg__"],
+    deps = [
+        ":code_generator",
+        "//src/google/protobuf",
+        "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:descriptor_visitor",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_binary(
+    name = "test_plugin",
+    testonly = 1,
+    srcs = ["test_plugin.cc"],
+    copts = COPTS,
+    deps = [
+        ":code_generator",
+        ":mock_code_generator",
+    ],
+)
+
+cc_binary(
+    name = "fake_plugin",
+    testonly = True,
+    srcs = ["fake_plugin.cc"],
+    copts = COPTS,
+    deps = [
+        ":code_generator",
+        ":plugin_cc_proto",
+        "//src/google/protobuf",
+        "//src/google/protobuf/io:io_win32",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "code_generator_unittest",
+    srcs = ["code_generator_unittest.cc"],
+    copts = COPTS,
+    deps = [
+        ":code_generator",
+        ":importer",
+        "//editions:edition_defaults_test_utils",
+        "//src/google/protobuf",
+        "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:test_textproto",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+inject_plugin_paths("test_plugin_paths")
+
+cc_test(
+    name = "command_line_interface_unittest",
+    srcs = ["command_line_interface_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated",
+            "-Wno-deprecated-declarations",
+        ],
+    }) + [
+        # Note: This only works on Windows with symlinks and runfiles enabled.
+        # "-DGOOGLE_PROTOBUF_FAKE_PLUGIN_PATH=\\\"$(rootpath :fake_plugin)\\\"",
+        # "-DGOOGLE_PROTOBUF_TEST_PLUGIN_PATH=\\\"$(rootpath :test_plugin)\\\"",
+        # Workaround for https://github.com/bazelbuild/bazel/issues/19124.
+        "-DGOOGLE_PROTOBUF_USE_BAZEL_GENERATED_PLUGIN_PATHS=1",
+    ],
+    data = [
+        ":fake_plugin",
+        ":test_plugin",
+        "//:test_proto_srcs",
+        "//src/google/protobuf:descriptor_proto_srcs",
+        "//src/google/protobuf:testdata",
+    ],
+    deps = [
+        ":code_generator",
+        ":command_line_interface",
+        ":command_line_interface_tester",
+        ":mock_code_generator",
+        ":test_plugin_paths",
+        "//:protobuf",
+        "//editions:edition_defaults_test_utils",
+        "//src/google/protobuf",
+        "//src/google/protobuf:any_cc_proto",
+        "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:test_textproto",
+        "//src/google/protobuf:test_util",
+        "//src/google/protobuf:test_util2",
+        "//src/google/protobuf/compiler/cpp:names",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:io_win32",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/types:span",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "command_line_interface_tester",
+    testonly = True,
+    srcs = ["command_line_interface_tester.cc"],
+    hdrs = ["command_line_interface_tester.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__subpackages__",
+    ],
+    deps = [
+        ":code_generator",
+        ":command_line_interface",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "importer_unittest",
+    srcs = ["importer_unittest.cc"],
+    copts = COPTS,
+    deps = [
+        ":importer",
+        "//:protobuf",
+        "//src/google/protobuf",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "parser_unittest",
+    srcs = ["parser_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated",
+            "-Wno-deprecated-declarations",
+        ],
+    }),
+    deps = [
+        ":importer",
+        "//:protobuf",
+        "//src/google/protobuf",
+        "//src/google/protobuf:any_cc_proto",
+        "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:test_util2",
+        "//src/google/protobuf/compiler:retention",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "retention",
+    srcs = ["retention.cc"],
+    hdrs = ["retention.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//src/google/protobuf:__subpackages__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/types:span",
+    ],
+)
+
+cc_test(
+    name = "retention_unittest",
+    srcs = ["retention_unittest.cc"],
+    deps = [
+        ":importer",
+        ":retention",
+        "//src/google/protobuf",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:die_if_null",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+################################################################################
+# Generates protoc release artifacts.
+################################################################################
+
+genrule(
+    name = "protoc_readme",
+    outs = ["readme.txt"],
+    cmd = """
+echo "Protocol Buffers - Google's data interchange format
+Copyright 2008 Google Inc.
+https://developers.google.com/protocol-buffers/
+This package contains a precompiled binary version of the protocol buffer
+compiler (protoc). This binary is intended for users who want to use Protocol
+Buffers in languages other than C++ but do not want to compile protoc
+themselves. To install, simply place this binary somewhere in your PATH.
+If you intend to use the included well known types then don't forget to
+copy the contents of the 'include' directory somewhere as well, for example
+into '/usr/local/include/'.
+Please refer to our official github site for more installation instructions:
+  https://github.com/protocolbuffers/protobuf" > $@
+    """,
+    visibility = ["//:__pkg__"],
+)
+
+pkg_files(
+    name = "compiler_plugin_protos_files",
+    srcs = ["plugin.proto"],
+    prefix = "include/google/protobuf/compiler",
+    visibility = ["//pkg:__pkg__"],
+)
+
+pkg_files(
+    name = "protoc_files",
+    srcs = [":protoc"],
+    attributes = pkg_attributes(mode = "0555"),
+    prefix = "bin/",
+    visibility = ["//:__pkg__"],
+)
+
+################################################################################
+# Distribution packaging
+################################################################################
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob(
+        [
+            "*_test.cc",
+            "*unittest.cc",
+        ],
+        allow_empty = True,
+    ) + [
+        "//src/google/protobuf/compiler/cpp:test_srcs",
+        "//src/google/protobuf/compiler/csharp:test_srcs",
+        "//src/google/protobuf/compiler/java:test_srcs",
+        "//src/google/protobuf/compiler/objectivec:test_srcs",
+        "//src/google/protobuf/compiler/php:test_srcs",
+        "//src/google/protobuf/compiler/python:test_srcs",
+        "//src/google/protobuf/compiler/ruby:test_srcs",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "fake_plugin_srcs",
+    srcs = ["fake_plugin.cc"],
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "test_plugin_srcs",
+    srcs = ["test_plugin.cc"],
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "test_proto_srcs",
+    srcs = [
+        "//src/google/protobuf/compiler/cpp:test_proto_srcs",
+        "//src/google/protobuf/compiler/java:test_proto_srcs",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)

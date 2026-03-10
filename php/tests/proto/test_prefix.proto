@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option php_class_prefix = "Prefix";
+
+message TestPrefix {
+  int32 a = 1;
+  NestedMessage nested_message = 2;
+  NestedEnum nested_enum = 3;
+  message NestedMessage {
+    int32 a = 1;
+  }
+  enum NestedEnum {
+      ZERO = 0;
+  };
+}
+
+// Test prefix for reserved words.
+message Empty {
+  int32 a = 1;
+}

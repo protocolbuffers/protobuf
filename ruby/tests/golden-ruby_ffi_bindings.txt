@@ -1,0 +1,120 @@
+Arena_create [] upb_Arena *
+Descriptor_serialized_options [const upb_MessageDef *, size_t *, upb_Arena *] char *
+Descriptor_serialized_to_proto [const upb_MessageDef *, size_t *, upb_Arena *] char *
+EnumDescriptor_serialized_options [const upb_EnumDef *, size_t *, upb_Arena *] char *
+EnumDescriptor_serialized_to_proto [const upb_EnumDef *, size_t *, upb_Arena *] char *
+FieldDescriptor_serialized_options [const upb_FieldDef *, size_t *, upb_Arena *] char *
+FieldDescriptor_serialized_to_proto [const upb_FieldDef *, size_t *, upb_Arena *] char *
+FileDescriptorProto_parse [const char *, size_t, upb_Arena *] int *
+FileDescriptor_serialized_options [const upb_FileDef *, size_t *, upb_Arena *] char *
+FileDescriptor_serialized_to_proto [const upb_FileDef *, size_t *, upb_Arena *] char *
+MethodDescriptor_serialized_options [const upb_MethodDef *, size_t *, upb_Arena *] char *
+MethodDescriptor_serialized_to_proto [const upb_MethodDef *, size_t *, upb_Arena *] char *
+OneOfDescriptor_serialized_options [const upb_OneofDef *, size_t *, upb_Arena *] char *
+OneOfDescriptor_serialized_to_proto [const upb_OneofDef *, size_t *, upb_Arena *] char *
+ServiceDescriptor_serialized_options [const upb_ServiceDef *, size_t *, upb_Arena *] char *
+ServiceDescriptor_serialized_to_proto [const upb_ServiceDef *, size_t *, upb_Arena *] char *
+shared_Msgval_GetHash [upb_MessageValue, upb_CType, const upb_MessageDef *, uint64_t, upb_Status *] uint64_t
+shared_Msgval_IsEqual [upb_MessageValue, upb_MessageValue, upb_CType, const upb_MessageDef *, upb_Status *] _Bool
+upb_Arena_Free [upb_Arena *] void
+upb_Arena_Fuse [const upb_Arena *, const upb_Arena *] _Bool
+upb_Arena_Malloc [struct upb_Arena *, size_t] void *
+upb_Array_Append [upb_Array *, upb_MessageValue, upb_Arena *] _Bool
+upb_Array_Freeze [upb_Array *, const upb_MiniTable *] void
+upb_Array_Get [const upb_Array *, size_t] upb_MessageValue
+upb_Array_IsFrozen [const upb_Array *] _Bool
+upb_Array_New [upb_Arena *, upb_CType] upb_Array *
+upb_Array_Resize [upb_Array *, size_t, upb_Arena *] _Bool
+upb_Array_Set [upb_Array *, size_t, upb_MessageValue] void
+upb_Array_Size [const upb_Array *] size_t
+upb_Decode [const char *, size_t, upb_Message *, const upb_MiniTable *, const upb_ExtensionRegistry *, int, upb_Arena *] upb_DecodeStatus
+upb_DefPool_AddFile [upb_DefPool *, const int *, upb_Status *] const upb_FileDef *
+upb_DefPool_ExtensionRegistry [const upb_DefPool *] const int *
+upb_DefPool_FindEnumByName [const upb_DefPool *, const char *] const upb_EnumDef *
+upb_DefPool_FindExtensionByName [const upb_DefPool *, const char *] const upb_FieldDef *
+upb_DefPool_FindFileByName [const upb_DefPool *, const char *] const upb_FileDef *
+upb_DefPool_FindMessageByName [const upb_DefPool *, const char *] const upb_MessageDef *
+upb_DefPool_FindServiceByName [const upb_DefPool *, const char *] const upb_ServiceDef *
+upb_DefPool_Free [upb_DefPool *] void
+upb_DefPool_New [] upb_DefPool *
+upb_Encode [const upb_Message *, const upb_MiniTable *, int, upb_Arena *, char **, size_t *] upb_EncodeStatus
+upb_EnumDef_File [const upb_EnumDef *] const upb_FileDef *
+upb_EnumDef_FindValueByNameWithSize [const upb_EnumDef *, const char *, size_t] const upb_EnumValueDef *
+upb_EnumDef_FindValueByNumber [const upb_EnumDef *, int32_t] const upb_EnumValueDef *
+upb_EnumDef_FullName [const upb_EnumDef *] const char *
+upb_EnumDef_Value [const upb_EnumDef *, int] const upb_EnumValueDef *
+upb_EnumDef_ValueCount [const upb_EnumDef *] int
+upb_EnumValueDef_Name [const upb_EnumValueDef *] const char *
+upb_EnumValueDef_Number [const upb_EnumValueDef *] int32_t
+upb_FieldDef_CType [const upb_FieldDef *] upb_CType
+upb_FieldDef_ContainingType [const upb_FieldDef *] const upb_MessageDef *
+upb_FieldDef_Default [const upb_FieldDef *] upb_MessageValue
+upb_FieldDef_EnumSubDef [const upb_FieldDef *] const upb_EnumDef *
+upb_FieldDef_File [const upb_FieldDef *] const upb_FileDef *
+upb_FieldDef_HasPresence [const upb_FieldDef *] _Bool
+upb_FieldDef_IsMap [const upb_FieldDef *] _Bool
+upb_FieldDef_IsPacked [const upb_FieldDef *] _Bool
+upb_FieldDef_IsRepeated [const upb_FieldDef *] _Bool
+upb_FieldDef_IsSubMessage [const upb_FieldDef *] _Bool
+upb_FieldDef_JsonName [const upb_FieldDef *] const char *
+upb_FieldDef_Label [const upb_FieldDef *] upb_Label
+upb_FieldDef_MessageSubDef [const upb_FieldDef *] const upb_MessageDef *
+upb_FieldDef_Name [const upb_FieldDef *] const char *
+upb_FieldDef_Number [const upb_FieldDef *] uint32_t
+upb_FieldDef_RealContainingOneof [const upb_FieldDef *] const upb_OneofDef *
+upb_FieldDef_Type [const upb_FieldDef *] upb_FieldType
+upb_FileDef_Name [const upb_FileDef *] const char *
+upb_FileDef_Pool [const upb_FileDef *] const upb_DefPool *
+upb_JsonDecodeDetectingNonconformance [const char *, size_t, upb_Message *, const upb_MessageDef *, const upb_DefPool *, int, upb_Arena *, upb_Status *] int
+upb_JsonEncode [const upb_Message *, const upb_MessageDef *, const upb_DefPool *, int, char *, size_t, upb_Status *] size_t
+upb_MapIterator_Done [const upb_Map *, size_t] _Bool
+upb_MapIterator_Key [const upb_Map *, size_t] upb_MessageValue
+upb_MapIterator_Next [const upb_Map *, size_t *] _Bool
+upb_MapIterator_Value [const upb_Map *, size_t] upb_MessageValue
+upb_Map_Clear [upb_Map *] void
+upb_Map_Delete [upb_Map *, upb_MessageValue, upb_MessageValue *] _Bool
+upb_Map_Freeze [upb_Map *, const upb_MiniTable *] void
+upb_Map_Get [const upb_Map *, upb_MessageValue, upb_MessageValue *] _Bool
+upb_Map_IsFrozen [const upb_Map *] _Bool
+upb_Map_New [upb_Arena *, upb_CType, upb_CType] upb_Map *
+upb_Map_Set [upb_Map *, upb_MessageValue, upb_MessageValue, upb_Arena *] _Bool
+upb_Map_Size [const upb_Map *] size_t
+upb_MessageDef_Field [const upb_MessageDef *, int] const upb_FieldDef *
+upb_MessageDef_FieldCount [const upb_MessageDef *] int
+upb_MessageDef_File [const upb_MessageDef *] const upb_FileDef *
+upb_MessageDef_FindByNameWithSize [const upb_MessageDef *, const char *, size_t, const upb_FieldDef **, const upb_OneofDef **] _Bool
+upb_MessageDef_FindFieldByNameWithSize [const upb_MessageDef *, const char *, size_t] const upb_FieldDef *
+upb_MessageDef_FindFieldByNumber [const upb_MessageDef *, uint32_t] const upb_FieldDef *
+upb_MessageDef_FindOneofByNameWithSize [const upb_MessageDef *, const char *, size_t] const upb_OneofDef *
+upb_MessageDef_FullName [const upb_MessageDef *] const char *
+upb_MessageDef_MiniTable [const upb_MessageDef *] const upb_MiniTable *
+upb_MessageDef_Oneof [const upb_MessageDef *, int] const upb_OneofDef *
+upb_MessageDef_OneofCount [const upb_MessageDef *] int
+upb_MessageDef_WellKnownType [const upb_MessageDef *] upb_WellKnown
+upb_Message_ClearFieldByDef [upb_Message *, const upb_FieldDef *] void
+upb_Message_DiscardUnknown [upb_Message *, const upb_MessageDef *, const upb_DefPool *, int] _Bool
+upb_Message_Freeze [upb_Message *, const upb_MiniTable *] void
+upb_Message_GetFieldByDef [const upb_Message *, const upb_FieldDef *] upb_MessageValue
+upb_Message_HasFieldByDef [const upb_Message *, const upb_FieldDef *] _Bool
+upb_Message_IsFrozen [const upb_Message *] _Bool
+upb_Message_Mutable [upb_Message *, const upb_FieldDef *, upb_Arena *] upb_MutableMessageValue
+upb_Message_New [const upb_MiniTable *, upb_Arena *] upb_Message *
+upb_Message_Next [const upb_Message *, const upb_MessageDef *, const upb_DefPool *, const upb_FieldDef **, upb_MessageValue *, size_t *] _Bool
+upb_Message_SetFieldByDef [upb_Message *, const upb_FieldDef *, upb_MessageValue, upb_Arena *] _Bool
+upb_Message_WhichOneofByDef [const upb_Message *, const upb_OneofDef *] const upb_FieldDef *
+upb_MethodDef_ClientStreaming [const upb_MethodDef *] _Bool
+upb_MethodDef_InputType [const upb_MethodDef *] const upb_MessageDef *
+upb_MethodDef_Name [const upb_MethodDef *] const char *
+upb_MethodDef_OutputType [const upb_MethodDef *] const upb_MessageDef *
+upb_MethodDef_ServerStreaming [const upb_MethodDef *] _Bool
+upb_MethodDef_Service [const upb_MethodDef *] const upb_ServiceDef *
+upb_OneofDef_ContainingType [const upb_OneofDef *] const upb_MessageDef *
+upb_OneofDef_Field [const upb_OneofDef *, int] const upb_FieldDef *
+upb_OneofDef_FieldCount [const upb_OneofDef *] int
+upb_OneofDef_Name [const upb_OneofDef *] const char *
+upb_ServiceDef_File [const upb_ServiceDef *] const upb_FileDef *
+upb_ServiceDef_FullName [const upb_ServiceDef *] const char *
+upb_ServiceDef_Method [const upb_ServiceDef *, int] const upb_MethodDef *
+upb_ServiceDef_MethodCount [const upb_ServiceDef *] int
+upb_Status_Clear [upb_Status *] void
+upb_Status_ErrorMessage [const upb_Status *] const char *

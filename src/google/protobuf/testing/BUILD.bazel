@@ -1,0 +1,59 @@
+# Protobuf testing support.
+#   This package contains testonly utilities used in C++ unit tests.
+
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
+
+package(
+    default_visibility = ["//:__subpackages__"],
+)
+
+cc_library(
+    name = "file",
+    testonly = 1,
+    srcs = ["file.cc"],
+    hdrs = ["file.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:io_win32",
+        "//src/google/protobuf/stubs:lite",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "testing",
+    testonly = 1,
+    srcs = [
+        "googletest.cc",
+    ],
+    hdrs = [
+        "googletest.h",
+    ],
+    copts = COPTS,
+    linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":file",
+        "//:protobuf_lite",  # for ShutdownProtobufLibrary
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:io_win32",
+        "//src/google/protobuf/stubs:lite",
+        "@abseil-cpp//absl/base:log_severity",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/log:log_sink",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+    ],
+)

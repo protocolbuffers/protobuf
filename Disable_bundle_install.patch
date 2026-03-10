@@ -1,0 +1,37 @@
+Subject: [PATCH] Disable bundle install
+---
+Index: ruby/private/bundle_fetch.bzl
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ruby/private/bundle_fetch.bzl b/ruby/private/bundle_fetch.bzl
+--- a/ruby/private/bundle_fetch.bzl	(revision 075937d3f2e22d4657f5c4693e7405d8952ab209)
++++ b/ruby/private/bundle_fetch.bzl	(date 1740971614385)
+@@ -168,16 +168,16 @@
+         )
+ 
+     # Fetch Bundler and define an `rb_gem_install()` target for it.
+-    _download_gem(repository_ctx, gemfile_lock.bundler, cache_path, gemfile_lock.bundler.sha256)
+-    gem_full_names.append(":%s" % gemfile_lock.bundler.full_name)
+-    gem_install_fragments.append(
+-        _GEM_INSTALL_BUILD_FRAGMENT.format(
+-            name = gemfile_lock.bundler.full_name,
+-            gem = gemfile_lock.bundler.filename,
+-            cache_path = cache_path,
+-            ruby = ruby_toolchain_attr,
+-        ),
+-    )
++#    _download_gem(repository_ctx, gemfile_lock.bundler, cache_path, gemfile_lock.bundler.sha256)
++#    gem_full_names.append(":%s" % gemfile_lock.bundler.full_name)
++#    gem_install_fragments.append(
++#        _GEM_INSTALL_BUILD_FRAGMENT.format(
++#            name = gemfile_lock.bundler.full_name,
++#            gem = gemfile_lock.bundler.filename,
++#            cache_path = cache_path,
++#            ruby = ruby_toolchain_attr,
++#        ),
++#    )
+ 
+     # Create `bin` package with shims for gem executables.
+     # This allows targets to depend on `@bundle//bin:rake`

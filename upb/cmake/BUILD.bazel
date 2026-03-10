@@ -1,0 +1,58 @@
+# Copyright (c) 2009-2021, Google LLC
+# All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_python//python:defs.bzl", "py_library")
+
+licenses(["notice"])
+
+exports_files(["staleness_test.py"])
+
+py_library(
+    name = "staleness_test_lib",
+    testonly = 1,
+    srcs = ["staleness_test_lib.py"],
+    # This is public only for use by the staleness_test() macro. Please do not
+    # depend on this target directly.
+    visibility = ["//visibility:public"],
+)
+
+genrule(
+    name = "copy_protos",
+    srcs = [
+        "//src/google/protobuf:descriptor_upb_c_proto",
+        "//src/google/protobuf:descriptor_upb_minitable_proto",
+    ],
+    outs = [
+        "generated-in/google/protobuf/descriptor.upb.h",
+        "generated-in/google/protobuf/descriptor.upb_minitable.c",
+        "generated-in/google/protobuf/descriptor.upb_minitable.h",
+    ],
+    cmd = "cp $(SRCS) $(@D)/generated-in/google/protobuf",
+)
+
+pkg_files(
+    name = "upb_cmake_dist",
+    srcs = [
+        ":copy_protos",
+        "//third_party/utf8_range:utf8_range_srcs",
+        "//upb:source_files",
+        "//upb/base:source_files",
+        "//upb/hash:source_files",
+        "//upb/lex:source_files",
+        "//upb/mem:source_files",
+        "//upb/message:source_files",
+        "//upb/mini_descriptor:source_files",
+        "//upb/mini_table:source_files",
+        "//upb/port:source_files",
+        "//upb/reflection:source_files",
+        "//upb/text:source_files",
+        "//upb/wire:source_files",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//rust:__pkg__"],
+)

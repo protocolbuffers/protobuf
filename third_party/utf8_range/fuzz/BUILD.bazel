@@ -1,0 +1,14 @@
+load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
+
+package(default_applicable_licenses = ["//third_party/utf8_range:license"])
+
+cc_fuzz_test(
+    name = "utf8_validity_fuzzer",
+    testonly = 1,
+    srcs = ["utf8_validity_fuzzer.cc"],
+    dicts = ["utf8_fuzzer.dict"],
+    deps = [
+        "//third_party/utf8_range:utf8_validity",
+        "@abseil-cpp//absl/strings:string_view",
+    ],
+)

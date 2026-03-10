@@ -1,0 +1,9 @@
+common --enable_platform_specific_config
+
+build:linux --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
+build:macos --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
+
+common:windows --cxxopt=/std:c++17 --host_cxxopt=/std:c++17 --enable_runfiles
+
+build --experimental_remote_cache_eviction_retries=5
+build --remote_download_outputs=all

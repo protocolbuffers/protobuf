@@ -1,0 +1,2761 @@
+################################################################################
+# Protocol Buffers: C++ Runtime and common proto files
+################################################################################
+
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:proto_library.bzl", "proto_library")
+load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
+load("//upb/bazel:upb_c_proto_library.bzl", "upb_c_proto_library")
+load("//upb/bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
+load("//upb/bazel:upb_proto_reflection_library.bzl", "upb_proto_reflection_library")
+load("//upb/cmake:build_defs.bzl", "staleness_test")
+
+package(
+    default_visibility = [
+        "//:__pkg__",  # "public" targets are alias rules in //.
+        "//json:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+)
+
+proto_library(
+    name = "any_proto",
+    srcs = ["any.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "any_cc_proto",
+    deps = [":any_proto"],
+)
+
+upb_c_proto_library(
+    name = "any_upb_proto",
+    deps = [":any_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "any_upb_reflection_proto",
+    deps = [":any_proto"],
+)
+
+proto_library(
+    name = "api_proto",
+    srcs = ["api.proto"],
+    strip_import_prefix = "/src",
+    deps = [
+        "//:source_context_proto",
+        "//:type_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "api_cc_proto",
+    deps = [":api_proto"],
+)
+
+upb_c_proto_library(
+    name = "api_upb_proto",
+    deps = [":api_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "api_upb_reflection_proto",
+    deps = [":api_proto"],
+)
+
+proto_library(
+    name = "duration_proto",
+    srcs = ["duration.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "duration_cc_proto",
+    deps = [":duration_proto"],
+)
+
+upb_c_proto_library(
+    name = "duration_upb_proto",
+    deps = [":duration_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "duration_upb_reflection_proto",
+    deps = [":duration_proto"],
+)
+
+proto_library(
+    name = "empty_proto",
+    srcs = ["empty.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "empty_cc_proto",
+    deps = [":empty_proto"],
+)
+
+upb_c_proto_library(
+    name = "empty_upb_proto",
+    deps = [":empty_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "empty_upb_reflection_proto",
+    deps = [":empty_proto"],
+)
+
+proto_library(
+    name = "field_mask_proto",
+    srcs = ["field_mask.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "field_mask_cc_proto",
+    deps = [":field_mask_proto"],
+)
+
+upb_c_proto_library(
+    name = "field_mask_upb_proto",
+    deps = [":field_mask_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "field_mask_upb_reflection_proto",
+    deps = [":field_mask_proto"],
+)
+
+proto_library(
+    name = "source_context_proto",
+    srcs = ["source_context.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "source_context_cc_proto",
+    deps = [":source_context_proto"],
+)
+
+upb_c_proto_library(
+    name = "source_context_upb_proto",
+    deps = [":source_context_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "source_context_upb_reflection_proto",
+    deps = [":source_context_proto"],
+)
+
+proto_library(
+    name = "struct_proto",
+    srcs = ["struct.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "struct_cc_proto",
+    deps = [":struct_proto"],
+)
+
+upb_c_proto_library(
+    name = "struct_upb_proto",
+    deps = [":struct_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "struct_upb_reflection_proto",
+    deps = [":struct_proto"],
+)
+
+proto_library(
+    name = "timestamp_proto",
+    srcs = ["timestamp.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "timestamp_cc_proto",
+    deps = [":timestamp_proto"],
+)
+
+upb_c_proto_library(
+    name = "timestamp_upb_proto",
+    deps = [":timestamp_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "timestamp_upb_reflection_proto",
+    deps = [":timestamp_proto"],
+)
+
+proto_library(
+    name = "type_proto",
+    srcs = ["type.proto"],
+    strip_import_prefix = "/src",
+    deps = [
+        "//:any_proto",
+        "//:source_context_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "type_cc_proto",
+    deps = [":type_proto"],
+)
+
+upb_c_proto_library(
+    name = "type_upb_proto",
+    deps = [":type_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "type_upb_reflection_proto",
+    deps = [":type_proto"],
+)
+
+proto_library(
+    name = "wrappers_proto",
+    srcs = ["wrappers.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "wrappers_cc_proto",
+    deps = [":wrappers_proto"],
+)
+
+upb_c_proto_library(
+    name = "wrappers_upb_proto",
+    deps = [":wrappers_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "wrappers_upb_reflection_proto",
+    deps = [":wrappers_proto"],
+)
+
+# Generate code for the well-known types on demand.
+# This needs to be done in a separate genrule because we publish protoc and the
+# C++ runtime with the WKT code linked in.  We need to use a stripped down
+# compiler and runtime library to generate them, and cc_proto_library doesn't
+# support swapping out the compiler binary (even though a custom runtime can
+# be passed to proto_lang_toolchain).
+#
+# TODO We still check in generated pb.h and pb.cc files purely to
+# support CMake builds.  These aren't used at all by Bazel and will be removed
+# in the future once CMake can generate them too.
+
+WELL_KNOWN_TYPES = [
+    "any",
+    "api",
+    "duration",
+    "empty",
+    "field_mask",
+    "source_context",
+    "struct",
+    "timestamp",
+    "type",
+    "wrappers",
+]
+
+# When we generate code for the well-known types, we put the resulting files in
+# wkt/google/protobuf and add ./wkt to the include paths below. This is a
+# somewhat strange setup but is necessary to satisfy these two constraints:
+# - We need to keep the checked-in sources for now, since Cocoapods relies on
+#   them.
+# - The Bazel build should always use the generated sources so that developers
+#   don't have to worry about manually updating the checked-in sources.
+genrule(
+    name = "gen_wkt_cc_sources",
+    srcs = [wkt + ".proto" for wkt in WELL_KNOWN_TYPES],
+    outs =
+        ["wkt/google/protobuf/" + wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES] +
+        ["wkt/google/protobuf/" + wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
+    cmd = """
+        $(execpath //:protoc) \
+            --cpp_out=dllexport_decl=PROTOBUF_EXPORT:$(RULEDIR)/wkt \
+            --proto_path=$$(dirname $$(dirname $$(dirname $(location any.proto)))) \
+            $(SRCS)
+    """,
+    tools = ["//:protoc"],
+    visibility = ["//visibility:private"],
+)
+
+staleness_test(
+    name = "well_known_types_staleness_test",
+    outs =
+        [wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES] +
+        [wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
+    generated_pattern = "wkt/google/protobuf/%s",
+    tags = ["manual"],
+)
+
+# This is necessary for our generated cmake configs to pick up the checked in
+# WKT files.
+# TODO Remove this once we generate WKT code from cmake.
+cc_library(
+    name = "cmake_wkt_cc_proto",
+    srcs = ["wkt/google/protobuf/" + wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
+    hdrs = ["wkt/google/protobuf/" + wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES],
+    copts = COPTS,
+    includes = ["wkt"],
+    linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//pkg:__pkg__"],
+    deps = [
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        "//src/google/protobuf/io",
+    ],
+)
+
+# Built-in runtime types
+
+proto_library(
+    name = "descriptor_proto",
+    srcs = ["descriptor.proto"],
+    strip_import_prefix = "/src",
+    visibility = [
+        "//:__pkg__",
+        "//pkg:__pkg__",
+        "//rust/test:__pkg__",
+    ],
+)
+
+upb_c_proto_library(
+    name = "descriptor_upb_c_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":descriptor_proto"],
+)
+
+upb_minitable_proto_library(
+    name = "descriptor_upb_minitable_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":descriptor_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "descriptor_upb_reflection_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":descriptor_proto"],
+)
+
+proto_library(
+    name = "cpp_features_proto",
+    srcs = ["cpp_features.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [":descriptor_proto"],
+)
+
+cc_proto_library(
+    name = "cpp_features_cc_proto",
+    visibility = ["//editions:__pkg__"],
+    deps = [":cpp_features_proto"],
+)
+
+################################################################################
+# C++ Runtime Library
+################################################################################
+
+cc_library(
+    name = "os_macros",
+    hdrs = [
+        "os_macros_restore.inc",
+        "os_macros_undef.inc",
+    ],
+    strip_include_prefix = "/src",
+    visibility = ["//hpb:__subpackages__"],
+)
+
+cc_library(
+    name = "port",
+    srcs = ["port.cc"],
+    hdrs = [
+        "port.h",
+        "port_def.inc",
+        "port_undef.inc",
+    ],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [
+        ":os_macros",
+        "@abseil-cpp//absl/base:config",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/base:prefetch",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/types:optional",
+    ],
+)
+
+cc_library(
+    name = "varint_shuffle",
+    hdrs = ["varint_shuffle.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [
+        ":port",
+        "@abseil-cpp//absl/base:core_headers",
+    ],
+)
+
+cc_test(
+    name = "varint_shuffle_test",
+    srcs = ["varint_shuffle_test.cc"],
+    deps = [
+        ":port",
+        ":varint_shuffle",
+        "@abseil-cpp//absl/log:absl_check",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "reflection_visit_fields_test",
+    size = "small",
+    srcs = ["reflection_visit_fields_test.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":arena",
+        ":cc_test_protos",
+        ":lite_test_util",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_util",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "port_test",
+    srcs = ["port_test.cc"],
+    deps = [
+        ":port",
+        ":varint_shuffle",
+        "@abseil-cpp//absl/base:config",
+        "@abseil-cpp//absl/log:absl_check",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "arena_align",
+    srcs = ["arena_align.cc"],
+    hdrs = ["arena_align.h"],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [
+        ":port",
+        "//src/google/protobuf/stubs:lite",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/numeric:bits",
+    ],
+)
+
+cc_library(
+    name = "arena_cleanup",
+    hdrs = ["arena_cleanup.h"],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/base:prefetch",
+    ],
+)
+
+cc_library(
+    name = "arena_allocation_policy",
+    hdrs = ["arena_allocation_policy.h"],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [
+        "//src/google/protobuf/stubs:lite",
+    ],
+)
+
+cc_library(
+    name = "string_block",
+    hdrs = ["string_block.h"],
+    strip_include_prefix = "/src",
+    deps = [
+        ":arena_align",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/log:absl_check",
+    ],
+)
+
+cc_test(
+    name = "string_block_test",
+    srcs = ["string_block_test.cc"],
+    deps = [
+        ":port",
+        ":string_block",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "field_with_arena_test",
+    srcs = ["field_with_arena_test.cc"],
+    deps = [
+        ":arena",
+        ":protobuf_lite",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "arena",
+    srcs = [
+        "arena.cc",
+    ],
+    hdrs = [
+        "arena.h",
+        "arenaz_sampler.h",
+        "serial_arena.h",
+        "thread_safe_arena.h",
+    ],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [
+        ":arena_align",
+        ":arena_allocation_policy",
+        ":arena_cleanup",
+        ":internal_visibility",
+        ":port",
+        ":string_block",
+        "//src/google/protobuf/stubs:lite",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/base:dynamic_annotations",
+        "@abseil-cpp//absl/base:prefetch",
+        "@abseil-cpp//absl/container:layout",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/meta:type_traits",
+        "@abseil-cpp//absl/numeric:bits",
+        "@abseil-cpp//absl/synchronization",
+        "@abseil-cpp//absl/types:span",
+    ],
+)
+
+cc_library(
+    name = "micro_string",
+    srcs = ["micro_string.cc"],
+    hdrs = ["micro_string.h"],
+    strip_include_prefix = "/src",
+    deps = [
+        ":arena",
+        ":arena_align",
+        ":port",
+        "@abseil-cpp//absl/base:config",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:string_view",
+    ],
+)
+
+cc_test(
+    name = "micro_string_test",
+    srcs = ["micro_string_test.cc"],
+    deps = [
+        ":arena",
+        ":arena_align",
+        ":micro_string",
+        ":port",
+        ":protobuf_lite",
+        "@abseil-cpp//absl/base:config",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "internal_visibility",
+    hdrs = ["internal_visibility.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+)
+
+cc_library(
+    name = "internal_visibility_for_testing",
+    testonly = 1,
+    hdrs = ["internal_visibility_for_testing.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [":internal_visibility"],
+)
+
+cc_library(
+    name = "protobuf_lite",
+    srcs = [
+        "any_lite.cc",
+        "arenastring.cc",
+        "arenaz_sampler.cc",
+        "extension_set.cc",
+        "generated_enum_util.cc",
+        "generated_message_tctable_lite.cc",
+        "generated_message_util.cc",
+        "implicit_weak_message.cc",
+        "inlined_string_field.cc",
+        "map.cc",
+        "message_lite.cc",
+        "parse_context.cc",
+        "raw_ptr.cc",
+        "repeated_field.cc",
+        "repeated_ptr_field.cc",
+        "wire_format_lite.cc",
+    ],
+    # TODO Fix ODR violations across BUILD.bazel files.
+    hdrs = [
+        "any.h",
+        "arena.h",
+        "arenastring.h",
+        "arenaz_sampler.h",
+        "descriptor_lite.h",
+        "endian.h",
+        "explicitly_constructed.h",
+        "extension_set.h",
+        "extension_set_inl.h",
+        "field_with_arena.h",
+        "generated_enum_util.h",
+        "generated_message_tctable_decl.h",
+        "generated_message_tctable_impl.h",
+        "generated_message_util.h",
+        "has_bits.h",
+        "implicit_weak_message.h",
+        "inlined_string_field.h",
+        "internal_metadata_locator.h",
+        "internal_visibility.h",
+        "map.h",
+        "map_field_lite.h",
+        "map_type_handler.h",
+        "message_lite.h",
+        "metadata_lite.h",
+        "parse_context.h",
+        "raw_ptr.h",
+        "repeated_field.h",
+        "repeated_field_proxy.h",
+        "repeated_ptr_field.h",
+        "runtime_version.h",
+        "serial_arena.h",
+        "thread_safe_arena.h",
+        "wire_format_lite.h",
+    ],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error",
+        ],
+    }),
+    linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//:__subpackages__",
+    ],
+    # In Bazel 6.0+, these will be `interface_deps`:
+    deps = [
+        ":arena",
+        ":arena_align",
+        ":arena_allocation_policy",
+        ":arena_cleanup",
+        ":endian",
+        ":internal_visibility",
+        ":micro_string",
+        ":port",
+        ":string_block",
+        ":varint_shuffle",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs:lite",
+        "//third_party/utf8_range:utf8_validity",
+        "@abseil-cpp//absl/base",
+        "@abseil-cpp//absl/base:config",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/base:dynamic_annotations",
+        "@abseil-cpp//absl/base:no_destructor",
+        "@abseil-cpp//absl/base:prefetch",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/functional:function_ref",
+        "@abseil-cpp//absl/functional:overload",
+        "@abseil-cpp//absl/hash",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/numeric:bits",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/strings:internal",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/synchronization",
+        "@abseil-cpp//absl/time",
+        "@abseil-cpp//absl/types:optional",
+        "@abseil-cpp//absl/types:span",
+    ],
+)
+
+PROTOBUF_HEADERS = [
+    "cpp_edition_defaults.h",
+    "cpp_features.pb.h",
+    "descriptor.h",
+    "descriptor.pb.h",
+    "descriptor_database.h",
+    "descriptor_visitor.h",
+    "dynamic_message.h",
+    "feature_resolver.h",
+    "internal_feature_helper.h",
+    "field_access_listener.h",
+    "generated_enum_reflection.h",
+    "generated_message_bases.h",
+    "generated_message_reflection.h",
+    "generated_message_tctable_gen.h",
+    "map_entry.h",
+    "map_field.h",
+    "message.h",
+    "metadata.h",
+    "reflection.h",
+    "reflection_internal.h",
+    "reflection_mode.h",
+    "reflection_ops.h",
+    "reflection_visit_fields.h",
+    "reflection_visit_field_info.h",
+    "service.h",
+    "text_format.h",
+    "unknown_field_set.h",
+    "wire_format.h",
+]
+
+cc_library(
+    name = "protobuf",
+    srcs = [
+        "any.cc",
+        "cpp_features.pb.cc",
+        "descriptor.cc",
+        "descriptor.pb.cc",
+        "descriptor_database.cc",
+        "dynamic_message.cc",
+        "extension_set_heavy.cc",
+        "feature_resolver.cc",
+        "generated_message_bases.cc",
+        "generated_message_reflection.cc",
+        "generated_message_tctable_full.cc",
+        "generated_message_tctable_gen.cc",
+        "internal_feature_helper.cc",
+        "map_field.cc",
+        "message.cc",
+        "reflection_mode.cc",
+        "reflection_ops.cc",
+        "service.cc",
+        "symbol_checker.cc",
+        "text_format.cc",
+        "unknown_field_set.cc",
+        "wire_format.cc",
+    ],
+    hdrs = PROTOBUF_HEADERS,
+    copts = COPTS,
+    linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//:__subpackages__",
+    ],
+    deps = [
+        ":internal_visibility",
+        ":micro_string",
+        ":port",
+        ":protobuf_lite",
+        ":repeated_field_proxy",
+        ":symbol_checker",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:gzip_stream",
+        "//src/google/protobuf/io:printer",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/stubs",
+        "//third_party/utf8_range:utf8_validity",
+        "@abseil-cpp//absl/algorithm:container",
+        "@abseil-cpp//absl/base",
+        "@abseil-cpp//absl/base:config",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/base:dynamic_annotations",
+        "@abseil-cpp//absl/base:no_destructor",
+        "@abseil-cpp//absl/cleanup",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:fixed_array",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/functional:any_invocable",
+        "@abseil-cpp//absl/functional:function_ref",
+        "@abseil-cpp//absl/functional:overload",
+        "@abseil-cpp//absl/hash",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/numeric:bits",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:charset",
+        "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/strings:internal",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/synchronization",
+        "@abseil-cpp//absl/time",
+        "@abseil-cpp//absl/types:optional",
+        "@abseil-cpp//absl/types:span",
+        "@abseil-cpp//absl/utility",
+    ],
+)
+
+cc_library(
+    name = "symbol_checker",
+    hdrs = ["symbol_checker.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:private"],
+    deps = [
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+# This target exposes the headers for the protobuf runtime, and additionally
+# depends on the C++ well-known types and some other miscellaneous utilities.
+# The purpose is to preserve compatibility with projects that do not yet comply
+# with the layering check. Ideally everyone should get into compliance with the
+# layering check, which would mean for example taking a dependency on
+# //:any_cc_proto instead of relying on this target to make it available
+# indirectly.
+cc_library(
+    name = "protobuf_layering_check_legacy",
+    hdrs = PROTOBUF_HEADERS,
+    copts = COPTS,
+    linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//:__subpackages__",
+    ],
+    deps = [
+        ":any_cc_proto",
+        ":api_cc_proto",
+        ":duration_cc_proto",
+        ":empty_cc_proto",
+        ":field_mask_cc_proto",
+        ":protobuf",
+        ":source_context_cc_proto",
+        ":struct_cc_proto",
+        ":timestamp_cc_proto",
+        ":type_cc_proto",
+        ":wrappers_cc_proto",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/util:delimited_message_util",
+        "//src/google/protobuf/util:differencer",
+        "//src/google/protobuf/util:field_mask_util",
+        "//src/google/protobuf/util:json_util",
+        "//src/google/protobuf/util:time_util",
+        "//src/google/protobuf/util:type_resolver",
+    ],
+)
+
+cc_test(
+    name = "has_bits_test",
+    srcs = ["has_bits_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":cc_test_protos",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+proto_library(
+    name = "internal_metadata_locator_test_proto",
+    srcs = ["internal_metadata_locator_test.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "internal_metadata_locator_test_cc_proto",
+    deps = [":internal_metadata_locator_test_proto"],
+)
+
+cc_test(
+    name = "internal_metadata_locator_test",
+    size = "small",
+    srcs = [
+        "internal_metadata_locator_test.cc",
+    ],
+    deps = [
+        ":arena",
+        ":internal_metadata_locator_test_cc_proto",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_util2",
+        "//src/google/protobuf/io",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "repeated_field_proxy",
+    hdrs = ["repeated_field_proxy.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":port",
+        ":protobuf_lite",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/strings:string_view",
+    ],
+)
+
+cc_test(
+    name = "repeated_field_proxy_test",
+    size = "small",
+    srcs = [
+        "repeated_field_proxy_test.cc",
+    ],
+    deps = [
+        ":arena",
+        ":protobuf",
+        ":protobuf_lite",
+        ":repeated_field_proxy",
+        ":test_textproto",
+        "//src/google/protobuf/test_protos:test_cc_protos",
+        "@abseil-cpp//absl/algorithm:container",
+        "@abseil-cpp//absl/meta:type_traits",
+        "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+# This provides just the header files for use in projects that need to build
+# shared libraries for dynamic loading. This target is available until Bazel
+# adds native support for such use cases.
+# TODO: Remove this target once the support gets added to Bazel.
+cc_library(
+    name = "protobuf_headers",
+    hdrs = glob([
+        "**/*.h",
+        "**/*.inc",
+    ]),
+    strip_include_prefix = "/src",
+)
+
+cc_library(
+    name = "descriptor_visitor",
+    hdrs = ["descriptor_visitor.h"],
+    copts = COPTS,
+    linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":port",
+        ":protobuf",
+    ],
+)
+
+cc_library(
+    name = "descriptor_legacy",
+    hdrs = ["descriptor_legacy.h"],
+    copts = COPTS,
+    linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":protobuf",
+    ],
+)
+
+filegroup(
+    name = "well_known_type_protos",
+    srcs = [
+        "any.proto",
+        "api.proto",
+        "duration.proto",
+        "empty.proto",
+        "field_mask.proto",
+        "source_context.proto",
+        "struct.proto",
+        "timestamp.proto",
+        "type.proto",
+        "wrappers.proto",
+    ],
+    visibility = ["//:__subpackages__"],
+)
+
+filegroup(
+    name = "descriptor_proto_srcs",
+    srcs = ["descriptor.proto"],
+    visibility = ["//:__subpackages__"],
+)
+
+filegroup(
+    name = "cpp_features_proto_srcs",
+    srcs = ["cpp_features.proto"],
+    visibility = ["//:__subpackages__"],
+)
+
+filegroup(
+    name = "testdata",
+    srcs = glob(["testdata/**/*"]) + [
+        "descriptor.cc",
+    ],
+    visibility = [
+        "//:__subpackages__",
+    ],
+)
+
+filegroup(
+    name = "lite_test_proto_srcs",
+    srcs = [
+        "map_lite_unittest.proto",
+        "only_one_enum_test.proto",
+        "unittest_import_lite.proto",
+        "unittest_import_public_lite.proto",
+        "unittest_lite.proto",
+    ],
+    visibility = ["//:__subpackages__"],
+)
+
+proto_library(
+    name = "lite_test_protos",
+    srcs = [":lite_test_proto_srcs"],
+    strip_import_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":any_proto",
+        ":api_proto",
+        ":descriptor_proto",
+        ":duration_proto",
+        ":empty_proto",
+        ":field_mask_proto",
+        ":source_context_proto",
+        ":struct_proto",
+        ":timestamp_proto",
+        ":type_proto",
+        ":wrappers_proto",
+    ],
+)
+
+filegroup(
+    name = "test_proto_srcs",
+    srcs = [
+        "any_test.proto",
+        "internal_metadata_locator_test.proto",
+        "map_proto2_unittest.proto",
+        "map_unittest.proto",
+        "unittest.proto",
+        "unittest_custom_features.proto",
+        "unittest_custom_options.proto",
+        "unittest_embed_optimize_for.proto",
+        "unittest_empty.proto",
+        "unittest_enormous_descriptor.proto",
+        "unittest_features.proto",
+        "unittest_import.proto",
+        "unittest_import_option.proto",
+        "unittest_import_public.proto",
+        "unittest_invalid_features.proto",
+        "unittest_lite_imports_nonlite.proto",
+        "unittest_mset.proto",
+        "unittest_mset_wire_format.proto",
+        "unittest_no_generic_services.proto",
+        "unittest_optimize_for.proto",
+        "unittest_proto3.proto",
+        "unittest_proto3_arena.proto",
+        "unittest_proto3_arena_lite.proto",
+        "unittest_proto3_bad_macros.proto",
+        "unittest_proto3_extensions.proto",
+        "unittest_proto3_lite.proto",
+        "unittest_proto3_optional.proto",
+        "unittest_redaction.proto",
+        "unittest_retention.proto",
+        "unittest_string_type.proto",
+        "unittest_utf8_string_extensions.proto",
+        "unittest_well_known_types.proto",
+    ],
+    visibility = ["//:__subpackages__"],
+)
+
+filegroup(
+    name = "unittest_custom_options_unlinked_proto_srcs",
+    srcs = ["unittest_custom_options_unlinked.proto"],
+    visibility = ["//:__subpackages__"],
+)
+
+filegroup(
+    name = "unittest_proto_srcs",
+    srcs = [
+        "unittest.proto",
+        "unittest_import.proto",
+        "unittest_import_public.proto",
+    ],
+    visibility = ["//:__subpackages__"],
+)
+
+filegroup(
+    name = "test_proto_editions_srcs",
+    srcs = [
+        "edition_unittest.proto",
+        "map_proto3_unittest.proto",
+        "unittest_arena.proto",
+        "unittest_delimited.proto",
+        "unittest_delimited_import.proto",
+        "unittest_drop_unknown_fields.proto",
+        "unittest_lazy_dependencies.proto",
+        "unittest_lazy_dependencies_custom_option.proto",
+        "unittest_lazy_dependencies_enum.proto",
+        "unittest_legacy_features.proto",
+        "unittest_no_field_presence.proto",
+        "unittest_preserve_unknown_enum.proto",
+        "unittest_preserve_unknown_enum2.proto",
+        "unittest_string_view.proto",
+    ],
+    visibility = ["//:__subpackages__"],
+)
+
+filegroup(
+    name = "test_proto_all_srcs",
+    testonly = 1,
+    srcs = [
+        ":test_proto_editions_srcs",
+        ":test_proto_srcs",
+        "//src/google/protobuf/test_protos:test_proto_srcs",
+    ],
+    visibility = ["//:__subpackages__"],
+)
+
+proto_library(
+    name = "test_protos",
+    srcs = [
+        "any_test.proto",
+        "edition_unittest.proto",
+        "map_proto2_unittest.proto",
+        "map_proto3_unittest.proto",
+        "map_unittest.proto",
+        "unittest.proto",
+        "unittest_arena.proto",
+        "unittest_custom_features.proto",
+        "unittest_custom_options.proto",
+        "unittest_delimited.proto",
+        "unittest_delimited_import.proto",
+        "unittest_drop_unknown_fields.proto",
+        "unittest_embed_optimize_for.proto",
+        "unittest_empty.proto",
+        "unittest_enormous_descriptor.proto",
+        "unittest_features.proto",
+        "unittest_import.proto",
+        "unittest_import_public.proto",
+        "unittest_invalid_features.proto",
+        "unittest_lazy_dependencies.proto",
+        "unittest_lazy_dependencies_custom_option.proto",
+        "unittest_lazy_dependencies_enum.proto",
+        "unittest_legacy_features.proto",
+        "unittest_lite_imports_nonlite.proto",
+        "unittest_mset.proto",
+        "unittest_mset_wire_format.proto",
+        "unittest_no_field_presence.proto",
+        "unittest_no_generic_services.proto",
+        "unittest_optimize_for.proto",
+        "unittest_preserve_unknown_enum.proto",
+        "unittest_preserve_unknown_enum2.proto",
+        "unittest_proto3_bad_macros.proto",
+        "unittest_proto3_extensions.proto",
+        "unittest_proto3_lite.proto",
+        "unittest_redaction.proto",
+        "unittest_retention.proto",
+        "unittest_string_type.proto",
+        "unittest_string_view.proto",
+        "unittest_utf8_string_extensions.proto",
+        "unittest_well_known_types.proto",
+    ],
+    option_deps = [
+        ":cpp_features_proto",
+        "//:java_features_proto",
+    ],
+    strip_import_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":any_proto",
+        ":api_proto",
+        ":descriptor_proto",
+        ":duration_proto",
+        ":empty_proto",
+        ":field_mask_proto",
+        ":source_context_proto",
+        ":struct_proto",
+        ":timestamp_proto",
+        ":type_proto",
+        ":wrappers_proto",
+    ],
+)
+
+upb_c_proto_library(
+    name = "unittest_upb_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":test_protos"],
+)
+
+upb_proto_reflection_library(
+    name = "unittest_upb_reflection_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":test_protos"],
+)
+
+proto_library(
+    name = "unittest_proto3_arena_proto",
+    srcs = ["unittest_proto3_arena.proto"],
+    strip_import_prefix = "/src",
+    deps = [
+        ":descriptor_proto",
+        ":test_protos",
+    ],
+)
+
+cc_proto_library(
+    name = "unittest_proto3_arena_cc_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":unittest_proto3_arena_proto"],
+)
+
+proto_library(
+    name = "unittest_proto3_arena_lite_proto",
+    srcs = ["unittest_proto3_arena_lite.proto"],
+    strip_import_prefix = "/src",
+    deps = [
+        ":descriptor_proto",
+        ":test_protos",
+    ],
+)
+
+cc_proto_library(
+    name = "unittest_proto3_arena_lite_cc_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":unittest_proto3_arena_lite_proto"],
+)
+
+proto_library(
+    name = "unittest_proto3_proto",
+    srcs = ["unittest_proto3.proto"],
+    strip_import_prefix = "/src",
+    deps = [
+        ":descriptor_proto",
+        ":test_protos",
+    ],
+)
+
+cc_proto_library(
+    name = "unittest_proto3_cc_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":unittest_proto3_proto"],
+)
+
+proto_library(
+    name = "unittest_proto3_optional_proto",
+    srcs = ["unittest_proto3_optional.proto"],
+    strip_import_prefix = "/src",
+    deps = [":descriptor_proto"],
+)
+
+cc_proto_library(
+    name = "unittest_proto3_optional_cc_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":unittest_proto3_optional_proto"],
+)
+
+proto_library(
+    name = "unittest_features_proto",
+    srcs = ["unittest_features.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//editions:__subpackages__"],
+    deps = [
+        ":descriptor_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "unittest_features_cc_proto",
+    visibility = ["//editions:__subpackages__"],
+    deps = [":unittest_features_proto"],
+)
+
+proto_library(
+    name = "generic_test_protos",
+    srcs = [":test_proto_srcs"],
+    option_deps = [
+        "//:java_features_proto",
+        ":cpp_features_proto",
+        ":unittest_custom_options_unlinked_proto",
+    ],
+    strip_import_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":any_proto",
+        ":api_proto",
+        ":cpp_features_proto",
+        ":descriptor_proto",
+        ":duration_proto",
+        ":empty_proto",
+        ":field_mask_proto",
+        ":source_context_proto",
+        ":struct_proto",
+        ":timestamp_proto",
+        ":type_proto",
+        ":wrappers_proto",
+    ],
+)
+
+proto_library(
+    name = "generic_test_editions_protos",
+    srcs = [":test_proto_editions_srcs"],
+    option_deps = [
+        ":cpp_features_proto",
+        "//:java_features_proto",
+    ],
+    strip_import_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":any_proto",
+        ":api_proto",
+        ":cpp_features_proto",
+        ":descriptor_proto",
+        ":duration_proto",
+        ":empty_proto",
+        ":field_mask_proto",
+        ":generic_test_protos",
+        ":source_context_proto",
+        ":struct_proto",
+        ":timestamp_proto",
+        ":type_proto",
+        ":wrappers_proto",
+    ],
+)
+
+exports_files(
+    [
+        "test_messages_proto2.proto",
+        "test_messages_proto3.proto",
+    ],
+    visibility = [
+        "//:__pkg__",
+        "//python:__pkg__",
+        "//ruby:__pkg__",
+        "//upb:__pkg__",
+    ],
+)
+
+proto_library(
+    name = "test_messages_proto2_proto",
+    srcs = ["test_messages_proto2.proto"],
+    strip_import_prefix = "/src",
+    visibility = [
+        "//:__pkg__",
+        "//conformance:__subpackages__",
+        "//lua:__subpackages__",
+        "//python:__subpackages__",
+        "//upb:__subpackages__",
+    ],
+)
+
+proto_library(
+    name = "test_messages_proto3_proto",
+    srcs = ["test_messages_proto3.proto"],
+    strip_import_prefix = "/src",
+    visibility = [
+        "//:__pkg__",
+        "//conformance:__subpackages__",
+        "//lua:__subpackages__",
+        "//python:__subpackages__",
+        "//upb:__subpackages__",
+    ],
+    deps = [
+        ":any_proto",
+        ":duration_proto",
+        ":empty_proto",
+        ":field_mask_proto",
+        ":struct_proto",
+        ":timestamp_proto",
+        ":wrappers_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "cc_lite_test_protos",
+    deps = [":lite_test_protos"],
+)
+
+cc_proto_library(
+    name = "cc_test_protos",
+    visibility = [
+        "//rust/test:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [":test_protos"],
+)
+
+proto_library(
+    name = "unittest_string_view_proto",
+    srcs = ["unittest_string_view.proto"],
+    strip_import_prefix = "/src",
+    deps = [":cpp_features_proto"],
+)
+
+cc_proto_library(
+    name = "unittest_string_view_cc_proto",
+    deps = [":unittest_string_view_proto"],
+)
+
+proto_library(
+    name = "unittest_custom_options_unlinked_proto",
+    srcs = ["unittest_custom_options_unlinked.proto"],
+    strip_import_prefix = "/src",
+    deps = [
+        "//:any_proto",
+        "//:descriptor_proto",
+    ],
+)
+
+proto_library(
+    name = "unittest_import_option_proto",
+    srcs = ["unittest_import_option.proto"],
+    option_deps = [
+        ":test_protos",
+        ":unittest_custom_options_unlinked_proto",
+    ],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "unittest_import_option_cc_proto",
+    deps = [":unittest_import_option_proto"],
+)
+
+cc_test(
+    name = "string_view_test",
+    srcs = ["string_view_test.cc"],
+    deps = [
+        ":port",
+        ":protobuf",
+        ":unittest_string_view_cc_proto",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+# Filegroup for golden comparison test:
+filegroup(
+    name = "descriptor_cc_srcs",
+    testonly = 1,
+    data = [
+        "descriptor.pb.cc",
+        "descriptor.pb.h",
+    ],
+    visibility = ["//src/google/protobuf/compiler/cpp:__pkg__"],
+)
+
+filegroup(
+    name = "cpp_features_cc_srcs",
+    testonly = 1,
+    data = [
+        "cpp_features.pb.cc",
+        "cpp_features.pb.h",
+    ],
+    visibility = ["//src/google/protobuf/compiler/cpp:__pkg__"],
+)
+
+cc_library(
+    name = "lite_test_util",
+    testonly = 1,
+    srcs = [
+        "test_util_lite.cc",
+    ],
+    hdrs = [
+        "arena_test_util.h",
+        "map_test_util.h",
+        "proto3_lite_unittest.inc",
+        "test_util_lite.h",
+    ],
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":arena",
+        ":cc_lite_test_protos",
+        ":port",
+        "//src/google/protobuf/io",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "test_util",
+    testonly = 1,
+    srcs = [
+        "reflection_tester.cc",
+        "test_util.cc",
+    ],
+    hdrs = [
+        "map_test.inc",
+        "message_unittest.inc",
+        "message_unittest_legacy_apis.inc",
+        "reflection_tester.h",
+        "repeated_field_reflection_unittest.inc",
+        "test_util.h",
+        "test_util_lite.h",
+        "wire_format_unittest.h",
+    ],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":cc_lite_test_protos",
+        ":cc_test_protos",
+        ":lite_test_util",
+        ":port",
+        ":protobuf",
+        ":test_textproto",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/base:config",
+        "@abseil-cpp//absl/base:log_severity",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/flags:flag",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/time",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "test_util2",
+    testonly = 1,
+    hdrs = ["test_util2.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":test_util",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/util:differencer",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "any_test",
+    srcs = ["any_test.cc"],
+    deps = [
+        ":any_cc_proto",
+        ":cc_test_protos",
+        ":port",
+        ":protobuf",
+        ":test_util",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "arena_align_test",
+    srcs = ["arena_align_test.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":arena_align",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "arena_unittest",
+    srcs = ["arena_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":arena",
+        ":arena_cleanup",
+        ":cc_test_protos",
+        ":lite_test_util",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_util",
+        "//src/google/protobuf/io",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/synchronization",
+        "@abseil-cpp//absl/utility",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "arenastring_unittest",
+    srcs = ["arenastring_unittest.cc"],
+    deps = [
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "arenaz_sampler_test",
+    srcs = ["arenaz_sampler_test.cc"],
+    deps = [
+        ":arena",
+        ":arena_allocation_policy",
+        ":port",
+        ":protobuf",
+        "//src/google/protobuf/stubs",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:log_streamer",
+        "@abseil-cpp//absl/numeric:bits",
+        "@abseil-cpp//absl/random",
+        "@abseil-cpp//absl/random:seed_sequences",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/synchronization",
+        "@abseil-cpp//absl/time",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "descriptor_database_unittest",
+    srcs = ["descriptor_database_unittest.cc"],
+    deps = [
+        ":protobuf",
+        ":test_textproto",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "descriptor_test_utils",
+    testonly = True,
+    srcs = [
+        "descriptor_test_utils.cc",
+    ],
+    hdrs = [
+        "descriptor_test_utils.h",
+    ],
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":port",
+        ":protobuf",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:die_if_null",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "descriptor_unittest",
+    srcs = ["descriptor_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":any_cc_proto",
+        ":cc_test_protos",
+        ":descriptor_legacy",
+        ":descriptor_test_utils",
+        ":port",
+        ":protobuf",
+        ":test_textproto",
+        ":unittest_proto3_arena_cc_proto",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/base:log_severity",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/flags:flag",
+        "@abseil-cpp//absl/functional:any_invocable",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/log:die_if_null",
+        "@abseil-cpp//absl/log:scoped_mock_log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/synchronization",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "symbol_checker_test",
+    srcs = ["symbol_checker_test.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":descriptor_test_utils",
+        ":port",
+        ":protobuf",
+        ":symbol_checker",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/log:die_if_null",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "lazily_build_dependencies_test",
+    srcs = ["lazily_build_dependencies_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":any_cc_proto",
+        ":cc_test_protos",
+        ":descriptor_legacy",
+        ":port",
+        ":protobuf",
+        ":test_textproto",
+        ":unittest_proto3_arena_cc_proto",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "test_textproto",
+    testonly = True,
+    hdrs = ["test_textproto.h"],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//:__subpackages__",
+    ],
+    deps = [
+        ":protobuf",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/memory",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "drop_unknown_fields_test",
+    srcs = ["drop_unknown_fields_test.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        ":protobuf_lite",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "dynamic_message_unittest",
+    srcs = ["dynamic_message_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":cc_test_protos",
+        ":cpp_features_cc_proto",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_util",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "extension_set_unittest",
+    srcs = ["extension_set_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":cc_test_protos",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_textproto",
+        ":test_util",
+        ":test_util2",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "//src/google/protobuf/util:differencer",
+        "//third_party/utf8_range:utf8_validity",
+        "@abseil-cpp//absl/algorithm:container",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "feature_resolver_test",
+    srcs = ["feature_resolver_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":cc_test_protos",
+        ":port",
+        ":protobuf",
+        ":test_textproto",
+        ":test_util",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/log:die_if_null",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:status_matchers",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "internal_feature_helper_test",
+    srcs = [
+        "internal_feature_helper_test.cc",
+    ],
+    copts = COPTS,
+    deps = [
+        ":cc_test_protos",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_textproto",
+        ":test_util",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/log:die_if_null",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "generated_message_reflection_unittest",
+    srcs = ["generated_message_reflection_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":arena",
+        ":cc_test_protos",
+        ":lite_test_util",
+        ":port",
+        ":protobuf",
+        ":test_util",
+        ":unittest_import_option_cc_proto",
+        ":unittest_proto3_cc_proto",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/flags:flag",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "generated_message_tctable_lite_test",
+    srcs = ["generated_message_tctable_lite_test.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":cc_test_protos",
+        ":descriptor_visitor",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        "//src/google/protobuf/io",
+        "@abseil-cpp//absl/algorithm:container",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "inlined_string_field_unittest",
+    srcs = ["inlined_string_field_unittest.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "lite_arena_unittest",
+    srcs = ["lite_arena_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":cc_lite_test_protos",
+        ":lite_test_util",
+        ":protobuf",
+        ":test_util",
+        "@abseil-cpp//absl/log:absl_check",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "lite_unittest",
+    srcs = ["lite_unittest.cc"],
+    deps = [
+        ":cc_lite_test_protos",
+        ":lite_test_util",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "map_field_test",
+    srcs = ["map_field_test.cc"],
+    deps = [
+        ":arena",
+        ":cc_test_protos",
+        ":lite_test_util",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_util",
+        "//src/google/protobuf/stubs",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/synchronization",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "map_test",
+    timeout = "long",
+    srcs = [
+        "map_test.cc",
+        "map_test.inc",
+    ],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
+    data = [":testdata"],
+    deps = [
+        ":arena",
+        ":cc_test_protos",
+        ":internal_visibility_for_testing",
+        ":lite_test_util",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_textproto",
+        ":test_util",
+        ":test_util2",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "//src/google/protobuf/util:differencer",
+        "//src/google/protobuf/util:time_util",
+        "@abseil-cpp//absl/base",
+        "@abseil-cpp//absl/base:log_severity",
+        "@abseil-cpp//absl/cleanup",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/log:globals",
+        "@abseil-cpp//absl/random",
+        "@abseil-cpp//absl/random:distributions",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/time",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "message_unittest",
+    srcs = [
+        "message_unittest.cc",
+        "message_unittest.inc",
+        "message_unittest_legacy_apis.inc",
+    ],
+    deps = [
+        ":arena",
+        ":cc_lite_test_protos",
+        ":cc_test_protos",
+        ":internal_visibility",
+        ":lite_test_util",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_util",
+        ":test_util2",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:io_win32",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/test_protos:test_cc_protos",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "//src/google/protobuf/util:differencer",
+        "@abseil-cpp//absl/base:config",
+        "@abseil-cpp//absl/flags:flag",
+        "@abseil-cpp//absl/flags:marshalling",
+        "@abseil-cpp//absl/hash:hash_testing",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:scoped_mock_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/strings:str_format",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "edition_message_unittest",
+    srcs = [
+        "edition_message_unittest.cc",
+        "message_unittest.inc",
+    ],
+    deps = [
+        ":arena",
+        ":cc_test_protos",
+        ":internal_visibility",
+        ":lite_test_util",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_util",
+        ":test_util2",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:io_win32",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "//src/google/protobuf/util:differencer",
+        "@abseil-cpp//absl/base:config",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:scoped_mock_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "no_field_presence_test",
+    srcs = ["no_field_presence_test.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "no_field_presence_map_test",
+    srcs = ["no_field_presence_map_test.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "preserve_unknown_enum_test",
+    srcs = ["preserve_unknown_enum_test.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        "@abseil-cpp//absl/log:absl_check",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "proto3_arena_lite_unittest",
+    srcs = ["proto3_arena_lite_unittest.cc"],
+    deps = [
+        ":arena",
+        ":cc_test_protos",
+        ":protobuf",
+        # TODO: This should test against :unittest_proto3_arena_lite_cc_proto instead.
+        ":unittest_proto3_arena_cc_proto",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "proto3_arena_unittest",
+    srcs = ["proto3_arena_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":arena",
+        ":cc_test_protos",
+        ":port",
+        ":protobuf",
+        ":test_util",
+        ":unittest_proto3_arena_cc_proto",
+        ":unittest_proto3_optional_cc_proto",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "proto3_lite_unittest",
+    srcs = [
+        "proto3_lite_unittest.cc",
+        "proto3_lite_unittest.inc",
+    ],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
+    deps = [
+        ":arena",
+        ":cc_test_protos",
+        ":lite_test_util",
+        ":protobuf",
+        ":unittest_proto3_cc_proto",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "reflection_ops_unittest",
+    srcs = ["reflection_ops_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_util",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "repeated_field_reflection_unittest",
+    srcs = [
+        "repeated_field_reflection_unittest.cc",
+        "repeated_field_reflection_unittest.inc",
+    ],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
+    deps = [
+        ":cc_test_protos",
+        ":port",
+        ":protobuf",
+        ":test_util",
+        "//src/google/protobuf/stubs",
+        "@abseil-cpp//absl/base",
+        "@abseil-cpp//absl/strings:cord",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "repeated_field_unittest",
+    srcs = ["repeated_field_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
+    deps = [
+        ":cc_test_protos",
+        ":internal_visibility_for_testing",
+        ":lite_test_util",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/base:config",
+        "@abseil-cpp//absl/flags:flag",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/numeric:bits",
+        "@abseil-cpp//absl/random",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/types:span",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "repeated_ptr_field_unittest",
+    srcs = [
+        "repeated_ptr_field_unittest.cc",
+    ],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
+    deps = [
+        ":arena",
+        ":cc_test_protos",
+        ":lite_test_util",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_textproto",
+        ":test_util",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/test_protos:test_cc_protos",
+        "@abseil-cpp//absl/flags:flag",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/numeric:bits",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/types:optional",
+        "@abseil-cpp//absl/types:span",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "text_format_unittest",
+    srcs = ["text_format_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
+    data = [":testdata"],
+    deps = [
+        ":any_cc_proto",
+        ":cc_test_protos",
+        ":port",
+        ":protobuf",
+        ":test_util",
+        ":test_util2",
+        ":unittest_proto3_cc_proto",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "//third_party/utf8_range:utf8_validity",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:die_if_null",
+        "@abseil-cpp//absl/log:scoped_mock_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/strings:str_format",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "unknown_field_set_unittest",
+    srcs = ["unknown_field_set_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":cc_lite_test_protos",
+        ":cc_test_protos",
+        ":port",
+        ":protobuf",
+        ":test_util",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/functional:bind_front",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/synchronization",
+        "@abseil-cpp//absl/time",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "well_known_types_unittest",
+    srcs = ["well_known_types_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "wire_format_unittest",
+    srcs = [
+        "wire_format_unittest.cc",
+    ],
+    deps = [
+        ":cc_test_protos",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_util",
+        ":test_util2",
+        ":unittest_proto3_arena_cc_proto",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "//src/google/protobuf/util:differencer",
+        "@abseil-cpp//absl/base",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:scoped_mock_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "generated_enum_util_test",
+    srcs = ["generated_enum_util_test.cc"],
+    deps = [
+        ":cc_lite_test_protos",
+        ":cc_test_protos",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/flags:marshalling",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/types:span",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "retention_test",
+    srcs = ["retention_test.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/compiler:retention",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/util:differencer",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "reflection_mode_test",
+    srcs = ["reflection_mode_test.cc"],
+    deps = [
+        ":protobuf",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "descriptor_visitor_test",
+    srcs = ["descriptor_visitor_test.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "unredacted_debug_format_for_test",
+    testonly = True,
+    srcs = ["unredacted_debug_format_for_test.cc"],
+    hdrs = ["unredacted_debug_format_for_test.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":protobuf",
+        ":protobuf_lite",
+        "@abseil-cpp//absl/log:absl_check",
+    ],
+)
+
+cc_test(
+    name = "unredacted_debug_format_for_test_test",
+    srcs = ["unredacted_debug_format_for_test_test.cc"],
+    deps = [
+        ":cc_lite_test_protos",
+        ":cc_test_protos",
+        ":protobuf",
+        ":unredacted_debug_format_for_test",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+################################################################################
+# Helper targets for Kotlin tests
+################################################################################
+
+proto_library(
+    name = "kt_unittest_protos",
+    srcs = [
+        "map_proto2_unittest.proto",
+        "unittest.proto",
+        "unittest_import.proto",
+        "unittest_import_public.proto",
+    ],
+    strip_import_prefix = "/src",
+    visibility = ["//java/kotlin:__pkg__"],
+)
+
+proto_library(
+    name = "kt_proto3_unittest_protos",
+    srcs = [
+        "unittest_import.proto",
+        "unittest_import_public.proto",
+        "unittest_proto3.proto",
+    ],
+    strip_import_prefix = "/src",
+    visibility = [
+        "//java/kotlin:__pkg__",
+        "//java/kotlin-lite:__pkg__",
+    ],
+)
+
+################################################################################
+# Packaging rules
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["**"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//src:__pkg__"],
+)
+
+filegroup(
+    name = "full_test_srcs",
+    srcs = glob(
+        include = [
+            "*_test.cc",
+            "*unittest.cc",
+        ],
+        exclude = [
+            "lazily_build_dependencies_test.cc",
+            "lite_unittest.cc",
+            "lite_arena_unittest.cc",
+        ],
+    ),
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "lazily_build_dependencies_test_srcs",
+    srcs = ["lazily_build_dependencies_test.cc"],
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "lite_test_srcs",
+    srcs = [
+        "lite_arena_unittest.cc",
+        "lite_unittest.cc",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)
+
+cc_library(
+    name = "endian",
+    hdrs = ["endian.h"],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//conformance:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [
+        ":port",
+        "@abseil-cpp//absl/base:config",
+    ],
+)

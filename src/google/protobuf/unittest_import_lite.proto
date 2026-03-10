@@ -1,0 +1,31 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Author: kenton@google.com (Kenton Varda)
+//
+// This is like unittest_import.proto but with optimize_for = LITE_RUNTIME.
+
+edition = "2023";
+
+package proto2_unittest_import;
+
+import public "google/protobuf/unittest_import_public_lite.proto";
+
+option optimize_for = LITE_RUNTIME;
+option java_package = "com.google.protobuf";
+
+message ImportMessageLite {
+  int32 d = 1;
+}
+
+enum ImportEnumLite {
+  option features.enum_type = CLOSED;
+
+  IMPORT_LITE_FOO = 7;
+  IMPORT_LITE_BAR = 8;
+  IMPORT_LITE_BAZ = 9;
+}
