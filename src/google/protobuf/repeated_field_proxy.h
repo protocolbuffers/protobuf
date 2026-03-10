@@ -219,6 +219,13 @@ class RepeatedFieldProxyBase {
     return static_cast<size_type>(field().size());
   }
 
+  [[nodiscard]] const_iterator cbegin() const { return begin(); }
+  [[nodiscard]] const_iterator cend() const { return end(); }
+  [[nodiscard]] iterator begin() const { return field().begin(); }
+  [[nodiscard]] iterator end() const { return field().end(); }
+  [[nodiscard]] reverse_iterator rbegin() const { return field().rbegin(); }
+  [[nodiscard]] reverse_iterator rend() const { return field().rend(); }
+
  protected:
   explicit RepeatedFieldProxyBase(ConstQualifiedRepeatedFieldType& field)
       : field_(&field) {}
