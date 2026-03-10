@@ -280,6 +280,21 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     }
   }
 
+  template <typename TypeHandler, typename... Args>
+  Value<TypeHandler>* Emplace(Arena* arena, Args&&... args) {
+    if (ClearedCount() > 0) {
+      auto* result =
+          cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1)));
+      // NOLINTNEXTLINE(google3-readability-redundant-string-conversions)
+      *result = Value<TypeHandler>(std::forward<Args>(args)...);
+      return result;
+    } else {
+      return cast<TypeHandler>(AddInternal(
+          arena,
+          TypeHandler::GetNewWithEmplaceFunc(std::forward<Args>(args)...)));
+    }
+  }
+
   // Must be called from destructor.
   //
   // Pre-condition: NeedsDestroy() returns true.
@@ -1052,6 +1067,12 @@ class GenericTypeHandler {
       ptr = Arena::Create<Type>(arena, from);
     };
   }
+  template <typename... Args>
+  static constexpr auto GetNewWithEmplaceFunc(Args&&... args) {
+    return [&args...](Arena* arena, void*& ptr) {
+      ptr = Arena::Create<Type>(arena, std::forward<Args>(args)...);
+    };
+  }
   static constexpr auto GetNewFromPrototypeFunc(
       const Type* prototype ABSL_ATTRIBUTE_LIFETIME_BOUND) {
     ABSL_DCHECK(prototype != nullptr);
@@ -1124,6 +1145,12 @@ class GenericTypeHandler<std::string> {
       const Type& from ABSL_ATTRIBUTE_LIFETIME_BOUND) {
     return [&from](Arena* arena, void*& ptr) {
       ptr = Arena::Create<Type>(arena, from);
+    };
+  }
+  template <typename... Args>
+  static constexpr auto GetNewWithEmplaceFunc(Args&&... args) {
+    return [&args...](Arena* arena, void*& ptr) {
+      ptr = Arena::Create<Type>(arena, std::forward<Args>(args)...);
     };
   }
   static constexpr auto GetNewFromPrototypeFunc(const Type* /*prototype*/) {
@@ -1567,6 +1594,10 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   template <typename Iter>
   void AddWithArena(Arena* arena, Iter begin, Iter end);
 
+  // Private-only. Constructs an element in-place from `args`.
+  template <typename... Args>
+  pointer EmplaceWithArena(Arena* arena, Args&&... args);
+
   void AddAllocatedWithArena(Arena* arena, Element* value);
 
   PROTOBUF_FUTURE_ADD_NODISCARD Element* ReleaseLastWithArena(Arena* arena);
@@ -1762,6 +1793,14 @@ template <typename Element>
 PROTOBUF_NDEBUG_INLINE typename RepeatedPtrField<Element>::pointer
 RepeatedPtrField<Element>::AddWithArena(Arena* arena, const Element& value) {
   return RepeatedPtrFieldBase::Add<TypeHandler>(arena, value);
+}
+
+template <typename Element>
+template <typename... Args>
+PROTOBUF_NDEBUG_INLINE typename RepeatedPtrField<Element>::pointer
+RepeatedPtrField<Element>::EmplaceWithArena(Arena* arena, Args&&... args) {
+  return RepeatedPtrFieldBase::Emplace<TypeHandler>(
+      arena, std::forward<Args>(args)...);
 }
 
 template <typename Element>

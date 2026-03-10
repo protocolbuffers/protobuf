@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <functional>
 #include <string>
 #include <type_traits>
@@ -9,6 +10,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/algorithm/container.h"
 #include "absl/meta/type_traits.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
@@ -142,6 +144,8 @@ TEST_P(RepeatedFieldProxyTest, Empty) {
   RepeatedFieldProxy<RepeatedFieldProxyTestSimpleMessage> proxy =
       field.MakeProxy();
   EXPECT_TRUE(proxy.empty());
+  proxy.emplace_back();
+  EXPECT_FALSE(proxy.empty());
 }
 
 TEST_P(RepeatedFieldProxyTest, ConstEmpty) {
@@ -168,6 +172,13 @@ TEST_P(RepeatedFieldProxyTest, Size) {
   RepeatedFieldProxy<RepeatedFieldProxyTestSimpleMessage> proxy =
       field.MakeProxy();
   EXPECT_EQ(proxy.size(), 0);
+
+  proxy.emplace_back();
+  EXPECT_EQ(proxy.size(), 1);
+
+  proxy.emplace_back();
+  proxy.emplace_back();
+  EXPECT_EQ(proxy.size(), 3);
 }
 
 TEST_P(RepeatedFieldProxyTest, ConstSize) {
@@ -501,6 +512,131 @@ TEST_P(RepeatedFieldProxyTest, PushBackStringView) {
 TEST_P(RepeatedFieldProxyTest, PushBackCord) {
   auto field = MakeRepeatedFieldContainer<absl::Cord>();
   TestPushBackString<absl::Cord>(field.MakeProxy());
+}
+
+TEST_P(RepeatedFieldProxyTest, EmplaceBackInt) {
+  auto field = MakeRepeatedFieldContainer<int32_t>();
+  auto proxy = field.MakeProxy();
+  proxy.emplace_back(1);
+  proxy.emplace_back(2);
+  proxy.emplace_back(3);
+
+  EXPECT_THAT(*field, ElementsAre(1, 2, 3));
+}
+
+TEST_P(RepeatedFieldProxyTest, EmplaceBackMessageLvalueCopies) {
+  auto field =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  auto proxy = field.MakeProxy();
+  auto* msg1 = Arena::Create<RepeatedFieldProxyTestSimpleMessage>(arena());
+  auto* nested = msg1->mutable_nested();
+  proxy.emplace_back(*msg1);
+  EXPECT_NE(proxy[0].mutable_nested(), nested);
+
+  EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(nested: {})pb")));
+
+  if (!UseArena()) {
+    delete msg1;
+  }
+}
+
+TEST_P(RepeatedFieldProxyTest, EmplaceBackMessageRvalueDoesNotCopy) {
+  auto field =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  auto proxy = field.MakeProxy();
+  auto* msg1 = Arena::Create<RepeatedFieldProxyTestSimpleMessage>(arena());
+  auto* nested = msg1->mutable_nested();
+  proxy.emplace_back(std::move(*msg1));
+  EXPECT_EQ(proxy[0].mutable_nested(), nested);
+
+  EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(nested: {})pb")));
+
+  if (!UseArena()) {
+    delete msg1;
+  }
+}
+
+template <typename StringType>
+void TestEmplaceBackVanillaString(
+    const TestOnlyRepeatedFieldContainer<StringType>& field,
+    google::protobuf::RepeatedFieldProxy<StringType> proxy) {
+  // Test that `emplace_back` returns a reference to the inserted element.
+  EXPECT_EQ(proxy.emplace_back("1"), "1");
+
+  // Test reflexive insertions.
+  proxy.emplace_back(proxy[0]);
+
+  proxy.emplace_back(StrAs<std::string>("2"));
+  proxy.emplace_back(StrAs<absl::string_view>("3"));
+  const char* c_str = "4";
+  proxy.emplace_back(c_str);
+
+  auto moved_string = std::string(kLongString);
+  const char* moved_string_ptr = moved_string.data();
+  proxy.emplace_back(std::move(moved_string));
+  EXPECT_EQ(proxy[5].data(), moved_string_ptr);
+
+  auto copied_string = std::string(kLongString);
+  const char* copied_string_ptr = copied_string.data();
+  proxy.emplace_back(copied_string);
+  EXPECT_NE(proxy[6].data(), copied_string_ptr);
+  EXPECT_EQ(copied_string, kLongString);
+
+  if constexpr (std::is_same_v<StringType, std::string>) {
+    proxy.emplace_back(10, 'a');
+
+    const char* c_str_with_len = "5";
+    proxy.emplace_back(c_str_with_len, std::strlen(c_str_with_len));
+    const char* c_str_with_len2 = "60";
+    proxy.emplace_back(c_str_with_len2, 2);
+
+    std::string string_to_copy_from = "123456789";
+    auto start_it = absl::c_find(string_to_copy_from, '3');
+    auto end_it = absl::c_find(string_to_copy_from, '7');
+    proxy.emplace_back(start_it, end_it);
+    proxy.emplace_back(absl::c_find(string_to_copy_from, '1'),
+                       absl::c_find(string_to_copy_from, '4'));
+  }
+
+  if constexpr (std::is_same_v<StringType, std::string>) {
+    EXPECT_THAT(*field,
+                ElementsAre("1", "1", "2", "3", "4", kLongString, kLongString,
+                            "aaaaaaaaaa", "5", "60", "3456", "123"));
+  } else {
+    EXPECT_THAT(*field,
+                ElementsAre("1", "1", "2", "3", "4", kLongString, kLongString));
+  }
+}
+
+TEST_P(RepeatedFieldProxyTest, EmplaceBackStdString) {
+  auto field = MakeRepeatedFieldContainer<std::string>();
+  TestEmplaceBackVanillaString<std::string>(field, field.MakeProxy());
+}
+
+TEST_P(RepeatedFieldProxyTest, EmplaceBackStringView) {
+  // Check that we don't leak an `std::string` through the `emplace_back` API.
+  static_assert(std::is_same_v<
+                decltype(std::declval<RepeatedFieldProxy<absl::string_view>>()
+                             .emplace_back("1")),
+                absl::string_view>);
+
+  auto field = MakeRepeatedFieldContainer<absl::string_view>();
+  TestEmplaceBackVanillaString<absl::string_view>(field, field.MakeProxy());
+}
+
+TEST_P(RepeatedFieldProxyTest, EmplaceBackCord) {
+  auto field = MakeRepeatedFieldContainer<absl::Cord>();
+  auto proxy = field.MakeProxy();
+  proxy.emplace_back("1");
+  proxy.emplace_back(StrAs<absl::string_view>("2"));
+
+  absl::Cord cord3 = absl::Cord(kLongString);
+  proxy.emplace_back(std::move(cord3));
+
+  absl::Cord cord4 = absl::Cord(kLongString);
+  proxy.emplace_back(cord4);
+
+  EXPECT_THAT(*field, ElementsAre("1", "2", kLongString, kLongString));
 }
 
 INSTANTIATE_TEST_SUITE_P(RepeatedFieldProxyTest, RepeatedFieldProxyTest,
