@@ -1180,14 +1180,14 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
               output.writeMessageSetExtension(descriptor.getNumber(), (Message) next.getValue());
             }
           } else {
-            // TODO: Taken care of following code, it may cause
-            // problem when we use LazyField for normal fields/extensions.
-            // Due to the optional field can be duplicated at the end of
-            // serialized bytes, which will make the serialized size change
-            // after lazy field parsed. So when we use LazyField globally,
-            // we need to change the following write method to write cached
-            // bytes directly rather than write the parsed message.
-            FieldSet.writeField(descriptor, next.getValue(), output);
+            if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE
+                && next instanceof LazyField.LazyEntry<?>) {
+              output.writeBytes(
+                  descriptor.getNumber(),
+                  ((LazyField.LazyEntry<?>) next).getField().toByteString());
+            } else {
+              FieldSet.writeField(descriptor, next.getValue(), output);
+            }
           }
           if (iter.hasNext()) {
             next = iter.next();
@@ -2014,6 +2014,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
      * single element.
      */
     @Override
+    @SuppressWarnings("PatternMatchingInstanceof")
     protected Object singularFromReflectionType(final Object value) {
       FieldDescriptor descriptor = getDescriptor();
       switch (descriptor.getJavaType()) {
@@ -2021,6 +2022,13 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           if (singularType.isInstance(value)) {
             return value;
           } else {
+            if (value instanceof LazyField) {
+              LazyField lazyField = (LazyField) value;
+              return messageDefaultInstance
+                  .newBuilderForType()
+                  .mergeFrom(lazyField.getValue())
+                  .build();
+            }
             return messageDefaultInstance.newBuilderForType().mergeFrom((Message) value).build();
           }
         case ENUM:

@@ -478,7 +478,11 @@ public class LazyFieldLite {
         if (delayedBytes != null) {
           // The extensionRegistry shouldn't be null here since we have delayedBytes.
           MessageLite parsedValue =
-              defaultInstance.getParserForType().parseFrom(delayedBytes, extensionRegistry);
+              ExtensionRegistryLite.lazyExtensionFieldEnabled()
+                  ? defaultInstance
+                      .getParserForType()
+                      .parsePartialFrom(delayedBytes, extensionRegistry)
+                  : defaultInstance.getParserForType().parseFrom(delayedBytes, extensionRegistry);
           this.value = parsedValue;
           this.memoizedBytes = delayedBytes;
         } else {
@@ -488,6 +492,9 @@ public class LazyFieldLite {
       } catch (InvalidProtocolBufferException e) {
         // Nothing is logged and no exceptions are thrown. Clients will be unaware that this proto
         // was invalid.
+        if (ExtensionRegistryLite.lazyExtensionFieldEnabled()) {
+          throw new InvalidProtobufRuntimeException(e);
+        }
         this.corrupted = true;
         this.value = defaultInstance;
         this.memoizedBytes = ByteString.EMPTY;

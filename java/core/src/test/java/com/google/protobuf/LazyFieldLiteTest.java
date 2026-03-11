@@ -9,17 +9,51 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 import static proto2_unittest.UnittestProto.optionalInt32Extension;
+import static org.junit.Assert.assertThrows;
 
+import com.google.protobuf.ExtensionRegistryLite.LazyExtensionFieldsExperimentMode;
 import proto2_unittest.UnittestProto.TestAllExtensions;
 import proto2_unittest.UnittestProto.TestAllTypes;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /** Unit test for {@link LazyFieldLite}. */
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class LazyFieldLiteTest {
+
+  @Parameters(name = "mode={0}")
+  public static List<Object[]> data() {
+    return Arrays.asList(
+        new Object[][] {
+          {LazyExtensionFieldsExperimentMode.EAGER},
+          {LazyExtensionFieldsExperimentMode.UNVERIFIED_LAZY}
+        });
+  }
+
+  private final LazyExtensionFieldsExperimentMode mode;
+  private LazyExtensionFieldsExperimentMode originalMode;
+
+  public LazyFieldLiteTest(LazyExtensionFieldsExperimentMode mode) {
+    this.mode = mode;
+  }
+
+  @Before
+  public void setUp() {
+    originalMode = ExtensionRegistryLite.getLazyExtensionFieldsExperimentMode();
+    ExtensionRegistryLite.setLazyExtensionFieldsExperimentMode(mode);
+  }
+
+  @After
+  public void tearDown() {
+    ExtensionRegistryLite.setLazyExtensionFieldsExperimentMode(originalMode);
+  }
 
   @Test
   public void testGetValue() {
@@ -121,11 +155,21 @@ public class LazyFieldLiteTest {
     ByteString invalid = ByteString.copyFromUtf8("invalid");
     LazyFieldLite field = new LazyFieldLite(TestUtil.getExtensionRegistry(), invalid);
     assertThat(field.getSerializedSize()).isEqualTo(7);
-    assertThat(
-        field.getValue(TestAllTypes.getDefaultInstance()))
-            .isEqualTo(TestAllTypes.getDefaultInstance());
-    assertThat(field.getSerializedSize()).isEqualTo(7);
-    assertThat(field.toByteString()).isEqualTo(invalid);
+
+    if (mode == LazyExtensionFieldsExperimentMode.UNVERIFIED_LAZY) {
+      InvalidProtobufRuntimeException thrown =
+          assertThrows(
+              InvalidProtobufRuntimeException.class,
+              () -> field.getValue(TestAllTypes.getDefaultInstance()));
+      assertThat(thrown)
+          .hasMessageThat()
+          .contains("the input ended unexpectedly in the middle of a field");
+    } else {
+      assertThat(field.getValue(TestAllTypes.getDefaultInstance()))
+          .isEqualTo(TestAllTypes.getDefaultInstance());
+      assertThat(field.getSerializedSize()).isEqualTo(7);
+      assertThat(field.toByteString()).isEqualTo(invalid);
+    }
   }
 
   @Test
@@ -203,10 +247,19 @@ public class LazyFieldLiteTest {
     LazyFieldLite valid = LazyFieldLite.fromValue(message);
     LazyFieldLite invalid =
         new LazyFieldLite(TestUtil.getExtensionRegistry(), ByteString.copyFromUtf8("invalid"));
-    invalid.merge(valid);
 
-    // We swallow the exception and just use the set field.
-    assertThat(invalid.getValue(TestAllTypes.getDefaultInstance())).isEqualTo(message);
+    if (mode == LazyExtensionFieldsExperimentMode.UNVERIFIED_LAZY) {
+      InvalidProtobufRuntimeException thrown =
+          assertThrows(
+              InvalidProtobufRuntimeException.class,
+              () -> invalid.getValue(TestAllTypes.getDefaultInstance()));
+      assertThat(thrown)
+          .hasMessageThat()
+          .contains("the input ended unexpectedly in the middle of a field");
+    } else {
+      invalid.merge(valid);
+      assertThat(invalid.getValue(TestAllTypes.getDefaultInstance())).isEqualTo(message);
+    }
   }
 
   @Test
