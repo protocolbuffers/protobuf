@@ -98,6 +98,8 @@ def protobuf_deps():
             commit = "89e2973c754a9c02a49974d839779b151e95afd6",  # 1.9.6
             sha256 = "02f0804596c1e18c064d890ac9497fa17d585e822fcacf07ff8a8aa0b344a7bd",
             build_file = Label("//third_party:jsoncpp.BUILD"),
+            patch_args = ["-p1"],
+            patches = [Label("//patches:jsoncpp_fix_macro.patch")],
         )
 
     if not native.existing_rule("rules_cc"):
@@ -106,15 +108,6 @@ def protobuf_deps():
             urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.16/rules_cc-0.0.16.tar.gz"],
             sha256 = "bbf1ae2f83305b7053b11e4467d317a7ba3517a12cef608543c1b1c5bf48a4df",
             strip_prefix = "rules_cc-0.0.16",
-        )
-
-    if not native.existing_rule("rules_java"):
-        http_archive(
-            name = "rules_java",
-            urls = [
-                "https://github.com/bazelbuild/rules_java/releases/download/8.6.1/rules_java-8.6.1.tar.gz",
-            ],
-            sha256 = "c5bc17e17bb62290b1fd8fdd847a2396d3459f337a7e07da7769b869b488ec26",
         )
 
     if not native.existing_rule("rules_shell"):

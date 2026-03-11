@@ -1,0 +1,44 @@
+--- a/java/private/java_common_internal.bzl
++++ b/java/private/java_common_internal.bzl
+@@ -226,31 +226,36 @@
+     elif _should_use_header_compilation(ctx, java_toolchain):
+         compile_jar = _derive_output_file(ctx, output, name_suffix = "-hjar", extension = "jar")
+ 
++        # Use hasattr for compatibility with older Bazel versions (e.g. < 8.4.2)
+         # TODO: b/417791104 - remove check after a Bazel release
+-        if ctx.fragments.java.use_header_compilation_direct_deps():
++        use_direct_deps = hasattr(ctx.fragments.java, "use_header_compilation_direct_deps") and ctx.fragments.java.use_header_compilation_direct_deps()
++        if use_direct_deps:
+             header_compilation_jar = _derive_output_file(ctx, output, name_suffix = "-tjar", extension = "jar")
+         else:
+             header_compilation_jar = None
+         compile_deps_proto = _derive_output_file(ctx, output, name_suffix = "-hjar", extension = "jdeps")
+-        get_internal_java_common().create_header_compilation_action(
++
++        header_compilation_args = [
+             ctx,
+             java_toolchain,
+             compile_jar,
+             compile_deps_proto,
+             plugin_info,
+             depset(source_files),
+             source_jars,
+             compilation_classpath,
+             direct_jars,
+             bootclasspath,
+             compile_time_java_deps,
+             all_javac_opts,
+             strict_deps,
+             ctx.label,
+             injecting_rule_kind,
+             enable_direct_classpath,
+             annotation_processor_additional_inputs,
+-            header_compilation_jar,
+-            header_compilation_direct_deps,
+-        )
++        ]
++        if use_direct_deps:
++            header_compilation_args.append(header_compilation_jar)
++            header_compilation_args.append(header_compilation_direct_deps)
++        get_internal_java_common().create_header_compilation_action(*header_compilation_args)
+     elif ctx.fragments.java.use_ijars():

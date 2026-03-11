@@ -14,10 +14,11 @@ module(
 # https://bazel.build/versions/6.0.0/build/bzlmod#version-resolution
 # Thus the highest version in their module graph is resolved.
 
-bazel_dep(name = "apple_support", version = "1.16.0", repo_name = "build_bazel_apple_support")
+bazel_dep(name = "apple_support", version = "2.3.0", repo_name = "build_bazel_apple_support")
 
 # Unused but must be pinned to avoid old broken versions
 bazel_dep(name = "rules_proto", version = "7.1.0")
+bazel_dep(name = "protobuf", version = "34.0.bcr.1")
 
 #ifndef PROTO2_OPENSOURCE
 # LINT.IfChange
@@ -40,9 +41,10 @@ bazel_dep(name = "rules_kotlin", version = "2.2.2")
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.6.0")
-bazel_dep(name = "rules_rust", version = "0.63.0")
+bazel_dep(name = "rules_rust", version = "0.69.0")
+bazel_dep(name = "rules_android", version = "0.7.1")
 
-bazel_dep(name = "rules_ruby", version = "0.20.1", dev_dependency = True)
+bazel_dep(name = "rules_ruby", version = "0.24.0", dev_dependency = True)
 
 # Workaround for https://github.com/bazelbuild/bazel-central-registry/issues/4230
 # rules_fuzzing 0.5.3 is not yet available in BCR.
@@ -54,14 +56,19 @@ archive_override(
     urls = ["https://github.com/bazelbuild/rules_fuzzing/archive/v0.5.3.tar.gz"],
 )
 
-# Workaround for https://github.com/bazel-contrib/rules_ruby/issues/216
-# Patch rules_ruby to disable automatic attempt to install bundler. When fixed,
-# delete Disable_bundle_install.patch and single_version_override() below.
 single_version_override(
-    module_name = "rules_ruby",
+    module_name = "jsoncpp",
     patch_strip = 1,
     patches = [
-        "@com_google_protobuf//:Disable_bundle_install.patch",
+        "@com_google_protobuf//:patches/jsoncpp_fix_macro.patch",
+    ],
+)
+
+single_version_override(
+    module_name = "rules_java",
+    patch_strip = 1,
+    patches = [
+        "@com_google_protobuf//:patches/rules_java_bazel8.patch",
     ],
 )
 
@@ -73,12 +80,66 @@ bazel_dep(name = "platforms", version = "0.0.11")
 ruby = use_extension("@rules_ruby//ruby:extensions.bzl", "ruby", dev_dependency = True)
 ruby.toolchain(
     name = "ruby",
-    version = "system",
+    version = "3.1.6",
 )
-use_repo(ruby, "ruby")
+ruby.toolchain(
+    name = "ruby_3_1",
+    version = "3.1.6",
+)
+ruby.toolchain(
+    name = "ruby_3_2",
+    version = "3.2.6",
+)
+ruby.toolchain(
+    name = "ruby_3_3",
+    version = "3.3.6",
+)
+ruby.toolchain(
+    name = "ruby_3_4",
+    version = "3.4.1",
+)
+
+ruby.toolchain(
+    name = "jruby_9_4",
+    version = "9.4.9.0",
+    # Enable portable ruby to skip ruby-build compilation
+    portable_ruby = True, 
+    # Use this attribute to provide the checksum for new versions
+    portable_ruby_checksums = {
+        "9.4.9.0": "3e3a08608cc2072d714ae62b8d9e92042874b453e68ba30be6640604362669b7",
+    },
+)
+
+ruby.toolchain(
+    name = "ruby_4_0",
+    version = "4.0.0",
+    portable_ruby = True,
+    portable_ruby_checksums = {
+        "4.0.0": "a72bacee9de07283ebc19baa4ac243b193129f21aa4e168c7186fb1fe7d07fe1",
+    },
+)
+
+use_repo(
+    ruby,
+    "jruby_9_4",
+    "jruby_9_4_toolchains",
+    "ruby",
+    "ruby_toolchains",
+    "ruby_3_1",
+    "ruby_3_1_toolchains",
+    "ruby_3_2",
+    "ruby_3_2_toolchains",
+    "ruby_3_3",
+    "ruby_3_3_toolchains",
+    "ruby_3_4",
+    "ruby_3_4_toolchains",
+    "ruby_4_0",
+    "ruby_4_0_toolchains",
+)
 
 ruby.bundle_fetch(
     name = "protobuf_bundle",
+    bundler = "",
     gem_checksums = {
         "bigdecimal-3.1.9": "2ffc742031521ad69c2dfc815a98e426a230a3d22aeac1995826a75dabfad8cc",
         "bigdecimal-3.1.9-java": "dd9b8f7c870664cd9538a1325ce385ba57a6627969177258c4f0e661a7be4456",
@@ -94,10 +155,16 @@ ruby.bundle_fetch(
     gemfile = "//ruby:Gemfile",
     gemfile_lock = "//ruby:Gemfile.lock",
 )
-use_repo(ruby, "protobuf_bundle", "ruby_toolchains")
+use_repo(ruby, "protobuf_bundle")
 
 register_toolchains(
     "@ruby_toolchains//:all",
+    "@ruby_3_1_toolchains//:all",
+    "@ruby_3_2_toolchains//:all",
+    "@ruby_3_3_toolchains//:all",
+    "@ruby_3_4_toolchains//:all",
+    "@ruby_4_0_toolchains//:all",
+    "@jruby_9_4_toolchains//:all",
     dev_dependency = True,
 )
 
@@ -234,6 +301,34 @@ maven.install(
     ],
 )
 
+# override protobuf for rules_android
+maven.install(
+    name = "android_ide_common_30_1_3",
+    artifacts = [
+        "com.google.protobuf:protobuf-java:4.34.0",
+        "com.google.protobuf:protobuf-java-util:4.34.0",
+    ],
+    known_contributing_modules = ["rules_android"],
+    repositories = [
+        "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
+    ],
+    use_starlark_android_rules = True,
+)
+maven.install(
+    name = "rules_android_maven",
+    artifacts = [
+        "com.google.protobuf:protobuf-java:4.34.0",
+        "com.google.protobuf:protobuf-java-util:4.34.0",
+    ],
+    known_contributing_modules = ["rules_android"],
+    repositories = [
+        "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
+    ],
+    use_starlark_android_rules = True,
+)
+
 # Use the default "maven" namespace because protobuf java targets are exposed to users
 # See https://github.com/protocolbuffers/protobuf/issues/21177
 use_repo(maven, "maven")
@@ -304,17 +399,16 @@ archive_override(
     urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz"],
 )
 
-bazel_dep(name = "com_google_protobuf_previous_release", version = "29.0", dev_dependency = True)
+bazel_dep(name = "com_google_protobuf_previous_release", version = "33.0", dev_dependency = True)
 archive_override(
     module_name = "com_google_protobuf_previous_release",
-    integrity = "sha256-EKDVjzmhqQnpXgDougtbHcZNApl/dBFRlTorNln254w=",
+    integrity = "sha256-y8U2BkcGtijc/lB77zhu8+IhTVY2V2EilvF4GqFV7gc=",
     patch_strip = 1,
     patches = [
-        "@com_google_protobuf//:patches/protobuf_v29/0001-Update-module-name.patch",
-        "@com_google_protobuf//:patches/protobuf_v29/0002-bazel9.patch",
+        "@com_google_protobuf//:patches/protobuf_v33/0001-Update-module-name.patch",
     ],
-    strip_prefix = "protobuf-29.0",
-    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz"],
+    strip_prefix = "protobuf-33.0",
+    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v33.0/protobuf-33.0.tar.gz"],
 )
 
 # Register C++ toolchains for cross-compilation. These are used for compiling release binaries of

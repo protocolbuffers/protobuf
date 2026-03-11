@@ -278,3 +278,20 @@ index a5eadfe..62a153e 100644
  load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
  load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_CPPOPTS")
  load(
+    ":bootstrap_compiler.bzl",
+    "bootstrap_cc_binary",
+    "bootstrap_cc_library",
+)
+
+diff --git a/src/google/protobuf/arena.h b/src/google/protobuf/arena.h
+index 9781b0a..e439281 100644
+--- a/src/google/protobuf/arena.h
++++ b/src/google/protobuf/arena.h
+@@ -32,7 +32,6 @@
+ #include "absl/base/optimization.h"
+ #include "absl/base/prefetch.h"
+ #include "absl/log/absl_check.h"
+-#include "absl/utility/internal/if_constexpr.h"
+ #include "google/protobuf/arena_align.h"
+ #include "google/protobuf/arena_allocation_policy.h"
+ #include "google/protobuf/port.h"

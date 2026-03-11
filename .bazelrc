@@ -3,6 +3,10 @@ build --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
 # TODO: ErrorProne's SelfAssertions are violated in protobuf's test
 build --javacopt=-Xep:SelfAssertion:WARN
 
+build --java_header_compilation=false
+
+build --@com_google_protobuf//bazel/toolchains:prefer_prebuilt_protoc=false
+
 # This flag works around some issues with Rust linking.
 build --@rules_rust//rust/settings:experimental_use_cc_common_link=True
 
@@ -34,6 +38,17 @@ build:ubsan --copt=-fno-sanitize=nonnull-attribute
 # Important: this flag ensures that we remain compliant with the C++ layering
 # check.
 build --features=layering_check
+
+# --- Bazel 9 ONLY ---
+# These flags tell Bazel 9 "Don't look for Android" 
+# This prevents the crash even if rules_java/kotlin try to find it.
+build:9 --android_sdk=""
+build:9 --android_ndk=""
+build:9 --incompatible_enable_android_toolchain_resolution=false
+
+# --- Bazel 8 ONLY ---
+# Bazel 8 ignores the flags above and stays stable.
+build:8 --android_sdk=@androidsdk//:sdk
 
 common --enable_platform_specific_config
 

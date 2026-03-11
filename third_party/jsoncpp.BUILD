@@ -2,6 +2,8 @@ licenses(["unencumbered"])  # Public Domain or MIT
 
 exports_files(["LICENSE"])
 
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 cc_library(
     name = "jsoncpp",
     srcs = [
@@ -24,7 +26,6 @@ cc_library(
     ],
     copts = [
         "-DJSON_USE_EXCEPTION=0",
-        "-DJSON_HAS_INT64",
     ],
     includes = ["include"],
     visibility = ["//visibility:public"],

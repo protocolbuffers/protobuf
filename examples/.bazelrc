@@ -2,6 +2,7 @@ common --enable_platform_specific_config
 
 build:linux --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
 build:macos --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
+build --@com_google_protobuf//bazel/toolchains:prefer_prebuilt_protoc=false
 
 common:windows --cxxopt=/std:c++17 --host_cxxopt=/std:c++17 --enable_runfiles
 
