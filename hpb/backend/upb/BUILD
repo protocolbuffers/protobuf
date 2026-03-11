@@ -72,7 +72,10 @@ cc_library(
     name = "extension",
     srcs = ["extension.cc"],
     hdrs = ["extension.h"],
-    visibility = ["//hpb:__subpackages__"],
+    visibility = [
+        "//hpb:__subpackages__",
+        "//multiplatform/elements/runtime/view_processor:__pkg__",
+    ],
     deps = [
         ":interop",
         "//hpb:status",
