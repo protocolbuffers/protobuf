@@ -39,8 +39,8 @@ jobs:
           # used by all the images the next time there is an update to the Dockerfile
           - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-ruby-4.0.0-f1c24ed6acfbf6ec709b0de2f702209c9d3ac659' }
           - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: FFI, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-ruby-4.0.0-f1c24ed6acfbf6ec709b0de2f702209c9d3ac659' }
-          - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: NATIVE }
-          - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: FFI }
+          - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:9.0.0-jruby-9.4.9.0-9fc33a0c378b5affd3c85d3f5ae4f330993048f7', flags: --repo_contents_cache= }
+          - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: FFI, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:9.0.0-jruby-9.4.9.0-9fc33a0c378b5affd3c85d3f5ae4f330993048f7', flags: --repo_contents_cache= }
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.name }} ${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: ubuntu-latest
@@ -57,7 +57,7 @@ jobs:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-{0}-b77fdae6d4771789dfc66a56bf8d806354e8011a', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_linux/${{ matrix.ruby }}
-          bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
+          bazel: test //ruby/... //ruby/tests:ruby_version ${{ matrix.flags }} --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
 # Useful tool for troubleshooting, but the action introduces flakes as well,
 # e.g. https://github.com/actions/upload-artifact/issues/569
 #      - name: Archive log artifacts
@@ -192,8 +192,8 @@ jobs:
           - { name: Ruby 3.4, ruby: ruby-3.4.1, continuous-only: true }
           - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-ruby-4.0.0-f1c24ed6acfbf6ec709b0de2f702209c9d3ac659' }
           - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: FFI, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-ruby-4.0.0-f1c24ed6acfbf6ec709b0de2f702209c9d3ac659' }
-          - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: NATIVE }
-          - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: FFI, continuous-only: true }
+          - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:9.0.0-jruby-9.4.9.0-9fc33a0c378b5affd3c85d3f5ae4f330993048f7', flags: --repo_contents_cache= }
+          - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: FFI, continuous-only: true, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:9.0.0-jruby-9.4.9.0-9fc33a0c378b5affd3c85d3f5ae4f330993048f7', flags: --repo_contents_cache= }
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Install ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: ubuntu-latest
     steps:
@@ -213,7 +213,7 @@ jobs:
             bazel --version;
             ruby --version;
             ./regenerate_stale_files.sh $BAZEL_FLAGS;
-            bazel build //ruby:release //:protoc ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled' || '' }} $BAZEL_FLAGS;
+            bazel build //ruby:release //:protoc ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled' || '' }} ${{ matrix.flags }} $BAZEL_FLAGS;
             gem install bazel-bin/ruby/google-protobuf-*;
             bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/test_import_proto2.proto;
             bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/basic_test.proto;

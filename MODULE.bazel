@@ -14,10 +14,11 @@ module(
 # https://bazel.build/versions/6.0.0/build/bzlmod#version-resolution
 # Thus the highest version in their module graph is resolved.
 
-bazel_dep(name = "apple_support", version = "1.16.0", repo_name = "build_bazel_apple_support")
+bazel_dep(name = "apple_support", version = "2.3.0", repo_name = "build_bazel_apple_support")
 
 # Unused but must be pinned to avoid old broken versions
 bazel_dep(name = "rules_proto", version = "7.1.0")
+bazel_dep(name = "protobuf", version = "34.0.bcr.1")
 
 #ifndef PROTO2_OPENSOURCE
 # LINT.IfChange
@@ -40,7 +41,8 @@ bazel_dep(name = "rules_kotlin", version = "2.2.2")
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.6.0")
-bazel_dep(name = "rules_rust", version = "0.63.0")
+bazel_dep(name = "rules_rust", version = "0.69.0")
+bazel_dep(name = "rules_android", version = "0.7.1")
 
 bazel_dep(name = "rules_ruby", version = "0.20.1", dev_dependency = True)
 
@@ -232,6 +234,34 @@ maven.install(
         "https://repo1.maven.org/maven2",
         "https://repo.maven.apache.org/maven2",
     ],
+)
+
+# override protobuf for rules_android
+maven.install(
+    name = "android_ide_common_30_1_3",
+    artifacts = [
+        "com.google.protobuf:protobuf-java:4.34.0",
+        "com.google.protobuf:protobuf-java-util:4.34.0",
+    ],
+    repositories = [
+        "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
+    ],
+    use_starlark_android_rules = True,
+    known_contributing_modules = ["rules_android"]
+)
+maven.install(
+    name = "rules_android_maven",
+    artifacts = [
+        "com.google.protobuf:protobuf-java:4.34.0",
+        "com.google.protobuf:protobuf-java-util:4.34.0",
+    ],
+    repositories = [
+        "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
+    ],
+    use_starlark_android_rules = True,
+    known_contributing_modules = ["rules_android"]
 )
 
 # Use the default "maven" namespace because protobuf java targets are exposed to users
