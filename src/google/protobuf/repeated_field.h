@@ -1402,7 +1402,8 @@ size_t erase(RepeatedField<T>& cont, const U& value) {
 template <int&..., typename T, typename Compare>
 void sort(internal::RepeatedIterator<T> begin,
           internal::RepeatedIterator<T> end, Compare cmp) {
-  std::sort(begin, end, cmp);
+  std::sort(begin, end,
+            [&cmp](const auto& lhs, const auto& rhs) { return cmp(lhs, rhs); });
 }
 template <int&..., typename T>
 void sort(internal::RepeatedIterator<T> begin,
@@ -1412,7 +1413,9 @@ void sort(internal::RepeatedIterator<T> begin,
 template <int&..., typename T, typename Compare>
 void stable_sort(internal::RepeatedIterator<T> begin,
                  internal::RepeatedIterator<T> end, Compare cmp) {
-  std::stable_sort(begin, end, cmp);
+  std::stable_sort(begin, end, [&cmp](const auto& lhs, const auto& rhs) {
+    return cmp(lhs, rhs);
+  });
 }
 template <int&..., typename T>
 void stable_sort(internal::RepeatedIterator<T> begin,
