@@ -33,6 +33,7 @@
 #include <utility>
 
 #include "absl/base/attributes.h"
+#include "absl/base/config.h"
 #include "absl/base/no_destructor.h"
 #include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
@@ -157,6 +158,24 @@ PROTOBUF_EXPORT inline void RuntimeAssertInBoundsGE(int64_t value,
     }
   }
   ABSL_DCHECK_GE(value, limit);
+}
+
+PROTOBUF_EXPORT ABSL_ATTRIBUTE_NORETURN PROTOBUF_NOINLINE void
+HandleAddOverflow(int a, int b);
+
+inline int CheckedAdd(int a, int b) {
+  int sum;
+#if ABSL_HAVE_BUILTIN(__builtin_add_overflow)
+  bool overflow = __builtin_add_overflow(a, b, &sum);
+#else
+  int64_t sum64 = static_cast<int64_t>(a) + static_cast<int64_t>(b);
+  sum = static_cast<int>(sum64);
+  bool overflow = sum64 != sum;
+#endif
+  if (ABSL_PREDICT_FALSE(overflow)) {
+    HandleAddOverflow(a, b);
+  }
+  return sum;
 }
 
 // Defined further below.
@@ -459,7 +478,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   void RemoveLast() {
-    ABSL_DCHECK_GT(current_size_, 0);
+    internal::RuntimeAssertInBoundsGE(current_size_, 1);
     ExchangeCurrentSize(current_size_ - 1);
     using H = CommonHandler<TypeHandler>;
     H::Clear(cast<H>(element_at(current_size_)));

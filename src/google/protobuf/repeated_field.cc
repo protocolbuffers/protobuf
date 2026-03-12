@@ -54,6 +54,10 @@ void LogIndexOutOfBoundsAndAbort(int64_t index, int64_t size,
       break;
   }
 }
+
+void HandleAddOverflow(int a, int b) {
+  ABSL_LOG(FATAL) << "Integer overflow in CheckedAdd: " << a << " + " << b;
+}
 }  // namespace internal
 
 template <>
