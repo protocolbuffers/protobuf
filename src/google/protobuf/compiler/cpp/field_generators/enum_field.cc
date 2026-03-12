@@ -430,9 +430,8 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $WeakDescriptorSelfPin$;
       $assert_valid$;
       $TsanDetectConcurrentMutation$;
-      _internal_mutable_$name_internal$()
-          ->InternalAddWithArena<const $pb$::MessageLite*>(
-              internal_visibility(), this, value);
+      _internal_mutable_$name_internal$()->InternalAddWithArena(
+          internal_visibility(), GetArena(), value);
       $set_hasbit$;
       $annotate_add$
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)

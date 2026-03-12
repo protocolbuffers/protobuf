@@ -31,9 +31,6 @@
 
 namespace google {
 namespace protobuf {
-
-class Arena;
-
 namespace internal {
 
 // This class provides the core Arena memory allocation library. Different
@@ -117,8 +114,6 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   friend class cleanup::ChunkList;
   static uint64_t GetNextLifeCycleId();
 
-  friend SerialArena* GetSerialArena(Arena*);
-
   class SerialArenaChunk;
 
   // Returns a new SerialArenaChunk that has {id, serial} at slot 0. It may
@@ -195,14 +190,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // create a big enough block to accommodate n bytes.
   SerialArena* GetSerialArenaFallback(size_t n);
 
-  SerialArena* GetSerialArenaSlow();
-  SerialArena* GetSerialArena() {
-    SerialArena* arena;
-    if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
-      return arena;
-    }
-    return GetSerialArenaSlow();
-  }
+  SerialArena* GetSerialArena();
 
   template <AllocationClient alloc_client = AllocationClient::kDefault>
   void* AllocateAlignedFallback(size_t n);

@@ -13524,9 +13524,8 @@ inline void FileDescriptorProto::set_public_dependency(int index, ::int32_t valu
 }
 inline void FileDescriptorProto::add_public_dependency(::int32_t value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _internal_mutable_public_dependency()
-      ->InternalAddWithArena<const ::google::protobuf::MessageLite*>(
-          internal_visibility(), this, value);
+  _internal_mutable_public_dependency()->InternalAddWithArena(
+      internal_visibility(), GetArena(), value);
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000020U);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.public_dependency)
 }
@@ -13576,9 +13575,8 @@ inline void FileDescriptorProto::set_weak_dependency(int index, ::int32_t value)
 }
 inline void FileDescriptorProto::add_weak_dependency(::int32_t value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _internal_mutable_weak_dependency()
-      ->InternalAddWithArena<const ::google::protobuf::MessageLite*>(
-          internal_visibility(), this, value);
+  _internal_mutable_weak_dependency()->InternalAddWithArena(
+      internal_visibility(), GetArena(), value);
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000040U);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.weak_dependency)
 }
@@ -19651,9 +19649,8 @@ inline void FieldOptions::add_targets(::google::protobuf::FieldOptions_OptionTar
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::FieldOptions_OptionTargetType_internal_data_));
                                           ::google::protobuf::internal::TSanWrite(&_impl_);
-  _internal_mutable_targets()
-      ->InternalAddWithArena<const ::google::protobuf::MessageLite*>(
-          internal_visibility(), this, value);
+  _internal_mutable_targets()->InternalAddWithArena(
+      internal_visibility(), GetArena(), value);
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00002000U);
   // @@protoc_insertion_point(field_add:google.protobuf.FieldOptions.targets)
 }
@@ -22224,9 +22221,8 @@ inline void SourceCodeInfo_Location::set_path(int index, ::int32_t value) {
 }
 inline void SourceCodeInfo_Location::add_path(::int32_t value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _internal_mutable_path()
-      ->InternalAddWithArena<const ::google::protobuf::MessageLite*>(
-          internal_visibility(), this, value);
+  _internal_mutable_path()->InternalAddWithArena(
+      internal_visibility(), GetArena(), value);
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.path)
 }
@@ -22276,9 +22272,8 @@ inline void SourceCodeInfo_Location::set_span(int index, ::int32_t value) {
 }
 inline void SourceCodeInfo_Location::add_span(::int32_t value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _internal_mutable_span()
-      ->InternalAddWithArena<const ::google::protobuf::MessageLite*>(
-          internal_visibility(), this, value);
+  _internal_mutable_span()->InternalAddWithArena(
+      internal_visibility(), GetArena(), value);
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.span)
 }
@@ -22603,9 +22598,8 @@ inline void GeneratedCodeInfo_Annotation::set_path(int index, ::int32_t value) {
 }
 inline void GeneratedCodeInfo_Annotation::add_path(::int32_t value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _internal_mutable_path()
-      ->InternalAddWithArena<const ::google::protobuf::MessageLite*>(
-          internal_visibility(), this, value);
+  _internal_mutable_path()->InternalAddWithArena(
+      internal_visibility(), GetArena(), value);
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.GeneratedCodeInfo.Annotation.path)
 }
