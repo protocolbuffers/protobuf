@@ -1538,7 +1538,7 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
           template <typename = void>
           explicit constexpr $classname$($pbi$::ConstantInitialized);
           explicit $classname$($pb$::Arena* $nullable$ arena);
-          static constexpr const void* $nonnull$ internal_default_instance() {
+          static constexpr const void* $nonnull$ internal_message_globals() {
             return &_$classname$_globals_;
           }
 
