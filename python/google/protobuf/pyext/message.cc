@@ -810,7 +810,7 @@ int FixupMessageAfterMerge(CMessage* self) {
         !descriptor->is_repeated()) {
       CMessage* cmsg = reinterpret_cast<CMessage*>(item.second);
       if (cmsg->read_only == false) {
-        return 0;
+        continue;
       }
       Message* message = self->message;
       const Reflection* reflection = message->GetReflection();
