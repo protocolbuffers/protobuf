@@ -5674,7 +5674,7 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
               $classname$ _default;
             };
             ::_pbi::WeakDescriptorDefaultTail tail = {
-                file_default_instances + $index$, sizeof($type$)};
+                file_message_globals + $index$, sizeof($type$)};
           };
 
           PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
