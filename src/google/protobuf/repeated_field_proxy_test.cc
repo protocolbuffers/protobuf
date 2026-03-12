@@ -1036,6 +1036,67 @@ TEST_P(RepeatedFieldProxyTest, StringViewIteratorsNoStdStringLeak) {
                                const absl::string_view&>);
 }
 
+TEST_P(RepeatedFieldProxyTest, PopBackInt) {
+  auto field = MakeRepeatedFieldContainer<int32_t>();
+  field->Add(1);
+  field->Add(2);
+
+  auto proxy = field.MakeProxy();
+  proxy.pop_back();
+
+  EXPECT_THAT(proxy, ElementsAre(1));
+  EXPECT_THAT(*field, ElementsAre(1));
+}
+
+TEST_P(RepeatedFieldProxyTest, PopBackMessage) {
+  auto field =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  field->Add()->set_value(1);
+  field->Add()->set_value(2);
+
+  auto proxy = field.MakeProxy();
+  proxy.pop_back();
+
+  EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 1)pb")));
+  EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(value: 1)pb")));
+}
+
+TEST_P(RepeatedFieldProxyTest, PopBackStdString) {
+  auto field = MakeRepeatedFieldContainer<std::string>();
+  field->Add("1");
+  field->Add("2");
+
+  auto proxy = field.MakeProxy();
+  proxy.pop_back();
+
+  EXPECT_THAT(proxy, ElementsAre("1"));
+  EXPECT_THAT(*field, ElementsAre("1"));
+}
+
+TEST_P(RepeatedFieldProxyTest, PopBackStringView) {
+  auto field = MakeRepeatedFieldContainer<absl::string_view>();
+  field->Add("1");
+  field->Add("2");
+
+  auto proxy = field.MakeProxy();
+  proxy.pop_back();
+
+  EXPECT_THAT(proxy, ElementsAre("1"));
+  EXPECT_THAT(*field, ElementsAre("1"));
+}
+
+TEST_P(RepeatedFieldProxyTest, PopBackCord) {
+  auto field = MakeRepeatedFieldContainer<absl::Cord>();
+  field->Add(absl::Cord("1"));
+  field->Add(absl::Cord("2"));
+
+  auto proxy = field.MakeProxy();
+  proxy.pop_back();
+
+  EXPECT_THAT(proxy, ElementsAre(StringEq("1")));
+  EXPECT_THAT(*field, ElementsAre(StringEq("1")));
+}
+
 TEST_P(RepeatedFieldProxyTest, Rebind) {
   auto field1 = MakeRepeatedFieldContainer<int32_t>();
   field1->Add(1);
