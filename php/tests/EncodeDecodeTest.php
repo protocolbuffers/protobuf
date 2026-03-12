@@ -1975,9 +1975,9 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("{}", $json4);
     }
 
+    /** @runInSeparateProcess */
     public function testJsonEncodeFloatLocaleIndependent()
     {
-        $originalLocale = setlocale(LC_NUMERIC, 0);
         $localeSet = setlocale(LC_NUMERIC, 'de_DE.UTF-8', 'de_DE', 'cs_CZ.UTF-8', 'cs_CZ', 'fr_FR.UTF-8', 'fr_FR');
         if ($localeSet === false) {
             $this->markTestSkipped('No locale with comma decimal separator available');
@@ -1996,7 +1996,5 @@ class EncodeDecodeTest extends TestBase
         $this->assertStringNotContainsString(',', $json2);
         $this->assertStringContainsString('.', $json2);
         $this->assertNotNull(json_decode($json2));
-
-        setlocale(LC_NUMERIC, $originalLocale);
     }
 }
