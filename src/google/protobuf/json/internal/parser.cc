@@ -114,6 +114,13 @@ uint32_t Base64Lookup(char c) {
 
 // Decodes `base64` in-place, shrinking the length as appropriate.
 absl::StatusOr<absl::Span<char>> DecodeBase64InPlace(absl::Span<char> base64) {
+  // Handle empty input up front to avoid pointer arithmetic on a potentially
+  // null data pointer, which is undefined in C++ even if the result is not
+  // dereferenced.
+  if (base64.empty()) {
+    return base64;
+  }
+
   // We decode in place. This is safe because this is a new buffer (not
   // aliasing the input) and because base64 decoding shrinks 4 bytes into 3.
   char* out = base64.data();
@@ -321,12 +328,14 @@ absl::StatusOr<std::string> ParseStrOrBytes(JsonLexer& lex,
 
   if (Traits::FieldType(field) == FieldDescriptor::TYPE_BYTES) {
     std::string& b64 = str->value.ToString();
-    absl::StatusOr<absl::Span<char>> decoded =
-        DecodeBase64InPlace(absl::MakeSpan(&b64[0], b64.size()));
-    if (!decoded.ok()) {
-      return str->loc.Invalid(decoded.status().message());
+    if (!b64.empty()) {
+      absl::StatusOr<absl::Span<char>> decoded =
+          DecodeBase64InPlace(absl::MakeSpan(b64.data(), b64.size()));
+      if (!decoded.ok()) {
+        return str->loc.Invalid(decoded.status().message());
+      }
+      b64.resize(decoded->size());
     }
-    b64.resize(decoded->size());
   }
 
   return std::move(str->value.ToString());
