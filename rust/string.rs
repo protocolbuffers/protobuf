@@ -239,6 +239,14 @@ impl ProtoString {
 
 impl SealedInternal for ProtoString {}
 
+impl Deref for ProtoString {
+    type Target = ProtoStr;
+
+    fn deref(&self) -> &Self::Target {
+        self.as_view()
+    }
+}
+
 impl AsRef<[u8]> for ProtoString {
     fn as_ref(&self) -> &[u8] {
         self.inner.as_bytes()
@@ -440,6 +448,62 @@ impl ProtoStr {
     pub fn from_str(string: &str) -> &Self {
         Self::from_utf8_unchecked(string.as_bytes())
     }
+
+    pub fn is_ascii(&self) -> bool {
+        self.0.is_ascii()
+    }
+
+    pub fn contains<T>(&self, other: &T) -> bool
+    where
+        T: AsRef<[u8]> + ?Sized,
+    {
+        let other = other.as_ref();
+        if other.is_empty() {
+            return true;
+        }
+        // Note: this sliding window approach is suboptimal, but simple and correct and can be
+        // optimized later if needed.
+        self.0.windows(other.len()).any(|window| window == other)
+    }
+
+    pub fn starts_with<T>(&self, other: &T) -> bool
+    where
+        T: AsRef<[u8]> + ?Sized,
+    {
+        self.0.starts_with(other.as_ref())
+    }
+
+    pub fn ends_with<T>(&self, other: &T) -> bool
+    where
+        T: AsRef<[u8]> + ?Sized,
+    {
+        self.0.ends_with(other.as_ref())
+    }
+
+    pub fn find<T>(&self, other: &T) -> Option<usize>
+    where
+        T: AsRef<[u8]> + ?Sized,
+    {
+        let other = other.as_ref();
+        if other.is_empty() {
+            return Some(0);
+        }
+        // Note: this sliding window approach is suboptimal, but simple and correct and can be
+        // optimized later if needed.
+        self.0.windows(other.len()).position(|window| window == other)
+    }
+
+    pub fn trim_ascii(&self) -> &Self {
+        Self::from_utf8_unchecked(self.0.trim_ascii())
+    }
+
+    pub fn trim_ascii_start(&self) -> &Self {
+        Self::from_utf8_unchecked(self.0.trim_ascii_start())
+    }
+
+    pub fn trim_ascii_end(&self) -> &Self {
+        Self::from_utf8_unchecked(self.0.trim_ascii_end())
+    }
 }
 
 impl AsRef<[u8]> for ProtoStr {
@@ -617,6 +681,55 @@ mod tests {
         let invalid_utf8 = b"\xff";
         let s = ProtoString::from_utf8_unchecked(invalid_utf8);
         verify_eq!(s.as_bytes(), invalid_utf8)?;
+        Ok(())
+    }
+
+    #[gtest]
+    fn test_proto_str_methods() -> googletest::Result<()> {
+        let s = ProtoStr::from_str("  hello world  ");
+
+        // contains
+        verify_eq!(s.contains(s), true)?;
+        verify_eq!(s.contains("hello"), true)?;
+        verify_eq!(s.contains("world"), true)?;
+        verify_eq!(s.contains("o w"), true)?;
+        verify_eq!(s.contains("xyz"), false)?;
+        verify_eq!(s.contains(""), true)?;
+
+        // starts_with / ends_with
+        verify_eq!(s.starts_with(s), true)?;
+        verify_eq!(s.ends_with(s), true)?;
+        verify_eq!(s.starts_with("  he"), true)?;
+        verify_eq!(s.ends_with("d  "), true)?;
+        verify_eq!(s.starts_with("hel"), false)?;
+
+        // find
+        verify_eq!(s.find(s), Some(0))?;
+        verify_eq!(s.find("hello"), Some(2))?;
+        verify_eq!(s.find("world"), Some(8))?;
+        verify_eq!(s.find("xyz"), None)?;
+        verify_eq!(s.find(""), Some(0))?;
+
+        // trim
+        verify_eq!(s.trim_ascii(), "hello world")?;
+        verify_eq!(s.trim_ascii_start(), "hello world  ")?;
+        verify_eq!(s.trim_ascii_end(), "  hello world")?;
+
+        Ok(())
+    }
+
+    #[gtest]
+    fn test_proto_string_deref() -> googletest::Result<()> {
+        let s = ProtoString::from("  hello  ");
+        verify_eq!(s.contains("hello"), true)?;
+        verify_eq!(s.trim_ascii(), "hello")?;
+
+        let s2 = ProtoStr::from_str("he");
+        verify_eq!(s.contains(s2), true)?;
+
+        let s2 = ProtoStr::from_str("world");
+        verify_eq!(s.contains(s2), false)?;
+
         Ok(())
     }
 }

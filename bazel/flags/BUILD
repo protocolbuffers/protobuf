@@ -36,6 +36,12 @@ label_flag(
     build_setting_default = "@bazel_tools//tools/proto:protoc",
 )
 
+string_list_flag(
+    name = "protocopt",
+    build_setting_default = [],
+    scope = "universal",
+)
+
 # When set to true, we will use a prebuilt protoc binary from GitHub if it's available.
 # This is now enabled by default.
 bool_flag(

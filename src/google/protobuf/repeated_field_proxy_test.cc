@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstring>
 #include <functional>
+#include <iterator>
 #include <limits>
 #include <string>
 #include <type_traits>
@@ -980,6 +981,59 @@ TEST_P(RepeatedFieldProxyTest, ConstIterators) {
   EXPECT_EQ(*(++rit), 2);
   EXPECT_EQ(*(++rit), 1);
   EXPECT_EQ(++rit, proxy.rend());
+}
+
+TEST_P(RepeatedFieldProxyTest, StringViewIteratorsElementAccess) {
+  auto field = MakeRepeatedFieldContainer<absl::string_view>();
+  RepeatedFieldProxy<absl::string_view> proxy = field.MakeProxy();
+  proxy.push_back("first");
+  proxy.push_back("second");
+  proxy.push_back("3rd");
+
+  auto it = proxy.begin();
+
+  EXPECT_EQ(it->size(), 5);
+  EXPECT_EQ(it->at(0), 'f');
+  ++it;
+
+  EXPECT_EQ(it->size(), 6);
+  ++it;
+  EXPECT_EQ(it->size(), 3);
+  ++it;
+  EXPECT_TRUE(it == proxy.end());
+
+  google::protobuf::sort(proxy.begin(), proxy.end(),
+               [](absl::string_view a, absl::string_view b) {
+                 return a.size() < b.size();
+               });
+  EXPECT_THAT(proxy, ElementsAre("3rd", "first", "second"));
+}
+
+TEST_P(RepeatedFieldProxyTest, StringViewIteratorsNoStdStringLeak) {
+  auto field = MakeRepeatedFieldContainer<absl::string_view>();
+  RepeatedFieldProxy<absl::string_view> proxy = field.MakeProxy();
+
+  // Check that we don't leak an `std::string` through the iterator.
+  static_assert(std::is_same_v<decltype(proxy.begin()),
+                               RepeatedPtrIterator<absl::string_view>>);
+  static_assert(std::is_same_v<decltype(proxy.end()),
+                               RepeatedPtrIterator<absl::string_view>>);
+  static_assert(std::is_same_v<decltype(proxy.cbegin()),
+                               RepeatedPtrIterator<absl::string_view>>);
+  static_assert(std::is_same_v<decltype(proxy.cend()),
+                               RepeatedPtrIterator<absl::string_view>>);
+  static_assert(std::is_same_v<
+                decltype(proxy.rbegin()),
+                std::reverse_iterator<RepeatedPtrIterator<absl::string_view>>>);
+  static_assert(std::is_same_v<
+                decltype(proxy.rend()),
+                std::reverse_iterator<RepeatedPtrIterator<absl::string_view>>>);
+
+  auto it = proxy.begin();
+
+  static_assert(std::is_same_v<decltype(*it), absl::string_view>);
+  static_assert(std::is_same_v<decltype(*it.operator->().operator->()),
+                               const absl::string_view&>);
 }
 
 TEST_P(RepeatedFieldProxyTest, Rebind) {

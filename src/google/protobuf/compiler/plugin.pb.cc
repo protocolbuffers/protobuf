@@ -256,11 +256,12 @@ static const ::_pbi::MigrationSchema
         {24, sizeof(::google::protobuf::compiler::CodeGeneratorResponse_File)},
         {35, sizeof(::google::protobuf::compiler::CodeGeneratorResponse)},
 };
-static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::google::protobuf::compiler::_Version_globals_._default,
-    &::google::protobuf::compiler::_CodeGeneratorRequest_globals_._default,
-    &::google::protobuf::compiler::_CodeGeneratorResponse_File_globals_._default,
-    &::google::protobuf::compiler::_CodeGeneratorResponse_globals_._default,
+static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
+    file_message_globals[] = {
+        &::google::protobuf::compiler::_Version_globals_,
+        &::google::protobuf::compiler::_CodeGeneratorRequest_globals_,
+        &::google::protobuf::compiler::_CodeGeneratorResponse_File_globals_,
+        &::google::protobuf::compiler::_CodeGeneratorResponse_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -305,7 +306,7 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
     1,
     4,
     schemas,
-    file_default_instances,
+    file_message_globals,
     TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto::offsets,
     file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
     file_level_service_descriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto,

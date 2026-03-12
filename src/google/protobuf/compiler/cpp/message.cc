@@ -1538,7 +1538,7 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
           template <typename = void>
           explicit constexpr $classname$($pbi$::ConstantInitialized);
           explicit $classname$($pb$::Arena* $nullable$ arena);
-          static constexpr const void* $nonnull$ internal_default_instance() {
+          static constexpr const void* $nonnull$ internal_message_globals() {
             return &_$classname$_globals_;
           }
 
@@ -5674,7 +5674,7 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
               $classname$ _default;
             };
             ::_pbi::WeakDescriptorDefaultTail tail = {
-                file_default_instances + $index$, sizeof($type$)};
+                file_message_globals + $index$, sizeof($type$)};
           };
 
           PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$

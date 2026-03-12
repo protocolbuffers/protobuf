@@ -823,12 +823,12 @@ void FileGenerator::GenerateSource(io::Printer* p) {
                               options_)},
                      },
                      R"cc(
-                       extern const $class$ __start_$section$
-                           __attribute__((weak));
+                       // $class$
+                       extern const ::_pbi::MessageGlobalsBase __start_$section$ __attribute__((weak));
                      )cc");
                }
              }},
-            {"defaults",
+            {"globals",
              [&] {
                for (auto& gen : message_generators_) {
                  p->Emit({{"section",
@@ -843,8 +843,8 @@ void FileGenerator::GenerateSource(io::Printer* p) {
         },
         R"cc(
           $weak_defaults$;
-          static const ::_pb::Message* file_default_instances[] = {
-              $defaults$,
+          static const ::_pbi::MessageGlobalsBase* file_message_globals[] = {
+              $globals$,
           };
         )cc");
   }
@@ -1115,13 +1115,14 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
           };
         )cc");
     constexpr absl::string_view file_default_instances_code = R"cc(
-      static const ::_pb::Message* $nonnull$ const file_default_instances[] = {
-          $defaults$,
+      static const ::_pbi::MessageGlobalsBase* $nonnull$ const
+          file_message_globals[] = {
+              $globals$,
       };
     )cc";
     if (!UsingImplicitWeakDescriptor(file_, options_)) {
       std::vector<Sub> subs = {
-          {"defaults", [&] {
+          {"globals", [&] {
              for (auto& gen : message_generators_) {
                p->Emit(
                    {
@@ -1129,7 +1130,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                        {"class", ClassName(gen->descriptor())},
                    },
                    R"cc(
-                     &$ns$::_$class$_globals_._default,
+                     &$ns$::_$class$_globals_,
                    )cc");
              }
            }}};
@@ -1142,8 +1143,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
     p->Emit(R"cc(
       const ::uint32_t $tablename$::offsets[1] = {};
       static constexpr ::_pbi::MigrationSchema* $nullable$ schemas = nullptr;
-      static constexpr ::_pb::Message* $nonnull$ const* $nullable$
-          file_default_instances = nullptr;
+      static constexpr ::_pbi::MessageGlobalsBase* $nonnull$ const* $nullable$
+          file_message_globals = nullptr;
     )cc");
   }
 
@@ -1271,7 +1272,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
             $num_deps$,
             $num_msgs$,
             schemas,
-            file_default_instances,
+            file_message_globals,
             $tablename$::offsets,
             $file_level_enum_descriptors$,
             $file_level_service_descriptors$,
