@@ -576,6 +576,12 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToDisk(
     const char* data = pair.second.data();
     int size = pair.second.size();
 
+    if (absl::StrContains(relative_filename, "..")) {
+      std::cerr << "Output file names must never have a relative path."
+                << " (" << relative_filename << ")" << std::endl;
+      return false;
+    }
+
     if (!TryCreateParentDirectory(prefix, relative_filename)) {
       return false;
     }
