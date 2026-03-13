@@ -122,6 +122,8 @@ struct RepeatedFieldTraits {
   using type = RepeatedField<ElementType>;
   using const_reference = ElementType;
   using reference = ElementType;
+  using const_iterator = typename type::const_iterator;
+  using iterator = typename type::iterator;
 };
 
 // Specialization for message types.
@@ -133,6 +135,8 @@ struct RepeatedFieldTraits<
   using type = RepeatedPtrField<ElementType>;
   using const_reference = const ElementType&;
   using reference = ElementType&;
+  using const_iterator = typename type::const_iterator;
+  using iterator = typename type::iterator;
 };
 
 // Explicit specializations for string types.
@@ -141,6 +145,8 @@ struct RepeatedFieldTraits<absl::string_view> {
   using type = RepeatedPtrField<std::string>;
   using const_reference = absl::string_view;
   using reference = absl::string_view;
+  using const_iterator = RepeatedPtrIterator<absl::string_view>;
+  using iterator = RepeatedPtrIterator<absl::string_view>;
 };
 
 template <>
@@ -148,6 +154,8 @@ struct RepeatedFieldTraits<std::string> {
   using type = RepeatedPtrField<std::string>;
   using const_reference = const std::string&;
   using reference = std::string&;
+  using const_iterator = typename type::const_iterator;
+  using iterator = typename type::iterator;
 };
 
 template <>
@@ -155,6 +163,8 @@ struct RepeatedFieldTraits<absl::Cord> {
   using type = RepeatedField<absl::Cord>;
   using const_reference = const absl::Cord&;
   using reference = absl::Cord&;
+  using const_iterator = typename type::const_iterator;
+  using iterator = typename type::iterator;
 };
 
 // The base class for both mutable and const repeated field proxies. Implements
@@ -185,9 +195,9 @@ class RepeatedFieldProxyBase {
   // This is important, as the concrete type of the iterator leaks the
   // underlying container type. With a forbidden spelling, we have the
   // flexibility to change the iterator type without breaking user code.
-  using const_iterator = typename RepeatedFieldType::const_iterator;
-  using iterator = std::conditional_t<kIsConst, const_iterator,
-                                      typename RepeatedFieldType::iterator>;
+  using const_iterator = typename Traits::const_iterator;
+  using iterator =
+      std::conditional_t<kIsConst, const_iterator, typename Traits::iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
   using reverse_iterator = std::reverse_iterator<iterator>;
 
@@ -221,10 +231,14 @@ class RepeatedFieldProxyBase {
 
   [[nodiscard]] const_iterator cbegin() const { return begin(); }
   [[nodiscard]] const_iterator cend() const { return end(); }
-  [[nodiscard]] iterator begin() const { return field().begin(); }
-  [[nodiscard]] iterator end() const { return field().end(); }
-  [[nodiscard]] reverse_iterator rbegin() const { return field().rbegin(); }
-  [[nodiscard]] reverse_iterator rend() const { return field().rend(); }
+  [[nodiscard]] iterator begin() const { return iterator(field().begin()); }
+  [[nodiscard]] iterator end() const { return iterator(field().end()); }
+  [[nodiscard]] reverse_iterator rbegin() const {
+    return reverse_iterator(end());
+  }
+  [[nodiscard]] reverse_iterator rend() const {
+    return reverse_iterator(begin());
+  }
 
  protected:
   explicit RepeatedFieldProxyBase(ConstQualifiedRepeatedFieldType& field)
@@ -430,6 +444,13 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
   [[nodiscard]] reference operator[](size_type index) const {
     return field()[index];
   }
+
+  // Removes the last element from the repeated field.
+  void pop_back() const { field().RemoveLast(); }
+
+  // Removes all elements from the repeated field. The field will be empty after
+  // this call.
+  void clear() const { field().Clear(); }
 
  private:
   friend RepeatedFieldProxy<const ElementType>;

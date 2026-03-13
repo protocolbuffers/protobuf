@@ -335,12 +335,13 @@ static const ::_pbi::MigrationSchema
         {55, sizeof(::google::protobuf::EnumValue)},
         {64, sizeof(::google::protobuf::Option)},
 };
-static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::google::protobuf::_Type_globals_._default,
-    &::google::protobuf::_Field_globals_._default,
-    &::google::protobuf::_Enum_globals_._default,
-    &::google::protobuf::_EnumValue_globals_._default,
-    &::google::protobuf::_Option_globals_._default,
+static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
+    file_message_globals[] = {
+        &::google::protobuf::_Type_globals_,
+        &::google::protobuf::_Field_globals_,
+        &::google::protobuf::_Enum_globals_,
+        &::google::protobuf::_EnumValue_globals_,
+        &::google::protobuf::_Option_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2ftype_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -404,7 +405,7 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
     2,
     5,
     schemas,
-    file_default_instances,
+    file_message_globals,
     TableStruct_google_2fprotobuf_2ftype_2eproto::offsets,
     file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto,
     file_level_service_descriptors_google_2fprotobuf_2ftype_2eproto,

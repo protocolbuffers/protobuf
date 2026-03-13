@@ -28,4 +28,4 @@ googletest = "0.14.2"
 cc = "1.1.6"
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(bzl)', 'cfg(cpp_kernel)', 'cfg(upb_kernel)'] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(bzl)', 'cfg(cpp_kernel)', 'cfg(upb_kernel)', 'cfg(lite_runtime)'] }
