@@ -554,7 +554,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct_FieldsEntry_DoNotUse final
   template <typename = void>
   explicit constexpr Struct_FieldsEntry_DoNotUse(::google::protobuf::internal::ConstantInitialized);
   explicit Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static constexpr const void* PROTOBUF_NONNULL internal_default_instance() {
+  static constexpr const void* PROTOBUF_NONNULL internal_message_globals() {
     return &_Struct_FieldsEntry_DoNotUse_globals_;
   }
 
