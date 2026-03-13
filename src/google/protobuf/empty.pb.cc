@@ -48,9 +48,13 @@ struct EmptyGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr EmptyGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~EmptyGlobalsTypeInternal() {}
   union {
-    Empty _default;
+    alignas(::_pbi::kMaxMessageAlignment) Empty _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(EmptyGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EmptyGlobalsTypeInternal _Empty_globals_;
