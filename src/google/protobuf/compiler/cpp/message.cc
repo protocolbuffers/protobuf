@@ -2548,13 +2548,13 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
 
   if (ShouldSplit(descriptor_, options_)) {
     p->Emit({{"split_default", SplitDefaultInstanceName(descriptor_, options_)},
-             {"default", MsgGlobalsInstanceName(descriptor_, options_)}},
+             {"globals", MsgGlobalsInstanceName(descriptor_, options_)}},
             R"cc(
               void $classname$::PrepareSplitMessageForWrite() {
                 if (ABSL_PREDICT_TRUE(IsSplitMessageDefault())) {
+                  ABSL_DCHECK_NE(this, &default_instance());
                   void* chunk = $pbi$::CreateSplitMessageGeneric(
-                      GetArena(), &$split_default$, sizeof(Impl_::Split), this,
-                      &$default$);
+                      GetArena(), &$split_default$, sizeof(Impl_::Split));
                   $split$ = reinterpret_cast<Impl_::Split*>(chunk);
                 }
               }
@@ -5651,9 +5651,13 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
             ~$type$() {}
             union {
-              $classname$ _default;
+              alignas(::_pbi::kMaxMessageAlignment) $classname$ _default;
             };
           };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+          static_assert(PROTOBUF_FIELD_OFFSET($type$, _default) ==
+                        ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
           PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
               PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
@@ -5671,11 +5675,15 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
             ~$type$() {}
             //~ _default must be the first member.
             union {
-              $classname$ _default;
+              alignas(::_pbi::kMaxMessageAlignment) $classname$ _default;
             };
             ::_pbi::WeakDescriptorDefaultTail tail = {
                 file_message_globals + $index$, sizeof($type$)};
           };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+          static_assert(PROTOBUF_FIELD_OFFSET($type$, _default) ==
+                        ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
           PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
               PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$
@@ -5688,9 +5696,13 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
             constexpr $type$() : _default(::_pbi::ConstantInitialized{}) {}
             ~$type$() {}
             union {
-              $classname$ _default;
+              alignas(::_pbi::kMaxMessageAlignment) $classname$ _default;
             };
           };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+          static_assert(PROTOBUF_FIELD_OFFSET($type$, _default) ==
+                        ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
           PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
               PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;

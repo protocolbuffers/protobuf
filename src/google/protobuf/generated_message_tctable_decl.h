@@ -145,7 +145,7 @@ struct Offset {
 #pragma warning(disable : 4324)
 #endif
 
-struct FieldAuxDefaultMessage {};
+struct FieldAuxMessageGlobals {};
 struct FieldAuxEnumData {};
 
 // Small type card used by mini parse to handle map entries.
@@ -430,15 +430,14 @@ struct alignas(uint64_t) TcParseTableBase {
 
   // Auxiliary entries for field types that need extra information.
   union FieldAux {
-    constexpr FieldAux() : message_default_p(nullptr) {}
+    constexpr FieldAux() : message_globals_p(nullptr) {}
     constexpr FieldAux(FieldAuxEnumData, const uint32_t* enum_data)
         : enum_data(enum_data) {}
     constexpr FieldAux(field_layout::Offset off) : offset(off.off) {}
     constexpr FieldAux(int32_t range_first, int32_t range_last)
         : enum_range{range_first, range_last} {}
-    constexpr FieldAux(const MessageLite* msg) : message_default_p(msg) {}
-    constexpr FieldAux(FieldAuxDefaultMessage, const void* msg)
-        : message_default_p(msg) {}
+    constexpr FieldAux(FieldAuxMessageGlobals, const void* globals)
+        : message_globals_p(globals) {}
     constexpr FieldAux(const TcParseTableBase* table) : table(table) {}
     constexpr FieldAux(MapAuxInfo map_info) : map_info(map_info) {}
     constexpr FieldAux(LazyEagerVerifyFnType verify_func)
@@ -448,17 +447,23 @@ struct alignas(uint64_t) TcParseTableBase {
       int32_t last;   // the last label in the range (inclusize)
     } enum_range;
     uint32_t offset;
-    const void* message_default_p;
+    const void* message_globals_p;
     const uint32_t* enum_data;
     const TcParseTableBase* table;
     MapAuxInfo map_info;
     LazyEagerVerifyFnType verify_func;
 
     const MessageLite* message_default() const {
-      return static_cast<const MessageLite*>(message_default_p);
+      return MessageGlobalsBase::default_instance(message_globals_p);
     }
     const MessageLite* message_default_weak() const {
-      return *static_cast<const MessageLite* const*>(message_default_p);
+      return MessageGlobalsBase::default_instance(message_globals_weak());
+    }
+    const MessageGlobalsBase* message_globals() const {
+      return static_cast<const MessageGlobalsBase*>(message_globals_p);
+    }
+    const MessageGlobalsBase* message_globals_weak() const {
+      return *static_cast<const MessageGlobalsBase* const*>(message_globals_p);
     }
   };
   const FieldAux* field_aux(uint32_t idx) const {

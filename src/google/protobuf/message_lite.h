@@ -605,18 +605,19 @@ inline const ClassDataFull& ClassData::full() const {
   return *static_cast<const ClassDataFull*>(this);
 }
 
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 struct MessageGlobalsBase {
   template <typename T = MessageLite>
   static const T* default_instance(const void* globals) {
     return reinterpret_cast<const T*>(globals);
   }
 
-  static const void* FromDefaultInstance(const void* default_instance) {
-    return default_instance;
+  static const MessageGlobalsBase* FromDefaultInstance(
+      const void* default_instance) {
+    return reinterpret_cast<const MessageGlobalsBase*>(default_instance);
   }
 };
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 template <const auto* kDefault, const auto* kClassData>
 struct GeneratedMessageTraitsT {
   static constexpr const void* default_instance() { return kDefault; }
@@ -624,6 +625,31 @@ struct GeneratedMessageTraitsT {
   static constexpr auto StrongPointer() { return default_instance(); }
 };
 #else
+struct MessageGlobalsBase {
+  template <size_t R>
+  static constexpr size_t RoundUpTo(size_t n) {
+    static_assert(absl::has_single_bit(R), "Must be power of two");
+    return (n + (R - 1)) & ~(R - 1);
+  }
+
+  static constexpr size_t OffsetToDefault() {
+    return RoundUpTo<kMaxMessageAlignment>(sizeof(MessageGlobalsBase));
+  }
+  template <typename T = MessageLite>
+  static const T* default_instance(const void* globals) {
+    return reinterpret_cast<const T*>(reinterpret_cast<const char*>(globals) +
+                                      OffsetToDefault());
+  }
+
+  static const MessageGlobalsBase* FromDefaultInstance(
+      const void* default_instance) {
+    return reinterpret_cast<const MessageGlobalsBase*>(
+        reinterpret_cast<const char*>(default_instance) - OffsetToDefault());
+  }
+
+  uintptr_t dummy = 0xDEADBEEF;
+};
+
 template <const auto* kGlobals, const auto* kClassData>
 struct GeneratedMessageTraitsT {
   static const void* default_instance() {
