@@ -56,7 +56,6 @@ PROTOBUF_SHARED = [
     "enum.rs",
     "internal.rs",
     "map.rs",
-    "optional.rs",
     "prelude.rs",
     "primitive.rs",
     "proxied.rs",
