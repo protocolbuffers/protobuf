@@ -15,6 +15,8 @@
 #include "absl/algorithm/container.h"
 #include "absl/meta/type_traits.h"
 #include "absl/strings/cord.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/repeated_field.h"
@@ -142,9 +144,83 @@ class RepeatedFieldProxyTest : public testing::TestWithParam<bool> {
   Arena arena_;
 };
 
-TEST_P(RepeatedFieldProxyTest, RepeatedInt32) {
-  auto field = MakeRepeatedFieldContainer<int32_t>();
-  RepeatedFieldProxy<int32_t> proxy = field.MakeProxy();
+template <typename ElementTypeParam, bool UseArena>
+struct RepeatedNumericFieldProxyTestParams {
+  using ElementType = ElementTypeParam;
+  static constexpr bool kUseArena = UseArena;
+};
+
+template <typename Params>
+class RepeatedNumericFieldProxyTest : public ::testing::Test {
+ protected:
+  using ElementType = typename Params::ElementType;
+
+  static constexpr bool UseArena() { return Params::kUseArena; }
+  Arena* arena() { return UseArena() ? &arena_ : nullptr; }
+
+  TestOnlyRepeatedFieldContainer<ElementType> MakeRepeatedFieldContainer() {
+    return TestOnlyRepeatedFieldContainer<ElementType>::New(arena());
+  }
+
+ private:
+  Arena arena_;
+};
+
+struct RepeatedNumericFieldProxyTestName {
+  template <typename T>
+  static std::string GetName(int) {
+    using ElementType = typename T::ElementType;
+
+    std::string name;
+    if constexpr (std::is_same_v<ElementType, int32_t>) {
+      name = "Int32";
+    } else if constexpr (std::is_same_v<ElementType, int64_t>) {
+      name = "Int64";
+    } else if constexpr (std::is_same_v<ElementType, uint32_t>) {
+      name = "Uint32";
+    } else if constexpr (std::is_same_v<ElementType, uint64_t>) {
+      name = "Uint64";
+    } else if constexpr (std::is_same_v<ElementType, float>) {
+      name = "Float";
+    } else if constexpr (std::is_same_v<ElementType, double>) {
+      name = "Double";
+    } else {
+      // We want to say static_assert(false), but older compilers eagerly
+      // evaluate the condition and fail to compile before the template is
+      // instantiated. We use a condition that is always false that depends on
+      // ElementType to force lazy evaluation.
+      static_assert(!std::is_same_v<ElementType, ElementType>,
+                    "Unsupported numeric type");
+    }
+
+    if constexpr (T::kUseArena) {
+      absl::StrAppend(&name, "_WithArena");
+    } else {
+      absl::StrAppend(&name, "_WithoutArena");
+    }
+    return name;
+  }
+};
+
+#define TEST_NUMERIC_ALL_TYPES(use_arena)                       \
+  RepeatedNumericFieldProxyTestParams<int32_t, use_arena>,      \
+      RepeatedNumericFieldProxyTestParams<int64_t, use_arena>,  \
+      RepeatedNumericFieldProxyTestParams<uint32_t, use_arena>, \
+      RepeatedNumericFieldProxyTestParams<uint64_t, use_arena>, \
+      RepeatedNumericFieldProxyTestParams<float, use_arena>,    \
+      RepeatedNumericFieldProxyTestParams<double, use_arena>
+
+#define TEST_NUMERIC_USE_ARENA() \
+  TEST_NUMERIC_ALL_TYPES(false), TEST_NUMERIC_ALL_TYPES(true)
+
+using AllNumericProxyTestParams = ::testing::Types<TEST_NUMERIC_USE_ARENA()>;
+
+TYPED_TEST_SUITE(RepeatedNumericFieldProxyTest, AllNumericProxyTestParams,
+                 RepeatedNumericFieldProxyTestName);
+
+TYPED_TEST(RepeatedNumericFieldProxyTest, RepeatedNumeric) {
+  auto field = this->MakeRepeatedFieldContainer();
+  auto proxy = field.MakeProxy();
   proxy.push_back(1);
   proxy.push_back(2);
   proxy.push_back(3);
@@ -156,61 +232,35 @@ TEST_P(RepeatedFieldProxyTest, RepeatedInt32) {
   EXPECT_THAT(*field, ElementsAre(1, 4, 3));
 }
 
-TEST_P(RepeatedFieldProxyTest, ConstRepeatedInt32) {
-  auto field = MakeRepeatedFieldContainer<int32_t>();
+TYPED_TEST(RepeatedNumericFieldProxyTest, ConstRepeatedNumeric) {
+  auto field = this->MakeRepeatedFieldContainer();
   field->Add(1);
   field->Add(2);
   field->Add(3);
 
   {
-    RepeatedFieldProxy<const int32_t> proxy = field.MakeConstProxy();
+    auto proxy = field.MakeConstProxy();
     EXPECT_THAT(proxy, ElementsAre(1, 2, 3));
   }
 
   {
-    RepeatedFieldProxy<const int32_t> proxy = field.MakeProxy();
+    // Check that mutable proxies can be implicitly converted to const proxies.
+    decltype(field.MakeConstProxy()) proxy = field.MakeProxy();
     EXPECT_THAT(proxy, ElementsAre(1, 2, 3));
   }
 }
 
-TEST_P(RepeatedFieldProxyTest, RepeatedUint32) {
-  auto field = MakeRepeatedFieldContainer<uint32_t>();
-  RepeatedFieldProxy<uint32_t> proxy = field.MakeProxy();
-  proxy.push_back(1);
-  EXPECT_THAT(proxy, ElementsAre(1));
-  EXPECT_THAT(*field, ElementsAre(1));
-}
+TYPED_TEST(RepeatedNumericFieldProxyTest, Limits) {
+  using ElementType = typename TypeParam::ElementType;
 
-TEST_P(RepeatedFieldProxyTest, RepeatedInt64) {
-  auto field = MakeRepeatedFieldContainer<int64_t>();
-  RepeatedFieldProxy<int64_t> proxy = field.MakeProxy();
-  proxy.push_back(std::numeric_limits<int64_t>::min());
-  EXPECT_THAT(proxy, ElementsAre(std::numeric_limits<int64_t>::min()));
-  EXPECT_THAT(*field, ElementsAre(std::numeric_limits<int64_t>::min()));
-}
-
-TEST_P(RepeatedFieldProxyTest, RepeatedUint64) {
-  auto field = MakeRepeatedFieldContainer<uint64_t>();
-  RepeatedFieldProxy<uint64_t> proxy = field.MakeProxy();
-  proxy.push_back(std::numeric_limits<uint64_t>::max());
-  EXPECT_THAT(proxy, ElementsAre(std::numeric_limits<uint64_t>::max()));
-  EXPECT_THAT(*field, ElementsAre(std::numeric_limits<uint64_t>::max()));
-}
-
-TEST_P(RepeatedFieldProxyTest, RepeatedFloat) {
-  auto field = MakeRepeatedFieldContainer<float>();
-  RepeatedFieldProxy<float> proxy = field.MakeProxy();
-  proxy.push_back(1.5);
-  EXPECT_THAT(proxy, ElementsAre(1.5));
-  EXPECT_THAT(*field, ElementsAre(1.5));
-}
-
-TEST_P(RepeatedFieldProxyTest, RepeatedDouble) {
-  auto field = MakeRepeatedFieldContainer<double>();
-  RepeatedFieldProxy<double> proxy = field.MakeProxy();
-  proxy.push_back(std::numeric_limits<double>::max());
-  EXPECT_THAT(proxy, ElementsAre(std::numeric_limits<double>::max()));
-  EXPECT_THAT(*field, ElementsAre(std::numeric_limits<double>::max()));
+  auto field = this->MakeRepeatedFieldContainer();
+  auto proxy = field.MakeProxy();
+  proxy.push_back(std::numeric_limits<ElementType>::min());
+  proxy.push_back(std::numeric_limits<ElementType>::max());
+  EXPECT_THAT(proxy, ElementsAre(std::numeric_limits<ElementType>::min(),
+                                 std::numeric_limits<ElementType>::max()));
+  EXPECT_THAT(*field, ElementsAre(std::numeric_limits<ElementType>::min(),
+                                  std::numeric_limits<ElementType>::max()));
 }
 
 TEST_P(RepeatedFieldProxyTest, RepeatedString) {
@@ -345,7 +395,37 @@ TEST_P(RepeatedFieldProxyTest, ConstSize) {
   }
 }
 
-TEST_P(RepeatedFieldProxyTest, ArrayIndexing) {
+TYPED_TEST(RepeatedNumericFieldProxyTest, ArrayIndexing) {
+  using ElementType = typename TypeParam::ElementType;
+
+  auto field = this->MakeRepeatedFieldContainer();
+  field->Add(1);
+  field->Add(2);
+  field->Add(3);
+
+  {
+    auto proxy = field.MakeProxy();
+    EXPECT_EQ(proxy[0], 1);
+    EXPECT_EQ(proxy[1], 2);
+    EXPECT_EQ(proxy[2], 3);
+
+    // Check that repeated numeric proxies return values, not references.
+    static_assert(std::is_same_v<decltype(proxy[0]), ElementType>);
+  }
+
+  {
+    auto proxy = field.MakeConstProxy();
+    EXPECT_EQ(proxy[0], 1);
+    EXPECT_EQ(proxy[1], 2);
+    EXPECT_EQ(proxy[2], 3);
+
+    // Check that const repeated numeric proxies return values, not const
+    // references.
+    static_assert(std::is_same_v<decltype(proxy[0]), ElementType>);
+  }
+}
+
+TEST_P(RepeatedFieldProxyTest, ArrayIndexingMessage) {
   auto field =
       MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
   field->Add()->set_value(1);
@@ -388,8 +468,8 @@ TEST_P(RepeatedFieldProxyTest, ArrayIndexingStringView) {
   }
 }
 
-TEST_P(RepeatedFieldProxyTest, MutateElementPrimitive) {
-  auto field = MakeRepeatedFieldContainer<int32_t>();
+TYPED_TEST(RepeatedNumericFieldProxyTest, MutateElementPrimitive) {
+  auto field = this->MakeRepeatedFieldContainer();
   field->Add(1);
   field->Add(2);
   field->Add(3);
@@ -531,8 +611,8 @@ TEST_P(RepeatedFieldProxyTest, MutateElementMessage) {
                                   EqualsProto(R"pb(value: 4)pb")));
 }
 
-TEST_P(RepeatedFieldProxyTest, PushBackInt) {
-  auto field = MakeRepeatedFieldContainer<int32_t>();
+TYPED_TEST(RepeatedNumericFieldProxyTest, PushBack) {
+  auto field = this->MakeRepeatedFieldContainer();
   auto proxy = field.MakeProxy();
   proxy.push_back(1);
   proxy.push_back(2);
@@ -665,8 +745,8 @@ TEST_P(RepeatedFieldProxyTest, PushBackCord) {
   TestPushBackString<absl::Cord>(field.MakeProxy());
 }
 
-TEST_P(RepeatedFieldProxyTest, EmplaceBackInt) {
-  auto field = MakeRepeatedFieldContainer<int32_t>();
+TYPED_TEST(RepeatedNumericFieldProxyTest, EmplaceBack) {
+  auto field = this->MakeRepeatedFieldContainer();
   auto proxy = field.MakeProxy();
   proxy.emplace_back(1);
   proxy.emplace_back(2);
@@ -802,9 +882,9 @@ TEST_P(RepeatedFieldProxyTest, EmplaceBackCord) {
   EXPECT_THAT(*field, ElementsAre("1", "2", kLongString, kLongString));
 }
 
-TEST_P(RepeatedFieldProxyTest, IntIterators) {
-  auto field = MakeRepeatedFieldContainer<uint32_t>();
-  RepeatedFieldProxy<uint32_t> proxy = field.MakeProxy();
+TYPED_TEST(RepeatedNumericFieldProxyTest, Iterators) {
+  auto field = this->MakeRepeatedFieldContainer();
+  auto proxy = field.MakeProxy();
   proxy.push_back(1);
   proxy.push_back(2);
   proxy.push_back(3);
@@ -943,9 +1023,9 @@ TEST_P(RepeatedFieldProxyTest, CordIterators) {
   TestStringIterators(field.MakeProxy());
 }
 
-TEST_P(RepeatedFieldProxyTest, IteratorMutation) {
-  auto field = MakeRepeatedFieldContainer<uint32_t>();
-  RepeatedFieldProxy<uint32_t> proxy = field.MakeProxy();
+TYPED_TEST(RepeatedNumericFieldProxyTest, IteratorMutation) {
+  auto field = this->MakeRepeatedFieldContainer();
+  auto proxy = field.MakeProxy();
   proxy.push_back(1);
   proxy.push_back(2);
   proxy.push_back(3);
@@ -963,13 +1043,13 @@ TEST_P(RepeatedFieldProxyTest, IteratorMutation) {
   EXPECT_THAT(*field, ElementsAre(4, 7, 6));
 }
 
-TEST_P(RepeatedFieldProxyTest, ConstIterators) {
-  auto field = MakeRepeatedFieldContainer<uint32_t>();
+TYPED_TEST(RepeatedNumericFieldProxyTest, ConstIterators) {
+  auto field = this->MakeRepeatedFieldContainer();
   field->Add(1);
   field->Add(2);
   field->Add(3);
 
-  RepeatedFieldProxy<const uint32_t> proxy = field.MakeConstProxy();
+  auto proxy = field.MakeConstProxy();
   auto it = proxy.cbegin();
   EXPECT_EQ(*it, 1);
   EXPECT_EQ(*(++it), 2);
@@ -1036,8 +1116,8 @@ TEST_P(RepeatedFieldProxyTest, StringViewIteratorsNoStdStringLeak) {
                                const absl::string_view&>);
 }
 
-TEST_P(RepeatedFieldProxyTest, PopBackInt) {
-  auto field = MakeRepeatedFieldContainer<int32_t>();
+TYPED_TEST(RepeatedNumericFieldProxyTest, PopBack) {
+  auto field = this->MakeRepeatedFieldContainer();
   field->Add(1);
   field->Add(2);
 
@@ -1097,14 +1177,14 @@ TEST_P(RepeatedFieldProxyTest, PopBackCord) {
   EXPECT_THAT(*field, ElementsAre(StringEq("1")));
 }
 
-TEST_P(RepeatedFieldProxyTest, Rebind) {
-  auto field1 = MakeRepeatedFieldContainer<int32_t>();
+TYPED_TEST(RepeatedNumericFieldProxyTest, Rebind) {
+  auto field1 = this->MakeRepeatedFieldContainer();
   field1->Add(1);
 
-  auto field2 = MakeRepeatedFieldContainer<int32_t>();
+  auto field2 = this->MakeRepeatedFieldContainer();
   field2->Add(2);
 
-  RepeatedFieldProxy<int32_t> proxy = field1.MakeProxy();
+  auto proxy = field1.MakeProxy();
   proxy = field2.MakeProxy();
 
   // Proxy should be rebound to field2 without having modified either field.
