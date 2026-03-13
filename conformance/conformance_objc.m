@@ -57,28 +57,56 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
       GPBExtensionRegistry *registry;
       if ([request.messageType isEqual:@"protobuf_test_messages.proto2.TestAllTypesProto2"]) {
         msgClass = [Proto2TestAllTypesProto2 class];
-        registry = [Proto2TestMessagesProto2Root extensionRegistry];
+        // copybara:strip_begin(google3 defaults to kCFunction extension generation mode)
+        registry = Proto2_ProtobufTestMessages_Proto2_Proto2TestMessagesProto2Root_Registry();
+        // copybara:strip_end_and_replace_begin
+        // registry = [Proto2TestMessagesProto2Root extensionRegistry];
+        // copybara:replace_end
       } else if ([request.messageType
                      isEqual:@"protobuf_test_messages.proto3.TestAllTypesProto3"]) {
         msgClass = [Proto3TestAllTypesProto3 class];
-        registry = [Proto3TestMessagesProto3Root extensionRegistry];
+        // copybara:strip_begin(google3 defaults to kCFunction extension generation mode)
+        registry = Proto3_ProtobufTestMessages_Proto3_Proto3TestMessagesProto3Root_Registry();
+        // copybara:strip_end_and_replace_begin
+        // registry = [Proto3TestMessagesProto3Root extensionRegistry];
+        // copybara:replace_end
       } else if ([request.messageType
                      isEqual:@"protobuf_test_messages.editions.TestAllTypesEdition2023"]) {
         msgClass = [EditionsTestAllTypesEdition2023 class];
-        registry = [EditionsTestMessagesEdition2023Root extensionRegistry];
+        // copybara:strip_begin(google3 defaults to kCFunction extension generation mode)
+        registry =
+            Editions_ProtobufTestMessages_Editions_EditionsTestMessagesEdition2023Root_Registry();
+        // copybara:strip_end_and_replace_begin
+        // registry = [EditionsTestMessagesEdition2023Root extensionRegistry];
+        // copybara:replace_end
       } else if ([request.messageType
                      isEqual:
                          @"protobuf_test_messages.edition_unstable.TestAllTypesEditionUnstable"]) {
         msgClass = [EditionUnstableTestAllTypesEditionUnstable class];
-        registry = [EditionUnstableTestMessagesEditionUnstableRoot extensionRegistry];
+        // copybara:strip_begin(google3 defaults to kCFunction extension generation mode)
+        registry =
+            EditionUnstable_ProtobufTestMessages_EditionUnstable_EditionUnstableTestMessagesEditionUnstableRoot_Registry();
+        // copybara:strip_end_and_replace_begin
+        // registry = [EditionUnstableTestMessagesEditionUnstableRoot extensionRegistry];
+        // copybara:replace_end
       } else if ([request.messageType
                      isEqual:@"protobuf_test_messages.editions.proto2.TestAllTypesProto2"]) {
         msgClass = [EditionsProto2TestAllTypesProto2 class];
-        registry = [EditionsProto2TestMessagesProto2EditionsRoot extensionRegistry];
+        // copybara:strip_begin(google3 defaults to kCFunction extension generation mode)
+        registry =
+            EditionsProto2_ProtobufTestMessages_Editions_Proto2_EditionsProto2TestMessagesProto2EditionsRoot_Registry();
+        // copybara:strip_end_and_replace_begin
+        // registry = [EditionsProto2TestMessagesProto2EditionsRoot extensionRegistry];
+        // copybara:replace_end
       } else if ([request.messageType
                      isEqual:@"protobuf_test_messages.editions.proto3.TestAllTypesProto3"]) {
         msgClass = [EditionsProto3TestAllTypesProto3 class];
-        registry = [EditionsProto3TestMessagesProto3EditionsRoot extensionRegistry];
+        // copybara:strip_begin(google3 defaults to kCFunction extension generation mode)
+        registry =
+            EditionsProto3_ProtobufTestMessages_Editions_Proto3_EditionsProto3TestMessagesProto3EditionsRoot_Registry();
+        // copybara:strip_end_and_replace_begin
+        // registry = [EditionsProto3TestMessagesProto3EditionsRoot extensionRegistry];
+        // copybara:replace_end
       } else {
         msgClass = nil;
         registry = nil;
