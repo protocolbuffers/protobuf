@@ -448,6 +448,10 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
   // Removes the last element from the repeated field.
   void pop_back() const { field().RemoveLast(); }
 
+  // Removes all elements from the repeated field. The field will be empty after
+  // this call.
+  void clear() const { field().Clear(); }
+
  private:
   friend RepeatedFieldProxy<const ElementType>;
 

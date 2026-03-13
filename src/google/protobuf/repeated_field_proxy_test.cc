@@ -1177,6 +1177,61 @@ TEST_P(RepeatedFieldProxyTest, PopBackCord) {
   EXPECT_THAT(*field, ElementsAre(StringEq("1")));
 }
 
+TYPED_TEST(RepeatedNumericFieldProxyTest, Clear) {
+  auto field = this->MakeRepeatedFieldContainer();
+  field->Add(1);
+  field->Add(2);
+
+  auto proxy = field.MakeProxy();
+  proxy.clear();
+
+  EXPECT_THAT(proxy, IsEmpty());
+  EXPECT_THAT(*field, IsEmpty());
+}
+
+TEST_P(RepeatedFieldProxyTest, ClearMessage) {
+  auto field =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  field->Add()->set_value(1);
+  field->Add()->set_value(2);
+
+  auto proxy = field.MakeProxy();
+  proxy.clear();
+
+  EXPECT_THAT(proxy, IsEmpty());
+  EXPECT_THAT(*field, IsEmpty());
+}
+
+template <typename StringType>
+void TestClearString(TestOnlyRepeatedFieldContainer<StringType>& field) {
+  auto proxy = field.MakeProxy();
+  proxy.push_back("1");
+  proxy.push_back("2");
+
+  EXPECT_THAT(proxy, ElementsAre(StringEq("1"), StringEq("2")));
+  EXPECT_THAT(*field, ElementsAre(StringEq("1"), StringEq("2")));
+
+  proxy.clear();
+
+  EXPECT_THAT(proxy, IsEmpty());
+  EXPECT_THAT(*field, IsEmpty());
+}
+
+TEST_P(RepeatedFieldProxyTest, ClearStdString) {
+  auto field = MakeRepeatedFieldContainer<std::string>();
+  TestClearString(field);
+}
+
+TEST_P(RepeatedFieldProxyTest, ClearStringView) {
+  auto field = MakeRepeatedFieldContainer<absl::string_view>();
+  TestClearString(field);
+}
+
+TEST_P(RepeatedFieldProxyTest, ClearCord) {
+  auto field = MakeRepeatedFieldContainer<absl::Cord>();
+  TestClearString(field);
+}
+
 TYPED_TEST(RepeatedNumericFieldProxyTest, Rebind) {
   auto field1 = this->MakeRepeatedFieldContainer();
   field1->Add(1);
@@ -1191,6 +1246,41 @@ TYPED_TEST(RepeatedNumericFieldProxyTest, Rebind) {
   EXPECT_THAT(proxy, ElementsAre(2));
   EXPECT_THAT(*field1, ElementsAre(1));
   EXPECT_THAT(*field2, ElementsAre(2));
+}
+
+TEST_P(RepeatedFieldProxyTest, ExplicitConversionToLegacyRepeatedField) {
+  auto field = MakeRepeatedFieldContainer<int>();
+  field->Add(1);
+
+  RepeatedFieldProxy<int> proxy = field.MakeProxy();
+  // Make an explicit conversion to RepeatedField. This will perform a deep
+  // copy.
+  RepeatedField<int> field2 = RepeatedField<int>(proxy);
+  EXPECT_THAT(field2, ElementsAre(1));
+
+  // Verify that field2 is a copy.
+  proxy.clear();
+  EXPECT_THAT(proxy, IsEmpty());
+  EXPECT_THAT(field2, ElementsAre(1));
+}
+
+TEST_P(RepeatedFieldProxyTest, ExplicitConversionToLegacyRepeatedPtrField) {
+  auto field =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  field->Add()->set_value(1);
+
+  RepeatedFieldProxy<RepeatedFieldProxyTestSimpleMessage> proxy =
+      field.MakeProxy();
+  // Make an explicit conversion to RepeatedPtrField. This will perform a deep
+  // copy.
+  RepeatedPtrField<RepeatedFieldProxyTestSimpleMessage> field2 =
+      RepeatedPtrField<RepeatedFieldProxyTestSimpleMessage>(proxy);
+  EXPECT_THAT(field2, ElementsAre(EqualsProto(R"pb(value: 1)pb")));
+
+  // Verify that field2 is a copy.
+  proxy.clear();
+  EXPECT_THAT(proxy, IsEmpty());
+  EXPECT_THAT(field2, ElementsAre(EqualsProto(R"pb(value: 1)pb")));
 }
 
 INSTANTIATE_TEST_SUITE_P(RepeatedFieldProxyTest, RepeatedFieldProxyTest,
