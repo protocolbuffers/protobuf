@@ -186,7 +186,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ListValue final : p
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const ListValue& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<ListValue>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<ListValue>(
         &_ListValue_globals_);
   }
   static constexpr int kIndexInFileMessages = 3;
@@ -392,7 +392,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct final : publ
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Struct& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Struct>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Struct>(
         &_Struct_globals_);
   }
   static constexpr int kIndexInFileMessages = 1;
@@ -633,7 +633,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Value& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Value>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Value>(
         &_Value_globals_);
   }
   enum KindCase {
@@ -1160,7 +1160,7 @@ inline ::google::protobuf::Struct* PROTOBUF_NULLABLE Value::release_struct_value
 }
 inline const ::google::protobuf::Struct& Value::_internal_struct_value() const {
   return kind_case() == kStructValue ? static_cast<const ::google::protobuf::Struct&>(*_impl_.kind_.struct_value_)
-                     : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::Struct>(&::google::protobuf::_Struct_globals_);
+                     : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::Struct>(&::google::protobuf::_Struct_globals_);
 }
 inline const ::google::protobuf::Struct& Value::struct_value() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Value.struct_value)
@@ -1242,7 +1242,7 @@ inline ::google::protobuf::ListValue* PROTOBUF_NULLABLE Value::release_list_valu
 }
 inline const ::google::protobuf::ListValue& Value::_internal_list_value() const {
   return kind_case() == kListValue ? static_cast<const ::google::protobuf::ListValue&>(*_impl_.kind_.list_value_)
-                     : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::ListValue>(&::google::protobuf::_ListValue_globals_);
+                     : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::ListValue>(&::google::protobuf::_ListValue_globals_);
 }
 inline const ::google::protobuf::ListValue& Value::list_value() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Value.list_value)
