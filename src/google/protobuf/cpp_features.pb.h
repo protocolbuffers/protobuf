@@ -220,7 +220,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const CppFeatures& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<CppFeatures>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<CppFeatures>(
         &_CppFeatures_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;

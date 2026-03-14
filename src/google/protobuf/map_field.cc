@@ -54,7 +54,7 @@ const Message* MapFieldBase::GetPrototype() const {
   if (IsPayload(p)) {
     return ToPayload(p)->prototype();
   }
-  return MessageGlobalsBase::default_instance<Message>(p);
+  return MessageGlobalsBase::ToDefaultInstance<Message>(p);
 }
 
 template <typename Map, typename F>
@@ -225,7 +225,7 @@ MapFieldBase::ReflectionPayload& MapFieldBase::PayloadSlow() const {
         },
         std::memory_order_relaxed);
 
-    const auto* prototype = MessageGlobalsBase::default_instance<Message>(p);
+    const auto* prototype = MessageGlobalsBase::ToDefaultInstance<Message>(p);
     auto* payload =
         Arena::Create<ReflectionPayload>(arena(), arena(), prototype);
 

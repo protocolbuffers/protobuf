@@ -3821,7 +3821,7 @@ ReflectionSchema MigrationToReflectionSchema(
     MigrationSchema migration_schema) {
   ReflectionSchema result;
   result.default_instance_ =
-      MessageGlobalsBase::default_instance<Message>(*message_globals);
+      MessageGlobalsBase::ToDefaultInstance<Message>(*message_globals);
   int index = migration_schema.offsets_index;
 
   // First values are offsets to the special fields, but they are optional.
@@ -3886,7 +3886,7 @@ class AssignDescriptorsHelper {
     // without updating the reflection.
     if (message_globals_data_[0] != nullptr) {
       auto* default_instance =
-          MessageGlobalsBase::default_instance(message_globals_data_[0]);
+          MessageGlobalsBase::ToDefaultInstance(message_globals_data_[0]);
       auto& class_data = default_instance->GetClassData()->full();
       // If there is no descriptor_table in the class data, then it is not
       // interested in receiving reflection information either.
@@ -4059,7 +4059,7 @@ void RegisterFileLevelMetadata(const DescriptorTable* table) {
     MessageFactory::InternalRegisterGeneratedMessage(
         desc, *globals == nullptr
                   ? nullptr
-                  : MessageGlobalsBase::default_instance<Message>(*globals));
+                  : MessageGlobalsBase::ToDefaultInstance<Message>(*globals));
     ++globals;
     return std::false_type{};
   });
@@ -4148,7 +4148,7 @@ const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
 
   // Now check if the table has it. If so, return it.
   if (const auto* globals = table->message_globals[index]) {
-    return MessageGlobalsBase::default_instance<Message>(globals);
+    return MessageGlobalsBase::ToDefaultInstance<Message>(globals);
   }
 
   if (!force_build) {

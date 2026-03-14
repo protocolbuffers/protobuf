@@ -2252,7 +2252,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           $descriptor_accessor$;
           $get_descriptor$;
           $nodiscard $static const $classname$& default_instance() {
-            return *$pbi$::MessageGlobalsBase::default_instance<$classname$>(
+            return *$pbi$::MessageGlobalsBase::ToDefaultInstance<$classname$>(
                 &$msg_globals$);
           }
           $decl_oneof$;

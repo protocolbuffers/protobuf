@@ -608,7 +608,7 @@ inline const ClassDataFull& ClassData::full() const {
 #ifndef PROTOBUF_MESSAGE_GLOBALS
 struct MessageGlobalsBase {
   template <typename T = MessageLite>
-  static const T* default_instance(const void* globals) {
+  static const T* ToDefaultInstance(const void* globals) {
     return reinterpret_cast<const T*>(globals);
   }
 
@@ -636,7 +636,7 @@ struct MessageGlobalsBase {
     return RoundUpTo<kMaxMessageAlignment>(sizeof(MessageGlobalsBase));
   }
   template <typename T = MessageLite>
-  static const T* default_instance(const void* globals) {
+  static const T* ToDefaultInstance(const void* globals) {
     return reinterpret_cast<const T*>(reinterpret_cast<const char*>(globals) +
                                       OffsetToDefault());
   }
@@ -653,7 +653,7 @@ struct MessageGlobalsBase {
 template <const auto* kGlobals, const auto* kClassData>
 struct GeneratedMessageTraitsT {
   static const void* default_instance() {
-    return internal::MessageGlobalsBase::default_instance<MessageLite>(
+    return internal::MessageGlobalsBase::ToDefaultInstance<MessageLite>(
         kGlobals);
   }
   static constexpr const auto* class_data() { return kClassData->base(); }

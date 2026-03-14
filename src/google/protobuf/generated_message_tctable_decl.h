@@ -454,10 +454,10 @@ struct alignas(uint64_t) TcParseTableBase {
     LazyEagerVerifyFnType verify_func;
 
     const MessageLite* message_default() const {
-      return MessageGlobalsBase::default_instance(message_globals_p);
+      return MessageGlobalsBase::ToDefaultInstance(message_globals_p);
     }
     const MessageLite* message_default_weak() const {
-      return MessageGlobalsBase::default_instance(message_globals_weak());
+      return MessageGlobalsBase::ToDefaultInstance(message_globals_weak());
     }
     const MessageGlobalsBase* message_globals() const {
       return static_cast<const MessageGlobalsBase*>(message_globals_p);
