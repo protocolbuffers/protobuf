@@ -145,7 +145,7 @@ struct RepeatedFieldTraits<absl::string_view> {
   using type = RepeatedPtrField<std::string>;
   using const_reference = absl::string_view;
   using reference = absl::string_view;
-  using const_iterator = RepeatedPtrIterator<absl::string_view>;
+  using const_iterator = RepeatedPtrIterator<const absl::string_view>;
   using iterator = RepeatedPtrIterator<absl::string_view>;
 };
 
@@ -451,6 +451,29 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
   // Removes all elements from the repeated field. The field will be empty after
   // this call.
   void clear() const { field().Clear(); }
+
+  // Removes the element at `position` from the repeated field. Returns an
+  // iterator to the element immediately following the removed element.
+  iterator erase(const_iterator position) const {
+    // The internal iterator type may not match the proxy iterator type (for
+    // example for `absl::string_view` proxies which are backed by
+    // `std::string`). To avoid special casing, we will always cast to the
+    // internal iterator type before passing down to erase, then cast back to
+    // the proxy iterator type upon return. This conversion is redundant for
+    // types which have matching exposed and internal element types.
+    using const_internal_iterator = typename RepeatedFieldType::const_iterator;
+    return iterator(
+        ToProxyType(this).field().erase(const_internal_iterator(position)));
+  }
+
+  // Removes the elements in the range `[first, last)` from the repeated field.
+  // Returns an iterator to the element immediately following the last removed
+  // element.
+  iterator erase(const_iterator first, const_iterator last) const {
+    using const_internal_iterator = typename RepeatedFieldType::const_iterator;
+    return iterator(ToProxyType(this).field().erase(
+        const_internal_iterator(first), const_internal_iterator(last)));
+  }
 
  private:
   friend RepeatedFieldProxy<const ElementType>;
