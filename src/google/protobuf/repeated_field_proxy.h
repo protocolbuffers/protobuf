@@ -475,6 +475,45 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
         const_internal_iterator(first), const_internal_iterator(last)));
   }
 
+  // Copy-assigns `other` into this repeated field.
+  //
+  // This method exists because proxies cannot be reassigned through the `=`
+  // assignment operator.
+  void assign(RepeatedFieldProxy<const ElementType> other) const {
+    field().CopyFrom(other.field());
+  }
+
+  // Copy-assigns the elements in the range `[begin, end)` to the repeated
+  // field.
+  //
+  // If `begin` or `end` is an iterator into this repeated field, the behavior
+  // is undefined.
+  template <
+      typename Iter,
+      // A seemingly redundant verification that `Iter` is an iterator type.
+      // Even though we use `std::iterator_traits` below, we duplicate the
+      // condition here in case the implementation changes.
+      typename = std::void_t<typename std::iterator_traits<Iter>::value_type>>
+  auto assign(Iter begin, Iter end) const
+      // Verify that the iterator value type is assignable to `ElementType`.
+      // Pass through `push_back`, which is a catch-all for allowed conversions
+      // to the element type.
+      -> std::void_t<decltype(this->push_back(*begin))> {
+    field().Clear();
+    // Forward iterators in C++ are required to model `std::incrementable`,
+    // which means they are suitable for multi-pass algorithms, and therefore
+    // support `std::distance`.
+    if constexpr (std::is_base_of<std::forward_iterator_tag,
+                                  typename std::iterator_traits<
+                                      Iter>::iterator_category>::value) {
+      int distance = static_cast<int>(std::distance(begin, end));
+      field().ReserveWithArena(arena(), distance);
+    }
+    for (; begin != end; ++begin) {
+      this->push_back(*begin);
+    }
+  }
+
  private:
   friend RepeatedFieldProxy<const ElementType>;
 
@@ -550,6 +589,8 @@ class RepeatedFieldProxy<const ElementType> final
   }
 
  private:
+  friend RepeatedFieldProxy<ElementType>;
+
   template <typename T, typename... Args>
   friend RepeatedFieldProxy<T> internal::ConstructRepeatedFieldProxy(
       Args&&... args);

@@ -9,6 +9,7 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -1308,6 +1309,149 @@ TEST_P(RepeatedFieldProxyTest, EraseRange) {
                                  EqualsProto(R"pb(value: 4)pb")));
   EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
                                   EqualsProto(R"pb(value: 4)pb")));
+}
+
+TYPED_TEST(RepeatedNumericFieldProxyTest, CopyAssign) {
+  auto field1 = this->MakeRepeatedFieldContainer();
+  field1->Add(1);
+
+  auto field2 = this->MakeRepeatedFieldContainer();
+  field2->Add(2);
+  field2->Add(3);
+
+  auto proxy1 = field1.MakeProxy();
+  auto proxy2 = field2.MakeProxy();
+  proxy1.assign(proxy2);
+
+  EXPECT_THAT(proxy1, ElementsAre(2, 3));
+  EXPECT_THAT(*field1, ElementsAre(2, 3));
+
+  EXPECT_THAT(proxy2, ElementsAre(2, 3));
+  EXPECT_THAT(*field2, ElementsAre(2, 3));
+}
+
+TYPED_TEST(RepeatedStringFieldProxyTest, CopyAssign) {
+  auto field1 = this->MakeRepeatedFieldContainer();
+  this->Add(field1, "1");
+
+  auto field2 = this->MakeRepeatedFieldContainer();
+  this->Add(field2, "2");
+  this->Add(field2, "3");
+
+  auto proxy1 = field1.MakeProxy();
+  auto proxy2 = field2.MakeProxy();
+  proxy1.assign(proxy2);
+
+  EXPECT_THAT(proxy1, ElementsAre(StringEq("2"), StringEq("3")));
+  EXPECT_THAT(*field1, ElementsAre(StringEq("2"), StringEq("3")));
+
+  EXPECT_THAT(proxy2, ElementsAre(StringEq("2"), StringEq("3")));
+  EXPECT_THAT(*field2, ElementsAre(StringEq("2"), StringEq("3")));
+}
+
+TEST_P(RepeatedFieldProxyTest, CopyAssignMessage) {
+  auto field1 =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  field1->Add()->set_value(1);
+
+  auto field2 =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  field2->Add()->set_value(2);
+  field2->Add()->set_value(3);
+
+  auto proxy1 = field1.MakeProxy();
+  auto proxy2 = field2.MakeProxy();
+  proxy1.assign(proxy2);
+
+  EXPECT_THAT(proxy1, ElementsAre(EqualsProto(R"pb(value: 2)pb"),
+                                  EqualsProto(R"pb(value: 3)pb")));
+  EXPECT_THAT(*field1, ElementsAre(EqualsProto(R"pb(value: 2)pb"),
+                                   EqualsProto(R"pb(value: 3)pb")));
+
+  EXPECT_THAT(proxy2, ElementsAre(EqualsProto(R"pb(value: 2)pb"),
+                                  EqualsProto(R"pb(value: 3)pb")));
+  EXPECT_THAT(*field2, ElementsAre(EqualsProto(R"pb(value: 2)pb"),
+                                   EqualsProto(R"pb(value: 3)pb")));
+}
+
+TYPED_TEST(RepeatedNumericFieldProxyTest, AssignIteratorRange) {
+  using ElementType = typename TypeParam::ElementType;
+
+  auto field = this->MakeRepeatedFieldContainer();
+  field->Add(1);
+
+  auto proxy = field.MakeProxy();
+
+  std::vector<ElementType> ints = {2, 3};
+  proxy.assign(ints.begin(), ints.end());
+
+  EXPECT_THAT(proxy, ElementsAre(2, 3));
+  EXPECT_THAT(*field, ElementsAre(2, 3));
+
+  // Assign a subrange of `ints`.
+  proxy.assign(ints.begin() + 1, ints.end());
+  EXPECT_THAT(proxy, ElementsAre(3));
+  EXPECT_THAT(*field, ElementsAre(3));
+}
+
+TYPED_TEST(RepeatedStringFieldProxyTest, AssignIteratorRange) {
+  auto field = this->MakeRepeatedFieldContainer();
+  this->Add(field, "1");
+
+  auto proxy = field.MakeProxy();
+
+  std::vector<absl::string_view> strs = {"2", "3"};
+  proxy.assign(strs.begin(), strs.end());
+
+  EXPECT_THAT(proxy, ElementsAre(StringEq("2"), StringEq("3")));
+  EXPECT_THAT(*field, ElementsAre(StringEq("2"), StringEq("3")));
+
+  // Assign a subrange of `strs`.
+  proxy.assign(strs.begin() + 1, strs.end());
+  EXPECT_THAT(proxy, ElementsAre(StringEq("3")));
+  EXPECT_THAT(*field, ElementsAre(StringEq("3")));
+}
+
+TYPED_TEST(RepeatedStringFieldProxyTest, AssignIteratorRangeWithStdStrings) {
+  auto field = this->MakeRepeatedFieldContainer();
+  this->Add(field, "1");
+
+  auto proxy = field.MakeProxy();
+
+  std::vector<std::string> strs = {"2", "3"};
+  proxy.assign(strs.begin(), strs.end());
+
+  EXPECT_THAT(proxy, ElementsAre(StringEq("2"), StringEq("3")));
+  EXPECT_THAT(*field, ElementsAre(StringEq("2"), StringEq("3")));
+
+  // Assign a subrange of `strs`.
+  proxy.assign(strs.begin() + 1, strs.end());
+  EXPECT_THAT(proxy, ElementsAre(StringEq("3")));
+  EXPECT_THAT(*field, ElementsAre(StringEq("3")));
+}
+
+TEST_P(RepeatedFieldProxyTest, AssignMessageIteratorRange) {
+  auto field =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  field->Add()->set_value(1);
+
+  std::vector<RepeatedFieldProxyTestSimpleMessage> msgs(2);
+  msgs[0].set_value(2);
+  msgs[1].set_value(3);
+
+  RepeatedFieldProxy<RepeatedFieldProxyTestSimpleMessage> proxy =
+      field.MakeProxy();
+  proxy.assign(msgs.begin(), msgs.end());
+
+  EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 2)pb"),
+                                 EqualsProto(R"pb(value: 3)pb")));
+  EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(value: 2)pb"),
+                                  EqualsProto(R"pb(value: 3)pb")));
+
+  // Assign a subrange of `msgs`.
+  proxy.assign(msgs.begin() + 1, msgs.end());
+  EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 3)pb")));
+  EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(value: 3)pb")));
 }
 
 TYPED_TEST(RepeatedNumericFieldProxyTest, Rebind) {
