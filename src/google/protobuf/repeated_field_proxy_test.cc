@@ -1122,9 +1122,9 @@ TEST_P(RepeatedFieldProxyTest, StringViewIteratorsNoStdStringLeak) {
   static_assert(std::is_same_v<decltype(proxy.end()),
                                RepeatedPtrIterator<absl::string_view>>);
   static_assert(std::is_same_v<decltype(proxy.cbegin()),
-                               RepeatedPtrIterator<const absl::string_view>>);
+                               RepeatedPtrIterator<absl::string_view>>);
   static_assert(std::is_same_v<decltype(proxy.cend()),
-                               RepeatedPtrIterator<const absl::string_view>>);
+                               RepeatedPtrIterator<absl::string_view>>);
   static_assert(std::is_same_v<
                 decltype(proxy.rbegin()),
                 std::reverse_iterator<RepeatedPtrIterator<absl::string_view>>>);
@@ -1134,8 +1134,9 @@ TEST_P(RepeatedFieldProxyTest, StringViewIteratorsNoStdStringLeak) {
 
   auto it = proxy.begin();
 
-  static_assert(
-      std::is_same_v<absl::remove_cvref_t<decltype(*it)>, absl::string_view>);
+  static_assert(std::is_same_v<decltype(*it), absl::string_view>);
+  static_assert(std::is_same_v<decltype(*it.operator->().operator->()),
+                               const absl::string_view&>);
 }
 
 TYPED_TEST(RepeatedNumericFieldProxyTest, PopBack) {
@@ -1210,104 +1211,6 @@ TYPED_TEST(RepeatedStringFieldProxyTest, Clear) {
 
   EXPECT_THAT(proxy, IsEmpty());
   EXPECT_THAT(*field, IsEmpty());
-}
-
-TYPED_TEST(RepeatedNumericFieldProxyTest, Erase) {
-  auto field = this->MakeRepeatedFieldContainer();
-  field->Add(1);
-  field->Add(2);
-  field->Add(3);
-
-  auto proxy = field.MakeProxy();
-  proxy.erase(absl::c_find_if(proxy, [](auto value) { return value == 2; }));
-
-  EXPECT_THAT(proxy, ElementsAre(1, 3));
-  EXPECT_THAT(*field, ElementsAre(1, 3));
-}
-
-TYPED_TEST(RepeatedStringFieldProxyTest, Erase) {
-  auto field = this->MakeRepeatedFieldContainer();
-  this->Add(field, "1");
-  this->Add(field, "2");
-  this->Add(field, "3");
-
-  auto proxy = field.MakeProxy();
-  proxy.erase(proxy.begin() + 1);
-
-  EXPECT_THAT(proxy, ElementsAre(StringEq("1"), StringEq("3")));
-  EXPECT_THAT(*field, ElementsAre(StringEq("1"), StringEq("3")));
-}
-
-TEST_P(RepeatedFieldProxyTest, Erase) {
-  auto field =
-      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
-  field->Add()->set_value(1);
-  field->Add()->set_value(2);
-  field->Add()->set_value(3);
-
-  RepeatedFieldProxy<RepeatedFieldProxyTestSimpleMessage> proxy =
-      field.MakeProxy();
-  proxy.erase(absl::c_find_if(
-      proxy, [](const RepeatedFieldProxyTestSimpleMessage& msg) {
-        return msg.value() == 2;
-      }));
-
-  EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
-                                 EqualsProto(R"pb(value: 3)pb")));
-  EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
-                                  EqualsProto(R"pb(value: 3)pb")));
-}
-
-TYPED_TEST(RepeatedNumericFieldProxyTest, EraseRange) {
-  auto field = this->MakeRepeatedFieldContainer();
-  field->Add(1);
-  field->Add(2);
-  field->Add(3);
-  field->Add(4);
-
-  auto proxy = field.MakeProxy();
-  auto it = absl::c_find_if(proxy, [](auto value) { return value == 2; });
-  proxy.erase(it, it + 2);
-
-  EXPECT_THAT(proxy, ElementsAre(1, 4));
-  EXPECT_THAT(*field, ElementsAre(1, 4));
-}
-
-TYPED_TEST(RepeatedStringFieldProxyTest, EraseRange) {
-  auto field = this->MakeRepeatedFieldContainer();
-  this->Add(field, "1");
-  this->Add(field, "2");
-  this->Add(field, "3");
-  this->Add(field, "4");
-
-  auto proxy = field.MakeProxy();
-  auto it = proxy.begin() + 1;
-  proxy.erase(it, it + 2);
-
-  EXPECT_THAT(proxy, ElementsAre(StringEq("1"), StringEq("4")));
-  EXPECT_THAT(*field, ElementsAre(StringEq("1"), StringEq("4")));
-}
-
-TEST_P(RepeatedFieldProxyTest, EraseRange) {
-  auto field =
-      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
-  field->Add()->set_value(1);
-  field->Add()->set_value(2);
-  field->Add()->set_value(3);
-  field->Add()->set_value(4);
-
-  RepeatedFieldProxy<RepeatedFieldProxyTestSimpleMessage> proxy =
-      field.MakeProxy();
-  auto it = absl::c_find_if(proxy,
-                            [](const RepeatedFieldProxyTestSimpleMessage& msg) {
-                              return msg.value() == 2;
-                            });
-  proxy.erase(it, it + 2);
-
-  EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
-                                 EqualsProto(R"pb(value: 4)pb")));
-  EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
-                                  EqualsProto(R"pb(value: 4)pb")));
 }
 
 TYPED_TEST(RepeatedNumericFieldProxyTest, Rebind) {
