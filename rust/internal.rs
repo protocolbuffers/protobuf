@@ -41,6 +41,9 @@ pub struct Private;
 /// traits to support trait objects.
 pub trait SealedInternal: Sized {}
 
+impl<T: SealedInternal> SealedInternal for &T {}
+impl<T: SealedInternal> SealedInternal for &mut T {}
+
 /// A trait used by the proto_eq() gtest macro.
 pub trait MatcherEq: SealedInternal + Debug {
     fn matches(&self, o: &Self) -> bool;

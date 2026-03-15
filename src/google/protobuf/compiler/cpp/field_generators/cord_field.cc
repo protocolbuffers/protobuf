@@ -353,11 +353,7 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       if ($not_has_field$) {
         clear_$oneof_name$();
         set_has_$name_internal$();
-        $field$ = new ::absl::Cord;
-        $pb$::Arena* arena = GetArena();
-        if (arena != nullptr) {
-          arena->Own($field$);
-        }
+        $field$ = $pb$::Arena::Create<::absl::Cord>(GetArena());
       }
       *$field$ = value;
       $annotate_set$;
@@ -370,11 +366,7 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       if ($not_has_field$) {
         clear_$oneof_name$();
         set_has_$name_internal$();
-        $field$ = new ::absl::Cord;
-        $pb$::Arena* arena = GetArena();
-        if (arena != nullptr) {
-          arena->Own($field$);
-        }
+        $field$ = $pb$::Arena::Create<::absl::Cord>(GetArena());
       }
       *$field$ = value;
       $annotate_set$;
@@ -387,11 +379,7 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       if ($not_has_field$) {
         clear_$oneof_name$();
         set_has_$name_internal$();
-        $field$ = new ::absl::Cord;
-        $pb$::Arena* arena = GetArena();
-        if (arena != nullptr) {
-          arena->Own($field$);
-        }
+        $field$ = $pb$::Arena::Create<::absl::Cord>(GetArena());
       }
       return $field$;
     }

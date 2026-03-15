@@ -157,6 +157,7 @@ void ArenaStringPtr::Set(std::string&& value, Arena* arena) {
     NewString(arena, std::move(value));
   } else if (IsFixedSizeArena()) {
     std::string* current = tagged_ptr_.Get();
+    UnpoisonMemoryRegion(current, sizeof(*current));
     auto* s = new (current) std::string(std::move(value));
     arena->OwnDestructor(s);
     tagged_ptr_.SetMutableArena(s);

@@ -145,7 +145,7 @@ bool MessageLayoutHelper::IsFastPathField(
     return false;
   }
 
-  const uint32_t coded_tag = GetRecodedTagForFastParsing(field);
+  const uint32_t coded_tag = internal::GetRecodedTagForFastParsing(field);
   const uint32_t fast_idx = internal::TcParseTableBase::TagToIdx(
       coded_tag, static_cast<uint32_t>(fast_path_fields.size()));
   const auto* fast_field = fast_path_fields[fast_idx].AsField();

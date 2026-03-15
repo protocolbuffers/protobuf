@@ -188,6 +188,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_visit_field_info.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_visit_fields.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_proxy.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/runtime_version.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/serial_arena.h
@@ -289,6 +290,7 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port_undef.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/raw_ptr.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_proxy.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/runtime_version.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/serial_arena.h
@@ -1284,6 +1286,7 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_mode_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_ops_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_visit_fields_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_proxy_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_reflection_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field_unittest.cc
@@ -1314,6 +1317,9 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_proto2_unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_proto3_unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_unittest.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/abseil_flag_test.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/repeated_field_proxy_test.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/repeated_ptr_field_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_arena.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_custom_features.proto

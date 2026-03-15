@@ -31,7 +31,7 @@ class Value extends \Google\Protobuf\Internal\Message
      *     @type int $null_value
      *           Represents a null value.
      *     @type float $number_value
-     *           Represents a double value.
+     *           Represents a double value. Must not be `NaN`, `Infinity` or `-Infinity`.
      *     @type string $string_value
      *           Represents a string value.
      *     @type bool $bool_value
@@ -79,7 +79,7 @@ class Value extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Represents a double value.
+     * Represents a double value. Must not be `NaN`, `Infinity` or `-Infinity`.
      *
      * Generated from protobuf field <code>double number_value = 2;</code>
      * @return float
@@ -95,7 +95,7 @@ class Value extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Represents a double value.
+     * Represents a double value. Must not be `NaN`, `Infinity` or `-Infinity`.
      *
      * Generated from protobuf field <code>double number_value = 2;</code>
      * @param float $var

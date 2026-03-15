@@ -111,6 +111,7 @@ google/protobuf/reflection_ops.h
 google/protobuf/reflection_visit_field_info.h
 google/protobuf/reflection_visit_fields.h
 google/protobuf/repeated_field.h
+google/protobuf/repeated_field_proxy.h
 google/protobuf/repeated_ptr_field.h
 google/protobuf/runtime_version.h
 google/protobuf/serial_arena.h

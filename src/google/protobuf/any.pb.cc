@@ -25,6 +25,15 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+namespace {
+PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
+    file_reflection_data[] = {
+        // ::google::protobuf::Any
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fany_2eproto, /* tracker*/ nullptr,},
+};
+}  // namespace
+#endif
 #if defined(__llvm__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wuninitialized"
@@ -52,13 +61,17 @@ constexpr Any::Any(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct AnyGlobalsTypeInternal {
+struct AnyGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr AnyGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~AnyGlobalsTypeInternal() {}
   union {
-    Any _default;
+    alignas(::_pbi::kMaxMessageAlignment) Any _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(AnyGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 AnyGlobalsTypeInternal _Any_globals_;
@@ -84,8 +97,9 @@ static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, sizeof(::google::protobuf::Any)},
 };
-static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::google::protobuf::_Any_globals_._default,
+static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
+    file_message_globals[] = {
+        &::google::protobuf::_Any_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fany_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -108,7 +122,7 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
     0,
     1,
     schemas,
-    file_default_instances,
+    file_message_globals,
     TableStruct_google_2fprotobuf_2fany_2eproto::offsets,
     file_level_enum_descriptors_google_2fprotobuf_2fany_2eproto,
     file_level_service_descriptors_google_2fprotobuf_2fany_2eproto,
@@ -206,6 +220,24 @@ constexpr auto Any::InternalNewImpl_() {
                                             alignof(Any));
 }
 constexpr auto Any::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_Any_globals_._default,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &Any::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<Any>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &Any::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<Any>(), &Any::ByteSizeLong,
+              &Any::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(Any, _impl_._cached_size_),
+          false,
+      },
+      &file_reflection_data[0]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_Any_globals_._default,
@@ -225,6 +257,7 @@ constexpr auto Any::InternalGenerateClassData_() {
       &descriptor_table_google_2fprotobuf_2fany_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const

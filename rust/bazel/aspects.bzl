@@ -25,7 +25,11 @@ load(
     "encode_raw_string_as_crate_name",
 )
 
-visibility(["//rust/...", "//third_party/crubit/rs_bindings_from_cc/...", "//net/proto2/compiler/stubby/cc/build_defs/..."])
+visibility([
+    "//net/proto2/compiler/stubby/...",
+    "//rust/...",
+    "//third_party/crubit/rs_bindings_from_cc/...",
+])
 
 CrateMappingInfo = provider(
     doc = "Struct mapping crate name to the .proto import paths",
@@ -395,7 +399,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         ctx = ctx,
         cc_toolchain = cc_toolchain,
         requested_features = ctx.features,
-        unsupported_features = ctx.disabled_features,
+        unsupported_features = ctx.disabled_features + ["module_maps"],
     )
 
     mapping_for_current_target = depset(transitive = transitive_crate_mappings)
@@ -495,11 +499,6 @@ def _make_proto_library_aspect(is_upb):
         attr_aspects = ["deps", "exports"],
         requires = ([] if is_upb else [cc_proto_aspect]),
         attrs = {
-            "_collect_cc_coverage": attr.label(
-                default = Label("@rules_rust//util:collect_coverage"),
-                executable = True,
-                cfg = "exec",
-            ),
             "_cpp_thunks_deps": attr.label_list(
                 default = [
                     Label("//rust/cpp_kernel:cpp_api"),

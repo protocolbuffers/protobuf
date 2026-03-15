@@ -624,8 +624,7 @@ std::string ClassDataType(const Descriptor* descriptor,
                  // via options.
                  IsBootstrapProto(options, descriptor->file())
              ? "ClassDataFull"
-             : absl::StrFormat("ClassDataLite<%d>",
-                               descriptor->full_name().size() + 1);
+             : "ClassDataLite";
 }
 
 std::string DescriptorTableName(const FileDescriptor* file,
@@ -1243,21 +1242,30 @@ const FieldDescriptor* FindHottestField(
   return nullptr;
 }
 
-static bool HasRepeatedFields(const Descriptor* descriptor) {
+static bool HasRepeatedFields(
+    const Descriptor* descriptor,
+    FieldDescriptor::CppRepeatedType cpp_repeated_type) {
   for (int i = 0; i < descriptor->field_count(); ++i) {
-    if (descriptor->field(i)->is_repeated()) {
+    const auto* field = descriptor->field(i);
+    if (field->is_repeated() && !field->is_map() &&
+        CalculateFieldDescriptorRepeatedType(field) == cpp_repeated_type) {
       return true;
     }
   }
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
-    if (HasRepeatedFields(descriptor->nested_type(i))) return true;
+    if (HasRepeatedFields(descriptor->nested_type(i), cpp_repeated_type)) {
+      return true;
+    }
   }
   return false;
 }
 
-bool HasRepeatedFields(const FileDescriptor* file) {
+bool HasRepeatedFields(const FileDescriptor* file,
+                       FieldDescriptor::CppRepeatedType cpp_repeated_type) {
   for (int i = 0; i < file->message_type_count(); ++i) {
-    if (HasRepeatedFields(file->message_type(i))) return true;
+    if (HasRepeatedFields(file->message_type(i), cpp_repeated_type)) {
+      return true;
+    }
   }
   return false;
 }
@@ -1881,7 +1889,7 @@ int CollectFieldsExcludingWeakAndOneof(
     const Descriptor* d, const Options& options,
     std::vector<const FieldDescriptor*>& fields) {
   int num_weak_fields = 0;
-  for (auto field : FieldRange(d)) {
+  for (auto field : internal::FieldRange(d)) {
     if (IsWeak(field, options)) {
       ++num_weak_fields;
     }
@@ -2151,7 +2159,7 @@ FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
 
 bool HasMessageFieldOrExtension(const Descriptor* desc) {
   if (desc->extension_range_count() > 0) return true;
-  for (const auto* f : FieldRange(desc)) {
+  for (const auto* f : internal::FieldRange(desc)) {
     if (f->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) return true;
   }
   return false;

@@ -107,18 +107,6 @@
 #define PROTOBUF_CPLUSPLUS_MIN(x) (_MSVC_LANG >= x)
 #endif
 
-// Check minimum Protobuf support defined at:
-// https://github.com/google/oss-policies-info/blob/main/foundational-cxx-support-matrix.md
-#ifdef __clang__
-static_assert(PROTOBUF_CLANG_MIN(6, 0), "Protobuf only supports Clang 6.0 and newer.");
-#elif defined(__GNUC__)
-static_assert(PROTOBUF_GNUC_MIN(7, 3), "Protobuf only supports GCC 7.3 and newer.");
-#elif defined(_MSVC_LANG)
-static_assert(PROTOBUF_MSC_VER_MIN(1910), "Protobuf only supports MSVC 2017 and newer.");
-#endif
-static_assert(PROTOBUF_CPLUSPLUS_MIN(201703L),
-              "Protobuf only supports C++17 and newer.");
-
 // Check minimum Abseil version.
 #if defined(ABSL_LTS_RELEASE_VERSION) && defined(ABSL_LTS_RELEASE_PATCH_LEVEL)
 #define PROTOBUF_ABSL_MIN(x, y)      \
@@ -130,9 +118,6 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201703L),
 // this file.
 #define PROTOBUF_ABSL_MIN(x, y) 1
 #endif
-
-static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
-              "Protobuf only supports Abseil version 20230125.3 and newer.");
 
 // Future versions of protobuf will include breaking changes to some APIs.
 // This macro can be set to enable these API changes ahead of time, so that

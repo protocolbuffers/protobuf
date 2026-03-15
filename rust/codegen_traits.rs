@@ -7,6 +7,10 @@
 
 //! Traits that are implemented by codegen types.
 
+use crate::AsMut;
+use crate::AsView;
+use crate::IntoMut;
+use crate::IntoView;
 use crate::MutProxied;
 use crate::__internal::SealedInternal;
 use create::Parse;
@@ -18,6 +22,7 @@ use write::{Clear, ClearAndParse, CopyFrom, MergeFrom, TakeFrom};
 /// A trait that all generated owned message types implement.
 pub trait Message: SealedInternal
   + MutProxied
+  + for<'a> MutProxied<View<'a> = Self::MessageView<'a>, Mut<'a> = Self::MessageMut<'a>>
   // Create traits:
   + Parse + Default
   // Read traits:
@@ -31,10 +36,21 @@ pub trait Message: SealedInternal
   // C++ Interop:
   + OwnedMessageInterop
 {
+    /// The same type as `<Self as Proxied>::View`. This is defined as a second redundant associated
+    /// type and should not be necessary, but the having this available is a hacky workaround
+    /// that can appease the trait solver in some cases.
+    type MessageView<'msg>: MessageView<'msg, Message = Self>;
+
+    /// The same type as `<Self as Proxied>::Mut`. This is defined as a second redundant associated
+    /// type and should not be necessary, but the having this available is a hacky workaround
+    /// that can appease the trait solver in some cases.
+    type MessageMut<'msg>: MessageMut<'msg, Message = Self>;
 }
 
 /// A trait that all generated message views implement.
 pub trait MessageView<'msg>: SealedInternal
+    + AsView<Proxied = Self::Message>
+    + IntoView<'msg, Proxied = Self::Message>
     // Read traits:
     + Debug + Serialize + Default
     // Thread safety:
@@ -44,12 +60,16 @@ pub trait MessageView<'msg>: SealedInternal
     // C++ Interop:
     + MessageViewInterop<'msg>
 {
-    #[doc(hidden)]
+    /// The owned message type that this is a view of.
     type Message: Message;
 }
 
 /// A trait that all generated message muts implement.
 pub trait MessageMut<'msg>: SealedInternal
+    + AsView<Proxied = Self::Message>
+    + IntoView<'msg, Proxied = Self::Message>
+    + AsMut<MutProxied = Self::Message>
+    + IntoMut<'msg, MutProxied = Self::Message>
     // Read traits:
     + Debug + Serialize
     // Write traits:
@@ -61,7 +81,7 @@ pub trait MessageMut<'msg>: SealedInternal
     // C++ Interop:
     + MessageMutInterop<'msg>
 {
-    #[doc(hidden)]
+    /// The owned message type that this is a mut of.
     type Message: Message;
 }
 

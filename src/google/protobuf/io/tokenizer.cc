@@ -67,9 +67,9 @@
 
 #include "google/protobuf/io/tokenizer.h"
 
+#include <limits>
 #include <string>
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/charset.h"
@@ -78,6 +78,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/stubs/common.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -962,17 +963,18 @@ bool Tokenizer::ParseInteger(const std::string& text, uint64_t max_value,
 
   const char* ptr = text.c_str();
   int base = 10;
-  uint64_t overflow_if_mul_base = (kuint64max / 10) + 1;
+  uint64_t overflow_if_mul_base =
+      (std::numeric_limits<uint64_t>::max() / 10) + 1;
   if (ptr[0] == '0') {
     if (ptr[1] == 'x' || ptr[1] == 'X') {
       // This is hex.
       base = 16;
-      overflow_if_mul_base = (kuint64max / 16) + 1;
+      overflow_if_mul_base = (std::numeric_limits<uint64_t>::max() / 16) + 1;
       ptr += 2;
     } else {
       // This is octal.
       base = 8;
-      overflow_if_mul_base = (kuint64max / 8) + 1;
+      overflow_if_mul_base = (std::numeric_limits<uint64_t>::max() / 8) + 1;
     }
   }
 

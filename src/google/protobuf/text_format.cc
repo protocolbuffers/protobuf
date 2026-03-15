@@ -149,18 +149,18 @@ PROTOBUF_EXPORT std::string StringifyMessage(const Message& message) {
 }  // namespace internal
 
 std::string Message::DebugString() const {
-  return StringifyMessage(*this, internal::Option::kNone,
-                          FieldReporterLevel::kDebugString);
+  return internal::StringifyMessage(*this, internal::Option::kNone,
+                                    FieldReporterLevel::kDebugString);
 }
 
 std::string Message::ShortDebugString() const {
-  return StringifyMessage(*this, internal::Option::kShort,
-                          FieldReporterLevel::kShortDebugString);
+  return internal::StringifyMessage(*this, internal::Option::kShort,
+                                    FieldReporterLevel::kShortDebugString);
 }
 
 std::string Message::Utf8DebugString() const {
-  return StringifyMessage(*this, internal::Option::kUTF8,
-                          FieldReporterLevel::kUtf8DebugString);
+  return internal::StringifyMessage(*this, internal::Option::kUTF8,
+                                    FieldReporterLevel::kUtf8DebugString);
 }
 
 void Message::PrintDebugString() const { printf("%s", DebugString().c_str()); }

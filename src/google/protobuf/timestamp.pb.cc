@@ -25,6 +25,15 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+namespace {
+PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
+    file_reflection_data[] = {
+        // ::google::protobuf::Timestamp
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2ftimestamp_2eproto, /* tracker*/ nullptr,},
+};
+}  // namespace
+#endif
 namespace google {
 namespace protobuf {
 
@@ -44,13 +53,17 @@ constexpr Timestamp::Timestamp(::_pbi::ConstantInitialized)
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct TimestampGlobalsTypeInternal {
+struct TimestampGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr TimestampGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~TimestampGlobalsTypeInternal() {}
   union {
-    Timestamp _default;
+    alignas(::_pbi::kMaxMessageAlignment) Timestamp _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(TimestampGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 TimestampGlobalsTypeInternal _Timestamp_globals_;
@@ -76,8 +89,9 @@ static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, sizeof(::google::protobuf::Timestamp)},
 };
-static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::google::protobuf::_Timestamp_globals_._default,
+static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
+    file_message_globals[] = {
+        &::google::protobuf::_Timestamp_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -100,7 +114,7 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
     0,
     1,
     schemas,
-    file_default_instances,
+    file_message_globals,
     TableStruct_google_2fprotobuf_2ftimestamp_2eproto::offsets,
     file_level_enum_descriptors_google_2fprotobuf_2ftimestamp_2eproto,
     file_level_service_descriptors_google_2fprotobuf_2ftimestamp_2eproto,
@@ -175,6 +189,24 @@ constexpr auto Timestamp::InternalNewImpl_() {
                                             alignof(Timestamp));
 }
 constexpr auto Timestamp::InternalGenerateClassData_() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_Timestamp_globals_._default,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &Timestamp::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<Timestamp>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &Timestamp::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<Timestamp>(), &Timestamp::ByteSizeLong,
+              &Timestamp::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._cached_size_),
+          false,
+      },
+      &file_reflection_data[0]};
+#else  // !PROTOBUF_MESSAGE_GLOBALS
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &_Timestamp_globals_._default,
@@ -194,6 +226,7 @@ constexpr auto Timestamp::InternalGenerateClassData_() {
       &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto,
       nullptr,  // tracker
   };
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const

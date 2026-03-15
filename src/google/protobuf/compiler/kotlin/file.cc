@@ -113,7 +113,7 @@ void FileGenerator::GenerateSiblings(const std::string& package_dir,
 
     if (options_.annotate_code) {
       std::string annotations_base64;
-      absl::Base64Escape(annotations.SerializeAsString(), &annotations_base64);
+      annotations_base64 = absl::Base64Escape(annotations.SerializeAsString());
       printer.Emit({{"annotations_base64", annotations_base64}},
                    "// google.protobuf.GeneratedCodeInfo: $annotations_base64$\n");
     }

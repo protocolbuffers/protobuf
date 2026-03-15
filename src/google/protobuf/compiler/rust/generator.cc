@@ -138,10 +138,10 @@ void EmitEntryPointRsFile(GeneratorContext* generator_context,
               {"mod_name", RustInternalModuleName(*file)}},
              R"rs(
               #[path="$file_path$"]
-              #[allow(nonstandard_style)]
+              #[allow(nonstandard_style, unused)]
               pub mod internal_do_not_use_$mod_name$;
 
-              #[allow(unused_imports, nonstandard_style)]
+              #[allow(nonstandard_style, unused)]
               pub use internal_do_not_use_$mod_name$::*;
             )rs");
   }
@@ -151,6 +151,7 @@ void EmitEntryPointRsFile(GeneratorContext* generator_context,
   });
   if (ctx.is_upb() && !ctx.opts().strip_nonfunctional_codegen) {
     ctx.Emit(R"rs(
+      #[allow(nonstandard_style, unused)]
       pub mod __unstable {
     )rs");
     for (const FileDescriptor* file : files) {
@@ -216,7 +217,14 @@ bool RustGenerator::Generate(const FileDescriptor* file,
 
   auto outfile = absl::WrapUnique(
       generator_context->Open(GetRsFile(ctx_without_printer, *file)));
-  io::Printer printer(outfile.get());
+  GeneratedCodeInfo annotations;
+  io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
+      &annotations);
+  io::Printer::Options printer_options{};
+  if (opts->annotate_code) {
+    printer_options.annotation_collector = &annotation_collector;
+  }
+  io::Printer printer(outfile.get(), printer_options);
   Context ctx = ctx_without_printer.WithPrinter(&printer);
 
   // Convenience shorthands for common symbols.
@@ -324,6 +332,12 @@ bool RustGenerator::Generate(const FileDescriptor* file,
       )cc");
       thunks_ctx.printer().PrintRaw("\n");
     }
+  }
+
+  if (opts->annotate_code) {
+    ctx.printer().PrintRaw(absl::StrCat(
+        "// google.protobuf.GeneratedCodeInfo ",
+        absl::Base64Escape(annotations.SerializeAsString()), "\n"));
   }
 
   return true;

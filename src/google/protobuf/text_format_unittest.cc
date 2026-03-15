@@ -1829,18 +1829,41 @@ class TextFormatParserTest : public testing::Test {
   }
 
   void ExpectLocation(TextFormat::ParseInfoTree* tree, const Descriptor* d,
-                      const std::string& field_name, int index, int start_line,
-                      int start_column, int end_line, int end_column) {
+                      absl::string_view input, const std::string& field_name,
+                      int index, absl::string_view expected_substring) {
     TextFormat::ParseLocationRange range =
         tree->GetLocationRange(d->FindFieldByName(field_name), index);
-    EXPECT_EQ(start_line, range.start.line);
-    EXPECT_EQ(start_column, range.start.column);
-    EXPECT_EQ(end_line, range.end.line);
-    EXPECT_EQ(end_column, range.end.column);
-    TextFormat::ParseLocation start_location =
-        tree->GetLocation(d->FindFieldByName(field_name), index);
-    EXPECT_EQ(start_line, start_location.line);
-    EXPECT_EQ(start_column, start_location.column);
+
+    if (expected_substring.empty()) {
+      EXPECT_EQ(-1, range.start.line) << "Field: " << field_name;
+      EXPECT_EQ(-1, range.start.column) << "Field: " << field_name;
+      EXPECT_EQ(-1, range.end.line) << "Field: " << field_name;
+      EXPECT_EQ(-1, range.end.column) << "Field: " << field_name;
+      return;
+    }
+
+    auto get_offset = [&](int line, int col) -> size_t {
+      if (line == -1) return std::string::npos;
+      size_t offset = 0;
+      for (int i = 0; i < line; ++i) {
+        offset = input.find('\n', offset);
+        if (offset == std::string::npos) return std::string::npos;
+        offset++;
+      }
+      return offset + col;
+    };
+
+    size_t start_offset = get_offset(range.start.line, range.start.column);
+    size_t end_offset = get_offset(range.end.line, range.end.column);
+
+    ASSERT_NE(start_offset, std::string::npos) << "Field: " << field_name;
+    ASSERT_NE(end_offset, std::string::npos) << "Field: " << field_name;
+    ASSERT_LE(start_offset, end_offset) << "Field: " << field_name;
+    ASSERT_LE(end_offset, input.size()) << "Field: " << field_name;
+
+    absl::string_view actual_substring =
+        input.substr(start_offset, end_offset - start_offset);
+    EXPECT_EQ(expected_substring, actual_substring) << "Field: " << field_name;
   }
 
   // An error collector which simply concatenates all its errors into a big
@@ -1892,22 +1915,36 @@ TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
   ExpectSuccessAndTree(stringData, message.get(), &tree);
 
   // Verify that the tree has the correct positions.
-  ExpectLocation(&tree, d, "optional_int32", -1, 0, 0, 0, 17);
-  ExpectLocation(&tree, d, "optional_int64", -1, 1, 0, 1, 17);
-  ExpectLocation(&tree, d, "optional_double", -1, 2, 2, 2, 22);
+  ExpectLocation(&tree, d, stringData, "optional_int32", -1,
+                 "optional_int32: 1");
+  ExpectLocation(&tree, d, stringData, "optional_int64", -1,
+                 "optional_int64: 2");
+  ExpectLocation(&tree, d, stringData, "optional_double", -1,
+                 "optional_double: 2.4");
 
-  ExpectLocation(&tree, d, "repeated_int32", 0, 3, 0, 3, 17);
-  ExpectLocation(&tree, d, "repeated_int32", 1, 4, 0, 4, 18);
+  ExpectLocation(&tree, d, stringData, "repeated_int32", 0,
+                 "repeated_int32: 5");
+  ExpectLocation(&tree, d, stringData, "repeated_int32", 1,
+                 "repeated_int32: 10");
 
-  ExpectLocation(&tree, d, "optional_nested_message", -1, 5, 0, 7, 1);
-  ExpectLocation(&tree, d, "repeated_nested_message", 0, 8, 0, 10, 1);
-  ExpectLocation(&tree, d, "repeated_nested_message", 1, 11, 0, 13, 1);
+  ExpectLocation(&tree, d, stringData, "optional_nested_message", -1,
+                 "optional_nested_message <\n"
+                 "  bb: 78\n"
+                 ">");
+  ExpectLocation(&tree, d, stringData, "repeated_nested_message", 0,
+                 "repeated_nested_message <\n"
+                 "  bb: 79\n"
+                 ">");
+  ExpectLocation(&tree, d, stringData, "repeated_nested_message", 1,
+                 "repeated_nested_message <\n"
+                 "  bb: 80\n"
+                 ">");
 
   // Check for fields not set. For an invalid field, the start and end locations
   // returned should be -1, -1.
-  ExpectLocation(&tree, d, "repeated_int64", 0, -1, -1, -1, -1);
-  ExpectLocation(&tree, d, "repeated_int32", 6, -1, -1, -1, -1);
-  ExpectLocation(&tree, d, "some_unknown_field", -1, -1, -1, -1, -1);
+  ExpectLocation(&tree, d, stringData, "repeated_int64", 0, "");
+  ExpectLocation(&tree, d, stringData, "repeated_int32", 6, "");
+  ExpectLocation(&tree, d, stringData, "some_unknown_field", -1, "");
 
   // Verify inside the nested message.
   const FieldDescriptor* nested_field =
@@ -1915,24 +1952,54 @@ TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
 
   TextFormat::ParseInfoTree* nested_tree =
       tree.GetTreeForNested(nested_field, -1);
-  ExpectLocation(nested_tree, nested_field->message_type(), "bb", -1, 6, 2, 6,
-                 8);
+  ExpectLocation(nested_tree, nested_field->message_type(), stringData, "bb",
+                 -1, "bb: 78");
 
   // Verify inside another nested message.
   nested_field = d->FindFieldByName("repeated_nested_message");
   nested_tree = tree.GetTreeForNested(nested_field, 0);
-  ExpectLocation(nested_tree, nested_field->message_type(), "bb", -1, 9, 2, 9,
-                 8);
+  ExpectLocation(nested_tree, nested_field->message_type(), stringData, "bb",
+                 -1, "bb: 79");
 
   nested_tree = tree.GetTreeForNested(nested_field, 1);
-  ExpectLocation(nested_tree, nested_field->message_type(), "bb", -1, 12, 2, 12,
-                 8);
+  ExpectLocation(nested_tree, nested_field->message_type(), stringData, "bb",
+                 -1, "bb: 80");
 
   // Verify a nullptr tree for an unknown nested field.
   TextFormat::ParseInfoTree* unknown_nested_tree =
       tree.GetTreeForNested(nested_field, 2);
 
   EXPECT_EQ(nullptr, unknown_nested_tree);
+}
+
+TEST_F(TextFormatParserTest, ParseInfoTreeBuildingMaps) {
+  auto message = std::make_unique<unittest::TestHugeFieldNumbers>();
+  const Descriptor* d = message->GetDescriptor();
+
+  std::string stringData =
+      "string_string_map {\n"
+      "  key: \"key1\"\n"
+      "  value: \"value1\"\n"
+      "}\n"
+      "string_string_map {\n"
+      "  key: \"key2\"\n"
+      "  value: \"value2\"\n"
+      "}";
+
+  TextFormat::ParseInfoTree tree;
+  ExpectSuccessAndTree(stringData, message.get(), &tree);
+
+  // Verify that the tree has the correct positions for the map entries.
+  ExpectLocation(&tree, d, stringData, "string_string_map", 0,
+                 "string_string_map {\n"
+                 "  key: \"key1\"\n"
+                 "  value: \"value1\"\n"
+                 "}");
+  ExpectLocation(&tree, d, stringData, "string_string_map", 1,
+                 "string_string_map {\n"
+                 "  key: \"key2\"\n"
+                 "  value: \"value2\"\n"
+                 "}");
 }
 
 TEST_F(TextFormatParserTest, ParseFieldValueFromString) {

@@ -19,6 +19,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <functional>
 #include <iterator>
 #include <limits>
 #include <list>
@@ -54,6 +55,7 @@ namespace {
 using ::proto2_unittest::TestAllTypes;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
+using ::testing::ElementsAreArray;
 using ::testing::Ge;
 using ::testing::Le;
 
@@ -427,20 +429,16 @@ TEST(RepeatedField, ReserveLessThanExisting) {
   EXPECT_LE(20, ReservedSpace(&field));
 }
 
-TEST(RepeatedField, Resize) {
+TEST(RepeatedField, resize) {
   RepeatedField<int> field;
-  field.Resize(2, 1);
-  EXPECT_EQ(2, field.size());
-  field.Resize(5, 2);
-  EXPECT_EQ(5, field.size());
-  field.Resize(4, 3);
-  ASSERT_EQ(4, field.size());
-  EXPECT_EQ(1, field.Get(0));
-  EXPECT_EQ(1, field.Get(1));
-  EXPECT_EQ(2, field.Get(2));
-  EXPECT_EQ(2, field.Get(3));
-  field.Resize(0, 4);
-  EXPECT_TRUE(field.empty());
+  field.resize(2);
+  EXPECT_THAT(field, ElementsAre(0, 0));
+  field.resize(5, 2);
+  EXPECT_THAT(field, ElementsAre(0, 0, 2, 2, 2));
+  field.resize(4, 3);
+  EXPECT_THAT(field, ElementsAre(0, 0, 2, 2));
+  field.resize(0, 4);
+  EXPECT_THAT(field, ElementsAre());
 }
 
 TEST(RepeatedField, ReserveLowerClamp) {
@@ -1009,7 +1007,7 @@ TEST(RepeatedCordField, AddClear) {
 
 TEST(RepeatedCordField, Resize) {
   RepeatedField<absl::Cord> field;
-  field.Resize(10, absl::Cord("foo"));
+  field.resize(10, absl::Cord("foo"));
 }
 
 TEST(RepeatedField, Cords) {
@@ -1073,17 +1071,17 @@ TEST(RepeatedField, TruncateCords) {
 
 TEST(RepeatedField, ResizeCords) {
   RepeatedField<absl::Cord> field;
-  field.Resize(2, absl::Cord("foo"));
+  field.resize(2, absl::Cord("foo"));
   EXPECT_EQ(2, field.size());
-  field.Resize(5, absl::Cord("bar"));
+  field.resize(5, absl::Cord("bar"));
   EXPECT_EQ(5, field.size());
-  field.Resize(4, absl::Cord("baz"));
+  field.resize(4, absl::Cord("baz"));
   ASSERT_EQ(4, field.size());
   EXPECT_EQ("foo", std::string(field.Get(0)));
   EXPECT_EQ("foo", std::string(field.Get(1)));
   EXPECT_EQ("bar", std::string(field.Get(2)));
   EXPECT_EQ("bar", std::string(field.Get(3)));
-  field.Resize(0, absl::Cord("moo"));
+  field.resize(0, absl::Cord("moo"));
   EXPECT_TRUE(field.empty());
 }
 
@@ -1129,7 +1127,7 @@ TEST(RepeatedField, TestSAddFromSelf) {
 // We have, or at least had bad callers that never triggered our DCHECKS
 // Here we check we DO fail on bad Truncate calls under debug, and do nothing
 // under opt compiles.
-TEST(RepeatedField, HardenAgainstBadTruncate) {
+TEST(RepeatedFieldTest, HardenAgainstBadTruncate) {
   RepeatedField<int> field;
   for (int size = 0; size < 10; ++size) {
     field.Truncate(size);
@@ -1143,6 +1141,89 @@ TEST(RepeatedField, HardenAgainstBadTruncate) {
     EXPECT_EQ(field.size(), size);
     field.Add(1);
   }
+}
+
+TEST(RepeatedFieldTest, Erase) {
+  RepeatedField<int32_t> elements;
+  while (elements.size() < 15) {
+    elements.Add(elements.size() % 5);
+  }
+  EXPECT_EQ(3, google::protobuf::erase(elements, 3));
+  EXPECT_THAT(elements, ElementsAre(0, 1, 2, 4, 0, 1, 2, 4, 0, 1, 2, 4));
+}
+
+TEST(RepeatedFieldTest, EraseIf) {
+  RepeatedField<int32_t> elements;
+  while (elements.size() < 15) {
+    elements.Add(elements.size());
+  }
+  EXPECT_EQ(5, google::protobuf::erase_if(elements, [](auto i) { return i % 3 == 0; }));
+  EXPECT_THAT(elements, ElementsAre(1, 2, 4, 5, 7, 8, 10, 11, 13, 14));
+}
+
+TEST(RepeatedFieldTest, SortTest) {
+  RepeatedField<int64_t> rep;
+
+  // Store values in decreasing order.
+  for (int i = 0; i < 20; i++) {
+    rep.Add(20 - (i / 2));
+  }
+
+  EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end(), std::greater<>{}));
+
+  // Sort by numeric values - this should reverse the order of creation.
+  {
+    auto cmp = std::less<>{};
+    ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end(), cmp));
+    google::protobuf::sort(rep.begin(), rep.end(), cmp);
+    EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end(), cmp));
+  }
+
+  // Reverse again.
+  {
+    auto cmp = std::greater<>{};
+    ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end(), cmp));
+    google::protobuf::c_sort(rep, cmp);
+    EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end(), cmp));
+  }
+
+  // And again - without a predicate this time.
+  ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end()));
+  google::protobuf::c_sort(rep);
+  EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end()));
+}
+
+TEST(RepeatedFieldTest, SortSubrangeTest) {
+  RepeatedField<int> rep;
+  for (int v : {1, 4, 9, 0, 2, 3, 5}) rep.Add(v);
+  EXPECT_THAT(rep, ElementsAre(1, 4, 9, 0, 2, 3, 5));
+
+  google::protobuf::sort(rep.begin() + 1, rep.begin() + 5);
+  EXPECT_THAT(rep, ElementsAre(1, 0, 2, 4, 9, 3, 5));
+}
+
+TEST(RepeatdFieldTest, StableSort) {
+  RepeatedField<int> rep;
+  while (rep.size() < 100) rep.Add(rep.size());
+
+  const auto less_10 = [](int a, int b) { return a % 10 < b % 10; };
+
+  ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end(), less_10));
+  google::protobuf::stable_sort(rep.begin(), rep.end(), less_10);
+  EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end(), less_10));
+
+  // Make sure that the relative orders where kept.
+  std::vector<int> expected;
+  for (int i = 0; i < 10; ++i) {
+    for (int j = 0; j < 10; ++j) {
+      expected.push_back(10 * j + i);
+    }
+  }
+  EXPECT_THAT(rep, ElementsAreArray(expected));
+
+  ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end()));
+  google::protobuf::c_stable_sort(rep);
+  EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end()));
 }
 
 #if defined(GTEST_HAS_DEATH_TEST) && (defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
@@ -1356,19 +1437,20 @@ TEST(RepeatedField, CheckedGetOrAbortTest) {
   RepeatedField<int> field;
 
   // Empty container tests.
-  EXPECT_DEATH(CheckedMutableOrAbort(&field, -1),
+  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, -1),
                "Index \\(-1\\) out of bounds of container with size \\(0\\)");
-  EXPECT_DEATH(CheckedMutableOrAbort(&field, field.size()),
+  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, field.size()),
                "Index \\(0\\) out of bounds of container with size \\(0\\)");
 
   // Non-empty container tests
   field.Add(5);
   field.Add(4);
-  EXPECT_DEATH(CheckedMutableOrAbort(&field, 2),
+  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, 2),
                "Index \\(2\\) out of bounds of container with size \\(2\\)");
-  EXPECT_DEATH(CheckedMutableOrAbort(&field, -1),
+  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, -1),
                "Index \\(-1\\) out of bounds of container with size \\(2\\)");
 }
+
 
 }  // namespace
 

@@ -85,7 +85,7 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
 
  private:
   static const TcParseTable<0> table_;
-  static const ClassDataLite<1> class_data_;
+  static const ClassDataLite class_data_;
 
   static void MergeImpl(MessageLite&, const MessageLite&);
 
@@ -111,7 +111,7 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
 };
 
 struct ImplicitWeakMessageDefaultType;
-extern ImplicitWeakMessageDefaultType implicit_weak_message_default_instance;
+extern ImplicitWeakMessageDefaultType implicit_weak_message_globals;
 
 // A type handler for use with implicit weak repeated message fields.
 template <typename ImplicitWeakType>

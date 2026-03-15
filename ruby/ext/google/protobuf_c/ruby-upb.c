@@ -7340,6 +7340,7 @@ UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(upb_Message* msg,
     if (!view) return false;
     view->data = data;
   } else {
+    if (SIZE_MAX - sizeof(upb_StringView) < len) return false;
     view = upb_Arena_Malloc(arena, sizeof(upb_StringView) + len);
     if (!view) return false;
     char* copy = UPB_PTR_AT(view, sizeof(upb_StringView), char);
@@ -8496,8 +8497,15 @@ bool UPB_PRIVATE(_upb_Message_ReserveSlot)(struct upb_Message* msg,
     in->capacity = capacity;
     UPB_PRIVATE(_upb_Message_SetInternal)(msg, in);
   } else if (in->capacity == in->size) {
+    if (in->size == UINT32_MAX) return false;
     // Internal data is too small, reallocate.
-    uint32_t new_capacity = upb_RoundUpToPowerOfTwo(in->size + 1);
+    size_t needed_pow2 = upb_RoundUpToPowerOfTwo(in->size + 1);
+    if (needed_pow2 > UINT32_MAX) return false;
+    uint32_t new_capacity = needed_pow2;
+    if (UPB_SIZEOF_FLEX_WOULD_OVERFLOW(upb_Message_Internal, aux_data,
+                                       new_capacity)) {
+      return false;
+    }
     in = upb_Arena_Realloc(a, in, _upb_Message_SizeOfInternal(in->capacity),
                            _upb_Message_SizeOfInternal(new_capacity));
     if (!in) return false;
@@ -10440,6 +10448,7 @@ struct upb_DefPool {
   size_t scratch_size;
   size_t bytes_loaded;
   bool disable_closed_enum_checking;
+  bool disable_implicit_field_presence;
 };
 
 void upb_DefPool_Free(upb_DefPool* s) {
@@ -10458,6 +10467,7 @@ upb_DefPool* upb_DefPool_New(void) {
   s->arena = upb_Arena_New();
   s->bytes_loaded = 0;
   s->disable_closed_enum_checking = false;
+  s->disable_implicit_field_presence = false;
 
   s->scratch_size = 240;
   s->scratch_data = upb_gmalloc(s->scratch_size);
@@ -10497,6 +10507,15 @@ void upb_DefPool_DisableClosedEnumChecking(upb_DefPool* s) {
 
 bool upb_DefPool_ClosedEnumCheckingDisabled(const upb_DefPool* s) {
   return s->disable_closed_enum_checking;
+}
+
+void upb_DefPool_DisableImplicitFieldPresence(upb_DefPool* s) {
+  UPB_ASSERT(upb_strtable_count(&s->files) == 0);
+  s->disable_implicit_field_presence = true;
+}
+
+bool upb_DefPool_ImplicitFieldPresenceDisabled(const upb_DefPool* s) {
+  return s->disable_implicit_field_presence;
 }
 
 const google_protobuf_FeatureSetDefaults* upb_DefPool_FeatureSetDefaults(
@@ -10608,7 +10627,7 @@ void _upb_DefPool_SetPlatform(upb_DefPool* s, upb_MiniTablePlatform platform) {
 
 const upb_MessageDef* upb_DefPool_FindMessageByName(const upb_DefPool* s,
                                                     const char* sym) {
-  return _upb_DefPool_Unpack(s, sym, strlen(sym), UPB_DEFTYPE_MSG);
+  return upb_DefPool_FindMessageByNameWithSize(s, sym, strlen(sym));
 }
 
 const upb_MessageDef* upb_DefPool_FindMessageByNameWithSize(
@@ -10618,12 +10637,23 @@ const upb_MessageDef* upb_DefPool_FindMessageByNameWithSize(
 
 const upb_EnumDef* upb_DefPool_FindEnumByName(const upb_DefPool* s,
                                               const char* sym) {
-  return _upb_DefPool_Unpack(s, sym, strlen(sym), UPB_DEFTYPE_ENUM);
+  return upb_DefPool_FindEnumByNameWithSize(s, sym, strlen(sym));
 }
 
-const upb_EnumValueDef* upb_DefPool_FindEnumByNameval(const upb_DefPool* s,
-                                                      const char* sym) {
-  return _upb_DefPool_Unpack(s, sym, strlen(sym), UPB_DEFTYPE_ENUMVAL);
+const upb_EnumDef* upb_DefPool_FindEnumByNameWithSize(const upb_DefPool* s,
+                                                      const char* sym,
+                                                      size_t len) {
+  return _upb_DefPool_Unpack(s, sym, len, UPB_DEFTYPE_ENUM);
+}
+
+const upb_EnumValueDef* upb_DefPool_FindEnumValueByName(const upb_DefPool* s,
+                                                        const char* sym) {
+  return upb_DefPool_FindEnumValueByNameWithSize(s, sym, strlen(sym));
+}
+
+const upb_EnumValueDef* upb_DefPool_FindEnumValueByNameWithSize(
+    const upb_DefPool* s, const char* sym, size_t len) {
+  return _upb_DefPool_Unpack(s, sym, len, UPB_DEFTYPE_ENUMVAL);
 }
 
 const upb_FileDef* upb_DefPool_FindFileByName(const upb_DefPool* s,
@@ -12240,7 +12270,7 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
 
   f->has_presence =
       (!upb_FieldDef_IsRepeated(f)) &&
-      (f->is_extension ||
+      (f->is_extension || _upb_FileDef_ImplicitFieldPresenceDisabled(f->file) ||
        (f->type_ == kUpb_FieldType_Message ||
         f->type_ == kUpb_FieldType_Group || upb_FieldDef_ContainingOneof(f) ||
         google_protobuf_FeatureSet_field_presence(f->resolved_features) !=
@@ -12642,6 +12672,10 @@ const int32_t* _upb_FileDef_WeakDependencyIndexes(const upb_FileDef* f) {
 
 bool _upb_FileDef_ClosedEnumCheckingDisabled(const upb_FileDef* f) {
   return upb_DefPool_ClosedEnumCheckingDisabled(f->symtab);
+}
+
+bool _upb_FileDef_ImplicitFieldPresenceDisabled(const upb_FileDef* f) {
+  return upb_DefPool_ImplicitFieldPresenceDisabled(f->symtab);
 }
 
 int upb_FileDef_TopLevelEnumCount(const upb_FileDef* f) {
@@ -14532,6 +14566,7 @@ static void create_method(upb_DefBuilder* ctx,
   m->output_type = _upb_DefBuilder_Resolve(
       ctx, m->full_name, m->full_name,
       google_protobuf_MethodDescriptorProto_output_type(method_proto), UPB_DEFTYPE_MSG);
+  _upb_ServiceDef_InsertMethod(ctx, s, m);
 }
 
 // Allocate and initialize an array of |n| method defs belonging to |s|.
@@ -14763,6 +14798,7 @@ struct upb_ServiceDef {
   upb_MethodDef* methods;
   int method_count;
   int index;
+  upb_strtable ntom;
 };
 
 upb_ServiceDef* _upb_ServiceDef_At(const upb_ServiceDef* s, int index) {
@@ -14807,13 +14843,18 @@ const upb_MethodDef* upb_ServiceDef_Method(const upb_ServiceDef* s, int i) {
 
 const upb_MethodDef* upb_ServiceDef_FindMethodByName(const upb_ServiceDef* s,
                                                      const char* name) {
-  for (int i = 0; i < s->method_count; i++) {
-    const upb_MethodDef* m = _upb_MethodDef_At(s->methods, i);
-    if (strcmp(name, upb_MethodDef_Name(m)) == 0) {
-      return m;
-    }
+  return upb_ServiceDef_FindMethodByNameWithSize(s, name, strlen(name));
+}
+
+const upb_MethodDef* upb_ServiceDef_FindMethodByNameWithSize(
+    const upb_ServiceDef* s, const char* name, size_t len) {
+  upb_value val;
+
+  if (!upb_strtable_lookup2(&s->ntom, name, len, &val)) {
+    return NULL;
   }
-  return NULL;
+
+  return _upb_DefType_Unpack(val, UPB_DEFTYPE_METHOD);
 }
 
 static void create_service(upb_DefBuilder* ctx,
@@ -14838,6 +14879,8 @@ static void create_service(upb_DefBuilder* ctx,
   const google_protobuf_MethodDescriptorProto* const* methods =
       google_protobuf_ServiceDescriptorProto_method(svc_proto, &n);
   s->method_count = n;
+  bool ok = upb_strtable_init(&s->ntom, n, ctx->arena);
+  if (!ok) _upb_DefBuilder_OomErr(ctx);
   s->methods = _upb_MethodDefs_New(ctx, n, methods, s->resolved_features, s);
 }
 
@@ -14853,6 +14896,20 @@ upb_ServiceDef* _upb_ServiceDefs_New(
     s[i].index = i;
   }
   return s;
+}
+
+void _upb_ServiceDef_InsertMethod(upb_DefBuilder* ctx, upb_ServiceDef* s,
+                                  const upb_MethodDef* m) {
+  const char* shortname = upb_MethodDef_Name(m);
+  const size_t shortnamelen = strlen(shortname);
+  upb_value existing_v;
+  if (upb_strtable_lookup(&s->ntom, shortname, &existing_v)) {
+    _upb_DefBuilder_Errf(ctx, "duplicate method name (%s)", shortname);
+  }
+  const upb_value method_v = _upb_DefType_Pack(m, UPB_DEFTYPE_METHOD);
+  bool ok = upb_strtable_insert(&s->ntom, shortname, shortnamelen, method_v,
+                                ctx->arena);
+  if (!ok) _upb_DefBuilder_OomErr(ctx);
 }
 
 
@@ -16168,9 +16225,13 @@ static void upb_Decoder_AddKnownMessageSetItem(
   upb_Message* submsg = _upb_Decoder_NewSubMessage2(
       d, ext->ext->UPB_PRIVATE(sub).UPB_PRIVATE(submsg),
       &ext->ext->UPB_PRIVATE(field), submsgp);
+  // upb_Decode_LimitDepth() takes uint32_t, d->depth - 1 can not be negative.
+  if (d->depth <= 1) {
+    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_MaxDepthExceeded);
+  }
   upb_DecodeStatus status = upb_Decode(
       data, size, submsg, upb_MiniTableExtension_GetSubMessage(item_mt),
-      d->extreg, d->options, &d->arena);
+      d->extreg, upb_Decode_LimitDepth(d->options, d->depth - 1), &d->arena);
   if (status != kUpb_DecodeStatus_Ok) {
     upb_ErrorHandler_ThrowError(&d->err, status);
   }
@@ -16911,14 +16972,6 @@ typedef struct {
   _upb_mapsorter sorter;
 } upb_encstate;
 
-static size_t upb_roundup_pow2(size_t bytes) {
-  size_t ret = 128;
-  while (ret < bytes) {
-    ret *= 2;
-  }
-  return ret;
-}
-
 UPB_NORETURN static void encode_err(upb_encstate* e, upb_EncodeStatus s) {
   UPB_ASSERT(s != kUpb_EncodeStatus_Ok);
   e->status = s;
@@ -16934,7 +16987,9 @@ UPB_NOINLINE static char* encode_growbuffer(char* ptr, upb_encstate* e,
                                             size_t bytes) {
   size_t old_size = e->limit - e->buf;
   size_t needed_size = bytes + (e->limit - ptr);
-  size_t new_size = upb_roundup_pow2(needed_size);
+  if (needed_size < bytes) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
+  size_t new_size = upb_RoundUpToPowerOfTwo(UPB_MAX(128, needed_size));
+  if (new_size == old_size) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
   void* old_buf = e->buf == &initial_buf_sentinel ? NULL : (void*)e->buf;
   char* new_buf = upb_Arena_Realloc(e->arena, old_buf, old_size, new_size);
 
