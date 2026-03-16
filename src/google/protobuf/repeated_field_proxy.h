@@ -520,6 +520,13 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
     field() = std::move(other.field());
   }
 
+  // A hint to the container to expect to grow/shrink to `new_size` elements.
+  // This may allow the container to make optimizations to avoid reallocations,
+  // but may also be ignored.
+  void reserve(size_type new_size) const {
+    field().ReserveWithArena(arena(), new_size);
+  }
+
  private:
   friend RepeatedFieldProxy<const ElementType>;
 

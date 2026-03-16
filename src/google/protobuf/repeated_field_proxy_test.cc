@@ -1,5 +1,6 @@
 #include "google/protobuf/repeated_field_proxy.h"
 
+#include <cinttypes>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -1544,6 +1545,92 @@ TEST_P(RepeatedFieldProxyTest, MoveAssignMessage) {
                                   EqualsProto(R"pb(value: 3)pb")));
   EXPECT_THAT(*field1, ElementsAre(EqualsProto(R"pb(value: 2)pb"),
                                    EqualsProto(R"pb(value: 3)pb")));
+}
+
+TYPED_TEST(RepeatedNumericFieldProxyTest, Reserve) {
+  auto field = this->MakeRepeatedFieldContainer();
+
+  auto proxy = field.MakeProxy();
+  proxy.reserve(10);
+  const void* data_before = field->data();
+
+  uint64_t space_used_before = 0;
+  if (this->arena() != nullptr) {
+    space_used_before = this->arena()->SpaceUsed();
+  }
+
+  for (int i = 0; i < 10; ++i) {
+    proxy.emplace_back(i);
+  }
+
+  // Verify that reserve() prevented resizing.
+  EXPECT_EQ(field->data(), data_before);
+
+  EXPECT_THAT(proxy, ElementsAre(0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
+  EXPECT_THAT(*field, ElementsAre(0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
+
+  if (this->arena() != nullptr) {
+    // In the arena case, we verify that no additional memory was allocated
+    // after the initial reserve().
+    EXPECT_EQ(space_used_before, this->arena()->SpaceUsed());
+  }
+}
+
+TYPED_TEST(RepeatedStringFieldProxyTest, Reserve) {
+  auto field = this->MakeRepeatedFieldContainer();
+
+  auto proxy = field.MakeProxy();
+  proxy.reserve(10);
+  const void* data_before = field->data();
+
+  for (int i = 0; i < 10; ++i) {
+    proxy.emplace_back(absl::StrFormat("%" PRId32, i));
+  }
+
+  // Verify that reserve() prevented resizing.
+  EXPECT_EQ(field->data(), data_before);
+
+  EXPECT_THAT(proxy, ElementsAre(StringEq("0"), StringEq("1"), StringEq("2"),
+                                 StringEq("3"), StringEq("4"), StringEq("5"),
+                                 StringEq("6"), StringEq("7"), StringEq("8"),
+                                 StringEq("9")));
+  EXPECT_THAT(*field, ElementsAre(StringEq("0"), StringEq("1"), StringEq("2"),
+                                  StringEq("3"), StringEq("4"), StringEq("5"),
+                                  StringEq("6"), StringEq("7"), StringEq("8"),
+                                  StringEq("9")));
+}
+
+TEST_P(RepeatedFieldProxyTest, ReserveMessage) {
+  auto field =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+
+  auto proxy = field.MakeProxy();
+  proxy.reserve(10);
+  const void* data_before = field->data();
+
+  for (int i = 0; i < 10; ++i) {
+    proxy.emplace_back().set_value(i);
+  }
+
+  // Verify that reserve() prevented resizing.
+  EXPECT_EQ(field->data(), data_before);
+
+  EXPECT_THAT(
+      proxy,
+      ElementsAre(
+          EqualsProto(R"pb(value: 0)pb"), EqualsProto(R"pb(value: 1)pb"),
+          EqualsProto(R"pb(value: 2)pb"), EqualsProto(R"pb(value: 3)pb"),
+          EqualsProto(R"pb(value: 4)pb"), EqualsProto(R"pb(value: 5)pb"),
+          EqualsProto(R"pb(value: 6)pb"), EqualsProto(R"pb(value: 7)pb"),
+          EqualsProto(R"pb(value: 8)pb"), EqualsProto(R"pb(value: 9)pb")));
+  EXPECT_THAT(
+      *field,
+      ElementsAre(
+          EqualsProto(R"pb(value: 0)pb"), EqualsProto(R"pb(value: 1)pb"),
+          EqualsProto(R"pb(value: 2)pb"), EqualsProto(R"pb(value: 3)pb"),
+          EqualsProto(R"pb(value: 4)pb"), EqualsProto(R"pb(value: 5)pb"),
+          EqualsProto(R"pb(value: 6)pb"), EqualsProto(R"pb(value: 7)pb"),
+          EqualsProto(R"pb(value: 8)pb"), EqualsProto(R"pb(value: 9)pb")));
 }
 
 TYPED_TEST(RepeatedNumericFieldProxyTest, Rebind) {
