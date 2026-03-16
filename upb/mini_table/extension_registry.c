@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "upb/base/internal/log2.h"
 #include "upb/hash/common.h"
 #include "upb/hash/str_table.h"
 #include "upb/mem/arena.h"
@@ -70,6 +71,8 @@ upb_ExtensionRegistryStatus upb_ExtensionRegistry_AddArray(
   const upb_MiniTableExtension** start = e;
   const upb_MiniTableExtension** end = UPB_PTRADD(e, count);
   upb_ExtensionRegistryStatus status = kUpb_ExtensionRegistryStatus_Ok;
+  status = upb_ExtensionRegistry_Reserve(r, count);
+  if (status != kUpb_ExtensionRegistryStatus_Ok) return status;
   for (; e < end; e++) {
     status = upb_ExtensionRegistry_Add(r, *e);
     if (status != kUpb_ExtensionRegistryStatus_Ok) goto failure;
@@ -87,6 +90,23 @@ failure:
   }
   UPB_ASSERT(status != kUpb_ExtensionRegistryStatus_Ok);
   return status;
+}
+
+/** Calculates the number of entries required to hold an expected number of
+ * values, within the table's load factor. */
+static size_t _upb_extreg_entries_needed_for(size_t expected_size) {
+  size_t need_entries = expected_size + 1 + expected_size / 7;
+  UPB_ASSERT(need_entries - (need_entries >> 3) >= expected_size);
+  return need_entries;
+}
+
+upb_ExtensionRegistryStatus upb_ExtensionRegistry_Reserve(
+    upb_ExtensionRegistry* r, size_t count) {
+  int size_lg2 = upb_Log2Ceiling(_upb_extreg_entries_needed_for(count));
+  if (!upb_strtable_resize(&r->exts, size_lg2, r->arena)) {
+    return kUpb_ExtensionRegistryStatus_OutOfMemory;
+  }
+  return kUpb_ExtensionRegistryStatus_Ok;
 }
 
 const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(

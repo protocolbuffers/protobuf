@@ -7,6 +7,7 @@
 
 #include "upb/mini_table/generated_registry.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "upb/base/shutdown.h"
@@ -33,6 +34,21 @@ typedef struct upb_GeneratedRegistry {
 static upb_GeneratedRegistry* _upb_generated_registry(void) {
   static upb_GeneratedRegistry r = {};
   return &r;
+}
+
+static size_t _upb_GeneratedRegistry_EstimateLinkedExtensions() {
+  size_t count = 0;
+  const UPB_PRIVATE(upb_GeneratedExtensionListEntry)* entry =
+      UPB_PRIVATE(upb_generated_extension_list);
+  while (entry != NULL) {
+    // Comparing pointers to different objects is undefined behavior, so we
+    // convert them to uintptr_t and compare their values.
+    uintptr_t begin = (uintptr_t)entry->start;
+    uintptr_t end = (uintptr_t)entry->stop;
+    count += (end - begin) / sizeof(upb_MiniTableExtension);
+    entry = entry->next;
+  }
+  return count;
 }
 
 static bool _upb_GeneratedRegistry_AddAllLinkedExtensions(
@@ -82,6 +98,12 @@ static upb_GeneratedRegistryRef* _upb_GeneratedRegistry_New(void) {
   upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena);
   if (extreg == NULL) goto err;
   ref->UPB_PRIVATE(registry) = extreg;
+
+  size_t count = _upb_GeneratedRegistry_EstimateLinkedExtensions();
+  if (upb_ExtensionRegistry_Reserve(extreg, count) !=
+      kUpb_ExtensionRegistryStatus_Ok) {
+    goto err;
+  }
 
   if (!_upb_GeneratedRegistry_AddAllLinkedExtensions(extreg)) goto err;
 

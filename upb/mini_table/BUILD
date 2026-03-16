@@ -46,6 +46,7 @@ cc_library(
     deps = [
         ":internal",
         "//upb/base",
+        "//upb/base:internal",
         "//upb/hash",
         "//upb/mem",
         "//upb/port",
