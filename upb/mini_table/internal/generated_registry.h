@@ -26,6 +26,7 @@ typedef struct UPB_PRIVATE(upb_GeneratedExtensionListEntry) {
 struct upb_GeneratedRegistryRef {
   struct upb_Arena* UPB_PRIVATE(arena);
   const struct upb_ExtensionRegistry* UPB_PRIVATE(registry);
+  UPB_XSAN_MEMBER
 };
 
 #ifdef __cplusplus
