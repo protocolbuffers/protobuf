@@ -1454,6 +1454,98 @@ TEST_P(RepeatedFieldProxyTest, AssignMessageIteratorRange) {
   EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(value: 3)pb")));
 }
 
+TYPED_TEST(RepeatedNumericFieldProxyTest, MoveAssign) {
+  auto field1 = this->MakeRepeatedFieldContainer();
+  field1->Add(1);
+
+  auto field2 = this->MakeRepeatedFieldContainer();
+  field2->Add(2);
+  field2->Add(3);
+  field2->Add(4);
+
+  const void* prev_data = field2->data();
+
+  auto proxy1 = field1.MakeProxy();
+  auto proxy2 = field2.MakeProxy();
+
+  if (this->UseArena()) {
+    size_t arena_memory = this->arena()->SpaceUsed();
+    proxy1.move_assign(proxy2);
+    // Verify that the move assignment did not allocate any additional memory.
+    EXPECT_EQ(this->arena()->SpaceUsed(), arena_memory);
+  } else {
+    proxy1.move_assign(proxy2);
+  }
+
+  // Verify that the move assignment did not allocate any additional memory.
+  EXPECT_EQ(field1->data(), prev_data);
+
+  EXPECT_THAT(proxy1, ElementsAre(2, 3, 4));
+  EXPECT_THAT(*field1, ElementsAre(2, 3, 4));
+}
+
+TYPED_TEST(RepeatedStringFieldProxyTest, MoveAssign) {
+  auto field1 = this->MakeRepeatedFieldContainer();
+  this->Add(field1, "1");
+
+  auto field2 = this->MakeRepeatedFieldContainer();
+  this->Add(field2, "2");
+  this->Add(field2, "3");
+
+  const void* prev_data = field2->data();
+
+  auto proxy1 = field1.MakeProxy();
+  auto proxy2 = field2.MakeProxy();
+
+  if (this->UseArena()) {
+    size_t arena_memory = this->arena()->SpaceUsed();
+    proxy1.move_assign(proxy2);
+    // Verify that the move assignment did not allocate any additional memory.
+    EXPECT_EQ(this->arena()->SpaceUsed(), arena_memory);
+  } else {
+    proxy1.move_assign(proxy2);
+  }
+
+  // Verify that the move assignment did not allocate any additional memory.
+  EXPECT_EQ(field1->data(), prev_data);
+
+  EXPECT_THAT(proxy1, ElementsAre(StringEq("2"), StringEq("3")));
+  EXPECT_THAT(*field1, ElementsAre(StringEq("2"), StringEq("3")));
+}
+
+TEST_P(RepeatedFieldProxyTest, MoveAssignMessage) {
+  auto field1 =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  field1->Add()->set_value(1);
+
+  auto field2 =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  field2->Add()->set_value(2);
+  field2->Add()->set_value(3);
+
+  const void* prev_data = field2->data();
+
+  auto proxy1 = field1.MakeProxy();
+  auto proxy2 = field2.MakeProxy();
+
+  if (this->UseArena()) {
+    size_t arena_memory = this->arena()->SpaceUsed();
+    proxy1.move_assign(proxy2);
+    // Verify that the move assignment did not allocate any additional memory.
+    EXPECT_EQ(this->arena()->SpaceUsed(), arena_memory);
+  } else {
+    proxy1.move_assign(proxy2);
+  }
+
+  // Verify that the move assignment did not allocate any additional memory.
+  EXPECT_EQ(field1->data(), prev_data);
+
+  EXPECT_THAT(proxy1, ElementsAre(EqualsProto(R"pb(value: 2)pb"),
+                                  EqualsProto(R"pb(value: 3)pb")));
+  EXPECT_THAT(*field1, ElementsAre(EqualsProto(R"pb(value: 2)pb"),
+                                   EqualsProto(R"pb(value: 3)pb")));
+}
+
 TYPED_TEST(RepeatedNumericFieldProxyTest, Rebind) {
   auto field1 = this->MakeRepeatedFieldContainer();
   field1->Add(1);

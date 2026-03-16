@@ -514,6 +514,12 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
     }
   }
 
+  // Move-assigns `other` into this repeated field. `other` is left in a valid
+  // but unspecified state.
+  void move_assign(RepeatedFieldProxy<ElementType> other) const {
+    field() = std::move(other.field());
+  }
+
  private:
   friend RepeatedFieldProxy<const ElementType>;
 
