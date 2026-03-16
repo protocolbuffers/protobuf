@@ -124,11 +124,9 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
     return cmessage::InternalGetScalar(self->parent->message, descriptor);
   }
 
-  CMessage::CompositeFieldsMap::iterator iterator =
-      self->parent->composite_fields->find(descriptor);
-  if (iterator != self->parent->composite_fields->end()) {
-    Py_INCREF(iterator->second);
-    return iterator->second->AsPyObject();
+  if (PyObject* value =
+          self->parent->composite_fields->Get(descriptor, nullptr)) {
+    return value;
   }
 
   if (!descriptor->is_repeated() &&
@@ -139,8 +137,9 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
     if (sub_message == nullptr) {
       return nullptr;
     }
-    (*self->parent->composite_fields)[descriptor] = sub_message;
-    return sub_message->AsPyObject();
+    PyObject* value = sub_message->AsPyObject();
+    self->parent->composite_fields->TrySet(descriptor, value);
+    return value;
   }
 
   if (descriptor->is_repeated()) {
@@ -168,16 +167,18 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
       if (py_container == nullptr) {
         return nullptr;
       }
-      (*self->parent->composite_fields)[descriptor] = py_container;
-      return py_container->AsPyObject();
+      PyObject* value = py_container->AsPyObject();
+      self->parent->composite_fields->TrySet(descriptor, value);
+      return value;
     } else {
       ContainerBase* py_container =
           repeated_scalar_container::NewContainer(self->parent, descriptor);
       if (py_container == nullptr) {
         return nullptr;
       }
-      (*self->parent->composite_fields)[descriptor] = py_container;
-      return py_container->AsPyObject();
+      PyObject* value = py_container->AsPyObject();
+      self->parent->composite_fields->TrySet(descriptor, value);
+      return value;
     }
   }
   PyErr_SetString(PyExc_ValueError, "control reached unexpected line");
