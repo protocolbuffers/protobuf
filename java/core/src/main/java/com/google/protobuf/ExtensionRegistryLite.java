@@ -7,9 +7,7 @@
 
 package com.google.protobuf;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import javax.annotation.Nullable;
 
 /**
  * Equivalent to {@link ExtensionRegistry} but supports only "lite" types.
@@ -91,6 +89,8 @@ public class ExtensionRegistryLite {
 
   private static volatile ExtensionRegistryLite emptyRegistry;
 
+  private static volatile ExtensionRegistryLite generatedRegistry;
+
   /**
    * Get the unmodifiable singleton empty instance of either ExtensionRegistryLite or {@code
    * ExtensionRegistry} (if the full (non-Lite) proto libraries are available).
@@ -111,6 +111,31 @@ public class ExtensionRegistryLite {
     return result;
   }
 
+  /**
+   * Get the unmodifiable singleton instance for all the generated protobuf messages loadable in the
+   * classpath.
+   */
+  public static ExtensionRegistryLite getGeneratedRegistry() {
+    ExtensionRegistryLite result = generatedRegistry;
+    if (result == null) {
+      synchronized (ExtensionRegistryLite.class) {
+        result = generatedRegistry;
+        if (result == null) {
+          generatedRegistry =
+              result =
+                  Android.assumeLiteRuntime
+                      ? loadGeneratedRegistry()
+                      : ExtensionRegistryFactory.loadGeneratedRegistry();
+        }
+      }
+    }
+    return result;
+  }
+
+  static ExtensionRegistryLite loadGeneratedRegistry() {
+    return GeneratedExtensionRegistryLoader.load(ExtensionRegistryLite.class);
+  }
+
   /** Returns an unmodifiable view of the registry. */
   public ExtensionRegistryLite getUnmodifiable() {
     return new ExtensionRegistryLite(this);
@@ -122,18 +147,17 @@ public class ExtensionRegistryLite {
    * @return Information about the extension if found, or {@code null} otherwise.
    */
   @SuppressWarnings("unchecked")
-  public <ContainingType extends MessageLite>
-      GeneratedMessageLite.GeneratedExtension<ContainingType, ?> findLiteExtensionByNumber(
-          final ContainingType containingTypeDefaultInstance, final int fieldNumber) {
-    return (GeneratedMessageLite.GeneratedExtension<ContainingType, ?>)
-        extensionsByNumber.get(new ObjectIntPair(containingTypeDefaultInstance, fieldNumber));
+  public <ContainingTypeT extends MessageLite>
+      GeneratedMessageLite.GeneratedExtension<ContainingTypeT, ?> findLiteExtensionByNumber(
+          final ContainingTypeT containingTypeDefaultInstance, final int fieldNumber) {
+    return (GeneratedMessageLite.GeneratedExtension<ContainingTypeT, ?>)
+        extensionsByNumber.get(containingTypeDefaultInstance, fieldNumber);
   }
 
   /** Add an extension from a lite generated file to the registry. */
   public final void add(final GeneratedMessageLite.GeneratedExtension<?, ?> extension) {
     extensionsByNumber.put(
-        new ObjectIntPair(extension.getContainingTypeDefaultInstance(), extension.getNumber()),
-        extension);
+        extension.getContainingTypeDefaultInstance(), extension.getNumber(), extension);
   }
 
   /**
@@ -157,53 +181,149 @@ public class ExtensionRegistryLite {
   // =================================================================
   // Private stuff.
 
-  // Constructors are package-private so that ExtensionRegistry can subclass
-  // this.
-
-  ExtensionRegistryLite() {
-    this.extensionsByNumber =
-        new HashMap<ObjectIntPair, GeneratedMessageLite.GeneratedExtension<?, ?>>();
-  }
+  private static final ExtensionMap EMPTY_MAP = new ExtensionMap(0, true);
 
   static final ExtensionRegistryLite EMPTY_REGISTRY_LITE = new ExtensionRegistryLite(true);
 
+  private final ExtensionMap extensionsByNumber;
+
+  ExtensionRegistryLite() {
+    this.extensionsByNumber = new ExtensionMap();
+  }
+
+  public ExtensionRegistryLite(int initialCapacity) {
+    this.extensionsByNumber = new ExtensionMap(initialCapacity);
+  }
+
   ExtensionRegistryLite(ExtensionRegistryLite other) {
     if (other == EMPTY_REGISTRY_LITE) {
-      this.extensionsByNumber = Collections.emptyMap();
+      this.extensionsByNumber = EMPTY_MAP;
     } else {
-      this.extensionsByNumber = Collections.unmodifiableMap(other.extensionsByNumber);
+      this.extensionsByNumber = other.extensionsByNumber.asUnmodifiable();
     }
   }
-
-  private final Map<ObjectIntPair, GeneratedMessageLite.GeneratedExtension<?, ?>>
-      extensionsByNumber;
 
   ExtensionRegistryLite(boolean empty) {
-    this.extensionsByNumber = Collections.emptyMap();
+    this.extensionsByNumber = EMPTY_MAP;
   }
 
-  /** A (Object, int) pair, used as a map key. */
-  private static final class ObjectIntPair {
-    private final Object object;
-    private final int number;
+  private static final class ExtensionMap {
+    private Object[] objects;
+    private int[] numbers;
+    private GeneratedMessageLite.GeneratedExtension<?, ?>[] values;
+    private int capacity;
+    private int size;
+    private final boolean unmodifiable;
 
-    ObjectIntPair(final Object object, final int number) {
-      this.object = object;
-      this.number = number;
+    ExtensionMap() {
+      this(16);
     }
 
-    @Override
-    public int hashCode() {
-      return System.identityHashCode(object) * ((1 << 16) - 1) + number;
+    ExtensionMap(int capacity) {
+      this(capacity, false);
     }
 
-    @Override
-    public boolean equals(final Object obj) {
-      if (!(obj instanceof ObjectIntPair)) {
-        return false;
+    private ExtensionMap(int capacity, boolean unmodifiable) {
+      this.capacity = capacity > 0 ? nextPowerOfTwo(capacity) : 0;
+      if (this.capacity > 0) {
+        this.objects = new Object[this.capacity];
+        this.numbers = new int[this.capacity];
+        this.values = new GeneratedMessageLite.GeneratedExtension<?, ?>[this.capacity];
+      } else {
+        this.objects = null;
+        this.numbers = null;
+        this.values = null;
       }
-      final ObjectIntPair other = (ObjectIntPair) obj;
-      return object == other.object && number == other.number;
+      this.size = 0;
+      this.unmodifiable = unmodifiable;
+    }
+
+    private ExtensionMap(ExtensionMap other, boolean unmodifiable) {
+      this.capacity = other.capacity;
+      this.size = other.size;
+      this.objects = other.objects != null ? other.objects.clone() : null;
+      this.numbers = other.numbers != null ? other.numbers.clone() : null;
+      this.values = other.values != null ? other.values.clone() : null;
+      this.unmodifiable = unmodifiable;
+    }
+
+    private static int nextPowerOfTwo(int n) {
+      int v = n - 1;
+      v |= v >> 1;
+      v |= v >> 2;
+      v |= v >> 4;
+      v |= v >> 8;
+      v |= v >> 16;
+      return v + 1;
+    }
+
+    @Nullable
+    GeneratedMessageLite.GeneratedExtension<?, ?> get(Object object, int number) {
+      if (capacity == 0) {
+        return null;
+      }
+      int hash = (System.identityHashCode(object) * 31 + number) & (capacity - 1);
+      for (int i = 0; i < capacity; i++) {
+        int index = (hash + i) & (capacity - 1);
+        if (objects[index] == null) {
+          return null;
+        }
+        if (objects[index] == object && numbers[index] == number) {
+          return values[index];
+        }
+      }
+      return null;
+    }
+
+    void put(Object object, int number, GeneratedMessageLite.GeneratedExtension<?, ?> value) {
+      if (unmodifiable) {
+        throw new UnsupportedOperationException();
+      }
+      if (capacity == 0) {
+        // This case should not happen if used correctly via constructors, but for safety:
+        throw new IllegalStateException("ExtensionMap not initialized");
+      }
+      if (size >= capacity * 0.75) {
+        resize();
+      }
+      putInternal(object, number, value);
+    }
+
+    private void putInternal(
+        Object object, int number, GeneratedMessageLite.GeneratedExtension<?, ?> value) {
+      int hash = (System.identityHashCode(object) * 31 + number) & (capacity - 1);
+      for (int i = 0; i < capacity; i++) {
+        int index = (hash + i) & (capacity - 1);
+        if (objects[index] == null) {
+          objects[index] = object;
+          numbers[index] = number;
+          values[index] = value;
+          size++;
+          return;
+        }
+        if (objects[index] == object && numbers[index] == number) {
+          values[index] = value;
+          return;
+        }
+      }
+    }
+
+    private void resize() {
+      int newCapacity = capacity * 2;
+      ExtensionMap newMap = new ExtensionMap(newCapacity);
+      for (int i = 0; i < capacity; i++) {
+        if (objects[i] != null) {
+          newMap.putInternal(objects[i], numbers[i], values[i]);
+        }
+      }
+      this.capacity = newMap.capacity;
+      this.objects = newMap.objects;
+      this.numbers = newMap.numbers;
+      this.values = newMap.values;
+    }
+
+    ExtensionMap asUnmodifiable() {
+      return new ExtensionMap(this, true);
     }
   }
 }
