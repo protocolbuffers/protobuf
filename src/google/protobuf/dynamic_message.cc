@@ -370,6 +370,11 @@ class DynamicMessage final : public Message {
 using internal::MessageGlobalsBase;
 
 struct DynamicMessageGlobalsInternalType : MessageGlobalsBase {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  explicit constexpr DynamicMessageGlobalsInternalType(
+      internal::ClassDataFull class_data)
+      : MessageGlobalsBase(class_data) {}
+#endif  // PROTOBUF_MESSAGE_GLOBALS
   union {
     alignas(internal::kMaxMessageAlignment) DynamicMessage _default;  // NOLINT
   };
@@ -1037,6 +1042,12 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   void* globals_base = internal::Allocate(globals_size);
   memset(globals_base, 0, globals_size);
   auto* msg_base = DynamicMessageGlobalsToDefaultInstance(globals_base);
+
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  type_info->class_data.prototype =
+      reinterpret_cast<const DynamicMessage*>(msg_base);
+  new (globals_base) DynamicMessageGlobalsInternalType(type_info->class_data);
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
   // We have already locked the factory so we should not lock in the constructor
   // of dynamic message to avoid dead lock.
