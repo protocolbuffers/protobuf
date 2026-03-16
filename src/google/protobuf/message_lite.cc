@@ -115,7 +115,7 @@ absl::string_view TypeId::name() const {
   }
 
   // For LITE messages, the type name is accessed via ClassDataLite.
-  return static_cast<const internal::ClassDataLite*>(data_)->type_name;
+  return static_cast<const internal::ClassDataLite*>(data_)->type_name();
 }
 
 std::string MessageLite::InitializationErrorString() const {
