@@ -88,7 +88,7 @@ jobs:
           bazel-cache: java_linux/8
           # TODO: b/318555165 - enable the layering check. Currently it does
           # not work correctly with the toolchain in this Docker image.
-          bazel: test --test_output=all //java:linkage_monitor --spawn_strategy=standalone --features=-layering_check
+          bazel: test --sandbox_debug -s --test_output=all //java:linkage_monitor --spawn_strategy=standalone --features=-layering_check
 
   protobuf-bom:
     name: Protobuf Maven BOM
