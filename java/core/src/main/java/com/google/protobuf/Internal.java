@@ -52,6 +52,12 @@ public final class Internal {
     return obj;
   }
 
+  /** Throws an {@link IllegalArgumentException} for unrecognized enum values. */
+  @DoNotInline
+  public static int throwCannotGetNumberOfUnrecognized() {
+    throw new IllegalArgumentException("Can't get the number of an unknown enum value.");
+  }
+
   /**
    * Helper called by generated code to construct default values for string fields.
    *
