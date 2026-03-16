@@ -83,9 +83,9 @@ jobs:
       - name: Run Linkage Monitor test
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8.0.1-8-b77fdae6d4771789dfc66a56bf8d806354e8011a
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: java_linux/11
+          bazel-cache: java_linux/8
           # TODO: b/318555165 - enable the layering check. Currently it does
           # not work correctly with the toolchain in this Docker image.
           bazel: test --test_output=all //java:linkage_monitor --spawn_strategy=standalone --features=-layering_check
