@@ -149,18 +149,10 @@ public final class UnknownFieldSetLite {
 
   /** Serializes the set and writes it to {@code writer} using {@code MessageSet} wire format. */
   void writeAsMessageSetTo(Writer writer) throws IOException {
-    if (writer.fieldOrder() == Writer.FieldOrder.DESCENDING) {
-      // Write fields in descending order.
-      for (int i = count - 1; i >= 0; i--) {
-        int fieldNumber = WireFormat.getTagFieldNumber(tags[i]);
-        writer.writeMessageSetItem(fieldNumber, objects[i]);
-      }
-    } else {
-      // Write fields in ascending order.
-      for (int i = 0; i < count; i++) {
-        int fieldNumber = WireFormat.getTagFieldNumber(tags[i]);
-        writer.writeMessageSetItem(fieldNumber, objects[i]);
-      }
+    // Write fields in ascending order.
+    for (int i = 0; i < count; i++) {
+      int fieldNumber = WireFormat.getTagFieldNumber(tags[i]);
+      writer.writeMessageSetItem(fieldNumber, objects[i]);
     }
   }
 
@@ -171,14 +163,8 @@ public final class UnknownFieldSetLite {
     }
 
     // TODO: tags are not sorted, so there's no write order guarantees
-    if (writer.fieldOrder() == Writer.FieldOrder.ASCENDING) {
-      for (int i = 0; i < count; ++i) {
-        writeField(tags[i], objects[i], writer);
-      }
-    } else {
-      for (int i = count - 1; i >= 0; --i) {
-        writeField(tags[i], objects[i], writer);
-      }
+    for (int i = 0; i < count; ++i) {
+      writeField(tags[i], objects[i], writer);
     }
   }
 
@@ -198,15 +184,9 @@ public final class UnknownFieldSetLite {
         writer.writeBytes(fieldNumber, (ByteString) object);
         break;
       case WireFormat.WIRETYPE_START_GROUP:
-        if (writer.fieldOrder() == Writer.FieldOrder.ASCENDING) {
-          writer.writeStartGroup(fieldNumber);
-          ((UnknownFieldSetLite) object).writeTo(writer);
-          writer.writeEndGroup(fieldNumber);
-        } else {
-          writer.writeEndGroup(fieldNumber);
-          ((UnknownFieldSetLite) object).writeTo(writer);
-          writer.writeStartGroup(fieldNumber);
-        }
+        writer.writeStartGroup(fieldNumber);
+        ((UnknownFieldSetLite) object).writeTo(writer);
+        writer.writeEndGroup(fieldNumber);
         break;
       default:
         // TODO: Change writeTo to throw IOException?
