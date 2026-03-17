@@ -717,7 +717,6 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/base/error_handler.h
   ${protobuf_SOURCE_DIR}/upb/base/internal/endian.h
   ${protobuf_SOURCE_DIR}/upb/base/internal/log2.h
-  ${protobuf_SOURCE_DIR}/upb/base/shutdown.h
   ${protobuf_SOURCE_DIR}/upb/base/status.h
   ${protobuf_SOURCE_DIR}/upb/base/status.hpp
   ${protobuf_SOURCE_DIR}/upb/base/string_view.h
