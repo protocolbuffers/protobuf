@@ -1149,7 +1149,13 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
   }
 
   if (descriptor_->extension_range_count() > 0) {
-    printer->Print("hash = hashFields(hash, getExtensionFields());\n");
+    // MessageSetWireFormat are lazy extensions, only hash the field numbers
+    // and not the field values to avoid parsing lazy extensions.
+    if (descriptor_->options().message_set_wire_format()) {
+      printer->Print("hash = (29 * hash) + super.extensionsHashCode(true);\n");
+    } else {
+      printer->Print("hash = (29 * hash) + super.extensionsHashCode(false);\n");
+    }
   }
 
   printer->Print("hash = (29 * hash) + getUnknownFields().hashCode();\n");

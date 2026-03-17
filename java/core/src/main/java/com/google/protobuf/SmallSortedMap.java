@@ -655,6 +655,18 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
 
   @Override
   public int hashCode() {
+    return hashCodeFieldNumbersAndValues();
+  }
+
+  int hashCode(boolean hashFieldNumbersOnly) {
+    if (hashFieldNumbersOnly) {
+      return hashCodeFieldNumbersOnly();
+    } else {
+      return hashCodeFieldNumbersAndValues();
+    }
+  }
+
+  private int hashCodeFieldNumbersAndValues() {
     int h = 0;
     final int listSize = getNumArrayEntries();
     for (int i = 0; i < listSize; i++) {
@@ -663,6 +675,22 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
     // Avoid the iterator allocation if possible.
     if (getNumOverflowEntries() > 0) {
       h += overflowEntries.hashCode();
+    }
+    return h;
+  }
+
+  @SuppressWarnings("unchecked") // entries is guaranteed to be an array of Entry objects.
+  private int hashCodeFieldNumbersOnly() {
+    int h = 0;
+    final int listSize = getNumArrayEntries();
+    for (int i = 0; i < listSize; i++) {
+      h += ((Entry) entries[i]).getKey().hashCode();
+    }
+    // Avoid the iterator allocation if possible.
+    if (getNumOverflowEntries() > 0) {
+      for (K key : overflowEntries.keySet()) {
+        h += key.hashCode();
+      }
     }
     return h;
   }
