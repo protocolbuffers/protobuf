@@ -450,7 +450,7 @@ struct DynamicMessageFactory::TypeInfo {
     DynamicMessage::DestroyImpl(
         *const_cast<MessageLite*>(class_data.prototype));
     internal::SizedDelete(
-        const_cast<void*>(
+        const_cast<MessageGlobalsBase*>(
             MessageGlobalsBase::FromDefaultInstance(class_data.prototype)),
         MsgSizeToGlobalsSize(class_data.message_creator.allocation_size()));
 

@@ -461,14 +461,19 @@ struct PROTOBUF_EXPORT ClassData {
   uint8_t alignment() const { return message_creator.alignment(); }
 };
 
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 struct ClassDataLite : ClassData {
   constexpr ClassDataLite(ClassData base, const char* type_name)
-      : ClassData(base), type_name(type_name) {}
+      : ClassData(base), type_name_ptr(type_name) {}
 
-  const char* type_name;
+  const char* type_name() const { return type_name_ptr; }
+  const char* type_name_ptr;
 
   constexpr const ClassData* base() const { return this; }
 };
+#else
+using ClassDataLite = ClassDataFull;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 // We use a secondary vtable for descriptor based methods. This way ClassData
 // does not grow with the number of descriptor methods. This avoids extra
@@ -568,35 +573,60 @@ struct PROTOBUF_EXPORT ClassDataFull : ClassData {
   void (*get_metadata_tracker_func)();
 };
 #else
+// TODO b/474609573 - Rename this type to reflect that is's unified to
+// ClassDataLite as well.
 struct PROTOBUF_EXPORT ClassDataFull : ClassData {
   constexpr ClassDataFull(ClassData base, ReflectionData* reflection_data)
-      : ClassData(base), reflection_data(reflection_data) {}
+      : ClassData(base), aux_data{.reflection_data = reflection_data} {
+    ABSL_DCHECK(!is_lite);
+  }
+
+  constexpr ClassDataFull(ClassData base, const char* type_name)
+      : ClassData(base), aux_data{.type_name = type_name} {
+    ABSL_DCHECK(is_lite);
+  }
 
   constexpr const ClassData* base() const { return this; }
 
-  // Accessors for reflection related data.
-  const Reflection* reflection() const { return reflection_data->reflection; }
-  const Descriptor* descriptor() const { return reflection_data->descriptor; }
+  // Accessors for reflection related data (ClassDataFull only).
+  const Reflection* reflection() const { return reflection_data()->reflection; }
+  const Descriptor* descriptor() const { return reflection_data()->descriptor; }
 
   void set_reflection(const Reflection* reflection) const {
-    reflection_data->reflection = reflection;
+    reflection_data()->reflection = reflection;
   }
   void set_descriptor(const Descriptor* descriptor) const {
-    reflection_data->descriptor = descriptor;
+    reflection_data()->descriptor = descriptor;
   }
 
   const internal::DescriptorTable* descriptor_table() const {
-    return reflection_data->descriptor_table;
+    return reflection_data()->descriptor_table;
   }
   const DescriptorMethods* descriptor_methods() const {
-    return reflection_data->descriptor_methods;
+    return reflection_data()->descriptor_methods;
   }
   bool has_get_metadata_tracker() const {
-    return reflection_data->get_metadata_tracker != nullptr;
+    return reflection_data()->get_metadata_tracker != nullptr;
   }
-  void get_metadata_tracker() const { reflection_data->get_metadata_tracker(); }
+  void get_metadata_tracker() const {
+    reflection_data()->get_metadata_tracker();
+  }
 
-  ReflectionData* reflection_data;
+  ReflectionData* reflection_data() const {
+    ABSL_DCHECK(!is_lite);
+    return aux_data.reflection_data;
+  }
+
+  // Accessors for type name (ClassDataLite only).
+  const char* type_name() const {
+    ABSL_DCHECK(is_lite);
+    return aux_data.type_name;
+  }
+
+  union ReflectionDataOrTypeName {
+    ReflectionData* reflection_data;
+    const char* type_name;
+  } aux_data;
 };
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
@@ -605,18 +635,19 @@ inline const ClassDataFull& ClassData::full() const {
   return *static_cast<const ClassDataFull*>(this);
 }
 
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 struct MessageGlobalsBase {
   template <typename T = MessageLite>
-  static const T* default_instance(const void* globals) {
+  static const T* ToDefaultInstance(const void* globals) {
     return reinterpret_cast<const T*>(globals);
   }
 
-  static const void* FromDefaultInstance(const void* default_instance) {
-    return default_instance;
+  static const MessageGlobalsBase* FromDefaultInstance(
+      const void* default_instance) {
+    return reinterpret_cast<const MessageGlobalsBase*>(default_instance);
   }
 };
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 template <const auto* kDefault, const auto* kClassData>
 struct GeneratedMessageTraitsT {
   static constexpr const void* default_instance() { return kDefault; }
@@ -624,10 +655,35 @@ struct GeneratedMessageTraitsT {
   static constexpr auto StrongPointer() { return default_instance(); }
 };
 #else
+struct MessageGlobalsBase {
+  template <size_t R>
+  static constexpr size_t RoundUpTo(size_t n) {
+    static_assert(absl::has_single_bit(R), "Must be power of two");
+    return (n + (R - 1)) & ~(R - 1);
+  }
+
+  static constexpr size_t OffsetToDefault() {
+    return RoundUpTo<kMaxMessageAlignment>(sizeof(MessageGlobalsBase));
+  }
+  template <typename T = MessageLite>
+  static const T* ToDefaultInstance(const void* globals) {
+    return reinterpret_cast<const T*>(reinterpret_cast<const char*>(globals) +
+                                      OffsetToDefault());
+  }
+
+  static const MessageGlobalsBase* FromDefaultInstance(
+      const void* default_instance) {
+    return reinterpret_cast<const MessageGlobalsBase*>(
+        reinterpret_cast<const char*>(default_instance) - OffsetToDefault());
+  }
+
+  uintptr_t dummy = 0xDEADBEEF;
+};
+
 template <const auto* kGlobals, const auto* kClassData>
 struct GeneratedMessageTraitsT {
   static const void* default_instance() {
-    return internal::MessageGlobalsBase::default_instance<MessageLite>(
+    return internal::MessageGlobalsBase::ToDefaultInstance<MessageLite>(
         kGlobals);
   }
   static constexpr const auto* class_data() { return kClassData->base(); }

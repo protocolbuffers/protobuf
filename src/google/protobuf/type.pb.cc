@@ -67,9 +67,13 @@ struct OptionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr OptionGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~OptionGlobalsTypeInternal() {}
   union {
-    Option _default;
+    alignas(::_pbi::kMaxMessageAlignment) Option _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(OptionGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OptionGlobalsTypeInternal _Option_globals_;
@@ -114,9 +118,13 @@ struct FieldGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr FieldGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~FieldGlobalsTypeInternal() {}
   union {
-    Field _default;
+    alignas(::_pbi::kMaxMessageAlignment) Field _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(FieldGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldGlobalsTypeInternal _Field_globals_;
@@ -148,9 +156,13 @@ struct EnumValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr EnumValueGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~EnumValueGlobalsTypeInternal() {}
   union {
-    EnumValue _default;
+    alignas(::_pbi::kMaxMessageAlignment) EnumValue _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(EnumValueGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueGlobalsTypeInternal _EnumValue_globals_;
@@ -196,9 +208,13 @@ struct TypeGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr TypeGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~TypeGlobalsTypeInternal() {}
   union {
-    Type _default;
+    alignas(::_pbi::kMaxMessageAlignment) Type _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(TypeGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 TypeGlobalsTypeInternal _Type_globals_;
@@ -239,9 +255,13 @@ struct EnumGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr EnumGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~EnumGlobalsTypeInternal() {}
   union {
-    Enum _default;
+    alignas(::_pbi::kMaxMessageAlignment) Enum _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(EnumGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumGlobalsTypeInternal _Enum_globals_;

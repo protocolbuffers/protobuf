@@ -58,9 +58,13 @@ struct SourceContextGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr SourceContextGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~SourceContextGlobalsTypeInternal() {}
   union {
-    SourceContext _default;
+    alignas(::_pbi::kMaxMessageAlignment) SourceContext _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(SourceContextGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceContextGlobalsTypeInternal _SourceContext_globals_;

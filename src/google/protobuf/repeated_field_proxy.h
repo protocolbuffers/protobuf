@@ -145,7 +145,7 @@ struct RepeatedFieldTraits<absl::string_view> {
   using type = RepeatedPtrField<std::string>;
   using const_reference = absl::string_view;
   using reference = absl::string_view;
-  using const_iterator = RepeatedPtrIterator<absl::string_view>;
+  using const_iterator = RepeatedPtrIterator<const absl::string_view>;
   using iterator = RepeatedPtrIterator<absl::string_view>;
 };
 
@@ -452,6 +452,81 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
   // this call.
   void clear() const { field().Clear(); }
 
+  // Removes the element at `position` from the repeated field. Returns an
+  // iterator to the element immediately following the removed element.
+  iterator erase(const_iterator position) const {
+    // The internal iterator type may not match the proxy iterator type (for
+    // example for `absl::string_view` proxies which are backed by
+    // `std::string`). To avoid special casing, we will always cast to the
+    // internal iterator type before passing down to erase, then cast back to
+    // the proxy iterator type upon return. This conversion is redundant for
+    // types which have matching exposed and internal element types.
+    using const_internal_iterator = typename RepeatedFieldType::const_iterator;
+    return iterator(
+        ToProxyType(this).field().erase(const_internal_iterator(position)));
+  }
+
+  // Removes the elements in the range `[first, last)` from the repeated field.
+  // Returns an iterator to the element immediately following the last removed
+  // element.
+  iterator erase(const_iterator first, const_iterator last) const {
+    using const_internal_iterator = typename RepeatedFieldType::const_iterator;
+    return iterator(ToProxyType(this).field().erase(
+        const_internal_iterator(first), const_internal_iterator(last)));
+  }
+
+  // Copy-assigns `other` into this repeated field.
+  //
+  // This method exists because proxies cannot be reassigned through the `=`
+  // assignment operator.
+  void assign(RepeatedFieldProxy<const ElementType> other) const {
+    field().CopyFrom(other.field());
+  }
+
+  // Copy-assigns the elements in the range `[begin, end)` to the repeated
+  // field.
+  //
+  // If `begin` or `end` is an iterator into this repeated field, the behavior
+  // is undefined.
+  template <
+      typename Iter,
+      // A seemingly redundant verification that `Iter` is an iterator type.
+      // Even though we use `std::iterator_traits` below, we duplicate the
+      // condition here in case the implementation changes.
+      typename = std::void_t<typename std::iterator_traits<Iter>::value_type>>
+  auto assign(Iter begin, Iter end) const
+      // Verify that the iterator value type is assignable to `ElementType`.
+      // Pass through `push_back`, which is a catch-all for allowed conversions
+      // to the element type.
+      -> std::void_t<decltype(this->push_back(*begin))> {
+    field().Clear();
+    // Forward iterators in C++ are required to model `std::incrementable`,
+    // which means they are suitable for multi-pass algorithms, and therefore
+    // support `std::distance`.
+    if constexpr (std::is_base_of<std::forward_iterator_tag,
+                                  typename std::iterator_traits<
+                                      Iter>::iterator_category>::value) {
+      int distance = static_cast<int>(std::distance(begin, end));
+      field().ReserveWithArena(arena(), distance);
+    }
+    for (; begin != end; ++begin) {
+      this->push_back(*begin);
+    }
+  }
+
+  // Move-assigns `other` into this repeated field. `other` is left in a valid
+  // but unspecified state.
+  void move_assign(RepeatedFieldProxy<ElementType> other) const {
+    field() = std::move(other.field());
+  }
+
+  // A hint to the container to expect to grow/shrink to `new_size` elements.
+  // This may allow the container to make optimizations to avoid reallocations,
+  // but may also be ignored.
+  void reserve(size_type new_size) const {
+    field().ReserveWithArena(arena(), new_size);
+  }
+
  private:
   friend RepeatedFieldProxy<const ElementType>;
 
@@ -527,6 +602,8 @@ class RepeatedFieldProxy<const ElementType> final
   }
 
  private:
+  friend RepeatedFieldProxy<ElementType>;
+
   template <typename T, typename... Args>
   friend RepeatedFieldProxy<T> internal::ConstructRepeatedFieldProxy(
       Args&&... args);

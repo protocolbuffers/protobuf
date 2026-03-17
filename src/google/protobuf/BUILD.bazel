@@ -964,6 +964,7 @@ cc_library(
     deps = [
         ":port",
         ":protobuf_lite",
+        "@abseil-cpp//absl/base:no_destructor",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings:cord",
         "@abseil-cpp//absl/strings:string_view",

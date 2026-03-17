@@ -57,9 +57,13 @@ struct DurationGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr DurationGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~DurationGlobalsTypeInternal() {}
   union {
-    Duration _default;
+    alignas(::_pbi::kMaxMessageAlignment) Duration _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(DurationGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DurationGlobalsTypeInternal _Duration_globals_;
