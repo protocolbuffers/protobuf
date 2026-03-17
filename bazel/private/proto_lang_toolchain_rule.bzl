@@ -150,7 +150,7 @@ Deprecated. Alias for <code>denylisted_protos</code>. Will be removed in a futur
             executable = True,
         ),
         "_protocopt": attr.label(
-            default = "//bazel/flags/cc:protocopt",
+            default = "//bazel/flags:protocopt",
         ),
     } | ({} if proto_common.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION else {
         "_proto_compiler": attr.label(

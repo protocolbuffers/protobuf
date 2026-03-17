@@ -33,7 +33,7 @@ reduce .assets[] as $a (
 EOF
 )
 
-mkdir -p ${PREFIX}/bazel/private
+mkdir -p "$(dirname "$INTEGRITY_FILE")"
 cat >${INTEGRITY_FILE} <<EOF
 "Generated during release by release_prep.sh"
 
