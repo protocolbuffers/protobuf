@@ -19,7 +19,6 @@ cc_library(
     hdrs = [
         "descriptor_constants.h",
         "error_handler.h",
-        "shutdown.h",
         "status.h",
         "status.hpp",
         "string_view.h",
