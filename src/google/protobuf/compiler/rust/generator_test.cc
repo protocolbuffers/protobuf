@@ -152,6 +152,7 @@ TEST_F(RustGeneratorTest, EmitsFieldMetadata) {
     package foo;
     message Message {
       optional int32 int32_field = 1;
+      optional string string_field = 2;
     })schema");
   CountMatchingAnnotations(
       {google::protobuf::FileDescriptorProto::kMessageTypeFieldNumber, 0}, "Message",
@@ -164,6 +165,14 @@ TEST_F(RustGeneratorTest, EmitsFieldMetadata) {
       {google::protobuf::FileDescriptorProto::kMessageTypeFieldNumber, 0,
        google::protobuf::DescriptorProto::kFieldFieldNumber, 0},
       "set_int32_field", GeneratedCodeInfo::Annotation::SET, 2);
+  CountMatchingAnnotations(
+      {google::protobuf::FileDescriptorProto::kMessageTypeFieldNumber, 0,
+       google::protobuf::DescriptorProto::kFieldFieldNumber, 1},
+      "string_field", GeneratedCodeInfo::Annotation::NONE, 3);
+  CountMatchingAnnotations(
+      {google::protobuf::FileDescriptorProto::kMessageTypeFieldNumber, 0,
+       google::protobuf::DescriptorProto::kFieldFieldNumber, 1},
+      "set_string_field", GeneratedCodeInfo::Annotation::SET, 2);
 }
 
 }  // namespace
