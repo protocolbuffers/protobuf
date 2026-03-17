@@ -123,7 +123,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FieldMask& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FieldMask>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FieldMask>(
         &_FieldMask_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;

@@ -58,9 +58,13 @@ struct CppFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr CppFeaturesGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~CppFeaturesGlobalsTypeInternal() {}
   union {
-    CppFeatures _default;
+    alignas(::_pbi::kMaxMessageAlignment) CppFeatures _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(CppFeaturesGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CppFeaturesGlobalsTypeInternal _CppFeatures_globals_;
@@ -89,8 +93,9 @@ static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, sizeof(::pb::CppFeatures)},
 };
-static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::pb::_CppFeatures_globals_._default,
+static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
+    file_message_globals[] = {
+        &::pb::_CppFeatures_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffeatures_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -131,7 +136,7 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
     1,
     1,
     schemas,
-    file_default_instances,
+    file_message_globals,
     TableStruct_google_2fprotobuf_2fcpp_5ffeatures_2eproto::offsets,
     file_level_enum_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
     file_level_service_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto,

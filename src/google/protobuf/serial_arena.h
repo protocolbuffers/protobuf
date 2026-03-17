@@ -146,6 +146,7 @@ class PROTOBUF_EXPORT SerialArena {
                : ArenaAlignAs(a).CeilDefaultAligned(p);
   }
 
+ public:
   // See comments on `cached_blocks_` member for details.
   void ReturnArrayMemory(void* p, size_t size) {
     // We only need to check for 32-bit platforms.
@@ -196,7 +197,6 @@ class PROTOBUF_EXPORT SerialArena {
     internal::PoisonMemoryRegion(p, size);
   }
 
- public:
   // Allocate space if the current region provides enough space.
   bool MaybeAllocateAligned(size_t n, void** out) {
     ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));

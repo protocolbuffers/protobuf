@@ -342,6 +342,31 @@ message LotsNestedMessage {
   message B255 {}
 }
 
+message LotsOfMessageFields {
+  optional LotsOfMessageFields a1 = 1;
+  optional LotsOfMessageFields a2 = 2;
+  optional LotsOfMessageFields a3 = 3;
+  optional LotsOfMessageFields a4 = 4;
+  optional LotsOfMessageFields a5 = 5;
+  optional LotsOfMessageFields a6 = 6;
+  optional LotsOfMessageFields a7 = 7;
+  optional LotsOfMessageFields a8 = 8;
+  optional LotsOfMessageFields a9 = 9;
+  optional LotsOfMessageFields a10 = 10;
+  optional LotsOfMessageFields a11 = 11;
+  optional LotsOfMessageFields a12 = 12;
+  optional LotsOfMessageFields a13 = 13;
+  optional LotsOfMessageFields a14 = 14;
+  optional LotsOfMessageFields a15 = 15;
+  optional LotsOfMessageFields a16 = 16;
+  optional LotsOfMessageFields a17 = 17;
+  optional LotsOfMessageFields a18 = 18;
+  optional LotsOfMessageFields a19 = 19;
+  optional LotsOfMessageFields a20 = 20;
+
+  optional int32 b = 100;
+}
+
 message RequiredField {
   required int32 id = 1;
 }

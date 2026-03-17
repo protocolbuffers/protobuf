@@ -224,7 +224,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const JavaFeatures_NestInFileClassFeature& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<JavaFeatures_NestInFileClassFeature>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<JavaFeatures_NestInFileClassFeature>(
         &_JavaFeatures_NestInFileClassFeature_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
@@ -384,7 +384,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const JavaFeatures& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<JavaFeatures>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<JavaFeatures>(
         &_JavaFeatures_globals_);
   }
   static constexpr int kIndexInFileMessages = 1;

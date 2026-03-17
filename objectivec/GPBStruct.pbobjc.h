@@ -30,10 +30,15 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Enum GPBNullValue
 
 /**
- * `NullValue` is a singleton enumeration to represent the null value for the
- * `Value` type union.
+ * Represents a JSON `null`.
  *
- * The JSON representation for `NullValue` is JSON `null`.
+ * `NullValue` is a sentinel, using an enum with only one value to represent
+ * the null value for the `Value` type union.
+ *
+ * A field of type `NullValue` with any value other than `0` is considered
+ * invalid. Most ProtoJSON serializers will emit a Value with a `null_value` set
+ * as a JSON `null` regardless of the integer value, and so will round trip to
+ * a `0` value.
  **/
 typedef GPB_ENUM(GPBNullValue) {
   /**
@@ -76,15 +81,19 @@ typedef GPB_ENUM(GPBStruct_FieldNumber) {
 };
 
 /**
- * Represents an unordered key-value map, intending to perfectly
- * capture the semantics of a JSON object. This enables parsing any arbitrary
- * JSON payload as a message field in ProtoJSON format.
+ * Represents a JSON object.
  *
- * This type cannot represent large Int64 values or `NaN`/`Infinity` numbers,
- * since JSON format generally does not support them in its number type.
+ * An unordered key-value map, intending to perfectly capture the semantics of a
+ * JSON object. This enables parsing any arbitrary JSON payload as a message
+ * field in ProtoJSON format.
+ *
+ * This follows RFC 8259 guidelines for interoperable JSON: notably this type
+ * cannot represent large Int64 values or `NaN`/`Infinity` numbers,
+ * since the JSON format generally does not support those values in its number
+ * type.
  *
  * If you do not intend to parse arbitrary JSON into your message, a custom
- * typed message should be preferred instead.
+ * typed message should be preferred instead of using this type.
  **/
 GPB_FINAL @interface GPBStruct : GPBMessage
 
@@ -117,41 +126,46 @@ typedef GPB_ENUM(GPBValue_Kind_OneOfCase) {
 };
 
 /**
+ * Represents a JSON value.
+ *
  * `Value` represents a dynamically typed value which can be either
  * null, a number, a string, a boolean, a recursive struct value, or a
  * list of values. A producer of value is expected to set one of these
- * variants. Absence of any variant indicates an error.
- *
- * The JSON representation for `Value` is JSON value.
+ * variants. Absence of any variant is an invalid state.
  **/
 GPB_FINAL @interface GPBValue : GPBMessage
 
 /** The kind of value. */
 @property(nonatomic, readonly) GPBValue_Kind_OneOfCase kindOneOfCase;
 
-/** Represents a null value. */
+/** Represents a JSON `null`. */
 @property(nonatomic, readwrite) GPBNullValue nullValue;
 @property(nonatomic, readwrite) BOOL hasNullValue;
 
-/** Represents a double value. Must not be `NaN`, `Infinity` or `-Infinity`. */
+/**
+ * Represents a JSON number. Must not be `NaN`, `Infinity` or
+ * `-Infinity`, since those are not supported in JSON. This also cannot
+ * represent large Int64 values, since JSON format generally does not
+ * support them in its number type.
+ **/
 @property(nonatomic, readwrite) double numberValue;
 @property(nonatomic, readwrite) BOOL hasNumberValue;
 
-/** Represents a string value. */
+/** Represents a JSON string. */
 @property(nonatomic, readwrite, copy, null_resettable) NSString *stringValue;
 /** Test to see if @c stringValue has been set. */
 @property(nonatomic, readwrite) BOOL hasStringValue;
 
-/** Represents a boolean value. */
+/** Represents a JSON boolean (`true` or `false` literal in JSON). */
 @property(nonatomic, readwrite) BOOL boolValue;
 @property(nonatomic, readwrite) BOOL hasBoolValue;
 
-/** Represents a structured value. */
+/** Represents a JSON object. */
 @property(nonatomic, readwrite, strong, null_resettable) GPBStruct *structValue;
 /** Test to see if @c structValue has been set. */
 @property(nonatomic, readwrite) BOOL hasStructValue;
 
-/** Represents a repeated `Value`. */
+/** Represents a JSON array. */
 @property(nonatomic, readwrite, strong, null_resettable) GPBListValue *listValue;
 /** Test to see if @c listValue has been set. */
 @property(nonatomic, readwrite) BOOL hasListValue;
@@ -182,9 +196,7 @@ typedef GPB_ENUM(GPBListValue_FieldNumber) {
 };
 
 /**
- * `ListValue` is a wrapper around a repeated field of values.
- *
- * The JSON representation for `ListValue` is JSON array.
+ * Represents a JSON array.
  **/
 GPB_FINAL @interface GPBListValue : GPBMessage
 

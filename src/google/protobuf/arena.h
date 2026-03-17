@@ -77,6 +77,8 @@ class UntypedMapBase;        // defined in map.h
 class RepeatedPtrFieldBase;  // defined in repeated_ptr_field.h
 class TcParser;              // defined in generated_message_tctable_impl.h
 
+SerialArena* PROTOBUF_NULLABLE GetSerialArena(Arena* PROTOBUF_NULLABLE);
+
 template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
 
@@ -740,6 +742,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   friend class internal::RepeatedPtrFieldBase;  // For ReturnArrayMemory
   friend class internal::UntypedMapBase;        // For ReturnArrayMemory
   friend class internal::ExtensionSet;          // For ReturnArrayMemory
+  friend internal::SerialArena* PROTOBUF_NULLABLE
+  internal::GetSerialArena(Arena* PROTOBUF_NULLABLE);
 
   friend struct internal::ArenaTestPeer;
 };
@@ -812,6 +816,29 @@ inline void* PROTOBUF_NONNULL Arena::AllocateInternal<std::string, false>() {
 }
 
 namespace internal {
+
+inline SerialArena* PROTOBUF_NULLABLE
+GetSerialArena(SerialArena* PROTOBUF_NULLABLE arena) {
+  return arena;
+}
+
+inline SerialArena* PROTOBUF_NULLABLE
+GetSerialArena(Arena* PROTOBUF_NULLABLE arena) {
+  if (arena == nullptr) return nullptr;
+  SerialArena* res = arena->impl_.GetSerialArena();
+  PROTOBUF_ASSUME(res != nullptr);
+  return res;
+}
+
+// Using a template to make member access type dependent and delay it until
+// instantiation when `MessageLite` will be complete.
+// Not really a generic function.
+template <auto... delay>
+inline SerialArena* PROTOBUF_NULLABLE
+GetSerialArena(const MessageLite* PROTOBUF_NONNULL elem) {
+  const auto* dependent_elem = (delay, ..., elem);
+  return GetSerialArena(dependent_elem->GetArena());
+}
 
 // This class is used to define `DestructorSkippable_` for some containing type
 // if and only if `T` is destructor-skippable.

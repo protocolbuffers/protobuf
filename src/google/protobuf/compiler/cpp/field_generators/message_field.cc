@@ -54,7 +54,8 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
       {"MemberType", use_base_class ? base : qualified_type},
       {"kDefaultRef",
        absl::Substitute(
-           "*::google::protobuf::internal::MessageGlobalsBase::default_instance<$0>(&$1)",
+           "*::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<$0>(&$"
+           "1)",
            qualified_type,
            QualifiedMsgGlobalsInstanceName(field->message_type(), opts))},
       Sub{"cast_to_field",
