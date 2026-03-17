@@ -1384,9 +1384,20 @@ inline size_t RepeatedField<Element>::SpaceUsedExcludingSelfLong() const {
 // Like C++20's std::erase_if, for RepeatedField
 template <typename T, typename Pred>
 size_t erase_if(RepeatedField<T>& cont, Pred pred) {
-  auto it = std::remove_if(cont.begin(), cont.end(),
-                           [&pred](const auto& elem) { return pred(elem); });
-  const size_t removed = cont.end() - it;
+  size_t removed;
+  if constexpr (std::is_same_v<T, absl::Cord>) {
+    // Wrap `pred` in a lambda that casts the element to `const`.
+    auto it =
+        std::remove_if(cont.begin(), cont.end(),
+                       [&pred](const absl::Cord& elem) { return pred(elem); });
+    removed = cont.end() - it;
+  } else {
+    // Intentionally decay `elem` to avoid exposing a reference to elements of
+    // the repeated field directly.
+    auto it = std::remove_if(cont.begin(), cont.end(),
+                             [&pred](const auto elem) { return pred(elem); });
+    removed = cont.end() - it;
+  }
   cont.Truncate(cont.size() - removed);
   return removed;
 }
@@ -1403,8 +1414,17 @@ size_t erase(RepeatedField<T>& cont, const U& value) {
 template <int&..., typename T, typename Compare>
 void sort(internal::RepeatedIterator<T> begin,
           internal::RepeatedIterator<T> end, Compare cmp) {
-  std::sort(begin, end,
-            [&cmp](const auto& lhs, const auto& rhs) { return cmp(lhs, rhs); });
+  if constexpr (std::is_same_v<T, absl::Cord>) {
+    // Wrap `cmp` in a lambda that casts the elements to `const`.
+    std::sort(begin, end, [&cmp](const absl::Cord& lhs, const absl::Cord& rhs) {
+      return cmp(lhs, rhs);
+    });
+  } else {
+    // Intentionally decay `lhs` and `rhs` to avoid exposing a reference to
+    // elements of the repeated field directly.
+    std::sort(begin, end,
+              [&cmp](const auto lhs, const auto rhs) { return cmp(lhs, rhs); });
+  }
 }
 template <int&..., typename T>
 void sort(internal::RepeatedIterator<T> begin,
@@ -1414,9 +1434,19 @@ void sort(internal::RepeatedIterator<T> begin,
 template <int&..., typename T, typename Compare>
 void stable_sort(internal::RepeatedIterator<T> begin,
                  internal::RepeatedIterator<T> end, Compare cmp) {
-  std::stable_sort(begin, end, [&cmp](const auto& lhs, const auto& rhs) {
-    return cmp(lhs, rhs);
-  });
+  if constexpr (std::is_same_v<T, absl::Cord>) {
+    // Wrap `cmp` in a lambda that casts the elements to `const`.
+    std::stable_sort(begin, end,
+                     [&cmp](const absl::Cord& lhs, const absl::Cord& rhs) {
+                       return cmp(lhs, rhs);
+                     });
+  } else {
+    // Intentionally decay `lhs` and `rhs` to avoid exposing a reference to
+    // elements of the repeated field directly.
+    std::stable_sort(begin, end, [&cmp](const auto lhs, const auto rhs) {
+      return cmp(lhs, rhs);
+    });
+  }
 }
 template <int&..., typename T>
 void stable_sort(internal::RepeatedIterator<T> begin,
