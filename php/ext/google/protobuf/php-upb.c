@@ -8484,6 +8484,7 @@ UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(upb_Message* msg,
     if (!view) return false;
     view->data = data;
   } else {
+    if (SIZE_MAX - sizeof(upb_StringView) < len) return false;
     view = upb_Arena_Malloc(arena, sizeof(upb_StringView) + len);
     if (!view) return false;
     char* copy = UPB_PTR_AT(view, sizeof(upb_StringView), char);
@@ -9640,8 +9641,15 @@ bool UPB_PRIVATE(_upb_Message_ReserveSlot)(struct upb_Message* msg,
     in->capacity = capacity;
     UPB_PRIVATE(_upb_Message_SetInternal)(msg, in);
   } else if (in->capacity == in->size) {
+    if (in->size == UINT32_MAX) return false;
     // Internal data is too small, reallocate.
-    uint32_t new_capacity = upb_RoundUpToPowerOfTwo(in->size + 1);
+    size_t needed_pow2 = upb_RoundUpToPowerOfTwo(in->size + 1);
+    if (needed_pow2 > UINT32_MAX) return false;
+    uint32_t new_capacity = needed_pow2;
+    if (UPB_SIZEOF_FLEX_WOULD_OVERFLOW(upb_Message_Internal, aux_data,
+                                       new_capacity)) {
+      return false;
+    }
     in = upb_Arena_Realloc(a, in, _upb_Message_SizeOfInternal(in->capacity),
                            _upb_Message_SizeOfInternal(new_capacity));
     if (!in) return false;
@@ -11340,20 +11348,18 @@ const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
 
 // Must be last.
 
-#if UPB_TSAN
-#include <sched.h>
-#endif  // UPB_TSAN
-
 const UPB_PRIVATE(upb_GeneratedExtensionListEntry) *
     UPB_PRIVATE(upb_generated_extension_list) = NULL;
 
 typedef struct upb_GeneratedRegistry {
   UPB_ATOMIC(upb_GeneratedRegistryRef*) ref;
-  UPB_ATOMIC(int32_t) ref_count;
+#ifndef NDEBUG
+  UPB_ATOMIC(uintptr_t) ref_count;
+#endif
 } upb_GeneratedRegistry;
 
 static upb_GeneratedRegistry* _upb_generated_registry(void) {
-  static upb_GeneratedRegistry r = {NULL, 0};
+  static upb_GeneratedRegistry r = {};
   return &r;
 }
 
@@ -11394,107 +11400,77 @@ static bool _upb_GeneratedRegistry_AddAllLinkedExtensions(
 // Constructs a new GeneratedRegistryRef, adding all linked extensions to the
 // registry or returning NULL on failure.
 static upb_GeneratedRegistryRef* _upb_GeneratedRegistry_New(void) {
-  upb_Arena* arena = NULL;
-  upb_ExtensionRegistry* extreg = NULL;
-  upb_GeneratedRegistryRef* ref = upb_gmalloc(sizeof(upb_GeneratedRegistryRef));
+  upb_Arena* arena = upb_Arena_New();
+  if (arena == NULL) return NULL;
+  upb_GeneratedRegistryRef* ref =
+      upb_Arena_Malloc(arena, sizeof(upb_GeneratedRegistryRef));
   if (ref == NULL) goto err;
-  arena = upb_Arena_New();
-  if (arena == NULL) goto err;
-  extreg = upb_ExtensionRegistry_New(arena);
-  if (extreg == NULL) goto err;
-
   ref->UPB_PRIVATE(arena) = arena;
+
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena);
+  if (extreg == NULL) goto err;
   ref->UPB_PRIVATE(registry) = extreg;
 
   if (!_upb_GeneratedRegistry_AddAllLinkedExtensions(extreg)) goto err;
 
+  UPB_PRIVATE(upb_Xsan_Init)(UPB_XSAN(ref));
   return ref;
 
 err:
-  if (arena != NULL) upb_Arena_Free(arena);
-  if (ref != NULL) upb_gfree(ref);
+  upb_Arena_Free(arena);
   return NULL;
 }
 
 const upb_GeneratedRegistryRef* upb_GeneratedRegistry_Load(void) {
   upb_GeneratedRegistry* registry = _upb_generated_registry();
-
-  // Loop until we successfully acquire a reference.  This loop should only
-  // kick in under extremely high contention, and it should be guaranteed to
-  // succeed.
-  while (true) {
-    int32_t count = upb_Atomic_Load(&registry->ref_count, memory_order_acquire);
-
-    // Try to increment the refcount, but only if it's not zero.
-    while (count > 0) {
-      if (upb_Atomic_CompareExchangeStrong(&registry->ref_count, &count,
-                                           count + 1, memory_order_acquire,
-                                           memory_order_relaxed)) {
-        // Successfully incremented. We can now safely load and return the
-        // pointer.
-        const upb_GeneratedRegistryRef* ref =
-            upb_Atomic_Load(&registry->ref, memory_order_acquire);
-        UPB_ASSERT(ref != NULL);
-        return ref;
-      }
-      // CAS failed, `count` was updated. Loop will retry.
+  const upb_GeneratedRegistryRef* ref =
+      upb_Atomic_Load(&registry->ref, memory_order_acquire);
+  if (ref == NULL) {
+    upb_GeneratedRegistryRef* new_ref = _upb_GeneratedRegistry_New();
+    if (!new_ref) return NULL;
+    upb_GeneratedRegistryRef* expected = NULL;
+    if (!upb_Atomic_CompareExchangeStrong(&registry->ref, &expected, new_ref,
+                                          memory_order_release,
+                                          memory_order_acquire)) {
+      upb_Arena_Free(new_ref->UPB_PRIVATE(arena));
+      ref = expected;  // Another thread won, use their ref.
+    } else {
+      ref = new_ref;  // We won race, our new_ref is now in registry->ref.
     }
-
-    // If we're here, the count was 0. Time for the slow path.
-    // Double-check that the pointer is NULL before trying to create.
-    upb_GeneratedRegistryRef* ref =
-        upb_Atomic_Load(&registry->ref, memory_order_acquire);
-    if (ref == NULL) {
-      // Pointer is NULL, try to create and publish a new registry.
-      upb_GeneratedRegistryRef* new_ref = _upb_GeneratedRegistry_New();
-      if (new_ref == NULL) return NULL;  // OOM
-
-      // Try to CAS the pointer from NULL to our new_ref.
-      if (upb_Atomic_CompareExchangeStrong(&registry->ref, &ref, new_ref,
-                                           memory_order_release,
-                                           memory_order_acquire)) {
-        // We won the race. Set the ref count to 1.
-        upb_Atomic_Store(&registry->ref_count, 1, memory_order_release);
-        return new_ref;
-      } else {
-        // We lost the race. `ref` now holds the pointer from the winning
-        // thread. Clean up our unused one and loop to try again to get a
-        // reference.
-        upb_Arena_Free(new_ref->UPB_PRIVATE(arena));
-        upb_gfree(new_ref);
-      }
-    }
-    // If we are here, either we lost the CAS race, or the pointer was already
-    // non-NULL. In either case, we loop to the top and try to increment the
-    // refcount of the existing object.
-
-#if UPB_TSAN
-    // Yield to give other threads a chance to increment the refcount.  This is
-    // especially an issue for TSAN builds, which are prone to locking up from
-    // the thread with the upb_Atomic_Store call above getting starved.
-    sched_yield();
-#endif  // UPB_TSAN
   }
+  UPB_ASSERT(ref != NULL);
+  UPB_PRIVATE(upb_Xsan_AccessReadOnly)(UPB_XSAN(ref));
+
+#ifndef NDEBUG
+  upb_Atomic_Add(&registry->ref_count, 1, memory_order_relaxed);
+#endif
+  return ref;
 }
 
 void upb_GeneratedRegistry_Release(const upb_GeneratedRegistryRef* r) {
+#ifndef NDEBUG
   if (r == NULL) return;
-
   upb_GeneratedRegistry* registry = _upb_generated_registry();
+  // Relaxed order safe here since it's exclusively used for debug checks, and
+  // upb_Shutdown expects external synchronization. Using a stronger memory
+  // order could impede tsan
+  int ref_count = upb_Atomic_Sub(&registry->ref_count, 1, memory_order_relaxed);
+  UPB_ASSERT(ref_count > 0);
+#else
+  UPB_UNUSED(r);
+#endif
+}
 
-  int ref_count = upb_Atomic_Sub(&registry->ref_count, 1, memory_order_acq_rel);
-  UPB_ASSERT(registry->ref_count >= 0);
-
-  // A ref_count of 1 means that we decremented the refcount to 0.
-  if (ref_count == 1) {
-    upb_GeneratedRegistryRef* ref =
-        upb_Atomic_Exchange(&registry->ref, NULL, memory_order_acq_rel);
-    if (ref != NULL) {
-      // This is the last reference and we won any potential race to store NULL,
-      // so we need to clean up.
-      upb_Arena_Free(ref->UPB_PRIVATE(arena));
-      upb_gfree(ref);
-    }
+void upb_Shutdown(void) {
+  upb_GeneratedRegistry* registry = _upb_generated_registry();
+#ifndef NDEBUG
+  UPB_ASSERT(upb_Atomic_Load(&registry->ref_count, memory_order_relaxed) == 0);
+#endif
+  upb_GeneratedRegistryRef* ref =
+      upb_Atomic_Exchange(&registry->ref, NULL, memory_order_relaxed);
+  if (ref) {
+    UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(ref));
+    upb_Arena_Free(ref->UPB_PRIVATE(arena));
   }
 }
 
@@ -11763,7 +11739,7 @@ void _upb_DefPool_SetPlatform(upb_DefPool* s, upb_MiniTablePlatform platform) {
 
 const upb_MessageDef* upb_DefPool_FindMessageByName(const upb_DefPool* s,
                                                     const char* sym) {
-  return _upb_DefPool_Unpack(s, sym, strlen(sym), UPB_DEFTYPE_MSG);
+  return upb_DefPool_FindMessageByNameWithSize(s, sym, strlen(sym));
 }
 
 const upb_MessageDef* upb_DefPool_FindMessageByNameWithSize(
@@ -11773,12 +11749,23 @@ const upb_MessageDef* upb_DefPool_FindMessageByNameWithSize(
 
 const upb_EnumDef* upb_DefPool_FindEnumByName(const upb_DefPool* s,
                                               const char* sym) {
-  return _upb_DefPool_Unpack(s, sym, strlen(sym), UPB_DEFTYPE_ENUM);
+  return upb_DefPool_FindEnumByNameWithSize(s, sym, strlen(sym));
 }
 
-const upb_EnumValueDef* upb_DefPool_FindEnumByNameval(const upb_DefPool* s,
-                                                      const char* sym) {
-  return _upb_DefPool_Unpack(s, sym, strlen(sym), UPB_DEFTYPE_ENUMVAL);
+const upb_EnumDef* upb_DefPool_FindEnumByNameWithSize(const upb_DefPool* s,
+                                                      const char* sym,
+                                                      size_t len) {
+  return _upb_DefPool_Unpack(s, sym, len, UPB_DEFTYPE_ENUM);
+}
+
+const upb_EnumValueDef* upb_DefPool_FindEnumValueByName(const upb_DefPool* s,
+                                                        const char* sym) {
+  return upb_DefPool_FindEnumValueByNameWithSize(s, sym, strlen(sym));
+}
+
+const upb_EnumValueDef* upb_DefPool_FindEnumValueByNameWithSize(
+    const upb_DefPool* s, const char* sym, size_t len) {
+  return _upb_DefPool_Unpack(s, sym, len, UPB_DEFTYPE_ENUMVAL);
 }
 
 const upb_FileDef* upb_DefPool_FindFileByName(const upb_DefPool* s,
@@ -15691,6 +15678,7 @@ static void create_method(upb_DefBuilder* ctx,
   m->output_type = _upb_DefBuilder_Resolve(
       ctx, m->full_name, m->full_name,
       google_protobuf_MethodDescriptorProto_output_type(method_proto), UPB_DEFTYPE_MSG);
+  _upb_ServiceDef_InsertMethod(ctx, s, m);
 }
 
 // Allocate and initialize an array of |n| method defs belonging to |s|.
@@ -15922,6 +15910,7 @@ struct upb_ServiceDef {
   upb_MethodDef* methods;
   int method_count;
   int index;
+  upb_strtable ntom;
 };
 
 upb_ServiceDef* _upb_ServiceDef_At(const upb_ServiceDef* s, int index) {
@@ -15966,13 +15955,18 @@ const upb_MethodDef* upb_ServiceDef_Method(const upb_ServiceDef* s, int i) {
 
 const upb_MethodDef* upb_ServiceDef_FindMethodByName(const upb_ServiceDef* s,
                                                      const char* name) {
-  for (int i = 0; i < s->method_count; i++) {
-    const upb_MethodDef* m = _upb_MethodDef_At(s->methods, i);
-    if (strcmp(name, upb_MethodDef_Name(m)) == 0) {
-      return m;
-    }
+  return upb_ServiceDef_FindMethodByNameWithSize(s, name, strlen(name));
+}
+
+const upb_MethodDef* upb_ServiceDef_FindMethodByNameWithSize(
+    const upb_ServiceDef* s, const char* name, size_t len) {
+  upb_value val;
+
+  if (!upb_strtable_lookup2(&s->ntom, name, len, &val)) {
+    return NULL;
   }
-  return NULL;
+
+  return _upb_DefType_Unpack(val, UPB_DEFTYPE_METHOD);
 }
 
 static void create_service(upb_DefBuilder* ctx,
@@ -15997,6 +15991,8 @@ static void create_service(upb_DefBuilder* ctx,
   const google_protobuf_MethodDescriptorProto* const* methods =
       google_protobuf_ServiceDescriptorProto_method(svc_proto, &n);
   s->method_count = n;
+  bool ok = upb_strtable_init(&s->ntom, n, ctx->arena);
+  if (!ok) _upb_DefBuilder_OomErr(ctx);
   s->methods = _upb_MethodDefs_New(ctx, n, methods, s->resolved_features, s);
 }
 
@@ -16012,6 +16008,20 @@ upb_ServiceDef* _upb_ServiceDefs_New(
     s[i].index = i;
   }
   return s;
+}
+
+void _upb_ServiceDef_InsertMethod(upb_DefBuilder* ctx, upb_ServiceDef* s,
+                                  const upb_MethodDef* m) {
+  const char* shortname = upb_MethodDef_Name(m);
+  const size_t shortnamelen = strlen(shortname);
+  upb_value existing_v;
+  if (upb_strtable_lookup(&s->ntom, shortname, &existing_v)) {
+    _upb_DefBuilder_Errf(ctx, "duplicate method name (%s)", shortname);
+  }
+  const upb_value method_v = _upb_DefType_Pack(m, UPB_DEFTYPE_METHOD);
+  bool ok = upb_strtable_insert(&s->ntom, shortname, shortnamelen, method_v,
+                                ctx->arena);
+  if (!ok) _upb_DefBuilder_OomErr(ctx);
 }
 
 
@@ -17371,14 +17381,6 @@ typedef struct {
   _upb_mapsorter sorter;
 } upb_encstate;
 
-static size_t upb_roundup_pow2(size_t bytes) {
-  size_t ret = 128;
-  while (ret < bytes) {
-    ret *= 2;
-  }
-  return ret;
-}
-
 UPB_NORETURN static void encode_err(upb_encstate* e, upb_EncodeStatus s) {
   UPB_ASSERT(s != kUpb_EncodeStatus_Ok);
   e->status = s;
@@ -17394,7 +17396,9 @@ UPB_NOINLINE static char* encode_growbuffer(char* ptr, upb_encstate* e,
                                             size_t bytes) {
   size_t old_size = e->limit - e->buf;
   size_t needed_size = bytes + (e->limit - ptr);
-  size_t new_size = upb_roundup_pow2(needed_size);
+  if (needed_size < bytes) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
+  size_t new_size = upb_RoundUpToPowerOfTwo(UPB_MAX(128, needed_size));
+  if (new_size == old_size) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
   void* old_buf = e->buf == &initial_buf_sentinel ? NULL : (void*)e->buf;
   char* new_buf = upb_Arena_Realloc(e->arena, old_buf, old_size, new_size);
 

@@ -236,8 +236,11 @@ inline absl::optional<absl::string_view> RttiTypeName() {
 // Helpers for identifying our supported types.
 template <typename T>
 struct is_supported_integral_type
-    : std::disjunction<std::is_same<T, int32_t>, std::is_same<T, uint32_t>,
-                       std::is_same<T, int64_t>, std::is_same<T, uint64_t>,
+    : std::disjunction<std::is_same<T, int>, std::is_same<T, unsigned int>,
+                       std::is_same<T, long>,                // NOLINT
+                       std::is_same<T, unsigned long>,       // NOLINT
+                       std::is_same<T, long long>,           // NOLINT
+                       std::is_same<T, unsigned long long>,  // NOLINT
                        std::is_same<T, bool>> {};
 
 template <typename T>
@@ -872,6 +875,23 @@ constexpr bool HasCrc32() { return false; }
 inline uint32_t Crc32(uint32_t, uint64_t) { return 0; }
 
 #endif
+
+// Check minimum Protobuf support defined at:
+// https://github.com/google/oss-policies-info/blob/main/foundational-cxx-support-matrix.md
+#ifdef __clang__
+static_assert(PROTOBUF_CLANG_MIN(6, 0),
+              "Protobuf only supports Clang 6.0 and newer.");
+#elif defined(__GNUC__)
+static_assert(PROTOBUF_GNUC_MIN(7, 3),
+              "Protobuf only supports GCC 7.3 and newer.");
+#elif defined(_MSVC_LANG)
+static_assert(PROTOBUF_MSC_VER_MIN(1910),
+              "Protobuf only supports MSVC 2017 and newer.");
+#endif
+static_assert(PROTOBUF_CPLUSPLUS_MIN(201703L),
+              "Protobuf only supports C++17 and newer.");
+static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
+              "Protobuf only supports Abseil version 20230125.3 and newer.");
 
 }  // namespace internal
 }  // namespace protobuf

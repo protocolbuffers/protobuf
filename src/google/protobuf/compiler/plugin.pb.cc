@@ -68,9 +68,13 @@ struct VersionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr VersionGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~VersionGlobalsTypeInternal() {}
   union {
-    Version _default;
+    alignas(::_pbi::kMaxMessageAlignment) Version _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(VersionGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 VersionGlobalsTypeInternal _Version_globals_;
@@ -103,9 +107,13 @@ struct CodeGeneratorResponse_FileGlobalsTypeInternal : ::_pbi::MessageGlobalsBas
   constexpr CodeGeneratorResponse_FileGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorResponse_FileGlobalsTypeInternal() {}
   union {
-    CodeGeneratorResponse_File _default;
+    alignas(::_pbi::kMaxMessageAlignment) CodeGeneratorResponse_File _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_FileGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorResponse_FileGlobalsTypeInternal _CodeGeneratorResponse_File_globals_;
@@ -139,9 +147,13 @@ struct CodeGeneratorResponseGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr CodeGeneratorResponseGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorResponseGlobalsTypeInternal() {}
   union {
-    CodeGeneratorResponse _default;
+    alignas(::_pbi::kMaxMessageAlignment) CodeGeneratorResponse _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(CodeGeneratorResponseGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorResponseGlobalsTypeInternal _CodeGeneratorResponse_globals_;
@@ -183,9 +195,13 @@ struct CodeGeneratorRequestGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr CodeGeneratorRequestGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorRequestGlobalsTypeInternal() {}
   union {
-    CodeGeneratorRequest _default;
+    alignas(::_pbi::kMaxMessageAlignment) CodeGeneratorRequest _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(CodeGeneratorRequestGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorRequestGlobalsTypeInternal _CodeGeneratorRequest_globals_;
@@ -256,11 +272,12 @@ static const ::_pbi::MigrationSchema
         {24, sizeof(::google::protobuf::compiler::CodeGeneratorResponse_File)},
         {35, sizeof(::google::protobuf::compiler::CodeGeneratorResponse)},
 };
-static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::google::protobuf::compiler::_Version_globals_._default,
-    &::google::protobuf::compiler::_CodeGeneratorRequest_globals_._default,
-    &::google::protobuf::compiler::_CodeGeneratorResponse_File_globals_._default,
-    &::google::protobuf::compiler::_CodeGeneratorResponse_globals_._default,
+static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
+    file_message_globals[] = {
+        &::google::protobuf::compiler::_Version_globals_,
+        &::google::protobuf::compiler::_CodeGeneratorRequest_globals_,
+        &::google::protobuf::compiler::_CodeGeneratorResponse_File_globals_,
+        &::google::protobuf::compiler::_CodeGeneratorResponse_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -305,7 +322,7 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
     1,
     4,
     schemas,
-    file_default_instances,
+    file_message_globals,
     TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto::offsets,
     file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
     file_level_service_descriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto,

@@ -39,8 +39,7 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                if (is_string_type) {
                  ctx.Emit(R"rs(
                 $pb$::ProtoStringCow::Borrowed(
-                  // SAFETY: The runtime doesn't require ProtoStr to be UTF-8.
-                  unsafe { $pb$::ProtoStr::from_utf8_unchecked(view.as_ref()) }
+                  $pb$::ProtoStr::from_utf8_unchecked(unsafe { view.as_ref() })
                 )
               )rs");
                } else {

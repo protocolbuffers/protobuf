@@ -820,7 +820,7 @@ static int lupb_DefPool_FindEnumByName(lua_State* L) {
 static int lupb_DefPool_FindEnumByNameval(lua_State* L) {
   const upb_DefPool* s = lupb_DefPool_check(L, 1);
   const upb_EnumValueDef* e =
-      upb_DefPool_FindEnumByNameval(s, luaL_checkstring(L, 2));
+      upb_DefPool_FindEnumValueByName(s, luaL_checkstring(L, 2));
   lupb_DefPool_pushwrapper(L, 1, e, LUPB_ENUMVALDEF);
   return 1;
 }

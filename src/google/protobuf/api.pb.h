@@ -133,7 +133,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Mixin& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Mixin>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Mixin>(
         &_Mixin_globals_);
   }
   static constexpr int kIndexInFileMessages = 2;
@@ -351,7 +351,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Method& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Method>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Method>(
         &_Method_globals_);
   }
   static constexpr int kIndexInFileMessages = 1;
@@ -661,7 +661,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Api& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Api>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Api>(
         &_Api_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
@@ -1199,7 +1199,7 @@ inline bool Api::has_source_context() const {
 inline const ::google::protobuf::SourceContext& Api::_internal_source_context() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::SourceContext* p = _impl_.source_context_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::SourceContext>(&::google::protobuf::_SourceContext_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::SourceContext>(&::google::protobuf::_SourceContext_globals_);
 }
 inline const ::google::protobuf::SourceContext& Api::source_context() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.source_context)

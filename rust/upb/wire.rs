@@ -9,6 +9,7 @@ use super::sys::wire::wire::{upb_Decode, upb_Encode, DecodeStatus, EncodeStatus}
 use super::{Arena, AssociatedMiniTable, MessagePtr};
 
 /// Contains the decode options that can be passed to `decode_with_options`.
+#[allow(unused)] // FFI constants.
 pub mod decode_options {
     // LINT.IfChange(decode_option)
     pub const ALIAS_STRING: i32 = 1;
@@ -48,6 +49,7 @@ pub fn encode<T: AssociatedMiniTable>(msg: MessagePtr<T>) -> Result<Vec<u8>, Enc
 ///
 /// # Safety
 /// - `msg` must be mutable.
+#[allow(unused)] // Not used yet.
 pub unsafe fn decode<T: AssociatedMiniTable>(
     buf: &[u8],
     msg: MessagePtr<T>,

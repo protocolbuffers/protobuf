@@ -13,4 +13,6 @@ use core::ptr::NonNull;
 use sys::opaque_pointee::opaque_pointee;
 
 opaque_pointee!(upb_ExtensionRegistry);
+
+#[allow(unused)] // Not used yet but intended in the future.
 pub type RawExtensionRegistry = NonNull<upb_ExtensionRegistry>;

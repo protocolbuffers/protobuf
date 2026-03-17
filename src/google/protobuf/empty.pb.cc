@@ -48,9 +48,13 @@ struct EmptyGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr EmptyGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~EmptyGlobalsTypeInternal() {}
   union {
-    Empty _default;
+    alignas(::_pbi::kMaxMessageAlignment) Empty _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(EmptyGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EmptyGlobalsTypeInternal _Empty_globals_;
@@ -70,8 +74,9 @@ static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, sizeof(::google::protobuf::Empty)},
 };
-static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::google::protobuf::_Empty_globals_._default,
+static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
+    file_message_globals[] = {
+        &::google::protobuf::_Empty_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -93,7 +98,7 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
     0,
     1,
     schemas,
-    file_default_instances,
+    file_message_globals,
     TableStruct_google_2fprotobuf_2fempty_2eproto::offsets,
     file_level_enum_descriptors_google_2fprotobuf_2fempty_2eproto,
     file_level_service_descriptors_google_2fprotobuf_2fempty_2eproto,

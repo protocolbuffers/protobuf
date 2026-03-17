@@ -36,9 +36,7 @@ message Foo {
     option features.enforce_naming_style = STYLE_LEGACY;
 
     sint64 sint64 = 4;
-    MyGroup mygroup = 5 [
-      features.message_encoding = DELIMITED
-    ];
+    MyGroup mygroup = 5 [features.message_encoding = DELIMITED];
   }
 
   message MyGroup {
@@ -72,9 +70,7 @@ extend Foo {
   int32 varint = 101;
   fixed32 fixed32 = 102;
   fixed64 fixed64 = 103;
-  MyGroup mygroup = 104 [
-    features.message_encoding = DELIMITED
-  ];
+  MyGroup mygroup = 104 [features.message_encoding = DELIMITED];
 }
 
 message MyGroup {
@@ -91,4 +87,26 @@ message TestRecursiveOneof {
 
     TestRecursiveOneof r = 1;
   }
+}
+
+// Regression test for O(V^N) complexity in MessageSchema.equals() when
+// comparing messages with oneof fields containing nested messages.
+// The 6 oneof variants mirror real-world protos like Firestore's Value type.
+message TestOneofWithMultipleVariants {
+  option features.(pb.java).nest_in_file_class = YES;
+
+  oneof value_type {
+    bool boolean_value = 1;
+    int64 integer_value = 2;
+    double double_value = 3;
+    string string_value = 4;
+    bytes bytes_value = 5;
+    NestedValue nested_value = 6;
+  }
+}
+
+message NestedValue {
+  option features.(pb.java).nest_in_file_class = YES;
+
+  map<string, TestOneofWithMultipleVariants> fields = 1;
 }

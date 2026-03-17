@@ -469,9 +469,7 @@ size_t Message::SpaceUsedLong() const {
 
 namespace internal {
 void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
-                                size_t size, const void* message,
-                                const void* default_message) {
-  ABSL_DCHECK_NE(message, default_message);
+                                size_t size) {
   void* split =
       (arena == nullptr) ? Allocate(size) : arena->AllocateAligned(size);
   memcpy(split, default_split, size);

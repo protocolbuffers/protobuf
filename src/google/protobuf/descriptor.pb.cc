@@ -130,9 +130,13 @@ struct UninterpretedOption_NamePartGlobalsTypeInternal : ::_pbi::MessageGlobalsB
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~UninterpretedOption_NamePartGlobalsTypeInternal() {}
   union {
-    UninterpretedOption_NamePart _default;
+    alignas(::_pbi::kMaxMessageAlignment) UninterpretedOption_NamePart _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePartGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UninterpretedOption_NamePartGlobalsTypeInternal _UninterpretedOption_NamePart_globals_;
@@ -183,9 +187,13 @@ struct SourceCodeInfo_LocationGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~SourceCodeInfo_LocationGlobalsTypeInternal() {}
   union {
-    SourceCodeInfo_Location _default;
+    alignas(::_pbi::kMaxMessageAlignment) SourceCodeInfo_Location _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(SourceCodeInfo_LocationGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceCodeInfo_LocationGlobalsTypeInternal _SourceCodeInfo_Location_globals_;
@@ -225,9 +233,13 @@ struct GeneratedCodeInfo_AnnotationGlobalsTypeInternal : ::_pbi::MessageGlobalsB
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~GeneratedCodeInfo_AnnotationGlobalsTypeInternal() {}
   union {
-    GeneratedCodeInfo_Annotation _default;
+    alignas(::_pbi::kMaxMessageAlignment) GeneratedCodeInfo_Annotation _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_AnnotationGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GeneratedCodeInfo_AnnotationGlobalsTypeInternal _GeneratedCodeInfo_Annotation_globals_;
@@ -264,9 +276,13 @@ struct FieldOptions_FeatureSupportGlobalsTypeInternal : ::_pbi::MessageGlobalsBa
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~FieldOptions_FeatureSupportGlobalsTypeInternal() {}
   union {
-    FieldOptions_FeatureSupport _default;
+    alignas(::_pbi::kMaxMessageAlignment) FieldOptions_FeatureSupport _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupportGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptions_FeatureSupportGlobalsTypeInternal _FieldOptions_FeatureSupport_globals_;
@@ -298,9 +314,13 @@ struct FieldOptions_EditionDefaultGlobalsTypeInternal : ::_pbi::MessageGlobalsBa
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~FieldOptions_EditionDefaultGlobalsTypeInternal() {}
   union {
-    FieldOptions_EditionDefault _default;
+    alignas(::_pbi::kMaxMessageAlignment) FieldOptions_EditionDefault _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefaultGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptions_EditionDefaultGlobalsTypeInternal _FieldOptions_EditionDefault_globals_;
@@ -321,9 +341,13 @@ struct FeatureSet_VisibilityFeatureGlobalsTypeInternal : ::_pbi::MessageGlobalsB
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~FeatureSet_VisibilityFeatureGlobalsTypeInternal() {}
   union {
-    FeatureSet_VisibilityFeature _default;
+    alignas(::_pbi::kMaxMessageAlignment) FeatureSet_VisibilityFeature _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(FeatureSet_VisibilityFeatureGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FeatureSet_VisibilityFeatureGlobalsTypeInternal _FeatureSet_VisibilityFeature_globals_;
@@ -359,9 +383,13 @@ struct FeatureSetGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~FeatureSetGlobalsTypeInternal() {}
   union {
-    FeatureSet _default;
+    alignas(::_pbi::kMaxMessageAlignment) FeatureSet _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(FeatureSetGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FeatureSetGlobalsTypeInternal _FeatureSet_globals_;
@@ -398,9 +426,13 @@ struct ExtensionRangeOptions_DeclarationGlobalsTypeInternal : ::_pbi::MessageGlo
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~ExtensionRangeOptions_DeclarationGlobalsTypeInternal() {}
   union {
-    ExtensionRangeOptions_Declaration _default;
+    alignas(::_pbi::kMaxMessageAlignment) ExtensionRangeOptions_Declaration _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_DeclarationGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExtensionRangeOptions_DeclarationGlobalsTypeInternal _ExtensionRangeOptions_Declaration_globals_;
@@ -430,9 +462,13 @@ struct EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal : ::_pbi::Messag
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal() {}
   union {
-    EnumDescriptorProto_EnumReservedRange _default;
+    alignas(::_pbi::kMaxMessageAlignment) EnumDescriptorProto_EnumReservedRange _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal _EnumDescriptorProto_EnumReservedRange_globals_;
@@ -462,9 +498,13 @@ struct DescriptorProto_ReservedRangeGlobalsTypeInternal : ::_pbi::MessageGlobals
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~DescriptorProto_ReservedRangeGlobalsTypeInternal() {}
   union {
-    DescriptorProto_ReservedRange _default;
+    alignas(::_pbi::kMaxMessageAlignment) DescriptorProto_ReservedRange _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRangeGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProto_ReservedRangeGlobalsTypeInternal _DescriptorProto_ReservedRange_globals_;
@@ -509,9 +549,13 @@ struct UninterpretedOptionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~UninterpretedOptionGlobalsTypeInternal() {}
   union {
-    UninterpretedOption _default;
+    alignas(::_pbi::kMaxMessageAlignment) UninterpretedOption _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(UninterpretedOptionGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UninterpretedOptionGlobalsTypeInternal _UninterpretedOption_globals_;
@@ -544,9 +588,13 @@ struct SourceCodeInfoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~SourceCodeInfoGlobalsTypeInternal() {}
   union {
-    SourceCodeInfo _default;
+    alignas(::_pbi::kMaxMessageAlignment) SourceCodeInfo _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(SourceCodeInfoGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceCodeInfoGlobalsTypeInternal _SourceCodeInfo_globals_;
@@ -579,9 +627,13 @@ struct GeneratedCodeInfoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~GeneratedCodeInfoGlobalsTypeInternal() {}
   union {
-    GeneratedCodeInfo _default;
+    alignas(::_pbi::kMaxMessageAlignment) GeneratedCodeInfo _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(GeneratedCodeInfoGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GeneratedCodeInfoGlobalsTypeInternal _GeneratedCodeInfo_globals_;
@@ -612,9 +664,13 @@ struct FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal : ::_pbi::
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal() {}
   union {
-    FeatureSetDefaults_FeatureSetEditionDefault _default;
+    alignas(::_pbi::kMaxMessageAlignment) FeatureSetDefaults_FeatureSetEditionDefault _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal _FeatureSetDefaults_FeatureSetEditionDefault_globals_;
@@ -649,9 +705,13 @@ struct ServiceOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~ServiceOptionsGlobalsTypeInternal() {}
   union {
-    ServiceOptions _default;
+    alignas(::_pbi::kMaxMessageAlignment) ServiceOptions _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(ServiceOptionsGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ServiceOptionsGlobalsTypeInternal _ServiceOptions_globals_;
@@ -685,9 +745,13 @@ struct OneofOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~OneofOptionsGlobalsTypeInternal() {}
   union {
-    OneofOptions _default;
+    alignas(::_pbi::kMaxMessageAlignment) OneofOptions _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(OneofOptionsGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OneofOptionsGlobalsTypeInternal _OneofOptions_globals_;
@@ -723,9 +787,13 @@ struct MethodOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~MethodOptionsGlobalsTypeInternal() {}
   union {
-    MethodOptions _default;
+    alignas(::_pbi::kMaxMessageAlignment) MethodOptions _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(MethodOptionsGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodOptionsGlobalsTypeInternal _MethodOptions_globals_;
@@ -764,9 +832,13 @@ struct MessageOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~MessageOptionsGlobalsTypeInternal() {}
   union {
-    MessageOptions _default;
+    alignas(::_pbi::kMaxMessageAlignment) MessageOptions _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(MessageOptionsGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MessageOptionsGlobalsTypeInternal _MessageOptions_globals_;
@@ -839,9 +911,13 @@ struct FileOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~FileOptionsGlobalsTypeInternal() {}
   union {
-    FileOptions _default;
+    alignas(::_pbi::kMaxMessageAlignment) FileOptions _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(FileOptionsGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileOptionsGlobalsTypeInternal _FileOptions_globals_;
@@ -895,9 +971,13 @@ struct FieldOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~FieldOptionsGlobalsTypeInternal() {}
   union {
-    FieldOptions _default;
+    alignas(::_pbi::kMaxMessageAlignment) FieldOptions _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(FieldOptionsGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptionsGlobalsTypeInternal _FieldOptions_globals_;
@@ -932,9 +1012,13 @@ struct FeatureSetDefaultsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~FeatureSetDefaultsGlobalsTypeInternal() {}
   union {
-    FeatureSetDefaults _default;
+    alignas(::_pbi::kMaxMessageAlignment) FeatureSetDefaults _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(FeatureSetDefaultsGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FeatureSetDefaultsGlobalsTypeInternal _FeatureSetDefaults_globals_;
@@ -974,9 +1058,13 @@ struct ExtensionRangeOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~ExtensionRangeOptionsGlobalsTypeInternal() {}
   union {
-    ExtensionRangeOptions _default;
+    alignas(::_pbi::kMaxMessageAlignment) ExtensionRangeOptions _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(ExtensionRangeOptionsGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExtensionRangeOptionsGlobalsTypeInternal _ExtensionRangeOptions_globals_;
@@ -1013,9 +1101,13 @@ struct EnumValueOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~EnumValueOptionsGlobalsTypeInternal() {}
   union {
-    EnumValueOptions _default;
+    alignas(::_pbi::kMaxMessageAlignment) EnumValueOptions _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(EnumValueOptionsGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueOptionsGlobalsTypeInternal _EnumValueOptions_globals_;
@@ -1052,9 +1144,13 @@ struct EnumOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~EnumOptionsGlobalsTypeInternal() {}
   union {
-    EnumOptions _default;
+    alignas(::_pbi::kMaxMessageAlignment) EnumOptions _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(EnumOptionsGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumOptionsGlobalsTypeInternal _EnumOptions_globals_;
@@ -1086,9 +1182,13 @@ struct OneofDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~OneofDescriptorProtoGlobalsTypeInternal() {}
   union {
-    OneofDescriptorProto _default;
+    alignas(::_pbi::kMaxMessageAlignment) OneofDescriptorProto _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(OneofDescriptorProtoGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OneofDescriptorProtoGlobalsTypeInternal _OneofDescriptorProto_globals_;
@@ -1128,9 +1228,13 @@ struct MethodDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~MethodDescriptorProtoGlobalsTypeInternal() {}
   union {
-    MethodDescriptorProto _default;
+    alignas(::_pbi::kMaxMessageAlignment) MethodDescriptorProto _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(MethodDescriptorProtoGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodDescriptorProtoGlobalsTypeInternal _MethodDescriptorProto_globals_;
@@ -1179,9 +1283,13 @@ struct FieldDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~FieldDescriptorProtoGlobalsTypeInternal() {}
   union {
-    FieldDescriptorProto _default;
+    alignas(::_pbi::kMaxMessageAlignment) FieldDescriptorProto _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(FieldDescriptorProtoGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldDescriptorProtoGlobalsTypeInternal _FieldDescriptorProto_globals_;
@@ -1214,9 +1322,13 @@ struct EnumValueDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase 
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~EnumValueDescriptorProtoGlobalsTypeInternal() {}
   union {
-    EnumValueDescriptorProto _default;
+    alignas(::_pbi::kMaxMessageAlignment) EnumValueDescriptorProto _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProtoGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueDescriptorProtoGlobalsTypeInternal _EnumValueDescriptorProto_globals_;
@@ -1247,9 +1359,13 @@ struct DescriptorProto_ExtensionRangeGlobalsTypeInternal : ::_pbi::MessageGlobal
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~DescriptorProto_ExtensionRangeGlobalsTypeInternal() {}
   union {
-    DescriptorProto_ExtensionRange _default;
+    alignas(::_pbi::kMaxMessageAlignment) DescriptorProto_ExtensionRange _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRangeGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProto_ExtensionRangeGlobalsTypeInternal _DescriptorProto_ExtensionRange_globals_;
@@ -1286,9 +1402,13 @@ struct ServiceDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~ServiceDescriptorProtoGlobalsTypeInternal() {}
   union {
-    ServiceDescriptorProto _default;
+    alignas(::_pbi::kMaxMessageAlignment) ServiceDescriptorProto _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(ServiceDescriptorProtoGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ServiceDescriptorProtoGlobalsTypeInternal _ServiceDescriptorProto_globals_;
@@ -1336,9 +1456,13 @@ struct EnumDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~EnumDescriptorProtoGlobalsTypeInternal() {}
   union {
-    EnumDescriptorProto _default;
+    alignas(::_pbi::kMaxMessageAlignment) EnumDescriptorProto _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(EnumDescriptorProtoGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDescriptorProtoGlobalsTypeInternal _EnumDescriptorProto_globals_;
@@ -1411,9 +1535,13 @@ struct DescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~DescriptorProtoGlobalsTypeInternal() {}
   union {
-    DescriptorProto _default;
+    alignas(::_pbi::kMaxMessageAlignment) DescriptorProto _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(DescriptorProtoGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProtoGlobalsTypeInternal _DescriptorProto_globals_;
@@ -1493,9 +1621,13 @@ struct FileDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~FileDescriptorProtoGlobalsTypeInternal() {}
   union {
-    FileDescriptorProto _default;
+    alignas(::_pbi::kMaxMessageAlignment) FileDescriptorProto _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(FileDescriptorProtoGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileDescriptorProtoGlobalsTypeInternal _FileDescriptorProto_globals_;
@@ -1528,9 +1660,13 @@ struct FileDescriptorSetGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   ~FileDescriptorSetGlobalsTypeInternal() {}
   union {
-    FileDescriptorSet _default;
+    alignas(::_pbi::kMaxMessageAlignment) FileDescriptorSet _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(FileDescriptorSetGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileDescriptorSetGlobalsTypeInternal _FileDescriptorSet_globals_;
@@ -2046,41 +2182,42 @@ static const ::_pbi::MigrationSchema
         {446, sizeof(::google::protobuf::GeneratedCodeInfo_Annotation)},
         {459, sizeof(::google::protobuf::GeneratedCodeInfo)},
 };
-static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::google::protobuf::_FileDescriptorSet_globals_._default,
-    &::google::protobuf::_FileDescriptorProto_globals_._default,
-    &::google::protobuf::_DescriptorProto_ExtensionRange_globals_._default,
-    &::google::protobuf::_DescriptorProto_ReservedRange_globals_._default,
-    &::google::protobuf::_DescriptorProto_globals_._default,
-    &::google::protobuf::_ExtensionRangeOptions_Declaration_globals_._default,
-    &::google::protobuf::_ExtensionRangeOptions_globals_._default,
-    &::google::protobuf::_FieldDescriptorProto_globals_._default,
-    &::google::protobuf::_OneofDescriptorProto_globals_._default,
-    &::google::protobuf::_EnumDescriptorProto_EnumReservedRange_globals_._default,
-    &::google::protobuf::_EnumDescriptorProto_globals_._default,
-    &::google::protobuf::_EnumValueDescriptorProto_globals_._default,
-    &::google::protobuf::_ServiceDescriptorProto_globals_._default,
-    &::google::protobuf::_MethodDescriptorProto_globals_._default,
-    &::google::protobuf::_FileOptions_globals_._default,
-    &::google::protobuf::_MessageOptions_globals_._default,
-    &::google::protobuf::_FieldOptions_EditionDefault_globals_._default,
-    &::google::protobuf::_FieldOptions_FeatureSupport_globals_._default,
-    &::google::protobuf::_FieldOptions_globals_._default,
-    &::google::protobuf::_OneofOptions_globals_._default,
-    &::google::protobuf::_EnumOptions_globals_._default,
-    &::google::protobuf::_EnumValueOptions_globals_._default,
-    &::google::protobuf::_ServiceOptions_globals_._default,
-    &::google::protobuf::_MethodOptions_globals_._default,
-    &::google::protobuf::_UninterpretedOption_NamePart_globals_._default,
-    &::google::protobuf::_UninterpretedOption_globals_._default,
-    &::google::protobuf::_FeatureSet_VisibilityFeature_globals_._default,
-    &::google::protobuf::_FeatureSet_globals_._default,
-    &::google::protobuf::_FeatureSetDefaults_FeatureSetEditionDefault_globals_._default,
-    &::google::protobuf::_FeatureSetDefaults_globals_._default,
-    &::google::protobuf::_SourceCodeInfo_Location_globals_._default,
-    &::google::protobuf::_SourceCodeInfo_globals_._default,
-    &::google::protobuf::_GeneratedCodeInfo_Annotation_globals_._default,
-    &::google::protobuf::_GeneratedCodeInfo_globals_._default,
+static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
+    file_message_globals[] = {
+        &::google::protobuf::_FileDescriptorSet_globals_,
+        &::google::protobuf::_FileDescriptorProto_globals_,
+        &::google::protobuf::_DescriptorProto_ExtensionRange_globals_,
+        &::google::protobuf::_DescriptorProto_ReservedRange_globals_,
+        &::google::protobuf::_DescriptorProto_globals_,
+        &::google::protobuf::_ExtensionRangeOptions_Declaration_globals_,
+        &::google::protobuf::_ExtensionRangeOptions_globals_,
+        &::google::protobuf::_FieldDescriptorProto_globals_,
+        &::google::protobuf::_OneofDescriptorProto_globals_,
+        &::google::protobuf::_EnumDescriptorProto_EnumReservedRange_globals_,
+        &::google::protobuf::_EnumDescriptorProto_globals_,
+        &::google::protobuf::_EnumValueDescriptorProto_globals_,
+        &::google::protobuf::_ServiceDescriptorProto_globals_,
+        &::google::protobuf::_MethodDescriptorProto_globals_,
+        &::google::protobuf::_FileOptions_globals_,
+        &::google::protobuf::_MessageOptions_globals_,
+        &::google::protobuf::_FieldOptions_EditionDefault_globals_,
+        &::google::protobuf::_FieldOptions_FeatureSupport_globals_,
+        &::google::protobuf::_FieldOptions_globals_,
+        &::google::protobuf::_OneofOptions_globals_,
+        &::google::protobuf::_EnumOptions_globals_,
+        &::google::protobuf::_EnumValueOptions_globals_,
+        &::google::protobuf::_ServiceOptions_globals_,
+        &::google::protobuf::_MethodOptions_globals_,
+        &::google::protobuf::_UninterpretedOption_NamePart_globals_,
+        &::google::protobuf::_UninterpretedOption_globals_,
+        &::google::protobuf::_FeatureSet_VisibilityFeature_globals_,
+        &::google::protobuf::_FeatureSet_globals_,
+        &::google::protobuf::_FeatureSetDefaults_FeatureSetEditionDefault_globals_,
+        &::google::protobuf::_FeatureSetDefaults_globals_,
+        &::google::protobuf::_SourceCodeInfo_Location_globals_,
+        &::google::protobuf::_SourceCodeInfo_globals_,
+        &::google::protobuf::_GeneratedCodeInfo_Annotation_globals_,
+        &::google::protobuf::_GeneratedCodeInfo_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -2377,7 +2514,7 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
     0,
     34,
     schemas,
-    file_default_instances,
+    file_message_globals,
     TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets,
     file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto,
     file_level_service_descriptors_google_2fprotobuf_2fdescriptor_2eproto,
