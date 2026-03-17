@@ -292,8 +292,7 @@ class PROTOBUF_EXPORT UnknownFieldSetFieldSkipper : public FieldSkipper {
       io::CodedInputStream* input, uint32_t tag) override;
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SkipMessage(
       io::CodedInputStream* input) override;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD void SkipUnknownEnum(int field_number,
-                                                           int value) override;
+  void SkipUnknownEnum(int field_number, int value) override;
 
  protected:
   UnknownFieldSet* unknown_fields_;

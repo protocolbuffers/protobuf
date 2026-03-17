@@ -31,6 +31,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/charset.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
@@ -38,6 +39,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
+#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
@@ -147,18 +149,18 @@ PROTOBUF_EXPORT std::string StringifyMessage(const Message& message) {
 }  // namespace internal
 
 std::string Message::DebugString() const {
-  return StringifyMessage(*this, internal::Option::kNone,
-                          FieldReporterLevel::kDebugString);
+  return internal::StringifyMessage(*this, internal::Option::kNone,
+                                    FieldReporterLevel::kDebugString);
 }
 
 std::string Message::ShortDebugString() const {
-  return StringifyMessage(*this, internal::Option::kShort,
-                          FieldReporterLevel::kShortDebugString);
+  return internal::StringifyMessage(*this, internal::Option::kShort,
+                                    FieldReporterLevel::kShortDebugString);
 }
 
 std::string Message::Utf8DebugString() const {
-  return StringifyMessage(*this, internal::Option::kUTF8,
-                          FieldReporterLevel::kUtf8DebugString);
+  return internal::StringifyMessage(*this, internal::Option::kUTF8,
+                                    FieldReporterLevel::kUtf8DebugString);
 }
 
 void Message::PrintDebugString() const { printf("%s", DebugString().c_str()); }
@@ -250,12 +252,8 @@ const FieldDescriptor* DefaultFinderFindExtensionByNumber(
 }
 
 const Descriptor* DefaultFinderFindAnyType(const Message& message,
-                                           const std::string& prefix,
+                                           const std::string& url_prefix,
                                            const std::string& name) {
-  if (prefix != internal::kTypeGoogleApisComPrefix &&
-      prefix != internal::kTypeGoogleProdComPrefix) {
-    return nullptr;
-  }
   return message.GetDescriptor()->file()->pool()->FindMessageTypeByName(name);
 }
 }  // namespace
@@ -487,12 +485,15 @@ class TextFormat::Parser::ParserImpl {
     const FieldDescriptor* any_value_field;
     if (internal::GetAnyFieldDescriptors(*message, &any_type_url_field,
                                          &any_value_field) &&
-        TryConsume("[")) {
-      std::string full_type_name, prefix;
-      DO(ConsumeAnyTypeUrl(&full_type_name, &prefix));
-      std::string prefix_and_full_type_name =
-          absl::StrCat(prefix, full_type_name);
-      DO(ConsumeBeforeWhitespace("]"));
+        LookingAt("[")) {
+      std::string full_type_name, url_prefix;
+      DO(ConsumeAnyTypeUrlOrFullTypeName(full_type_name, url_prefix));
+      if (url_prefix.empty()) {
+        ReportError("Type URL prefix is missing");
+        return false;
+      }
+      std::string url_prefix_and_full_type_name =
+          absl::StrCat(url_prefix, full_type_name);
       TryConsumeWhitespace();
       // ':' is optional between message labels and values.
       if (TryConsumeBeforeWhitespace(":")) {
@@ -500,11 +501,12 @@ class TextFormat::Parser::ParserImpl {
       }
       std::string serialized_value;
       const Descriptor* value_descriptor =
-          finder_ ? finder_->FindAnyType(*message, prefix, full_type_name)
-                  : DefaultFinderFindAnyType(*message, prefix, full_type_name);
+          finder_
+              ? finder_->FindAnyType(*message, url_prefix, full_type_name)
+              : DefaultFinderFindAnyType(*message, url_prefix, full_type_name);
       if (value_descriptor == nullptr) {
         ReportError(absl::StrCat("Could not find type \"",
-                                 prefix_and_full_type_name,
+                                 url_prefix_and_full_type_name,
                                  "\" stored in google.protobuf.Any."));
         return false;
       }
@@ -520,15 +522,19 @@ class TextFormat::Parser::ParserImpl {
         }
       }
       reflection->SetString(message, any_type_url_field,
-                            std::move(prefix_and_full_type_name));
+                            std::move(url_prefix_and_full_type_name));
       reflection->SetString(message, any_value_field,
                             std::move(serialized_value));
       return skip_parsing(true);
     }
-    if (TryConsume("[")) {
+    if (LookingAt("[")) {
       // Extension.
-      DO(ConsumeFullTypeName(&field_name));
-      DO(ConsumeBeforeWhitespace("]"));
+      std::string url_prefix;
+      DO(ConsumeAnyTypeUrlOrFullTypeName(field_name, url_prefix));
+      if (!url_prefix.empty()) {
+        ReportError("Extension name contains \"/\"");
+        return false;
+      }
       TryConsumeWhitespace();
 
       field = finder_ ? finder_->FindExtension(message, field_name)
@@ -708,10 +714,11 @@ class TextFormat::Parser::ParserImpl {
   // Skips the next field including the field's name and value.
   bool SkipField() {
     std::string field_name;
-    if (TryConsume("[")) {
+    if (LookingAt("[")) {
       // Extension name or type URL.
-      DO(ConsumeTypeUrlOrFullTypeName(&field_name));
-      DO(ConsumeBeforeWhitespace("]"));
+      std::string full_type_name, url_prefix;
+      DO(ConsumeAnyTypeUrlOrFullTypeName(full_type_name, url_prefix));
+      field_name = absl::StrCat(url_prefix, full_type_name);
     } else {
       DO(ConsumeIdentifierBeforeWhitespace(&field_name));
     }
@@ -1074,36 +1081,6 @@ class TextFormat::Parser::ParserImpl {
     return result;
   }
 
-  // Consume a string of form "<id1>.<id2>....<idN>".
-  bool ConsumeFullTypeName(std::string* name) {
-    DO(ConsumeIdentifier(name));
-    while (TryConsume(".")) {
-      std::string part;
-      DO(ConsumeIdentifier(&part));
-      absl::StrAppend(name, ".", part);
-    }
-    return true;
-  }
-
-  bool ConsumeTypeUrlOrFullTypeName(std::string* name) {
-    DO(ConsumeIdentifier(name));
-    while (true) {
-      std::string connector;
-      if (TryConsume(".")) {
-        connector = ".";
-      } else if (TryConsume("/")) {
-        connector = "/";
-      } else {
-        break;
-      }
-      std::string part;
-      DO(ConsumeIdentifier(&part));
-      *name += connector;
-      *name += part;
-    }
-    return true;
-  }
-
   // Consumes a string and saves its value in the text parameter.
   // Returns false if the token is not of type STRING.
   bool ConsumeString(std::string* text) {
@@ -1252,21 +1229,89 @@ class TextFormat::Parser::ParserImpl {
     return true;
   }
 
-  // Consumes Any::type_url value, of form "type.googleapis.com/full.type.Name"
-  // or "type.googleprod.com/full.type.Name"
-  bool ConsumeAnyTypeUrl(std::string* full_type_name, std::string* prefix) {
-    // TODO Extend Consume() to consume multiple tokens at once, so that
-    // this code can be written as just DO(Consume(kGoogleApisTypePrefix)).
-    DO(ConsumeIdentifier(prefix));
-    while (TryConsume(".")) {
-      std::string url;
-      DO(ConsumeIdentifier(&url));
-      absl::StrAppend(prefix, ".", url);
-    }
-    DO(Consume("/"));
-    absl::StrAppend(prefix, "/");
-    DO(ConsumeFullTypeName(full_type_name));
+  // Consumes an Any type URL of the form "some.domain/path/full.type.Name" or a
+  // full type name of the form "full.type.Name" enclosed in brackets (the
+  // enclosing `[]` are also consumed).
+  // The full type name is returned in `full_type_name`, and the type URL prefix
+  // is returned in `url_prefix` (which is empty if a full type name without a
+  // prefix is consumed).
+  bool ConsumeAnyTypeUrlOrFullTypeName(std::string& full_type_name,
+                                       std::string& url_prefix) {
+    // Collect all characters between [ and ] using the URL chars mode of
+    // the tokenizer. The mode switch must happen first so that it is active
+    // when we advance the tokenizer to the token following the "[" in the
+    // consume call.
+    tokenizer_.set_report_url_chars(true);
+    Consume("[");
 
+    std::string text;
+    std::string url_chars;
+    while (TryConsumeUrlChars(url_chars)) {
+      text.append(url_chars);
+    }
+
+    // The mode switch must happen first so that it is active when we advance
+    // the tokenizer to the token following the "]" in the consume call.
+    tokenizer_.set_report_url_chars(false);
+    DO(ConsumeBeforeWhitespace("]"));
+
+    size_t last_slash_pos = text.find_last_of('/');
+
+    if (last_slash_pos == std::string::npos) {
+      // No slash found, this must be a type name.
+      url_prefix = "";
+      full_type_name = text;  // validated below
+    } else {
+      // Found a slash, this must be a type URL.
+      url_prefix = text.substr(0, last_slash_pos + 1);
+      full_type_name = text.substr(last_slash_pos + 1);  // validated below
+
+      // Validate prefix
+      if (url_prefix == "/") {
+        ReportError("Type URL prefix is empty");
+        return false;
+      }
+
+      if (url_prefix[0] == '/') {
+        ReportError("Type URL starts with \"/\"");
+        return false;
+      }
+
+      // Validate URL percent encodings in prefix: Every '%' needs to be
+      // followed by two hex characters.
+      for (size_t i = 0; i < url_prefix.size(); ++i) {
+        static constexpr absl::CharSet kHexDigits =
+            absl::CharSet::AsciiHexDigits();
+        if (url_prefix[i] == '%' && (i + 2 >= url_prefix.size() ||
+                                     !kHexDigits.contains(url_prefix[i + 1]) ||
+                                     !kHexDigits.contains(url_prefix[i + 2]))) {
+          ReportError(absl::StrFormat("Invalid percent encode, got: \"%s\"",
+                                      url_prefix.substr(i, 3)));
+          return false;
+        }
+      }
+    }
+
+    // Validate type name: Must be non-empty and consist of valid identifiers
+    // separated by '.'.
+    for (absl::string_view identifier : absl::StrSplit(full_type_name, '.')) {
+      if (!tokenizer_.IsIdentifier(identifier)) {
+        ReportError(absl::StrFormat(
+            "Invalid identifier in type name, got: \"%s\"", identifier));
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  bool TryConsumeUrlChars(std::string& url_chars) {
+    if (!LookingAtType(io::Tokenizer::TYPE_URL_CHARS)) {
+      return false;
+    }
+
+    url_chars = tokenizer_.current().text;
+    tokenizer_.Next();
     return true;
   }
 
@@ -1731,9 +1776,9 @@ const FieldDescriptor* TextFormat::Finder::FindExtensionByNumber(
 }
 
 const Descriptor* TextFormat::Finder::FindAnyType(
-    const Message& message, const std::string& prefix,
+    const Message& message, const std::string& url_prefix,
     const std::string& name) const {
-  return DefaultFinderFindAnyType(message, prefix, name);
+  return DefaultFinderFindAnyType(message, url_prefix, name);
 }
 
 MessageFactory* TextFormat::Finder::FindExtensionFactory(

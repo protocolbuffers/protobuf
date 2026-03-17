@@ -135,6 +135,15 @@ void ValidationErrorTest::ParseAndBuildFileWithErrorSubstr(
   EXPECT_THAT(error_collector.text_, HasSubstr(expected_errors));
 }
 
+void ValidationErrorTest::ParseAndBuildFileWithWarningSubstr(
+    absl::string_view file_name, absl::string_view file_text,
+    absl::string_view expected_warning) {
+  MockErrorCollector error_collector;
+  EXPECT_TRUE(pool_.BuildFileCollectingErrors(ParseFile(file_name, file_text),
+                                              &error_collector));
+  EXPECT_THAT(error_collector.warning_text_, HasSubstr(expected_warning));
+}
+
 // Parse file_text as a FileDescriptorProto in text format and add it
 // to the DescriptorPool.  Expect errors to be produced which match the
 // given warning text.

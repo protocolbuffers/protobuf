@@ -147,8 +147,8 @@ void MessageGenerator::GenerateMembers(io::Printer* printer) const {
       "  $message_kt$.Dsl._create($message$.newBuilder()).apply { block() "
       "}._build()\n");
 
-  WriteMessageDocComment(printer, descriptor_, context_->options(),
-                         /* kdoc */ true);
+  java::WriteMessageDocComment(printer, descriptor_, context_->options(),
+                               /* kdoc */ true);
   printer->Emit(
       {
           io::Printer::Sub{"name_kt", absl::StrCat(descriptor_->name(), "Kt")}

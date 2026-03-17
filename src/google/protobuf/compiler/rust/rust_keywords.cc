@@ -18,13 +18,16 @@ namespace compiler {
 namespace rust {
 
 bool IsLegalRawIdentifierName(absl::string_view str_without_r_prefix) {
-  // These keywords cannot be used even with an r# prefix.
+  // These cannot be used even with an r# prefix.
   static const auto* illegal_raw_identifiers = new absl::flat_hash_set<
       std::string>{
       // https://doc.rust-lang.org/reference/identifiers.html#r-ident.syntax
       "crate", "self", "super", "Self",
       // https://doc.rust-lang.org/reference/identifiers.html#r-ident.raw.reserved
-      "_"};
+      "_",
+      // Collisions with methods on inherent impl will also break. We don't
+      // avoid all such collisions, only ones that are preexisting 'popular'.
+      "new"};
   return !illegal_raw_identifiers->contains(str_without_r_prefix);
 }
 

@@ -16,9 +16,11 @@ use protobuf::proto;
 
 #[gtest]
 fn test_reserved_keyword_in_accessors() {
-    let msg = Self__mangled_because_ident_isnt_a_legal_raw_identifier::new();
-    let res = msg.self__mangled_because_ident_isnt_a_legal_raw_identifier().r#for();
+    let mut msg = Self_::new();
+    let res = msg.self_().r#for();
     assert_that!(res, eq(0));
+    msg.set_new(true);
+    assert_that!(msg.new_(), eq(true));
 }
 
 #[gtest]
@@ -29,10 +31,7 @@ fn test_reserved_keyword_in_messages() {
 
 #[gtest]
 fn test_reserved_keyword_with_proto_macro() {
-    let _ = proto!(Self__mangled_because_ident_isnt_a_legal_raw_identifier {
-        r#true: false,
-        r#match: [0i32],
-    });
+    let _ = proto!(Self_ { r#true: false, r#match: [0i32] });
 }
 
 #[gtest]

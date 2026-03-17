@@ -44,8 +44,7 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
   bool is_foreign = IsCrossFileMessage(field);
   std::string field_name = FieldMemberName(field, split);
   std::string qualified_type = FieldMessageTypeName(field, opts);
-  std::string default_ref =
-      QualifiedDefaultInstanceName(field->message_type(), opts);
+
   std::string base = absl::StrCat(
       "::", ProtobufNamespace(opts), "::",
       HasDescriptorMethods(field->file(), opts) ? "Message" : "MessageLite");
@@ -53,7 +52,12 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
   return {
       {"Submsg", qualified_type},
       {"MemberType", use_base_class ? base : qualified_type},
-      {"kDefault", default_ref},
+      {"kDefaultRef",
+       absl::Substitute(
+           "*::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<$0>(&$"
+           "1)",
+           qualified_type,
+           QualifiedMsgGlobalsInstanceName(field->message_type(), opts))},
       Sub{"cast_to_field",
           use_base_class ? absl::Substitute("reinterpret_cast<$0*>", base) : ""}
           .ConditionalFunctionCall(),
@@ -193,7 +197,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $TsanDetectConcurrentRead$;
       $StrongRef$;
       const $Submsg$* p = $cast_field_$;
-      return p != nullptr ? *p : reinterpret_cast<const $Submsg$&>($kDefault$);
+      return p != nullptr ? *p : $kDefaultRef$;
     }
     inline const $Submsg$& $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
@@ -558,7 +562,7 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     inline const $Submsg$& $Msg$::_internal_$name_internal$() const {
       $StrongRef$;
       return $has_field$ ? static_cast<const $Submsg$&>(*$cast_field_$)
-                         : reinterpret_cast<const $Submsg$&>($kDefault$);
+                         : $kDefaultRef$;
     }
   )cc");
   p->Emit(R"cc(
@@ -783,20 +787,19 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
 void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   // TODO: move insertion points
 
-  p->Emit({GetEmitRepeatedFieldMutableSub(*opts_, p)},
-          R"cc(
-            //~ Note: no need to set hasbit in mutable_$name$(int index).
-            //~ Hasbits only need to be updated if a new element is
-            //~ (potentially) added, not if an existing element is mutated.
-            inline $Submsg$* $nonnull$ $Msg$::mutable_$name$(int index)
-                ABSL_ATTRIBUTE_LIFETIME_BOUND {
-              $WeakDescriptorSelfPin$;
-              $annotate_mutable$;
-              // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
-              $StrongRef$;
-              return $mutable$;
-            }
-          )cc");
+  p->Emit(R"cc(
+    //~ Note: no need to set hasbit in mutable_$name$(int index).
+    //~ Hasbits only need to be updated if a new element is
+    //~ (potentially) added, not if an existing element is mutated.
+    inline $Submsg$* $nonnull$ $Msg$::mutable_$name$(int index)
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
+      $annotate_mutable$;
+      // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
+      $StrongRef$;
+      return _internal_mutable_$name_internal$()->Mutable(index);
+    }
+  )cc");
 
   p->Emit(R"cc(
     inline $pb$::RepeatedPtrField<$Submsg$>* $nonnull$ $Msg$::mutable_$name$()
@@ -810,17 +813,16 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       return _internal_mutable_$name_internal$();
     }
   )cc");
-  p->Emit({GetEmitRepeatedFieldGetterSub(*opts_, p)},
-          R"cc(
-            inline const $Submsg$& $Msg$::$name$(int index) const
-                ABSL_ATTRIBUTE_LIFETIME_BOUND {
-              $WeakDescriptorSelfPin$;
-              $annotate_get$;
-              // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-              $StrongRef$;
-              return $getter$;
-            }
-          )cc");
+  p->Emit(R"cc(
+    inline const $Submsg$& $Msg$::$name$(int index) const
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
+      $annotate_get$;
+      // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
+      $StrongRef$;
+      return _internal_$name_internal$().Get(index);
+    }
+  )cc");
   p->Emit(R"cc(
     inline $Submsg$* $nonnull$ $Msg$::add_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {

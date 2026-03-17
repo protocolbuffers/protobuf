@@ -729,7 +729,7 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
 
   f->has_presence =
       (!upb_FieldDef_IsRepeated(f)) &&
-      (f->is_extension ||
+      (f->is_extension || _upb_FileDef_ImplicitFieldPresenceDisabled(f->file) ||
        (f->type_ == kUpb_FieldType_Message ||
         f->type_ == kUpb_FieldType_Group || upb_FieldDef_ContainingOneof(f) ||
         google_protobuf_FeatureSet_field_presence(f->resolved_features) !=

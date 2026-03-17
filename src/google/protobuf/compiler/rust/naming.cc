@@ -301,8 +301,7 @@ std::string FieldNameWithCollisionAvoidance(const FieldDescriptor& field) {
 
 std::string RsSafeName(absl::string_view name) {
   if (!IsLegalRawIdentifierName(name)) {
-    return absl::StrCat(name,
-                        "__mangled_because_ident_isnt_a_legal_raw_identifier");
+    return absl::StrCat(name, "_");
   }
   if (IsRustKeyword(name)) {
     return absl::StrCat("r#", name);

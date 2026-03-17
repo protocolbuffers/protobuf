@@ -272,20 +272,8 @@ class PROTOBUF_EXPORT UnknownFieldSet {
 
   Arena* arena() { return fields_.GetArena(); }
 
-  const RepeatedField<UnknownField>& fields() const {
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-    return fields_.field();
-#else
-    return fields_;
-#endif
-  }
-  RepeatedField<UnknownField>& fields() {
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-    return fields_.field();
-#else
-    return fields_;
-#endif
-  }
+  const RepeatedField<UnknownField>& fields() const { return fields_.field(); }
+  RepeatedField<UnknownField>& fields() { return fields_.field(); }
 
   void ClearFallback();
   void SwapSlow(UnknownFieldSet* other);
@@ -323,11 +311,7 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   }
 
   std::string* v2_data_ = nullptr;
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
   internal::RepeatedFieldWithArena<UnknownField> fields_;
-#else
-  RepeatedField<UnknownField> fields_;
-#endif
 };
 
 namespace internal {

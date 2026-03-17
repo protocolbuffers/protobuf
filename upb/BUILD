@@ -8,9 +8,9 @@
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_python//python:defs.bzl", "py_binary")
-load("//bazel/private:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
-load("//upb/bazel:amalgamation.bzl", "upb_amalgamation")
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel/private:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
+load("//upb/bazel/private/oss:amalgamation.bzl", "upb_amalgamation")  # buildifier: disable=bzl-visibility
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -41,7 +41,7 @@ config_setting(
 bool_flag(
     name = "fasttable_enabled",
     build_setting_default = False,
-    visibility = ["//bazel:__pkg__"],
+    visibility = ["//upb/bazel:__pkg__"],
 )
 
 config_setting(
@@ -58,7 +58,7 @@ config_setting(
 upb_proto_library_copts(
     name = "upb_proto_library_copts",
     copts = UPB_DEFAULT_COPTS,
-    visibility = ["//bazel:__pkg__"],
+    visibility = ["//upb/bazel:__pkg__"],
 )
 
 # Please update copy.bara.sky target = ":friends" if

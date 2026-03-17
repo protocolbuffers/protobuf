@@ -7,16 +7,13 @@
 
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS")
 load(
-    "//bazel:upb_proto_library.bzl",
+    "//upb/bazel:upb_proto_library.bzl",
     "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
-load(
-    "//upb/bazel:build_defs.bzl",
-    "UPB_DEFAULT_COPTS",
-    "make_shell_script",
-)
+load(":build_defs.bzl", "make_shell_script")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -153,5 +150,31 @@ sh_test(
         ":conformance_upb_dynamic_minitable",
         "//conformance:conformance_test_runner",
     ],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+)
+
+make_shell_script(
+    name = "gen_test_conformance_upb_performance",
+    out = "test_conformance_upb_performance.sh",
+    contents = "$1 --performance --maximum_edition 2023 --enforce_recommended --failure_list $2 $3",
+)
+
+sh_test(
+    name = "test_conformance_upb_performance",
+    srcs = ["test_conformance_upb_performance.sh"],
+    args = [
+        "$(location //conformance:conformance_test_runner)",
+        "$(location :conformance_upb_failures_performance.txt)",
+        "$(location :conformance_upb)",
+    ],
+    data = [
+        "conformance_upb_failures_performance.txt",
+        ":conformance_upb",
+        "//conformance:conformance_test_runner",
+    ],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )

@@ -7,14 +7,13 @@ load(
     "@rules_pkg//pkg:mappings.bzl",
     "pkg_attributes",
     "pkg_files",
-    "strip_prefix",
 )
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
-load("//bazel:upb_c_proto_library.bzl", "upb_c_proto_library")
-load("//bazel:upb_proto_reflection_library.bzl", "upb_proto_reflection_library")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
+load("//upb/bazel:upb_c_proto_library.bzl", "upb_c_proto_library")
+load("//upb/bazel:upb_proto_reflection_library.bzl", "upb_proto_reflection_library")
 load(
     "//upb_generator:bootstrap_compiler.bzl",
     "bootstrap_cc_library",

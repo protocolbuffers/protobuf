@@ -38,6 +38,8 @@ namespace compiler {
 namespace rust {
 namespace {
 
+using Sub = ::google::protobuf::io::Printer::Sub;
+
 void MessageNew(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
@@ -318,21 +320,21 @@ void TypeConversions(Context& ctx, const Descriptor& msg) {
       ctx.Emit(
           R"rs(
           impl $pbr$::CppMapTypeConversions for $Msg$ {
-              fn get_prototype() -> $pbr$::MapValue {
-                  $pbr$::MapValue::make_message(<$Msg$View as $std$::default::Default>::default().raw_msg())
+              fn get_prototype() -> $pbr$::FfiMapValue {
+                  $pbr$::FfiMapValue::make_message(<$Msg$View as $std$::default::Default>::default().raw_msg())
               }
 
-              fn to_map_value(self) -> $pbr$::MapValue {
-                  $pbr$::MapValue::make_message(std::mem::ManuallyDrop::new(self).raw_msg())
+              fn to_map_value(self) -> $pbr$::FfiMapValue {
+                  $pbr$::FfiMapValue::make_message(std::mem::ManuallyDrop::new(self).raw_msg())
               }
 
-              unsafe fn from_map_value<'b>(value: $pbr$::MapValue) -> $Msg$View<'b> {
-                  debug_assert_eq!(value.tag, $pbr$::MapValueTag::Message);
+              unsafe fn from_map_value<'b>(value: $pbr$::FfiMapValue) -> $Msg$View<'b> {
+                  debug_assert_eq!(value.tag, $pbr$::FfiMapValueTag::Message);
                   unsafe { $pbr$::MessageViewInner::wrap_raw(value.val.m).into() }
               }
 
-              unsafe fn mut_from_map_value<'b>(value: $pbr$::MapValue) -> $Msg$Mut<'b> {
-                  debug_assert_eq!(value.tag, $pbr$::MapValueTag::Message);
+              unsafe fn mut_from_map_value<'b>(value: $pbr$::FfiMapValue) -> $Msg$Mut<'b> {
+                  debug_assert_eq!(value.tag, $pbr$::FfiMapValueTag::Message);
                   let inner = unsafe { $pbr$::MessageMutInner::wrap_raw(value.val.m) };
                   $Msg$Mut { inner }
               }
@@ -409,6 +411,9 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
   upb::MessageDefPtr upb_msg = pool.FindMessageByName(msg.full_name().data());
   ctx.Emit(
       {
+          // There's also ${$/$}$-style begin and end tokens, but those might
+          // be harder to retrofit here because of the giant-template style.
+          Sub("MsgDefinition", RsSafeName(msg.name())).AnnotatedAs(&msg),
           {"Msg", RsSafeName(msg.name())},
           {"Msg::new", [&] { MessageNew(ctx, msg); }},
           {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
@@ -520,11 +525,14 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
       },
       R"rs(
         #[allow(non_camel_case_types)]
-        pub struct $Msg$ {
+        pub struct $MsgDefinition$ {
           inner: $pbr$::OwnedMessageInner<$Msg$>
         }
 
-        impl $pb$::Message for $Msg$ {}
+        impl $pb$::Message for $Msg$ {
+          type MessageView<'msg> = $Msg$View<'msg>;
+          type MessageMut<'msg> = $Msg$Mut<'msg>;
+        }
 
         impl $std$::default::Default for $Msg$ {
           fn default() -> Self {

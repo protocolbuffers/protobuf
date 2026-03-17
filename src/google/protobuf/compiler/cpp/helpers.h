@@ -54,6 +54,13 @@ inline absl::string_view ProtobufNamespace(const Options& opts) {
   return opts.opensource_runtime ? kOssNs : kGoogle3Ns;
 }
 
+// A helper for calling FieldDescriptor::CalculateCppRepeatedType() which is
+// private.
+inline FieldDescriptor::CppRepeatedType CalculateFieldDescriptorRepeatedType(
+    const FieldDescriptor* field) {
+  return field->CalculateCppRepeatedType();
+}
+
 inline std::string DeprecatedAttribute(const Options&,
                                        const FieldDescriptor* d) {
   return d->options().deprecated() ? "[[deprecated]] " : "";
@@ -151,27 +158,37 @@ std::string QualifiedExtensionName(const FieldDescriptor* d,
 std::string QualifiedExtensionName(const FieldDescriptor* d);
 
 // Type name of default instance.
-std::string DefaultInstanceType(const Descriptor* descriptor,
-                                const Options& options, bool split = false);
+std::string SplitDefaultInstanceType(const Descriptor* descriptor,
+                                     const Options& options);
 
 // Non-qualified name of the default_instance of this message.
-std::string DefaultInstanceName(const Descriptor* descriptor,
-                                const Options& options, bool split = false);
+std::string SplitDefaultInstanceName(const Descriptor* descriptor,
+                                     const Options& options);
+
+// Type name of globals instance.
+std::string MsgGlobalsInstanceType(const Descriptor* descriptor,
+                                   const Options& options);
+
+// Non-qualified name of the globals instance of this message.
+std::string MsgGlobalsInstanceName(const Descriptor* descriptor,
+                                   const Options& options);
 
 // Non-qualified name of the default instance pointer. This is used only for
 // implicit weak fields, where we need an extra indirection.
-std::string DefaultInstancePtr(const Descriptor* descriptor,
-                               const Options& options, bool split = false);
+std::string MsgGlobalsInstancePtr(const Descriptor* descriptor,
+                                  const Options& options);
 
 // Fully qualified name of the default_instance of this message.
-std::string QualifiedDefaultInstanceName(const Descriptor* descriptor,
-                                         const Options& options,
-                                         bool split = false);
+std::string QualifiedSplitDefaultInstanceName(const Descriptor* descriptor,
+                                              const Options& options);
+
+// Fully qualified name of the globals instance of this message.
+std::string QualifiedMsgGlobalsInstanceName(const Descriptor* descriptor,
+                                            const Options& options);
 
 // Fully qualified name of the default instance pointer.
-std::string QualifiedDefaultInstancePtr(const Descriptor* descriptor,
-                                        const Options& options,
-                                        bool split = false);
+std::string QualifiedMsgGlobalsInstancePtr(const Descriptor* descriptor,
+                                           const Options& options);
 
 // Name of the ClassData subclass used for a message.
 std::string ClassDataType(const Descriptor* descriptor, const Options& options);
@@ -484,10 +501,12 @@ const FieldDescriptor* FindHottestField(
 // Does the file contain any definitions that need extension_set.h?
 bool HasExtensionsOrExtendableMessage(const FileDescriptor* file);
 
-// Does the file have any repeated fields, necessitating the file to include
-// repeated_field.h? This does not include repeated extensions, since those are
-// all stored internally in an ExtensionSet, not a separate RepeatedField*.
-bool HasRepeatedFields(const FileDescriptor* file);
+// Does the file have any repeated fields matching the given repeated type,
+// necessitating the file to include repeated_field.h/repeated_field_proxy.h?
+// This does not include repeated extensions, since those are all stored
+// internally in an ExtensionSet, not a separate RepeatedField*.
+bool HasRepeatedFields(const FileDescriptor* file,
+                       FieldDescriptor::CppRepeatedType cpp_repeated_type);
 
 // Does the file have any string/bytes fields with ctype=STRING_PIECE? This
 // does not include extensions, since ctype is ignored for extensions.
@@ -769,7 +788,7 @@ template <bool do_nested_types, class T>
 void ForEachField(const Descriptor* d, T&& func) {
   if (do_nested_types) {
     for (int i = 0; i < d->nested_type_count(); i++) {
-      ForEachField<true>(d->nested_type(i), std::forward<T&&>(func));
+      ForEachField<true>(d->nested_type(i), std::forward<T>(func));
     }
   }
   for (int i = 0; i < d->extension_count(); i++) {
@@ -783,7 +802,7 @@ void ForEachField(const Descriptor* d, T&& func) {
 template <class T>
 void ForEachField(const FileDescriptor* d, T&& func) {
   for (int i = 0; i < d->message_type_count(); i++) {
-    ForEachField<true>(d->message_type(i), std::forward<T&&>(func));
+    ForEachField<true>(d->message_type(i), std::forward<T>(func));
   }
   for (int i = 0; i < d->extension_count(); i++) {
     func(d->extension(i));
@@ -1237,69 +1256,6 @@ bool HasOnDeserializeTracker(const Descriptor* descriptor,
 // `&ClassName::PostLoopHandler` which should be a static function of the right
 // signature.
 bool NeedsPostLoopHandler(const Descriptor* descriptor, const Options& options);
-
-// Emit the repeated field getter for the custom options.
-// Depending on the bounds check mode specified, this will emit the
-// corresponding getter.
-inline auto GetEmitRepeatedFieldGetterSub(const Options& options,
-                                          io::Printer* p) {
-  return io::Printer::Sub{
-      "getter",
-      [&options, p] {
-        switch (options.bounds_check_mode) {
-          case BoundsCheckMode::kNoEnforcement:
-            p->Emit(R"cc(_internal_$name_internal$().Get(index))cc");
-            break;
-          case BoundsCheckMode::kReturnDefaultValue:
-            p->Emit(R"cc(
-              $pbi$::CheckedGetOrDefault(_internal_$name_internal$(), index)
-            )cc");
-            break;
-          case BoundsCheckMode::kAbort:
-            p->Emit(R"cc(
-              $pbi$::CheckedGetOrAbort(_internal_$name_internal$(), index)
-            )cc");
-            break;
-        }
-      }}
-      .WithSuffix("");
-}
-
-// Emit the code for getting a mutable element from a repeated field. This will
-// generate different code depending on the `bounds_check_mode` specified in the
-// options.
-// TODO: b/347304492 Harden this function by taking in the field and checking
-// if splitting is supported.
-inline auto GetEmitRepeatedFieldMutableSub(const Options& options,
-                                           io::Printer* p,
-                                           bool use_stringpiecefield = false) {
-  return io::Printer::Sub{
-      "mutable",
-      [&options, p, use_stringpiecefield] {
-        switch (options.bounds_check_mode) {
-          case BoundsCheckMode::kNoEnforcement:
-          case BoundsCheckMode::kReturnDefaultValue:
-            if (use_stringpiecefield) {
-              p->Emit("$field$.Mutable(index)");
-            } else {
-              p->Emit(
-                  R"cc(_internal_mutable_$name_internal$()->Mutable(index))cc");
-            }
-            break;
-          case BoundsCheckMode::kAbort:
-            if (use_stringpiecefield) {
-              p->Emit("$pbi$::CheckedMutableOrAbort(&$field$, index)");
-            } else {
-              p->Emit(R"cc(
-                $pbi$::CheckedMutableOrAbort(
-                    _internal_mutable_$name_internal$(), index)
-              )cc");
-            }
-            break;
-        }
-      }}
-      .WithSuffix("");
-}
 
 // Priority used for static initializers.
 enum InitPriority {

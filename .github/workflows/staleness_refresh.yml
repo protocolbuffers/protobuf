@@ -20,7 +20,7 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
 
     steps:
-      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
         with:
           # Note: this token has an expiration date, so if the workflow starts
           # failing then you may need to generate a fresh token.

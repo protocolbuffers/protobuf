@@ -42,8 +42,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                            [&] {
                              if (field.type() == FieldDescriptor::TYPE_STRING) {
                                ctx.Emit(R"rs(
-              // SAFETY: The runtime doesn't require ProtoStr to be UTF-8.
-              unsafe { $pb$::ProtoStr::from_utf8_unchecked(str_view.as_ref()) }
+              $pb$::ProtoStr::from_utf8_unchecked(unsafe { str_view.as_ref() })
             )rs");
                              } else {
                                ctx.Emit("unsafe { str_view.as_ref() }");

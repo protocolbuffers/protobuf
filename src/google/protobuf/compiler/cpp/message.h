@@ -77,6 +77,8 @@ class MessageGenerator {
   // default instance.
   void GenerateConstexprConstructor(io::Printer* p);
 
+  void GenerateSourceDefaultInstance(io::Printer* p);
+
   void GenerateSchema(io::Printer* p, int offset);
 
   // Generate the field offsets array.  Returns the total number of entries
@@ -143,14 +145,11 @@ class MessageGenerator {
     // Some field is initialized to non-zero values. Eg string fields pointing
     // to default string.
     bool needs_memcpy = false;
-    // Some field has a copy of the arena.
-    bool needs_arena_seeding = false;
     // Some field has logic that needs to run.
     bool needs_to_run_constructor = false;
   };
-  NewOpRequirements GetNewOp(io::Printer* arena_emitter,
-                             bool use_arena_offset) const;
-  void GenerateNewOp(io::Printer* p, bool use_arena_offset) const;
+  NewOpRequirements GetNewOp() const;
+  void GenerateNewOp(io::Printer* p) const;
 
 
   // Helpers for GenerateSerializeWithCachedSizes().

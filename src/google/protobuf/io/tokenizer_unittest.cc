@@ -11,12 +11,15 @@
 
 #include "google/protobuf/io/tokenizer.h"
 
-#include <limits.h>
 #include <math.h>
 
+#include <cstddef>
+#include <limits>
+#include <string>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
+#include <gmock/gmock.h>
+#include "absl/base/macros.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -59,7 +62,7 @@ namespace {
   };                                                              \
                                                                   \
   TEST_F(FIXTURE##_##NAME##_DD, NAME) {                           \
-    for (int i = 0; i < ABSL_ARRAYSIZE(CASES); i++) {             \
+    for (size_t i = 0; i < ABSL_ARRAYSIZE(CASES); i++) {          \
       SCOPED_TRACE(testing::Message()                             \
                    << #CASES " case #" << i << ": " << CASES[i]); \
       DoSingleCase(CASES[i]);                                     \
@@ -94,12 +97,51 @@ namespace {
 
 // -------------------------------------------------------------------
 
+// A simple equals matcher for Tokenizer::Token.
+MATCHER_P(EqualsToken, token,
+          absl::StrFormat(
+              "%s equal to Token{TokenType(%s), \"%s\", %d, %d, %d}",
+              negation ? "isn't" : "is", testing::PrintToString(token.type),
+              token.text, token.line, token.column, token.end_column)) {
+  if (arg.type != token.type || arg.text != token.text ||
+      arg.line != token.line || arg.column != token.column ||
+      arg.end_column != token.end_column) {
+    *result_listener << absl::StrFormat(
+        "which is Token{TokenType(%s), \"%s\", %d, %d, %d}",
+        testing::PrintToString(arg.type), arg.text, arg.line, arg.column,
+        arg.end_column);
+    return false;
+  }
+
+  return true;
+}
+
+// Advances the tokenizer to the next token and verifies that the next token
+// matches the given, expected one. Also verifies that the previous token is
+// updated correctly.
+void ExpectNextToken(Tokenizer& tokenizer,
+                     const Tokenizer::Token& expected_token) {
+  Tokenizer::Token previous = tokenizer.current();
+
+  // Next() should only return false when it hits the end token.
+  if (expected_token.type != Tokenizer::TYPE_END) {
+    ASSERT_TRUE(tokenizer.Next());
+  } else {
+    ASSERT_FALSE(tokenizer.Next());
+  }
+
+  EXPECT_THAT(tokenizer.previous(), EqualsToken(previous));
+  EXPECT_THAT(tokenizer.current(), EqualsToken(expected_token));
+}
+
+// -------------------------------------------------------------------
+
 // An input stream that is basically like an ArrayInputStream but sometimes
 // returns empty buffers, just to throw us off.
 class TestInputStream : public ZeroCopyInputStream {
  public:
-  TestInputStream(const void* data, int size, int block_size)
-      : array_stream_(data, size, block_size), counter_(0) {}
+  TestInputStream(const void* data, size_t size, int block_size)
+      : array_stream_(data, static_cast<int>(size), block_size), counter_(0) {}
   ~TestInputStream() override = default;
 
   // implements ZeroCopyInputStream ----------------------------------
@@ -156,7 +198,8 @@ class TokenizerTest : public testing::Test {
   // For easy testing.
   uint64_t ParseInteger(const std::string& text) {
     uint64_t result;
-    EXPECT_TRUE(Tokenizer::ParseInteger(text, kuint64max, &result))
+    EXPECT_TRUE(Tokenizer::ParseInteger(
+        text, std::numeric_limits<uint64_t>::max(), &result))
         << "'" << text << "'";
     return result;
   }
@@ -449,44 +492,18 @@ TEST_2D(TokenizerTest, MultipleTokens, kMultiTokenCases, kBlockSizes) {
   Tokenizer tokenizer(&input, &error_collector);
 
   // Before Next() is called, the initial token should always be TYPE_START.
-  EXPECT_EQ(Tokenizer::TYPE_START, tokenizer.current().type);
-  EXPECT_EQ("", tokenizer.current().text);
-  EXPECT_EQ(0, tokenizer.current().line);
-  EXPECT_EQ(0, tokenizer.current().column);
-  EXPECT_EQ(0, tokenizer.current().end_column);
+  EXPECT_THAT(tokenizer.current(), EqualsToken(Tokenizer::Token{
+                                       Tokenizer::TYPE_START, "", 0, 0, 0}));
 
   // Loop through all expected tokens.
-  int i = 0;
-  Tokenizer::Token token;
+  size_t i = 0;
+  Tokenizer::Token expected_token;
   do {
-    token = kMultiTokenCases_case.output[i++];
-
-    SCOPED_TRACE(testing::Message() << "Token #" << i << ": " << token.text);
-
-    Tokenizer::Token previous = tokenizer.current();
-
-    // Next() should only return false when it hits the end token.
-    if (token.type != Tokenizer::TYPE_END) {
-      ASSERT_TRUE(tokenizer.Next());
-    } else {
-      ASSERT_FALSE(tokenizer.Next());
-    }
-
-    // Check that the previous token is set correctly.
-    EXPECT_EQ(previous.type, tokenizer.previous().type);
-    EXPECT_EQ(previous.text, tokenizer.previous().text);
-    EXPECT_EQ(previous.line, tokenizer.previous().line);
-    EXPECT_EQ(previous.column, tokenizer.previous().column);
-    EXPECT_EQ(previous.end_column, tokenizer.previous().end_column);
-
-    // Check that the token matches the expected one.
-    EXPECT_EQ(token.type, tokenizer.current().type);
-    EXPECT_EQ(token.text, tokenizer.current().text);
-    EXPECT_EQ(token.line, tokenizer.current().line);
-    EXPECT_EQ(token.column, tokenizer.current().column);
-    EXPECT_EQ(token.end_column, tokenizer.current().end_column);
-
-  } while (token.type != Tokenizer::TYPE_END);
+    expected_token = kMultiTokenCases_case.output[i++];
+    SCOPED_TRACE(testing::Message()
+                 << "Token #" << i << ": " << expected_token.text);
+    ExpectNextToken(tokenizer, expected_token);
+  } while (expected_token.type != Tokenizer::TYPE_END);
 
   // There should be no errors.
   EXPECT_TRUE(error_collector.text_.empty());
@@ -524,44 +541,141 @@ TEST_2D(TokenizerTest, MultipleWhitespaceTokens, kMultiWhitespaceTokenCases,
   tokenizer.set_report_newlines(true);
 
   // Before Next() is called, the initial token should always be TYPE_START.
-  EXPECT_EQ(Tokenizer::TYPE_START, tokenizer.current().type);
-  EXPECT_EQ("", tokenizer.current().text);
-  EXPECT_EQ(0, tokenizer.current().line);
-  EXPECT_EQ(0, tokenizer.current().column);
-  EXPECT_EQ(0, tokenizer.current().end_column);
+  EXPECT_THAT(tokenizer.current(), EqualsToken(Tokenizer::Token{
+                                       Tokenizer::TYPE_START, "", 0, 0, 0}));
 
   // Loop through all expected tokens.
-  int i = 0;
-  Tokenizer::Token token;
+  size_t i = 0;
+  Tokenizer::Token expected_token;
   do {
-    token = kMultiWhitespaceTokenCases_case.output[i++];
+    expected_token = kMultiWhitespaceTokenCases_case.output[i++];
+    SCOPED_TRACE(testing::Message()
+                 << "Token #" << i << ": " << expected_token.text);
+    ExpectNextToken(tokenizer, expected_token);
+  } while (expected_token.type != Tokenizer::TYPE_END);
 
-    SCOPED_TRACE(testing::Message() << "Token #" << i << ": " << token.text);
+  // There should be no errors.
+  EXPECT_TRUE(error_collector.text_.empty());
+}
 
-    Tokenizer::Token previous = tokenizer.current();
+TEST_1D(TokenizerTest, UrlCharsMode, kBlockSizes) {
+  std::string input_string =
+      "foo\n1 1.2\t+\r'bar' foo\n1 1.2\t+\r'bar'\v!&[=* foo\n1 1.2\t+\r'bar'";
 
-    // Next() should only return false when it hits the end token.
-    if (token.type != Tokenizer::TYPE_END) {
-      ASSERT_TRUE(tokenizer.Next());
-    } else {
-      ASSERT_FALSE(tokenizer.Next());
-    }
+  // Set up the tokenizer.
+  TestInputStream input(input_string.data(), input_string.size(),
+                        kBlockSizes_case);
+  TestErrorCollector error_collector;
+  Tokenizer tokenizer(&input, &error_collector);
 
-    // Check that the previous token is set correctly.
-    EXPECT_EQ(previous.type, tokenizer.previous().type);
-    EXPECT_EQ(previous.text, tokenizer.previous().text);
-    EXPECT_EQ(previous.line, tokenizer.previous().line);
-    EXPECT_EQ(previous.column, tokenizer.previous().column);
-    EXPECT_EQ(previous.end_column, tokenizer.previous().end_column);
+  // Before Next() is called, the initial token should always be TYPE_START.
+  EXPECT_THAT(tokenizer.current(), EqualsToken(Tokenizer::Token{
+                                       Tokenizer::TYPE_START, "", 0, 0, 0}));
 
-    // Check that the token matches the expected one.
-    EXPECT_EQ(token.type, tokenizer.current().type);
-    EXPECT_EQ(token.text, tokenizer.current().text);
-    EXPECT_EQ(token.line, tokenizer.current().line);
-    EXPECT_EQ(token.column, tokenizer.current().column);
-    EXPECT_EQ(token.end_column, tokenizer.current().end_column);
+  // URL chars mode is disabled by default, input should be tokenized
+  // into regular tokens.
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_IDENTIFIER, "foo", 0, 0, 3});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_INTEGER, "1", 1, 0, 1});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_FLOAT, "1.2", 1, 2, 5});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_SYMBOL, "+", 1, 8, 9});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_STRING, "'bar'", 1, 10, 15});
 
-  } while (token.type != Tokenizer::TYPE_END);
+  // Switch to URL chars mode. All URL characters should be reported as "groups"
+  // of URL chars separated py non-URL characters as symbols and by newlines and
+  // whitespace (reporting is disabled by default).
+  tokenizer.set_report_url_chars(true);
+
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_URL_CHARS, "foo", 1, 16, 19});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_URL_CHARS, "1", 2, 0, 1});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_URL_CHARS, "1.2", 2, 2, 5});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_URL_CHARS, "+", 2, 8, 9});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_SYMBOL, "'", 2, 10, 11});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_URL_CHARS, "bar", 2, 11, 14});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_SYMBOL, "'", 2, 14, 15});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_URL_CHARS, "!&", 2, 16, 18});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_SYMBOL, "[", 2, 18, 19});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_URL_CHARS, "=*", 2, 19, 21});
+
+  // Disable URL chars mode again, input should be tokenized into regular
+  // tokens.
+  tokenizer.set_report_url_chars(false);
+
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_IDENTIFIER, "foo", 2, 22, 25});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_INTEGER, "1", 3, 0, 1});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_FLOAT, "1.2", 3, 2, 5});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_SYMBOL, "+", 3, 8, 9});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_STRING, "'bar'", 3, 10, 15});
+
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_END, "", 3, 15, 15});
+
+  // There should be no errors.
+  EXPECT_TRUE(error_collector.text_.empty());
+}
+
+TEST_1D(TokenizerTest, UrlCharsModeAcceptedChars, kBlockSizes) {
+  std::string input_string = "azAZ09_  -.~!$&()*+,;=%/  [}:@";
+
+  // Set up the tokenizer.
+  TestInputStream input(input_string.data(), input_string.size(),
+                        kBlockSizes_case);
+  TestErrorCollector error_collector;
+  Tokenizer tokenizer(&input, &error_collector);
+  tokenizer.set_report_url_chars(true);
+
+  // Before Next() is called, the initial token should always be TYPE_START.
+  EXPECT_THAT(tokenizer.current(), EqualsToken(Tokenizer::Token{
+                                       Tokenizer::TYPE_START, "", 0, 0, 0}));
+
+  // Acceped characters should be reported as URL chars.
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_URL_CHARS, "azAZ09_", 0, 0, 7});
+  ExpectNextToken(tokenizer,
+                  {Tokenizer::TYPE_URL_CHARS, "-.~!$&()*+,;=%/", 0, 9, 24});
+
+  // Non-accepted characters should be reported as symbols.
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_SYMBOL, "[", 0, 26, 27});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_SYMBOL, "}", 0, 27, 28});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_SYMBOL, ":", 0, 28, 29});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_SYMBOL, "@", 0, 29, 30});
+
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_END, "", 0, 30, 30});
+
+  // There should be no errors.
+  EXPECT_TRUE(error_collector.text_.empty());
+}
+
+TEST_1D(TokenizerTest, UrlCharsModeWithWhitespaceReporting, kBlockSizes) {
+  std::string input_string = "A \nB \nC \nD";
+
+  // Set up the tokenizer.
+  TestInputStream input(input_string.data(), input_string.size(),
+                        kBlockSizes_case);
+  TestErrorCollector error_collector;
+  Tokenizer tokenizer(&input, &error_collector);
+
+  tokenizer.set_report_url_chars(true);
+
+  // Before Next() is called, the initial token should always be TYPE_START.
+  EXPECT_THAT(tokenizer.current(), EqualsToken(Tokenizer::Token{
+                                       Tokenizer::TYPE_START, "", 0, 0, 0}));
+
+  // Whitespace and newline reporting are disabled by default.
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_URL_CHARS, "A", 0, 0, 1});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_URL_CHARS, "B", 1, 0, 1});
+
+  // Enable whitespace reporting only.
+  tokenizer.set_report_whitespace(true);
+
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_WHITESPACE, " \n", 1, 1, 0});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_URL_CHARS, "C", 2, 0, 1});
+
+  // Enable whitespace and newline reporting.
+  tokenizer.set_report_newlines(true);
+
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_WHITESPACE, " ", 2, 1, 2});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_NEWLINE, "\n", 2, 2, 0});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_URL_CHARS, "D", 3, 0, 1});
+
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_END, "", 3, 1, 1});
 
   // There should be no errors.
   EXPECT_TRUE(error_collector.text_.empty());
@@ -867,7 +981,8 @@ TEST_F(TokenizerTest, ParseInteger) {
   EXPECT_EQ(123, ParseInteger("123"));
   EXPECT_EQ(0xabcdef12u, ParseInteger("0xabcdef12"));
   EXPECT_EQ(0xabcdef12u, ParseInteger("0xABCDEF12"));
-  EXPECT_EQ(kuint64max, ParseInteger("0xFFFFFFFFFFFFFFFF"));
+  EXPECT_EQ(std::numeric_limits<uint64_t>::max(),
+            ParseInteger("0xFFFFFFFFFFFFFFFF"));
   EXPECT_EQ(01234567, ParseInteger("01234567"));
   EXPECT_EQ(0X123, ParseInteger("0X123"));
 
@@ -877,11 +992,16 @@ TEST_F(TokenizerTest, ParseInteger) {
   uint64_t i;
 
   // Test invalid integers that will never be tokenized as integers.
-  EXPECT_FALSE(Tokenizer::ParseInteger("zxy", kuint64max, &i));
-  EXPECT_FALSE(Tokenizer::ParseInteger("1.2", kuint64max, &i));
-  EXPECT_FALSE(Tokenizer::ParseInteger("08", kuint64max, &i));
-  EXPECT_FALSE(Tokenizer::ParseInteger("0xg", kuint64max, &i));
-  EXPECT_FALSE(Tokenizer::ParseInteger("-1", kuint64max, &i));
+  EXPECT_FALSE(
+      Tokenizer::ParseInteger("zxy", std::numeric_limits<uint64_t>::max(), &i));
+  EXPECT_FALSE(
+      Tokenizer::ParseInteger("1.2", std::numeric_limits<uint64_t>::max(), &i));
+  EXPECT_FALSE(
+      Tokenizer::ParseInteger("08", std::numeric_limits<uint64_t>::max(), &i));
+  EXPECT_FALSE(
+      Tokenizer::ParseInteger("0xg", std::numeric_limits<uint64_t>::max(), &i));
+  EXPECT_FALSE(
+      Tokenizer::ParseInteger("-1", std::numeric_limits<uint64_t>::max(), &i));
 
   // Test overflows.
   EXPECT_TRUE(Tokenizer::ParseInteger("0", 0, &i));
@@ -889,10 +1009,13 @@ TEST_F(TokenizerTest, ParseInteger) {
   EXPECT_TRUE(Tokenizer::ParseInteger("1", 1, &i));
   EXPECT_TRUE(Tokenizer::ParseInteger("12345", 12345, &i));
   EXPECT_FALSE(Tokenizer::ParseInteger("12346", 12345, &i));
-  EXPECT_TRUE(Tokenizer::ParseInteger("0xFFFFFFFFFFFFFFFF", kuint64max, &i));
-  EXPECT_FALSE(Tokenizer::ParseInteger("0x10000000000000000", kuint64max, &i));
+  EXPECT_TRUE(Tokenizer::ParseInteger(
+      "0xFFFFFFFFFFFFFFFF", std::numeric_limits<uint64_t>::max(), &i));
+  EXPECT_FALSE(Tokenizer::ParseInteger(
+      "0x10000000000000000", std::numeric_limits<uint64_t>::max(), &i));
 
-  // Test near the limits of signed parsing (values in kint64max +/- 1600)
+  // Test near the limits of signed parsing (values within +/- 1600 of
+  // the maximum int64_t).
   for (int64_t offset = -1600; offset <= 1600; ++offset) {
     // We make sure to perform an unsigned addition so that we avoid signed
     // overflow, which would be undefined behavior.
@@ -901,11 +1024,13 @@ TEST_F(TokenizerTest, ParseInteger) {
     snprintf(decimal, 32, "%llu", static_cast<unsigned long long>(i));
     if (offset > 0) {
       uint64_t parsed = -1;
-      EXPECT_FALSE(Tokenizer::ParseInteger(decimal, kint64max, &parsed))
+      EXPECT_FALSE(Tokenizer::ParseInteger(
+          decimal, std::numeric_limits<int64_t>::max(), &parsed))
           << decimal << "=>" << parsed;
     } else {
       uint64_t parsed = -1;
-      EXPECT_TRUE(Tokenizer::ParseInteger(decimal, kint64max, &parsed))
+      EXPECT_TRUE(Tokenizer::ParseInteger(
+          decimal, std::numeric_limits<int64_t>::max(), &parsed))
           << decimal << "=>" << parsed;
       EXPECT_EQ(parsed, i);
     }
@@ -913,11 +1038,13 @@ TEST_F(TokenizerTest, ParseInteger) {
     snprintf(octal, 32, "0%llo", static_cast<unsigned long long>(i));
     if (offset > 0) {
       uint64_t parsed = -1;
-      EXPECT_FALSE(Tokenizer::ParseInteger(octal, kint64max, &parsed))
+      EXPECT_FALSE(Tokenizer::ParseInteger(
+          octal, std::numeric_limits<int64_t>::max(), &parsed))
           << octal << "=>" << parsed;
     } else {
       uint64_t parsed = -1;
-      EXPECT_TRUE(Tokenizer::ParseInteger(octal, kint64max, &parsed))
+      EXPECT_TRUE(Tokenizer::ParseInteger(
+          octal, std::numeric_limits<int64_t>::max(), &parsed))
           << octal << "=>" << parsed;
       EXPECT_EQ(parsed, i);
     }
@@ -925,21 +1052,25 @@ TEST_F(TokenizerTest, ParseInteger) {
     snprintf(hex, 32, "0x%llx", static_cast<unsigned long long>(i));
     if (offset > 0) {
       uint64_t parsed = -1;
-      EXPECT_FALSE(Tokenizer::ParseInteger(hex, kint64max, &parsed))
+      EXPECT_FALSE(Tokenizer::ParseInteger(
+          hex, std::numeric_limits<int64_t>::max(), &parsed))
           << hex << "=>" << parsed;
     } else {
       uint64_t parsed = -1;
-      EXPECT_TRUE(Tokenizer::ParseInteger(hex, kint64max, &parsed)) << hex;
+      EXPECT_TRUE(Tokenizer::ParseInteger(
+          hex, std::numeric_limits<int64_t>::max(), &parsed))
+          << hex;
       EXPECT_EQ(parsed, i);
     }
     // EXPECT_NE(offset, -237);
   }
 
-  // Test near the limits of unsigned parsing (values in kuint64max +/- 1600)
-  // By definition, values greater than kuint64max cannot be held in a uint64_t
-  // variable, so printing them is a little tricky; fortunately all but the
-  // last four digits are known, so we can hard-code them in the printf string,
-  // and we only need to format the last 4.
+  // Test near the limits of unsigned parsing (values within +/- 1600 of
+  // the maximum uint64_t). By definition, values greater than
+  // std::numeric_limits<uint64_t>::max() cannot be held in a uint64_t variable,
+  // so printing them is a little tricky; fortunately all but the last four
+  // digits are known, so we can hard-code them in the printf string, and we
+  // only need to format the last 4.
   for (int64_t offset = -1600; offset <= 1600; ++offset) {
     {
       uint64_t i = 18446744073709551615u + offset;
@@ -948,11 +1079,13 @@ TEST_F(TokenizerTest, ParseInteger) {
                static_cast<unsigned long long>(1615 + offset));
       if (offset > 0) {
         uint64_t parsed = -1;
-        EXPECT_FALSE(Tokenizer::ParseInteger(decimal, kuint64max, &parsed))
+        EXPECT_FALSE(Tokenizer::ParseInteger(
+            decimal, std::numeric_limits<uint64_t>::max(), &parsed))
             << decimal << "=>" << parsed;
       } else {
         uint64_t parsed = -1;
-        EXPECT_TRUE(Tokenizer::ParseInteger(decimal, kuint64max, &parsed))
+        EXPECT_TRUE(Tokenizer::ParseInteger(
+            decimal, std::numeric_limits<uint64_t>::max(), &parsed))
             << decimal;
         EXPECT_EQ(parsed, i);
       }
@@ -964,13 +1097,15 @@ TEST_F(TokenizerTest, ParseInteger) {
         snprintf(octal, 32, "0200000000000000000%04llo",
                  static_cast<unsigned long long>(offset - 1));
         uint64_t parsed = -1;
-        EXPECT_FALSE(Tokenizer::ParseInteger(octal, kuint64max, &parsed))
+        EXPECT_FALSE(Tokenizer::ParseInteger(
+            octal, std::numeric_limits<uint64_t>::max(), &parsed))
             << octal << "=>" << parsed;
       } else {
         char octal[32];
         snprintf(octal, 32, "0%llo", static_cast<unsigned long long>(i));
         uint64_t parsed = -1;
-        EXPECT_TRUE(Tokenizer::ParseInteger(octal, kuint64max, &parsed))
+        EXPECT_TRUE(Tokenizer::ParseInteger(
+            octal, std::numeric_limits<uint64_t>::max(), &parsed))
             << octal;
         EXPECT_EQ(parsed, i);
       }
@@ -982,12 +1117,15 @@ TEST_F(TokenizerTest, ParseInteger) {
         snprintf(hex, 32, "0x1000000000000%04llx",
                  static_cast<unsigned long long>(offset - 1));
         uint64_t parsed = -1;
-        EXPECT_FALSE(Tokenizer::ParseInteger(hex, kuint64max, &parsed))
+        EXPECT_FALSE(Tokenizer::ParseInteger(
+            hex, std::numeric_limits<uint64_t>::max(), &parsed))
             << hex << "=>" << parsed;
       } else {
         snprintf(hex, 32, "0x%llx", static_cast<unsigned long long>(ui));
         uint64_t parsed = -1;
-        EXPECT_TRUE(Tokenizer::ParseInteger(hex, kuint64max, &parsed)) << hex;
+        EXPECT_TRUE(Tokenizer::ParseInteger(
+            hex, std::numeric_limits<uint64_t>::max(), &parsed))
+            << hex;
         EXPECT_EQ(parsed, ui);
       }
     }

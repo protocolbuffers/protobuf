@@ -6,7 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@rules_cc//cc:defs.bzl", "cc_library")
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_CPPOPTS")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_CPPOPTS")
 
 package(default_applicable_licenses = ["//:license"])
 

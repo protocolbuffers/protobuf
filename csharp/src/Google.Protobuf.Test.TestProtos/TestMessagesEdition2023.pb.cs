@@ -188,17 +188,21 @@ namespace ProtobufTestMessages.Editions {
             "ZGl0aW9uMjAyMxIPCgtGT1JFSUdOX0ZPTxAAEg8KC0ZPUkVJR05fQkFSEAES",
             "DwoLRk9SRUlHTl9CQVoQAjpRCg9leHRlbnNpb25faW50MzISOC5wcm90b2J1",
             "Zl90ZXN0X21lc3NhZ2VzLmVkaXRpb25zLlRlc3RBbGxUeXBlc0VkaXRpb24y",
-            "MDIzGHggASgFOn8KDWdyb3VwbGlrZXR5cGUSOC5wcm90b2J1Zl90ZXN0X21l",
-            "c3NhZ2VzLmVkaXRpb25zLlRlc3RBbGxUeXBlc0VkaXRpb24yMDIzGHkgASgL",
-            "Mi4ucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0aW9ucy5Hcm91cExpa2VU",
-            "eXBlOn8KDWRlbGltaXRlZF9leHQSOC5wcm90b2J1Zl90ZXN0X21lc3NhZ2Vz",
-            "LmVkaXRpb25zLlRlc3RBbGxUeXBlc0VkaXRpb24yMDIzGHogASgLMi4ucHJv",
-            "dG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0aW9ucy5Hcm91cExpa2VUeXBlQkEK",
-            "LWNvbS5nb29nbGUucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0aW9uMjAy",
-            "M1ABogIIRWRpdGlvbnOSAwIoAmIIZWRpdGlvbnNw6Ac="));
+            "MDIzGHggASgFOlMKEGV4dGVuc2lvbl9zdHJpbmcSOC5wcm90b2J1Zl90ZXN0",
+            "X21lc3NhZ2VzLmVkaXRpb25zLlRlc3RBbGxUeXBlc0VkaXRpb24yMDIzGIUB",
+            "IAEoCTpSCg9leHRlbnNpb25fYnl0ZXMSOC5wcm90b2J1Zl90ZXN0X21lc3Nh",
+            "Z2VzLmVkaXRpb25zLlRlc3RBbGxUeXBlc0VkaXRpb24yMDIzGIYBIAEoDDp/",
+            "Cg1ncm91cGxpa2V0eXBlEjgucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0",
+            "aW9ucy5UZXN0QWxsVHlwZXNFZGl0aW9uMjAyMxh5IAEoCzIuLnByb3RvYnVm",
+            "X3Rlc3RfbWVzc2FnZXMuZWRpdGlvbnMuR3JvdXBMaWtlVHlwZTp/Cg1kZWxp",
+            "bWl0ZWRfZXh0EjgucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0aW9ucy5U",
+            "ZXN0QWxsVHlwZXNFZGl0aW9uMjAyMxh6IAEoCzIuLnByb3RvYnVmX3Rlc3Rf",
+            "bWVzc2FnZXMuZWRpdGlvbnMuR3JvdXBMaWtlVHlwZUJBCi1jb20uZ29vZ2xl",
+            "LnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMuZWRpdGlvbjIwMjNQAaICCEVkaXRp",
+            "b25zkgMCKAJiCGVkaXRpb25zcOgH"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Editions.ForeignEnumEdition2023), }, new pb::Extension[] { TestMessagesEdition2023Extensions.ExtensionInt32, TestMessagesEdition2023Extensions.GroupLikeType, TestMessagesEdition2023Extensions.DelimitedExt }, new pbr::GeneratedClrTypeInfo[] {
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Editions.ForeignEnumEdition2023), }, new pb::Extension[] { TestMessagesEdition2023Extensions.ExtensionInt32, TestMessagesEdition2023Extensions.ExtensionString, TestMessagesEdition2023Extensions.ExtensionBytes, TestMessagesEdition2023Extensions.GroupLikeType, TestMessagesEdition2023Extensions.DelimitedExt }, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Editions.ComplexMessage), global::ProtobufTestMessages.Editions.ComplexMessage.Parser, new[]{ "D" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Editions.TestAllTypesEdition2023), global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Parser, new[]{ "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalNestedMessage", "OptionalForeignMessage", "OptionalNestedEnum", "OptionalForeignEnum", "OptionalStringPiece", "OptionalCord", "RecursiveMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedStringPiece", "RepeatedCord", "PackedInt32", "PackedInt64", "PackedUint32", "PackedUint64", "PackedSint32", "PackedSint64", "PackedFixed32", "PackedFixed64", "PackedSfixed32", "PackedSfixed64", "PackedFloat", "PackedDouble", "PackedBool", "PackedNestedEnum", "UnpackedInt32", "UnpackedInt64", "UnpackedUint32", "UnpackedUint64", "UnpackedSint32", "UnpackedSint64", "UnpackedFixed32", "UnpackedFixed64", "UnpackedSfixed32", "UnpackedSfixed64", "UnpackedFloat", "UnpackedDouble", "UnpackedBool", "UnpackedNestedEnum", "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapStringString", "MapStringBytes", "MapStringNestedMessage", "MapStringForeignMessage", "MapStringNestedEnum", "MapStringForeignEnum", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes", "OneofBool", "OneofUint64", "OneofFloat", "OneofDouble", "OneofEnum", "GroupLikeType", "DelimitedField" }, new[]{ "OneofField" }, new[]{ typeof(global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Types.NestedEnum) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Types.NestedMessage), global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Types.NestedMessage.Parser, new[]{ "A", "Corecursive" }, null, null, null, null),
             null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Types.GroupLikeType), global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Types.GroupLikeType.Parser, new[]{ "GroupInt32", "GroupUint32" }, null, null, null, null)}),
@@ -213,6 +217,10 @@ namespace ProtobufTestMessages.Editions {
   public static partial class TestMessagesEdition2023Extensions {
     public static readonly pb::Extension<global::ProtobufTestMessages.Editions.TestAllTypesEdition2023, int> ExtensionInt32 =
       new pb::Extension<global::ProtobufTestMessages.Editions.TestAllTypesEdition2023, int>(120, pb::FieldCodec.ForInt32(960, 0));
+    public static readonly pb::Extension<global::ProtobufTestMessages.Editions.TestAllTypesEdition2023, string> ExtensionString =
+      new pb::Extension<global::ProtobufTestMessages.Editions.TestAllTypesEdition2023, string>(133, pb::FieldCodec.ForString(1066, ""));
+    public static readonly pb::Extension<global::ProtobufTestMessages.Editions.TestAllTypesEdition2023, pb::ByteString> ExtensionBytes =
+      new pb::Extension<global::ProtobufTestMessages.Editions.TestAllTypesEdition2023, pb::ByteString>(134, pb::FieldCodec.ForBytes(1074, pb::ByteString.Empty));
     public static readonly pb::Extension<global::ProtobufTestMessages.Editions.TestAllTypesEdition2023, global::ProtobufTestMessages.Editions.GroupLikeType> GroupLikeType =
       new pb::Extension<global::ProtobufTestMessages.Editions.TestAllTypesEdition2023, global::ProtobufTestMessages.Editions.GroupLikeType>(121, pb::FieldCodec.ForGroup(971, 972, global::ProtobufTestMessages.Editions.GroupLikeType.Parser));
     public static readonly pb::Extension<global::ProtobufTestMessages.Editions.TestAllTypesEdition2023, global::ProtobufTestMessages.Editions.GroupLikeType> DelimitedExt =

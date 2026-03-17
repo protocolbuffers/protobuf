@@ -26,6 +26,7 @@ message TestMessageSetExtension1 {
     optional TestMessageSetExtension1 message_set_extension = 98418603;
   }
   optional int32 i = 15;
+  optional TestMessageSet sub_msg = 16;
 }
 
 message TestMessageSetExtension2 {
