@@ -289,18 +289,19 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ListValue final : p
 
   public:
   void clear_values() ;
+  [[nodiscard]] const ::google::protobuf::Value& values(int index) const;
   [[nodiscard]] ::google::protobuf::Value* PROTOBUF_NONNULL mutable_values(int index);
+  ::google::protobuf::Value* PROTOBUF_NONNULL add_values();
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>&
+  values() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* PROTOBUF_NONNULL
   mutable_values();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>& _internal_values() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* PROTOBUF_NONNULL _internal_mutable_values();
+
   public:
-  [[nodiscard]] const ::google::protobuf::Value& values(int index) const;
-  ::google::protobuf::Value* PROTOBUF_NONNULL add_values();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>& values()
-      const;
   // @@protoc_insertion_point(class_scope:google.protobuf.ListValue)
  private:
   class _Internal;
@@ -1313,22 +1314,15 @@ inline void ListValue::clear_values() {
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
-inline ::google::protobuf::Value* PROTOBUF_NONNULL ListValue::mutable_values(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.ListValue.values)
-  return _internal_mutable_values()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* PROTOBUF_NONNULL ListValue::mutable_values()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.ListValue.values)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_values();
-}
 inline const ::google::protobuf::Value& ListValue::values(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.ListValue.values)
   return _internal_values().Get(index);
+}
+inline ::google::protobuf::Value* PROTOBUF_NONNULL ListValue::mutable_values(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.ListValue.values)
+  return _internal_mutable_values()->Mutable(index);
 }
 inline ::google::protobuf::Value* PROTOBUF_NONNULL ListValue::add_values()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1344,6 +1338,13 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>& Li
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.ListValue.values)
   return _internal_values();
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* PROTOBUF_NONNULL ListValue::mutable_values()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.ListValue.values)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_values();
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>&
 ListValue::_internal_values() const {
