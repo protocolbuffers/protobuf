@@ -8,7 +8,7 @@
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_python//python:defs.bzl", "py_binary")
-load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_FEATURES")
 load("//upb/bazel/private:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
 load("//upb/bazel/private/oss:amalgamation.bzl", "upb_amalgamation")  # buildifier: disable=bzl-visibility
 
@@ -58,6 +58,7 @@ config_setting(
 upb_proto_library_copts(
     name = "upb_proto_library_copts",
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//upb/bazel:__pkg__"],
 )
 
@@ -83,6 +84,7 @@ cc_library(
     name = "generated_code_support",
     hdrs = ["generated_code_support.h"],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     textual_hdrs = [
         "//upb/port:inc",
     ],
@@ -112,6 +114,7 @@ cc_library(
 cc_library(
     name = "generated_cpp_support",
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     textual_hdrs = [
         "//upb/port:inc",
     ],
