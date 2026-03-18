@@ -557,9 +557,8 @@ impl CppTypeConversions for ProtoBytes {
 
 unsafe impl<T> Singular for T
 where
-    Self: MutProxied + CppGetRawMessage + Message,
-    for<'a> View<'a, Self>:
-        From<MessageViewInner<'a, Self>> + std::default::Default + CppGetRawMessage,
+    Self: MutProxied + Message,
+    for<'a> View<'a, Self>: From<MessageViewInner<'a, Self>> + std::default::Default,
     for<'a> Mut<'a, Self>: From<MessageMutInner<'a, Self>>,
 {
     fn repeated_new(_private: Private) -> Repeated<Self> {
@@ -1500,6 +1499,15 @@ where
         self.as_mut().get_raw_message_mut(_private)
     }
 }
+
+pub trait KernelMessage: CppGetRawMessage + CppGetRawMessageMut {}
+impl<T: CppGetRawMessage + CppGetRawMessageMut> KernelMessage for T {}
+
+pub trait KernelMessageView: CppGetRawMessage {}
+impl<T: CppGetRawMessage> KernelMessageView for T {}
+
+pub trait KernelMessageMut: CppGetRawMessageMut {}
+impl<T: CppGetRawMessageMut> KernelMessageMut for T {}
 
 impl<'a, T> MessageMutInterop<'a> for T
 where

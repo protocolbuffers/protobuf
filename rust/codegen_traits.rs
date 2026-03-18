@@ -12,6 +12,7 @@ use crate::AsView;
 use crate::IntoMut;
 use crate::IntoView;
 use crate::MutProxied;
+use crate::__internal::runtime::{KernelMessage, KernelMessageMut, KernelMessageView};
 use crate::__internal::SealedInternal;
 use create::Parse;
 use interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop};
@@ -35,6 +36,7 @@ pub trait Message: SealedInternal
   + Clone
   // C++ Interop:
   + OwnedMessageInterop
+  + KernelMessage
 {
     /// The same type as `<Self as Proxied>::View`. This is defined as a second redundant associated
     /// type and should not be necessary, but the having this available is a hacky workaround
@@ -59,6 +61,7 @@ pub trait MessageView<'msg>: SealedInternal
     + Copy + Clone
     // C++ Interop:
     + MessageViewInterop<'msg>
+    + KernelMessageView
 {
     /// The owned message type that this is a view of.
     type Message: Message;
@@ -80,6 +83,7 @@ pub trait MessageMut<'msg>: SealedInternal
     // (Neither)
     // C++ Interop:
     + MessageMutInterop<'msg>
+    + KernelMessageMut
 {
     /// The owned message type that this is a mut of.
     type Message: Message;
