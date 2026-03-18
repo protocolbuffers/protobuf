@@ -329,7 +329,7 @@ class MapSorterPtr {
 };
 
 struct WeakDescriptorDefaultTail {
-  const Message** target;
+  const MessageGlobalsBase** target;
   size_t size;
 };
 

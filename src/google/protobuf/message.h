@@ -451,8 +451,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 namespace internal {
 // Creates and returns an allocation for a split message.
 void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
-                                size_t size, const void* message,
-                                const void* default_message);
+                                size_t size);
 
 // Forward-declare interfaces used to implement RepeatedFieldRef.
 // These are protobuf internals that users shouldn't care about.

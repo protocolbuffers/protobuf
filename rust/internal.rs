@@ -12,6 +12,8 @@
 // Used by the proto! macro
 pub use paste::paste;
 
+pub use crate::codegen_traits::entity_tag;
+pub use crate::codegen_traits::EntityType;
 pub use crate::r#enum::Enum;
 use crate::repeated::RepeatedView;
 use crate::singular::Singular;
@@ -40,6 +42,9 @@ pub struct Private;
 /// We require Sized as a supertrait, because we generally do not want our
 /// traits to support trait objects.
 pub trait SealedInternal: Sized {}
+
+impl<T: SealedInternal> SealedInternal for &T {}
+impl<T: SealedInternal> SealedInternal for &mut T {}
 
 /// A trait used by the proto_eq() gtest macro.
 pub trait MatcherEq: SealedInternal + Debug {

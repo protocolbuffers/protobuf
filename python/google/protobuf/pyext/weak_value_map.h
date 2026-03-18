@@ -16,24 +16,63 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
+#include "absl/synchronization/mutex.h"
 
+// A map of void* to PyObject*.
+//
+// The values in the map are only held by weak reference, meaning that the map
+// does not own a reference to the objects. It is up to the user to ensure that
+// objects are removed from the map when they are deallocated.
 class PyWeakValueMap {
  public:
+  // Sets the value in the cache if the key is not already present.
+  //
+  // Returns true if the value was set, false if the key was already present.
+  // When false is returned, `value` is decref'd and replaced with the existing
+  // value, which the caller will own a ref on.
+  bool TrySet(const void* key, PyObject*& value);
+
+  // Sets the value in the cache. The key must not be already present.
+  // This must only be called from logically mutating methods. For nominally
+  // read-only methods, this is inherently racy.
+  void Set(const void* key, PyObject* value) { ABSL_CHECK(TrySet(key, value)); }
+
   // Returns a new reference to the cached value. If the key is not found,
   // invokes the given function to create the value, and caches it.
-  //
-  // The value is not referenced from the cache, so it may be deallocated while
-  // the cache still references it.
   template <class Func>
-  PyObject* Get(const void* key, const PyTypeObject* type, Func&& func);
+  PyObject* GetOrInsert(const void* key, const PyTypeObject* type, Func&& func);
 
-  // The Dealloc() function should call method to remove the entry from the
-  // cache.
-  void Delete(const void* key, PyObject* value);
+  // Returns a new reference to the cached value, or nullptr if not found.
+  PyObject* Get(const void* key, const PyTypeObject* type);
+
+  // Removes the entry from the map. Returns true if the entry was found.
+  bool Erase(const void* key);
+
+  // Removes the entry from the cache, but only if it matches the given value.
+  void EraseIfEqual(const void* key, PyObject* value);
+
+  // Returns true if the map is empty.
+  bool IsEmpty() const;
+
+  // Removes all entries from the map.
+  void Clear();
+
+  // Calls the given function for each entry in the map.
+  //
+  // Ownership: The callback `func` receives a reference to the PyObject that is
+  // guaranteed to be alive for the duration of the call.
+  //
+  // In free-threaded builds, this is a temporary strong reference. In
+  // GIL-enabled builds, this is a borrowed reference protected by the GIL.
+  //
+  // If the callback needs to keep the object alive after it returns, it MUST
+  // explicitly call `Py_INCREF`.
+  template <typename Func>
+  void ForEach(Func&& func);
 
  private:
 #ifdef Py_GIL_DISABLED
-  absl::Mutex mutex_;
+  mutable absl::Mutex mutex_;
   absl::flat_hash_map<const void*, PyObject*> cache_ ABSL_GUARDED_BY(mutex_);
 #else
   absl::flat_hash_map<const void*, PyObject*> cache_;
@@ -43,68 +82,41 @@ class PyWeakValueMap {
 #ifdef Py_GIL_DISABLED
 
 template <class Func>
-PyObject* PyWeakValueMap::Get(const void* key, const PyTypeObject* type,
-                              Func&& func) {
-  {
-    absl::MutexLock lock(mutex_);
-    auto it = cache_.find(key);
-    if (it != cache_.end()) {
-      ABSL_DCHECK(Py_TYPE(it->second) == type);
-      if (PyUnstable_TryIncRef(it->second)) {
-        return it->second;
-      }
-      // Object is deallocating, remove it from the map.
-      cache_.erase(it);
-    }
+PyObject* PyWeakValueMap::GetOrInsert(const void* key, const PyTypeObject* type,
+                                      Func&& func) {
+  if (auto obj = Get(key, type); obj != nullptr) {
+    return obj;
   }
 
-  PyObject* decref;
   PyObject* obj = func();
+
   if (obj == nullptr) {
     return nullptr;
   }
 
-  PyUnstable_EnableTryIncRef(obj);
-
-  // Cache the fully initialized object.
-  // Check again if another thread cached it while we were initializing.
-  {
-    absl::MutexLock lock(mutex_);
-    auto [it, inserted] = cache_.insert(std::make_pair(key, obj));
-    if (inserted) return obj;
-
-    // Another thread beat us to it. Use the existing object.
-    ABSL_DCHECK(Py_TYPE(it->second) == type);
-    if (PyUnstable_TryIncRef(it->second)) {
-      // The existing object is valid, so we can deallocate our copy, but we
-      // should drop the lock first.
-      decref = obj;
-      obj = it->second;
-      // Fall through to the end of the function.
-    } else {
-      // The existing object is dying, replace it.
-      it->second = obj;
-      return obj;
-    }
-  }
-
-  Py_DECREF(decref);
+  TrySet(key, obj);
   return obj;
 }
 
-inline void PyWeakValueMap::Delete(const void* key, PyObject* value) {
-  absl::MutexLock lock(mutex_);
-  auto it = cache_.find(key);
-  if (it != cache_.end() && it->second == value) {
-    cache_.erase(it);
+template <typename Func>
+void PyWeakValueMap::ForEach(Func&& func) {
+  absl::MutexLock lock(&mutex_);
+  for (auto it = cache_.begin(); it != cache_.end();) {
+    if (PyUnstable_TryIncRef(it->second)) {
+      func(it->first, it->second);
+      Py_DECREF(it->second);
+      ++it;
+    } else {
+      cache_.erase(it++);
+    }
   }
 }
 
 #else  // !Py_GIL_DISABLED
 
 template <class Func>
-PyObject* PyWeakValueMap::Get(const void* key, const PyTypeObject* type,
-                              Func&& func) {
+PyObject* PyWeakValueMap::GetOrInsert(const void* key, const PyTypeObject* type,
+                                      Func&& func) {
   auto [it, inserted] = cache_.insert(std::make_pair(key, nullptr));
   if (inserted) {
     it->second = func();
@@ -114,10 +126,11 @@ PyObject* PyWeakValueMap::Get(const void* key, const PyTypeObject* type,
   return it->second;
 }
 
-inline void PyWeakValueMap::Delete(const void* key, PyObject* value) {
-  auto it = cache_.find(key);
-  ABSL_CHECK(it != cache_.end() && it->second == value);
-  cache_.erase(it);
+template <typename Func>
+void PyWeakValueMap::ForEach(Func&& func) {
+  for (auto const& [key, val] : cache_) {
+    func(key, val);
+  }
 }
 
 #endif

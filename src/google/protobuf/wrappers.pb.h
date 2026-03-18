@@ -155,7 +155,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt64Value final :
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const UInt64Value& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<UInt64Value>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<UInt64Value>(
         &_UInt64Value_globals_);
   }
   static constexpr int kIndexInFileMessages = 3;
@@ -351,7 +351,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt32Value final :
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const UInt32Value& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<UInt32Value>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<UInt32Value>(
         &_UInt32Value_globals_);
   }
   static constexpr int kIndexInFileMessages = 5;
@@ -547,7 +547,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED StringValue final :
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const StringValue& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<StringValue>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<StringValue>(
         &_StringValue_globals_);
   }
   static constexpr int kIndexInFileMessages = 7;
@@ -748,7 +748,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int64Value final : 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Int64Value& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Int64Value>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Int64Value>(
         &_Int64Value_globals_);
   }
   static constexpr int kIndexInFileMessages = 2;
@@ -944,7 +944,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int32Value final : 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Int32Value& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Int32Value>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Int32Value>(
         &_Int32Value_globals_);
   }
   static constexpr int kIndexInFileMessages = 4;
@@ -1140,7 +1140,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FloatValue final : 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FloatValue& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FloatValue>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FloatValue>(
         &_FloatValue_globals_);
   }
   static constexpr int kIndexInFileMessages = 1;
@@ -1336,7 +1336,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DoubleValue final :
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const DoubleValue& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<DoubleValue>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<DoubleValue>(
         &_DoubleValue_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
@@ -1532,7 +1532,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BytesValue final : 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const BytesValue& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<BytesValue>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<BytesValue>(
         &_BytesValue_globals_);
   }
   static constexpr int kIndexInFileMessages = 8;
@@ -1733,7 +1733,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BoolValue final : p
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const BoolValue& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<BoolValue>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<BoolValue>(
         &_BoolValue_globals_);
   }
   static constexpr int kIndexInFileMessages = 6;

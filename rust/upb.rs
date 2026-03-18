@@ -7,7 +7,8 @@
 
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
-use crate::__internal::{MatcherEq, Private, SealedInternal};
+use crate::__internal::entity_tag::*;
+use crate::__internal::{EntityType, MatcherEq, Private, SealedInternal};
 use crate::{
     AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapValue,
     MapView, MergeFrom, Message, MessageMut, MessageMutInterop, MessageView, MessageViewInterop,
@@ -146,13 +147,13 @@ pub struct OwnedMessageInner<T> {
     arena: Arena,
 }
 
-impl<T: Message + AssociatedMiniTable> Default for OwnedMessageInner<T> {
+impl<T: Message> Default for OwnedMessageInner<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T: Message + AssociatedMiniTable> OwnedMessageInner<T> {
+impl<T: Message> OwnedMessageInner<T> {
     pub fn new() -> Self {
         let arena = Arena::new();
         let ptr = MessagePtr::new(&arena).expect("alloc should never fail");
@@ -218,14 +219,14 @@ pub struct MessageMutInner<'msg, T> {
     arena: &'msg Arena,
 }
 
-impl<'msg, T: Message + AssociatedMiniTable> Clone for MessageMutInner<'msg, T> {
+impl<'msg, T: Message> Clone for MessageMutInner<'msg, T> {
     fn clone(&self) -> Self {
         *self
     }
 }
-impl<'msg, T: Message + AssociatedMiniTable> Copy for MessageMutInner<'msg, T> {}
+impl<'msg, T: Message> Copy for MessageMutInner<'msg, T> {}
 
-impl<'msg, T: Message + AssociatedMiniTable> MessageMutInner<'msg, T> {
+impl<'msg, T: Message> MessageMutInner<'msg, T> {
     /// # Safety
     /// - `msg` must be a valid `RawMessage`
     /// - `arena` must hold the memory for `msg`
@@ -272,14 +273,14 @@ pub struct MessageViewInner<'msg, T> {
     _phantom: PhantomData<&'msg ()>,
 }
 
-impl<'msg, T: Message + AssociatedMiniTable> Clone for MessageViewInner<'msg, T> {
+impl<'msg, T: Message> Clone for MessageViewInner<'msg, T> {
     fn clone(&self) -> Self {
         *self
     }
 }
-impl<'msg, T: Message + AssociatedMiniTable> Copy for MessageViewInner<'msg, T> {}
+impl<'msg, T: Message> Copy for MessageViewInner<'msg, T> {}
 
-impl<'msg, T: Message + AssociatedMiniTable> MessageViewInner<'msg, T> {
+impl<'msg, T: Message> MessageViewInner<'msg, T> {
     /// # Safety
     /// - The underlying pointer must live as long as `'msg`.
     pub unsafe fn wrap(ptr: MessagePtr<T>) -> Self {
@@ -316,7 +317,7 @@ impl<'msg, T: Message + AssociatedMiniTable> MessageViewInner<'msg, T> {
     }
 }
 
-impl<T: Message + AssociatedMiniTable> Default for MessageViewInner<'static, T> {
+impl<T: Message> Default for MessageViewInner<'static, T> {
     fn default() -> Self {
         unsafe {
             // SAFETY:
@@ -648,32 +649,6 @@ impl<'msg> InnerMapMut<'msg> {
     }
 }
 
-/// This trait allows us to associate a tag with each type of protobuf entity. The tag indicates
-/// whether the entity is a message, enum, primitive, view proxy, or mut proxy. The main purpose of
-/// this is to allow us to have separate blanket implementations of UpbTypeConversions for messages
-/// and enums.
-pub trait EntityType {
-    type Tag;
-}
-
-pub struct MessageTag;
-pub struct EnumTag;
-pub struct PrimitiveTag;
-pub struct ViewProxyTag;
-pub struct MutProxyTag;
-
-macro_rules! impl_entity_type_for_primitives {
-    ($($t:ty,)*) => {
-        $(
-            impl EntityType for $t {
-                type Tag = PrimitiveTag;
-            }
-        )*
-    };
-}
-
-impl_entity_type_for_primitives!(f32, f64, i32, u32, i64, u64, bool, ProtoBytes, ProtoString,);
-
 pub trait UpbTypeConversions<Tag>: Proxied {
     fn upb_type() -> upb::CType;
 
@@ -712,8 +687,8 @@ pub trait UpbTypeConversions<Tag>: Proxied {
 
 impl<T> UpbTypeConversions<MessageTag> for T
 where
-    Self: Message + AssociatedMiniTable + UpbGetArena + UpbGetMessagePtr,
-    for<'a> View<'a, Self>: UpbGetMessagePtr + MessageViewInterop<'a>,
+    Self: Message,
+    for<'a> View<'a, Self>: MessageViewInterop<'a>,
     for<'a> Mut<'a, Self>: From<MessageMutInner<'a, Self>>,
 {
     fn upb_type() -> CType {
@@ -1116,12 +1091,24 @@ pub unsafe trait UpbGetArena: SealedInternal {
 impl<T: Message> OwnedMessageInterop for T {}
 impl<'a, T: MessageMut<'a>> MessageMutInterop<'a> for T {}
 
+pub trait KernelMessage:
+    AssociatedMiniTable + UpbGetArena + UpbGetMessagePtr + UpbGetMessagePtrMut
+{
+}
+impl<T: AssociatedMiniTable + UpbGetArena + UpbGetMessagePtr + UpbGetMessagePtrMut> KernelMessage
+    for T
+{
+}
+
+pub trait KernelMessageView: UpbGetMessagePtr {}
+impl<T: UpbGetMessagePtr> KernelMessageView for T {}
+
+pub trait KernelMessageMut: UpbGetMessagePtr + UpbGetMessagePtrMut {}
+impl<T: UpbGetMessagePtr + UpbGetMessagePtrMut> KernelMessageMut for T {}
+
 impl<'a, T> MessageViewInterop<'a> for T
 where
-    Self: UpbGetMessagePtr
-        + MessageView<'a>
-        + From<MessageViewInner<'a, <Self as MessageView<'a>>::Message>>,
-    <Self as MessageView<'a>>::Message: AssociatedMiniTable,
+    Self: MessageView<'a> + From<MessageViewInner<'a, <Self as MessageView<'a>>::Message>>,
 {
     unsafe fn __unstable_wrap_raw_message(msg: &'a *const std::ffi::c_void) -> Self {
         let raw = RawMessage::new(*msg as *mut _).unwrap();

@@ -123,7 +123,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceContext final
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const SourceContext& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<SourceContext>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<SourceContext>(
         &_SourceContext_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;

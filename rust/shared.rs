@@ -29,7 +29,6 @@ pub use crate::codegen_traits::{
 pub use crate::cord::{ProtoBytesCow, ProtoStringCow};
 pub use crate::map::{Map, MapIter, MapKey, MapMut, MapValue, MapView};
 
-pub use crate::optional::Optional;
 pub use crate::proxied::{
     AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, Proxied, View,
 };
@@ -68,7 +67,6 @@ mod cord;
 #[path = "enum.rs"]
 mod r#enum;
 mod map;
-mod optional;
 mod primitive;
 mod proxied;
 mod repeated;

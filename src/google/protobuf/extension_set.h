@@ -1686,7 +1686,7 @@ class MessageTypeTraits {
   typedef Type* MutableType;
   using InitType = const void*;
   static ConstType FromInitType(InitType v) {
-    return *static_cast<const Type*>(v);
+    return *internal::MessageGlobalsBase::ToDefaultInstance<Type>(v);
   }
   typedef MessageTypeTraits<Type> Singular;
   static constexpr bool kLifetimeBound = true;
