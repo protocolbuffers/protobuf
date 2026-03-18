@@ -123,7 +123,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Any final : public 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Any& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Any>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Any>(
         &_Any_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;

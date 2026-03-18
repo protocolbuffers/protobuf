@@ -367,6 +367,25 @@ class DynamicMessage final : public Message {
   internal::CachedSize cached_byte_size_;
 };
 
+using internal::MessageGlobalsBase;
+
+struct DynamicMessageGlobalsInternalType : MessageGlobalsBase {
+  union {
+    alignas(internal::kMaxMessageAlignment) DynamicMessage _default;  // NOLINT
+  };
+};
+
+namespace {
+inline uint32_t MsgSizeToGlobalsSize(uint32_t size) {
+  return size +
+         PROTOBUF_FIELD_OFFSET(DynamicMessageGlobalsInternalType, _default);
+}
+inline void* DynamicMessageGlobalsToDefaultInstance(void* globals) {
+  return &(
+      reinterpret_cast<DynamicMessageGlobalsInternalType*>(globals)->_default);
+}
+}  // namespace
+
 struct DynamicMessageFactory::TypeInfo {
   int has_bits_offset;
   int oneof_case_offset;
@@ -428,7 +447,13 @@ struct DynamicMessageFactory::TypeInfo {
   TypeInfo() = default;
 
   ~TypeInfo() {
-    delete class_data.prototype;
+    DynamicMessage::DestroyImpl(
+        *const_cast<MessageLite*>(class_data.prototype));
+    internal::SizedDelete(
+        const_cast<MessageGlobalsBase*>(
+            MessageGlobalsBase::FromDefaultInstance(class_data.prototype)),
+        MsgSizeToGlobalsSize(class_data.message_creator.allocation_size()));
+
     delete class_data.reflection();
 
     auto* type = class_data.descriptor();
@@ -1007,13 +1032,15 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
 
   // Construct the reflection object.
 
-  // Allocate the prototype fields.
-  void* base = internal::Allocate(size);
-  memset(base, 0, size);
+  // Allocate the message globals object that contains the default instance.
+  uint32_t globals_size = MsgSizeToGlobalsSize(size);
+  void* globals_base = internal::Allocate(globals_size);
+  memset(globals_base, 0, globals_size);
+  auto* msg_base = DynamicMessageGlobalsToDefaultInstance(globals_base);
 
   // We have already locked the factory so we should not lock in the constructor
   // of dynamic message to avoid dead lock.
-  DynamicMessage* prototype = new (base) DynamicMessage(type_info, false);
+  DynamicMessage* prototype = new (msg_base) DynamicMessage(type_info, false);
 
   internal::ReflectionSchema schema = {
       static_cast<const Message*>(type_info->class_data.default_instance()),

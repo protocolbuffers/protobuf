@@ -65,9 +65,13 @@ struct MixinGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr MixinGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~MixinGlobalsTypeInternal() {}
   union {
-    Mixin _default;
+    alignas(::_pbi::kMaxMessageAlignment) Mixin _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(MixinGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MixinGlobalsTypeInternal _Mixin_globals_;
@@ -110,9 +114,13 @@ struct MethodGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr MethodGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~MethodGlobalsTypeInternal() {}
   union {
-    Method _default;
+    alignas(::_pbi::kMaxMessageAlignment) Method _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(MethodGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodGlobalsTypeInternal _Method_globals_;
@@ -161,9 +169,13 @@ struct ApiGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr ApiGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~ApiGlobalsTypeInternal() {}
   union {
-    Api _default;
+    alignas(::_pbi::kMaxMessageAlignment) Api _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(ApiGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ApiGlobalsTypeInternal _Api_globals_;
@@ -229,10 +241,11 @@ static const ::_pbi::MigrationSchema
         {19, sizeof(::google::protobuf::Method)},
         {38, sizeof(::google::protobuf::Mixin)},
 };
-static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::google::protobuf::_Api_globals_._default,
-    &::google::protobuf::_Method_globals_._default,
-    &::google::protobuf::_Mixin_globals_._default,
+static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
+    file_message_globals[] = {
+        &::google::protobuf::_Api_globals_,
+        &::google::protobuf::_Method_globals_,
+        &::google::protobuf::_Mixin_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fapi_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -274,7 +287,7 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
     2,
     3,
     schemas,
-    file_default_instances,
+    file_message_globals,
     TableStruct_google_2fprotobuf_2fapi_2eproto::offsets,
     file_level_enum_descriptors_google_2fprotobuf_2fapi_2eproto,
     file_level_service_descriptors_google_2fprotobuf_2fapi_2eproto,

@@ -123,7 +123,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Duration final : pu
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Duration& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Duration>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Duration>(
         &_Duration_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;

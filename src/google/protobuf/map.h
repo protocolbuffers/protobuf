@@ -622,7 +622,7 @@ inline void UntypedMapIterator::PlusPlus() {
 class MapFieldBaseForParse {
  public:
   const UntypedMapBase& GetMap() const {
-    const void* p = prototype_or_payload_.load(std::memory_order_acquire);
+    const void* p = globals_or_payload_.load(std::memory_order_acquire);
     // If this instance has a payload, then it might need sync'n.
     if (ABSL_PREDICT_FALSE(IsPayload(p))) {
       sync_map_with_repeated.load(std::memory_order_relaxed)(*this, false);
@@ -631,7 +631,7 @@ class MapFieldBaseForParse {
   }
 
   UntypedMapBase* MutableMap() {
-    const void* p = prototype_or_payload_.load(std::memory_order_acquire);
+    const void* p = globals_or_payload_.load(std::memory_order_acquire);
     // If this instance has a payload, then it might need sync'n.
     if (ABSL_PREDICT_FALSE(IsPayload(p))) {
       sync_map_with_repeated.load(std::memory_order_relaxed)(*this, true);
@@ -658,13 +658,16 @@ class MapFieldBaseForParse {
   using SyncFunc = void (*)(const MapFieldBaseForParse&, bool is_mutable);
   static std::atomic<SyncFunc> sync_map_with_repeated;
 
-  // The prototype is a `Message`, but due to restrictions on constexpr in the
-  // codegen we are receiving it as `void` during constant evaluation.
-  explicit constexpr MapFieldBaseForParse(const void* prototype_as_void)
-      : prototype_or_payload_(prototype_as_void) {}
+  // The globals is a `*GlobalsTypeInternal`, but due to restrictions on
+  // constexpr in the codegen we are receiving it as `void` during constant
+  // evaluation.
+  explicit constexpr MapFieldBaseForParse(const void* globals_as_void)
+      : globals_or_payload_(globals_as_void) {}
 
+  // Convert "prototype" to "globals" for consistency.
   explicit MapFieldBaseForParse(const Message* prototype)
-      : prototype_or_payload_(prototype) {}
+      : globals_or_payload_(
+            MessageGlobalsBase::FromDefaultInstance(prototype)) {}
 
   ~MapFieldBaseForParse() = default;
 
@@ -674,7 +677,7 @@ class MapFieldBaseForParse {
     return reinterpret_cast<uintptr_t>(p) & kHasPayloadBit;
   }
 
-  mutable std::atomic<const void*> prototype_or_payload_;
+  mutable std::atomic<const void*> globals_or_payload_;
 };
 
 // The value might be of different signedness, so use memcpy to extract it.

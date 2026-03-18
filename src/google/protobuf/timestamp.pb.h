@@ -123,7 +123,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Timestamp final : p
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Timestamp& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Timestamp>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Timestamp>(
         &_Timestamp_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;

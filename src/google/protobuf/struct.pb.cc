@@ -66,9 +66,13 @@ struct ListValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr ListValueGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~ListValueGlobalsTypeInternal() {}
   union {
-    ListValue _default;
+    alignas(::_pbi::kMaxMessageAlignment) ListValue _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(ListValueGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ListValueGlobalsTypeInternal _ListValue_globals_;
@@ -96,9 +100,13 @@ struct StructGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr StructGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~StructGlobalsTypeInternal() {}
   union {
-    Struct _default;
+    alignas(::_pbi::kMaxMessageAlignment) Struct _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(StructGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 StructGlobalsTypeInternal _Struct_globals_;
@@ -114,9 +122,13 @@ struct Struct_FieldsEntry_DoNotUseGlobalsTypeInternal : ::_pbi::MessageGlobalsBa
   constexpr Struct_FieldsEntry_DoNotUseGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~Struct_FieldsEntry_DoNotUseGlobalsTypeInternal() {}
   union {
-    Struct_FieldsEntry_DoNotUse _default;
+    alignas(::_pbi::kMaxMessageAlignment) Struct_FieldsEntry_DoNotUse _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUseGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Struct_FieldsEntry_DoNotUseGlobalsTypeInternal _Struct_FieldsEntry_DoNotUse_globals_;
@@ -141,9 +153,13 @@ struct ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr ValueGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
   ~ValueGlobalsTypeInternal() {}
   union {
-    Value _default;
+    alignas(::_pbi::kMaxMessageAlignment) Value _default;
   };
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(ValueGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ValueGlobalsTypeInternal _Value_globals_;
@@ -191,11 +207,12 @@ static const ::_pbi::MigrationSchema
         {12, sizeof(::google::protobuf::Value)},
         {21, sizeof(::google::protobuf::ListValue)},
 };
-static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::google::protobuf::_Struct_FieldsEntry_DoNotUse_globals_._default,
-    &::google::protobuf::_Struct_globals_._default,
-    &::google::protobuf::_Value_globals_._default,
-    &::google::protobuf::_ListValue_globals_._default,
+static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
+    file_message_globals[] = {
+        &::google::protobuf::_Struct_FieldsEntry_DoNotUse_globals_,
+        &::google::protobuf::_Struct_globals_,
+        &::google::protobuf::_Value_globals_,
+        &::google::protobuf::_ListValue_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fstruct_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -228,7 +245,7 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
     0,
     4,
     schemas,
-    file_default_instances,
+    file_message_globals,
     TableStruct_google_2fprotobuf_2fstruct_2eproto::offsets,
     file_level_enum_descriptors_google_2fprotobuf_2fstruct_2eproto,
     file_level_service_descriptors_google_2fprotobuf_2fstruct_2eproto,

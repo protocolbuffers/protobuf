@@ -16,11 +16,13 @@ from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
 from google.protobuf.internal import api_implementation
+from google.protobuf.internal import testing_refleaks
 
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_pb2
 
 
+@testing_refleaks.TestCase
 class ThreadSafeTest(unittest.TestCase):
 
   def setUp(self):
@@ -113,7 +115,94 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentSubMessageAccess(self):
+    msg = unittest_proto3_pb2.TestAllTypes(
+        optional_nested_message=unittest_proto3_pb2.TestAllTypes.NestedMessage(
+            bb=1000
+        )
+    )
 
+    def AccessSubMessage():
+      for _ in range(100):
+        _ = msg.optional_nested_message.bb
+
+    threads = []
+    for i in range(100):
+      thread = threading.Thread(target=AccessSubMessage)
+      threads.append(thread)
+      thread.start()
+
+    for thread in threads:
+      thread.join()
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentRepeatedMessageAccess(self):
+    variable = unittest_proto3_pb2.TestAllTypes()
+
+    def UseVariable():
+      for _ in range(1000):
+        _ = variable.repeated_nested_message
+
+    threads = []
+    for i in range(100):
+      thread = threading.Thread(target=UseVariable)
+      threads.append(thread)
+      thread.start()
+
+    for thread in threads:
+      thread.join()
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentRepeatedPrimitiveAccess(self):
+    variable = unittest_proto3_pb2.TestAllTypes()
+    variable.repeated_float.append(1.0)
+
+    def UseVariable():
+      for _ in range(1000):
+        _ = variable.repeated_float
+
+    threads = []
+    for i in range(100):
+      thread = threading.Thread(target=UseVariable)
+      threads.append(thread)
+      thread.start()
+
+    for thread in threads:
+      thread.join()
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentSingularFieldAccess(self):
+    variable = unittest_proto3_pb2.TestAllTypes()
+
+    def UseVariable():
+      for _ in range(1000):
+        _ = variable.optional_int32
+        _ = variable.optional_string
+
+    threads = []
+    for i in range(100):
+      thread = threading.Thread(target=UseVariable)
+      threads.append(thread)
+      thread.start()
+
+    for thread in threads:
+      thread.join()
+
+
+@testing_refleaks.TestCase
 class FreeThreadingTest(unittest.TestCase):
 
   def RunThreads(self, thread_size, func):
