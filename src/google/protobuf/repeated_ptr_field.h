@@ -1128,7 +1128,7 @@ class GenericTypeHandler {
     return !std::is_same_v<Type, Message> && !std::is_same_v<Type, MessageLite>;
   }
 
-  static const Type& ForEraseIf(const Type* ptr) { return *ptr; }
+  static const Type& ForElementCallback(const Type* ptr) { return *ptr; }
 };
 
 template <>
@@ -1181,8 +1181,14 @@ class GenericTypeHandler<std::string> {
   }
   static constexpr bool has_default_instance() { return true; }
 
-  static absl::string_view ForEraseIf(const std::string* ptr) { return *ptr; }
+  static absl::string_view ForElementCallback(const std::string* ptr) {
+    return *ptr;
+  }
 };
+
+template <>
+class GenericTypeHandler<absl::string_view>
+    : public GenericTypeHandler<std::string> {};
 
 
 }  // namespace internal
@@ -2608,7 +2614,7 @@ size_t erase_if(RepeatedPtrField<T>& cont, Pred pred) {
   // the end for cleanup.
   auto it = std::stable_partition(
       cont.pointer_begin(), cont.pointer_end(), [&](const auto* elem) {
-        return !pred(internal::GenericTypeHandler<T>::ForEraseIf(elem));
+        return !pred(internal::GenericTypeHandler<T>::ForElementCallback(elem));
       });
   const size_t removed = cont.pointer_end() - it;
   cont.DeleteSubrange(it - cont.pointer_begin(), removed);
@@ -2628,9 +2634,13 @@ size_t erase(RepeatedPtrField<T>& cont, const U& value) {
 template <int&..., typename T, typename Compare>
 void sort(internal::RepeatedPtrIterator<T> begin,
           internal::RepeatedPtrIterator<T> end, Compare cmp) {
+  using H = internal::GenericTypeHandler<T>;
   std::sort(internal::ConvertToPtrIterator(begin),
             internal::ConvertToPtrIterator(end),
-            [&](const auto* lhs, const auto* rhs) { return cmp(*lhs, *rhs); });
+            [&](const auto* lhs, const auto* rhs) {
+              return cmp(H::ForElementCallback(lhs),
+                         H::ForElementCallback(rhs));
+            });
 }
 template <int&..., typename T>
 void sort(internal::RepeatedPtrIterator<T> begin,
@@ -2640,10 +2650,13 @@ void sort(internal::RepeatedPtrIterator<T> begin,
 template <int&..., typename T, typename Compare>
 void stable_sort(internal::RepeatedPtrIterator<T> begin,
                  internal::RepeatedPtrIterator<T> end, Compare cmp) {
-  std::stable_sort(
-      internal::ConvertToPtrIterator(begin),
-      internal::ConvertToPtrIterator(end),
-      [&](const auto* lhs, const auto* rhs) { return cmp(*lhs, *rhs); });
+  using H = internal::GenericTypeHandler<T>;
+  std::stable_sort(internal::ConvertToPtrIterator(begin),
+                   internal::ConvertToPtrIterator(end),
+                   [&](const auto* lhs, const auto* rhs) {
+                     return cmp(H::ForElementCallback(lhs),
+                                H::ForElementCallback(rhs));
+                   });
 }
 template <int&..., typename T>
 void stable_sort(internal::RepeatedPtrIterator<T> begin,
