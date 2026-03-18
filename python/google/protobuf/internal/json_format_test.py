@@ -1861,6 +1861,77 @@ class JsonFormatTest(JsonFormatBase):
         max_recursion_depth=5,
     )
 
+  def testStructRecursionDepthEnforcement(self):
+    """Struct parsing must respect max_recursion_depth."""
+    nested = {'leaf': 'data'}
+    for _ in range(50):
+      nested = {'level': nested}
+    msg = struct_pb2.Struct()
+    self.assertRaisesRegex(
+        json_format.ParseError,
+        'Message too deep',
+        json_format.ParseDict,
+        nested,
+        msg,
+        max_recursion_depth=10,
+    )
+
+  def testValueRecursionDepthEnforcement(self):
+    """Value parsing must respect max_recursion_depth."""
+    nested = {'leaf': 'data'}
+    for _ in range(50):
+      nested = {'level': nested}
+    msg = struct_pb2.Value()
+    self.assertRaisesRegex(
+        json_format.ParseError,
+        'Message too deep',
+        json_format.ParseDict,
+        nested,
+        msg,
+        max_recursion_depth=10,
+    )
+
+  def testListValueRecursionDepthEnforcement(self):
+    """ListValue parsing must respect max_recursion_depth."""
+    node = [{'inner': 'data'}]
+    for _ in range(50):
+      node = [{'level': node}]
+    msg = struct_pb2.ListValue()
+    self.assertRaisesRegex(
+        json_format.ParseError,
+        'Message too deep',
+        json_format.ParseDict,
+        node,
+        msg,
+        max_recursion_depth=10,
+    )
+
+  def testStructDoesNotRaiseRecursionError(self):
+    """ParseDict must never propagate a raw RecursionError for Struct."""
+    nested = {'leaf': 'data'}
+    for _ in range(500):
+      nested = {'level': nested}
+    msg = struct_pb2.Struct()
+    try:
+      json_format.ParseDict(nested, msg, max_recursion_depth=10)
+      self.fail('Expected ParseError but ParseDict succeeded')
+    except json_format.ParseError:
+      pass  # correct
+    except RecursionError:
+      self.fail(
+          'ParseDict raised RecursionError — max_recursion_depth '
+          'was not enforced for Struct'
+      )
+
+  def testStructShallowNestingAllowed(self):
+    """Nesting within the limit must parse successfully."""
+    nested = {'leaf': 'data'}
+    for _ in range(3):
+      nested = {'level': nested}
+    msg = struct_pb2.Struct()
+    json_format.ParseDict(nested, msg, max_recursion_depth=100)
+    self.assertTrue(msg.fields)
+
   def testJsonNameConflictSerilize(self):
     message = more_messages_pb2.ConflictJsonName(value=2)
     self.assertEqual(
