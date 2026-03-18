@@ -315,10 +315,9 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
 }
 
 void TypeConversions(Context& ctx, const Descriptor& msg) {
-  switch (ctx.opts().kernel) {
-    case Kernel::kCpp:
-      ctx.Emit(
-          R"rs(
+  if (ctx.is_cpp()) {
+    ctx.Emit(
+        R"rs(
           impl $pbr$::CppMapTypeConversions for $Msg$ {
               fn get_prototype() -> $pbr$::FfiMapValue {
                   $pbr$::FfiMapValue::make_message(<$Msg$View as $std$::default::Default>::default().raw_msg())
@@ -340,26 +339,24 @@ void TypeConversions(Context& ctx, const Descriptor& msg) {
               }
           }
           )rs");
-      return;
-    case Kernel::kUpb:
-      ctx.Emit(
-          {
-              {"new_thunk", ThunkName(ctx, msg, "new")},
-          },
-          R"rs(
-            impl $pbr$::EntityType for $Msg$ {
-                type Tag = $pbr$::MessageTag;
+  }
+  ctx.Emit(
+      {
+          {"new_thunk", ThunkName(ctx, msg, "new")},
+      },
+      R"rs(
+            impl $pbi$::EntityType for $Msg$ {
+                type Tag = $pbi$::entity_tag::MessageTag;
             }
 
-            impl<'msg> $pbr$::EntityType for $Msg$View<'msg> {
-                type Tag = $pbr$::ViewProxyTag;
+            impl<'msg> $pbi$::EntityType for $Msg$View<'msg> {
+                type Tag = $pbi$::entity_tag::ViewProxyTag;
             }
 
-            impl<'msg> $pbr$::EntityType for $Msg$Mut<'msg> {
-                type Tag = $pbr$::MutProxyTag;
+            impl<'msg> $pbi$::EntityType for $Msg$Mut<'msg> {
+                type Tag = $pbi$::entity_tag::MutProxyTag;
             }
             )rs");
-  }
 }
 
 void GenerateDefaultInstanceImpl(Context& ctx, const Descriptor& msg) {

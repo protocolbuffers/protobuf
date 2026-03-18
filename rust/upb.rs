@@ -7,7 +7,8 @@
 
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
-use crate::__internal::{MatcherEq, Private, SealedInternal};
+use crate::__internal::entity_tag::*;
+use crate::__internal::{EntityType, MatcherEq, Private, SealedInternal};
 use crate::{
     AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapValue,
     MapView, MergeFrom, Message, MessageMut, MessageMutInterop, MessageView, MessageViewInterop,
@@ -647,32 +648,6 @@ impl<'msg> InnerMapMut<'msg> {
         self.arena.raw()
     }
 }
-
-/// This trait allows us to associate a tag with each type of protobuf entity. The tag indicates
-/// whether the entity is a message, enum, primitive, view proxy, or mut proxy. The main purpose of
-/// this is to allow us to have separate blanket implementations of UpbTypeConversions for messages
-/// and enums.
-pub trait EntityType {
-    type Tag;
-}
-
-pub struct MessageTag;
-pub struct EnumTag;
-pub struct PrimitiveTag;
-pub struct ViewProxyTag;
-pub struct MutProxyTag;
-
-macro_rules! impl_entity_type_for_primitives {
-    ($($t:ty,)*) => {
-        $(
-            impl EntityType for $t {
-                type Tag = PrimitiveTag;
-            }
-        )*
-    };
-}
-
-impl_entity_type_for_primitives!(f32, f64, i32, u32, i64, u64, bool, ProtoBytes, ProtoString,);
 
 pub trait UpbTypeConversions<Tag>: Proxied {
     fn upb_type() -> upb::CType;

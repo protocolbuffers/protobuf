@@ -12,6 +12,8 @@
 // Used by the proto! macro
 pub use paste::paste;
 
+pub use crate::codegen_traits::entity_tag;
+pub use crate::codegen_traits::EntityType;
 pub use crate::r#enum::Enum;
 use crate::repeated::RepeatedView;
 use crate::singular::Singular;
