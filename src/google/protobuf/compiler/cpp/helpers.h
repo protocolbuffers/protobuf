@@ -1159,11 +1159,6 @@ void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
                                     absl::string_view parameters,
                                     const Formatter& format);
 
-void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
-                                  const Options& options, bool for_parse,
-                                  absl::string_view parameters,
-                                  const Formatter& format);
-
 void GenerateUtf8CheckCodeForString(io::Printer* p,
                                     const FieldDescriptor* field,
                                     const Options& options, bool for_parse,
