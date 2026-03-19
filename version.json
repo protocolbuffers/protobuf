@@ -1,18 +1,18 @@
 {
     "34.x": {
-        "protoc_version": "34.1",
+        "protoc_version": "34.2-dev",
         "lts": false,
         "date": "2026-03-19",
         "languages": {
-            "cpp": "7.34.1",
-            "csharp": "3.34.1",
-            "java": "4.34.1",
-            "javascript": "3.34.1",
-            "objectivec": "5.34.1",
-            "php": "5.34.1",
-            "python": "7.34.1",
-            "ruby": "4.34.1",
-            "rust": "4.34.1"
+            "cpp": "7.34.2-dev",
+            "csharp": "3.34.2-dev",
+            "java": "4.34.2-dev",
+            "javascript": "3.34.2-dev",
+            "objectivec": "5.34.2-dev",
+            "php": "5.34.2-dev",
+            "python": "7.34.2-dev",
+            "ruby": "4.34.2-dev",
+            "rust": "4.34.2-dev"
         }
     }
 }
