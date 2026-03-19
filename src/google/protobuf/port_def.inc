@@ -546,6 +546,12 @@
 #ifdef PROTOBUF_CUSTOM_VTABLE
 #error PROTOBUF_CUSTOM_VTABLE was previously defined
 #endif
+#ifdef __arm64e__
+#define PROTOBUF_CUSTOM_VTABLE
+#define PROTOBUF_VIRTUAL
+#define PROTOBUF_OVERRIDE
+#define PROTOBUF_FINAL
+#endif
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
 #define PROTOBUF_VIRTUAL virtual
 #define PROTOBUF_OVERRIDE override
