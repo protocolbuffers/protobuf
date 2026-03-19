@@ -14,19 +14,14 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/status/status.h"
+#include "absl/types/source_location.h"
 #include "hpb/backend/types.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 
 namespace hpb {
 
-// This type exists to work around an absl type that has not yet been
-// released.
-struct SourceLocation {
-  static SourceLocation current() { return {}; }
-  absl::string_view file_name() { return "<unknown>"; }
-  int line() { return 0; }
-};
+using SourceLocation = absl::SourceLocation;
 
 absl::Status MessageEncodeError(upb_EncodeStatus status,
                                 SourceLocation loc = SourceLocation::current());
