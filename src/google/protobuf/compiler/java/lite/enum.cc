@@ -137,8 +137,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
   if (!descriptor_->is_closed()) {
     printer->Print(
         "  if (this == UNRECOGNIZED) {\n"
-        "    throw new java.lang.IllegalArgumentException(\n"
-        "        \"Can't get the number of an unknown enum value.\");\n"
+        "    throw null;\n"
         "  }\n");
   }
   printer->Print(
