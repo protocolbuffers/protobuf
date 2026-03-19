@@ -203,8 +203,7 @@ impl<T: Message> OwnedMessageInner<T> {
 ///   generate `BytesMut`, would also require `BytesMut` to store a `&'msg
 ///   OwnedMessageInner` since they can't store an owned `Arena`.
 ///
-/// Note: even though this type is `Copy`, it should only be copied by
-/// protobuf internals that can maintain mutation invariants:
+/// The following invariants must be upheld:
 ///
 /// - No concurrent mutation for any two fields in a message: this means
 ///   mutators cannot be `Send` but are `Sync`.
@@ -217,14 +216,8 @@ impl<T: Message> OwnedMessageInner<T> {
 pub struct MessageMutInner<'msg, T> {
     ptr: MessagePtr<T>,
     arena: &'msg Arena,
+    _phantom: PhantomData<&'msg mut ()>,
 }
-
-impl<'msg, T: Message> Clone for MessageMutInner<'msg, T> {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
-impl<'msg, T: Message> Copy for MessageMutInner<'msg, T> {}
 
 impl<'msg, T: Message> MessageMutInner<'msg, T> {
     /// # Safety
@@ -234,19 +227,19 @@ impl<'msg, T: Message> MessageMutInner<'msg, T> {
         // SAFETY:
         // - Caller guaranteed `raw` is valid and of type `T`
         let ptr = unsafe { MessagePtr::wrap(raw) };
-        MessageMutInner { ptr, arena }
+        MessageMutInner { ptr, arena, _phantom: PhantomData }
     }
 
     #[allow(clippy::needless_pass_by_ref_mut)] // Sound construction requires mutable access.
     pub fn mut_of_owned(msg: &'msg mut OwnedMessageInner<T>) -> Self {
-        MessageMutInner { ptr: msg.ptr, arena: &msg.arena }
+        MessageMutInner { ptr: msg.ptr, arena: &msg.arena, _phantom: PhantomData }
     }
 
     pub fn from_parent<ParentT>(
         parent_msg: MessageMutInner<'msg, ParentT>,
         ptr: MessagePtr<T>,
     ) -> Self {
-        MessageMutInner { ptr, arena: parent_msg.arena }
+        MessageMutInner { ptr, arena: parent_msg.arena, _phantom: PhantomData }
     }
 
     pub fn ptr_mut(&mut self) -> MessagePtr<T> {
@@ -263,6 +256,17 @@ impl<'msg, T: Message> MessageMutInner<'msg, T> {
 
     pub fn arena(&self) -> &Arena {
         self.arena
+    }
+
+    pub fn as_view(&self) -> MessageViewInner<'msg, T> {
+        MessageViewInner { ptr: self.ptr, _phantom: PhantomData }
+    }
+
+    pub fn reborrow<'shorter>(&mut self) -> MessageMutInner<'shorter, T>
+    where
+        'msg: 'shorter,
+    {
+        Self { ptr: self.ptr, arena: self.arena, _phantom: PhantomData }
     }
 }
 
