@@ -63,7 +63,9 @@ PROTOBUF_EXPORT extern const uint32_t CppFeatures_StringType_internal_data_[];
 class CppFeatures;
 struct CppFeaturesGlobalsTypeInternal;
 PROTOBUF_EXPORT extern CppFeaturesGlobalsTypeInternal _CppFeatures_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull CppFeatures_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace pb
 namespace google {
 namespace protobuf {
@@ -306,7 +308,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
   static constexpr auto InternalNewImpl_();
 
  public:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto InternalGenerateClassData_();
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -421,6 +425,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   friend ::google::protobuf::internal::PrivateAccess;
+  friend CppFeaturesGlobalsTypeInternal;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -446,8 +451,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcpp_5ffeatures_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull CppFeatures_class_data_;
 
 // ===================================================================
 

@@ -328,7 +328,18 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
               )cc");
             }
           }},
-         {"class_data", [&] { p->Emit("$classname$_class_data_.base(),\n"); }},
+         {"class_data",
+          [&] {
+            p->Emit(
+                {{"globals", MsgGlobalsInstanceName(descriptor_, options_)}},
+                R"cc(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+                  $classname$_class_data_.base(),
+#else
+                  $globals$.class_data.base(),
+#endif
+                )cc");
+          }},
          {"post_loop_handler",
           [&] {
             if (NeedsPostLoopHandler(descriptor_, options_)) {

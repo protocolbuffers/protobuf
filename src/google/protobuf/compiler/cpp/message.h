@@ -132,6 +132,7 @@ class MessageGenerator {
   void GenerateByteSizeV2(io::Printer* p);
   void GenerateSerializeV2(io::Printer* p);
   void GenerateClassData(io::Printer* p);
+  void GenerateClassDataInitializer(io::Printer* p);
   void GenerateMapEntryClassDefinition(io::Printer* p);
   void GenerateAnyMethodDefinition(io::Printer* p);
   void GenerateImplDefinition(io::Printer* p);

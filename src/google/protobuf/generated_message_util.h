@@ -416,6 +416,10 @@ struct PrivateAccess {
   static void TrackerOnGetMetadata() {
     T::Impl_::TrackerOnGetMetadata();
   }
+  template <typename T>
+  static constexpr internal::MessageCreator GetNewImpl() {
+    return MessageLite::GetNewImpl<T>();
+  }
 };
 
 }  // namespace internal

@@ -35,6 +35,9 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+struct ImplicitWeakMessageDefaultType;
+extern ImplicitWeakMessageDefaultType implicit_weak_message_globals;
+
 // An implementation of MessageLite that treats all data as unknown. This type
 // acts as a placeholder for an implicit weak field in the case where the true
 // message type does not get linked into the binary.
@@ -51,8 +54,16 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
 
   // TODO: make this constructor private
   explicit ImplicitWeakMessage(Arena* arena)
-      : MessageLite(arena, class_data_.base()),
-        data_(Arena::Create<std::string>(arena)) {}
+      : MessageLite(arena,
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+                    class_data_.base()
+#else
+                    MessageGlobalsBase::GetClassData(
+                        &implicit_weak_message_globals)
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+                        ),
+        data_(Arena::Create<std::string>(arena)) {
+  }
 
   ~ImplicitWeakMessage() PROTOBUF_FINAL { delete data_; }
 
@@ -85,7 +96,11 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
 
  private:
   static const TcParseTable<0> table_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static const ClassDataLite class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+
+  friend ImplicitWeakMessageDefaultType;
 
   static void MergeImpl(MessageLite&, const MessageLite&);
 
@@ -109,9 +124,6 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
   std::string* data_;
   google::protobuf::internal::CachedSize cached_size_{};
 };
-
-struct ImplicitWeakMessageDefaultType;
-extern ImplicitWeakMessageDefaultType implicit_weak_message_globals;
 
 // A type handler for use with implicit weak repeated message fields.
 template <typename ImplicitWeakType>
