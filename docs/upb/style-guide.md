@@ -22,7 +22,7 @@ converting public interfaces as these are more difficult to change later.
 C does not have namespaces. Anywhere you would normally use a namespace
 separator (`::`) in C++, we use an underscore (`_`) in C:
 
-```c++
+```c++ {.good}
 // C equivalent for upb::Arena::New()
 upb_Arena* upb_Arena_New();
 ```
@@ -30,27 +30,28 @@ upb_Arena* upb_Arena_New();
 Since we rely on `_` to be our namespace separator, we never use it to merely
 separate words in function or type names:
 
-```c++
+```c++ {.bad}
 // BAD: this would be interpreted as upb::FieldDef::has::default().
 bool upb_FieldDef_has_default(const upb_FieldDef* f);
-
+```
+```c++ {.good}
 // GOOD: this is equivalent to upb::FieldDef::HasDefault().
 bool upb_FieldDef_HasDefault(const upb_FieldDef* f);
 ```
 
 For multi-word namespaces, we use `PascalCase`:
 
-```c++
+```c++ {.good}
 // `PyUpb` is the namespace.
 PyObject* PyUpb_CMessage_GetAttr(PyObject* _self, PyObject* attr);
 ```
 
 ### Private Functions and Members
 
-Since we do not have `private` in C++, we use the `UPB_PRIVATE()` macro to mark
+Since we do not have `private` in C, we use the `UPB_PRIVATE()` macro to mark
 internal functions and variables that should only be accessed from upb:
 
-```c++
+```c++ {.good}
 // Internal-only function.
 int64_t UPB_PRIVATE(upb_Int64_FromLL)();
 
