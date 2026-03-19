@@ -11,29 +11,38 @@
 
 #include "absl/status/status.h"
 #include "absl/strings/str_format.h"
+#include "absl/types/source_location.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 
 namespace hpb {
 absl::Status MessageAllocationError(SourceLocation loc) {
-  return absl::Status(absl::StatusCode::kUnknown,
-                      "Upb message allocation error");
+  return absl::Status(absl::StatusCode::kInternal,
+                      "Upb message allocation error", loc);
 }
 
-absl::Status ExtensionNotFoundError(uint32_t ext_number, SourceLocation loc)
-{
-  return absl::Status(absl::StatusCode::kUnknown,
-                      absl::StrFormat("Extension %d not found", ext_number));
+absl::Status ExtensionNotFoundError(uint32_t extension_number,
+                                    SourceLocation loc) {
+  return absl::Status(
+      absl::StatusCode::kInternal,
+      absl::StrFormat("Extension %d not found", extension_number), loc);
 }
 
-absl::Status MessageEncodeError(upb_EncodeStatus s, SourceLocation loc) {
-  return absl::Status(absl::StatusCode::kUnknown, "Encoding error");
+absl::Status MessageEncodeError(upb_EncodeStatus status, SourceLocation loc) {
+  return absl::Status(absl::StatusCode::kInternal,
+                      absl::StrFormat("Upb message encoding error %d", status),
+                      loc
+
+  );
 }
 
 absl::Status MessageDecodeError(upb_DecodeStatus status, SourceLocation loc
 
 ) {
-  return absl::Status(absl::StatusCode::kUnknown, "Upb message parse error");
+  return absl::Status(absl::StatusCode::kInternal,
+                      absl::StrFormat("Upb message parse error %d", status), loc
+
+  );
 }
 
 }  // namespace hpb
