@@ -462,7 +462,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   void RemoveLast() {
-    ABSL_DCHECK_GT(current_size_, 0);
+    internal::RuntimeAssertInBoundsGE(current_size_, 1);
     ExchangeCurrentSize(current_size_ - 1);
     using H = CommonHandler<TypeHandler>;
     H::Clear(cast<H>(element_at(current_size_)));
