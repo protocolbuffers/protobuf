@@ -663,7 +663,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           #[doc(hidden)]
           pub fn as_message_mut_inner(&mut self, _private: $pbi$::Private)
             -> $pbr$::MessageMutInner<'msg, $Msg$> {
-            self.inner
+            self.inner.reborrow()
           }
 
           pub fn to_owned(&self) -> $Msg$ {
@@ -688,9 +688,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
         impl<'msg> $pb$::AsView for $Msg$Mut<'msg> {
           type Proxied = $Msg$;
           fn as_view(&self) -> $pb$::View<'_, $Msg$> {
-            $Msg$View {
-              inner: $pbr$::MessageViewInner::view_of_mut(self.inner)
-            }
+            self.inner.as_view().into()
           }
         }
 
@@ -698,16 +696,14 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$>
           where
               'msg: 'shorter {
-            $Msg$View {
-              inner: $pbr$::MessageViewInner::view_of_mut(self.inner)
-            }
+            self.inner.as_view().into()
           }
         }
 
         impl<'msg> $pb$::AsMut for $Msg$Mut<'msg> {
           type MutProxied = $Msg$;
           fn as_mut(&mut self) -> $Msg$Mut<'msg> {
-            $Msg$Mut { inner: self.inner }
+            self.inner.reborrow().into()
           }
         }
 
