@@ -34,11 +34,6 @@ final class CodedOutputStreamWriter implements Writer {
     this.output.wrapper = this;
   }
 
-  @Override
-  public FieldOrder fieldOrder() {
-    return FieldOrder.ASCENDING;
-  }
-
   public int getTotalBytesWritten() {
     return output.getTotalBytesWritten();
   }
