@@ -1640,13 +1640,56 @@ TYPED_TEST(RepeatedNumericFieldProxyTest, Rebind) {
   auto field2 = this->MakeRepeatedFieldContainer();
   field2->Add(2);
 
-  auto proxy = field1.MakeProxy();
-  proxy = field2.MakeProxy();
+  auto proxy = field1.MakeConstProxy();
+  proxy = field2.MakeConstProxy();
 
   // Proxy should be rebound to field2 without having modified either field.
   EXPECT_THAT(proxy, ElementsAre(2));
   EXPECT_THAT(*field1, ElementsAre(1));
   EXPECT_THAT(*field2, ElementsAre(2));
+
+  // Verify that mutable proxies can't be rebound.
+  static_assert(!std::is_copy_assignable_v<decltype(field1.MakeProxy())>);
+}
+
+TYPED_TEST(RepeatedStringFieldProxyTest, Rebind) {
+  auto field1 = this->MakeRepeatedFieldContainer();
+  this->Add(field1, "1");
+
+  auto field2 = this->MakeRepeatedFieldContainer();
+  this->Add(field2, "2");
+
+  auto proxy = field1.MakeConstProxy();
+  proxy = field2.MakeConstProxy();
+
+  // Proxy should be rebound to field2 without having modified either field.
+  EXPECT_THAT(proxy, ElementsAre(StringEq("2")));
+  EXPECT_THAT(*field1, ElementsAre(StringEq("1")));
+  EXPECT_THAT(*field2, ElementsAre(StringEq("2")));
+
+  // Verify that mutable proxies can't be rebound.
+  static_assert(!std::is_copy_assignable_v<decltype(field1.MakeProxy())>);
+}
+
+TEST_P(RepeatedFieldProxyTest, RebindMessage) {
+  auto field1 =
+      this->MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  field1->Add()->set_value(1);
+
+  auto field2 =
+      this->MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  field2->Add()->set_value(2);
+
+  auto proxy = field1.MakeConstProxy();
+  proxy = field2.MakeConstProxy();
+
+  // Proxy should be rebound to field2 without having modified either field.
+  EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 2)pb")));
+  EXPECT_THAT(*field1, ElementsAre(EqualsProto(R"pb(value: 1)pb")));
+  EXPECT_THAT(*field2, ElementsAre(EqualsProto(R"pb(value: 2)pb")));
+
+  // Verify that mutable proxies can't be rebound.
+  static_assert(!std::is_copy_assignable_v<decltype(field1.MakeProxy())>);
 }
 
 TEST_P(RepeatedFieldProxyTest, ExplicitConversionToLegacyRepeatedField) {

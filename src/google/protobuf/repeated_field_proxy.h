@@ -437,7 +437,9 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
 
  public:
   RepeatedFieldProxy(const RepeatedFieldProxy& other) = default;
-  RepeatedFieldProxy& operator=(const RepeatedFieldProxy&) = default;
+  // Mutable proxies are not assignable. This is intentional to avoid confusion
+  // with the `assign` method, which reassigns the underlying repeated field.
+  RepeatedFieldProxy& operator=(const RepeatedFieldProxy&) = delete;
 
   // Returns a type which references the element at the given index. Performs
   // bounds checking in accordance with `bounds_check_mode_*`.
@@ -560,7 +562,7 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
 
   Arena* arena() const { return arena_; }
 
-  Arena* arena_;
+  Arena* const arena_;
 };
 
 template <typename ElementType>
