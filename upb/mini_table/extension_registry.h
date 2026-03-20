@@ -79,6 +79,10 @@ UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
 upb_ExtensionRegistryStatus upb_ExtensionRegistry_AddArray(
     upb_ExtensionRegistry* r, const upb_MiniTableExtension** e, size_t count);
 
+// Reserves space for at least |count| extensions to be added.
+upb_ExtensionRegistryStatus upb_ExtensionRegistry_Reserve(
+    upb_ExtensionRegistry* r, size_t count);
+
 // Looks up the extension (if any) defined for message type |t| and field
 // number |num|. Returns the extension if found, otherwise NULL.
 UPB_API const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
