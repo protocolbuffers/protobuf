@@ -1,0 +1,11 @@
+edition = "2023";
+
+package third_party_protobuf_rust_test;
+
+import "rust/test/extensions.proto";
+
+option java_multiple_files = true;
+
+extend TestExtensions {
+  int32 i32_extension_separate_file = 1000;
+}

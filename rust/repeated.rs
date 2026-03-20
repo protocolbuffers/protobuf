@@ -95,6 +95,10 @@ impl<T: Singular> Proxied for Repeated<T> {
 
 impl<T: Singular> SealedInternal for Repeated<T> {}
 
+impl<T: Singular> crate::codegen_traits::EntityType for Repeated<T> {
+    type Tag = crate::codegen_traits::entity_tag::RepeatedTag;
+}
+
 impl<T: Singular> AsView for Repeated<T> {
     type Proxied = Self;
 

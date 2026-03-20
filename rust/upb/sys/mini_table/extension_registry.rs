@@ -10,9 +10,26 @@ mod sys {
 }
 
 use core::ptr::NonNull;
+use sys::mem::arena::RawArena;
+use sys::mini_table::mini_table::RawMiniTableExtension;
 use sys::opaque_pointee::opaque_pointee;
 
 opaque_pointee!(upb_ExtensionRegistry);
 
 #[allow(unused)] // Not used yet but intended in the future.
 pub type RawExtensionRegistry = NonNull<upb_ExtensionRegistry>;
+
+pub enum ExtensionRegistryStatus {
+    Ok = 0,
+    DuplicateEntry = 1,
+    OutOfMemory = 2,
+    InvalidExtension = 3,
+}
+
+unsafe extern "C" {
+    pub fn upb_ExtensionRegistry_New(arena: RawArena) -> RawExtensionRegistry;
+    pub fn upb_ExtensionRegistry_Add(
+        r: RawExtensionRegistry,
+        e: RawMiniTableExtension,
+    ) -> ExtensionRegistryStatus;
+}

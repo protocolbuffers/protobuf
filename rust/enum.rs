@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use crate::__internal::Private;
+use crate::{AsView, IntoView, Proxied, __internal::Private, __internal::SealedInternal};
 use std::{
     error::Error,
     fmt::{Debug, Display},
@@ -56,3 +56,31 @@ impl<T: Enum> Display for UnknownEnumValue<T> {
 }
 
 impl<T: Enum> Error for UnknownEnumValue<T> {}
+
+#[macro_export]
+macro_rules! impl_enum_proxied {
+    ($t:ty) => {
+        impl $crate::__internal::SealedInternal for $t {}
+
+        impl $crate::Proxied for $t {
+            type View<'msg> = $t;
+        }
+
+        impl $crate::AsView for $t {
+            type Proxied = $t;
+
+            fn as_view(&self) -> $t {
+                *self
+            }
+        }
+
+        impl<'msg> $crate::IntoView<'msg> for $t {
+            fn into_view<'shorter>(self) -> $t
+            where
+                'msg: 'shorter,
+            {
+                self
+            }
+        }
+    };
+}
