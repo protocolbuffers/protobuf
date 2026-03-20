@@ -125,7 +125,6 @@ class SingularString : public FieldGeneratorBase {
     )cc");
   }
 
-
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
       decltype($field_$){},
@@ -617,7 +616,6 @@ void SingularString::GenerateSerializeWithCachedSizesToArray(
           )cc");
 }
 
-
 void SingularString::GenerateConstexprAggregateInitializer(
     io::Printer* p) const {
   if (is_inlined()) {
@@ -745,7 +743,6 @@ class RepeatedString : public FieldGeneratorBase {
       }
     )cc");
   }
-
 
   void GenerateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
@@ -922,7 +919,6 @@ void RepeatedString::GenerateSerializeWithCachedSizesToArray(
             }
           )cc");
 }
-
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarStringGenerator(

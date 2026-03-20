@@ -237,10 +237,6 @@ std::string IntTypeName(const Options& options, absl::string_view type) {
 
 
 
-bool HasV2Table(const Descriptor* descriptor, const Options& options) {
-  return false;
-}
-
 }  // namespace
 
 bool IsLazy(const FieldDescriptor* field, const Options& options) {
@@ -892,36 +888,6 @@ const char* DeclaredTypeMethodName(FieldDescriptor::Type type) {
   return "";
 }
 
-absl::string_view DeclaredCppTypeMethodName(FieldDescriptor::CppType type) {
-  switch (type) {
-    case FieldDescriptor::CPPTYPE_INT32:
-      return "Int32";
-    case FieldDescriptor::CPPTYPE_INT64:
-      return "Int64";
-    case FieldDescriptor::CPPTYPE_UINT32:
-      return "UInt32";
-    case FieldDescriptor::CPPTYPE_UINT64:
-      return "UInt64";
-    case FieldDescriptor::CPPTYPE_DOUBLE:
-      return "Double";
-    case FieldDescriptor::CPPTYPE_FLOAT:
-      return "Float";
-    case FieldDescriptor::CPPTYPE_BOOL:
-      return "Bool";
-    case FieldDescriptor::CPPTYPE_ENUM:
-      return "Enum";
-    case FieldDescriptor::CPPTYPE_STRING:
-      return "String";
-    case FieldDescriptor::CPPTYPE_MESSAGE:
-      return "Message";
-
-      // No default because we want the compiler to complain if any new
-      // types are added.
-  }
-  ABSL_LOG(FATAL) << "Can't get here.";
-  return "";
-}
-
 std::string Int32ToString(int number) {
   if (number == std::numeric_limits<int32_t>::min()) {
     // This needs to be special-cased, see explanation here:
@@ -1361,34 +1327,6 @@ bool HasMapFields(const FileDescriptor* file) {
   return false;
 }
 
-bool IsV2EnabledForMessage(const Descriptor* descriptor,
-                           const Options& options) {
-  return false;
-}
-
-// Returns true if a message (descriptor) directly has required fields. Later
-// CLs will expand to cover transitively required fields.
-bool ShouldVerifyV2(const Descriptor* descriptor, const Options& options) {
-  return false;
-}
-
-
-bool HasV2MessageTable(const FileDescriptor* file, const Options& options) {
-  for (int i = 0; i < file->message_type_count(); ++i) {
-    if (HasV2Table(file->message_type(i), options)) return true;
-  }
-  return false;
-}
-
-
-bool IsV2ParseEnabledForMessage(const Descriptor* descriptor,
-                                const Options& options) {
-  return false;
-}
-
-bool HasV2ParseTable(const FileDescriptor* file, const Options& options) {
-  return false;
-}
 
 static bool HasEnumDefinitions(const Descriptor* message_type) {
   if (message_type->enum_type_count() > 0) return true;

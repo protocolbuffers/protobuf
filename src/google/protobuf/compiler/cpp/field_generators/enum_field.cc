@@ -113,7 +113,6 @@ class SingularEnum : public FieldGeneratorBase {
     )cc");
   }
 
-
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
       /*decltype($field_$)*/ $kDefault$,

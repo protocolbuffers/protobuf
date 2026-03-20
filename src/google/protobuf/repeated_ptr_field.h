@@ -1580,8 +1580,6 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // `RepeatedPtrFieldBase`.
   friend internal::MapFieldBase;
 
-  friend class internal::v2::TableDrivenParse;
-
   // Note:  RepeatedPtrField SHOULD NOT be subclassed by users.
   using TypeHandler = internal::GenericTypeHandler<Element>;
 

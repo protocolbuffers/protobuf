@@ -87,12 +87,6 @@ namespace internal {
 PROTOBUF_EXPORT void GenericSwap(MessageLite* lhs, MessageLite* rhs);
 PROTOBUF_EXPORT void GenericSwap(Message* lhs, Message* rhs);
 
-namespace v2 {
-class TableDriven;
-class TableDrivenMessage;
-class TableDrivenParse;
-}  // namespace v2
-
 class MessageCreator {
  public:
   using Func = void* (*)(const void*, void*, Arena*);
@@ -321,7 +315,6 @@ class WireFormatLite;
 class WeakFieldMap;
 class RustMapHelper;
 
-
 // We compute sizes as size_t but cache them as int.  This function converts a
 // computed size to a cached size.  Since we don't proceed with serialization
 // if the total size was > INT_MAX, it is not important what this function
@@ -398,17 +391,14 @@ struct PROTOBUF_EXPORT ClassData {
                       void (*merge_to_from)(MessageLite& to,
                                             const MessageLite& from_msg),
                       internal::MessageCreator message_creator,
-                      uint32_t cached_size_offset, bool is_lite
-                      )
+                      uint32_t cached_size_offset, bool is_lite)
       : prototype(prototype),
         tc_table(tc_table),
         is_initialized(is_initialized),
         merge_to_from(merge_to_from),
         message_creator(message_creator),
         cached_size_offset(cached_size_offset),
-        is_lite(is_lite)
-  {
-  }
+        is_lite(is_lite) {}
 #endif  // !PROTOBUF_CUSTOM_VTABLE
 
   // But we always provide the full constructor even in normal mode to make
@@ -424,8 +414,7 @@ struct PROTOBUF_EXPORT ClassData {
       [[maybe_unused]] uint8_t* (*serialize)(const MessageLite& msg,
                                              uint8_t* ptr,
                                              io::EpsCopyOutputStream* stream),
-      uint32_t cached_size_offset, bool is_lite
-      )
+      uint32_t cached_size_offset, bool is_lite)
       : prototype(prototype),
         tc_table(tc_table),
         is_initialized(is_initialized),
@@ -438,8 +427,7 @@ struct PROTOBUF_EXPORT ClassData {
         serialize(serialize),
 #endif  // PROTOBUF_CUSTOM_VTABLE
         cached_size_offset(cached_size_offset),
-        is_lite(is_lite)
-  {
+        is_lite(is_lite) {
   }
 
   const ClassDataFull& full() const;
@@ -1054,7 +1042,6 @@ class PROTOBUF_EXPORT MessageLite {
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual size_t ByteSizeLong() const = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
-
   // Legacy ByteSize() API.
   [[deprecated(
       "Please use ByteSizeLong() "
@@ -1181,7 +1168,6 @@ class PROTOBUF_EXPORT MessageLite {
     }
     return tc_table;
   }
-
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   explicit constexpr MessageLite(const internal::ClassData* data)
@@ -1343,9 +1329,6 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::WeakFieldMap;
   friend class internal::WireFormatLite;
   friend class internal::RustMapHelper;
-  friend class internal::v2::TableDriven;
-  friend class internal::v2::TableDrivenMessage;
-  friend class internal::v2::TableDrivenParse;
   friend class internal::MessageCreator;
   friend class internal::RepeatedPtrFieldBase;
   template <typename Type>

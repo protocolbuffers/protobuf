@@ -44,7 +44,6 @@ class UnknownFieldSet;
 
 namespace internal {
 
-
 enum {
   kSplitOffsetAuxIdx = 0,
   kSplitSizeAuxIdx = 1,
