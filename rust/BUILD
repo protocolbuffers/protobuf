@@ -1,6 +1,7 @@
 # Protobuf Rust runtime packages.
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
@@ -69,11 +70,22 @@ PROTOBUF_SHARED = [
 # All Rust source files; this is used for packaging up a crate.
 ALL_RUST_SRCS = PROTOBUF_SHARED + [
     # go/keep-sorted start
-    "cpp.rs",
+    "cpp_kernel/map.rs",
+    "cpp_kernel/message.rs",
+    "cpp_kernel/mod.rs",
+    "cpp_kernel/raw.rs",
+    "cpp_kernel/repeated.rs",
+    "cpp_kernel/string.rs",
     "gtest_matchers.rs",
     "gtest_matchers_impl.rs",
     "protobuf.rs",
-    "upb.rs",
+    "upb_kernel/conversions.rs",
+    "upb_kernel/map.rs",
+    "upb_kernel/message.rs",
+    "upb_kernel/minitable.rs",
+    "upb_kernel/mod.rs",
+    "upb_kernel/repeated.rs",
+    "upb_kernel/string.rs",
     # go/keep-sorted end
 ]
 
@@ -84,7 +96,15 @@ ALL_RUST_SRCS = PROTOBUF_SHARED + [
 # setting.
 rust_library(
     name = "protobuf_upb",
-    srcs = PROTOBUF_SHARED + ["upb.rs"],
+    srcs = PROTOBUF_SHARED + [
+        "upb_kernel/conversions.rs",
+        "upb_kernel/map.rs",
+        "upb_kernel/message.rs",
+        "upb_kernel/minitable.rs",
+        "upb_kernel/mod.rs",
+        "upb_kernel/repeated.rs",
+        "upb_kernel/string.rs",
+    ],
     crate_root = "shared.rs",
     proc_macro_deps = [
         "//rust/protobuf_macros",
@@ -131,7 +151,14 @@ rust_library(
 # setting.
 rust_library(
     name = "protobuf_cpp",
-    srcs = PROTOBUF_SHARED + ["cpp.rs"],
+    srcs = PROTOBUF_SHARED + [
+        "cpp_kernel/map.rs",
+        "cpp_kernel/message.rs",
+        "cpp_kernel/mod.rs",
+        "cpp_kernel/raw.rs",
+        "cpp_kernel/repeated.rs",
+        "cpp_kernel/string.rs",
+    ],
     crate_root = "shared.rs",
     proc_macro_deps = [
         "//rust/protobuf_macros",
@@ -143,7 +170,7 @@ rust_library(
     ],
     visibility = [":protobuf_internal"],
     deps = [
-        "//rust/cpp_kernel:cpp_api",
+        "//rust:cpp_api",
     ],
 )
 
@@ -168,6 +195,48 @@ rust_library(
     rustc_flags = ["--cfg=cpp_kernel"],
     visibility = [":protobuf_internal"],
     deps = [":protobuf_cpp"],
+)
+
+cc_library(
+    name = "cpp_api",
+    srcs = [
+        "cpp_kernel/compare.cc",
+        "cpp_kernel/debug.cc",
+        "cpp_kernel/map.cc",
+        "cpp_kernel/message.cc",
+        "cpp_kernel/repeated.cc",
+        "cpp_kernel/strings.cc",
+    ],
+    hdrs = [
+        "cpp_kernel/compare.h",
+        "cpp_kernel/debug.h",
+        "cpp_kernel/rust_alloc_for_cpp_api.h",
+        "cpp_kernel/serialized_data.h",
+        "cpp_kernel/strings.h",
+    ],
+    visibility = [
+        "//rust:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [
+        ":rust_alloc_for_cpp_api",  # buildcleaner: keep
+        "//src/google/protobuf",
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/io",
+        "@abseil-cpp//absl/functional:overload",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/strings:string_view",
+    ],
+)
+
+rust_library(
+    name = "rust_alloc_for_cpp_api",
+    srcs = ["cpp_kernel/rust_alloc_for_cpp_api.rs"],
+    visibility = [
+        "//rust:__subpackages__",
+    ],
 )
 
 rust_library(

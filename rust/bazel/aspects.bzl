@@ -504,7 +504,7 @@ def _make_proto_library_aspect(is_upb):
         attrs = {
             "_cpp_thunks_deps": attr.label_list(
                 default = [
-                    Label("//rust/cpp_kernel:cpp_api"),
+                    Label("//rust:cpp_api"),
                     Label("//src/google/protobuf"),
                     Label("//src/google/protobuf:protobuf_lite"),
                 ],

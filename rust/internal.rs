@@ -22,10 +22,10 @@ use crate::{MapKey, MapValue, MapView};
 pub use std::fmt::Debug;
 
 #[cfg(all(bzl, cpp_kernel))]
-#[path = "cpp.rs"]
+#[path = "cpp_kernel/mod.rs"]
 pub mod runtime;
 #[cfg(any(not(bzl), upb_kernel))]
-#[path = "upb.rs"]
+#[path = "upb_kernel/mod.rs"]
 pub mod runtime;
 
 /// Used to protect internal-only items from being used accidentally.

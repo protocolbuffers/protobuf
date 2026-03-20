@@ -265,7 +265,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
     kString,   // std::string
     kMessage,  // Derived from MessageLite
   };
-  // LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp.rs:map_ffi)
+  // LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp_kernel/map.rs:map_ffi)
 
   template <typename T>
   static constexpr TypeKind StaticTypeKind() {
