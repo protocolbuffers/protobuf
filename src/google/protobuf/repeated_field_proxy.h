@@ -23,6 +23,11 @@ namespace protobuf {
 template <typename ElementType>
 class RepeatedFieldProxy;
 
+template <int&... DeductionBarrier, typename T, typename Pred>
+size_t erase_if(RepeatedFieldProxy<T> cont, Pred pred);
+template <int&... DeductionBarrier, typename T, typename U>
+size_t erase(RepeatedFieldProxy<T> cont, const U& value);
+
 namespace internal {
 
 template <typename T, typename... Args>
@@ -585,6 +590,11 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
   friend RepeatedFieldProxy<T> internal::ConstructRepeatedFieldProxy(
       Args&&... args);
 
+  template <int&... DeductionBarrier, typename T, typename Pred>
+  friend size_t erase_if(RepeatedFieldProxy<T> cont, Pred pred);
+  template <int&... DeductionBarrier, typename T, typename U>
+  friend size_t erase(RepeatedFieldProxy<T> cont, const U& value);
+
   RepeatedFieldProxy(RepeatedFieldType& field, Arena* arena)
       : Base(field), arena_(arena) {
     ABSL_DCHECK_EQ(arena, field.GetArena());
@@ -681,6 +691,18 @@ RepeatedFieldProxy<ElementType> ToProxyType(const C<ElementType>* proxy) {
 }
 
 }  // namespace internal
+
+// Like C++20's std::erase_if, for RepeatedFieldProxy
+template <int&... DeductionBarrier, typename T, typename Pred>
+size_t erase_if(RepeatedFieldProxy<T> cont, Pred pred) {
+  return google::protobuf::erase_if(cont.field(), pred);
+}
+
+// Like C++20's std::erase, for RepeatedFieldProxy
+template <int&... DeductionBarrier, typename T, typename U>
+size_t erase(RepeatedFieldProxy<T> cont, const U& value) {
+  return google::protobuf::erase(cont.field(), value);
+}
 
 }  // namespace protobuf
 }  // namespace google

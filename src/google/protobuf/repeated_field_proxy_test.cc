@@ -33,8 +33,11 @@ namespace internal {
 namespace {
 
 using ::proto2_unittest::RepeatedFieldProxyTestSimpleMessage;
+using ::testing::AnyOf;
 using ::testing::ElementsAre;
+using ::testing::Ge;
 using ::testing::IsEmpty;
+using ::testing::Lt;
 using ::testing::Not;
 
 static constexpr absl::string_view kLongString =
@@ -1310,6 +1313,112 @@ TEST_P(RepeatedFieldProxyTest, EraseRange) {
                                  EqualsProto(R"pb(value: 4)pb")));
   EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
                                   EqualsProto(R"pb(value: 4)pb")));
+}
+
+TYPED_TEST(RepeatedNumericFieldProxyTest, Proto2Erase) {
+  auto field = this->MakeRepeatedFieldContainer();
+  field->Add(1);
+  field->Add(2);
+  field->Add(3);
+  field->Add(4);
+
+  auto proxy = field.MakeProxy();
+  size_t count = google::protobuf::erase(proxy, 2);
+  EXPECT_EQ(count, 1);
+  EXPECT_THAT(proxy, ElementsAre(1, 3, 4));
+  EXPECT_THAT(*field, ElementsAre(1, 3, 4));
+}
+
+TYPED_TEST(RepeatedNumericFieldProxyTest, Proto2EraseIf) {
+  using ElementType = typename TypeParam::ElementType;
+
+  auto field = this->MakeRepeatedFieldContainer();
+  field->Add(1);
+  field->Add(2);
+  field->Add(3);
+  field->Add(4);
+
+  const ElementType* backing_array =
+      reinterpret_cast<const ElementType*>(field->data());
+  const ElementType* backing_array_end = backing_array + field->size();
+
+  auto proxy = field.MakeProxy();
+  size_t count =
+      google::protobuf::erase_if(proxy, [backing_array, backing_array_end](auto&& x) {
+        // Verify that `x` is a const lvalue reference. The value from the
+        // repeated field was intentionally decayed to avoid exposing a
+        // reference to the element, but if the argument type of this lambda is
+        // a reference, it will alias the temporary copy in `erase_if`. Since
+        // mutation of this temporary would not affect the original element,
+        // ensure it is const.
+        static_assert(std::is_lvalue_reference_v<decltype(x)>);
+        static_assert(std::is_const_v<std::remove_reference_t<decltype(x)>>);
+
+        // Verify that `x` is a copy of an element from the repeated field,
+        // meaning it does not lie in the backing array.
+        EXPECT_THAT(&x, AnyOf(Lt(backing_array), Ge(backing_array_end)));
+
+        return x > ElementType{2};
+      });
+  EXPECT_EQ(count, 2);
+  EXPECT_THAT(proxy, ElementsAre(1, 2));
+  EXPECT_THAT(*field, ElementsAre(1, 2));
+}
+
+TYPED_TEST(RepeatedStringFieldProxyTest, Proto2Erase) {
+  auto field = this->MakeRepeatedFieldContainer();
+  this->Add(field, "1");
+  this->Add(field, "2");
+  this->Add(field, "3");
+  this->Add(field, "4");
+
+  auto proxy = field.MakeProxy();
+  size_t count = google::protobuf::erase(proxy, "3");
+
+  EXPECT_EQ(count, 1);
+  EXPECT_THAT(proxy, ElementsAre(StringEq("1"), StringEq("2"), StringEq("4")));
+  EXPECT_THAT(*field, ElementsAre(StringEq("1"), StringEq("2"), StringEq("4")));
+}
+
+TYPED_TEST(RepeatedStringFieldProxyTest, Proto2EraseIf) {
+  using ElementType = typename TypeParam::ElementType;
+
+  auto field = this->MakeRepeatedFieldContainer();
+  this->Add(field, "1");
+  this->Add(field, "2");
+  this->Add(field, "3");
+  this->Add(field, "4");
+
+  auto proxy = field.MakeProxy();
+  size_t count = google::protobuf::erase_if(proxy, [](auto&& s) {
+    if constexpr (std::is_same_v<ElementType, absl::Cord>) {
+      static_assert(std::is_same_v<decltype(s), const absl::Cord&>);
+    } else {
+      static_assert(std::is_same_v<decltype(s), absl::string_view&&>);
+    }
+    return s == "2" || s == "4";
+  });
+  EXPECT_EQ(count, 2);
+  EXPECT_THAT(proxy, ElementsAre(StringEq("1"), StringEq("3")));
+  EXPECT_THAT(*field, ElementsAre(StringEq("1"), StringEq("3")));
+}
+
+TEST_P(RepeatedFieldProxyTest, Proto2EraseIfMessage) {
+  auto field =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  field->Add()->set_value(1);
+  field->Add()->set_value(2);
+  field->Add()->set_value(3);
+  field->Add()->set_value(4);
+
+  auto proxy = field.MakeProxy();
+  size_t count = google::protobuf::erase_if(
+      proxy, [](const auto& msg) { return msg.value() % 2 == 0; });
+  EXPECT_EQ(count, 2);
+  EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
+                                 EqualsProto(R"pb(value: 3)pb")));
+  EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
+                                  EqualsProto(R"pb(value: 3)pb")));
 }
 
 TYPED_TEST(RepeatedNumericFieldProxyTest, CopyAssign) {
