@@ -77,10 +77,6 @@ class EpsCopyInputStream;
 class TcParser;
 class WireFormat;
 
-namespace v2 {
-class TableDrivenParse;
-}  // namespace v2
-
 template <typename T, int kHeapRepHeaderSize>
 constexpr int RepeatedFieldLowerClampLimit() {
   // The header is padded to be at least `sizeof(T)` when it would be smaller
@@ -526,7 +522,6 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   friend class internal::EpsCopyInputStream;
   friend class internal::TcParser;
   friend class internal::WireFormat;
-  friend class internal::v2::TableDrivenParse;
 
   friend class RepeatedFieldProxy<Element>;
 

@@ -58,7 +58,6 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
 
       {"field_", FieldMemberName(field, split)},
       {"DeclaredType", DeclaredTypeMethodName(field->type())},
-      {"DeclaredCppType", DeclaredCppTypeMethodName(field->cpp_type())},
       {"Oneof", field->real_containing_oneof() ? "Oneof" : ""},
       {"Utf8", IsStrictUtf8String(field, opts) ? "Utf8" : "Raw"},
       {"StrType", IsStrictUtf8String(field, opts) ? "String" : "Bytes"},

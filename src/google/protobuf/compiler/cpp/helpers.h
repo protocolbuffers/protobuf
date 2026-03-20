@@ -272,10 +272,6 @@ std::string PrimitiveTypeName(const Options& options,
 // methods of WireFormat.  For example, TYPE_INT32 becomes "Int32".
 const char* DeclaredTypeMethodName(FieldDescriptor::Type type);
 
-// Get the declared cpp_type name in CamelCase format, as is used e.g. for the
-// methods of v2 WireFormat.  For example, CPPTYPE_INT32 becomes "Int32".
-absl::string_view DeclaredCppTypeMethodName(FieldDescriptor::CppType type);
-
 // Return the code that evaluates to the number when compiled.
 std::string Int32ToString(int number);
 
@@ -526,22 +522,6 @@ bool HasMapFields(const FileDescriptor* file);
 
 // Does this file have any enum type definitions?
 bool HasEnumDefinitions(const FileDescriptor* file);
-
-// Returns true if any message in the file can have v2 table.
-bool HasV2MessageTable(const FileDescriptor* file, const Options& options);
-bool HasV2ParseTable(const FileDescriptor* file, const Options& options);
-
-bool IsV2ParseEnabledForMessage(const Descriptor* descriptor,
-                                const Options& options);
-
-// Returns true if a message (descriptor) can have v2 table.
-bool IsV2EnabledForMessage(const Descriptor* descriptor,
-                           const Options& options);
-
-// Returns true if a message (descriptor) needs v2 verify function because it
-// may (transitively) contain a required field.
-bool ShouldVerifyV2(const Descriptor* descriptor, const Options& options);
-
 
 // Does this file have generated parsing, serialization, and other
 // standard methods for which reflection-based fallback implementations exist?
