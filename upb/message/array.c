@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/internal/log2.h"
 #include "upb/mem/arena.h"
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/types.h"
@@ -124,9 +125,17 @@ bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
   void* ptr = upb_Array_MutableDataPtr(array);
 
   // Log2 ceiling of size.
-  while (new_capacity < min_capacity) new_capacity *= 2;
+  while (new_capacity < min_capacity) {
+    if (upb_ShlOverflow(&new_capacity, 1)) {
+      new_capacity = SIZE_MAX;
+      break;
+    }
+  }
 
-  const size_t new_bytes = new_capacity << lg2;
+  size_t new_bytes = new_capacity;
+  if (upb_ShlOverflow(&new_bytes, lg2)) {
+    return false;
+  }
   ptr = upb_Arena_Realloc(arena, ptr, old_bytes, new_bytes);
   if (!ptr) return false;
 
