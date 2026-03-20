@@ -8,6 +8,7 @@
 // Tests for upb_table.
 
 #include <limits.h>
+#include <stdio.h>
 
 #include <cstdint>
 #include <cstring>
@@ -18,10 +19,16 @@
 
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
+#include "upb/base/string_view.h"
 #include "upb/hash/common.h"
+#include "upb/hash/ext_table.h"
 #include "upb/hash/int_table.h"
 #include "upb/hash/str_table.h"
+#include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
+#include "upb/message/test.upb_minitable.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -191,6 +198,51 @@ TEST_P(IntTableTest, TestIntTable) {
   EXPECT_EQ(0, upb_inttable_count(&t));
 
   upb_inttable_clear(&t);
+}
+
+TEST(TableTest, ExtTable) {
+  upb_Arena* a = upb_Arena_New();
+  upb_exttable table;
+  ASSERT_TRUE(upb_exttable_init(&table, 4, a));
+
+  const upb_MiniTable* mt1 = &upb_0test__TestExtensions_msg_init;
+  const upb_MiniTable* mt2 = &upb_0test__TestMessageSet_msg_init;
+
+  const upb_MiniTableExtension* ext1_10 =
+      &upb_test_TestExtensions_optional_int32_ext_ext;
+  const upb_MiniTableExtension* ext1_20 = &upb_test_optional_msg_ext_ext;
+  const upb_MiniTableExtension* ext2_10 =
+      &upb_test_MessageSetMember_message_set_extension_ext;
+
+  ASSERT_TRUE(upb_exttable_insert(&table, mt1, (const uint32_t*)ext1_10, a));
+  ASSERT_TRUE(upb_exttable_insert(&table, mt1, (const uint32_t*)ext1_20, a));
+  ASSERT_TRUE(upb_exttable_insert(&table, mt2, (const uint32_t*)ext2_10, a));
+
+  ASSERT_EQ(3, upb_exttable_count(&table));
+
+  const uint32_t* v;
+  v = upb_exttable_lookup(&table, mt1, 1000);  // optional_int32_ext
+  ASSERT_NE(nullptr, v);
+  ASSERT_EQ((const uint32_t*)ext1_10, v);
+
+  v = upb_exttable_lookup(&table, mt1, 1002);  // optional_msg_ext
+  ASSERT_NE(nullptr, v);
+  ASSERT_EQ((const uint32_t*)ext1_20, v);
+
+  v = upb_exttable_lookup(&table, mt2, 2000);  // message_set_extension
+  ASSERT_NE(nullptr, v);
+  ASSERT_EQ((const uint32_t*)ext2_10, v);
+
+  ASSERT_EQ(nullptr, upb_exttable_lookup(&table, mt2, 20));
+
+  v = upb_exttable_remove(&table, mt1, 1000);
+  ASSERT_NE(nullptr, v);
+  ASSERT_EQ((const uint32_t*)ext1_10, v);
+  ASSERT_EQ(2, upb_exttable_count(&table));
+
+  ASSERT_EQ(nullptr, upb_exttable_lookup(&table, mt1, 1000));
+
+  upb_Arena_Free(a);
 }
 
 TEST(IntTableTest, EmptyTable) {
