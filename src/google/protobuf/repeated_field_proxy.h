@@ -401,6 +401,36 @@ class RepeatedFieldProxyWithEmplaceBack<
   }
 };
 
+// Defines `resize(new_size, value)` for all non-string repeated fields.
+template <typename ElementType, typename Enable = void>
+class RepeatedFieldProxyWithResize {
+ public:
+  void resize(size_t new_size, const ElementType& value) const {
+    ToProxyType(this).field().resize(new_size, value);
+  }
+};
+
+// Defines `resize(new_size, value)` for non-Cord string repeated fields.
+template <typename ElementType>
+class RepeatedFieldProxyWithResize<
+    ElementType, std::enable_if_t<RepeatedElementTypeIsString<ElementType> &&
+                                  !std::is_same_v<ElementType, absl::Cord>>> {
+ public:
+  void resize(size_t new_size, absl::string_view value) const {
+    ToProxyType(this).field().resize(new_size, value);
+  }
+};
+
+// Defines `resize(new_size, value)` for repeated Cords.
+template <typename ElementType>
+class RepeatedFieldProxyWithResize<
+    ElementType, std::enable_if_t<std::is_same_v<ElementType, absl::Cord>>> {
+ public:
+  void resize(size_t new_size, const absl::Cord& value) const {
+    ToProxyType(this).field().resize(new_size, value);
+  }
+};
+
 }  // namespace internal
 
 // A proxy for a repeated field of type `ElementType` in a Protobuf message.
@@ -419,7 +449,8 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
     : public internal::RepeatedFieldProxyBase<ElementType>,
       public internal::RepeatedFieldProxyWithSet<ElementType>,
       public internal::RepeatedFieldProxyWithPushBack<ElementType>,
-      public internal::RepeatedFieldProxyWithEmplaceBack<ElementType> {
+      public internal::RepeatedFieldProxyWithEmplaceBack<ElementType>,
+      public internal::RepeatedFieldProxyWithResize<ElementType> {
   static_assert(!std::is_const_v<ElementType>);
 
  protected:
@@ -529,12 +560,26 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
     field().ReserveWithArena(arena(), new_size);
   }
 
+  // Resizes the repeated field to `new_size` elements. If `new_size` is smaller
+  // than the current size, the field is truncated. Otherwise, the field is
+  // extended with default-valued elements.
+  void resize(size_t new_size) const { field().resize(new_size); }
+
+  // Because we have an overload of `resize` in this class, we need to
+  // explicitly inherit the overload from the base class to avoid hiding it.
+
+  // Resizes the repeated field to `new_size` elements. If `new_size` is smaller
+  // than the current size, the field is truncated. Otherwise, the field is
+  // extended with copies of `value`.
+  using internal::RepeatedFieldProxyWithResize<ElementType>::resize;
+
  private:
   friend RepeatedFieldProxy<const ElementType>;
 
   friend internal::RepeatedFieldProxyWithSet<ElementType, void>;
   friend internal::RepeatedFieldProxyWithPushBack<ElementType, void>;
   friend internal::RepeatedFieldProxyWithEmplaceBack<ElementType, void>;
+  friend internal::RepeatedFieldProxyWithResize<ElementType, void>;
 
   template <typename T, typename... Args>
   friend RepeatedFieldProxy<T> internal::ConstructRepeatedFieldProxy(
