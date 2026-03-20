@@ -46,6 +46,14 @@ UPB_INLINE size_t upb_RoundUpToPowerOfTwo(size_t x) {
   return ((size_t)1) << lg2;
 }
 
+UPB_INLINE bool upb_ShlOverflow(size_t* a, unsigned int b) {
+  if (*a > (SIZE_MAX >> b)) {
+    return true;
+  }
+  *a <<= b;
+  return false;
+}
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
