@@ -9,6 +9,8 @@ load(
     "rust_cc_proto_library",
 )
 
+package(default_applicable_licenses = ["//:license"])
+
 cc_library(
     name = "test_utils",
     srcs = ["test_utils.cc"],
