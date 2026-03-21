@@ -31,16 +31,20 @@ static int GetLocaleRadix(char *data, size_t capacity) {
 
 // Populates a string identical to *input except that the character pointed to
 // by pos (which should be '.') is replaced with the locale-specific radix.
+// output must have at least input_len + 8 bytes of space.
 
-static void LocalizeRadix(const char *input, const char *pos, char *output) {
-  const int len1 = pos - input;
+static void LocalizeRadix(const char *input, size_t input_len, const char *pos,
+                           char *output) {
+  const size_t len1 = pos - input;
 
   char radix[8];
   const int len2 = GetLocaleRadix(radix, sizeof(radix));
+  const size_t len3 = input_len - len1 - 1;
 
   memcpy(output, input, len1);
   memcpy(output + len1, radix, len2);
-  strcpy(output + len1 + len2, input + len1 + 1);
+  memcpy(output + len1 + len2, input + len1 + 1, len3);
+  output[len1 + len2 + len3] = '\0';
 }
 
 double _upb_NoLocaleStrtod(const char *str, char **endptr) {
@@ -59,8 +63,16 @@ double _upb_NoLocaleStrtod(const char *str, char **endptr) {
   // try to replace the '.' with a locale-specific radix character and
   // try again.
 
-  char localized[80];
-  LocalizeRadix(str, temp_endptr, localized);
+  const size_t str_len = strlen(str);
+  // Extra space for locale radix which may be multi-byte.
+  const size_t buf_size = str_len + 8;
+  char stack_buf[256];
+  char *localized = buf_size <= sizeof(stack_buf)
+                        ? stack_buf
+                        : (char *)malloc(buf_size);
+  if (!localized) return result;
+
+  LocalizeRadix(str, str_len, temp_endptr, localized);
   char *localized_endptr;
   result = strtod(localized, &localized_endptr);
   if ((localized_endptr - &localized[0]) > (temp_endptr - str)) {
@@ -72,6 +84,8 @@ double _upb_NoLocaleStrtod(const char *str, char **endptr) {
       *endptr = (char *)str + (localized_endptr - &localized[0] - size_diff);
     }
   }
+
+  if (localized != stack_buf) free(localized);
 
   return result;
 }
