@@ -1,20 +1,18 @@
 include(GNUInstallDirs)
 
-foreach(_target IN LISTS protobuf_ABSL_USED_TARGETS)
-  # shared abseil on windows breaks the absl::foo -> absl_foo replacement logic -
-  # preempt this by a more specific replace (harmless if it doesn't apply); see GH-15883
-  string(REPLACE "absl::abseil_dll" "abseil_dll" _modified_target ${_target})
-  string(REPLACE :: _ _modified_target ${_modified_target})
-  list(APPEND _pc_targets ${_modified_target})
-endforeach()
-list(APPEND _pc_targets "utf8_range")
+# pkg-config dependencies: only list abseil packages whose types are exposed
+# in public headers. Listing all internal deps causes exponential blowup in
+# pkg-config's dependency resolution (see GitHub issue #24610).
+if (BUILD_SHARED_LIBS AND MSVC)
+  set(_protobuf_PC_REQUIRES "abseil_dll utf8_range")
+  set(_protobuf_lite_PC_REQUIRES "abseil_dll utf8_range")
+else()
+  # Abseil types exposed in protobuf public headers
+  set(_protobuf_PC_REQUIRES "absl_absl_check absl_absl_log absl_btree absl_cord absl_hash absl_log_severity absl_span absl_strings absl_flat_hash_map absl_flat_hash_set absl_function_ref absl_optional absl_status absl_statusor absl_synchronization utf8_range")
+  # Abseil types exposed in protobuf-lite public headers (subset of above)
+  set(_protobuf_lite_PC_REQUIRES "absl_absl_check absl_absl_log absl_btree absl_cord absl_hash absl_log_severity absl_span absl_strings utf8_range")
+endif()
 
-set(_protobuf_PC_REQUIRES "")
-set(_sep "")
-foreach (_target IN LISTS _pc_targets)
-  string(CONCAT _protobuf_PC_REQUIRES "${_protobuf_PC_REQUIRES}" "${_sep}" "${_target}")
-  set(_sep " ")
-endforeach ()
 set(_protobuf_PC_CFLAGS)
 if (protobuf_BUILD_SHARED_LIBS)
   set(_protobuf_PC_CFLAGS -DPROTOBUF_USE_DLLS)
