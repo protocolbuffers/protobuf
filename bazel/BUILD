@@ -87,3 +87,8 @@ filegroup(
         "//bazel/private:__pkg__",
     ],
 )
+
+test_suite(
+    name = "release_tests",
+    tests = ["//.github:release_prep_test"],
+)
