@@ -892,7 +892,7 @@ class PROTOBUF_EXPORT TcParser final {
     const uint32_t has_bits_offset = table->has_bits_offset;
     if constexpr (internal::PerformDebugChecks()) {
       // We always have some offset to write to.
-      ABSL_DCHECK_NE(has_bits_offset, 0);
+      ABSL_DCHECK_NE(has_bits_offset, 0u);
       // and if we actually have has bits to push, we should be pushing to a
       // real HasBits.
       // `has_bits_offset` points to `_cached_size_` when we have
