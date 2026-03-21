@@ -9854,7 +9854,6 @@ upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data, size_t len,
 
 
 #include <inttypes.h>
-#include <stdalign.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
