@@ -234,6 +234,12 @@ class RepeatedFieldProxyBase {
     return static_cast<size_type>(field().size());
   }
 
+  // Returns a const reference or view into the element at the given index,
+  // performing bounds checking in accordance with `bounds_check_mode_*`.
+  [[nodiscard]] const_reference get(size_type index) const {
+    return field()[index];
+  }
+
   [[nodiscard]] const_iterator cbegin() const { return begin(); }
   [[nodiscard]] const_iterator cend() const { return end(); }
   [[nodiscard]] iterator begin() const { return iterator(field().begin()); }

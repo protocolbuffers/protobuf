@@ -485,8 +485,13 @@ TYPED_TEST(RepeatedNumericFieldProxyTest, ArrayIndexing) {
     EXPECT_EQ(proxy[1], 2);
     EXPECT_EQ(proxy[2], 3);
 
+    EXPECT_EQ(proxy.get(0), 1);
+    EXPECT_EQ(proxy.get(1), 2);
+    EXPECT_EQ(proxy.get(2), 3);
+
     // Check that repeated numeric proxies return values, not references.
     static_assert(std::is_same_v<decltype(proxy[0]), ElementType>);
+    static_assert(std::is_same_v<decltype(proxy.get(0)), ElementType>);
   }
 
   {
@@ -495,9 +500,14 @@ TYPED_TEST(RepeatedNumericFieldProxyTest, ArrayIndexing) {
     EXPECT_EQ(proxy[1], 2);
     EXPECT_EQ(proxy[2], 3);
 
+    EXPECT_EQ(proxy.get(0), 1);
+    EXPECT_EQ(proxy.get(1), 2);
+    EXPECT_EQ(proxy.get(2), 3);
+
     // Check that const repeated numeric proxies return values, not const
     // references.
     static_assert(std::is_same_v<decltype(proxy[0]), ElementType>);
+    static_assert(std::is_same_v<decltype(proxy.get(0)), ElementType>);
   }
 }
 
@@ -513,6 +523,15 @@ TEST_P(RepeatedFieldProxyTest, ArrayIndexingMessage) {
     EXPECT_THAT(proxy[0], EqualsProto(R"pb(value: 1)pb"));
     EXPECT_THAT(proxy[1], EqualsProto(R"pb(value: 2)pb"));
     EXPECT_THAT(proxy[2], EqualsProto(R"pb(value: 3)pb"));
+
+    EXPECT_THAT(proxy.get(0), EqualsProto(R"pb(value: 1)pb"));
+    EXPECT_THAT(proxy.get(1), EqualsProto(R"pb(value: 2)pb"));
+    EXPECT_THAT(proxy.get(2), EqualsProto(R"pb(value: 3)pb"));
+
+    static_assert(std::is_same_v<decltype(proxy[0]),
+                                 RepeatedFieldProxyTestSimpleMessage&>);
+    static_assert(std::is_same_v<decltype(proxy.get(0)),
+                                 const RepeatedFieldProxyTestSimpleMessage&>);
   }
 
   {
@@ -520,10 +539,21 @@ TEST_P(RepeatedFieldProxyTest, ArrayIndexingMessage) {
     EXPECT_THAT(proxy[0], EqualsProto(R"pb(value: 1)pb"));
     EXPECT_THAT(proxy[1], EqualsProto(R"pb(value: 2)pb"));
     EXPECT_THAT(proxy[2], EqualsProto(R"pb(value: 3)pb"));
+
+    EXPECT_THAT(proxy.get(0), EqualsProto(R"pb(value: 1)pb"));
+    EXPECT_THAT(proxy.get(1), EqualsProto(R"pb(value: 2)pb"));
+    EXPECT_THAT(proxy.get(2), EqualsProto(R"pb(value: 3)pb"));
+
+    static_assert(std::is_same_v<decltype(proxy[0]),
+                                 const RepeatedFieldProxyTestSimpleMessage&>);
+    static_assert(std::is_same_v<decltype(proxy.get(0)),
+                                 const RepeatedFieldProxyTestSimpleMessage&>);
   }
 }
 
 TYPED_TEST(RepeatedStringFieldProxyTest, ArrayIndexing) {
+  using ElementType = typename TypeParam::ElementType;
+
   auto field = this->MakeRepeatedFieldContainer();
   this->Add(field, "1");
   this->Add(field, "2");
@@ -534,6 +564,18 @@ TYPED_TEST(RepeatedStringFieldProxyTest, ArrayIndexing) {
     EXPECT_THAT(proxy[0], StringEq("1"));
     EXPECT_THAT(proxy[1], StringEq("2"));
     EXPECT_THAT(proxy[2], StringEq("3"));
+
+    EXPECT_THAT(proxy.get(0), StringEq("1"));
+    EXPECT_THAT(proxy.get(1), StringEq("2"));
+    EXPECT_THAT(proxy.get(2), StringEq("3"));
+
+    if constexpr (std::is_same_v<ElementType, absl::string_view>) {
+      static_assert(std::is_same_v<decltype(proxy[0]), absl::string_view>);
+      static_assert(std::is_same_v<decltype(proxy.get(0)), absl::string_view>);
+    } else {
+      static_assert(std::is_same_v<decltype(proxy[0]), ElementType&>);
+      static_assert(std::is_same_v<decltype(proxy.get(0)), const ElementType&>);
+    }
   }
 
   {
@@ -541,6 +583,18 @@ TYPED_TEST(RepeatedStringFieldProxyTest, ArrayIndexing) {
     EXPECT_THAT(proxy[0], StringEq("1"));
     EXPECT_THAT(proxy[1], StringEq("2"));
     EXPECT_THAT(proxy[2], StringEq("3"));
+
+    EXPECT_THAT(proxy.get(0), StringEq("1"));
+    EXPECT_THAT(proxy.get(1), StringEq("2"));
+    EXPECT_THAT(proxy.get(2), StringEq("3"));
+
+    if constexpr (std::is_same_v<ElementType, absl::string_view>) {
+      static_assert(std::is_same_v<decltype(proxy[0]), absl::string_view>);
+      static_assert(std::is_same_v<decltype(proxy.get(0)), absl::string_view>);
+    } else {
+      static_assert(std::is_same_v<decltype(proxy[0]), const ElementType&>);
+      static_assert(std::is_same_v<decltype(proxy.get(0)), const ElementType&>);
+    }
   }
 }
 
