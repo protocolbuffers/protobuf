@@ -218,6 +218,33 @@ bool GetProtocAbsolutePath(std::string* path) {
 #ifdef _WIN32
   char buffer[MAX_PATH];
   int len = GetModuleFileNameA(nullptr, buffer, MAX_PATH);
+  if (len > 0) {
+    // Resolve symlinks by opening the file and querying its final path.
+    // GetModuleFileNameA does not resolve symbolic links, which causes
+    // AddDefaultProtoPaths to fail when protoc is accessed via a symlink
+    // (e.g. WinGet adds protoc.exe as a symlink in its Links directory).
+    HANDLE handle = CreateFileA(buffer, 0, FILE_SHARE_READ, nullptr,
+                                OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (handle != INVALID_HANDLE_VALUE) {
+      char resolved[MAX_PATH];
+      DWORD resolved_len =
+          GetFinalPathNameByHandleA(handle, resolved, MAX_PATH, VOLUME_NAME_DOS);
+      CloseHandle(handle);
+      if (resolved_len > 0 && resolved_len < MAX_PATH) {
+        // GetFinalPathNameByHandleA returns paths prefixed with "\\?\".
+        // Strip this prefix to get a normal path.
+        if (resolved_len > 4 && strncmp(resolved, "\\\\?\\", 4) == 0) {
+          len = resolved_len - 4;
+          memmove(buffer, resolved + 4, len);
+          buffer[len] = '\0';
+        } else {
+          len = resolved_len;
+          memcpy(buffer, resolved, len);
+          buffer[len] = '\0';
+        }
+      }
+    }
+  }
 #elif defined(__APPLE__)
   char buffer[PATH_MAX];
   int len = 0;
