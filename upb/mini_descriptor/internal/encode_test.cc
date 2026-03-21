@@ -25,6 +25,7 @@
 #include "upb/mini_descriptor/internal/modifiers.h"
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 
@@ -32,6 +33,29 @@
 #include "upb/port/def.inc"
 
 namespace protobuf = ::google::protobuf;
+
+namespace {
+
+size_t FindAlignmentOverflowFieldCount() {
+  const size_t max_size = UINT16_MAX;
+  const size_t rep_size = 4;   // int32 field rep size
+  const size_t rep_align = 4;  // int32 field rep alignment
+  const size_t message_align = kUpb_Message_Align;
+  const size_t reserved_hasbytes = sizeof(struct upb_Message);
+
+  for (size_t n = 1; n < 200000; n++) {
+    const size_t hasbits_bytes = reserved_hasbytes + ((n + 7) / 8);
+    const size_t base =
+        UPB_ALIGN_UP(hasbits_bytes, rep_align) + (rep_size * n);
+    if (base <= max_size && UPB_ALIGN_UP(base, message_align) > max_size) {
+      return n;
+    }
+  }
+
+  return 0;
+}
+
+}  // namespace
 
 class MiniTableTest : public testing::TestWithParam<upb_MiniTablePlatform> {};
 
@@ -185,6 +209,24 @@ TEST_P(MiniTableTest, SizeOverflow) {
   upb_MiniTable* table2 = _upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_EQ(nullptr, table2) << status.error_message();
+}
+
+TEST_P(MiniTableTest, SizeAlignmentOverflow) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  const size_t n = FindAlignmentOverflowFieldCount();
+  ASSERT_NE(0u, n);
+
+  ASSERT_TRUE(e.StartMessage(0));
+  for (size_t i = 1; i <= n; i++) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Int32, i, 0));
+  }
+
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  EXPECT_EQ(nullptr, table);
+  EXPECT_FALSE(status.ok());
 }
 
 INSTANTIATE_TEST_SUITE_P(Platforms, MiniTableTest,
