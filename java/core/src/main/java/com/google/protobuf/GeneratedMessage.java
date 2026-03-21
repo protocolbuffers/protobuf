@@ -1034,6 +1034,20 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       return new FieldEntryIterator(extensions);
     }
 
+    /**
+     * Returns the hash code of the extensions. This method exists only for gencode to be able to be
+     * more efficient when computing hash codes, especially when potentially in the presence of lazy
+     * extensions.
+     *
+     * @param hashFieldNumbersOnly whether to only hash the field numbers or the field values as
+     *     well. If `false` the hash is higher quality, but will always force lazy fields to be
+     *     parsed. If `true` the hash is lower quality but slower, and will not force lazy fields to
+     *     be parsed.
+     */
+    protected final int extensionsHashCode(boolean hashFieldNumbersOnly) {
+      return extensions.hashCode(hashFieldNumbersOnly);
+    }
+
     private void verifyExtensionContainingType(final FieldDescriptor descriptor) {
       if (descriptor.getContainingType() != getDescriptorForType()) {
         // This can only happen if someone uses unchecked operations.

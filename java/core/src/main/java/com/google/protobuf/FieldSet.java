@@ -150,6 +150,10 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     return fields.hashCode();
   }
 
+  int hashCode(boolean hashFieldNumbersOnly) {
+    return fields.hashCode(hashFieldNumbersOnly);
+  }
+
   /**
    * Clones the FieldSet. The returned FieldSet will be mutable even if the original FieldSet was
    * immutable.
