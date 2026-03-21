@@ -510,7 +510,15 @@ class TextFormat::Parser::ParserImpl {
                                  "\" stored in google.protobuf.Any."));
         return false;
       }
+      if (--recursion_limit_ < 0) {
+        ReportError(
+            absl::StrCat("Message is too deep, the parser exceeded the "
+                         "configured recursion limit of ",
+                         initial_recursion_limit_, "."));
+        return false;
+      }
       DO(ConsumeAnyValue(value_descriptor, &serialized_value));
+      ++recursion_limit_;
       if (singular_overwrite_policy_ == FORBID_SINGULAR_OVERWRITES) {
         // Fail if any_type_url_field has already been specified.
         if ((!any_type_url_field->is_repeated() &&
