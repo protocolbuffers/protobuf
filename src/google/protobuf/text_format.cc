@@ -1512,6 +1512,11 @@ class TextFormat::Printer::TextGenerator
     return 2 * indent_level_;
   }
 
+  // True if any write to the underlying stream failed.  (We don't just
+  // crash in this case because this is an I/O failure, not a programming
+  // error.)
+  bool Failed() const override { return failed_; }
+
   // Print text to the output stream.
   void Print(const char* text, size_t size) override {
     if (indent_level_ > 0) {
@@ -1521,6 +1526,7 @@ class TextFormat::Printer::TextGenerator
           // Saw newline.  If there is more text, we may need to insert an
           // indent here.  So, write what we have so far, including the '\n'.
           Write(text + pos, i - pos + 1);
+          if (failed_) return;
           pos = i + 1;
 
           // Setting this true will cause the next Write() to insert an indent
@@ -1537,11 +1543,6 @@ class TextFormat::Printer::TextGenerator
       }
     }
   }
-
-  // True if any write to the underlying stream failed.  (We don't just
-  // crash in this case because this is an I/O failure, not a programming
-  // error.)
-  bool failed() const { return failed_; }
 
   void PrintMaybeWithMarker(MarkerToken, absl::string_view text) override {
     Print(text.data(), text.size());
@@ -2302,11 +2303,10 @@ bool TextFormat::Printer::Print(const Message& message,
   internal::PrintTextMarker(&generator, redact_debug_string_,
                             randomize_debug_string_, single_line_mode_);
 
-
   Print(message, &generator);
 
   // Output false if the generator failed internally.
-  return !generator.failed();
+  return !generator.Failed();
 }
 
 // Maximum recursion depth for heuristically printing out length-prefixed
@@ -2321,7 +2321,7 @@ bool TextFormat::Printer::PrintUnknownFields(
   PrintUnknownFields(unknown_fields, &generator, kUnknownFieldRecursionLimit);
 
   // Output false if the generator failed internally.
-  return !generator.failed();
+  return !generator.Failed();
 }
 
 namespace {
@@ -2420,7 +2420,7 @@ void TextFormat::Printer::Print(const Message& message,
 
 void TextFormat::Printer::PrintMessage(const Message& message,
                                        BaseTextGenerator* generator) const {
-  if (generator == nullptr) {
+  if (generator == nullptr || generator->Failed()) {
     return;
   }
   const Descriptor* descriptor = message.GetDescriptor();
@@ -2442,6 +2442,9 @@ void TextFormat::Printer::PrintMessage(const Message& message,
   }
   for (const FieldDescriptor* field : fields) {
     PrintField(message, reflection, field, generator);
+    if (generator->Failed()) {
+        return;
+    }
   }
   if (!hide_unknown_fields_) {
     PrintUnknownFields(reflection->GetUnknownFields(message), generator,
@@ -2707,6 +2710,10 @@ void TextFormat::Printer::PrintField(const Message& message,
         generator->PrintLiteral("\n");
       }
     }
+
+    if (generator->Failed()) {
+        return;
+    }
   }
 }
 
@@ -2721,6 +2728,9 @@ void TextFormat::Printer::PrintShortRepeatedField(
   for (int i = 0; i < size; i++) {
     if (i > 0) generator->PrintLiteral(", ");
     PrintFieldValue(message, reflection, field, i, generator);
+    if (generator->Failed()) {
+        return;
+    }
   }
   if (single_line_mode_) {
     generator->PrintLiteral("] ");
@@ -3024,6 +3034,10 @@ void TextFormat::Printer::PrintUnknownFields(
           generator->PrintLiteral("}\n");
         }
         break;
+    }
+
+    if (generator->Failed()) {
+        return;
     }
   }
 }
