@@ -33,8 +33,11 @@ namespace internal {
 namespace {
 
 using ::proto2_unittest::RepeatedFieldProxyTestSimpleMessage;
+using ::testing::AnyOf;
 using ::testing::ElementsAre;
+using ::testing::Ge;
 using ::testing::IsEmpty;
+using ::testing::Lt;
 using ::testing::Not;
 
 static constexpr absl::string_view kLongString =
@@ -482,8 +485,13 @@ TYPED_TEST(RepeatedNumericFieldProxyTest, ArrayIndexing) {
     EXPECT_EQ(proxy[1], 2);
     EXPECT_EQ(proxy[2], 3);
 
+    EXPECT_EQ(proxy.get(0), 1);
+    EXPECT_EQ(proxy.get(1), 2);
+    EXPECT_EQ(proxy.get(2), 3);
+
     // Check that repeated numeric proxies return values, not references.
     static_assert(std::is_same_v<decltype(proxy[0]), ElementType>);
+    static_assert(std::is_same_v<decltype(proxy.get(0)), ElementType>);
   }
 
   {
@@ -492,9 +500,14 @@ TYPED_TEST(RepeatedNumericFieldProxyTest, ArrayIndexing) {
     EXPECT_EQ(proxy[1], 2);
     EXPECT_EQ(proxy[2], 3);
 
+    EXPECT_EQ(proxy.get(0), 1);
+    EXPECT_EQ(proxy.get(1), 2);
+    EXPECT_EQ(proxy.get(2), 3);
+
     // Check that const repeated numeric proxies return values, not const
     // references.
     static_assert(std::is_same_v<decltype(proxy[0]), ElementType>);
+    static_assert(std::is_same_v<decltype(proxy.get(0)), ElementType>);
   }
 }
 
@@ -510,6 +523,15 @@ TEST_P(RepeatedFieldProxyTest, ArrayIndexingMessage) {
     EXPECT_THAT(proxy[0], EqualsProto(R"pb(value: 1)pb"));
     EXPECT_THAT(proxy[1], EqualsProto(R"pb(value: 2)pb"));
     EXPECT_THAT(proxy[2], EqualsProto(R"pb(value: 3)pb"));
+
+    EXPECT_THAT(proxy.get(0), EqualsProto(R"pb(value: 1)pb"));
+    EXPECT_THAT(proxy.get(1), EqualsProto(R"pb(value: 2)pb"));
+    EXPECT_THAT(proxy.get(2), EqualsProto(R"pb(value: 3)pb"));
+
+    static_assert(std::is_same_v<decltype(proxy[0]),
+                                 RepeatedFieldProxyTestSimpleMessage&>);
+    static_assert(std::is_same_v<decltype(proxy.get(0)),
+                                 const RepeatedFieldProxyTestSimpleMessage&>);
   }
 
   {
@@ -517,10 +539,21 @@ TEST_P(RepeatedFieldProxyTest, ArrayIndexingMessage) {
     EXPECT_THAT(proxy[0], EqualsProto(R"pb(value: 1)pb"));
     EXPECT_THAT(proxy[1], EqualsProto(R"pb(value: 2)pb"));
     EXPECT_THAT(proxy[2], EqualsProto(R"pb(value: 3)pb"));
+
+    EXPECT_THAT(proxy.get(0), EqualsProto(R"pb(value: 1)pb"));
+    EXPECT_THAT(proxy.get(1), EqualsProto(R"pb(value: 2)pb"));
+    EXPECT_THAT(proxy.get(2), EqualsProto(R"pb(value: 3)pb"));
+
+    static_assert(std::is_same_v<decltype(proxy[0]),
+                                 const RepeatedFieldProxyTestSimpleMessage&>);
+    static_assert(std::is_same_v<decltype(proxy.get(0)),
+                                 const RepeatedFieldProxyTestSimpleMessage&>);
   }
 }
 
 TYPED_TEST(RepeatedStringFieldProxyTest, ArrayIndexing) {
+  using ElementType = typename TypeParam::ElementType;
+
   auto field = this->MakeRepeatedFieldContainer();
   this->Add(field, "1");
   this->Add(field, "2");
@@ -531,6 +564,18 @@ TYPED_TEST(RepeatedStringFieldProxyTest, ArrayIndexing) {
     EXPECT_THAT(proxy[0], StringEq("1"));
     EXPECT_THAT(proxy[1], StringEq("2"));
     EXPECT_THAT(proxy[2], StringEq("3"));
+
+    EXPECT_THAT(proxy.get(0), StringEq("1"));
+    EXPECT_THAT(proxy.get(1), StringEq("2"));
+    EXPECT_THAT(proxy.get(2), StringEq("3"));
+
+    if constexpr (std::is_same_v<ElementType, absl::string_view>) {
+      static_assert(std::is_same_v<decltype(proxy[0]), absl::string_view>);
+      static_assert(std::is_same_v<decltype(proxy.get(0)), absl::string_view>);
+    } else {
+      static_assert(std::is_same_v<decltype(proxy[0]), ElementType&>);
+      static_assert(std::is_same_v<decltype(proxy.get(0)), const ElementType&>);
+    }
   }
 
   {
@@ -538,6 +583,18 @@ TYPED_TEST(RepeatedStringFieldProxyTest, ArrayIndexing) {
     EXPECT_THAT(proxy[0], StringEq("1"));
     EXPECT_THAT(proxy[1], StringEq("2"));
     EXPECT_THAT(proxy[2], StringEq("3"));
+
+    EXPECT_THAT(proxy.get(0), StringEq("1"));
+    EXPECT_THAT(proxy.get(1), StringEq("2"));
+    EXPECT_THAT(proxy.get(2), StringEq("3"));
+
+    if constexpr (std::is_same_v<ElementType, absl::string_view>) {
+      static_assert(std::is_same_v<decltype(proxy[0]), absl::string_view>);
+      static_assert(std::is_same_v<decltype(proxy.get(0)), absl::string_view>);
+    } else {
+      static_assert(std::is_same_v<decltype(proxy[0]), const ElementType&>);
+      static_assert(std::is_same_v<decltype(proxy.get(0)), const ElementType&>);
+    }
   }
 }
 
@@ -1312,6 +1369,112 @@ TEST_P(RepeatedFieldProxyTest, EraseRange) {
                                   EqualsProto(R"pb(value: 4)pb")));
 }
 
+TYPED_TEST(RepeatedNumericFieldProxyTest, Proto2Erase) {
+  auto field = this->MakeRepeatedFieldContainer();
+  field->Add(1);
+  field->Add(2);
+  field->Add(3);
+  field->Add(4);
+
+  auto proxy = field.MakeProxy();
+  size_t count = google::protobuf::erase(proxy, 2);
+  EXPECT_EQ(count, 1);
+  EXPECT_THAT(proxy, ElementsAre(1, 3, 4));
+  EXPECT_THAT(*field, ElementsAre(1, 3, 4));
+}
+
+TYPED_TEST(RepeatedNumericFieldProxyTest, Proto2EraseIf) {
+  using ElementType = typename TypeParam::ElementType;
+
+  auto field = this->MakeRepeatedFieldContainer();
+  field->Add(1);
+  field->Add(2);
+  field->Add(3);
+  field->Add(4);
+
+  const ElementType* backing_array =
+      reinterpret_cast<const ElementType*>(field->data());
+  const ElementType* backing_array_end = backing_array + field->size();
+
+  auto proxy = field.MakeProxy();
+  size_t count =
+      google::protobuf::erase_if(proxy, [backing_array, backing_array_end](auto&& x) {
+        // Verify that `x` is a const lvalue reference. The value from the
+        // repeated field was intentionally decayed to avoid exposing a
+        // reference to the element, but if the argument type of this lambda is
+        // a reference, it will alias the temporary copy in `erase_if`. Since
+        // mutation of this temporary would not affect the original element,
+        // ensure it is const.
+        static_assert(std::is_lvalue_reference_v<decltype(x)>);
+        static_assert(std::is_const_v<std::remove_reference_t<decltype(x)>>);
+
+        // Verify that `x` is a copy of an element from the repeated field,
+        // meaning it does not lie in the backing array.
+        EXPECT_THAT(&x, AnyOf(Lt(backing_array), Ge(backing_array_end)));
+
+        return x > ElementType{2};
+      });
+  EXPECT_EQ(count, 2);
+  EXPECT_THAT(proxy, ElementsAre(1, 2));
+  EXPECT_THAT(*field, ElementsAre(1, 2));
+}
+
+TYPED_TEST(RepeatedStringFieldProxyTest, Proto2Erase) {
+  auto field = this->MakeRepeatedFieldContainer();
+  this->Add(field, "1");
+  this->Add(field, "2");
+  this->Add(field, "3");
+  this->Add(field, "4");
+
+  auto proxy = field.MakeProxy();
+  size_t count = google::protobuf::erase(proxy, "3");
+
+  EXPECT_EQ(count, 1);
+  EXPECT_THAT(proxy, ElementsAre(StringEq("1"), StringEq("2"), StringEq("4")));
+  EXPECT_THAT(*field, ElementsAre(StringEq("1"), StringEq("2"), StringEq("4")));
+}
+
+TYPED_TEST(RepeatedStringFieldProxyTest, Proto2EraseIf) {
+  using ElementType = typename TypeParam::ElementType;
+
+  auto field = this->MakeRepeatedFieldContainer();
+  this->Add(field, "1");
+  this->Add(field, "2");
+  this->Add(field, "3");
+  this->Add(field, "4");
+
+  auto proxy = field.MakeProxy();
+  size_t count = google::protobuf::erase_if(proxy, [](auto&& s) {
+    if constexpr (std::is_same_v<ElementType, absl::Cord>) {
+      static_assert(std::is_same_v<decltype(s), const absl::Cord&>);
+    } else {
+      static_assert(std::is_same_v<decltype(s), absl::string_view&&>);
+    }
+    return s == "2" || s == "4";
+  });
+  EXPECT_EQ(count, 2);
+  EXPECT_THAT(proxy, ElementsAre(StringEq("1"), StringEq("3")));
+  EXPECT_THAT(*field, ElementsAre(StringEq("1"), StringEq("3")));
+}
+
+TEST_P(RepeatedFieldProxyTest, Proto2EraseIfMessage) {
+  auto field =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  field->Add()->set_value(1);
+  field->Add()->set_value(2);
+  field->Add()->set_value(3);
+  field->Add()->set_value(4);
+
+  auto proxy = field.MakeProxy();
+  size_t count = google::protobuf::erase_if(
+      proxy, [](const auto& msg) { return msg.value() % 2 == 0; });
+  EXPECT_EQ(count, 2);
+  EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
+                                 EqualsProto(R"pb(value: 3)pb")));
+  EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
+                                  EqualsProto(R"pb(value: 3)pb")));
+}
+
 TYPED_TEST(RepeatedNumericFieldProxyTest, CopyAssign) {
   auto field1 = this->MakeRepeatedFieldContainer();
   field1->Add(1);
@@ -1633,6 +1796,134 @@ TEST_P(RepeatedFieldProxyTest, ReserveMessage) {
           EqualsProto(R"pb(value: 8)pb"), EqualsProto(R"pb(value: 9)pb")));
 }
 
+TYPED_TEST(RepeatedNumericFieldProxyTest, Resize) {
+  auto field = this->MakeRepeatedFieldContainer();
+  field->Add(1);
+  field->Add(2);
+
+  auto proxy = field.MakeProxy();
+  proxy.resize(4);
+
+  EXPECT_THAT(proxy, ElementsAre(1, 2, 0, 0));
+  EXPECT_THAT(*field, ElementsAre(1, 2, 0, 0));
+
+  proxy.resize(1);
+  EXPECT_THAT(proxy, ElementsAre(1));
+  EXPECT_THAT(*field, ElementsAre(1));
+}
+
+TYPED_TEST(RepeatedNumericFieldProxyTest, ResizeWithValue) {
+  auto field = this->MakeRepeatedFieldContainer();
+  field->Add(1);
+
+  auto proxy = field.MakeProxy();
+  proxy.resize(3, 10);
+
+  EXPECT_THAT(proxy, ElementsAre(1, 10, 10));
+  EXPECT_THAT(*field, ElementsAre(1, 10, 10));
+
+  proxy.resize(2, 20);
+  EXPECT_THAT(proxy, ElementsAre(1, 10));
+  EXPECT_THAT(*field, ElementsAre(1, 10));
+}
+
+TYPED_TEST(RepeatedStringFieldProxyTest, Resize) {
+  auto field = this->MakeRepeatedFieldContainer();
+  this->Add(field, "1");
+  this->Add(field, "2");
+
+  auto proxy = field.MakeProxy();
+  proxy.resize(4);
+
+  EXPECT_THAT(proxy, ElementsAre(StringEq("1"), StringEq("2"), StringEq(""),
+                                 StringEq("")));
+  EXPECT_THAT(*field, ElementsAre(StringEq("1"), StringEq("2"), StringEq(""),
+                                  StringEq("")));
+
+  proxy.resize(1);
+  EXPECT_THAT(proxy, ElementsAre(StringEq("1")));
+  EXPECT_THAT(*field, ElementsAre(StringEq("1")));
+}
+
+TYPED_TEST(RepeatedStringFieldProxyTest, ResizeWithValue) {
+  using ElementType = typename TypeParam::ElementType;
+
+  auto field = this->MakeRepeatedFieldContainer();
+  this->Add(field, "1");
+
+  auto proxy = field.MakeProxy();
+  if constexpr (std::is_same_v<ElementType, absl::Cord>) {
+    const auto value = absl::Cord("10");
+    proxy.resize(3, value);
+  } else {
+    proxy.resize(3, "10");
+  }
+
+  EXPECT_THAT(proxy,
+              ElementsAre(StringEq("1"), StringEq("10"), StringEq("10")));
+  EXPECT_THAT(*field,
+              ElementsAre(StringEq("1"), StringEq("10"), StringEq("10")));
+
+  if constexpr (std::is_same_v<ElementType, absl::Cord>) {
+    proxy.resize(2, absl::Cord("20"));
+  } else {
+    proxy.resize(2, "20");
+  }
+  EXPECT_THAT(proxy, ElementsAre(StringEq("1"), StringEq("10")));
+  EXPECT_THAT(*field, ElementsAre(StringEq("1"), StringEq("10")));
+}
+
+TEST_P(RepeatedFieldProxyTest, ResizeMessage) {
+  auto field =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  field->Add()->set_value(1);
+  field->Add()->set_value(2);
+
+  RepeatedFieldProxy<RepeatedFieldProxyTestSimpleMessage> proxy =
+      field.MakeProxy();
+  proxy.resize(4);
+
+  EXPECT_THAT(
+      proxy, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
+                         EqualsProto(R"pb(value: 2)pb"), EqualsProto(R"pb()pb"),
+                         EqualsProto(R"pb()pb")));
+  EXPECT_THAT(*field,
+              ElementsAre(EqualsProto(R"pb(value: 1)pb"),
+                          EqualsProto(R"pb(value: 2)pb"),
+                          EqualsProto(R"pb()pb"), EqualsProto(R"pb()pb")));
+
+  proxy.resize(1);
+  EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 1)pb")));
+  EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(value: 1)pb")));
+}
+
+TEST_P(RepeatedFieldProxyTest, ResizeMessageWithValue) {
+  auto field =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  field->Add()->set_value(1);
+
+  RepeatedFieldProxy<RepeatedFieldProxyTestSimpleMessage> proxy =
+      field.MakeProxy();
+  RepeatedFieldProxyTestSimpleMessage msg;
+  msg.set_value(10);
+  proxy.resize(3, msg);
+
+  EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
+                                 EqualsProto(R"pb(value: 10)pb"),
+                                 EqualsProto(R"pb(value: 10)pb")));
+  EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
+                                  EqualsProto(R"pb(value: 10)pb"),
+                                  EqualsProto(R"pb(value: 10)pb")));
+
+  RepeatedFieldProxyTestSimpleMessage msg2;
+  msg2.set_value(20);
+  proxy.resize(2, msg2);
+  EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
+                                 EqualsProto(R"pb(value: 10)pb")));
+  EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
+                                  EqualsProto(R"pb(value: 10)pb")));
+}
+
 TYPED_TEST(RepeatedNumericFieldProxyTest, Rebind) {
   auto field1 = this->MakeRepeatedFieldContainer();
   field1->Add(1);
@@ -1640,13 +1931,56 @@ TYPED_TEST(RepeatedNumericFieldProxyTest, Rebind) {
   auto field2 = this->MakeRepeatedFieldContainer();
   field2->Add(2);
 
-  auto proxy = field1.MakeProxy();
-  proxy = field2.MakeProxy();
+  auto proxy = field1.MakeConstProxy();
+  proxy = field2.MakeConstProxy();
 
   // Proxy should be rebound to field2 without having modified either field.
   EXPECT_THAT(proxy, ElementsAre(2));
   EXPECT_THAT(*field1, ElementsAre(1));
   EXPECT_THAT(*field2, ElementsAre(2));
+
+  // Verify that mutable proxies can't be rebound.
+  static_assert(!std::is_copy_assignable_v<decltype(field1.MakeProxy())>);
+}
+
+TYPED_TEST(RepeatedStringFieldProxyTest, Rebind) {
+  auto field1 = this->MakeRepeatedFieldContainer();
+  this->Add(field1, "1");
+
+  auto field2 = this->MakeRepeatedFieldContainer();
+  this->Add(field2, "2");
+
+  auto proxy = field1.MakeConstProxy();
+  proxy = field2.MakeConstProxy();
+
+  // Proxy should be rebound to field2 without having modified either field.
+  EXPECT_THAT(proxy, ElementsAre(StringEq("2")));
+  EXPECT_THAT(*field1, ElementsAre(StringEq("1")));
+  EXPECT_THAT(*field2, ElementsAre(StringEq("2")));
+
+  // Verify that mutable proxies can't be rebound.
+  static_assert(!std::is_copy_assignable_v<decltype(field1.MakeProxy())>);
+}
+
+TEST_P(RepeatedFieldProxyTest, RebindMessage) {
+  auto field1 =
+      this->MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  field1->Add()->set_value(1);
+
+  auto field2 =
+      this->MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  field2->Add()->set_value(2);
+
+  auto proxy = field1.MakeConstProxy();
+  proxy = field2.MakeConstProxy();
+
+  // Proxy should be rebound to field2 without having modified either field.
+  EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 2)pb")));
+  EXPECT_THAT(*field1, ElementsAre(EqualsProto(R"pb(value: 1)pb")));
+  EXPECT_THAT(*field2, ElementsAre(EqualsProto(R"pb(value: 2)pb")));
+
+  // Verify that mutable proxies can't be rebound.
+  static_assert(!std::is_copy_assignable_v<decltype(field1.MakeProxy())>);
 }
 
 TEST_P(RepeatedFieldProxyTest, ExplicitConversionToLegacyRepeatedField) {

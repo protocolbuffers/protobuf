@@ -196,7 +196,7 @@ PyObject* InternalGetScalar(const Message* message,
 bool SetCompositeField(CMessage* self, const FieldDescriptor* field,
                        ContainerBase* value);
 
-bool SetSubmessage(CMessage* self, CMessage* submessage);
+bool SetSubmessage(CMessage* self, CMessage*& submessage);
 
 // Clears the message, removing all contained data. Extension dictionary and
 // submessages are released first if there are remaining external references.

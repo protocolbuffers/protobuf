@@ -201,8 +201,32 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentRepeatedMessageAccess2(self):
+    msg = unittest_proto3_pb2.TestAllTypes(
+        repeated_nested_message=[
+            unittest_proto3_pb2.TestAllTypes.NestedMessage(bb=1)
+        ]
+    )
 
-@testing_refleaks.TestCase
+    def UseVariable():
+      for _ in range(1000):
+        for nested in msg.repeated_nested_message:
+          pass
+
+    threads = []
+    for _ in range(100):
+      thread = threading.Thread(target=UseVariable)
+      threads.append(thread)
+      thread.start()
+
+    for thread in threads:
+      thread.join()
+
+
 class FreeThreadingTest(unittest.TestCase):
 
   def RunThreads(self, thread_size, func):
