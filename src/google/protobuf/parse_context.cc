@@ -596,6 +596,88 @@ const char* InlineGreedyStringParser(std::string* s, const char* ptr,
   return ctx->ReadString(ptr, size, s);
 }
 
+void WireFormatStringSink::Flush(const char* ptr) {
+  ABSL_CHECK_GE(ptr, prev);
+  absl::StrAppend(&data,
+                  absl::string_view(prev, static_cast<size_t>(ptr - prev)));
+}
+void WireFormatStringSink::Append(absl::string_view view) {
+  absl::StrAppend(&data, view);
+  prev = view.data() + view.size();
+}
+
+void WireFormatLazyFieldSink::Flush(const char* ptr) {
+  if (ptr == prev) return;
+
+  ABSL_DCHECK_GT(ptr, prev);
+  Append(absl::string_view(prev, static_cast<size_t>(ptr - prev)));
+}
+void WireFormatLazyFieldSink::Append(absl::string_view view) {
+  auto& unparsed = lazy_field.unparsed_;
+
+  // Always upgrade to Cord if we are appending to an existing buffer.
+  if (unparsed.IsCord() || unparsed.Size() > 0) {
+    unparsed.UpgradeToCord<LazyField::WireVersion::kV2>(arena).Append(view);
+  } else if (arena == nullptr || view.size() > LazyField::kMaxArraySize) {
+    unparsed.InitAsCord<LazyField::WireVersion::kV2>(arena).Append(view);
+  } else {
+    char* ptr = unparsed.InitAsArray<LazyField::WireVersion::kV2>(
+        arena, LazyField::UnparsedPayload::ToArraySizeType(view.size()));
+    memcpy(ptr, view.data(), view.size());
+  }
+}
+
+std::string WireFormatLazyFieldSink::FlattenedDataForTesting() const {
+  return lazy_field.unparsed_.Visit(
+      [] { return std::string{}; },
+      [](const auto& cord) { return std::string(cord); },
+      [](auto view) { return std::string(view); });
+}
+
+bool WireFormatLazyFieldSink::IsDataCord() const {
+  return lazy_field.unparsed_.IsCord();
+}
+
+template <typename SinkT>
+[[nodiscard]] const char* EpsCopyInputStream::ReadArrayMaybeFlush(
+    const char* ptr, absl::Span<char> out, SinkT& sink) {
+  char* dst = out.data();
+  return AdvancePtrMaybeFlush<char>(
+      ptr, out.size(), sink, [&](absl::string_view view) {
+        memcpy(dst, view.data(), view.size());
+        dst += view.size();
+        ABSL_DCHECK_LE(dst, out.data() + out.size());
+        return true;
+      });
+}
+
+template <typename SinkT>
+const char* ParseContext::VerifyUTF8MaybeFlushFallback(const char* ptr,
+                                                       int64_t size,
+                                                       SinkT& sink) {
+  // Copied the implementation of CordIsValid().
+  LeftoverBuffer leftover;
+
+  ptr = AdvancePtrMaybeFlush<char>(
+      ptr, size, sink, [&leftover](absl::string_view view) -> bool {
+        return IsViewValidUTF8WithLeftover(view, leftover);
+      });
+  return leftover.empty() ? ptr : nullptr;
+}
+
+template const char* EpsCopyInputStream::ReadArrayMaybeFlush(
+    const char* ptr, absl::Span<char> out, WireFormatNoOpSink& sink);
+template const char* EpsCopyInputStream::ReadArrayMaybeFlush(
+    const char* ptr, absl::Span<char> out, WireFormatStringSink& sink);
+template const char* EpsCopyInputStream::ReadArrayMaybeFlush(
+    const char* ptr, absl::Span<char> out, WireFormatLazyFieldSink& sink);
+
+template const char* ParseContext::VerifyUTF8MaybeFlushFallback(
+    const char* ptr, int64_t size, WireFormatNoOpSink& sink);
+template const char* ParseContext::VerifyUTF8MaybeFlushFallback(
+    const char* ptr, int64_t size, WireFormatStringSink& sink);
+template const char* ParseContext::VerifyUTF8MaybeFlushFallback(
+    const char* ptr, int64_t size, WireFormatLazyFieldSink& sink);
 
 
 template <typename T, bool sign>
