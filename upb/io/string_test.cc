@@ -7,6 +7,7 @@
 
 #include "upb/io/string.h"
 
+#include <stdint.h>
 #include <string.h>
 
 #include <gtest/gtest.h>
@@ -104,4 +105,35 @@ TEST(StringTest, Erase) {
   upb_String_Erase(&foo, 0, 4);
   EXPECT_EQ(upb_String_Size(&foo), 0);
   EXPECT_EQ(strcmp(upb_String_Data(&foo), ""), 0);
+}
+
+TEST(StringTest, AppendOverflowReturnsFailure) {
+  upb::Arena arena;
+
+  upb_String s;
+  EXPECT_TRUE(upb_String_Init(&s, arena.ptr()));
+  EXPECT_TRUE(upb_String_Append(&s, "hello", 5));
+  EXPECT_EQ(upb_String_Size(&s), 5);
+
+  // Attempt an append where size_ + size would overflow size_t.
+  // SIZE_MAX - 4 + 5 = SIZE_MAX + 1 which wraps to 0.
+  // The overflow check should catch this and return false.
+  EXPECT_FALSE(upb_String_Append(&s, "x", SIZE_MAX - 4));
+
+  // The string should be unchanged after the failed append.
+  EXPECT_EQ(upb_String_Size(&s), 5);
+  EXPECT_EQ(strcmp(upb_String_Data(&s), "hello"), 0);
+}
+
+TEST(StringTest, AppendNormalStillWorks) {
+  upb::Arena arena;
+
+  upb_String s;
+  EXPECT_TRUE(upb_String_Init(&s, arena.ptr()));
+
+  // Normal appends should still succeed.
+  EXPECT_TRUE(upb_String_Append(&s, "abc", 3));
+  EXPECT_TRUE(upb_String_Append(&s, "def", 3));
+  EXPECT_EQ(upb_String_Size(&s), 6);
+  EXPECT_EQ(strcmp(upb_String_Data(&s), "abcdef"), 0);
 }
