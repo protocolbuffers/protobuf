@@ -6,6 +6,7 @@ module(
     version = "35.0-dev",  # Automatically updated on release
     bazel_compatibility = [">=8.0.0"],
     compatibility_level = 1,
+    bazel_compatibility = [">=8.0.0"],
     repo_name = "com_google_protobuf",
 )
 
