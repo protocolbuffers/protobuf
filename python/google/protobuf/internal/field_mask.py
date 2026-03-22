@@ -9,6 +9,11 @@
 
 from google.protobuf.descriptor import FieldDescriptor
 
+# Maximum number of dot-separated segments allowed in a single FieldMask path.
+# Paths that exceed this limit are rejected at ingestion time to prevent
+# unbounded-recursion / stack-overflow denial-of-service attacks.
+_MAX_FIELD_MASK_DEPTH = 64
+
 
 class FieldMask(object):
   """Class for FieldMask message type."""
@@ -199,9 +204,18 @@ class _FieldMaskTree(object):
 
     Args:
       path: The field path to add.
+
+    Raises:
+      ValueError: If the path has more than _MAX_FIELD_MASK_DEPTH segments.
     """
+    parts = path.split('.')
+    if len(parts) > _MAX_FIELD_MASK_DEPTH:
+      raise ValueError(
+          'FieldMask path exceeds the maximum allowed depth of '
+          '{0} segments: "{1}"'.format(
+              _MAX_FIELD_MASK_DEPTH, path[:80] + ('...' if len(path) > 80 else '')))
     node = self._root
-    for name in path.split('.'):
+    for name in parts:
       if name not in node:
         node[name] = {}
       elif not node[name]:
@@ -235,11 +249,15 @@ class _FieldMaskTree(object):
 
   def AddLeafNodes(self, prefix, node):
     """Adds leaf nodes begin with prefix to this tree."""
-    if not node:
-      self.AddPath(prefix)
-    for name in node:
-      child_path = prefix + '.' + name
-      self.AddLeafNodes(child_path, node[name])
+    # Iterative implementation to avoid unbounded call-stack growth on deep trees.
+    stack = [(prefix, node)]
+    while stack:
+      current_prefix, current_node = stack.pop()
+      if not current_node:
+        self.AddPath(current_prefix)
+        continue
+      for name in current_node:
+        stack.append((current_prefix + '.' + name, current_node[name]))
 
   def MergeMessage(
       self, source, destination,
@@ -262,51 +280,59 @@ def _StrConvert(value):
 def _MergeMessage(
     node, source, destination, replace_message, replace_repeated):
   """Merge all fields specified by a sub-tree from source to destination."""
-  source_descriptor = source.DESCRIPTOR
-  for name in node:
-    child = node[name]
-    field = source_descriptor.fields_by_name[name]
-    if field is None:
-      raise ValueError('Error: Can\'t find field {0} in message {1}.'.format(
-          name, source_descriptor.full_name))
-    if child:
-      # Sub-paths are only allowed for singular message fields.
-      if (field.is_repeated or
-          field.cpp_type != FieldDescriptor.CPPTYPE_MESSAGE):
-        raise ValueError('Error: Field {0} in message {1} is not a singular '
-                         'message field and cannot have sub-fields.'.format(
-                             name, source_descriptor.full_name))
-      if source.HasField(name):
-        _MergeMessage(
-            child, getattr(source, name), getattr(destination, name),
-            replace_message, replace_repeated)
-      continue
-    if field.is_repeated:
-      if replace_repeated:
-        destination.ClearField(_StrConvert(name))
-      repeated_source = getattr(source, name)
-      repeated_destination = getattr(destination, name)
-      repeated_destination.MergeFrom(repeated_source)
-    else:
-      if field.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE:
-        if replace_message:
-          destination.ClearField(_StrConvert(name))
-        if source.HasField(name):
-          getattr(destination, name).MergeFrom(getattr(source, name))
-      elif not field.has_presence or source.HasField(name):
-        setattr(destination, name, getattr(source, name))
+  # Iterative implementation to avoid unbounded call-stack growth on deep trees.
+  # Work-list items are (node, source_msg, destination_msg) triples.
+  work_list = [(node, source, destination)]
+  while work_list:
+    current_node, src, dst = work_list.pop()
+    src_descriptor = src.DESCRIPTOR
+    for name in current_node:
+      child = current_node[name]
+      field = src_descriptor.fields_by_name[name]
+      if field is None:
+        raise ValueError('Error: Can\'t find field {0} in message {1}.'.format(
+            name, src_descriptor.full_name))
+      if child:
+        # Sub-paths are only allowed for singular message fields.
+        if (field.is_repeated or
+            field.cpp_type != FieldDescriptor.CPPTYPE_MESSAGE):
+          raise ValueError(
+              'Error: Field {0} in message {1} is not a singular '
+              'message field and cannot have sub-fields.'.format(
+                  name, src_descriptor.full_name))
+        if src.HasField(name):
+          work_list.append(
+              (child, getattr(src, name), getattr(dst, name)))
+        continue
+      if field.is_repeated:
+        if replace_repeated:
+          dst.ClearField(_StrConvert(name))
+        repeated_source = getattr(src, name)
+        repeated_destination = getattr(dst, name)
+        repeated_destination.MergeFrom(repeated_source)
       else:
-        destination.ClearField(_StrConvert(name))
+        if field.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE:
+          if replace_message:
+            dst.ClearField(_StrConvert(name))
+          if src.HasField(name):
+            getattr(dst, name).MergeFrom(getattr(src, name))
+        elif not field.has_presence or src.HasField(name):
+          setattr(dst, name, getattr(src, name))
+        else:
+          dst.ClearField(_StrConvert(name))
 
 
 def _AddFieldPaths(node, prefix, field_mask):
   """Adds the field paths descended from node to field_mask."""
-  if not node and prefix:
-    field_mask.paths.append(prefix)
-    return
-  for name in sorted(node):
-    if prefix:
-      child_path = prefix + '.' + name
-    else:
-      child_path = name
-    _AddFieldPaths(node[name], child_path, field_mask)
+  # Iterative implementation to avoid unbounded call-stack growth on deep trees.
+  # We push children in reverse-sorted order so that when we pop from the stack
+  # we process them in ascending sorted order, preserving the original semantics.
+  stack = [(node, prefix)]
+  while stack:
+    current_node, current_prefix = stack.pop()
+    if not current_node and current_prefix:
+      field_mask.paths.append(current_prefix)
+      continue
+    for name in sorted(current_node, reverse=True):
+      child_path = (current_prefix + '.' + name) if current_prefix else name
+      stack.append((current_node[name], child_path))
