@@ -16,6 +16,7 @@
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/error_handler.h"
 #include "upb/base/internal/endian.h"
+#include "upb/base/internal/log2.h"
 #include "upb/base/string_view.h"
 #include "upb/hash/common.h"
 #include "upb/mem/arena.h"
@@ -985,7 +986,6 @@ const char* _upb_Decoder_DecodeWireValue(upb_Decoder* d, const char* ptr,
 UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
                                           upb_Message* msg,
-                                          const upb_MiniTable* layout,
                                           const upb_MiniTableField* field,
                                           int op, wireval* val) {
   uint8_t mode = field->UPB_PRIVATE(mode);
@@ -1043,37 +1043,85 @@ static const char* _upb_Decoder_FindFieldStart(upb_Decoder* d, const char* ptr,
   }
   assert(start == d->debug_valstart);
 
-  {
-    // The varint parser does not enforce that integers are encoded with their
-    // minimum size; for example the value 1 could be encoded with three
-    // bytes: 0x81, 0x80, 0x00. These unnecessary trailing zeroes mean that we
-    // cannot skip backwards by the minimum encoded size of the tag; and
-    // unlike the loop for delimited or varint fields, we can't stop at a
-    // sentinel value because anything can precede a tag. Instead, parse back
-    // one byte at a time until we read the same tag value that was parsed
-    // earlier.
-    uint32_t tag = ((uint32_t)field_number << 3) | wire_type;
-    uint32_t seen = 0;
+  int clz = upb_CountLeadingZeros32(field_number);
+  // This calculation takes advantage of the fact that the tag representation
+  // has three fewer leading zeros than the field number; rather than shifting
+  // before the clz or adding after it, we can fold it into the constant. This
+  // is an expanded form of ((32 - (clz - 3)) * 9) / 64, which approximates
+  // division by 7 rounding down; it's always one byte shorter than the actual
+  // size but that's fine because we subtract a byte anyway when testing for
+  // excess trailing zeroes.
+  int size = ((32 * 9 + 3 * 9) - (clz * 9)) >> 6;
+  // The varint parser does not enforce that integers are encoded with their
+  // minimum size; for example the value 1 could be encoded with three
+  // bytes: 0x81, 0x80, 0x00. Before we can skip backwards by the minimum
+  // encoded size of the tag, we have to skip any unnecessary trailing zero
+  // bytes.
+  if (UPB_UNLIKELY(*(--start) == 0)) {
     do {
       start--;
-      seen <<= 7;
-      seen |= *start & 0x7f;
-    } while (seen != tag);
+    } while (*start == 0x7fu);
   }
+  start -= size;
   assert(start == d->debug_tagstart);
 
   return start;
 }
 
+// Storing the start point of fields dramatically speeds up unknown field
+// parsing. However, if it causes register spills for the known field path,
+// which it can on architectures with fewer GPRs, it slows down the common case
+// of parsing mostly or entirely known fields. For use cases where
+// minidescriptors are treeshaken to remove fields not used by the program, the
+// speed of parsing unknown fields can be a major performance bottleneck. Here
+// we choose whether to store the start pointer or recalculate it if the field
+// is unknown based on the number of GPRs in the target instruction set.
+#if defined(__aarch64__) || defined(_M_ARM64)
+#define UPB_STORE_FIELD_START_POINTER 1
+#elif defined(__arm__) || defined(_M_ARM)
+#define UPB_STORE_FIELD_START_POINTER 0
+#elif defined(__x86_64__) || defined(_M_X64) || defined(_M_AMD64)
+#if defined(__APX_F__)
+// APX adds extra registers
+#define UPB_STORE_FIELD_START_POINTER 1
+#else
+#define UPB_STORE_FIELD_START_POINTER 0
+#endif
+#elif defined(__i386__) || defined(_M_IX86)
+#define UPB_STORE_FIELD_START_POINTER 0
+#elif defined(__riscv)
+#if defined(__riscv_32e)
+#define UPB_STORE_FIELD_START_POINTER 0
+#else
+#define UPB_STORE_FIELD_START_POINTER 1
+#endif
+#elif defined(__loongarch__)
+#define UPB_STORE_FIELD_START_POINTER 1
+#elif defined(__mips__)
+#define UPB_STORE_FIELD_START_POINTER 1
+#else
+#define UPB_STORE_FIELD_START_POINTER 0
+#endif
+
+#if UPB_STORE_FIELD_START_POINTER
+#define UPB_START_FIELD_PARAM_DECL , const char* start
+#define UPB_START_FIELD_PARAM , start
+#else
+#define UPB_START_FIELD_PARAM_DECL
+#define UPB_START_FIELD_PARAM
+#endif
+
 static const char* _upb_Decoder_DecodeUnknownField(
     upb_Decoder* d, const char* ptr, upb_Message* msg, uint32_t field_number,
-    uint32_t wire_type, wireval val) {
+    uint32_t wire_type, wireval val UPB_START_FIELD_PARAM_DECL) {
   if (field_number == 0) {
     upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_Malformed);
   }
 
+#if !UPB_STORE_FIELD_START_POINTER
   const char* start =
       _upb_Decoder_FindFieldStart(d, ptr, field_number, wire_type);
+#endif
 
   upb_EpsCopyInputStream_StartCapture(&d->input, start);
 
@@ -1126,11 +1174,9 @@ const char* _upb_Decoder_DecodeFieldTag(upb_Decoder* d, const char* ptr,
 }
 
 UPB_FORCEINLINE
-const char* _upb_Decoder_DecodeFieldData(upb_Decoder* d, const char* ptr,
-                                         upb_Message* msg,
-                                         const upb_MiniTable* mt,
-                                         uint32_t field_number,
-                                         uint32_t wire_type) {
+const char* _upb_Decoder_DecodeFieldData(
+    upb_Decoder* d, const char* ptr, upb_Message* msg, const upb_MiniTable* mt,
+    uint32_t field_number, uint32_t wire_type UPB_START_FIELD_PARAM_DECL) {
 #ifndef NDEBUG
   d->debug_valstart = ptr;
 #endif
@@ -1143,12 +1189,12 @@ const char* _upb_Decoder_DecodeFieldData(upb_Decoder* d, const char* ptr,
   ptr = _upb_Decoder_DecodeWireValue(d, ptr, mt, field, wire_type, &val, &op);
 
   if (op >= 0) {
-    return _upb_Decoder_DecodeKnownField(d, ptr, msg, mt, field, op, &val);
+    return _upb_Decoder_DecodeKnownField(d, ptr, msg, field, op, &val);
   } else {
     switch (op) {
       case kUpb_DecodeOp_UnknownField:
-        return _upb_Decoder_DecodeUnknownField(d, ptr, msg, field_number,
-                                               wire_type, val);
+        return _upb_Decoder_DecodeUnknownField(
+            d, ptr, msg, field_number, wire_type, val UPB_START_FIELD_PARAM);
       case kUpb_DecodeOp_MessageSetItem:
         return upb_Decoder_DecodeMessageSetItem(d, ptr, msg, mt);
       default:
@@ -1169,6 +1215,9 @@ const char* _upb_Decoder_DecodeFieldNoFast(upb_Decoder* d, const char* ptr,
   uint32_t field_number;
   uint32_t wire_type;
 
+#if UPB_STORE_FIELD_START_POINTER
+  const char* start = ptr;
+#endif
   ptr = _upb_Decoder_DecodeFieldTag(d, ptr, &field_number, &wire_type);
 
   if (wire_type == kUpb_WireType_EndGroup) {
@@ -1176,10 +1225,13 @@ const char* _upb_Decoder_DecodeFieldNoFast(upb_Decoder* d, const char* ptr,
     return _upb_Decoder_EndMessage(d, ptr);
   }
 
-  ptr = _upb_Decoder_DecodeFieldData(d, ptr, msg, mt, field_number, wire_type);
+  ptr = _upb_Decoder_DecodeFieldData(d, ptr, msg, mt, field_number,
+                                     wire_type UPB_START_FIELD_PARAM);
   _upb_Decoder_Trace(d, 'M');
   return ptr;
 }
+#undef UPB_START_FIELD_PARAM_DECL
+#undef UPB_START_FIELD_PARAM
 
 UPB_FORCEINLINE
 bool _upb_Decoder_TryDecodeMessageFast(upb_Decoder* d, const char** ptr,
