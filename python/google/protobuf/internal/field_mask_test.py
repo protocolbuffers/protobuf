@@ -474,5 +474,51 @@ class FieldMaskTest(unittest.TestCase):
     )
 
 
+class FieldMaskDepthLimitTest(unittest.TestCase):
+  """Security regression tests for the FieldMask path-depth DoS fix."""
+
+  def _deep_path(self, depth):
+    return '.'.join(['a'] * depth)
+
+  def test_add_path_at_limit(self):
+    """A path of exactly _MAX_FIELD_MASK_DEPTH segments must be accepted."""
+    from google.protobuf.internal.field_mask import _MAX_FIELD_MASK_DEPTH
+    tree = field_mask._FieldMaskTree()
+    # Should not raise.
+    tree.AddPath(self._deep_path(_MAX_FIELD_MASK_DEPTH))
+
+  def test_add_path_exceeds_limit(self):
+    """A path one segment over the limit must raise ValueError."""
+    from google.protobuf.internal.field_mask import _MAX_FIELD_MASK_DEPTH
+    tree = field_mask._FieldMaskTree()
+    with self.assertRaises(ValueError) as ctx:
+      tree.AddPath(self._deep_path(_MAX_FIELD_MASK_DEPTH + 1))
+    self.assertIn('maximum allowed depth', str(ctx.exception))
+
+  def test_union_with_deep_malicious_path(self):
+    """Union() with a 1500-segment path must raise ValueError, not RecursionError."""
+    malicious_path = self._deep_path(1500)
+    mask = field_mask_pb2.FieldMask(paths=[malicious_path])
+    out_mask = field_mask_pb2.FieldMask()
+    with self.assertRaises(ValueError):
+      out_mask.Union(mask, mask)
+
+  def test_intersect_with_deep_malicious_path(self):
+    """Intersect() with a 1500-segment path must raise ValueError, not RecursionError."""
+    malicious_path = self._deep_path(1500)
+    mask = field_mask_pb2.FieldMask(paths=[malicious_path])
+    out_mask = field_mask_pb2.FieldMask()
+    with self.assertRaises(ValueError):
+      out_mask.Intersect(mask, mask)
+
+  def test_canonical_form_with_deep_malicious_path(self):
+    """CanonicalFormFromMask() with a 1500-segment path must raise ValueError."""
+    malicious_path = self._deep_path(1500)
+    mask = field_mask_pb2.FieldMask(paths=[malicious_path])
+    out_mask = field_mask_pb2.FieldMask()
+    with self.assertRaises(ValueError):
+      out_mask.CanonicalFormFromMask(mask)
+
+
 if __name__ == '__main__':
   unittest.main()
