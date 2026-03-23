@@ -579,6 +579,15 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
     field().ReserveWithArena(arena(), new_size);
   }
 
+  // Swaps the contents of this repeated field with `other`.
+  //
+  // Invalidates all iterators. Pointer stability is not guaranteed across the
+  // swap for any element of either repeated field.
+  //
+  // If the underlying repeated fields are on different arenas, this may force
+  // deep copies of the elements.
+  void swap(RepeatedFieldProxy other) const { field().Swap(&other.field()); }
+
   // Resizes the repeated field to `new_size` elements. If `new_size` is smaller
   // than the current size, the field is truncated. Otherwise, the field is
   // extended with default-valued elements.

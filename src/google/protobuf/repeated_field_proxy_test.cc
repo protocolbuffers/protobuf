@@ -1830,6 +1830,59 @@ TEST_P(RepeatedFieldProxyTest, ReserveMessage) {
           EqualsProto(R"pb(value: 8)pb"), EqualsProto(R"pb(value: 9)pb")));
 }
 
+TYPED_TEST(RepeatedNumericFieldProxyTest, Swap) {
+  auto field1 = this->MakeRepeatedFieldContainer();
+  field1->Add(1);
+
+  auto field2 = this->MakeRepeatedFieldContainer();
+  field2->Add(2);
+  field2->Add(3);
+
+  auto proxy1 = field1.MakeProxy();
+  auto proxy2 = field2.MakeProxy();
+  proxy1.swap(proxy2);
+
+  EXPECT_THAT(proxy1, ElementsAre(2, 3));
+  EXPECT_THAT(proxy2, ElementsAre(1));
+}
+
+TYPED_TEST(RepeatedStringFieldProxyTest, Swap) {
+  auto field1 = this->MakeRepeatedFieldContainer();
+  this->Add(field1, "1");
+
+  auto field2 = this->MakeRepeatedFieldContainer();
+  this->Add(field2, "2");
+  this->Add(field2, "3");
+
+  auto proxy1 = field1.MakeProxy();
+  auto proxy2 = field2.MakeProxy();
+  proxy1.swap(proxy2);
+
+  EXPECT_THAT(proxy1, ElementsAre(StringEq("2"), StringEq("3")));
+  EXPECT_THAT(proxy2, ElementsAre(StringEq("1")));
+}
+
+TEST_P(RepeatedFieldProxyTest, SwapMessage) {
+  auto field1 =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  field1->Add()->set_value(1);
+
+  auto field2 =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  field2->Add()->set_value(2);
+  field2->Add()->set_value(3);
+
+  RepeatedFieldProxy<RepeatedFieldProxyTestSimpleMessage> proxy1 =
+      field1.MakeProxy();
+  RepeatedFieldProxy<RepeatedFieldProxyTestSimpleMessage> proxy2 =
+      field2.MakeProxy();
+  proxy1.swap(proxy2);
+
+  EXPECT_THAT(proxy1, ElementsAre(EqualsProto(R"pb(value: 2)pb"),
+                                  EqualsProto(R"pb(value: 3)pb")));
+  EXPECT_THAT(proxy2, ElementsAre(EqualsProto(R"pb(value: 1)pb")));
+}
+
 TYPED_TEST(RepeatedNumericFieldProxyTest, Resize) {
   auto field = this->MakeRepeatedFieldContainer();
   field->Add(1);
