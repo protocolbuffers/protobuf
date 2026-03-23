@@ -155,7 +155,7 @@ absl::Status WriteSingular(JsonWriter& writer, Field<Traits> field,
           RoundTripsThroughDouble(*x)) {
         writer.Write(*x);
       } else {
-        writer.Write(MakeQuoted(*x));
+        writer.Write(Quoted(*x));
       }
       break;
     }
@@ -167,7 +167,7 @@ absl::Status WriteSingular(JsonWriter& writer, Field<Traits> field,
           RoundTripsThroughDouble(*x)) {
         writer.Write(*x);
       } else {
-        writer.Write(MakeQuoted(*x));
+        writer.Write(Quoted(*x));
       }
       break;
     }
@@ -196,7 +196,7 @@ absl::Status WriteSingular(JsonWriter& writer, Field<Traits> field,
       auto x = Traits::GetString(field, writer.ScratchBuf(),
                                  std::forward<Args>(args)...);
       RETURN_IF_ERROR(x.status());
-      writer.Write(MakeQuoted(*x));
+      writer.Write(Quoted(*x));
       break;
     }
     case FieldDescriptor::TYPE_BYTES: {
@@ -284,14 +284,14 @@ absl::Status WriteMapKey(JsonWriter& writer, const Msg<Traits>& entry,
     case FieldDescriptor::TYPE_INT64: {
       auto x = Traits::GetInt64(field, entry);
       RETURN_IF_ERROR(x.status());
-      writer.Write(MakeQuoted(*x));
+      writer.Write(Quoted(*x));
       break;
     }
     case FieldDescriptor::TYPE_FIXED64:
     case FieldDescriptor::TYPE_UINT64: {
       auto x = Traits::GetUInt64(field, entry);
       RETURN_IF_ERROR(x.status());
-      writer.Write(MakeQuoted(*x));
+      writer.Write(Quoted(*x));
       break;
     }
     case FieldDescriptor::TYPE_SFIXED32:
@@ -299,26 +299,26 @@ absl::Status WriteMapKey(JsonWriter& writer, const Msg<Traits>& entry,
     case FieldDescriptor::TYPE_INT32: {
       auto x = Traits::GetInt32(field, entry);
       RETURN_IF_ERROR(x.status());
-      writer.Write(MakeQuoted(*x));
+      writer.Write(Quoted(*x));
       break;
     }
     case FieldDescriptor::TYPE_FIXED32:
     case FieldDescriptor::TYPE_UINT32: {
       auto x = Traits::GetUInt32(field, entry);
       RETURN_IF_ERROR(x.status());
-      writer.Write(MakeQuoted(*x));
+      writer.Write(Quoted(*x));
       break;
     }
     case FieldDescriptor::TYPE_BOOL: {
       auto x = Traits::GetBool(field, entry);
       RETURN_IF_ERROR(x.status());
-      writer.Write(MakeQuoted(*x ? "true" : "false"));
+      writer.Write(Quoted(*x ? "true" : "false"));
       break;
     }
     case FieldDescriptor::TYPE_STRING: {
       auto x = Traits::GetString(field, writer.ScratchBuf(), entry);
       RETURN_IF_ERROR(x.status());
-      writer.Write(MakeQuoted(*x));
+      writer.Write(Quoted(*x));
       break;
     }
     case FieldDescriptor::TYPE_ENUM: {
@@ -424,7 +424,7 @@ absl::Status WriteField(JsonWriter& writer, const Msg<Traits>& msg,
                               original_name.substr(1)),
                    ":");
     } else {
-      writer.Write(MakeQuoted(json_name), ":");
+      writer.Write(Quoted(json_name), ":");
     }
   }
   writer.Whitespace(" ");
@@ -523,7 +523,7 @@ absl::Status WriteValue(JsonWriter& writer, const Msg<Traits>& msg,
   if (Traits::GetSize(string_field, msg) > 0) {
     auto x = Traits::GetString(string_field, writer.ScratchBuf(), msg);
     RETURN_IF_ERROR(x.status());
-    writer.Write(MakeQuoted(*x));
+    writer.Write(Quoted(*x));
     return absl::OkStatus();
   }
 
@@ -755,7 +755,7 @@ absl::Status WriteAny(JsonWriter& writer, const Msg<Traits>& msg,
   writer.NewLine();
   writer.Write("\"@type\":");
   writer.Whitespace(" ");
-  writer.Write(MakeQuoted(*type_url));
+  writer.Write(Quoted(*type_url));
 
   return Traits::WithDynamicType(
       desc, std::string(*type_url),

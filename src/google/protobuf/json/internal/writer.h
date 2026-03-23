@@ -74,10 +74,12 @@ struct Quoted {
   std::tuple<T...> value;
 };
 
-// Because this is not C++17 yet, we cannot add a deduction guide.
 template <typename... T>
-static Quoted<T...> MakeQuoted(T... t) {
-  return Quoted<T...>{std::make_tuple(t...)};
+Quoted(T...) -> Quoted<T...>;
+
+template <typename... T>
+static Quoted<T...> MakeQuoted(T... value) {
+  return Quoted<T...>{std::make_tuple(value...)};
 }
 
 class JsonWriter {
