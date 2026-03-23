@@ -339,9 +339,7 @@ macro_rules! impl_repeated_primitives {
 impl_repeated_primitives!(i32, u32, i64, u64, f32, f64, bool, ProtoString, ProtoBytes);
 
 /// Cast a `RepeatedView<SomeEnum>` to `RepeatedView<c_int>`.
-pub fn cast_enum_repeated_view<E: Enum + Singular>(
-    repeated: RepeatedView<E>,
-) -> RepeatedView<c_int> {
+pub fn cast_enum_repeated_view<E: Enum>(repeated: RepeatedView<E>) -> RepeatedView<c_int> {
     // SAFETY: the implementer of `Enum` has promised that this
     // raw repeated is a type-erased `proto2::RepeatedField<int>*`.
     unsafe { RepeatedView::from_raw(Private, repeated.as_raw(Private)) }
@@ -351,9 +349,7 @@ pub fn cast_enum_repeated_view<E: Enum + Singular>(
 ///
 /// Writing an unknown value is sound because all enums
 /// are representationally open.
-pub fn cast_enum_repeated_mut<E: Enum + Singular>(
-    mut repeated: RepeatedMut<E>,
-) -> RepeatedMut<c_int> {
+pub fn cast_enum_repeated_mut<E: Enum>(mut repeated: RepeatedMut<E>) -> RepeatedMut<c_int> {
     // SAFETY: the implementer of `Enum` has promised that this
     // raw repeated is a type-erased `proto2::RepeatedField<int>*`.
     unsafe {
@@ -366,12 +362,12 @@ pub fn cast_enum_repeated_mut<E: Enum + Singular>(
 
 /// Cast a `RepeatedMut<SomeEnum>` to `RepeatedMut<c_int>` and call
 /// repeated_reserve.
-pub fn reserve_enum_repeated_mut<E: Enum + Singular>(repeated: RepeatedMut<E>, additional: usize) {
+pub fn reserve_enum_repeated_mut<E: Enum>(repeated: RepeatedMut<E>, additional: usize) {
     let int_repeated = cast_enum_repeated_mut(repeated);
     Singular::repeated_reserve(Private, int_repeated, additional);
 }
 
-pub fn new_enum_repeated<E: Enum + Singular>() -> Repeated<E> {
+pub fn new_enum_repeated<E: Enum>() -> Repeated<E> {
     let int_repeated = Repeated::<c_int>::new();
     let raw = int_repeated.inner.raw();
     std::mem::forget(int_repeated);
@@ -383,7 +379,7 @@ pub fn new_enum_repeated<E: Enum + Singular>() -> Repeated<E> {
 /// # Safety
 /// - The passed in `&mut Repeated<E>` must not be used after this function is
 ///   called.
-pub unsafe fn free_enum_repeated<E: Enum + Singular>(repeated: &mut Repeated<E>) {
+pub unsafe fn free_enum_repeated<E: Enum>(repeated: &mut Repeated<E>) {
     unsafe {
         let mut int_r: Repeated<c_int> =
             Repeated::from_inner(Private, InnerRepeated::from_raw(repeated.inner.raw()));
