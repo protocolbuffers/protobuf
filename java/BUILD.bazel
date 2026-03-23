@@ -13,9 +13,9 @@ sh_test(
         ":core",
         ":kotlin",
         ":kotlin-lite",
-        ":lite_mvn",
         ":util",
         "//:protoc",
+        "//java:lite",
         # Making this test depends on the code change in core and util
         "//java/core:dist_files",
         "//java/util",
