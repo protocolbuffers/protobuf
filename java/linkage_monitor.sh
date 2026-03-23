@@ -9,7 +9,7 @@ mvn --version
 
 # This script runs within the Bazel's sandbox directory and uses protoc
 # generated within the Bazel project.
-protoc_location=$(realpath "${RUNFILES_DIR}/com_google_protobuf/protoc")
+protoc_location=$(realpath "${RUNFILES_DIR}/_main/protoc")
 if [ ! -x "${protoc_location}" ]; then
   echo "${protoc_location} is not found or not executable"
   exit 1
