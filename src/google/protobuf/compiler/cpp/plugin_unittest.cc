@@ -12,13 +12,17 @@
 //   worth.
 
 #include <memory>
+#include <string>
 
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
-#include "google/protobuf/compiler/cpp/generator.h"
-#include "google/protobuf/compiler/command_line_interface.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
+#include "absl/strings/str_cat.h"
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/command_line_interface.h"
+#include "google/protobuf/compiler/cpp/generator.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
