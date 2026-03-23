@@ -182,7 +182,34 @@ class RepeatedFieldProxyTypedTestBase {
 template <typename Params>
 class RepeatedNumericFieldProxyTest
     : public ::testing::Test,
-      public RepeatedFieldProxyTypedTestBase<Params> {};
+      public RepeatedFieldProxyTypedTestBase<Params> {
+ public:
+  using ElementType =
+      typename RepeatedFieldProxyTypedTestBase<Params>::ElementType;
+
+  template <typename T, typename U,
+            typename = std::enable_if_t<std::is_same_v<
+                absl::remove_cvref_t<T>, absl::remove_cvref_t<U>>>>
+  static void VerifyLambdaTypeRequirements(
+      const TestOnlyRepeatedFieldContainer<ElementType>& field,
+      const U& lambda_argument) {
+    // Verify that `lambda_argument` is a const lvalue reference. The value from
+    // the repeated field was intentionally decayed to avoid exposing a
+    // reference to the element, but if the argument type of this lambda is a
+    // reference, it will alias the temporary copy. Since mutation of this
+    // temporary would not affect the original element, ensure it is const.
+    static_assert(std::is_lvalue_reference_v<T>);
+    static_assert(std::is_const_v<std::remove_reference_t<T>>);
+
+    // Verify that `lambda_argument` is a copy of an element from the repeated
+    // field, meaning it does not lie in the backing array.
+    const ElementType* backing_array =
+        reinterpret_cast<const ElementType*>(field->data());
+    const ElementType* backing_array_end = backing_array + field->size();
+    EXPECT_THAT(&lambda_argument,
+                AnyOf(Lt(backing_array), Ge(backing_array_end)));
+  }
+};
 
 struct RepeatedNumericFieldProxyTestName {
   template <typename T>
@@ -239,6 +266,25 @@ class RepeatedStringFieldProxyTest
   using ElementType =
       typename RepeatedFieldProxyTypedTestBase<Params>::ElementType;
 
+  template <typename T>
+  static constexpr void VerifyLambdaTypeRequirements() {
+    if constexpr (std::is_same_v<ElementType, absl::Cord>) {
+      static_assert(std::is_same_v<T, const absl::Cord&>);
+    } else {
+      static_assert(std::is_same_v<T, absl::string_view&&>);
+    }
+  }
+
+  template <typename Compare>
+  static auto StringCompare(Compare&& compare) {
+    return [&compare](auto&& lhs, auto&& rhs) {
+      VerifyLambdaTypeRequirements<decltype(lhs)>();
+      VerifyLambdaTypeRequirements<decltype(rhs)>();
+
+      return compare(lhs, rhs);
+    };
+  }
+
   // A helper for adding strings to the legacy repeated field containers. The
   // API is inconsistent across the different string types, so this centralizes
   // the special casing.
@@ -249,6 +295,17 @@ class RepeatedStringFieldProxyTest
       field->Add(std::string(s));
     } else if constexpr (std::is_same_v<ElementType, absl::Cord>) {
       field->Add(absl::Cord(s));
+    } else {
+      static_assert(dependent_false_t<ElementType>, "Unsupported string type");
+    }
+  }
+
+  const char* StartAddress(const ElementType& element) {
+    if constexpr (std::is_same_v<ElementType, std::string> ||
+                  std::is_same_v<ElementType, absl::string_view>) {
+      return element.data();
+    } else if constexpr (std::is_same_v<ElementType, absl::Cord>) {
+      return &*element.char_begin();
     } else {
       static_assert(dependent_false_t<ElementType>, "Unsupported string type");
     }
@@ -1392,28 +1449,11 @@ TYPED_TEST(RepeatedNumericFieldProxyTest, Proto2EraseIf) {
   field->Add(3);
   field->Add(4);
 
-  const ElementType* backing_array =
-      reinterpret_cast<const ElementType*>(field->data());
-  const ElementType* backing_array_end = backing_array + field->size();
-
   auto proxy = field.MakeProxy();
-  size_t count =
-      google::protobuf::erase_if(proxy, [backing_array, backing_array_end](auto&& x) {
-        // Verify that `x` is a const lvalue reference. The value from the
-        // repeated field was intentionally decayed to avoid exposing a
-        // reference to the element, but if the argument type of this lambda is
-        // a reference, it will alias the temporary copy in `erase_if`. Since
-        // mutation of this temporary would not affect the original element,
-        // ensure it is const.
-        static_assert(std::is_lvalue_reference_v<decltype(x)>);
-        static_assert(std::is_const_v<std::remove_reference_t<decltype(x)>>);
-
-        // Verify that `x` is a copy of an element from the repeated field,
-        // meaning it does not lie in the backing array.
-        EXPECT_THAT(&x, AnyOf(Lt(backing_array), Ge(backing_array_end)));
-
-        return x > ElementType{2};
-      });
+  size_t count = google::protobuf::erase_if(proxy, [this, &field](auto&& x) {
+    this->template VerifyLambdaTypeRequirements<decltype(x)>(field, x);
+    return x > ElementType{2};
+  });
   EXPECT_EQ(count, 2);
   EXPECT_THAT(proxy, ElementsAre(1, 2));
   EXPECT_THAT(*field, ElementsAre(1, 2));
@@ -1435,8 +1475,6 @@ TYPED_TEST(RepeatedStringFieldProxyTest, Proto2Erase) {
 }
 
 TYPED_TEST(RepeatedStringFieldProxyTest, Proto2EraseIf) {
-  using ElementType = typename TypeParam::ElementType;
-
   auto field = this->MakeRepeatedFieldContainer();
   this->Add(field, "1");
   this->Add(field, "2");
@@ -1444,12 +1482,8 @@ TYPED_TEST(RepeatedStringFieldProxyTest, Proto2EraseIf) {
   this->Add(field, "4");
 
   auto proxy = field.MakeProxy();
-  size_t count = google::protobuf::erase_if(proxy, [](auto&& s) {
-    if constexpr (std::is_same_v<ElementType, absl::Cord>) {
-      static_assert(std::is_same_v<decltype(s), const absl::Cord&>);
-    } else {
-      static_assert(std::is_same_v<decltype(s), absl::string_view&&>);
-    }
+  size_t count = google::protobuf::erase_if(proxy, [this](auto&& s) {
+    this->template VerifyLambdaTypeRequirements<decltype(s)>();
     return s == "2" || s == "4";
   });
   EXPECT_EQ(count, 2);
@@ -2016,6 +2050,174 @@ TEST_P(RepeatedFieldProxyTest, ExplicitConversionToLegacyRepeatedPtrField) {
   proxy.clear();
   EXPECT_THAT(proxy, IsEmpty());
   EXPECT_THAT(field2, ElementsAre(EqualsProto(R"pb(value: 1)pb")));
+}
+
+TYPED_TEST(RepeatedNumericFieldProxyTest, CSort) {
+  auto field = this->MakeRepeatedFieldContainer();
+  field->Add(4);
+  field->Add(1);
+  field->Add(3);
+  field->Add(2);
+
+  auto proxy = field.MakeProxy();
+  google::protobuf::c_sort(proxy);
+  EXPECT_THAT(proxy, ElementsAre(1, 2, 3, 4));
+  EXPECT_THAT(*field, ElementsAre(1, 2, 3, 4));
+
+  google::protobuf::c_sort(proxy, [this, &field](auto&& lhs, auto&& rhs) {
+    this->template VerifyLambdaTypeRequirements<decltype(lhs)>(field, lhs);
+    this->template VerifyLambdaTypeRequirements<decltype(rhs)>(field, rhs);
+    return std::greater{}(lhs, rhs);
+  });
+  EXPECT_THAT(proxy, ElementsAre(4, 3, 2, 1));
+  EXPECT_THAT(*field, ElementsAre(4, 3, 2, 1));
+}
+
+TYPED_TEST(RepeatedNumericFieldProxyTest, StableCSort) {
+  auto field = this->MakeRepeatedFieldContainer();
+  field->Add(4);
+  field->Add(1);
+  field->Add(3);
+  field->Add(2);
+
+  auto proxy = field.MakeProxy();
+  google::protobuf::c_stable_sort(proxy);
+  EXPECT_THAT(proxy, ElementsAre(1, 2, 3, 4));
+  EXPECT_THAT(*field, ElementsAre(1, 2, 3, 4));
+
+  google::protobuf::c_stable_sort(proxy, [this, &field](auto&& lhs, auto&& rhs) {
+    this->template VerifyLambdaTypeRequirements<decltype(lhs)>(field, lhs);
+    this->template VerifyLambdaTypeRequirements<decltype(rhs)>(field, rhs);
+    return std::greater{}(lhs, rhs);
+  });
+  EXPECT_THAT(proxy, ElementsAre(4, 3, 2, 1));
+  EXPECT_THAT(*field, ElementsAre(4, 3, 2, 1));
+}
+
+TYPED_TEST(RepeatedStringFieldProxyTest, CSort) {
+  auto field = this->MakeRepeatedFieldContainer();
+  this->Add(field, "d");
+  this->Add(field, "a");
+  this->Add(field, "c");
+  this->Add(field, "b");
+
+  auto proxy = field.MakeProxy();
+  google::protobuf::c_sort(proxy);
+  EXPECT_THAT(proxy, ElementsAre(StringEq("a"), StringEq("b"), StringEq("c"),
+                                 StringEq("d")));
+  EXPECT_THAT(*field, ElementsAre(StringEq("a"), StringEq("b"), StringEq("c"),
+                                  StringEq("d")));
+
+  google::protobuf::c_sort(proxy, this->StringCompare(std::greater{}));
+  EXPECT_THAT(proxy, ElementsAre(StringEq("d"), StringEq("c"), StringEq("b"),
+                                 StringEq("a")));
+  EXPECT_THAT(*field, ElementsAre(StringEq("d"), StringEq("c"), StringEq("b"),
+                                  StringEq("a")));
+}
+
+TYPED_TEST(RepeatedStringFieldProxyTest, StableCSort) {
+  auto field = this->MakeRepeatedFieldContainer();
+  // Use long strings to ensure the backing string does not use SSO, and we can
+  // compare `.data()` before and after stable sorting to determine relative
+  // order of equivalent strings.
+  const auto long_string_a = absl::StrCat("a", kLongString);
+  const auto long_string_b = absl::StrCat("b", kLongString);
+  this->Add(field, long_string_b);
+  this->Add(field, long_string_b);
+  this->Add(field, long_string_a);
+  this->Add(field, long_string_a);
+
+  const char* str1 = this->StartAddress(field->Get(0));
+  const char* str2 = this->StartAddress(field->Get(1));
+  const char* str3 = this->StartAddress(field->Get(2));
+  const char* str4 = this->StartAddress(field->Get(3));
+
+  auto proxy = field.MakeProxy();
+  google::protobuf::c_stable_sort(proxy);
+  EXPECT_THAT(proxy,
+              ElementsAre(StringEq(long_string_a), StringEq(long_string_a),
+                          StringEq(long_string_b), StringEq(long_string_b)));
+  EXPECT_THAT(*field,
+              ElementsAre(StringEq(long_string_a), StringEq(long_string_a),
+                          StringEq(long_string_b), StringEq(long_string_b)));
+
+  // Stable sort should preserve the relative order of elements that compare
+  // equal.
+  EXPECT_EQ(this->StartAddress(field->Get(0)), str3);
+  EXPECT_EQ(this->StartAddress(field->Get(1)), str4);
+  EXPECT_EQ(this->StartAddress(field->Get(2)), str1);
+  EXPECT_EQ(this->StartAddress(field->Get(3)), str2);
+
+  google::protobuf::c_stable_sort(proxy, this->StringCompare(std::greater{}));
+  EXPECT_THAT(proxy,
+              ElementsAre(StringEq(long_string_b), StringEq(long_string_b),
+                          StringEq(long_string_a), StringEq(long_string_a)));
+  EXPECT_THAT(*field,
+              ElementsAre(StringEq(long_string_b), StringEq(long_string_b),
+                          StringEq(long_string_a), StringEq(long_string_a)));
+
+  // Stable sort should preserve the relative order of elements that compare
+  // equal.
+  EXPECT_EQ(this->StartAddress(field->Get(0)), str1);
+  EXPECT_EQ(this->StartAddress(field->Get(1)), str2);
+  EXPECT_EQ(this->StartAddress(field->Get(2)), str3);
+  EXPECT_EQ(this->StartAddress(field->Get(3)), str4);
+}
+
+TEST_P(RepeatedFieldProxyTest, CSortMessage) {
+  auto field =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  field->Add()->set_value(4);
+  field->Add()->set_value(1);
+  field->Add()->set_value(3);
+  field->Add()->set_value(2);
+
+  auto proxy = field.MakeProxy();
+  google::protobuf::c_sort(proxy, [](const auto& a, const auto& b) {
+    return a.value() < b.value();
+  });
+  EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
+                                 EqualsProto(R"pb(value: 2)pb"),
+                                 EqualsProto(R"pb(value: 3)pb"),
+                                 EqualsProto(R"pb(value: 4)pb")));
+  EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
+                                  EqualsProto(R"pb(value: 2)pb"),
+                                  EqualsProto(R"pb(value: 3)pb"),
+                                  EqualsProto(R"pb(value: 4)pb")));
+}
+
+TEST_P(RepeatedFieldProxyTest, StableCSortMessage) {
+  auto field =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
+  field->Add()->set_value(2);
+  field->Add()->set_value(2);
+  field->Add()->set_value(1);
+  field->Add()->set_value(1);
+
+  const auto* msg1 = &field->Get(0);
+  const auto* msg2 = &field->Get(1);
+  const auto* msg3 = &field->Get(2);
+  const auto* msg4 = &field->Get(3);
+
+  auto proxy = field.MakeProxy();
+  google::protobuf::c_stable_sort(proxy, [](const auto& a, const auto& b) {
+    return a.value() < b.value();
+  });
+  EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
+                                 EqualsProto(R"pb(value: 1)pb"),
+                                 EqualsProto(R"pb(value: 2)pb"),
+                                 EqualsProto(R"pb(value: 2)pb")));
+  EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
+                                  EqualsProto(R"pb(value: 1)pb"),
+                                  EqualsProto(R"pb(value: 2)pb"),
+                                  EqualsProto(R"pb(value: 2)pb")));
+
+  // Stable sort should preserve the relative order of elements that compare
+  // equal.
+  EXPECT_EQ(&field->Get(0), msg3);
+  EXPECT_EQ(&field->Get(1), msg4);
+  EXPECT_EQ(&field->Get(2), msg1);
+  EXPECT_EQ(&field->Get(3), msg2);
 }
 
 INSTANTIATE_TEST_SUITE_P(RepeatedFieldProxyTest, RepeatedFieldProxyTest,

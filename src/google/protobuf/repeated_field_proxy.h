@@ -27,6 +27,14 @@ template <int&... DeductionBarrier, typename T, typename Pred>
 size_t erase_if(RepeatedFieldProxy<T> cont, Pred pred);
 template <int&... DeductionBarrier, typename T, typename U>
 size_t erase(RepeatedFieldProxy<T> cont, const U& value);
+template <int&... DeductionBarrier, typename T, typename Compare>
+void c_sort(RepeatedFieldProxy<T> cont, Compare cmp);
+template <int&... DeductionBarrier, typename T>
+void c_sort(RepeatedFieldProxy<T> cont);
+template <int&... DeductionBarrier, typename T, typename Compare>
+void c_stable_sort(RepeatedFieldProxy<T> cont, Compare cmp);
+template <int&... DeductionBarrier, typename T>
+void c_stable_sort(RepeatedFieldProxy<T> cont);
 
 namespace internal {
 
@@ -600,6 +608,14 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
   friend size_t erase_if(RepeatedFieldProxy<T> cont, Pred pred);
   template <int&... DeductionBarrier, typename T, typename U>
   friend size_t erase(RepeatedFieldProxy<T> cont, const U& value);
+  template <int&... DeductionBarrier, typename T, typename Compare>
+  friend void c_sort(RepeatedFieldProxy<T> cont, Compare cmp);
+  template <int&... DeductionBarrier, typename T>
+  friend void c_sort(RepeatedFieldProxy<T> cont);
+  template <int&... DeductionBarrier, typename T, typename Compare>
+  friend void c_stable_sort(RepeatedFieldProxy<T> cont, Compare cmp);
+  template <int&... DeductionBarrier, typename T>
+  friend void c_stable_sort(RepeatedFieldProxy<T> cont);
 
   RepeatedFieldProxy(RepeatedFieldType& field, Arena* arena)
       : Base(field), arena_(arena) {
@@ -708,6 +724,28 @@ size_t erase_if(RepeatedFieldProxy<T> cont, Pred pred) {
 template <int&... DeductionBarrier, typename T, typename U>
 size_t erase(RepeatedFieldProxy<T> cont, const U& value) {
   return google::protobuf::erase(cont.field(), value);
+}
+
+// Like C++20's std::sort, for RepeatedFieldProxy.
+template <int&... DeductionBarrier, typename T, typename Compare>
+void c_sort(RepeatedFieldProxy<T> cont, Compare cmp) {
+  google::protobuf::c_sort(cont.field(), cmp);
+}
+// Like C++20's std::sort, for RepeatedFieldProxy, with default comparison.
+template <int&... DeductionBarrier, typename T>
+void c_sort(RepeatedFieldProxy<T> cont) {
+  google::protobuf::c_sort(cont.field());
+}
+// Like C++20's std::stable_sort, for RepeatedFieldProxy.
+template <int&... DeductionBarrier, typename T, typename Compare>
+void c_stable_sort(RepeatedFieldProxy<T> cont, Compare cmp) {
+  google::protobuf::c_stable_sort(cont.field(), cmp);
+}
+// Like C++20's std::stable_sort, for RepeatedFieldProxy, with default
+// comparison.
+template <int&... DeductionBarrier, typename T>
+void c_stable_sort(RepeatedFieldProxy<T> cont) {
+  google::protobuf::c_stable_sort(cont.field());
 }
 
 }  // namespace protobuf
