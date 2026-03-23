@@ -536,6 +536,26 @@ TEST_F(ParseMessageTest, FieldJsonName) {
       "}\n");
 }
 
+/*
+TEST_F(ParseMessageTest, FieldJsonEnum) {
+  ExpectParsesTo(
+      "enum TestEnum { A = 0; B = 1; }\n"
+      "message TestMessage {\n"
+      "  optional TestEnum foo = 1;\n"
+      "}\n",
+      "message_type {"
+      "  name: \"TestMessage\""
+      "  field {\n"
+      "    name: \"foo\" number: 1 label: LABEL_OPTIONAL type_name: "
+      "\"TestEnum\""
+      "  }\n \n}"
+      "  enum_type {\n"
+      "    name: \"TestEnum\"\n"
+      "    value { name: \"A\" number: 0 }\n"
+      "    value { name: \"B\" number: 1 }"
+      "}\n");
+}
+*/
 TEST_F(ParseMessageTest, Varint32Unstable) {
   ExpectParsesTo(
       R"schema(edition = "UNSTABLE";

@@ -899,6 +899,13 @@ message EnumValueOptions {
   // Information about the support window of a feature value.
   optional FieldOptions.FeatureSupport feature_support = 4;
 
+  // json_name support for enums. See json_options.proto.
+  extensions 5 [declaration = {
+    number: 5,
+    full_name: ".pb.json_options.enum_value_name",
+    type: "string"
+  }];
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 

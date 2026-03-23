@@ -16,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include "google/protobuf/descriptor.pb.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
@@ -35,6 +36,7 @@
 #include "google/protobuf/json/internal/descriptor_traits.h"
 #include "google/protobuf/json/internal/unparser_traits.h"
 #include "google/protobuf/json/internal/writer.h"
+#include "google/protobuf/json_options.pb.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/util/type_resolver.h"
 #include "google/protobuf/stubs/status_macros.h"
