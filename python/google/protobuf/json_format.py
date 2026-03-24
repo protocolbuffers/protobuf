@@ -781,27 +781,25 @@ class _Parser(object):
               self.max_recursion_depth
           )
       )
-    try:
-      if isinstance(value, dict):
-        self._ConvertStructMessage(value, message.struct_value, path)
-      elif isinstance(value, _LIST_LIKE):
-        self._ConvertListOrTupleValueMessage(value, message.list_value, path)
-      elif value is None:
-        message.null_value = 0
-      elif isinstance(value, bool):
-        message.bool_value = value
-      elif isinstance(value, str):
-        message.string_value = value
-      elif isinstance(value, _INT_OR_FLOAT):
-        message.number_value = value
-      else:
-        raise ParseError(
-            'Value {0} has unexpected type {1} at {2}'.format(
-                value, type(value), path
-            )
-        )
-    finally:
-      self.recursion_depth -= 1
+    if isinstance(value, dict):
+      self._ConvertStructMessage(value, message.struct_value, path)
+    elif isinstance(value, _LIST_LIKE):
+      self._ConvertListOrTupleValueMessage(value, message.list_value, path)
+    elif value is None:
+      message.null_value = 0
+    elif isinstance(value, bool):
+      message.bool_value = value
+    elif isinstance(value, str):
+      message.string_value = value
+    elif isinstance(value, _INT_OR_FLOAT):
+      message.number_value = value
+    else:
+      raise ParseError(
+          'Value {0} has unexpected type {1} at {2}'.format(
+              value, type(value), path
+          )
+      )
+    self.recursion_depth -= 1
 
   def _ConvertListOrTupleValueMessage(self, value, message, path):
     """Convert a JSON representation into ListValue message."""
@@ -816,14 +814,12 @@ class _Parser(object):
               self.max_recursion_depth
           )
       )
-    try:
-      message.ClearField('values')
-      for index, item in enumerate(value):
-        self._ConvertValueMessage(
-            item, message.values.add(), '{0}[{1}]'.format(path, index)
-        )
-    finally:
-      self.recursion_depth -= 1
+    message.ClearField('values')
+    for index, item in enumerate(value):
+      self._ConvertValueMessage(
+          item, message.values.add(), '{0}[{1}]'.format(path, index)
+      )
+    self.recursion_depth -= 1
 
   def _ConvertStructMessage(self, value, message, path):
     """Convert a JSON representation into Struct message."""
@@ -838,16 +834,14 @@ class _Parser(object):
               self.max_recursion_depth
           )
       )
-    try:
-      # Clear will mark the struct as modified so it will be created even if
-      # there are no values.
-      message.Clear()
-      for key in value:
-        self._ConvertValueMessage(
-            value[key], message.fields[key], '{0}.{1}'.format(path, key)
-        )
-    finally:
-      self.recursion_depth -= 1
+    # Clear will mark the struct as modified so it will be created even if
+    # there are no values.
+    message.Clear()
+    for key in value:
+      self._ConvertValueMessage(
+          value[key], message.fields[key], '{0}.{1}'.format(path, key)
+      )
+    self.recursion_depth -= 1
 
   def _ConvertWrapperMessage(self, value, message, path):
     """Convert a JSON representation into Wrapper message."""
