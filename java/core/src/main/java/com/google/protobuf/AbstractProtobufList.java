@@ -167,7 +167,12 @@ abstract class AbstractProtobufList<E> extends AbstractList<E> implements Protob
    */
   protected final void ensureIsMutable() {
     if (!isMutable) {
-      throw new UnsupportedOperationException();
+      throwUnsupportedOperationException();
     }
+  }
+
+  @DoNotInline
+  private void throwUnsupportedOperationException() {
+    throw new UnsupportedOperationException();
   }
 }
