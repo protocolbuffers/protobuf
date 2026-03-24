@@ -596,6 +596,54 @@ const char* InlineGreedyStringParser(std::string* s, const char* ptr,
   return ctx->ReadString(ptr, size, s);
 }
 
+void WireFormatStringSink::Flush(const char* ptr) {
+  ABSL_CHECK_GE(ptr, prev);
+  absl::StrAppend(&data,
+                  absl::string_view(prev, static_cast<size_t>(ptr - prev)));
+}
+void WireFormatStringSink::Append(absl::string_view view) {
+  absl::StrAppend(&data, view);
+  prev = view.data() + view.size();
+}
+
+
+template <typename SinkT>
+[[nodiscard]] const char* EpsCopyInputStream::ReadArrayMaybeFlush(
+    const char* ptr, absl::Span<char> out, SinkT& sink) {
+  char* dst = out.data();
+  return AdvancePtrMaybeFlush<char>(
+      ptr, out.size(), sink, [&](absl::string_view view) {
+        memcpy(dst, view.data(), view.size());
+        dst += view.size();
+        ABSL_DCHECK_LE(dst, out.data() + out.size());
+        return true;
+      });
+}
+
+template <typename SinkT>
+const char* ParseContext::VerifyUTF8MaybeFlushFallback(const char* ptr,
+                                                       int64_t size,
+                                                       SinkT& sink) {
+  // Copied the implementation of CordIsValid().
+  LeftoverBuffer leftover;
+
+  ptr = AdvancePtrMaybeFlush<char>(
+      ptr, size, sink, [&leftover](absl::string_view view) -> bool {
+        return IsViewValidUTF8WithLeftover(view, leftover);
+      });
+  return leftover.empty() ? ptr : nullptr;
+}
+
+template const char* EpsCopyInputStream::ReadArrayMaybeFlush(
+    const char* ptr, absl::Span<char> out, WireFormatNoOpSink& sink);
+template const char* EpsCopyInputStream::ReadArrayMaybeFlush(
+    const char* ptr, absl::Span<char> out, WireFormatStringSink& sink);
+
+template const char* ParseContext::VerifyUTF8MaybeFlushFallback(
+    const char* ptr, int64_t size, WireFormatNoOpSink& sink);
+template const char* ParseContext::VerifyUTF8MaybeFlushFallback(
+    const char* ptr, int64_t size, WireFormatStringSink& sink);
+
 
 
 template <typename T, bool sign>
