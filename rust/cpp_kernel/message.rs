@@ -46,8 +46,7 @@ impl<T: Message> OwnedMessageInner<T> {
 /// Since C++ messages manage their own memory, this can just copy the
 /// `RawMessage` instead of referencing an arena like UPB must.
 ///
-/// Note: even though this type is `Copy`, it should only be copied by
-/// protobuf internals that can maintain mutation invariants:
+/// The following invariants must be upheld:
 ///
 /// - No concurrent mutation for any two fields in a message: this means
 ///   mutators cannot be `Send` but are `Sync`.
@@ -62,13 +61,6 @@ pub struct MessageMutInner<'msg, T> {
     raw: RawMessage,
     _phantom: PhantomData<(&'msg mut (), T)>,
 }
-
-impl<'msg, T: Message> Clone for MessageMutInner<'msg, T> {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
-impl<'msg, T: Message> Copy for MessageMutInner<'msg, T> {}
 
 impl<'msg, T: Message> MessageMutInner<'msg, T> {
     #[allow(clippy::needless_pass_by_ref_mut)] // Sound construction requires mutable access.
@@ -91,6 +83,17 @@ impl<'msg, T: Message> MessageMutInner<'msg, T> {
 
     pub fn raw(&self) -> RawMessage {
         self.raw
+    }
+
+    pub fn as_view(&self) -> MessageViewInner<'msg, T> {
+        MessageViewInner { raw: self.raw, _phantom: PhantomData }
+    }
+
+    pub fn reborrow<'shorter>(&mut self) -> MessageMutInner<'shorter, T>
+    where
+        'msg: 'shorter,
+    {
+        MessageMutInner { raw: self.raw, _phantom: PhantomData }
     }
 }
 

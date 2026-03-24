@@ -63,8 +63,7 @@ impl<T: Message> OwnedMessageInner<T> {
 ///   generate `BytesMut`, would also require `BytesMut` to store a `&'msg
 ///   OwnedMessageInner` since they can't store an owned `Arena`.
 ///
-/// Note: even though this type is `Copy`, it should only be copied by
-/// protobuf internals that can maintain mutation invariants:
+/// The following invariants must be upheld:
 ///
 /// - No concurrent mutation for any two fields in a message: this means
 ///   mutators cannot be `Send` but are `Sync`.
@@ -78,13 +77,6 @@ pub struct MessageMutInner<'msg, T> {
     pub(crate) ptr: MessagePtr<T>,
     pub(crate) arena: &'msg Arena,
 }
-
-impl<'msg, T: Message> Clone for MessageMutInner<'msg, T> {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
-impl<'msg, T: Message> Copy for MessageMutInner<'msg, T> {}
 
 impl<'msg, T: Message> MessageMutInner<'msg, T> {
     /// # Safety
@@ -123,6 +115,17 @@ impl<'msg, T: Message> MessageMutInner<'msg, T> {
 
     pub fn arena(&self) -> &Arena {
         self.arena
+    }
+
+    pub fn as_view(&self) -> MessageViewInner<'msg, T> {
+        MessageViewInner { ptr: self.ptr, _phantom: PhantomData }
+    }
+
+    pub fn reborrow<'shorter>(&mut self) -> MessageMutInner<'shorter, T>
+    where
+        'msg: 'shorter,
+    {
+        Self { ptr: self.ptr, arena: self.arena }
     }
 }
 
