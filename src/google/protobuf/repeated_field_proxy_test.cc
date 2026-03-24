@@ -129,10 +129,12 @@ class TestOnlyRepeatedFieldContainer {
   const FieldType* operator->() const { return &*field_; }
 
   RepeatedFieldProxy<T> MakeProxy() {
-    return internal::ConstructRepeatedFieldProxy<T>(*field_, arena_);
+    return internal::RepeatedFieldProxyInternalPrivateAccessHelper<
+        T>::Construct(*field_, arena_);
   }
   RepeatedFieldProxy<const T> MakeConstProxy() const {
-    return internal::ConstructRepeatedFieldProxy<const T>(*field_);
+    return internal::RepeatedFieldProxyInternalPrivateAccessHelper<
+        const T>::Construct(*field_);
   }
 
  private:
