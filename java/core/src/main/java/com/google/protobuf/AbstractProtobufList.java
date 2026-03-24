@@ -165,7 +165,7 @@ abstract class AbstractProtobufList<E> extends AbstractList<E> implements Protob
    * Throws an {@link UnsupportedOperationException} if the list is immutable. Subclasses are
    * responsible for invoking this method on mutate operations.
    */
-  protected void ensureIsMutable() {
+  protected final void ensureIsMutable() {
     if (!isMutable) {
       throw new UnsupportedOperationException();
     }
