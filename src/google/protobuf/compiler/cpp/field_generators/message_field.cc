@@ -412,7 +412,6 @@ void SingularMessage::GenerateByteSize(io::Printer* p) const {
   )cc");
 }
 
-
 void SingularMessage::GenerateIsInitialized(io::Printer* p) const {
   if (!NeedsIsInitialized()) return;
 
@@ -1031,7 +1030,6 @@ void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
         }
       )cc");
 }
-
 
 void RepeatedMessage::GenerateIsInitialized(io::Printer* p) const {
   if (!NeedsIsInitialized()) return;

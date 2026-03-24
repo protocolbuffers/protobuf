@@ -596,7 +596,6 @@ bool MaybeEmitHaswordsCheck(ChunkIterator it, ChunkIterator end,
   return true;
 }
 
-
 using Sub = ::google::protobuf::io::Printer::Sub;
 std::vector<Sub> ClassVars(const Descriptor* desc, Options opts) {
   std::vector<Sub> vars = {
@@ -1339,15 +1338,11 @@ class AccessorVerifier {
 
 }  // namespace
 
-template <bool kIsV2>
 void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
-    const FieldDescriptor* field, io::Printer* p, bool try_batch) const {
+    const FieldDescriptor* field, io::Printer* p) const {
   absl::AnyInvocable<void()> emit_body = [&] {
     const auto& gen = field_generators_.get(field);
-    if constexpr (!kIsV2) {
-      gen.GenerateByteSize(p);
-    } else {
-    }
+    gen.GenerateByteSize(p);
   };
 
   if (!HasHasbit(field, options_)) {
@@ -1409,47 +1404,13 @@ void MessageGenerator::EmitUpdateByteSizeForField(
        {"update_cached_has_bits",
         [&] { MaybeEmitUpdateCachedHasbits(field, p, cached_has_word_index); }},
        {"check_and_update_byte_size_for_field",
-        [&]() {
-          EmitCheckAndUpdateByteSizeForField</*kIsV2=*/false>(
-              field, p, /*try_batch=*/false);
-        }}},
+        [&]() { EmitCheckAndUpdateByteSizeForField(field, p); }}},
       R"cc(
         $comment$;
         $update_cached_has_bits$;
         $check_and_update_byte_size_for_field$;
       )cc");
 }
-
-void MessageGenerator::EmitUpdateByteSizeV2ForNumerics(
-    size_t field_size, io::Printer* p, int& cached_has_word_index,
-    std::vector<const FieldDescriptor*>&& fields) const {
-  if (fields.empty()) return;
-
-  auto v = p->WithVars({{"field_size", field_size}});
-  p->Emit(R"cc(
-    // fixed size numerics: $field_size$
-  )cc");
-  for (const auto* f : fields) {
-    p->Emit({{"full_name", f->full_name()}},
-            R"cc(
-              // $full_name$
-            )cc");
-  }
-
-  p->Emit({{"mask",
-            absl::StrFormat("0x%08xU", GenChunkMask(fields, has_bit_indices_))},
-           {"size", 1 + 4 + field_size},  // tag + field number + payload
-           {"update_cached_has_bits",
-            [&] {
-              MaybeEmitUpdateCachedHasbits(fields.front(), p,
-                                           cached_has_word_index);
-            }}},
-          R"cc(
-            $update_cached_has_bits$;
-            total_size += absl::popcount(cached_has_bits & $mask$) * $size$;
-          )cc");
-}
-
 
 void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
   p->Emit("// $classname$\n\n");
@@ -1521,9 +1482,7 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
         }},
        {"decl_annotate", [&] { GenerateAnnotationDecl(p); }},
        {"parse_decls",
-        [&] {
-          parse_function_generator_->GenerateDataDecls(p);
-        }}},
+        [&] { parse_function_generator_->GenerateDataDecls(p); }}},
       R"cc(
         class $unused $$classname$ final
             : public $pbi$::MapEntry<$key_cpp$, $val_cpp$,
@@ -2173,10 +2132,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             )cc");
           }
         }},
-       {"decl_data",
-        [&] {
-          parse_function_generator_->GenerateDataDecls(p);
-        }},
+       {"decl_data", [&] { parse_function_generator_->GenerateDataDecls(p); }},
        {"post_loop_handler",
         [&] {
           if (!NeedsPostLoopHandler(descriptor_, options_)) return;
@@ -2534,7 +2490,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
 
     GenerateByteSize(p);
     p->Emit("\n");
-
 
     GenerateClassSpecificMergeImpl(p);
     p->Emit("\n");
@@ -4015,9 +3970,6 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
     }
   };
 
-  const auto emit_v2_data = [&] {
-  };
-
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     const auto pin_weak_descriptor = [&] {
       if (!UsingImplicitWeakDescriptor(descriptor_->file(), options_)) return;
@@ -4045,7 +3997,6 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             {"is_initialized", is_initialized},
             {"pin_weak_descriptor", pin_weak_descriptor},
             {"custom_vtable_methods", custom_vtable_methods},
-            {"v2_data", emit_v2_data},
             {"tracker_on_get_metadata",
              [&] {
                if (HasTracker(descriptor_, options_)) {
@@ -4075,7 +4026,6 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
                     PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                     false,
-                    $v2_data$,
                 },
                 &file_reflection_data[$index_in_file_messages$]};
 #else  // !PROTOBUF_MESSAGE_GLOBALS
@@ -4092,7 +4042,6 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
                     PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                     false,
-                    $v2_data$,
                 },
                 &::_pbi::kDescriptorMethods,
                 &$desc_table$,
@@ -4125,7 +4074,6 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
         {
             {"is_initialized", is_initialized},
             {"custom_vtable_methods", custom_vtable_methods},
-            {"v2_data", emit_v2_data},
         },
         R"cc(
           constexpr auto $classname$::InternalGenerateClassData_() {
@@ -4142,7 +4090,6 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
                     PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                     true,
-                    $v2_data$,
                 },
                 "$full_name$",
             };
@@ -4532,9 +4479,6 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
 }
 
 void MessageGenerator::GenerateVerify(io::Printer* p) {
-}
-
-void MessageGenerator::GenerateVerifyV2(io::Printer* p) {
 }
 
 void MessageGenerator::GenerateSerializeOneofFields(
@@ -5416,53 +5360,6 @@ void MessageGenerator::EmitOneofFields(io::Printer* p, const T& emitter) const {
               }
             )cc");
   }
-}
-
-void MessageGenerator::GenerateByteSizeV2(io::Printer* p) {
-}
-
-void MessageGenerator::EmitCheckAndSerializeField(const FieldDescriptor* field,
-                                                  io::Printer* p,
-                                                  bool try_batch) const {
-  absl::AnyInvocable<void()> emit_body = [&] {
-  };
-  if (!HasHasbit(field, options_)) {
-    MayEmitIfNonDefaultCheck(p, "this_.", field, options_, std::move(emit_body),
-                             /*with_enclosing_braces_always=*/true);
-    return;
-  }
-
-  if (field->options().weak()) {
-    p->Emit({{"emit_body", [&] { emit_body(); }}},
-            R"cc(
-              if (has_$name$()) {
-                $emit_body$;
-              }
-            )cc");
-    return;
-  }
-
-  int has_bit_index = has_bit_indices_[field->index()];
-  p->Emit(
-      {{"condition", GenerateConditionMaybeWithProbabilityForField(
-                         has_bit_index, field, options_, field->is_repeated())},
-       {"check_nondefault_and_emit_body",
-        [&] {
-          // Note that it's possible that the field has explicit presence.
-          // In that case, nondefault check will not be emitted but
-          // emit_body will still be emitted.
-          MayEmitIfNonDefaultCheck(p, "this_.", field, options_,
-                                   std::move(emit_body),
-                                   /*with_enclosing_braces_always=*/false);
-        }}},
-      R"cc(
-        if ($condition$) {
-          $check_nondefault_and_emit_body$;
-        }
-      )cc");
-}
-
-void MessageGenerator::GenerateSerializeV2(io::Printer* p) {
 }
 
 bool MessageGenerator::NeedsIsInitialized() {

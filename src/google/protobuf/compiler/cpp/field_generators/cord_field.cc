@@ -292,7 +292,6 @@ void CordFieldGenerator::GenerateByteSize(io::Printer* p) const {
   )cc");
 }
 
-
 void CordFieldGenerator::GenerateConstexprAggregateInitializer(
     io::Printer* p) const {
   if (field_->default_value_string().empty()) {

@@ -679,7 +679,6 @@ class PROTOBUF_EXPORT WireFormatLite {
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t LengthDelimitedSize(
       size_t length);
 
-
  private:
   // A helper method for the repeated primitive reader. This method has
   // optimizations for primitive types that have fixed size on the wire, and

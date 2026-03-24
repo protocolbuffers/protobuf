@@ -349,7 +349,6 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
                                                 absl::Span<char> out,
                                                 SinkT& sink);
 
-
   // Advances "ptr" by "size" bytes and calls "peek_func" with the contiguous
   // "view" of the data. Adjusts the size of the "view" if sizeof(DataT) > 1 to
   // allow users to read `DataT` without worrying about fragmented input.
@@ -407,7 +406,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       ABSL_DCHECK_GE(overrun, 0);
       ABSL_DCHECK_LE(overrun, kSlopBytes);
 
-      ptr = NextBuffer</*kExperimentalV2=*/true>(overrun, /*depth=*/-1);
+      ptr = NextBuffer(overrun, /*depth=*/-1);
       if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
       limit_ -= buffer_end_ - ptr;  // Adjust limit_ relative to new anchor
       ptr += overrun;
@@ -446,7 +445,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // Returns true if limit (either an explicit limit or end of stream) is
   // reached. It aligns *ptr across buffer seams.
   // If limit is exceeded, it returns true and ptr is set to null.
-  template <bool kExperimentalV2, typename SinkT>
+  template <typename SinkT>
   bool DoneWithCheck(const char** ptr, int d, SinkT& sink) {
     ABSL_DCHECK(*ptr);
     if (ABSL_PREDICT_TRUE(*ptr < limit_end_)) return false;
@@ -464,7 +463,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     }
     // Flush up to *ptr before updating it.
     sink.Flush(*ptr);
-    auto res = DoneFallback<kExperimentalV2>(overrun, d);
+    auto res = DoneFallback(overrun, d);
     *ptr = res.first;
     // Reset the sink to the new start pointer.
     sink.Reset(res.first);
@@ -564,7 +563,6 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // error. The invariant of this function is that it's guaranteed that
   // kSlopBytes bytes can be accessed from the returned ptr. This function might
   // advance more buffers than one in the underlying ZeroCopyInputStream.
-  template <bool kExperimentalV2>
   std::pair<const char*, bool> DoneFallback(int overrun, int depth);
   // Advances to the next buffer, at most one call to Next() on the underlying
   // ZeroCopyInputStream is made. This function DOES NOT match the returned
@@ -577,7 +575,6 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // the ZeroCopyInputStream in the case the parse will end in the last
   // kSlopBytes of the current buffer. depth is the current depth of nested
   // groups (or negative if the use case does not need careful tracking).
-  template <bool kExperimentalV2>
   const char* NextBuffer(int overrun, int depth);
   const char* SkipFallback(const char* ptr, int size);
   const char* AppendStringFallback(const char* ptr, int size, std::string* str);
@@ -585,7 +582,6 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   const char* ReadStringFallback(const char* ptr, int size, std::string* str);
   const char* ReadArrayFallback(const char* ptr, absl::Span<char> out);
   const char* ReadCordFallback(const char* ptr, int size, absl::Cord* cord);
-  template <bool kExperimentalV2>
   static bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth);
   bool StreamNext(const void** data) {
     bool res = zcis_->Next(data, &size_);
@@ -669,7 +665,6 @@ using LazyEagerVerifyFnType = const char* (*)(const char* ptr,
                                               ParseContext* ctx);
 using LazyEagerVerifyFnRef = std::remove_pointer<LazyEagerVerifyFnType>::type&;
 
-
 // ParseContext holds all data that is global to the entire parse. Most
 // importantly it contains the input stream, but also recursion depth and also
 // stores the end group tag, in case a parser ended on a endgroup, to verify
@@ -711,15 +706,13 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   ParseContext& operator=(ParseContext&&) = delete;
   ParseContext& operator=(const ParseContext&) = delete;
 
-  void TrackCorrectEnding() {
-    group_depth_ = 0;
-  }
+  void TrackCorrectEnding() { group_depth_ = 0; }
 
   // Done should only be called when the parsing pointer is pointing to the
   // beginning of field data - that is, at a tag.  Or if it is NULL.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Done(const char** ptr) {
     WireFormatNoOpSink sink;
-    return DoneWithCheck</*kExperimentalV2=*/false>(ptr, group_depth_, sink);
+    return DoneWithCheck(ptr, group_depth_, sink);
   }
 
   template <typename SinkT>
@@ -735,7 +728,6 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   template <typename SinkT>
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const char* VerifyUTF8MaybeFlushFallback(
       const char* ptr, int64_t size, SinkT& sink);
-
 
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int depth() const { return depth_; }
 
@@ -776,7 +768,6 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
       return Parser::ParseLoop(msg, ptr, this, tc_table);
     });
   }
-
 
   [[nodiscard]] PROTOBUF_NDEBUG_INLINE const char* ParseGroup(MessageLite* msg,
                                                               const char* ptr,
@@ -846,7 +837,6 @@ struct WireFormatStringSink {
   const char* prev;
   std::string data;
 };
-
 
 // Explicit template instantiation is required to avoid undefined reference
 // errors.
@@ -1495,7 +1485,6 @@ inline const char* EpsCopyInputStream::ReadMicroStringWithSize(const char* ptr,
   return ReadMicroStringFallback(ptr, size, str, arena);
 }
 
-
 template <typename Tag, typename T>
 const char* EpsCopyInputStream::ReadRepeatedFixed(const char* ptr, Arena* arena,
                                                   Tag expected_tag,
@@ -1880,14 +1869,6 @@ template <typename T, typename Validator>
 // UnknownFieldSet* to make the generated code isomorphic between full and lite.
 [[nodiscard]] PROTOBUF_EXPORT const char* UnknownFieldParse(
     uint32_t tag, std::string* unknown, const char* ptr, ParseContext* ctx);
-
-extern template const char* EpsCopyInputStream::NextBuffer<false>(int, int);
-extern template const char* EpsCopyInputStream::NextBuffer<true>(int, int);
-
-extern template std::pair<const char*, bool>
-EpsCopyInputStream::DoneFallback<false>(int, int);
-extern template std::pair<const char*, bool>
-EpsCopyInputStream::DoneFallback<true>(int, int);
 
 }  // namespace internal
 }  // namespace protobuf

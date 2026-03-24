@@ -69,9 +69,6 @@ struct PtrAndLen;
 }  // namespace rust
 
 namespace internal {
-namespace v2 {
-class TableDrivenMessage;
-}  // namespace v2
 
 template <typename Key, typename T>
 class MapFieldLite;
