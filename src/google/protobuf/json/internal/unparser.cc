@@ -86,7 +86,7 @@ void WriteEnum(JsonWriter& writer, Field<Traits> field, int32_t value,
 }
 
 // Returns true if x round-trips through being cast to a double, i.e., if
-// x is represenable exactly as a double. This is a slightly weaker condition
+// x is representable exactly as a double. This is a slightly weaker condition
 // than x < 2^52.
 template <typename Int>
 bool RoundTripsThroughDouble(Int x) {
