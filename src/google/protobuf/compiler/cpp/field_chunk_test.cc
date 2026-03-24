@@ -178,6 +178,7 @@ TEST(GenChunkMaskTest, ValidMaskFromChunks) {
   EXPECT_EQ(mask, (1 << kHasbitIdxAt0) | (1 << kHasbitIdxAt1));
 }
 
+
 }  // namespace
 }  // namespace cpp
 }  // namespace compiler
