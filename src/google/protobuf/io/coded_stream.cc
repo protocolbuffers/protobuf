@@ -239,6 +239,9 @@ bool CodedInputStream::GetDirectBufferPointer(const void** data, int* size) {
 bool CodedInputStream::ReadRaw(void* buffer, int size) {
   int current_buffer_size;
   while ((current_buffer_size = BufferSize()) < size) {
+    if (current_buffer_size <= 0) {
+      return false;
+    }
     // Reading past end of buffer.  Copy what we have, then refresh.
     memcpy(buffer, buffer_, current_buffer_size);
     buffer = reinterpret_cast<uint8_t*>(buffer) + current_buffer_size;
