@@ -59,4 +59,5 @@ UPB_DEFAULT_COPTS = select({
     "//conditions:default": [],
 })
 
-UPB_DEFAULT_FEATURES = []
+UPB_DEFAULT_FEATURES = [
+]
