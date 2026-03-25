@@ -45,3 +45,9 @@ def create_test_name(fn_name, name):
     if fn_name.startswith("_"):
         fn_name = fn_name.removeprefix("_")
     return fn_name + "_" + name
+
+def package_label_string(label_str, name = None):
+    """Returns the string repr of a label resolved relative to the current package being constructed."""
+
+    # name is unused.
+    return str(native.package_relative_label(label_str))
