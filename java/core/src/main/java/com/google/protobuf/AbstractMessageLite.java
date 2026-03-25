@@ -92,6 +92,7 @@ public abstract class AbstractMessageLite<
     throw new UnsupportedOperationException();
   }
 
+  @SuppressWarnings({"rawtypes", "unchecked"})
   int getSerializedSize(
           Schema schema) {
     int memoizedSerializedSize = getMemoizedSerializedSize();

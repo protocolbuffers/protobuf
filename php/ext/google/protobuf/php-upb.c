@@ -510,17 +510,13 @@ Error, UINTPTR_MAX is undefined
 
 #if defined(UPB_IS_GOOGLE3) && \
     (!defined(UPB_BOOTSTRAP_STAGE) || UPB_BOOTSTRAP_STAGE != 0)
-#define UPB_DESC(sym) proto2_##sym
 #define UPB_DESC_MINITABLE(sym) &proto2__##sym##_msg_init
 #elif defined(UPB_IS_GOOGLE3) && defined(UPB_BOOTSTRAP_STAGE) && \
     UPB_BOOTSTRAP_STAGE == 0
-#define UPB_DESC(sym) proto2_##sym
 #define UPB_DESC_MINITABLE(sym) proto2__##sym##_msg_init()
 #elif defined(UPB_BOOTSTRAP_STAGE) && UPB_BOOTSTRAP_STAGE == 0
-#define UPB_DESC(sym) google_protobuf_##sym
 #define UPB_DESC_MINITABLE(sym) google__protobuf__##sym##_msg_init()
 #else
-#define UPB_DESC(sym) google_protobuf_##sym
 #define UPB_DESC_MINITABLE(sym) &google__protobuf__##sym##_msg_init
 #endif
 
@@ -6803,24 +6799,33 @@ static int GetLocaleRadix(char *data, size_t capacity) {
   const int size = snprintf(temp, sizeof(temp), "%.1f", 1.5);
   UPB_ASSERT(temp[0] == '1');
   UPB_ASSERT(temp[size - 1] == '5');
-  UPB_ASSERT(size < capacity);
+  if (size < capacity) {
+    return 0;
+  }
   temp[size - 1] = '\0';
-  strcpy(data, temp + 1);
+  strncpy(data, temp + 1, size);
   return size - 2;
 }
 
 // Populates a string identical to *input except that the character pointed to
 // by pos (which should be '.') is replaced with the locale-specific radix.
 
-static void LocalizeRadix(const char *input, const char *pos, char *output) {
+static void LocalizeRadix(const char *input, const char *pos, char *output,
+                          int output_size) {
   const int len1 = pos - input;
 
   char radix[8];
   const int len2 = GetLocaleRadix(radix, sizeof(radix));
 
+  const int n = output_size - len1 - len2 - 1;
+  if (n < 0) {
+    return;
+  }
+
   memcpy(output, input, len1);
   memcpy(output + len1, radix, len2);
-  strcpy(output + len1 + len2, input + len1 + 1);
+  strncpy(output + len1 + len2, input + len1 + 1, n);
+  output[output_size - 1] = '\0';
 }
 
 double _upb_NoLocaleStrtod(const char *str, char **endptr) {
@@ -6840,7 +6845,7 @@ double _upb_NoLocaleStrtod(const char *str, char **endptr) {
   // try again.
 
   char localized[80];
-  LocalizeRadix(str, temp_endptr, localized);
+  LocalizeRadix(str, temp_endptr, localized, sizeof localized);
   char *localized_endptr;
   result = strtod(localized, &localized_endptr);
   if ((localized_endptr - &localized[0]) > (temp_endptr - str)) {
@@ -6922,6 +6927,7 @@ upb_alloc upb_alloc_global = {&upb_global_allocfunc};
 static UPB_ATOMIC(size_t) g_max_block_size = UPB_DEFAULT_MAX_BLOCK_SIZE;
 
 void upb_Arena_SetMaxBlockSize(size_t max) {
+  UPB_ASSERT(max <= UINT32_MAX);
   upb_Atomic_Store(&g_max_block_size, max, memory_order_relaxed);
 }
 
@@ -6958,8 +6964,14 @@ typedef struct upb_ArenaInternal {
   UPB_ATOMIC(const upb_ArenaRef*) refs;
 #endif
 
-  // A growing hint of what the *next* block should be sized
-  size_t size_hint;
+  // Size of the last block we allocated in the normal exponential scheme.
+  uint32_t last_block_size;
+
+  // A hint that grows whenever we perform a "one-off" allocation into a a
+  // dedicated block. This helps us determine if these outlier blocks are
+  // actually common enough that we should switch back to the normal exponential
+  // scheme at the larger size.
+  uint32_t size_hint;
 
   // All non atomic members used during allocation must be above this point, and
   // are used by _SwapIn/_SwapOut
@@ -7255,23 +7267,60 @@ bool upb_Arena_HasRefChain(const upb_Arena* from, const upb_Arena* to) {
 
 #endif
 
-// Adds an allocated block to the head of the list.
-static void _upb_Arena_AddBlock(upb_Arena* a, void* ptr, size_t offset,
-                                size_t block_size) {
-  upb_ArenaInternal* ai = upb_Arena_Internal(a);
-  upb_MemBlock* block = ptr;
+static upb_MemBlock* _upb_Arena_AllocBlockInternal(upb_alloc* alloc,
+                                                   size_t size) {
+  UPB_ASSERT(size >= kUpb_MemblockReserve);
+  upb_SizedPtr alloc_result = upb_SizeReturningMalloc(alloc, size);
+  if (!alloc_result.p) return NULL;
+  upb_MemBlock* block = alloc_result.p;
+  block->size = alloc_result.n;
+  return block;
+}
 
-  block->size = block_size;
-  UPB_ASSERT(offset >= kUpb_MemblockReserve);
-  char* start = UPB_PTR_AT(block, offset, char);
-  upb_MemBlock* head = ai->blocks;
-  block->next = head;
+static upb_MemBlock* _upb_Arena_AllocBlock(upb_Arena* a, size_t size) {
+  upb_ArenaInternal* ai = upb_Arena_Internal(a);
+  return _upb_Arena_AllocBlockInternal(_upb_ArenaInternal_BlockAlloc(ai), size);
+}
+
+static void _upb_Arena_AddBlock(upb_Arena* a, upb_MemBlock* block) {
+  upb_ArenaInternal* ai = upb_Arena_Internal(a);
+
+  // Atomic add not required here, as threads won't race allocating blocks, plus
+  // atomic fetch-add is slower than load/add/store on arm devices compiled
+  // targeting pre-v8.1. Relaxed order is safe as nothing depends on order of
+  // size allocated.
+  uintptr_t old_space_allocated =
+      upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed);
+  upb_Atomic_Store(&ai->space_allocated, old_space_allocated + block->size,
+                   memory_order_relaxed);
+
+  block->next = ai->blocks;
   ai->blocks = block;
-  UPB_PRIVATE(upb_Xsan_Init)(UPB_XSAN(a));
+}
+
+static void _upb_Arena_UseBlockInternal(upb_Arena* a, upb_MemBlock* block,
+                                        size_t offset) {
+  size_t block_size = block->size;
+  char* start = UPB_PTR_AT(block, kUpb_MemblockReserve + offset, char);
   a->UPB_PRIVATE(ptr) = start;
   a->UPB_PRIVATE(end) = UPB_PTR_AT(block, block_size, char);
   UPB_PRIVATE(upb_Xsan_PoisonRegion)(start, a->UPB_PRIVATE(end) - start);
-  UPB_ASSERT(UPB_PRIVATE(_upb_ArenaHas)(a) >= block_size - offset);
+  UPB_PRIVATE(upb_Xsan_Init)(UPB_XSAN(a));
+  UPB_ASSERT(UPB_PRIVATE(_upb_ArenaHas)(a) >=
+             block_size - kUpb_MemblockReserve - offset);
+}
+
+static void _upb_Arena_UseBlock(upb_Arena* a, upb_MemBlock* block) {
+  _upb_Arena_UseBlockInternal(a, block, 0);
+}
+
+static bool _upb_Arena_WouldReduceFreeSpace(upb_Arena* a, size_t size,
+                                            size_t block_size) {
+  upb_ArenaInternal* ai = upb_Arena_Internal(a);
+  size_t current_free =
+      ai->blocks ? a->UPB_PRIVATE(end) - a->UPB_PRIVATE(ptr) : 0;
+  size_t future_free = block_size - kUpb_MemblockReserve - size;
+  return current_free >= future_free;
 }
 
 // Fulfills the allocation request by allocating a new block. Returns NULL on
@@ -7279,84 +7328,56 @@ static void _upb_Arena_AddBlock(upb_Arena* a, void* ptr, size_t offset,
 void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t size) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   if (!ai->block_alloc) return NULL;
-  size_t last_size = 128;
-  size_t current_free = 0;
-  upb_MemBlock* last_block = ai->blocks;
-  if (last_block) {
-    last_size = last_block->size;
-    current_free = a->UPB_PRIVATE(end) - a->UPB_PRIVATE(ptr);
-  }
+
+  // Whether to satisfy the allocation from a one-off block which is right-sized
+  // for the current allocation. We do this if we suspect that the current
+  // allocation is an outlier that does not represent the typical size of
+  // allocations from this arena, or if we would reduce free space by
+  // using exponential growth.
+  bool one_off = false;
 
   // Relaxed order is safe here as we don't need any ordering with the setter.
   size_t max_block_size =
       upb_Atomic_Load(&g_max_block_size, memory_order_relaxed);
+  size_t block_size = UPB_MIN(ai->last_block_size * 2, max_block_size);
 
-  // Don't naturally grow beyond the max block size.
-  size_t target_size = UPB_MIN(last_size * 2, max_block_size);
-  size_t future_free = UPB_MAX(size, target_size - kUpb_MemblockReserve) - size;
-  // We want to preserve exponential growth in block size without wasting too
-  // much unused space at the end of blocks. Once the head of our blocks list is
-  // large enough to always trigger a max-sized block for all subsequent
-  // allocations, allocate blocks that would net reduce free space behind it.
-  if (last_block && current_free > future_free &&
-      target_size < max_block_size) {
-    last_size = ai->size_hint;
-    // Recalculate sizes with possibly larger last_size
-    target_size = UPB_MIN(last_size * 2, max_block_size);
-    future_free = UPB_MAX(size, target_size - kUpb_MemblockReserve) - size;
-  }
-  bool insert_after_head = false;
-  // Only insert after head if an allocated block is present; we don't want to
-  // continue allocating out of the initial block because we'll have no way of
-  // restoring the size of our allocated block if we add another.
-  if (last_block && current_free >= future_free) {
-    // If we're still going to net reduce free space with this new block, then
-    // only allocate the precise size requested and keep the current last block
-    // as the active block for future allocations.
-    insert_after_head = true;
-    target_size = size + kUpb_MemblockReserve;
-    // Add something to our previous size each time, so that eventually we
-    // will reach the max block size. Allocations larger than the max block size
-    // will always get their own backing allocation, so don't include them.
-    if (target_size <= max_block_size) {
-      ai->size_hint = UPB_MIN(ai->size_hint + (size >> 1), max_block_size >> 1);
+  if (size + kUpb_MemblockReserve > block_size) {
+    // A regular doubling would not yield a large enough block. Does size_hint
+    // indicate that we have consistently needed large blocks?
+    block_size = UPB_MIN(ai->size_hint * 2, max_block_size);
+    if (size + kUpb_MemblockReserve > block_size) {
+      // Even size_hint is not large enough, we will have to do a one-off.
+      one_off = true;
     }
   }
-  // We may need to exceed the max block size if the user requested a large
-  // allocation.
-  size_t block_size = UPB_MAX(kUpb_MemblockReserve + size, target_size);
-  upb_alloc* block_alloc = _upb_ArenaInternal_BlockAlloc(ai);
-  upb_SizedPtr alloc_result = upb_SizeReturningMalloc(block_alloc, block_size);
 
-  if (!alloc_result.p) return NULL;
+  // If switching to a block of this size would *reduce* available free space,
+  // we might as well make a one-off block instead.
+  one_off = one_off || _upb_Arena_WouldReduceFreeSpace(a, size, block_size);
 
-  upb_MemBlock* block = alloc_result.p;
-  size_t actual_block_size = alloc_result.n;
+  if (one_off) {
+    // Note: this may exceed the max block size, but that's okay.
+    block_size = size + kUpb_MemblockReserve;
+  }
 
-  // Atomic add not required here, as threads won't race allocating blocks, plus
-  // atomic fetch-add is slower than load/add/store on arm devices compiled
-  // targetting pre-v8.1. Relaxed order is safe as nothing depends on order of
-  // size allocated.
+  upb_MemBlock* block = _upb_Arena_AllocBlock(a, block_size);
+  if (!block) return NULL;
 
-  uintptr_t old_space_allocated =
-      upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed);
-  upb_Atomic_Store(&ai->space_allocated,
-                   old_space_allocated + actual_block_size,
-                   memory_order_relaxed);
-  if (UPB_UNLIKELY(insert_after_head)) {
-    upb_ArenaInternal* ai = upb_Arena_Internal(a);
-    block->size = actual_block_size;
-    upb_MemBlock* head = ai->blocks;
-    block->next = head->next;
-    head->next = block;
+  _upb_Arena_AddBlock(a, block);
 
+  if (UPB_UNLIKELY(one_off)) {
+    // Increase size_hint, so that a series of one-off allocations will
+    // eventually convince us to switch to exponential growth at the larger
+    // size.
+    ai->size_hint = UPB_MIN(ai->size_hint + (size >> 1), max_block_size >> 1);
     char* allocated = UPB_PTR_AT(block, kUpb_MemblockReserve, char);
     UPB_PRIVATE(upb_Xsan_PoisonRegion)(allocated + size,
                                        UPB_PRIVATE(kUpb_Asan_GuardSize));
     return allocated;
   } else {
-    ai->size_hint = actual_block_size;
-    _upb_Arena_AddBlock(a, block, kUpb_MemblockReserve, actual_block_size);
+    ai->last_block_size = UPB_MIN(block->size, UINT32_MAX);
+    ai->size_hint = ai->last_block_size;
+    _upb_Arena_UseBlock(a, block);
     UPB_ASSERT(UPB_PRIVATE(_upb_ArenaHas)(a) >= size);
     return upb_Arena_Malloc(a, size - UPB_PRIVATE(kUpb_Asan_GuardSize));
   }
@@ -7367,27 +7388,26 @@ static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc, size_t first_size) {
       UPB_ALIGN_MALLOC(kUpb_MemblockReserve + sizeof(upb_ArenaState));
   upb_ArenaState* a;
 
-  // We need to malloc the initial block.
+  if (!alloc) return NULL;
 
+  // We need to malloc the initial block.
   size_t block_size =
       first_block_overhead + UPB_MAX(256, UPB_ALIGN_MALLOC(first_size) +
                                               UPB_PRIVATE(kUpb_Asan_GuardSize));
-  upb_SizedPtr alloc_result;
-  if (!alloc ||
-      !(alloc_result = upb_SizeReturningMalloc(alloc, block_size)).p) {
-    return NULL;
-  }
-  char* mem = alloc_result.p;
-  size_t actual_block_size = alloc_result.n;
+  upb_MemBlock* block = _upb_Arena_AllocBlockInternal(alloc, block_size);
+  if (!block) return NULL;
 
-  a = UPB_PTR_AT(mem, kUpb_MemblockReserve, upb_ArenaState);
+  // Initialize the arena state in the first block. We "borrow" the memory from
+  // the block, because we can't yet call upb_Arena_Malloc.
+  a = UPB_PTR_AT(block, kUpb_MemblockReserve, upb_ArenaState);
   a->body.block_alloc = _upb_Arena_MakeBlockAlloc(alloc, 0);
-  a->body.size_hint = actual_block_size;
+  a->body.last_block_size = UPB_MIN(block->size, UINT32_MAX);
+  a->body.size_hint = UPB_MIN(block->size, UINT32_MAX);
   upb_Atomic_Init(&a->body.parent_or_count, _upb_Arena_TaggedFromRefcount(1));
   upb_Atomic_Init(&a->body.next, NULL);
   upb_Atomic_Init(&a->body.previous_or_tail,
                   _upb_Arena_TaggedFromTail(&a->body));
-  upb_Atomic_Init(&a->body.space_allocated, actual_block_size);
+  upb_Atomic_Init(&a->body.space_allocated, 0);
   a->body.blocks = NULL;
 #ifndef NDEBUG
   a->body.refs = NULL;
@@ -7395,15 +7415,16 @@ static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc, size_t first_size) {
   a->body.upb_alloc_cleanup = NULL;
   UPB_PRIVATE(upb_Xsan_Init)(UPB_XSAN(&a->body));
 
-  _upb_Arena_AddBlock(&a->head, mem, first_block_overhead, actual_block_size);
+  _upb_Arena_AddBlock(&a->head, block);
+  _upb_Arena_UseBlockInternal(&a->head, block,
+                              UPB_ALIGN_MALLOC(sizeof(upb_ArenaState)));
 
   return &a->head;
 }
 
 upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
-  UPB_STATIC_ASSERT(
-      sizeof(void*) * UPB_ARENA_SIZE_HACK >= sizeof(upb_ArenaState),
-      "Need to update UPB_ARENA_SIZE_HACK");
+  UPB_STATIC_ASSERT(UPB_ARENA_SIZE_HACK >= sizeof(upb_ArenaState),
+                    "Need to update UPB_ARENA_SIZE_HACK");
   upb_ArenaState* a;
 
   if (mem) {
@@ -7433,6 +7454,7 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   a->body.refs = NULL;
 #endif
   a->body.size_hint = 128;
+  a->body.last_block_size = 128;
   a->body.upb_alloc_cleanup = NULL;
   a->body.block_alloc = _upb_Arena_MakeBlockAlloc(alloc, 1);
   a->head.UPB_PRIVATE(ptr) = (void*)UPB_ALIGN_MALLOC((uintptr_t)(a + 1));
@@ -7879,13 +7901,10 @@ void UPB_PRIVATE(_upb_Arena_SwapOut)(upb_Arena* des, const upb_Arena* src) {
 bool _upb_Arena_WasLastAlloc(struct upb_Arena* a, void* ptr, size_t oldsize) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   upb_MemBlock* block = ai->blocks;
-  if (block == NULL) return false;
   // Skip any arena refs.
   while (block != NULL && block->size == 0) {
     block = block->next;
   }
-  if (block == NULL) return false;
-  block = block->next;
   if (block == NULL) return false;
   char* start = UPB_PTR_AT(block, kUpb_MemblockReserve, char);
   return UPB_PRIVATE(upb_Xsan_PtrEq)(ptr, start) &&
@@ -8488,6 +8507,7 @@ UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(upb_Message* msg,
     if (!view) return false;
     view->data = data;
   } else {
+    if (SIZE_MAX - sizeof(upb_StringView) < len) return false;
     view = upb_Arena_Malloc(arena, sizeof(upb_StringView) + len);
     if (!view) return false;
     char* copy = UPB_PTR_AT(view, sizeof(upb_StringView), char);
@@ -9644,8 +9664,15 @@ bool UPB_PRIVATE(_upb_Message_ReserveSlot)(struct upb_Message* msg,
     in->capacity = capacity;
     UPB_PRIVATE(_upb_Message_SetInternal)(msg, in);
   } else if (in->capacity == in->size) {
+    if (in->size == UINT32_MAX) return false;
     // Internal data is too small, reallocate.
-    uint32_t new_capacity = upb_RoundUpToPowerOfTwo(in->size + 1);
+    size_t needed_pow2 = upb_RoundUpToPowerOfTwo(in->size + 1);
+    if (needed_pow2 > UINT32_MAX) return false;
+    uint32_t new_capacity = needed_pow2;
+    if (UPB_SIZEOF_FLEX_WOULD_OVERFLOW(upb_Message_Internal, aux_data,
+                                       new_capacity)) {
+      return false;
+    }
     in = upb_Arena_Realloc(a, in, _upb_Message_SizeOfInternal(in->capacity),
                            _upb_Message_SizeOfInternal(new_capacity));
     if (!in) return false;
@@ -11582,12 +11609,13 @@ struct upb_DefPool {
   upb_inttable exts;   // (upb_MiniTableExtension*) -> (upb_FieldDef*)
   upb_ExtensionRegistry* extreg;
   const upb_GeneratedRegistryRef* generated_extreg;
-  const UPB_DESC(FeatureSetDefaults) * feature_set_defaults;
+  const google_protobuf_FeatureSetDefaults* feature_set_defaults;
   upb_MiniTablePlatform platform;
   void* scratch_data;
   size_t scratch_size;
   size_t bytes_loaded;
   bool disable_closed_enum_checking;
+  bool disable_implicit_field_presence;
 };
 
 void upb_DefPool_Free(upb_DefPool* s) {
@@ -11606,6 +11634,7 @@ upb_DefPool* upb_DefPool_New(void) {
   s->arena = upb_Arena_New();
   s->bytes_loaded = 0;
   s->disable_closed_enum_checking = false;
+  s->disable_implicit_field_presence = false;
 
   s->scratch_size = 240;
   s->scratch_data = upb_gmalloc(s->scratch_size);
@@ -11647,8 +11676,17 @@ bool upb_DefPool_ClosedEnumCheckingDisabled(const upb_DefPool* s) {
   return s->disable_closed_enum_checking;
 }
 
-const UPB_DESC(FeatureSetDefaults) *
-    upb_DefPool_FeatureSetDefaults(const upb_DefPool* s) {
+void upb_DefPool_DisableImplicitFieldPresence(upb_DefPool* s) {
+  UPB_ASSERT(upb_strtable_count(&s->files) == 0);
+  s->disable_implicit_field_presence = true;
+}
+
+bool upb_DefPool_ImplicitFieldPresenceDisabled(const upb_DefPool* s) {
+  return s->disable_implicit_field_presence;
+}
+
+const google_protobuf_FeatureSetDefaults* upb_DefPool_FeatureSetDefaults(
+    const upb_DefPool* s) {
   return s->feature_set_defaults;
 }
 
@@ -11656,8 +11694,8 @@ bool upb_DefPool_SetFeatureSetDefaults(upb_DefPool* s,
                                        const char* serialized_defaults,
                                        size_t serialized_len,
                                        upb_Status* status) {
-  const UPB_DESC(FeatureSetDefaults)* defaults = UPB_DESC(
-      FeatureSetDefaults_parse)(serialized_defaults, serialized_len, s->arena);
+  const google_protobuf_FeatureSetDefaults* defaults = google_protobuf_FeatureSetDefaults_parse(
+      serialized_defaults, serialized_len, s->arena);
   if (!defaults) {
     upb_Status_SetErrorFormat(status, "Failed to parse defaults");
     return false;
@@ -11668,8 +11706,8 @@ bool upb_DefPool_SetFeatureSetDefaults(upb_DefPool* s,
                               "pool has started building");
     return false;
   }
-  int min_edition = UPB_DESC(FeatureSetDefaults_minimum_edition(defaults));
-  int max_edition = UPB_DESC(FeatureSetDefaults_maximum_edition(defaults));
+  int min_edition = google_protobuf_FeatureSetDefaults_minimum_edition(defaults);
+  int max_edition = google_protobuf_FeatureSetDefaults_maximum_edition(defaults);
   if (min_edition > max_edition) {
     upb_Status_SetErrorFormat(status, "Invalid edition range %s to %s",
                               upb_FileDef_EditionName(min_edition),
@@ -11677,14 +11715,13 @@ bool upb_DefPool_SetFeatureSetDefaults(upb_DefPool* s,
     return false;
   }
   size_t size;
-  const UPB_DESC(
-      FeatureSetDefaults_FeatureSetEditionDefault)* const* default_list =
-      UPB_DESC(FeatureSetDefaults_defaults(defaults, &size));
-  int prev_edition = UPB_DESC(EDITION_UNKNOWN);
+  const google_protobuf_FeatureSetDefaults_FeatureSetEditionDefault* const*
+      default_list = google_protobuf_FeatureSetDefaults_defaults(defaults, &size);
+  int prev_edition = google_protobuf_EDITION_UNKNOWN;
   for (size_t i = 0; i < size; ++i) {
-    int edition = UPB_DESC(
-        FeatureSetDefaults_FeatureSetEditionDefault_edition(default_list[i]));
-    if (edition == UPB_DESC(EDITION_UNKNOWN)) {
+    int edition = google_protobuf_FeatureSetDefaults_FeatureSetEditionDefault_edition(
+        default_list[i]);
+    if (edition == google_protobuf_EDITION_UNKNOWN) {
       upb_Status_SetErrorFormat(status, "Invalid edition UNKNOWN specified");
       return false;
     }
@@ -11757,7 +11794,7 @@ void _upb_DefPool_SetPlatform(upb_DefPool* s, upb_MiniTablePlatform platform) {
 
 const upb_MessageDef* upb_DefPool_FindMessageByName(const upb_DefPool* s,
                                                     const char* sym) {
-  return _upb_DefPool_Unpack(s, sym, strlen(sym), UPB_DEFTYPE_MSG);
+  return upb_DefPool_FindMessageByNameWithSize(s, sym, strlen(sym));
 }
 
 const upb_MessageDef* upb_DefPool_FindMessageByNameWithSize(
@@ -11767,12 +11804,23 @@ const upb_MessageDef* upb_DefPool_FindMessageByNameWithSize(
 
 const upb_EnumDef* upb_DefPool_FindEnumByName(const upb_DefPool* s,
                                               const char* sym) {
-  return _upb_DefPool_Unpack(s, sym, strlen(sym), UPB_DEFTYPE_ENUM);
+  return upb_DefPool_FindEnumByNameWithSize(s, sym, strlen(sym));
 }
 
-const upb_EnumValueDef* upb_DefPool_FindEnumByNameval(const upb_DefPool* s,
-                                                      const char* sym) {
-  return _upb_DefPool_Unpack(s, sym, strlen(sym), UPB_DEFTYPE_ENUMVAL);
+const upb_EnumDef* upb_DefPool_FindEnumByNameWithSize(const upb_DefPool* s,
+                                                      const char* sym,
+                                                      size_t len) {
+  return _upb_DefPool_Unpack(s, sym, len, UPB_DEFTYPE_ENUM);
+}
+
+const upb_EnumValueDef* upb_DefPool_FindEnumValueByName(const upb_DefPool* s,
+                                                        const char* sym) {
+  return upb_DefPool_FindEnumValueByNameWithSize(s, sym, strlen(sym));
+}
+
+const upb_EnumValueDef* upb_DefPool_FindEnumValueByNameWithSize(
+    const upb_DefPool* s, const char* sym, size_t len) {
+  return _upb_DefPool_Unpack(s, sym, len, UPB_DEFTYPE_ENUMVAL);
 }
 
 const upb_FileDef* upb_DefPool_FindFileByName(const upb_DefPool* s,
@@ -11915,7 +11963,7 @@ static void remove_filedef(upb_DefPool* s, upb_FileDef* file) {
 
 static const upb_FileDef* upb_DefBuilder_AddFileToPool(
     upb_DefBuilder* const builder, upb_DefPool* const s,
-    const UPB_DESC(FileDescriptorProto) * const file_proto,
+    const google_protobuf_FileDescriptorProto* const file_proto,
     const upb_StringView name, upb_Status* const status) {
   if (UPB_SETJMP(builder->err) != 0) {
     UPB_ASSERT(!upb_Status_IsOk(status));
@@ -11927,7 +11975,7 @@ static const upb_FileDef* upb_DefBuilder_AddFileToPool(
              !upb_strtable_init(&builder->feature_cache, 16,
                                 builder->tmp_arena) ||
              !(builder->legacy_features =
-                   UPB_DESC(FeatureSet_new)(builder->tmp_arena))) {
+                   google_protobuf_FeatureSet_new(builder->tmp_arena))) {
     _upb_DefBuilder_OomErr(builder);
   } else {
     _upb_FileDef_Create(builder, file_proto);
@@ -11943,9 +11991,9 @@ static const upb_FileDef* upb_DefBuilder_AddFileToPool(
 }
 
 static const upb_FileDef* _upb_DefPool_AddFile(
-    upb_DefPool* s, const UPB_DESC(FileDescriptorProto) * file_proto,
+    upb_DefPool* s, const google_protobuf_FileDescriptorProto* file_proto,
     const upb_MiniTableFile* layout, upb_Status* status) {
-  const upb_StringView name = UPB_DESC(FileDescriptorProto_name)(file_proto);
+  const upb_StringView name = google_protobuf_FileDescriptorProto_name(file_proto);
 
   // Determine whether we already know about this file.
   {
@@ -11976,10 +12024,9 @@ static const upb_FileDef* _upb_DefPool_AddFile(
   return upb_DefBuilder_AddFileToPool(&ctx, s, file_proto, name, status);
 }
 
-const upb_FileDef* upb_DefPool_AddFile(upb_DefPool* s,
-                                       const UPB_DESC(FileDescriptorProto) *
-                                           file_proto,
-                                       upb_Status* status) {
+const upb_FileDef* upb_DefPool_AddFile(
+    upb_DefPool* s, const google_protobuf_FileDescriptorProto* file_proto,
+    upb_Status* status) {
   return _upb_DefPool_AddFile(s, file_proto, NULL, status);
 }
 
@@ -11988,7 +12035,7 @@ bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
   /* Since this function should never fail (it would indicate a bug in upb) we
    * print errors to stderr instead of returning error status to the user. */
   _upb_DefPool_Init** deps = init->deps;
-  UPB_DESC(FileDescriptorProto) * file;
+  google_protobuf_FileDescriptorProto* file;
   upb_Arena* arena;
   upb_Status status;
 
@@ -12004,7 +12051,7 @@ bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
     if (!_upb_DefPool_LoadDefInitEx(s, *deps, rebuild_minitable)) goto err;
   }
 
-  file = UPB_DESC(FileDescriptorProto_parse_ex)(
+  file = google_protobuf_FileDescriptorProto_parse_ex(
       init->descriptor.data, init->descriptor.size, NULL,
       kUpb_DecodeOption_AliasString, arena);
   s->bytes_loaded += init->descriptor.size;
@@ -12153,8 +12200,8 @@ bool _upb_DescState_Grow(upb_DescState* d, upb_Arena* a) {
 // Must be last.
 
 struct upb_EnumDef {
-  UPB_ALIGN_AS(8) const UPB_DESC(EnumOptions*) opts;
-  const UPB_DESC(FeatureSet*) resolved_features;
+  UPB_ALIGN_AS(8) const google_protobuf_EnumOptions* opts;
+  const google_protobuf_FeatureSet* resolved_features;
   const upb_MiniTableEnum* layout;  // Only for proto2.
   const upb_FileDef* file;
   const upb_MessageDef* containing_type;  // Could be merged with "file".
@@ -12168,7 +12215,7 @@ struct upb_EnumDef {
   int res_range_count;
   int res_name_count;
   int32_t defaultval;
-  UPB_DESC(SymbolVisibility) visibility;
+  google_protobuf_SymbolVisibility visibility;
   bool is_sorted;  // Whether all of the values are defined in ascending order.
 };
 
@@ -12194,7 +12241,7 @@ bool _upb_EnumDef_Insert(upb_EnumDef* e, upb_EnumValueDef* v, upb_Arena* a) {
   return true;
 }
 
-const UPB_DESC(EnumOptions) * upb_EnumDef_Options(const upb_EnumDef* e) {
+const google_protobuf_EnumOptions* upb_EnumDef_Options(const upb_EnumDef* e) {
   return e->opts;
 }
 
@@ -12202,12 +12249,11 @@ bool upb_EnumDef_HasOptions(const upb_EnumDef* e) {
   return e->opts != (void*)kUpbDefOptDefault;
 }
 
-const UPB_DESC(FeatureSet) *
-    upb_EnumDef_ResolvedFeatures(const upb_EnumDef* e) {
+const google_protobuf_FeatureSet* upb_EnumDef_ResolvedFeatures(const upb_EnumDef* e) {
   return e->resolved_features;
 }
 
-UPB_DESC(SymbolVisibility) upb_EnumDef_Visibility(const upb_EnumDef* e) {
+google_protobuf_SymbolVisibility upb_EnumDef_Visibility(const upb_EnumDef* e) {
   return e->visibility;
 }
 
@@ -12281,8 +12327,8 @@ const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i) {
 }
 
 static bool upb_EnumDef_IsSpecifiedAsClosed(const upb_EnumDef* e) {
-  return UPB_DESC(FeatureSet_enum_type)(e->resolved_features) ==
-         UPB_DESC(FeatureSet_CLOSED);
+  return google_protobuf_FeatureSet_enum_type(e->resolved_features) ==
+         google_protobuf_FeatureSet_CLOSED;
 }
 
 bool upb_EnumDef_IsClosed(const upb_EnumDef* e) {
@@ -12356,36 +12402,36 @@ static upb_StringView* _upb_EnumReservedNames_New(
 }
 
 static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
-                           const UPB_DESC(EnumDescriptorProto) * enum_proto,
-                           const UPB_DESC(FeatureSet*) parent_features,
+                           const google_protobuf_EnumDescriptorProto* enum_proto,
+                           const google_protobuf_FeatureSet* parent_features,
                            upb_EnumDef* e) {
-  const UPB_DESC(EnumValueDescriptorProto)* const* values;
-  const UPB_DESC(EnumDescriptorProto_EnumReservedRange)* const* res_ranges;
+  const google_protobuf_EnumValueDescriptorProto* const* values;
+  const google_protobuf_EnumDescriptorProto_EnumReservedRange* const* res_ranges;
   const upb_StringView* res_names;
   upb_StringView name;
   size_t n_value, n_res_range, n_res_name;
 
   UPB_DEF_SET_OPTIONS(e->opts, EnumDescriptorProto, EnumOptions, enum_proto);
   e->resolved_features = _upb_DefBuilder_ResolveFeatures(
-      ctx, parent_features, UPB_DESC(EnumOptions_features)(e->opts));
+      ctx, parent_features, google_protobuf_EnumOptions_features(e->opts));
 
   // Must happen before _upb_DefBuilder_Add()
   e->file = _upb_DefBuilder_File(ctx);
 
-  name = UPB_DESC(EnumDescriptorProto_name)(enum_proto);
+  name = google_protobuf_EnumDescriptorProto_name(enum_proto);
 
   e->full_name = _upb_DefBuilder_MakeFullName(ctx, prefix, name);
   _upb_DefBuilder_Add(ctx, e->full_name,
                       _upb_DefType_Pack(e, UPB_DEFTYPE_ENUM));
 
-  values = UPB_DESC(EnumDescriptorProto_value)(enum_proto, &n_value);
+  values = google_protobuf_EnumDescriptorProto_value(enum_proto, &n_value);
 
   if (n_value == 0) {
     _upb_DefBuilder_Errf(ctx, "enums must contain at least one value (%s)",
                          e->full_name);
   }
 
-  e->defaultval = UPB_DESC(EnumValueDescriptorProto_number)(values[0]);
+  e->defaultval = google_protobuf_EnumValueDescriptorProto_number(values[0]);
 
   // When the special UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN is enabled, we have to
   // exempt closed enums from this check, even when we are treating them as
@@ -12411,16 +12457,15 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
                                      e->resolved_features, e, &e->is_sorted);
 
   res_ranges =
-      UPB_DESC(EnumDescriptorProto_reserved_range)(enum_proto, &n_res_range);
+      google_protobuf_EnumDescriptorProto_reserved_range(enum_proto, &n_res_range);
   e->res_range_count = n_res_range;
   e->res_ranges = _upb_EnumReservedRanges_New(ctx, n_res_range, res_ranges, e);
 
-  res_names =
-      UPB_DESC(EnumDescriptorProto_reserved_name)(enum_proto, &n_res_name);
+  res_names = google_protobuf_EnumDescriptorProto_reserved_name(enum_proto, &n_res_name);
   e->res_name_count = n_res_name;
   e->res_names = _upb_EnumReservedNames_New(ctx, n_res_name, res_names);
 
-  e->visibility = UPB_DESC(EnumDescriptorProto_visibility)(enum_proto);
+  e->visibility = google_protobuf_EnumDescriptorProto_visibility(enum_proto);
 
   if (!upb_inttable_compact(&e->iton, ctx->arena)) _upb_DefBuilder_OomErr(ctx);
 
@@ -12436,9 +12481,8 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
 }
 
 upb_EnumDef* _upb_EnumDefs_New(upb_DefBuilder* ctx, int n,
-                               const UPB_DESC(EnumDescriptorProto*)
-                                   const* protos,
-                               const UPB_DESC(FeatureSet*) parent_features,
+                               const google_protobuf_EnumDescriptorProto* const* protos,
+                               const google_protobuf_FeatureSet* parent_features,
                                const upb_MessageDef* containing_type) {
   _upb_DefType_CheckPadding(sizeof(upb_EnumDef));
 
@@ -12455,6 +12499,8 @@ upb_EnumDef* _upb_EnumDefs_New(upb_DefBuilder* ctx, int n,
   return e;
 }
 
+
+#include <stdint.h>
 
 
 // Must be last.
@@ -12478,16 +12524,16 @@ int32_t upb_EnumReservedRange_End(const upb_EnumReservedRange* r) {
 
 upb_EnumReservedRange* _upb_EnumReservedRanges_New(
     upb_DefBuilder* ctx, int n,
-    const UPB_DESC(EnumDescriptorProto_EnumReservedRange) * const* protos,
+    const google_protobuf_EnumDescriptorProto_EnumReservedRange* const* protos,
     const upb_EnumDef* e) {
   upb_EnumReservedRange* r =
       UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_EnumReservedRange, n);
 
   for (int i = 0; i < n; i++) {
     const int32_t start =
-        UPB_DESC(EnumDescriptorProto_EnumReservedRange_start)(protos[i]);
+        google_protobuf_EnumDescriptorProto_EnumReservedRange_start(protos[i]);
     const int32_t end =
-        UPB_DESC(EnumDescriptorProto_EnumReservedRange_end)(protos[i]);
+        google_protobuf_EnumDescriptorProto_EnumReservedRange_end(protos[i]);
 
     // A full validation would also check that each range is disjoint, and that
     // none of the fields overlap with the extension ranges, but we are just
@@ -12516,8 +12562,8 @@ upb_EnumReservedRange* _upb_EnumReservedRanges_New(
 // Must be last.
 
 struct upb_EnumValueDef {
-  UPB_ALIGN_AS(8) const UPB_DESC(EnumValueOptions*) opts;
-  const UPB_DESC(FeatureSet*) resolved_features;
+  UPB_ALIGN_AS(8) const google_protobuf_EnumValueOptions* opts;
+  const google_protobuf_FeatureSet* resolved_features;
   const upb_EnumDef* parent;
   const char* full_name;
   int32_t number;
@@ -12549,8 +12595,8 @@ const upb_EnumValueDef** _upb_EnumValueDefs_Sorted(const upb_EnumValueDef* v,
   return (const upb_EnumValueDef**)out;
 }
 
-const UPB_DESC(EnumValueOptions) *
-    upb_EnumValueDef_Options(const upb_EnumValueDef* v) {
+const google_protobuf_EnumValueOptions* upb_EnumValueDef_Options(
+    const upb_EnumValueDef* v) {
   return v->opts;
 }
 
@@ -12558,8 +12604,8 @@ bool upb_EnumValueDef_HasOptions(const upb_EnumValueDef* v) {
   return v->opts != (void*)kUpbDefOptDefault;
 }
 
-const UPB_DESC(FeatureSet) *
-    upb_EnumValueDef_ResolvedFeatures(const upb_EnumValueDef* e) {
+const google_protobuf_FeatureSet* upb_EnumValueDef_ResolvedFeatures(
+    const upb_EnumValueDef* e) {
   return e->resolved_features;
 }
 
@@ -12583,20 +12629,19 @@ uint32_t upb_EnumValueDef_Index(const upb_EnumValueDef* v) {
 }
 
 static void create_enumvaldef(upb_DefBuilder* ctx, const char* prefix,
-                              const UPB_DESC(EnumValueDescriptorProto*)
-                                  val_proto,
-                              const UPB_DESC(FeatureSet*) parent_features,
+                              const google_protobuf_EnumValueDescriptorProto* val_proto,
+                              const google_protobuf_FeatureSet* parent_features,
                               upb_EnumDef* e, upb_EnumValueDef* v) {
   UPB_DEF_SET_OPTIONS(v->opts, EnumValueDescriptorProto, EnumValueOptions,
                       val_proto);
   v->resolved_features = _upb_DefBuilder_ResolveFeatures(
-      ctx, parent_features, UPB_DESC(EnumValueOptions_features)(v->opts));
+      ctx, parent_features, google_protobuf_EnumValueOptions_features(v->opts));
 
-  upb_StringView name = UPB_DESC(EnumValueDescriptorProto_name)(val_proto);
+  upb_StringView name = google_protobuf_EnumValueDescriptorProto_name(val_proto);
 
   v->parent = e;  // Must happen prior to _upb_DefBuilder_Add()
   v->full_name = _upb_DefBuilder_MakeFullName(ctx, prefix, name);
-  v->number = UPB_DESC(EnumValueDescriptorProto_number)(val_proto);
+  v->number = google_protobuf_EnumValueDescriptorProto_number(val_proto);
   _upb_DefBuilder_Add(ctx, v->full_name,
                       _upb_DefType_Pack(v, UPB_DEFTYPE_ENUMVAL));
 
@@ -12607,9 +12652,8 @@ static void create_enumvaldef(upb_DefBuilder* ctx, const char* prefix,
 // Allocate and initialize an array of |n| enum value defs owned by |e|.
 upb_EnumValueDef* _upb_EnumValueDefs_New(
     upb_DefBuilder* ctx, const char* prefix, int n,
-    const UPB_DESC(EnumValueDescriptorProto*) const* protos,
-    const UPB_DESC(FeatureSet*) parent_features, upb_EnumDef* e,
-    bool* is_sorted) {
+    const google_protobuf_EnumValueDescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features, upb_EnumDef* e, bool* is_sorted) {
   _upb_DefType_CheckPadding(sizeof(upb_EnumValueDef));
 
   upb_EnumValueDef* v = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_EnumValueDef, n);
@@ -12634,8 +12678,8 @@ upb_EnumValueDef* _upb_EnumValueDefs_New(
 // Must be last.
 
 struct upb_ExtensionRange {
-  const UPB_DESC(ExtensionRangeOptions*) opts;
-  const UPB_DESC(FeatureSet*) resolved_features;
+  const google_protobuf_ExtensionRangeOptions* opts;
+  const google_protobuf_FeatureSet* resolved_features;
   int32_t start;
   int32_t end;
 };
@@ -12644,8 +12688,8 @@ upb_ExtensionRange* _upb_ExtensionRange_At(const upb_ExtensionRange* r, int i) {
   return (upb_ExtensionRange*)&r[i];
 }
 
-const UPB_DESC(ExtensionRangeOptions) *
-    upb_ExtensionRange_Options(const upb_ExtensionRange* r) {
+const google_protobuf_ExtensionRangeOptions* upb_ExtensionRange_Options(
+    const upb_ExtensionRange* r) {
   return r->opts;
 }
 
@@ -12661,24 +12705,23 @@ int32_t upb_ExtensionRange_End(const upb_ExtensionRange* r) { return r->end; }
 
 upb_ExtensionRange* _upb_ExtensionRanges_New(
     upb_DefBuilder* ctx, int n,
-    const UPB_DESC(DescriptorProto_ExtensionRange*) const* protos,
-    const UPB_DESC(FeatureSet*) parent_features, const upb_MessageDef* m) {
+    const google_protobuf_DescriptorProto_ExtensionRange* const* protos,
+    const google_protobuf_FeatureSet* parent_features, const upb_MessageDef* m) {
   upb_ExtensionRange* r = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_ExtensionRange, n);
 
   for (int i = 0; i < n; i++) {
     UPB_DEF_SET_OPTIONS(r[i].opts, DescriptorProto_ExtensionRange,
                         ExtensionRangeOptions, protos[i]);
     r[i].resolved_features = _upb_DefBuilder_ResolveFeatures(
-        ctx, parent_features,
-        UPB_DESC(ExtensionRangeOptions_features)(r[i].opts));
+        ctx, parent_features, google_protobuf_ExtensionRangeOptions_features(r[i].opts));
 
     const int32_t start =
-        UPB_DESC(DescriptorProto_ExtensionRange_start)(protos[i]);
-    const int32_t end = UPB_DESC(DescriptorProto_ExtensionRange_end)(protos[i]);
-    const int32_t max = UPB_DESC(MessageOptions_message_set_wire_format)(
-                            upb_MessageDef_Options(m))
-                            ? INT32_MAX
-                            : kUpb_MaxFieldNumber + 1;
+        google_protobuf_DescriptorProto_ExtensionRange_start(protos[i]);
+    const int32_t end = google_protobuf_DescriptorProto_ExtensionRange_end(protos[i]);
+    const int32_t max =
+        google_protobuf_MessageOptions_message_set_wire_format(upb_MessageDef_Options(m))
+            ? INT32_MAX
+            : kUpb_MaxFieldNumber + 1;
 
     // A full validation would also check that each range is disjoint, and that
     // none of the fields overlap with the extension ranges, but we are just
@@ -12715,8 +12758,8 @@ typedef struct {
 } str_t;
 
 struct upb_FieldDef {
-  UPB_ALIGN_AS(8) const UPB_DESC(FieldOptions*) opts;
-  const UPB_DESC(FeatureSet*) resolved_features;
+  UPB_ALIGN_AS(8) const google_protobuf_FieldOptions* opts;
+  const google_protobuf_FeatureSet* resolved_features;
   const upb_FileDef* file;
   const upb_MessageDef* msgdef;
   const char* full_name;
@@ -12737,7 +12780,7 @@ struct upb_FieldDef {
   union {
     const upb_MessageDef* msgdef;
     const upb_EnumDef* enumdef;
-    const UPB_DESC(FieldDescriptorProto) * unresolved;
+    const google_protobuf_FieldDescriptorProto* unresolved;
   } sub;
   uint32_t number_;
   uint16_t index_;
@@ -12755,7 +12798,7 @@ upb_FieldDef* _upb_FieldDef_At(const upb_FieldDef* f, int i) {
   return (upb_FieldDef*)&f[i];
 }
 
-const UPB_DESC(FieldOptions) * upb_FieldDef_Options(const upb_FieldDef* f) {
+const google_protobuf_FieldOptions* upb_FieldDef_Options(const upb_FieldDef* f) {
   return f->opts;
 }
 
@@ -12763,8 +12806,7 @@ bool upb_FieldDef_HasOptions(const upb_FieldDef* f) {
   return f->opts != (void*)kUpbDefOptDefault;
 }
 
-const UPB_DESC(FeatureSet) *
-    upb_FieldDef_ResolvedFeatures(const upb_FieldDef* f) {
+const google_protobuf_FeatureSet* upb_FieldDef_ResolvedFeatures(const upb_FieldDef* f) {
   return f->resolved_features;
 }
 
@@ -12796,8 +12838,8 @@ bool _upb_FieldDef_IsPackable(const upb_FieldDef* f) {
 
 bool upb_FieldDef_IsPacked(const upb_FieldDef* f) {
   return _upb_FieldDef_IsPackable(f) &&
-         UPB_DESC(FeatureSet_repeated_field_encoding(f->resolved_features)) ==
-             UPB_DESC(FeatureSet_PACKED);
+         google_protobuf_FeatureSet_repeated_field_encoding(f->resolved_features) ==
+             google_protobuf_FeatureSet_PACKED;
 }
 
 const char* upb_FieldDef_Name(const upb_FieldDef* f) {
@@ -12912,8 +12954,8 @@ int _upb_FieldDef_LayoutIndex(const upb_FieldDef* f) { return f->layout_index; }
 
 bool _upb_FieldDef_ValidateUtf8(const upb_FieldDef* f) {
   if (upb_FieldDef_Type(f) != kUpb_FieldType_String) return false;
-  return UPB_DESC(FeatureSet_utf8_validation(f->resolved_features)) ==
-         UPB_DESC(FeatureSet_VERIFY);
+  return google_protobuf_FeatureSet_utf8_validation(f->resolved_features) ==
+         google_protobuf_FeatureSet_VERIFY;
 }
 
 bool _upb_FieldDef_IsGroupLike(const upb_FieldDef* f) {
@@ -13000,8 +13042,8 @@ bool upb_FieldDef_IsRepeated(const upb_FieldDef* f) {
 }
 
 bool upb_FieldDef_IsRequired(const upb_FieldDef* f) {
-  return UPB_DESC(FeatureSet_field_presence)(f->resolved_features) ==
-         UPB_DESC(FeatureSet_LEGACY_REQUIRED);
+  return google_protobuf_FeatureSet_field_presence(f->resolved_features) ==
+         google_protobuf_FeatureSet_LEGACY_REQUIRED;
 }
 
 bool upb_FieldDef_IsString(const upb_FieldDef* f) {
@@ -13234,32 +13276,31 @@ static void set_default_default(upb_DefBuilder* ctx, upb_FieldDef* f,
 
 static bool _upb_FieldDef_InferLegacyFeatures(
     upb_DefBuilder* ctx, upb_FieldDef* f,
-    const UPB_DESC(FieldDescriptorProto*) proto,
-    const UPB_DESC(FieldOptions*) options, google_protobuf_Edition edition,
-    UPB_DESC(FeatureSet*) features) {
+    const google_protobuf_FieldDescriptorProto* proto,
+    const google_protobuf_FieldOptions* options, google_protobuf_Edition edition,
+    google_protobuf_FeatureSet* features) {
   bool ret = false;
 
-  if (UPB_DESC(FieldDescriptorProto_label)(proto) == kUpb_Label_Required) {
+  if (google_protobuf_FieldDescriptorProto_label(proto) == kUpb_Label_Required) {
     if (edition == google_protobuf_EDITION_PROTO3) {
       _upb_DefBuilder_Errf(ctx, "proto3 fields cannot be required (%s)",
                            f->full_name);
     }
-    int val = UPB_DESC(FeatureSet_LEGACY_REQUIRED);
-    UPB_DESC(FeatureSet_set_field_presence(features, val));
+    int val = google_protobuf_FeatureSet_LEGACY_REQUIRED;
+    google_protobuf_FeatureSet_set_field_presence(features, val);
     ret = true;
   }
 
-  if (UPB_DESC(FieldDescriptorProto_type)(proto) == kUpb_FieldType_Group) {
-    int val = UPB_DESC(FeatureSet_DELIMITED);
-    UPB_DESC(FeatureSet_set_message_encoding(features, val));
+  if (google_protobuf_FieldDescriptorProto_type(proto) == kUpb_FieldType_Group) {
+    int val = google_protobuf_FeatureSet_DELIMITED;
+    google_protobuf_FeatureSet_set_message_encoding(features, val);
     ret = true;
   }
 
-  if (UPB_DESC(FieldOptions_has_packed)(options)) {
-    int val = UPB_DESC(FieldOptions_packed)(options)
-                  ? UPB_DESC(FeatureSet_PACKED)
-                  : UPB_DESC(FeatureSet_EXPANDED);
-    UPB_DESC(FeatureSet_set_repeated_field_encoding(features, val));
+  if (google_protobuf_FieldOptions_has_packed(options)) {
+    int val = google_protobuf_FieldOptions_packed(options) ? google_protobuf_FeatureSet_PACKED
+                                                  : google_protobuf_FeatureSet_EXPANDED;
+    google_protobuf_FeatureSet_set_repeated_field_encoding(features, val);
     ret = true;
   }
 
@@ -13267,26 +13308,25 @@ static bool _upb_FieldDef_InferLegacyFeatures(
 }
 
 static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
-                                 const UPB_DESC(FeatureSet*) parent_features,
-                                 const UPB_DESC(FieldDescriptorProto*)
-                                     field_proto,
+                                 const google_protobuf_FeatureSet* parent_features,
+                                 const google_protobuf_FieldDescriptorProto* field_proto,
                                  upb_MessageDef* m, upb_FieldDef* f) {
   // Must happen before _upb_DefBuilder_Add()
   f->file = _upb_DefBuilder_File(ctx);
 
-  const upb_StringView name = UPB_DESC(FieldDescriptorProto_name)(field_proto);
+  const upb_StringView name = google_protobuf_FieldDescriptorProto_name(field_proto);
   f->full_name = _upb_DefBuilder_MakeFullName(ctx, prefix, name);
-  f->number_ = UPB_DESC(FieldDescriptorProto_number)(field_proto);
+  f->number_ = google_protobuf_FieldDescriptorProto_number(field_proto);
   f->is_proto3_optional =
-      UPB_DESC(FieldDescriptorProto_proto3_optional)(field_proto);
+      google_protobuf_FieldDescriptorProto_proto3_optional(field_proto);
   f->msgdef = m;
   f->scope.oneof = NULL;
 
   UPB_DEF_SET_OPTIONS(f->opts, FieldDescriptorProto, FieldOptions, field_proto);
 
-  UPB_DESC(Edition) edition = upb_FileDef_Edition(f->file);
-  const UPB_DESC(FeatureSet*) unresolved_features =
-      UPB_DESC(FieldOptions_features)(f->opts);
+  google_protobuf_Edition edition = upb_FileDef_Edition(f->file);
+  const google_protobuf_FeatureSet* unresolved_features =
+      google_protobuf_FieldOptions_features(f->opts);
   bool implicit = false;
 
   if (_upb_DefBuilder_IsLegacyEdition(edition)) {
@@ -13299,8 +13339,8 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
     }
   }
 
-  if (UPB_DESC(FieldDescriptorProto_has_oneof_index)(field_proto)) {
-    int oneof_index = UPB_DESC(FieldDescriptorProto_oneof_index)(field_proto);
+  if (google_protobuf_FieldDescriptorProto_has_oneof_index(field_proto)) {
+    int oneof_index = google_protobuf_FieldDescriptorProto_oneof_index(field_proto);
 
     if (!m) {
       _upb_DefBuilder_Errf(ctx, "oneof field (%s) has no containing msg",
@@ -13321,33 +13361,33 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
   f->resolved_features = _upb_DefBuilder_DoResolveFeatures(
       ctx, parent_features, unresolved_features, implicit);
 
-  f->label_ = (int)UPB_DESC(FieldDescriptorProto_label)(field_proto);
+  f->label_ = (int)google_protobuf_FieldDescriptorProto_label(field_proto);
   if (f->label_ == kUpb_Label_Optional &&
       // TODO: remove once we can deprecate kUpb_Label_Required.
-      UPB_DESC(FeatureSet_field_presence)(f->resolved_features) ==
-          UPB_DESC(FeatureSet_LEGACY_REQUIRED)) {
+      google_protobuf_FeatureSet_field_presence(f->resolved_features) ==
+          google_protobuf_FeatureSet_LEGACY_REQUIRED) {
     f->label_ = kUpb_Label_Required;
   }
 
-  if (!UPB_DESC(FieldDescriptorProto_has_name)(field_proto)) {
+  if (!google_protobuf_FieldDescriptorProto_has_name(field_proto)) {
     _upb_DefBuilder_Errf(ctx, "field has no name");
   }
 
-  f->has_json_name = UPB_DESC(FieldDescriptorProto_has_json_name)(field_proto);
+  f->has_json_name = google_protobuf_FieldDescriptorProto_has_json_name(field_proto);
   if (f->has_json_name) {
     const upb_StringView sv =
-        UPB_DESC(FieldDescriptorProto_json_name)(field_proto);
+        google_protobuf_FieldDescriptorProto_json_name(field_proto);
     f->json_name = upb_strdup2(sv.data, sv.size, ctx->arena);
   } else {
     f->json_name = make_json_name(name.data, name.size, ctx->arena);
   }
   if (!f->json_name) _upb_DefBuilder_OomErr(ctx);
 
-  const bool has_type = UPB_DESC(FieldDescriptorProto_has_type)(field_proto);
+  const bool has_type = google_protobuf_FieldDescriptorProto_has_type(field_proto);
   const bool has_type_name =
-      UPB_DESC(FieldDescriptorProto_has_type_name)(field_proto);
+      google_protobuf_FieldDescriptorProto_has_type_name(field_proto);
 
-  f->type_ = (int)UPB_DESC(FieldDescriptorProto_type)(field_proto);
+  f->type_ = (int)google_protobuf_FieldDescriptorProto_type(field_proto);
 
   if (has_type) {
     switch (f->type_) {
@@ -13388,7 +13428,7 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
    * to the field_proto until later when we can properly resolve it. */
   f->sub.unresolved = field_proto;
 
-  if (UPB_DESC(FieldDescriptorProto_has_oneof_index)(field_proto)) {
+  if (google_protobuf_FieldDescriptorProto_has_oneof_index(field_proto)) {
     if (upb_FieldDef_Label(f) != kUpb_Label_Optional) {
       _upb_DefBuilder_Errf(ctx, "fields in oneof must have OPTIONAL label (%s)",
                            f->full_name);
@@ -13397,22 +13437,22 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
 
   f->has_presence =
       (!upb_FieldDef_IsRepeated(f)) &&
-      (f->is_extension ||
+      (f->is_extension || _upb_FileDef_ImplicitFieldPresenceDisabled(f->file) ||
        (f->type_ == kUpb_FieldType_Message ||
         f->type_ == kUpb_FieldType_Group || upb_FieldDef_ContainingOneof(f) ||
-        UPB_DESC(FeatureSet_field_presence)(f->resolved_features) !=
-            UPB_DESC(FeatureSet_IMPLICIT)));
+        google_protobuf_FeatureSet_field_presence(f->resolved_features) !=
+            google_protobuf_FeatureSet_IMPLICIT));
 }
 
-static void _upb_FieldDef_CreateExt(upb_DefBuilder* ctx, const char* prefix,
-                                    const UPB_DESC(FeatureSet*) parent_features,
-                                    const UPB_DESC(FieldDescriptorProto*)
-                                        field_proto,
-                                    upb_MessageDef* m, upb_FieldDef* f) {
+static void _upb_FieldDef_CreateExt(
+    upb_DefBuilder* ctx, const char* prefix,
+    const google_protobuf_FeatureSet* parent_features,
+    const google_protobuf_FieldDescriptorProto* field_proto, upb_MessageDef* m,
+    upb_FieldDef* f) {
   f->is_extension = true;
   _upb_FieldDef_Create(ctx, prefix, parent_features, field_proto, m, f);
 
-  if (UPB_DESC(FieldDescriptorProto_has_oneof_index)(field_proto)) {
+  if (google_protobuf_FieldDescriptorProto_has_oneof_index(field_proto)) {
     _upb_DefBuilder_Errf(ctx, "oneof_index provided for extension field (%s)",
                          f->full_name);
   }
@@ -13427,16 +13467,15 @@ static void _upb_FieldDef_CreateExt(upb_DefBuilder* ctx, const char* prefix,
   }
 }
 
-static void _upb_FieldDef_CreateNotExt(upb_DefBuilder* ctx, const char* prefix,
-                                       const UPB_DESC(FeatureSet*)
-                                           parent_features,
-                                       const UPB_DESC(FieldDescriptorProto*)
-                                           field_proto,
-                                       upb_MessageDef* m, upb_FieldDef* f) {
+static void _upb_FieldDef_CreateNotExt(
+    upb_DefBuilder* ctx, const char* prefix,
+    const google_protobuf_FeatureSet* parent_features,
+    const google_protobuf_FieldDescriptorProto* field_proto, upb_MessageDef* m,
+    upb_FieldDef* f) {
   f->is_extension = false;
   _upb_FieldDef_Create(ctx, prefix, parent_features, field_proto, m, f);
 
-  if (!UPB_DESC(FieldDescriptorProto_has_oneof_index)(field_proto)) {
+  if (!google_protobuf_FieldDescriptorProto_has_oneof_index(field_proto)) {
     if (f->is_proto3_optional) {
       _upb_DefBuilder_Errf(
           ctx,
@@ -13448,11 +13487,11 @@ static void _upb_FieldDef_CreateNotExt(upb_DefBuilder* ctx, const char* prefix,
   _upb_MessageDef_InsertField(ctx, m, f);
 }
 
-upb_FieldDef* _upb_Extensions_New(upb_DefBuilder* ctx, int n,
-                                  const UPB_DESC(FieldDescriptorProto*)
-                                      const* protos,
-                                  const UPB_DESC(FeatureSet*) parent_features,
-                                  const char* prefix, upb_MessageDef* m) {
+upb_FieldDef* _upb_Extensions_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_FieldDescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features, const char* prefix,
+    upb_MessageDef* m) {
   _upb_DefType_CheckPadding(sizeof(upb_FieldDef));
   upb_FieldDef* defs = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_FieldDef, n);
 
@@ -13466,12 +13505,11 @@ upb_FieldDef* _upb_Extensions_New(upb_DefBuilder* ctx, int n,
   return defs;
 }
 
-upb_FieldDef* _upb_FieldDefs_New(upb_DefBuilder* ctx, int n,
-                                 const UPB_DESC(FieldDescriptorProto*)
-                                     const* protos,
-                                 const UPB_DESC(FeatureSet*) parent_features,
-                                 const char* prefix, upb_MessageDef* m,
-                                 bool* is_sorted) {
+upb_FieldDef* _upb_FieldDefs_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_FieldDescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features, const char* prefix,
+    upb_MessageDef* m, bool* is_sorted) {
   _upb_DefType_CheckPadding(sizeof(upb_FieldDef));
   upb_FieldDef* defs = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_FieldDef, n);
 
@@ -13499,9 +13537,9 @@ upb_FieldDef* _upb_FieldDefs_New(upb_DefBuilder* ctx, int n,
 
 static void resolve_subdef(upb_DefBuilder* ctx, const char* prefix,
                            upb_FieldDef* f) {
-  const UPB_DESC(FieldDescriptorProto)* field_proto = f->sub.unresolved;
-  upb_StringView name = UPB_DESC(FieldDescriptorProto_type_name)(field_proto);
-  bool has_name = UPB_DESC(FieldDescriptorProto_has_type_name)(field_proto);
+  const google_protobuf_FieldDescriptorProto* field_proto = f->sub.unresolved;
+  upb_StringView name = google_protobuf_FieldDescriptorProto_type_name(field_proto);
+  bool has_name = google_protobuf_FieldDescriptorProto_has_type_name(field_proto);
   switch ((int)f->type_) {
     case UPB_FIELD_TYPE_UNSPECIFIED: {
       // Type was not specified and must be inferred.
@@ -13519,8 +13557,8 @@ static void resolve_subdef(upb_DefBuilder* ctx, const char* prefix,
           f->type_ = kUpb_FieldType_Message;
           // TODO: remove once we can deprecate
           // kUpb_FieldType_Group.
-          if (UPB_DESC(FeatureSet_message_encoding)(f->resolved_features) ==
-                  UPB_DESC(FeatureSet_DELIMITED) &&
+          if (google_protobuf_FeatureSet_message_encoding(f->resolved_features) ==
+                  google_protobuf_FeatureSet_DELIMITED &&
               !upb_MessageDef_IsMapEntry(def) &&
               !(f->msgdef && upb_MessageDef_IsMapEntry(f->msgdef))) {
             f->type_ = kUpb_FieldType_Group;
@@ -13598,14 +13636,13 @@ bool upb_FieldDef_MiniDescriptorEncode(const upb_FieldDef* f, upb_Arena* a,
 
 static void resolve_extension(upb_DefBuilder* ctx, const char* prefix,
                               upb_FieldDef* f,
-                              const UPB_DESC(FieldDescriptorProto) *
-                                  field_proto) {
-  if (!UPB_DESC(FieldDescriptorProto_has_extendee)(field_proto)) {
+                              const google_protobuf_FieldDescriptorProto* field_proto) {
+  if (!google_protobuf_FieldDescriptorProto_has_extendee(field_proto)) {
     _upb_DefBuilder_Errf(ctx, "extension for field '%s' had no extendee",
                          f->full_name);
   }
 
-  upb_StringView name = UPB_DESC(FieldDescriptorProto_extendee)(field_proto);
+  upb_StringView name = google_protobuf_FieldDescriptorProto_extendee(field_proto);
   const upb_MessageDef* m =
       _upb_DefBuilder_Resolve(ctx, f->full_name, prefix, name, UPB_DEFTYPE_MSG);
   f->msgdef = m;
@@ -13650,8 +13687,7 @@ void _upb_FieldDef_BuildMiniTableExtension(upb_DefBuilder* ctx,
 }
 
 static void resolve_default(upb_DefBuilder* ctx, upb_FieldDef* f,
-                            const UPB_DESC(FieldDescriptorProto) *
-                                field_proto) {
+                            const google_protobuf_FieldDescriptorProto* field_proto) {
   // Implicit presence fields should always have an effective default of 0.
   // This should naturally fall out of the validations that protoc performs:
   // - Implicit presence fields cannot specify a default value.
@@ -13664,9 +13700,9 @@ static void resolve_default(upb_DefBuilder* ctx, upb_FieldDef* f,
 
   // Have to delay resolving of the default value until now because of the enum
   // case, since enum defaults are specified with a label.
-  if (UPB_DESC(FieldDescriptorProto_has_default_value)(field_proto)) {
+  if (google_protobuf_FieldDescriptorProto_has_default_value(field_proto)) {
     upb_StringView defaultval =
-        UPB_DESC(FieldDescriptorProto_default_value)(field_proto);
+        google_protobuf_FieldDescriptorProto_default_value(field_proto);
 
     if (must_be_empty) {
       _upb_DefBuilder_Errf(ctx,
@@ -13698,7 +13734,7 @@ static void resolve_default(upb_DefBuilder* ctx, upb_FieldDef* f,
 void _upb_FieldDef_Resolve(upb_DefBuilder* ctx, const char* prefix,
                            upb_FieldDef* f) {
   // We have to stash this away since resolve_subdef() may overwrite it.
-  const UPB_DESC(FieldDescriptorProto)* field_proto = f->sub.unresolved;
+  const google_protobuf_FieldDescriptorProto* field_proto = f->sub.unresolved;
 
   resolve_subdef(ctx, prefix, f);
   resolve_default(ctx, f, field_proto);
@@ -13717,11 +13753,11 @@ void _upb_FieldDef_Resolve(upb_DefBuilder* ctx, const char* prefix,
 // Must be last.
 
 struct upb_FileDef {
-  const UPB_DESC(FileOptions*) opts;
-  const UPB_DESC(FeatureSet*) resolved_features;
+  const google_protobuf_FileOptions* opts;
+  const google_protobuf_FeatureSet* resolved_features;
   const char* name;
   const char* package;
-  UPB_DESC(Edition) edition;
+  google_protobuf_Edition edition;
 
   const upb_FileDef** deps;
   const int32_t* public_deps;
@@ -13746,23 +13782,22 @@ struct upb_FileDef {
 UPB_API const char* upb_FileDef_EditionName(int edition) {
   // TODO Synchronize this with descriptor.proto better.
   switch (edition) {
-    case UPB_DESC(EDITION_PROTO2):
+    case google_protobuf_EDITION_PROTO2:
       return "PROTO2";
-    case UPB_DESC(EDITION_PROTO3):
+    case google_protobuf_EDITION_PROTO3:
       return "PROTO3";
-    case UPB_DESC(EDITION_2023):
+    case google_protobuf_EDITION_2023:
       return "2023";
     default:
       return "UNKNOWN";
   }
 }
 
-const UPB_DESC(FileOptions) * upb_FileDef_Options(const upb_FileDef* f) {
+const google_protobuf_FileOptions* upb_FileDef_Options(const upb_FileDef* f) {
   return f->opts;
 }
 
-const UPB_DESC(FeatureSet) *
-    upb_FileDef_ResolvedFeatures(const upb_FileDef* f) {
+const google_protobuf_FeatureSet* upb_FileDef_ResolvedFeatures(const upb_FileDef* f) {
   return f->resolved_features;
 }
 
@@ -13776,9 +13811,7 @@ const char* upb_FileDef_Package(const upb_FileDef* f) {
   return f->package ? f->package : "";
 }
 
-UPB_DESC(Edition) upb_FileDef_Edition(const upb_FileDef* f) {
-  return f->edition;
-}
+google_protobuf_Edition upb_FileDef_Edition(const upb_FileDef* f) { return f->edition; }
 
 const char* _upb_FileDef_RawPackage(const upb_FileDef* f) { return f->package; }
 
@@ -13806,6 +13839,10 @@ const int32_t* _upb_FileDef_WeakDependencyIndexes(const upb_FileDef* f) {
 
 bool _upb_FileDef_ClosedEnumCheckingDisabled(const upb_FileDef* f) {
   return upb_DefPool_ClosedEnumCheckingDisabled(f->symtab);
+}
+
+bool _upb_FileDef_ImplicitFieldPresenceDisabled(const upb_FileDef* f) {
+  return upb_DefPool_ImplicitFieldPresenceDisabled(f->symtab);
 }
 
 int upb_FileDef_TopLevelEnumCount(const upb_FileDef* f) {
@@ -13881,13 +13918,13 @@ static bool streql_view(upb_StringView view, const char* b) {
   return view.size == strlen(b) && memcmp(view.data, b, view.size) == 0;
 }
 
-static int count_exts_in_msg(const UPB_DESC(DescriptorProto) * msg_proto) {
+static int count_exts_in_msg(const google_protobuf_DescriptorProto* msg_proto) {
   size_t n;
-  UPB_DESC(DescriptorProto_extension)(msg_proto, &n);
+  google_protobuf_DescriptorProto_extension(msg_proto, &n);
   int ext_count = n;
 
-  const UPB_DESC(DescriptorProto)* const* nested_msgs =
-      UPB_DESC(DescriptorProto_nested_type)(msg_proto, &n);
+  const google_protobuf_DescriptorProto* const* nested_msgs =
+      google_protobuf_DescriptorProto_nested_type(msg_proto, &n);
   for (size_t i = 0; i < n; i++) {
     ext_count += count_exts_in_msg(nested_msgs[i]);
   }
@@ -13895,13 +13932,13 @@ static int count_exts_in_msg(const UPB_DESC(DescriptorProto) * msg_proto) {
   return ext_count;
 }
 
-const UPB_DESC(FeatureSet*)
-    _upb_FileDef_FindEdition(upb_DefBuilder* ctx, int edition) {
-  const UPB_DESC(FeatureSetDefaults)* defaults =
+const google_protobuf_FeatureSet* _upb_FileDef_FindEdition(upb_DefBuilder* ctx,
+                                                  int edition) {
+  const google_protobuf_FeatureSetDefaults* defaults =
       upb_DefPool_FeatureSetDefaults(ctx->symtab);
 
-  int min = UPB_DESC(FeatureSetDefaults_minimum_edition)(defaults);
-  int max = UPB_DESC(FeatureSetDefaults_maximum_edition)(defaults);
+  int min = google_protobuf_FeatureSetDefaults_minimum_edition(defaults);
+  int max = google_protobuf_FeatureSetDefaults_maximum_edition(defaults);
   if (edition < min) {
     _upb_DefBuilder_Errf(ctx,
                          "Edition %s is earlier than the minimum edition %s "
@@ -13910,7 +13947,7 @@ const UPB_DESC(FeatureSet*)
                          upb_FileDef_EditionName(min));
     return NULL;
   }
-  if (edition > max && edition != UPB_DESC(EDITION_UNSTABLE)) {
+  if (edition > max && edition != google_protobuf_EDITION_UNSTABLE) {
     _upb_DefBuilder_Errf(ctx,
                          "Edition %s is later than the maximum edition %s "
                          "given in the defaults",
@@ -13920,11 +13957,11 @@ const UPB_DESC(FeatureSet*)
   }
 
   size_t n;
-  const UPB_DESC(FeatureSetDefaults_FeatureSetEditionDefault)* const* d =
-      UPB_DESC(FeatureSetDefaults_defaults)(defaults, &n);
-  const UPB_DESC(FeatureSetDefaults_FeatureSetEditionDefault)* result = NULL;
+  const google_protobuf_FeatureSetDefaults_FeatureSetEditionDefault* const* d =
+      google_protobuf_FeatureSetDefaults_defaults(defaults, &n);
+  const google_protobuf_FeatureSetDefaults_FeatureSetEditionDefault* result = NULL;
   for (size_t i = 0; i < n; i++) {
-    if (UPB_DESC(FeatureSetDefaults_FeatureSetEditionDefault_edition)(d[i]) >
+    if (google_protobuf_FeatureSetDefaults_FeatureSetEditionDefault_edition(d[i]) >
         edition) {
       break;
     }
@@ -13938,10 +13975,11 @@ const UPB_DESC(FeatureSet*)
 
   // Merge the fixed and overridable features to get the edition's default
   // feature set.
-  const UPB_DESC(FeatureSet)* fixed = UPB_DESC(
-      FeatureSetDefaults_FeatureSetEditionDefault_fixed_features)(result);
-  const UPB_DESC(FeatureSet)* overridable = UPB_DESC(
-      FeatureSetDefaults_FeatureSetEditionDefault_overridable_features)(result);
+  const google_protobuf_FeatureSet* fixed =
+      google_protobuf_FeatureSetDefaults_FeatureSetEditionDefault_fixed_features(result);
+  const google_protobuf_FeatureSet* overridable =
+      google_protobuf_FeatureSetDefaults_FeatureSetEditionDefault_overridable_features(
+          result);
   if (!fixed && !overridable) {
     _upb_DefBuilder_Errf(ctx, "No valid default found for edition %s",
                          upb_FileDef_EditionName(edition));
@@ -13955,14 +13993,14 @@ const UPB_DESC(FeatureSet*)
 
 // Allocate and initialize one file def, and add it to the context object.
 void _upb_FileDef_Create(upb_DefBuilder* ctx,
-                         const UPB_DESC(FileDescriptorProto) * file_proto) {
+                         const google_protobuf_FileDescriptorProto* file_proto) {
   upb_FileDef* file = _upb_DefBuilder_Alloc(ctx, sizeof(upb_FileDef));
   ctx->file = file;
 
-  const UPB_DESC(DescriptorProto)* const* msgs;
-  const UPB_DESC(EnumDescriptorProto)* const* enums;
-  const UPB_DESC(FieldDescriptorProto)* const* exts;
-  const UPB_DESC(ServiceDescriptorProto)* const* services;
+  const google_protobuf_DescriptorProto* const* msgs;
+  const google_protobuf_EnumDescriptorProto* const* enums;
+  const google_protobuf_FieldDescriptorProto* const* exts;
+  const google_protobuf_ServiceDescriptorProto* const* services;
   const upb_StringView* strs;
   const int32_t* public_deps;
   const int32_t* weak_deps;
@@ -13971,9 +14009,9 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   file->symtab = ctx->symtab;
 
   // Count all extensions in the file, to build a flat array of layouts.
-  UPB_DESC(FileDescriptorProto_extension)(file_proto, &n);
+  google_protobuf_FileDescriptorProto_extension(file_proto, &n);
   int ext_count = n;
-  msgs = UPB_DESC(FileDescriptorProto_message_type)(file_proto, &n);
+  msgs = google_protobuf_FileDescriptorProto_message_type(file_proto, &n);
   for (size_t i = 0; i < n; i++) {
     ext_count += count_exts_in_msg(msgs[i]);
   }
@@ -13999,13 +14037,13 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
     }
   }
 
-  upb_StringView name = UPB_DESC(FileDescriptorProto_name)(file_proto);
+  upb_StringView name = google_protobuf_FileDescriptorProto_name(file_proto);
   file->name = _strviewdup(ctx, name);
   if (strlen(file->name) != name.size) {
     _upb_DefBuilder_Errf(ctx, "File name contained embedded NULL");
   }
 
-  upb_StringView package = UPB_DESC(FileDescriptorProto_package)(file_proto);
+  upb_StringView package = google_protobuf_FileDescriptorProto_package(file_proto);
 
   if (package.size) {
     _upb_DefBuilder_CheckIdentFull(ctx, package);
@@ -14014,21 +14052,21 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
     file->package = NULL;
   }
 
-  upb_StringView syntax = UPB_DESC(FileDescriptorProto_syntax)(file_proto);
+  upb_StringView syntax = google_protobuf_FileDescriptorProto_syntax(file_proto);
 
-  if (UPB_DESC(FileDescriptorProto_has_edition)(file_proto)) {
+  if (google_protobuf_FileDescriptorProto_has_edition(file_proto)) {
     if (!streql_view(syntax, "editions")) {
       _upb_DefBuilder_Errf(ctx,
                            "Setting edition requires that syntax=\"editions\", "
                            "but syntax is \"" UPB_STRINGVIEW_FORMAT "\"",
                            UPB_STRINGVIEW_ARGS(syntax));
     }
-    file->edition = UPB_DESC(FileDescriptorProto_edition)(file_proto);
-  } else if (UPB_DESC(FileDescriptorProto_has_syntax)(file_proto)) {
+    file->edition = google_protobuf_FileDescriptorProto_edition(file_proto);
+  } else if (google_protobuf_FileDescriptorProto_has_syntax(file_proto)) {
     if (streql_view(syntax, "proto2")) {
-      file->edition = UPB_DESC(EDITION_PROTO2);
+      file->edition = google_protobuf_EDITION_PROTO2;
     } else if (streql_view(syntax, "proto3")) {
-      file->edition = UPB_DESC(EDITION_PROTO3);
+      file->edition = google_protobuf_EDITION_PROTO3;
     } else if (streql_view(syntax, "editions")) {
       _upb_DefBuilder_Errf(
           ctx, "File has syntax=\"editions\", but no edition is specified");
@@ -14038,22 +14076,21 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
     }
   } else {
     // The legacy default when no edition or syntax is specified is proto2.
-    file->edition = UPB_DESC(EDITION_PROTO2);
+    file->edition = google_protobuf_EDITION_PROTO2;
   }
 
   // Read options.
   UPB_DEF_SET_OPTIONS(file->opts, FileDescriptorProto, FileOptions, file_proto);
 
   // Resolve features.
-  const UPB_DESC(FeatureSet*) edition_defaults =
+  const google_protobuf_FeatureSet* edition_defaults =
       _upb_FileDef_FindEdition(ctx, file->edition);
-  const UPB_DESC(FeatureSet*) unresolved =
-      UPB_DESC(FileOptions_features)(file->opts);
+  const google_protobuf_FeatureSet* unresolved = google_protobuf_FileOptions_features(file->opts);
   file->resolved_features =
       _upb_DefBuilder_ResolveFeatures(ctx, edition_defaults, unresolved);
 
   // Verify dependencies.
-  strs = UPB_DESC(FileDescriptorProto_dependency)(file_proto, &n);
+  strs = google_protobuf_FileDescriptorProto_dependency(file_proto, &n);
   file->dep_count = n;
   file->deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, const upb_FileDef*, n);
 
@@ -14069,7 +14106,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
     }
   }
 
-  public_deps = UPB_DESC(FileDescriptorProto_public_dependency)(file_proto, &n);
+  public_deps = google_protobuf_FileDescriptorProto_public_dependency(file_proto, &n);
   file->public_dep_count = n;
   file->public_deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, int32_t, n);
   int32_t* mutable_public_deps = (int32_t*)file->public_deps;
@@ -14081,7 +14118,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
     mutable_public_deps[i] = public_deps[i];
   }
 
-  weak_deps = UPB_DESC(FileDescriptorProto_weak_dependency)(file_proto, &n);
+  weak_deps = google_protobuf_FileDescriptorProto_weak_dependency(file_proto, &n);
   file->weak_dep_count = n;
   file->weak_deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, const int32_t, n);
   int32_t* mutable_weak_deps = (int32_t*)file->weak_deps;
@@ -14094,25 +14131,25 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   }
 
   // Create enums.
-  enums = UPB_DESC(FileDescriptorProto_enum_type)(file_proto, &n);
+  enums = google_protobuf_FileDescriptorProto_enum_type(file_proto, &n);
   file->top_lvl_enum_count = n;
   file->top_lvl_enums =
       _upb_EnumDefs_New(ctx, n, enums, file->resolved_features, NULL);
 
   // Create extensions.
-  exts = UPB_DESC(FileDescriptorProto_extension)(file_proto, &n);
+  exts = google_protobuf_FileDescriptorProto_extension(file_proto, &n);
   file->top_lvl_ext_count = n;
   file->top_lvl_exts = _upb_Extensions_New(
       ctx, n, exts, file->resolved_features, file->package, NULL);
 
   // Create messages.
-  msgs = UPB_DESC(FileDescriptorProto_message_type)(file_proto, &n);
+  msgs = google_protobuf_FileDescriptorProto_message_type(file_proto, &n);
   file->top_lvl_msg_count = n;
   file->top_lvl_msgs =
       _upb_MessageDefs_New(ctx, n, msgs, file->resolved_features, NULL);
 
   // Create services.
-  services = UPB_DESC(FileDescriptorProto_service)(file_proto, &n);
+  services = google_protobuf_FileDescriptorProto_service(file_proto, &n);
   file->service_count = n;
   file->services =
       _upb_ServiceDefs_New(ctx, n, services, file->resolved_features);
@@ -14490,7 +14527,7 @@ void _upb_DefBuilder_CheckIdentSlow(upb_DefBuilder* ctx, upb_StringView name,
 }
 
 upb_StringView _upb_DefBuilder_MakeKey(upb_DefBuilder* ctx,
-                                       const UPB_DESC(FeatureSet*) parent,
+                                       const google_protobuf_FeatureSet* parent,
                                        upb_StringView key) {
   size_t need = key.size + sizeof(void*);
   if (ctx->tmp_buf_size < need) {
@@ -14505,9 +14542,9 @@ upb_StringView _upb_DefBuilder_MakeKey(upb_DefBuilder* ctx,
 }
 
 bool _upb_DefBuilder_GetOrCreateFeatureSet(upb_DefBuilder* ctx,
-                                           const UPB_DESC(FeatureSet*) parent,
+                                           const google_protobuf_FeatureSet* parent,
                                            upb_StringView key,
-                                           UPB_DESC(FeatureSet**) set) {
+                                           google_protobuf_FeatureSet** set) {
   upb_StringView k = _upb_DefBuilder_MakeKey(ctx, parent, key);
   upb_value v;
   if (upb_strtable_lookup2(&ctx->feature_cache, k.data, k.size, &v)) {
@@ -14515,7 +14552,7 @@ bool _upb_DefBuilder_GetOrCreateFeatureSet(upb_DefBuilder* ctx,
     return false;
   }
 
-  *set = (UPB_DESC(FeatureSet*))upb_Message_DeepClone(
+  *set = (google_protobuf_FeatureSet*)upb_Message_DeepClone(
       UPB_UPCAST(parent), UPB_DESC_MINITABLE(FeatureSet), ctx->arena);
   if (!*set) _upb_DefBuilder_OomErr(ctx);
 
@@ -14528,11 +14565,9 @@ bool _upb_DefBuilder_GetOrCreateFeatureSet(upb_DefBuilder* ctx,
   return true;
 }
 
-const UPB_DESC(FeatureSet*)
-    _upb_DefBuilder_DoResolveFeatures(upb_DefBuilder* ctx,
-                                      const UPB_DESC(FeatureSet*) parent,
-                                      const UPB_DESC(FeatureSet*) child,
-                                      bool is_implicit) {
+const google_protobuf_FeatureSet* _upb_DefBuilder_DoResolveFeatures(
+    upb_DefBuilder* ctx, const google_protobuf_FeatureSet* parent,
+    const google_protobuf_FeatureSet* child, bool is_implicit) {
   assert(parent);
   if (!child) return parent;
 
@@ -14541,10 +14576,10 @@ const UPB_DESC(FeatureSet*)
     _upb_DefBuilder_Errf(ctx, "Features can only be specified for editions");
   }
 
-  UPB_DESC(FeatureSet*) resolved;
+  google_protobuf_FeatureSet* resolved;
   size_t child_size;
   const char* child_bytes =
-      UPB_DESC(FeatureSet_serialize)(child, ctx->tmp_arena, &child_size);
+      google_protobuf_FeatureSet_serialize(child, ctx->tmp_arena, &child_size);
   if (!child_bytes) _upb_DefBuilder_OomErr(ctx);
 
   upb_StringView key = upb_StringView_FromDataAndSize(child_bytes, child_size);
@@ -14817,8 +14852,8 @@ bool upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
 // Must be last.
 
 struct upb_MessageDef {
-  UPB_ALIGN_AS(8) const UPB_DESC(MessageOptions*) opts;
-  const UPB_DESC(FeatureSet*) resolved_features;
+  UPB_ALIGN_AS(8) const google_protobuf_MessageOptions* opts;
+  const google_protobuf_FeatureSet* resolved_features;
   const upb_MiniTable* layout;
   const upb_FileDef* file;
   const upb_MessageDef* containing_type;
@@ -14856,7 +14891,7 @@ struct upb_MessageDef {
   bool in_message_set;
   bool is_sorted;
   upb_WellKnown well_known_type;
-  UPB_DESC(SymbolVisibility) visibility;
+  google_protobuf_SymbolVisibility visibility;
 };
 
 static void assign_msg_wellknowntype(upb_MessageDef* m) {
@@ -14916,8 +14951,7 @@ bool _upb_MessageDef_IsValidExtensionNumber(const upb_MessageDef* m, int n) {
   return false;
 }
 
-const UPB_DESC(MessageOptions) *
-    upb_MessageDef_Options(const upb_MessageDef* m) {
+const google_protobuf_MessageOptions* upb_MessageDef_Options(const upb_MessageDef* m) {
   return m->opts;
 }
 
@@ -14925,8 +14959,8 @@ bool upb_MessageDef_HasOptions(const upb_MessageDef* m) {
   return m->opts != (void*)kUpbDefOptDefault;
 }
 
-const UPB_DESC(FeatureSet) *
-    upb_MessageDef_ResolvedFeatures(const upb_MessageDef* m) {
+const google_protobuf_FeatureSet* upb_MessageDef_ResolvedFeatures(
+    const upb_MessageDef* m) {
   return m->resolved_features;
 }
 
@@ -15100,8 +15134,8 @@ upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m) {
   return m->well_known_type;
 }
 
-UPB_API UPB_DESC(SymbolVisibility)
-    upb_MessageDef_Visibility(const upb_MessageDef* m) {
+UPB_API google_protobuf_SymbolVisibility
+upb_MessageDef_Visibility(const upb_MessageDef* m) {
   return m->visibility;
 }
 
@@ -15120,11 +15154,11 @@ const upb_OneofDef* upb_MessageDef_FindOneofByName(const upb_MessageDef* m,
 }
 
 bool upb_MessageDef_IsMapEntry(const upb_MessageDef* m) {
-  return UPB_DESC(MessageOptions_map_entry)(m->opts);
+  return google_protobuf_MessageOptions_map_entry(m->opts);
 }
 
 bool upb_MessageDef_IsMessageSet(const upb_MessageDef* m) {
-  return UPB_DESC(MessageOptions_message_set_wire_format)(m->opts);
+  return google_protobuf_MessageOptions_message_set_wire_format(m->opts);
 }
 
 static upb_MiniTable* _upb_MessageDef_MakeMiniTable(upb_DefBuilder* ctx,
@@ -15158,7 +15192,7 @@ void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m) {
     if (upb_FieldDef_Type(ext) == kUpb_FieldType_Message &&
         upb_FieldDef_Label(ext) == kUpb_Label_Optional &&
         upb_FieldDef_MessageSubDef(ext) == m &&
-        UPB_DESC(MessageOptions_message_set_wire_format)(
+        google_protobuf_MessageOptions_message_set_wire_format(
             upb_MessageDef_Options(upb_FieldDef_ContainingType(ext)))) {
       m->in_message_set = true;
     }
@@ -15195,11 +15229,11 @@ void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
   bool skip_json_conflicts =
-      UPB_DESC(MessageOptions_deprecated_legacy_json_field_conflicts)(
+      google_protobuf_MessageOptions_deprecated_legacy_json_field_conflicts(
           upb_MessageDef_Options(m));
   if (!skip_json_conflicts && strcmp(shortname, json_name) != 0 &&
-      UPB_DESC(FeatureSet_json_format)(m->resolved_features) ==
-          UPB_DESC(FeatureSet_ALLOW) &&
+      google_protobuf_FeatureSet_json_format(m->resolved_features) ==
+          google_protobuf_FeatureSet_ALLOW &&
       upb_strtable_lookup(&m->ntof, json_name, &v)) {
     _upb_DefBuilder_Errf(
         ctx, "duplicate json_name for (%s) with original field name (%s)",
@@ -15423,7 +15457,7 @@ bool upb_MessageDef_MiniDescriptorEncode(const upb_MessageDef* m, upb_Arena* a,
 
   if (upb_MessageDef_IsMapEntry(m)) {
     if (!_upb_MessageDef_EncodeMap(&s, m, a)) return false;
-  } else if (UPB_DESC(MessageOptions_message_set_wire_format)(m->opts)) {
+  } else if (google_protobuf_MessageOptions_message_set_wire_format(m->opts)) {
     if (!_upb_MessageDef_EncodeMessageSet(&s, m, a)) return false;
   } else {
     if (!_upb_MessageDef_EncodeMessage(&s, m, a)) return false;
@@ -15449,14 +15483,14 @@ static upb_StringView* _upb_ReservedNames_New(upb_DefBuilder* ctx, int n,
 }
 
 static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
-                          const UPB_DESC(DescriptorProto*) msg_proto,
-                          const UPB_DESC(FeatureSet*) parent_features,
+                          const google_protobuf_DescriptorProto* msg_proto,
+                          const google_protobuf_FeatureSet* parent_features,
                           const upb_MessageDef* containing_type,
                           upb_MessageDef* m) {
-  const UPB_DESC(OneofDescriptorProto)* const* oneofs;
-  const UPB_DESC(FieldDescriptorProto)* const* fields;
-  const UPB_DESC(DescriptorProto_ExtensionRange)* const* ext_ranges;
-  const UPB_DESC(DescriptorProto_ReservedRange)* const* res_ranges;
+  const google_protobuf_OneofDescriptorProto* const* oneofs;
+  const google_protobuf_FieldDescriptorProto* const* fields;
+  const google_protobuf_DescriptorProto_ExtensionRange* const* ext_ranges;
+  const google_protobuf_DescriptorProto_ReservedRange* const* res_ranges;
   const upb_StringView* res_names;
   size_t n_oneof, n_field, n_enum, n_ext, n_msg;
   size_t n_ext_range, n_res_range, n_res_name;
@@ -15464,7 +15498,7 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
 
   UPB_DEF_SET_OPTIONS(m->opts, DescriptorProto, MessageOptions, msg_proto);
   m->resolved_features = _upb_DefBuilder_ResolveFeatures(
-      ctx, parent_features, UPB_DESC(MessageOptions_features)(m->opts));
+      ctx, parent_features, google_protobuf_MessageOptions_features(m->opts));
 
   // Must happen before _upb_DefBuilder_Add()
   m->file = _upb_DefBuilder_File(ctx);
@@ -15472,18 +15506,16 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   m->containing_type = containing_type;
   m->is_sorted = true;
 
-  name = UPB_DESC(DescriptorProto_name)(msg_proto);
+  name = google_protobuf_DescriptorProto_name(msg_proto);
 
   m->full_name = _upb_DefBuilder_MakeFullName(ctx, prefix, name);
   _upb_DefBuilder_Add(ctx, m->full_name, _upb_DefType_Pack(m, UPB_DEFTYPE_MSG));
 
-  oneofs = UPB_DESC(DescriptorProto_oneof_decl)(msg_proto, &n_oneof);
-  fields = UPB_DESC(DescriptorProto_field)(msg_proto, &n_field);
-  ext_ranges =
-      UPB_DESC(DescriptorProto_extension_range)(msg_proto, &n_ext_range);
-  res_ranges =
-      UPB_DESC(DescriptorProto_reserved_range)(msg_proto, &n_res_range);
-  res_names = UPB_DESC(DescriptorProto_reserved_name)(msg_proto, &n_res_name);
+  oneofs = google_protobuf_DescriptorProto_oneof_decl(msg_proto, &n_oneof);
+  fields = google_protobuf_DescriptorProto_field(msg_proto, &n_field);
+  ext_ranges = google_protobuf_DescriptorProto_extension_range(msg_proto, &n_ext_range);
+  res_ranges = google_protobuf_DescriptorProto_reserved_range(msg_proto, &n_res_range);
+  res_names = google_protobuf_DescriptorProto_reserved_name(msg_proto, &n_res_name);
 
   bool ok = upb_inttable_init(&m->itof, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
@@ -15502,7 +15534,7 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
                                  m->full_name, m, &m->is_sorted);
 
   // Message Sets may not contain fields.
-  if (UPB_UNLIKELY(UPB_DESC(MessageOptions_message_set_wire_format)(m->opts))) {
+  if (UPB_UNLIKELY(google_protobuf_MessageOptions_message_set_wire_format(m->opts))) {
     if (UPB_UNLIKELY(n_field > 0)) {
       _upb_DefBuilder_Errf(ctx, "invalid message set (%s)", m->full_name);
     }
@@ -15525,34 +15557,32 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   assign_msg_wellknowntype(m);
   if (!upb_inttable_compact(&m->itof, ctx->arena)) _upb_DefBuilder_OomErr(ctx);
 
-  const UPB_DESC(EnumDescriptorProto)* const* enums =
-      UPB_DESC(DescriptorProto_enum_type)(msg_proto, &n_enum);
+  const google_protobuf_EnumDescriptorProto* const* enums =
+      google_protobuf_DescriptorProto_enum_type(msg_proto, &n_enum);
   m->nested_enum_count = n_enum;
   m->nested_enums =
       _upb_EnumDefs_New(ctx, n_enum, enums, m->resolved_features, m);
 
-  const UPB_DESC(FieldDescriptorProto)* const* exts =
-      UPB_DESC(DescriptorProto_extension)(msg_proto, &n_ext);
+  const google_protobuf_FieldDescriptorProto* const* exts =
+      google_protobuf_DescriptorProto_extension(msg_proto, &n_ext);
   m->nested_ext_count = n_ext;
   m->nested_exts = _upb_Extensions_New(ctx, n_ext, exts, m->resolved_features,
                                        m->full_name, m);
 
-  const UPB_DESC(DescriptorProto)* const* msgs =
-      UPB_DESC(DescriptorProto_nested_type)(msg_proto, &n_msg);
+  const google_protobuf_DescriptorProto* const* msgs =
+      google_protobuf_DescriptorProto_nested_type(msg_proto, &n_msg);
   m->nested_msg_count = n_msg;
   m->nested_msgs =
       _upb_MessageDefs_New(ctx, n_msg, msgs, m->resolved_features, m);
 
-  m->visibility = UPB_DESC(DescriptorProto_visibility)(msg_proto);
+  m->visibility = google_protobuf_DescriptorProto_visibility(msg_proto);
 }
 
 // Allocate and initialize an array of |n| message defs.
-upb_MessageDef* _upb_MessageDefs_New(upb_DefBuilder* ctx, int n,
-                                     const UPB_DESC(DescriptorProto*)
-                                         const* protos,
-                                     const UPB_DESC(FeatureSet*)
-                                         parent_features,
-                                     const upb_MessageDef* containing_type) {
+upb_MessageDef* _upb_MessageDefs_New(
+    upb_DefBuilder* ctx, int n, const google_protobuf_DescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features,
+    const upb_MessageDef* containing_type) {
   _upb_DefType_CheckPadding(sizeof(upb_MessageDef));
 
   const char* name = containing_type ? containing_type->full_name
@@ -15565,6 +15595,8 @@ upb_MessageDef* _upb_MessageDefs_New(upb_DefBuilder* ctx, int n,
   }
   return m;
 }
+
+#include <stdint.h>
 
 
 // Must be last.
@@ -15588,15 +15620,14 @@ int32_t upb_MessageReservedRange_End(const upb_MessageReservedRange* r) {
 
 upb_MessageReservedRange* _upb_MessageReservedRanges_New(
     upb_DefBuilder* ctx, int n,
-    const UPB_DESC(DescriptorProto_ReservedRange) * const* protos,
+    const google_protobuf_DescriptorProto_ReservedRange* const* protos,
     const upb_MessageDef* m) {
   upb_MessageReservedRange* r =
       UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_MessageReservedRange, n);
 
   for (int i = 0; i < n; i++) {
-    const int32_t start =
-        UPB_DESC(DescriptorProto_ReservedRange_start)(protos[i]);
-    const int32_t end = UPB_DESC(DescriptorProto_ReservedRange_end)(protos[i]);
+    const int32_t start = google_protobuf_DescriptorProto_ReservedRange_start(protos[i]);
+    const int32_t end = google_protobuf_DescriptorProto_ReservedRange_end(protos[i]);
     const int32_t max = kUpb_MaxFieldNumber + 1;
 
     // A full validation would also check that each range is disjoint, and that
@@ -15620,8 +15651,8 @@ upb_MessageReservedRange* _upb_MessageReservedRanges_New(
 // Must be last.
 
 struct upb_MethodDef {
-  const UPB_DESC(MethodOptions*) opts;
-  const UPB_DESC(FeatureSet*) resolved_features;
+  const google_protobuf_MethodOptions* opts;
+  const google_protobuf_FeatureSet* resolved_features;
   upb_ServiceDef* service;
   const char* full_name;
   const upb_MessageDef* input_type;
@@ -15639,7 +15670,7 @@ const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m) {
   return m->service;
 }
 
-const UPB_DESC(MethodOptions) * upb_MethodDef_Options(const upb_MethodDef* m) {
+const google_protobuf_MethodOptions* upb_MethodDef_Options(const upb_MethodDef* m) {
   return m->opts;
 }
 
@@ -15647,8 +15678,8 @@ bool upb_MethodDef_HasOptions(const upb_MethodDef* m) {
   return m->opts != (void*)kUpbDefOptDefault;
 }
 
-const UPB_DESC(FeatureSet) *
-    upb_MethodDef_ResolvedFeatures(const upb_MethodDef* m) {
+const google_protobuf_FeatureSet* upb_MethodDef_ResolvedFeatures(
+    const upb_MethodDef* m) {
   return m->resolved_features;
 }
 
@@ -15679,39 +15710,37 @@ bool upb_MethodDef_ServerStreaming(const upb_MethodDef* m) {
 }
 
 static void create_method(upb_DefBuilder* ctx,
-                          const UPB_DESC(MethodDescriptorProto*) method_proto,
-                          const UPB_DESC(FeatureSet*) parent_features,
+                          const google_protobuf_MethodDescriptorProto* method_proto,
+                          const google_protobuf_FeatureSet* parent_features,
                           upb_ServiceDef* s, upb_MethodDef* m) {
   UPB_DEF_SET_OPTIONS(m->opts, MethodDescriptorProto, MethodOptions,
                       method_proto);
   m->resolved_features = _upb_DefBuilder_ResolveFeatures(
-      ctx, parent_features, UPB_DESC(MethodOptions_features)(m->opts));
+      ctx, parent_features, google_protobuf_MethodOptions_features(m->opts));
 
-  upb_StringView name = UPB_DESC(MethodDescriptorProto_name)(method_proto);
+  upb_StringView name = google_protobuf_MethodDescriptorProto_name(method_proto);
 
   m->service = s;
   m->full_name =
       _upb_DefBuilder_MakeFullName(ctx, upb_ServiceDef_FullName(s), name);
   m->client_streaming =
-      UPB_DESC(MethodDescriptorProto_client_streaming)(method_proto);
+      google_protobuf_MethodDescriptorProto_client_streaming(method_proto);
   m->server_streaming =
-      UPB_DESC(MethodDescriptorProto_server_streaming)(method_proto);
+      google_protobuf_MethodDescriptorProto_server_streaming(method_proto);
   m->input_type = _upb_DefBuilder_Resolve(
       ctx, m->full_name, m->full_name,
-      UPB_DESC(MethodDescriptorProto_input_type)(method_proto),
-      UPB_DEFTYPE_MSG);
+      google_protobuf_MethodDescriptorProto_input_type(method_proto), UPB_DEFTYPE_MSG);
   m->output_type = _upb_DefBuilder_Resolve(
       ctx, m->full_name, m->full_name,
-      UPB_DESC(MethodDescriptorProto_output_type)(method_proto),
-      UPB_DEFTYPE_MSG);
+      google_protobuf_MethodDescriptorProto_output_type(method_proto), UPB_DEFTYPE_MSG);
+  _upb_ServiceDef_InsertMethod(ctx, s, m);
 }
 
 // Allocate and initialize an array of |n| method defs belonging to |s|.
-upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
-                                   const UPB_DESC(MethodDescriptorProto*)
-                                       const* protos,
-                                   const UPB_DESC(FeatureSet*) parent_features,
-                                   upb_ServiceDef* s) {
+upb_MethodDef* _upb_MethodDefs_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_MethodDescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features, upb_ServiceDef* s) {
   upb_MethodDef* m = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_MethodDef, n);
   for (int i = 0; i < n; i++) {
     create_method(ctx, protos[i], parent_features, s, &m[i]);
@@ -15721,7 +15750,7 @@ upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
 }
 
 
-#include <ctype.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -15729,8 +15758,8 @@ upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
 // Must be last.
 
 struct upb_OneofDef {
-  UPB_ALIGN_AS(8) const UPB_DESC(OneofOptions*) opts;
-  const UPB_DESC(FeatureSet*) resolved_features;
+  UPB_ALIGN_AS(8) const google_protobuf_OneofOptions* opts;
+  const google_protobuf_FeatureSet* resolved_features;
   const upb_MessageDef* parent;
   const char* full_name;
   int field_count;
@@ -15744,7 +15773,7 @@ upb_OneofDef* _upb_OneofDef_At(const upb_OneofDef* o, int i) {
   return (upb_OneofDef*)&o[i];
 }
 
-const UPB_DESC(OneofOptions) * upb_OneofDef_Options(const upb_OneofDef* o) {
+const google_protobuf_OneofOptions* upb_OneofDef_Options(const upb_OneofDef* o) {
   return o->opts;
 }
 
@@ -15752,8 +15781,7 @@ bool upb_OneofDef_HasOptions(const upb_OneofDef* o) {
   return o->opts != (void*)kUpbDefOptDefault;
 }
 
-const UPB_DESC(FeatureSet) *
-    upb_OneofDef_ResolvedFeatures(const upb_OneofDef* o) {
+const google_protobuf_FeatureSet* upb_OneofDef_ResolvedFeatures(const upb_OneofDef* o) {
   return o->resolved_features;
 }
 
@@ -15876,16 +15904,16 @@ size_t _upb_OneofDefs_Finalize(upb_DefBuilder* ctx, upb_MessageDef* m) {
 }
 
 static void create_oneofdef(upb_DefBuilder* ctx, upb_MessageDef* m,
-                            const UPB_DESC(OneofDescriptorProto*) oneof_proto,
-                            const UPB_DESC(FeatureSet*) parent_features,
+                            const google_protobuf_OneofDescriptorProto* oneof_proto,
+                            const google_protobuf_FeatureSet* parent_features,
                             const upb_OneofDef* _o) {
   upb_OneofDef* o = (upb_OneofDef*)_o;
 
   UPB_DEF_SET_OPTIONS(o->opts, OneofDescriptorProto, OneofOptions, oneof_proto);
   o->resolved_features = _upb_DefBuilder_ResolveFeatures(
-      ctx, parent_features, UPB_DESC(OneofOptions_features)(o->opts));
+      ctx, parent_features, google_protobuf_OneofOptions_features(o->opts));
 
-  upb_StringView name = UPB_DESC(OneofDescriptorProto_name)(oneof_proto);
+  upb_StringView name = google_protobuf_OneofDescriptorProto_name(oneof_proto);
 
   o->parent = m;
   o->full_name =
@@ -15909,11 +15937,10 @@ static void create_oneofdef(upb_DefBuilder* ctx, upb_MessageDef* m,
 }
 
 // Allocate and initialize an array of |n| oneof defs.
-upb_OneofDef* _upb_OneofDefs_New(upb_DefBuilder* ctx, int n,
-                                 const UPB_DESC(OneofDescriptorProto*)
-                                     const* protos,
-                                 const UPB_DESC(FeatureSet*) parent_features,
-                                 upb_MessageDef* m) {
+upb_OneofDef* _upb_OneofDefs_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_OneofDescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features, upb_MessageDef* m) {
   _upb_DefType_CheckPadding(sizeof(upb_OneofDef));
 
   upb_OneofDef* o = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_OneofDef, n);
@@ -15924,25 +15951,28 @@ upb_OneofDef* _upb_OneofDefs_New(upb_DefBuilder* ctx, int n,
 }
 
 
+#include <stddef.h>
+#include <string.h>
+
 
 // Must be last.
 
 struct upb_ServiceDef {
-  UPB_ALIGN_AS(8) const UPB_DESC(ServiceOptions*) opts;
-  const UPB_DESC(FeatureSet*) resolved_features;
+  UPB_ALIGN_AS(8) const google_protobuf_ServiceOptions* opts;
+  const google_protobuf_FeatureSet* resolved_features;
   const upb_FileDef* file;
   const char* full_name;
   upb_MethodDef* methods;
   int method_count;
   int index;
+  upb_strtable ntom;
 };
 
 upb_ServiceDef* _upb_ServiceDef_At(const upb_ServiceDef* s, int index) {
   return (upb_ServiceDef*)&s[index];
 }
 
-const UPB_DESC(ServiceOptions) *
-    upb_ServiceDef_Options(const upb_ServiceDef* s) {
+const google_protobuf_ServiceOptions* upb_ServiceDef_Options(const upb_ServiceDef* s) {
   return s->opts;
 }
 
@@ -15950,8 +15980,8 @@ bool upb_ServiceDef_HasOptions(const upb_ServiceDef* s) {
   return s->opts != (void*)kUpbDefOptDefault;
 }
 
-const UPB_DESC(FeatureSet) *
-    upb_ServiceDef_ResolvedFeatures(const upb_ServiceDef* s) {
+const google_protobuf_FeatureSet* upb_ServiceDef_ResolvedFeatures(
+    const upb_ServiceDef* s) {
   return s->resolved_features;
 }
 
@@ -15980,45 +16010,51 @@ const upb_MethodDef* upb_ServiceDef_Method(const upb_ServiceDef* s, int i) {
 
 const upb_MethodDef* upb_ServiceDef_FindMethodByName(const upb_ServiceDef* s,
                                                      const char* name) {
-  for (int i = 0; i < s->method_count; i++) {
-    const upb_MethodDef* m = _upb_MethodDef_At(s->methods, i);
-    if (strcmp(name, upb_MethodDef_Name(m)) == 0) {
-      return m;
-    }
+  return upb_ServiceDef_FindMethodByNameWithSize(s, name, strlen(name));
+}
+
+const upb_MethodDef* upb_ServiceDef_FindMethodByNameWithSize(
+    const upb_ServiceDef* s, const char* name, size_t len) {
+  upb_value val;
+
+  if (!upb_strtable_lookup2(&s->ntom, name, len, &val)) {
+    return NULL;
   }
-  return NULL;
+
+  return _upb_DefType_Unpack(val, UPB_DEFTYPE_METHOD);
 }
 
 static void create_service(upb_DefBuilder* ctx,
-                           const UPB_DESC(ServiceDescriptorProto*) svc_proto,
-                           const UPB_DESC(FeatureSet*) parent_features,
+                           const google_protobuf_ServiceDescriptorProto* svc_proto,
+                           const google_protobuf_FeatureSet* parent_features,
                            upb_ServiceDef* s) {
   UPB_DEF_SET_OPTIONS(s->opts, ServiceDescriptorProto, ServiceOptions,
                       svc_proto);
   s->resolved_features = _upb_DefBuilder_ResolveFeatures(
-      ctx, parent_features, UPB_DESC(ServiceOptions_features)(s->opts));
+      ctx, parent_features, google_protobuf_ServiceOptions_features(s->opts));
 
   // Must happen before _upb_DefBuilder_Add()
   s->file = _upb_DefBuilder_File(ctx);
 
-  upb_StringView name = UPB_DESC(ServiceDescriptorProto_name)(svc_proto);
+  upb_StringView name = google_protobuf_ServiceDescriptorProto_name(svc_proto);
   const char* package = _upb_FileDef_RawPackage(s->file);
   s->full_name = _upb_DefBuilder_MakeFullName(ctx, package, name);
   _upb_DefBuilder_Add(ctx, s->full_name,
                       _upb_DefType_Pack(s, UPB_DEFTYPE_SERVICE));
 
   size_t n;
-  const UPB_DESC(MethodDescriptorProto)* const* methods =
-      UPB_DESC(ServiceDescriptorProto_method)(svc_proto, &n);
+  const google_protobuf_MethodDescriptorProto* const* methods =
+      google_protobuf_ServiceDescriptorProto_method(svc_proto, &n);
   s->method_count = n;
+  bool ok = upb_strtable_init(&s->ntom, n, ctx->arena);
+  if (!ok) _upb_DefBuilder_OomErr(ctx);
   s->methods = _upb_MethodDefs_New(ctx, n, methods, s->resolved_features, s);
 }
 
-upb_ServiceDef* _upb_ServiceDefs_New(upb_DefBuilder* ctx, int n,
-                                     const UPB_DESC(ServiceDescriptorProto*)
-                                         const* protos,
-                                     const UPB_DESC(FeatureSet*)
-                                         parent_features) {
+upb_ServiceDef* _upb_ServiceDefs_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_ServiceDescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features) {
   _upb_DefType_CheckPadding(sizeof(upb_ServiceDef));
 
   upb_ServiceDef* s = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_ServiceDef, n);
@@ -16027,6 +16063,20 @@ upb_ServiceDef* _upb_ServiceDefs_New(upb_DefBuilder* ctx, int n,
     s[i].index = i;
   }
   return s;
+}
+
+void _upb_ServiceDef_InsertMethod(upb_DefBuilder* ctx, upb_ServiceDef* s,
+                                  const upb_MethodDef* m) {
+  const char* shortname = upb_MethodDef_Name(m);
+  const size_t shortnamelen = strlen(shortname);
+  upb_value existing_v;
+  if (upb_strtable_lookup(&s->ntom, shortname, &existing_v)) {
+    _upb_DefBuilder_Errf(ctx, "duplicate method name (%s)", shortname);
+  }
+  const upb_value method_v = _upb_DefType_Pack(m, UPB_DEFTYPE_METHOD);
+  bool ok = upb_strtable_insert(&s->ntom, shortname, shortnamelen, method_v,
+                                ctx->arena);
+  if (!ok) _upb_DefBuilder_OomErr(ctx);
 }
 
 
@@ -16529,17 +16579,32 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
   // Parse map entry.
   memset(&ent, 0, sizeof(ent));
 
-  if (entry->UPB_PRIVATE(fields)[1].UPB_PRIVATE(descriptortype) ==
+  bool value_is_message =
+      entry->UPB_PRIVATE(fields)[1].UPB_PRIVATE(descriptortype) ==
           kUpb_FieldType_Message ||
       entry->UPB_PRIVATE(fields)[1].UPB_PRIVATE(descriptortype) ==
-          kUpb_FieldType_Group) {
+          kUpb_FieldType_Group;
+  const upb_MiniTable* sub_table =
+      value_is_message
+          ? upb_MiniTable_GetSubMessageTable(&entry->UPB_PRIVATE(fields)[1])
+          : NULL;
+  upb_Message* sub_msg = NULL;
+
+  if (sub_table) {
     // Create proactively to handle the case where it doesn't appear.
-    upb_Message* msg;
-    _upb_Decoder_NewSubMessage(d, &entry->UPB_PRIVATE(fields)[1], &msg);
-    ent.v.val = upb_value_ptr(msg);
+    _upb_Decoder_NewSubMessage(d, &entry->UPB_PRIVATE(fields)[1], &sub_msg);
+    ent.v.val = upb_value_ptr(sub_msg);
   }
 
   ptr = _upb_Decoder_DecodeSubMessage(d, ptr, &ent.message, field, val->size);
+
+  if (sub_msg && sub_table->UPB_PRIVATE(required_count)) {
+    // If the map entry did not contain a value on the wire, `sub_msg` is an
+    // empty message; we must check if it is missing any required fields. If the
+    // value was present, this check is redundant but harmless.
+    _upb_Decoder_CheckRequired(d, ptr, sub_msg, sub_table);
+  }
+
   if (upb_Message_HasUnknown(&ent.message)) {
     _upb_Decoder_AddMapEntryUnknown(d, msg, field, &ent.message, entry);
   } else {
@@ -16624,9 +16689,13 @@ static void upb_Decoder_AddKnownMessageSetItem(
   upb_Message* submsg = _upb_Decoder_NewSubMessage2(
       d, ext->ext->UPB_PRIVATE(sub).UPB_PRIVATE(submsg),
       &ext->ext->UPB_PRIVATE(field), submsgp);
+  // upb_Decode_LimitDepth() takes uint32_t, d->depth - 1 can not be negative.
+  if (d->depth <= 1) {
+    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_MaxDepthExceeded);
+  }
   upb_DecodeStatus status = upb_Decode(
       data, size, submsg, upb_MiniTableExtension_GetSubMessage(item_mt),
-      d->extreg, d->options, &d->arena);
+      d->extreg, upb_Decode_LimitDepth(d->options, d->depth - 1), &d->arena);
   if (status != kUpb_DecodeStatus_Ok) {
     upb_ErrorHandler_ThrowError(&d->err, status);
   }
@@ -16914,6 +16983,7 @@ const char* _upb_Decoder_DecodeWireValue(upb_Decoder* d, const char* ptr,
           *op = kUpb_DecodeOp_UnknownField;
           return ptr;
         }
+        _upb_Decoder_MungeInt32(val);
       } else {
         _upb_Decoder_Munge(field, val);
       }
@@ -17366,14 +17436,6 @@ typedef struct {
   _upb_mapsorter sorter;
 } upb_encstate;
 
-static size_t upb_roundup_pow2(size_t bytes) {
-  size_t ret = 128;
-  while (ret < bytes) {
-    ret *= 2;
-  }
-  return ret;
-}
-
 UPB_NORETURN static void encode_err(upb_encstate* e, upb_EncodeStatus s) {
   UPB_ASSERT(s != kUpb_EncodeStatus_Ok);
   e->status = s;
@@ -17389,7 +17451,9 @@ UPB_NOINLINE static char* encode_growbuffer(char* ptr, upb_encstate* e,
                                             size_t bytes) {
   size_t old_size = e->limit - e->buf;
   size_t needed_size = bytes + (e->limit - ptr);
-  size_t new_size = upb_roundup_pow2(needed_size);
+  if (needed_size < bytes) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
+  size_t new_size = upb_RoundUpToPowerOfTwo(UPB_MAX(128, needed_size));
+  if (new_size == old_size) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
   void* old_buf = e->buf == &initial_buf_sentinel ? NULL : (void*)e->buf;
   char* new_buf = upb_Arena_Realloc(e->arena, old_buf, old_size, new_size);
 
@@ -18407,7 +18471,6 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
 #undef UPB_DEPRECATED
 #undef UPB_GNUC_MIN
 #undef UPB_DESCRIPTOR_UPB_H_FILENAME
-#undef UPB_DESC
 #undef UPB_DESC_MINITABLE
 #undef UPB_IS_GOOGLE3
 #undef UPB_ATOMIC

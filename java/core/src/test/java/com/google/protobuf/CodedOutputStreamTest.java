@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
@@ -565,7 +566,7 @@ public class CodedOutputStreamTest {
 
     // Write some some bytes (more than the buffer can hold) and verify that totalWritten
     // is correct.
-    byte[] value = "abcde".getBytes(Internal.UTF_8);
+    byte[] value = "abcde".getBytes(StandardCharsets.UTF_8);
     for (int i = 0; i < 1024; ++i) {
       coder.stream().writeRawBytes(value, 0, value.length);
     }
@@ -677,7 +678,7 @@ public class CodedOutputStreamTest {
 
   @Test
   public void testWriteRawBytes_byteBuffer() throws Exception {
-    byte[] value = "abcde".getBytes(Internal.UTF_8);
+    byte[] value = "abcde".getBytes(StandardCharsets.UTF_8);
     Coder coder = outputType.newCoder(100);
     CodedOutputStream codedStream = coder.stream();
     ByteBuffer byteBuffer = ByteBuffer.wrap(value, /* offset= */ 0, /* length= */ 1);
@@ -790,7 +791,7 @@ public class CodedOutputStreamTest {
     for (int pos = 0; pos < source.length(); pos += 2) {
       String substr = source.substring(pos, pos + 2);
       expectedBytesStream.write(2);
-      expectedBytesStream.write(substr.getBytes(Internal.UTF_8));
+      expectedBytesStream.write(substr.getBytes(StandardCharsets.UTF_8));
     }
     final byte[] expectedBytes = expectedBytesStream.toByteArray();
 

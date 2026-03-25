@@ -11,17 +11,16 @@ import static com.google.protobuf.Internal.checkNotNull;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 @ExperimentalApi
 @CheckReturnValue
 final class Protobuf {
   private static final Protobuf INSTANCE = new Protobuf();
 
-  private final SchemaFactory schemaFactory;
+  private final ManifestSchemaFactory schemaFactory;
 
   // TODO: b/341207042 - Consider using ClassValue instead.
-  private final ConcurrentMap<Class<?>, Schema<?>> schemaCache =
+  private final ConcurrentHashMap<Class<?>, Schema<?>> schemaCache =
       new ConcurrentHashMap<Class<?>, Schema<?>>();
 
   /** Gets the singleton instance of the Protobuf runtime. */
@@ -46,19 +45,24 @@ final class Protobuf {
   }
 
   /** Gets the schema for the given message type. */
+  @SuppressWarnings("unchecked")
   <T> Schema<T> schemaFor(Class<T> messageType) {
-    checkNotNull(messageType, "messageType");
-    @SuppressWarnings("unchecked")
-    Schema<T> schema = (Schema<T>) schemaCache.get(messageType);
+    Object schema = schemaCache.get(messageType);
     if (schema == null) {
-      schema = schemaFactory.createSchema(messageType);
-      checkNotNull(schema, "schema");
-      @SuppressWarnings("unchecked")
-      Schema<T> previous = (Schema<T>) schemaCache.putIfAbsent(messageType, schema);
-      if (previous != null) {
-        // A new schema was registered by another thread.
-        schema = previous;
-      }
+      return registerSchema(messageType);
+    }
+    return (Schema<T>) schema;
+  }
+
+  @DoNotInline
+  private <T> Schema<T> registerSchema(Class<T> messageType) {
+    Schema<T> schema = schemaFactory.createSchema(messageType);
+    checkNotNull(schema, "schema");
+    @SuppressWarnings("unchecked")
+    Schema<T> previous = (Schema<T>) schemaCache.putIfAbsent(messageType, schema);
+    if (previous != null) {
+      // A new schema was registered by another thread.
+      schema = previous;
     }
     return schema;
   }

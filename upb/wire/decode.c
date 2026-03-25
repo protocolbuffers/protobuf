@@ -538,17 +538,32 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
   // Parse map entry.
   memset(&ent, 0, sizeof(ent));
 
-  if (entry->UPB_PRIVATE(fields)[1].UPB_PRIVATE(descriptortype) ==
+  bool value_is_message =
+      entry->UPB_PRIVATE(fields)[1].UPB_PRIVATE(descriptortype) ==
           kUpb_FieldType_Message ||
       entry->UPB_PRIVATE(fields)[1].UPB_PRIVATE(descriptortype) ==
-          kUpb_FieldType_Group) {
+          kUpb_FieldType_Group;
+  const upb_MiniTable* sub_table =
+      value_is_message
+          ? upb_MiniTable_GetSubMessageTable(&entry->UPB_PRIVATE(fields)[1])
+          : NULL;
+  upb_Message* sub_msg = NULL;
+
+  if (sub_table) {
     // Create proactively to handle the case where it doesn't appear.
-    upb_Message* msg;
-    _upb_Decoder_NewSubMessage(d, &entry->UPB_PRIVATE(fields)[1], &msg);
-    ent.v.val = upb_value_ptr(msg);
+    _upb_Decoder_NewSubMessage(d, &entry->UPB_PRIVATE(fields)[1], &sub_msg);
+    ent.v.val = upb_value_ptr(sub_msg);
   }
 
   ptr = _upb_Decoder_DecodeSubMessage(d, ptr, &ent.message, field, val->size);
+
+  if (sub_msg && sub_table->UPB_PRIVATE(required_count)) {
+    // If the map entry did not contain a value on the wire, `sub_msg` is an
+    // empty message; we must check if it is missing any required fields. If the
+    // value was present, this check is redundant but harmless.
+    _upb_Decoder_CheckRequired(d, ptr, sub_msg, sub_table);
+  }
+
   if (upb_Message_HasUnknown(&ent.message)) {
     _upb_Decoder_AddMapEntryUnknown(d, msg, field, &ent.message, entry);
   } else {
@@ -633,9 +648,13 @@ static void upb_Decoder_AddKnownMessageSetItem(
   upb_Message* submsg = _upb_Decoder_NewSubMessage2(
       d, ext->ext->UPB_PRIVATE(sub).UPB_PRIVATE(submsg),
       &ext->ext->UPB_PRIVATE(field), submsgp);
+  // upb_Decode_LimitDepth() takes uint32_t, d->depth - 1 can not be negative.
+  if (d->depth <= 1) {
+    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_MaxDepthExceeded);
+  }
   upb_DecodeStatus status = upb_Decode(
       data, size, submsg, upb_MiniTableExtension_GetSubMessage(item_mt),
-      d->extreg, d->options, &d->arena);
+      d->extreg, upb_Decode_LimitDepth(d->options, d->depth - 1), &d->arena);
   if (status != kUpb_DecodeStatus_Ok) {
     upb_ErrorHandler_ThrowError(&d->err, status);
   }
@@ -923,6 +942,7 @@ const char* _upb_Decoder_DecodeWireValue(upb_Decoder* d, const char* ptr,
           *op = kUpb_DecodeOp_UnknownField;
           return ptr;
         }
+        _upb_Decoder_MungeInt32(val);
       } else {
         _upb_Decoder_Munge(field, val);
       }

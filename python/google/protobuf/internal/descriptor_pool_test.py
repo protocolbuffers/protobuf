@@ -33,6 +33,7 @@ from google.protobuf.internal import testing_refleaks
 from google.protobuf import duration_pb2
 from google.protobuf import struct_pb2
 from google.protobuf import timestamp_pb2
+from absl.testing import parameterized
 from google.protobuf import unittest_features_pb2
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_import_public_pb2
@@ -1705,6 +1706,71 @@ class FallBackDBTest(unittest.TestCase):
     message_desc = file_desc.message_types_by_name['Factory1Message']
     extensions = self.bad_pool.FindAllExtensions(message_desc)
     self.assertEqual(len(extensions), 0)
+
+
+class DescriptorPoolParaTest(parameterized.TestCase):
+
+  @parameterized.named_parameters(
+      (
+          'Message',
+          'google.protobuf.python.internal.Factory1Message',
+          'FindMessageTypeByName',
+      ),
+      (
+          'Field',
+          'google.protobuf.python.internal.Factory1Message.list_value',
+          'FindFieldByName',
+      ),
+      (
+          'File',
+          'google/protobuf/internal/factory_test1.proto',
+          'FindFileByName',
+      ),
+      (
+          'Enum',
+          'google.protobuf.python.internal.Factory1Enum',
+          'FindEnumTypeByName',
+      ),
+      (
+          'Oneof',
+          'google.protobuf.python.internal.Factory2Message.oneof_field',
+          'FindOneofByName',
+      ),
+      (
+          'Extension',
+          'google.protobuf.python.internal.another_field',
+          'FindExtensionByName',
+      ),
+      ('Service', 'proto2_unittest.TestService', 'FindServiceByName'),
+      ('Method', 'proto2_unittest.TestService.Foo', 'FindMethodByName'),
+  )
+  def testFindNULLByte(self, normal_name, method_name):
+    # Attack: Craft malicious type name with embedded null byte
+    malicious_name = normal_name + '\x00Tail.Content.Ignore'
+    method = getattr(descriptor_pool.Default(), method_name)
+    des = method(normal_name)
+
+    if hasattr(des, 'full_name'):
+      self.assertEqual(normal_name, des.full_name)
+    else:
+      self.assertEqual(normal_name, des.name)
+    with self.assertRaises(KeyError) as exc:
+      method(malicious_name)
+    self.assertIn('Tail.Content', str(exc.exception))
+
+  @parameterized.named_parameters(
+      ('Message', 'google.protobuf.python.internal.Factory1Message'),
+      ('Field', 'google.protobuf.python.internal.Factory1Message.list_value'),
+  )
+  def testFindNullByteSymbol(self, normal_name):
+    malicious_name = normal_name + '\x00Tail.Content'
+    file = descriptor_pool.Default().FindFileContainingSymbol(normal_name)
+    self.assertEqual(
+        'google/protobuf/internal/factory_test1.proto', file.name
+    )
+    with self.assertRaises(KeyError) as exc:
+      descriptor_pool.Default().FindFileContainingSymbol(malicious_name)
+    self.assertIn('Tail.Content', str(exc.exception))
 
 
 if __name__ == '__main__':

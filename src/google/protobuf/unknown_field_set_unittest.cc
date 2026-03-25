@@ -18,20 +18,13 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/stubs/callback.h"
-#include "google/protobuf/stubs/common.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_set.h"
-#include "absl/functional/bind_front.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
-#include "absl/synchronization/mutex.h"
-#include "absl/time/clock.h"
-#include "absl/time/time.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/text_format.h"

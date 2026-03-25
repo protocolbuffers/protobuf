@@ -8,7 +8,11 @@
 #ifndef UPB_REFLECTION_FIELD_DEF_INTERNAL_H_
 #define UPB_REFLECTION_FIELD_DEF_INTERNAL_H_
 
-#include "upb/reflection/field_def.h"
+#include <stdint.h>
+
+#include "upb/mem/arena.h"
+#include "upb/reflection/def.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -29,19 +33,18 @@ void _upb_FieldDef_BuildMiniTableExtension(upb_DefBuilder* ctx,
                                            const upb_FieldDef* f);
 
 // Allocate and initialize an array of |n| extensions (field defs).
-upb_FieldDef* _upb_Extensions_New(upb_DefBuilder* ctx, int n,
-                                  const UPB_DESC(FieldDescriptorProto*)
-                                      const* protos,
-                                  const UPB_DESC(FeatureSet*) parent_features,
-                                  const char* prefix, upb_MessageDef* m);
+upb_FieldDef* _upb_Extensions_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_FieldDescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features, const char* prefix,
+    upb_MessageDef* m);
 
 // Allocate and initialize an array of |n| field defs.
-upb_FieldDef* _upb_FieldDefs_New(upb_DefBuilder* ctx, int n,
-                                 const UPB_DESC(FieldDescriptorProto*)
-                                     const* protos,
-                                 const UPB_DESC(FeatureSet*) parent_features,
-                                 const char* prefix, upb_MessageDef* m,
-                                 bool* is_sorted);
+upb_FieldDef* _upb_FieldDefs_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_FieldDescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features, const char* prefix,
+    upb_MessageDef* m, bool* is_sorted);
 
 // Allocate and return a list of pointers to the |n| field defs in |ff|,
 // sorted by field number.

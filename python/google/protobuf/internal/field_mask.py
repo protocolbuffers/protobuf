@@ -237,9 +237,16 @@ class _FieldMaskTree(object):
     """Adds leaf nodes begin with prefix to this tree."""
     if not node:
       self.AddPath(prefix)
-    for name in node:
-      child_path = prefix + '.' + name
-      self.AddLeafNodes(child_path, node[name])
+      return
+    stack = [(prefix, node)]
+    while stack:
+      current_prefix, current_node = stack.pop()
+      if not current_node:
+        self.AddPath(current_prefix)
+        continue
+      for name in current_node:
+        child_path = current_prefix + '.' + name
+        stack.append((child_path, current_node[name]))
 
   def MergeMessage(
       self, source, destination,
@@ -262,51 +269,58 @@ def _StrConvert(value):
 def _MergeMessage(
     node, source, destination, replace_message, replace_repeated):
   """Merge all fields specified by a sub-tree from source to destination."""
-  source_descriptor = source.DESCRIPTOR
-  for name in node:
-    child = node[name]
-    field = source_descriptor.fields_by_name[name]
-    if field is None:
-      raise ValueError('Error: Can\'t find field {0} in message {1}.'.format(
-          name, source_descriptor.full_name))
-    if child:
-      # Sub-paths are only allowed for singular message fields.
-      if (field.is_repeated or
-          field.cpp_type != FieldDescriptor.CPPTYPE_MESSAGE):
-        raise ValueError('Error: Field {0} in message {1} is not a singular '
-                         'message field and cannot have sub-fields.'.format(
-                             name, source_descriptor.full_name))
-      if source.HasField(name):
-        _MergeMessage(
-            child, getattr(source, name), getattr(destination, name),
-            replace_message, replace_repeated)
-      continue
-    if field.is_repeated:
-      if replace_repeated:
-        destination.ClearField(_StrConvert(name))
-      repeated_source = getattr(source, name)
-      repeated_destination = getattr(destination, name)
-      repeated_destination.MergeFrom(repeated_source)
-    else:
-      if field.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE:
-        if replace_message:
-          destination.ClearField(_StrConvert(name))
-        if source.HasField(name):
-          getattr(destination, name).MergeFrom(getattr(source, name))
-      elif not field.has_presence or source.HasField(name):
-        setattr(destination, name, getattr(source, name))
+  stack = [(node, source, destination)]
+  while stack:
+    current_node, current_source, current_destination = stack.pop()
+    source_descriptor = current_source.DESCRIPTOR
+    for name in current_node:
+      child = current_node[name]
+      field = source_descriptor.fields_by_name[name]
+      if field is None:
+        raise ValueError('Error: Can\'t find field {0} in message {1}.'.format(
+            name, source_descriptor.full_name))
+      if child:
+        # Sub-paths are only allowed for singular message fields.
+        if (field.is_repeated or
+            field.cpp_type != FieldDescriptor.CPPTYPE_MESSAGE):
+          raise ValueError('Error: Field {0} in message {1} is not a singular '
+                           'message field and cannot have sub-fields.'.format(
+                               name, source_descriptor.full_name))
+        if current_source.HasField(name):
+          stack.append(
+              (child, getattr(current_source, name),
+               getattr(current_destination, name)))
+        continue
+      if field.is_repeated:
+        if replace_repeated:
+          current_destination.ClearField(_StrConvert(name))
+        repeated_source = getattr(current_source, name)
+        repeated_destination = getattr(current_destination, name)
+        repeated_destination.MergeFrom(repeated_source)
       else:
-        destination.ClearField(_StrConvert(name))
+        if field.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE:
+          if replace_message:
+            current_destination.ClearField(_StrConvert(name))
+          if current_source.HasField(name):
+            getattr(current_destination, name).MergeFrom(
+                getattr(current_source, name))
+        elif not field.has_presence or current_source.HasField(name):
+          setattr(current_destination, name, getattr(current_source, name))
+        else:
+          current_destination.ClearField(_StrConvert(name))
 
 
 def _AddFieldPaths(node, prefix, field_mask):
   """Adds the field paths descended from node to field_mask."""
-  if not node and prefix:
-    field_mask.paths.append(prefix)
-    return
-  for name in sorted(node):
-    if prefix:
-      child_path = prefix + '.' + name
-    else:
-      child_path = name
-    _AddFieldPaths(node[name], child_path, field_mask)
+  stack = [(node, prefix)]
+  while stack:
+    current_node, current_prefix = stack.pop()
+    if not current_node and current_prefix:
+      field_mask.paths.append(current_prefix)
+      continue
+    for name in sorted(current_node, reverse=True):
+      if current_prefix:
+        child_path = current_prefix + '.' + name
+      else:
+        child_path = name
+      stack.append((current_node[name], child_path))

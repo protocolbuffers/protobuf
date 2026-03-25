@@ -113,7 +113,6 @@ class SingularEnum : public FieldGeneratorBase {
     )cc");
   }
 
-
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
       /*decltype($field_$)*/ $kDefault$,
@@ -301,11 +300,7 @@ class RepeatedEnum : public FieldGeneratorBase {
   void GenerateAggregateInitializer(io::Printer* p) const override {
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
               decltype($field_$){$internal_metadata_offset$},
-#else
-              decltype($field_$){arena},
-#endif
             )cc");
     if (has_cached_size_) {
       // std::atomic has no copy constructor, which prevents explicit aggregate
@@ -331,11 +326,7 @@ class RepeatedEnum : public FieldGeneratorBase {
   void GenerateMemberConstexprConstructor(io::Printer* p) const override {
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-              $name$_{visibility, $internal_metadata_offset$}
-#else
-              $name$_ {}
-#endif
+              $name$_ { visibility, $internal_metadata_offset$ }
             )cc");
     if (has_cached_size_) {
       p->Emit(",\n_$name$_cached_byte_size_{0}");
@@ -345,11 +336,7 @@ class RepeatedEnum : public FieldGeneratorBase {
   void GenerateMemberConstructor(io::Printer* p) const override {
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-              $name$_{visibility, $internal_metadata_offset$}
-#else
-              $name$_ { visibility, arena }
-#endif
+              $name$_ { visibility, $internal_metadata_offset$ }
             )cc");
     if (has_cached_size_) {
       p->Emit(",\n_$name$_cached_byte_size_{0}");
@@ -359,11 +346,10 @@ class RepeatedEnum : public FieldGeneratorBase {
   void GenerateMemberCopyConstructor(io::Printer* p) const override {
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-              $name$_{visibility, $internal_metadata_offset$, from.$name$_}
-#else
-              $name$_ { visibility, arena, from.$name$_ }
-#endif)cc");
+              $name$_ {
+                visibility, $internal_metadata_offset$, from.$name$_
+              }
+            )cc");
     if (has_cached_size_) {
       p->Emit(",\n_$name$_cached_byte_size_{0}");
     }
@@ -443,8 +429,9 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $WeakDescriptorSelfPin$;
       $assert_valid$;
       $TsanDetectConcurrentMutation$;
-      _internal_mutable_$name_internal$()->InternalAddWithArena(
-          internal_visibility(), GetArena(), value);
+      _internal_mutable_$name_internal$()
+          ->InternalAddWithArena<const $pb$::MessageLite*>(
+              internal_visibility(), this, value);
       $set_hasbit$;
       $annotate_add$
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)

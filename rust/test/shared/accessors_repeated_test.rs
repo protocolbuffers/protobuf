@@ -257,6 +257,15 @@ fn test_repeated_message_setter() {
 }
 
 #[gtest]
+fn test_repeated_message_push_default() {
+    let mut msg = TestAllTypes::new();
+    let mut repeated = msg.repeated_nested_message_mut();
+    let mut nested = repeated.push_default();
+    nested.set_bb(1);
+    assert_that!(msg.repeated_nested_message().get(0).unwrap().bb(), eq(1));
+}
+
+#[gtest]
 fn test_empty_repeated_message_drop() {
     let _ = Repeated::<TestAllTypes>::new();
 }

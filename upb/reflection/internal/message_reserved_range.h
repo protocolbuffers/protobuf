@@ -8,6 +8,8 @@
 #ifndef UPB_REFLECTION_MESSAGE_RESERVED_RANGE_INTERNAL_H_
 #define UPB_REFLECTION_MESSAGE_RESERVED_RANGE_INTERNAL_H_
 
+#include "upb/reflection/def.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 #include "upb/reflection/message_reserved_range.h"
 
 // Must be last.
@@ -23,7 +25,7 @@ upb_MessageReservedRange* _upb_MessageReservedRange_At(
 // Allocate and initialize an array of |n| reserved ranges owned by |m|.
 upb_MessageReservedRange* _upb_MessageReservedRanges_New(
     upb_DefBuilder* ctx, int n,
-    const UPB_DESC(DescriptorProto_ReservedRange) * const* protos,
+    const google_protobuf_DescriptorProto_ReservedRange* const* protos,
     const upb_MessageDef* m);
 
 #ifdef __cplusplus

@@ -4011,6 +4011,121 @@ TEST_P(AllowUnknownDependenciesTest, CustomOption) {
   EXPECT_EQ(2, file->options().uninterpreted_option_size());
 }
 
+TEST_P(AllowUnknownDependenciesTest, MissingTypeAggregateOption) {
+  // Test that we can use an aggregate custom option with a missing type.
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(BuildFile(file_proto) != nullptr);
+
+  FileDescriptorProto option_proto;
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "unknown_custom_options.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          extendee: "google.protobuf.FileOptions"
+          name: "some_option"
+          number: 123456
+          label: LABEL_OPTIONAL
+          type: TYPE_MESSAGE
+          type_name: "some_package.MissingMessage"
+        }
+        options {
+          uninterpreted_option {
+            name { name_part: "some_option" is_extension: true }
+            aggregate_value: "foo: 1 bar { baz: FOO }"
+          }
+        })pb",
+      &option_proto));
+
+  const FileDescriptor* file = BuildFile(option_proto);
+  ASSERT_TRUE(file != nullptr);
+
+  // Verify that no extension options were set, but they were left as
+  // uninterpreted_options.
+  std::vector<const FieldDescriptor*> fields;
+  file->options().GetReflection()->ListFields(file->options(), &fields);
+  EXPECT_EQ(fields.size(), 1);
+  EXPECT_EQ(file->options().unknown_fields().field_count(), 0);
+  EXPECT_EQ(file->options().uninterpreted_option_size(), 1);
+}
+
+TEST_P(AllowUnknownDependenciesTest, MissingNestedTypeAggregateOption) {
+  // Test that we can use an aggregate custom option with a missing type.
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(BuildFile(file_proto) != nullptr);
+
+  FileDescriptorProto option_proto;
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "unknown_custom_options.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          extendee: "google.protobuf.MessageOptions"
+          name: "some_option"
+          number: 123456
+          label: LABEL_OPTIONAL
+          type: TYPE_MESSAGE
+          type_name: "ExtensionType"
+        }
+        message_type {
+          name: "ExtensionType"
+          field { name: "int" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field {
+            name: "msg"
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_MESSAGE
+            type_name: "some_package.MissingMessage"
+          }
+        }
+        message_type {
+          name: "MessageMissing"
+          options {
+            uninterpreted_option {
+              name { name_part: "some_option" is_extension: true }
+              aggregate_value: "int: 1 msg { baz: FOO }"
+            }
+          }
+        }
+        message_type {
+          name: "MessageValid"
+          options {
+            uninterpreted_option {
+              name { name_part: "some_option" is_extension: true }
+              aggregate_value: "int: 9"
+            }
+          }
+        })pb",
+      &option_proto));
+
+  const FileDescriptor* file = BuildFile(option_proto);
+  ASSERT_TRUE(file != nullptr);
+
+  // Verify that no extension options were set, but they were left as
+  // uninterpreted_options.
+  const Descriptor* message = file->FindMessageTypeByName("MessageMissing");
+  ASSERT_NE(message, nullptr);
+  std::vector<const FieldDescriptor*> fields;
+  message->options().GetReflection()->ListFields(message->options(), &fields);
+  EXPECT_EQ(fields.size(), 1);
+  EXPECT_EQ(message->options().unknown_fields().field_count(), 0);
+  EXPECT_EQ(message->options().uninterpreted_option_size(), 1);
+
+  // Aggregate options without missing types should be resolved.
+  message = file->FindMessageTypeByName("MessageValid");
+  ASSERT_NE(message, nullptr);
+  message->options().GetReflection()->ListFields(message->options(), &fields);
+  EXPECT_EQ(fields.size(), 0);
+  EXPECT_EQ(message->options().unknown_fields().field_count(), 1);
+  EXPECT_EQ(message->options().uninterpreted_option_size(), 0);
+}
+
 TEST_P(AllowUnknownDependenciesTest,
        UndeclaredDependencyTriggersBuildOfDependency) {
   // Crazy case: suppose foo.proto refers to a symbol without declaring the
@@ -8800,6 +8915,11 @@ class FeaturesTest : public FeaturesBaseTest {
     ASSERT_OK(default_spec);
     ASSERT_OK(pool_.SetFeatureSetDefaults(std::move(default_spec).value()));
   }
+
+  FieldDescriptor::CppRepeatedType GetCppRepeatedType(
+      const FieldDescriptor* field) {
+    return field->CalculateCppRepeatedType();
+  }
 };
 
 template <typename T>
@@ -8908,6 +9028,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                   legacy_closed_enum: true
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
   EXPECT_THAT(GetCoreFeatures(field), EqualsProto(R"pb(
                 field_presence: EXPLICIT
@@ -8922,6 +9043,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                   legacy_closed_enum: true
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
   EXPECT_THAT(GetCoreFeatures(group), EqualsProto(R"pb(
                 field_presence: EXPLICIT
@@ -8936,6 +9058,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                   legacy_closed_enum: true
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
   EXPECT_TRUE(field->has_presence());
   EXPECT_FALSE(field->requires_utf8_validation());
@@ -8962,6 +9085,9 @@ TEST_F(FeaturesTest, Proto2Features) {
             FieldDescriptor::CppStringType::kString);
   EXPECT_EQ(message->FindFieldByName("cord")->cpp_string_type(),
             FieldDescriptor::CppStringType::kCord);
+
+  EXPECT_EQ(GetCppRepeatedType(message->FindFieldByName("rep")),
+            FieldDescriptor::CppRepeatedType::kRepeated);
 
   // Check round-trip consistency.
   FileDescriptorProto proto;
@@ -9015,6 +9141,7 @@ TEST_F(FeaturesTest, Proto3Features) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
   EXPECT_THAT(GetCoreFeatures(field), EqualsProto(R"pb(
                 field_presence: IMPLICIT
@@ -9029,6 +9156,7 @@ TEST_F(FeaturesTest, Proto3Features) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
   EXPECT_FALSE(field->has_presence());
   EXPECT_FALSE(field->requires_utf8_validation());
@@ -9211,6 +9339,7 @@ TEST_F(FeaturesTest, Edition2023Defaults) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 }
               )pb"));
 
@@ -9296,6 +9425,7 @@ TEST_F(FeaturesTest, Edition2024Defaults) {
                   legacy_closed_enum: false
                   string_type: VIEW
                   enum_name_uses_string_view: true
+                  repeated_type: LEGACY
                 }
               )pb"));
 
@@ -9331,6 +9461,7 @@ TEST_F(FeaturesBaseTest, DefaultEdition2023Defaults) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 }
               )pb"));
   EXPECT_FALSE(GetFeatures(file).HasExtension(pb::test));
@@ -9361,6 +9492,7 @@ TEST_F(FeaturesTest, ClearsOptions) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -9730,6 +9862,7 @@ TEST_F(FeaturesTest, NoOptions) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -9765,6 +9898,7 @@ TEST_F(FeaturesTest, FileFeatures) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -9848,6 +9982,7 @@ TEST_F(FeaturesTest, MessageFeaturesDefault) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -9961,6 +10096,7 @@ TEST_F(FeaturesTest, FieldFeaturesDefault) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -10687,6 +10823,7 @@ TEST_F(FeaturesTest, EnumFeaturesDefault) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -10804,6 +10941,7 @@ TEST_F(FeaturesTest, EnumValueFeaturesDefault) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -10905,6 +11043,7 @@ TEST_F(FeaturesTest, OneofFeaturesDefault) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -11015,6 +11154,7 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesDefault) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -11110,6 +11250,7 @@ TEST_F(FeaturesTest, ServiceFeaturesDefault) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -11182,6 +11323,7 @@ TEST_F(FeaturesTest, MethodFeaturesDefault) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -11538,6 +11680,70 @@ TEST_F(FeaturesTest, FieldCppStringType) {
   EXPECT_EQ(cord_ext->cpp_string_type(),
             FieldDescriptor::CppStringType::kString);
 
+}
+
+TEST_F(FeaturesTest, FieldCppRepeatedType) {
+  BuildDescriptorMessagesInTestPool();
+  const std::string file_contents = absl::Substitute(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2024
+        message_type {
+          name: "Foo"
+          field {
+            name: "repeated_message"
+            number: 1
+            label: LABEL_REPEATED
+            type: TYPE_MESSAGE
+            type_name: "Foo"
+          }
+          field {
+            name: "repeated_message_proxy"
+            number: 2
+            label: LABEL_REPEATED
+            type: TYPE_MESSAGE
+            type_name: "Foo"
+            options {
+              features {
+                [pb.cpp] { repeated_type: PROXY }
+              }
+            }
+          }
+          field {
+            name: "repeated_int32"
+            number: 3
+            label: LABEL_REPEATED
+            type: TYPE_INT32
+          }
+          field {
+            name: "repeated_int32_proxy"
+            number: 4
+            label: LABEL_REPEATED
+            type: TYPE_INT32
+            options {
+              features {
+                [pb.cpp] { repeated_type: PROXY }
+              }
+            }
+          }
+        }
+      )pb");
+  const FileDescriptor* file = BuildFile(file_contents);
+  const Descriptor* message = file->message_type(0);
+  const FieldDescriptor* repeated_message = message->field(0);
+  const FieldDescriptor* repeated_message_proxy = message->field(1);
+  const FieldDescriptor* repeated_int32 = message->field(2);
+  const FieldDescriptor* repeated_int32_proxy = message->field(3);
+
+  EXPECT_EQ(GetCppRepeatedType(repeated_message),
+            FieldDescriptor::CppRepeatedType::kRepeated);
+  EXPECT_EQ(GetCppRepeatedType(repeated_message_proxy),
+            FieldDescriptor::CppRepeatedType::kProxy);
+  EXPECT_EQ(GetCppRepeatedType(repeated_int32),
+            FieldDescriptor::CppRepeatedType::kRepeated);
+  EXPECT_EQ(GetCppRepeatedType(repeated_int32_proxy),
+            FieldDescriptor::CppRepeatedType::kProxy);
 }
 
 TEST_F(FeaturesTest, MergeFeatureValidationFailed) {
@@ -12327,6 +12533,7 @@ TEST_F(FeaturesTest, UninterpretedOptions) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -12790,6 +12997,61 @@ TEST_F(FeaturesTest, ExistingUnstableFeatureDefault) {
   EXPECT_EQ(
       GetFeatures(file).GetExtension(pb::test).unstable_existing_feature(),
       pb::UNSTABLE3);
+}
+
+TEST_F(FeaturesTest, FeatureLifetimesOptionRemoved) {
+  BuildDescriptorMessagesInTestPool();
+  ParseAndBuildFileWithErrorSubstr(
+      "featurelifetimes.proto", R"schema(
+    edition = "2024";
+    package featurelifetimes;
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.MessageOptions {
+      bool removed_option = 7733026 [feature_support = {
+        edition_removed: EDITION_2023
+        removal_error: "removed_option removal error"
+      }];
+    }
+    message SomeMessage {
+      option (removed_option) = true;
+    }
+  )schema",
+      "featurelifetimes.removed_option has been removed in edition 2023: "
+      "removed_option removal error");
+}
+
+TEST_F(FeaturesTest, FeatureLifetimesOptionDeprecated) {
+  BuildDescriptorMessagesInTestPool();
+
+  ParseAndBuildFile("featurelifetimes.proto", R"schema(
+    edition = "2024";
+    package featurelifetimes;
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.MessageOptions {
+       bool deprecated_option = 7733026 [feature_support = {
+        edition_deprecated: EDITION_2023
+        deprecation_warning: "deprecated_option deprecation warning"
+      }];
+    }
+  )schema");
+
+  pool_.AddDirectInputFile("some_message.proto");
+  ParseAndBuildFileWithWarningSubstr(
+      "some_message.proto",
+      R"schema(
+      edition = "2024";
+      package some_message;
+      import "google/protobuf/descriptor.proto";
+      import "featurelifetimes.proto";
+
+      message SomeMessage {
+        option (featurelifetimes.deprecated_option) = true;
+      }
+    )schema",
+      "featurelifetimes.deprecated_option has been deprecated in edition 2023: "
+      "deprecated_option deprecation warning");
 }
 
 // Test that the result of FileDescriptor::DebugString() can be used to create
@@ -13641,6 +13903,54 @@ TEST_F(ValidationErrorTest, VisibilityFromLocalExtender) {
       "defined in \"vis.proto\" target of extend is not visible from "
       "\"bad_importer.proto\". It is explicitly marked 'local' and cannot be "
       "accessed outside its own file\n");
+}
+
+TEST_F(ValidationErrorTest, VisibilityFromService) {
+  pool_.EnforceSymbolVisibility(true);
+  ASSERT_THAT(ParseAndBuildFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+
+        local message LocalMessage {
+        }
+        export message ExportMessage {
+        }
+        )schema"),
+              NotNull());
+
+  ParseAndBuildFileWithErrorSubstr(
+      "service_bad_input.proto",
+      R"schema(
+        edition = "2024";
+        import "vis.proto";
+
+        service MyServiceInput {
+           rpc MyBadMethod(vis.test.LocalMessage)
+             returns (vis.test.ExportMessage) {}
+        }
+      )schema",
+      "service_bad_input.proto: MyServiceInput.MyBadMethod: INPUT_TYPE: Symbol "
+      "\"vis.test.LocalMessage\", "
+      "defined in \"vis.proto\"  is not visible "
+      "from \"service_bad_input.proto\". It is explicitly marked 'local' and "
+      "cannot be accessed outside its own file\n");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "service_bad_return.proto",
+      R"schema(
+        edition = "2024";
+        import "vis.proto";
+
+        service MyServiceReturn {
+           rpc MyBadMethod(vis.test.ExportMessage)
+             returns (vis.test.LocalMessage) {}
+        }
+      )schema",
+      "service_bad_return.proto: MyServiceReturn.MyBadMethod: OUTPUT_TYPE: "
+      "Symbol \"vis.test.LocalMessage\", defined in \"vis.proto\"  is not "
+      "visible from \"service_bad_return.proto\". It is "
+      "explicitly marked 'local' and cannot be accessed outside its own "
+      "file\n");
 }
 
 struct ExtensionDeclarationsTestParams {

@@ -335,7 +335,7 @@ class PROTOBUF_EXPORT EncodedDescriptorDatabase : public DescriptorDatabase {
 
   // If encoded_file.first is non-nullptr, parse the data into *output and
   // return true, otherwise return false.
-  bool MaybeParse(std::pair<const void * PROTOBUF_NULLABLE, int> encoded_file,
+  bool MaybeParse(std::pair<const void* PROTOBUF_NULLABLE, int> encoded_file,
                   FileDescriptorProto* PROTOBUF_NONNULL output);
 };
 

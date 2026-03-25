@@ -20,6 +20,7 @@
 #include <unordered_map>
 
 #include "absl/strings/string_view.h"
+#include "google/protobuf/pyext/weak_value_map.h"
 
 namespace google {
 namespace protobuf {
@@ -93,15 +94,15 @@ typedef struct CMessage : public ContainerBase {
   // which need to implement the "Release" mechanism:
   // direct submessages, RepeatedCompositeContainer, RepeatedScalarContainer
   // and MapContainer.
-  typedef std::unordered_map<const FieldDescriptor*, ContainerBase*>
-      CompositeFieldsMap;
-  CompositeFieldsMap* composite_fields;
+  typedef PyWeakValueMap CompositeFieldsMap;
+  CompositeFieldsMap*
+      composite_fields;  // const FieldDescriptor* -> ContainerBase*
 
   // A mapping containing weak references to indirect child messages, accessed
   // through containers: repeated messages, and values of message maps.
   // This avoid the creation of similar maps in each of those containers.
-  typedef std::unordered_map<const Message*, CMessage*> SubMessagesMap;
-  SubMessagesMap* child_submessages;
+  typedef PyWeakValueMap SubMessagesMap;
+  SubMessagesMap* child_submessages;  // const Message* -> CMessage*
 
   // Implements the "weakref" protocol for this object.
   PyObject* weakreflist;
@@ -195,7 +196,7 @@ PyObject* InternalGetScalar(const Message* message,
 bool SetCompositeField(CMessage* self, const FieldDescriptor* field,
                        ContainerBase* value);
 
-bool SetSubmessage(CMessage* self, CMessage* submessage);
+bool SetSubmessage(CMessage* self, CMessage*& submessage);
 
 // Clears the message, removing all contained data. Extension dictionary and
 // submessages are released first if there are remaining external references.

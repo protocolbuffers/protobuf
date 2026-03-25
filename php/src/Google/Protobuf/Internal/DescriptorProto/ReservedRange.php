@@ -78,7 +78,7 @@ class ReservedRange extends \Google\Protobuf\Internal\Message
      * @param int $var
      * @return $this
      */
-    public function setStart($var)
+    public function setStart(int $var)
     {
         GPBUtil::checkInt32($var);
         $this->start = $var;
@@ -114,7 +114,7 @@ class ReservedRange extends \Google\Protobuf\Internal\Message
      * @param int $var
      * @return $this
      */
-    public function setEnd($var)
+    public function setEnd(int $var)
     {
         GPBUtil::checkInt32($var);
         $this->end = $var;
