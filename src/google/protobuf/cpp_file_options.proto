@@ -1,0 +1,14 @@
+edition = "2024";
+
+package pb.file;
+
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.FileOptions {
+  CppOptions cpp = 990;
+}
+
+message CppOptions {
+  // Specifying C++ namespace for generated code.
+  string namespace = 1;
+}

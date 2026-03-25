@@ -560,6 +560,10 @@ message FileOptions {
   // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 50;
 
+  // Range reserved for first-class extension options defined by the Protobuf
+  // team. Custom options must use the 1000+ range instead.
+  extensions 990 to 998;
+
   // The parser stores options it doesn't recognize here.
   // See the documentation for the "Options" section above.
   repeated UninterpretedOption uninterpreted_option = 999;
