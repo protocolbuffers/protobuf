@@ -70,6 +70,7 @@ def fuzzing_py_install_deps():
 
 _build_file = """
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_python//python:py_runtime.bzl", "py_runtime")
@@ -268,7 +269,7 @@ system_python = repository_rule(
     implementation = _system_python_impl,
     local = True,
     attrs = {
-        "minimum_python_version": attr.string(default = "3.9"),
+        "minimum_python_version": attr.string(default = "3.10"),
     },
 )
 

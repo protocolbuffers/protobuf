@@ -68,6 +68,75 @@ const uint32_t kGPBDefaultRepeatCount = 2;
 // -------------------------------------------------------------------
 
 - (void)modifyRepeatedExtensions:(TestAllExtensions *)message {
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedInt32Extension() index:1 value:@501];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedInt64Extension() index:1 value:@502];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedUint32Extension() index:1 value:@503];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedUint64Extension() index:1 value:@504];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedSint32Extension() index:1 value:@505];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedSint64Extension() index:1 value:@506];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedFixed32Extension()
+                  index:1
+                  value:@507];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedFixed64Extension()
+                  index:1
+                  value:@508];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedSfixed32Extension()
+                  index:1
+                  value:@509];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedSfixed64Extension()
+                  index:1
+                  value:@510];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedFloatExtension()
+                  index:1
+                  value:@511.0f];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedDoubleExtension()
+                  index:1
+                  value:@512.0];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedBoolExtension() index:1 value:@YES];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedStringExtension()
+                  index:1
+                  value:@"515"];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedBytesExtension()
+                  index:1
+                  value:[NSData gpbtu_dataWithUint32:516]];
+
+  RepeatedGroup_extension *repeatedGroup = [RepeatedGroup_extension message];
+  [repeatedGroup setA:517];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedGroupExtension()
+                  index:1
+                  value:repeatedGroup];
+  TestAllTypes_NestedMessage *nestedMessage = [TestAllTypes_NestedMessage message];
+  [nestedMessage setBb:518];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedNestedMessageExtension()
+                  index:1
+                  value:nestedMessage];
+  ForeignMessage *foreignMessage = [ForeignMessage message];
+  [foreignMessage setC:519];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedForeignMessageExtension()
+                  index:1
+                  value:foreignMessage];
+  ImportMessage *importMessage = [ImportMessage message];
+  [importMessage setD:520];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedImportMessageExtension()
+                  index:1
+                  value:importMessage];
+
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedNestedEnumExtension()
+                  index:1
+                  value:@(TestAllTypes_NestedEnum_Foo)];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedForeignEnumExtension()
+                  index:1
+                  value:@(ForeignEnum_ForeignFoo)];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedImportEnumExtension()
+                  index:1
+                  value:@(ImportEnum_ImportFoo)];
+
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedStringPieceExtension()
+                  index:1
+                  value:@"524"];
+  [message setExtension:Objc_Protobuf_Tests_extension_RepeatedCordExtension() index:1 value:@"525"];
+#else
   [message setExtension:[UnittestRoot repeatedInt32Extension] index:1 value:@501];
   [message setExtension:[UnittestRoot repeatedInt64Extension] index:1 value:@502];
   [message setExtension:[UnittestRoot repeatedUint32Extension] index:1 value:@503];
@@ -113,9 +182,373 @@ const uint32_t kGPBDefaultRepeatCount = 2;
 
   [message setExtension:[UnittestRoot repeatedStringPieceExtension] index:1 value:@"524"];
   [message setExtension:[UnittestRoot repeatedCordExtension] index:1 value:@"525"];
+#endif
 }
 
 - (void)assertAllExtensionsSet:(TestAllExtensions *)message repeatedCount:(uint32_t)count {
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalInt32Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalInt64Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalUint32Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalUint64Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalSint32Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalSint64Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalFixed32Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalFixed64Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalSfixed32Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalSfixed64Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalFloatExtension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalDoubleExtension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalBoolExtension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalStringExtension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalBytesExtension()]);
+
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalGroupExtension()]);
+  XCTAssertTrue(
+      [message hasExtension:Objc_Protobuf_Tests_extension_OptionalNestedMessageExtension()]);
+  XCTAssertTrue(
+      [message hasExtension:Objc_Protobuf_Tests_extension_OptionalForeignMessageExtension()]);
+  XCTAssertTrue(
+      [message hasExtension:Objc_Protobuf_Tests_extension_OptionalImportMessageExtension()]);
+
+  XCTAssertTrue(
+      [[message getExtension:Objc_Protobuf_Tests_extension_OptionalGroupExtension()] hasA]);
+  XCTAssertTrue([[message
+      getExtension:Objc_Protobuf_Tests_extension_OptionalNestedMessageExtension()] hasBb]);
+  XCTAssertTrue([[message
+      getExtension:Objc_Protobuf_Tests_extension_OptionalForeignMessageExtension()] hasC]);
+  XCTAssertTrue(
+      [[message getExtension:Objc_Protobuf_Tests_extension_OptionalImportMessageExtension()] hasD]);
+
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalNestedEnumExtension()]);
+  XCTAssertTrue(
+      [message hasExtension:Objc_Protobuf_Tests_extension_OptionalForeignEnumExtension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalImportEnumExtension()]);
+
+  XCTAssertTrue(
+      [message hasExtension:Objc_Protobuf_Tests_extension_OptionalStringPieceExtension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalCordExtension()]);
+
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultInt32Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultInt64Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultUint32Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultUint64Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultSint32Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultSint64Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultFixed32Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultFixed64Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultSfixed32Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultSfixed64Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultFloatExtension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultDoubleExtension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultBoolExtension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultStringExtension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultBytesExtension()]);
+
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultNestedEnumExtension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultForeignEnumExtension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultImportEnumExtension()]);
+
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultStringPieceExtension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultCordExtension()]);
+
+  XCTAssertEqual(101, [[message getExtension:Objc_Protobuf_Tests_extension_OptionalInt32Extension()]
+                          intValue]);
+  XCTAssertEqual(102LL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_OptionalInt64Extension()]
+                     longLongValue]);
+  XCTAssertEqual(103U,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_OptionalUint32Extension()]
+                     unsignedIntValue]);
+  XCTAssertEqual(104ULL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_OptionalUint64Extension()]
+                     unsignedLongLongValue]);
+  XCTAssertEqual(
+      105,
+      [[message getExtension:Objc_Protobuf_Tests_extension_OptionalSint32Extension()] intValue]);
+  XCTAssertEqual(106LL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_OptionalSint64Extension()]
+                     longLongValue]);
+  XCTAssertEqual(107U,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_OptionalFixed32Extension()]
+                     unsignedIntValue]);
+  XCTAssertEqual(108ULL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_OptionalFixed64Extension()]
+                     unsignedLongLongValue]);
+  XCTAssertEqual(
+      109,
+      [[message getExtension:Objc_Protobuf_Tests_extension_OptionalSfixed32Extension()] intValue]);
+  XCTAssertEqual(110LL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_OptionalSfixed64Extension()]
+                     longLongValue]);
+  XCTAssertEqualWithAccuracy(
+      111.0f,
+      [[message getExtension:Objc_Protobuf_Tests_extension_OptionalFloatExtension()] floatValue],
+      0.01);
+  XCTAssertEqualWithAccuracy(
+      112.0,
+      [[message getExtension:Objc_Protobuf_Tests_extension_OptionalDoubleExtension()] doubleValue],
+      0.01);
+  XCTAssertTrue(
+      [[message getExtension:Objc_Protobuf_Tests_extension_OptionalBoolExtension()] boolValue]);
+  XCTAssertEqualObjects(
+      @"115", [message getExtension:Objc_Protobuf_Tests_extension_OptionalStringExtension()]);
+  XCTAssertEqualObjects(
+      [NSData gpbtu_dataWithEmbeddedNulls],
+      [message getExtension:Objc_Protobuf_Tests_extension_OptionalBytesExtension()]);
+
+  XCTAssertEqual(117, [(TestAllTypes_OptionalGroup *)[message
+                          getExtension:Objc_Protobuf_Tests_extension_OptionalGroupExtension()] a]);
+  XCTAssertEqual(
+      118, [(TestAllTypes_NestedMessage *)[message
+               getExtension:Objc_Protobuf_Tests_extension_OptionalNestedMessageExtension()] bb]);
+  XCTAssertEqual(
+      119,
+      [[message getExtension:Objc_Protobuf_Tests_extension_OptionalForeignMessageExtension()] c]);
+  XCTAssertEqual(
+      120,
+      [[message getExtension:Objc_Protobuf_Tests_extension_OptionalImportMessageExtension()] d]);
+
+  XCTAssertEqual(TestAllTypes_NestedEnum_Baz,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_OptionalNestedEnumExtension()]
+                     intValue]);
+  XCTAssertEqual(
+      ForeignEnum_ForeignBaz,
+      [[message getExtension:Objc_Protobuf_Tests_extension_OptionalForeignEnumExtension()]
+          intValue]);
+  XCTAssertEqual(ImportEnum_ImportBaz,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_OptionalImportEnumExtension()]
+                     intValue]);
+
+  XCTAssertEqualObjects(
+      @"124", [message getExtension:Objc_Protobuf_Tests_extension_OptionalStringPieceExtension()]);
+  XCTAssertEqualObjects(
+      @"125", [message getExtension:Objc_Protobuf_Tests_extension_OptionalCordExtension()]);
+
+  // -----------------------------------------------------------------
+
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedInt32Extension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedInt64Extension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedUint32Extension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedUint64Extension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedSint32Extension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedSint64Extension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedFixed32Extension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedFixed64Extension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedSfixed32Extension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedSfixed64Extension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedFloatExtension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedDoubleExtension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedBoolExtension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedStringExtension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedBytesExtension()] count]);
+
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedGroupExtension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedNestedMessageExtension()]
+                 count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedForeignMessageExtension()]
+                 count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedImportMessageExtension()]
+                 count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedNestedEnumExtension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedForeignEnumExtension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedImportEnumExtension()] count]);
+
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedStringPieceExtension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedCordExtension()] count]);
+
+  for (uint32_t i = 0; i < count; ++i) {
+    id extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedInt32Extension()];
+    XCTAssertEqual((int)(201 + i * 100), [extension[i] intValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedInt64Extension()];
+    XCTAssertEqual(202 + i * 100, [extension[i] longLongValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedUint32Extension()];
+    XCTAssertEqual(203 + i * 100, [extension[i] unsignedIntValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedUint64Extension()];
+    XCTAssertEqual(204 + i * 100, [extension[i] unsignedLongLongValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedSint32Extension()];
+    XCTAssertEqual((int)(205 + i * 100), [extension[i] intValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedSint64Extension()];
+    XCTAssertEqual(206 + i * 100, [extension[i] longLongValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedFixed32Extension()];
+    XCTAssertEqual(207 + i * 100, [extension[i] unsignedIntValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedFixed64Extension()];
+    XCTAssertEqual(208 + i * 100, [extension[i] unsignedLongLongValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedSfixed32Extension()];
+    XCTAssertEqual((int)(209 + i * 100), [extension[i] intValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedSfixed64Extension()];
+    XCTAssertEqual(210 + i * 100, [extension[i] longLongValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedFloatExtension()];
+    XCTAssertEqualWithAccuracy(211 + i * 100, [extension[i] floatValue], 0.01);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedDoubleExtension()];
+    XCTAssertEqualWithAccuracy(212 + i * 100, [extension[i] doubleValue], 0.01);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedBoolExtension()];
+    XCTAssertEqual((i % 2) ? YES : NO, [extension[i] boolValue]);
+
+    NSString *string = [[NSString alloc] initWithFormat:@"%d", 215 + i * 100];
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedStringExtension()];
+    XCTAssertEqualObjects(string, extension[i]);
+    [string release];
+
+    NSData *data = [[NSData alloc] initWithUint32_gpbtu:216 + i * 100];
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedBytesExtension()];
+    XCTAssertEqualObjects(data, extension[i]);
+    [data release];
+
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedGroupExtension()];
+    XCTAssertEqual((int)(217 + i * 100), [(TestAllTypes_OptionalGroup *)extension[i] a]);
+    extension =
+        [message getExtension:Objc_Protobuf_Tests_extension_RepeatedNestedMessageExtension()];
+    XCTAssertEqual((int)(218 + i * 100), [(TestAllTypes_NestedMessage *)extension[i] bb]);
+    extension =
+        [message getExtension:Objc_Protobuf_Tests_extension_RepeatedForeignMessageExtension()];
+    XCTAssertEqual((int)(219 + i * 100), [extension[i] c]);
+    extension =
+        [message getExtension:Objc_Protobuf_Tests_extension_RepeatedImportMessageExtension()];
+    XCTAssertEqual((int)(220 + i * 100), [extension[i] d]);
+
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedNestedEnumExtension()];
+    XCTAssertEqual((i % 2) ? TestAllTypes_NestedEnum_Bar : TestAllTypes_NestedEnum_Baz,
+                   [extension[i] intValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedForeignEnumExtension()];
+    XCTAssertEqual((i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz,
+                   [extension[i] intValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedImportEnumExtension()];
+    XCTAssertEqual((i % 2) ? ImportEnum_ImportBar : ImportEnum_ImportBaz, [extension[i] intValue]);
+
+    string = [[NSString alloc] initWithFormat:@"%d", 224 + i * 100];
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedStringPieceExtension()];
+    XCTAssertEqualObjects(string, extension[i]);
+    [string release];
+
+    string = [[NSString alloc] initWithFormat:@"%d", 225 + i * 100];
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_RepeatedCordExtension()];
+    XCTAssertEqualObjects(string, extension[i]);
+    [string release];
+  }
+
+  // -----------------------------------------------------------------
+
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultInt32Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultInt64Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultUint32Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultUint64Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultSint32Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultSint64Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultFixed32Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultFixed64Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultSfixed32Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultSfixed64Extension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultFloatExtension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultDoubleExtension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultBoolExtension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultStringExtension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultBytesExtension()]);
+
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultNestedEnumExtension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultForeignEnumExtension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultImportEnumExtension()]);
+
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultStringPieceExtension()]);
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_DefaultCordExtension()]);
+
+  XCTAssertEqual(
+      401, [[message getExtension:Objc_Protobuf_Tests_extension_DefaultInt32Extension()] intValue]);
+  XCTAssertEqual(
+      402LL,
+      [[message getExtension:Objc_Protobuf_Tests_extension_DefaultInt64Extension()] longLongValue]);
+  XCTAssertEqual(403U,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_DefaultUint32Extension()]
+                     unsignedIntValue]);
+  XCTAssertEqual(404ULL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_DefaultUint64Extension()]
+                     unsignedLongLongValue]);
+  XCTAssertEqual(405, [[message getExtension:Objc_Protobuf_Tests_extension_DefaultSint32Extension()]
+                          intValue]);
+  XCTAssertEqual(406LL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_DefaultSint64Extension()]
+                     longLongValue]);
+  XCTAssertEqual(407U,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_DefaultFixed32Extension()]
+                     unsignedIntValue]);
+  XCTAssertEqual(408ULL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_DefaultFixed64Extension()]
+                     unsignedLongLongValue]);
+  XCTAssertEqual(
+      409,
+      [[message getExtension:Objc_Protobuf_Tests_extension_DefaultSfixed32Extension()] intValue]);
+  XCTAssertEqual(410LL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_DefaultSfixed64Extension()]
+                     longLongValue]);
+  XCTAssertEqualWithAccuracy(
+      411.0f,
+      [[message getExtension:Objc_Protobuf_Tests_extension_DefaultFloatExtension()] floatValue],
+      0.01);
+  XCTAssertEqualWithAccuracy(
+      412.0,
+      [[message getExtension:Objc_Protobuf_Tests_extension_DefaultDoubleExtension()] doubleValue],
+      0.01);
+  XCTAssertFalse(
+      [[message getExtension:Objc_Protobuf_Tests_extension_DefaultBoolExtension()] boolValue]);
+  XCTAssertEqualObjects(
+      @"415", [message getExtension:Objc_Protobuf_Tests_extension_DefaultStringExtension()]);
+  XCTAssertEqualObjects(
+      [NSData gpbtu_dataWithUint32:416],
+      [message getExtension:Objc_Protobuf_Tests_extension_DefaultBytesExtension()]);
+
+  XCTAssertEqual(
+      TestAllTypes_NestedEnum_Foo,
+      [[message getExtension:Objc_Protobuf_Tests_extension_DefaultNestedEnumExtension()] intValue]);
+  XCTAssertEqual(ForeignEnum_ForeignFoo,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_DefaultForeignEnumExtension()]
+                     intValue]);
+  XCTAssertEqual(
+      ImportEnum_ImportFoo,
+      [[message getExtension:Objc_Protobuf_Tests_extension_DefaultImportEnumExtension()] intValue]);
+
+  XCTAssertEqualObjects(
+      @"424", [message getExtension:Objc_Protobuf_Tests_extension_DefaultStringPieceExtension()]);
+  XCTAssertEqualObjects(
+      @"425", [message getExtension:Objc_Protobuf_Tests_extension_DefaultCordExtension()]);
+#else
   XCTAssertTrue([message hasExtension:[UnittestRoot optionalInt32Extension]]);
   XCTAssertTrue([message hasExtension:[UnittestRoot optionalInt64Extension]]);
   XCTAssertTrue([message hasExtension:[UnittestRoot optionalUint32Extension]]);
@@ -374,6 +807,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
 
   XCTAssertEqualObjects(@"424", [message getExtension:[UnittestRoot defaultStringPieceExtension]]);
   XCTAssertEqualObjects(@"425", [message getExtension:[UnittestRoot defaultCordExtension]]);
+#endif
 }
 
 - (void)assertRepeatedExtensionsModified:(TestAllExtensions *)message
@@ -381,6 +815,234 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   // ModifyRepeatedFields only sets the second repeated element of each
   // field.  In addition to verifying this, we also verify that the first
   // element and size were *not* modified.
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedInt32Extension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedInt64Extension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedUint32Extension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedUint64Extension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedSint32Extension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedSint64Extension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedFixed32Extension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedFixed64Extension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedSfixed32Extension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedSfixed64Extension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedFloatExtension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedDoubleExtension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedBoolExtension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedStringExtension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedBytesExtension()] count]);
+
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedGroupExtension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedNestedMessageExtension()]
+                 count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedForeignMessageExtension()]
+                 count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedImportMessageExtension()]
+                 count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedNestedEnumExtension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedForeignEnumExtension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedImportEnumExtension()] count]);
+
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedStringPieceExtension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedCordExtension()] count]);
+
+  XCTAssertEqual(
+      201,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedInt32Extension()][0] intValue]);
+  XCTAssertEqual(202LL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedInt64Extension()][0]
+                     longLongValue]);
+  XCTAssertEqual(203U,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedUint32Extension()][0]
+                     unsignedIntValue]);
+  XCTAssertEqual(204ULL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedUint64Extension()][0]
+                     unsignedLongLongValue]);
+  XCTAssertEqual(
+      205,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedSint32Extension()][0] intValue]);
+  XCTAssertEqual(206LL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedSint64Extension()][0]
+                     longLongValue]);
+  XCTAssertEqual(207U,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedFixed32Extension()][0]
+                     unsignedIntValue]);
+  XCTAssertEqual(208ULL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedFixed64Extension()][0]
+                     unsignedLongLongValue]);
+  XCTAssertEqual(
+      209, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedSfixed32Extension()][0]
+               intValue]);
+  XCTAssertEqual(
+      210LL, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedSfixed64Extension()][0]
+                 longLongValue]);
+  XCTAssertEqualWithAccuracy(
+      211.0f,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedFloatExtension()][0] floatValue],
+      0.01);
+  XCTAssertEqualWithAccuracy(
+      212.0,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedDoubleExtension()][0]
+          doubleValue],
+      0.01);
+  XCTAssertFalse(
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedBoolExtension()][0] boolValue]);
+  XCTAssertEqualObjects(
+      @"215", [message getExtension:Objc_Protobuf_Tests_extension_RepeatedStringExtension()][0]);
+  XCTAssertEqualObjects(
+      [NSData gpbtu_dataWithUint32:216],
+      [message getExtension:Objc_Protobuf_Tests_extension_RepeatedBytesExtension()][0]);
+
+  XCTAssertEqual(217,
+                 [(TestAllTypes_OptionalGroup *)[message
+                     getExtension:Objc_Protobuf_Tests_extension_RepeatedGroupExtension()][0] a]);
+  XCTAssertEqual(
+      218, [(TestAllTypes_NestedMessage *)[message
+               getExtension:Objc_Protobuf_Tests_extension_RepeatedNestedMessageExtension()][0] bb]);
+  XCTAssertEqual(
+      219, [[message
+               getExtension:Objc_Protobuf_Tests_extension_RepeatedForeignMessageExtension()][0] c]);
+  XCTAssertEqual(
+      220,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedImportMessageExtension()][0] d]);
+
+  XCTAssertEqual(
+      TestAllTypes_NestedEnum_Baz,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedNestedEnumExtension()][0]
+          intValue]);
+  XCTAssertEqual(
+      ForeignEnum_ForeignBaz,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedForeignEnumExtension()][0]
+          intValue]);
+  XCTAssertEqual(
+      ImportEnum_ImportBaz,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedImportEnumExtension()][0]
+          intValue]);
+
+  XCTAssertEqualObjects(
+      @"224",
+      [message getExtension:Objc_Protobuf_Tests_extension_RepeatedStringPieceExtension()][0]);
+  XCTAssertEqualObjects(
+      @"225", [message getExtension:Objc_Protobuf_Tests_extension_RepeatedCordExtension()][0]);
+
+  // Actually verify the second (modified) elements now.
+  XCTAssertEqual(
+      501,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedInt32Extension()][1] intValue]);
+  XCTAssertEqual(502LL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedInt64Extension()][1]
+                     longLongValue]);
+  XCTAssertEqual(503U,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedUint32Extension()][1]
+                     unsignedIntValue]);
+  XCTAssertEqual(504ULL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedUint64Extension()][1]
+                     unsignedLongLongValue]);
+  XCTAssertEqual(
+      505,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedSint32Extension()][1] intValue]);
+  XCTAssertEqual(506LL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedSint64Extension()][1]
+                     longLongValue]);
+  XCTAssertEqual(507U,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedFixed32Extension()][1]
+                     unsignedIntValue]);
+  XCTAssertEqual(508ULL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedFixed64Extension()][1]
+                     unsignedLongLongValue]);
+  XCTAssertEqual(
+      509, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedSfixed32Extension()][1]
+               intValue]);
+  XCTAssertEqual(
+      510LL, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedSfixed64Extension()][1]
+                 longLongValue]);
+  XCTAssertEqualWithAccuracy(
+      511.0f,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedFloatExtension()][1] floatValue],
+      0.01);
+  XCTAssertEqualWithAccuracy(
+      512.0,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedDoubleExtension()][1]
+          doubleValue],
+      0.01);
+  XCTAssertTrue(
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedBoolExtension()][1] boolValue]);
+  XCTAssertEqualObjects(
+      @"515", [message getExtension:Objc_Protobuf_Tests_extension_RepeatedStringExtension()][1]);
+  XCTAssertEqualObjects(
+      [NSData gpbtu_dataWithUint32:516],
+      [message getExtension:Objc_Protobuf_Tests_extension_RepeatedBytesExtension()][1]);
+
+  XCTAssertEqual(517,
+                 [(TestAllTypes_OptionalGroup *)[message
+                     getExtension:Objc_Protobuf_Tests_extension_RepeatedGroupExtension()][1] a]);
+  XCTAssertEqual(
+      518, [(TestAllTypes_NestedMessage *)[message
+               getExtension:Objc_Protobuf_Tests_extension_RepeatedNestedMessageExtension()][1] bb]);
+  XCTAssertEqual(
+      519, [[message
+               getExtension:Objc_Protobuf_Tests_extension_RepeatedForeignMessageExtension()][1] c]);
+  XCTAssertEqual(
+      520,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedImportMessageExtension()][1] d]);
+
+  XCTAssertEqual(
+      TestAllTypes_NestedEnum_Foo,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedNestedEnumExtension()][1]
+          intValue]);
+  XCTAssertEqual(
+      ForeignEnum_ForeignFoo,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedForeignEnumExtension()][1]
+          intValue]);
+  XCTAssertEqual(
+      ImportEnum_ImportFoo,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedImportEnumExtension()][1]
+          intValue]);
+
+  XCTAssertEqualObjects(
+      @"524",
+      [message getExtension:Objc_Protobuf_Tests_extension_RepeatedStringPieceExtension()][1]);
+  XCTAssertEqualObjects(
+      @"525", [message getExtension:Objc_Protobuf_Tests_extension_RepeatedCordExtension()][1]);
+#else
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedInt32Extension]] count]);
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedInt64Extension]] count]);
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedUint32Extension]] count]);
@@ -501,6 +1163,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertEqualObjects(@"524",
                         [message getExtension:[UnittestRoot repeatedStringPieceExtension]][1]);
   XCTAssertEqualObjects(@"525", [message getExtension:[UnittestRoot repeatedCordExtension]][1]);
+#endif
 }
 
 // -------------------------------------------------------------------
@@ -929,6 +1592,150 @@ const uint32_t kGPBDefaultRepeatCount = 2;
 }
 
 - (void)setAllExtensions:(TestAllExtensions *)message repeatedCount:(uint32_t)count {
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalInt32Extension() value:@101];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalInt64Extension() value:@102L];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalUint32Extension() value:@103];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalUint64Extension() value:@104L];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalSint32Extension() value:@105];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalSint64Extension() value:@106L];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalFixed32Extension() value:@107];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalFixed64Extension() value:@108L];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalSfixed32Extension() value:@109];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalSfixed64Extension() value:@110L];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalFloatExtension() value:@111.0f];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalDoubleExtension() value:@112.0];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalBoolExtension() value:@YES];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalStringExtension() value:@"115"];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalBytesExtension()
+                  value:[NSData gpbtu_dataWithEmbeddedNulls]];
+
+  OptionalGroup_extension *optionalGroup = [OptionalGroup_extension message];
+  [optionalGroup setA:117];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalGroupExtension() value:optionalGroup];
+  TestAllTypes_NestedMessage *nestedMessage = [TestAllTypes_NestedMessage message];
+  [nestedMessage setBb:118];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalNestedMessageExtension()
+                  value:nestedMessage];
+  ForeignMessage *foreignMessage = [ForeignMessage message];
+  [foreignMessage setC:119];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalForeignMessageExtension()
+                  value:foreignMessage];
+  ImportMessage *importMessage = [ImportMessage message];
+  [importMessage setD:120];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalImportMessageExtension()
+                  value:importMessage];
+
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalNestedEnumExtension()
+                  value:@(TestAllTypes_NestedEnum_Baz)];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalForeignEnumExtension()
+                  value:@(ForeignEnum_ForeignBaz)];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalImportEnumExtension()
+                  value:@(ImportEnum_ImportBaz)];
+
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalStringPieceExtension() value:@"124"];
+  [message setExtension:Objc_Protobuf_Tests_extension_OptionalCordExtension() value:@"125"];
+
+  for (uint32_t i = 0; i < count; ++i) {
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedInt32Extension()
+                    value:@(201 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedInt64Extension()
+                    value:@(202 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedUint32Extension()
+                    value:@(203 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedUint64Extension()
+                    value:@(204 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedSint32Extension()
+                    value:@(205 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedSint64Extension()
+                    value:@(206 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedFixed32Extension()
+                    value:@(207 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedFixed64Extension()
+                    value:@(208 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedSfixed32Extension()
+                    value:@(209 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedSfixed64Extension()
+                    value:@(210 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedFloatExtension()
+                    value:@(211 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedDoubleExtension()
+                    value:@(212 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedBoolExtension()
+                    value:@((i % 2) ? YES : NO)];
+    NSString *string = [[NSString alloc] initWithFormat:@"%d", 215 + i * 100];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedStringExtension() value:string];
+    [string release];
+    NSData *data = [[NSData alloc] initWithUint32_gpbtu:216 + i * 100];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedBytesExtension() value:data];
+    [data release];
+
+    RepeatedGroup_extension *repeatedGroup = [[RepeatedGroup_extension alloc] init];
+    [repeatedGroup setA:217 + i * 100];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedGroupExtension()
+                    value:repeatedGroup];
+    [repeatedGroup release];
+    nestedMessage = [[TestAllTypes_NestedMessage alloc] init];
+    [nestedMessage setBb:218 + i * 100];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedNestedMessageExtension()
+                    value:nestedMessage];
+    [nestedMessage release];
+    foreignMessage = [[ForeignMessage alloc] init];
+    [foreignMessage setC:219 + i * 100];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedForeignMessageExtension()
+                    value:foreignMessage];
+    [foreignMessage release];
+    importMessage = [[ImportMessage alloc] init];
+    [importMessage setD:220 + i * 100];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedImportMessageExtension()
+                    value:importMessage];
+    [importMessage release];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedNestedEnumExtension()
+                    value:@((i % 2) ? TestAllTypes_NestedEnum_Bar : TestAllTypes_NestedEnum_Baz)];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedForeignEnumExtension()
+                    value:@((i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz)];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedImportEnumExtension()
+                    value:@((i % 2) ? ImportEnum_ImportBar : ImportEnum_ImportBaz)];
+
+    string = [[NSString alloc] initWithFormat:@"%d", 224 + i * 100];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedStringPieceExtension()
+                    value:string];
+    [string release];
+
+    string = [[NSString alloc] initWithFormat:@"%d", 225 + i * 100];
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedCordExtension() value:string];
+    [string release];
+  }
+
+  // -----------------------------------------------------------------
+
+  [message setExtension:Objc_Protobuf_Tests_extension_DefaultInt32Extension() value:@401];
+  [message setExtension:Objc_Protobuf_Tests_extension_DefaultInt64Extension() value:@402L];
+  [message setExtension:Objc_Protobuf_Tests_extension_DefaultUint32Extension() value:@403];
+  [message setExtension:Objc_Protobuf_Tests_extension_DefaultUint64Extension() value:@404L];
+  [message setExtension:Objc_Protobuf_Tests_extension_DefaultSint32Extension() value:@405];
+  [message setExtension:Objc_Protobuf_Tests_extension_DefaultSint64Extension() value:@406L];
+  [message setExtension:Objc_Protobuf_Tests_extension_DefaultFixed32Extension() value:@407];
+  [message setExtension:Objc_Protobuf_Tests_extension_DefaultFixed64Extension() value:@408L];
+  [message setExtension:Objc_Protobuf_Tests_extension_DefaultSfixed32Extension() value:@409];
+  [message setExtension:Objc_Protobuf_Tests_extension_DefaultSfixed64Extension() value:@410L];
+  [message setExtension:Objc_Protobuf_Tests_extension_DefaultFloatExtension() value:@411.0f];
+  [message setExtension:Objc_Protobuf_Tests_extension_DefaultDoubleExtension() value:@412.0];
+  [message setExtension:Objc_Protobuf_Tests_extension_DefaultBoolExtension() value:@NO];
+  [message setExtension:Objc_Protobuf_Tests_extension_DefaultStringExtension() value:@"415"];
+  [message setExtension:Objc_Protobuf_Tests_extension_DefaultBytesExtension()
+                  value:[NSData gpbtu_dataWithUint32:416]];
+
+  [message setExtension:Objc_Protobuf_Tests_extension_DefaultNestedEnumExtension()
+                  value:@(TestAllTypes_NestedEnum_Foo)];
+  [message setExtension:Objc_Protobuf_Tests_extension_DefaultForeignEnumExtension()
+                  value:@(ForeignEnum_ForeignFoo)];
+  [message setExtension:Objc_Protobuf_Tests_extension_DefaultImportEnumExtension()
+                  value:@(ImportEnum_ImportFoo)];
+
+  [message setExtension:Objc_Protobuf_Tests_extension_DefaultStringPieceExtension() value:@"424"];
+  [message setExtension:Objc_Protobuf_Tests_extension_DefaultCordExtension() value:@"425"];
+#else
   [message setExtension:[UnittestRoot optionalInt32Extension] value:@101];
   [message setExtension:[UnittestRoot optionalInt64Extension] value:@102L];
   [message setExtension:[UnittestRoot optionalUint32Extension] value:@103];
@@ -1047,6 +1854,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
 
   [message setExtension:[UnittestRoot defaultStringPieceExtension] value:@"424"];
   [message setExtension:[UnittestRoot defaultCordExtension] value:@"425"];
+#endif
 }
 
 - (void)setAllMapFields:(TestMap *)message numEntries:(uint32_t)count {
@@ -1152,7 +1960,11 @@ const uint32_t kGPBDefaultRepeatCount = 2;
 }
 
 - (GPBExtensionRegistry *)extensionRegistry {
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  return Objc_Protobuf_Tests_UnittestRoot_Registry();
+#else
   return [UnittestRoot extensionRegistry];
+#endif
 }
 
 - (TestAllTypes *)allSetRepeatedCount:(uint32_t)count {
@@ -1349,6 +2161,266 @@ const uint32_t kGPBDefaultRepeatCount = 2;
 
 - (void)assertExtensionsClear:(TestAllExtensions *)message {
   // hasBlah() should initially be NO for all optional fields.
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_OptionalInt32Extension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_OptionalInt64Extension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_OptionalUint32Extension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_OptionalUint64Extension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_OptionalSint32Extension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_OptionalSint64Extension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_OptionalFixed32Extension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_OptionalFixed64Extension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_OptionalSfixed32Extension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_OptionalSfixed64Extension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_OptionalFloatExtension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_OptionalDoubleExtension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_OptionalBoolExtension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_OptionalStringExtension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_OptionalBytesExtension()]);
+
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_OptionalGroupExtension()]);
+  XCTAssertFalse(
+      [message hasExtension:Objc_Protobuf_Tests_extension_OptionalNestedMessageExtension()]);
+  XCTAssertFalse(
+      [message hasExtension:Objc_Protobuf_Tests_extension_OptionalForeignMessageExtension()]);
+  XCTAssertFalse(
+      [message hasExtension:Objc_Protobuf_Tests_extension_OptionalImportMessageExtension()]);
+
+  XCTAssertFalse(
+      [message hasExtension:Objc_Protobuf_Tests_extension_OptionalNestedEnumExtension()]);
+  XCTAssertFalse(
+      [message hasExtension:Objc_Protobuf_Tests_extension_OptionalForeignEnumExtension()]);
+  XCTAssertFalse(
+      [message hasExtension:Objc_Protobuf_Tests_extension_OptionalImportEnumExtension()]);
+
+  XCTAssertFalse(
+      [message hasExtension:Objc_Protobuf_Tests_extension_OptionalStringPieceExtension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_OptionalCordExtension()]);
+
+  // Optional fields without defaults are set to zero or something like it.
+  XCTAssertEqual(
+      0, [[message getExtension:Objc_Protobuf_Tests_extension_OptionalInt32Extension()] intValue]);
+  XCTAssertEqual(0LL, [[message getExtension:Objc_Protobuf_Tests_extension_OptionalInt64Extension()]
+                          longLongValue]);
+  XCTAssertEqual(0U, [[message getExtension:Objc_Protobuf_Tests_extension_OptionalUint32Extension()]
+                         unsignedIntValue]);
+  XCTAssertEqual(0ULL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_OptionalUint64Extension()]
+                     unsignedLongLongValue]);
+  XCTAssertEqual(
+      0, [[message getExtension:Objc_Protobuf_Tests_extension_OptionalSint32Extension()] intValue]);
+  XCTAssertEqual(0LL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_OptionalSint64Extension()]
+                     longLongValue]);
+  XCTAssertEqual(0U,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_OptionalFixed32Extension()]
+                     unsignedIntValue]);
+  XCTAssertEqual(0ULL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_OptionalFixed64Extension()]
+                     unsignedLongLongValue]);
+  XCTAssertEqual(
+      0,
+      [[message getExtension:Objc_Protobuf_Tests_extension_OptionalSfixed32Extension()] intValue]);
+  XCTAssertEqual(0LL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_OptionalSfixed64Extension()]
+                     longLongValue]);
+  XCTAssertEqualWithAccuracy(
+      0.0f,
+      [[message getExtension:Objc_Protobuf_Tests_extension_OptionalFloatExtension()] floatValue],
+      0.01);
+  XCTAssertEqualWithAccuracy(
+      0.0,
+      [[message getExtension:Objc_Protobuf_Tests_extension_OptionalDoubleExtension()] doubleValue],
+      0.01);
+  XCTAssertFalse(
+      [[message getExtension:Objc_Protobuf_Tests_extension_OptionalBoolExtension()] boolValue]);
+  XCTAssertEqualObjects(
+      @"", [message getExtension:Objc_Protobuf_Tests_extension_OptionalStringExtension()]);
+  XCTAssertEqualObjects(
+      GPBEmptyNSData(),
+      [message getExtension:Objc_Protobuf_Tests_extension_OptionalBytesExtension()]);
+
+  // Embedded messages should also be clear.
+
+  XCTAssertFalse(
+      [[message getExtension:Objc_Protobuf_Tests_extension_OptionalGroupExtension()] hasA]);
+  XCTAssertFalse([[message
+      getExtension:Objc_Protobuf_Tests_extension_OptionalNestedMessageExtension()] hasBb]);
+  XCTAssertFalse([[message
+      getExtension:Objc_Protobuf_Tests_extension_OptionalForeignMessageExtension()] hasC]);
+  XCTAssertFalse(
+      [[message getExtension:Objc_Protobuf_Tests_extension_OptionalImportMessageExtension()] hasD]);
+
+  XCTAssertEqual(0, [(TestAllTypes_OptionalGroup *)[message
+                        getExtension:Objc_Protobuf_Tests_extension_OptionalGroupExtension()] a]);
+  XCTAssertEqual(
+      0, [(TestAllTypes_NestedMessage *)[message
+             getExtension:Objc_Protobuf_Tests_extension_OptionalNestedMessageExtension()] bb]);
+  XCTAssertEqual(
+      0,
+      [[message getExtension:Objc_Protobuf_Tests_extension_OptionalForeignMessageExtension()] c]);
+  XCTAssertEqual(
+      0, [[message getExtension:Objc_Protobuf_Tests_extension_OptionalImportMessageExtension()] d]);
+
+  // Enums without defaults are set to the first value in the enum.
+  XCTAssertEqual(TestAllTypes_NestedEnum_Foo,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_OptionalNestedEnumExtension()]
+                     intValue]);
+  XCTAssertEqual(
+      ForeignEnum_ForeignFoo,
+      [[message getExtension:Objc_Protobuf_Tests_extension_OptionalForeignEnumExtension()]
+          intValue]);
+  XCTAssertEqual(ImportEnum_ImportFoo,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_OptionalImportEnumExtension()]
+                     intValue]);
+
+  XCTAssertEqualObjects(
+      @"", [message getExtension:Objc_Protobuf_Tests_extension_OptionalStringPieceExtension()]);
+  XCTAssertEqualObjects(
+      @"", [message getExtension:Objc_Protobuf_Tests_extension_OptionalCordExtension()]);
+
+  // Repeated fields are empty.
+  XCTAssertEqual(
+      0U, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedInt32Extension()] count]);
+  XCTAssertEqual(
+      0U, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedInt64Extension()] count]);
+  XCTAssertEqual(
+      0U, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedUint32Extension()] count]);
+  XCTAssertEqual(
+      0U, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedUint64Extension()] count]);
+  XCTAssertEqual(
+      0U, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedSint32Extension()] count]);
+  XCTAssertEqual(
+      0U, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedSint64Extension()] count]);
+  XCTAssertEqual(
+      0U, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedFixed32Extension()] count]);
+  XCTAssertEqual(
+      0U, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedFixed64Extension()] count]);
+  XCTAssertEqual(
+      0U, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedSfixed32Extension()] count]);
+  XCTAssertEqual(
+      0U, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedSfixed64Extension()] count]);
+  XCTAssertEqual(
+      0U, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedFloatExtension()] count]);
+  XCTAssertEqual(
+      0U, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedDoubleExtension()] count]);
+  XCTAssertEqual(
+      0U, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedBoolExtension()] count]);
+  XCTAssertEqual(
+      0U, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedStringExtension()] count]);
+  XCTAssertEqual(
+      0U, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedBytesExtension()] count]);
+
+  XCTAssertEqual(
+      0U, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedGroupExtension()] count]);
+  XCTAssertEqual(
+      0U, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedNestedMessageExtension()]
+              count]);
+  XCTAssertEqual(
+      0U, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedForeignMessageExtension()]
+              count]);
+  XCTAssertEqual(
+      0U, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedImportMessageExtension()]
+              count]);
+  XCTAssertEqual(
+      0U,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedNestedEnumExtension()] count]);
+  XCTAssertEqual(
+      0U,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedForeignEnumExtension()] count]);
+  XCTAssertEqual(
+      0U,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedImportEnumExtension()] count]);
+
+  XCTAssertEqual(
+      0U,
+      [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedStringPieceExtension()] count]);
+  XCTAssertEqual(
+      0U, [[message getExtension:Objc_Protobuf_Tests_extension_RepeatedCordExtension()] count]);
+
+  // hasBlah() should also be NO for all default fields.
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_DefaultInt32Extension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_DefaultInt64Extension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_DefaultUint32Extension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_DefaultUint64Extension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_DefaultSint32Extension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_DefaultSint64Extension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_DefaultFixed32Extension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_DefaultFixed64Extension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_DefaultSfixed32Extension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_DefaultSfixed64Extension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_DefaultFloatExtension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_DefaultDoubleExtension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_DefaultBoolExtension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_DefaultStringExtension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_DefaultBytesExtension()]);
+
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_DefaultNestedEnumExtension()]);
+  XCTAssertFalse(
+      [message hasExtension:Objc_Protobuf_Tests_extension_DefaultForeignEnumExtension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_DefaultImportEnumExtension()]);
+
+  XCTAssertFalse(
+      [message hasExtension:Objc_Protobuf_Tests_extension_DefaultStringPieceExtension()]);
+  XCTAssertFalse([message hasExtension:Objc_Protobuf_Tests_extension_DefaultCordExtension()]);
+
+  // Fields with defaults have their default values (duh).
+  XCTAssertEqual(
+      41, [[message getExtension:Objc_Protobuf_Tests_extension_DefaultInt32Extension()] intValue]);
+  XCTAssertEqual(42LL, [[message getExtension:Objc_Protobuf_Tests_extension_DefaultInt64Extension()]
+                           longLongValue]);
+  XCTAssertEqual(43U, [[message getExtension:Objc_Protobuf_Tests_extension_DefaultUint32Extension()]
+                          unsignedIntValue]);
+  XCTAssertEqual(44ULL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_DefaultUint64Extension()]
+                     unsignedLongLongValue]);
+  XCTAssertEqual(-45, [[message getExtension:Objc_Protobuf_Tests_extension_DefaultSint32Extension()]
+                          intValue]);
+  XCTAssertEqual(46LL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_DefaultSint64Extension()]
+                     longLongValue]);
+  XCTAssertEqual(47, [[message getExtension:Objc_Protobuf_Tests_extension_DefaultFixed32Extension()]
+                         intValue]);
+  XCTAssertEqual(48ULL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_DefaultFixed64Extension()]
+                     unsignedLongLongValue]);
+  XCTAssertEqual(
+      49,
+      [[message getExtension:Objc_Protobuf_Tests_extension_DefaultSfixed32Extension()] intValue]);
+  XCTAssertEqual(-50LL,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_DefaultSfixed64Extension()]
+                     longLongValue]);
+  XCTAssertEqualWithAccuracy(
+      51.5f,
+      [[message getExtension:Objc_Protobuf_Tests_extension_DefaultFloatExtension()] floatValue],
+      0.01);
+  XCTAssertEqualWithAccuracy(
+      52e3,
+      [[message getExtension:Objc_Protobuf_Tests_extension_DefaultDoubleExtension()] doubleValue],
+      0.01);
+  XCTAssertTrue(
+      [[message getExtension:Objc_Protobuf_Tests_extension_DefaultBoolExtension()] boolValue]);
+  XCTAssertEqualObjects(
+      @"hello", [message getExtension:Objc_Protobuf_Tests_extension_DefaultStringExtension()]);
+  XCTAssertEqualObjects(
+      [NSData gpbtu_dataWithCString:"world"],
+      [message getExtension:Objc_Protobuf_Tests_extension_DefaultBytesExtension()]);
+
+  XCTAssertEqual(
+      TestAllTypes_NestedEnum_Bar,
+      [[message getExtension:Objc_Protobuf_Tests_extension_DefaultNestedEnumExtension()] intValue]);
+  XCTAssertEqual(ForeignEnum_ForeignBar,
+                 [[message getExtension:Objc_Protobuf_Tests_extension_DefaultForeignEnumExtension()]
+                     intValue]);
+  XCTAssertEqual(
+      ImportEnum_ImportBar,
+      [[message getExtension:Objc_Protobuf_Tests_extension_DefaultImportEnumExtension()] intValue]);
+
+  XCTAssertEqualObjects(
+      @"abc", [message getExtension:Objc_Protobuf_Tests_extension_DefaultStringPieceExtension()]);
+  XCTAssertEqualObjects(
+      @"123", [message getExtension:Objc_Protobuf_Tests_extension_DefaultCordExtension()]);
+#else
   XCTAssertFalse([message hasExtension:[UnittestRoot optionalInt32Extension]]);
   XCTAssertFalse([message hasExtension:[UnittestRoot optionalInt64Extension]]);
   XCTAssertFalse([message hasExtension:[UnittestRoot optionalUint32Extension]]);
@@ -1514,6 +2586,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
 
   XCTAssertEqualObjects(@"abc", [message getExtension:[UnittestRoot defaultStringPieceExtension]]);
   XCTAssertEqualObjects(@"123", [message getExtension:[UnittestRoot defaultCordExtension]]);
+#endif
 }
 
 - (void)modifyRepeatedFields:(TestAllTypes *)message {
@@ -1816,6 +2889,36 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   // Must match -setUnpackedFields:repeatedCount:
   // Must match -setUnpackedExtensions:repeatedCount:
   for (uint32_t i = 0; i < count; i++) {
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+    [message addExtension:Objc_Protobuf_Tests_extension_PackedInt32Extension()
+                    value:@(601 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_PackedInt64Extension()
+                    value:@(602 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_PackedUint32Extension()
+                    value:@(603 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_PackedUint64Extension()
+                    value:@(604 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_PackedSint32Extension()
+                    value:@(605 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_PackedSint64Extension()
+                    value:@(606 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_PackedFixed32Extension()
+                    value:@(607 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_PackedFixed64Extension()
+                    value:@(608 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_PackedSfixed32Extension()
+                    value:@(609 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_PackedSfixed64Extension()
+                    value:@(610 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_PackedFloatExtension()
+                    value:@(611 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_PackedDoubleExtension()
+                    value:@(612 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_PackedBoolExtension()
+                    value:@((i % 2) ? YES : NO)];
+    [message addExtension:Objc_Protobuf_Tests_extension_PackedEnumExtension()
+                    value:@((i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz)];
+#else
     [message addExtension:[UnittestRoot packedInt32Extension] value:@(601 + i * 100)];
     [message addExtension:[UnittestRoot packedInt64Extension] value:@(602 + i * 100)];
     [message addExtension:[UnittestRoot packedUint32Extension] value:@(603 + i * 100)];
@@ -1831,6 +2934,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
     [message addExtension:[UnittestRoot packedBoolExtension] value:@((i % 2) ? YES : NO)];
     [message addExtension:[UnittestRoot packedEnumExtension]
                     value:@((i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz)];
+#endif
   }
 }
 
@@ -1839,6 +2943,36 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   // Must match -setUnpackedFields:repeatedCount:
   // Must match -setPackedExtensions:repeatedCount:
   for (uint32_t i = 0; i < count; i++) {
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+    [message addExtension:Objc_Protobuf_Tests_extension_UnpackedInt32Extension()
+                    value:@(601 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_UnpackedInt64Extension()
+                    value:@(602 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_UnpackedUint32Extension()
+                    value:@(603 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_UnpackedUint64Extension()
+                    value:@(604 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_UnpackedSint32Extension()
+                    value:@(605 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_UnpackedSint64Extension()
+                    value:@(606 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_UnpackedFixed32Extension()
+                    value:@(607 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_UnpackedFixed64Extension()
+                    value:@(608 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_UnpackedSfixed32Extension()
+                    value:@(609 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_UnpackedSfixed64Extension()
+                    value:@(610 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_UnpackedFloatExtension()
+                    value:@(611 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_UnpackedDoubleExtension()
+                    value:@(612 + i * 100)];
+    [message addExtension:Objc_Protobuf_Tests_extension_UnpackedBoolExtension()
+                    value:@((i % 2) ? YES : NO)];
+    [message addExtension:Objc_Protobuf_Tests_extension_UnpackedEnumExtension()
+                    value:@((i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz)];
+#else
     [message addExtension:[UnittestRoot unpackedInt32Extension] value:@(601 + i * 100)];
     [message addExtension:[UnittestRoot unpackedInt64Extension] value:@(602 + i * 100)];
     [message addExtension:[UnittestRoot unpackedUint32Extension] value:@(603 + i * 100)];
@@ -1854,10 +2988,75 @@ const uint32_t kGPBDefaultRepeatCount = 2;
     [message addExtension:[UnittestRoot unpackedBoolExtension] value:@((i % 2) ? YES : NO)];
     [message addExtension:[UnittestRoot unpackedEnumExtension]
                     value:@((i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz)];
+#endif
   }
 }
 
 - (void)assertPackedExtensionsSet:(TestPackedExtensions *)message repeatedCount:(uint32_t)count {
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_PackedInt32Extension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_PackedInt64Extension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_PackedUint32Extension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_PackedUint64Extension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_PackedSint32Extension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_PackedSint64Extension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_PackedFixed32Extension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_PackedFixed64Extension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_PackedSfixed32Extension()] count]);
+  XCTAssertEqual(
+      count,
+      [[message getExtension:Objc_Protobuf_Tests_extension_PackedSfixed64Extension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_PackedFloatExtension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_PackedDoubleExtension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_PackedBoolExtension()] count]);
+  XCTAssertEqual(
+      count, [[message getExtension:Objc_Protobuf_Tests_extension_PackedEnumExtension()] count]);
+
+  for (uint32_t i = 0; i < count; ++i) {
+    id extension = [message getExtension:Objc_Protobuf_Tests_extension_PackedInt32Extension()];
+    XCTAssertEqual((int)(601 + i * 100), [extension[i] intValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_PackedInt64Extension()];
+    XCTAssertEqual(602 + i * 100, [extension[i] longLongValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_PackedUint32Extension()];
+    XCTAssertEqual(603 + i * 100, [extension[i] unsignedIntValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_PackedUint64Extension()];
+    XCTAssertEqual(604 + i * 100, [extension[i] unsignedLongLongValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_PackedSint32Extension()];
+    XCTAssertEqual((int)(605 + i * 100), [extension[i] intValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_PackedSint64Extension()];
+    XCTAssertEqual(606 + i * 100, [extension[i] longLongValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_PackedFixed32Extension()];
+    XCTAssertEqual(607 + i * 100, [extension[i] unsignedIntValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_PackedFixed64Extension()];
+    XCTAssertEqual(608 + i * 100, [extension[i] unsignedLongLongValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_PackedSfixed32Extension()];
+    XCTAssertEqual((int)(609 + i * 100), [extension[i] intValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_PackedSfixed64Extension()];
+    XCTAssertEqual(610 + i * 100, [extension[i] longLongValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_PackedFloatExtension()];
+    XCTAssertEqualWithAccuracy(611 + i * 100, [extension[i] floatValue], 0.01);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_PackedDoubleExtension()];
+    XCTAssertEqualWithAccuracy(612 + i * 100, [extension[i] doubleValue], 0.01);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_PackedBoolExtension()];
+    XCTAssertEqual((i % 2) ? YES : NO, [extension[i] boolValue]);
+    extension = [message getExtension:Objc_Protobuf_Tests_extension_PackedEnumExtension()];
+    XCTAssertEqual((i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz,
+                   [extension[i] intValue]);
+  }
+#else
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot packedInt32Extension]] count]);
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot packedInt64Extension]] count]);
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot packedUint32Extension]] count]);
@@ -1904,6 +3103,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
     XCTAssertEqual((i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz,
                    [extension[i] intValue]);
   }
+#endif
 }
 
 - (void)assertAllFieldsKVCMatch:(TestAllTypes *)message {

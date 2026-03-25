@@ -645,15 +645,15 @@ class PROTOBUF_EXPORT TextFormat {
     ParseInfoTree(const ParseInfoTree&) = delete;
     ParseInfoTree& operator=(const ParseInfoTree&) = delete;
 
-    // Returns the parse location range for index-th value of the field in
-    // the parsed text. If none exists, returns a location with start and end
-    // line -1. Index should be -1 for not-repeated fields.
+    // Returns the parse location range for the name and value of the index-th
+    // field in the parsed text. If none exists, returns a location with start
+    // and end line -1. Index should be -1 for not-repeated fields.
     PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ParseLocationRange
     GetLocationRange(const FieldDescriptor* field, int index) const;
 
-    // Returns the starting parse location for index-th value of the field in
-    // the parsed text. If none exists, returns a location with line = -1. Index
-    // should be -1 for not-repeated fields.
+    // Returns the starting parse location for the name and value of the
+    // index-th field in the parsed text. If none exists, returns a location
+    // with line = -1. Index should be -1 for not-repeated fields.
     PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ParseLocation
     GetLocation(const FieldDescriptor* field, int index) const {
       return GetLocationRange(field, index).start;

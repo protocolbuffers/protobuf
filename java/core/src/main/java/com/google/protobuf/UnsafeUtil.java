@@ -259,6 +259,7 @@ final class UnsafeUtil {
   /**
    * Gets the {@code sun.misc.Unsafe} instance, or {@code null} if not available on this platform.
    */
+  @SuppressWarnings("removal") // We gracefully fall back when Unsafe is not available.
   static sun.misc.Unsafe getUnsafe() {
     sun.misc.Unsafe unsafe = null;
     try {

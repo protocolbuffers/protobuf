@@ -41,14 +41,13 @@ class ParseFunctionGenerator {
   ParseFunctionGenerator(
       const Descriptor* descriptor, int max_has_bit_index,
       absl::Span<const int> has_bit_indices, const Options& options,
-      MessageSCCAnalyzer* scc_analyzer,
       const absl::flat_hash_map<absl::string_view, std::string>& vars,
       int index_in_file_messages);
 
   static std::vector<internal::TailCallTableInfo::FieldOptions>
   BuildFieldOptions(const Descriptor* descriptor,
                     absl::Span<const FieldDescriptor* const> ordered_fields,
-                    const Options& options, MessageSCCAnalyzer* scc_analyzer,
+                    const Options& options,
                     absl::Span<const int> has_bit_indices);
 
   static internal::TailCallTableInfo BuildTcTableInfoFromDescriptor(
@@ -74,7 +73,6 @@ class ParseFunctionGenerator {
   void GenerateFieldNames(Formatter& format);
 
   const Descriptor* descriptor_;
-  MessageSCCAnalyzer* scc_analyzer_;
   const Options& options_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
   std::unique_ptr<internal::TailCallTableInfo> tc_table_info_;

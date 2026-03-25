@@ -68,17 +68,30 @@ struct Prefix {
 constexpr uint32_t kAnyField = UINT32_MAX;
 
 // Prefixes used by C code generator for field access.
-static constexpr std::array<Prefix, 6> kPrefixes{
+static constexpr std::array<Prefix, 7> kPrefixes{
     Prefix{"clear_", kContainerField | kStringField},
     Prefix{"delete_", kContainerField},
     Prefix{"add_", kContainerField},
     Prefix{"resize_", kContainerField},
     Prefix{"set_", kAnyField},
     Prefix{"has_", kAnyField},
+    Prefix{"mutable_", kAnyField},
 };
+
+static constexpr std::array<absl::string_view, 5> kReservedNames{
+    "new", "parse", "parse_ex", "serialize", "serialize_ex",
+};
+
+bool IsReservedName(absl::string_view name) {
+  for (const auto& reserved : kReservedNames) {
+    if (name == reserved) return true;
+  }
+  return false;
+}
 
 bool HasConflict(absl::string_view name,
                  const absl::flat_hash_map<std::string, FieldClass>& fields) {
+  if (IsReservedName(name)) return true;
   for (const auto& prefix : kPrefixes) {
     if (!absl::StartsWith(name, prefix.name)) continue;
     auto match = fields.find(name.substr(prefix.name.size()));

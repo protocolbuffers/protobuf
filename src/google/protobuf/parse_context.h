@@ -40,6 +40,7 @@
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
+#include "utf8_validity.h"
 
 
 // Must be included last.
@@ -333,6 +334,105 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return static_cast<int>(available);
   }
 
+  template <typename SinkT>
+  [[nodiscard]] const char* SkipMaybeFlush(const char* ptr, int64_t size,
+                                           SinkT& sink) {
+    if (size <= BytesAvailable(ptr)) {
+      return ptr + size;
+    }
+    return AdvancePtrMaybeFlush<char>(ptr, size, sink,
+                                      [](absl::string_view) { return true; });
+  }
+
+  template <typename SinkT>
+  [[nodiscard]] const char* ReadArrayMaybeFlush(const char* ptr,
+                                                absl::Span<char> out,
+                                                SinkT& sink);
+
+  // Advances "ptr" by "size" bytes and calls "peek_func" with the contiguous
+  // "view" of the data. Adjusts the size of the "view" if sizeof(DataT) > 1 to
+  // allow users to read `DataT` without worrying about fragmented input.
+  //
+  // If the current buffer is exhausted, update "ptr" accordingly after reading
+  // next buffers. Flush previous buffers to the sink if needed. Callers are
+  // responsible for the final `Flush`.
+  //
+  // The sink object must provide the following methods:
+  //   // Called when data is flushed from a buffer. `p` is the pointer up to
+  //   // which data is flushed. "sink" must track start pointer.
+  //   void Flush(const char* p);
+  //
+  //   // Called to append a view of data. "sink" must update its start pointer
+  //   // accordingly.
+  //   void Append(absl::string_view view);
+  //
+  //   // Called after advancing to new data, `p` is the new start pointer.
+  //   void Reset(const char* p);
+  template <typename DataT, typename SinkT, typename PeekFunc>
+  [[nodiscard]] const char* AdvancePtrMaybeFlush(const char* ptr, int64_t count,
+                                                 SinkT& sink,
+                                                 PeekFunc&& peek_func) {
+    // "end" points to the end of the current buffer (including the slop
+    // region). "buffer_end_" is set to guarantee that kSlopBytes can be read.
+    const char* end = buffer_end_ + kSlopBytes;
+    int64_t size = count * sizeof(DataT);
+    ABSL_DCHECK_NE(ptr, nullptr);
+    ABSL_DCHECK_LE(ptr, end);
+
+    // In common cases, we can just advance the pointer.
+    int64_t available = end - ptr;
+    if (ABSL_PREDICT_TRUE(available >= size)) {
+      // Size is always aligned (= count * sizeof(DataT)). So we can just peek
+      // the entire size.
+      if (!peek_func(absl::string_view(ptr, size))) return nullptr;
+      return ptr + size;
+    }
+    int64_t round_down_size = available / sizeof(DataT) * sizeof(DataT);
+
+    if (!peek_func(absl::string_view(ptr, round_down_size))) return nullptr;
+    ptr += round_down_size;
+#if !defined(__APPLE__)
+    // Working around clang issue on Apple.
+    PROTOBUF_ALWAYS_INLINE_CALL
+#endif  // !__APPLE__
+    sink.Flush(ptr);
+    size -= round_down_size;
+
+    // After exhausting the current buffer, we need to read from the next
+    // buffer.
+    // TODO: b/434084966 - revisit this to avoid redundancy around seams.
+    do {
+      int overrun = static_cast<int>(ptr - buffer_end_);
+      ABSL_DCHECK_GE(overrun, 0);
+      ABSL_DCHECK_LE(overrun, kSlopBytes);
+
+      ptr = NextBuffer(overrun, /*depth=*/-1);
+      if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
+      limit_ -= buffer_end_ - ptr;  // Adjust limit_ relative to new anchor
+      ptr += overrun;
+      limit_end_ = buffer_end_ + std::min(0, limit_);
+
+      int64_t chunk_round_down_size =
+          BytesAvailable(ptr) / sizeof(DataT) * sizeof(DataT);
+      // In case `append_size == 0`, we will continue calling NextBuffer() till
+      // we get enough data or reach the end of the stream.
+      int64_t append_size = std::min(size, chunk_round_down_size);
+
+      absl::string_view view(ptr, static_cast<size_t>(append_size));
+      if (!peek_func(view)) return nullptr;
+#if !defined(__APPLE__)
+      // Working around clang issue on Apple.
+      PROTOBUF_ALWAYS_INLINE_CALL
+#endif  // !__APPLE__
+      sink.Append(view);
+
+      ptr += append_size;
+      size -= append_size;
+    } while (size > 0);
+
+    sink.Reset(ptr);
+    return ptr;
+  }
 
   struct WireFormatNoOpSink {
     static constexpr bool kIsLazySink = false;
@@ -345,7 +445,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // Returns true if limit (either an explicit limit or end of stream) is
   // reached. It aligns *ptr across buffer seams.
   // If limit is exceeded, it returns true and ptr is set to null.
-  template <bool kExperimentalV2, typename SinkT>
+  template <typename SinkT>
   bool DoneWithCheck(const char** ptr, int d, SinkT& sink) {
     ABSL_DCHECK(*ptr);
     if (ABSL_PREDICT_TRUE(*ptr < limit_end_)) return false;
@@ -363,7 +463,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     }
     // Flush up to *ptr before updating it.
     sink.Flush(*ptr);
-    auto res = DoneFallback<kExperimentalV2>(overrun, d);
+    auto res = DoneFallback(overrun, d);
     *ptr = res.first;
     // Reset the sink to the new start pointer.
     sink.Reset(res.first);
@@ -463,7 +563,6 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // error. The invariant of this function is that it's guaranteed that
   // kSlopBytes bytes can be accessed from the returned ptr. This function might
   // advance more buffers than one in the underlying ZeroCopyInputStream.
-  template <bool kExperimentalV2>
   std::pair<const char*, bool> DoneFallback(int overrun, int depth);
   // Advances to the next buffer, at most one call to Next() on the underlying
   // ZeroCopyInputStream is made. This function DOES NOT match the returned
@@ -476,7 +575,6 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // the ZeroCopyInputStream in the case the parse will end in the last
   // kSlopBytes of the current buffer. depth is the current depth of nested
   // groups (or negative if the use case does not need careful tracking).
-  template <bool kExperimentalV2>
   const char* NextBuffer(int overrun, int depth);
   const char* SkipFallback(const char* ptr, int size);
   const char* AppendStringFallback(const char* ptr, int size, std::string* str);
@@ -484,7 +582,6 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   const char* ReadStringFallback(const char* ptr, int size, std::string* str);
   const char* ReadArrayFallback(const char* ptr, absl::Span<char> out);
   const char* ReadCordFallback(const char* ptr, int size, absl::Cord* cord);
-  template <bool kExperimentalV2>
   static bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth);
   bool StreamNext(const void** data) {
     bool res = zcis_->Next(data, &size_);
@@ -568,7 +665,6 @@ using LazyEagerVerifyFnType = const char* (*)(const char* ptr,
                                               ParseContext* ctx);
 using LazyEagerVerifyFnRef = std::remove_pointer<LazyEagerVerifyFnType>::type&;
 
-
 // ParseContext holds all data that is global to the entire parse. Most
 // importantly it contains the input stream, but also recursion depth and also
 // stores the end group tag, in case a parser ended on a endgroup, to verify
@@ -610,17 +706,28 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   ParseContext& operator=(ParseContext&&) = delete;
   ParseContext& operator=(const ParseContext&) = delete;
 
-  void TrackCorrectEnding() {
-    group_depth_ = 0;
-  }
+  void TrackCorrectEnding() { group_depth_ = 0; }
 
   // Done should only be called when the parsing pointer is pointing to the
   // beginning of field data - that is, at a tag.  Or if it is NULL.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Done(const char** ptr) {
     WireFormatNoOpSink sink;
-    return DoneWithCheck</*kExperimentalV2=*/false>(ptr, group_depth_, sink);
+    return DoneWithCheck(ptr, group_depth_, sink);
   }
 
+  template <typename SinkT>
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const char* VerifyUTF8MaybeFlush(
+      const char* ptr, int64_t size, SinkT& sink) {
+    if (size <= BytesAvailable(ptr)) {
+      return utf8_range::IsStructurallyValid({ptr, static_cast<size_t>(size)})
+                 ? ptr + size
+                 : nullptr;
+    }
+    return VerifyUTF8MaybeFlushFallback(ptr, size, sink);
+  }
+  template <typename SinkT>
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const char* VerifyUTF8MaybeFlushFallback(
+      const char* ptr, int64_t size, SinkT& sink);
 
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int depth() const { return depth_; }
 
@@ -661,7 +768,6 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
       return Parser::ParseLoop(msg, ptr, this, tc_table);
     });
   }
-
 
   [[nodiscard]] PROTOBUF_NDEBUG_INLINE const char* ParseGroup(MessageLite* msg,
                                                               const char* ptr,
@@ -714,6 +820,35 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   Data data_;
 };
 
+// Sink types for AdvancePtrMaybeFlush.
+struct WireFormatStringSink {
+  static constexpr bool kIsLazySink = false;
+  explicit WireFormatStringSink(const char* ptr) : prev(ptr) {}
+
+  void Flush(const char* ptr);
+  void Append(absl::string_view view);
+  void Reset(const char* ptr) { prev = ptr; }
+
+  // For testing only.
+  std::string FlattenedDataForTesting() const { return data; }
+
+  // The previous pointer to a contiguous buffer to flush from. Tracking the
+  // start pointer allows us to prematurely flush.
+  const char* prev;
+  std::string data;
+};
+
+// Explicit template instantiation is required to avoid undefined reference
+// errors.
+extern template const char* EpsCopyInputStream::ReadArrayMaybeFlush(
+    const char* ptr, absl::Span<char> out, WireFormatNoOpSink& sink);
+extern template const char* EpsCopyInputStream::ReadArrayMaybeFlush(
+    const char* ptr, absl::Span<char> out, WireFormatStringSink& sink);
+
+extern template const char* ParseContext::VerifyUTF8MaybeFlushFallback(
+    const char* ptr, int64_t size, WireFormatNoOpSink& sink);
+extern template const char* ParseContext::VerifyUTF8MaybeFlushFallback(
+    const char* ptr, int64_t size, WireFormatStringSink& sink);
 
 template <int>
 struct EndianHelper;
@@ -1350,7 +1485,6 @@ inline const char* EpsCopyInputStream::ReadMicroStringWithSize(const char* ptr,
   return ReadMicroStringFallback(ptr, size, str, arena);
 }
 
-
 template <typename Tag, typename T>
 const char* EpsCopyInputStream::ReadRepeatedFixed(const char* ptr, Arena* arena,
                                                   Tag expected_tag,
@@ -1735,14 +1869,6 @@ template <typename T, typename Validator>
 // UnknownFieldSet* to make the generated code isomorphic between full and lite.
 [[nodiscard]] PROTOBUF_EXPORT const char* UnknownFieldParse(
     uint32_t tag, std::string* unknown, const char* ptr, ParseContext* ctx);
-
-extern template const char* EpsCopyInputStream::NextBuffer<false>(int, int);
-extern template const char* EpsCopyInputStream::NextBuffer<true>(int, int);
-
-extern template std::pair<const char*, bool>
-EpsCopyInputStream::DoneFallback<false>(int, int);
-extern template std::pair<const char*, bool>
-EpsCopyInputStream::DoneFallback<true>(int, int);
 
 }  // namespace internal
 }  // namespace protobuf

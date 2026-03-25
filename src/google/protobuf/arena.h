@@ -53,7 +53,7 @@ namespace protobuf {
 
 struct ArenaOptions;  // defined below
 class Arena;          // defined below
-class Message;  // defined in message.h
+class Message;        // defined in message.h
 class MessageLite;
 template <typename Key, typename T>
 class Map;
@@ -76,6 +76,8 @@ class EpsCopyInputStream;    // defined in parse_context.h
 class UntypedMapBase;        // defined in map.h
 class RepeatedPtrFieldBase;  // defined in repeated_ptr_field.h
 class TcParser;              // defined in generated_message_tctable_impl.h
+
+SerialArena* PROTOBUF_NULLABLE GetSerialArena(Arena* PROTOBUF_NULLABLE);
 
 template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
@@ -500,22 +502,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     template <typename... Args>
     static T* PROTOBUF_NONNULL ConstructOnArena(void* PROTOBUF_NONNULL ptr,
                                                 Arena& arena, Args&&... args) {
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-      // TODO - ClangTidy gives warnings for calling the deprecated
-      // constructors here, which leads to log spam. It is correct to invoke
-      // these constructors through the Arena class as it will allow us to
-      // silently switch to a different constructor once arena pointers are
-      // removed. While these constructors exists, we will call the
-      // `InternalVisibility` overrides to silence the warning.
-      if constexpr (internal::HasDeprecatedArenaConstructor<T>()) {
-        return new (ptr) T(internal::InternalVisibility(), &arena,
-                           static_cast<Args&&>(args)...);
-      } else {
-#endif
-        return new (ptr) T(&arena, static_cast<Args&&>(args)...);
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-      }
-#endif
+      return new (ptr) T(&arena, static_cast<Args&&>(args)...);
     }
 
     template <typename... Args>
@@ -743,8 +730,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
   template <typename Type>
   friend class internal::GenericTypeHandler;
-  friend class internal::InternalMetadata;  // For user_arena().
-  friend class internal::LazyField;         // For DefaultConstruct.
+  friend class internal::InternalMetadata;    // For user_arena().
+  friend class internal::LazyField;           // For DefaultConstruct.
   friend class internal::EpsCopyInputStream;  // For parser performance
   friend class internal::TcParser;            // For parser performance
   friend class MessageLite;
@@ -755,6 +742,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   friend class internal::RepeatedPtrFieldBase;  // For ReturnArrayMemory
   friend class internal::UntypedMapBase;        // For ReturnArrayMemory
   friend class internal::ExtensionSet;          // For ReturnArrayMemory
+  friend internal::SerialArena* PROTOBUF_NULLABLE
+  internal::GetSerialArena(Arena* PROTOBUF_NULLABLE);
 
   friend struct internal::ArenaTestPeer;
 };
@@ -827,6 +816,29 @@ inline void* PROTOBUF_NONNULL Arena::AllocateInternal<std::string, false>() {
 }
 
 namespace internal {
+
+inline SerialArena* PROTOBUF_NULLABLE
+GetSerialArena(SerialArena* PROTOBUF_NULLABLE arena) {
+  return arena;
+}
+
+inline SerialArena* PROTOBUF_NULLABLE
+GetSerialArena(Arena* PROTOBUF_NULLABLE arena) {
+  if (arena == nullptr) return nullptr;
+  SerialArena* res = arena->impl_.GetSerialArena();
+  PROTOBUF_ASSUME(res != nullptr);
+  return res;
+}
+
+// Using a template to make member access type dependent and delay it until
+// instantiation when `MessageLite` will be complete.
+// Not really a generic function.
+template <auto... delay>
+inline SerialArena* PROTOBUF_NULLABLE
+GetSerialArena(const MessageLite* PROTOBUF_NONNULL elem) {
+  const auto* dependent_elem = (delay, ..., elem);
+  return GetSerialArena(dependent_elem->GetArena());
+}
 
 // This class is used to define `DestructorSkippable_` for some containing type
 // if and only if `T` is destructor-skippable.

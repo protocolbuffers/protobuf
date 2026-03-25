@@ -20,6 +20,9 @@ namespace protobuf {
 namespace compiler {
 class AccessInfoMap;
 class SplitMap;
+namespace cpp {
+class MessageSCCAnalyzer;
+}  // namespace cpp
 
 namespace cpp {
 
@@ -28,12 +31,6 @@ enum class EnforceOptimizeMode {
   kSpeed,          // Full runtime with a generated code implementation.
   kCodeSize,       // Full runtime with a reflective implementation.
   kLiteRuntime,
-};
-
-enum class BoundsCheckMode {
-  kNoEnforcement,       // No enforcement.
-  kReturnDefaultValue,  // Return default value if out of bounds.
-  kAbort,               // TrapOrAbort if out of bounds.
 };
 
 struct FieldListenerOptions {
@@ -45,6 +42,7 @@ struct FieldListenerOptions {
 struct Options {
   const AccessInfoMap* access_info_map = nullptr;
   const SplitMap* split_map = nullptr;
+  cpp::MessageSCCAnalyzer* scc_analyzer = nullptr;
   std::string dllexport_decl;
   std::string runtime_include_base;
   std::string annotation_pragma_name;
@@ -52,7 +50,6 @@ struct Options {
   FieldListenerOptions field_listener_options;
   EnforceOptimizeMode enforce_mode = EnforceOptimizeMode::kNoEnforcement;
   int num_cc_files = 0;
-  BoundsCheckMode bounds_check_mode = BoundsCheckMode::kNoEnforcement;
   bool proto_h = false;
   bool transitive_pb_h = true;
   bool annotate_headers = false;

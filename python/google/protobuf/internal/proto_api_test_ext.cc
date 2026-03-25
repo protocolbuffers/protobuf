@@ -3,11 +3,13 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/proto_api.h"
@@ -70,7 +72,7 @@ auto ReprDynamicMessage(int value) {
   //   throw std::runtime_error("Failed to build file descriptor");
   // }
   const Descriptor* descriptor =
-      pool.FindMessageTypeByName("google_protobuf_unittest.TestAllTypes");
+      pool.FindMessageTypeByName("proto2_unittest.TestAllTypes");
   if (!descriptor) {
     throw std::runtime_error("Failed to find file descriptor");
   }

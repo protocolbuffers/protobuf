@@ -14,6 +14,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
@@ -325,9 +326,9 @@ struct ExtensionRangeOrdering {
   }
 };
 
-// Sort the fields of the given Descriptor by number into a new[]'d array
-// and return it. The caller should delete the returned array.
-const FieldDescriptor** SortFieldsByNumber(const Descriptor* descriptor);
+// Sort the fields of the given Descriptor by number into the vector.
+std::vector<const FieldDescriptor*> SortFieldsByNumber(
+    const Descriptor* descriptor);
 
 // Does this message class have any packed fields?
 inline bool HasPackedFields(const Descriptor* descriptor) {

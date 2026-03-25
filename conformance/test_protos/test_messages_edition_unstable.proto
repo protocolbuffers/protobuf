@@ -42,6 +42,11 @@ message TestAllTypesEditionUnstable {
   map<string, ForeignMessageEditionUnstable> map_string_foreign_message = 11;
   map<string, ForeignEnumEditionUnstable> map_string_foreign_enum = 12;
 
+  // bytes
+  bytes optional_bytes = 13;
+  repeated bytes repeated_bytes = 14;
+  map<string, bytes> map_string_bytes = 15;
+
   // extensions
   extensions 120 to 200;
 }

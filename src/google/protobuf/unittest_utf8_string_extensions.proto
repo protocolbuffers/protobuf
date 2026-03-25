@@ -1,0 +1,16 @@
+edition = "2024";
+
+// This proto is used to test UTF-8 validation of extensions. Tests enforce the
+// understanding that the utf8_validation feature is set to VERIFY in the
+// edition specified above.
+
+package proto2_unittest;
+
+message TestUtf8ValidationOfExtensions {
+  extensions 1 to max;
+}
+
+extend TestUtf8ValidationOfExtensions {
+  string optional_utf8_string_extension = 1;
+  repeated string repeated_utf8_string_extension = 2;
+}

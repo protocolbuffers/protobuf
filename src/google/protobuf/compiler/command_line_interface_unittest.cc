@@ -1652,6 +1652,36 @@ TEST_F(CommandLineInterfaceTest, ValidateFeatureSupportValid) {
   ExpectNoErrors();
 }
 
+TEST_F(CommandLineInterfaceTest, ValidateFeatureSupportLifetimesOptionRemoved) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2024";
+    import "google/protobuf/descriptor.proto";
+
+    option features.field_presence = IMPLICIT;
+
+    extend google.protobuf.MessageOptions {
+      bool removed_option = 7733026 [feature_support = {
+        edition_removed: EDITION_2023
+        removal_error: "removed_option removal error"}];
+    }
+    message Foo {
+      option (removed_option) = true;
+      int32 bar = 1 [
+        feature_support = {
+          edition_removed: EDITION_2023
+          removal_error: "Custom removal error"
+        }
+      ];
+    })schema");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "removed_option has been removed in edition 2023: removed_option removal "
+      "error");
+}
+
 TEST_F(CommandLineInterfaceTest, FeatureValidationError) {
   CreateTempFile("foo.proto",
                  R"schema(

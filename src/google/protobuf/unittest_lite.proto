@@ -268,9 +268,10 @@ extend TestAllExtensionsLite {
   TestAllTypesLite.NestedMessage optional_lazy_message_extension_lite = 27
       [lazy = true];
 
+  // "unverified_lazy" is copied from the counterpart field in TestAllTypes.
+  // An extension can't be labeled as "unverified_lazy".
   TestAllTypesLite.NestedMessage
-      optional_unverified_lazy_message_extension_lite = 28
-      [unverified_lazy = true];
+      optional_unverified_lazy_message_extension_lite = 28;
 
   // Repeated
   repeated int32 repeated_int32_extension_lite = 31;
