@@ -1145,8 +1145,8 @@ inline bool WireFormatLite::ReadPackedFixedSizePrimitive(
   if (bytes_limit >= new_bytes) {
     // Fast-path that pre-allocates *values to the final size.
 #if defined(ABSL_IS_LITTLE_ENDIAN)
-    values->Resize(old_entries + new_entries, 0);
-    // values->mutable_data() may change after Resize(), so do this after:
+    values->resize(old_entries + new_entries, 0);
+    // values->mutable_data() may change after resize(), so do this after:
     void* dest = reinterpret_cast<void*>(values->mutable_data() + old_entries);
     if (!input->ReadRaw(dest, new_bytes)) {
       values->Truncate(old_entries);
