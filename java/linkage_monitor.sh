@@ -32,7 +32,7 @@ mvn -e -B clean generate-sources install  \
 
 echo "Installed the artifacts to local Maven repository"
 
-curl -O "https://storage.googleapis.com/cloud-opensource-java-linkage-monitor/linkage-monitor-latest-all-deps.jar"
+curl -O "https://github.com/GoogleCloudPlatform/cloud-opensource-java/releases/download/dependencies-v1.5.15/linkage-monitor-latest-all-deps.jar"
 
 echo "Running linkage-monitor-latest-all-deps.jar."
 
