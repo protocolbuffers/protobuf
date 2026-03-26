@@ -768,7 +768,11 @@ absl::Status WriteAny(JsonWriter& writer, const Msg<Traits>& msg,
           any_bytes = *bytes;
         }
 
-        return Traits::WithDecodedMessage(
+        if (!writer.IncrementMessageDepth()) {
+          return absl::InvalidArgumentError(
+              "Any message nesting depth exceeded");
+        }
+        absl::Status any_status = Traits::WithDecodedMessage(
             any_desc, any_bytes,
             [&](const Msg<Traits>& unerased) -> absl::Status {
               bool first = false;
@@ -791,6 +795,8 @@ absl::Status WriteAny(JsonWriter& writer, const Msg<Traits>& msg,
               writer.Write("}");
               return absl::OkStatus();
             });
+        writer.DecrementMessageDepth();
+        return any_status;
       });
 }
 

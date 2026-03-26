@@ -1199,6 +1199,24 @@ TEST_P(JsonTest, TestAny) {
   EXPECT_EQ(round_trip->value(), "");
 }
 
+
+TEST_P(JsonTest, DeeplyNestedAnyRejected) {
+  // Verify that deeply nested Any messages are rejected during JSON
+  // serialization rather than causing unbounded stack recursion.
+  std::string inner;
+  google::protobuf::Any msg;
+  for (int i = 0; i < 200; ++i) {
+    msg.Clear();
+    msg.set_type_url("type.googleapis.com/google.protobuf.Any");
+    msg.set_value(inner);
+    inner = msg.SerializeAsString();
+  }
+  google::protobuf::Any outer;
+  outer.set_type_url("type.googleapis.com/google.protobuf.Any");
+  outer.set_value(inner);
+  EXPECT_THAT(ToJson(outer), StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
 TEST_P(JsonTest, TestDuration) {
   auto m = ToProto<proto3::TestDuration>(R"json(
     {

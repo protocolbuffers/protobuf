@@ -90,6 +90,13 @@ class JsonWriter {
   void Push() { ++indent_; }
   void Pop() { --indent_; }
 
+  // Track message nesting depth to prevent unbounded recursion via Any.
+  static constexpr int kMaxMessageDepth = 100;
+  bool IncrementMessageDepth() {
+    return ++message_depth_ <= kMaxMessageDepth;
+  }
+  void DecrementMessageDepth() { --message_depth_; }
+
   // The many overloads of Write() will write a value to the underlying stream.
   // Some values may want to be quoted; the Quoted<> type will automatically add
   // quotes and escape sequences.
@@ -203,6 +210,7 @@ class JsonWriter {
   io::zc_sink_internal::ZeroCopyStreamByteSink sink_;
   WriterOptions options_;
   int indent_ = 0;
+  int message_depth_ = 0;
 
   std::string scratch_buf_;
 };
