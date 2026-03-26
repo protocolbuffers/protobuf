@@ -6,9 +6,10 @@ load("@rules_testing//lib:util.bzl", "testing_aspect")
 def bzl_test_suite(
         name,
         tests,
+        attrs = {},
+        testing_aspect = testing_aspect,
         provider_subject_factories = [],
-        config_settings = [],
-        testing_aspect = testing_aspect):
+        config_settings = []):
     """Defines a test suite for bzl analysis tests.
 
     Args:
@@ -26,9 +27,10 @@ def bzl_test_suite(
             name = test_name,
             target = target,
             impl = impl,
+            provider_subject_factories = provider_subject_factories,
             config_settings = config_settings,
             testing_aspect = testing_aspect,
-            provider_subject_factories = provider_subject_factories,
+            attrs = attrs,
         )
         test_names.append(test_name)
 
