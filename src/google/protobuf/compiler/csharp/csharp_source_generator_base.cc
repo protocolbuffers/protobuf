@@ -34,7 +34,7 @@ void SourceGeneratorBase::WriteGeneratedCodeAttributes(io::Printer* printer) {
   // The second argument of the [GeneratedCode] attribute could be set to current protoc
   // version, but that would cause excessive code churn in the pre-generated
   // code in the repository every time the protobuf version number is updated.
-  printer->Print("[global::System.CodeDom.Compiler.GeneratedCode(\"protoc\", null)]\n");
+  // printer->Print("[global::System.CodeDom.Compiler.GeneratedCode(\"protoc\", null)]\n");
 }
 
 std::string SourceGeneratorBase::class_access_level() {

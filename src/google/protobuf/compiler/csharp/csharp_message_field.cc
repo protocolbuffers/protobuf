@@ -35,19 +35,33 @@ MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
 MessageFieldGenerator::~MessageFieldGenerator() = default;
 
 void MessageFieldGenerator::GenerateMembers(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "private $type_name$ $name$_;\n");
-  WritePropertyDocComment(printer, options(), descriptor_);
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "$access_level$ $type_name$ $property_name$ {\n"
-    "  get { return $name$_; }\n"
-    "  set {\n"
-    "    $name$_ = value;\n"
-    "  }\n"
-    "}\n");
+  if (IsNullable(descriptor_))
+  {
+    printer->Print(variables_, "private $type_name$? $name$_;\n");
+    WritePropertyDocComment(printer, options(), descriptor_);
+    AddPublicMemberAttributes(printer);
+    printer->Print(variables_,
+      "$access_level$ $type_name$? $property_name$ {\n"
+      "  get { return $name$_; }\n"
+      "  set {\n"
+      "    $name$_ = value;\n"
+      "  }\n"
+      "}\n");
+  }
+  else
+  {
+    printer->Print(variables_, "private $type_name$ $name$_;\n");
+    WritePropertyDocComment(printer, options(), descriptor_);
+    AddPublicMemberAttributes(printer);
+    printer->Print(variables_,
+      "$access_level$ $type_name$ $property_name$ {\n"
+      "  get { return $name$_; }\n"
+      "  set {\n"
+      "    $name$_ = value;\n"
+      "  }\n"
+      "}\n");
+  }
+
   if (SupportsPresenceApi(descriptor_)) {
     printer->Print(
       variables_,
@@ -77,7 +91,7 @@ void MessageFieldGenerator::GenerateMergingCode(io::Printer* printer) {
     "  if ($has_not_property_check$) {\n"
     "    $property_name$ = new $type_name$();\n"
     "  }\n"
-    "  $property_name$.MergeFrom(other.$property_name$);\n"
+    "  $property_name$?.MergeFrom(other.$property_name$);\n"
     "}\n");
 }
 
@@ -132,7 +146,7 @@ void MessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
 void MessageFieldGenerator::WriteHash(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n");
+    "if ($has_property_check$) hash ^= $property_name$?.GetHashCode() ?? 0;\n");
 }
 void MessageFieldGenerator::WriteEquals(io::Printer* printer) {
   printer->Print(
@@ -226,7 +240,7 @@ void MessageOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) {
     "if ($property_name$ == null) {\n"
     "  $property_name$ = new $type_name$();\n"
     "}\n"
-    "$property_name$.MergeFrom(other.$property_name$);\n");
+    "$property_name$?.MergeFrom(other.$property_name$);\n");
 }
 
 void MessageOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {

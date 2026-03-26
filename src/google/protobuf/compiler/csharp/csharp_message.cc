@@ -113,14 +113,14 @@ void MessageGenerator::Generate(io::Printer* printer) {
   printer->Print("#endif\n");
   printer->Print("{\n");
   printer->Indent();
-
+  
   // All static fields and properties
   printer->Print(
       vars,
       "private static readonly pb::MessageParser<$class_name$> _parser = new "
       "pb::MessageParser<$class_name$>(() => new $class_name$());\n");
 
-  printer->Print("private pb::UnknownFieldSet _unknownFields;\n");
+  printer->Print("private pb::UnknownFieldSet? _unknownFields;\n");
 
   if (has_extension_ranges_) {
     if (IsDescriptorProto(descriptor_->file())) {
@@ -193,6 +193,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
     const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
 
     // Rats: we lose the debug comment here :(
+    auto fn = fieldDescriptor->name().data();
     printer->Print(
         "/// <summary>Field number for the \"$field_name$\" field.</summary>\n"
         "public const int $field_constant_name$ = $index$;\n",
@@ -421,12 +422,12 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
   // Equality
   WriteGeneratedCodeAttributes(printer);
   printer->Print(vars,
-                 "public override bool Equals(object other) {\n"
+                 "public override bool Equals(object? other) {\n"
                  "  return Equals(other as $class_name$);\n"
                  "}\n\n");
   WriteGeneratedCodeAttributes(printer);
   printer->Print(vars,
-                 "public bool Equals($class_name$ other) {\n"
+                 "public bool Equals($class_name$? other) {\n"
                  "  if (ReferenceEquals(other, null)) {\n"
                  "    return false;\n"
                  "  }\n"
@@ -586,7 +587,7 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   vars["class_name"] = class_name();
 
   WriteGeneratedCodeAttributes(printer);
-  printer->Print(vars, "public void MergeFrom($class_name$ other) {\n");
+  printer->Print(vars, "public void MergeFrom($class_name$? other) {\n");
   printer->Indent();
   printer->Print(
       "if (other == null) {\n"

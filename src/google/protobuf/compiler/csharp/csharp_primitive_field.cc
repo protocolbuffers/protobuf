@@ -33,10 +33,18 @@ PrimitiveFieldGenerator::PrimitiveFieldGenerator(
       && descriptor->type() != FieldDescriptor::TYPE_BYTES;
   if (!is_value_type && !SupportsPresenceApi(descriptor_)) {
     std::string property_name = variables_["property_name"];
-    variables_["has_property_check"] =
-        absl::StrCat(property_name, ".Length != 0");
-    variables_["other_has_property_check"] =
-        absl::StrCat("other.", property_name, ".Length != 0");
+
+    if (IsNullable(descriptor_)) {
+      variables_["has_property_check"] =
+          absl::StrCat(property_name, "?.Length != 0");
+      variables_["other_has_property_check"] =
+          absl::StrCat("other.", property_name, "?.Length != 0");
+    } else {
+      variables_["has_property_check"] =
+          absl::StrCat(property_name, ".Length != 0");
+      variables_["other_has_property_check"] =
+          absl::StrCat("other.", property_name, ".Length != 0");
+    }
   }
 }
 
@@ -68,16 +76,16 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
   }
 
   // Declare the field itself.
-  printer->Print(
-    variables_,
-    "private $type_name$ $name_def_message$;\n");
+  // [dlatikay 20260326] if primitives shall be nullable, this is the spot 
+  printer->Print(variables_, "private $type_name$ $name_def_message$;\n");
 
   WritePropertyDocComment(printer, options(), descriptor_);
   AddPublicMemberAttributes(printer);
 
   // Most of the work is done in the property:
   // Declare the property itself (the same for all options)
-  printer->Print(variables_, "$access_level$ $type_name$ $property_name$ {\n");
+    printer->Print(variables_,
+                   "$access_level$ $type_name$ $property_name$ {\n");
 
   // Specify the "getter", which may need to check for a presence field.
   if (SupportsPresenceApi(descriptor_)) {
@@ -161,7 +169,7 @@ void PrimitiveFieldGenerator::GenerateMergingCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "if ($other_has_property_check$) {\n"
-    "  $property_name$ = other.$property_name$;\n"
+    "  $property_name$ = other.$property_name$!;\n"
     "}\n");
 }
 
@@ -203,7 +211,7 @@ void PrimitiveFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
 }
 
 void PrimitiveFieldGenerator::WriteHash(io::Printer* printer) {
-  const char *text = "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n";
+  const char *text = "if ($has_property_check$) hash ^= $property_name$!.GetHashCode();\n";
   if (descriptor_->type() == FieldDescriptor::TYPE_FLOAT) {
     text = "if ($has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode($property_name$);\n";
   } else if (descriptor_->type() == FieldDescriptor::TYPE_DOUBLE) {

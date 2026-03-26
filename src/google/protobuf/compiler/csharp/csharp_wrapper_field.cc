@@ -43,20 +43,50 @@ void WrapperFieldGenerator::GenerateMembers(io::Printer* printer) {
         variables_,
         "private static readonly pb::FieldCodec<$type_name$> _single_$name$_codec = ");
   GenerateCodecCode(printer);
-  printer->Print(
-    variables_,
-    ";\n"
-    "private $type_name$ $name$_;\n");
-  WritePropertyDocComment(printer, options(), descriptor_);
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "$access_level$ $type_name$ $property_name$ {\n"
-    "  get { return $name$_; }\n"
-    "  set {\n"
-    "    $name$_ = value;\n"
-    "  }\n"
-    "}\n\n");
+
+  /*
+  auto ct = descriptor_->cpp_type();
+  auto nm = descriptor_->name();
+  auto fn = descriptor_->full_name();
+  auto tp = descriptor_->type();
+  */
+
+  // string is the only reference type that is nullable without explicit
+  // annotation
+  auto& tn = variables_["type_name"];
+  bool needsNullabilityAnnotation = strncmp(tn.c_str(), "string", 6) == 0;
+
+  if (needsNullabilityAnnotation) 
+  {
+    printer->Print(variables_,
+                   ";\n"
+                   "private $type_name$? $name$_;\n");
+    WritePropertyDocComment(printer, options(), descriptor_);
+    AddPublicMemberAttributes(printer);
+    printer->Print(variables_,
+                   "$access_level$ $type_name$? $property_name$ {\n"
+                   "  get { return $name$_; }\n"
+                   "  set {\n"
+                   "    $name$_ = value;\n"
+                   "  }\n"
+                   "}\n\n");    
+  }
+  else
+  {
+    printer->Print(variables_,
+                   ";\n"
+                   "private $type_name$ $name$_;\n");
+    WritePropertyDocComment(printer, options(), descriptor_);
+    AddPublicMemberAttributes(printer);
+    printer->Print(variables_,
+                   "$access_level$ $type_name$ $property_name$ {\n"
+                   "  get { return $name$_; }\n"
+                   "  set {\n"
+                   "    $name$_ = value;\n"
+                   "  }\n"
+                   "}\n\n");
+  }
+
   if (SupportsPresenceApi(descriptor_)) {
     printer->Print(
       variables_,
@@ -84,7 +114,7 @@ void WrapperFieldGenerator::GenerateMergingCode(io::Printer* printer) {
     variables_,
     "if (other.$has_property_check$) {\n"
     "  if ($has_not_property_check$ || other.$property_name$ != $default_value$) {\n"
-    "    $property_name$ = other.$property_name$;\n"
+    "    $property_name$ = other.$property_name$!;\n"
     "  }\n"
     "}\n");
 }
@@ -116,10 +146,10 @@ void WrapperFieldGenerator::GenerateSerializationCode(io::Printer* printer, bool
     variables_,
     use_write_context
     ? "if ($has_property_check$) {\n"
-      "  _single_$name$_codec.WriteTagAndValue(ref output, $property_name$);\n"
+      "  _single_$name$_codec.WriteTagAndValue(ref output, $property_name$!);\n"
       "}\n"
     : "if ($has_property_check$) {\n"
-      "  _single_$name$_codec.WriteTagAndValue(output, $property_name$);\n"
+      "  _single_$name$_codec.WriteTagAndValue(output, $property_name$!);\n"
       "}\n");
 }
 
@@ -127,12 +157,12 @@ void WrapperFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "if ($has_property_check$) {\n"
-    "  size += _single_$name$_codec.CalculateSizeWithTag($property_name$);\n"
+    "  size += _single_$name$_codec.CalculateSizeWithTag($property_name$!);\n"
     "}\n");
 }
 
 void WrapperFieldGenerator::WriteHash(io::Printer* printer) {
-  const char *text = "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n";
+  const char *text = "if ($has_property_check$) hash ^= $property_name$!.GetHashCode();\n";
   if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_FLOAT) {
     text = "if ($has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.GetHashCode($property_name$);\n";
   }
@@ -273,7 +303,7 @@ void WrapperOneofFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer
   printer->Print(
     variables_,
     "if ($has_property_check$) {\n"
-    "  size += _oneof_$name$_codec.CalculateSizeWithTag($property_name$);\n"
+    "  size += _oneof_$name$_codec.CalculateSizeWithTag($property_name$!);\n"
     "}\n");
 }
 
