@@ -154,7 +154,7 @@ static id ExtensionForName(id self, SEL _cmd) {
 
   const char *className = class_getName(self);
   size_t classNameLen = strlen(className);
-  char key[classNameLen + selNameLen + 2];
+  char *key = alloca(classNameLen + selNameLen + 2);
   memcpy(key, className, classNameLen);
   key[classNameLen] = '_';
   memcpy(&key[classNameLen + 1], selName, selNameLen);
