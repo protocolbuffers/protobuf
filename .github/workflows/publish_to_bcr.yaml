@@ -22,7 +22,7 @@ on:
         type: string
 jobs:
   publish:
-    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.0.0
+    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@748dc7186bc60d0e24a81ee30aba8aa543794767 # v1.0.0
     with:
       attest: false # protobuf releases are not created with provenance attestations
       draft: false

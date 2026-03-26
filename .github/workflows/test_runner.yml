@@ -94,12 +94,14 @@ jobs:
         id: safe-checkout
         run: >
           ${{ github.event_name != 'pull_request_target' }} ||
-          echo "sha=${{ github.event.pull_request.head.sha  }}"  >> $GITHUB_OUTPUT
+          echo "sha=${PR_HEAD_SHA}"  >> $GITHUB_OUTPUT
 
+        env:
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha  }}
       - name: Set Test Type Variables
         id: set-test-type-vars
         run: |
-          if ([ "${{ github.event_name }}" == 'pull_request' ] || [ "${{ github.event_name }}" == 'pull_request_target' ]) && ${{ !contains(toJson(github.event.pull_request.body), '#test-continuous') }}; then
+          if ([ "${{ github.event_name }}" == 'pull_request' ] || [ "${{ github.event_name }}" == 'pull_request_target' ]) && ${PR_BODY}; then
             echo "continuous-run=" >> "$GITHUB_OUTPUT"
             echo "continuous-prefix=[SKIPPED] (Continuous)" >> "$GITHUB_OUTPUT"
           else
@@ -107,6 +109,8 @@ jobs:
             echo "continuous-prefix=(Continuous)" >> "$GITHUB_OUTPUT"
           fi
 
+        env:
+          PR_BODY: ${{ !contains(toJson(github.event.pull_request.body), '#test-continuous') }}
   remove-tag:
     name: Remove safety tag
     needs: [set-vars]
