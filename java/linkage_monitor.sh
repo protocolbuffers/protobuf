@@ -26,14 +26,14 @@ echo "FOO FOO FOO"
 echo `pwd`
 echo `ls -l`
 echo "BAR BAR BAR"
-echo `ls -l core`
+echo `ls core`
 echo "BAZ BAZ BAZ"
-echo `ls -l core/*`
-echo `ls -l core/core_mvn-pom.xml`
-echo `ls -l core/lite_mvn-pom.xml`
-echo `ls -l kotlin/kotlin_mvn-pom.xml`
-echo `ls -l kotlin-lite/kotlin-lite_mvn-pom.xml`
-echo `ls -l util/util_mvn-pom.xml`
+echo `ls core/*`
+echo `ls core/core_mvn-pom.xml`
+echo `ls core/lite_mvn-pom.xml`
+echo `ls kotlin/kotlin_mvn-pom.xml`
+echo `ls kotlin-lite/kotlin-lite_mvn-pom.xml`
+echo `ls util/util_mvn-pom.xml`
 
 # Linkage Monitor requires the artifacts to be available in local Maven
 # repository.
@@ -42,6 +42,8 @@ mvn -e -B clean generate-sources install  \
     -Dmaven.test.skip=true \
     -Dprotobuf.basedir="../.." \
     -Dprotoc="${protoc_location}"
+
+echo "BAT BAT BAT"
 
 echo "Installed the artifacts to local Maven repository"
 
