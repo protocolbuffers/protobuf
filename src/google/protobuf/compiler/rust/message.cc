@@ -216,7 +216,7 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
                                    const upb::DefPool& pool) {
   ABSL_CHECK(ctx.is_upb());
   ctx.Emit(
-      {{"name", RsSafeName(msg.name())},
+      {{"name", MessageRsName(msg)},
        {"mini_table_impl",
         [&] {
           const SCC& scc = ctx.GetSCC(msg);
@@ -392,7 +392,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
       // visibility. The only reason we generate anything for them at all is
       // that it is useful to have map entries implement the
       // AssociatedMiniTable trait.
-      ctx.Emit({{"Msg", RsSafeName(msg.name())},
+      ctx.Emit({{"Msg", MessageRsName(msg)},
                 {"upb_generated_message_trait_impls",
                  [&] { UpbGeneratedMessageTraitImpls(ctx, msg, pool); }}},
                R"rs(
@@ -410,8 +410,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
       {
           // There's also ${$/$}$-style begin and end tokens, but those might
           // be harder to retrofit here because of the giant-template style.
-          Sub("MsgDefinition", RsSafeName(msg.name())).AnnotatedAs(&msg),
-          {"Msg", RsSafeName(msg.name())},
+          Sub("MsgDefinition", MessageRsName(msg)).AnnotatedAs(&msg),
+          {"Msg", MessageRsName(msg)},
           {"Msg::new", [&] { MessageNew(ctx, msg); }},
           {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
           {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
@@ -802,7 +802,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
   ctx.printer().PrintRaw("\n");
   if (ctx.is_cpp()) {
 
-    ctx.Emit({{"Msg", RsSafeName(msg.name())}},
+    ctx.Emit({{"Msg", MessageRsName(msg)}},
              R"rs(
       impl<'a> $Msg$Mut<'a> {
         pub unsafe fn __unstable_wrap_cpp_grant_permission_to_break(
@@ -862,7 +862,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
 
     if (!ctx.opts().force_lite_runtime &&
         msg.file()->options().optimize_for() != FileOptions::LITE_RUNTIME) {
-      ctx.Emit({{"Msg", RsSafeName(msg.name())}},
+      ctx.Emit({{"Msg", MessageRsName(msg)}},
                R"rs(
               impl $pb$::MessageDescriptorInterop for $Msg$ {
                 fn __unstable_get_descriptor() -> *const $std$::ffi::c_void {
