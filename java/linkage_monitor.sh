@@ -17,6 +17,16 @@ fi
 
 cd java
 
+
+echo `pwd`
+echo `ls -l core/core_mvn-pom.xml`
+echo `ls -l core/lite_mvn-pom.xml`
+echo `ls -l kotlin/kotlin_mvn-pom.xml`
+echo `ls -l kotlin-lite/kotlin-lite_mvn-pom.xml`
+echo `ls -l util/util_mvn-pom.xml`
+exit
+
+
 # Install the test BOM for Linkage Monitor
 pushd test/linkage-monitor-check-bom
 mvn -e -B install
