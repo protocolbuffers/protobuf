@@ -24,16 +24,14 @@ popd
 
 echo "FOO FOO FOO"
 echo `pwd`
-echo `ls -l`
 echo "BAR BAR BAR"
-echo `ls core`
+echo `ls -lR .`
 echo "BAZ BAZ BAZ"
-echo `ls core/*`
-echo `ls core/core_mvn-pom.xml`
-echo `ls core/lite_mvn-pom.xml`
-echo `ls kotlin/kotlin_mvn-pom.xml`
-echo `ls kotlin-lite/kotlin-lite_mvn-pom.xml`
-echo `ls util/util_mvn-pom.xml`
+#echo `ls core/core_mvn-pom.xml`
+#echo `ls core/lite_mvn-pom.xml`
+#echo `ls kotlin/kotlin_mvn-pom.xml`
+#echo `ls kotlin-lite/kotlin-lite_mvn-pom.xml`
+#echo `ls util/util_mvn-pom.xml`
 
 # Linkage Monitor requires the artifacts to be available in local Maven
 # repository.
