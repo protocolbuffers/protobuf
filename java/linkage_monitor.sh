@@ -17,19 +17,18 @@ fi
 
 cd java
 
+# Install the test BOM for Linkage Monitor
+pushd test/linkage-monitor-check-bom
+mvn -e -B install
+popd
 
+echo "FOO FOO FOO"
 echo `pwd`
 echo `ls -l core/core_mvn-pom.xml`
 echo `ls -l core/lite_mvn-pom.xml`
 echo `ls -l kotlin/kotlin_mvn-pom.xml`
 echo `ls -l kotlin-lite/kotlin-lite_mvn-pom.xml`
 echo `ls -l util/util_mvn-pom.xml`
-
-
-# Install the test BOM for Linkage Monitor
-pushd test/linkage-monitor-check-bom
-mvn -e -B install
-popd
 
 # Linkage Monitor requires the artifacts to be available in local Maven
 # repository.
