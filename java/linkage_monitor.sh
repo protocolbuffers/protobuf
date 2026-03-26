@@ -27,6 +27,8 @@ echo `pwd`
 echo `ls -l`
 echo "BAR BAR BAR"
 echo `ls -l core`
+echo "BAZ BAZ BAZ"
+echo `ls -l core/*`
 echo `ls -l core/core_mvn-pom.xml`
 echo `ls -l core/lite_mvn-pom.xml`
 echo `ls -l kotlin/kotlin_mvn-pom.xml`
