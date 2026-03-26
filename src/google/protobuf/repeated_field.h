@@ -1007,7 +1007,7 @@ inline void* RepeatedField<Element>::AddUninitializedWithArena(
   bool is_soo = this->is_soo();
   const int old_size = size();
   if (ABSL_PREDICT_FALSE(old_size == Capacity(is_soo))) {
-    Grow(arena_provider, is_soo, old_size, internal::CheckedAdd(old_size, 1));
+    Grow(arena_provider, is_soo, old_size, old_size + 1);
     is_soo = false;
   }
   return unsafe_elements(is_soo) + ExchangeCurrentSize(old_size + 1);
@@ -1036,7 +1036,7 @@ inline auto RepeatedField<Element>::AddWithArena(ArenaProvider arena_provider,
   int capacity = Capacity(is_soo);
   Element* elem = unsafe_elements(is_soo);
   if (ABSL_PREDICT_FALSE(old_size == capacity)) {
-    Grow(arena_provider, is_soo, old_size, internal::CheckedAdd(old_size, 1));
+    Grow(arena_provider, is_soo, old_size, old_size + 1);
     is_soo = false;
     capacity = Capacity(is_soo);
     elem = unsafe_elements(is_soo);
@@ -1094,8 +1094,10 @@ inline void RepeatedField<Element>::AddForwardIterator(
   ABSL_CHECK_LE(distance, static_cast<size_t>(std::numeric_limits<int>::max()))
       << "Input too large";
   // Check again for signed overflow.
-  const int new_size =
-      internal::CheckedAdd(old_size, static_cast<int>(distance));
+  const int delta = static_cast<int>(distance);
+  ABSL_CHECK_LE(old_size, std::numeric_limits<int>::max() - delta)
+      << "Input too large";
+  const int new_size = old_size + delta;
   if (ABSL_PREDICT_FALSE(new_size > capacity)) {
     Grow(arena_provider, is_soo, old_size, new_size);
     is_soo = false;
@@ -1133,8 +1135,7 @@ inline void RepeatedField<Element>::AddInputIterator(
   while (begin != end) {
     if (ABSL_PREDICT_FALSE(first == last)) {
       size = first - elem;
-      GrowNoAnnotate(arena_provider, is_soo, size,
-                     internal::CheckedAdd(size, 1));
+      GrowNoAnnotate(arena_provider, is_soo, size, size + 1);
       is_soo = false;
       elem = unsafe_elements(is_soo);
       capacity = Capacity(is_soo);

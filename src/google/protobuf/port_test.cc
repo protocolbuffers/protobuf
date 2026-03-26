@@ -13,7 +13,6 @@
 #include <cassert>
 #include <cstdint>  // NOLINT
 
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/base/config.h"
 
@@ -23,9 +22,6 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-namespace {
-
-using ::testing::HasSubstr;
 
 int assume_var_for_test = 1;
 
@@ -138,14 +134,6 @@ TEST(PortTest, PrefetchWorksWithValidOffsets) {
 
 #endif  // defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
 
-TEST(PortTest, CheckedAdd) {
-  int n = (std::numeric_limits<int>::max)();
-  EXPECT_EQ(n, CheckedAdd(n - 1, 1));
-  EXPECT_DEATH(CheckedAdd(n, 1),
-               HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
-}
-
-}  // namespace
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
