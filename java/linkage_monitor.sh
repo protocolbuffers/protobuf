@@ -28,7 +28,7 @@ echo "BAR BAR BAR"
 echo `ls -lR .`
 echo "BAZ BAZ BAZ"
 echo "$(realpath ${RUNFILES_DIR})"
-echo `ls $(realpath ${RUNFILES_DIR})`
+echo `ls -LR $(realpath ${RUNFILES_DIR})`
 #echo `ls core/core_mvn-pom.xml`
 #echo `ls core/lite_mvn-pom.xml`
 #echo `ls kotlin/kotlin_mvn-pom.xml`
