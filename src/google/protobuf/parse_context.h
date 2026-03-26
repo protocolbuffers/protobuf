@@ -391,10 +391,12 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
     if (!peek_func(absl::string_view(ptr, round_down_size))) return nullptr;
     ptr += round_down_size;
-#if !defined(__APPLE__)
-    // Working around clang issue on Apple.
+    // TODO: b/496023113 - Remove hexagon once hexagon-clang handles it
+    // properly.
+#if !defined(__APPLE__) && !defined(__hexagon__)
+    // Working around clang issue on Apple and Hexagon.
     PROTOBUF_ALWAYS_INLINE_CALL
-#endif  // !__APPLE__
+#endif  // !__APPLE__ && !__hexagon__
     sink.Flush(ptr);
     size -= round_down_size;
 
@@ -420,10 +422,12 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
       absl::string_view view(ptr, static_cast<size_t>(append_size));
       if (!peek_func(view)) return nullptr;
-#if !defined(__APPLE__)
-      // Working around clang issue on Apple.
+      // TODO: b/496023113 - Remove hexagon once hexagon-clang handles it
+      // properly.
+#if !defined(__APPLE__) && !defined(__hexagon__)
+      // Working around clang issue on Apple and Hexagon.
       PROTOBUF_ALWAYS_INLINE_CALL
-#endif  // !__APPLE__
+#endif  // !__APPLE__ && !__hexagon__
       sink.Append(view);
 
       ptr += append_size;
