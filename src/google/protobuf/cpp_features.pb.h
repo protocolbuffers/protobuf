@@ -164,10 +164,6 @@ template <>
 using ::google::protobuf::internal::generated_enum::AbslParseFlag;
 using ::google::protobuf::internal::generated_enum::AbslUnparseFlag;
 
-// ===================================================================
-
-
-// -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:pb.CppFeatures) */ {
@@ -194,15 +190,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
     CopyFrom(from);
     return *this;
   }
-  inline CppFeatures& operator=(CppFeatures&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  CppFeatures& operator=(CppFeatures&& from) noexcept;
 
   [[nodiscard]] inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -229,19 +217,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(CppFeatures& a, CppFeatures& b) { a.Swap(&b); }
-  inline void Swap(CppFeatures* PROTOBUF_NONNULL other) {
-    if (other == this) return;
-    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
-    } else {
-      ::google::protobuf::internal::GenericSwap(this, other);
-    }
-  }
-  void UnsafeArenaSwap(CppFeatures* PROTOBUF_NONNULL other) {
-    if (other == this) return;
-    ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
-  }
+  void Swap(CppFeatures* PROTOBUF_NONNULL other);
+  void UnsafeArenaSwap(CppFeatures* PROTOBUF_NONNULL other);
 
   // implements Message ----------------------------------------------
 
@@ -458,23 +435,17 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
   friend struct ::TableStruct_google_2fprotobuf_2fcpp_5ffeatures_2eproto;
 };
 
-// ===================================================================
-
 
 
 inline constexpr int kCppFieldNumber = 1000;
 PROTOBUF_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
     ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::CppFeatures >, 11, false>(cpp);
 
-// ===================================================================
-
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
-// -------------------------------------------------------------------
-
 // CppFeatures
 
 // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {

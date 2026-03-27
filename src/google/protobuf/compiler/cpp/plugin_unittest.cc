@@ -57,7 +57,7 @@ class TestGenerator : public CodeGenerator {
     TryInsert("test.pb.h", "field_get:foo.Bar.requiredString", context);
     TryInsert("test.pb.h", "field_set:foo.Bar.requiredString", context);
     TryInsert("test.pb.h", "field_mutable:foo.Bar.requiredString", context);
-    TryInsert("test.pb.h", "field_set_allocated:foo.Bar.requiredString",
+    TryInsert("test.pb.cc", "field_set_allocated:foo.Bar.requiredString",
               context);
 
     // Check field accessors for a repeated string:
@@ -73,12 +73,12 @@ class TestGenerator : public CodeGenerator {
     TryInsert("test.pb.h", "field_get:foo.Bar.oneOfString", context);
     TryInsert("test.pb.h", "field_set:foo.Bar.oneOfString", context);
     TryInsert("test.pb.h", "field_mutable:foo.Bar.oneOfString", context);
-    TryInsert("test.pb.h", "field_set_allocated:foo.Bar.oneOfString", context);
+    TryInsert("test.pb.cc", "field_set_allocated:foo.Bar.oneOfString", context);
 
     // Check field accessors for an optional message:
     TryInsert("test.pb.h", "field_get:foo.Bar.optMessage", context);
     TryInsert("test.pb.h", "field_mutable:foo.Bar.optMessage", context);
-    TryInsert("test.pb.h", "field_set_allocated:foo.Bar.optMessage", context);
+    TryInsert("test.pb.cc", "field_set_allocated:foo.Bar.optMessage", context);
 
     // Check field accessors for a repeated message:
     TryInsert("test.pb.h", "field_add:foo.Bar.repeatedMessage", context);

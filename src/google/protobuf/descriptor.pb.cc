@@ -7803,8 +7803,6 @@ SymbolVisibility_descriptor() {
 }
 PROTOBUF_CONSTINIT const uint32_t SymbolVisibility_internal_data_[] = {
     196608u, 0u, };
-// ===================================================================
-
 FileDescriptorSet::FileDescriptorSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FileDescriptorSet_get_class_data()) {
@@ -8048,11 +8046,244 @@ void FileDescriptorSet::InternalSwap(FileDescriptorSet* PROTOBUF_RESTRICT PROTOB
   _impl_.file_.InternalSwap(&other->_impl_.file_);
 }
 
+void FileDescriptorSet::Swap(FileDescriptorSet* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void FileDescriptorSet::UnsafeArenaSwap(FileDescriptorSet* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+FileDescriptorSet& FileDescriptorSet::operator=(FileDescriptorSet&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata FileDescriptorSet::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
+::std::string* PROTOBUF_NULLABLE FileDescriptorProto::release_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.name)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000100U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000100U);
+  auto* released = _impl_.name_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  return released;
+}
+void FileDescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000100U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000100U);
+  }
+  _impl_.name_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.name)
+}
+::std::string* PROTOBUF_NONNULL FileDescriptorProto::_internal_mutable_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.name_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE FileDescriptorProto::release_package() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.package)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000200U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000200U);
+  auto* released = _impl_.package_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.package_.Set("", GetArena());
+  }
+  return released;
+}
+void FileDescriptorProto::set_allocated_package(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000200U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000200U);
+  }
+  _impl_.package_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.package_.IsDefault()) {
+    _impl_.package_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.package)
+}
+::std::string* PROTOBUF_NONNULL FileDescriptorProto::_internal_mutable_package() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.package_.Mutable( GetArena());
+}
+::google::protobuf::FileOptions* PROTOBUF_NULLABLE FileDescriptorProto::release_options() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
+  ClearHasBit(_impl_._has_bits_[0], 0x00000800U);
+  ::google::protobuf::FileOptions* released = _impl_.options_;
+  _impl_.options_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void FileDescriptorProto::unsafe_arena_set_allocated_options(
+    ::google::protobuf::FileOptions* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
+  }
+  _impl_.options_ = reinterpret_cast<::google::protobuf::FileOptions*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000800U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000800U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FileDescriptorProto.options)
+}
+::google::protobuf::FileOptions* PROTOBUF_NONNULL FileDescriptorProto::_internal_mutable_options() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.options_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FileOptions>(GetArena());
+    _impl_.options_ = reinterpret_cast<::google::protobuf::FileOptions*>(p);
+  }
+  return _impl_.options_;
+}
+void FileDescriptorProto::set_allocated_options(::google::protobuf::FileOptions* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000800U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000800U);
+  }
+
+  _impl_.options_ = reinterpret_cast<::google::protobuf::FileOptions*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.options)
+}
+::google::protobuf::SourceCodeInfo* PROTOBUF_NULLABLE FileDescriptorProto::release_source_code_info() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+
+  ClearHasBit(_impl_._has_bits_[0], 0x00001000U);
+  ::google::protobuf::SourceCodeInfo* released = _impl_.source_code_info_;
+  _impl_.source_code_info_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void FileDescriptorProto::unsafe_arena_set_allocated_source_code_info(
+    ::google::protobuf::SourceCodeInfo* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.source_code_info_);
+  }
+  _impl_.source_code_info_ = reinterpret_cast<::google::protobuf::SourceCodeInfo*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00001000U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00001000U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FileDescriptorProto.source_code_info)
+}
+::google::protobuf::SourceCodeInfo* PROTOBUF_NONNULL FileDescriptorProto::_internal_mutable_source_code_info() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.source_code_info_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::SourceCodeInfo>(GetArena());
+    _impl_.source_code_info_ = reinterpret_cast<::google::protobuf::SourceCodeInfo*>(p);
+  }
+  return _impl_.source_code_info_;
+}
+void FileDescriptorProto::set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.source_code_info_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00001000U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00001000U);
+  }
+
+  _impl_.source_code_info_ = reinterpret_cast<::google::protobuf::SourceCodeInfo*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.source_code_info)
+}
+::std::string* PROTOBUF_NULLABLE FileDescriptorProto::release_syntax() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.syntax)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000400U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000400U);
+  auto* released = _impl_.syntax_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.syntax_.Set("", GetArena());
+  }
+  return released;
+}
+void FileDescriptorProto::set_allocated_syntax(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000400U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000400U);
+  }
+  _impl_.syntax_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.syntax_.IsDefault()) {
+    _impl_.syntax_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.syntax)
+}
+::std::string* PROTOBUF_NONNULL FileDescriptorProto::_internal_mutable_syntax() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.syntax_.Mutable( GetArena());
+}
 FileDescriptorProto::FileDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FileDescriptorProto_get_class_data()) {
@@ -8722,11 +8953,93 @@ void FileDescriptorProto::InternalSwap(FileDescriptorProto* PROTOBUF_RESTRICT PR
           reinterpret_cast<char*>(&other->_impl_.options_));
 }
 
+void FileDescriptorProto::Swap(FileDescriptorProto* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void FileDescriptorProto::UnsafeArenaSwap(FileDescriptorProto* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+FileDescriptorProto& FileDescriptorProto::operator=(FileDescriptorProto&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata FileDescriptorProto::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
+::google::protobuf::ExtensionRangeOptions* PROTOBUF_NULLABLE DescriptorProto_ExtensionRange::release_options() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ::google::protobuf::ExtensionRangeOptions* released = _impl_.options_;
+  _impl_.options_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void DescriptorProto_ExtensionRange::unsafe_arena_set_allocated_options(
+    ::google::protobuf::ExtensionRangeOptions* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
+  }
+  _impl_.options_ = reinterpret_cast<::google::protobuf::ExtensionRangeOptions*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.DescriptorProto.ExtensionRange.options)
+}
+::google::protobuf::ExtensionRangeOptions* PROTOBUF_NONNULL DescriptorProto_ExtensionRange::_internal_mutable_options() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.options_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::ExtensionRangeOptions>(GetArena());
+    _impl_.options_ = reinterpret_cast<::google::protobuf::ExtensionRangeOptions*>(p);
+  }
+  return _impl_.options_;
+}
+void DescriptorProto_ExtensionRange::set_allocated_options(::google::protobuf::ExtensionRangeOptions* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+
+  _impl_.options_ = reinterpret_cast<::google::protobuf::ExtensionRangeOptions*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.DescriptorProto.ExtensionRange.options)
+}
 DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, DescriptorProto_ExtensionRange_get_class_data()) {
@@ -8997,11 +9310,32 @@ void DescriptorProto_ExtensionRange::InternalSwap(DescriptorProto_ExtensionRange
           reinterpret_cast<char*>(&other->_impl_.options_));
 }
 
+void DescriptorProto_ExtensionRange::Swap(DescriptorProto_ExtensionRange* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void DescriptorProto_ExtensionRange::UnsafeArenaSwap(DescriptorProto_ExtensionRange* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+DescriptorProto_ExtensionRange& DescriptorProto_ExtensionRange::operator=(DescriptorProto_ExtensionRange&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata DescriptorProto_ExtensionRange::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
-
 DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, DescriptorProto_ReservedRange_get_class_data()) {
@@ -9214,11 +9548,123 @@ void DescriptorProto_ReservedRange::InternalSwap(DescriptorProto_ReservedRange* 
           reinterpret_cast<char*>(&other->_impl_.start_));
 }
 
+void DescriptorProto_ReservedRange::Swap(DescriptorProto_ReservedRange* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void DescriptorProto_ReservedRange::UnsafeArenaSwap(DescriptorProto_ReservedRange* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+DescriptorProto_ReservedRange& DescriptorProto_ReservedRange::operator=(DescriptorProto_ReservedRange&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata DescriptorProto_ReservedRange::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
+::std::string* PROTOBUF_NULLABLE DescriptorProto::release_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.DescriptorProto.name)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000100U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000100U);
+  auto* released = _impl_.name_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  return released;
+}
+void DescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000100U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000100U);
+  }
+  _impl_.name_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.DescriptorProto.name)
+}
+::std::string* PROTOBUF_NONNULL DescriptorProto::_internal_mutable_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.name_.Mutable( GetArena());
+}
+::google::protobuf::MessageOptions* PROTOBUF_NULLABLE DescriptorProto::release_options() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
+  ClearHasBit(_impl_._has_bits_[0], 0x00000200U);
+  ::google::protobuf::MessageOptions* released = _impl_.options_;
+  _impl_.options_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void DescriptorProto::unsafe_arena_set_allocated_options(
+    ::google::protobuf::MessageOptions* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
+  }
+  _impl_.options_ = reinterpret_cast<::google::protobuf::MessageOptions*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000200U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000200U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.DescriptorProto.options)
+}
+::google::protobuf::MessageOptions* PROTOBUF_NONNULL DescriptorProto::_internal_mutable_options() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.options_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::MessageOptions>(GetArena());
+    _impl_.options_ = reinterpret_cast<::google::protobuf::MessageOptions*>(p);
+  }
+  return _impl_.options_;
+}
+void DescriptorProto::set_allocated_options(::google::protobuf::MessageOptions* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000200U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000200U);
+  }
+
+  _impl_.options_ = reinterpret_cast<::google::protobuf::MessageOptions*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.DescriptorProto.options)
+}
 DescriptorProto::DescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, DescriptorProto_get_class_data()) {
@@ -9832,11 +10278,92 @@ void DescriptorProto::InternalSwap(DescriptorProto* PROTOBUF_RESTRICT PROTOBUF_N
           reinterpret_cast<char*>(&other->_impl_.options_));
 }
 
+void DescriptorProto::Swap(DescriptorProto* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void DescriptorProto::UnsafeArenaSwap(DescriptorProto* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+DescriptorProto& DescriptorProto::operator=(DescriptorProto&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata DescriptorProto::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
-
+::std::string* PROTOBUF_NULLABLE ExtensionRangeOptions_Declaration::release_full_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.ExtensionRangeOptions.Declaration.full_name)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000001U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  auto* released = _impl_.full_name_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.full_name_.Set("", GetArena());
+  }
+  return released;
+}
+void ExtensionRangeOptions_Declaration::set_allocated_full_name(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+  _impl_.full_name_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.full_name_.IsDefault()) {
+    _impl_.full_name_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.ExtensionRangeOptions.Declaration.full_name)
+}
+::std::string* PROTOBUF_NONNULL ExtensionRangeOptions_Declaration::_internal_mutable_full_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.full_name_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE ExtensionRangeOptions_Declaration::release_type() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.ExtensionRangeOptions.Declaration.type)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000002U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  auto* released = _impl_.type_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.type_.Set("", GetArena());
+  }
+  return released;
+}
+void ExtensionRangeOptions_Declaration::set_allocated_type(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+  _impl_.type_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.type_.IsDefault()) {
+    _impl_.type_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.ExtensionRangeOptions.Declaration.type)
+}
+::std::string* PROTOBUF_NONNULL ExtensionRangeOptions_Declaration::_internal_mutable_type() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.type_.Mutable( GetArena());
+}
 ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, ExtensionRangeOptions_Declaration_get_class_data()) {
@@ -10121,11 +10648,93 @@ void ExtensionRangeOptions_Declaration::InternalSwap(ExtensionRangeOptions_Decla
           reinterpret_cast<char*>(&other->_impl_.number_));
 }
 
+void ExtensionRangeOptions_Declaration::Swap(ExtensionRangeOptions_Declaration* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void ExtensionRangeOptions_Declaration::UnsafeArenaSwap(ExtensionRangeOptions_Declaration* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+ExtensionRangeOptions_Declaration& ExtensionRangeOptions_Declaration::operator=(ExtensionRangeOptions_Declaration&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata ExtensionRangeOptions_Declaration::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
+::google::protobuf::FeatureSet* PROTOBUF_NULLABLE ExtensionRangeOptions::release_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
+  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  ::google::protobuf::FeatureSet* released = _impl_.features_;
+  _impl_.features_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void ExtensionRangeOptions::unsafe_arena_set_allocated_features(
+    ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
+  }
+  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.ExtensionRangeOptions.features)
+}
+::google::protobuf::FeatureSet* PROTOBUF_NONNULL ExtensionRangeOptions::_internal_mutable_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.features_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.features_;
+}
+void ExtensionRangeOptions::set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  }
+
+  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.ExtensionRangeOptions.features)
+}
 ExtensionRangeOptions::ExtensionRangeOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, ExtensionRangeOptions_get_class_data()) {
@@ -10471,11 +11080,243 @@ void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* PROTOBUF_RESTRIC
           reinterpret_cast<char*>(&other->_impl_.features_));
 }
 
+void ExtensionRangeOptions::Swap(ExtensionRangeOptions* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void ExtensionRangeOptions::UnsafeArenaSwap(ExtensionRangeOptions* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+ExtensionRangeOptions& ExtensionRangeOptions::operator=(ExtensionRangeOptions&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata ExtensionRangeOptions::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
+::std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.name)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000001U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  auto* released = _impl_.name_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  return released;
+}
+void FieldDescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+  _impl_.name_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.name)
+}
+::std::string* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.name_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_type_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.type_name)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000004U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  auto* released = _impl_.type_name_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.type_name_.Set("", GetArena());
+  }
+  return released;
+}
+void FieldDescriptorProto::set_allocated_type_name(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  }
+  _impl_.type_name_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.type_name_.IsDefault()) {
+    _impl_.type_name_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.type_name)
+}
+::std::string* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_type_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.type_name_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_extendee() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.extendee)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000002U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  auto* released = _impl_.extendee_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.extendee_.Set("", GetArena());
+  }
+  return released;
+}
+void FieldDescriptorProto::set_allocated_extendee(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+  _impl_.extendee_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.extendee_.IsDefault()) {
+    _impl_.extendee_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.extendee)
+}
+::std::string* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_extendee() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.extendee_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_default_value() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.default_value)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000008U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  auto* released = _impl_.default_value_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.default_value_.Set("", GetArena());
+  }
+  return released;
+}
+void FieldDescriptorProto::set_allocated_default_value(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  }
+  _impl_.default_value_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.default_value_.IsDefault()) {
+    _impl_.default_value_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.default_value)
+}
+::std::string* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_default_value() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.default_value_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_json_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.json_name)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000010U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
+  auto* released = _impl_.json_name_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.json_name_.Set("", GetArena());
+  }
+  return released;
+}
+void FieldDescriptorProto::set_allocated_json_name(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000010U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
+  }
+  _impl_.json_name_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.json_name_.IsDefault()) {
+    _impl_.json_name_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.json_name)
+}
+::std::string* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_json_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.json_name_.Mutable( GetArena());
+}
+::google::protobuf::FieldOptions* PROTOBUF_NULLABLE FieldDescriptorProto::release_options() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
+  ClearHasBit(_impl_._has_bits_[0], 0x00000020U);
+  ::google::protobuf::FieldOptions* released = _impl_.options_;
+  _impl_.options_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void FieldDescriptorProto::unsafe_arena_set_allocated_options(
+    ::google::protobuf::FieldOptions* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
+  }
+  _impl_.options_ = reinterpret_cast<::google::protobuf::FieldOptions*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000020U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000020U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FieldDescriptorProto.options)
+}
+::google::protobuf::FieldOptions* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_options() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.options_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FieldOptions>(GetArena());
+    _impl_.options_ = reinterpret_cast<::google::protobuf::FieldOptions*>(p);
+  }
+  return _impl_.options_;
+}
+void FieldDescriptorProto::set_allocated_options(::google::protobuf::FieldOptions* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000020U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000020U);
+  }
+
+  _impl_.options_ = reinterpret_cast<::google::protobuf::FieldOptions*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.options)
+}
 FieldDescriptorProto::FieldDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FieldDescriptorProto_get_class_data()) {
@@ -10907,11 +11748,123 @@ void FieldDescriptorProto::InternalSwap(FieldDescriptorProto* PROTOBUF_RESTRICT 
           reinterpret_cast<char*>(&other->_impl_.options_));
 }
 
+void FieldDescriptorProto::Swap(FieldDescriptorProto* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void FieldDescriptorProto::UnsafeArenaSwap(FieldDescriptorProto* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+FieldDescriptorProto& FieldDescriptorProto::operator=(FieldDescriptorProto&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata FieldDescriptorProto::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
+::std::string* PROTOBUF_NULLABLE OneofDescriptorProto::release_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.OneofDescriptorProto.name)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000001U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  auto* released = _impl_.name_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  return released;
+}
+void OneofDescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+  _impl_.name_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.OneofDescriptorProto.name)
+}
+::std::string* PROTOBUF_NONNULL OneofDescriptorProto::_internal_mutable_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.name_.Mutable( GetArena());
+}
+::google::protobuf::OneofOptions* PROTOBUF_NULLABLE OneofDescriptorProto::release_options() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ::google::protobuf::OneofOptions* released = _impl_.options_;
+  _impl_.options_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void OneofDescriptorProto::unsafe_arena_set_allocated_options(
+    ::google::protobuf::OneofOptions* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
+  }
+  _impl_.options_ = reinterpret_cast<::google::protobuf::OneofOptions*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.OneofDescriptorProto.options)
+}
+::google::protobuf::OneofOptions* PROTOBUF_NONNULL OneofDescriptorProto::_internal_mutable_options() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.options_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::OneofOptions>(GetArena());
+    _impl_.options_ = reinterpret_cast<::google::protobuf::OneofOptions*>(p);
+  }
+  return _impl_.options_;
+}
+void OneofDescriptorProto::set_allocated_options(::google::protobuf::OneofOptions* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+
+  _impl_.options_ = reinterpret_cast<::google::protobuf::OneofOptions*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.OneofDescriptorProto.options)
+}
 OneofDescriptorProto::OneofDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, OneofDescriptorProto_get_class_data()) {
@@ -11155,11 +12108,32 @@ void OneofDescriptorProto::InternalSwap(OneofDescriptorProto* PROTOBUF_RESTRICT 
   swap(_impl_.options_, other->_impl_.options_);
 }
 
+void OneofDescriptorProto::Swap(OneofDescriptorProto* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void OneofDescriptorProto::UnsafeArenaSwap(OneofDescriptorProto* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+OneofDescriptorProto& OneofDescriptorProto::operator=(OneofDescriptorProto&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata OneofDescriptorProto::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
-
 EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, EnumDescriptorProto_EnumReservedRange_get_class_data()) {
@@ -11372,11 +12346,123 @@ void EnumDescriptorProto_EnumReservedRange::InternalSwap(EnumDescriptorProto_Enu
           reinterpret_cast<char*>(&other->_impl_.start_));
 }
 
+void EnumDescriptorProto_EnumReservedRange::Swap(EnumDescriptorProto_EnumReservedRange* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void EnumDescriptorProto_EnumReservedRange::UnsafeArenaSwap(EnumDescriptorProto_EnumReservedRange* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+EnumDescriptorProto_EnumReservedRange& EnumDescriptorProto_EnumReservedRange::operator=(EnumDescriptorProto_EnumReservedRange&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata EnumDescriptorProto_EnumReservedRange::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
+::std::string* PROTOBUF_NULLABLE EnumDescriptorProto::release_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.EnumDescriptorProto.name)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000008U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  auto* released = _impl_.name_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  return released;
+}
+void EnumDescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  }
+  _impl_.name_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumDescriptorProto.name)
+}
+::std::string* PROTOBUF_NONNULL EnumDescriptorProto::_internal_mutable_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.name_.Mutable( GetArena());
+}
+::google::protobuf::EnumOptions* PROTOBUF_NULLABLE EnumDescriptorProto::release_options() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
+  ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
+  ::google::protobuf::EnumOptions* released = _impl_.options_;
+  _impl_.options_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void EnumDescriptorProto::unsafe_arena_set_allocated_options(
+    ::google::protobuf::EnumOptions* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
+  }
+  _impl_.options_ = reinterpret_cast<::google::protobuf::EnumOptions*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000010U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.EnumDescriptorProto.options)
+}
+::google::protobuf::EnumOptions* PROTOBUF_NONNULL EnumDescriptorProto::_internal_mutable_options() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.options_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::EnumOptions>(GetArena());
+    _impl_.options_ = reinterpret_cast<::google::protobuf::EnumOptions*>(p);
+  }
+  return _impl_.options_;
+}
+void EnumDescriptorProto::set_allocated_options(::google::protobuf::EnumOptions* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000010U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
+  }
+
+  _impl_.options_ = reinterpret_cast<::google::protobuf::EnumOptions*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumDescriptorProto.options)
+}
 EnumDescriptorProto::EnumDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, EnumDescriptorProto_get_class_data()) {
@@ -11769,11 +12855,123 @@ void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* PROTOBUF_RESTRICT PR
           reinterpret_cast<char*>(&other->_impl_.options_));
 }
 
+void EnumDescriptorProto::Swap(EnumDescriptorProto* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void EnumDescriptorProto::UnsafeArenaSwap(EnumDescriptorProto* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+EnumDescriptorProto& EnumDescriptorProto::operator=(EnumDescriptorProto&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata EnumDescriptorProto::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
+::std::string* PROTOBUF_NULLABLE EnumValueDescriptorProto::release_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.EnumValueDescriptorProto.name)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000001U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  auto* released = _impl_.name_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  return released;
+}
+void EnumValueDescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+  _impl_.name_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumValueDescriptorProto.name)
+}
+::std::string* PROTOBUF_NONNULL EnumValueDescriptorProto::_internal_mutable_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.name_.Mutable( GetArena());
+}
+::google::protobuf::EnumValueOptions* PROTOBUF_NULLABLE EnumValueDescriptorProto::release_options() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ::google::protobuf::EnumValueOptions* released = _impl_.options_;
+  _impl_.options_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void EnumValueDescriptorProto::unsafe_arena_set_allocated_options(
+    ::google::protobuf::EnumValueOptions* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
+  }
+  _impl_.options_ = reinterpret_cast<::google::protobuf::EnumValueOptions*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.EnumValueDescriptorProto.options)
+}
+::google::protobuf::EnumValueOptions* PROTOBUF_NONNULL EnumValueDescriptorProto::_internal_mutable_options() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.options_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::EnumValueOptions>(GetArena());
+    _impl_.options_ = reinterpret_cast<::google::protobuf::EnumValueOptions*>(p);
+  }
+  return _impl_.options_;
+}
+void EnumValueDescriptorProto::set_allocated_options(::google::protobuf::EnumValueOptions* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+
+  _impl_.options_ = reinterpret_cast<::google::protobuf::EnumValueOptions*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumValueDescriptorProto.options)
+}
 EnumValueDescriptorProto::EnumValueDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, EnumValueDescriptorProto_get_class_data()) {
@@ -12044,11 +13242,123 @@ void EnumValueDescriptorProto::InternalSwap(EnumValueDescriptorProto* PROTOBUF_R
           reinterpret_cast<char*>(&other->_impl_.options_));
 }
 
+void EnumValueDescriptorProto::Swap(EnumValueDescriptorProto* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void EnumValueDescriptorProto::UnsafeArenaSwap(EnumValueDescriptorProto* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+EnumValueDescriptorProto& EnumValueDescriptorProto::operator=(EnumValueDescriptorProto&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata EnumValueDescriptorProto::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
+::std::string* PROTOBUF_NULLABLE ServiceDescriptorProto::release_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.ServiceDescriptorProto.name)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000002U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  auto* released = _impl_.name_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  return released;
+}
+void ServiceDescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+  _impl_.name_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.ServiceDescriptorProto.name)
+}
+::std::string* PROTOBUF_NONNULL ServiceDescriptorProto::_internal_mutable_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.name_.Mutable( GetArena());
+}
+::google::protobuf::ServiceOptions* PROTOBUF_NULLABLE ServiceDescriptorProto::release_options() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
+  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  ::google::protobuf::ServiceOptions* released = _impl_.options_;
+  _impl_.options_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void ServiceDescriptorProto::unsafe_arena_set_allocated_options(
+    ::google::protobuf::ServiceOptions* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
+  }
+  _impl_.options_ = reinterpret_cast<::google::protobuf::ServiceOptions*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.ServiceDescriptorProto.options)
+}
+::google::protobuf::ServiceOptions* PROTOBUF_NONNULL ServiceDescriptorProto::_internal_mutable_options() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.options_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::ServiceOptions>(GetArena());
+    _impl_.options_ = reinterpret_cast<::google::protobuf::ServiceOptions*>(p);
+  }
+  return _impl_.options_;
+}
+void ServiceDescriptorProto::set_allocated_options(::google::protobuf::ServiceOptions* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  }
+
+  _impl_.options_ = reinterpret_cast<::google::protobuf::ServiceOptions*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.ServiceDescriptorProto.options)
+}
 ServiceDescriptorProto::ServiceDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, ServiceDescriptorProto_get_class_data()) {
@@ -12335,11 +13645,183 @@ void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* PROTOBUF_RESTR
   swap(_impl_.options_, other->_impl_.options_);
 }
 
+void ServiceDescriptorProto::Swap(ServiceDescriptorProto* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void ServiceDescriptorProto::UnsafeArenaSwap(ServiceDescriptorProto* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+ServiceDescriptorProto& ServiceDescriptorProto::operator=(ServiceDescriptorProto&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata ServiceDescriptorProto::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
+::std::string* PROTOBUF_NULLABLE MethodDescriptorProto::release_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.name)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000001U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  auto* released = _impl_.name_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  return released;
+}
+void MethodDescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+  _impl_.name_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.MethodDescriptorProto.name)
+}
+::std::string* PROTOBUF_NONNULL MethodDescriptorProto::_internal_mutable_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.name_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE MethodDescriptorProto::release_input_type() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.input_type)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000002U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  auto* released = _impl_.input_type_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.input_type_.Set("", GetArena());
+  }
+  return released;
+}
+void MethodDescriptorProto::set_allocated_input_type(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+  _impl_.input_type_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.input_type_.IsDefault()) {
+    _impl_.input_type_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.MethodDescriptorProto.input_type)
+}
+::std::string* PROTOBUF_NONNULL MethodDescriptorProto::_internal_mutable_input_type() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.input_type_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE MethodDescriptorProto::release_output_type() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.output_type)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000004U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  auto* released = _impl_.output_type_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.output_type_.Set("", GetArena());
+  }
+  return released;
+}
+void MethodDescriptorProto::set_allocated_output_type(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  }
+  _impl_.output_type_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.output_type_.IsDefault()) {
+    _impl_.output_type_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.MethodDescriptorProto.output_type)
+}
+::std::string* PROTOBUF_NONNULL MethodDescriptorProto::_internal_mutable_output_type() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.output_type_.Mutable( GetArena());
+}
+::google::protobuf::MethodOptions* PROTOBUF_NULLABLE MethodDescriptorProto::release_options() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
+  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  ::google::protobuf::MethodOptions* released = _impl_.options_;
+  _impl_.options_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void MethodDescriptorProto::unsafe_arena_set_allocated_options(
+    ::google::protobuf::MethodOptions* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
+  }
+  _impl_.options_ = reinterpret_cast<::google::protobuf::MethodOptions*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.MethodDescriptorProto.options)
+}
+::google::protobuf::MethodOptions* PROTOBUF_NONNULL MethodDescriptorProto::_internal_mutable_options() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.options_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::MethodOptions>(GetArena());
+    _impl_.options_ = reinterpret_cast<::google::protobuf::MethodOptions*>(p);
+  }
+  return _impl_.options_;
+}
+void MethodDescriptorProto::set_allocated_options(::google::protobuf::MethodOptions* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  }
+
+  _impl_.options_ = reinterpret_cast<::google::protobuf::MethodOptions*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.MethodDescriptorProto.options)
+}
 MethodDescriptorProto::MethodDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, MethodDescriptorProto_get_class_data()) {
@@ -12666,11 +14148,393 @@ void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* PROTOBUF_RESTRIC
           reinterpret_cast<char*>(&other->_impl_.options_));
 }
 
+void MethodDescriptorProto::Swap(MethodDescriptorProto* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void MethodDescriptorProto::UnsafeArenaSwap(MethodDescriptorProto* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+MethodDescriptorProto& MethodDescriptorProto::operator=(MethodDescriptorProto&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata MethodDescriptorProto::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
+::std::string* PROTOBUF_NULLABLE FileOptions::release_java_package() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.java_package)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000001U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  auto* released = _impl_.java_package_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.java_package_.Set("", GetArena());
+  }
+  return released;
+}
+void FileOptions::set_allocated_java_package(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+  _impl_.java_package_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.java_package_.IsDefault()) {
+    _impl_.java_package_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.java_package)
+}
+::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_java_package() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.java_package_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE FileOptions::release_java_outer_classname() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.java_outer_classname)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000002U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  auto* released = _impl_.java_outer_classname_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.java_outer_classname_.Set("", GetArena());
+  }
+  return released;
+}
+void FileOptions::set_allocated_java_outer_classname(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+  _impl_.java_outer_classname_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.java_outer_classname_.IsDefault()) {
+    _impl_.java_outer_classname_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.java_outer_classname)
+}
+::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_java_outer_classname() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.java_outer_classname_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE FileOptions::release_go_package() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.go_package)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000004U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  auto* released = _impl_.go_package_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.go_package_.Set("", GetArena());
+  }
+  return released;
+}
+void FileOptions::set_allocated_go_package(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  }
+  _impl_.go_package_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.go_package_.IsDefault()) {
+    _impl_.go_package_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.go_package)
+}
+::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_go_package() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.go_package_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE FileOptions::release_objc_class_prefix() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.objc_class_prefix)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000008U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  auto* released = _impl_.objc_class_prefix_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.objc_class_prefix_.Set("", GetArena());
+  }
+  return released;
+}
+void FileOptions::set_allocated_objc_class_prefix(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  }
+  _impl_.objc_class_prefix_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.objc_class_prefix_.IsDefault()) {
+    _impl_.objc_class_prefix_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.objc_class_prefix)
+}
+::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_objc_class_prefix() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.objc_class_prefix_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE FileOptions::release_csharp_namespace() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.csharp_namespace)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000010U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
+  auto* released = _impl_.csharp_namespace_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.csharp_namespace_.Set("", GetArena());
+  }
+  return released;
+}
+void FileOptions::set_allocated_csharp_namespace(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000010U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
+  }
+  _impl_.csharp_namespace_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.csharp_namespace_.IsDefault()) {
+    _impl_.csharp_namespace_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.csharp_namespace)
+}
+::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_csharp_namespace() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.csharp_namespace_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE FileOptions::release_swift_prefix() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.swift_prefix)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000020U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000020U);
+  auto* released = _impl_.swift_prefix_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.swift_prefix_.Set("", GetArena());
+  }
+  return released;
+}
+void FileOptions::set_allocated_swift_prefix(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000020U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000020U);
+  }
+  _impl_.swift_prefix_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.swift_prefix_.IsDefault()) {
+    _impl_.swift_prefix_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.swift_prefix)
+}
+::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_swift_prefix() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.swift_prefix_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE FileOptions::release_php_class_prefix() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.php_class_prefix)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000040U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000040U);
+  auto* released = _impl_.php_class_prefix_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.php_class_prefix_.Set("", GetArena());
+  }
+  return released;
+}
+void FileOptions::set_allocated_php_class_prefix(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000040U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000040U);
+  }
+  _impl_.php_class_prefix_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.php_class_prefix_.IsDefault()) {
+    _impl_.php_class_prefix_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.php_class_prefix)
+}
+::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_php_class_prefix() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.php_class_prefix_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE FileOptions::release_php_namespace() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.php_namespace)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000080U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000080U);
+  auto* released = _impl_.php_namespace_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.php_namespace_.Set("", GetArena());
+  }
+  return released;
+}
+void FileOptions::set_allocated_php_namespace(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000080U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000080U);
+  }
+  _impl_.php_namespace_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.php_namespace_.IsDefault()) {
+    _impl_.php_namespace_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.php_namespace)
+}
+::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_php_namespace() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.php_namespace_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE FileOptions::release_php_metadata_namespace() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.php_metadata_namespace)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000100U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000100U);
+  auto* released = _impl_.php_metadata_namespace_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.php_metadata_namespace_.Set("", GetArena());
+  }
+  return released;
+}
+void FileOptions::set_allocated_php_metadata_namespace(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000100U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000100U);
+  }
+  _impl_.php_metadata_namespace_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.php_metadata_namespace_.IsDefault()) {
+    _impl_.php_metadata_namespace_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.php_metadata_namespace)
+}
+::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_php_metadata_namespace() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.php_metadata_namespace_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE FileOptions::release_ruby_package() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.ruby_package)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000200U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000200U);
+  auto* released = _impl_.ruby_package_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.ruby_package_.Set("", GetArena());
+  }
+  return released;
+}
+void FileOptions::set_allocated_ruby_package(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000200U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000200U);
+  }
+  _impl_.ruby_package_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.ruby_package_.IsDefault()) {
+    _impl_.ruby_package_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.ruby_package)
+}
+::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_ruby_package() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.ruby_package_.Mutable( GetArena());
+}
+::google::protobuf::FeatureSet* PROTOBUF_NULLABLE FileOptions::release_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
+  ClearHasBit(_impl_._has_bits_[0], 0x00000400U);
+  ::google::protobuf::FeatureSet* released = _impl_.features_;
+  _impl_.features_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void FileOptions::unsafe_arena_set_allocated_features(
+    ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
+  }
+  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000400U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000400U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FileOptions.features)
+}
+::google::protobuf::FeatureSet* PROTOBUF_NONNULL FileOptions::_internal_mutable_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.features_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.features_;
+}
+void FileOptions::set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000400U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000400U);
+  }
+
+  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.features)
+}
 FileOptions::FileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FileOptions_get_class_data()) {
@@ -13302,11 +15166,93 @@ void FileOptions::InternalSwap(FileOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
   _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
 }
 
+void FileOptions::Swap(FileOptions* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void FileOptions::UnsafeArenaSwap(FileOptions* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+FileOptions& FileOptions::operator=(FileOptions&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata FileOptions::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
+::google::protobuf::FeatureSet* PROTOBUF_NULLABLE MessageOptions::release_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ::google::protobuf::FeatureSet* released = _impl_.features_;
+  _impl_.features_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void MessageOptions::unsafe_arena_set_allocated_features(
+    ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
+  }
+  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.MessageOptions.features)
+}
+::google::protobuf::FeatureSet* PROTOBUF_NONNULL MessageOptions::_internal_mutable_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.features_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.features_;
+}
+void MessageOptions::set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+
+  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.MessageOptions.features)
+}
 MessageOptions::MessageOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, MessageOptions_get_class_data()) {
@@ -13659,11 +15605,62 @@ void MessageOptions::InternalSwap(MessageOptions* PROTOBUF_RESTRICT PROTOBUF_NON
   _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
 }
 
+void MessageOptions::Swap(MessageOptions* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void MessageOptions::UnsafeArenaSwap(MessageOptions* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+MessageOptions& MessageOptions::operator=(MessageOptions&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata MessageOptions::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
-
+::std::string* PROTOBUF_NULLABLE FieldOptions_EditionDefault::release_value() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FieldOptions.EditionDefault.value)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000001U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  auto* released = _impl_.value_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.value_.Set("", GetArena());
+  }
+  return released;
+}
+void FieldOptions_EditionDefault::set_allocated_value(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+  _impl_.value_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.value_.IsDefault()) {
+    _impl_.value_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldOptions.EditionDefault.value)
+}
+::std::string* PROTOBUF_NONNULL FieldOptions_EditionDefault::_internal_mutable_value() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.value_.Mutable( GetArena());
+}
 FieldOptions_EditionDefault::FieldOptions_EditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FieldOptions_EditionDefault_get_class_data()) {
@@ -13884,11 +15881,92 @@ void FieldOptions_EditionDefault::InternalSwap(FieldOptions_EditionDefault* PROT
   swap(_impl_.edition_, other->_impl_.edition_);
 }
 
+void FieldOptions_EditionDefault::Swap(FieldOptions_EditionDefault* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void FieldOptions_EditionDefault::UnsafeArenaSwap(FieldOptions_EditionDefault* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+FieldOptions_EditionDefault& FieldOptions_EditionDefault::operator=(FieldOptions_EditionDefault&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata FieldOptions_EditionDefault::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
-
+::std::string* PROTOBUF_NULLABLE FieldOptions_FeatureSupport::release_deprecation_warning() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FieldOptions.FeatureSupport.deprecation_warning)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000001U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  auto* released = _impl_.deprecation_warning_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.deprecation_warning_.Set("", GetArena());
+  }
+  return released;
+}
+void FieldOptions_FeatureSupport::set_allocated_deprecation_warning(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+  _impl_.deprecation_warning_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.deprecation_warning_.IsDefault()) {
+    _impl_.deprecation_warning_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldOptions.FeatureSupport.deprecation_warning)
+}
+::std::string* PROTOBUF_NONNULL FieldOptions_FeatureSupport::_internal_mutable_deprecation_warning() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.deprecation_warning_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE FieldOptions_FeatureSupport::release_removal_error() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FieldOptions.FeatureSupport.removal_error)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000002U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  auto* released = _impl_.removal_error_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.removal_error_.Set("", GetArena());
+  }
+  return released;
+}
+void FieldOptions_FeatureSupport::set_allocated_removal_error(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+  _impl_.removal_error_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.removal_error_.IsDefault()) {
+    _impl_.removal_error_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldOptions.FeatureSupport.removal_error)
+}
+::std::string* PROTOBUF_NONNULL FieldOptions_FeatureSupport::_internal_mutable_removal_error() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.removal_error_.Mutable( GetArena());
+}
 FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FieldOptions_FeatureSupport_get_class_data()) {
@@ -14182,11 +16260,154 @@ void FieldOptions_FeatureSupport::InternalSwap(FieldOptions_FeatureSupport* PROT
           reinterpret_cast<char*>(&other->_impl_.edition_introduced_));
 }
 
+void FieldOptions_FeatureSupport::Swap(FieldOptions_FeatureSupport* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void FieldOptions_FeatureSupport::UnsafeArenaSwap(FieldOptions_FeatureSupport* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+FieldOptions_FeatureSupport& FieldOptions_FeatureSupport::operator=(FieldOptions_FeatureSupport&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata FieldOptions_FeatureSupport::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
+::google::protobuf::FeatureSet* PROTOBUF_NULLABLE FieldOptions::release_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
+  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  ::google::protobuf::FeatureSet* released = _impl_.features_;
+  _impl_.features_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void FieldOptions::unsafe_arena_set_allocated_features(
+    ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
+  }
+  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FieldOptions.features)
+}
+::google::protobuf::FeatureSet* PROTOBUF_NONNULL FieldOptions::_internal_mutable_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.features_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.features_;
+}
+void FieldOptions::set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  }
+
+  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldOptions.features)
+}
+::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE FieldOptions::release_feature_support() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+
+  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  ::google::protobuf::FieldOptions_FeatureSupport* released = _impl_.feature_support_;
+  _impl_.feature_support_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void FieldOptions::unsafe_arena_set_allocated_feature_support(
+    ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.feature_support_);
+  }
+  _impl_.feature_support_ = reinterpret_cast<::google::protobuf::FieldOptions_FeatureSupport*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FieldOptions.feature_support)
+}
+::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NONNULL FieldOptions::_internal_mutable_feature_support() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.feature_support_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FieldOptions_FeatureSupport>(GetArena());
+    _impl_.feature_support_ = reinterpret_cast<::google::protobuf::FieldOptions_FeatureSupport*>(p);
+  }
+  return _impl_.feature_support_;
+}
+void FieldOptions::set_allocated_feature_support(::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.feature_support_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  }
+
+  _impl_.feature_support_ = reinterpret_cast<::google::protobuf::FieldOptions_FeatureSupport*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldOptions.feature_support)
+}
 FieldOptions::FieldOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FieldOptions_get_class_data()) {
@@ -14712,11 +16933,93 @@ void FieldOptions::InternalSwap(FieldOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL
   _impl_.targets_.InternalSwap(&other->_impl_.targets_);
 }
 
+void FieldOptions::Swap(FieldOptions* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void FieldOptions::UnsafeArenaSwap(FieldOptions* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+FieldOptions& FieldOptions::operator=(FieldOptions&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata FieldOptions::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
+::google::protobuf::FeatureSet* PROTOBUF_NULLABLE OneofOptions::release_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ::google::protobuf::FeatureSet* released = _impl_.features_;
+  _impl_.features_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void OneofOptions::unsafe_arena_set_allocated_features(
+    ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
+  }
+  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.OneofOptions.features)
+}
+::google::protobuf::FeatureSet* PROTOBUF_NONNULL OneofOptions::_internal_mutable_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.features_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.features_;
+}
+void OneofOptions::set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+
+  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.OneofOptions.features)
+}
 OneofOptions::OneofOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, OneofOptions_get_class_data()) {
@@ -14998,11 +17301,93 @@ void OneofOptions::InternalSwap(OneofOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL
   swap(_impl_.features_, other->_impl_.features_);
 }
 
+void OneofOptions::Swap(OneofOptions* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void OneofOptions::UnsafeArenaSwap(OneofOptions* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+OneofOptions& OneofOptions::operator=(OneofOptions&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata OneofOptions::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
+::google::protobuf::FeatureSet* PROTOBUF_NULLABLE EnumOptions::release_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ::google::protobuf::FeatureSet* released = _impl_.features_;
+  _impl_.features_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void EnumOptions::unsafe_arena_set_allocated_features(
+    ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
+  }
+  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.EnumOptions.features)
+}
+::google::protobuf::FeatureSet* PROTOBUF_NONNULL EnumOptions::_internal_mutable_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.features_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.features_;
+}
+void EnumOptions::set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+
+  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumOptions.features)
+}
 EnumOptions::EnumOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, EnumOptions_get_class_data()) {
@@ -15333,11 +17718,154 @@ void EnumOptions::InternalSwap(EnumOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
   _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
 }
 
+void EnumOptions::Swap(EnumOptions* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void EnumOptions::UnsafeArenaSwap(EnumOptions* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+EnumOptions& EnumOptions::operator=(EnumOptions&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata EnumOptions::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
+::google::protobuf::FeatureSet* PROTOBUF_NULLABLE EnumValueOptions::release_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ::google::protobuf::FeatureSet* released = _impl_.features_;
+  _impl_.features_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void EnumValueOptions::unsafe_arena_set_allocated_features(
+    ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
+  }
+  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.EnumValueOptions.features)
+}
+::google::protobuf::FeatureSet* PROTOBUF_NONNULL EnumValueOptions::_internal_mutable_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.features_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.features_;
+}
+void EnumValueOptions::set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+
+  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumValueOptions.features)
+}
+::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE EnumValueOptions::release_feature_support() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+
+  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  ::google::protobuf::FieldOptions_FeatureSupport* released = _impl_.feature_support_;
+  _impl_.feature_support_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void EnumValueOptions::unsafe_arena_set_allocated_feature_support(
+    ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.feature_support_);
+  }
+  _impl_.feature_support_ = reinterpret_cast<::google::protobuf::FieldOptions_FeatureSupport*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.EnumValueOptions.feature_support)
+}
+::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NONNULL EnumValueOptions::_internal_mutable_feature_support() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.feature_support_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FieldOptions_FeatureSupport>(GetArena());
+    _impl_.feature_support_ = reinterpret_cast<::google::protobuf::FieldOptions_FeatureSupport*>(p);
+  }
+  return _impl_.feature_support_;
+}
+void EnumValueOptions::set_allocated_feature_support(::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.feature_support_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  }
+
+  _impl_.feature_support_ = reinterpret_cast<::google::protobuf::FieldOptions_FeatureSupport*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumValueOptions.feature_support)
+}
 EnumValueOptions::EnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, EnumValueOptions_get_class_data()) {
@@ -15691,11 +18219,93 @@ void EnumValueOptions::InternalSwap(EnumValueOptions* PROTOBUF_RESTRICT PROTOBUF
           reinterpret_cast<char*>(&other->_impl_.features_));
 }
 
+void EnumValueOptions::Swap(EnumValueOptions* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void EnumValueOptions::UnsafeArenaSwap(EnumValueOptions* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+EnumValueOptions& EnumValueOptions::operator=(EnumValueOptions&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata EnumValueOptions::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
+::google::protobuf::FeatureSet* PROTOBUF_NULLABLE ServiceOptions::release_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ::google::protobuf::FeatureSet* released = _impl_.features_;
+  _impl_.features_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void ServiceOptions::unsafe_arena_set_allocated_features(
+    ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
+  }
+  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.ServiceOptions.features)
+}
+::google::protobuf::FeatureSet* PROTOBUF_NONNULL ServiceOptions::_internal_mutable_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.features_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.features_;
+}
+void ServiceOptions::set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+
+  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.ServiceOptions.features)
+}
 ServiceOptions::ServiceOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, ServiceOptions_get_class_data()) {
@@ -16000,11 +18610,93 @@ void ServiceOptions::InternalSwap(ServiceOptions* PROTOBUF_RESTRICT PROTOBUF_NON
           reinterpret_cast<char*>(&other->_impl_.features_));
 }
 
+void ServiceOptions::Swap(ServiceOptions* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void ServiceOptions::UnsafeArenaSwap(ServiceOptions* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+ServiceOptions& ServiceOptions::operator=(ServiceOptions&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata ServiceOptions::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
+::google::protobuf::FeatureSet* PROTOBUF_NULLABLE MethodOptions::release_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ::google::protobuf::FeatureSet* released = _impl_.features_;
+  _impl_.features_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void MethodOptions::unsafe_arena_set_allocated_features(
+    ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
+  }
+  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.MethodOptions.features)
+}
+::google::protobuf::FeatureSet* PROTOBUF_NONNULL MethodOptions::_internal_mutable_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.features_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.features_;
+}
+void MethodOptions::set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+
+  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.MethodOptions.features)
+}
 MethodOptions::MethodOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, MethodOptions_get_class_data()) {
@@ -16334,11 +19026,62 @@ void MethodOptions::InternalSwap(MethodOptions* PROTOBUF_RESTRICT PROTOBUF_NONNU
           reinterpret_cast<char*>(&other->_impl_.features_));
 }
 
+void MethodOptions::Swap(MethodOptions* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void MethodOptions::UnsafeArenaSwap(MethodOptions* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+MethodOptions& MethodOptions::operator=(MethodOptions&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata MethodOptions::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
-
+::std::string* PROTOBUF_NULLABLE UninterpretedOption_NamePart::release_name_part() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.NamePart.name_part)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000001U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  auto* released = _impl_.name_part_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.name_part_.Set("", GetArena());
+  }
+  return released;
+}
+void UninterpretedOption_NamePart::set_allocated_name_part(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+  _impl_.name_part_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_part_.IsDefault()) {
+    _impl_.name_part_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.UninterpretedOption.NamePart.name_part)
+}
+::std::string* PROTOBUF_NONNULL UninterpretedOption_NamePart::_internal_mutable_name_part() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.name_part_.Mutable( GetArena());
+}
 UninterpretedOption_NamePart::UninterpretedOption_NamePart(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, UninterpretedOption_NamePart_get_class_data()) {
@@ -16563,11 +19306,122 @@ void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* PR
   swap(_impl_.is_extension_, other->_impl_.is_extension_);
 }
 
+void UninterpretedOption_NamePart::Swap(UninterpretedOption_NamePart* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void UninterpretedOption_NamePart::UnsafeArenaSwap(UninterpretedOption_NamePart* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+UninterpretedOption_NamePart& UninterpretedOption_NamePart::operator=(UninterpretedOption_NamePart&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata UninterpretedOption_NamePart::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
-
+::std::string* PROTOBUF_NULLABLE UninterpretedOption::release_identifier_value() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.identifier_value)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000002U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  auto* released = _impl_.identifier_value_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.identifier_value_.Set("", GetArena());
+  }
+  return released;
+}
+void UninterpretedOption::set_allocated_identifier_value(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+  _impl_.identifier_value_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.identifier_value_.IsDefault()) {
+    _impl_.identifier_value_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.UninterpretedOption.identifier_value)
+}
+::std::string* PROTOBUF_NONNULL UninterpretedOption::_internal_mutable_identifier_value() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.identifier_value_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE UninterpretedOption::release_string_value() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.string_value)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000004U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  auto* released = _impl_.string_value_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.string_value_.Set("", GetArena());
+  }
+  return released;
+}
+void UninterpretedOption::set_allocated_string_value(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  }
+  _impl_.string_value_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.string_value_.IsDefault()) {
+    _impl_.string_value_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.UninterpretedOption.string_value)
+}
+::std::string* PROTOBUF_NONNULL UninterpretedOption::_internal_mutable_string_value() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.string_value_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE UninterpretedOption::release_aggregate_value() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.aggregate_value)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000008U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  auto* released = _impl_.aggregate_value_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.aggregate_value_.Set("", GetArena());
+  }
+  return released;
+}
+void UninterpretedOption::set_allocated_aggregate_value(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  }
+  _impl_.aggregate_value_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.aggregate_value_.IsDefault()) {
+    _impl_.aggregate_value_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.UninterpretedOption.aggregate_value)
+}
+::std::string* PROTOBUF_NONNULL UninterpretedOption::_internal_mutable_aggregate_value() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.aggregate_value_.Mutable( GetArena());
+}
 UninterpretedOption::UninterpretedOption(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, UninterpretedOption_get_class_data()) {
@@ -16927,11 +19781,32 @@ void UninterpretedOption::InternalSwap(UninterpretedOption* PROTOBUF_RESTRICT PR
           reinterpret_cast<char*>(&other->_impl_.positive_int_value_));
 }
 
+void UninterpretedOption::Swap(UninterpretedOption* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void UninterpretedOption::UnsafeArenaSwap(UninterpretedOption* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+UninterpretedOption& UninterpretedOption::operator=(UninterpretedOption&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata UninterpretedOption::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
-
 FeatureSet_VisibilityFeature::FeatureSet_VisibilityFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::internal::ZeroFieldsBase(arena, FeatureSet_VisibilityFeature_get_class_data()) {
@@ -16990,11 +19865,32 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FeatureSet_VisibilityFeature::ParseTable
 
 
 
+void FeatureSet_VisibilityFeature::Swap(FeatureSet_VisibilityFeature* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void FeatureSet_VisibilityFeature::UnsafeArenaSwap(FeatureSet_VisibilityFeature* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+FeatureSet_VisibilityFeature& FeatureSet_VisibilityFeature::operator=(FeatureSet_VisibilityFeature&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata FeatureSet_VisibilityFeature::GetMetadata() const {
   return ::google::protobuf::internal::ZeroFieldsBase::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
-
 FeatureSet::FeatureSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FeatureSet_get_class_data()) {
@@ -17341,11 +20237,154 @@ void FeatureSet::InternalSwap(FeatureSet* PROTOBUF_RESTRICT PROTOBUF_NONNULL oth
           reinterpret_cast<char*>(&other->_impl_.field_presence_));
 }
 
+void FeatureSet::Swap(FeatureSet* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void FeatureSet::UnsafeArenaSwap(FeatureSet* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+FeatureSet& FeatureSet::operator=(FeatureSet&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata FeatureSet::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
+::google::protobuf::FeatureSet* PROTOBUF_NULLABLE FeatureSetDefaults_FeatureSetEditionDefault::release_overridable_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ::google::protobuf::FeatureSet* released = _impl_.overridable_features_;
+  _impl_.overridable_features_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void FeatureSetDefaults_FeatureSetEditionDefault::unsafe_arena_set_allocated_overridable_features(
+    ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.overridable_features_);
+  }
+  _impl_.overridable_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.overridable_features)
+}
+::google::protobuf::FeatureSet* PROTOBUF_NONNULL FeatureSetDefaults_FeatureSetEditionDefault::_internal_mutable_overridable_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.overridable_features_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    _impl_.overridable_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.overridable_features_;
+}
+void FeatureSetDefaults_FeatureSetEditionDefault::set_allocated_overridable_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.overridable_features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+
+  _impl_.overridable_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.overridable_features)
+}
+::google::protobuf::FeatureSet* PROTOBUF_NULLABLE FeatureSetDefaults_FeatureSetEditionDefault::release_fixed_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ::google::protobuf::FeatureSet* released = _impl_.fixed_features_;
+  _impl_.fixed_features_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void FeatureSetDefaults_FeatureSetEditionDefault::unsafe_arena_set_allocated_fixed_features(
+    ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.fixed_features_);
+  }
+  _impl_.fixed_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.fixed_features)
+}
+::google::protobuf::FeatureSet* PROTOBUF_NONNULL FeatureSetDefaults_FeatureSetEditionDefault::_internal_mutable_fixed_features() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.fixed_features_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    _impl_.fixed_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.fixed_features_;
+}
+void FeatureSetDefaults_FeatureSetEditionDefault::set_allocated_fixed_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.fixed_features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+
+  _impl_.fixed_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.fixed_features)
+}
 FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FeatureSetDefaults_FeatureSetEditionDefault_get_class_data()) {
@@ -17624,11 +20663,32 @@ void FeatureSetDefaults_FeatureSetEditionDefault::InternalSwap(FeatureSetDefault
           reinterpret_cast<char*>(&other->_impl_.overridable_features_));
 }
 
+void FeatureSetDefaults_FeatureSetEditionDefault::Swap(FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void FeatureSetDefaults_FeatureSetEditionDefault::UnsafeArenaSwap(FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+FeatureSetDefaults_FeatureSetEditionDefault& FeatureSetDefaults_FeatureSetEditionDefault::operator=(FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata FeatureSetDefaults_FeatureSetEditionDefault::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
-
 FeatureSetDefaults::FeatureSetDefaults(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FeatureSetDefaults_get_class_data()) {
@@ -17910,11 +20970,92 @@ void FeatureSetDefaults::InternalSwap(FeatureSetDefaults* PROTOBUF_RESTRICT PROT
           reinterpret_cast<char*>(&other->_impl_.minimum_edition_));
 }
 
+void FeatureSetDefaults::Swap(FeatureSetDefaults* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void FeatureSetDefaults::UnsafeArenaSwap(FeatureSetDefaults* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+FeatureSetDefaults& FeatureSetDefaults::operator=(FeatureSetDefaults&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata FeatureSetDefaults::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
-
+::std::string* PROTOBUF_NULLABLE SourceCodeInfo_Location::release_leading_comments() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.SourceCodeInfo.Location.leading_comments)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000008U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  auto* released = _impl_.leading_comments_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.leading_comments_.Set("", GetArena());
+  }
+  return released;
+}
+void SourceCodeInfo_Location::set_allocated_leading_comments(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  }
+  _impl_.leading_comments_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.leading_comments_.IsDefault()) {
+    _impl_.leading_comments_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceCodeInfo.Location.leading_comments)
+}
+::std::string* PROTOBUF_NONNULL SourceCodeInfo_Location::_internal_mutable_leading_comments() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.leading_comments_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE SourceCodeInfo_Location::release_trailing_comments() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.SourceCodeInfo.Location.trailing_comments)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000010U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
+  auto* released = _impl_.trailing_comments_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.trailing_comments_.Set("", GetArena());
+  }
+  return released;
+}
+void SourceCodeInfo_Location::set_allocated_trailing_comments(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000010U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
+  }
+  _impl_.trailing_comments_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.trailing_comments_.IsDefault()) {
+    _impl_.trailing_comments_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceCodeInfo.Location.trailing_comments)
+}
+::std::string* PROTOBUF_NONNULL SourceCodeInfo_Location::_internal_mutable_trailing_comments() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.trailing_comments_.Mutable( GetArena());
+}
 SourceCodeInfo_Location::SourceCodeInfo_Location(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, SourceCodeInfo_Location_get_class_data()) {
@@ -18256,11 +21397,32 @@ void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* PROTOBUF_RES
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.trailing_comments_, &other->_impl_.trailing_comments_, arena);
 }
 
+void SourceCodeInfo_Location::Swap(SourceCodeInfo_Location* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void SourceCodeInfo_Location::UnsafeArenaSwap(SourceCodeInfo_Location* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+SourceCodeInfo_Location& SourceCodeInfo_Location::operator=(SourceCodeInfo_Location&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata SourceCodeInfo_Location::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
-
 SourceCodeInfo::SourceCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, SourceCodeInfo_get_class_data()) {
@@ -18502,11 +21664,62 @@ void SourceCodeInfo::InternalSwap(SourceCodeInfo* PROTOBUF_RESTRICT PROTOBUF_NON
   _impl_.location_.InternalSwap(&other->_impl_.location_);
 }
 
+void SourceCodeInfo::Swap(SourceCodeInfo* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void SourceCodeInfo::UnsafeArenaSwap(SourceCodeInfo* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+SourceCodeInfo& SourceCodeInfo::operator=(SourceCodeInfo&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata SourceCodeInfo::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
-
+::std::string* PROTOBUF_NULLABLE GeneratedCodeInfo_Annotation::release_source_file() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000002U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  auto* released = _impl_.source_file_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.source_file_.Set("", GetArena());
+  }
+  return released;
+}
+void GeneratedCodeInfo_Annotation::set_allocated_source_file(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+  _impl_.source_file_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.source_file_.IsDefault()) {
+    _impl_.source_file_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
+}
+::std::string* PROTOBUF_NONNULL GeneratedCodeInfo_Annotation::_internal_mutable_source_file() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.source_file_.Mutable( GetArena());
+}
 GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, GeneratedCodeInfo_Annotation_get_class_data()) {
@@ -18818,11 +22031,32 @@ void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* PR
           reinterpret_cast<char*>(&other->_impl_.begin_));
 }
 
+void GeneratedCodeInfo_Annotation::Swap(GeneratedCodeInfo_Annotation* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void GeneratedCodeInfo_Annotation::UnsafeArenaSwap(GeneratedCodeInfo_Annotation* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+GeneratedCodeInfo_Annotation& GeneratedCodeInfo_Annotation::operator=(GeneratedCodeInfo_Annotation&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata GeneratedCodeInfo_Annotation::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
-
 GeneratedCodeInfo::GeneratedCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, GeneratedCodeInfo_get_class_data()) {
@@ -19039,6 +22273,29 @@ void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* PROTOBUF_RESTRICT PROTOB
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.annotation_.InternalSwap(&other->_impl_.annotation_);
+}
+
+void GeneratedCodeInfo::Swap(GeneratedCodeInfo* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void GeneratedCodeInfo::UnsafeArenaSwap(GeneratedCodeInfo* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+GeneratedCodeInfo& GeneratedCodeInfo::operator=(GeneratedCodeInfo&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
 }
 
 ::google::protobuf::Metadata GeneratedCodeInfo::GetMetadata() const {

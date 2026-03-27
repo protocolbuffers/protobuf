@@ -171,10 +171,6 @@ template <>
 using ::google::protobuf::internal::generated_enum::AbslParseFlag;
 using ::google::protobuf::internal::generated_enum::AbslUnparseFlag;
 
-// ===================================================================
-
-
-// -------------------------------------------------------------------
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFileClassFeature final : public ::google::protobuf::internal::ZeroFieldsBase
 /* @@protoc_insertion_point(class_definition:pb.JavaFeatures.NestInFileClassFeature) */ {
@@ -200,15 +196,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
     CopyFrom(from);
     return *this;
   }
-  inline JavaFeatures_NestInFileClassFeature& operator=(JavaFeatures_NestInFileClassFeature&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  JavaFeatures_NestInFileClassFeature& operator=(JavaFeatures_NestInFileClassFeature&& from) noexcept;
 
   [[nodiscard]] inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -235,19 +223,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(JavaFeatures_NestInFileClassFeature& a, JavaFeatures_NestInFileClassFeature& b) { a.Swap(&b); }
-  inline void Swap(JavaFeatures_NestInFileClassFeature* PROTOBUF_NONNULL other) {
-    if (other == this) return;
-    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
-    } else {
-      ::google::protobuf::internal::GenericSwap(this, other);
-    }
-  }
-  void UnsafeArenaSwap(JavaFeatures_NestInFileClassFeature* PROTOBUF_NONNULL other) {
-    if (other == this) return;
-    ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
-  }
+  void Swap(JavaFeatures_NestInFileClassFeature* PROTOBUF_NONNULL other);
+  void UnsafeArenaSwap(JavaFeatures_NestInFileClassFeature* PROTOBUF_NONNULL other);
 
   // implements Message ----------------------------------------------
 
@@ -340,8 +317,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
   using DestructorSkippable_ = void;
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto;
 };
-// -------------------------------------------------------------------
-
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:pb.JavaFeatures) */ {
  public:
@@ -367,15 +342,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
     CopyFrom(from);
     return *this;
   }
-  inline JavaFeatures& operator=(JavaFeatures&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  JavaFeatures& operator=(JavaFeatures&& from) noexcept;
 
   [[nodiscard]] inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -402,19 +369,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
   }
   static constexpr int kIndexInFileMessages = 1;
   friend void swap(JavaFeatures& a, JavaFeatures& b) { a.Swap(&b); }
-  inline void Swap(JavaFeatures* PROTOBUF_NONNULL other) {
-    if (other == this) return;
-    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
-    } else {
-      ::google::protobuf::internal::GenericSwap(this, other);
-    }
-  }
-  void UnsafeArenaSwap(JavaFeatures* PROTOBUF_NONNULL other) {
-    if (other == this) return;
-    ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
-  }
+  void Swap(JavaFeatures* PROTOBUF_NONNULL other);
+  void UnsafeArenaSwap(JavaFeatures* PROTOBUF_NONNULL other);
 
   // implements Message ----------------------------------------------
 
@@ -624,26 +580,18 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto;
 };
 
-// ===================================================================
-
 
 
 inline constexpr int kJavaFieldNumber = 1001;
 PROTOC_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
     ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::JavaFeatures >, 11, false>(java);
 
-// ===================================================================
-
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
-// -------------------------------------------------------------------
-
 // JavaFeatures_NestInFileClassFeature
-
-// -------------------------------------------------------------------
 
 // JavaFeatures
 

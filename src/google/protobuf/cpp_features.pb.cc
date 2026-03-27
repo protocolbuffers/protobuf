@@ -290,8 +290,6 @@ CppFeatures_RepeatedType_descriptor() {
 }
 PROTOBUF_CONSTINIT const uint32_t CppFeatures_RepeatedType_internal_data_[] = {
     196608u, 0u, };
-// ===================================================================
-
 CppFeatures::CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, CppFeatures_get_class_data()) {
@@ -523,6 +521,29 @@ void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
       - PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.string_type_)>(
           reinterpret_cast<char*>(&_impl_.string_type_),
           reinterpret_cast<char*>(&other->_impl_.string_type_));
+}
+
+void CppFeatures::Swap(CppFeatures* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void CppFeatures::UnsafeArenaSwap(CppFeatures* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+CppFeatures& CppFeatures::operator=(CppFeatures&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
 }
 
 ::google::protobuf::Metadata CppFeatures::GetMetadata() const {

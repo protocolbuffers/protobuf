@@ -357,10 +357,12 @@ std::string UnderscoresToCamelCase(absl::string_view input,
   return result;
 }
 
-const char kThickSeparator[] =
-    "// ===================================================================\n";
-const char kThinSeparator[] =
-    "// -------------------------------------------------------------------\n";
+// To reduce the size of the generated code, we don't actually emit separators
+// (these used to be comments like "// =====..." and "// -----...", but
+// represented a substantial number of bytes in generated source files and don't
+// seem to provide much value)
+const char kThickSeparator[] = "";
+const char kThinSeparator[] = "";
 
 bool CanInitializeByZeroing(const FieldDescriptor* field,
                             const Options& options) {

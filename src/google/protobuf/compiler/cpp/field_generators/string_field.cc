@@ -109,12 +109,45 @@ class SingularString : public FieldGeneratorBase {
   }
 
   void GenerateNonInlineAccessorDefinitions(io::Printer* p) const override {
-    if (EmptyDefault()) return;
+    if (!EmptyDefault()) {
+      p->Emit(R"cc(
+        /*static*/ const ::_pbi::LazyString $Msg$::$default_variable_field${
+            {{$kDefault$, $kDefaultLen$}},
+            {nullptr},
+        };
+      )cc");
+    }
+    auto v = p->WithVars(
+        {{"release_name",
+          SafeFunctionName(field_->containing_type(), field_, "release_")}});
+    p->Emit({{"release_impl", [&] { ReleaseImpl(p); }}},
+            R"cc(
+              ::std::string* $nullable$ $Msg$::$release_name$() {
+                $WeakDescriptorSelfPin$;
+                $TsanDetectConcurrentMutation$;
+                $annotate_release$;
+                $PrepareSplitMessageForWrite$;
+                // @@protoc_insertion_point(field_release:$pkg.Msg.field$)
+                $release_impl$;
+              }
+            )cc");
+    p->Emit(
+        {{"set_allocated_impl", [&] { SetAllocatedImpl(p); }}},
+        R"cc(
+          void $Msg$::set_allocated_$name$(::std::string* $nullable$ value) {
+            $WeakDescriptorSelfPin$;
+            $TsanDetectConcurrentMutation$;
+            $PrepareSplitMessageForWrite$;
+            $set_allocated_impl$;
+            $annotate_set$;
+            // @@protoc_insertion_point(field_set_allocated:$pkg.Msg.field$)
+          }
+        )cc");
     p->Emit(R"cc(
-      /*static*/ const ::_pbi::LazyString $Msg$::$default_variable_field${
-          {{$kDefault$, $kDefaultLen$}},
-          {nullptr},
-      };
+      ::std::string* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
+        $TsanDetectConcurrentMutation$;
+        return $field_$.Mutable($lazy_args$, GetArena());
+      }
     )cc");
   }
 
@@ -433,26 +466,6 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       //~ Don't use $Set$ here; we always want the std::string variant
       //~ regardless of whether this is a `bytes` field.
       $field_$.Set(value, GetArena());
-    }
-    inline ::std::string* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
-      $TsanDetectConcurrentMutation$;
-      return $field_$.Mutable($lazy_args$, GetArena());
-    }
-    inline ::std::string* $nullable$ $Msg$::$release_name$() {
-      $WeakDescriptorSelfPin$;
-      $TsanDetectConcurrentMutation$;
-      $annotate_release$;
-      $PrepareSplitMessageForWrite$;
-      // @@protoc_insertion_point(field_release:$pkg.Msg.field$)
-      $release_impl$;
-    }
-    inline void $Msg$::set_allocated_$name$(::std::string* $nullable$ value) {
-      $WeakDescriptorSelfPin$;
-      $TsanDetectConcurrentMutation$;
-      $PrepareSplitMessageForWrite$;
-      $set_allocated_impl$;
-      $annotate_set$;
-      // @@protoc_insertion_point(field_set_allocated:$pkg.Msg.field$)
     })cc";
   p->Emit(vars, code);
 }

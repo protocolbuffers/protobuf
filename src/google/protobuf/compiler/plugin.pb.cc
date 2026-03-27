@@ -904,8 +904,36 @@ CodeGeneratorResponse_Feature_descriptor() {
 }
 PROTOBUF_CONSTINIT const uint32_t CodeGeneratorResponse_Feature_internal_data_[] = {
     196608u, 0u, };
-// ===================================================================
-
+::std::string* PROTOBUF_NULLABLE Version::release_suffix() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.compiler.Version.suffix)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000001U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  auto* released = _impl_.suffix_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.suffix_.Set("", GetArena());
+  }
+  return released;
+}
+void Version::set_allocated_suffix(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+  _impl_.suffix_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.suffix_.IsDefault()) {
+    _impl_.suffix_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.Version.suffix)
+}
+::std::string* PROTOBUF_NONNULL Version::_internal_mutable_suffix() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.suffix_.Mutable( GetArena());
+}
 Version::Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, Version_get_class_data()) {
@@ -1176,11 +1204,62 @@ void Version::InternalSwap(Version* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
           reinterpret_cast<char*>(&other->_impl_.major_));
 }
 
+void Version::Swap(Version* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void Version::UnsafeArenaSwap(Version* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+Version& Version::operator=(Version&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata Version::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
-
+::std::string* PROTOBUF_NULLABLE CodeGeneratorRequest::release_parameter() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorRequest.parameter)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000004U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  auto* released = _impl_.parameter_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.parameter_.Set("", GetArena());
+  }
+  return released;
+}
+void CodeGeneratorRequest::set_allocated_parameter(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  }
+  _impl_.parameter_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.parameter_.IsDefault()) {
+    _impl_.parameter_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorRequest.parameter)
+}
+::std::string* PROTOBUF_NONNULL CodeGeneratorRequest::_internal_mutable_parameter() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.parameter_.Mutable( GetArena());
+}
 void CodeGeneratorRequest::clear_proto_file() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.proto_file_.Clear();
@@ -1192,6 +1271,67 @@ void CodeGeneratorRequest::clear_source_file_descriptors() {
   _impl_.source_file_descriptors_.Clear();
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000010U);
+}
+::google::protobuf::compiler::Version* PROTOBUF_NULLABLE CodeGeneratorRequest::release_compiler_version() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+
+  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  ::google::protobuf::compiler::Version* released = _impl_.compiler_version_;
+  _impl_.compiler_version_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void CodeGeneratorRequest::unsafe_arena_set_allocated_compiler_version(
+    ::google::protobuf::compiler::Version* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.compiler_version_);
+  }
+  _impl_.compiler_version_ = reinterpret_cast<::google::protobuf::compiler::Version*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
+}
+::google::protobuf::compiler::Version* PROTOBUF_NONNULL CodeGeneratorRequest::_internal_mutable_compiler_version() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.compiler_version_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::compiler::Version>(GetArena());
+    _impl_.compiler_version_ = reinterpret_cast<::google::protobuf::compiler::Version*>(p);
+  }
+  return _impl_.compiler_version_;
+}
+void CodeGeneratorRequest::set_allocated_compiler_version(::google::protobuf::compiler::Version* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.compiler_version_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  }
+
+  _impl_.compiler_version_ = reinterpret_cast<::google::protobuf::compiler::Version*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
 }
 CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -1557,11 +1697,183 @@ void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* PROTOBUF_RESTRICT 
   _impl_.source_file_descriptors_.InternalSwap(&other->_impl_.source_file_descriptors_);
 }
 
+void CodeGeneratorRequest::Swap(CodeGeneratorRequest* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void CodeGeneratorRequest::UnsafeArenaSwap(CodeGeneratorRequest* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+CodeGeneratorRequest& CodeGeneratorRequest::operator=(CodeGeneratorRequest&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata CodeGeneratorRequest::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
+::std::string* PROTOBUF_NULLABLE CodeGeneratorResponse_File::release_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.File.name)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000001U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  auto* released = _impl_.name_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  return released;
+}
+void CodeGeneratorResponse_File::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+  _impl_.name_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.name)
+}
+::std::string* PROTOBUF_NONNULL CodeGeneratorResponse_File::_internal_mutable_name() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.name_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE CodeGeneratorResponse_File::release_insertion_point() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000002U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  auto* released = _impl_.insertion_point_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.insertion_point_.Set("", GetArena());
+  }
+  return released;
+}
+void CodeGeneratorResponse_File::set_allocated_insertion_point(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+  _impl_.insertion_point_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.insertion_point_.IsDefault()) {
+    _impl_.insertion_point_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
+}
+::std::string* PROTOBUF_NONNULL CodeGeneratorResponse_File::_internal_mutable_insertion_point() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.insertion_point_.Mutable( GetArena());
+}
+::std::string* PROTOBUF_NULLABLE CodeGeneratorResponse_File::release_content() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.File.content)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000004U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  auto* released = _impl_.content_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.content_.Set("", GetArena());
+  }
+  return released;
+}
+void CodeGeneratorResponse_File::set_allocated_content(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  }
+  _impl_.content_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.content_.IsDefault()) {
+    _impl_.content_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.content)
+}
+::std::string* PROTOBUF_NONNULL CodeGeneratorResponse_File::_internal_mutable_content() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.content_.Mutable( GetArena());
+}
+::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE CodeGeneratorResponse_File::release_generated_code_info() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
+  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  ::google::protobuf::GeneratedCodeInfo* released = _impl_.generated_code_info_;
+  _impl_.generated_code_info_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+void CodeGeneratorResponse_File::unsafe_arena_set_allocated_generated_code_info(
+    ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.generated_code_info_);
+  }
+  _impl_.generated_code_info_ = reinterpret_cast<::google::protobuf::GeneratedCodeInfo*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
+}
+::google::protobuf::GeneratedCodeInfo* PROTOBUF_NONNULL CodeGeneratorResponse_File::_internal_mutable_generated_code_info() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.generated_code_info_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::GeneratedCodeInfo>(GetArena());
+    _impl_.generated_code_info_ = reinterpret_cast<::google::protobuf::GeneratedCodeInfo*>(p);
+  }
+  return _impl_.generated_code_info_;
+}
+void CodeGeneratorResponse_File::set_allocated_generated_code_info(::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.generated_code_info_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::Message*>(value)->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  }
+
+  _impl_.generated_code_info_ = reinterpret_cast<::google::protobuf::GeneratedCodeInfo*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
+}
 void CodeGeneratorResponse_File::clear_generated_code_info() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.generated_code_info_ != nullptr) _impl_.generated_code_info_->Clear();
@@ -1845,11 +2157,62 @@ void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* PROTOB
   swap(_impl_.generated_code_info_, other->_impl_.generated_code_info_);
 }
 
+void CodeGeneratorResponse_File::Swap(CodeGeneratorResponse_File* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void CodeGeneratorResponse_File::UnsafeArenaSwap(CodeGeneratorResponse_File* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+CodeGeneratorResponse_File& CodeGeneratorResponse_File::operator=(CodeGeneratorResponse_File&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata CodeGeneratorResponse_File::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
-
+::std::string* PROTOBUF_NULLABLE CodeGeneratorResponse::release_error() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.error)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000002U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  auto* released = _impl_.error_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.error_.Set("", GetArena());
+  }
+  return released;
+}
+void CodeGeneratorResponse::set_allocated_error(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+  _impl_.error_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.error_.IsDefault()) {
+    _impl_.error_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.error)
+}
+::std::string* PROTOBUF_NONNULL CodeGeneratorResponse::_internal_mutable_error() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.error_.Mutable( GetArena());
+}
 CodeGeneratorResponse::CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, CodeGeneratorResponse_get_class_data()) {
@@ -2162,6 +2525,29 @@ void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* PROTOBUF_RESTRIC
       - PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.supported_features_)>(
           reinterpret_cast<char*>(&_impl_.supported_features_),
           reinterpret_cast<char*>(&other->_impl_.supported_features_));
+}
+
+void CodeGeneratorResponse::Swap(CodeGeneratorResponse* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void CodeGeneratorResponse::UnsafeArenaSwap(CodeGeneratorResponse* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+CodeGeneratorResponse& CodeGeneratorResponse::operator=(CodeGeneratorResponse&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
 }
 
 ::google::protobuf::Metadata CodeGeneratorResponse::GetMetadata() const {

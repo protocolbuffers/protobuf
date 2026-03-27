@@ -102,7 +102,7 @@ class SingularMessage : public FieldGeneratorBase {
 
   bool RequiresArena(GeneratorFunction function) const override;
 
-  void GenerateNonInlineAccessorDefinitions(io::Printer* p) const override {}
+  void GenerateNonInlineAccessorDefinitions(io::Printer* p) const override;
 
   void GenerateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
@@ -146,6 +146,100 @@ class SingularMessage : public FieldGeneratorBase {
   bool has_hasbit_;
 };
 
+void SingularMessage::GenerateNonInlineAccessorDefinitions(
+    io::Printer* p) const {
+  auto v =
+      p->WithVars({{"release_name", SafeFunctionName(field_->containing_type(),
+                                                     field_, "release_")}});
+  p->Emit(R"cc(
+    $Submsg$* $nullable$ $Msg$::$release_name$() {
+      $WeakDescriptorSelfPin$;
+      $TsanDetectConcurrentMutation$;
+      $StrongRef$;
+      $annotate_release$;
+      $PrepareSplitMessageForWrite$;
+
+      $clear_hasbit$;
+      $Submsg$* released = $cast_field_$;
+      $field_$ = nullptr;
+      if ($pbi$::DebugHardenForceCopyInRelease()) {
+        auto* old = reinterpret_cast<$pb$::MessageLite*>(released);
+        released = $pbi$::DuplicateIfNonNull(released);
+        if (GetArena() == nullptr) {
+          delete old;
+        }
+      } else {
+        if (GetArena() != nullptr) {
+          released = $pbi$::DuplicateIfNonNull(released);
+        }
+      }
+      return released;
+    }
+  )cc");
+  p->Emit({{"update_hasbit",
+            [&] {
+              if (!has_hasbit_) return;
+              p->Emit(R"cc(
+                if (value != nullptr) {
+                  $set_hasbit$
+                } else {
+                  $clear_hasbit$
+                }
+              )cc");
+            }}},
+          R"cc(
+            void $Msg$::unsafe_arena_set_allocated_$name$(
+                $Submsg$* $nullable$ value) {
+              $WeakDescriptorSelfPin$;
+              $TsanDetectConcurrentMutation$;
+              $PrepareSplitMessageForWrite$;
+              if (GetArena() == nullptr) {
+                delete reinterpret_cast<$pb$::MessageLite*>($field_$);
+              }
+              $field_$ = reinterpret_cast<$MemberType$*>(value);
+              $update_hasbit$;
+              $annotate_set$;
+              // @@protoc_insertion_point(field_unsafe_arena_set_allocated:$pkg.Msg.field$)
+            }
+          )cc");
+  p->Emit(R"cc(
+    $Submsg$* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
+      $TsanDetectConcurrentMutation$;
+      $StrongRef$;
+      if ($field_$ == nullptr) {
+        auto* p = $superclass$::DefaultConstruct<$Submsg$>(GetArena());
+        $field_$ = reinterpret_cast<$MemberType$*>(p);
+      }
+      return $cast_field_$;
+    }
+  )cc");
+  p->Emit(R"cc(
+    void $Msg$::set_allocated_$name$($Submsg$* $nullable$ value) {
+      $WeakDescriptorSelfPin$;
+      $pb$::Arena* message_arena = GetArena();
+      $TsanDetectConcurrentMutation$;
+      $PrepareSplitMessageForWrite$;
+      if (message_arena == nullptr) {
+        delete reinterpret_cast<$pb$::MessageLite*>($field_$);
+      }
+
+      if (value != nullptr) {
+        $pb$::Arena* submessage_arena = $arena_cast$(value)->GetArena();
+        if (message_arena != submessage_arena) {
+          value = $pbi$::GetOwnedMessage(message_arena, value, submessage_arena);
+        }
+        $set_hasbit$;
+      } else {
+        $clear_hasbit$;
+      }
+
+      $field_$ = reinterpret_cast<$MemberType$*>(value);
+      $annotate_set$;
+      // @@protoc_insertion_point(field_set_allocated:$pkg.Msg.field$)
+    }
+  )cc");
+}
+
 void SingularMessage::GenerateAccessorDeclarations(io::Printer* p) const {
   auto vars = AnnotatedAccessors(
       field_, {"", "set_allocated_", "unsafe_arena_set_allocated_",
@@ -179,20 +273,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   auto v =
       p->WithVars({{"release_name", SafeFunctionName(field_->containing_type(),
                                                      field_, "release_")}});
-  std::vector<Sub> subs = {
-      {"update_hasbit",
-       [&] {
-         if (!has_hasbit_) return;
-         p->Emit(R"cc(
-           if (value != nullptr) {
-             $set_hasbit$
-           } else {
-             $clear_hasbit$
-           }
-         )cc");
-       }},
-  };
-  absl::string_view code = R"cc(
+  p->Emit(R"cc(
     inline const $Submsg$& $Msg$::_internal_$name_internal$() const {
       $TsanDetectConcurrentRead$;
       $StrongRef$;
@@ -204,44 +285,6 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $annotate_get$;
       // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
       return _internal_$name_internal$();
-    }
-    inline void $Msg$::unsafe_arena_set_allocated_$name$(
-        $Submsg$* $nullable$ value) {
-      $WeakDescriptorSelfPin$;
-      $TsanDetectConcurrentMutation$;
-      $PrepareSplitMessageForWrite$;
-      //~ If we're not on an arena, free whatever we were holding before.
-      //~ (If we are on arena, we can just forget the earlier pointer.)
-      if (GetArena() == nullptr) {
-        delete reinterpret_cast<$pb$::MessageLite*>($field_$);
-      }
-      $field_$ = reinterpret_cast<$MemberType$*>(value);
-      $update_hasbit$;
-      $annotate_set$;
-      // @@protoc_insertion_point(field_unsafe_arena_set_allocated:$pkg.Msg.field$)
-    }
-    inline $Submsg$* $nullable$ $Msg$::$release_name$() {
-      $WeakDescriptorSelfPin$;
-      $TsanDetectConcurrentMutation$;
-      $StrongRef$;
-      $annotate_release$;
-      $PrepareSplitMessageForWrite$;
-
-      $clear_hasbit$;
-      $Submsg$* released = $cast_field_$;
-      $field_$ = nullptr;
-      if ($pbi$::DebugHardenForceCopyInRelease()) {
-        auto* old = reinterpret_cast<$pb$::MessageLite*>(released);
-        released = $pbi$::DuplicateIfNonNull(released);
-        if (GetArena() == nullptr) {
-          delete old;
-        }
-      } else {
-        if (GetArena() != nullptr) {
-          released = $pbi$::DuplicateIfNonNull(released);
-        }
-      }
-      return released;
     }
     inline $Submsg$* $nullable$ $Msg$::unsafe_arena_release_$name$() {
       $WeakDescriptorSelfPin$;
@@ -256,54 +299,20 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $field_$ = nullptr;
       return temp;
     }
-    inline $Submsg$* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
-      $TsanDetectConcurrentMutation$;
-      $StrongRef$;
-      if ($field_$ == nullptr) {
-        auto* p = $superclass$::DefaultConstruct<$Submsg$>(GetArena());
-        $field_$ = reinterpret_cast<$MemberType$*>(p);
-      }
-      return $cast_field_$;
-    }
     inline $Submsg$* $nonnull$ $Msg$::mutable_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
-      //~ TODO: add tests to make sure all write accessors are
-      //~ able to prepare split message allocation.
       $WeakDescriptorSelfPin$;
       $PrepareSplitMessageForWrite$;
       $set_hasbit$;
-      $Submsg$* _msg = _internal_mutable_$name_internal$();
+      $Submsg$* _msg = $cast_field_$;
+      if (_msg == nullptr) {
+        _msg = _internal_mutable_$name_internal$();
+      }
       $annotate_mutable$;
       // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
       return _msg;
     }
-    //~ We handle the most common case inline, and delegate less common
-    //~ cases to the slow fallback function.
-    inline void $Msg$::set_allocated_$name$($Submsg$* $nullable$ value) {
-      $WeakDescriptorSelfPin$;
-      $pb$::Arena* message_arena = GetArena();
-      $TsanDetectConcurrentMutation$;
-      $PrepareSplitMessageForWrite$;
-      if (message_arena == nullptr) {
-        delete reinterpret_cast<$pb$::MessageLite*>($field_$);
-      }
-
-      if (value != nullptr) {
-        $pb$::Arena* submessage_arena = $arena_cast$(value)->GetArena();
-        if (message_arena != submessage_arena) {
-          value = $pbi$::GetOwnedMessage(message_arena, value, submessage_arena);
-        }
-        $set_hasbit$;
-      } else {
-        $clear_hasbit$;
-      }
-
-      $field_$ = reinterpret_cast<$MemberType$*>(value);
-      $annotate_set$;
-      // @@protoc_insertion_point(field_set_allocated:$pkg.Msg.field$)
-    }
-  )cc";
-  p->Emit(subs, code);
+  )cc");
 }
 
 void SingularMessage::GenerateClearingCode(io::Printer* p) const {
@@ -531,15 +540,11 @@ void OneofMessage::GenerateNonInlineAccessorDefinitions(io::Printer* p) const {
       // @@protoc_insertion_point(field_set_allocated:$pkg.Msg.field$)
     }
   )cc");
-}
-
-void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
-  auto v =
+  auto v2 =
       p->WithVars({{"release_name", SafeFunctionName(field_->containing_type(),
                                                      field_, "release_")}});
-
   p->Emit(R"cc(
-    inline $Submsg$* $nullable$ $Msg$::$release_name$() {
+    $Submsg$* $nullable$ $Msg$::$release_name$() {
       $WeakDescriptorSelfPin$;
       $annotate_release$;
       // @@protoc_insertion_point(field_release:$pkg.Msg.field$)
@@ -557,6 +562,40 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       }
     }
   )cc");
+  // We rely on the oneof clear method to free the earlier contents
+  // of this oneof. We can directly use the pointer we're given to
+  // set the new value.
+  p->Emit(R"cc(
+    void $Msg$::unsafe_arena_set_allocated_$name$($Submsg$* $nullable$ value) {
+      $WeakDescriptorSelfPin$;
+      clear_$oneof_name$();
+      if (value) {
+        set_has_$name_internal$();
+        $field_$ = $cast_to_field$(value);
+      }
+      $annotate_set$;
+      // @@protoc_insertion_point(field_unsafe_arena_set_allocated:$pkg.Msg.field$)
+    }
+  )cc");
+  p->Emit(R"cc(
+    $Submsg$* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
+      $StrongRef$;
+      if ($not_has_field$) {
+        clear_$oneof_name$();
+        set_has_$name_internal$();
+        $field_$ = $cast_to_field$(
+            $superclass$::DefaultConstruct<$Submsg$>(GetArena()));
+      }
+      return $cast_field_$;
+    }
+  )cc");
+}
+
+void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
+  auto v =
+      p->WithVars({{"release_name", SafeFunctionName(field_->containing_type(),
+                                                     field_, "release_")}});
+
   p->Emit(R"cc(
     inline const $Submsg$& $Msg$::_internal_$name_internal$() const {
       $StrongRef$;
@@ -586,34 +625,6 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       } else {
         return nullptr;
       }
-    }
-  )cc");
-  p->Emit(R"cc(
-    inline void $Msg$::unsafe_arena_set_allocated_$name$(
-        $Submsg$* $nullable$ value) {
-      $WeakDescriptorSelfPin$;
-      // We rely on the oneof clear method to free the earlier contents
-      // of this oneof. We can directly use the pointer we're given to
-      // set the new value.
-      clear_$oneof_name$();
-      if (value) {
-        set_has_$name_internal$();
-        $field_$ = $cast_to_field$(value);
-      }
-      $annotate_set$;
-      // @@protoc_insertion_point(field_unsafe_arena_set_allocated:$pkg.Msg.field$)
-    }
-  )cc");
-  p->Emit(R"cc(
-    inline $Submsg$* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
-      $StrongRef$;
-      if ($not_has_field$) {
-        clear_$oneof_name$();
-        set_has_$name_internal$();
-        $field_$ = $cast_to_field$(
-            $superclass$::DefaultConstruct<$Submsg$>(GetArena()));
-      }
-      return $cast_field_$;
     }
   )cc");
   p->Emit(R"cc(
@@ -820,10 +831,10 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       return _internal_$name_internal$().Get(index);
     }
   )cc");
+  //~ Note: no need to set hasbit in mutable_$name$(int index).
+  //~ Hasbits only need to be updated if a new element is
+  //~ (potentially) added, not if an existing element is mutated.
   p->Emit(R"cc(
-    //~ Note: no need to set hasbit in mutable_$name$(int index).
-    //~ Hasbits only need to be updated if a new element is
-    //~ (potentially) added, not if an existing element is mutated.
     inline $Submsg$* $nonnull$ $Msg$::mutable_$name$(int index)
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;

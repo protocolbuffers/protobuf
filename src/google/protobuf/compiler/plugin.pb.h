@@ -140,10 +140,6 @@ template <>
 using ::google::protobuf::internal::generated_enum::AbslParseFlag;
 using ::google::protobuf::internal::generated_enum::AbslUnparseFlag;
 
-// ===================================================================
-
-
-// -------------------------------------------------------------------
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.Version) */ {
@@ -170,15 +166,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
     CopyFrom(from);
     return *this;
   }
-  inline Version& operator=(Version&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  Version& operator=(Version&& from) noexcept;
 
   [[nodiscard]] inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -205,19 +193,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(Version& a, Version& b) { a.Swap(&b); }
-  inline void Swap(Version* PROTOBUF_NONNULL other) {
-    if (other == this) return;
-    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
-    } else {
-      ::google::protobuf::internal::GenericSwap(this, other);
-    }
-  }
-  void UnsafeArenaSwap(Version* PROTOBUF_NONNULL other) {
-    if (other == this) return;
-    ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
-  }
+  void Swap(Version* PROTOBUF_NONNULL other);
+  void UnsafeArenaSwap(Version* PROTOBUF_NONNULL other);
 
   // implements Message ----------------------------------------------
 
@@ -395,8 +372,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
-// -------------------------------------------------------------------
-
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse_File final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse.File) */ {
  public:
@@ -422,15 +397,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
     CopyFrom(from);
     return *this;
   }
-  inline CodeGeneratorResponse_File& operator=(CodeGeneratorResponse_File&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  CodeGeneratorResponse_File& operator=(CodeGeneratorResponse_File&& from) noexcept;
 
   [[nodiscard]] inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -457,19 +424,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   }
   static constexpr int kIndexInFileMessages = 2;
   friend void swap(CodeGeneratorResponse_File& a, CodeGeneratorResponse_File& b) { a.Swap(&b); }
-  inline void Swap(CodeGeneratorResponse_File* PROTOBUF_NONNULL other) {
-    if (other == this) return;
-    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
-    } else {
-      ::google::protobuf::internal::GenericSwap(this, other);
-    }
-  }
-  void UnsafeArenaSwap(CodeGeneratorResponse_File* PROTOBUF_NONNULL other) {
-    if (other == this) return;
-    ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
-  }
+  void Swap(CodeGeneratorResponse_File* PROTOBUF_NONNULL other);
+  void UnsafeArenaSwap(CodeGeneratorResponse_File* PROTOBUF_NONNULL other);
 
   // implements Message ----------------------------------------------
 
@@ -661,8 +617,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
-// -------------------------------------------------------------------
-
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse) */ {
  public:
@@ -688,15 +642,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
     CopyFrom(from);
     return *this;
   }
-  inline CodeGeneratorResponse& operator=(CodeGeneratorResponse&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  CodeGeneratorResponse& operator=(CodeGeneratorResponse&& from) noexcept;
 
   [[nodiscard]] inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -723,19 +669,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   }
   static constexpr int kIndexInFileMessages = 3;
   friend void swap(CodeGeneratorResponse& a, CodeGeneratorResponse& b) { a.Swap(&b); }
-  inline void Swap(CodeGeneratorResponse* PROTOBUF_NONNULL other) {
-    if (other == this) return;
-    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
-    } else {
-      ::google::protobuf::internal::GenericSwap(this, other);
-    }
-  }
-  void UnsafeArenaSwap(CodeGeneratorResponse* PROTOBUF_NONNULL other) {
-    if (other == this) return;
-    ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
-  }
+  void Swap(CodeGeneratorResponse* PROTOBUF_NONNULL other);
+  void UnsafeArenaSwap(CodeGeneratorResponse* PROTOBUF_NONNULL other);
 
   // implements Message ----------------------------------------------
 
@@ -958,8 +893,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
-// -------------------------------------------------------------------
-
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorRequest) */ {
  public:
@@ -985,15 +918,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
     CopyFrom(from);
     return *this;
   }
-  inline CodeGeneratorRequest& operator=(CodeGeneratorRequest&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  CodeGeneratorRequest& operator=(CodeGeneratorRequest&& from) noexcept;
 
   [[nodiscard]] inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1020,19 +945,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   }
   static constexpr int kIndexInFileMessages = 1;
   friend void swap(CodeGeneratorRequest& a, CodeGeneratorRequest& b) { a.Swap(&b); }
-  inline void Swap(CodeGeneratorRequest* PROTOBUF_NONNULL other) {
-    if (other == this) return;
-    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
-    } else {
-      ::google::protobuf::internal::GenericSwap(this, other);
-    }
-  }
-  void UnsafeArenaSwap(CodeGeneratorRequest* PROTOBUF_NONNULL other) {
-    if (other == this) return;
-    ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
-  }
+  void Swap(CodeGeneratorRequest* PROTOBUF_NONNULL other);
+  void UnsafeArenaSwap(CodeGeneratorRequest* PROTOBUF_NONNULL other);
 
   // implements Message ----------------------------------------------
 
@@ -1267,20 +1181,14 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
 
-// ===================================================================
 
 
-
-
-// ===================================================================
 
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
-// -------------------------------------------------------------------
-
 // Version
 
 // optional int32 major = 1;
@@ -1408,38 +1316,6 @@ inline void Version::_internal_set_suffix(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.suffix_.Set(value, GetArena());
 }
-inline ::std::string* PROTOBUF_NONNULL Version::_internal_mutable_suffix() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _impl_.suffix_.Mutable( GetArena());
-}
-inline ::std::string* PROTOBUF_NULLABLE Version::release_suffix() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:google.protobuf.compiler.Version.suffix)
-  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000001U)) {
-    return nullptr;
-  }
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
-  auto* released = _impl_.suffix_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.suffix_.Set("", GetArena());
-  }
-  return released;
-}
-inline void Version::set_allocated_suffix(::std::string* PROTOBUF_NULLABLE value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (value != nullptr) {
-    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
-  } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
-  }
-  _impl_.suffix_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.suffix_.IsDefault()) {
-    _impl_.suffix_.Set("", GetArena());
-  }
-  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.Version.suffix)
-}
-
-// -------------------------------------------------------------------
 
 // CodeGeneratorRequest
 
@@ -1553,36 +1429,6 @@ inline const ::std::string& CodeGeneratorRequest::_internal_parameter() const {
 inline void CodeGeneratorRequest::_internal_set_parameter(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.parameter_.Set(value, GetArena());
-}
-inline ::std::string* PROTOBUF_NONNULL CodeGeneratorRequest::_internal_mutable_parameter() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _impl_.parameter_.Mutable( GetArena());
-}
-inline ::std::string* PROTOBUF_NULLABLE CodeGeneratorRequest::release_parameter() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorRequest.parameter)
-  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000004U)) {
-    return nullptr;
-  }
-  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
-  auto* released = _impl_.parameter_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.parameter_.Set("", GetArena());
-  }
-  return released;
-}
-inline void CodeGeneratorRequest::set_allocated_parameter(::std::string* PROTOBUF_NULLABLE value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (value != nullptr) {
-    SetHasBit(_impl_._has_bits_[0], 0x00000004U);
-  } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
-  }
-  _impl_.parameter_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.parameter_.IsDefault()) {
-    _impl_.parameter_.Set("", GetArena());
-  }
-  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
 
 // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
@@ -1706,39 +1552,6 @@ inline const ::google::protobuf::compiler::Version& CodeGeneratorRequest::compil
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
   return _internal_compiler_version();
 }
-inline void CodeGeneratorRequest::unsafe_arena_set_allocated_compiler_version(
-    ::google::protobuf::compiler::Version* PROTOBUF_NULLABLE value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.compiler_version_);
-  }
-  _impl_.compiler_version_ = reinterpret_cast<::google::protobuf::compiler::Version*>(value);
-  if (value != nullptr) {
-    SetHasBit(_impl_._has_bits_[0], 0x00000008U);
-  } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
-}
-inline ::google::protobuf::compiler::Version* PROTOBUF_NULLABLE CodeGeneratorRequest::release_compiler_version() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-
-  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
-  ::google::protobuf::compiler::Version* released = _impl_.compiler_version_;
-  _impl_.compiler_version_ = nullptr;
-  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
-    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
-      delete old;
-    }
-  } else {
-    if (GetArena() != nullptr) {
-      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    }
-  }
-  return released;
-}
 inline ::google::protobuf::compiler::Version* PROTOBUF_NULLABLE CodeGeneratorRequest::unsafe_arena_release_compiler_version() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
@@ -1748,43 +1561,16 @@ inline ::google::protobuf::compiler::Version* PROTOBUF_NULLABLE CodeGeneratorReq
   _impl_.compiler_version_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::compiler::Version* PROTOBUF_NONNULL CodeGeneratorRequest::_internal_mutable_compiler_version() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.compiler_version_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::compiler::Version>(GetArena());
-    _impl_.compiler_version_ = reinterpret_cast<::google::protobuf::compiler::Version*>(p);
-  }
-  return _impl_.compiler_version_;
-}
 inline ::google::protobuf::compiler::Version* PROTOBUF_NONNULL CodeGeneratorRequest::mutable_compiler_version()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   SetHasBit(_impl_._has_bits_[0], 0x00000008U);
-  ::google::protobuf::compiler::Version* _msg = _internal_mutable_compiler_version();
+  ::google::protobuf::compiler::Version* _msg = _impl_.compiler_version_;
+  if (_msg == nullptr) {
+    _msg = _internal_mutable_compiler_version();
+  }
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
   return _msg;
 }
-inline void CodeGeneratorRequest::set_allocated_compiler_version(::google::protobuf::compiler::Version* PROTOBUF_NULLABLE value) {
-  ::google::protobuf::Arena* message_arena = GetArena();
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.compiler_version_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = value->GetArena();
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    SetHasBit(_impl_._has_bits_[0], 0x00000008U);
-  } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
-  }
-
-  _impl_.compiler_version_ = reinterpret_cast<::google::protobuf::compiler::Version*>(value);
-  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
-}
-
-// -------------------------------------------------------------------
 
 // CodeGeneratorResponse_File
 
@@ -1826,36 +1612,6 @@ inline void CodeGeneratorResponse_File::_internal_set_name(const ::std::string& 
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.Set(value, GetArena());
 }
-inline ::std::string* PROTOBUF_NONNULL CodeGeneratorResponse_File::_internal_mutable_name() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _impl_.name_.Mutable( GetArena());
-}
-inline ::std::string* PROTOBUF_NULLABLE CodeGeneratorResponse_File::release_name() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.File.name)
-  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000001U)) {
-    return nullptr;
-  }
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
-  auto* released = _impl_.name_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.name_.Set("", GetArena());
-  }
-  return released;
-}
-inline void CodeGeneratorResponse_File::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (value != nullptr) {
-    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
-  } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
-  }
-  _impl_.name_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
-    _impl_.name_.Set("", GetArena());
-  }
-  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.name)
-}
 
 // optional string insertion_point = 2;
 inline bool CodeGeneratorResponse_File::has_insertion_point() const {
@@ -1894,36 +1650,6 @@ inline const ::std::string& CodeGeneratorResponse_File::_internal_insertion_poin
 inline void CodeGeneratorResponse_File::_internal_set_insertion_point(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.insertion_point_.Set(value, GetArena());
-}
-inline ::std::string* PROTOBUF_NONNULL CodeGeneratorResponse_File::_internal_mutable_insertion_point() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _impl_.insertion_point_.Mutable( GetArena());
-}
-inline ::std::string* PROTOBUF_NULLABLE CodeGeneratorResponse_File::release_insertion_point() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
-  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000002U)) {
-    return nullptr;
-  }
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
-  auto* released = _impl_.insertion_point_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.insertion_point_.Set("", GetArena());
-  }
-  return released;
-}
-inline void CodeGeneratorResponse_File::set_allocated_insertion_point(::std::string* PROTOBUF_NULLABLE value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (value != nullptr) {
-    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
-  } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
-  }
-  _impl_.insertion_point_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.insertion_point_.IsDefault()) {
-    _impl_.insertion_point_.Set("", GetArena());
-  }
-  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
 }
 
 // optional string content = 15;
@@ -1964,36 +1690,6 @@ inline void CodeGeneratorResponse_File::_internal_set_content(const ::std::strin
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.content_.Set(value, GetArena());
 }
-inline ::std::string* PROTOBUF_NONNULL CodeGeneratorResponse_File::_internal_mutable_content() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _impl_.content_.Mutable( GetArena());
-}
-inline ::std::string* PROTOBUF_NULLABLE CodeGeneratorResponse_File::release_content() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.File.content)
-  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000004U)) {
-    return nullptr;
-  }
-  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
-  auto* released = _impl_.content_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.content_.Set("", GetArena());
-  }
-  return released;
-}
-inline void CodeGeneratorResponse_File::set_allocated_content(::std::string* PROTOBUF_NULLABLE value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (value != nullptr) {
-    SetHasBit(_impl_._has_bits_[0], 0x00000004U);
-  } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
-  }
-  _impl_.content_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.content_.IsDefault()) {
-    _impl_.content_.Set("", GetArena());
-  }
-  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.content)
-}
 
 // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
 inline bool CodeGeneratorResponse_File::has_generated_code_info() const {
@@ -2010,39 +1706,6 @@ inline const ::google::protobuf::GeneratedCodeInfo& CodeGeneratorResponse_File::
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
   return _internal_generated_code_info();
 }
-inline void CodeGeneratorResponse_File::unsafe_arena_set_allocated_generated_code_info(
-    ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.generated_code_info_);
-  }
-  _impl_.generated_code_info_ = reinterpret_cast<::google::protobuf::GeneratedCodeInfo*>(value);
-  if (value != nullptr) {
-    SetHasBit(_impl_._has_bits_[0], 0x00000008U);
-  } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
-}
-inline ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE CodeGeneratorResponse_File::release_generated_code_info() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-
-  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
-  ::google::protobuf::GeneratedCodeInfo* released = _impl_.generated_code_info_;
-  _impl_.generated_code_info_ = nullptr;
-  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
-    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
-      delete old;
-    }
-  } else {
-    if (GetArena() != nullptr) {
-      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    }
-  }
-  return released;
-}
 inline ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE CodeGeneratorResponse_File::unsafe_arena_release_generated_code_info() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
@@ -2052,43 +1715,16 @@ inline ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE CodeGeneratorRes
   _impl_.generated_code_info_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NONNULL CodeGeneratorResponse_File::_internal_mutable_generated_code_info() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.generated_code_info_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::GeneratedCodeInfo>(GetArena());
-    _impl_.generated_code_info_ = reinterpret_cast<::google::protobuf::GeneratedCodeInfo*>(p);
-  }
-  return _impl_.generated_code_info_;
-}
 inline ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NONNULL CodeGeneratorResponse_File::mutable_generated_code_info()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   SetHasBit(_impl_._has_bits_[0], 0x00000008U);
-  ::google::protobuf::GeneratedCodeInfo* _msg = _internal_mutable_generated_code_info();
+  ::google::protobuf::GeneratedCodeInfo* _msg = _impl_.generated_code_info_;
+  if (_msg == nullptr) {
+    _msg = _internal_mutable_generated_code_info();
+  }
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
   return _msg;
 }
-inline void CodeGeneratorResponse_File::set_allocated_generated_code_info(::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE value) {
-  ::google::protobuf::Arena* message_arena = GetArena();
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.generated_code_info_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::Message*>(value)->GetArena();
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    SetHasBit(_impl_._has_bits_[0], 0x00000008U);
-  } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
-  }
-
-  _impl_.generated_code_info_ = reinterpret_cast<::google::protobuf::GeneratedCodeInfo*>(value);
-  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
-}
-
-// -------------------------------------------------------------------
 
 // CodeGeneratorResponse
 
@@ -2129,36 +1765,6 @@ inline const ::std::string& CodeGeneratorResponse::_internal_error() const {
 inline void CodeGeneratorResponse::_internal_set_error(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.error_.Set(value, GetArena());
-}
-inline ::std::string* PROTOBUF_NONNULL CodeGeneratorResponse::_internal_mutable_error() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _impl_.error_.Mutable( GetArena());
-}
-inline ::std::string* PROTOBUF_NULLABLE CodeGeneratorResponse::release_error() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.error)
-  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000002U)) {
-    return nullptr;
-  }
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
-  auto* released = _impl_.error_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.error_.Set("", GetArena());
-  }
-  return released;
-}
-inline void CodeGeneratorResponse::set_allocated_error(::std::string* PROTOBUF_NULLABLE value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (value != nullptr) {
-    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
-  } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
-  }
-  _impl_.error_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.error_.IsDefault()) {
-    _impl_.error_.Set("", GetArena());
-  }
-  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
 
 // optional uint64 supported_features = 2;

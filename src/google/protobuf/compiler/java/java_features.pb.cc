@@ -443,8 +443,6 @@ JavaFeatures_Utf8Validation_descriptor() {
 }
 PROTOBUF_CONSTINIT const uint32_t JavaFeatures_Utf8Validation_internal_data_[] = {
     196608u, 0u, };
-// ===================================================================
-
 JavaFeatures_NestInFileClassFeature::JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::internal::ZeroFieldsBase(arena, JavaFeatures_NestInFileClassFeature_get_class_data()) {
@@ -503,11 +501,32 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const JavaFeatures_NestInFileClassFeature::Par
 
 
 
+void JavaFeatures_NestInFileClassFeature::Swap(JavaFeatures_NestInFileClassFeature* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void JavaFeatures_NestInFileClassFeature::UnsafeArenaSwap(JavaFeatures_NestInFileClassFeature* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+JavaFeatures_NestInFileClassFeature& JavaFeatures_NestInFileClassFeature::operator=(JavaFeatures_NestInFileClassFeature&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
+
 ::google::protobuf::Metadata JavaFeatures_NestInFileClassFeature::GetMetadata() const {
   return ::google::protobuf::internal::ZeroFieldsBase::GetMetadataImpl(GetClassData()->full());
 }
-// ===================================================================
-
 JavaFeatures::JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, JavaFeatures_get_class_data()) {
@@ -749,6 +768,29 @@ void JavaFeatures::InternalSwap(JavaFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL
       - PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.utf8_validation_)>(
           reinterpret_cast<char*>(&_impl_.utf8_validation_),
           reinterpret_cast<char*>(&other->_impl_.utf8_validation_));
+}
+
+void JavaFeatures::Swap(JavaFeatures* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+    InternalSwap(other);
+  } else {
+    ::google::protobuf::internal::GenericSwap(this, other);
+  }
+}
+void JavaFeatures::UnsafeArenaSwap(JavaFeatures* PROTOBUF_NONNULL other) {
+  if (other == this) return;
+  ABSL_DCHECK(GetArena() == other->GetArena());
+  InternalSwap(other);
+}
+JavaFeatures& JavaFeatures::operator=(JavaFeatures&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
 }
 
 ::google::protobuf::Metadata JavaFeatures::GetMetadata() const {
