@@ -59,6 +59,7 @@
 
 #include "absl/synchronization/mutex.h"
 
+
 // Must be included last
 #include "google/protobuf/port_def.inc"
 
@@ -2514,6 +2515,96 @@ TEST(ArenaPtrTest, ClassIsABIEfficient) {
   EXPECT_LE(sizeof(Arena::Ptr<TestAllTypes>), 2 * sizeof(void*));
 }
 
+
+TEST(ArenaTest, AllStringBlockSizesEmplaceCorrectly) {
+  // Allocate buffer large enough to fit exponentially growing string
+  // blocks up to 64K, which should cover any reasonable max size.
+  std::vector<char> arena_block(64 << 10);
+  ArenaOptions options;
+  options.initial_block = arena_block.data();
+  options.initial_block_size = arena_block.size();
+  Arena arena(options);
+  int runs = (64 << 10) / sizeof(std::string);
+  for (int i = 0; i < runs; ++i) {
+    EXPECT_NE(Arena::Create<std::string>(&arena), nullptr);
+  }
+}
+
+TEST(ArenaTest, BadInitialBlockSizeDeathTest) {
+  if constexpr (!internal::HasMemoryPoisoning()) {
+    GTEST_SKIP() << "Memory poisoning not enabled.";
+  }
+
+  // Create a valid block of size kTrueBlockSize followed by a poisoned memory
+  // region of the same size.
+  constexpr size_t kTrueBlockSize = 64 << 10;
+  std::vector<char> arena_block(kTrueBlockSize * 2);
+  internal::PoisonMemoryRegion(arena_block.data() + kTrueBlockSize,
+                               kTrueBlockSize);
+
+  ArenaOptions options;
+  options.initial_block = arena_block.data();
+  options.initial_block_size = 2 * kTrueBlockSize;
+}
+
+PROTOBUF_NOINLINE
+static void Impl_SerialArenaAlloc(internal::SerialArena* serial,
+                                  int n_allocs_div_10) {
+  for (int i = 0; i < n_allocs_div_10; i++) {
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+  }
+}
+
+static void BM_SerialArenaAlloc(benchmark::State& state) {
+  const int n_allocs = state.range(0);
+
+  ABSL_CHECK_EQ((n_allocs % 10), 0);
+  int n_allocs_div_10 = n_allocs / 10;
+
+  char mem[1024];
+  for (auto s : state) {
+    internal::ThreadSafeArena arena(mem, sizeof(mem));
+    Impl_SerialArenaAlloc(internal::ArenaBenchmark::GetSerialArena(arena),
+                          n_allocs_div_10);
+  }
+}
+BENCHMARK(BM_SerialArenaAlloc)->Arg(0)->Arg(10)->Arg(100);
+
+namespace {
+enum WithArena : bool { kNoArena = false, kArena = true };
+}  // namespace
+
+template <WithArena kWithArena>
+static void BM_RepeatedStringAdd(benchmark::State& state) {
+  const auto count = static_cast<size_t>(state.range(0));
+  const std::string long_string(sizeof(std::string), 'a');
+  for (auto s : state) {
+    Arena arena;
+    auto res =
+        MakeArenaSafeUnique<TestRepeatedString>(kWithArena ? &arena : nullptr);
+    for (uint32_t i = 0; i < count; ++i) {
+      *res->add_repeated_string1() = "aaa";
+      *res->add_repeated_string2() = long_string;
+
+      *res->add_repeated_bytes11() = "aaa";
+      *res->add_repeated_bytes12() = long_string;
+    }
+  }
+}
+
+BENCHMARK(BM_RepeatedStringAdd<kArena>)->Arg(0)->Arg(10)->Arg(100);
+BENCHMARK(BM_RepeatedStringAdd<kNoArena>)->Arg(0)->Arg(10)->Arg(100);
+
+
 
 }  // namespace protobuf
 }  // namespace google
