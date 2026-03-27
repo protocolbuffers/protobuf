@@ -1094,6 +1094,9 @@ class PROTOBUF_EXPORT ExtensionSet {
     return flat_size_ == 0 && flat_capacity_ == 0;
   }
 
+  // Reduces the flat_capacity_ to the smallest power of 2 >= flat_size_.
+  void InternalReduceSmallCapacity(Arena* arena);
+
   // Implementation of MergeFrom into the empty ExtensionSet from a small
   // `other`.
   // This is used in all types of copy.
