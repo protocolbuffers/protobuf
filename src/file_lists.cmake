@@ -1024,6 +1024,26 @@ set(plugin_proto_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin_proto-descriptor-set.proto.bin
 )
 
+# @//csharp:c_sharp_features_proto
+set(c_sharp_features_proto_proto_srcs
+  ${protobuf_SOURCE_DIR}/csharp/google/protobuf/c_sharp_features.proto
+)
+
+# @//csharp:c_sharp_features_proto
+set(c_sharp_features_proto_srcs
+  ${protobuf_SOURCE_DIR}/csharp/google/protobuf/c_sharp_features.proto.pb.cc
+)
+
+# @//csharp:c_sharp_features_proto
+set(c_sharp_features_proto_hdrs
+  ${protobuf_SOURCE_DIR}/csharp/google/protobuf/c_sharp_features.proto.pb.h
+)
+
+# @//csharp:c_sharp_features_proto
+set(c_sharp_features_proto_files
+  ${protobuf_SOURCE_DIR}/csharp/c_sharp_features_proto-descriptor-set.proto.bin
+)
+
 # @//java/core:java_features_proto
 set(java_features_proto_proto_srcs
   ${protobuf_SOURCE_DIR}/java/core/src/main/resources/google/protobuf/java_features.proto
