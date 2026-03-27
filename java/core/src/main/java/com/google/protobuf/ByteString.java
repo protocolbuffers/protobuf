@@ -454,6 +454,95 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   }
 
   /**
+   * Copies the next {@code size} bytes from a {@code java.nio.ByteBuffer} into a {@code
+   * ByteString}.
+   *
+   * @param bytes source buffer
+   * @param size number of bytes to copy
+   * @return new {@code ByteString}
+   * @throws IndexOutOfBoundsException if {@code size > bytes.remaining()}
+   */
+  public static ByteString copyFrom(ByteBuffer bytes, int size) {
+    if (size == 0) {
+      return EMPTY;
+    }
+    checkRange(0, size, bytes.remaining());
+    byte[] copy = new byte[size];
+    bytes.get(copy);
+    return new LiteralByteString(copy);
+  }
+
+  /**
+   * Copies the remaining bytes from a {@code java.nio.ByteBuffer} into a {@code ByteString}.
+   *
+   * @param bytes sourceBuffer
+   * @return new {@code ByteString}
+   */
+  public static ByteString copyFrom(ByteBuffer bytes) {
+    return copyFrom(bytes, bytes.remaining());
+  }
+
+  /**
+   * Encodes {@code text} into a sequence of bytes using the named charset and returns the result as
+   * a {@code ByteString}.
+   *
+   * @param text source string
+   * @param charsetName encoding to use
+   * @return new {@code ByteString}
+   * @throws UnsupportedEncodingException if the encoding isn't found
+   * @deprecated Use either {@link #copyFromUtf8(String)} or {@link #copyFrom(String, Charset)}
+   *     instead.
+   */
+  @Deprecated
+  public
+  static ByteString copyFrom(String text, String charsetName) throws UnsupportedEncodingException {
+    return text.isEmpty() ? EMPTY : new LiteralByteString(text.getBytes(charsetName));
+  }
+
+  /**
+   * Encodes {@code text} into a sequence of bytes using the named charset and returns the result as
+   * a {@code ByteString}.
+   *
+   * @param text source string
+   * @param charset encode using this charset
+   * @return new {@code ByteString}
+   */
+  public static ByteString copyFrom(String text, Charset charset) {
+    return text.isEmpty() ? EMPTY : new LiteralByteString(text.getBytes(charset));
+  }
+
+  /**
+   * Concatenates all byte strings in the iterable and returns the result. This is designed to run
+   * in O(list size), not O(total bytes).
+   *
+   * <p>The returned {@code ByteString} is not necessarily a unique object. If the list is empty,
+   * the returned object is the singleton empty {@code ByteString}. If the list has only one
+   * element, that {@code ByteString} will be returned without copying.
+   *
+   * @param byteStrings strings to be concatenated
+   * @return new {@code ByteString}
+   * @throws IllegalArgumentException if the combined size of the byte strings exceeds
+   *     Integer.MAX_VALUE
+   */
+  public static ByteString copyFrom(Iterable<ByteString> byteStrings) {
+    final Collection<ByteString> collection;
+    if (byteStrings instanceof Collection) {
+      collection = (Collection<ByteString>) byteStrings;
+    } else {
+      List<ByteString> list = new ArrayList<>();
+      for (ByteString byteString : byteStrings) {
+        list.add(byteString);
+      }
+      collection = list;
+    }
+
+    if (collection.isEmpty()) {
+      return EMPTY;
+    }
+    return balancedConcat(collection.iterator(), collection.size());
+  }
+
+  /**
    * Wraps the given bytes into a {@code ByteString}. Intended for internal usage within the
    * library.
    */
@@ -527,64 +616,6 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       throw InvalidProtocolBufferException.invalidUtf8();
     }
     return new BoundedByteString(bytes, offset, length);
-  }
-
-  /**
-   * Copies the next {@code size} bytes from a {@code java.nio.ByteBuffer} into a {@code
-   * ByteString}.
-   *
-   * @param bytes source buffer
-   * @param size number of bytes to copy
-   * @return new {@code ByteString}
-   * @throws IndexOutOfBoundsException if {@code size > bytes.remaining()}
-   */
-  public static ByteString copyFrom(ByteBuffer bytes, int size) {
-    if (size == 0) {
-      return EMPTY;
-    }
-    checkRange(0, size, bytes.remaining());
-    byte[] copy = new byte[size];
-    bytes.get(copy);
-    return new LiteralByteString(copy);
-  }
-
-  /**
-   * Copies the remaining bytes from a {@code java.nio.ByteBuffer} into a {@code ByteString}.
-   *
-   * @param bytes sourceBuffer
-   * @return new {@code ByteString}
-   */
-  public static ByteString copyFrom(ByteBuffer bytes) {
-    return copyFrom(bytes, bytes.remaining());
-  }
-
-  /**
-   * Encodes {@code text} into a sequence of bytes using the named charset and returns the result as
-   * a {@code ByteString}.
-   *
-   * @param text source string
-   * @param charsetName encoding to use
-   * @return new {@code ByteString}
-   * @throws UnsupportedEncodingException if the encoding isn't found
-   * @deprecated Use either {@link #copyFromUtf8(String)} or {@link #copyFrom(String, Charset)}
-   *     instead.
-   */
-  @Deprecated
-  public
-  static ByteString copyFrom(String text, String charsetName) throws UnsupportedEncodingException {
-    return text.isEmpty() ? EMPTY : new LiteralByteString(text.getBytes(charsetName));
-  }
-
-  /**
-   * Encodes {@code text} into a sequence of bytes using the named charset and returns the result as
-   * a {@code ByteString}.
-   *
-   * @param text source string
-   * @param charset encode using this charset
-   * @return new {@code ByteString}
-   */
-  public static ByteString copyFrom(String text, Charset charset) {
-    return text.isEmpty() ? EMPTY : new LiteralByteString(text.getBytes(charset));
   }
 
   /**
@@ -721,39 +752,6 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     }
 
     return RopeByteString.concatenate(this, other);
-  }
-
-  /**
-   * Concatenates all byte strings in the iterable and returns the result. This is designed to run
-   * in O(list size), not O(total bytes).
-   *
-   * <p>The returned {@code ByteString} is not necessarily a unique object. If the list is empty,
-   * the returned object is the singleton empty {@code ByteString}. If the list has only one
-   * element, that {@code ByteString} will be returned without copying.
-   *
-   * @param byteStrings strings to be concatenated
-   * @return new {@code ByteString}
-   * @throws IllegalArgumentException if the combined size of the byte strings exceeds
-   *     Integer.MAX_VALUE
-   */
-  public static ByteString copyFrom(Iterable<ByteString> byteStrings) {
-    // Determine the size;
-    final int size;
-    if (!(byteStrings instanceof Collection)) {
-      int tempSize = 0;
-      for (Iterator<ByteString> iter = byteStrings.iterator();
-          iter.hasNext();
-          iter.next(), ++tempSize) {}
-      size = tempSize;
-    } else {
-      size = ((Collection<ByteString>) byteStrings).size();
-    }
-
-    if (size == 0) {
-      return EMPTY;
-    }
-
-    return balancedConcat(byteStrings.iterator(), size);
   }
 
   // Internal function used by copyFrom(Iterable<ByteString>).
