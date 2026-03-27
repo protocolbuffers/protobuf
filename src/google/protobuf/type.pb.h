@@ -689,18 +689,19 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
 
   public:
   void clear_options() ;
+  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
   [[nodiscard]] ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
+  ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
+  options() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
   mutable_options();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
+
   public:
-  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
-  ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& options()
-      const;
   // string name = 4;
   void clear_name() ;
   [[nodiscard]] const ::std::string& name() const;
@@ -1016,18 +1017,19 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
 
   public:
   void clear_options() ;
+  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
   [[nodiscard]] ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
+  ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
+  options() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
   mutable_options();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
+
   public:
-  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
-  ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& options()
-      const;
   // string name = 1;
   void clear_name() ;
   [[nodiscard]] const ::std::string& name() const;
@@ -1255,18 +1257,19 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
 
   public:
   void clear_fields() ;
+  [[nodiscard]] const ::google::protobuf::Field& fields(int index) const;
   [[nodiscard]] ::google::protobuf::Field* PROTOBUF_NONNULL mutable_fields(int index);
+  ::google::protobuf::Field* PROTOBUF_NONNULL add_fields();
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>&
+  fields() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>* PROTOBUF_NONNULL
   mutable_fields();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>& _internal_fields() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>* PROTOBUF_NONNULL _internal_mutable_fields();
+
   public:
-  [[nodiscard]] const ::google::protobuf::Field& fields(int index) const;
-  ::google::protobuf::Field* PROTOBUF_NONNULL add_fields();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>& fields()
-      const;
   // repeated string oneofs = 3;
   [[nodiscard]] int oneofs_size()
       const;
@@ -1300,18 +1303,19 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
 
   public:
   void clear_options() ;
+  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
   [[nodiscard]] ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
+  ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
+  options() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
   mutable_options();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
+
   public:
-  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
-  ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& options()
-      const;
   // string name = 1;
   void clear_name() ;
   [[nodiscard]] const ::std::string& name() const;
@@ -1573,18 +1577,19 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
 
   public:
   void clear_enumvalue() ;
+  [[nodiscard]] const ::google::protobuf::EnumValue& enumvalue(int index) const;
   [[nodiscard]] ::google::protobuf::EnumValue* PROTOBUF_NONNULL mutable_enumvalue(int index);
+  ::google::protobuf::EnumValue* PROTOBUF_NONNULL add_enumvalue();
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>&
+  enumvalue() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>* PROTOBUF_NONNULL
   mutable_enumvalue();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>& _internal_enumvalue() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>* PROTOBUF_NONNULL _internal_mutable_enumvalue();
+
   public:
-  [[nodiscard]] const ::google::protobuf::EnumValue& enumvalue(int index) const;
-  ::google::protobuf::EnumValue* PROTOBUF_NONNULL add_enumvalue();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>& enumvalue()
-      const;
   // repeated .google.protobuf.Option options = 3;
   [[nodiscard]] int options_size()
       const;
@@ -1593,18 +1598,19 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
 
   public:
   void clear_options() ;
+  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
   [[nodiscard]] ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
+  ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
+  options() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
   mutable_options();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
+
   public:
-  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
-  ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& options()
-      const;
   // string name = 1;
   void clear_name() ;
   [[nodiscard]] const ::std::string& name() const;
@@ -1797,22 +1803,15 @@ inline void Type::clear_fields() {
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
-inline ::google::protobuf::Field* PROTOBUF_NONNULL Type::mutable_fields(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.Type.fields)
-  return _internal_mutable_fields()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>* PROTOBUF_NONNULL Type::mutable_fields()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.fields)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_fields();
-}
 inline const ::google::protobuf::Field& Type::fields(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Type.fields)
   return _internal_fields().Get(index);
+}
+inline ::google::protobuf::Field* PROTOBUF_NONNULL Type::mutable_fields(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Type.fields)
+  return _internal_mutable_fields()->Mutable(index);
 }
 inline ::google::protobuf::Field* PROTOBUF_NONNULL Type::add_fields()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1828,6 +1827,13 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>& Ty
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.Type.fields)
   return _internal_fields();
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>* PROTOBUF_NONNULL Type::mutable_fields()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.fields)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_fields();
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>&
 Type::_internal_fields() const {
@@ -1926,22 +1932,15 @@ inline void Type::clear_options() {
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000004U);
 }
-inline ::google::protobuf::Option* PROTOBUF_NONNULL Type::mutable_options(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.Type.options)
-  return _internal_mutable_options()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL Type::mutable_options()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000004U);
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.options)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_options();
-}
 inline const ::google::protobuf::Option& Type::options(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Type.options)
   return _internal_options().Get(index);
+}
+inline ::google::protobuf::Option* PROTOBUF_NONNULL Type::mutable_options(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Type.options)
+  return _internal_mutable_options()->Mutable(index);
 }
 inline ::google::protobuf::Option* PROTOBUF_NONNULL Type::add_options()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1957,6 +1956,13 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& T
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.Type.options)
   return _internal_options();
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL Type::mutable_options()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000004U);
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.options)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_options();
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 Type::_internal_options() const {
@@ -2424,22 +2430,15 @@ inline void Field::clear_options() {
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
-inline ::google::protobuf::Option* PROTOBUF_NONNULL Field::mutable_options(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.Field.options)
-  return _internal_mutable_options()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL Field::mutable_options()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Field.options)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_options();
-}
 inline const ::google::protobuf::Option& Field::options(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.options)
   return _internal_options().Get(index);
+}
+inline ::google::protobuf::Option* PROTOBUF_NONNULL Field::mutable_options(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Field.options)
+  return _internal_mutable_options()->Mutable(index);
 }
 inline ::google::protobuf::Option* PROTOBUF_NONNULL Field::add_options()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2455,6 +2454,13 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& F
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.Field.options)
   return _internal_options();
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL Field::mutable_options()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Field.options)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_options();
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 Field::_internal_options() const {
@@ -2679,22 +2685,15 @@ inline void Enum::clear_enumvalue() {
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
-inline ::google::protobuf::EnumValue* PROTOBUF_NONNULL Enum::mutable_enumvalue(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.Enum.enumvalue)
-  return _internal_mutable_enumvalue()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>* PROTOBUF_NONNULL Enum::mutable_enumvalue()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Enum.enumvalue)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_enumvalue();
-}
 inline const ::google::protobuf::EnumValue& Enum::enumvalue(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.enumvalue)
   return _internal_enumvalue().Get(index);
+}
+inline ::google::protobuf::EnumValue* PROTOBUF_NONNULL Enum::mutable_enumvalue(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Enum.enumvalue)
+  return _internal_mutable_enumvalue()->Mutable(index);
 }
 inline ::google::protobuf::EnumValue* PROTOBUF_NONNULL Enum::add_enumvalue()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2710,6 +2709,13 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.Enum.enumvalue)
   return _internal_enumvalue();
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>* PROTOBUF_NONNULL Enum::mutable_enumvalue()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Enum.enumvalue)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_enumvalue();
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>&
 Enum::_internal_enumvalue() const {
@@ -2735,22 +2741,15 @@ inline void Enum::clear_options() {
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000002U);
 }
-inline ::google::protobuf::Option* PROTOBUF_NONNULL Enum::mutable_options(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.Enum.options)
-  return _internal_mutable_options()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL Enum::mutable_options()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Enum.options)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_options();
-}
 inline const ::google::protobuf::Option& Enum::options(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.options)
   return _internal_options().Get(index);
+}
+inline ::google::protobuf::Option* PROTOBUF_NONNULL Enum::mutable_options(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Enum.options)
+  return _internal_mutable_options()->Mutable(index);
 }
 inline ::google::protobuf::Option* PROTOBUF_NONNULL Enum::add_options()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2766,6 +2765,13 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& E
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.Enum.options)
   return _internal_options();
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL Enum::mutable_options()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Enum.options)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_options();
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 Enum::_internal_options() const {
@@ -3068,22 +3074,15 @@ inline void EnumValue::clear_options() {
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
-inline ::google::protobuf::Option* PROTOBUF_NONNULL EnumValue::mutable_options(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.EnumValue.options)
-  return _internal_mutable_options()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL EnumValue::mutable_options()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumValue.options)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_options();
-}
 inline const ::google::protobuf::Option& EnumValue::options(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValue.options)
   return _internal_options().Get(index);
+}
+inline ::google::protobuf::Option* PROTOBUF_NONNULL EnumValue::mutable_options(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.EnumValue.options)
+  return _internal_mutable_options()->Mutable(index);
 }
 inline ::google::protobuf::Option* PROTOBUF_NONNULL EnumValue::add_options()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -3099,6 +3098,13 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& E
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.EnumValue.options)
   return _internal_options();
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL EnumValue::mutable_options()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumValue.options)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_options();
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 EnumValue::_internal_options() const {

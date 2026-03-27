@@ -8,7 +8,6 @@
 #include "upb/mini_descriptor/decode.h"
 
 #include <inttypes.h>
-#include <stdalign.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>

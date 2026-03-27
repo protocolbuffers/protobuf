@@ -31,7 +31,6 @@ public final class DynamicMessage extends AbstractMessage {
   private final FieldSet<FieldDescriptor> fields;
   private final FieldDescriptor[] oneofCases;
   private final UnknownFieldSet unknownFields;
-  private int memoizedSize = -1;
 
   /**
    * Stores previously-computed {@code isInitialized} results. {@code isInitialized} can be

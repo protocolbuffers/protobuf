@@ -19,7 +19,7 @@ NSString *const GPBWellKnownTypesErrorDomain = GPBNSStringifySymbol(GPBWellKnown
 static NSString *kTypePrefixGoogleApisCom = @"type.googleapis.com/";
 
 static NSTimeInterval TimeIntervalFromSecondsAndNanos(int64_t seconds, int32_t nanos) {
-  return seconds + (NSTimeInterval)nanos / 1e9;
+  return (NSTimeInterval)seconds + (NSTimeInterval)nanos / 1e9;
 }
 
 static int32_t SecondsAndNanosFromTimeInterval(NSTimeInterval time, int64_t *outSeconds,

@@ -13905,6 +13905,54 @@ TEST_F(ValidationErrorTest, VisibilityFromLocalExtender) {
       "accessed outside its own file\n");
 }
 
+TEST_F(ValidationErrorTest, VisibilityFromService) {
+  pool_.EnforceSymbolVisibility(true);
+  ASSERT_THAT(ParseAndBuildFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+
+        local message LocalMessage {
+        }
+        export message ExportMessage {
+        }
+        )schema"),
+              NotNull());
+
+  ParseAndBuildFileWithErrorSubstr(
+      "service_bad_input.proto",
+      R"schema(
+        edition = "2024";
+        import "vis.proto";
+
+        service MyServiceInput {
+           rpc MyBadMethod(vis.test.LocalMessage)
+             returns (vis.test.ExportMessage) {}
+        }
+      )schema",
+      "service_bad_input.proto: MyServiceInput.MyBadMethod: INPUT_TYPE: Symbol "
+      "\"vis.test.LocalMessage\", "
+      "defined in \"vis.proto\"  is not visible "
+      "from \"service_bad_input.proto\". It is explicitly marked 'local' and "
+      "cannot be accessed outside its own file\n");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "service_bad_return.proto",
+      R"schema(
+        edition = "2024";
+        import "vis.proto";
+
+        service MyServiceReturn {
+           rpc MyBadMethod(vis.test.ExportMessage)
+             returns (vis.test.LocalMessage) {}
+        }
+      )schema",
+      "service_bad_return.proto: MyServiceReturn.MyBadMethod: OUTPUT_TYPE: "
+      "Symbol \"vis.test.LocalMessage\", defined in \"vis.proto\"  is not "
+      "visible from \"service_bad_return.proto\". It is "
+      "explicitly marked 'local' and cannot be accessed outside its own "
+      "file\n");
+}
+
 struct ExtensionDeclarationsTestParams {
   std::string test_name;
 };
@@ -15204,6 +15252,40 @@ const char* const kSourceLocationTestInput =
     "  optional string test_ext_opt = 10101;\n"
     "}\n";
 
+MATCHER_P2(MatchesSubstring, full_string, expected_substring, "") {
+  auto get_offset = [&](int line, int col) -> size_t {
+    if (line == -1) return std::string::npos;
+    size_t offset = 0;
+    absl::string_view input(full_string);
+    for (int i = 0; i < line; ++i) {
+      offset = input.find('\n', offset);
+      if (offset == std::string::npos) return std::string::npos;
+      offset++;
+    }
+    return offset + col;
+  };
+
+  size_t start_offset = get_offset(arg.start_line, arg.start_column);
+  size_t end_offset = get_offset(arg.end_line, arg.end_column);
+
+  if (start_offset == std::string::npos || end_offset == std::string::npos ||
+      start_offset > end_offset ||
+      end_offset > absl::string_view(full_string).size()) {
+    *result_listener << "invalid range. Outside of range for " << full_string;
+    return false;
+  }
+
+  absl::string_view actual_substring =
+      absl::string_view(full_string)
+          .substr(start_offset, end_offset - start_offset);
+  EXPECT_EQ(actual_substring, expected_substring)
+      << " Actual substring matches source location " << arg.start_line << ":"
+      << arg.start_column << "-" << arg.end_line << ":" << arg.end_column
+      << " in the following text:\n\n"
+      << full_string;
+  return true;
+}
+
 class SourceLocationTest : public testing::Test {
  public:
   SourceLocationTest()
@@ -15216,12 +15298,6 @@ class SourceLocationTest : public testing::Test {
     // since our test file imports it
     FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto_);
     simple_db_.Add(file_proto_);
-  }
-
-  static std::string PrintSourceLocation(const SourceLocation& loc) {
-    return absl::Substitute("$0:$1-$2:$3", 1 + loc.start_line,
-                            1 + loc.start_column, 1 + loc.end_line,
-                            1 + loc.end_column);
   }
 
  private:
@@ -15252,27 +15328,70 @@ TEST_F(SourceLocationTest, GetSourceLocation) {
 
   const Descriptor* a_desc = file_desc->FindMessageTypeByName("A");
   EXPECT_TRUE(a_desc->GetSourceLocation(&loc));
-  EXPECT_EQ("4:1-16:2", PrintSourceLocation(loc));
+  EXPECT_THAT(loc,
+              MatchesSubstring(
+                  kSourceLocationTestInput,
+                  "message A {\n"
+                  "  option (test_msg_opt) = \"foobar\";\n"
+                  "  optional int32 a = 1 [deprecated = true];\n"
+                  "  message B {\n"
+                  "    required double b = 1 [(test_field_opt) = \"foobar\"];\n"
+                  "  }\n"
+                  "  oneof c {\n"
+                  "    option (test_oneof_opt) = \"foobar\";\n"
+                  "    string d = 2;\n"
+                  "    string e = 3;\n"
+                  "    string f = 4;\n"
+                  "  }\n"
+                  "}"));
 
   const Descriptor* a_b_desc = a_desc->FindNestedTypeByName("B");
   EXPECT_TRUE(a_b_desc->GetSourceLocation(&loc));
-  EXPECT_EQ("7:3-9:4", PrintSourceLocation(loc));
+  EXPECT_THAT(loc,
+              MatchesSubstring(
+                  kSourceLocationTestInput,
+                  "message B {\n"
+                  "    required double b = 1 [(test_field_opt) = \"foobar\"];\n"
+                  "  }"));
 
   const EnumDescriptor* e_desc = file_desc->FindEnumTypeByName("Indecision");
   EXPECT_TRUE(e_desc->GetSourceLocation(&loc));
-  EXPECT_EQ("17:1-24:2", PrintSourceLocation(loc));
+  EXPECT_THAT(loc,
+              MatchesSubstring(kSourceLocationTestInput,
+                               "enum Indecision {\n"
+                               "  option (test_enum_opt) = 21;\n"
+                               "  option (test_enum_opt) = 42;\n"
+                               "  option (test_enum_opt) = 63;\n"
+                               "  YES   = 1 [(test_enumval_opt).a = 100];\n"
+                               "  NO    = 2 [(test_enumval_opt) = {a:200}];\n"
+                               "  MAYBE = 3;\n"
+                               "}"));
 
   const EnumValueDescriptor* yes_desc = e_desc->FindValueByName("YES");
   EXPECT_TRUE(yes_desc->GetSourceLocation(&loc));
-  EXPECT_EQ("21:3-21:42", PrintSourceLocation(loc));
+  EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                    "YES   = 1 [(test_enumval_opt).a = 100];"));
 
   const ServiceDescriptor* s_desc = file_desc->FindServiceByName("S");
   EXPECT_TRUE(s_desc->GetSourceLocation(&loc));
-  EXPECT_EQ("25:1-35:2", PrintSourceLocation(loc));
+  EXPECT_THAT(loc,
+              MatchesSubstring(kSourceLocationTestInput,
+                               "service S {\n"
+                               "  option (test_svc_opt) = {a:100};\n"
+                               "  option (test_svc_opt) = {a:200};\n"
+                               "  option (test_svc_opt) = {a:300};\n"
+                               "  rpc Method(A) returns (A.B);\n"
+                               "\n"
+                               "  rpc OtherMethod(A) returns (A) {\n"
+                               "    option deprecated = true;\n"
+                               "    option (test_method_opt) = \"foobar\";\n"
+                               "  }\n"
+                               "}"));
 
   const MethodDescriptor* m_desc = s_desc->FindMethodByName("Method");
   EXPECT_TRUE(m_desc->GetSourceLocation(&loc));
-  EXPECT_EQ("29:3-29:31", PrintSourceLocation(loc));
+  EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                    "rpc Method(A) returns (A.B);"));
 }
 
 TEST_F(SourceLocationTest, ExtensionSourceLocation) {
@@ -15284,16 +15403,24 @@ TEST_F(SourceLocationTest, ExtensionSourceLocation) {
   const FieldDescriptor* int32_extension_desc =
       file_desc->FindExtensionByName("int32_extension");
   EXPECT_TRUE(int32_extension_desc->GetSourceLocation(&loc));
-  EXPECT_EQ("40:3-40:55", PrintSourceLocation(loc));
+  EXPECT_THAT(loc, MatchesSubstring(
+                       kSourceLocationTestInput,
+                       "repeated int32 int32_extension = 1001 [packed=true];"));
 
   const Descriptor* c_desc = file_desc->FindMessageTypeByName("C");
   EXPECT_TRUE(c_desc->GetSourceLocation(&loc));
-  EXPECT_EQ("42:1-46:2", PrintSourceLocation(loc));
+  EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                    "message C {\n"
+                                    "  extend MessageWithExtensions {\n"
+                                    "    optional C message_extension = 1002;\n"
+                                    "  }\n"
+                                    "}"));
 
   const FieldDescriptor* message_extension_desc =
       c_desc->FindExtensionByName("message_extension");
   EXPECT_TRUE(message_extension_desc->GetSourceLocation(&loc));
-  EXPECT_EQ("44:5-44:41", PrintSourceLocation(loc));
+  EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                    "optional C message_extension = 1002;"));
 }
 
 TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
@@ -15318,7 +15445,9 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
 
     std::vector<int> vpath(path, path + 2);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("2:1-2:37", PrintSourceLocation(loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput,
+                                 "option java_package = \"com.foo.bar\";"));
 
     std::vector<int> vunint(unint, unint + 3);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
@@ -15330,7 +15459,8 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    FileOptions::kUninterpretedOptionFieldNumber, 1};
     std::vector<int> vpath(path, path + 2);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("3:1-3:35", PrintSourceLocation(loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "option (test_file_opt) = \"foobar\";"));
 
     std::vector<int> vunint(unint, unint + 3);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
@@ -15346,7 +15476,8 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    MessageOptions::kUninterpretedOptionFieldNumber, 0};
     std::vector<int> vpath(path, path + 4);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("5:3-5:36", PrintSourceLocation(loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "option (test_msg_opt) = \"foobar\";"));
 
     std::vector<int> vunint(unint, unint + 5);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
@@ -15369,7 +15500,8 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    0};
     std::vector<int> vpath(path, path + 6);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("6:25-6:42", PrintSourceLocation(loc));
+    EXPECT_THAT(
+        loc, MatchesSubstring(kSourceLocationTestInput, "deprecated = true"));
 
     std::vector<int> vunint(unint, unint + 7);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
@@ -15393,7 +15525,8 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    0};
     std::vector<int> vpath(path, path + 8);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("8:28-8:55", PrintSourceLocation(loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "(test_field_opt) = \"foobar\""));
 
     std::vector<int> vunint(unint, unint + 9);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
@@ -15414,7 +15547,8 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    0};
     std::vector<int> vpath(path, path + 6);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("11:5-11:40", PrintSourceLocation(loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "option (test_oneof_opt) = \"foobar\";"));
 
     std::vector<int> vunint(unint, unint + 7);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
@@ -15430,7 +15564,8 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    EnumOptions::kUninterpretedOptionFieldNumber, 0};
     std::vector<int> vpath(path, path + 5);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("18:3-18:31", PrintSourceLocation(loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "option (test_enum_opt) = 21;"));
 
     std::vector<int> vunint(unint, unint + 5);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
@@ -15444,7 +15579,8 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    EnumOptions::kUninterpretedOptionFieldNumber, 1};
     std::vector<int> vpath(path, path + 5);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("19:3-19:31", PrintSourceLocation(loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "option (test_enum_opt) = 42;"));
 
     std::vector<int> vunint(unint, unint + 5);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
@@ -15458,7 +15594,8 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    OneofOptions::kUninterpretedOptionFieldNumber, 2};
     std::vector<int> vpath(path, path + 5);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("20:3-20:31", PrintSourceLocation(loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "option (test_enum_opt) = 63;"));
 
     std::vector<int> vunint(unint, unint + 5);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
@@ -15483,7 +15620,8 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    0};
     std::vector<int> vpath(path, path + 7);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("21:14-21:40", PrintSourceLocation(loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "(test_enumval_opt).a = 100"));
 
     std::vector<int> vunint(unint, unint + 7);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
@@ -15504,7 +15642,8 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    0};
     std::vector<int> vpath(path, path + 6);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("22:14-22:42", PrintSourceLocation(loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "(test_enumval_opt) = {a:200}"));
 
     std::vector<int> vunint(unint, unint + 7);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
@@ -15520,7 +15659,8 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    ServiceOptions::kUninterpretedOptionFieldNumber, 0};
     std::vector<int> vpath(path, path + 5);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("26:3-26:35", PrintSourceLocation(loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "option (test_svc_opt) = {a:100};"));
 
     std::vector<int> vunint(unint, unint + 5);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
@@ -15534,7 +15674,8 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    ServiceOptions::kUninterpretedOptionFieldNumber, 1};
     std::vector<int> vpath(path, path + 5);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("27:3-27:35", PrintSourceLocation(loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "option (test_svc_opt) = {a:200};"));
 
     std::vector<int> vunint(unint, unint + 5);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
@@ -15548,7 +15689,8 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    ServiceOptions::kUninterpretedOptionFieldNumber, 2};
     std::vector<int> vpath(path, path + 5);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("28:3-28:35", PrintSourceLocation(loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "option (test_svc_opt) = {a:300};"));
 
     std::vector<int> vunint(unint, unint + 5);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
@@ -15571,7 +15713,8 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    0};
     std::vector<int> vpath(path, path + 6);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("32:5-32:30", PrintSourceLocation(loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "option deprecated = true;"));
 
     std::vector<int> vunint(unint, unint + 7);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
@@ -15590,7 +15733,9 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    1};
     std::vector<int> vpath(path, path + 6);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("33:5-33:41", PrintSourceLocation(loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput,
+                                 "option (test_method_opt) = \"foobar\";"));
 
     std::vector<int> vunint(unint, unint + 7);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
@@ -15603,7 +15748,8 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                   DescriptorProto_ExtensionRange::kOptionsFieldNumber};
     std::vector<int> vpath(path, path + 5);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("37:40-37:67", PrintSourceLocation(loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "[(test_ext_opt) = \"foobar\"]"));
   }
   {
     int path[] = {FileDescriptorProto::kMessageTypeFieldNumber,
@@ -15621,7 +15767,8 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    0};
     std::vector<int> vpath(path, path + 6);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("37:41-37:66", PrintSourceLocation(loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "(test_ext_opt) = \"foobar\""));
 
     std::vector<int> vunint(unint, unint + 7);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
@@ -15642,7 +15789,8 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    0};
     std::vector<int> vpath(path, path + 6);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("37:41-37:66", PrintSourceLocation(loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "(test_ext_opt) = \"foobar\""));
 
     std::vector<int> vunint(unint, unint + 7);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
@@ -15658,7 +15806,7 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    FieldOptions::kUninterpretedOptionFieldNumber, 0};
     std::vector<int> vpath(path, path + 4);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("40:42-40:53", PrintSourceLocation(loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "packed=true"));
 
     std::vector<int> vunint(unint, unint + 5);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));

@@ -717,7 +717,6 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/base/error_handler.h
   ${protobuf_SOURCE_DIR}/upb/base/internal/endian.h
   ${protobuf_SOURCE_DIR}/upb/base/internal/log2.h
-  ${protobuf_SOURCE_DIR}/upb/base/shutdown.h
   ${protobuf_SOURCE_DIR}/upb/base/status.h
   ${protobuf_SOURCE_DIR}/upb/base/status.hpp
   ${protobuf_SOURCE_DIR}/upb/base/string_view.h
@@ -1023,6 +1022,26 @@ set(plugin_proto_hdrs
 # @//src/google/protobuf/compiler:plugin_proto
 set(plugin_proto_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin_proto-descriptor-set.proto.bin
+)
+
+# @//csharp:c_sharp_features_proto
+set(c_sharp_features_proto_proto_srcs
+  ${protobuf_SOURCE_DIR}/csharp/google/protobuf/c_sharp_features.proto
+)
+
+# @//csharp:c_sharp_features_proto
+set(c_sharp_features_proto_srcs
+  ${protobuf_SOURCE_DIR}/csharp/google/protobuf/c_sharp_features.proto.pb.cc
+)
+
+# @//csharp:c_sharp_features_proto
+set(c_sharp_features_proto_hdrs
+  ${protobuf_SOURCE_DIR}/csharp/google/protobuf/c_sharp_features.proto.pb.h
+)
+
+# @//csharp:c_sharp_features_proto
+set(c_sharp_features_proto_files
+  ${protobuf_SOURCE_DIR}/csharp/c_sharp_features_proto-descriptor-set.proto.bin
 )
 
 # @//java/core:java_features_proto

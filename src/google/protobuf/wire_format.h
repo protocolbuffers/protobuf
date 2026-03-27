@@ -169,7 +169,6 @@ class PROTOBUF_EXPORT WireFormat {
                                         uint8_t* target,
                                         io::EpsCopyOutputStream* stream);
 
-
   // Same thing except for messages that have the message_set_wire_format
   // option.
   // Requires that the buffer have sufficient capacity for

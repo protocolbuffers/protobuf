@@ -2614,11 +2614,13 @@ bool SetCompositeField(CMessage* self, const FieldDescriptor* field,
   return true;
 }
 
-bool SetSubmessage(CMessage* self, CMessage* submessage) {
+bool SetSubmessage(CMessage* self, CMessage*& submessage) {
   if (self->child_submessages == nullptr) {
     self->child_submessages = new CMessage::SubMessagesMap();
   }
-  self->child_submessages->Set(submessage->message, submessage->AsPyObject());
+  PyObject* obj = submessage->AsPyObject();
+  self->child_submessages->TrySet(submessage->message, obj);
+  submessage = reinterpret_cast<CMessage*>(obj);
   return true;
 }
 

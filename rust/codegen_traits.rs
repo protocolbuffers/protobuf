@@ -11,8 +11,9 @@ use crate::AsMut;
 use crate::AsView;
 use crate::IntoMut;
 use crate::IntoView;
-use crate::MutProxied;
+use crate::__internal::runtime::{KernelMessage, KernelMessageMut, KernelMessageView};
 use crate::__internal::SealedInternal;
+use crate::{MutProxied, ProtoBytes, ProtoString};
 use create::Parse;
 use interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop};
 use read::Serialize;
@@ -35,6 +36,7 @@ pub trait Message: SealedInternal
   + Clone
   // C++ Interop:
   + OwnedMessageInterop
+  + KernelMessage
 {
     /// The same type as `<Self as Proxied>::View`. This is defined as a second redundant associated
     /// type and should not be necessary, but the having this available is a hacky workaround
@@ -59,6 +61,7 @@ pub trait MessageView<'msg>: SealedInternal
     + Copy + Clone
     // C++ Interop:
     + MessageViewInterop<'msg>
+    + KernelMessageView
 {
     /// The owned message type that this is a view of.
     type Message: Message;
@@ -80,10 +83,39 @@ pub trait MessageMut<'msg>: SealedInternal
     // (Neither)
     // C++ Interop:
     + MessageMutInterop<'msg>
+    + KernelMessageMut
 {
     /// The owned message type that this is a mut of.
     type Message: Message;
 }
+
+/// This trait allows us to associate a tag with each type of protobuf entity. The tag indicates
+/// whether the entity is a message, enum, primitive, view proxy, or mut proxy. The main purpose of
+/// this is to allow us to have separate blanket implementations of various traits for messages
+/// and enums.
+pub trait EntityType {
+    type Tag;
+}
+
+pub mod entity_tag {
+    pub struct MessageTag;
+    pub struct EnumTag;
+    pub struct PrimitiveTag;
+    pub struct ViewProxyTag;
+    pub struct MutProxyTag;
+}
+
+macro_rules! impl_entity_type_for_primitives {
+    ($($t:ty,)*) => {
+        $(
+            impl EntityType for $t {
+                type Tag = entity_tag::PrimitiveTag;
+            }
+        )*
+    };
+}
+
+impl_entity_type_for_primitives!(f32, f64, i32, u32, i64, u64, bool, ProtoBytes, ProtoString,);
 
 /// Operations related to constructing a message. Only owned messages implement
 /// these traits.

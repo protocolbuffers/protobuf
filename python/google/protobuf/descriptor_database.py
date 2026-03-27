@@ -148,7 +148,7 @@ class DescriptorDatabase(object):
     # TODO: implement this API.
     return None
 
-  def FindAllExtensionNumbers(self, extendee_name: str) -> Iterator[int]:  # pylint: disable=unused-argument
+  def FindAllExtensionNumbers(self, extendee_name: str) -> list[int]:  # pylint: disable=unused-argument
     # TODO: implement this API.
     return []
 

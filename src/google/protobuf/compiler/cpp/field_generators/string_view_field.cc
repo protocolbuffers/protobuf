@@ -129,7 +129,6 @@ class SingularStringView : public FieldGeneratorBase {
     )cc");
   }
 
-
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
       decltype($field_$){},
@@ -531,7 +530,6 @@ void SingularStringView::GenerateAggregateInitializer(io::Printer* p) const {
   }
 }
 
-
 class RepeatedStringView : public FieldGeneratorBase {
  public:
   RepeatedStringView(const FieldDescriptor* field, const Options& opts)
@@ -626,7 +624,6 @@ class RepeatedStringView : public FieldGeneratorBase {
       }
     )cc");
   }
-
 
   void GenerateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
@@ -775,7 +772,6 @@ void RepeatedStringView::GenerateSerializeWithCachedSizesToArray(
             }
           )cc");
 }
-
 
 }  // namespace
 

@@ -33,7 +33,9 @@ using type_info = ::type_info;
 
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
+#include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/str_format.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/port.h"
@@ -228,6 +230,64 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 #endif  // __clang__
     Arena final {
  public:
+  // A unique-pointer-like smart pointer type for holding objects that
+  // correctly and safely deletes them, whether or not the objects owned by
+  // protobuf `Arena`s. `UniquePtr` is used to hold either a newly created
+  // object or a message released from a parent container.
+  //
+  // In spirit, an `Arena::UniquePtr<T>` is akin to
+  // `std::variant<std::unique_ptr<T>, Arena::Ptr<T>>`. It might semantically
+  // contain either of those types, it can be constructed from them, and you can
+  // extract them out as needed.
+  //
+  // To create an `UniquePtr`, use the helper functions in `Arena` or release a
+  // message from a parent using one of the release functions in
+  // message_movers.h.
+  //
+  // If using heap, this smart pointer will own its object and destroy it as
+  // needed.
+  //
+  // `UniquePtr` provides a similar interface to `std::unique_ptr` except that
+  // it also provides access to the message's owning `Arena`, explicitly removes
+  // the `reset(T*)` function (though it leaves `reset()` and `reset(nullptr)`),
+  // and makes all constructors except the move-constructor private. Instead of
+  // `reset(T*)` or a constructor, you should use move assignment and the
+  // `MakeUnique`/`UnsafeWrapUniquePtr` functions.
+  //
+  //
+  // Example Usage:
+  //   Arena* arena_ptr = ...;
+  //   UniquePtr<MyMessage> parent = Arena::MakeUnique<MyMessage>(arena_ptr);
+  //   ...
+  //   UniquePtr<ChildMessage> ptr =
+  //       google::protobuf::ReleaseMessageField<"child_field">(parent);
+  //   ...
+  //   ptr.reset();  // Will delete ChildMessage ptr if arena_ptr was nullptr.
+  //   CHECK(ptr == nullptr);
+  //   ...
+  //   ModifyChildMessage(ptr.get());
+  //   ConsumeChildMessage(std::move(ptr));
+  template <typename T>
+  class
+      ABSL_MUST_USE_RESULT
+          ABSL_ATTRIBUTE_TRIVIAL_ABI ABSL_NULLABILITY_COMPATIBLE UniquePtr;
+
+  // A smart pointer type for holding objects that are statically known to be
+  // owned by an `Arena`. Even though it is a smart pointer, `Ptr` does not
+  // actually own the underlying object.
+  //
+  // `Ptr` exists to provide invariants in the type-system in a way that `T*`
+  // cannot. `Ptr<T>` is similar to `T*` except it hoolds extra static
+  // information (the fact that it is arena owned) and extra dynamic information
+  // (the arena that owns it). Main differences from `UniquePtr` are:
+  //  - `Ptr` is never null. It has no default state, and no moved-from state.
+  //  - `Ptr` does not own the object. The underlying `Arena` does.
+  //  - `Ptr` is copyable. Trying to move it will just copy it, just like `T*`
+  //    would.
+  //  - `Ptr` has no `reset()`. It can be assigned from another `Ptr`.
+  template <typename T>
+  class ABSL_MUST_USE_RESULT ABSL_ATTRIBUTE_TRIVIAL_ABI Ptr;
+
   // Default constructor with sensible default options, tuned for average
   // use-cases.
   inline Arena() : impl_() {}
@@ -259,6 +319,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
   // Allocates an object type T if the arena passed in is not nullptr;
   // otherwise, returns a heap-allocated object.
+  //
+  // In new code, prefer `arena.Make<T>()` when it is statically known to have
+  // an arena, and `Arena::MakeUnique<T>(arena)` when you have a potentially
+  // null Arena*. These functions return smart pointers that help manage the
+  // lifetime of the returned object.
   template <typename T, typename... Args>
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static T*
       PROTOBUF_NONNULL
@@ -288,6 +353,43 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
       }
       return new (arena->AllocateInternal<T>()) T(std::forward<Args>(args)...);
     }
+  }
+
+  // Allocates an object type T if the arena passed in is not nullptr;
+  // otherwise, returns a heap-allocated object.
+  // The returned smart pointer owns the object even in the arena case.
+  template <typename T, int&..., typename... Args>
+  [[nodiscard]] PROTOBUF_NDEBUG_INLINE static UniquePtr<T> PROTOBUF_NONNULL
+  MakeUnique(Arena* PROTOBUF_NULLABLE arena, Args&&... args) {
+    // NOLINTNEXTLINE(google3-runtime-pointer-nullability)
+    return UnsafeWrapUniquePtr(arena,
+                               Create<T>(arena, std::forward<Args>(args)...));
+  }
+
+  // Allocates an object type T in the arena.
+  // As opposed to `MakeUnique`, this is a non-static member implying that there
+  // is always an `Arena` instance.
+  // The returned value is always Arena owned.
+  //
+  // Note that `arena->Make<T>()` has undefined behavior if `arena` is null. If
+  // the caller is uncertain of the nullness of the arena pointer, it should
+  // prefer `MakeUnique<T>(arena)` instead.
+  template <typename T, int&..., typename... Args>
+  [[nodiscard]] PROTOBUF_NDEBUG_INLINE Ptr<T> Make(Args&&... args) {
+    return Ptr<T>(this, Create<T>(this, std::forward<Args>(args)...));
+  }
+
+  // Creates a `UniquePtr` with an explicit owning arena.
+  //
+  // If `owning_arena` is not the actual owner of `ptr`, the behavior is
+  // undefined. As such, this function is unsafe and should be of last resort.
+  //
+  // Note: The owning arena is not necessarily the same as `msg->GetArena()`.
+  // Do not use `msg->GetArena()` as the owning arena.
+  template <typename T>
+  [[nodiscard]] static UniquePtr<T> PROTOBUF_NULLABLE UnsafeWrapUniquePtr(
+      Arena* PROTOBUF_NULLABLE owning_arena, T* PROTOBUF_NULLABLE ptr) {
+    return UniquePtr<T>(ptr, owning_arena);
   }
 
   // API to delete any objects not on an arena.  This can be used to safely
@@ -746,6 +848,281 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   internal::GetSerialArena(Arena* PROTOBUF_NULLABLE);
 
   friend struct internal::ArenaTestPeer;
+};
+
+namespace internal {
+// Comparison base to inject relational operators in UniquePtr and Ptr.
+// We use a base class to facilitate symmetric relational operators with
+// UniquePtr, Ptr, T* and nullptr.
+struct ArenaPtrCmpBase {
+  template <typename T>
+  static T* PROTOBUF_NULLABLE Unpack(T* PROTOBUF_NULLABLE ptr) {
+    return ptr;
+  }
+
+  template <typename T>
+  static auto PROTOBUF_NULLABLE
+  Unpack(const typename Arena::UniquePtr<T>& ptr) {
+    return ptr.get();
+  }
+
+  template <typename T>
+  static auto PROTOBUF_NONNULL
+  Unpack(const typename Arena::template Ptr<T>& ptr) {
+    return ptr.get();
+  }
+
+  static std::nullptr_t Unpack(std::nullptr_t) { return nullptr; }
+
+ public:
+  template <typename LHS, typename RHS>
+  friend auto operator==(const LHS& lhs, const RHS& rhs)
+      -> decltype(Unpack(lhs) == Unpack(rhs)) {
+    return Unpack(lhs) == Unpack(rhs);
+  }
+
+  template <typename LHS, typename RHS>
+  friend auto operator!=(const LHS& lhs, const RHS& rhs)
+      -> decltype(lhs == rhs) {
+    return !(lhs == rhs);
+  }
+
+};
+
+// Transparent hasher that supports the same types as equality above.
+// This allows for heterogeneous lookup on UniquePtr and Ptr keyed associative
+// containers.
+struct ArenaPtrContainerHash {
+  using is_transparent = void;
+
+  template <typename T>
+  auto operator()(const T& value) const
+      -> decltype(absl::HashOf(ArenaPtrCmpBase::Unpack(value))) {
+    return absl::HashOf(ArenaPtrCmpBase::Unpack(value));
+  }
+};
+
+// The deleter type used for implementing UniquePtr.
+// Only deletes an element if the Arena* passed at construction time is
+// nullptr.
+struct UniquePtrDeleter {
+  template <typename T>
+  void operator()(T* PROTOBUF_NONNULL element) const {
+    if (arena == nullptr) delete element;
+  }
+
+  Arena* PROTOBUF_NULLABLE arena = nullptr;
+};
+
+}  // namespace internal
+
+template <typename T>
+class
+    ABSL_MUST_USE_RESULT
+        ABSL_ATTRIBUTE_TRIVIAL_ABI ABSL_NULLABILITY_COMPATIBLE
+            Arena::UniquePtr final : internal::ArenaPtrCmpBase {
+ public:
+  using pointer = T*;
+  using element_type = T;
+
+  // Public Constructors
+  constexpr UniquePtr() : ptr_(nullptr, Deleter{}) {}
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  constexpr UniquePtr(std::nullptr_t) : ptr_(nullptr, Deleter{}) {}
+
+  // Allow implicit conversion from `std::unique_ptr` with
+  // `std::default_delete`.
+  // This is always safe since `UniquePtr` can safely hold heap-allocated
+  // pointers.
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  UniquePtr(PROTOBUF_NULLABLE std::unique_ptr<T> heap_owned)
+      : ptr_(heap_owned.release(), Deleter{}) {}
+
+  // Allow implicit conversion from `Ptr<T>`.
+  // This is always safe since `Ptr` is statically known to be owned by an
+  // arena. There is no "unique" ownership on it.
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  UniquePtr(Ptr<T> arena_owned)
+      : UniquePtr(arena_owned.get(), arena_owned.GetOwningArena()) {}
+
+  ~UniquePtr() = default;
+
+  constexpr UniquePtr(UniquePtr&& rhs) = default;
+  template <typename U,
+            typename = std::enable_if_t<std::is_convertible_v<U*, T*>>>
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  constexpr UniquePtr(UniquePtr<U>&& rhs) : ptr_(std::move(rhs.ptr_)) {}
+
+  // Use Arena::UnsafeWrapUniquePtr or Arena::MakeUnique
+  explicit UniquePtr(T* PROTOBUF_NULLABLE ptr) = delete;
+
+  UniquePtr& operator=(UniquePtr&& rhs) = default;
+  UniquePtr& operator=(std::nullptr_t) {
+    reset();
+    return *this;
+  }
+  template <typename U,
+            typename = std::enable_if_t<std::is_convertible_v<U*, T*>>>
+  UniquePtr& operator=(UniquePtr<U>&& rhs) {
+    ptr_ = std::move(rhs.ptr_);
+    return *this;
+  }
+
+  // Delete the copy ctor and copy assignment operator.
+  UniquePtr(const UniquePtr& rhs) = delete;
+  UniquePtr& operator=(const UniquePtr& rhs) = delete;
+
+  // If heap allocated transfer ownership of the pointer to the caller, clearing
+  // the `UniquePtr` instance.
+  // Otherwise, return `absl::nullopt` and have no effect.
+  absl::optional<PROTOBUF_NONNULL std::unique_ptr<T>> try_heap_release() {
+    if (GetOwningArena() != nullptr || get() == nullptr) {
+      return absl::nullopt;
+    }
+    return std::unique_ptr<T>(std::exchange(ptr_, UniquePtrType()).release());
+  }
+
+  // If it contains an arena allocated object, return a `Ptr` to the caller.
+  // Otherwise, return `absl::nullopt`.
+  // This function has does not modify the `UniquePtr`.
+  absl::optional<Ptr<T>> try_as_arena_ptr() const {
+    Arena* arena = GetOwningArena();
+    if (arena == nullptr || get() == nullptr) {
+      return absl::nullopt;
+    }
+    return Ptr<T>(arena, get());
+  }
+
+
+  void swap(UniquePtr& other) noexcept { ptr_.swap(other.ptr_); }
+  friend void swap(UniquePtr& a, UniquePtr& b) noexcept { a.swap(b); }
+
+  // reset() the pointed to object to nullptr.
+  ABSL_ATTRIBUTE_REINITIALIZES void reset() { ptr_.reset(); }
+  ABSL_ATTRIBUTE_REINITIALIZES void reset(std::nullptr_t) {
+    ptr_.reset(nullptr);
+  }
+  void reset(T* PROTOBUF_NULLABLE) = delete;
+
+  PROTOBUF_NULLABLE pointer get() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return ptr_.get();
+  }
+  PROTOBUF_NONNULL pointer operator->() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return get();
+  }
+  element_type& operator*() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ABSL_DCHECK(ptr_ != nullptr);
+    return *ptr_;
+  }
+  explicit operator bool() const { return ptr_ != nullptr; }
+
+  // Return a pointer to the Arena pointer that owns the pointed to message.
+  Arena* PROTOBUF_NULLABLE GetOwningArena() const {
+    return ptr_.get_deleter().arena;
+  }
+
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const UniquePtr& ptr) {
+    if constexpr (std::is_base_of_v<MessageLite, T>) {
+      if (ptr != nullptr) {
+        absl::Format(&sink, "points to (%p) with value <%v>", ptr.get(), *ptr);
+        return;
+      }
+    }
+    absl::Format(&sink, "%p", ptr.get());
+  }
+
+  using absl_container_hash = internal::ArenaPtrContainerHash;
+
+  template <typename H>
+  friend H AbslHashValue(H h, const UniquePtr& u) {
+    return H::combine(std::move(h), u.ptr_);
+  }
+
+ private:
+  friend Arena;
+
+  template <typename U>
+  friend class ABSL_NULLABILITY_COMPATIBLE UniquePtr;
+
+  using Deleter = internal::UniquePtrDeleter;
+  using UniquePtrType = std::unique_ptr<T, Deleter>;
+
+  // Only allow construction through the helper functions in order to ensure
+  // that the owning_arena passed in did actually come from the parents.
+  UniquePtr(T* PROTOBUF_NULLABLE t, Arena* PROTOBUF_NULLABLE owning_arena)
+      : ptr_(t, Deleter{owning_arena}) {}
+
+  // The underlying std::unique_ptr member.
+  PROTOBUF_NULLABLE UniquePtrType ptr_;
+};
+
+template <typename T>
+class ABSL_MUST_USE_RESULT ABSL_ATTRIBUTE_TRIVIAL_ABI Arena::Ptr final
+    : internal::ArenaPtrCmpBase {
+ public:
+  using pointer = T*;
+  using element_type = T;
+
+  constexpr Ptr(const Ptr& rhs) = default;
+  template <typename U,
+            typename = std::enable_if_t<std::is_convertible_v<U*, T*>>>
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  constexpr Ptr(const Ptr<U>& rhs) : ptr_(rhs.ptr_), arena_(rhs.arena_) {}
+
+  ~Ptr() = default;
+
+  Ptr& operator=(const Ptr& rhs) = default;
+  template <typename U,
+            typename = std::enable_if_t<std::is_convertible_v<U*, T*>>>
+  Ptr& operator=(const Ptr<U>& rhs) {
+    ptr_ = rhs.ptr_;
+    arena_ = rhs.arena_;
+    return *this;
+  }
+
+  void swap(Ptr& other) noexcept {
+    std::swap(ptr_, other.ptr_);
+    std::swap(arena_, other.arena_);
+  }
+  friend void swap(Ptr& a, Ptr& b) noexcept { a.swap(b); }
+
+  PROTOBUF_NONNULL pointer get() const { return ptr_; }
+  PROTOBUF_NONNULL pointer operator->() const { return ptr_; }
+  element_type& operator*() const { return *ptr_; }
+
+  // Return a pointer to the Arena pointer that owns the pointed to message.
+  Arena* PROTOBUF_NONNULL GetOwningArena() const { return arena_; }
+
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, Ptr ptr) {
+    if constexpr (std::is_base_of_v<MessageLite, T>) {
+      absl::Format(&sink, "points to (%p) with value <%v>", ptr.get(), *ptr);
+    } else {
+      absl::Format(&sink, "%p", ptr.get());
+    }
+  }
+
+  using absl_container_hash = internal::ArenaPtrContainerHash;
+
+  template <typename H>
+  friend H AbslHashValue(H h, Ptr u) {
+    return H::combine(std::move(h), u.ptr_);
+  }
+
+ private:
+  friend Arena;
+
+  template <typename U>
+  friend class Ptr;
+
+  // Only allow construction through the helper functions in order to ensure
+  // that the owning_arena passed in did actually come from the parents.
+  Ptr(Arena* PROTOBUF_NONNULL owning_arena, T* PROTOBUF_NONNULL ptr)
+      : ptr_(ptr), arena_(owning_arena) {}
+
+  T* PROTOBUF_NONNULL ptr_;
+  Arena* PROTOBUF_NONNULL arena_;
 };
 
 // DefaultConstruct/CopyConstruct

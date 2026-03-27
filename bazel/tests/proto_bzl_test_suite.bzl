@@ -6,8 +6,10 @@ load("@rules_testing//lib:util.bzl", "testing_aspect")
 def bzl_test_suite(
         name,
         tests,
-        config_settings = [],
-        testing_aspect = testing_aspect):
+        attrs = {},
+        testing_aspect = testing_aspect,
+        provider_subject_factories = [],
+        config_settings = []):
     """Defines a test suite for bzl analysis tests.
 
     Args:
@@ -25,8 +27,10 @@ def bzl_test_suite(
             name = test_name,
             target = target,
             impl = impl,
+            provider_subject_factories = provider_subject_factories,
             config_settings = config_settings,
             testing_aspect = testing_aspect,
+            attrs = attrs,
         )
         test_names.append(test_name)
 
@@ -45,3 +49,9 @@ def create_test_name(fn_name, name):
     if fn_name.startswith("_"):
         fn_name = fn_name.removeprefix("_")
     return fn_name + "_" + name
+
+def package_label_string(label_str, name = None):
+    """Returns the string repr of a label resolved relative to the current package being constructed."""
+
+    # name is unused.
+    return str(native.package_relative_label(label_str))
