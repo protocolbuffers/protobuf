@@ -69,12 +69,12 @@ class Reflection;       // message.h
 class UnknownFieldSet;  // unknown_field_set.h
 class FeatureSet;
 namespace internal {
+class LazyField;
 struct DescriptorTable;
 class FieldSkipper;     // wire_format_lite.h
 class ReflectionVisit;  // message_reflection_util.h
 class WireFormat;
 struct DynamicExtensionInfoHelper;
-void InitializeLazyExtensionSet();
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
@@ -656,7 +656,6 @@ class PROTOBUF_EXPORT ExtensionSet {
   friend struct google::protobuf::internal::DynamicExtensionInfoHelper;
   friend class google::protobuf::internal::WireFormat;
 
-  friend void internal::InitializeLazyExtensionSet();
   friend PROTOBUF_EXPORT bool internal::IsDescendant(const Message& root,
                                                      const Message& message);
   friend class google::protobuf::internal::FindExtensionTest;
@@ -690,68 +689,7 @@ class PROTOBUF_EXPORT ExtensionSet {
                                        int start_field_number,
                                        int end_field_number, uint8_t* target,
                                        io::EpsCopyOutputStream* stream) const;
-  // Interface of a lazily parsed singular message extension.
-  class PROTOBUF_EXPORT LazyMessageExtension {
-   public:
-    LazyMessageExtension() = default;
-    LazyMessageExtension(const LazyMessageExtension&) = delete;
-    LazyMessageExtension& operator=(const LazyMessageExtension&) = delete;
-    virtual ~LazyMessageExtension() = default;
-
-    virtual LazyMessageExtension* Clone(Arena* arena,
-                                        const LazyMessageExtension& other,
-                                        Arena* other_arena) const = 0;
-    virtual const MessageLite& GetMessage(const MessageLite& prototype,
-                                          Arena* arena) const = 0;
-    virtual const MessageLite& GetMessageIgnoreUnparsed(
-        const MessageLite& prototype, Arena* arena) const = 0;
-    virtual MessageLite* MutableMessage(const MessageLite& prototype,
-                                        Arena* arena) = 0;
-    virtual void SetAllocatedMessage(MessageLite* message, Arena* arena) = 0;
-    virtual void UnsafeArenaSetAllocatedMessage(MessageLite* message,
-                                                Arena* arena) = 0;
-    [[nodiscard]] virtual MessageLite* ReleaseMessage(
-        const MessageLite& prototype, Arena* arena) = 0;
-    virtual MessageLite* UnsafeArenaReleaseMessage(const MessageLite& prototype,
-                                                   Arena* arena) = 0;
-
-    virtual bool HasUnparsed() const = 0;
-    virtual bool IsInitialized(const MessageLite* prototype,
-                               Arena* arena) const = 0;
-    virtual bool IsEagerSerializeSafe(const MessageLite* prototype,
-                                      Arena* arena) const = 0;
-    virtual size_t ByteSizeLong() const = 0;
-    virtual size_t SpaceUsedLong() const = 0;
-
-    virtual std::variant<size_t, const MessageLite*> UnparsedSizeOrMessage()
-        const = 0;
-
-    virtual void MergeFrom(const MessageLite* prototype,
-                           const LazyMessageExtension& other, Arena* arena,
-                           Arena* other_arena) = 0;
-    virtual void MergeFromMessage(const MessageLite& msg, Arena* arena) = 0;
-    virtual void Clear() = 0;
-
-    virtual const char* _InternalParse(const MessageLite& prototype,
-                                       Arena* arena, const char* ptr,
-                                       ParseContext* ctx) = 0;
-    virtual uint8_t* WriteMessageToArray(
-        const MessageLite* prototype, int number, uint8_t* target,
-        io::EpsCopyOutputStream* stream) const = 0;
-
-    virtual LazyField* GetUnderlyingField() = 0;
-
-   private:
-    virtual void UnusedKeyMethod();  // Dummy key method to avoid weak vtable.
-  };
-  // Give access to function defined below to see LazyMessageExtension.
-  static LazyMessageExtension* MaybeCreateLazyExtensionImpl(Arena* arena);
-  static LazyMessageExtension* MaybeCreateLazyExtension(Arena* arena) {
-    auto* f = maybe_create_lazy_extension_.load(std::memory_order_relaxed);
-    return f != nullptr ? f(arena) : nullptr;
-  }
-  static std::atomic<LazyMessageExtension* (*)(Arena * arena)>
-      maybe_create_lazy_extension_;
+  static LazyField* MaybeCreateLazyExtension(Arena* arena);
 
   // We can't directly use std::atomic for Extension::cached_size because
   // Extension needs to be trivially copyable.
@@ -802,7 +740,7 @@ class PROTOBUF_EXPORT ExtensionSet {
     union Pointer {
       std::string* string_value;
       MessageLite* message_value;
-      LazyMessageExtension* lazymessage_value;
+      LazyField* lazymessage_value;
 
       RepeatedField<int32_t>* repeated_int32_t_value;
       RepeatedField<int64_t>* repeated_int64_t_value;
