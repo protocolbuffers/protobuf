@@ -10,13 +10,15 @@
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
-load("@rules_rust//:version.bzl", RUST_VERSION = "VERSION")
+
+# buildifier: disable=bzl-visibility
+load(
+    "@rules_rust//rust/private:common.bzl",
+    "rust_common",
+)
 
 # buildifier: disable=bzl-visibility
 load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "DepInfo", "DepVariantInfo")
-
-# buildifier: disable=bzl-visibility
-load("@rules_rust//rust/private:rustc.bzl", "rustc_compile_action")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:cc_proto_aspect.bzl", "cc_proto_aspect")
@@ -53,14 +55,6 @@ RustProtoInfo = provider(
                          "dependencies of the current proto_library.",
     },
 )
-
-def _version_parts(version):
-    major, minor = version.split(".")[0:2]
-    return (int(major), int(minor))
-
-def _rust_version_ge(version):
-    """Checks if the rust version as at least the given major.minor version."""
-    return _version_parts(RUST_VERSION) >= _version_parts(version)
 
 def label_to_crate_name(ctx, label, toolchain):
     return label.name.replace("-", "_")
@@ -184,24 +178,6 @@ def _generate_rust_gencode(
     )
     return (entry_point_rs_output, rs_outputs, cc_outputs)
 
-def _get_crate_info(providers):
-    for provider in providers:
-        if hasattr(provider, "name"):
-            return provider
-    fail("Couldn't find a CrateInfo in the list of providers")
-
-def _get_dep_info(providers):
-    for provider in providers:
-        if hasattr(provider, "direct_crates"):
-            return provider
-    fail("Couldn't find a DepInfo in the list of providers")
-
-def _get_cc_info(providers):
-    for provider in providers:
-        if hasattr(provider, "linking_context"):
-            return provider
-    fail("Couldn't find a CcInfo in the list of providers")
-
 def _compile_cc(
         ctx,
         attr,
@@ -266,73 +242,18 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps, aliases, runtime):
       A DepVariantInfo provider.
     """
     toolchain = ctx.toolchains["@rules_rust//rust:toolchain_type"]
-    output_hash = repr(hash(src.path))
-
     crate_name = label_to_crate_name(ctx, ctx.label, toolchain)
 
-    lib_name = "{prefix}{name}-{lib_hash}{extension}".format(
-        prefix = "lib",
-        name = crate_name,
-        lib_hash = output_hash,
-        extension = ".rlib",
-    )
-
-    rmeta_name = "{prefix}{name}-{lib_hash}{extension}".format(
-        prefix = "lib",
-        name = crate_name,
-        lib_hash = output_hash,
-        extension = ".rmeta",
-    )
-
-    lib = ctx.actions.declare_file(lib_name)
-    rmeta = ctx.actions.declare_file(rmeta_name)
-
-    if _rust_version_ge("0.66"):
-        deps = deps
-        proc_macro_deps = []
-    else:
-        deps = depset(deps)
-        proc_macro_deps = depset()
-
-    if _rust_version_ge("0.67"):
-        srcs = [src] + extra_srcs
-    else:
-        srcs = depset([src] + extra_srcs)
-
-    # TODO: Use higher level rules_rust API once available.
-    providers = rustc_compile_action(
+    return rust_common.compile_rust(
         ctx = ctx,
         attr = attr,
-        toolchain = toolchain,
-        crate_info_dict = dict(
-            name = crate_name,
-            type = "rlib",
-            root = src,
-            srcs = srcs,
-            deps = deps,
-            proc_macro_deps = proc_macro_deps,
-            # Make "protobuf" into an alias for the runtime. This allows the
-            # generated code to use a consistent name, even though the actual
-            # name of the runtime crate varies depending on the protobuf kernel
-            # and build system.
-            aliases = {runtime: "protobuf"} | aliases,
-            output = lib,
-            metadata = rmeta,
-            edition = "2024",
-            is_test = False,
-            rustc_env = {},
-            compile_data = depset([]),
-            compile_data_targets = depset([]),
-            owner = ctx.label,
-        ),
-        output_hash = output_hash,
-    )
-
-    return DepVariantInfo(
-        crate_info = _get_crate_info(providers),
-        dep_info = _get_dep_info(providers),
-        cc_info = _get_cc_info(providers),
-        build_info = None,
+        src = src,
+        extra_srcs = extra_srcs,
+        deps = deps,
+        edition = "2024",
+        crate_name = crate_name,
+        aliases = aliases,
+        runtime = runtime,
     )
 
 def _rust_upb_proto_aspect_impl(target, ctx):
