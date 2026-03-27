@@ -1861,6 +1861,45 @@ class JsonFormatTest(JsonFormatBase):
         max_recursion_depth=5,
     )
 
+  def testStructRecursionDepthEnforcement(self):
+    message = struct_pb2.Struct()
+    nested_struct = {'k': {'k': {'k': {'k': 0}}}}
+
+    self.assertRaisesRegex(
+        json_format.ParseError,
+        'Message too deep. Max recursion depth is 3',
+        json_format.ParseDict,
+        nested_struct,
+        message,
+        max_recursion_depth=3,
+    )
+
+  def testListValueRecursionDepthEnforcement(self):
+    message = struct_pb2.ListValue()
+    nested_list = [[[[0]]]]
+
+    self.assertRaisesRegex(
+        json_format.ParseError,
+        'Message too deep. Max recursion depth is 3',
+        json_format.ParseDict,
+        nested_list,
+        message,
+        max_recursion_depth=3,
+    )
+
+  def testValueRecursionDepthEnforcement(self):
+    message = struct_pb2.Value()
+    nested_value = {'k': {'k': {'k': {'k': 0}}}}
+
+    self.assertRaisesRegex(
+        json_format.ParseError,
+        'Message too deep. Max recursion depth is 3',
+        json_format.ParseDict,
+        nested_value,
+        message,
+        max_recursion_depth=3,
+    )
+
   def testJsonNameConflictSerilize(self):
     message = more_messages_pb2.ConflictJsonName(value=2)
     self.assertEqual(
