@@ -665,26 +665,16 @@ struct MessageGlobalsBase {
         reinterpret_cast<const char*>(default_instance) - OffsetToDefault());
   }
 
-  static constexpr const ClassData* GetClassData(const void* globals) {
-    return static_cast<const MessageGlobalsBase*>(globals)->class_data.base();
-  }
-  constexpr const ClassData* GetClassData() const { return class_data.base(); }
-
-  explicit constexpr MessageGlobalsBase(ClassDataFull class_data)
-      : class_data(class_data) {}
-
-  // It also aliases to ClassDataLite.
-  ClassDataFull class_data;
+  uintptr_t dummy = 0xDEADBEEF;
 };
 
-template <const auto* kGlobals>
+template <const auto* kGlobals, const auto* kClassData>
 struct GeneratedMessageTraitsT {
   static const void* default_instance() {
-    return MessageGlobalsBase::ToDefaultInstance(kGlobals);
+    return internal::MessageGlobalsBase::ToDefaultInstance<MessageLite>(
+        kGlobals);
   }
-  static const auto* class_data() {
-    return MessageGlobalsBase::GetClassData(kGlobals);
-  }
+  static constexpr const auto* class_data() { return kClassData->base(); }
   static constexpr auto StrongPointer() { return kGlobals; }
 };
 #endif  // PROTOBUF_MESSAGE_GLOBALS

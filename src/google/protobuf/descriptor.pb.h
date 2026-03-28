@@ -100,207 +100,139 @@ PROTOBUF_EXPORT extern const uint32_t SymbolVisibility_internal_data_[];
 class DescriptorProto;
 struct DescriptorProtoGlobalsTypeInternal;
 PROTOBUF_EXPORT extern DescriptorProtoGlobalsTypeInternal _DescriptorProto_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DescriptorProto_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class DescriptorProto_ExtensionRange;
 struct DescriptorProto_ExtensionRangeGlobalsTypeInternal;
 PROTOBUF_EXPORT extern DescriptorProto_ExtensionRangeGlobalsTypeInternal _DescriptorProto_ExtensionRange_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DescriptorProto_ExtensionRange_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class DescriptorProto_ReservedRange;
 struct DescriptorProto_ReservedRangeGlobalsTypeInternal;
 PROTOBUF_EXPORT extern DescriptorProto_ReservedRangeGlobalsTypeInternal _DescriptorProto_ReservedRange_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DescriptorProto_ReservedRange_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class EnumDescriptorProto;
 struct EnumDescriptorProtoGlobalsTypeInternal;
 PROTOBUF_EXPORT extern EnumDescriptorProtoGlobalsTypeInternal _EnumDescriptorProto_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumDescriptorProto_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class EnumDescriptorProto_EnumReservedRange;
 struct EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal;
 PROTOBUF_EXPORT extern EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal _EnumDescriptorProto_EnumReservedRange_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumDescriptorProto_EnumReservedRange_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class EnumOptions;
 struct EnumOptionsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern EnumOptionsGlobalsTypeInternal _EnumOptions_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumOptions_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class EnumValueDescriptorProto;
 struct EnumValueDescriptorProtoGlobalsTypeInternal;
 PROTOBUF_EXPORT extern EnumValueDescriptorProtoGlobalsTypeInternal _EnumValueDescriptorProto_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValueDescriptorProto_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class EnumValueOptions;
 struct EnumValueOptionsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern EnumValueOptionsGlobalsTypeInternal _EnumValueOptions_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValueOptions_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class ExtensionRangeOptions;
 struct ExtensionRangeOptionsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern ExtensionRangeOptionsGlobalsTypeInternal _ExtensionRangeOptions_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ExtensionRangeOptions_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class ExtensionRangeOptions_Declaration;
 struct ExtensionRangeOptions_DeclarationGlobalsTypeInternal;
 PROTOBUF_EXPORT extern ExtensionRangeOptions_DeclarationGlobalsTypeInternal _ExtensionRangeOptions_Declaration_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ExtensionRangeOptions_Declaration_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FeatureSet;
 struct FeatureSetGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FeatureSetGlobalsTypeInternal _FeatureSet_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSet_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FeatureSetDefaults;
 struct FeatureSetDefaultsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FeatureSetDefaultsGlobalsTypeInternal _FeatureSetDefaults_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSetDefaults_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FeatureSetDefaults_FeatureSetEditionDefault;
 struct FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal _FeatureSetDefaults_FeatureSetEditionDefault_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSetDefaults_FeatureSetEditionDefault_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FeatureSet_VisibilityFeature;
 struct FeatureSet_VisibilityFeatureGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FeatureSet_VisibilityFeatureGlobalsTypeInternal _FeatureSet_VisibilityFeature_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSet_VisibilityFeature_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FieldDescriptorProto;
 struct FieldDescriptorProtoGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FieldDescriptorProtoGlobalsTypeInternal _FieldDescriptorProto_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldDescriptorProto_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FieldOptions;
 struct FieldOptionsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FieldOptionsGlobalsTypeInternal _FieldOptions_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldOptions_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FieldOptions_EditionDefault;
 struct FieldOptions_EditionDefaultGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FieldOptions_EditionDefaultGlobalsTypeInternal _FieldOptions_EditionDefault_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldOptions_EditionDefault_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FieldOptions_FeatureSupport;
 struct FieldOptions_FeatureSupportGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FieldOptions_FeatureSupportGlobalsTypeInternal _FieldOptions_FeatureSupport_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldOptions_FeatureSupport_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FileDescriptorProto;
 struct FileDescriptorProtoGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FileDescriptorProtoGlobalsTypeInternal _FileDescriptorProto_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FileDescriptorProto_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FileDescriptorSet;
 struct FileDescriptorSetGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FileDescriptorSetGlobalsTypeInternal _FileDescriptorSet_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FileDescriptorSet_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FileOptions;
 struct FileOptionsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FileOptionsGlobalsTypeInternal _FileOptions_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FileOptions_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class GeneratedCodeInfo;
 struct GeneratedCodeInfoGlobalsTypeInternal;
 PROTOBUF_EXPORT extern GeneratedCodeInfoGlobalsTypeInternal _GeneratedCodeInfo_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull GeneratedCodeInfo_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class GeneratedCodeInfo_Annotation;
 struct GeneratedCodeInfo_AnnotationGlobalsTypeInternal;
 PROTOBUF_EXPORT extern GeneratedCodeInfo_AnnotationGlobalsTypeInternal _GeneratedCodeInfo_Annotation_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull GeneratedCodeInfo_Annotation_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class MessageOptions;
 struct MessageOptionsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern MessageOptionsGlobalsTypeInternal _MessageOptions_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull MessageOptions_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class MethodDescriptorProto;
 struct MethodDescriptorProtoGlobalsTypeInternal;
 PROTOBUF_EXPORT extern MethodDescriptorProtoGlobalsTypeInternal _MethodDescriptorProto_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull MethodDescriptorProto_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class MethodOptions;
 struct MethodOptionsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern MethodOptionsGlobalsTypeInternal _MethodOptions_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull MethodOptions_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class OneofDescriptorProto;
 struct OneofDescriptorProtoGlobalsTypeInternal;
 PROTOBUF_EXPORT extern OneofDescriptorProtoGlobalsTypeInternal _OneofDescriptorProto_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull OneofDescriptorProto_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class OneofOptions;
 struct OneofOptionsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern OneofOptionsGlobalsTypeInternal _OneofOptions_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull OneofOptions_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class ServiceDescriptorProto;
 struct ServiceDescriptorProtoGlobalsTypeInternal;
 PROTOBUF_EXPORT extern ServiceDescriptorProtoGlobalsTypeInternal _ServiceDescriptorProto_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ServiceDescriptorProto_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class ServiceOptions;
 struct ServiceOptionsGlobalsTypeInternal;
 PROTOBUF_EXPORT extern ServiceOptionsGlobalsTypeInternal _ServiceOptions_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ServiceOptions_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class SourceCodeInfo;
 struct SourceCodeInfoGlobalsTypeInternal;
 PROTOBUF_EXPORT extern SourceCodeInfoGlobalsTypeInternal _SourceCodeInfo_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceCodeInfo_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class SourceCodeInfo_Location;
 struct SourceCodeInfo_LocationGlobalsTypeInternal;
 PROTOBUF_EXPORT extern SourceCodeInfo_LocationGlobalsTypeInternal _SourceCodeInfo_Location_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceCodeInfo_Location_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class UninterpretedOption;
 struct UninterpretedOptionGlobalsTypeInternal;
 PROTOBUF_EXPORT extern UninterpretedOptionGlobalsTypeInternal _UninterpretedOption_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UninterpretedOption_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class UninterpretedOption_NamePart;
 struct UninterpretedOption_NamePartGlobalsTypeInternal;
 PROTOBUF_EXPORT extern UninterpretedOption_NamePartGlobalsTypeInternal _UninterpretedOption_NamePart_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UninterpretedOption_NamePart_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 template <>
 internal::EnumTraitsT<::google::protobuf::Edition_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::Edition>;
@@ -1161,9 +1093,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
 #endif
 
   template <typename = void>
-  explicit constexpr UninterpretedOption_NamePart(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr UninterpretedOption_NamePart(::google::protobuf::internal::ConstantInitialized);
 
   inline UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from) : UninterpretedOption_NamePart(nullptr, from) {}
   inline UninterpretedOption_NamePart(UninterpretedOption_NamePart&& from) noexcept
@@ -1293,8 +1223,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1368,6 +1297,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UninterpretedOption_NamePart_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Location final : public ::google::protobuf::Message
@@ -1384,9 +1315,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
 #endif
 
   template <typename = void>
-  explicit constexpr SourceCodeInfo_Location(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr SourceCodeInfo_Location(::google::protobuf::internal::ConstantInitialized);
 
   inline SourceCodeInfo_Location(const SourceCodeInfo_Location& from) : SourceCodeInfo_Location(nullptr, from) {}
   inline SourceCodeInfo_Location(SourceCodeInfo_Location&& from) noexcept
@@ -1511,8 +1440,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1662,6 +1590,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceCodeInfo_Location_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_Annotation final : public ::google::protobuf::Message
@@ -1678,9 +1608,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
 #endif
 
   template <typename = void>
-  explicit constexpr GeneratedCodeInfo_Annotation(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr GeneratedCodeInfo_Annotation(::google::protobuf::internal::ConstantInitialized);
 
   inline GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from) : GeneratedCodeInfo_Annotation(nullptr, from) {}
   inline GeneratedCodeInfo_Annotation(GeneratedCodeInfo_Annotation&& from) noexcept
@@ -1805,8 +1733,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1951,6 +1878,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull GeneratedCodeInfo_Annotation_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_FeatureSupport final : public ::google::protobuf::Message
@@ -1967,9 +1896,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
 #endif
 
   template <typename = void>
-  explicit constexpr FieldOptions_FeatureSupport(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr FieldOptions_FeatureSupport(::google::protobuf::internal::ConstantInitialized);
 
   inline FieldOptions_FeatureSupport(const FieldOptions_FeatureSupport& from) : FieldOptions_FeatureSupport(nullptr, from) {}
   inline FieldOptions_FeatureSupport(FieldOptions_FeatureSupport&& from) noexcept
@@ -2094,8 +2021,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -2216,6 +2142,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldOptions_FeatureSupport_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_EditionDefault final : public ::google::protobuf::Message
@@ -2232,9 +2160,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
 #endif
 
   template <typename = void>
-  explicit constexpr FieldOptions_EditionDefault(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr FieldOptions_EditionDefault(::google::protobuf::internal::ConstantInitialized);
 
   inline FieldOptions_EditionDefault(const FieldOptions_EditionDefault& from) : FieldOptions_EditionDefault(nullptr, from) {}
   inline FieldOptions_EditionDefault(FieldOptions_EditionDefault&& from) noexcept
@@ -2359,8 +2285,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -2434,6 +2359,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldOptions_EditionDefault_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_VisibilityFeature final : public ::google::protobuf::internal::ZeroFieldsBase
@@ -2449,9 +2376,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_Visibili
 #endif
 
   template <typename = void>
-  explicit constexpr FeatureSet_VisibilityFeature(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr FeatureSet_VisibilityFeature(::google::protobuf::internal::ConstantInitialized);
 
   inline FeatureSet_VisibilityFeature(const FeatureSet_VisibilityFeature& from) : FeatureSet_VisibilityFeature(nullptr, from) {}
   inline FeatureSet_VisibilityFeature(FeatureSet_VisibilityFeature&& from) noexcept
@@ -2547,8 +2472,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_Visibili
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -2595,6 +2519,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_Visibili
   using DestructorSkippable_ = void;
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSet_VisibilityFeature_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : public ::google::protobuf::Message
@@ -2611,9 +2537,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
 #endif
 
   template <typename = void>
-  explicit constexpr FeatureSet(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr FeatureSet(::google::protobuf::internal::ConstantInitialized);
 
   inline FeatureSet(const FeatureSet& from) : FeatureSet(nullptr, from) {}
   inline FeatureSet(FeatureSet&& from) noexcept
@@ -2743,8 +2667,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -3237,6 +3160,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSet_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptions_Declaration final : public ::google::protobuf::Message
@@ -3253,9 +3178,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
 #endif
 
   template <typename = void>
-  explicit constexpr ExtensionRangeOptions_Declaration(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr ExtensionRangeOptions_Declaration(::google::protobuf::internal::ConstantInitialized);
 
   inline ExtensionRangeOptions_Declaration(const ExtensionRangeOptions_Declaration& from) : ExtensionRangeOptions_Declaration(nullptr, from) {}
   inline ExtensionRangeOptions_Declaration(ExtensionRangeOptions_Declaration&& from) noexcept
@@ -3380,8 +3303,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -3502,6 +3424,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ExtensionRangeOptions_Declaration_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto_EnumReservedRange final : public ::google::protobuf::Message
@@ -3518,9 +3442,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
 #endif
 
   template <typename = void>
-  explicit constexpr EnumDescriptorProto_EnumReservedRange(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr EnumDescriptorProto_EnumReservedRange(::google::protobuf::internal::ConstantInitialized);
 
   inline EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& from) : EnumDescriptorProto_EnumReservedRange(nullptr, from) {}
   inline EnumDescriptorProto_EnumReservedRange(EnumDescriptorProto_EnumReservedRange&& from) noexcept
@@ -3645,8 +3567,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -3715,6 +3636,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumDescriptorProto_EnumReservedRange_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_ReservedRange final : public ::google::protobuf::Message
@@ -3731,9 +3654,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Res
 #endif
 
   template <typename = void>
-  explicit constexpr DescriptorProto_ReservedRange(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr DescriptorProto_ReservedRange(::google::protobuf::internal::ConstantInitialized);
 
   inline DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& from) : DescriptorProto_ReservedRange(nullptr, from) {}
   inline DescriptorProto_ReservedRange(DescriptorProto_ReservedRange&& from) noexcept
@@ -3858,8 +3779,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Res
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -3928,6 +3848,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Res
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DescriptorProto_ReservedRange_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption final : public ::google::protobuf::Message
@@ -3944,9 +3866,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
 #endif
 
   template <typename = void>
-  explicit constexpr UninterpretedOption(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr UninterpretedOption(::google::protobuf::internal::ConstantInitialized);
 
   inline UninterpretedOption(const UninterpretedOption& from) : UninterpretedOption(nullptr, from) {}
   inline UninterpretedOption(UninterpretedOption&& from) noexcept
@@ -4076,8 +3996,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -4241,6 +4160,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UninterpretedOption_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo final : public ::google::protobuf::Message
@@ -4257,9 +4178,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
 #endif
 
   template <typename = void>
-  explicit constexpr SourceCodeInfo(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr SourceCodeInfo(::google::protobuf::internal::ConstantInitialized);
 
   inline SourceCodeInfo(const SourceCodeInfo& from) : SourceCodeInfo(nullptr, from) {}
   inline SourceCodeInfo(SourceCodeInfo&& from) noexcept
@@ -4389,8 +4308,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -4646,6 +4564,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceCodeInfo_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo final : public ::google::protobuf::Message
@@ -4662,9 +4582,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
 #endif
 
   template <typename = void>
-  explicit constexpr GeneratedCodeInfo(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr GeneratedCodeInfo(::google::protobuf::internal::ConstantInitialized);
 
   inline GeneratedCodeInfo(const GeneratedCodeInfo& from) : GeneratedCodeInfo(nullptr, from) {}
   inline GeneratedCodeInfo(GeneratedCodeInfo&& from) noexcept
@@ -4789,8 +4707,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -4855,6 +4772,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull GeneratedCodeInfo_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_FeatureSetEditionDefault final : public ::google::protobuf::Message
@@ -4871,9 +4790,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
 #endif
 
   template <typename = void>
-  explicit constexpr FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::internal::ConstantInitialized);
 
   inline FeatureSetDefaults_FeatureSetEditionDefault(const FeatureSetDefaults_FeatureSetEditionDefault& from) : FeatureSetDefaults_FeatureSetEditionDefault(nullptr, from) {}
   inline FeatureSetDefaults_FeatureSetEditionDefault(FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept
@@ -5003,8 +4920,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -5095,6 +5011,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSetDefaults_FeatureSetEditionDefault_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions final : public ::google::protobuf::Message
@@ -5111,9 +5029,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
 #endif
 
   template <typename = void>
-  explicit constexpr ServiceOptions(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr ServiceOptions(::google::protobuf::internal::ConstantInitialized);
 
   inline ServiceOptions(const ServiceOptions& from) : ServiceOptions(nullptr, from) {}
   inline ServiceOptions(ServiceOptions&& from) noexcept
@@ -5243,8 +5159,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -5531,6 +5446,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ServiceOptions_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final : public ::google::protobuf::Message
@@ -5547,9 +5464,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
 #endif
 
   template <typename = void>
-  explicit constexpr OneofOptions(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr OneofOptions(::google::protobuf::internal::ConstantInitialized);
 
   inline OneofOptions(const OneofOptions& from) : OneofOptions(nullptr, from) {}
   inline OneofOptions(OneofOptions&& from) noexcept
@@ -5679,8 +5594,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -5953,6 +5867,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull OneofOptions_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final : public ::google::protobuf::Message
@@ -5969,9 +5885,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
 #endif
 
   template <typename = void>
-  explicit constexpr MethodOptions(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr MethodOptions(::google::protobuf::internal::ConstantInitialized);
 
   inline MethodOptions(const MethodOptions& from) : MethodOptions(nullptr, from) {}
   inline MethodOptions(MethodOptions&& from) noexcept
@@ -6101,8 +6015,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -6424,6 +6337,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull MethodOptions_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions final : public ::google::protobuf::Message
@@ -6440,9 +6355,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
 #endif
 
   template <typename = void>
-  explicit constexpr MessageOptions(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr MessageOptions(::google::protobuf::internal::ConstantInitialized);
 
   inline MessageOptions(const MessageOptions& from) : MessageOptions(nullptr, from) {}
   inline MessageOptions(MessageOptions&& from) noexcept
@@ -6572,8 +6485,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -6916,6 +6828,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull MessageOptions_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final : public ::google::protobuf::Message
@@ -6932,9 +6846,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
 #endif
 
   template <typename = void>
-  explicit constexpr FileOptions(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr FileOptions(::google::protobuf::internal::ConstantInitialized);
 
   inline FileOptions(const FileOptions& from) : FileOptions(nullptr, from) {}
   inline FileOptions(FileOptions&& from) noexcept
@@ -7064,8 +6976,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -7675,6 +7586,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FileOptions_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final : public ::google::protobuf::Message
@@ -7691,9 +7604,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
 #endif
 
   template <typename = void>
-  explicit constexpr FieldOptions(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr FieldOptions(::google::protobuf::internal::ConstantInitialized);
 
   inline FieldOptions(const FieldOptions& from) : FieldOptions(nullptr, from) {}
   inline FieldOptions(FieldOptions&& from) noexcept
@@ -7823,8 +7734,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -8379,6 +8289,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldOptions_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults final : public ::google::protobuf::Message
@@ -8395,9 +8307,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
 #endif
 
   template <typename = void>
-  explicit constexpr FeatureSetDefaults(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr FeatureSetDefaults(::google::protobuf::internal::ConstantInitialized);
 
   inline FeatureSetDefaults(const FeatureSetDefaults& from) : FeatureSetDefaults(nullptr, from) {}
   inline FeatureSetDefaults(FeatureSetDefaults&& from) noexcept
@@ -8527,8 +8437,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -8621,6 +8530,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSetDefaults_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptions final : public ::google::protobuf::Message
@@ -8637,9 +8548,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
 #endif
 
   template <typename = void>
-  explicit constexpr ExtensionRangeOptions(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr ExtensionRangeOptions(::google::protobuf::internal::ConstantInitialized);
 
   inline ExtensionRangeOptions(const ExtensionRangeOptions& from) : ExtensionRangeOptions(nullptr, from) {}
   inline ExtensionRangeOptions(ExtensionRangeOptions&& from) noexcept
@@ -8769,8 +8678,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -9101,6 +9009,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ExtensionRangeOptions_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions final : public ::google::protobuf::Message
@@ -9117,9 +9027,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
 #endif
 
   template <typename = void>
-  explicit constexpr EnumValueOptions(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr EnumValueOptions(::google::protobuf::internal::ConstantInitialized);
 
   inline EnumValueOptions(const EnumValueOptions& from) : EnumValueOptions(nullptr, from) {}
   inline EnumValueOptions(EnumValueOptions&& from) noexcept
@@ -9249,8 +9157,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -9569,6 +9476,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValueOptions_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final : public ::google::protobuf::Message
@@ -9585,9 +9494,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
 #endif
 
   template <typename = void>
-  explicit constexpr EnumOptions(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr EnumOptions(::google::protobuf::internal::ConstantInitialized);
 
   inline EnumOptions(const EnumOptions& from) : EnumOptions(nullptr, from) {}
   inline EnumOptions(EnumOptions&& from) noexcept
@@ -9717,8 +9624,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -10033,6 +9939,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumOptions_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProto final : public ::google::protobuf::Message
@@ -10049,9 +9957,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
 #endif
 
   template <typename = void>
-  explicit constexpr OneofDescriptorProto(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr OneofDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   inline OneofDescriptorProto(const OneofDescriptorProto& from) : OneofDescriptorProto(nullptr, from) {}
   inline OneofDescriptorProto(OneofDescriptorProto&& from) noexcept
@@ -10181,8 +10087,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -10260,6 +10165,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull OneofDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorProto final : public ::google::protobuf::Message
@@ -10276,9 +10183,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
 #endif
 
   template <typename = void>
-  explicit constexpr MethodDescriptorProto(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr MethodDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   inline MethodDescriptorProto(const MethodDescriptorProto& from) : MethodDescriptorProto(nullptr, from) {}
   inline MethodDescriptorProto(MethodDescriptorProto&& from) noexcept
@@ -10408,8 +10313,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -10553,6 +10457,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull MethodDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProto final : public ::google::protobuf::Message
@@ -10569,9 +10475,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
 #endif
 
   template <typename = void>
-  explicit constexpr FieldDescriptorProto(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr FieldDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   inline FieldDescriptorProto(const FieldDescriptorProto& from) : FieldDescriptorProto(nullptr, from) {}
   inline FieldDescriptorProto(FieldDescriptorProto&& from) noexcept
@@ -10701,8 +10605,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -10983,6 +10886,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptorProto final : public ::google::protobuf::Message
@@ -10999,9 +10904,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
 #endif
 
   template <typename = void>
-  explicit constexpr EnumValueDescriptorProto(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr EnumValueDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   inline EnumValueDescriptorProto(const EnumValueDescriptorProto& from) : EnumValueDescriptorProto(nullptr, from) {}
   inline EnumValueDescriptorProto(EnumValueDescriptorProto&& from) noexcept
@@ -11131,8 +11034,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -11224,6 +11126,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValueDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_ExtensionRange final : public ::google::protobuf::Message
@@ -11240,9 +11144,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
 #endif
 
   template <typename = void>
-  explicit constexpr DescriptorProto_ExtensionRange(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr DescriptorProto_ExtensionRange(::google::protobuf::internal::ConstantInitialized);
 
   inline DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from) : DescriptorProto_ExtensionRange(nullptr, from) {}
   inline DescriptorProto_ExtensionRange(DescriptorProto_ExtensionRange&& from) noexcept
@@ -11372,8 +11274,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -11460,6 +11361,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DescriptorProto_ExtensionRange_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorProto final : public ::google::protobuf::Message
@@ -11476,9 +11379,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
 #endif
 
   template <typename = void>
-  explicit constexpr ServiceDescriptorProto(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr ServiceDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   inline ServiceDescriptorProto(const ServiceDescriptorProto& from) : ServiceDescriptorProto(nullptr, from) {}
   inline ServiceDescriptorProto(ServiceDescriptorProto&& from) noexcept
@@ -11608,8 +11509,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -11710,6 +11610,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ServiceDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto final : public ::google::protobuf::Message
@@ -11726,9 +11628,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
 #endif
 
   template <typename = void>
-  explicit constexpr EnumDescriptorProto(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr EnumDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   inline EnumDescriptorProto(const EnumDescriptorProto& from) : EnumDescriptorProto(nullptr, from) {}
   inline EnumDescriptorProto(EnumDescriptorProto&& from) noexcept
@@ -11858,8 +11758,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -12025,6 +11924,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto final : public ::google::protobuf::Message
@@ -12041,9 +11942,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
 #endif
 
   template <typename = void>
-  explicit constexpr DescriptorProto(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr DescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   inline DescriptorProto(const DescriptorProto& from) : DescriptorProto(nullptr, from) {}
   inline DescriptorProto(DescriptorProto&& from) noexcept
@@ -12173,8 +12072,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -12456,6 +12354,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto final : public ::google::protobuf::Message
@@ -12472,9 +12372,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
 #endif
 
   template <typename = void>
-  explicit constexpr FileDescriptorProto(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr FileDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
   inline FileDescriptorProto(const FileDescriptorProto& from) : FileDescriptorProto(nullptr, from) {}
   inline FileDescriptorProto(FileDescriptorProto&& from) noexcept
@@ -12604,8 +12502,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -12941,6 +12838,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FileDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet final : public ::google::protobuf::Message
@@ -12957,9 +12856,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
 #endif
 
   template <typename = void>
-  explicit constexpr FileDescriptorSet(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr FileDescriptorSet(::google::protobuf::internal::ConstantInitialized);
 
   inline FileDescriptorSet(const FileDescriptorSet& from) : FileDescriptorSet(nullptr, from) {}
   inline FileDescriptorSet(FileDescriptorSet&& from) noexcept
@@ -13089,8 +12986,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -13345,6 +13241,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FileDescriptorSet_class_data_;
 
 // ===================================================================
 

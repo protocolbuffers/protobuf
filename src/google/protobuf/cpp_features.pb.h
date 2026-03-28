@@ -63,9 +63,7 @@ PROTOBUF_EXPORT extern const uint32_t CppFeatures_StringType_internal_data_[];
 class CppFeatures;
 struct CppFeaturesGlobalsTypeInternal;
 PROTOBUF_EXPORT extern CppFeaturesGlobalsTypeInternal _CppFeatures_globals_;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull CppFeatures_class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace pb
 namespace google {
 namespace protobuf {
@@ -183,9 +181,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
 #endif
 
   template <typename = void>
-  explicit constexpr CppFeatures(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+  explicit constexpr CppFeatures(::google::protobuf::internal::ConstantInitialized);
 
   inline CppFeatures(const CppFeatures& from) : CppFeatures(nullptr, from) {}
   inline CppFeatures(CppFeatures&& from) noexcept
@@ -310,8 +306,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -451,6 +446,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcpp_5ffeatures_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull CppFeatures_class_data_;
 
 // ===================================================================
 
