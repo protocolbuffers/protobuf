@@ -69,19 +69,27 @@ PROTOC_EXPORT extern const uint32_t CodeGeneratorResponse_Feature_internal_data_
 class CodeGeneratorRequest;
 struct CodeGeneratorRequestGlobalsTypeInternal;
 PROTOC_EXPORT extern CodeGeneratorRequestGlobalsTypeInternal _CodeGeneratorRequest_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorRequest_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class CodeGeneratorResponse;
 struct CodeGeneratorResponseGlobalsTypeInternal;
 PROTOC_EXPORT extern CodeGeneratorResponseGlobalsTypeInternal _CodeGeneratorResponse_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class CodeGeneratorResponse_File;
 struct CodeGeneratorResponse_FileGlobalsTypeInternal;
 PROTOC_EXPORT extern CodeGeneratorResponse_FileGlobalsTypeInternal _CodeGeneratorResponse_File_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_File_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class Version;
 struct VersionGlobalsTypeInternal;
 PROTOC_EXPORT extern VersionGlobalsTypeInternal _Version_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull Version_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace compiler
 template <>
 internal::EnumTraitsT<::google::protobuf::compiler::CodeGeneratorResponse_Feature_internal_data_>
@@ -151,7 +159,9 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
 #endif
 
   template <typename = void>
-  explicit constexpr Version(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Version(::google::protobuf::internal::ConstantInitialized,
+                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                                     class_data);
 
   inline Version(const Version& from) : Version(nullptr, from) {}
   inline Version(Version&& from) noexcept
@@ -276,7 +286,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -378,8 +389,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
-
-PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull Version_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse_File final : public ::google::protobuf::Message
@@ -396,7 +405,9 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 #endif
 
   template <typename = void>
-  explicit constexpr CodeGeneratorResponse_File(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr CodeGeneratorResponse_File(::google::protobuf::internal::ConstantInitialized,
+                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                                     class_data);
 
   inline CodeGeneratorResponse_File(const CodeGeneratorResponse_File& from) : CodeGeneratorResponse_File(nullptr, from) {}
   inline CodeGeneratorResponse_File(CodeGeneratorResponse_File&& from) noexcept
@@ -521,7 +532,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -637,8 +649,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
-
-PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_File_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse final : public ::google::protobuf::Message
@@ -655,7 +665,9 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 #endif
 
   template <typename = void>
-  explicit constexpr CodeGeneratorResponse(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr CodeGeneratorResponse(::google::protobuf::internal::ConstantInitialized,
+                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                                     class_data);
 
   inline CodeGeneratorResponse(const CodeGeneratorResponse& from) : CodeGeneratorResponse(nullptr, from) {}
   inline CodeGeneratorResponse(CodeGeneratorResponse&& from) noexcept
@@ -780,7 +792,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -927,8 +940,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
-
-PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest final : public ::google::protobuf::Message
@@ -945,7 +956,9 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
 #endif
 
   template <typename = void>
-  explicit constexpr CodeGeneratorRequest(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr CodeGeneratorRequest(::google::protobuf::internal::ConstantInitialized,
+                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                                     class_data);
 
   inline CodeGeneratorRequest(const CodeGeneratorRequest& from) : CodeGeneratorRequest(nullptr, from) {}
   inline CodeGeneratorRequest(CodeGeneratorRequest&& from) noexcept
@@ -1075,7 +1088,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1226,8 +1240,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
-
-PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorRequest_class_data_;
 
 // ===================================================================
 

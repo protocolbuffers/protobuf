@@ -614,6 +614,8 @@ std::vector<Sub> ClassVars(const Descriptor* desc, Options opts) {
       {"nodiscard", opts.opensource_runtime ? "[[nodiscard]]" : ""},
       {"unused",
        opts.opensource_runtime ? "PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED" : ""},
+      {"globals", MsgGlobalsInstanceName(desc, opts)},
+      {"globals_type", MsgGlobalsInstanceType(desc, opts)},
 
       Sub("WeakDescriptorSelfPin",
           UsingImplicitWeakDescriptor(desc->file(), opts)
@@ -1495,7 +1497,9 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
                               $pbi$::WireFormatLite::$val_wire_type$>;
           $classname$();
           template <typename = void>
-          explicit constexpr $classname$($pbi$::ConstantInitialized);
+          explicit constexpr $classname$($pbi$::ConstantInitialized,
+                                         const $pbi$::ClassData* $nonnull$
+                                             class_data);
           explicit $classname$($pb$::Arena* $nullable$ arena);
           static constexpr const void* $nonnull$ internal_message_globals() {
             return &_$classname$_globals_;
@@ -1503,11 +1507,13 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
 
           $decl_verify_func$;
 
-          static constexpr auto InternalGenerateClassData_();
+          static constexpr auto InternalGenerateClassData_(
+              const $pb$::MessageLite& prototype);
 
          private:
           friend class $pb$::MessageLite;
           friend struct ::$tablename$;
+          friend $globals_type$;
 
           $parse_decls$;
           $decl_annotate$;
@@ -1519,7 +1525,6 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
               $pb$::Arena* $nullable$ arena);
           static constexpr auto InternalNewImpl_();
         };
-        $dllexport_decl $extern const $pbi$::ClassDataFull $classname$_class_data_;
       )cc");
 }
 
@@ -2174,7 +2179,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           //~ Templatize constexpr constructor as a workaround for a bug in
           //~ gcc 12 (warning in gcc 13).
           template <typename = void>
-          explicit constexpr $classname$($pbi$::ConstantInitialized);
+          explicit constexpr $classname$($pbi$::ConstantInitialized,
+                                         const $pbi$::ClassData* $nonnull$
+                                             class_data);
 
           inline $classname$(const $classname$& from) : $classname$(nullptr, from) {}
           inline $classname$($classname$&& from) noexcept
@@ -2271,7 +2278,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           //~ of T_class_data_. However, since it is `constexpr` and has an
           //~ `auto` return type it is not callable from outside the .pb.cc
           //~ without a definition so it is effectively private.
-          static constexpr auto InternalGenerateClassData_();
+          static constexpr auto InternalGenerateClassData_(
+              const MessageLite& prototype);
 
           $get_metadata$;
           $decl_split_methods$;
@@ -2307,8 +2315,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           //~ order to construct the offsets of all members.
           friend struct ::$tablename$;
         };
-
-        $dllexport_decl $extern const $pbi$::$classdata_type$ $classname$_class_data_;
       )cc");
 }  // NOLINT(readability/fn_size)
 
@@ -2374,13 +2380,12 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
              {"class_data", [&] { GenerateClassData(p); }}},
             R"cc(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-              $classname$::$classname$()
-                  : SuperType($classname$_class_data_.base()) {}
-              $classname$::$classname$($pb$::Arena* $nullable$ arena)
-                  : SuperType(arena, $classname$_class_data_.base()) {}
+              $Msg$::$Msg$() : SuperType($Msg$_get_class_data()) {}
+              $Msg$::$Msg$($pb$::Arena* $nullable$ arena)
+                  : SuperType(arena, $Msg$_get_class_data()) {}
 #else   // PROTOBUF_CUSTOM_VTABLE
-              $classname$::$classname$() : SuperType() {}
-              $classname$::$classname$($pb$::Arena* $nullable$ arena) : SuperType(arena) {}
+              $Msg$::$Msg$() : SuperType() {}
+              $Msg$::$Msg$($pb$::Arena* $nullable$ arena) : SuperType(arena) {}
 #endif  // PROTOBUF_CUSTOM_VTABLE
               $annotate_accessors$;
               $verify$;
@@ -3075,13 +3080,14 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
               //~ Templatize constexpr constructor as a workaround for a bug in
               //~ gcc 12 (warning in gcc 13).
               template <typename>
-              constexpr $classname$::$classname$(::_pbi::ConstantInitialized)
+              constexpr $Msg$::$Msg$(::_pbi::ConstantInitialized,
+                                     const ::_pbi::ClassData* class_data)
+                  : $base$(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-                  : $base$($classname$_class_data_.base()){}
-#else   // PROTOBUF_CUSTOM_VTABLE
-                  : $base$() {
-              }
+                        class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
+                    ) {
+              }
             )cc");
     return;
   }
@@ -3103,12 +3109,13 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
   p->Emit(
       R"cc(
         template <typename>
-        constexpr $classname$::$classname$(::_pbi::ConstantInitialized)
+        constexpr $Msg$::$Msg$(::_pbi::ConstantInitialized,
+                               const ::_pbi::ClassData* class_data)
+            : $superclass$(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            : $superclass$($classname$_class_data_.base()),
-#else   // PROTOBUF_CUSTOM_VTABLE
-            : $superclass$(),
+                  class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
+                  ),
               _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
         }
       )cc");
@@ -3357,7 +3364,8 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
                 //~ force alignment
                 const $classname$& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-                : $superclass$(arena, $classname$_class_data_.base()) {
+                : $superclass$(arena, $classname$_get_class_data()) {
+
 #else   // PROTOBUF_CUSTOM_VTABLE
                 : $superclass$(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -3400,7 +3408,7 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
       R"cc(
         $classname$::$classname$($pb$::Arena* $nullable$ arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            : $superclass$(arena, $classname$_class_data_.base()) {
+            : $superclass$(arena, $classname$_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
             : $superclass$(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -3429,7 +3437,7 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
           //~ Force alignment
           $pb$::Arena* $nullable$ arena, const $classname$& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-          : $superclass$(arena, $classname$_class_data_.base()),
+          : $superclass$(arena, $classname$_get_class_data()),
 #else   // PROTOBUF_CUSTOM_VTABLE
           : $superclass$(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -3922,27 +3930,7 @@ void MessageGenerator::GenerateNewOp(io::Printer* p) const {
   }
 }
 
-void MessageGenerator::GenerateClassData(io::Printer* p) {
-  // Always generate PlacementNew_ because we might need it for different
-  // reasons. EnableCustomNewFor<T> might be false in this compiler, or the
-  // object might be too large for arena seeding.
-  // We mark `inline` to avoid library bloat if the function is unused.
-  p->Emit(R"cc(
-    inline void* $nonnull$ $classname$::PlacementNew_(
-        //~
-        const void* $nonnull$, void* $nonnull$ mem,
-        $pb$::Arena* $nullable$ arena) {
-      return ::new (mem) $classname$(arena);
-    }
-  )cc");
-
-  GenerateNewOp(p);
-
-  auto vars = p->WithVars(
-      {{"default_instance",
-        absl::StrCat("&", MsgGlobalsInstanceName(descriptor_, options_),
-                     "._default")},
-       {"index_in_file_messages", index_in_file_messages_}});
+void MessageGenerator::GenerateInternalGenerateClassData(io::Printer* p) {
   const auto is_initialized = [&] {
     if (NeedsIsInitialized()) {
       p->Emit(R"cc(
@@ -3969,7 +3957,83 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
       )cc");
     }
   };
+  if (HasDescriptorMethods(descriptor_->file(), options_)) {
+    p->Emit(
+        {
+            {"is_initialized", is_initialized},
+            {"custom_vtable_methods", custom_vtable_methods},
+            {"index_in_file_messages", index_in_file_messages_},
+            {"tracker_on_get_metadata",
+             [&] {
+               if (HasTracker(descriptor_, options_)) {
+                 p->Emit(R"cc(
+                   &Impl_::TrackerOnGetMetadata,
+                 )cc");
+               } else {
+                 p->Emit(R"cc(
+                   nullptr,  // tracker
+                 )cc");
+               }
+             }},
+        },
+        R"cc(
+          constexpr auto $classname$::InternalGenerateClassData_(
+              const MessageLite& prototype) {
+            return $pbi$::ClassDataFull{
+                $pbi$::ClassData{
+                    &prototype,
+                    &_table_.header,
+                    $is_initialized$,
+                    &$classname$::MergeImpl,
+                    $superclass$::GetNewImpl<$classname$>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    &$classname$::SharedDtor,
+                    $custom_vtable_methods$,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+                    PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
+                    false,
+                },
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+                &file_reflection_data[$index_in_file_messages$],
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+                &::_pbi::kDescriptorMethods,
+                &$desc_table$,
+                $tracker_on_get_metadata$,
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+            };
+          }
+        )cc");
+  } else {
+    p->Emit(
+        {
+            {"is_initialized", is_initialized},
+            {"custom_vtable_methods", custom_vtable_methods},
+        },
+        R"cc(
+          constexpr auto $classname$::InternalGenerateClassData_(
+              const MessageLite& prototype) {
+            return $pbi$::ClassDataLite{
+                {
+                    &prototype,
+                    &_table_.header,
+                    $is_initialized$,
+                    &$classname$::MergeImpl,
+                    $superclass$::GetNewImpl<$classname$>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    &$classname$::SharedDtor,
+                    $custom_vtable_methods$,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+                    PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
+                    true,
+                },
+                "$full_name$",
+            };
+          }
+        )cc");
+  }
+}
 
+void MessageGenerator::GenerateClassData(io::Printer* p) {
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     const auto pin_weak_descriptor = [&] {
       if (!UsingImplicitWeakDescriptor(descriptor_->file(), options_)) return;
@@ -3992,113 +4056,86 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             )cc");
       }
     };
-    p->Emit(
-        {
-            {"is_initialized", is_initialized},
-            {"pin_weak_descriptor", pin_weak_descriptor},
-            {"custom_vtable_methods", custom_vtable_methods},
-            {"tracker_on_get_metadata",
-             [&] {
-               if (HasTracker(descriptor_, options_)) {
-                 p->Emit(R"cc(
-                   &Impl_::TrackerOnGetMetadata,
-                 )cc");
-               } else {
-                 p->Emit(R"cc(
-                   nullptr,  // tracker
-                 )cc");
-               }
-             }},
-        },
-        R"cc(
-          constexpr auto $classname$::InternalGenerateClassData_() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-            return $pbi$::ClassDataFull{
-                $pbi$::ClassData{
-                    $default_instance$,
-                    &_table_.header,
-                    $is_initialized$,
-                    &$classname$::MergeImpl,
-                    $superclass$::GetNewImpl<$classname$>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-                    &$classname$::SharedDtor,
-                    $custom_vtable_methods$,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-                    PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
-                    false,
-                },
-                &file_reflection_data[$index_in_file_messages$]};
-#else  // !PROTOBUF_MESSAGE_GLOBALS
-            return $pbi$::ClassDataFull{
-                $pbi$::ClassData{
-                    $default_instance$,
-                    &_table_.header,
-                    $is_initialized$,
-                    &$classname$::MergeImpl,
-                    $superclass$::GetNewImpl<$classname$>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-                    &$classname$::SharedDtor,
-                    $custom_vtable_methods$,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-                    PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
-                    false,
-                },
-                &::_pbi::kDescriptorMethods,
-                &$desc_table$,
-                $tracker_on_get_metadata$,
-            };
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-          }
 
-          PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
-              $pbi$::ClassDataFull $classname$_class_data_ =
-                  $classname$::InternalGenerateClassData_();
+    if (IsMapEntryMessage(descriptor_)) {
+      p->Emit(
+          {
+              {"pin_weak_descriptor", pin_weak_descriptor},
+          },
+          R"cc(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+            PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+                $pbi$::ClassDataFull $classname$_class_data_ =
+                    $classname$::InternalGenerateClassData_($globals$._default);
 
-          //~ This function needs to be marked as weak to avoid significantly
-          //~ slowing down compilation times.  This breaks up LLVM's SCC
-          //~ in the .pb.cc translation units. Large translation units see a
-          //~ reduction of roughly 50% of walltime for optimized builds.
-          //~ Without the weak attribute all the messages in the file, including
-          //~ all the vtables and everything they use become part of the same
-          //~ SCC.
-          PROTOBUF_ATTRIBUTE_WEAK const $pbi$::ClassData* $nonnull$
-          $classname$::GetClassData() const {
-            $pin_weak_descriptor$;
-            $pbi$::PrefetchToLocalCache(&$classname$_class_data_);
-            $pbi$::PrefetchToLocalCache($classname$_class_data_.tc_table);
-            return $classname$_class_data_.base();
-          }
-        )cc");
+            //~ This function needs to be marked as weak to avoid significantly
+            //~ slowing down compilation times.  This breaks up LLVM's SCC
+            //~ in the .pb.cc translation units. Large translation units see a
+            //~ reduction of roughly 50% of walltime for optimized builds.
+            //~ Without the weak attribute all the messages in the file,
+            // including ~ all the vtables and everything they use become part
+            // of the same ~ SCC.
+            PROTOBUF_ATTRIBUTE_WEAK const $pbi$::ClassData* $nonnull$
+            $classname$::GetClassData() const {
+              $pin_weak_descriptor$;
+              $pbi$::PrefetchToLocalCache(&$classname$_class_data_);
+              $pbi$::PrefetchToLocalCache($classname$_class_data_.tc_table);
+              return $classname$_class_data_.base();
+            }
+#else
+            PROTOBUF_ATTRIBUTE_WEAK const $pbi$::ClassData* $nonnull$
+            $classname$::GetClassData() const {
+              $pin_weak_descriptor$;
+              $pbi$::PrefetchToLocalCache(&$globals$);
+              $pbi$::PrefetchToLocalCache($globals$.GetClassData()->tc_table);
+              return $globals$.GetClassData();
+            }
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
+          )cc");
+    } else {
+      p->Emit(
+          {
+              {"pin_weak_descriptor", pin_weak_descriptor},
+          },
+          R"cc(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+            PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+                $pbi$::ClassDataFull $classname$_class_data_ =
+                    $classname$::InternalGenerateClassData_($globals$._default);
+
+            //~ This function needs to be marked as weak to avoid significantly
+            //~ slowing down compilation times.  This breaks up LLVM's SCC
+            //~ in the .pb.cc translation units. Large translation units see a
+            //~ reduction of roughly 50% of walltime for optimized builds.
+            //~ Without the weak attribute all the messages in the file,
+            //~ including all the vtables and everything they use become part
+            //~ of the same SCC.
+            PROTOBUF_ATTRIBUTE_WEAK const $pbi$::ClassData* $nonnull$
+            $classname$::GetClassData() const {
+              $pin_weak_descriptor$;
+              $pbi$::PrefetchToLocalCache(&$classname$_class_data_);
+              $pbi$::PrefetchToLocalCache($classname$_class_data_.tc_table);
+              return $classname$_class_data_.base();
+            }
+#else
+            PROTOBUF_ATTRIBUTE_WEAK const $pbi$::ClassData* $nonnull$
+            $classname$::GetClassData() const {
+              $pin_weak_descriptor$;
+              $pbi$::PrefetchToLocalCache(&$globals$);
+              $pbi$::PrefetchToLocalCache($globals$.GetClassData()->tc_table);
+              return $globals$.GetClassData();
+            }
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
+          )cc");
+    }
   } else {
     p->Emit(
-        {
-            {"is_initialized", is_initialized},
-            {"custom_vtable_methods", custom_vtable_methods},
-        },
         R"cc(
-          constexpr auto $classname$::InternalGenerateClassData_() {
-            return $pbi$::ClassDataLite{
-                {
-                    $default_instance$,
-                    &_table_.header,
-                    $is_initialized$,
-                    &$classname$::MergeImpl,
-                    $superclass$::GetNewImpl<$classname$>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-                    &$classname$::SharedDtor,
-                    $custom_vtable_methods$,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-                    PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
-                    true,
-                },
-                "$full_name$",
-            };
-          }
-
+#ifndef PROTOBUF_MESSAGE_GLOBALS
           PROTOBUF_CONSTINIT
           PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
           const $pbi$::ClassDataLite $classname$_class_data_ =
-              $classname$::InternalGenerateClassData_();
+              $classname$::InternalGenerateClassData_($globals$._default);
 
           //~ This function needs to be marked as weak to avoid significantly
           //~ slowing down compilation times.  This breaks up LLVM's SCC
@@ -4111,6 +4148,12 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
           $classname$::GetClassData() const {
             return $classname$_class_data_.base();
           }
+#else
+          PROTOBUF_ATTRIBUTE_WEAK const $pbi$::ClassData* $nonnull$
+          $classname$::GetClassData() const {
+            return $globals$.GetClassData();
+          }
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
         )cc");
   }
 }
@@ -5532,34 +5575,66 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
 
   GenerateConstexprConstructor(p);
 
-  auto local = p->WithVars({
-      {"type", MsgGlobalsInstanceType(descriptor_, options_)},
-      {"name", MsgGlobalsInstanceName(descriptor_, options_)},
-  });
+  // Always generate PlacementNew_ because we might need it for different
+  // reasons. EnableCustomNewFor<T> might be false in this compiler, or the
+  // object might be too large for arena seeding.
+  // We mark `inline` to avoid library bloat if the function is unused.
+  p->Emit(R"cc(
+    inline void* $nonnull$ $classname$::PlacementNew_(
+        //~
+        const void* $nonnull$, void* $nonnull$ mem,
+        $pb$::Arena* $nullable$ arena) {
+      return ::new (mem) $classname$(arena);
+    }
+  )cc");
+
+  GenerateNewOp(p);
+  GenerateInternalGenerateClassData(p);
+
   if (IsFileDescriptorProto(descriptor_->file(), options_)) {
+    // Note that unused class_data #ifndef PROOTBUF_CUSTOM_VTABLE is ignored and
+    // incurs no overhead for constexpr constructors.
     p->Emit(
         R"cc(
-          struct $type$ : ::_pbi::MessageGlobalsBase {
+          struct $globals_type$ : ::_pbi::MessageGlobalsBase {
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-            constexpr $type$() : _default(::_pbi::ConstantInitialized{}) {}
+            constexpr $globals_type$()
+                : _default(::_pbi::ConstantInitialized{},
+                           $Msg$_class_data_.base()) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-            $type$() {}
+            $globals_type$() {}
             void Init() { ::new (&_default) $classname$(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-            ~$type$() {}
+#else   // PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+            constexpr $globals_type$()
+                : MessageGlobalsBase(
+                      $Msg$::InternalGenerateClassData_(_default)),
+                  _default(::_pbi::ConstantInitialized{}, GetClassData()) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+            $globals_type$()
+                : MessageGlobalsBase(
+                      $Msg$::InternalGenerateClassData_(_default)) {}
+            void Init() { ::new (&_default) $classname$(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+            ~$globals_type$() {}
             union {
               alignas(::_pbi::kMaxMessageAlignment) $classname$ _default;
             };
           };
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-          static_assert(PROTOBUF_FIELD_OFFSET($type$, _default) ==
+          static_assert(PROTOBUF_FIELD_OFFSET($globals_type$, _default) ==
                         ::_pbi::MessageGlobalsBase::OffsetToDefault());
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
           PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $globals_type$ $globals$;
         )cc");
   } else if (UsingImplicitWeakDescriptor(descriptor_->file(), options_)) {
+    // Note that unused class_data #ifndef PROOTBUF_CUSTOM_VTABLE is ignored and
+    // incurs no overhead for constexpr constructors.
     p->Emit(
         {
             {"index", index_in_file_messages_},
@@ -5567,44 +5642,79 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                             descriptor_, index_in_file_messages_, options_)},
         },
         R"cc(
-          struct $type$ : ::_pbi::MessageGlobalsBase {
-            constexpr $type$() : _default(::_pbi::ConstantInitialized{}) {}
-            ~$type$() {}
+          struct $globals_type$ : ::_pbi::MessageGlobalsBase {
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+            constexpr $globals_type$()
+                : _default(::_pbi::ConstantInitialized{},
+                           $Msg$_class_data_.base()) {}
+#else
+            constexpr $globals_type$()
+                : MessageGlobalsBase(
+                      $Msg$::InternalGenerateClassData_(_default)),
+                  _default(::_pbi::ConstantInitialized{}, GetClassData()) {}
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+            ~$globals_type$() {}
             //~ _default must be the first member.
             union {
               alignas(::_pbi::kMaxMessageAlignment) $classname$ _default;
             };
             ::_pbi::WeakDescriptorDefaultTail tail = {
-                file_message_globals + $index$, sizeof($type$)};
+                file_message_globals + $index$, sizeof($globals_type$)};
           };
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-          static_assert(PROTOBUF_FIELD_OFFSET($type$, _default) ==
+          static_assert(PROTOBUF_FIELD_OFFSET($globals_type$, _default) ==
                         ::_pbi::MessageGlobalsBase::OffsetToDefault());
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
           PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $globals_type$ $globals$
               __attribute__((section("$section$")));
         )cc");
   } else {
+    // Note that unused class_data #ifndef PROOTBUF_CUSTOM_VTABLE is ignored and
+    // incurs no overhead for constexpr constructors.
     p->Emit(
         R"cc(
-          struct $type$ : ::_pbi::MessageGlobalsBase {
-            constexpr $type$() : _default(::_pbi::ConstantInitialized{}) {}
-            ~$type$() {}
+          struct $globals_type$ : ::_pbi::MessageGlobalsBase {
+            constexpr $globals_type$()
+                :
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+                  _default(::_pbi::ConstantInitialized{},
+                           $Msg$_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+                  MessageGlobalsBase(
+                      $Msg$::InternalGenerateClassData_(_default)),
+                  _default(::_pbi::ConstantInitialized{}, GetClassData())
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+            {
+            }
+            ~$globals_type$() {}
             union {
               alignas(::_pbi::kMaxMessageAlignment) $classname$ _default;
             };
           };
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-          static_assert(PROTOBUF_FIELD_OFFSET($type$, _default) ==
+          static_assert(PROTOBUF_FIELD_OFFSET($globals_type$, _default) ==
                         ::_pbi::MessageGlobalsBase::OffsetToDefault());
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
           PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $globals_type$ $globals$;
         )cc");
   }
+  p->Emit(R"cc(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    namespace {
+    const ::_pbi::ClassData* $Msg$_get_class_data() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+      return $globals$.GetClassData();
+#else
+      return $Msg$_class_data_.base();
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+    }
+    }  // namespace
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  )cc");
 
   if (options_.lite_implicit_weak_fields) {
     p->Emit(
@@ -5613,7 +5723,7 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
             {"name", MsgGlobalsInstanceName(descriptor_, options_)},
         },
         R"cc(
-          PROTOBUF_CONSTINIT const void* $ptr$ = &$name$;
+          PROTOBUF_CONSTINIT const void* $ptr$ = &$globals$;
         )cc");
   }
 }
