@@ -4960,7 +4960,8 @@ class DescriptorBuilder {
     // This maps the element path of uninterpreted options to the element path
     // of the resulting interpreted option. This is used to modify a file's
     // source code info to account for option interpretation.
-    absl::flat_hash_map<std::vector<int>, std::vector<int>> interpreted_paths_;
+    absl::flat_hash_map<std::vector<int>, std::vector<std::vector<int>>>
+        interpreted_paths_;
 
     // This maps the path to a repeated option field to the known number of
     // elements the field contains. This is used to track the compute the
@@ -9754,7 +9755,19 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
     int index = repeated_option_counts_[dest_path]++;
     dest_path.push_back(index);
   }
-  interpreted_paths_[src_path] = dest_path;
+  interpreted_paths_[src_path].push_back(dest_path);
+
+  // If we have drilled down through submessages to reach the leaf field,
+  // we also record the path to the message containing the leaf field.
+  // This allows the source location to be associated with both the whole
+  // option assignment and the leaf field.
+  if (uninterpreted_option_->name_size() > 1) {
+    if (field->is_repeated()) {
+      dest_path.pop_back();  // index
+    }
+    dest_path.pop_back();  // last field number
+    interpreted_paths_[src_path].push_back(std::move(dest_path));
+  }
 
   return true;
 }
@@ -9836,12 +9849,13 @@ void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
     }
 
     // add replacement and update its path
-    SourceCodeInfo_Location* replacement = new_locs.Add();
-    *replacement = *loc;
-    replacement->clear_path();
-    for (std::vector<int>::iterator rit = entry->second.begin();
-         rit != entry->second.end(); rit++) {
-      replacement->add_path(*rit);
+    for (const std::vector<int>& dpath : entry->second) {
+      SourceCodeInfo_Location* replacement = new_locs.Add();
+      *replacement = *loc;
+      replacement->clear_path();
+      for (int field_number : dpath) {
+        replacement->add_path(field_number);
+      }
     }
   }
 

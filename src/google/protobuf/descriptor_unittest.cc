@@ -15623,6 +15623,11 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
     EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
                                       "(test_enumval_opt).a = 100"));
 
+    std::vector<int> vpath2(path, path + 6);
+    EXPECT_TRUE(file_desc->GetSourceLocation(vpath2, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "(test_enumval_opt).a = 100"));
+
     std::vector<int> vunint(unint, unint + 7);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
   }
