@@ -16,6 +16,7 @@
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/error_handler.h"
 #include "upb/base/internal/endian.h"
+#include "upb/base/internal/log2.h"
 #include "upb/base/string_view.h"
 #include "upb/hash/common.h"
 #include "upb/mem/arena.h"
@@ -985,7 +986,6 @@ const char* _upb_Decoder_DecodeWireValue(upb_Decoder* d, const char* ptr,
 UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
                                           upb_Message* msg,
-                                          const upb_MiniTable* layout,
                                           const upb_MiniTableField* field,
                                           int op, wireval* val) {
   uint8_t mode = field->UPB_PRIVATE(mode);
@@ -1043,23 +1043,26 @@ static const char* _upb_Decoder_FindFieldStart(upb_Decoder* d, const char* ptr,
   }
   assert(start == d->debug_valstart);
 
-  {
-    // The varint parser does not enforce that integers are encoded with their
-    // minimum size; for example the value 1 could be encoded with three
-    // bytes: 0x81, 0x80, 0x00. These unnecessary trailing zeroes mean that we
-    // cannot skip backwards by the minimum encoded size of the tag; and
-    // unlike the loop for delimited or varint fields, we can't stop at a
-    // sentinel value because anything can precede a tag. Instead, parse back
-    // one byte at a time until we read the same tag value that was parsed
-    // earlier.
-    uint32_t tag = ((uint32_t)field_number << 3) | wire_type;
-    uint32_t seen = 0;
+  int clz = upb_CountLeadingZeros32(field_number);
+  // This calculation takes advantage of the fact that the tag representation
+  // has three fewer leading zeros than the field number; rather than shifting
+  // before the clz or adding after it, we can fold it into the constant. This
+  // is an expanded form of ((32 - (clz - 3)) * 9) / 64, which approximates
+  // division by 7 rounding down; it's always one byte shorter than the actual
+  // size but that's fine because we subtract a byte anyway when testing for
+  // excess trailing zeroes.
+  int size = ((32 * 9 + 3 * 9) - (clz * 9)) >> 6;
+  // The varint parser does not enforce that integers are encoded with their
+  // minimum size; for example the value 1 could be encoded with three
+  // bytes: 0x81, 0x80, 0x00. Before we can skip backwards by the minimum
+  // encoded size of the tag, we have to skip any unnecessary trailing zero
+  // bytes.
+  if (UPB_UNLIKELY(*(--start) == 0)) {
     do {
       start--;
-      seen <<= 7;
-      seen |= *start & 0x7f;
-    } while (seen != tag);
+    } while (*start == 0x7fu);
   }
+  start -= size;
   assert(start == d->debug_tagstart);
 
   return start;
@@ -1143,7 +1146,7 @@ const char* _upb_Decoder_DecodeFieldData(upb_Decoder* d, const char* ptr,
   ptr = _upb_Decoder_DecodeWireValue(d, ptr, mt, field, wire_type, &val, &op);
 
   if (op >= 0) {
-    return _upb_Decoder_DecodeKnownField(d, ptr, msg, mt, field, op, &val);
+    return _upb_Decoder_DecodeKnownField(d, ptr, msg, field, op, &val);
   } else {
     switch (op) {
       case kUpb_DecodeOp_UnknownField:

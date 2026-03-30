@@ -20,9 +20,27 @@
 extern "C" {
 #endif
 
+UPB_INLINE int upb_CountLeadingZeros32(uint32_t x) {
+  if (x == 0) return 32;
+#if UINT32_MAX == ULLONG_MAX && UPB_HAS_BUILTIN(__builtin_clzll)
+  return __builtin_clzll(x);
+#elif UINT32_MAX == ULONG_MAX && UPB_HAS_BUILTIN(__builtin_clzl)
+  return __builtin_clzl(x);
+#elif UINT32_MAX == UINT_MAX && UPB_HAS_BUILTIN(__builtin_clz)
+  return __builtin_clz(x);
+#else
+  int active_bits = 0;
+  do {
+    active_bits++;
+  } while (x >>= 1);
+
+  return 32 - active_bits;
+#endif
+}
+
 UPB_INLINE int upb_Log2Ceiling(size_t x) {
   if (x <= 1) return 0;
-#if SIZE_MAX == ULL_MAX && UPB_HAS_BUILTIN(__builtin_clzll)
+#if SIZE_MAX == ULLONG_MAX && UPB_HAS_BUILTIN(__builtin_clzll)
   return (sizeof(size_t) * CHAR_BIT) - __builtin_clzll(x - 1);
 #elif SIZE_MAX == ULONG_MAX && UPB_HAS_BUILTIN(__builtin_clzl)
   return (sizeof(size_t) * CHAR_BIT) - __builtin_clzl(x - 1);
