@@ -214,3 +214,11 @@ message TestOneOfAlignment {
     fixed64 should_be_sixty_four_aligned = 11;
   }
 }
+
+message TestDuplicateFunctionNames {
+  optional bool random = 6;
+  oneof value {
+    bytes body = 1;
+    bool clear_body = 2;
+  }
+}
