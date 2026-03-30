@@ -282,7 +282,7 @@ class RepeatedFieldProxyBase {
 
 // Defines `set()` for primitive element types, which only take by value.
 template <typename ElementType, typename Enable = void>
-class RepeatedFieldProxyWithSet {
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithSet {
  public:
   // Sets the element at the given index to the given value.
   //
@@ -295,7 +295,7 @@ class RepeatedFieldProxyWithSet {
 // Defines `set()` for message element types, which take by const reference or
 // rvalue.
 template <typename ElementType>
-class RepeatedFieldProxyWithSet<
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithSet<
     ElementType, std::enable_if_t<RepeatedElementTypeIsMessage<ElementType>>> {
  public:
   // Sets the element at the given index to the given value by move-assignment.
@@ -316,7 +316,7 @@ class RepeatedFieldProxyWithSet<
 // Defines `set()` for string element types, which dispatch to
 // `string_util::SetElement` and accept many string-like types.
 template <typename ElementType>
-class RepeatedFieldProxyWithSet<
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithSet<
     ElementType, std::enable_if_t<RepeatedElementTypeIsString<ElementType>>> {
  public:
   // Sets the element at the given index to the given value.
@@ -331,7 +331,7 @@ class RepeatedFieldProxyWithSet<
 
 // Defines `push_back()` for primitive element types, which only take by value.
 template <typename ElementType, typename Enable = void>
-class RepeatedFieldProxyWithPushBack {
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithPushBack {
  public:
   // Appends the given value to the end of the repeated field.
   void push_back(ElementType value) const { ToProxyType(this).Add(value); }
@@ -340,7 +340,7 @@ class RepeatedFieldProxyWithPushBack {
 // Defines `push_back()` for message element types, which take by const
 // reference or rvalue.
 template <typename ElementType>
-class RepeatedFieldProxyWithPushBack<
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithPushBack<
     ElementType, std::enable_if_t<RepeatedElementTypeIsMessage<ElementType>>> {
  public:
   // Appends the given value to the end of the repeated field by move
@@ -359,7 +359,7 @@ class RepeatedFieldProxyWithPushBack<
 // Defines `push_back()` for string element types, which dispatch to
 // `string_util::SetElement` and accept many string-like types.
 template <typename ElementType>
-class RepeatedFieldProxyWithPushBack<
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithPushBack<
     ElementType, std::enable_if_t<RepeatedElementTypeIsString<ElementType>>> {
  public:
   // Appends the given value to the end of the repeated field.
@@ -373,7 +373,7 @@ class RepeatedFieldProxyWithPushBack<
 // takes any arguments that can be passed to the constructor of `ElementType`
 // and in-place constructs the element at the end of the repeated field.
 template <typename ElementType, typename Enable = void>
-class RepeatedFieldProxyWithEmplaceBack {
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithEmplaceBack {
  public:
   // In-place constructs an element at the end of the repeated field, returning
   // a reference to the newly constructed element.
@@ -387,7 +387,7 @@ class RepeatedFieldProxyWithEmplaceBack {
 // list all constructors we want to support for repeated `string_views` to not
 // leak the `std::string` backing of repeated `string_views`.
 template <typename ElementType>
-class RepeatedFieldProxyWithEmplaceBack<
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithEmplaceBack<
     ElementType,
     std::enable_if_t<std::is_same_v<ElementType, absl::string_view>>> {
  public:
@@ -422,7 +422,7 @@ class RepeatedFieldProxyWithEmplaceBack<
 
 // Defines `resize(new_size, value)` for all non-string repeated fields.
 template <typename ElementType, typename Enable = void>
-class RepeatedFieldProxyWithResize {
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithResize {
  public:
   void resize(size_t new_size, const ElementType& value) const {
     ToProxyType(this).field().resize(new_size, value);
@@ -431,7 +431,7 @@ class RepeatedFieldProxyWithResize {
 
 // Defines `resize(new_size, value)` for non-Cord string repeated fields.
 template <typename ElementType>
-class RepeatedFieldProxyWithResize<
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithResize<
     ElementType, std::enable_if_t<RepeatedElementTypeIsString<ElementType> &&
                                   !std::is_same_v<ElementType, absl::Cord>>> {
  public:
@@ -442,7 +442,7 @@ class RepeatedFieldProxyWithResize<
 
 // Defines `resize(new_size, value)` for repeated Cords.
 template <typename ElementType>
-class RepeatedFieldProxyWithResize<
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithResize<
     ElementType, std::enable_if_t<std::is_same_v<ElementType, absl::Cord>>> {
  public:
   void resize(size_t new_size, const absl::Cord& value) const {
@@ -652,7 +652,7 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
 };
 
 template <typename ElementType>
-class RepeatedFieldProxy<const ElementType> final
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy<const ElementType> final
     : public internal::RepeatedFieldProxyBase<const ElementType> {
   // A specialization of RepeatedFieldProxy for const proxies. This is needed
   // for mutating methods to not be exposed on const proxies.
