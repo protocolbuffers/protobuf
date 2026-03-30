@@ -1468,6 +1468,15 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
       "  Actual type  : proto2_unittest.ForeignMessage\n"
       "  Field        : proto2_unittest.TestAllTypes.optional_int32\n"
       "  Problem      : Message is not the right object for reflection");
+  std::vector<const FieldDescriptor*>* fields = nullptr;
+  EXPECT_DEBUG_DEATH(
+      (void)reflection->ListFields(foreign, fields),
+      "Protocol Buffer reflection usage error:\n"
+      "  Method       : google::protobuf::Reflection::ListFields\n"
+      "  Expected type: proto2_unittest.TestAllTypes\n"
+      "  Actual type  : proto2_unittest.ForeignMessage\n"
+      "  Field        : n/a\n"
+      "  Problem      : Message is not the right object for reflection");
 #endif
   EXPECT_DEATH(
       (void)reflection->GetInt32(
