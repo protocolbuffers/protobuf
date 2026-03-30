@@ -6212,24 +6212,6 @@ extern const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout;
 extern "C" {
 #endif
 
-UPB_INLINE int upb_CountLeadingZeros32(uint32_t x) {
-  if (x == 0) return 32;
-#if UINT32_MAX == ULLONG_MAX && UPB_HAS_BUILTIN(__builtin_clzll)
-  return __builtin_clzll(x);
-#elif UINT32_MAX == ULONG_MAX && UPB_HAS_BUILTIN(__builtin_clzl)
-  return __builtin_clzl(x);
-#elif UINT32_MAX == UINT_MAX && UPB_HAS_BUILTIN(__builtin_clz)
-  return __builtin_clz(x);
-#else
-  int active_bits = 0;
-  do {
-    active_bits++;
-  } while (x >>= 1);
-
-  return 32 - active_bits;
-#endif
-}
-
 UPB_INLINE int upb_Log2Ceiling(size_t x) {
   if (x <= 1) return 0;
 #if SIZE_MAX == ULLONG_MAX && UPB_HAS_BUILTIN(__builtin_clzll)
@@ -17662,8 +17644,6 @@ typedef struct upb_Decoder {
   upb_ErrorHandler err;
 
 #ifndef NDEBUG
-  const char* debug_tagstart;
-  const char* debug_valstart;
   char* trace_buf;
   char* trace_ptr;
   char* trace_end;
