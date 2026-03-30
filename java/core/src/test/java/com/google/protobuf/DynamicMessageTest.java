@@ -385,7 +385,7 @@ public class DynamicMessageTest {
         new ThrowingRunnable() {
           @Override
           public void run() throws Throwable {
-            builder.getFieldBuilder(mapField);
+          builder.getFieldBuilder(mapField);
           }
         });
   }

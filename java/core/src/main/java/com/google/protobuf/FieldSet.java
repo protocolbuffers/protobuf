@@ -273,12 +273,6 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     return o;
   }
 
-  /** Returns true if the field is a lazy field and it is corrupted. */
-  boolean lazyFieldCorrupted(final T descriptor) {
-    Object o = fields.get(descriptor);
-    return o instanceof LazyField && ((LazyField) o).isCorrupted();
-  }
-
   /**
    * Useful for implementing {@link Message.Builder#setField(Descriptors.FieldDescriptor,Object)}.
    */
@@ -838,7 +832,8 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
         && !descriptor.isRepeated()
         && !descriptor.isPacked()) {
       if (value instanceof LazyField) {
-        return ((LazyField) value).computeMessageSetExtensionSize(entry.getKey().getNumber());
+        return ((LazyField) value)
+            .computeMessageSetExtensionSize(entry.getKey().getNumber());
       } else {
         return CodedOutputStream.computeMessageSetExtensionSize(
             entry.getKey().getNumber(), (MessageLite) value);
