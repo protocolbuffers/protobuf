@@ -60,15 +60,21 @@ namespace protobuf {
 class Api;
 struct ApiGlobalsTypeInternal;
 PROTOBUF_EXPORT extern ApiGlobalsTypeInternal _Api_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Api_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class Method;
 struct MethodGlobalsTypeInternal;
 PROTOBUF_EXPORT extern MethodGlobalsTypeInternal _Method_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Method_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class Mixin;
 struct MixinGlobalsTypeInternal;
 PROTOBUF_EXPORT extern MixinGlobalsTypeInternal _Mixin_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Mixin_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace protobuf
 }  // namespace google
 
@@ -94,7 +100,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
 #endif
 
   template <typename = void>
-  explicit constexpr Mixin(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Mixin(::google::protobuf::internal::ConstantInitialized,
+                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                                     class_data);
 
   inline Mixin(const Mixin& from) : Mixin(nullptr, from) {}
   inline Mixin(Mixin&& from) noexcept
@@ -133,7 +141,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Mixin& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Mixin>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Mixin>(
         &_Mixin_globals_);
   }
   static constexpr int kIndexInFileMessages = 2;
@@ -219,7 +227,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -294,8 +303,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fapi_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Mixin_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : public ::google::protobuf::Message
@@ -312,7 +319,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
 #endif
 
   template <typename = void>
-  explicit constexpr Method(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Method(::google::protobuf::internal::ConstantInitialized,
+                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                                     class_data);
 
   inline Method(const Method& from) : Method(nullptr, from) {}
   inline Method(Method&& from) noexcept
@@ -351,7 +360,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Method& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Method>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Method>(
         &_Method_globals_);
   }
   static constexpr int kIndexInFileMessages = 1;
@@ -437,7 +446,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -461,18 +471,19 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
 
   public:
   void clear_options() ;
+  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
   [[nodiscard]] ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
+  ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
+  options() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
   mutable_options();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
+
   public:
-  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
-  ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& options()
-      const;
   // string name = 1;
   void clear_name() ;
   [[nodiscard]] const ::std::string& name() const;
@@ -604,8 +615,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fapi_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Method_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public ::google::protobuf::Message
@@ -622,7 +631,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
 #endif
 
   template <typename = void>
-  explicit constexpr Api(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Api(::google::protobuf::internal::ConstantInitialized,
+                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                                     class_data);
 
   inline Api(const Api& from) : Api(nullptr, from) {}
   inline Api(Api&& from) noexcept
@@ -661,7 +672,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Api& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Api>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Api>(
         &_Api_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
@@ -747,7 +758,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -771,18 +783,19 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
 
   public:
   void clear_methods() ;
+  [[nodiscard]] const ::google::protobuf::Method& methods(int index) const;
   [[nodiscard]] ::google::protobuf::Method* PROTOBUF_NONNULL mutable_methods(int index);
+  ::google::protobuf::Method* PROTOBUF_NONNULL add_methods();
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>&
+  methods() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>* PROTOBUF_NONNULL
   mutable_methods();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>& _internal_methods() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>* PROTOBUF_NONNULL _internal_mutable_methods();
+
   public:
-  [[nodiscard]] const ::google::protobuf::Method& methods(int index) const;
-  ::google::protobuf::Method* PROTOBUF_NONNULL add_methods();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>& methods()
-      const;
   // repeated .google.protobuf.Option options = 3;
   [[nodiscard]] int options_size()
       const;
@@ -791,18 +804,19 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
 
   public:
   void clear_options() ;
+  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
   [[nodiscard]] ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
+  ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
+  options() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
   mutable_options();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
+
   public:
-  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
-  ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& options()
-      const;
   // repeated .google.protobuf.Mixin mixins = 6;
   [[nodiscard]] int mixins_size()
       const;
@@ -811,18 +825,19 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
 
   public:
   void clear_mixins() ;
+  [[nodiscard]] const ::google::protobuf::Mixin& mixins(int index) const;
   [[nodiscard]] ::google::protobuf::Mixin* PROTOBUF_NONNULL mutable_mixins(int index);
+  ::google::protobuf::Mixin* PROTOBUF_NONNULL add_mixins();
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>&
+  mixins() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>* PROTOBUF_NONNULL
   mutable_mixins();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>& _internal_mixins() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>* PROTOBUF_NONNULL _internal_mutable_mixins();
+
   public:
-  [[nodiscard]] const ::google::protobuf::Mixin& mixins(int index) const;
-  ::google::protobuf::Mixin* PROTOBUF_NONNULL add_mixins();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>& mixins()
-      const;
   // string name = 1;
   void clear_name() ;
   [[nodiscard]] const ::std::string& name() const;
@@ -936,8 +951,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
   friend struct ::TableStruct_google_2fprotobuf_2fapi_2eproto;
 };
 
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Api_class_data_;
-
 // ===================================================================
 
 
@@ -1032,22 +1045,15 @@ inline void Api::clear_methods() {
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
-inline ::google::protobuf::Method* PROTOBUF_NONNULL Api::mutable_methods(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.Api.methods)
-  return _internal_mutable_methods()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>* PROTOBUF_NONNULL Api::mutable_methods()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.methods)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_methods();
-}
 inline const ::google::protobuf::Method& Api::methods(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.methods)
   return _internal_methods().Get(index);
+}
+inline ::google::protobuf::Method* PROTOBUF_NONNULL Api::mutable_methods(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Api.methods)
+  return _internal_mutable_methods()->Mutable(index);
 }
 inline ::google::protobuf::Method* PROTOBUF_NONNULL Api::add_methods()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1063,6 +1069,13 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>& A
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.Api.methods)
   return _internal_methods();
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>* PROTOBUF_NONNULL Api::mutable_methods()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.methods)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_methods();
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>&
 Api::_internal_methods() const {
@@ -1082,22 +1095,15 @@ inline int Api::_internal_options_size() const {
 inline int Api::options_size() const {
   return _internal_options_size();
 }
-inline ::google::protobuf::Option* PROTOBUF_NONNULL Api::mutable_options(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.Api.options)
-  return _internal_mutable_options()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL Api::mutable_options()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.options)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_options();
-}
 inline const ::google::protobuf::Option& Api::options(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.options)
   return _internal_options().Get(index);
+}
+inline ::google::protobuf::Option* PROTOBUF_NONNULL Api::mutable_options(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Api.options)
+  return _internal_mutable_options()->Mutable(index);
 }
 inline ::google::protobuf::Option* PROTOBUF_NONNULL Api::add_options()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1113,6 +1119,13 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& A
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.Api.options)
   return _internal_options();
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL Api::mutable_options()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.options)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_options();
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 Api::_internal_options() const {
@@ -1199,7 +1212,7 @@ inline bool Api::has_source_context() const {
 inline const ::google::protobuf::SourceContext& Api::_internal_source_context() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::SourceContext* p = _impl_.source_context_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::default_instance<::google::protobuf::SourceContext>(&::google::protobuf::_SourceContext_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::SourceContext>(&::google::protobuf::_SourceContext_globals_);
 }
 inline const ::google::protobuf::SourceContext& Api::source_context() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.source_context)
@@ -1296,22 +1309,15 @@ inline void Api::clear_mixins() {
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000004U);
 }
-inline ::google::protobuf::Mixin* PROTOBUF_NONNULL Api::mutable_mixins(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.Api.mixins)
-  return _internal_mutable_mixins()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>* PROTOBUF_NONNULL Api::mutable_mixins()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000004U);
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.mixins)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_mixins();
-}
 inline const ::google::protobuf::Mixin& Api::mixins(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.mixins)
   return _internal_mixins().Get(index);
+}
+inline ::google::protobuf::Mixin* PROTOBUF_NONNULL Api::mutable_mixins(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Api.mixins)
+  return _internal_mutable_mixins()->Mutable(index);
 }
 inline ::google::protobuf::Mixin* PROTOBUF_NONNULL Api::add_mixins()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1327,6 +1333,13 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>& Ap
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.Api.mixins)
   return _internal_mixins();
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>* PROTOBUF_NONNULL Api::mutable_mixins()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000004U);
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.mixins)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_mixins();
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>&
 Api::_internal_mixins() const {
@@ -1685,22 +1698,15 @@ inline int Method::_internal_options_size() const {
 inline int Method::options_size() const {
   return _internal_options_size();
 }
-inline ::google::protobuf::Option* PROTOBUF_NONNULL Method::mutable_options(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.Method.options)
-  return _internal_mutable_options()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL Method::mutable_options()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Method.options)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_options();
-}
 inline const ::google::protobuf::Option& Method::options(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.options)
   return _internal_options().Get(index);
+}
+inline ::google::protobuf::Option* PROTOBUF_NONNULL Method::mutable_options(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Method.options)
+  return _internal_mutable_options()->Mutable(index);
 }
 inline ::google::protobuf::Option* PROTOBUF_NONNULL Method::add_options()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1716,6 +1722,13 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& M
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.Method.options)
   return _internal_options();
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL Method::mutable_options()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Method.options)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_options();
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 Method::_internal_options() const {

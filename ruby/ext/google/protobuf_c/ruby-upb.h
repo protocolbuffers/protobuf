@@ -1163,13 +1163,14 @@ UPB_INLINE void UPB_PRIVATE(upb_Xsan_AccessReadWrite)(upb_Xsan *xsan) {
 // We need this because the decoder inlines a upb_Arena for performance but
 // the full struct is not visible outside of arena.c. Yes, I know, it's awful.
 #ifndef NDEBUG
-#define UPB_ARENA_BASE_SIZE_HACK 11
-#else
 #define UPB_ARENA_BASE_SIZE_HACK 10
+#else
+#define UPB_ARENA_BASE_SIZE_HACK 9
 #endif
 
-#define UPB_ARENA_SIZE_HACK \
-  (UPB_ARENA_BASE_SIZE_HACK + (UPB_XSAN_STRUCT_SIZE * 2))
+#define UPB_ARENA_SIZE_HACK                                                   \
+  (sizeof(void*) * (UPB_ARENA_BASE_SIZE_HACK + (UPB_XSAN_STRUCT_SIZE * 2))) + \
+      (sizeof(uint32_t) * 2)
 
 // LINT.IfChange(upb_Arena)
 
@@ -2416,7 +2417,7 @@ UPB_API_INLINE bool upb_MiniTable_IsMessageSet(const struct upb_MiniTable* m) {
 UPB_API_INLINE
 const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
     const struct upb_MiniTable* m, uint32_t number) {
-  const size_t i = ((size_t)number) - 1;  // 0 wraps to SIZE_MAX
+  const uint32_t i = number - 1;  // 0 wraps to UINT32_MAX
 
   // Ideal case: index into dense fields
   if (i < m->UPB_PRIVATE(dense_below)) {
@@ -5972,7 +5973,7 @@ enum {
    * If set, the fasttable decoder will not be used. */
   kUpb_DecodeOption_DisableFastTable = 16,
 };
-// LINT.ThenChange(//depot/google3/third_party/protobuf/rust/upb.rs:decode_status)
+// LINT.ThenChange(//depot/google3/third_party/upb/rust/wire.rs:decode_status)
 
 UPB_INLINE uint32_t upb_DecodeOptions_MaxDepth(uint16_t depth) {
   return (uint32_t)depth << 16;
@@ -6201,16 +6202,24 @@ extern const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout;
 #ifndef UPB_BASE_INTERNAL_LOG2_H_
 #define UPB_BASE_INTERNAL_LOG2_H_
 
+#include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
+
 // Must be last.
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-UPB_INLINE int upb_Log2Ceiling(int x) {
+UPB_INLINE int upb_Log2Ceiling(size_t x) {
   if (x <= 1) return 0;
-#ifdef __GNUC__
-  return 32 - __builtin_clz(x - 1);
+#if SIZE_MAX == ULL_MAX && UPB_HAS_BUILTIN(__builtin_clzll)
+  return (sizeof(size_t) * CHAR_BIT) - __builtin_clzll(x - 1);
+#elif SIZE_MAX == ULONG_MAX && UPB_HAS_BUILTIN(__builtin_clzl)
+  return (sizeof(size_t) * CHAR_BIT) - __builtin_clzl(x - 1);
+#elif SIZE_MAX == UINT_MAX && UPB_HAS_BUILTIN(__builtin_clz)
+  return (sizeof(size_t) * CHAR_BIT) - __builtin_clz(x - 1);
 #else
   int lg2 = 0;
   while ((1 << lg2) < x) lg2++;
@@ -6218,8 +6227,15 @@ UPB_INLINE int upb_Log2Ceiling(int x) {
 #endif
 }
 
-UPB_INLINE int upb_RoundUpToPowerOfTwo(int x) {
-  return 1 << upb_Log2Ceiling(x);
+// Returns the smallest power of two that is greater than or equal to x. Returns
+// SIZE_MAX if the computation would overflow.
+UPB_INLINE size_t upb_RoundUpToPowerOfTwo(size_t x) {
+  int lg2 = upb_Log2Ceiling(x);
+  UPB_ASSERT(lg2 >= 0 && lg2 <= (int)sizeof(size_t) * CHAR_BIT);
+  if (lg2 == sizeof(size_t) * CHAR_BIT) {
+    return SIZE_MAX;
+  }
+  return ((size_t)1) << lg2;
 }
 
 #ifdef __cplusplus
@@ -17623,7 +17639,7 @@ typedef struct upb_Decoder {
   bool message_is_done;
   union {
     upb_Arena arena;
-    void* foo[UPB_ARENA_SIZE_HACK];
+    void* foo[UPB_ARENA_SIZE_HACK / sizeof(void*)];
   };
   upb_ErrorHandler err;
 

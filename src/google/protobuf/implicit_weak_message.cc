@@ -10,6 +10,7 @@
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -39,49 +40,81 @@ void ImplicitWeakMessage::MergeImpl(MessageLite& self,
   }
 }
 
-struct ImplicitWeakMessageDefaultType {
+constexpr auto ImplicitWeakMessage::InternalGenerateClassData_(
+    const MessageLite& prototype) {
+  return ClassDataLite{
+      ClassData{
+          &prototype,
+          &table_.header,
+          nullptr,  // is_initialized (always true)
+          MergeImpl,
+          internal::MessageCreator(NewImpl<ImplicitWeakMessage>,
+                                   sizeof(ImplicitWeakMessage),
+                                   alignof(ImplicitWeakMessage)),
+          &DestroyImpl,
+          GetClearImpl<ImplicitWeakMessage>(),
+          &ByteSizeLongImpl,
+          &_InternalSerializeImpl,
+          PROTOBUF_FIELD_OFFSET(ImplicitWeakMessage, cached_size_),
+          true,
+      },
+      /*type_name=*/""};
+}
+
+struct ImplicitWeakMessageDefaultType : MessageGlobalsBase {
   constexpr ImplicitWeakMessageDefaultType()
-      : instance(ConstantInitialized{}) {}
+      :
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+        MessageGlobalsBase(
+            ImplicitWeakMessage::InternalGenerateClassData_(_default)),
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+        _default(ConstantInitialized{}) {
+  }
   ~ImplicitWeakMessageDefaultType() {}
   union {
-    ImplicitWeakMessage instance;
+    ImplicitWeakMessage _default;  // NOLINT
   };
 };
 
 constexpr ImplicitWeakMessage::ImplicitWeakMessage(ConstantInitialized)
-    : MessageLite(class_data_.base()), data_(nullptr) {}
+    : MessageLite(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+          class_data_.base()
+#else
+          implicit_weak_message_globals.GetClassData()
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+              ),
+      data_(nullptr) {
+}
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT ImplicitWeakMessageDefaultType
-    implicit_weak_message_default_instance;
+    implicit_weak_message_globals;
 
 const ImplicitWeakMessage& ImplicitWeakMessage::default_instance() {
-  return implicit_weak_message_default_instance.instance;
+  return implicit_weak_message_globals._default;
 }
 
 const TcParseTable<0> ImplicitWeakMessage::table_ =
     internal::CreateStubTcParseTable<ImplicitWeakMessage, ParseImpl>(
-        class_data_.base());
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        class_data_.base()
+#else
+        implicit_weak_message_globals.GetClassData()
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+    );
 
-constexpr ClassDataLite ImplicitWeakMessage::class_data_ = {
-    {
-        &implicit_weak_message_default_instance.instance,
-        &table_.header,
-        nullptr,  // is_initialized (always true)
-        MergeImpl,
-        internal::MessageCreator(NewImpl<ImplicitWeakMessage>,
-                                 sizeof(ImplicitWeakMessage),
-                                 alignof(ImplicitWeakMessage)),
-        &DestroyImpl,
-        GetClearImpl<ImplicitWeakMessage>(),
-        &ByteSizeLongImpl,
-        &_InternalSerializeImpl,
-        PROTOBUF_FIELD_OFFSET(ImplicitWeakMessage, cached_size_),
-        true,
-    },
-    ""};
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+constexpr ClassDataLite ImplicitWeakMessage::class_data_ =
+    ImplicitWeakMessage::InternalGenerateClassData_(
+        implicit_weak_message_globals._default);
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 const ClassData* ImplicitWeakMessage::GetClassData() const {
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   return class_data_.base();
+#else
+  return implicit_weak_message_globals.GetClassData();
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 
 }  // namespace internal

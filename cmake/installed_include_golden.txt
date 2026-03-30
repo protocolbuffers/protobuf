@@ -9,6 +9,7 @@ google/protobuf/arena_allocation_policy.h
 google/protobuf/arena_cleanup.h
 google/protobuf/arenastring.h
 google/protobuf/arenaz_sampler.h
+google/protobuf/c_sharp_features.proto
 google/protobuf/compiler/code_generator.h
 google/protobuf/compiler/code_generator_lite.h
 google/protobuf/compiler/command_line_interface.h

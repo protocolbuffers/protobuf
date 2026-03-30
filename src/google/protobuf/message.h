@@ -169,10 +169,6 @@ struct RepeatedPtrEntityDynamicFieldInfoBase;
 namespace field_layout {
 enum TransformValidation : uint16_t;
 }  // namespace field_layout
-
-namespace v2 {
-class V2TableGenTester;
-}  // namespace v2
 }  // namespace internal
 class UnknownFieldSet;  // unknown_field_set.h
 namespace io {
@@ -437,7 +433,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   size_t MaybeComputeUnknownFieldsSize(
       size_t total_size, const internal::CachedSize* cached_size) const;
 
-
   // Reflection based version for reflection based types.
   static void MergeImpl(MessageLite& to, const MessageLite& from);
   void ClearImpl();
@@ -451,8 +446,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 namespace internal {
 // Creates and returns an allocation for a split message.
 void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
-                                size_t size, const void* message,
-                                const void* default_message);
+                                size_t size);
 
 // Forward-declare interfaces used to implement RepeatedFieldRef.
 // These are protobuf internals that users shouldn't care about.
@@ -1235,7 +1229,6 @@ class PROTOBUF_EXPORT Reflection final {
                                  bool is_string) const;
 
   friend class MapReflectionTester;
-  friend class internal::v2::V2TableGenTester;
 
   // Returns true if key is in map. Returns false if key is not in map field.
   bool ContainsMapKey(const Message& message, const FieldDescriptor* field,

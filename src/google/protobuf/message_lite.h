@@ -87,12 +87,6 @@ namespace internal {
 PROTOBUF_EXPORT void GenericSwap(MessageLite* lhs, MessageLite* rhs);
 PROTOBUF_EXPORT void GenericSwap(Message* lhs, Message* rhs);
 
-namespace v2 {
-class TableDriven;
-class TableDrivenMessage;
-class TableDrivenParse;
-}  // namespace v2
-
 class MessageCreator {
  public:
   using Func = void* (*)(const void*, void*, Arena*);
@@ -248,13 +242,6 @@ struct ClassData;
 template <typename Type>
 const ClassData* GetClassData(const Type& msg);
 
-template <const auto* kDefault, const auto* kClassData>
-struct GeneratedMessageTraitsT {
-  static constexpr const void* default_instance() { return kDefault; }
-  static constexpr const auto* class_data() { return kClassData->base(); }
-  static constexpr auto StrongPointer() { return default_instance(); }
-};
-
 template <typename T>
 struct FallbackMessageTraits {
   static const void* default_instance() { return &T::default_instance(); }
@@ -327,7 +314,6 @@ struct TcParseTableBase;
 class WireFormatLite;
 class WeakFieldMap;
 class RustMapHelper;
-
 
 // We compute sizes as size_t but cache them as int.  This function converts a
 // computed size to a cached size.  Since we don't proceed with serialization
@@ -405,17 +391,14 @@ struct PROTOBUF_EXPORT ClassData {
                       void (*merge_to_from)(MessageLite& to,
                                             const MessageLite& from_msg),
                       internal::MessageCreator message_creator,
-                      uint32_t cached_size_offset, bool is_lite
-                      )
+                      uint32_t cached_size_offset, bool is_lite)
       : prototype(prototype),
         tc_table(tc_table),
         is_initialized(is_initialized),
         merge_to_from(merge_to_from),
         message_creator(message_creator),
         cached_size_offset(cached_size_offset),
-        is_lite(is_lite)
-  {
-  }
+        is_lite(is_lite) {}
 #endif  // !PROTOBUF_CUSTOM_VTABLE
 
   // But we always provide the full constructor even in normal mode to make
@@ -431,8 +414,7 @@ struct PROTOBUF_EXPORT ClassData {
       [[maybe_unused]] uint8_t* (*serialize)(const MessageLite& msg,
                                              uint8_t* ptr,
                                              io::EpsCopyOutputStream* stream),
-      uint32_t cached_size_offset, bool is_lite
-      )
+      uint32_t cached_size_offset, bool is_lite)
       : prototype(prototype),
         tc_table(tc_table),
         is_initialized(is_initialized),
@@ -445,8 +427,7 @@ struct PROTOBUF_EXPORT ClassData {
         serialize(serialize),
 #endif  // PROTOBUF_CUSTOM_VTABLE
         cached_size_offset(cached_size_offset),
-        is_lite(is_lite)
-  {
+        is_lite(is_lite) {
   }
 
   const ClassDataFull& full() const;
@@ -468,14 +449,19 @@ struct PROTOBUF_EXPORT ClassData {
   uint8_t alignment() const { return message_creator.alignment(); }
 };
 
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 struct ClassDataLite : ClassData {
   constexpr ClassDataLite(ClassData base, const char* type_name)
-      : ClassData(base), type_name(type_name) {}
+      : ClassData(base), type_name_ptr(type_name) {}
 
-  const char* type_name;
+  const char* type_name() const { return type_name_ptr; }
+  const char* type_name_ptr;
 
   constexpr const ClassData* base() const { return this; }
 };
+#else
+using ClassDataLite = ClassDataFull;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 // We use a secondary vtable for descriptor based methods. This way ClassData
 // does not grow with the number of descriptor methods. This avoids extra
@@ -575,35 +561,60 @@ struct PROTOBUF_EXPORT ClassDataFull : ClassData {
   void (*get_metadata_tracker_func)();
 };
 #else
+// TODO b/474609573 - Rename this type to reflect that is's unified to
+// ClassDataLite as well.
 struct PROTOBUF_EXPORT ClassDataFull : ClassData {
   constexpr ClassDataFull(ClassData base, ReflectionData* reflection_data)
-      : ClassData(base), reflection_data(reflection_data) {}
+      : ClassData(base), aux_data{.reflection_data = reflection_data} {
+    ABSL_DCHECK(!is_lite);
+  }
+
+  constexpr ClassDataFull(ClassData base, const char* type_name)
+      : ClassData(base), aux_data{.type_name = type_name} {
+    ABSL_DCHECK(is_lite);
+  }
 
   constexpr const ClassData* base() const { return this; }
 
-  // Accessors for reflection related data.
-  const Reflection* reflection() const { return reflection_data->reflection; }
-  const Descriptor* descriptor() const { return reflection_data->descriptor; }
+  // Accessors for reflection related data (ClassDataFull only).
+  const Reflection* reflection() const { return reflection_data()->reflection; }
+  const Descriptor* descriptor() const { return reflection_data()->descriptor; }
 
   void set_reflection(const Reflection* reflection) const {
-    reflection_data->reflection = reflection;
+    reflection_data()->reflection = reflection;
   }
   void set_descriptor(const Descriptor* descriptor) const {
-    reflection_data->descriptor = descriptor;
+    reflection_data()->descriptor = descriptor;
   }
 
   const internal::DescriptorTable* descriptor_table() const {
-    return reflection_data->descriptor_table;
+    return reflection_data()->descriptor_table;
   }
   const DescriptorMethods* descriptor_methods() const {
-    return reflection_data->descriptor_methods;
+    return reflection_data()->descriptor_methods;
   }
   bool has_get_metadata_tracker() const {
-    return reflection_data->get_metadata_tracker != nullptr;
+    return reflection_data()->get_metadata_tracker != nullptr;
   }
-  void get_metadata_tracker() const { reflection_data->get_metadata_tracker(); }
+  void get_metadata_tracker() const {
+    reflection_data()->get_metadata_tracker();
+  }
 
-  ReflectionData* reflection_data;
+  ReflectionData* reflection_data() const {
+    ABSL_DCHECK(!is_lite);
+    return aux_data.reflection_data;
+  }
+
+  // Accessors for type name (ClassDataLite only).
+  const char* type_name() const {
+    ABSL_DCHECK(is_lite);
+    return aux_data.type_name;
+  }
+
+  union ReflectionDataOrTypeName {
+    ReflectionData* reflection_data;
+    const char* type_name;
+  } aux_data;
 };
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
@@ -612,21 +623,71 @@ inline const ClassDataFull& ClassData::full() const {
   return *static_cast<const ClassDataFull*>(this);
 }
 
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 struct MessageGlobalsBase {
-  template <typename T>
-  const T* default_instance() const {
-    return reinterpret_cast<const T*>(this);
+  template <typename T = MessageLite>
+  static const T* ToDefaultInstance(const void* globals) {
+    return reinterpret_cast<const T*>(globals);
   }
 
-  static const MessageGlobalsBase* ToMessageGlobalsBase(const void* globals) {
-    return reinterpret_cast<const MessageGlobalsBase*>(globals);
-  }
-
-  template <typename T>
-  static const T* default_instance(const void* globals) {
-    return ToMessageGlobalsBase(globals)->default_instance<T>();
+  static const MessageGlobalsBase* FromDefaultInstance(
+      const void* default_instance) {
+    return reinterpret_cast<const MessageGlobalsBase*>(default_instance);
   }
 };
+
+template <const auto* kDefault, const auto* kClassData>
+struct GeneratedMessageTraitsT {
+  static constexpr const void* default_instance() { return kDefault; }
+  static constexpr const auto* class_data() { return kClassData->base(); }
+  static constexpr auto StrongPointer() { return default_instance(); }
+};
+#else
+struct MessageGlobalsBase {
+  template <size_t R>
+  static constexpr size_t RoundUpTo(size_t n) {
+    static_assert(absl::has_single_bit(R), "Must be power of two");
+    return (n + (R - 1)) & ~(R - 1);
+  }
+
+  static constexpr size_t OffsetToDefault() {
+    return RoundUpTo<kMaxMessageAlignment>(sizeof(MessageGlobalsBase));
+  }
+  template <typename T = MessageLite>
+  static const T* ToDefaultInstance(const void* globals) {
+    return reinterpret_cast<const T*>(reinterpret_cast<const char*>(globals) +
+                                      OffsetToDefault());
+  }
+
+  static const MessageGlobalsBase* FromDefaultInstance(
+      const void* default_instance) {
+    return reinterpret_cast<const MessageGlobalsBase*>(
+        reinterpret_cast<const char*>(default_instance) - OffsetToDefault());
+  }
+
+  static constexpr const ClassData* GetClassData(const void* globals) {
+    return static_cast<const MessageGlobalsBase*>(globals)->class_data.base();
+  }
+  constexpr const ClassData* GetClassData() const { return class_data.base(); }
+
+  explicit constexpr MessageGlobalsBase(ClassDataFull class_data)
+      : class_data(class_data) {}
+
+  // It also aliases to ClassDataLite.
+  ClassDataFull class_data;
+};
+
+template <const auto* kGlobals>
+struct GeneratedMessageTraitsT {
+  static const void* default_instance() {
+    return MessageGlobalsBase::ToDefaultInstance(kGlobals);
+  }
+  static const auto* class_data() {
+    return MessageGlobalsBase::GetClassData(kGlobals);
+  }
+  static constexpr auto StrongPointer() { return kGlobals; }
+};
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace internal
 
 // Interface to light weight protocol messages.
@@ -991,7 +1052,6 @@ class PROTOBUF_EXPORT MessageLite {
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual size_t ByteSizeLong() const = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
-
   // Legacy ByteSize() API.
   [[deprecated(
       "Please use ByteSizeLong() "
@@ -1118,7 +1178,6 @@ class PROTOBUF_EXPORT MessageLite {
     }
     return tc_table;
   }
-
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   explicit constexpr MessageLite(const internal::ClassData* data)
@@ -1280,9 +1339,6 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::WeakFieldMap;
   friend class internal::WireFormatLite;
   friend class internal::RustMapHelper;
-  friend class internal::v2::TableDriven;
-  friend class internal::v2::TableDrivenMessage;
-  friend class internal::v2::TableDrivenParse;
   friend class internal::MessageCreator;
   friend class internal::RepeatedPtrFieldBase;
   template <typename Type>

@@ -1024,6 +1024,26 @@ set(plugin_proto_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin_proto-descriptor-set.proto.bin
 )
 
+# @//csharp:c_sharp_features_proto
+set(c_sharp_features_proto_proto_srcs
+  ${protobuf_SOURCE_DIR}/csharp/google/protobuf/c_sharp_features.proto
+)
+
+# @//csharp:c_sharp_features_proto
+set(c_sharp_features_proto_srcs
+  ${protobuf_SOURCE_DIR}/csharp/google/protobuf/c_sharp_features.proto.pb.cc
+)
+
+# @//csharp:c_sharp_features_proto
+set(c_sharp_features_proto_hdrs
+  ${protobuf_SOURCE_DIR}/csharp/google/protobuf/c_sharp_features.proto.pb.h
+)
+
+# @//csharp:c_sharp_features_proto
+set(c_sharp_features_proto_files
+  ${protobuf_SOURCE_DIR}/csharp/c_sharp_features_proto-descriptor-set.proto.bin
+)
+
 # @//java/core:java_features_proto
 set(java_features_proto_proto_srcs
   ${protobuf_SOURCE_DIR}/java/core/src/main/resources/google/protobuf/java_features.proto
@@ -1286,6 +1306,7 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_mode_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_ops_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_visit_fields_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_proxy_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_reflection_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field_unittest.cc
@@ -1317,6 +1338,7 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_proto3_unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/abseil_flag_test.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/repeated_field_proxy_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/repeated_ptr_field_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_arena.proto

@@ -3072,6 +3072,34 @@ class PackedFieldTest(unittest.TestCase):
 
 
 @testing_refleaks.TestCase
+class MergeFromTest(unittest.TestCase):
+  def testBugFixupAfterMerge(self):
+    target = more_messages_pb2.LotsOfMessageFields()
+    wrappers = []
+
+    # Access all fields mutably, except for a10 which is accessed read-only.
+    for i in range(1, 21):
+      sub = getattr(target, f'a{i}')
+      wrappers.append(sub)
+      if i != 10:
+        # Access mutable.
+        sub.b = 1
+
+    self.assertEqual(target.a10.b, 0)
+    self.assertFalse(target.HasField('a10'))
+
+    source = more_messages_pb2.LotsOfMessageFields()
+    source.a10.b = 1
+
+    # The read-only message target.a10 needs to be updated to point to the new
+    # message that is created by MergeFrom.
+    target.MergeFrom(source)
+
+    self.assertEqual(target.a10.b, 1)
+    self.assertTrue(target.HasField('a10'))
+
+
+@testing_refleaks.TestCase
 class OversizeProtosTest(unittest.TestCase):
 
   def GenerateNestedProto(self, n):

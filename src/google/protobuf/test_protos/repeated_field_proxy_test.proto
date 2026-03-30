@@ -1,0 +1,9 @@
+edition = "2024";
+
+package proto2_unittest;
+
+message RepeatedFieldProxyTestSimpleMessage {
+  int32 value = 1;
+
+  RepeatedFieldProxyTestSimpleMessage nested = 2;
+}

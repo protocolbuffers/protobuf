@@ -58,7 +58,9 @@ namespace protobuf {
 class FieldMask;
 struct FieldMaskGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FieldMaskGlobalsTypeInternal _FieldMask_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldMask_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace protobuf
 }  // namespace google
 
@@ -84,7 +86,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
 #endif
 
   template <typename = void>
-  explicit constexpr FieldMask(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr FieldMask(::google::protobuf::internal::ConstantInitialized,
+                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                                     class_data);
 
   inline FieldMask(const FieldMask& from) : FieldMask(nullptr, from) {}
   inline FieldMask(FieldMask&& from) noexcept
@@ -123,7 +127,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FieldMask& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FieldMask>(
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FieldMask>(
         &_FieldMask_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
@@ -209,7 +213,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -277,8 +282,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ffield_5fmask_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldMask_class_data_;
 
 // ===================================================================
 

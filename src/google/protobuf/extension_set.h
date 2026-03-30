@@ -100,10 +100,6 @@ template <class T>
 PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline ::absl::string_view
 GetFeatureSetDefaultsData();
 
-namespace v2 {
-class TableDrivenMessage;
-}  // namespace v2
-
 // Used to store values of type WireFormatLite::FieldType without having to
 // #include wire_format_lite.h.  Also, ensures that we use only one byte to
 // store these values, which is important to keep the layout of
@@ -659,7 +655,6 @@ class PROTOBUF_EXPORT ExtensionSet {
   friend class google::protobuf::internal::ReflectionVisit;
   friend struct google::protobuf::internal::DynamicExtensionInfoHelper;
   friend class google::protobuf::internal::WireFormat;
-  friend class google::protobuf::internal::v2::TableDrivenMessage;
 
   friend void internal::InitializeLazyExtensionSet();
   friend PROTOBUF_EXPORT bool internal::IsDescendant(const Message& root,
@@ -743,7 +738,6 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual uint8_t* WriteMessageToArray(
         const MessageLite* prototype, int number, uint8_t* target,
         io::EpsCopyOutputStream* stream) const = 0;
-
 
     virtual LazyField* GetUnderlyingField() = 0;
 
@@ -1686,7 +1680,7 @@ class MessageTypeTraits {
   typedef Type* MutableType;
   using InitType = const void*;
   static ConstType FromInitType(InitType v) {
-    return *static_cast<const Type*>(v);
+    return *internal::MessageGlobalsBase::ToDefaultInstance<Type>(v);
   }
   typedef MessageTypeTraits<Type> Singular;
   static constexpr bool kLifetimeBound = true;
@@ -1737,7 +1731,6 @@ class MessageTypeTraits {
 // Used by WireFormatVerify to extract the verify function from the registry.
 LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
     const MessageLite* extendee, int number);
-
 
 // forward declaration.
 class RepeatedMessageGenericTypeTraits;
@@ -1872,7 +1865,6 @@ auto TryGetLazyMessageFromExtensionSet(
 
 // -------------------------------------------------------------------
 // Generated accessors
-
 
 
 }  // namespace internal

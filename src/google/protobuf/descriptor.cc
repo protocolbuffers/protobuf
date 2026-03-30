@@ -4298,6 +4298,23 @@ FieldDescriptor::CppStringType FieldDescriptor::CalculateCppStringType() const {
   }
 }
 
+FieldDescriptor::CppRepeatedType FieldDescriptor::CalculateCppRepeatedType()
+    const {
+  ABSL_DCHECK(is_repeated());
+
+  switch (features().GetExtension(pb::cpp).repeated_type()) {
+    case pb::CppFeatures::LEGACY:
+      return CppRepeatedType::kRepeated;
+    case pb::CppFeatures::PROXY:
+      return CppRepeatedType::kProxy;
+    default:
+      // If features haven't been resolved, this is a dynamic build not for C++
+      // codegen. Just use the legacy repeated type.
+      ABSL_CHECK(!features().GetExtension(pb::cpp).has_repeated_type());
+      return CppRepeatedType::kRepeated;
+  }
+}
+
 // Location methods ===============================================
 
 bool FileDescriptor::GetSourceLocation(const std::vector<int>& path,
@@ -8263,6 +8280,11 @@ void DescriptorBuilder::CrossLinkMethod(MethodDescriptor* method,
                return absl::StrCat("\"", proto.input_type(),
                                    "\" is not a message type.");
              });
+  } else if (!input_type.IsVisibleFrom(file_) &&
+             pool_->enforce_symbol_visibility_) {
+    AddError(method->full_name(), proto,
+             DescriptorPool::ErrorCollector::INPUT_TYPE,
+             [&] { return input_type.GetVisibilityError(file_); });
   } else {
     method->input_type_.Set(input_type.descriptor());
   }
@@ -8285,6 +8307,11 @@ void DescriptorBuilder::CrossLinkMethod(MethodDescriptor* method,
                return absl::StrCat("\"", proto.output_type(),
                                    "\" is not a message type.");
              });
+  } else if (!output_type.IsVisibleFrom(file_) &&
+             pool_->enforce_symbol_visibility_) {
+    AddError(method->full_name(), proto,
+             DescriptorPool::ErrorCollector::OUTPUT_TYPE,
+             [&] { return output_type.GetVisibilityError(file_); });
   } else {
     method->output_type_.Set(output_type.descriptor());
   }
