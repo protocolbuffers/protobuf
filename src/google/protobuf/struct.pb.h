@@ -1353,8 +1353,8 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>& Li
   // @@protoc_insertion_point(field_list:google.protobuf.ListValue.values)
   return _internal_values();
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* PROTOBUF_NONNULL ListValue::mutable_values()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* PROTOBUF_NONNULL
+ListValue::mutable_values() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ListValue.values)
   ::google::protobuf::internal::TSanWrite(&_impl_);

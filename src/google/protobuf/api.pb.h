@@ -1070,8 +1070,8 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>& A
   // @@protoc_insertion_point(field_list:google.protobuf.Api.methods)
   return _internal_methods();
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>* PROTOBUF_NONNULL Api::mutable_methods()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>* PROTOBUF_NONNULL
+Api::mutable_methods() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.methods)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1120,8 +1120,8 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& A
   // @@protoc_insertion_point(field_list:google.protobuf.Api.options)
   return _internal_options();
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL Api::mutable_options()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
+Api::mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.options)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1334,8 +1334,8 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>& Ap
   // @@protoc_insertion_point(field_list:google.protobuf.Api.mixins)
   return _internal_mixins();
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>* PROTOBUF_NONNULL Api::mutable_mixins()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>* PROTOBUF_NONNULL
+Api::mutable_mixins() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000004U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.mixins)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1723,8 +1723,8 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& M
   // @@protoc_insertion_point(field_list:google.protobuf.Method.options)
   return _internal_options();
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL Method::mutable_options()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
+Method::mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Method.options)
   ::google::protobuf::internal::TSanWrite(&_impl_);
