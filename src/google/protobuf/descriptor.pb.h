@@ -1536,7 +1536,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
   [[nodiscard]] ::int32_t path(int index) const;
   void set_path(int index, ::int32_t value);
   void add_path(::int32_t value);
-  [[nodiscard]] const ::google::protobuf::RepeatedField<::int32_t>& path() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedField<::int32_t>& path()
+      const;
   ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL mutable_path();
 
   private:
@@ -1555,7 +1556,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
   [[nodiscard]] ::int32_t span(int index) const;
   void set_span(int index, ::int32_t value);
   void add_span(::int32_t value);
-  [[nodiscard]] const ::google::protobuf::RepeatedField<::int32_t>& span() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedField<::int32_t>& span()
+      const;
   ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL mutable_span();
 
   private:
@@ -1851,7 +1853,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
   [[nodiscard]] ::int32_t path(int index) const;
   void set_path(int index, ::int32_t value);
   void add_path(::int32_t value);
-  [[nodiscard]] const ::google::protobuf::RepeatedField<::int32_t>& path() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedField<::int32_t>& path()
+      const;
   ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL mutable_path();
 
   private:
@@ -12747,7 +12750,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   [[nodiscard]] ::int32_t public_dependency(int index) const;
   void set_public_dependency(int index, ::int32_t value);
   void add_public_dependency(::int32_t value);
-  [[nodiscard]] const ::google::protobuf::RepeatedField<::int32_t>& public_dependency() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedField<::int32_t>& public_dependency()
+      const;
   ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL mutable_public_dependency();
 
   private:
@@ -12766,7 +12770,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   [[nodiscard]] ::int32_t weak_dependency(int index) const;
   void set_weak_dependency(int index, ::int32_t value);
   void add_weak_dependency(::int32_t value);
-  [[nodiscard]] const ::google::protobuf::RepeatedField<::int32_t>& weak_dependency() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedField<::int32_t>& weak_dependency()
+      const;
   ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL mutable_weak_dependency();
 
   private:

@@ -35,6 +35,7 @@ namespace {
 
 using ::proto2_unittest::RepeatedFieldProxyTestSimpleMessage;
 using ::proto2_unittest::TestRepeatedImportMessageProxy;
+using ::proto2_unittest::TestRepeatedIntProxy;
 using ::proto2_unittest::TestRepeatedMessageProxy;
 using ::testing::AnyOf;
 using ::testing::ElementsAre;
@@ -2307,6 +2308,21 @@ static_assert(std::is_same_v<
                            .mutable_nested_messages_proxy()),
               RepeatedFieldProxy<TestRepeatedMessageProxy::NestedMessage>>);
 
+// Repeated ints:
+static_assert(
+    std::is_same_v<decltype(std::declval<TestRepeatedIntProxy>().ints()),
+                   const RepeatedField<int32_t>&>);
+static_assert(std::is_same_v<
+              decltype(std::declval<TestRepeatedIntProxy>().mutable_ints()),
+              RepeatedField<int32_t>*>);
+
+static_assert(
+    std::is_same_v<decltype(std::declval<TestRepeatedIntProxy>().ints_proxy()),
+                   RepeatedFieldProxy<const int32_t>>);
+static_assert(std::is_same_v<decltype(std::declval<TestRepeatedIntProxy>()
+                                          .mutable_ints_proxy()),
+                             RepeatedFieldProxy<int32_t>>);
+
 TEST(RepeatedFieldProxyInterfaceTest, RepeatedMessageProxy) {
   TestRepeatedMessageProxy msg;
   {
@@ -2335,6 +2351,19 @@ TEST(RepeatedFieldProxyInterfaceTest, RepeatedImportMessageProxy) {
   EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
                                  EqualsProto(R"pb(value: 2)pb"),
                                  EqualsProto(R"pb(value: 3)pb")));
+}
+
+TEST(RepeatedFieldProxyInterfaceTest, RepeatedIntProxy) {
+  TestRepeatedIntProxy msg;
+  {
+    auto proxy = msg.mutable_ints_proxy();
+    proxy.push_back(1);
+    proxy.push_back(2);
+    proxy.push_back(3);
+  }
+
+  auto proxy = msg.ints_proxy();
+  EXPECT_THAT(proxy, ElementsAre(1, 2, 3));
 }
 
 }  // namespace

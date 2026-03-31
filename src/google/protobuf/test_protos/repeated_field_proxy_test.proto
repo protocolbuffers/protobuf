@@ -27,3 +27,9 @@ message TestRepeatedImportMessageProxy {
   repeated proto2_unittest.RepeatedFieldProxyTestImportMessage
       import_messages_proxy = 1 [features.(pb.cpp).repeated_type = PROXY];
 }
+
+message TestRepeatedIntProxy {
+  repeated int32 ints = 1 [features.(pb.cpp).repeated_type = LEGACY];
+
+  repeated int32 ints_proxy = 2 [features.(pb.cpp).repeated_type = PROXY];
+}
