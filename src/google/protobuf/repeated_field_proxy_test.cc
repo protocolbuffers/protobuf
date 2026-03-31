@@ -41,6 +41,7 @@ using ::proto2_unittest::TestRepeatedImportMessageProxy;
 using ::proto2_unittest::TestRepeatedIntProxy;
 using ::proto2_unittest::TestRepeatedMessageProxy;
 using ::proto2_unittest::TestRepeatedStdStringProxy;
+using ::proto2_unittest::TestRepeatedStringViewProxy;
 using ::testing::AnyOf;
 using ::testing::ElementsAre;
 using ::testing::Ge;
@@ -2357,6 +2358,25 @@ static_assert(std::is_same_v<decltype(std::declval<TestRepeatedStdStringProxy>()
                                           .mutable_strings_proxy()),
                              RepeatedFieldProxy<std::string>>);
 
+// Repeated absl::string_view:
+static_assert(
+    std::is_same_v<
+        decltype(std::declval<TestRepeatedStringViewProxy>().string_views()),
+        const RepeatedPtrField<std::string>&>);
+static_assert(
+    std::is_same_v<decltype(std::declval<TestRepeatedStringViewProxy>()
+                                .mutable_string_views()),
+                   RepeatedPtrField<std::string>*>);
+
+static_assert(
+    std::is_same_v<decltype(std::declval<TestRepeatedStringViewProxy>()
+                                .string_views_proxy()),
+                   RepeatedFieldProxy<const absl::string_view>>);
+static_assert(
+    std::is_same_v<decltype(std::declval<TestRepeatedStringViewProxy>()
+                                .mutable_string_views_proxy()),
+                   RepeatedFieldProxy<absl::string_view>>);
+
 TEST(RepeatedFieldProxyInterfaceTest, RepeatedMessageProxy) {
   TestRepeatedMessageProxy msg;
   {
@@ -2446,6 +2466,19 @@ TEST(RepeatedFieldProxyInterfaceTest, RepeatedLegacyStringProxy) {
   }
 
   auto proxy = msg.strings_proxy();
+  EXPECT_THAT(proxy, ElementsAre("1", "2", "3"));
+}
+
+TEST(RepeatedFieldProxyInterfaceTest, RepeatedStringViewProxy) {
+  TestRepeatedStringViewProxy msg;
+  {
+    auto proxy = msg.mutable_string_views_proxy();
+    proxy.emplace_back("1");
+    proxy.emplace_back("2");
+    proxy.emplace_back("3");
+  }
+
+  auto proxy = msg.string_views_proxy();
   EXPECT_THAT(proxy, ElementsAre("1", "2", "3"));
 }
 

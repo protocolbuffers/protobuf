@@ -64,3 +64,15 @@ message TestRepeatedStdStringProxy {
     features.(pb.cpp).repeated_type = PROXY
   ];
 }
+
+message TestRepeatedStringViewProxy {
+  repeated string string_views = 1 [
+    features.(pb.cpp).string_type = VIEW,
+    features.(pb.cpp).repeated_type = LEGACY
+  ];
+
+  repeated string string_views_proxy = 2 [
+    features.(pb.cpp).string_type = VIEW,
+    features.(pb.cpp).repeated_type = PROXY
+  ];
+}
