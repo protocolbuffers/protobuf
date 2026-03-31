@@ -22,18 +22,26 @@ pushd test/linkage-monitor-check-bom
 mvn -e -B install
 popd
 
-echo "FOO FOO FOO"
-echo `pwd`
-echo "BAR BAR BAR"
-echo `ls -lR .`
-echo "BAZ BAZ BAZ"
-echo "$(realpath ${RUNFILES_DIR})"
-echo `ls -LR $(realpath ${RUNFILES_DIR})`
-#echo `ls core/core_mvn-pom.xml`
-#echo `ls core/lite_mvn-pom.xml`
-#echo `ls kotlin/kotlin_mvn-pom.xml`
-#echo `ls kotlin-lite/kotlin-lite_mvn-pom.xml`
-#echo `ls util/util_mvn-pom.xml`
+runfiles_dir="$(realpath ${RUNFILES_DIR})"
+genfiles_dir=`echo ${RUNFILES_DIR} | sed 's|/[^/]*$||'`
+
+rm "${runfiles_dir}/_main/java/core" || true
+rm "${runfiles_dir}/_main/java/lite" || true
+rm "${runfiles_dir}/_main/java/util" || true
+rm "${runfiles_dir}/_main/java/kotlin" || true
+rm "${runfiles_dir}/_main/java/kotlin-lite" || true
+
+mkdir "${runfiles_dir}/_main/java/core" || true
+mkdir "${runfiles_dir}/_main/java/lite" || true
+mkdir "${runfiles_dir}/_main/java/util" || true
+mkdir "${runfiles_dir}/_main/java/kotlin" || true
+mkdir "${runfiles_dir}/_main/java/kotlin-lite" || true
+
+cp -f "${genfiles_dir}"/core/core_mvn-pom.xml "${runfiles_dir}"/_main/java/core/pom.xml || true
+cp -f "${genfiles_dir}"/core/lite_mvn-pom.xml "${runfiles_dir}"/_main/java/lite/pom.xml || true
+cp -f "${genfiles_dir}"/util/util_mvn-pom.xml "${runfiles_dir}"/_main/java/util/pom.xml || true
+cp -f "${genfiles_dir}"/kotlin/kotlin_mvn-pom.xml "${runfiles_dir}"/_main/java/kotlin/pom.xml || true
+cp -f "${genfiles_dir}"/kotlin-lite/kotlin-lite_mvn-pom.xml "${runfiles_dir}"/_main/java/kotlin-lite/pom.xml || true
 
 # Linkage Monitor requires the artifacts to be available in local Maven
 # repository.
@@ -43,11 +51,9 @@ mvn -e -B clean generate-sources install  \
     -Dprotobuf.basedir="../.." \
     -Dprotoc="${protoc_location}"
 
-echo "BAT BAT BAT"
-
 echo "Installed the artifacts to local Maven repository"
 
-curl -O "https://github.com/GoogleCloudPlatform/cloud-opensource-java/releases/download/dependencies-v1.5.15/linkage-monitor-latest-all-deps.jar"
+curl -L -O "https://github.com/GoogleCloudPlatform/cloud-opensource-java/releases/download/dependencies-v1.5.15/linkage-monitor-latest-all-deps.jar"
 
 echo "Running linkage-monitor-latest-all-deps.jar."
 
