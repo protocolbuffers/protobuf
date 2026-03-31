@@ -6214,7 +6214,7 @@ extern "C" {
 
 UPB_INLINE int upb_Log2Ceiling(size_t x) {
   if (x <= 1) return 0;
-#if SIZE_MAX == ULL_MAX && UPB_HAS_BUILTIN(__builtin_clzll)
+#if SIZE_MAX == ULLONG_MAX && UPB_HAS_BUILTIN(__builtin_clzll)
   return (sizeof(size_t) * CHAR_BIT) - __builtin_clzll(x - 1);
 #elif SIZE_MAX == ULONG_MAX && UPB_HAS_BUILTIN(__builtin_clzl)
   return (sizeof(size_t) * CHAR_BIT) - __builtin_clzl(x - 1);
@@ -17644,8 +17644,6 @@ typedef struct upb_Decoder {
   upb_ErrorHandler err;
 
 #ifndef NDEBUG
-  const char* debug_tagstart;
-  const char* debug_valstart;
   char* trace_buf;
   char* trace_ptr;
   char* trace_end;

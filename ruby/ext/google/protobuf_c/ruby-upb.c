@@ -16584,7 +16584,6 @@ const char* _upb_Decoder_DecodeWireValue(upb_Decoder* d, const char* ptr,
 UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
                                           upb_Message* msg,
-                                          const upb_MiniTable* layout,
                                           const upb_MiniTableField* field,
                                           int op, wireval* val) {
   uint8_t mode = field->UPB_PRIVATE(mode);
@@ -16613,66 +16612,12 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
   }
 }
 
-static const char* _upb_Decoder_FindFieldStart(upb_Decoder* d, const char* ptr,
-                                               uint32_t field_number,
-                                               uint32_t wire_type) {
-  // Since unknown fields are the uncommon case, we do a little extra work here
-  // to walk backwards through the buffer to find the field start.  This frees
-  // up a register in the fast paths (when the field is known), which leads to
-  // significant speedups in benchmarks. Note that ptr may point into the slop
-  // space, beyond the normal end of the input buffer.
-  const char* start = ptr;
-
-  switch (wire_type) {
-    case kUpb_WireType_Varint:
-    case kUpb_WireType_Delimited:
-      // Skip the last byte
-      start--;
-      // Skip bytes until we encounter the final byte of the tag varint.
-      while (start[-1] & 0x80) start--;
-      break;
-    case kUpb_WireType_32Bit:
-      start -= 4;
-      break;
-    case kUpb_WireType_64Bit:
-      start -= 8;
-      break;
-    default:
-      break;
-  }
-  assert(start == d->debug_valstart);
-
-  {
-    // The varint parser does not enforce that integers are encoded with their
-    // minimum size; for example the value 1 could be encoded with three
-    // bytes: 0x81, 0x80, 0x00. These unnecessary trailing zeroes mean that we
-    // cannot skip backwards by the minimum encoded size of the tag; and
-    // unlike the loop for delimited or varint fields, we can't stop at a
-    // sentinel value because anything can precede a tag. Instead, parse back
-    // one byte at a time until we read the same tag value that was parsed
-    // earlier.
-    uint32_t tag = ((uint32_t)field_number << 3) | wire_type;
-    uint32_t seen = 0;
-    do {
-      start--;
-      seen <<= 7;
-      seen |= *start & 0x7f;
-    } while (seen != tag);
-  }
-  assert(start == d->debug_tagstart);
-
-  return start;
-}
-
 static const char* _upb_Decoder_DecodeUnknownField(
     upb_Decoder* d, const char* ptr, upb_Message* msg, uint32_t field_number,
-    uint32_t wire_type, wireval val) {
+    uint32_t wire_type, wireval val, const char* start) {
   if (field_number == 0) {
     upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_Malformed);
   }
-
-  const char* start =
-      _upb_Decoder_FindFieldStart(d, ptr, field_number, wire_type);
 
   upb_EpsCopyInputStream_StartCapture(&d->input, start);
 
@@ -16712,10 +16657,6 @@ UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeFieldTag(upb_Decoder* d, const char* ptr,
                                         uint32_t* field_number,
                                         uint32_t* wire_type) {
-#ifndef NDEBUG
-  d->debug_tagstart = ptr;
-#endif
-
   uint32_t tag;
   UPB_ASSERT(ptr < d->input.limit_ptr);
   ptr = upb_WireReader_ReadTag(ptr, &tag, EPS(d));
@@ -16725,15 +16666,9 @@ const char* _upb_Decoder_DecodeFieldTag(upb_Decoder* d, const char* ptr,
 }
 
 UPB_FORCEINLINE
-const char* _upb_Decoder_DecodeFieldData(upb_Decoder* d, const char* ptr,
-                                         upb_Message* msg,
-                                         const upb_MiniTable* mt,
-                                         uint32_t field_number,
-                                         uint32_t wire_type) {
-#ifndef NDEBUG
-  d->debug_valstart = ptr;
-#endif
-
+const char* _upb_Decoder_DecodeFieldData(
+    upb_Decoder* d, const char* ptr, upb_Message* msg, const upb_MiniTable* mt,
+    uint32_t field_number, uint32_t wire_type, const char* start) {
   int op;
   wireval val;
 
@@ -16742,12 +16677,12 @@ const char* _upb_Decoder_DecodeFieldData(upb_Decoder* d, const char* ptr,
   ptr = _upb_Decoder_DecodeWireValue(d, ptr, mt, field, wire_type, &val, &op);
 
   if (op >= 0) {
-    return _upb_Decoder_DecodeKnownField(d, ptr, msg, mt, field, op, &val);
+    return _upb_Decoder_DecodeKnownField(d, ptr, msg, field, op, &val);
   } else {
     switch (op) {
       case kUpb_DecodeOp_UnknownField:
         return _upb_Decoder_DecodeUnknownField(d, ptr, msg, field_number,
-                                               wire_type, val);
+                                               wire_type, val, start);
       case kUpb_DecodeOp_MessageSetItem:
         return upb_Decoder_DecodeMessageSetItem(d, ptr, msg, mt);
       default:
@@ -16768,6 +16703,7 @@ const char* _upb_Decoder_DecodeFieldNoFast(upb_Decoder* d, const char* ptr,
   uint32_t field_number;
   uint32_t wire_type;
 
+  const char* start = ptr;
   ptr = _upb_Decoder_DecodeFieldTag(d, ptr, &field_number, &wire_type);
 
   if (wire_type == kUpb_WireType_EndGroup) {
@@ -16775,7 +16711,8 @@ const char* _upb_Decoder_DecodeFieldNoFast(upb_Decoder* d, const char* ptr,
     return _upb_Decoder_EndMessage(d, ptr);
   }
 
-  ptr = _upb_Decoder_DecodeFieldData(d, ptr, msg, mt, field_number, wire_type);
+  ptr = _upb_Decoder_DecodeFieldData(d, ptr, msg, mt, field_number, wire_type,
+                                     start);
   _upb_Decoder_Trace(d, 'M');
   return ptr;
 }
