@@ -14,6 +14,7 @@ sh_test(
         ":kotlin",
         ":kotlin-lite",
         ":lite",
+        ":release",
         ":util",
         "//:protoc",
         # Making this test depends on the code change in core and util
