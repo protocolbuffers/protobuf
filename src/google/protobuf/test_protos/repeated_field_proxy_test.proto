@@ -52,3 +52,15 @@ message TestRepeatedImportEnumProxy {
   repeated proto2_unittest.RepeatedFieldProxyTestImportEnum enums_proxy = 1
       [features.(pb.cpp).repeated_type = PROXY];
 }
+
+message TestRepeatedStdStringProxy {
+  repeated string strings = 1 [
+    features.(pb.cpp).string_type = STRING,
+    features.(pb.cpp).repeated_type = LEGACY
+  ];
+
+  repeated string strings_proxy = 2 [
+    features.(pb.cpp).string_type = STRING,
+    features.(pb.cpp).repeated_type = PROXY
+  ];
+}

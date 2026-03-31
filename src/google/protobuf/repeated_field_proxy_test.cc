@@ -40,6 +40,7 @@ using ::proto2_unittest::TestRepeatedImportEnumProxy;
 using ::proto2_unittest::TestRepeatedImportMessageProxy;
 using ::proto2_unittest::TestRepeatedIntProxy;
 using ::proto2_unittest::TestRepeatedMessageProxy;
+using ::proto2_unittest::TestRepeatedStdStringProxy;
 using ::testing::AnyOf;
 using ::testing::ElementsAre;
 using ::testing::Ge;
@@ -2020,7 +2021,7 @@ TEST_P(RepeatedFieldProxyTest, ResizeMessageWithValue) {
                                   EqualsProto(R"pb(value: 10)pb")));
 }
 
-TYPED_TEST(RepeatedNumericFieldProxyTest, Rebind) {
+TYPED_TEST(RepeatedNumericFieldProxyTest, RebindConstProxy) {
   auto field1 = this->MakeRepeatedFieldContainer();
   field1->Add(1);
 
@@ -2039,7 +2040,7 @@ TYPED_TEST(RepeatedNumericFieldProxyTest, Rebind) {
   static_assert(!std::is_copy_assignable_v<decltype(field1.MakeProxy())>);
 }
 
-TYPED_TEST(RepeatedStringFieldProxyTest, Rebind) {
+TYPED_TEST(RepeatedStringFieldProxyTest, RebindConstProxy) {
   auto field1 = this->MakeRepeatedFieldContainer();
   this->Add(field1, "1");
 
@@ -2058,7 +2059,7 @@ TYPED_TEST(RepeatedStringFieldProxyTest, Rebind) {
   static_assert(!std::is_copy_assignable_v<decltype(field1.MakeProxy())>);
 }
 
-TEST_P(RepeatedFieldProxyTest, RebindMessage) {
+TEST_P(RepeatedFieldProxyTest, RebindConstMessageProxy) {
   auto field1 =
       this->MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
   field1->Add()->set_value(1);
@@ -2341,6 +2342,21 @@ static_assert(std::is_same_v<decltype(std::declval<TestRepeatedEnumProxy>()
                                           .mutable_enums_proxy()),
                              RepeatedFieldProxy<int>>);
 
+// Repeated std::string:
+static_assert(std::is_same_v<
+              decltype(std::declval<TestRepeatedStdStringProxy>().strings()),
+              const RepeatedPtrField<std::string>&>);
+static_assert(std::is_same_v<decltype(std::declval<TestRepeatedStdStringProxy>()
+                                          .mutable_strings()),
+                             RepeatedPtrField<std::string>*>);
+
+static_assert(std::is_same_v<decltype(std::declval<TestRepeatedStdStringProxy>()
+                                          .strings_proxy()),
+                             RepeatedFieldProxy<const std::string>>);
+static_assert(std::is_same_v<decltype(std::declval<TestRepeatedStdStringProxy>()
+                                          .mutable_strings_proxy()),
+                             RepeatedFieldProxy<std::string>>);
+
 TEST(RepeatedFieldProxyInterfaceTest, RepeatedMessageProxy) {
   TestRepeatedMessageProxy msg;
   {
@@ -2418,6 +2434,19 @@ TEST(RepeatedFieldProxyInterfaceTest, RepeatedImportEnumProxy) {
                                      REPEATED_FIELD_PROXY_TEST_IMPORT_BAR,
                                  RepeatedFieldProxyTestImportEnum::
                                      REPEATED_FIELD_PROXY_TEST_IMPORT_BAZ));
+}
+
+TEST(RepeatedFieldProxyInterfaceTest, RepeatedLegacyStringProxy) {
+  TestRepeatedStdStringProxy msg;
+  {
+    auto proxy = msg.mutable_strings_proxy();
+    proxy.emplace_back("1");
+    proxy.emplace_back("2");
+    proxy.emplace_back("3");
+  }
+
+  auto proxy = msg.strings_proxy();
+  EXPECT_THAT(proxy, ElementsAre("1", "2", "3"));
 }
 
 }  // namespace

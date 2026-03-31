@@ -1117,10 +1117,12 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   ::std::string* PROTOBUF_NONNULL add_file_to_generate();
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void add_file_to_generate(Arg_&& value, Args_... args);
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::std::string>&
-  file_to_generate() const;
-  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
-  mutable_file_to_generate();
+  [[nodiscard]] const
+      ::google::protobuf::RepeatedPtrField<::std::string>&
+      file_to_generate() const;
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>*
+      PROTOBUF_NONNULL
+      mutable_file_to_generate();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_file_to_generate() const;

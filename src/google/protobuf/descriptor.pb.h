@@ -1580,10 +1580,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
   ::std::string* PROTOBUF_NONNULL add_leading_detached_comments();
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void add_leading_detached_comments(Arg_&& value, Args_... args);
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::std::string>&
-  leading_detached_comments() const;
-  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
-  mutable_leading_detached_comments();
+  [[nodiscard]] const
+      ::google::protobuf::RepeatedPtrField<::std::string>&
+      leading_detached_comments() const;
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>*
+      PROTOBUF_NONNULL
+      mutable_leading_detached_comments();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_leading_detached_comments() const;
@@ -11935,10 +11937,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   ::std::string* PROTOBUF_NONNULL add_reserved_name();
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void add_reserved_name(Arg_&& value, Args_... args);
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::std::string>&
-  reserved_name() const;
-  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
-  mutable_reserved_name();
+  [[nodiscard]] const
+      ::google::protobuf::RepeatedPtrField<::std::string>&
+      reserved_name() const;
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>*
+      PROTOBUF_NONNULL
+      mutable_reserved_name();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_reserved_name() const;
@@ -12361,10 +12365,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   ::std::string* PROTOBUF_NONNULL add_reserved_name();
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void add_reserved_name(Arg_&& value, Args_... args);
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::std::string>&
-  reserved_name() const;
-  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
-  mutable_reserved_name();
+  [[nodiscard]] const
+      ::google::protobuf::RepeatedPtrField<::std::string>&
+      reserved_name() const;
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>*
+      PROTOBUF_NONNULL
+      mutable_reserved_name();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_reserved_name() const;
@@ -12646,10 +12652,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   ::std::string* PROTOBUF_NONNULL add_dependency();
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void add_dependency(Arg_&& value, Args_... args);
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::std::string>&
-  dependency() const;
-  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
-  mutable_dependency();
+  [[nodiscard]] const
+      ::google::protobuf::RepeatedPtrField<::std::string>&
+      dependency() const;
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>*
+      PROTOBUF_NONNULL
+      mutable_dependency();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_dependency() const;
@@ -12795,10 +12803,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   ::std::string* PROTOBUF_NONNULL add_option_dependency();
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void add_option_dependency(Arg_&& value, Args_... args);
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::std::string>&
-  option_dependency() const;
-  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
-  mutable_option_dependency();
+  [[nodiscard]] const
+      ::google::protobuf::RepeatedPtrField<::std::string>&
+      option_dependency() const;
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>*
+      PROTOBUF_NONNULL
+      mutable_option_dependency();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_option_dependency() const;
