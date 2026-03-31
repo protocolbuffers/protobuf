@@ -20,7 +20,6 @@
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/util/field_mask_util.h"
 #include "google/protobuf/util/field_mask_util_test.pb.h"
 
 namespace google {
@@ -867,6 +866,49 @@ TEST(FieldMaskUtilTest, TrimMessageReturnValue) {
 
   // TODO: field mask on repeated nested message is not yet
   // supported.
+}
+
+TEST(FieldMaskUtilTest, VeryDeepFieldMask) {
+  // Verifies that FieldMaskUtil can handle deeply nested field masks without
+  // running into stack overflow issues. While we enforce depth limits at
+  // parse time, a FieldMask is only a `repeated string` at parse time, and
+  // so we do want to ensure conceptually recursive FieldMask algorithms handle
+  // depth well.
+  const int kDepth = 10000;
+  NestedTestAllTypes src;
+  NestedTestAllTypes* current = &src;
+  for (int i = 0; i < kDepth; ++i) {
+    current = current->mutable_child();
+  }
+  current->mutable_payload()->set_optional_int32(42);
+  // Add an extra field at the root to ensure TrimMessage modifies the message.
+  src.mutable_payload()->set_optional_int32(11);
+
+  std::string path = "child";
+  for (int i = 1; i < kDepth; ++i) {
+    path += ".child";
+  }
+  path += ".payload.optional_int32";
+
+  FieldMask mask;
+  FieldMaskUtil::FromString(path, &mask);
+
+  // Test TrimMessage
+  NestedTestAllTypes trimmed = src;
+  EXPECT_TRUE(FieldMaskUtil::TrimMessage(mask, &trimmed));
+
+  // Test MergeMessageTo
+  NestedTestAllTypes dst;
+  FieldMaskUtil::MergeOptions options;
+  FieldMaskUtil::MergeMessageTo(src, mask, options, &dst);
+
+  // Verify dst has the value
+  const NestedTestAllTypes* current_dst = &dst;
+  for (int i = 0; i < kDepth; ++i) {
+    ASSERT_TRUE(current_dst->has_child());
+    current_dst = &current_dst->child();
+  }
+  EXPECT_EQ(42, current_dst->payload().optional_int32());
 }
 
 

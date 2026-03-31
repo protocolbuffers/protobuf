@@ -7,9 +7,11 @@
 
 #include "google/protobuf/util/field_mask_util.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/container/btree_map.h"
@@ -204,37 +206,18 @@ class FieldMaskTree {
   // Merge all fields specified by this tree from one message to another.
   void MergeMessage(const Message& source,
                     const FieldMaskUtil::MergeOptions& options,
-                    Message* destination) {
-    // Do nothing if the tree is empty.
-    if (root_.children.empty()) {
-      return;
-    }
-    MergeMessage(&root_, source, options, destination);
-  }
+                    Message* destination);
 
   // Add required field path of the message to this tree based on current tree
   // structure. If a message is present in the tree, add the path of its
   // required field to the tree. This is to make sure that after trimming a
   // message with required fields are set, check IsInitialized() will not fail.
-  void AddRequiredFieldPath(const Descriptor* descriptor) {
-    // Do nothing if the tree is empty.
-    if (root_.children.empty()) {
-      return;
-    }
-    AddRequiredFieldPath(&root_, descriptor);
-  }
+  void AddRequiredFieldPath(const Descriptor* descriptor);
 
   // Trims all fields not specified by this tree from the given message.
   // Returns true if the message is modified.
-  bool TrimMessage(Message* message) {
-    // Do nothing if the tree is empty.
-    if (root_.children.empty()) {
-      return false;
-    }
-    return TrimMessage(&root_, message);
-  }
+  bool TrimMessage(Message* message);
 
- private:
   struct Node {
     Node() = default;
     Node(const Node&) = delete;
@@ -242,36 +225,14 @@ class FieldMaskTree {
 
     ~Node() { ClearChildren(); }
 
-    void ClearChildren() {
-      children.clear();
-    }
+    void ClearChildren() { children.clear(); }
 
     absl::btree_map<std::string, std::unique_ptr<Node>> children;
   };
 
-  // Merge a sub-tree to mask. This method adds the field paths represented
-  // by all leaf nodes descended from "node" to mask.
-  void MergeToFieldMask(absl::string_view prefix, const Node* node,
-                        FieldMask* out);
-
-  // Merge all leaf nodes of a sub-tree to another tree.
+  // Merge all leaf nodes of a subtree to another tree.
   void MergeLeafNodesToTree(absl::string_view prefix, const Node* node,
                             FieldMaskTree* out);
-
-  // Merge all fields specified by a sub-tree from one message to another.
-  void MergeMessage(const Node* node, const Message& source,
-                    const FieldMaskUtil::MergeOptions& options,
-                    Message* destination);
-
-  // Add required field path of the message to this tree based on current tree
-  // structure. If a message is present in the tree, add the path of its
-  // required field to the tree. This is to make sure that after trimming a
-  // message with required fields are set, check IsInitialized() will not fail.
-  void AddRequiredFieldPath(Node* node, const Descriptor* descriptor);
-
-  // Trims all fields not specified by this sub-tree from the given message.
-  // Returns true if the message is actually modified
-  bool TrimMessage(const Node* node, Message* message);
 
   Node root_;
 };
@@ -286,25 +247,48 @@ void FieldMaskTree::MergeFromFieldMask(const FieldMask& mask) {
   }
 }
 
-void FieldMaskTree::MergeToFieldMask(FieldMask* mask) {
-  MergeToFieldMask("", &root_, mask);
+namespace {
+
+template <typename F>
+void ForEachLeaf(const FieldMaskTree::Node* root, F&& f) {
+  struct StackElement {
+    const FieldMaskTree::Node* node;
+    std::string path;
+  };
+
+  std::vector<StackElement> stack;
+  stack.push_back(StackElement{root, ""});
+
+  while (!stack.empty()) {
+    StackElement next = std::move(stack.back());
+    stack.pop_back();
+    const FieldMaskTree::Node* node = next.node;
+    const std::string& path = next.path;
+
+    if (node->children.empty()) {
+      f(path);
+    } else {
+      // Iterate in reverse order to maintain the order of the field mask (we
+      // want the next pop to be the first child not the last child).
+      for (auto it = node->children.crbegin(); it != node->children.crend();
+           ++it) {
+        const auto& [name, child_ptr] = *it;
+        std::string current_path =
+            path.empty() ? std::string(name) : absl::StrCat(path, ".", name);
+        stack.push_back(StackElement{child_ptr.get(), std::move(current_path)});
+      }
+    }
+  }
 }
 
-void FieldMaskTree::MergeToFieldMask(absl::string_view prefix, const Node* node,
-                                     FieldMask* out) {
-  if (node->children.empty()) {
-    if (prefix.empty()) {
-      // This is the root node.
-      return;
-    }
-    out->add_paths(prefix);
+}  // namespace
+
+void FieldMaskTree::MergeToFieldMask(FieldMask* mask) {
+  if (root_.children.empty()) {
     return;
   }
-  for (const auto& kv : node->children) {
-    std::string current_path =
-        prefix.empty() ? kv.first : absl::StrCat(prefix, ".", kv.first);
-    MergeToFieldMask(current_path, kv.second.get(), out);
-  }
+  ForEachLeaf(&root_,
+              [mask](const std::string& path) { mask->add_paths(path); });
 }
 
 void FieldMaskTree::AddPath(absl::string_view path) {
@@ -349,7 +333,7 @@ void FieldMaskTree::RemovePath(absl::string_view path,
   Node* node = &root_;
   const Descriptor* current_descriptor = descriptor;
   Node* new_branch_node = nullptr;
-  for (int i = 0; i < parts.size(); ++i) {
+  for (size_t i = 0; i < parts.size(); ++i) {
     nodes[i] = node;
     const FieldDescriptor* field_descriptor =
         current_descriptor->FindFieldByName(parts[i]);
@@ -418,184 +402,237 @@ void FieldMaskTree::MergeLeafNodesToTree(absl::string_view prefix,
                                          const Node* node, FieldMaskTree* out) {
   if (node->children.empty()) {
     out->AddPath(prefix);
+    return;
   }
-  for (const auto& kv : node->children) {
-    std::string current_path =
-        prefix.empty() ? kv.first : absl::StrCat(prefix, ".", kv.first);
-    MergeLeafNodesToTree(current_path, kv.second.get(), out);
+
+  if (prefix.empty()) {
+    ForEachLeaf(node, [out](const std::string& path) { out->AddPath(path); });
+  } else {
+    ForEachLeaf(node, [prefix, out](const std::string& path) {
+      out->AddPath(absl::StrCat(prefix, ".", path));
+    });
   }
 }
 
-void FieldMaskTree::MergeMessage(const Node* node, const Message& source,
+void FieldMaskTree::MergeMessage(const Message& source,
                                  const FieldMaskUtil::MergeOptions& options,
                                  Message* destination) {
-  ABSL_DCHECK(!node->children.empty());
-  const Reflection* source_reflection = source.GetReflection();
-  const Reflection* destination_reflection = destination->GetReflection();
-  const Descriptor* descriptor = source.GetDescriptor();
-  for (const auto& kv : node->children) {
-    absl::string_view field_name = kv.first;
-    const Node* child = kv.second.get();
-    const FieldDescriptor* field = descriptor->FindFieldByName(field_name);
-    if (field == nullptr) {
-      ABSL_LOG(ERROR) << "Cannot find field \"" << field_name
-                      << "\" in message " << descriptor->full_name();
-      continue;
-    }
-    if (!child->children.empty()) {
-      // Sub-paths are only allowed for singular message fields.
-      if (field->is_repeated() ||
-          field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
-        ABSL_LOG(ERROR) << "Field \"" << field_name << "\" in message "
-                        << descriptor->full_name()
-                        << " is not a singular message field and cannot "
-                        << "have sub-fields.";
+  if (root_.children.empty()) {
+    return;
+  }
+
+  struct StackElement {
+    const Node* node;
+    const Message* source;
+    Message* destination;
+  };
+
+  std::vector<StackElement> stack;
+  stack.push_back(StackElement{&root_, &source, destination});
+
+  while (!stack.empty()) {
+    StackElement next = stack.back();
+    stack.pop_back();
+    const Node* node = next.node;
+    const Message* src = next.source;
+    Message* dst = next.destination;
+
+    const Reflection* source_reflection = src->GetReflection();
+    const Reflection* destination_reflection = dst->GetReflection();
+    const Descriptor* descriptor = src->GetDescriptor();
+
+    for (const auto& [field_name, child] : node->children) {
+      const FieldDescriptor* field = descriptor->FindFieldByName(field_name);
+      if (field == nullptr) {
+        ABSL_LOG(ERROR) << "Cannot find field \"" << field_name
+                        << "\" in message " << descriptor->full_name();
         continue;
       }
-      MergeMessage(child, source_reflection->GetMessage(source, field), options,
-                   destination_reflection->MutableMessage(destination, field));
-      continue;
-    }
-    if (!field->is_repeated()) {
-      switch (field->cpp_type()) {
-#define COPY_VALUE(TYPE, Name)                                              \
-  case FieldDescriptor::CPPTYPE_##TYPE: {                                   \
-    if (source_reflection->HasField(source, field)) {                       \
-      destination_reflection->Set##Name(                                    \
-          destination, field, source_reflection->Get##Name(source, field)); \
-    } else {                                                                \
-      destination_reflection->ClearField(destination, field);               \
-    }                                                                       \
-    break;                                                                  \
+      if (!child->children.empty()) {
+        if (field->is_repeated() ||
+            field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
+          ABSL_LOG(ERROR) << "Field \"" << field_name << "\" in message "
+                          << descriptor->full_name()
+                          << " is not a singular message field and cannot "
+                          << "have sub-fields.";
+          continue;
+        }
+        stack.push_back(StackElement{
+            child.get(), &source_reflection->GetMessage(*src, field),
+            destination_reflection->MutableMessage(dst, field)});
+        continue;
+      }
+      if (!field->is_repeated()) {
+        switch (field->cpp_type()) {
+#define COPY_VALUE(TYPE, Name)                                    \
+  case FieldDescriptor::CPPTYPE_##TYPE: {                         \
+    if (source_reflection->HasField(*src, field)) {               \
+      destination_reflection->Set##Name(                          \
+          dst, field, source_reflection->Get##Name(*src, field)); \
+    } else {                                                      \
+      destination_reflection->ClearField(dst, field);             \
+    }                                                             \
+    break;                                                        \
   }
-        COPY_VALUE(BOOL, Bool)
-        COPY_VALUE(INT32, Int32)
-        COPY_VALUE(INT64, Int64)
-        COPY_VALUE(UINT32, UInt32)
-        COPY_VALUE(UINT64, UInt64)
-        COPY_VALUE(FLOAT, Float)
-        COPY_VALUE(DOUBLE, Double)
-        COPY_VALUE(ENUM, Enum)
-        COPY_VALUE(STRING, String)
+          COPY_VALUE(BOOL, Bool)
+          COPY_VALUE(INT32, Int32)
+          COPY_VALUE(INT64, Int64)
+          COPY_VALUE(UINT32, UInt32)
+          COPY_VALUE(UINT64, UInt64)
+          COPY_VALUE(FLOAT, Float)
+          COPY_VALUE(DOUBLE, Double)
+          COPY_VALUE(ENUM, Enum)
+          COPY_VALUE(STRING, String)
 #undef COPY_VALUE
-        case FieldDescriptor::CPPTYPE_MESSAGE: {
-          if (options.replace_message_fields()) {
-            destination_reflection->ClearField(destination, field);
+          case FieldDescriptor::CPPTYPE_MESSAGE: {
+            if (options.replace_message_fields()) {
+              destination_reflection->ClearField(dst, field);
+            }
+            if (source_reflection->HasField(*src, field)) {
+              destination_reflection->MutableMessage(dst, field)
+                  ->MergeFrom(source_reflection->GetMessage(*src, field));
+            }
+            break;
           }
-          if (source_reflection->HasField(source, field)) {
-            destination_reflection->MutableMessage(destination, field)
-                ->MergeFrom(source_reflection->GetMessage(source, field));
-          }
-          break;
-        }
-      }
-    } else {
-      if (options.replace_repeated_fields()) {
-        destination_reflection->ClearField(destination, field);
-      }
-      switch (field->cpp_type()) {
-#define COPY_REPEATED_VALUE(TYPE, Name)                            \
-  case FieldDescriptor::CPPTYPE_##TYPE: {                          \
-    int size = source_reflection->FieldSize(source, field);        \
-    for (int i = 0; i < size; ++i) {                               \
-      destination_reflection->Add##Name(                           \
-          destination, field,                                      \
-          source_reflection->GetRepeated##Name(source, field, i)); \
-    }                                                              \
-    break;                                                         \
-  }
-        COPY_REPEATED_VALUE(BOOL, Bool)
-        COPY_REPEATED_VALUE(INT32, Int32)
-        COPY_REPEATED_VALUE(INT64, Int64)
-        COPY_REPEATED_VALUE(UINT32, UInt32)
-        COPY_REPEATED_VALUE(UINT64, UInt64)
-        COPY_REPEATED_VALUE(FLOAT, Float)
-        COPY_REPEATED_VALUE(DOUBLE, Double)
-        COPY_REPEATED_VALUE(ENUM, Enum)
-        COPY_REPEATED_VALUE(STRING, String)
-#undef COPY_REPEATED_VALUE
-        case FieldDescriptor::CPPTYPE_MESSAGE: {
-          int size = source_reflection->FieldSize(source, field);
-          for (int i = 0; i < size; ++i) {
-            destination_reflection->AddMessage(destination, field)
-                ->MergeFrom(
-                    source_reflection->GetRepeatedMessage(source, field, i));
-          }
-          break;
-        }
-      }
-    }
-  }
-}
-
-void FieldMaskTree::AddRequiredFieldPath(Node* node,
-                                         const Descriptor* descriptor) {
-  const int32_t field_count = descriptor->field_count();
-  for (int index = 0; index < field_count; ++index) {
-    const FieldDescriptor* field = descriptor->field(index);
-    if (field->is_required()) {
-      absl::string_view node_name = field->name();
-      std::unique_ptr<Node>& child = node->children[node_name];
-      if (child == nullptr) {
-        // Add required field path to the tree
-        child = absl::make_unique<Node>();
-      } else if (child->children.empty()) {
-        // If the required field is in the tree and does not have any children,
-        // do nothing.
-        continue;
-      }
-      // Add required field in the children to the tree if the field is message.
-      if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-        AddRequiredFieldPath(child.get(), field->message_type());
-      }
-    } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      auto it = node->children.find(field->name());
-      if (it != node->children.end()) {
-        // Add required fields in the children to the
-        // tree if the field is a message and present in the tree.
-        Node* child = it->second.get();
-        if (!child->children.empty()) {
-          AddRequiredFieldPath(child, field->message_type());
-        }
-      }
-    }
-  }
-}
-
-bool FieldMaskTree::TrimMessage(const Node* node, Message* message) {
-  ABSL_DCHECK(!node->children.empty());
-  const Reflection* reflection = message->GetReflection();
-  const Descriptor* descriptor = message->GetDescriptor();
-  const int32_t field_count = descriptor->field_count();
-  bool modified = false;
-  for (int index = 0; index < field_count; ++index) {
-    const FieldDescriptor* field = descriptor->field(index);
-    auto it = node->children.find(field->name());
-    if (it == node->children.end()) {
-      if (field->is_repeated()) {
-        if (reflection->FieldSize(*message, field) != 0) {
-          modified = true;
         }
       } else {
-        if (reflection->HasField(*message, field)) {
-          modified = true;
+        if (options.replace_repeated_fields()) {
+          destination_reflection->ClearField(dst, field);
+        }
+        switch (field->cpp_type()) {
+#define COPY_REPEATED_VALUE(TYPE, Name)                                      \
+  case FieldDescriptor::CPPTYPE_##TYPE: {                                    \
+    int size = source_reflection->FieldSize(*src, field);                    \
+    for (int i = 0; i < size; ++i) {                                         \
+      destination_reflection->Add##Name(                                     \
+          dst, field, source_reflection->GetRepeated##Name(*src, field, i)); \
+    }                                                                        \
+    break;                                                                   \
+  }
+          COPY_REPEATED_VALUE(BOOL, Bool)
+          COPY_REPEATED_VALUE(INT32, Int32)
+          COPY_REPEATED_VALUE(INT64, Int64)
+          COPY_REPEATED_VALUE(UINT32, UInt32)
+          COPY_REPEATED_VALUE(UINT64, UInt64)
+          COPY_REPEATED_VALUE(FLOAT, Float)
+          COPY_REPEATED_VALUE(DOUBLE, Double)
+          COPY_REPEATED_VALUE(ENUM, Enum)
+          COPY_REPEATED_VALUE(STRING, String)
+#undef COPY_REPEATED_VALUE
+          case FieldDescriptor::CPPTYPE_MESSAGE: {
+            int size = source_reflection->FieldSize(*src, field);
+            for (int i = 0; i < size; ++i) {
+              destination_reflection->AddMessage(dst, field)
+                  ->MergeFrom(
+                      source_reflection->GetRepeatedMessage(*src, field, i));
+            }
+            break;
+          }
         }
       }
-      reflection->ClearField(message, field);
-    } else {
-      if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-        Node* child = it->second.get();
-        if (!child->children.empty() && reflection->HasField(*message, field)) {
-          if (field->is_repeated()) {
-            for (int i = 0; i < reflection->FieldSize(*message, field); ++i) {
-              bool nestedMessageChanged = TrimMessage(
-                  child, reflection->MutableRepeatedMessage(message, field, i));
-              modified = nestedMessageChanged || modified;
+    }
+  }
+}
+
+void FieldMaskTree::AddRequiredFieldPath(const Descriptor* descriptor) {
+  if (root_.children.empty()) {
+    return;
+  }
+
+  struct StackElement {
+    Node* node;
+    const Descriptor* descriptor;
+  };
+
+  std::vector<StackElement> stack;
+  stack.push_back(StackElement{&root_, descriptor});
+
+  while (!stack.empty()) {
+    StackElement next = stack.back();
+    stack.pop_back();
+    Node* node = next.node;
+    const Descriptor* desc = next.descriptor;
+
+    const int32_t field_count = desc->field_count();
+    for (int index = 0; index < field_count; ++index) {
+      const FieldDescriptor* field = desc->field(index);
+      if (field->is_required()) {
+        absl::string_view node_name = field->name();
+        std::unique_ptr<Node>& child = node->children[node_name];
+        if (child == nullptr) {
+          child = absl::make_unique<Node>();
+        } else if (child->children.empty()) {
+          continue;
+        }
+        if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+          stack.push_back(StackElement{child.get(), field->message_type()});
+        }
+      } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+        auto it = node->children.find(field->name());
+        if (it != node->children.end()) {
+          Node* child = it->second.get();
+          if (!child->children.empty()) {
+            stack.push_back(StackElement{child, field->message_type()});
+          }
+        }
+      }
+    }
+  }
+}
+
+bool FieldMaskTree::TrimMessage(Message* message) {
+  if (root_.children.empty()) {
+    return false;
+  }
+
+  bool modified = false;
+
+  struct StackElement {
+    const Node* node;
+    Message* message;
+  };
+
+  std::vector<StackElement> stack;
+  stack.push_back(StackElement{&root_, message});
+
+  while (!stack.empty()) {
+    StackElement next = stack.back();
+    stack.pop_back();
+    const Node* node = next.node;
+    Message* msg = next.message;
+
+    ABSL_DCHECK(!node->children.empty());
+    const Reflection* reflection = msg->GetReflection();
+    const Descriptor* descriptor = msg->GetDescriptor();
+    const int32_t field_count = descriptor->field_count();
+
+    for (int index = 0; index < field_count; ++index) {
+      const FieldDescriptor* field = descriptor->field(index);
+      auto it = node->children.find(field->name());
+      if (it == node->children.end()) {
+        if (field->is_repeated()) {
+          if (reflection->FieldSize(*msg, field) != 0) {
+            modified = true;
+          }
+        } else {
+          if (reflection->HasField(*msg, field)) {
+            modified = true;
+          }
+        }
+        reflection->ClearField(msg, field);
+      } else {
+        if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+          const Node* child = it->second.get();
+          if (!child->children.empty() && reflection->HasField(*msg, field)) {
+            if (field->is_repeated()) {
+              for (int i = 0; i < reflection->FieldSize(*msg, field); ++i) {
+                stack.push_back(StackElement{
+                    child, reflection->MutableRepeatedMessage(msg, field, i)});
+              }
+            } else {
+              stack.push_back(
+                  StackElement{child, reflection->MutableMessage(msg, field)});
             }
-          } else {
-            bool nestedMessageChanged =
-                TrimMessage(child, reflection->MutableMessage(message, field));
-            modified = nestedMessageChanged || modified;
           }
         }
       }
@@ -657,7 +694,7 @@ bool FieldMaskUtil::IsPathInFieldMask(absl::string_view path,
     if (current == mask_path) {
       return true;
     }
-      // Also check whether mask.paths(i) is a prefix of path.
+    // Also check whether mask.paths(i) is a prefix of path.
     if (mask_path.length() < current.length() &&
         absl::ConsumePrefix(&current, mask_path) &&
         absl::ConsumePrefix(&current, ".")) {
