@@ -8,6 +8,7 @@
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
 pub mod conversions;
+pub mod interop;
 pub mod map;
 pub mod message;
 pub mod minitable;
@@ -15,6 +16,7 @@ pub mod repeated;
 pub mod string;
 
 pub use conversions::*;
+pub use interop::*;
 pub use map::*;
 pub use message::*;
 pub use minitable::*;
@@ -25,9 +27,9 @@ use crate::__internal::entity_tag::*;
 use crate::__internal::{EntityType, MatcherEq, Private, SealedInternal};
 use crate::{
     AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapValue,
-    MapView, MergeFrom, Message, MessageMut, MessageMutInterop, MessageView, MessageViewInterop,
-    Mut, OwnedMessageInterop, ParseError, ProtoBytes, ProtoStr, ProtoString, Proxied, Repeated,
-    RepeatedMut, RepeatedView, Serialize, SerializeError, Singular, TakeFrom, View,
+    MapView, MergeFrom, Message, MessageMut, MessageView, Mut, ParseError, ProtoBytes, ProtoStr,
+    ProtoString, Proxied, Repeated, RepeatedMut, RepeatedView, Serialize, SerializeError, Singular,
+    TakeFrom, View,
 };
 use std::fmt::Debug;
 use std::marker::PhantomData;

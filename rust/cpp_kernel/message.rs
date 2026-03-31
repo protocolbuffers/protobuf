@@ -170,36 +170,14 @@ where
     }
 }
 
-pub trait KernelMessage: CppGetRawMessage + CppGetRawMessageMut {}
-impl<T: CppGetRawMessage + CppGetRawMessageMut> KernelMessage for T {}
+pub trait KernelMessage: CppGetRawMessage + CppGetRawMessageMut + OwnedMessageInterop {}
+impl<T: CppGetRawMessage + CppGetRawMessageMut + OwnedMessageInterop> KernelMessage for T {}
 
-pub trait KernelMessageView: CppGetRawMessage {}
-impl<T: CppGetRawMessage> KernelMessageView for T {}
+pub trait KernelMessageView<'msg>: CppGetRawMessage + MessageViewInterop<'msg> {}
+impl<'msg, T: CppGetRawMessage + MessageViewInterop<'msg>> KernelMessageView<'msg> for T {}
 
-pub trait KernelMessageMut: CppGetRawMessageMut {}
-impl<T: CppGetRawMessageMut> KernelMessageMut for T {}
-
-impl<'a, T> MessageMutInterop<'a> for T
-where
-    Self: AsMut + CppGetRawMessageMut + From<MessageMutInner<'a, <Self as AsMut>::MutProxied>>,
-    <Self as AsMut>::MutProxied: Message,
-{
-    unsafe fn __unstable_wrap_raw_message_mut(msg: &'a mut *mut std::ffi::c_void) -> Self {
-        let raw = RawMessage::new(*msg as *mut _).unwrap();
-        let inner = unsafe { MessageMutInner::wrap_raw(raw) };
-        inner.into()
-    }
-    unsafe fn __unstable_wrap_raw_message_mut_unchecked_lifetime(
-        msg: *mut std::ffi::c_void,
-    ) -> Self {
-        let raw = RawMessage::new(msg as *mut _).unwrap();
-        let inner = unsafe { MessageMutInner::wrap_raw(raw) };
-        inner.into()
-    }
-    fn __unstable_as_raw_message_mut(&mut self) -> *mut std::ffi::c_void {
-        self.get_raw_message_mut(Private).as_ptr() as *mut _
-    }
-}
+pub trait KernelMessageMut<'msg>: CppGetRawMessageMut + MessageMutInterop<'msg> {}
+impl<'msg, T: CppGetRawMessageMut + MessageMutInterop<'msg>> KernelMessageMut<'msg> for T {}
 
 /// Message equality definition which may have both false-negatives and false-positives in the face
 /// of unknown fields.

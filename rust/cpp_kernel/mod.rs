@@ -7,12 +7,14 @@
 
 // Rust Protobuf runtime using the C++ kernel.
 
+pub mod interop;
 pub mod map;
 pub mod message;
 pub mod raw;
 pub mod repeated;
 pub mod string;
 
+pub use interop::*;
 pub use map::*;
 pub use message::*;
 pub use raw::*;
@@ -22,9 +24,9 @@ pub use string::*;
 use crate::__internal::{Enum, MatcherEq, Private, SealedInternal};
 use crate::{
     AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapValue,
-    MapView, MergeFrom, Message, MessageMutInterop, Mut, MutProxied, ParseError, ProtoBytes,
-    ProtoStr, ProtoString, Proxied, Repeated, RepeatedMut, RepeatedView, Serialize, SerializeError,
-    Singular, TakeFrom, View,
+    MapView, MergeFrom, Message, Mut, MutProxied, ParseError, ProtoBytes, ProtoStr, ProtoString,
+    Proxied, Repeated, RepeatedMut, RepeatedView, Serialize, SerializeError, Singular, TakeFrom,
+    View,
 };
 use core::fmt::Debug;
 use paste::paste;
