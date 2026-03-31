@@ -33,7 +33,10 @@ namespace protobuf {
 namespace internal {
 namespace {
 
+using ::proto2_unittest::RepeatedFieldProxyTestImportEnum;
 using ::proto2_unittest::RepeatedFieldProxyTestSimpleMessage;
+using ::proto2_unittest::TestRepeatedEnumProxy;
+using ::proto2_unittest::TestRepeatedImportEnumProxy;
 using ::proto2_unittest::TestRepeatedImportMessageProxy;
 using ::proto2_unittest::TestRepeatedIntProxy;
 using ::proto2_unittest::TestRepeatedMessageProxy;
@@ -2323,6 +2326,21 @@ static_assert(std::is_same_v<decltype(std::declval<TestRepeatedIntProxy>()
                                           .mutable_ints_proxy()),
                              RepeatedFieldProxy<int32_t>>);
 
+// Repeated enums:
+static_assert(
+    std::is_same_v<decltype(std::declval<TestRepeatedEnumProxy>().enums()),
+                   const RepeatedField<int>&>);
+static_assert(std::is_same_v<
+              decltype(std::declval<TestRepeatedEnumProxy>().mutable_enums()),
+              RepeatedField<int>*>);
+
+static_assert(std::is_same_v<
+              decltype(std::declval<TestRepeatedEnumProxy>().enums_proxy()),
+              RepeatedFieldProxy<const int>>);
+static_assert(std::is_same_v<decltype(std::declval<TestRepeatedEnumProxy>()
+                                          .mutable_enums_proxy()),
+                             RepeatedFieldProxy<int>>);
+
 TEST(RepeatedFieldProxyInterfaceTest, RepeatedMessageProxy) {
   TestRepeatedMessageProxy msg;
   {
@@ -2364,6 +2382,42 @@ TEST(RepeatedFieldProxyInterfaceTest, RepeatedIntProxy) {
 
   auto proxy = msg.ints_proxy();
   EXPECT_THAT(proxy, ElementsAre(1, 2, 3));
+}
+
+TEST(RepeatedFieldProxyInterfaceTest, RepeatedEnumProxy) {
+  TestRepeatedEnumProxy msg;
+  {
+    auto proxy = msg.mutable_enums_proxy();
+    proxy.push_back(TestRepeatedEnumProxy::FOO);
+    proxy.push_back(TestRepeatedEnumProxy::BAR);
+    proxy.push_back(TestRepeatedEnumProxy::BAZ);
+  }
+
+  auto proxy = msg.enums_proxy();
+  EXPECT_THAT(
+      proxy, ElementsAre(TestRepeatedEnumProxy::FOO, TestRepeatedEnumProxy::BAR,
+                         TestRepeatedEnumProxy::BAZ));
+}
+
+TEST(RepeatedFieldProxyInterfaceTest, RepeatedImportEnumProxy) {
+  TestRepeatedImportEnumProxy msg;
+  {
+    auto proxy = msg.mutable_enums_proxy();
+    proxy.push_back(
+        RepeatedFieldProxyTestImportEnum::REPEATED_FIELD_PROXY_TEST_IMPORT_FOO);
+    proxy.push_back(
+        RepeatedFieldProxyTestImportEnum::REPEATED_FIELD_PROXY_TEST_IMPORT_BAR);
+    proxy.push_back(
+        RepeatedFieldProxyTestImportEnum::REPEATED_FIELD_PROXY_TEST_IMPORT_BAZ);
+  }
+
+  auto proxy = msg.enums_proxy();
+  EXPECT_THAT(proxy, ElementsAre(RepeatedFieldProxyTestImportEnum::
+                                     REPEATED_FIELD_PROXY_TEST_IMPORT_FOO,
+                                 RepeatedFieldProxyTestImportEnum::
+                                     REPEATED_FIELD_PROXY_TEST_IMPORT_BAR,
+                                 RepeatedFieldProxyTestImportEnum::
+                                     REPEATED_FIELD_PROXY_TEST_IMPORT_BAZ));
 }
 
 }  // namespace
