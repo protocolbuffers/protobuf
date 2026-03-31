@@ -7,9 +7,11 @@
 
 #include "google/protobuf/util/field_mask_util.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/container/btree_map.h"
@@ -173,10 +175,10 @@ namespace {
 // In the tree, each leaf node represents a field path.
 class FieldMaskTree {
  public:
-  FieldMaskTree();
+  FieldMaskTree() = default;
   FieldMaskTree(const FieldMaskTree&) = delete;
   FieldMaskTree& operator=(const FieldMaskTree&) = delete;
-  ~FieldMaskTree();
+  ~FieldMaskTree() = default;
 
   void MergeFromFieldMask(const FieldMask& mask);
   void MergeToFieldMask(FieldMask* mask);
@@ -234,7 +236,6 @@ class FieldMaskTree {
     return TrimMessage(&root_, message);
   }
 
- private:
   struct Node {
     Node() = default;
     Node(const Node&) = delete;
@@ -242,19 +243,39 @@ class FieldMaskTree {
 
     ~Node() { ClearChildren(); }
 
+    // Note: This function avoids recursion (including implicitly through the
+    // Node dtors), making it stack-safe even on very deep trees.
     void ClearChildren() {
+      // This is a DFS traversal that will:
+      // 1. Move all of the children from current node into the stack.
+      // 2. Clear the children vector (which is all nullptrs at this point).
+      // 3. Drop the Node. This will cause the destructor to be called which
+      //    will reenter ClearChildren(), but immediately bail out because the
+      //    children vector is empty.
+      if (children.empty()) return;
+      std::vector<std::unique_ptr<Node>> stack;
+      for (auto& name_and_child : children) {
+        stack.push_back(std::move(name_and_child.second));
+      }
+      // Reset the vector to zero size (still has unique_ptrs of nullptr here).
       children.clear();
+
+      while (!stack.empty()) {
+        std::unique_ptr<Node> current = std::move(stack.back());
+        stack.pop_back();
+        for (auto& name_and_child : current->children) {
+          stack.push_back(std::move(name_and_child.second));
+        }
+        // Reset the vector to zero size (still has unique_ptrs of nullptr
+        // here).
+        current->children.clear();
+      }
     }
 
     absl::btree_map<std::string, std::unique_ptr<Node>> children;
   };
 
-  // Merge a sub-tree to mask. This method adds the field paths represented
-  // by all leaf nodes descended from "node" to mask.
-  void MergeToFieldMask(absl::string_view prefix, const Node* node,
-                        FieldMask* out);
-
-  // Merge all leaf nodes of a sub-tree to another tree.
+  // Merge all leaf nodes of a subtree to another tree.
   void MergeLeafNodesToTree(absl::string_view prefix, const Node* node,
                             FieldMaskTree* out);
 
@@ -276,35 +297,54 @@ class FieldMaskTree {
   Node root_;
 };
 
-FieldMaskTree::FieldMaskTree() = default;
-
-FieldMaskTree::~FieldMaskTree() = default;
-
 void FieldMaskTree::MergeFromFieldMask(const FieldMask& mask) {
   for (int i = 0; i < mask.paths_size(); ++i) {
     AddPath(mask.paths(i));
   }
 }
 
-void FieldMaskTree::MergeToFieldMask(FieldMask* mask) {
-  MergeToFieldMask("", &root_, mask);
+namespace {
+
+template <typename F>
+void ForEachLeaf(const FieldMaskTree::Node* root, F&& f) {
+  struct StackElement {
+    const FieldMaskTree::Node* node;
+    std::string path;
+  };
+
+  std::vector<StackElement> stack;
+  stack.push_back(StackElement{root, ""});
+
+  while (!stack.empty()) {
+    StackElement next = std::move(stack.back());
+    stack.pop_back();
+    const FieldMaskTree::Node* node = next.node;
+    const std::string& path = next.path;
+
+    if (node->children.empty()) {
+      f(path);
+    } else {
+      // Iterate in reverse order to maintain the order of the field mask (we
+      // want the next pop to be the first child not the last child).
+      for (auto it = node->children.crbegin(); it != node->children.crend();
+           ++it) {
+        const auto& [name, child_ptr] = *it;
+        std::string current_path =
+            path.empty() ? std::string(name) : absl::StrCat(path, ".", name);
+        stack.push_back(StackElement{child_ptr.get(), std::move(current_path)});
+      }
+    }
+  }
 }
 
-void FieldMaskTree::MergeToFieldMask(absl::string_view prefix, const Node* node,
-                                     FieldMask* out) {
-  if (node->children.empty()) {
-    if (prefix.empty()) {
-      // This is the root node.
-      return;
-    }
-    out->add_paths(prefix);
+}  // namespace
+
+void FieldMaskTree::MergeToFieldMask(FieldMask* mask) {
+  if (root_.children.empty()) {
     return;
   }
-  for (const auto& kv : node->children) {
-    std::string current_path =
-        prefix.empty() ? kv.first : absl::StrCat(prefix, ".", kv.first);
-    MergeToFieldMask(current_path, kv.second.get(), out);
-  }
+  ForEachLeaf(&root_,
+              [mask](const std::string& path) { mask->add_paths(path); });
 }
 
 void FieldMaskTree::AddPath(absl::string_view path) {
@@ -349,7 +389,7 @@ void FieldMaskTree::RemovePath(absl::string_view path,
   Node* node = &root_;
   const Descriptor* current_descriptor = descriptor;
   Node* new_branch_node = nullptr;
-  for (int i = 0; i < parts.size(); ++i) {
+  for (size_t i = 0; i < parts.size(); ++i) {
     nodes[i] = node;
     const FieldDescriptor* field_descriptor =
         current_descriptor->FindFieldByName(parts[i]);
@@ -418,11 +458,15 @@ void FieldMaskTree::MergeLeafNodesToTree(absl::string_view prefix,
                                          const Node* node, FieldMaskTree* out) {
   if (node->children.empty()) {
     out->AddPath(prefix);
+    return;
   }
-  for (const auto& kv : node->children) {
-    std::string current_path =
-        prefix.empty() ? kv.first : absl::StrCat(prefix, ".", kv.first);
-    MergeLeafNodesToTree(current_path, kv.second.get(), out);
+
+  if (prefix.empty()) {
+    ForEachLeaf(node, [out](const std::string& path) { out->AddPath(path); });
+  } else {
+    ForEachLeaf(node, [prefix, out](const std::string& path) {
+      out->AddPath(absl::StrCat(prefix, ".", path));
+    });
   }
 }
 
@@ -657,7 +701,7 @@ bool FieldMaskUtil::IsPathInFieldMask(absl::string_view path,
     if (current == mask_path) {
       return true;
     }
-      // Also check whether mask.paths(i) is a prefix of path.
+    // Also check whether mask.paths(i) is a prefix of path.
     if (mask_path.length() < current.length() &&
         absl::ConsumePrefix(&current, mask_path) &&
         absl::ConsumePrefix(&current, ".")) {
