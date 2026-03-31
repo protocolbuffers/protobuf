@@ -1301,10 +1301,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
   ::std::string* PROTOBUF_NONNULL add_oneofs();
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void add_oneofs(Arg_&& value, Args_... args);
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::std::string>&
-  oneofs() const;
-  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
-  mutable_oneofs();
+  [[nodiscard]] const
+      ::google::protobuf::RepeatedPtrField<::std::string>&
+      oneofs() const;
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>*
+      PROTOBUF_NONNULL
+      mutable_oneofs();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_oneofs() const;

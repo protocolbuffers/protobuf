@@ -238,10 +238,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
   ::std::string* PROTOBUF_NONNULL add_paths();
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void add_paths(Arg_&& value, Args_... args);
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::std::string>&
-  paths() const;
-  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
-  mutable_paths();
+  [[nodiscard]] const
+      ::google::protobuf::RepeatedPtrField<::std::string>&
+      paths() const;
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>*
+      PROTOBUF_NONNULL
+      mutable_paths();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_paths() const;
