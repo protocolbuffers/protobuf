@@ -882,8 +882,8 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $annotate_list$;
           // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
           $StrongRef$;
-          return $pbi$::ConstructRepeatedFieldProxy<const $Submsg$>(
-              _internal_$name_internal$());
+          return $pbi$::RepeatedFieldProxyInternalPrivateAccessHelper<
+              const $Submsg$>::Construct(_internal_$name_internal$());
         }
       )cc");
       p->Emit(R"cc(
@@ -895,8 +895,9 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
           $StrongRef$;
           $TsanDetectConcurrentMutation$;
-          return $pbi$::ConstructRepeatedFieldProxy<$Submsg$>(
-              *_internal_mutable_$name_internal$(), GetArena());
+          return $pbi$::RepeatedFieldProxyInternalPrivateAccessHelper<
+              $Submsg$>::Construct(*_internal_mutable_$name_internal$(),
+                                   GetArena());
         }
       )cc");
       break;
