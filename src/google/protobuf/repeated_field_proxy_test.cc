@@ -2296,6 +2296,7 @@ static_assert(
     std::is_same_v<decltype(std::declval<TestRepeatedMessageProxy>()
                                 .mutable_nested_messages()),
                    RepeatedPtrField<TestRepeatedMessageProxy::NestedMessage>*>);
+
 static_assert(
     std::is_same_v<
         decltype(std::declval<TestRepeatedMessageProxy>()
