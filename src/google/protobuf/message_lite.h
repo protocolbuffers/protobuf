@@ -469,7 +469,6 @@ using ClassDataLite = ClassDataFull;
 struct PROTOBUF_EXPORT DescriptorMethods {
   absl::string_view (*get_type_name)(const ClassData* data);
   std::string (*initialization_error_string)(const MessageLite&);
-  const internal::TcParseTableBase* (*get_tc_table)(const MessageLite&);
   size_t (*space_used_long)(const MessageLite&);
   std::string (*debug_string)(const MessageLite&);
 };
@@ -1179,12 +1178,8 @@ class PROTOBUF_EXPORT MessageLite {
   const internal::TcParseTableBase* GetTcParseTable() const {
     auto* data = GetClassData();
     ABSL_DCHECK(data != nullptr);
-
     auto* tc_table = data->tc_table;
-    if (ABSL_PREDICT_FALSE(tc_table == nullptr)) {
-      ABSL_DCHECK(!data->is_lite);
-      return data->full().descriptor_methods()->get_tc_table(*this);
-    }
+    PROTOBUF_ASSUME(tc_table);
     return tc_table;
   }
 

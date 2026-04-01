@@ -80,21 +80,15 @@ struct ImplicitWeakMessageDefaultType : MessageGlobalsBase {
   };
 };
 #else
-struct ImplicitWeakMessageDefaultType : MessageGlobalsBase {
-  constexpr ImplicitWeakMessageDefaultType()
-      : MessageGlobalsBase(
-            ImplicitWeakMessage::InternalGenerateClassData_(
-                _default, &implicit_weak_message_globals._table.header),
-            &implicit_weak_message_globals._table.header),
-        _default(ConstantInitialized{}),
-        _table(
-            ImplicitWeakMessage::InternalGenerateParseTable_(GetClassData())) {}
-  ~ImplicitWeakMessageDefaultType() {}
-  union {
-    ImplicitWeakMessage _default;  // NOLINT
-  };
-  TcParseTable<0> _table;  // NOLINT
-};
+constexpr ImplicitWeakMessageDefaultType::ImplicitWeakMessageDefaultType()
+    : MessageGlobalsBase(
+          ImplicitWeakMessage::InternalGenerateClassData_(
+              _default, &implicit_weak_message_globals._table.header),
+          &implicit_weak_message_globals._table.header),
+      _default(ConstantInitialized{}),
+      _table(ImplicitWeakMessage::InternalGenerateParseTable_(GetClassData())) {
+}
+ImplicitWeakMessageDefaultType::~ImplicitWeakMessageDefaultType() {}
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 constexpr ImplicitWeakMessage::ImplicitWeakMessage(ConstantInitialized)
@@ -116,9 +110,7 @@ const ImplicitWeakMessage& ImplicitWeakMessage::default_instance() {
 }
 
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-const TcParseTable<0> ImplicitWeakMessage::table_ =
-    internal::CreateStubTcParseTable<ImplicitWeakMessage, ParseImpl>(
-        class_data_.base());
+const TcParseTable<0> ImplicitWeakMessage::table_ = MakeParseTable();
 constexpr ClassDataLite ImplicitWeakMessage::class_data_ =
     ImplicitWeakMessage::InternalGenerateClassData_(
         implicit_weak_message_globals._default);

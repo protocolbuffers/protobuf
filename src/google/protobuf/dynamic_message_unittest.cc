@@ -36,6 +36,7 @@
 #include "google/protobuf/edition_unittest.pb.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
@@ -168,11 +169,8 @@ std::unique_ptr<OverflowTestCase> GenerateOverflowTestCase(int num_oneofs) {
   auto* desc = file->message_type(0);
   test_case->prototype = test_case->factory.GetPrototype(desc);
 
-  struct Robber : MessageLite {
-    using MessageLite::GetTcParseTable;
-  };
-
-  test_case->table = (test_case->prototype->*&Robber::GetTcParseTable)();
+  test_case->table = internal::PrivateAccess::GetTcParseTable(
+      *test_case->prototype->GetReflection());
 
   // Verify that we have the fields.
   {

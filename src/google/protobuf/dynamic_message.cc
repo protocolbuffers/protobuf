@@ -57,6 +57,8 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_reflection.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/has_bits.h"
 #include "google/protobuf/internal_metadata_locator.h"
@@ -345,6 +347,10 @@ class DynamicMessage final : public Message {
   static void* NewImpl(const void* prototype, void* mem, Arena* arena);
   static void DestroyImpl(MessageLite& msg);
 
+  static PROTOBUF_CC const char* ParseTrampoline(DynamicMessage* self,
+                                                 const char* ptr,
+                                                 internal::ParseContext* ctx);
+
   // If `T` is not `void`, it will mask bits off the offset via alignment.
   // Used to remove feature masks that are part of the reflection
   // implementation.
@@ -403,11 +409,15 @@ struct DynamicMessageFactory::TypeInfo {
   std::unique_ptr<uint32_t[]> has_bits_indices;
   int weak_field_map_offset;  // The offset for the weak_field_map;
 
+  // Set it, then overwrite when the class_data is set.
+  internal::TcParseTable<0> tc_table = internal::CreateStubTcParseTable<
+      DynamicMessage, DynamicMessage::ParseTrampoline>(nullptr);
+
 #ifndef PROTOBUF_MESSAGE_GLOBALS
   internal::ClassDataFull class_data = {
       internal::ClassData{
           nullptr,  // default_instance
-          nullptr,  // tc_table
+          &tc_table.header,
           &DynamicMessage::IsInitializedImpl,
           &DynamicMessage::MergeImpl,
           internal::MessageCreator(),  // to be filled later
@@ -855,7 +865,15 @@ void DynamicMessage::CrossLinkPrototypes() {
 }
 
 const internal::ClassData* DynamicMessage::GetClassData() const {
+  ABSL_DCHECK(type_info_->GetClassDataFull().base()->tc_table);
   return type_info_->GetClassDataFull().base();
+}
+
+PROTOBUF_CC const char* DynamicMessage::ParseTrampoline(
+    DynamicMessage* self, const char* ptr, internal::ParseContext* ctx) {
+  return internal::TcParser::ParseLoop(
+      self, ptr, ctx,
+      self->type_info_->GetClassDataFull().reflection()->GetTcParseTable());
 }
 
 // ===================================================================
@@ -1052,7 +1070,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
       DynamicMessageGlobalsInternalType(internal::ClassDataFull{
           internal::ClassData{
               reinterpret_cast<const DynamicMessage*>(msg_base),  // prototype
-              nullptr,                                            // tc_table
+              &type_info->tc_table.header,
               &DynamicMessage::IsInitializedImpl,
               &DynamicMessage::MergeImpl,
               internal::MessageCreator(DynamicMessage::NewImpl, size,
@@ -1068,7 +1086,13 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
       });
   type_info->globals->class_data.set_descriptor(type);
   type_info->globals->class_data.is_dynamic = true;
+  type_info->globals->table = &type_info->tc_table.header;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
+
+  type_info->tc_table =
+      internal::CreateStubTcParseTable<DynamicMessage,
+                                       DynamicMessage::ParseTrampoline>(
+          type_info->GetClassDataFull().base());
 
   // We have already locked the factory so we should not lock in the constructor
   // of dynamic message to avoid dead lock.

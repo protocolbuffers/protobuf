@@ -152,9 +152,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(JavaFeatures_NestInFileClassFeatureGlobalsTy
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal
         _JavaFeatures_NestInFileClassFeature_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* JavaFeatures_NestInFileClassFeature_get_class_data() {
+constexpr const ::_pbi::ClassData* JavaFeatures_NestInFileClassFeature_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _JavaFeatures_NestInFileClassFeature_globals_.GetClassData();
 #else
@@ -162,7 +161,6 @@ const ::_pbi::ClassData* JavaFeatures_NestInFileClassFeature_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class JavaFeatures::_Internal {
  public:
   using HasBits =
@@ -330,9 +328,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(JavaFeaturesGlobalsTypeInternal, _default) =
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  JavaFeaturesGlobalsTypeInternal
         _JavaFeatures_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* JavaFeatures_get_class_data() {
+constexpr const ::_pbi::ClassData* JavaFeatures_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _JavaFeatures_globals_.GetClassData();
 #else
@@ -340,7 +337,6 @@ const ::_pbi::ClassData* JavaFeatures_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 }  // namespace pb
 static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
     file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[2];

@@ -253,9 +253,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePartGlobalsTypeInter
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  UninterpretedOption_NamePartGlobalsTypeInternal
         _UninterpretedOption_NamePart_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* UninterpretedOption_NamePart_get_class_data() {
+constexpr const ::_pbi::ClassData* UninterpretedOption_NamePart_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _UninterpretedOption_NamePart_globals_.GetClassData();
 #else
@@ -263,7 +262,6 @@ const ::_pbi::ClassData* UninterpretedOption_NamePart_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class SourceCodeInfo_Location::_Internal {
  public:
   using HasBits =
@@ -452,9 +450,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(SourceCodeInfo_LocationGlobalsTypeInternal, 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  SourceCodeInfo_LocationGlobalsTypeInternal
         _SourceCodeInfo_Location_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* SourceCodeInfo_Location_get_class_data() {
+constexpr const ::_pbi::ClassData* SourceCodeInfo_Location_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _SourceCodeInfo_Location_globals_.GetClassData();
 #else
@@ -462,7 +459,6 @@ const ::_pbi::ClassData* SourceCodeInfo_Location_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class GeneratedCodeInfo_Annotation::_Internal {
  public:
   using HasBits =
@@ -642,9 +638,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_AnnotationGlobalsTypeInter
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  GeneratedCodeInfo_AnnotationGlobalsTypeInternal
         _GeneratedCodeInfo_Annotation_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* GeneratedCodeInfo_Annotation_get_class_data() {
+constexpr const ::_pbi::ClassData* GeneratedCodeInfo_Annotation_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _GeneratedCodeInfo_Annotation_globals_.GetClassData();
 #else
@@ -652,7 +647,6 @@ const ::_pbi::ClassData* GeneratedCodeInfo_Annotation_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class FieldOptions_FeatureSupport::_Internal {
  public:
   using HasBits =
@@ -831,9 +825,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupportGlobalsTypeIntern
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FieldOptions_FeatureSupportGlobalsTypeInternal
         _FieldOptions_FeatureSupport_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* FieldOptions_FeatureSupport_get_class_data() {
+constexpr const ::_pbi::ClassData* FieldOptions_FeatureSupport_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _FieldOptions_FeatureSupport_globals_.GetClassData();
 #else
@@ -841,7 +834,6 @@ const ::_pbi::ClassData* FieldOptions_FeatureSupport_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class FieldOptions_EditionDefault::_Internal {
  public:
   using HasBits =
@@ -992,9 +984,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefaultGlobalsTypeIntern
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FieldOptions_EditionDefaultGlobalsTypeInternal
         _FieldOptions_EditionDefault_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* FieldOptions_EditionDefault_get_class_data() {
+constexpr const ::_pbi::ClassData* FieldOptions_EditionDefault_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _FieldOptions_EditionDefault_globals_.GetClassData();
 #else
@@ -1002,7 +993,6 @@ const ::_pbi::ClassData* FieldOptions_EditionDefault_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class FeatureSet_VisibilityFeature::_Internal {
  public:
 };
@@ -1124,9 +1114,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FeatureSet_VisibilityFeatureGlobalsTypeInter
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FeatureSet_VisibilityFeatureGlobalsTypeInternal
         _FeatureSet_VisibilityFeature_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* FeatureSet_VisibilityFeature_get_class_data() {
+constexpr const ::_pbi::ClassData* FeatureSet_VisibilityFeature_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _FeatureSet_VisibilityFeature_globals_.GetClassData();
 #else
@@ -1134,7 +1123,6 @@ const ::_pbi::ClassData* FeatureSet_VisibilityFeature_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class FeatureSet::_Internal {
  public:
   using HasBits =
@@ -1332,9 +1320,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FeatureSetGlobalsTypeInternal, _default) ==
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FeatureSetGlobalsTypeInternal
         _FeatureSet_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* FeatureSet_get_class_data() {
+constexpr const ::_pbi::ClassData* FeatureSet_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _FeatureSet_globals_.GetClassData();
 #else
@@ -1342,7 +1329,6 @@ const ::_pbi::ClassData* FeatureSet_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class ExtensionRangeOptions_Declaration::_Internal {
  public:
   using HasBits =
@@ -1517,9 +1503,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_DeclarationGlobalsType
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  ExtensionRangeOptions_DeclarationGlobalsTypeInternal
         _ExtensionRangeOptions_Declaration_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* ExtensionRangeOptions_Declaration_get_class_data() {
+constexpr const ::_pbi::ClassData* ExtensionRangeOptions_Declaration_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _ExtensionRangeOptions_Declaration_globals_.GetClassData();
 #else
@@ -1527,7 +1512,6 @@ const ::_pbi::ClassData* ExtensionRangeOptions_Declaration_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class EnumDescriptorProto_EnumReservedRange::_Internal {
  public:
   using HasBits =
@@ -1674,9 +1658,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRangeGlobals
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal
         _EnumDescriptorProto_EnumReservedRange_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* EnumDescriptorProto_EnumReservedRange_get_class_data() {
+constexpr const ::_pbi::ClassData* EnumDescriptorProto_EnumReservedRange_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _EnumDescriptorProto_EnumReservedRange_globals_.GetClassData();
 #else
@@ -1684,7 +1667,6 @@ const ::_pbi::ClassData* EnumDescriptorProto_EnumReservedRange_get_class_data() 
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class DescriptorProto_ReservedRange::_Internal {
  public:
   using HasBits =
@@ -1831,9 +1813,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRangeGlobalsTypeInte
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  DescriptorProto_ReservedRangeGlobalsTypeInternal
         _DescriptorProto_ReservedRange_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* DescriptorProto_ReservedRange_get_class_data() {
+constexpr const ::_pbi::ClassData* DescriptorProto_ReservedRange_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _DescriptorProto_ReservedRange_globals_.GetClassData();
 #else
@@ -1841,7 +1822,6 @@ const ::_pbi::ClassData* DescriptorProto_ReservedRange_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class UninterpretedOption::_Internal {
  public:
   using HasBits =
@@ -2040,9 +2020,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(UninterpretedOptionGlobalsTypeInternal, _def
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  UninterpretedOptionGlobalsTypeInternal
         _UninterpretedOption_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* UninterpretedOption_get_class_data() {
+constexpr const ::_pbi::ClassData* UninterpretedOption_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _UninterpretedOption_globals_.GetClassData();
 #else
@@ -2050,7 +2029,6 @@ const ::_pbi::ClassData* UninterpretedOption_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class SourceCodeInfo::_Internal {
  public:
   using HasBits =
@@ -2200,9 +2178,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(SourceCodeInfoGlobalsTypeInternal, _default)
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  SourceCodeInfoGlobalsTypeInternal
         _SourceCodeInfo_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* SourceCodeInfo_get_class_data() {
+constexpr const ::_pbi::ClassData* SourceCodeInfo_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _SourceCodeInfo_globals_.GetClassData();
 #else
@@ -2210,7 +2187,6 @@ const ::_pbi::ClassData* SourceCodeInfo_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class GeneratedCodeInfo::_Internal {
  public:
   using HasBits =
@@ -2360,9 +2336,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(GeneratedCodeInfoGlobalsTypeInternal, _defau
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  GeneratedCodeInfoGlobalsTypeInternal
         _GeneratedCodeInfo_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* GeneratedCodeInfo_get_class_data() {
+constexpr const ::_pbi::ClassData* GeneratedCodeInfo_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _GeneratedCodeInfo_globals_.GetClassData();
 #else
@@ -2370,7 +2345,6 @@ const ::_pbi::ClassData* GeneratedCodeInfo_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class FeatureSetDefaults_FeatureSetEditionDefault::_Internal {
  public:
   using HasBits =
@@ -2537,9 +2511,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefaultG
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal
         _FeatureSetDefaults_FeatureSetEditionDefault_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* FeatureSetDefaults_FeatureSetEditionDefault_get_class_data() {
+constexpr const ::_pbi::ClassData* FeatureSetDefaults_FeatureSetEditionDefault_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _FeatureSetDefaults_FeatureSetEditionDefault_globals_.GetClassData();
 #else
@@ -2547,7 +2520,6 @@ const ::_pbi::ClassData* FeatureSetDefaults_FeatureSetEditionDefault_get_class_d
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class ServiceOptions::_Internal {
  public:
   using HasBits =
@@ -2721,9 +2693,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(ServiceOptionsGlobalsTypeInternal, _default)
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  ServiceOptionsGlobalsTypeInternal
         _ServiceOptions_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* ServiceOptions_get_class_data() {
+constexpr const ::_pbi::ClassData* ServiceOptions_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _ServiceOptions_globals_.GetClassData();
 #else
@@ -2731,7 +2702,6 @@ const ::_pbi::ClassData* ServiceOptions_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class OneofOptions::_Internal {
  public:
   using HasBits =
@@ -2897,9 +2867,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(OneofOptionsGlobalsTypeInternal, _default) =
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  OneofOptionsGlobalsTypeInternal
         _OneofOptions_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* OneofOptions_get_class_data() {
+constexpr const ::_pbi::ClassData* OneofOptions_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _OneofOptions_globals_.GetClassData();
 #else
@@ -2907,7 +2876,6 @@ const ::_pbi::ClassData* OneofOptions_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class MethodOptions::_Internal {
  public:
   using HasBits =
@@ -3092,9 +3060,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(MethodOptionsGlobalsTypeInternal, _default) 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  MethodOptionsGlobalsTypeInternal
         _MethodOptions_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* MethodOptions_get_class_data() {
+constexpr const ::_pbi::ClassData* MethodOptions_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _MethodOptions_globals_.GetClassData();
 #else
@@ -3102,7 +3069,6 @@ const ::_pbi::ClassData* MethodOptions_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class MessageOptions::_Internal {
  public:
   using HasBits =
@@ -3296,9 +3262,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(MessageOptionsGlobalsTypeInternal, _default)
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  MessageOptionsGlobalsTypeInternal
         _MessageOptions_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* MessageOptions_get_class_data() {
+constexpr const ::_pbi::ClassData* MessageOptions_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _MessageOptions_globals_.GetClassData();
 #else
@@ -3306,7 +3271,6 @@ const ::_pbi::ClassData* MessageOptions_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class FileOptions::_Internal {
  public:
   using HasBits =
@@ -3625,9 +3589,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FileOptionsGlobalsTypeInternal, _default) ==
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FileOptionsGlobalsTypeInternal
         _FileOptions_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* FileOptions_get_class_data() {
+constexpr const ::_pbi::ClassData* FileOptions_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _FileOptions_globals_.GetClassData();
 #else
@@ -3635,7 +3598,6 @@ const ::_pbi::ClassData* FileOptions_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class FieldOptions::_Internal {
  public:
   using HasBits =
@@ -3895,9 +3857,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FieldOptionsGlobalsTypeInternal, _default) =
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FieldOptionsGlobalsTypeInternal
         _FieldOptions_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* FieldOptions_get_class_data() {
+constexpr const ::_pbi::ClassData* FieldOptions_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _FieldOptions_globals_.GetClassData();
 #else
@@ -3905,7 +3866,6 @@ const ::_pbi::ClassData* FieldOptions_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class FeatureSetDefaults::_Internal {
  public:
   using HasBits =
@@ -4067,9 +4027,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FeatureSetDefaultsGlobalsTypeInternal, _defa
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FeatureSetDefaultsGlobalsTypeInternal
         _FeatureSetDefaults_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* FeatureSetDefaults_get_class_data() {
+constexpr const ::_pbi::ClassData* FeatureSetDefaults_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _FeatureSetDefaults_globals_.GetClassData();
 #else
@@ -4077,7 +4036,6 @@ const ::_pbi::ClassData* FeatureSetDefaults_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class ExtensionRangeOptions::_Internal {
  public:
   using HasBits =
@@ -4268,9 +4226,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(ExtensionRangeOptionsGlobalsTypeInternal, _d
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  ExtensionRangeOptionsGlobalsTypeInternal
         _ExtensionRangeOptions_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* ExtensionRangeOptions_get_class_data() {
+constexpr const ::_pbi::ClassData* ExtensionRangeOptions_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _ExtensionRangeOptions_globals_.GetClassData();
 #else
@@ -4278,7 +4235,6 @@ const ::_pbi::ClassData* ExtensionRangeOptions_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class EnumValueOptions::_Internal {
  public:
   using HasBits =
@@ -4471,9 +4427,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(EnumValueOptionsGlobalsTypeInternal, _defaul
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  EnumValueOptionsGlobalsTypeInternal
         _EnumValueOptions_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* EnumValueOptions_get_class_data() {
+constexpr const ::_pbi::ClassData* EnumValueOptions_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _EnumValueOptions_globals_.GetClassData();
 #else
@@ -4481,7 +4436,6 @@ const ::_pbi::ClassData* EnumValueOptions_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class EnumOptions::_Internal {
  public:
   using HasBits =
@@ -4666,9 +4620,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(EnumOptionsGlobalsTypeInternal, _default) ==
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  EnumOptionsGlobalsTypeInternal
         _EnumOptions_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* EnumOptions_get_class_data() {
+constexpr const ::_pbi::ClassData* EnumOptions_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _EnumOptions_globals_.GetClassData();
 #else
@@ -4676,7 +4629,6 @@ const ::_pbi::ClassData* EnumOptions_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class OneofDescriptorProto::_Internal {
  public:
   using HasBits =
@@ -4831,9 +4783,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(OneofDescriptorProtoGlobalsTypeInternal, _de
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  OneofDescriptorProtoGlobalsTypeInternal
         _OneofDescriptorProto_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* OneofDescriptorProto_get_class_data() {
+constexpr const ::_pbi::ClassData* OneofDescriptorProto_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _OneofDescriptorProto_globals_.GetClassData();
 #else
@@ -4841,7 +4792,6 @@ const ::_pbi::ClassData* OneofDescriptorProto_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class MethodDescriptorProto::_Internal {
  public:
   using HasBits =
@@ -5030,9 +4980,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(MethodDescriptorProtoGlobalsTypeInternal, _d
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  MethodDescriptorProtoGlobalsTypeInternal
         _MethodDescriptorProto_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* MethodDescriptorProto_get_class_data() {
+constexpr const ::_pbi::ClassData* MethodDescriptorProto_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _MethodDescriptorProto_globals_.GetClassData();
 #else
@@ -5040,7 +4989,6 @@ const ::_pbi::ClassData* MethodDescriptorProto_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class FieldDescriptorProto::_Internal {
  public:
   using HasBits =
@@ -5270,9 +5218,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FieldDescriptorProtoGlobalsTypeInternal, _de
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FieldDescriptorProtoGlobalsTypeInternal
         _FieldDescriptorProto_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* FieldDescriptorProto_get_class_data() {
+constexpr const ::_pbi::ClassData* FieldDescriptorProto_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _FieldDescriptorProto_globals_.GetClassData();
 #else
@@ -5280,7 +5227,6 @@ const ::_pbi::ClassData* FieldDescriptorProto_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class EnumValueDescriptorProto::_Internal {
  public:
   using HasBits =
@@ -5443,9 +5389,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProtoGlobalsTypeInternal,
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  EnumValueDescriptorProtoGlobalsTypeInternal
         _EnumValueDescriptorProto_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* EnumValueDescriptorProto_get_class_data() {
+constexpr const ::_pbi::ClassData* EnumValueDescriptorProto_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _EnumValueDescriptorProto_globals_.GetClassData();
 #else
@@ -5453,7 +5398,6 @@ const ::_pbi::ClassData* EnumValueDescriptorProto_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class DescriptorProto_ExtensionRange::_Internal {
  public:
   using HasBits =
@@ -5614,9 +5558,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRangeGlobalsTypeInt
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  DescriptorProto_ExtensionRangeGlobalsTypeInternal
         _DescriptorProto_ExtensionRange_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* DescriptorProto_ExtensionRange_get_class_data() {
+constexpr const ::_pbi::ClassData* DescriptorProto_ExtensionRange_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _DescriptorProto_ExtensionRange_globals_.GetClassData();
 #else
@@ -5624,7 +5567,6 @@ const ::_pbi::ClassData* DescriptorProto_ExtensionRange_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class ServiceDescriptorProto::_Internal {
  public:
   using HasBits =
@@ -5796,9 +5738,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(ServiceDescriptorProtoGlobalsTypeInternal, _
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  ServiceDescriptorProtoGlobalsTypeInternal
         _ServiceDescriptorProto_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* ServiceDescriptorProto_get_class_data() {
+constexpr const ::_pbi::ClassData* ServiceDescriptorProto_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _ServiceDescriptorProto_globals_.GetClassData();
 #else
@@ -5806,7 +5747,6 @@ const ::_pbi::ClassData* ServiceDescriptorProto_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class EnumDescriptorProto::_Internal {
  public:
   using HasBits =
@@ -6014,9 +5954,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(EnumDescriptorProtoGlobalsTypeInternal, _def
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  EnumDescriptorProtoGlobalsTypeInternal
         _EnumDescriptorProto_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* EnumDescriptorProto_get_class_data() {
+constexpr const ::_pbi::ClassData* EnumDescriptorProto_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _EnumDescriptorProto_globals_.GetClassData();
 #else
@@ -6024,7 +5963,6 @@ const ::_pbi::ClassData* EnumDescriptorProto_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class DescriptorProto::_Internal {
  public:
   using HasBits =
@@ -6315,9 +6253,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(DescriptorProtoGlobalsTypeInternal, _default
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  DescriptorProtoGlobalsTypeInternal
         _DescriptorProto_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* DescriptorProto_get_class_data() {
+constexpr const ::_pbi::ClassData* DescriptorProto_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _DescriptorProto_globals_.GetClassData();
 #else
@@ -6325,7 +6262,6 @@ const ::_pbi::ClassData* DescriptorProto_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class FileDescriptorProto::_Internal {
  public:
   using HasBits =
@@ -6628,9 +6564,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FileDescriptorProtoGlobalsTypeInternal, _def
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FileDescriptorProtoGlobalsTypeInternal
         _FileDescriptorProto_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* FileDescriptorProto_get_class_data() {
+constexpr const ::_pbi::ClassData* FileDescriptorProto_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _FileDescriptorProto_globals_.GetClassData();
 #else
@@ -6638,7 +6573,6 @@ const ::_pbi::ClassData* FileDescriptorProto_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class FileDescriptorSet::_Internal {
  public:
   using HasBits =
@@ -6788,9 +6722,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FileDescriptorSetGlobalsTypeInternal, _defau
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FileDescriptorSetGlobalsTypeInternal
         _FileDescriptorSet_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* FileDescriptorSet_get_class_data() {
+constexpr const ::_pbi::ClassData* FileDescriptorSet_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _FileDescriptorSet_globals_.GetClassData();
 #else
@@ -6798,7 +6731,6 @@ const ::_pbi::ClassData* FileDescriptorSet_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 }  // namespace protobuf
 }  // namespace google
 static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL

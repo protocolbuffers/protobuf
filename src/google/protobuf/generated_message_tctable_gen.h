@@ -65,8 +65,6 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     // This choice comes from the profile data.
     // Incompatible with `use_micro_string`.
     bool is_string_inlined;
-    bool is_implicitly_weak;
-    bool use_direct_tcparser_table;
     bool should_split;
     // Whether to use the MicroString representation.
     // This choice comes from the temporary opt-in data.
@@ -132,7 +130,6 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     kSplitSizeof,
     kSubMessageGlobals,
     kSubTable,
-    kSubMessageGlobalsWeak,
     kMessageVerifyFunc,
     kSelfVerifyFunc,
     kEnumRange,

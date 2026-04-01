@@ -199,9 +199,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(VersionGlobalsTypeInternal, _default) ==
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  VersionGlobalsTypeInternal
         _Version_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* Version_get_class_data() {
+constexpr const ::_pbi::ClassData* Version_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _Version_globals_.GetClassData();
 #else
@@ -209,7 +208,6 @@ const ::_pbi::ClassData* Version_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class CodeGeneratorResponse_File::_Internal {
  public:
   using HasBits =
@@ -376,9 +374,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_FileGlobalsTypeInterna
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  CodeGeneratorResponse_FileGlobalsTypeInternal
         _CodeGeneratorResponse_File_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* CodeGeneratorResponse_File_get_class_data() {
+constexpr const ::_pbi::ClassData* CodeGeneratorResponse_File_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _CodeGeneratorResponse_File_globals_.GetClassData();
 #else
@@ -386,7 +383,6 @@ const ::_pbi::ClassData* CodeGeneratorResponse_File_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class CodeGeneratorResponse::_Internal {
  public:
   using HasBits =
@@ -563,9 +559,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(CodeGeneratorResponseGlobalsTypeInternal, _d
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  CodeGeneratorResponseGlobalsTypeInternal
         _CodeGeneratorResponse_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* CodeGeneratorResponse_get_class_data() {
+constexpr const ::_pbi::ClassData* CodeGeneratorResponse_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _CodeGeneratorResponse_globals_.GetClassData();
 #else
@@ -573,7 +568,6 @@ const ::_pbi::ClassData* CodeGeneratorResponse_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class CodeGeneratorRequest::_Internal {
  public:
   using HasBits =
@@ -765,9 +759,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(CodeGeneratorRequestGlobalsTypeInternal, _de
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  CodeGeneratorRequestGlobalsTypeInternal
         _CodeGeneratorRequest_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* CodeGeneratorRequest_get_class_data() {
+constexpr const ::_pbi::ClassData* CodeGeneratorRequest_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _CodeGeneratorRequest_globals_.GetClassData();
 #else
@@ -775,7 +768,6 @@ const ::_pbi::ClassData* CodeGeneratorRequest_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google

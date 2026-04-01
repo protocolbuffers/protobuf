@@ -147,9 +147,7 @@ class MapReflectionTester;
 class TextFormat;
 
 namespace internal {
-struct FuzzPeer;
 struct DescriptorTable;
-struct DescriptorMethodsFriend;
 template <bool is_oneof>
 struct DynamicFieldInfoHelper;
 class HasBitsTestPeer;
@@ -1159,7 +1157,6 @@ class PROTOBUF_EXPORT Reflection final {
   template <typename MessageT>
   friend struct internal::MapDynamicFieldInfo;
   friend class internal::ReflectionVisit;
-  friend internal::DescriptorMethodsFriend;
   friend bool internal::IsDescendant(const Message& root,
                                      const Message& message);
   friend void internal::MaybePoisonAfterClear(Message* root);
@@ -1215,6 +1212,7 @@ class PROTOBUF_EXPORT Reflection final {
   friend class Message;
   friend class MessageLayoutInspector;
   friend class AssignDescriptorsHelper;
+  friend class DynamicMessage;
   friend class DynamicMessageFactory;
   friend class GeneratedMessageReflectionTestHelper;
   friend class python::MapReflectionFriend;
@@ -1230,7 +1228,6 @@ class PROTOBUF_EXPORT Reflection final {
   friend class internal::SwapFieldHelper;
   template <bool is_oneof>
   friend struct internal::DynamicFieldInfoHelper;
-  friend struct internal::FuzzPeer;
   // Needed for implementing text format for map.
   friend class internal::MapFieldPrinterHelper;
 

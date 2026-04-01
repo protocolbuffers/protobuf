@@ -192,9 +192,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(CppFeaturesGlobalsTypeInternal, _default) ==
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  CppFeaturesGlobalsTypeInternal
         _CppFeatures_globals_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
-const ::_pbi::ClassData* CppFeatures_get_class_data() {
+constexpr const ::_pbi::ClassData* CppFeatures_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return _CppFeatures_globals_.GetClassData();
 #else
@@ -202,7 +201,6 @@ const ::_pbi::ClassData* CppFeatures_get_class_data() {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 }  // namespace pb
 static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
     file_level_enum_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto[2];

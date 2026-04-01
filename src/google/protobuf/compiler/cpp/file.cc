@@ -588,6 +588,13 @@ struct FileGenerator::CrossFileReferences {
 void FileGenerator::GetCrossFileReferencesForField(const FieldDescriptor* field,
                                                    CrossFileReferences* refs) {
   const Descriptor* msg = field->message_type();
+
+  // If a map entry, cross reference to the mapped type if is it a message.
+  if (msg != nullptr && msg->options().map_entry()) {
+    field = msg->map_value();
+    msg = field->message_type();
+  }
+
   if (msg == nullptr) {
     return;
   }
@@ -628,10 +635,15 @@ void FileGenerator::GenerateInternalForwardDeclarations(
       ns.ChangeTo(Namespace(instance, options_));
 
       if (options_.lite_implicit_weak_fields) {
-        p->Emit({{"ptr", MsgGlobalsInstancePtr(instance, options_)}}, R"cc(
-          PROTOBUF_CONSTINIT __attribute__((weak)) const void* $ptr$ =
-              &::_pbi::implicit_weak_message_globals;
-        )cc");
+        p->Emit({{"Msg", ClassName(instance, false)}},
+                R"cc(
+                  PROTOBUF_CONSTINIT
+                  extern const $pbi$::TcParseTable<0> $Msg$_weak_parse_table_;
+                  PROTOBUF_CONSTINIT __attribute__((weak))
+                  const $pbi$::TcParseTable<0>
+                      $Msg$_weak_parse_table_ =
+                          $pbi$::ImplicitWeakMessage::MakeParseTable();
+                )cc");
       } else {
         p->Emit({{"type", MsgGlobalsInstanceType(instance, options_)},
                  {"name", MsgGlobalsInstanceName(instance, options_)}},

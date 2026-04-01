@@ -88,8 +88,6 @@ ParseFunctionGenerator::BuildFieldOptions(
             .value_or(kUnknownPresenceProbability),
         GetLazyStyle(field, options),
         IsStringInlined(field, options),
-        IsImplicitWeakField(field, options),
-        /* use_direct_tcparser_table */ true,
         ShouldSplit(field, options),
         IsMicroString(field, options),
     });
@@ -416,26 +414,29 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
                   )cc");
           break;
         case TailCallTableInfo::kSubTable:
-          p->Emit(
-              {
-                  {"sub_type", QualifiedClassName(
-                                   aux_entry.field->message_type(), options_)},
-                  {"sub_globals",
-                   QualifiedMsgGlobalsInstanceName(
-                       aux_entry.field->message_type(), options_)},
-              },
-              R"cc(
+          if (IsImplicitWeakField(aux_entry.field, options_)) {
+            p->Emit(
+                {{"sub_type", QualifiedClassName(
+                                  aux_entry.field->message_type(), options_)}},
+                "{&$sub_type$_weak_parse_table_.header},\n");
+          } else {
+            p->Emit(
+                {
+                    {"sub_type",
+                     QualifiedClassName(aux_entry.field->message_type(),
+                                        options_)},
+                    {"sub_globals",
+                     QualifiedMsgGlobalsInstanceName(
+                         aux_entry.field->message_type(), options_)},
+                },
+                R"cc(
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-                {::_pbi::TcParser::GetTable<$sub_type$>()},
+                  {::_pbi::TcParser::GetTable<$sub_type$>()},
 #else
-                {::_pbi::FieldAuxMessageGlobals(), &$sub_globals$},
+                  {::_pbi::FieldAuxMessageGlobals(), &$sub_globals$},
 #endif
-              )cc");
-          break;
-        case TailCallTableInfo::kSubMessageGlobalsWeak:
-          p->Emit({{"ptr", QualifiedMsgGlobalsInstancePtr(
-                               aux_entry.field->message_type(), options_)}},
-                  "{::_pbi::FieldAuxMessageGlobals{}, &$ptr$},\n");
+                )cc");
+          }
           break;
         case TailCallTableInfo::kMessageVerifyFunc:
           p->Emit({{"name", QualifiedClassName(aux_entry.field->message_type(),

@@ -5709,9 +5709,8 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
         PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
             PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $section_decl$ $globals_type$
                 $globals$;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
         namespace {
-        const ::_pbi::ClassData* $Msg$_get_class_data() {
+        constexpr const ::_pbi::ClassData* $Msg$_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
           return $globals$.GetClassData();
 #else
@@ -5719,18 +5718,18 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
         }
         }  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
       )cc");
 
   if (options_.lite_implicit_weak_fields) {
-    p->Emit(
-        {
-            {"ptr", MsgGlobalsInstancePtr(descriptor_, options_)},
-            {"name", MsgGlobalsInstanceName(descriptor_, options_)},
-        },
-        R"cc(
-          PROTOBUF_CONSTINIT const void* $ptr$ = &$globals$;
-        )cc");
+    p->Emit(R"cc(
+      PROTOBUF_CONSTINIT
+      extern const $pbi$::TcParseTable<0> $Msg$_weak_parse_table_;
+      PROTOBUF_CONSTINIT
+      const $pbi$::TcParseTable<0> $Msg$_weak_parse_table_ =
+          $pbi$::CreateStubTcParseTable<
+              $pb$::MessageLite, &$pbi$::GenericStubTrampolineParseFunction<>>(
+              $Msg$_get_class_data());
+    )cc");
   }
 }
 

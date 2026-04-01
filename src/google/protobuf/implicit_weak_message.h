@@ -99,6 +99,8 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
   static constexpr auto InternalGenerateParseTable_(
       const ClassData* class_data);
 
+  static constexpr auto MakeParseTable();
+
  private:
 #ifndef PROTOBUF_MESSAGE_GLOBALS
   static const TcParseTable<0> table_;
@@ -129,6 +131,27 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
   std::string* data_;
   google::protobuf::internal::CachedSize cached_size_{};
 };
+
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+struct ImplicitWeakMessageDefaultType : MessageGlobalsBase {
+  constexpr ImplicitWeakMessageDefaultType();
+  ~ImplicitWeakMessageDefaultType();
+  union {
+    ImplicitWeakMessage _default;  // NOLINT
+  };
+  TcParseTable<0> _table;  // NOLINT
+};
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+
+constexpr auto ImplicitWeakMessage::MakeParseTable() {
+  return internal::CreateStubTcParseTable<ImplicitWeakMessage, ParseImpl>(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+      class_data_.base()
+#else
+      implicit_weak_message_globals.GetClassData()
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+  );
+}
 
 // A type handler for use with implicit weak repeated message fields.
 template <typename ImplicitWeakType>

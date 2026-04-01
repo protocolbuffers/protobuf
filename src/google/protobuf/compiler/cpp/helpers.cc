@@ -589,11 +589,6 @@ std::string MsgGlobalsInstanceName(const Descriptor* descriptor,
   return absl::StrCat("_", ClassName(descriptor, false), "_globals_");
 }
 
-std::string MsgGlobalsInstancePtr(const Descriptor* descriptor,
-                                  const Options& options) {
-  return absl::StrCat(MsgGlobalsInstanceName(descriptor, options), "ptr_");
-}
-
 std::string QualifiedSplitDefaultInstanceName(const Descriptor* descriptor,
                                               const Options& options) {
   return QualifiedFileLevelSymbol(descriptor->file(),

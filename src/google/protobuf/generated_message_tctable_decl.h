@@ -571,14 +571,28 @@ static_assert(offsetof(TcParseTable<1>, fast_entries) ==
                   sizeof(TcParseTableBase),
               "Table entries must be laid out after TcParseTableBase.");
 
+// To be used with CreateStubTcParseTable below when the actual parse table can
+// be accessed from the `class_data` parameter.
+template <typename TCP = TcParser>
+PROTOBUF_CC inline const char* GenericStubTrampolineParseFunction(
+    MessageLite* msg, const char* ptr, ParseContext* ctx,
+    const ClassData* class_data) {
+  return TCP::ParseLoop(msg, ptr, ctx, class_data->tc_table);
+}
+
 template <typename T,
           PROTOBUF_CC const char* (*func)(T*, const char*, ParseContext*)>
 PROTOBUF_CC const char* StubParseImpl(PROTOBUF_TC_PARAM_DECL) {
   return func(static_cast<T*>(msg), ptr, ctx);
 }
 
-template <typename T,
-          PROTOBUF_CC const char* (*func)(T*, const char*, ParseContext*)>
+template <typename T, PROTOBUF_CC const char* (*func)(
+                          T*, const char*, ParseContext*, const ClassData*)>
+PROTOBUF_CC const char* StubParseImpl(PROTOBUF_TC_PARAM_DECL) {
+  return func(static_cast<T*>(msg), ptr, ctx, table->class_data);
+}
+
+template <typename T, auto func>
 constexpr TcParseTable<0> CreateStubTcParseTable(
     const ClassData* class_data,
     TcParseTableBase::PostLoopHandler post_loop_handler = nullptr) {
@@ -602,6 +616,7 @@ constexpr TcParseTable<0> CreateStubTcParseTable(
 #endif              // PROTOBUF_PREFETCH_PARSE_TABLE
       },
       {{{StubParseImpl<T, func>, {}}}},
+      {},
   };
 }
 

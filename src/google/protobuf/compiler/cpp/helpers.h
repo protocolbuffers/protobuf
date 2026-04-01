@@ -173,11 +173,6 @@ std::string MsgGlobalsInstanceType(const Descriptor* descriptor,
 std::string MsgGlobalsInstanceName(const Descriptor* descriptor,
                                    const Options& options);
 
-// Non-qualified name of the default instance pointer. This is used only for
-// implicit weak fields, where we need an extra indirection.
-std::string MsgGlobalsInstancePtr(const Descriptor* descriptor,
-                                  const Options& options);
-
 // Fully qualified name of the default_instance of this message.
 std::string QualifiedSplitDefaultInstanceName(const Descriptor* descriptor,
                                               const Options& options);

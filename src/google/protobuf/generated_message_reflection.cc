@@ -3684,8 +3684,18 @@ void Reflection::PopulateTcParseFieldAux(
       case internal::TailCallTableInfo::kSplitSizeof:
         field_aux++->offset = schema_.SizeofSplit();
         break;
-      case internal::TailCallTableInfo::kSubTable:
-      case internal::TailCallTableInfo::kSubMessageGlobalsWeak:
+      case internal::TailCallTableInfo::kSubTable: {
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        field_aux++->table =
+            internal::GetClassData(*GetDefaultMessageInstance(aux_entry.field))
+                ->tc_table;
+#else
+        field_aux++->message_globals_p =
+            MessageGlobalsBase::FromDefaultInstance(
+                GetDefaultMessageInstance(aux_entry.field));
+#endif
+        break;
+      }
       case internal::TailCallTableInfo::kMessageVerifyFunc:
       case internal::TailCallTableInfo::kSelfVerifyFunc:
         ABSL_LOG(FATAL) << "Not supported";
@@ -3736,11 +3746,8 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
         1.f,  // All fields are assumed present.
         GetLazyStyle(field),
         is_inlined,
-        // Only LITE can be implicitly weak.
-        /* is_implicitly_weak */ false,
         // We could change this to use direct table.
         // Might be easier to do when all messages support TDP.
-        /* use_direct_tcparser_table */ false,
         schema_.IsSplit(field),
         field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
             IsMicroString(field),

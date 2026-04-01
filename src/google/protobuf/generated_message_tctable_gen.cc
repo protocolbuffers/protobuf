@@ -223,16 +223,12 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
       }
       break;
     case FieldDescriptor::TYPE_MESSAGE:
-      picked =
-          (HasLazyRep(field, options) ? PROTOBUF_PICK_SINGLE_FUNCTION(kFastMl)
-           : options.use_direct_tcparser_table
-               ? PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMt)
-               : PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMd));
+      picked = (HasLazyRep(field, options)
+                    ? PROTOBUF_PICK_SINGLE_FUNCTION(kFastMl)
+                    : PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMt));
       break;
     case FieldDescriptor::TYPE_GROUP:
-      picked = (options.use_direct_tcparser_table
-                    ? PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastGt)
-                    : PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastGd));
+      picked = PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastGt);
       break;
   }
 
@@ -254,8 +250,7 @@ bool IsFieldEligibleForFastParsing(
     const TailCallTableInfo::MessageOptions& message_options) {
   const auto* field = entry.field;
   // Map, oneof, weak, and split fields are not handled on the fast path.
-  if (!IsFieldTypeEligibleForFastParsing(field) || options.is_implicitly_weak ||
-      options.should_split) {
+  if (!IsFieldTypeEligibleForFastParsing(field) || options.should_split) {
     return false;
   }
 
@@ -602,14 +597,7 @@ uint16_t MakeTypeCardForField(const FieldDescriptor* field, bool has_hasbit,
     }
 
     case FieldDescriptor::TYPE_GROUP:
-      type_card |= 0 | fl::kMessage | fl::kRepGroup;
-      if (options.is_implicitly_weak) {
-        type_card |= fl::kTvWeakPtr;
-      } else if (options.use_direct_tcparser_table) {
-        type_card |= fl::kTvTable;
-      } else {
-        type_card |= fl::kTvDefault;
-      }
+      type_card |= 0 | fl::kMessage | fl::kRepGroup | fl::kTvTable;
       break;
     case FieldDescriptor::TYPE_MESSAGE:
       if (field->is_map()) {
@@ -621,13 +609,7 @@ uint16_t MakeTypeCardForField(const FieldDescriptor* field, bool has_hasbit,
                      options.lazy_opt == field_layout::kTvLazy);
           type_card |= +fl::kRepLazy | options.lazy_opt;
         } else {
-          if (options.is_implicitly_weak) {
-            type_card |= fl::kTvWeakPtr;
-          } else if (options.use_direct_tcparser_table) {
-            type_card |= fl::kTvTable;
-          } else {
-            type_card |= fl::kTvDefault;
-          }
+          type_card |= fl::kTvTable;
         }
       }
       break;
@@ -740,8 +722,7 @@ TailCallTableInfo::BuildFieldEntries(
     return (field->type() == FieldDescriptor::TYPE_MESSAGE ||
             field->type() == FieldDescriptor::TYPE_GROUP) &&
            !field->is_map() && !field->options().weak() &&
-           !HasLazyRep(field, options) && !options.is_implicitly_weak &&
-           options.use_direct_tcparser_table && is_non_cold(options);
+           !HasLazyRep(field, options) && is_non_cold(options);
   };
   for (const FieldOptions& options : ordered_fields) {
     if (is_non_cold_subtable(options)) {
@@ -795,16 +776,13 @@ TailCallTableInfo::BuildFieldEntries(
           entry.aux_idx = TcParseTableBase::FieldEntry::kNoAuxIdx;
         }
       } else {
-        AuxType type = options.is_implicitly_weak ? kSubMessageGlobalsWeak
-                       : options.use_direct_tcparser_table ? kSubTable
-                                                           : kSubMessageGlobals;
-        if (type == kSubTable && is_non_cold(options)) {
-          aux_entries[subtable_aux_idx] = {type, {field}};
+        if (is_non_cold(options)) {
+          aux_entries[subtable_aux_idx] = {kSubTable, {field}};
           entry.aux_idx = subtable_aux_idx;
           ++subtable_aux_idx;
         } else {
           entry.aux_idx = aux_entries.size();
-          aux_entries.push_back({type, {field}});
+          aux_entries.push_back({kSubTable, {field}});
         }
       }
     } else if (field->type() == FieldDescriptor::TYPE_ENUM &&

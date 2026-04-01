@@ -72,12 +72,6 @@ namespace internal {
 // defined in generated_message_reflection.cc
 void RegisterFileLevelMetadata(const DescriptorTable* descriptor_table);
 
-struct DescriptorMethodsFriend {
-  static const TcParseTableBase* GetTcParseTable(const MessageLite& msg) {
-    return DownCastMessage<Message>(msg).GetReflection()->GetTcParseTable();
-  }
-};
-
 namespace {
 
 Metadata GetMetadataImpl(const internal::ClassDataFull& data) {
@@ -106,11 +100,6 @@ std::string InitializationErrorStringImpl(const MessageLite& msg) {
   return DownCastMessage<Message>(msg).InitializationErrorString();
 }
 
-// Helper function to get TcParseTable - logic from Message::GetTcParseTableImpl
-const internal::TcParseTableBase* GetTcParseTableImpl(const MessageLite& msg) {
-  return DescriptorMethodsFriend::GetTcParseTable(msg);
-}
-
 // Helper function for SpaceUsedLong - logic from Message::SpaceUsedLongImpl
 size_t SpaceUsedLongImpl(const MessageLite& msg_lite) {
   auto& msg = DownCastMessage<Message>(msg_lite);
@@ -126,8 +115,9 @@ std::string DebugStringImpl(const MessageLite& msg) {
 
 PROTOBUF_CONSTINIT PROTOBUF_EXPORT const DescriptorMethods
     kDescriptorMethods = {
-        GetTypeNameImpl,     InitializationErrorStringImpl,
-        GetTcParseTableImpl, SpaceUsedLongImpl,
+        GetTypeNameImpl,
+        InitializationErrorStringImpl,
+        SpaceUsedLongImpl,
         DebugStringImpl,
 };
 
