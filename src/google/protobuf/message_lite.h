@@ -670,11 +670,19 @@ struct MessageGlobalsBase {
   }
   constexpr const ClassData* GetClassData() const { return class_data.base(); }
 
-  explicit constexpr MessageGlobalsBase(ClassDataFull class_data)
-      : class_data(class_data) {}
+  explicit constexpr MessageGlobalsBase(ClassDataFull class_data,
+                                        const TcParseTableBase* table)
+      : class_data(class_data), table(table) {}
+
+  static const TcParseTableBase* ToParseTableBase(const void* g) {
+    const auto* globals = static_cast<const MessageGlobalsBase*>(g);
+    ABSL_DCHECK_NE(globals, nullptr);
+    return globals->table;
+  }
 
   // It also aliases to ClassDataLite.
   ClassDataFull class_data;
+  const TcParseTableBase* table;
 };
 
 template <const auto* kGlobals>
@@ -685,6 +693,7 @@ struct GeneratedMessageTraitsT {
   static const auto* class_data() {
     return MessageGlobalsBase::GetClassData(kGlobals);
   }
+  static constexpr const auto* globals() { return kGlobals; }
   static constexpr auto StrongPointer() { return kGlobals; }
 };
 #endif  // PROTOBUF_MESSAGE_GLOBALS

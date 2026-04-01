@@ -376,9 +376,15 @@ enum class TcParseFunction : uint8_t { kNone, PROTOBUF_TC_PARSE_FUNCTION_LIST };
 class PROTOBUF_EXPORT TcParser final {
  public:
   template <typename T>
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static constexpr auto GetTable() -> decltype(&T::_table_.header) {
     return &T::_table_.header;
   }
+#else
+  static const TcParseTableBase* GetTable() {
+    return MessageGlobalsBase::ToParseTableBase(MessageTraits<T>::globals());
+  }
+#endif
 
   static PROTOBUF_ALWAYS_INLINE const char* ParseMessage(
       MessageLite* msg, const char* ptr, ParseContext* ctx,

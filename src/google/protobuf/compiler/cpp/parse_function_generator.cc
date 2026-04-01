@@ -186,8 +186,10 @@ void ParseFunctionGenerator::GenerateDataDecls(io::Printer* p) {
             }}},
           R"cc(
             friend class $pbi$::TcParser;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
             $SECTION$
             static const ParseTableT_ _table_;
+#endif
           )cc");
 }
 
@@ -197,15 +199,12 @@ void ParseFunctionGenerator::GenerateDataDefinitions(io::Printer* p) {
       MakeNumToEntryTable(ordered_fields_);
   p->Emit(
       R"cc(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
         PROTOBUF_CONSTINIT
         PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const $Msg$::ParseTableT_
-            $Msg$::_table_ = $Msg$::InternalGenerateParseTable_(
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-                $Msg$_class_data_.base()
-#else
-                $globals$.GetClassData()
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-            );
+            $Msg$::_table_ =
+                $Msg$::InternalGenerateParseTable_($Msg$_class_data_.base());
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
       )cc");
 }
 
@@ -417,9 +416,21 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
                   )cc");
           break;
         case TailCallTableInfo::kSubTable:
-          p->Emit({{"name", QualifiedClassName(aux_entry.field->message_type(),
-                                               options_)}},
-                  "{::_pbi::TcParser::GetTable<$name$>()},\n");
+          p->Emit(
+              {
+                  {"sub_type", QualifiedClassName(
+                                   aux_entry.field->message_type(), options_)},
+                  {"sub_globals",
+                   QualifiedMsgGlobalsInstanceName(
+                       aux_entry.field->message_type(), options_)},
+              },
+              R"cc(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+                {::_pbi::TcParser::GetTable<$sub_type$>()},
+#else
+                {::_pbi::FieldAuxMessageGlobals(), &$sub_globals$},
+#endif
+              )cc");
           break;
         case TailCallTableInfo::kSubMessageGlobalsWeak:
           p->Emit({{"ptr", QualifiedMsgGlobalsInstancePtr(

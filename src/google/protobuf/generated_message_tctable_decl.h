@@ -465,6 +465,13 @@ struct alignas(uint64_t) TcParseTableBase {
     const MessageGlobalsBase* message_globals_weak() const {
       return *static_cast<const MessageGlobalsBase* const*>(message_globals_p);
     }
+    const TcParseTableBase* table_ptr() const {
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+      return table;
+#else
+      return MessageGlobalsBase::ToParseTableBase(message_globals_p);
+#endif
+    }
   };
   const FieldAux* field_aux(uint32_t idx) const {
     return reinterpret_cast<const FieldAux*>(reinterpret_cast<uintptr_t>(this) +
