@@ -965,7 +965,7 @@ cc_library(
     deps = [
         ":port",
         ":protobuf_lite",
-        "@abseil-cpp//absl/base:no_destructor",
+        ":repeated_field_proxy_traits",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings:cord",
         "@abseil-cpp//absl/strings:string_view",
@@ -993,6 +993,17 @@ cc_test(
         "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "repeated_field_proxy_traits",
+    hdrs = ["repeated_field_proxy_traits.h"],
+    strip_include_prefix = "/src",
+    deps = [
+        ":protobuf_lite",
+        "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/strings:string_view",
     ],
 )
 
