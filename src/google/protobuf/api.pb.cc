@@ -125,11 +125,16 @@ constexpr auto Mixin::InternalNewImpl_() {
                                             alignof(Mixin));
 }
 constexpr auto Mixin::InternalGenerateClassData_(
-    const MessageLite& prototype) {
+    const MessageLite& prototype,
+    const ::google::protobuf::internal::TcParseTableBase* tc_table) {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &prototype,
+#ifndef PROTOBUF_MESSAGE_GLOBALS
           &_table_.header,
+#else
+          tc_table,
+#endif
           nullptr,  // IsInitialized
           &Mixin::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<Mixin>(),
@@ -157,9 +162,12 @@ struct MixinGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
         _default(::_pbi::ConstantInitialized{},
                  Mixin_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
-        MessageGlobalsBase(
-            Mixin::InternalGenerateClassData_(_default)),
-        _default(::_pbi::ConstantInitialized{}, GetClassData())
+        MessageGlobalsBase(Mixin::InternalGenerateClassData_(
+                               _default, &_Mixin_globals_._table.header),
+                           &_Mixin_globals_._table.header),
+        _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        _table(::_pbi::PrivateAccess::GenerateParseTable<Mixin>(
+            GetClassData()))
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
@@ -167,6 +175,10 @@ struct MixinGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   union {
     alignas(::_pbi::kMaxMessageAlignment) Mixin _default;
   };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  decltype(::_pbi::PrivateAccess::GenerateParseTable<Mixin>(
+      ::std::declval<const ::_pbi::ClassData*>())) _table;
+#endif
 };
 #ifdef PROTOBUF_MESSAGE_GLOBALS
 static_assert(PROTOBUF_FIELD_OFFSET(MixinGlobalsTypeInternal, _default) ==
@@ -266,7 +278,11 @@ constexpr Method::ParseTableT_ Method::InternalGenerateParseTable_(const ::_pbi:
       {PROTOBUF_FIELD_OFFSET(Method, _impl_.edition_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
     }},
     {{
+        #ifndef PROTOBUF_MESSAGE_GLOBALS
         {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
+        #else
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::_Option_globals_},
+        #endif
     }},
     {{
       "\26\4\20\0\21\0\0\0\7\0\0\0\0\0\0\0"
@@ -325,11 +341,16 @@ constexpr auto Method::InternalNewImpl_() {
                                             alignof(Method));
 }
 constexpr auto Method::InternalGenerateClassData_(
-    const MessageLite& prototype) {
+    const MessageLite& prototype,
+    const ::google::protobuf::internal::TcParseTableBase* tc_table) {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &prototype,
+#ifndef PROTOBUF_MESSAGE_GLOBALS
           &_table_.header,
+#else
+          tc_table,
+#endif
           nullptr,  // IsInitialized
           &Method::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<Method>(),
@@ -357,9 +378,12 @@ struct MethodGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
         _default(::_pbi::ConstantInitialized{},
                  Method_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
-        MessageGlobalsBase(
-            Method::InternalGenerateClassData_(_default)),
-        _default(::_pbi::ConstantInitialized{}, GetClassData())
+        MessageGlobalsBase(Method::InternalGenerateClassData_(
+                               _default, &_Method_globals_._table.header),
+                           &_Method_globals_._table.header),
+        _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        _table(::_pbi::PrivateAccess::GenerateParseTable<Method>(
+            GetClassData()))
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
@@ -367,6 +391,10 @@ struct MethodGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   union {
     alignas(::_pbi::kMaxMessageAlignment) Method _default;
   };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  decltype(::_pbi::PrivateAccess::GenerateParseTable<Method>(
+      ::std::declval<const ::_pbi::ClassData*>())) _table;
+#endif
 };
 #ifdef PROTOBUF_MESSAGE_GLOBALS
 static_assert(PROTOBUF_FIELD_OFFSET(MethodGlobalsTypeInternal, _default) ==
@@ -466,10 +494,26 @@ constexpr Api::ParseTableT_ Api::InternalGenerateParseTable_(const ::_pbi::Class
       {PROTOBUF_FIELD_OFFSET(Api, _impl_.edition_), _Internal::kHasBitsOffset + 5, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
     }},
     {{
+        #ifndef PROTOBUF_MESSAGE_GLOBALS
         {::_pbi::TcParser::GetTable<::google::protobuf::Method>()},
+        #else
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::_Method_globals_},
+        #endif
+        #ifndef PROTOBUF_MESSAGE_GLOBALS
         {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
+        #else
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::_Option_globals_},
+        #endif
+        #ifndef PROTOBUF_MESSAGE_GLOBALS
         {::_pbi::TcParser::GetTable<::google::protobuf::SourceContext>()},
+        #else
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::_SourceContext_globals_},
+        #endif
+        #ifndef PROTOBUF_MESSAGE_GLOBALS
         {::_pbi::TcParser::GetTable<::google::protobuf::Mixin>()},
+        #else
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::_Mixin_globals_},
+        #endif
     }},
     {{
       "\23\4\0\0\7\0\0\0\7\0\0\0\0\0\0\0"
@@ -533,11 +577,16 @@ constexpr auto Api::InternalNewImpl_() {
                                             alignof(Api));
 }
 constexpr auto Api::InternalGenerateClassData_(
-    const MessageLite& prototype) {
+    const MessageLite& prototype,
+    const ::google::protobuf::internal::TcParseTableBase* tc_table) {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &prototype,
+#ifndef PROTOBUF_MESSAGE_GLOBALS
           &_table_.header,
+#else
+          tc_table,
+#endif
           nullptr,  // IsInitialized
           &Api::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<Api>(),
@@ -565,9 +614,12 @@ struct ApiGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
         _default(::_pbi::ConstantInitialized{},
                  Api_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
-        MessageGlobalsBase(
-            Api::InternalGenerateClassData_(_default)),
-        _default(::_pbi::ConstantInitialized{}, GetClassData())
+        MessageGlobalsBase(Api::InternalGenerateClassData_(
+                               _default, &_Api_globals_._table.header),
+                           &_Api_globals_._table.header),
+        _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        _table(::_pbi::PrivateAccess::GenerateParseTable<Api>(
+            GetClassData()))
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
@@ -575,6 +627,10 @@ struct ApiGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   union {
     alignas(::_pbi::kMaxMessageAlignment) Api _default;
   };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  decltype(::_pbi::PrivateAccess::GenerateParseTable<Api>(
+      ::std::declval<const ::_pbi::ClassData*>())) _table;
+#endif
 };
 #ifdef PROTOBUF_MESSAGE_GLOBALS
 static_assert(PROTOBUF_FIELD_OFFSET(ApiGlobalsTypeInternal, _default) ==
@@ -850,19 +906,17 @@ Api::GetClassData() const {
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Api::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&_Api_globals_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_Api_globals_.GetClassData()->tc_table);
+  ::google::protobuf::internal::PrefetchToLocalCache(
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_Api_globals_));
   return _Api_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Api::ParseTableT_
-    Api::_table_ = Api::InternalGenerateParseTable_(
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        Api_class_data_.base()
-#else
-        _Api_globals_.GetClassData()
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-    );
+    Api::_table_ =
+        Api::InternalGenerateParseTable_(Api_class_data_.base());
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Api::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Api)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1312,19 +1366,17 @@ Method::GetClassData() const {
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Method::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&_Method_globals_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_Method_globals_.GetClassData()->tc_table);
+  ::google::protobuf::internal::PrefetchToLocalCache(
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_Method_globals_));
   return _Method_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Method::ParseTableT_
-    Method::_table_ = Method::InternalGenerateParseTable_(
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        Method_class_data_.base()
-#else
-        _Method_globals_.GetClassData()
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-    );
+    Method::_table_ =
+        Method::InternalGenerateParseTable_(Method_class_data_.base());
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Method::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Method)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1729,19 +1781,17 @@ Mixin::GetClassData() const {
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Mixin::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&_Mixin_globals_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_Mixin_globals_.GetClassData()->tc_table);
+  ::google::protobuf::internal::PrefetchToLocalCache(
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_Mixin_globals_));
   return _Mixin_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Mixin::ParseTableT_
-    Mixin::_table_ = Mixin::InternalGenerateParseTable_(
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        Mixin_class_data_.base()
-#else
-        _Mixin_globals_.GetClassData()
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-    );
+    Mixin::_table_ =
+        Mixin::InternalGenerateParseTable_(Mixin_class_data_.base());
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Mixin::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Mixin)
   ::google::protobuf::internal::TSanWrite(&_impl_);

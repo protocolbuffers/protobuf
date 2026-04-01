@@ -111,11 +111,16 @@ constexpr auto SourceContext::InternalNewImpl_() {
                                             alignof(SourceContext));
 }
 constexpr auto SourceContext::InternalGenerateClassData_(
-    const MessageLite& prototype) {
+    const MessageLite& prototype,
+    const ::google::protobuf::internal::TcParseTableBase* tc_table) {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &prototype,
+#ifndef PROTOBUF_MESSAGE_GLOBALS
           &_table_.header,
+#else
+          tc_table,
+#endif
           nullptr,  // IsInitialized
           &SourceContext::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<SourceContext>(),
@@ -143,9 +148,12 @@ struct SourceContextGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
         _default(::_pbi::ConstantInitialized{},
                  SourceContext_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
-        MessageGlobalsBase(
-            SourceContext::InternalGenerateClassData_(_default)),
-        _default(::_pbi::ConstantInitialized{}, GetClassData())
+        MessageGlobalsBase(SourceContext::InternalGenerateClassData_(
+                               _default, &_SourceContext_globals_._table.header),
+                           &_SourceContext_globals_._table.header),
+        _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        _table(::_pbi::PrivateAccess::GenerateParseTable<SourceContext>(
+            GetClassData()))
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
@@ -153,6 +161,10 @@ struct SourceContextGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   union {
     alignas(::_pbi::kMaxMessageAlignment) SourceContext _default;
   };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  decltype(::_pbi::PrivateAccess::GenerateParseTable<SourceContext>(
+      ::std::declval<const ::_pbi::ClassData*>())) _table;
+#endif
 };
 #ifdef PROTOBUF_MESSAGE_GLOBALS
 static_assert(PROTOBUF_FIELD_OFFSET(SourceContextGlobalsTypeInternal, _default) ==
@@ -299,19 +311,17 @@ SourceContext::GetClassData() const {
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 SourceContext::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&_SourceContext_globals_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_SourceContext_globals_.GetClassData()->tc_table);
+  ::google::protobuf::internal::PrefetchToLocalCache(
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_SourceContext_globals_));
   return _SourceContext_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const SourceContext::ParseTableT_
-    SourceContext::_table_ = SourceContext::InternalGenerateParseTable_(
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        SourceContext_class_data_.base()
-#else
-        _SourceContext_globals_.GetClassData()
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-    );
+    SourceContext::_table_ =
+        SourceContext::InternalGenerateParseTable_(SourceContext_class_data_.base());
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void SourceContext::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.SourceContext)
   ::google::protobuf::internal::TSanWrite(&_impl_);

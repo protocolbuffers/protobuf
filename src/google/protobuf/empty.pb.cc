@@ -88,11 +88,16 @@ constexpr auto Empty::InternalNewImpl_() {
                                             alignof(Empty));
 }
 constexpr auto Empty::InternalGenerateClassData_(
-    const MessageLite& prototype) {
+    const MessageLite& prototype,
+    const ::google::protobuf::internal::TcParseTableBase* tc_table) {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &prototype,
+#ifndef PROTOBUF_MESSAGE_GLOBALS
           &_table_.header,
+#else
+          tc_table,
+#endif
           nullptr,  // IsInitialized
           &Empty::MergeImpl,
           ::google::protobuf::internal::ZeroFieldsBase::GetNewImpl<Empty>(),
@@ -120,9 +125,12 @@ struct EmptyGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
         _default(::_pbi::ConstantInitialized{},
                  Empty_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
-        MessageGlobalsBase(
-            Empty::InternalGenerateClassData_(_default)),
-        _default(::_pbi::ConstantInitialized{}, GetClassData())
+        MessageGlobalsBase(Empty::InternalGenerateClassData_(
+                               _default, &_Empty_globals_._table.header),
+                           &_Empty_globals_._table.header),
+        _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        _table(::_pbi::PrivateAccess::GenerateParseTable<Empty>(
+            GetClassData()))
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
@@ -130,6 +138,10 @@ struct EmptyGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   union {
     alignas(::_pbi::kMaxMessageAlignment) Empty _default;
   };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  decltype(::_pbi::PrivateAccess::GenerateParseTable<Empty>(
+      ::std::declval<const ::_pbi::ClassData*>())) _table;
+#endif
 };
 #ifdef PROTOBUF_MESSAGE_GLOBALS
 static_assert(PROTOBUF_FIELD_OFFSET(EmptyGlobalsTypeInternal, _default) ==
@@ -238,19 +250,17 @@ Empty::GetClassData() const {
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Empty::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&_Empty_globals_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_Empty_globals_.GetClassData()->tc_table);
+  ::google::protobuf::internal::PrefetchToLocalCache(
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_Empty_globals_));
   return _Empty_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Empty::ParseTableT_
-    Empty::_table_ = Empty::InternalGenerateParseTable_(
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        Empty_class_data_.base()
-#else
-        _Empty_globals_.GetClassData()
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-    );
+    Empty::_table_ =
+        Empty::InternalGenerateParseTable_(Empty_class_data_.base());
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
 
 
