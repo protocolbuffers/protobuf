@@ -1101,6 +1101,8 @@ final class ArrayDecoders {
       case WireFormat.WIRETYPE_START_GROUP:
         final int endGroup = (tag & ~0x7) | WireFormat.WIRETYPE_END_GROUP;
         int lastTag = 0;
+        registers.recursionDepth++;
+        checkRecursionLimit(registers.recursionDepth);
         while (position < limit) {
           position = decodeVarint32(data, position, registers);
           lastTag = registers.int1;
@@ -1109,6 +1111,7 @@ final class ArrayDecoders {
           }
           position = skipField(lastTag, data, position, limit, registers);
         }
+        registers.recursionDepth--;
         if (position > limit || lastTag != endGroup) {
           throw InvalidProtocolBufferException.parseFailure();
         }
