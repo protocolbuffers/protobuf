@@ -36,6 +36,39 @@ PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
 #endif
 namespace google {
 namespace protobuf {
+class Empty::_Internal {
+ public:
+};
+
+constexpr Empty::ParseTableT_ Empty::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+  return ParseTableT_{
+    {
+      PROTOBUF_FIELD_OFFSET(Empty,
+                            _impl_._cached_size_),  // no hasbits
+      0, // no _extensions_
+      0, 0,  // max_field_number, fast_idx_mask
+      offsetof(ParseTableT_, field_lookup_table),
+      4294967295,  // skipmap
+      offsetof(ParseTableT_, field_names),  // no field_entries
+      0,  // num_field_entries
+      0,  // num_aux_entries
+      offsetof(ParseTableT_, field_names),  // no aux_entries
+      class_data,
+      nullptr,  // post_loop_handler
+      ::_pbi::TcParser::GenericFallback,  // fallback
+      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+      ::_pbi::TcParser::GetTable<::google::protobuf::Empty>(),  // to_prefetch
+      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+    }, {{
+      {::_pbi::TcParser::MiniParse, {}},
+    }}, {{
+      65535, 65535
+    }}, // no field_entries, or aux_entries
+    {{
+    }},
+  };
+}
+
 template <typename>
 constexpr Empty::Empty(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* class_data)
@@ -165,10 +198,6 @@ namespace google {
 namespace protobuf {
 // ===================================================================
 
-class Empty::_Internal {
- public:
-};
-
 Empty::Empty(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::internal::ZeroFieldsBase(arena, Empty_get_class_data()) {
@@ -213,38 +242,15 @@ Empty::GetClassData() const {
   return _Empty_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 0, 0, 0, 2>
-Empty::_table_ = {
-  {
-    PROTOBUF_FIELD_OFFSET(Empty,
-                          _impl_._cached_size_),  // no hasbits
-    0, // no _extensions_
-    0, 0,  // max_field_number, fast_idx_mask
-    offsetof(decltype(_table_), field_lookup_table),
-    4294967295,  // skipmap
-    offsetof(decltype(_table_), field_names),  // no field_entries
-    0,  // num_field_entries
-    0,  // num_aux_entries
-    offsetof(decltype(_table_), field_names),  // no aux_entries
-    #ifndef PROTOBUF_MESSAGE_GLOBALS
-    Empty_class_data_.base(),
-    #else
-    _Empty_globals_.GetClassData(),
-    #endif
-    nullptr,  // post_loop_handler
-    ::_pbi::TcParser::GenericFallback,  // fallback
-    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-    ::_pbi::TcParser::GetTable<::google::protobuf::Empty>(),  // to_prefetch
-    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  }, {{
-    {::_pbi::TcParser::MiniParse, {}},
-  }}, {{
-    65535, 65535
-  }}, // no field_entries, or aux_entries
-  {{
-  }},
-};
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Empty::ParseTableT_
+    Empty::_table_ = Empty::InternalGenerateParseTable_(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        Empty_class_data_.base()
+#else
+        _Empty_globals_.GetClassData()
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+    );
 
 
 

@@ -52,6 +52,49 @@ PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
 #endif
 namespace google {
 namespace protobuf {
+class UInt64Value::_Internal {
+ public:
+  using HasBits =
+      decltype(::std::declval<UInt64Value>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_._has_bits_);
+};
+
+constexpr UInt64Value::ParseTableT_ UInt64Value::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+  return ParseTableT_{
+    {
+      PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_._has_bits_),
+      0, // no _extensions_
+      1, 0,  // max_field_number, fast_idx_mask
+      offsetof(ParseTableT_, field_lookup_table),
+      4294967294,  // skipmap
+      offsetof(ParseTableT_, field_entries),
+      1,  // num_field_entries
+      0,  // num_aux_entries
+      offsetof(ParseTableT_, field_names),  // no aux_entries
+      class_data,
+      nullptr,  // post_loop_handler
+      ::_pbi::TcParser::GenericFallback,  // fallback
+      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+      ::_pbi::TcParser::GetTable<::google::protobuf::UInt64Value>(),  // to_prefetch
+      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+    }, {{
+      // uint64 value = 1;
+      {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(UInt64Value, _impl_.value_), 0>(),
+       {8, 0, 0,
+        PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_.value_)}},
+    }}, {{
+      65535, 65535
+    }}, {{
+      // uint64 value = 1;
+      {PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUInt64)},
+    }},
+    // no aux_entries
+    {{
+    }},
+  };
+}
+
 
 inline constexpr UInt64Value::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -140,6 +183,49 @@ const ::_pbi::ClassData* UInt64Value_get_class_data() {
 }
 }  // namespace
 #endif  // PROTOBUF_CUSTOM_VTABLE
+class UInt32Value::_Internal {
+ public:
+  using HasBits =
+      decltype(::std::declval<UInt32Value>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_._has_bits_);
+};
+
+constexpr UInt32Value::ParseTableT_ UInt32Value::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+  return ParseTableT_{
+    {
+      PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_._has_bits_),
+      0, // no _extensions_
+      1, 0,  // max_field_number, fast_idx_mask
+      offsetof(ParseTableT_, field_lookup_table),
+      4294967294,  // skipmap
+      offsetof(ParseTableT_, field_entries),
+      1,  // num_field_entries
+      0,  // num_aux_entries
+      offsetof(ParseTableT_, field_names),  // no aux_entries
+      class_data,
+      nullptr,  // post_loop_handler
+      ::_pbi::TcParser::GenericFallback,  // fallback
+      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+      ::_pbi::TcParser::GetTable<::google::protobuf::UInt32Value>(),  // to_prefetch
+      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+    }, {{
+      // uint32 value = 1;
+      {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(UInt32Value, _impl_.value_), 0>(),
+       {8, 0, 0,
+        PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_.value_)}},
+    }}, {{
+      65535, 65535
+    }}, {{
+      // uint32 value = 1;
+      {PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUInt32)},
+    }},
+    // no aux_entries
+    {{
+    }},
+  };
+}
+
 
 inline constexpr UInt32Value::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -228,6 +314,52 @@ const ::_pbi::ClassData* UInt32Value_get_class_data() {
 }
 }  // namespace
 #endif  // PROTOBUF_CUSTOM_VTABLE
+class StringValue::_Internal {
+ public:
+  using HasBits =
+      decltype(::std::declval<StringValue>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(StringValue, _impl_._has_bits_);
+};
+
+constexpr StringValue::ParseTableT_ StringValue::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+  return ParseTableT_{
+    {
+      PROTOBUF_FIELD_OFFSET(StringValue, _impl_._has_bits_),
+      0, // no _extensions_
+      1, 0,  // max_field_number, fast_idx_mask
+      offsetof(ParseTableT_, field_lookup_table),
+      4294967294,  // skipmap
+      offsetof(ParseTableT_, field_entries),
+      1,  // num_field_entries
+      0,  // num_aux_entries
+      offsetof(ParseTableT_, field_names),  // no aux_entries
+      class_data,
+      nullptr,  // post_loop_handler
+      ::_pbi::TcParser::GenericFallback,  // fallback
+      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+      ::_pbi::TcParser::GetTable<::google::protobuf::StringValue>(),  // to_prefetch
+      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+    }, {{
+      // string value = 1;
+      {::_pbi::TcParser::FastUS1,
+       {10, 0, 0,
+        PROTOBUF_FIELD_OFFSET(StringValue, _impl_.value_)}},
+    }}, {{
+      65535, 65535
+    }}, {{
+      // string value = 1;
+      {PROTOBUF_FIELD_OFFSET(StringValue, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    }},
+    // no aux_entries
+    {{
+      "\33\5\0\0\0\0\0\0"
+      "google.protobuf.StringValue"
+      "value"
+    }},
+  };
+}
+
 
 inline constexpr StringValue::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -318,6 +450,49 @@ const ::_pbi::ClassData* StringValue_get_class_data() {
 }
 }  // namespace
 #endif  // PROTOBUF_CUSTOM_VTABLE
+class Int64Value::_Internal {
+ public:
+  using HasBits =
+      decltype(::std::declval<Int64Value>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(Int64Value, _impl_._has_bits_);
+};
+
+constexpr Int64Value::ParseTableT_ Int64Value::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+  return ParseTableT_{
+    {
+      PROTOBUF_FIELD_OFFSET(Int64Value, _impl_._has_bits_),
+      0, // no _extensions_
+      1, 0,  // max_field_number, fast_idx_mask
+      offsetof(ParseTableT_, field_lookup_table),
+      4294967294,  // skipmap
+      offsetof(ParseTableT_, field_entries),
+      1,  // num_field_entries
+      0,  // num_aux_entries
+      offsetof(ParseTableT_, field_names),  // no aux_entries
+      class_data,
+      nullptr,  // post_loop_handler
+      ::_pbi::TcParser::GenericFallback,  // fallback
+      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+      ::_pbi::TcParser::GetTable<::google::protobuf::Int64Value>(),  // to_prefetch
+      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+    }, {{
+      // int64 value = 1;
+      {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(Int64Value, _impl_.value_), 0>(),
+       {8, 0, 0,
+        PROTOBUF_FIELD_OFFSET(Int64Value, _impl_.value_)}},
+    }}, {{
+      65535, 65535
+    }}, {{
+      // int64 value = 1;
+      {PROTOBUF_FIELD_OFFSET(Int64Value, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt64)},
+    }},
+    // no aux_entries
+    {{
+    }},
+  };
+}
+
 
 inline constexpr Int64Value::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -406,6 +581,49 @@ const ::_pbi::ClassData* Int64Value_get_class_data() {
 }
 }  // namespace
 #endif  // PROTOBUF_CUSTOM_VTABLE
+class Int32Value::_Internal {
+ public:
+  using HasBits =
+      decltype(::std::declval<Int32Value>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(Int32Value, _impl_._has_bits_);
+};
+
+constexpr Int32Value::ParseTableT_ Int32Value::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+  return ParseTableT_{
+    {
+      PROTOBUF_FIELD_OFFSET(Int32Value, _impl_._has_bits_),
+      0, // no _extensions_
+      1, 0,  // max_field_number, fast_idx_mask
+      offsetof(ParseTableT_, field_lookup_table),
+      4294967294,  // skipmap
+      offsetof(ParseTableT_, field_entries),
+      1,  // num_field_entries
+      0,  // num_aux_entries
+      offsetof(ParseTableT_, field_names),  // no aux_entries
+      class_data,
+      nullptr,  // post_loop_handler
+      ::_pbi::TcParser::GenericFallback,  // fallback
+      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+      ::_pbi::TcParser::GetTable<::google::protobuf::Int32Value>(),  // to_prefetch
+      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+    }, {{
+      // int32 value = 1;
+      {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Int32Value, _impl_.value_), 0>(),
+       {8, 0, 0,
+        PROTOBUF_FIELD_OFFSET(Int32Value, _impl_.value_)}},
+    }}, {{
+      65535, 65535
+    }}, {{
+      // int32 value = 1;
+      {PROTOBUF_FIELD_OFFSET(Int32Value, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
+    }},
+    // no aux_entries
+    {{
+    }},
+  };
+}
+
 
 inline constexpr Int32Value::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -494,6 +712,49 @@ const ::_pbi::ClassData* Int32Value_get_class_data() {
 }
 }  // namespace
 #endif  // PROTOBUF_CUSTOM_VTABLE
+class FloatValue::_Internal {
+ public:
+  using HasBits =
+      decltype(::std::declval<FloatValue>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(FloatValue, _impl_._has_bits_);
+};
+
+constexpr FloatValue::ParseTableT_ FloatValue::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+  return ParseTableT_{
+    {
+      PROTOBUF_FIELD_OFFSET(FloatValue, _impl_._has_bits_),
+      0, // no _extensions_
+      1, 0,  // max_field_number, fast_idx_mask
+      offsetof(ParseTableT_, field_lookup_table),
+      4294967294,  // skipmap
+      offsetof(ParseTableT_, field_entries),
+      1,  // num_field_entries
+      0,  // num_aux_entries
+      offsetof(ParseTableT_, field_names),  // no aux_entries
+      class_data,
+      nullptr,  // post_loop_handler
+      ::_pbi::TcParser::GenericFallback,  // fallback
+      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+      ::_pbi::TcParser::GetTable<::google::protobuf::FloatValue>(),  // to_prefetch
+      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+    }, {{
+      // float value = 1;
+      {::_pbi::TcParser::FastF32S1,
+       {13, 0, 0,
+        PROTOBUF_FIELD_OFFSET(FloatValue, _impl_.value_)}},
+    }}, {{
+      65535, 65535
+    }}, {{
+      // float value = 1;
+      {PROTOBUF_FIELD_OFFSET(FloatValue, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
+    }},
+    // no aux_entries
+    {{
+    }},
+  };
+}
+
 
 inline constexpr FloatValue::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -582,6 +843,49 @@ const ::_pbi::ClassData* FloatValue_get_class_data() {
 }
 }  // namespace
 #endif  // PROTOBUF_CUSTOM_VTABLE
+class DoubleValue::_Internal {
+ public:
+  using HasBits =
+      decltype(::std::declval<DoubleValue>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_._has_bits_);
+};
+
+constexpr DoubleValue::ParseTableT_ DoubleValue::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+  return ParseTableT_{
+    {
+      PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_._has_bits_),
+      0, // no _extensions_
+      1, 0,  // max_field_number, fast_idx_mask
+      offsetof(ParseTableT_, field_lookup_table),
+      4294967294,  // skipmap
+      offsetof(ParseTableT_, field_entries),
+      1,  // num_field_entries
+      0,  // num_aux_entries
+      offsetof(ParseTableT_, field_names),  // no aux_entries
+      class_data,
+      nullptr,  // post_loop_handler
+      ::_pbi::TcParser::GenericFallback,  // fallback
+      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+      ::_pbi::TcParser::GetTable<::google::protobuf::DoubleValue>(),  // to_prefetch
+      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+    }, {{
+      // double value = 1;
+      {::_pbi::TcParser::FastF64S1,
+       {9, 0, 0,
+        PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_.value_)}},
+    }}, {{
+      65535, 65535
+    }}, {{
+      // double value = 1;
+      {PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kDouble)},
+    }},
+    // no aux_entries
+    {{
+    }},
+  };
+}
+
 
 inline constexpr DoubleValue::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -670,6 +974,49 @@ const ::_pbi::ClassData* DoubleValue_get_class_data() {
 }
 }  // namespace
 #endif  // PROTOBUF_CUSTOM_VTABLE
+class BytesValue::_Internal {
+ public:
+  using HasBits =
+      decltype(::std::declval<BytesValue>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(BytesValue, _impl_._has_bits_);
+};
+
+constexpr BytesValue::ParseTableT_ BytesValue::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+  return ParseTableT_{
+    {
+      PROTOBUF_FIELD_OFFSET(BytesValue, _impl_._has_bits_),
+      0, // no _extensions_
+      1, 0,  // max_field_number, fast_idx_mask
+      offsetof(ParseTableT_, field_lookup_table),
+      4294967294,  // skipmap
+      offsetof(ParseTableT_, field_entries),
+      1,  // num_field_entries
+      0,  // num_aux_entries
+      offsetof(ParseTableT_, field_names),  // no aux_entries
+      class_data,
+      nullptr,  // post_loop_handler
+      ::_pbi::TcParser::GenericFallback,  // fallback
+      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+      ::_pbi::TcParser::GetTable<::google::protobuf::BytesValue>(),  // to_prefetch
+      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+    }, {{
+      // bytes value = 1;
+      {::_pbi::TcParser::FastBS1,
+       {10, 0, 0,
+        PROTOBUF_FIELD_OFFSET(BytesValue, _impl_.value_)}},
+    }}, {{
+      65535, 65535
+    }}, {{
+      // bytes value = 1;
+      {PROTOBUF_FIELD_OFFSET(BytesValue, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kBytes | ::_fl::kRepAString)},
+    }},
+    // no aux_entries
+    {{
+    }},
+  };
+}
+
 
 inline constexpr BytesValue::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -760,6 +1107,49 @@ const ::_pbi::ClassData* BytesValue_get_class_data() {
 }
 }  // namespace
 #endif  // PROTOBUF_CUSTOM_VTABLE
+class BoolValue::_Internal {
+ public:
+  using HasBits =
+      decltype(::std::declval<BoolValue>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(BoolValue, _impl_._has_bits_);
+};
+
+constexpr BoolValue::ParseTableT_ BoolValue::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+  return ParseTableT_{
+    {
+      PROTOBUF_FIELD_OFFSET(BoolValue, _impl_._has_bits_),
+      0, // no _extensions_
+      1, 0,  // max_field_number, fast_idx_mask
+      offsetof(ParseTableT_, field_lookup_table),
+      4294967294,  // skipmap
+      offsetof(ParseTableT_, field_entries),
+      1,  // num_field_entries
+      0,  // num_aux_entries
+      offsetof(ParseTableT_, field_names),  // no aux_entries
+      class_data,
+      nullptr,  // post_loop_handler
+      ::_pbi::TcParser::GenericFallback,  // fallback
+      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+      ::_pbi::TcParser::GetTable<::google::protobuf::BoolValue>(),  // to_prefetch
+      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+    }, {{
+      // bool value = 1;
+      {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(BoolValue, _impl_.value_), 0>(),
+       {8, 0, 0,
+        PROTOBUF_FIELD_OFFSET(BoolValue, _impl_.value_)}},
+    }}, {{
+      65535, 65535
+    }}, {{
+      // bool value = 1;
+      {PROTOBUF_FIELD_OFFSET(BoolValue, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
+    }},
+    // no aux_entries
+    {{
+    }},
+  };
+}
+
 
 inline constexpr BoolValue::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -964,14 +1354,6 @@ namespace google {
 namespace protobuf {
 // ===================================================================
 
-class DoubleValue::_Internal {
- public:
-  using HasBits =
-      decltype(::std::declval<DoubleValue>()._impl_._has_bits_);
-  static constexpr ::int32_t kHasBitsOffset =
-      8 * PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_._has_bits_);
-};
-
 DoubleValue::DoubleValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, DoubleValue_get_class_data()) {
@@ -1034,44 +1416,15 @@ DoubleValue::GetClassData() const {
   return _DoubleValue_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 0, 2>
-DoubleValue::_table_ = {
-  {
-    PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_._has_bits_),
-    0, // no _extensions_
-    1, 0,  // max_field_number, fast_idx_mask
-    offsetof(decltype(_table_), field_lookup_table),
-    4294967294,  // skipmap
-    offsetof(decltype(_table_), field_entries),
-    1,  // num_field_entries
-    0,  // num_aux_entries
-    offsetof(decltype(_table_), field_names),  // no aux_entries
-    #ifndef PROTOBUF_MESSAGE_GLOBALS
-    DoubleValue_class_data_.base(),
-    #else
-    _DoubleValue_globals_.GetClassData(),
-    #endif
-    nullptr,  // post_loop_handler
-    ::_pbi::TcParser::GenericFallback,  // fallback
-    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-    ::_pbi::TcParser::GetTable<::google::protobuf::DoubleValue>(),  // to_prefetch
-    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  }, {{
-    // double value = 1;
-    {::_pbi::TcParser::FastF64S1,
-     {9, 0, 0,
-      PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_.value_)}},
-  }}, {{
-    65535, 65535
-  }}, {{
-    // double value = 1;
-    {PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kDouble)},
-  }},
-  // no aux_entries
-  {{
-  }},
-};
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const DoubleValue::ParseTableT_
+    DoubleValue::_table_ = DoubleValue::InternalGenerateParseTable_(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        DoubleValue_class_data_.base()
+#else
+        _DoubleValue_globals_.GetClassData()
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+    );
 PROTOBUF_NOINLINE void DoubleValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.DoubleValue)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1192,14 +1545,6 @@ void DoubleValue::InternalSwap(DoubleValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 }
 // ===================================================================
 
-class FloatValue::_Internal {
- public:
-  using HasBits =
-      decltype(::std::declval<FloatValue>()._impl_._has_bits_);
-  static constexpr ::int32_t kHasBitsOffset =
-      8 * PROTOBUF_FIELD_OFFSET(FloatValue, _impl_._has_bits_);
-};
-
 FloatValue::FloatValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FloatValue_get_class_data()) {
@@ -1262,44 +1607,15 @@ FloatValue::GetClassData() const {
   return _FloatValue_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 0, 2>
-FloatValue::_table_ = {
-  {
-    PROTOBUF_FIELD_OFFSET(FloatValue, _impl_._has_bits_),
-    0, // no _extensions_
-    1, 0,  // max_field_number, fast_idx_mask
-    offsetof(decltype(_table_), field_lookup_table),
-    4294967294,  // skipmap
-    offsetof(decltype(_table_), field_entries),
-    1,  // num_field_entries
-    0,  // num_aux_entries
-    offsetof(decltype(_table_), field_names),  // no aux_entries
-    #ifndef PROTOBUF_MESSAGE_GLOBALS
-    FloatValue_class_data_.base(),
-    #else
-    _FloatValue_globals_.GetClassData(),
-    #endif
-    nullptr,  // post_loop_handler
-    ::_pbi::TcParser::GenericFallback,  // fallback
-    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-    ::_pbi::TcParser::GetTable<::google::protobuf::FloatValue>(),  // to_prefetch
-    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  }, {{
-    // float value = 1;
-    {::_pbi::TcParser::FastF32S1,
-     {13, 0, 0,
-      PROTOBUF_FIELD_OFFSET(FloatValue, _impl_.value_)}},
-  }}, {{
-    65535, 65535
-  }}, {{
-    // float value = 1;
-    {PROTOBUF_FIELD_OFFSET(FloatValue, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
-  }},
-  // no aux_entries
-  {{
-  }},
-};
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FloatValue::ParseTableT_
+    FloatValue::_table_ = FloatValue::InternalGenerateParseTable_(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        FloatValue_class_data_.base()
+#else
+        _FloatValue_globals_.GetClassData()
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+    );
 PROTOBUF_NOINLINE void FloatValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FloatValue)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1420,14 +1736,6 @@ void FloatValue::InternalSwap(FloatValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL oth
 }
 // ===================================================================
 
-class Int64Value::_Internal {
- public:
-  using HasBits =
-      decltype(::std::declval<Int64Value>()._impl_._has_bits_);
-  static constexpr ::int32_t kHasBitsOffset =
-      8 * PROTOBUF_FIELD_OFFSET(Int64Value, _impl_._has_bits_);
-};
-
 Int64Value::Int64Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, Int64Value_get_class_data()) {
@@ -1490,44 +1798,15 @@ Int64Value::GetClassData() const {
   return _Int64Value_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 0, 2>
-Int64Value::_table_ = {
-  {
-    PROTOBUF_FIELD_OFFSET(Int64Value, _impl_._has_bits_),
-    0, // no _extensions_
-    1, 0,  // max_field_number, fast_idx_mask
-    offsetof(decltype(_table_), field_lookup_table),
-    4294967294,  // skipmap
-    offsetof(decltype(_table_), field_entries),
-    1,  // num_field_entries
-    0,  // num_aux_entries
-    offsetof(decltype(_table_), field_names),  // no aux_entries
-    #ifndef PROTOBUF_MESSAGE_GLOBALS
-    Int64Value_class_data_.base(),
-    #else
-    _Int64Value_globals_.GetClassData(),
-    #endif
-    nullptr,  // post_loop_handler
-    ::_pbi::TcParser::GenericFallback,  // fallback
-    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-    ::_pbi::TcParser::GetTable<::google::protobuf::Int64Value>(),  // to_prefetch
-    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  }, {{
-    // int64 value = 1;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(Int64Value, _impl_.value_), 0>(),
-     {8, 0, 0,
-      PROTOBUF_FIELD_OFFSET(Int64Value, _impl_.value_)}},
-  }}, {{
-    65535, 65535
-  }}, {{
-    // int64 value = 1;
-    {PROTOBUF_FIELD_OFFSET(Int64Value, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt64)},
-  }},
-  // no aux_entries
-  {{
-  }},
-};
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Int64Value::ParseTableT_
+    Int64Value::_table_ = Int64Value::InternalGenerateParseTable_(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        Int64Value_class_data_.base()
+#else
+        _Int64Value_globals_.GetClassData()
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+    );
 PROTOBUF_NOINLINE void Int64Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Int64Value)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1649,14 +1928,6 @@ void Int64Value::InternalSwap(Int64Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL oth
 }
 // ===================================================================
 
-class UInt64Value::_Internal {
- public:
-  using HasBits =
-      decltype(::std::declval<UInt64Value>()._impl_._has_bits_);
-  static constexpr ::int32_t kHasBitsOffset =
-      8 * PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_._has_bits_);
-};
-
 UInt64Value::UInt64Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, UInt64Value_get_class_data()) {
@@ -1719,44 +1990,15 @@ UInt64Value::GetClassData() const {
   return _UInt64Value_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 0, 2>
-UInt64Value::_table_ = {
-  {
-    PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_._has_bits_),
-    0, // no _extensions_
-    1, 0,  // max_field_number, fast_idx_mask
-    offsetof(decltype(_table_), field_lookup_table),
-    4294967294,  // skipmap
-    offsetof(decltype(_table_), field_entries),
-    1,  // num_field_entries
-    0,  // num_aux_entries
-    offsetof(decltype(_table_), field_names),  // no aux_entries
-    #ifndef PROTOBUF_MESSAGE_GLOBALS
-    UInt64Value_class_data_.base(),
-    #else
-    _UInt64Value_globals_.GetClassData(),
-    #endif
-    nullptr,  // post_loop_handler
-    ::_pbi::TcParser::GenericFallback,  // fallback
-    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-    ::_pbi::TcParser::GetTable<::google::protobuf::UInt64Value>(),  // to_prefetch
-    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  }, {{
-    // uint64 value = 1;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(UInt64Value, _impl_.value_), 0>(),
-     {8, 0, 0,
-      PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_.value_)}},
-  }}, {{
-    65535, 65535
-  }}, {{
-    // uint64 value = 1;
-    {PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUInt64)},
-  }},
-  // no aux_entries
-  {{
-  }},
-};
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const UInt64Value::ParseTableT_
+    UInt64Value::_table_ = UInt64Value::InternalGenerateParseTable_(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        UInt64Value_class_data_.base()
+#else
+        _UInt64Value_globals_.GetClassData()
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+    );
 PROTOBUF_NOINLINE void UInt64Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.UInt64Value)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1878,14 +2120,6 @@ void UInt64Value::InternalSwap(UInt64Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 }
 // ===================================================================
 
-class Int32Value::_Internal {
- public:
-  using HasBits =
-      decltype(::std::declval<Int32Value>()._impl_._has_bits_);
-  static constexpr ::int32_t kHasBitsOffset =
-      8 * PROTOBUF_FIELD_OFFSET(Int32Value, _impl_._has_bits_);
-};
-
 Int32Value::Int32Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, Int32Value_get_class_data()) {
@@ -1948,44 +2182,15 @@ Int32Value::GetClassData() const {
   return _Int32Value_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 0, 2>
-Int32Value::_table_ = {
-  {
-    PROTOBUF_FIELD_OFFSET(Int32Value, _impl_._has_bits_),
-    0, // no _extensions_
-    1, 0,  // max_field_number, fast_idx_mask
-    offsetof(decltype(_table_), field_lookup_table),
-    4294967294,  // skipmap
-    offsetof(decltype(_table_), field_entries),
-    1,  // num_field_entries
-    0,  // num_aux_entries
-    offsetof(decltype(_table_), field_names),  // no aux_entries
-    #ifndef PROTOBUF_MESSAGE_GLOBALS
-    Int32Value_class_data_.base(),
-    #else
-    _Int32Value_globals_.GetClassData(),
-    #endif
-    nullptr,  // post_loop_handler
-    ::_pbi::TcParser::GenericFallback,  // fallback
-    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-    ::_pbi::TcParser::GetTable<::google::protobuf::Int32Value>(),  // to_prefetch
-    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  }, {{
-    // int32 value = 1;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Int32Value, _impl_.value_), 0>(),
-     {8, 0, 0,
-      PROTOBUF_FIELD_OFFSET(Int32Value, _impl_.value_)}},
-  }}, {{
-    65535, 65535
-  }}, {{
-    // int32 value = 1;
-    {PROTOBUF_FIELD_OFFSET(Int32Value, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
-  }},
-  // no aux_entries
-  {{
-  }},
-};
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Int32Value::ParseTableT_
+    Int32Value::_table_ = Int32Value::InternalGenerateParseTable_(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        Int32Value_class_data_.base()
+#else
+        _Int32Value_globals_.GetClassData()
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+    );
 PROTOBUF_NOINLINE void Int32Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Int32Value)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -2107,14 +2312,6 @@ void Int32Value::InternalSwap(Int32Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL oth
 }
 // ===================================================================
 
-class UInt32Value::_Internal {
- public:
-  using HasBits =
-      decltype(::std::declval<UInt32Value>()._impl_._has_bits_);
-  static constexpr ::int32_t kHasBitsOffset =
-      8 * PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_._has_bits_);
-};
-
 UInt32Value::UInt32Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, UInt32Value_get_class_data()) {
@@ -2177,44 +2374,15 @@ UInt32Value::GetClassData() const {
   return _UInt32Value_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 0, 2>
-UInt32Value::_table_ = {
-  {
-    PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_._has_bits_),
-    0, // no _extensions_
-    1, 0,  // max_field_number, fast_idx_mask
-    offsetof(decltype(_table_), field_lookup_table),
-    4294967294,  // skipmap
-    offsetof(decltype(_table_), field_entries),
-    1,  // num_field_entries
-    0,  // num_aux_entries
-    offsetof(decltype(_table_), field_names),  // no aux_entries
-    #ifndef PROTOBUF_MESSAGE_GLOBALS
-    UInt32Value_class_data_.base(),
-    #else
-    _UInt32Value_globals_.GetClassData(),
-    #endif
-    nullptr,  // post_loop_handler
-    ::_pbi::TcParser::GenericFallback,  // fallback
-    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-    ::_pbi::TcParser::GetTable<::google::protobuf::UInt32Value>(),  // to_prefetch
-    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  }, {{
-    // uint32 value = 1;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(UInt32Value, _impl_.value_), 0>(),
-     {8, 0, 0,
-      PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_.value_)}},
-  }}, {{
-    65535, 65535
-  }}, {{
-    // uint32 value = 1;
-    {PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUInt32)},
-  }},
-  // no aux_entries
-  {{
-  }},
-};
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const UInt32Value::ParseTableT_
+    UInt32Value::_table_ = UInt32Value::InternalGenerateParseTable_(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        UInt32Value_class_data_.base()
+#else
+        _UInt32Value_globals_.GetClassData()
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+    );
 PROTOBUF_NOINLINE void UInt32Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.UInt32Value)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -2336,14 +2504,6 @@ void UInt32Value::InternalSwap(UInt32Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 }
 // ===================================================================
 
-class BoolValue::_Internal {
- public:
-  using HasBits =
-      decltype(::std::declval<BoolValue>()._impl_._has_bits_);
-  static constexpr ::int32_t kHasBitsOffset =
-      8 * PROTOBUF_FIELD_OFFSET(BoolValue, _impl_._has_bits_);
-};
-
 BoolValue::BoolValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, BoolValue_get_class_data()) {
@@ -2406,44 +2566,15 @@ BoolValue::GetClassData() const {
   return _BoolValue_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 0, 2>
-BoolValue::_table_ = {
-  {
-    PROTOBUF_FIELD_OFFSET(BoolValue, _impl_._has_bits_),
-    0, // no _extensions_
-    1, 0,  // max_field_number, fast_idx_mask
-    offsetof(decltype(_table_), field_lookup_table),
-    4294967294,  // skipmap
-    offsetof(decltype(_table_), field_entries),
-    1,  // num_field_entries
-    0,  // num_aux_entries
-    offsetof(decltype(_table_), field_names),  // no aux_entries
-    #ifndef PROTOBUF_MESSAGE_GLOBALS
-    BoolValue_class_data_.base(),
-    #else
-    _BoolValue_globals_.GetClassData(),
-    #endif
-    nullptr,  // post_loop_handler
-    ::_pbi::TcParser::GenericFallback,  // fallback
-    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-    ::_pbi::TcParser::GetTable<::google::protobuf::BoolValue>(),  // to_prefetch
-    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  }, {{
-    // bool value = 1;
-    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(BoolValue, _impl_.value_), 0>(),
-     {8, 0, 0,
-      PROTOBUF_FIELD_OFFSET(BoolValue, _impl_.value_)}},
-  }}, {{
-    65535, 65535
-  }}, {{
-    // bool value = 1;
-    {PROTOBUF_FIELD_OFFSET(BoolValue, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
-  }},
-  // no aux_entries
-  {{
-  }},
-};
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const BoolValue::ParseTableT_
+    BoolValue::_table_ = BoolValue::InternalGenerateParseTable_(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        BoolValue_class_data_.base()
+#else
+        _BoolValue_globals_.GetClassData()
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+    );
 PROTOBUF_NOINLINE void BoolValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.BoolValue)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -2564,14 +2695,6 @@ void BoolValue::InternalSwap(BoolValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other
 }
 // ===================================================================
 
-class StringValue::_Internal {
- public:
-  using HasBits =
-      decltype(::std::declval<StringValue>()._impl_._has_bits_);
-  static constexpr ::int32_t kHasBitsOffset =
-      8 * PROTOBUF_FIELD_OFFSET(StringValue, _impl_._has_bits_);
-};
-
 StringValue::StringValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, StringValue_get_class_data()) {
@@ -2649,47 +2772,15 @@ StringValue::GetClassData() const {
   return _StringValue_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 41, 2>
-StringValue::_table_ = {
-  {
-    PROTOBUF_FIELD_OFFSET(StringValue, _impl_._has_bits_),
-    0, // no _extensions_
-    1, 0,  // max_field_number, fast_idx_mask
-    offsetof(decltype(_table_), field_lookup_table),
-    4294967294,  // skipmap
-    offsetof(decltype(_table_), field_entries),
-    1,  // num_field_entries
-    0,  // num_aux_entries
-    offsetof(decltype(_table_), field_names),  // no aux_entries
-    #ifndef PROTOBUF_MESSAGE_GLOBALS
-    StringValue_class_data_.base(),
-    #else
-    _StringValue_globals_.GetClassData(),
-    #endif
-    nullptr,  // post_loop_handler
-    ::_pbi::TcParser::GenericFallback,  // fallback
-    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-    ::_pbi::TcParser::GetTable<::google::protobuf::StringValue>(),  // to_prefetch
-    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  }, {{
-    // string value = 1;
-    {::_pbi::TcParser::FastUS1,
-     {10, 0, 0,
-      PROTOBUF_FIELD_OFFSET(StringValue, _impl_.value_)}},
-  }}, {{
-    65535, 65535
-  }}, {{
-    // string value = 1;
-    {PROTOBUF_FIELD_OFFSET(StringValue, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-  }},
-  // no aux_entries
-  {{
-    "\33\5\0\0\0\0\0\0"
-    "google.protobuf.StringValue"
-    "value"
-  }},
-};
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const StringValue::ParseTableT_
+    StringValue::_table_ = StringValue::InternalGenerateParseTable_(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        StringValue_class_data_.base()
+#else
+        _StringValue_globals_.GetClassData()
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+    );
 PROTOBUF_NOINLINE void StringValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.StringValue)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -2821,14 +2912,6 @@ void StringValue::InternalSwap(StringValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 }
 // ===================================================================
 
-class BytesValue::_Internal {
- public:
-  using HasBits =
-      decltype(::std::declval<BytesValue>()._impl_._has_bits_);
-  static constexpr ::int32_t kHasBitsOffset =
-      8 * PROTOBUF_FIELD_OFFSET(BytesValue, _impl_._has_bits_);
-};
-
 BytesValue::BytesValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, BytesValue_get_class_data()) {
@@ -2906,44 +2989,15 @@ BytesValue::GetClassData() const {
   return _BytesValue_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 0, 2>
-BytesValue::_table_ = {
-  {
-    PROTOBUF_FIELD_OFFSET(BytesValue, _impl_._has_bits_),
-    0, // no _extensions_
-    1, 0,  // max_field_number, fast_idx_mask
-    offsetof(decltype(_table_), field_lookup_table),
-    4294967294,  // skipmap
-    offsetof(decltype(_table_), field_entries),
-    1,  // num_field_entries
-    0,  // num_aux_entries
-    offsetof(decltype(_table_), field_names),  // no aux_entries
-    #ifndef PROTOBUF_MESSAGE_GLOBALS
-    BytesValue_class_data_.base(),
-    #else
-    _BytesValue_globals_.GetClassData(),
-    #endif
-    nullptr,  // post_loop_handler
-    ::_pbi::TcParser::GenericFallback,  // fallback
-    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-    ::_pbi::TcParser::GetTable<::google::protobuf::BytesValue>(),  // to_prefetch
-    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  }, {{
-    // bytes value = 1;
-    {::_pbi::TcParser::FastBS1,
-     {10, 0, 0,
-      PROTOBUF_FIELD_OFFSET(BytesValue, _impl_.value_)}},
-  }}, {{
-    65535, 65535
-  }}, {{
-    // bytes value = 1;
-    {PROTOBUF_FIELD_OFFSET(BytesValue, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kBytes | ::_fl::kRepAString)},
-  }},
-  // no aux_entries
-  {{
-  }},
-};
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const BytesValue::ParseTableT_
+    BytesValue::_table_ = BytesValue::InternalGenerateParseTable_(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        BytesValue_class_data_.base()
+#else
+        _BytesValue_globals_.GetClassData()
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+    );
 PROTOBUF_NOINLINE void BytesValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.BytesValue)
   ::google::protobuf::internal::TSanWrite(&_impl_);
