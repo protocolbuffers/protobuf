@@ -893,11 +893,12 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       // just that the list cannot be modified via the reference but that the
       // list can never be modified.
       "private java.util.List<$type$> $name$_ =\n"
-      "  java.util.Collections.emptyList();\n"
+      "  com.google.protobuf.UnmodifiableArrayList.emptyList();\n"
 
       "private void ensure$capitalized_name$IsMutable() {\n"
       "  if (!$get_mutable_bit_builder$) {\n"
-      "    $name$_ = new java.util.ArrayList<$type$>($name$_);\n"
+      "    $name$_ = new "
+      "com.google.protobuf.ModifiableArrayList<$type$>($name$_);\n"
       "    $set_mutable_bit_builder$;\n"
       "   }\n"
       "}\n"
@@ -1064,7 +1065,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
   PrintNestedBuilderFunction(
       printer, "$deprecation$public Builder ${$clear$capitalized_name$$}$()",
 
-      "$name$_ = java.util.Collections.emptyList();\n"
+      "$name$_ = com.google.protobuf.UnmodifiableArrayList.emptyList();\n"
       "$clear_mutable_bit_builder$;\n"
       "$on_changed$\n",
 
@@ -1183,16 +1184,20 @@ void RepeatedImmutableMessageFieldGenerator::
 
 void RepeatedImmutableMessageFieldGenerator::GenerateInitializationCode(
     io::Printer* printer) const {
-  printer->Print(variables_, "$name$_ = java.util.Collections.emptyList();\n");
+  printer->Print(variables_,
+                 "$name$_ = "
+                 "com.google.protobuf.UnmodifiableArrayList.emptyList();\n");
 }
 
 void RepeatedImmutableMessageFieldGenerator::GenerateBuilderClearCode(
     io::Printer* printer) const {
-  PrintNestedBuilderCondition(printer,
-                              "$name$_ = java.util.Collections.emptyList();\n",
+  PrintNestedBuilderCondition(
+      printer,
+      "$name$_ = "
+      "com.google.protobuf.UnmodifiableArrayList.emptyList();\n",
 
-                              "$name$_ = null;\n"
-                              "$name$Builder_.clear();\n");
+      "$name$_ = null;\n"
+      "$name$Builder_.clear();\n");
 
   printer->Print(variables_, "$clear_mutable_bit_builder$;\n");
 }
@@ -1241,7 +1246,8 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuildingCode(
   PrintNestedBuilderCondition(
       printer,
       "if ($get_mutable_bit_builder$) {\n"
-      "  $name$_ = java.util.Collections.unmodifiableList($name$_);\n"
+      "  $name$_ = ((com.google.protobuf.ModifiableArrayList<$type$>) "
+      "$name$_).toUnmodifiable();\n"
       "  $clear_mutable_bit_builder$;\n"
       "}\n"
       "result.$name$_ = $name$_;\n",
