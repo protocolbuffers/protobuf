@@ -100,7 +100,7 @@ inline constexpr ListValue::Impl_::Impl_(
 
 template <typename>
 constexpr ListValue::ListValue(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* class_data)
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -239,7 +239,7 @@ inline constexpr Struct::Impl_::Impl_(
 
 template <typename>
 constexpr Struct::Struct(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* class_data)
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -366,7 +366,7 @@ constexpr Struct_FieldsEntry_DoNotUse::ParseTableT_ Struct_FieldsEntry_DoNotUse:
 
 template <typename>
 constexpr Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* class_data)
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Struct_FieldsEntry_DoNotUse::MapEntry(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -510,7 +510,7 @@ inline constexpr Value::Impl_::Impl_(
 
 template <typename>
 constexpr Value::Value(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* class_data)
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data

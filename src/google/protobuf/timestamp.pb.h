@@ -87,8 +87,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Timestamp final : p
 
   template <typename = void>
   explicit constexpr Timestamp(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline Timestamp(const Timestamp& from) : Timestamp(nullptr, from) {}
   inline Timestamp(Timestamp&& from) noexcept

@@ -71,7 +71,7 @@ constexpr Empty::ParseTableT_ Empty::InternalGenerateParseTable_(const ::_pbi::C
 
 template <typename>
 constexpr Empty::Empty(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* class_data)
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : ::google::protobuf::internal::ZeroFieldsBase(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data

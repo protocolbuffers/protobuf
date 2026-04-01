@@ -104,7 +104,7 @@ inline constexpr UInt64Value::Impl_::Impl_(
 
 template <typename>
 constexpr UInt64Value::UInt64Value(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* class_data)
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -235,7 +235,7 @@ inline constexpr UInt32Value::Impl_::Impl_(
 
 template <typename>
 constexpr UInt32Value::UInt32Value(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* class_data)
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -371,7 +371,7 @@ inline constexpr StringValue::Impl_::Impl_(
 
 template <typename>
 constexpr StringValue::StringValue(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* class_data)
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -502,7 +502,7 @@ inline constexpr Int64Value::Impl_::Impl_(
 
 template <typename>
 constexpr Int64Value::Int64Value(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* class_data)
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -633,7 +633,7 @@ inline constexpr Int32Value::Impl_::Impl_(
 
 template <typename>
 constexpr Int32Value::Int32Value(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* class_data)
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -764,7 +764,7 @@ inline constexpr FloatValue::Impl_::Impl_(
 
 template <typename>
 constexpr FloatValue::FloatValue(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* class_data)
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -895,7 +895,7 @@ inline constexpr DoubleValue::Impl_::Impl_(
 
 template <typename>
 constexpr DoubleValue::DoubleValue(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* class_data)
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -1028,7 +1028,7 @@ inline constexpr BytesValue::Impl_::Impl_(
 
 template <typename>
 constexpr BytesValue::BytesValue(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* class_data)
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -1159,7 +1159,7 @@ inline constexpr BoolValue::Impl_::Impl_(
 
 template <typename>
 constexpr BoolValue::BoolValue(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* class_data)
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data

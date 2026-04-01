@@ -87,8 +87,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
 
   template <typename = void>
   explicit constexpr Empty(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline Empty(const Empty& from) : Empty(nullptr, from) {}
   inline Empty(Empty&& from) noexcept

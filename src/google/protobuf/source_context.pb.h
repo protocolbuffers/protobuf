@@ -87,8 +87,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceContext final
 
   template <typename = void>
   explicit constexpr SourceContext(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline SourceContext(const SourceContext& from) : SourceContext(nullptr, from) {}
   inline SourceContext(SourceContext&& from) noexcept
