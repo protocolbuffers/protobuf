@@ -1499,9 +1499,9 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
                               $pbi$::WireFormatLite::$val_wire_type$>;
           $classname$();
           template <typename = void>
-          explicit constexpr $classname$($pbi$::ConstantInitialized,
-                                         const $pbi$::ClassData* $nonnull$
-                                             class_data);
+          explicit constexpr $Msg$($pbi$::ConstantInitialized,
+                                   const $pbi$::ClassData* $nonnull$
+                                       class_data);
           explicit $classname$($pb$::Arena* $nullable$ arena);
           static constexpr const void* $nonnull$ internal_message_globals() {
             return &_$classname$_globals_;
@@ -2186,9 +2186,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           //~ Templatize constexpr constructor as a workaround for a bug in
           //~ gcc 12 (warning in gcc 13).
           template <typename = void>
-          explicit constexpr $classname$($pbi$::ConstantInitialized,
-                                         const $pbi$::ClassData* $nonnull$
-                                             class_data);
+          explicit constexpr $Msg$($pbi$::ConstantInitialized,
+                                   const $pbi$::ClassData* $nonnull$
+                                       class_data);
 
           inline $classname$(const $classname$& from) : $classname$(nullptr, from) {}
           inline $classname$($classname$&& from) noexcept
@@ -3033,27 +3033,28 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
   Formatter format(p);
 
   if (IsMapEntryMessage(descriptor_) || !HasImplData(descriptor_, options_)) {
-    p->Emit({{"base",
-              [&] {
-                if (IsMapEntryMessage(descriptor_)) {
-                  p->Emit("$classname$::MapEntry");
-                } else {
-                  p->Emit("$superclass$");
-                }
-              }}},
-            R"cc(
-              //~ Templatize constexpr constructor as a workaround for a bug in
-              //~ gcc 12 (warning in gcc 13).
-              template <typename>
-              constexpr $Msg$::$Msg$(::_pbi::ConstantInitialized,
-                                     const ::_pbi::ClassData* class_data)
-                  : $base$(
+    p->Emit(
+        {{"base",
+          [&] {
+            if (IsMapEntryMessage(descriptor_)) {
+              p->Emit("$classname$::MapEntry");
+            } else {
+              p->Emit("$superclass$");
+            }
+          }}},
+        R"cc(
+          //~ Templatize constexpr constructor as a workaround for a bug in
+          //~ gcc 12 (warning in gcc 13).
+          template <typename>
+          constexpr $Msg$::$Msg$(::_pbi::ConstantInitialized,
+                                 const ::_pbi::ClassData* $nonnull$ class_data)
+              : $base$(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-                        class_data
+                    class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
-                    ) {
-              }
-            )cc");
+                ) {
+          }
+        )cc");
     return;
   }
 
@@ -3075,7 +3076,7 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
       R"cc(
         template <typename>
         constexpr $Msg$::$Msg$(::_pbi::ConstantInitialized,
-                               const ::_pbi::ClassData* class_data)
+                               const ::_pbi::ClassData* $nonnull$ class_data)
             : $superclass$(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
                   class_data

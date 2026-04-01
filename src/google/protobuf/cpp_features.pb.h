@@ -184,8 +184,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
 
   template <typename = void>
   explicit constexpr CppFeatures(::google::protobuf::internal::ConstantInitialized,
-                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                                     class_data);
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline CppFeatures(const CppFeatures& from) : CppFeatures(nullptr, from) {}
   inline CppFeatures(CppFeatures&& from) noexcept

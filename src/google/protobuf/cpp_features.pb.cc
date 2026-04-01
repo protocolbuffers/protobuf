@@ -111,7 +111,7 @@ inline constexpr CppFeatures::Impl_::Impl_(
 
 template <typename>
 constexpr CppFeatures::CppFeatures(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* class_data)
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
