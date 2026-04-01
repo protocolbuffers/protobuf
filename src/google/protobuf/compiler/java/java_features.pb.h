@@ -64,11 +64,15 @@ PROTOC_EXPORT extern const uint32_t JavaFeatures_Utf8Validation_internal_data_[]
 class JavaFeatures;
 struct JavaFeaturesGlobalsTypeInternal;
 PROTOC_EXPORT extern JavaFeaturesGlobalsTypeInternal _JavaFeatures_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull JavaFeatures_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class JavaFeatures_NestInFileClassFeature;
 struct JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal;
 PROTOC_EXPORT extern JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal _JavaFeatures_NestInFileClassFeature_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull JavaFeatures_NestInFileClassFeature_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace pb
 namespace google {
 namespace protobuf {
@@ -185,7 +189,9 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
 #endif
 
   template <typename = void>
-  explicit constexpr JavaFeatures_NestInFileClassFeature(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr JavaFeatures_NestInFileClassFeature(::google::protobuf::internal::ConstantInitialized,
+                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                                     class_data);
 
   inline JavaFeatures_NestInFileClassFeature(const JavaFeatures_NestInFileClassFeature& from) : JavaFeatures_NestInFileClassFeature(nullptr, from) {}
   inline JavaFeatures_NestInFileClassFeature(JavaFeatures_NestInFileClassFeature&& from) noexcept
@@ -281,7 +287,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -327,8 +334,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
   using DestructorSkippable_ = void;
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto;
 };
-
-PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull JavaFeatures_NestInFileClassFeature_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : public ::google::protobuf::Message
@@ -345,7 +350,9 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
 #endif
 
   template <typename = void>
-  explicit constexpr JavaFeatures(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr JavaFeatures(::google::protobuf::internal::ConstantInitialized,
+                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                                     class_data);
 
   inline JavaFeatures(const JavaFeatures& from) : JavaFeatures(nullptr, from) {}
   inline JavaFeatures(JavaFeatures&& from) noexcept
@@ -470,7 +477,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -603,8 +611,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto;
 };
-
-PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull JavaFeatures_class_data_;
 
 // ===================================================================
 

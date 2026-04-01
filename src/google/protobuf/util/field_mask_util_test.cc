@@ -23,6 +23,7 @@
 #include "google/protobuf/util/field_mask_util.h"
 #include "google/protobuf/util/field_mask_util_test.pb.h"
 
+
 namespace google {
 namespace protobuf {
 namespace util {
@@ -868,6 +869,7 @@ TEST(FieldMaskUtilTest, TrimMessageReturnValue) {
   // TODO: field mask on repeated nested message is not yet
   // supported.
 }
+
 
 
 }  // namespace

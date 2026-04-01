@@ -367,6 +367,11 @@ class DynamicMessage final : public Message {
 using internal::MessageGlobalsBase;
 
 struct DynamicMessageGlobalsInternalType : MessageGlobalsBase {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  explicit constexpr DynamicMessageGlobalsInternalType(
+      internal::ClassDataFull class_data)
+      : MessageGlobalsBase(class_data) {}
+#endif  // PROTOBUF_MESSAGE_GLOBALS
   union {
     alignas(internal::kMaxMessageAlignment) DynamicMessage _default;  // NOLINT
   };
@@ -418,48 +423,47 @@ struct DynamicMessageFactory::TypeInfo {
       nullptr,  // get_metadata_tracker
   };
 #else   // !PROTOBUF_MESSAGE_GLOBALS
+  DynamicMessageGlobalsInternalType* globals = nullptr;
   internal::ReflectionData reflection_data = {
       &internal::kDescriptorMethods,
       nullptr,  // descriptor_table
       nullptr,  // get_metadata_tracker
   };
-  internal::ClassDataFull class_data = {
-      internal::ClassData{
-          nullptr,  // default_instance
-          nullptr,  // tc_table
-          &DynamicMessage::IsInitializedImpl,
-          &DynamicMessage::MergeImpl,
-          internal::MessageCreator(),  // to be filled later
-          &DynamicMessage::DestroyImpl,
-          static_cast<void (MessageLite::*)()>(&DynamicMessage::ClearImpl),
-          DynamicMessage::ByteSizeLongImpl,
-          DynamicMessage::_InternalSerializeImpl,
-          PROTOBUF_FIELD_OFFSET(DynamicMessage, cached_byte_size_),
-          false,
-      },
-      &reflection_data,
-  };
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
   TypeInfo() = default;
 
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   const internal::ClassDataFull& GetClassDataFull() const { return class_data; }
   internal::ClassDataFull& MutableClassDataFull() { return class_data; }
 
   const Message* GetPrototype() const {
     return static_cast<const Message*>(class_data.prototype);
   }
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+  const internal::ClassDataFull& GetClassDataFull() const {
+    return globals->class_data;
+  }
+  internal::ClassDataFull& MutableClassDataFull() {
+    return globals->class_data;
+  }
+
+  const Message* GetPrototype() const {
+    return static_cast<const Message*>(&globals->_default);
+  }
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
   ~TypeInfo() {
+    const auto& class_data = GetClassDataFull();
     DynamicMessage::DestroyImpl(const_cast<Message&>(*GetPrototype()));
+    // With PROTOBUF_MESSAGE_GLOBALS, deleting globals means deleting
+    // class_data. Access class_data beforehand.
+    delete class_data.reflection();
+    auto* type = class_data.descriptor();
     internal::SizedDelete(
         const_cast<MessageGlobalsBase*>(
             MessageGlobalsBase::FromDefaultInstance(GetPrototype())),
         MsgSizeToGlobalsSize(class_data.message_creator.allocation_size()));
-
-    delete class_data.reflection();
-
-    auto* type = class_data.descriptor();
 
     // Scribble the payload to prevent unsanitized opt builds from silently
     // allowing use-after-free bugs where the factory is destroyed but the
@@ -894,8 +898,10 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   TypeInfo* type_info = new TypeInfo;
   *target = type_info;
 
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   type_info->MutableClassDataFull().set_descriptor(type);
   type_info->MutableClassDataFull().is_dynamic = true;
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
   type_info->pool = (pool_ == nullptr) ? type->file()->pool() : pool_;
   type_info->factory = this;
 
@@ -1028,8 +1034,10 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
 
   type_info->weak_field_map_offset = -1;
 
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   type_info->MutableClassDataFull().message_creator =
       internal::MessageCreator(DynamicMessage::NewImpl, size, kSafeAlignment);
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 
   // Construct the reflection object.
 
@@ -1038,6 +1046,29 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   void* globals_base = internal::Allocate(globals_size);
   memset(globals_base, 0, globals_size);
   auto* msg_base = DynamicMessageGlobalsToDefaultInstance(globals_base);
+
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  type_info->globals = new (globals_base)
+      DynamicMessageGlobalsInternalType(internal::ClassDataFull{
+          internal::ClassData{
+              reinterpret_cast<const DynamicMessage*>(msg_base),  // prototype
+              nullptr,                                            // tc_table
+              &DynamicMessage::IsInitializedImpl,
+              &DynamicMessage::MergeImpl,
+              internal::MessageCreator(DynamicMessage::NewImpl, size,
+                                       kSafeAlignment),
+              &DynamicMessage::DestroyImpl,
+              static_cast<void (MessageLite::*)()>(&DynamicMessage::ClearImpl),
+              DynamicMessage::ByteSizeLongImpl,
+              DynamicMessage::_InternalSerializeImpl,
+              PROTOBUF_FIELD_OFFSET(DynamicMessage, cached_byte_size_),
+              false,
+          },
+          &type_info->reflection_data,
+      });
+  type_info->globals->class_data.set_descriptor(type);
+  type_info->globals->class_data.is_dynamic = true;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
   // We have already locked the factory so we should not lock in the constructor
   // of dynamic message to avoid dead lock.

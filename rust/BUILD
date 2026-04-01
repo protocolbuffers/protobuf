@@ -70,6 +70,7 @@ PROTOBUF_SHARED = [
 # All Rust source files; this is used for packaging up a crate.
 ALL_RUST_SRCS = PROTOBUF_SHARED + [
     # go/keep-sorted start
+    "cpp_kernel/interop.rs",
     "cpp_kernel/map.rs",
     "cpp_kernel/message.rs",
     "cpp_kernel/mod.rs",
@@ -80,6 +81,7 @@ ALL_RUST_SRCS = PROTOBUF_SHARED + [
     "gtest_matchers_impl.rs",
     "protobuf.rs",
     "upb_kernel/conversions.rs",
+    "upb_kernel/interop.rs",
     "upb_kernel/map.rs",
     "upb_kernel/message.rs",
     "upb_kernel/minitable.rs",
@@ -98,6 +100,7 @@ rust_library(
     name = "protobuf_upb",
     srcs = PROTOBUF_SHARED + [
         "upb_kernel/conversions.rs",
+        "upb_kernel/interop.rs",
         "upb_kernel/map.rs",
         "upb_kernel/message.rs",
         "upb_kernel/minitable.rs",
@@ -152,6 +155,7 @@ rust_library(
 rust_library(
     name = "protobuf_cpp",
     srcs = PROTOBUF_SHARED + [
+        "cpp_kernel/interop.rs",
         "cpp_kernel/map.rs",
         "cpp_kernel/message.rs",
         "cpp_kernel/mod.rs",

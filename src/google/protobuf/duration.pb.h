@@ -58,7 +58,9 @@ namespace protobuf {
 class Duration;
 struct DurationGlobalsTypeInternal;
 PROTOBUF_EXPORT extern DurationGlobalsTypeInternal _Duration_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Duration_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace protobuf
 }  // namespace google
 
@@ -84,7 +86,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Duration final : pu
 #endif
 
   template <typename = void>
-  explicit constexpr Duration(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Duration(::google::protobuf::internal::ConstantInitialized,
+                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                                     class_data);
 
   inline Duration(const Duration& from) : Duration(nullptr, from) {}
   inline Duration(Duration&& from) noexcept
@@ -209,7 +213,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Duration final : pu
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -274,8 +279,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Duration final : pu
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fduration_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Duration_class_data_;
 
 // ===================================================================
 

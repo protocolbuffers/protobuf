@@ -67,23 +67,33 @@ PROTOBUF_EXPORT extern const uint32_t Syntax_internal_data_[];
 class Enum;
 struct EnumGlobalsTypeInternal;
 PROTOBUF_EXPORT extern EnumGlobalsTypeInternal _Enum_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Enum_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class EnumValue;
 struct EnumValueGlobalsTypeInternal;
 PROTOBUF_EXPORT extern EnumValueGlobalsTypeInternal _EnumValue_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValue_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class Field;
 struct FieldGlobalsTypeInternal;
 PROTOBUF_EXPORT extern FieldGlobalsTypeInternal _Field_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Field_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class Option;
 struct OptionGlobalsTypeInternal;
 PROTOBUF_EXPORT extern OptionGlobalsTypeInternal _Option_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Option_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class Type;
 struct TypeGlobalsTypeInternal;
 PROTOBUF_EXPORT extern TypeGlobalsTypeInternal _Type_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Type_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 template <>
 internal::EnumTraitsT<::google::protobuf::Field_Cardinality_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::Field_Cardinality>;
@@ -260,7 +270,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
 #endif
 
   template <typename = void>
-  explicit constexpr Option(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Option(::google::protobuf::internal::ConstantInitialized,
+                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                                     class_data);
 
   inline Option(const Option& from) : Option(nullptr, from) {}
   inline Option(Option&& from) noexcept
@@ -385,7 +397,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -461,8 +474,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Option_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : public ::google::protobuf::Message
@@ -479,7 +490,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
 #endif
 
   template <typename = void>
-  explicit constexpr Field(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Field(::google::protobuf::internal::ConstantInitialized,
+                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                                     class_data);
 
   inline Field(const Field& from) : Field(nullptr, from) {}
   inline Field(Field&& from) noexcept
@@ -604,7 +617,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -855,8 +869,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Field_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : public ::google::protobuf::Message
@@ -873,7 +885,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
 #endif
 
   template <typename = void>
-  explicit constexpr EnumValue(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr EnumValue(::google::protobuf::internal::ConstantInitialized,
+                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                                     class_data);
 
   inline EnumValue(const EnumValue& from) : EnumValue(nullptr, from) {}
   inline EnumValue(EnumValue&& from) noexcept
@@ -998,7 +1012,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1091,8 +1106,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValue_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public ::google::protobuf::Message
@@ -1109,7 +1122,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
 #endif
 
   template <typename = void>
-  explicit constexpr Type(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Type(::google::protobuf::internal::ConstantInitialized,
+                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                                     class_data);
 
   inline Type(const Type& from) : Type(nullptr, from) {}
   inline Type(Type&& from) noexcept
@@ -1234,7 +1249,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1285,10 +1301,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
   ::std::string* PROTOBUF_NONNULL add_oneofs();
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void add_oneofs(Arg_&& value, Args_... args);
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::std::string>&
-  oneofs() const;
-  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
-  mutable_oneofs();
+  [[nodiscard]] const
+      ::google::protobuf::RepeatedPtrField<::std::string>&
+      oneofs() const;
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>*
+      PROTOBUF_NONNULL
+      mutable_oneofs();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_oneofs() const;
@@ -1412,8 +1430,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Type_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public ::google::protobuf::Message
@@ -1430,7 +1446,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
 #endif
 
   template <typename = void>
-  explicit constexpr Enum(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Enum(::google::protobuf::internal::ConstantInitialized,
+                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                                     class_data);
 
   inline Enum(const Enum& from) : Enum(nullptr, from) {}
   inline Enum(Enum&& from) noexcept
@@ -1555,7 +1573,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1707,8 +1726,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
 };
 
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Enum_class_data_;
-
 // ===================================================================
 
 
@@ -1828,8 +1845,8 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>& Ty
   // @@protoc_insertion_point(field_list:google.protobuf.Type.fields)
   return _internal_fields();
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>* PROTOBUF_NONNULL Type::mutable_fields()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>* PROTOBUF_NONNULL
+Type::mutable_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.fields)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1957,8 +1974,8 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& T
   // @@protoc_insertion_point(field_list:google.protobuf.Type.options)
   return _internal_options();
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL Type::mutable_options()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
+Type::mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000004U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.options)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -2455,8 +2472,8 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& F
   // @@protoc_insertion_point(field_list:google.protobuf.Field.options)
   return _internal_options();
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL Field::mutable_options()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
+Field::mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Field.options)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -2710,8 +2727,8 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>
   // @@protoc_insertion_point(field_list:google.protobuf.Enum.enumvalue)
   return _internal_enumvalue();
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>* PROTOBUF_NONNULL Enum::mutable_enumvalue()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>* PROTOBUF_NONNULL
+Enum::mutable_enumvalue() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Enum.enumvalue)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -2766,8 +2783,8 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& E
   // @@protoc_insertion_point(field_list:google.protobuf.Enum.options)
   return _internal_options();
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL Enum::mutable_options()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
+Enum::mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Enum.options)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -3099,8 +3116,8 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& E
   // @@protoc_insertion_point(field_list:google.protobuf.EnumValue.options)
   return _internal_options();
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL EnumValue::mutable_options()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
+EnumValue::mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumValue.options)
   ::google::protobuf::internal::TSanWrite(&_impl_);

@@ -2944,7 +2944,8 @@ void TextFormat::Printer::PrintUnknownFields(
         if (!value.empty() && recursion_budget > 0 &&
             embedded_unknown_fields.ParseFromCodedStream(&input_stream)) {
           // This field is parseable as a Message.
-          // So it is probably an embedded message.
+          // It might not be a message, but in the case of ambiguity we assume
+          // it is a message.
           if (redact_debug_string_) {
             generator->PrintMaybeWithMarker(MarkerToken(), ": ",
                                             "UNKNOWN_MESSAGE ");

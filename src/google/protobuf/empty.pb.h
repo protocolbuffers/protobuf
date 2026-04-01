@@ -59,7 +59,9 @@ namespace protobuf {
 class Empty;
 struct EmptyGlobalsTypeInternal;
 PROTOBUF_EXPORT extern EmptyGlobalsTypeInternal _Empty_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Empty_class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace protobuf
 }  // namespace google
 
@@ -84,7 +86,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
 #endif
 
   template <typename = void>
-  explicit constexpr Empty(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Empty(::google::protobuf::internal::ConstantInitialized,
+                                 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                                     class_data);
 
   inline Empty(const Empty& from) : Empty(nullptr, from) {}
   inline Empty(Empty&& from) noexcept
@@ -180,7 +184,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -204,8 +209,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
   using DestructorSkippable_ = void;
   friend struct ::TableStruct_google_2fprotobuf_2fempty_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Empty_class_data_;
 
 // ===================================================================
 

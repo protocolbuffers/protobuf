@@ -23,29 +23,10 @@ namespace protobuf {
 template <typename ElementType>
 class RepeatedFieldProxy;
 
-template <int&... DeductionBarrier, typename T, typename Pred>
-size_t erase_if(RepeatedFieldProxy<T> cont, Pred pred);
-template <int&... DeductionBarrier, typename T, typename U>
-size_t erase(RepeatedFieldProxy<T> cont, const U& value);
-template <int&... DeductionBarrier, typename T, typename Compare>
-void c_sort(RepeatedFieldProxy<T> cont, Compare cmp);
-template <int&... DeductionBarrier, typename T>
-void c_sort(RepeatedFieldProxy<T> cont);
-template <int&... DeductionBarrier, typename T, typename Compare>
-void c_stable_sort(RepeatedFieldProxy<T> cont, Compare cmp);
-template <int&... DeductionBarrier, typename T>
-void c_stable_sort(RepeatedFieldProxy<T> cont);
-
 namespace internal {
 
-template <typename T, typename... Args>
-RepeatedFieldProxy<T> ConstructRepeatedFieldProxy(Args&&... args);
-
-// Casts up to a `RepeatedFieldProxy<ElementType>` from a subclass of
-// `RepeatedFieldProxy<ElementType>`. This is used to implement the CRTP
-// pattern for `*With<MethodName>` classes.
-template <template <typename...> class C, typename ElementType>
-RepeatedFieldProxy<ElementType> ToProxyType(const C<ElementType>* proxy);
+template <typename ElementType>
+class RepeatedFieldProxyInternalPrivateAccessHelper;
 
 // A type trait to determine if a repeated field element of type `ElementType`
 // is a string type.
@@ -282,41 +263,47 @@ class RepeatedFieldProxyBase {
 
 // Defines `set()` for primitive element types, which only take by value.
 template <typename ElementType, typename Enable = void>
-class RepeatedFieldProxyWithSet {
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithSet {
  public:
   // Sets the element at the given index to the given value.
   //
   // Performs bounds checking in accordance with `bounds_check_mode_*`.
   void set(size_t index, ElementType value) const {
-    ToProxyType(this).field()[index] = value;
+    auto& field =
+        RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>::field(this);
+    field[index] = value;
   }
 };
 
 // Defines `set()` for message element types, which take by const reference or
 // rvalue.
 template <typename ElementType>
-class RepeatedFieldProxyWithSet<
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithSet<
     ElementType, std::enable_if_t<RepeatedElementTypeIsMessage<ElementType>>> {
  public:
   // Sets the element at the given index to the given value by move-assignment.
   //
   // Performs bounds checking in accordance with `bounds_check_mode_*`.
   void set(size_t index, ElementType&& value) const {
-    ToProxyType(this).field()[index] = std::move(value);
+    auto& field =
+        RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>::field(this);
+    field[index] = std::move(value);
   }
 
   // Sets the element at the given index to the given value by copy-assignment.
   //
   // Performs bounds checking in accordance with `bounds_check_mode_*`.
   void set(size_t index, const ElementType& value) const {
-    ToProxyType(this).field()[index] = value;
+    auto& field =
+        RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>::field(this);
+    field[index] = value;
   }
 };
 
 // Defines `set()` for string element types, which dispatch to
 // `string_util::SetElement` and accept many string-like types.
 template <typename ElementType>
-class RepeatedFieldProxyWithSet<
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithSet<
     ElementType, std::enable_if_t<RepeatedElementTypeIsString<ElementType>>> {
  public:
   // Sets the element at the given index to the given value.
@@ -324,48 +311,56 @@ class RepeatedFieldProxyWithSet<
   // Performs bounds checking in accordance with `bounds_check_mode_*`.
   template <typename T>
   void set(size_t index, T&& value) const {
-    string_util::SetElement(ToProxyType(this).field()[index],
-                            std::forward<T>(value));
+    auto& field =
+        RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>::field(this);
+    string_util::SetElement(field[index], std::forward<T>(value));
   }
 };
 
 // Defines `push_back()` for primitive element types, which only take by value.
 template <typename ElementType, typename Enable = void>
-class RepeatedFieldProxyWithPushBack {
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithPushBack {
  public:
   // Appends the given value to the end of the repeated field.
-  void push_back(ElementType value) const { ToProxyType(this).Add(value); }
+  void push_back(ElementType value) const {
+    RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>::Add(this,
+                                                                    value);
+  }
 };
 
 // Defines `push_back()` for message element types, which take by const
 // reference or rvalue.
 template <typename ElementType>
-class RepeatedFieldProxyWithPushBack<
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithPushBack<
     ElementType, std::enable_if_t<RepeatedElementTypeIsMessage<ElementType>>> {
  public:
   // Appends the given value to the end of the repeated field by move
   // construction/assignment.
   void push_back(ElementType&& value) const {
-    ToProxyType(this).Add(std::move(value));
+    RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>::Add(
+        this, std::move(value));
   }
 
   // Appends the given value to the end of the repeated field by copy
   // construction/assignment.
   void push_back(const ElementType& value) const {
-    ToProxyType(this).Add(value);
+    RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>::Add(this,
+                                                                    value);
   }
 };
 
 // Defines `push_back()` for string element types, which dispatch to
 // `string_util::SetElement` and accept many string-like types.
 template <typename ElementType>
-class RepeatedFieldProxyWithPushBack<
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithPushBack<
     ElementType, std::enable_if_t<RepeatedElementTypeIsString<ElementType>>> {
  public:
   // Appends the given value to the end of the repeated field.
   template <typename T>
   void push_back(T&& value) const {
-    string_util::SetElement(ToProxyType(this).Add(), std::forward<T>(value));
+    string_util::SetElement(
+        RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>::Add(this),
+        std::forward<T>(value));
   }
 };
 
@@ -373,13 +368,14 @@ class RepeatedFieldProxyWithPushBack<
 // takes any arguments that can be passed to the constructor of `ElementType`
 // and in-place constructs the element at the end of the repeated field.
 template <typename ElementType, typename Enable = void>
-class RepeatedFieldProxyWithEmplaceBack {
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithEmplaceBack {
  public:
   // In-place constructs an element at the end of the repeated field, returning
   // a reference to the newly constructed element.
   template <typename... Args>
   auto& emplace_back(Args&&... args) const {
-    return ToProxyType(this).Emplace(std::forward<Args>(args)...);
+    return RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>::Emplace(
+        this, std::forward<Args>(args)...);
   }
 };
 
@@ -387,66 +383,79 @@ class RepeatedFieldProxyWithEmplaceBack {
 // list all constructors we want to support for repeated `string_views` to not
 // leak the `std::string` backing of repeated `string_views`.
 template <typename ElementType>
-class RepeatedFieldProxyWithEmplaceBack<
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithEmplaceBack<
     ElementType,
     std::enable_if_t<std::is_same_v<ElementType, absl::string_view>>> {
  public:
   // In-place constructs an element at the end of the repeated field, returning
   // a string_view of the newly constructed element.
-  absl::string_view emplace_back() const { return ToProxyType(this).Emplace(); }
+  absl::string_view emplace_back() const {
+    return RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>::Emplace(
+        this);
+  }
 
   // In-place constructs an element at the end of the repeated field, returning
   // a string_view of the newly constructed element.
   absl::string_view emplace_back(absl::string_view value) const {
-    return ToProxyType(this).Emplace(value);
+    return RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>::Emplace(
+        this, value);
   }
 
   // In-place constructs an element at the end of the repeated field, returning
   // a string_view of the newly constructed element.
   absl::string_view emplace_back(std::string&& value) const {
-    return ToProxyType(this).Emplace(std::move(value));
+    return RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>::Emplace(
+        this, std::move(value));
   }
 
   // In-place constructs an element at the end of the repeated field, returning
   // a string_view of the newly constructed element.
   absl::string_view emplace_back(const std::string& value) const {
-    return ToProxyType(this).Emplace(value);
+    return RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>::Emplace(
+        this, value);
   }
 
   // In-place constructs an element at the end of the repeated field, returning
   // a string_view of the newly constructed element.
   absl::string_view emplace_back(const char* value) const {
-    return ToProxyType(this).Emplace(value);
+    return RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>::Emplace(
+        this, value);
   }
 };
 
 // Defines `resize(new_size, value)` for all non-string repeated fields.
 template <typename ElementType, typename Enable = void>
-class RepeatedFieldProxyWithResize {
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithResize {
  public:
   void resize(size_t new_size, const ElementType& value) const {
-    ToProxyType(this).field().resize(new_size, value);
+    auto& field =
+        RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>::field(this);
+    field.resize(new_size, value);
   }
 };
 
 // Defines `resize(new_size, value)` for non-Cord string repeated fields.
 template <typename ElementType>
-class RepeatedFieldProxyWithResize<
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithResize<
     ElementType, std::enable_if_t<RepeatedElementTypeIsString<ElementType> &&
                                   !std::is_same_v<ElementType, absl::Cord>>> {
  public:
   void resize(size_t new_size, absl::string_view value) const {
-    ToProxyType(this).field().resize(new_size, value);
+    auto& field =
+        RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>::field(this);
+    field.resize(new_size, value);
   }
 };
 
 // Defines `resize(new_size, value)` for repeated Cords.
 template <typename ElementType>
-class RepeatedFieldProxyWithResize<
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithResize<
     ElementType, std::enable_if_t<std::is_same_v<ElementType, absl::Cord>>> {
  public:
   void resize(size_t new_size, const absl::Cord& value) const {
-    ToProxyType(this).field().resize(new_size, value);
+    auto& field =
+        RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>::field(this);
+    field.resize(new_size, value);
   }
 };
 
@@ -514,8 +523,7 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
     // the proxy iterator type upon return. This conversion is redundant for
     // types which have matching exposed and internal element types.
     using const_internal_iterator = typename RepeatedFieldType::const_iterator;
-    return iterator(
-        ToProxyType(this).field().erase(const_internal_iterator(position)));
+    return iterator(field().erase(const_internal_iterator(position)));
   }
 
   // Removes the elements in the range `[first, last)` from the repeated field.
@@ -523,8 +531,8 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
   // element.
   iterator erase(const_iterator first, const_iterator last) const {
     using const_internal_iterator = typename RepeatedFieldType::const_iterator;
-    return iterator(ToProxyType(this).field().erase(
-        const_internal_iterator(first), const_internal_iterator(last)));
+    return iterator(field().erase(const_internal_iterator(first),
+                                  const_internal_iterator(last)));
   }
 
   // Copy-assigns `other` into this repeated field.
@@ -604,27 +612,7 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
  private:
   friend RepeatedFieldProxy<const ElementType>;
 
-  friend internal::RepeatedFieldProxyWithSet<ElementType, void>;
-  friend internal::RepeatedFieldProxyWithPushBack<ElementType, void>;
-  friend internal::RepeatedFieldProxyWithEmplaceBack<ElementType, void>;
-  friend internal::RepeatedFieldProxyWithResize<ElementType, void>;
-
-  template <typename T, typename... Args>
-  friend RepeatedFieldProxy<T> internal::ConstructRepeatedFieldProxy(
-      Args&&... args);
-
-  template <int&... DeductionBarrier, typename T, typename Pred>
-  friend size_t erase_if(RepeatedFieldProxy<T> cont, Pred pred);
-  template <int&... DeductionBarrier, typename T, typename U>
-  friend size_t erase(RepeatedFieldProxy<T> cont, const U& value);
-  template <int&... DeductionBarrier, typename T, typename Compare>
-  friend void c_sort(RepeatedFieldProxy<T> cont, Compare cmp);
-  template <int&... DeductionBarrier, typename T>
-  friend void c_sort(RepeatedFieldProxy<T> cont);
-  template <int&... DeductionBarrier, typename T, typename Compare>
-  friend void c_stable_sort(RepeatedFieldProxy<T> cont, Compare cmp);
-  template <int&... DeductionBarrier, typename T>
-  friend void c_stable_sort(RepeatedFieldProxy<T> cont);
+  friend internal::RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>;
 
   RepeatedFieldProxy(RepeatedFieldType& field, Arena* arena)
       : Base(field), arena_(arena) {
@@ -652,7 +640,7 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
 };
 
 template <typename ElementType>
-class RepeatedFieldProxy<const ElementType> final
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy<const ElementType> final
     : public internal::RepeatedFieldProxyBase<const ElementType> {
   // A specialization of RepeatedFieldProxy for const proxies. This is needed
   // for mutating methods to not be exposed on const proxies.
@@ -692,9 +680,8 @@ class RepeatedFieldProxy<const ElementType> final
  private:
   friend RepeatedFieldProxy<ElementType>;
 
-  template <typename T, typename... Args>
-  friend RepeatedFieldProxy<T> internal::ConstructRepeatedFieldProxy(
-      Args&&... args);
+  friend internal::RepeatedFieldProxyInternalPrivateAccessHelper<
+      const ElementType>;
 
   // Note that we don't need an arena pointer here, since we don't mutate the
   // underlying repeated field.
@@ -709,52 +696,93 @@ namespace internal {
 static_assert(sizeof(RepeatedFieldProxy<int>) == 2 * sizeof(void*));
 static_assert(sizeof(RepeatedFieldProxy<const int>) == sizeof(void*));
 
-// A helper function to construct a `RepeatedFieldProxy`. This is more scalable
-// than friending all places that need to construct `RepeatedFieldProxy`.
-template <typename T, typename... Args>
-inline RepeatedFieldProxy<T> ConstructRepeatedFieldProxy(Args&&... args) {
-  return RepeatedFieldProxy<T>(std::forward<Args>(args)...);
-}
+// A helper class for accessing private members of `RepeatedFieldProxy` in
+// Protobuf internal code.
+//
+// DO NOT USE this class for any reason outside of protobuf internal code.
+template <typename ElementType>
+class RepeatedFieldProxyInternalPrivateAccessHelper {
+  // Casts up to a `RepeatedFieldProxy<ElementType>` from a subclass of
+  // `RepeatedFieldProxy<ElementType>`. This is used to implement the CRTP
+  // pattern for `*With<MethodName>` classes.
+  template <template <typename...> class C>
+  static RepeatedFieldProxy<ElementType> ToProxyType(
+      const C<ElementType, void>* proxy) {
+    return *static_cast<const RepeatedFieldProxy<ElementType>*>(proxy);
+  }
 
-template <template <typename...> class C, typename ElementType>
-RepeatedFieldProxy<ElementType> ToProxyType(const C<ElementType>* proxy) {
-  return *static_cast<const RepeatedFieldProxy<ElementType>*>(proxy);
-}
+ public:
+  template <typename... Args>
+  static RepeatedFieldProxy<ElementType> Construct(Args&&... args) {
+    return RepeatedFieldProxy<ElementType>(std::forward<Args>(args)...);
+  }
+
+  static auto& field(const RepeatedFieldProxy<ElementType>& proxy) {
+    return proxy.field();
+  }
+
+  // Takes any subclass of `RepeatedFieldProxy<ElementType>`, upcasts to
+  // `RepeatedFieldProxy<ElementType>`, then calls `field()`. This is used to
+  // implement the CRTP pattern for `*With<MethodName>` classes.
+  template <template <typename...> class C>
+  static auto& field(const C<ElementType, void>* proxy) {
+    return ToProxyType(proxy).field();
+  }
+
+  template <template <typename...> class C, typename... Args>
+  static auto& Add(const C<ElementType, void>* proxy, Args&&... args) {
+    return ToProxyType(proxy).Add(std::forward<Args>(args)...);
+  }
+  template <template <typename...> class C, typename... Args>
+  static auto& Emplace(const C<ElementType, void>* proxy, Args&&... args) {
+    return ToProxyType(proxy).Emplace(std::forward<Args>(args)...);
+  }
+};
 
 }  // namespace internal
 
 // Like C++20's std::erase_if, for RepeatedFieldProxy
 template <int&... DeductionBarrier, typename T, typename Pred>
 size_t erase_if(RepeatedFieldProxy<T> cont, Pred pred) {
-  return google::protobuf::erase_if(cont.field(), pred);
+  return google::protobuf::erase_if(
+      internal::RepeatedFieldProxyInternalPrivateAccessHelper<T>::field(cont),
+      pred);
 }
 
 // Like C++20's std::erase, for RepeatedFieldProxy
 template <int&... DeductionBarrier, typename T, typename U>
 size_t erase(RepeatedFieldProxy<T> cont, const U& value) {
-  return google::protobuf::erase(cont.field(), value);
+  return google::protobuf::erase(
+      internal::RepeatedFieldProxyInternalPrivateAccessHelper<T>::field(cont),
+      value);
 }
 
 // Like C++20's std::sort, for RepeatedFieldProxy.
 template <int&... DeductionBarrier, typename T, typename Compare>
 void c_sort(RepeatedFieldProxy<T> cont, Compare cmp) {
-  google::protobuf::c_sort(cont.field(), cmp);
+  google::protobuf::c_sort(
+      internal::RepeatedFieldProxyInternalPrivateAccessHelper<T>::field(cont),
+      cmp);
 }
 // Like C++20's std::sort, for RepeatedFieldProxy, with default comparison.
 template <int&... DeductionBarrier, typename T>
 void c_sort(RepeatedFieldProxy<T> cont) {
-  google::protobuf::c_sort(cont.field());
+  google::protobuf::c_sort(
+      internal::RepeatedFieldProxyInternalPrivateAccessHelper<T>::field(cont));
 }
 // Like C++20's std::stable_sort, for RepeatedFieldProxy.
 template <int&... DeductionBarrier, typename T, typename Compare>
 void c_stable_sort(RepeatedFieldProxy<T> cont, Compare cmp) {
-  google::protobuf::c_stable_sort(cont.field(), cmp);
+  google::protobuf::c_stable_sort(
+      internal::RepeatedFieldProxyInternalPrivateAccessHelper<T>::field(cont),
+      cmp);
 }
 // Like C++20's std::stable_sort, for RepeatedFieldProxy, with default
 // comparison.
 template <int&... DeductionBarrier, typename T>
 void c_stable_sort(RepeatedFieldProxy<T> cont) {
-  google::protobuf::c_stable_sort(cont.field());
+  google::protobuf::c_stable_sort(
+      internal::RepeatedFieldProxyInternalPrivateAccessHelper<T>::field(cont));
 }
 
 }  // namespace protobuf
