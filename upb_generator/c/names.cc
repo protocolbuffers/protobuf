@@ -69,7 +69,7 @@ constexpr uint32_t kAnyField = UINT32_MAX;
 
 // Prefixes used by C code generator for field access.
 static constexpr std::array<Prefix, 6> kPrefixes{
-    Prefix{"clear_", kContainerField | kStringField},
+    Prefix{"clear_", kAnyField},
     Prefix{"delete_", kContainerField},
     Prefix{"add_", kContainerField},
     Prefix{"resize_", kContainerField},
