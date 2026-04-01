@@ -42,15 +42,16 @@ static bool upb_DecodeFast_SingleString(upb_Decoder* d, const char** ptr,
 /* Generate all combinations:
  * p x {s,o,r} x {s, b} x {1bt,2bt} */
 
-#define F(type, card, tagsize)                                              \
-  const char* UPB_PRESERVE_NONE UPB_DECODEFAST_FUNCNAME(                    \
-      type, card, tagsize)(UPB_PARSE_PARAMS) {                              \
-    upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;                 \
-    upb_DecodeFast_Unpacked(d, &ptr, msg, &data, &hasbits, &next,           \
-                            kUpb_DecodeFast_##type, kUpb_DecodeFast_##card, \
-                            kUpb_DecodeFast_##tagsize,                      \
-                            &upb_DecodeFast_SingleString);                  \
-    UPB_DECODEFAST_NEXT(next);                                              \
+#define F(type, card, tagsize)                                        \
+  const char* UPB_PRESERVE_NONE UPB_DECODEFAST_FUNCNAME(              \
+      type, card, tagsize)(UPB_PARSE_PARAMS) {                        \
+    upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;           \
+    upb_DecodeFast_Unpacked(                                          \
+        d, &ptr, msg, &data, &hasbits, &next, kUpb_DecodeFast_##type, \
+        kUpb_DecodeFast_##card, kUpb_DecodeFast_##tagsize,            \
+        &upb_DecodeFast_SingleString,                                 \
+        decode_totablep(table)->UPB_PRIVATE(fast_path_unknowns));     \
+    UPB_DECODEFAST_NEXT(next);                                        \
   }
 
 UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, String)

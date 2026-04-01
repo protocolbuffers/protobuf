@@ -7,15 +7,21 @@
 
 #include "upb/wire/decode_fast/dispatch.h"
 
+#include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
+#include "upb/base/error_handler.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/wire/decode.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/decoder.h"
 
 // Must be last.
 #include "upb/port/def.inc"
+#include "upb/wire/internal/reader.h"
+#include "upb/wire/types.h"
 
 UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
     UPB_PARSE_PARAMS) {
@@ -59,4 +65,40 @@ UPB_PRESERVE_NONE const char* _upb_FastDecoder_DecodeGeneric(
   (void)data;
   upb_DecodeFast_SetHasbits(msg, hasbits);
   return ptr;
+}
+
+UPB_PRESERVE_NONE const char* _upb_FastDecoder_HandleUnknown(
+    struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
+    uint64_t hasbits, uint64_t data) {
+  (void)table;
+  (void)data;
+  upb_DecodeFast_SetHasbits(msg, hasbits);
+
+  const char* tag_start = ptr;
+
+  uint32_t tag;
+  const char* next_ptr = upb_WireReader_ReadTag(tag_start, &tag, &d->input);
+
+  if (UPB_UNLIKELY(!next_ptr)) {
+    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_Malformed);
+    return _upb_FastDecoder_ErrorJmp2(d);
+  }
+  ptr = next_ptr;
+
+  uint32_t field_number = tag >> 3;
+  uint32_t wire_type = tag & 7;
+
+  wireval val;
+  memset(&val, 0, sizeof(val));
+
+  if (wire_type == kUpb_WireType_Delimited) {
+    ptr = upb_Decoder_DecodeSize(d, ptr, &val.size);
+    if (!ptr) {
+      upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_Malformed);
+      return _upb_FastDecoder_ErrorJmp2(d);
+    }
+  }
+
+  return _upb_Decoder_DecodeUnknownField(d, ptr, msg, field_number, wire_type,
+                                         val, tag_start);
 }

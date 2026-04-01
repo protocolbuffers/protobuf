@@ -223,10 +223,11 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
     }
     output("}};\n\n");
   }
-
-  upb_DecodeFast_TableEntry table_entries[32];
+  const int fast_table_limit = 32;
+  upb_DecodeFast_TableEntry table_entries[fast_table_limit];
   int table_size = upb_DecodeFast_BuildTable(mt_64, table_entries);
   uint8_t table_mask = upb_DecodeFast_GetTableMask(table_size);
+  int fast_path_unknowns = field_count < fast_table_limit;
 
   std::string msgext = "kUpb_ExtMode_NonExtendable";
 
@@ -240,11 +241,11 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
 
   output("const upb_MiniTable $0 = {\n", MessageVarName(message));
   output("  $0,\n", fields_array_ref);
-  output("  $0, $1, $2, $3, UPB_FASTTABLE_MASK($4), $5,\n",
+  output("  $0, $1, $2, $3, UPB_FASTTABLE_MASK($4), $5, $6,\n",
          ArchDependentSize(mt_32->UPB_PRIVATE(size), mt_64->UPB_PRIVATE(size)),
          mt_64->UPB_PRIVATE(field_count), msgext,
          mt_64->UPB_PRIVATE(dense_below), table_mask,
-         mt_64->UPB_PRIVATE(required_count));
+         mt_64->UPB_PRIVATE(required_count), fast_path_unknowns);
   output("#ifdef UPB_TRACING_ENABLED\n");
   output("  \"$0\",\n", message.full_name());
   output("#endif\n");

@@ -136,11 +136,14 @@ void upb_DecodeFast_Varint(upb_Decoder* d, const char** ptr, upb_Message* msg,
         .hasbits = hasbits,
         .ret = ret,
     };
-    upb_DecodeFast_Delimited(d, ptr, type, card, tagsize, data,
-                             &upb_DecodeFast_PackedVarint, ret, &ctx);
+    upb_DecodeFast_Delimited(
+        d, ptr, type, card, tagsize, data, &upb_DecodeFast_PackedVarint, ret,
+        &ctx, decode_totablep(table)->UPB_PRIVATE(fast_path_unknowns));
   } else {
-    upb_DecodeFast_Unpacked(d, ptr, msg, data, hasbits, ret, type, card,
-                            tagsize, &upb_DecodeFast_SingleVarint);
+    upb_DecodeFast_Unpacked(
+        d, ptr, msg, data, hasbits, ret, type, card, tagsize,
+        &upb_DecodeFast_SingleVarint,
+        decode_totablep(table)->UPB_PRIVATE(fast_path_unknowns));
   }
 }
 

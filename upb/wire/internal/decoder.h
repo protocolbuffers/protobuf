@@ -31,12 +31,20 @@
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/eps_copy_input_stream.h"
+#include "upb/wire/reader.h"
 #include "utf8_range.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
 #define DECODE_NOGROUP (uint32_t)-1
+
+typedef union {
+  bool bool_val;
+  uint32_t uint32_val;
+  uint64_t uint64_val;
+  uint32_t size;
+} wireval;
 
 typedef struct upb_Decoder {
   upb_EpsCopyInputStream input;
@@ -211,6 +219,23 @@ UPB_INLINE bool _upb_Decoder_ReadString(upb_Decoder* d, const char** ptr,
   }
   *sv = tmp;
   return true;
+}
+
+const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d, const char* ptr,
+                                            upb_Message* msg,
+                                            uint32_t field_number,
+                                            uint32_t wire_type, wireval val,
+                                            const char* start);
+
+// This is identical to _upb_Decoder_DecodeTag() except that the maximum value
+// is INT32_MAX instead of UINT32_MAX.
+UPB_FORCEINLINE
+const char* upb_Decoder_DecodeSize(upb_Decoder* d, const char* ptr,
+                                   uint32_t* size) {
+  int sz;
+  ptr = upb_WireReader_ReadSize(ptr, &sz, &d->input);
+  *size = sz;
+  return ptr;
 }
 
 #include "upb/port/undef.inc"

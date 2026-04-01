@@ -52,6 +52,7 @@ cc_library(
         ":combinations",
         ":data",
         ":dispatch",
+        ":select",
         "//upb/base",
         "//upb/base:internal",
         "//upb/mem",
@@ -74,12 +75,15 @@ cc_library(
     features = UPB_DEFAULT_FEATURES,
     visibility = ["//upb/wire:__pkg__"],
     deps = [
+        "//upb/base",
         "//upb/message",
         "//upb/mini_table",
         "//upb/mini_table:internal",
         "//upb/port",
         "//upb/wire:decoder",
         "//upb/wire:eps_copy_input_stream",
+        "//upb/wire:reader",
+        "//upb/wire:reader_internal",
     ],
 )
 

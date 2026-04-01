@@ -56,7 +56,7 @@ std::pair<const upb_MiniTable*, const upb_MiniTableField*>
 MiniTable::MakeSingleFieldTable(int field_number, upb_FieldType type,
                                 upb_DecodeFast_Type fast_type,
                                 upb_DecodeFast_Cardinality cardinality,
-                                upb_Arena* arena) {
+                                upb_Arena* arena, bool fast_path_unknowns) {
   MtDataEncoder encoder;
   encoder.StartMessage(0);
   encoder.PutField(type, 1, FieldModifiers(fast_type, cardinality));
@@ -68,6 +68,8 @@ MiniTable::MakeSingleFieldTable(int field_number, upb_FieldType type,
   upb::Status status;
   const upb_MiniTable* table =
       upb_MiniTable_Build(data.data(), data.size(), arena, status.ptr());
+  const_cast<upb_MiniTable*>(table)->UPB_PRIVATE(fast_path_unknowns) =
+      fast_path_unknowns;
   ABSL_CHECK(status.ok()) << status.error_message();
   const upb_MiniTableField* field = upb_MiniTable_GetFieldByIndex(table, 0);
   ABSL_CHECK(field != nullptr);

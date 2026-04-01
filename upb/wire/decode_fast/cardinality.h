@@ -323,7 +323,8 @@ bool upb_DecodeFast_CheckTag(const char** ptr, upb_DecodeFast_Type type,
                              upb_DecodeFast_Cardinality card,
                              upb_DecodeFast_TagSize tagsize, uint64_t* data,
                              upb_DecodeFastNext flipped,
-                             upb_DecodeFastNext* next) {
+                             upb_DecodeFastNext* next,
+                             bool fast_path_unknowns) {
 #if UPB_TRACE_FASTDECODER
   size_t idx = UPB_DECODEFAST_FUNCTION_IDX(type, card, tagsize);
   fprintf(stderr, "Fasttable enter -> %s\n",
@@ -338,6 +339,10 @@ bool upb_DecodeFast_CheckTag(const char** ptr, upb_DecodeFast_Type type,
     if (flipped && upb_DecodeFast_TryFlipPacked(type, card, tagsize, data)) {
       // We can jump directly to the decoder for the flipped tag.
       return UPB_DECODEFAST_EXIT(flipped, next);
+    }
+    // Fast return by calling directly into handling unknown fields
+    if (fast_path_unknowns) {
+      return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_HandleUnknown, next);
     }
     return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, next);
   }
@@ -401,10 +406,12 @@ bool upb_DecodeFast_Unpacked(upb_Decoder* d, const char** ptr, upb_Message* msg,
                              upb_DecodeFastNext* ret, upb_DecodeFast_Type type,
                              upb_DecodeFast_Cardinality card,
                              upb_DecodeFast_TagSize tagsize,
-                             upb_DecodeFast_Single* single) {
+                             upb_DecodeFast_Single* single,
+                             bool fast_path_unknowns) {
   const char* p = *ptr;
   if (!upb_DecodeFast_CheckTag(&p, type, card, tagsize, data,
-                               kUpb_DecodeFastNext_TailCallPacked, ret)) {
+                               kUpb_DecodeFastNext_TailCallPacked, ret,
+                               fast_path_unknowns)) {
     return false;
   }
 
@@ -464,12 +471,14 @@ bool upb_DecodeFast_Delimited(upb_Decoder* d, const char** ptr,
                               upb_DecodeFast_Cardinality card,
                               upb_DecodeFast_TagSize tagsize, uint64_t* data,
                               upb_EpsCopyInputStream_ParseDelimitedFunc* func,
-                              upb_DecodeFastNext* ret, void* ctx) {
+                              upb_DecodeFastNext* ret, void* ctx,
+                              bool fast_path_unknowns) {
   const char* p = *ptr;
   int size;
 
   if (!upb_DecodeFast_CheckTag(&p, type, card, tagsize, data,
-                               kUpb_DecodeFastNext_TailCallUnpacked, ret)) {
+                               kUpb_DecodeFastNext_TailCallUnpacked, ret,
+                               fast_path_unknowns)) {
     return false;
   }
 

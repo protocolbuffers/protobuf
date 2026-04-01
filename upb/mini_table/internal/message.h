@@ -65,6 +65,10 @@ struct upb_MiniTable {
   uint8_t UPB_PRIVATE(table_mask);
   uint8_t UPB_PRIVATE(required_count);  // Required fields have the low hasbits.
 
+  // If true, skip slow-path lookup for fields not in fasttable for messages
+  // with 32 (current fast_table_limit) or fewer fields.
+  uint8_t UPB_PRIVATE(fast_path_unknowns);
+
 #ifdef UPB_TRACING_ENABLED
   const char* UPB_PRIVATE(full_name);
 #endif

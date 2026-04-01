@@ -77,6 +77,8 @@ __attribute__((no_sanitize("hwaddress"))) UPB_INLINE
 UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
     UPB_PARSE_PARAMS);
 
+UPB_PRESERVE_NONE const char* _upb_FastDecoder_HandleUnknown(UPB_PARSE_PARAMS);
+
 UPB_FORCEINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_Dispatch(
     UPB_PARSE_PARAMS) {
   int overrun;
@@ -189,6 +191,9 @@ typedef enum {
   // Tail call to the function to parse the current field, except parse it as
   // unpacked instead of packed.
   kUpb_DecodeFastNext_TailCallUnpacked = 5,
+
+  // Handle as unknown field.
+  kUpb_DecodeFastNext_HandleUnknown = 6,
 } upb_DecodeFastNext;
 
 /* Error function that will abort decoding with longjmp(). We can't declare this
@@ -210,6 +215,8 @@ const char* _upb_FastDecoder_ErrorJmp(upb_Decoder* d, upb_DecodeStatus status) {
   switch (next) {                                                         \
     case kUpb_DecodeFastNext_Dispatch:                                    \
       UPB_MUSTTAIL return upb_DecodeFast_Dispatch(UPB_PARSE_ARGS);        \
+    case kUpb_DecodeFastNext_HandleUnknown:                               \
+      UPB_MUSTTAIL return _upb_FastDecoder_HandleUnknown(UPB_PARSE_ARGS); \
     case kUpb_DecodeFastNext_FallbackToMiniTable:                         \
       UPB_MUSTTAIL return _upb_FastDecoder_DecodeGeneric(UPB_PARSE_ARGS); \
     case kUpb_DecodeFastNext_Error:                                       \

@@ -89,13 +89,6 @@ enum {
 #define OP_FIXPCK_LG2(n) (n + 5) /* n in [2, 3] => op in [7, 8] */
 #define OP_VARPCK_LG2(n) (n + 9) /* n in [0, 2, 3] => op in [9, 11, 12] */
 
-typedef union {
-  bool bool_val;
-  uint32_t uint32_val;
-  uint64_t uint64_val;
-  uint32_t size;
-} wireval;
-
 static void _upb_Decoder_AssumeEpsHasErrorHandler(upb_Decoder* d) {
   UPB_ASSUME(upb_EpsCopyInputStream_HasErrorHandler(&d->input));
 }
@@ -116,17 +109,6 @@ typedef struct {
   const char* ptr;
   uint64_t val;
 } _upb_DecodeLongVarintReturn;
-
-// This is identical to _upb_Decoder_DecodeTag() except that the maximum value
-// is INT32_MAX instead of UINT32_MAX.
-UPB_FORCEINLINE
-const char* upb_Decoder_DecodeSize(upb_Decoder* d, const char* ptr,
-                                   uint32_t* size) {
-  int sz;
-  ptr = upb_WireReader_ReadSize(ptr, &sz, EPS(d));
-  *size = sz;
-  return ptr;
-}
 
 static void _upb_Decoder_MungeInt32(wireval* val) {
   if (!upb_IsLittleEndian()) {
@@ -1013,9 +995,11 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
   }
 }
 
-static const char* _upb_Decoder_DecodeUnknownField(
-    upb_Decoder* d, const char* ptr, upb_Message* msg, uint32_t field_number,
-    uint32_t wire_type, wireval val, const char* start) {
+const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d, const char* ptr,
+                                            upb_Message* msg,
+                                            uint32_t field_number,
+                                            uint32_t wire_type, wireval val,
+                                            const char* start) {
   if (field_number == 0) {
     upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_Malformed);
   }

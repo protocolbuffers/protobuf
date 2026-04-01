@@ -123,6 +123,23 @@ TYPED_TEST(FieldTypeTest, DecodeOptionalMinValue) {
   EXPECT_EQ(absl::string_view(trace_buf), ExpectedSingleFieldTrace(mt, field));
 }
 
+TEST(DecodeTest, DecodeUnknownFieldWithFastPathUnknowns) {
+  char trace_buf[64];
+  using Value = typename field_types::Int32::Value;
+  upb::Arena arena;
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::Int32>(
+      1, kUpb_DecodeFast_Scalar, arena.ptr(), /*fast_path_unknowns=*/true);
+  upb_Message* msg = upb_Message_New(mt, arena.ptr());
+  std::string payload =
+      ToBinaryPayload(wire_types::WireMessage{{17, wire_types::Varint{123}}});
+  const_cast<upb_MiniTable*>(mt)->UPB_PRIVATE(fast_path_unknowns) = 1;
+  upb_DecodeStatus result =
+      upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                          arena.ptr(), trace_buf, sizeof(trace_buf));
+  ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+  EXPECT_EQ(GetOptionalField<Value>(msg, field), std::nullopt);
+}
+
 TYPED_TEST(FieldTypeTest, DecodeOneofMaxValue) {
   char trace_buf[64];
   using Value = typename TypeParam::Value;
