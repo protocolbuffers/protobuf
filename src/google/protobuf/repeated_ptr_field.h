@@ -356,7 +356,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Creates and adds an element using the given prototype, without introducing
   // a link-time dependency on the concrete message type.
   //
-  // Pre-condition: `prototype` must not be nullptr.
+  // Pre-condition: prototype must not be nullptr.
   template <typename TypeHandler>
   PROTOBUF_ALWAYS_INLINE Value<TypeHandler>* AddFromPrototype(
       Arena* arena, const Value<TypeHandler>* prototype) {
@@ -378,21 +378,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     };
   }
 
-  // Creates and adds an element using the given ClassData, without introducing
-  // a link-time dependency on the concrete message type. This is generally
-  // faster and should be preferred over the equivalent `AddFromPrototype()` if
-  // the caller already has or can get the `ClassData`, and especially if
-  // elements are added repeatedly.
-  //
-  // Pre-condition: `class_data` must not be nullptr.
-  template <typename TypeHandler>
-  PROTOBUF_ALWAYS_INLINE Value<TypeHandler>* AddFromClassData(
-      Arena* arena, const ClassData* class_data) {
-    using H = CommonHandler<TypeHandler>;
-    Value<TypeHandler>* result = cast<TypeHandler>(
-        AddInternal(arena, H::GetNewFromClassDataFunc(class_data)));
-    return result;
-  }
 
   template <typename TypeHandler>
   void Clear() {
@@ -1080,19 +1065,11 @@ class GenericTypeHandler {
       ptr = Arena::Create<Type>(arena, std::forward<Args>(args)...);
     };
   }
-  static constexpr auto GetNewFromPrototypeFunc(
-      const Type* prototype ABSL_ATTRIBUTE_LIFETIME_BOUND) {
+  static constexpr auto GetNewFromPrototypeFunc(const Type* prototype) {
+    static_assert(std::is_base_of_v<MessageLite, Type>);
     ABSL_DCHECK(prototype != nullptr);
-    return [prototype](Arena* arena, void*& ptr) {
-      ptr = GetClassData(*prototype)->New(arena);
-    };
-  }
-  static constexpr auto GetNewFromClassDataFunc(
-      const ClassData* class_data ABSL_ATTRIBUTE_LIFETIME_BOUND) {
-    ABSL_DCHECK(class_data != nullptr);
-    return [class_data](Arena* arena, void*& ptr) {
-      ptr = class_data->New(arena);
-    };
+    return
+        [prototype](Arena* arena, void*& ptr) { ptr = prototype->New(arena); };
   }
 
   static inline Arena* GetArena(Type* value) {

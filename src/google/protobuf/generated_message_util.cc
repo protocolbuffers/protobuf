@@ -387,13 +387,12 @@ MessageLite* DuplicateIfNonNullInternal(MessageLite* message) {
 }
 
 void GenericSwap(MessageLite* lhs, MessageLite* rhs) {
-  const ClassData* class_data = GetClassData(*lhs);
-  std::unique_ptr<MessageLite> tmp(class_data->New(nullptr));
-  tmp->MergeFromWithClassData(*lhs, class_data);
+  std::unique_ptr<MessageLite> tmp(lhs->New());
+  tmp->CheckTypeAndMergeFrom(*lhs);
   lhs->Clear();
-  lhs->MergeFromWithClassData(*rhs, class_data);
+  lhs->CheckTypeAndMergeFrom(*rhs);
   rhs->Clear();
-  rhs->MergeFromWithClassData(*tmp, class_data);
+  rhs->CheckTypeAndMergeFrom(*tmp);
 }
 
 // Returns a message owned by this Arena.  This may require Own()ing or

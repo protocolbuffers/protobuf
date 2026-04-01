@@ -167,7 +167,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
         MessageLite* value =
             info.is_repeated
                 ? AddMessage(arena, number, WireFormatLite::TYPE_GROUP,
-                             info.message_info.GetClassData(), info.descriptor)
+                             *info.message_info.prototype, info.descriptor)
                 : MutableMessage(arena, number, WireFormatLite::TYPE_GROUP,
                                  *info.message_info.prototype, info.descriptor);
         uint32_t tag = (number << 3) + WireFormatLite::WIRETYPE_START_GROUP;
@@ -178,7 +178,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
         MessageLite* value =
             info.is_repeated
                 ? AddMessage(arena, number, WireFormatLite::TYPE_MESSAGE,
-                             info.message_info.GetClassData(), info.descriptor)
+                             *info.message_info.prototype, info.descriptor)
                 : MutableMessage(arena, number, WireFormatLite::TYPE_MESSAGE,
                                  *info.message_info.prototype, info.descriptor);
         return ctx->ParseMessage(value, ptr);
@@ -221,7 +221,7 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
           MessageLite* value =
               extension.is_repeated
                   ? AddMessage(arena, type_id, WireFormatLite::TYPE_MESSAGE,
-                               extension.message_info.GetClassData(),
+                               *extension.message_info.prototype,
                                extension.descriptor)
                   : MutableMessage(arena, type_id, WireFormatLite::TYPE_MESSAGE,
                                    *extension.message_info.prototype,
