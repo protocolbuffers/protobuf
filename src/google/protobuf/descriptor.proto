@@ -899,6 +899,10 @@ message EnumValueOptions {
   // Information about the support window of a feature value.
   optional FieldOptions.FeatureSupport feature_support = 4;
 
+  // Range reserved for first-class extension options defined by the Protobuf
+  // team. Custom options must use the 1000+ range instead.
+  extensions 990 to 998;
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 

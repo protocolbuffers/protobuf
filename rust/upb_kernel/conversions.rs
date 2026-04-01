@@ -1,4 +1,5 @@
 use super::*;
+use crate::Enum;
 
 pub trait UpbTypeConversions<Tag>: Proxied {
     fn upb_type() -> upb::CType;
@@ -100,7 +101,7 @@ where
 
 impl<T> UpbTypeConversions<EnumTag> for T
 where
-    Self: Into<i32> + TryFrom<i32> + for<'a> Proxied<View<'a> = Self> + 'static,
+    Self: Enum,
 {
     fn upb_type() -> CType {
         CType::Enum

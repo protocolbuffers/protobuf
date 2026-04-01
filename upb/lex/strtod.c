@@ -23,9 +23,11 @@ static int GetLocaleRadix(char *data, size_t capacity) {
   const int size = snprintf(temp, sizeof(temp), "%.1f", 1.5);
   UPB_ASSERT(temp[0] == '1');
   UPB_ASSERT(temp[size - 1] == '5');
-  UPB_ASSERT(size < capacity);
+  if (size < capacity) {
+    return 0;
+  }
   temp[size - 1] = '\0';
-  strcpy(data, temp + 1);
+  strncpy(data, temp + 1, size);
   return size - 2;
 }
 
@@ -36,10 +38,18 @@ static int GetLocaleRadix(char *data, size_t capacity) {
 static void LocalizeRadix(const char *input, size_t input_len, const char *pos,
                            char *output) {
   const size_t len1 = pos - input;
+static void LocalizeRadix(const char *input, const char *pos, char *output,
+                          int output_size) {
+  const int len1 = pos - input;
 
   char radix[8];
   const int len2 = GetLocaleRadix(radix, sizeof(radix));
   const size_t len3 = input_len - len1 - 1;
+
+  const int n = output_size - len1 - len2 - 1;
+  if (n < 0) {
+    return;
+  }
 
   memcpy(output, input, len1);
   memcpy(output + len1, radix, len2);

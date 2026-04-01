@@ -46,16 +46,63 @@ inline constexpr CppFeatures::Impl_::Impl_(
         repeated_type_{static_cast< ::pb::CppFeatures_RepeatedType >(0)} {}
 
 template <typename>
-constexpr CppFeatures::CppFeatures(::_pbi::ConstantInitialized)
+constexpr CppFeatures::CppFeatures(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* class_data)
+    : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(CppFeatures_class_data_.base()),
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(),
+          class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
+          ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
+inline void* PROTOBUF_NONNULL CppFeatures::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+  return ::new (mem) CppFeatures(arena);
+}
+constexpr auto CppFeatures::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(CppFeatures),
+                                            alignof(CppFeatures));
+}
+constexpr auto CppFeatures::InternalGenerateClassData_(
+    const MessageLite& prototype) {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &prototype,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &CppFeatures::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<CppFeatures>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &CppFeatures::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<CppFeatures>(), &CppFeatures::ByteSizeLong,
+              &CppFeatures::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
+          false,
+      },
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+      &file_reflection_data[0],
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+      &::_pbi::kDescriptorMethods,
+      &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
+      nullptr,  // tracker
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+  };
+}
 struct CppFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-  constexpr CppFeaturesGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  constexpr CppFeaturesGlobalsTypeInternal()
+      :
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 CppFeatures_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+        MessageGlobalsBase(
+            CppFeatures::InternalGenerateClassData_(_default)),
+        _default(::_pbi::ConstantInitialized{}, GetClassData())
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+  {
+  }
   ~CppFeaturesGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) CppFeatures _default;
@@ -68,6 +115,17 @@ static_assert(PROTOBUF_FIELD_OFFSET(CppFeaturesGlobalsTypeInternal, _default) ==
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CppFeaturesGlobalsTypeInternal _CppFeatures_globals_;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+namespace {
+const ::_pbi::ClassData* CppFeatures_get_class_data() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  return _CppFeatures_globals_.GetClassData();
+#else
+  return CppFeatures_class_data_.base();
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+}
+}  // namespace
+#endif  // PROTOBUF_CUSTOM_VTABLE
 }  // namespace pb
 static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
     file_level_enum_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto[2];
@@ -168,7 +226,7 @@ class CppFeatures::_Internal {
 
 CppFeatures::CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, CppFeatures_class_data_.base()) {
+    : ::google::protobuf::Message(arena, CppFeatures_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -178,7 +236,7 @@ CppFeatures::CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 CppFeatures::CppFeatures(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CppFeatures& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, CppFeatures_class_data_.base()),
+    : ::google::protobuf::Message(arena, CppFeatures_get_class_data()),
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -214,59 +272,10 @@ inline void CppFeatures::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* PROTOBUF_NONNULL CppFeatures::PlacementNew_(
-    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
-  return ::new (mem) CppFeatures(arena);
-}
-constexpr auto CppFeatures::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(CppFeatures),
-                                            alignof(CppFeatures));
-}
-constexpr auto CppFeatures::InternalGenerateClassData_() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &_CppFeatures_globals_._default,
-          &_table_.header,
-          nullptr,  // IsInitialized
-          &CppFeatures::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<CppFeatures>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          &CppFeatures::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<CppFeatures>(), &CppFeatures::ByteSizeLong,
-              &CppFeatures::_InternalSerialize,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
-          false,
-      },
-      &file_reflection_data[0]};
-#else  // !PROTOBUF_MESSAGE_GLOBALS
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &_CppFeatures_globals_._default,
-          &_table_.header,
-          nullptr,  // IsInitialized
-          &CppFeatures::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<CppFeatures>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          &CppFeatures::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<CppFeatures>(), &CppFeatures::ByteSizeLong,
-              &CppFeatures::_InternalSerialize,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
-          false,
-      },
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
-      nullptr,  // tracker
-  };
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-}
-
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull CppFeatures_class_data_ =
-        CppFeatures::InternalGenerateClassData_();
+        CppFeatures::InternalGenerateClassData_(_CppFeatures_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 CppFeatures::GetClassData() const {
@@ -274,6 +283,14 @@ CppFeatures::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(CppFeatures_class_data_.tc_table);
   return CppFeatures_class_data_.base();
 }
+#else
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+CppFeatures::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_CppFeatures_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_CppFeatures_globals_.GetClassData()->tc_table);
+  return _CppFeatures_globals_.GetClassData();
+}
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<2, 4, 2, 0, 2>
 CppFeatures::_table_ = {
@@ -287,7 +304,11 @@ CppFeatures::_table_ = {
     4,  // num_field_entries
     2,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
+    #ifndef PROTOBUF_MESSAGE_GLOBALS
     CppFeatures_class_data_.base(),
+    #else
+    _CppFeatures_globals_.GetClassData(),
+    #endif
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE

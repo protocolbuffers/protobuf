@@ -1163,13 +1163,14 @@ UPB_INLINE void UPB_PRIVATE(upb_Xsan_AccessReadWrite)(upb_Xsan *xsan) {
 // We need this because the decoder inlines a upb_Arena for performance but
 // the full struct is not visible outside of arena.c. Yes, I know, it's awful.
 #ifndef NDEBUG
-#define UPB_ARENA_BASE_SIZE_HACK 11
-#else
 #define UPB_ARENA_BASE_SIZE_HACK 10
+#else
+#define UPB_ARENA_BASE_SIZE_HACK 9
 #endif
 
-#define UPB_ARENA_SIZE_HACK \
-  (UPB_ARENA_BASE_SIZE_HACK + (UPB_XSAN_STRUCT_SIZE * 2))
+#define UPB_ARENA_SIZE_HACK                                                   \
+  (sizeof(void*) * (UPB_ARENA_BASE_SIZE_HACK + (UPB_XSAN_STRUCT_SIZE * 2))) + \
+      (sizeof(uint32_t) * 2)
 
 // LINT.IfChange(upb_Arena)
 
@@ -14991,7 +14992,7 @@ extern "C" {
 
 UPB_INLINE int upb_Log2Ceiling(size_t x) {
   if (x <= 1) return 0;
-#if SIZE_MAX == ULL_MAX && UPB_HAS_BUILTIN(__builtin_clzll)
+#if SIZE_MAX == ULLONG_MAX && UPB_HAS_BUILTIN(__builtin_clzll)
   return (sizeof(size_t) * CHAR_BIT) - __builtin_clzll(x - 1);
 #elif SIZE_MAX == ULONG_MAX && UPB_HAS_BUILTIN(__builtin_clzl)
   return (sizeof(size_t) * CHAR_BIT) - __builtin_clzl(x - 1);
@@ -17779,13 +17780,11 @@ typedef struct upb_Decoder {
   bool message_is_done;
   union {
     upb_Arena arena;
-    void* foo[UPB_ARENA_SIZE_HACK];
+    void* foo[UPB_ARENA_SIZE_HACK / sizeof(void*)];
   };
   upb_ErrorHandler err;
 
 #ifndef NDEBUG
-  const char* debug_tagstart;
-  const char* debug_valstart;
   char* trace_buf;
   char* trace_ptr;
   char* trace_end;

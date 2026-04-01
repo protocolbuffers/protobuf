@@ -55,16 +55,63 @@ inline constexpr Option::Impl_::Impl_(
         value_{nullptr} {}
 
 template <typename>
-constexpr Option::Option(::_pbi::ConstantInitialized)
+constexpr Option::Option(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* class_data)
+    : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(Option_class_data_.base()),
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(),
+          class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
+          ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
+inline void* PROTOBUF_NONNULL Option::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+  return ::new (mem) Option(arena);
+}
+constexpr auto Option::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Option),
+                                            alignof(Option));
+}
+constexpr auto Option::InternalGenerateClassData_(
+    const MessageLite& prototype) {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &prototype,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &Option::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<Option>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &Option::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<Option>(), &Option::ByteSizeLong,
+              &Option::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(Option, _impl_._cached_size_),
+          false,
+      },
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+      &file_reflection_data[4],
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+      &::_pbi::kDescriptorMethods,
+      &descriptor_table_google_2fprotobuf_2ftype_2eproto,
+      nullptr,  // tracker
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+  };
+}
 struct OptionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-  constexpr OptionGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  constexpr OptionGlobalsTypeInternal()
+      :
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 Option_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+        MessageGlobalsBase(
+            Option::InternalGenerateClassData_(_default)),
+        _default(::_pbi::ConstantInitialized{}, GetClassData())
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+  {
+  }
   ~OptionGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Option _default;
@@ -77,6 +124,17 @@ static_assert(PROTOBUF_FIELD_OFFSET(OptionGlobalsTypeInternal, _default) ==
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OptionGlobalsTypeInternal _Option_globals_;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+namespace {
+const ::_pbi::ClassData* Option_get_class_data() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  return _Option_globals_.GetClassData();
+#else
+  return Option_class_data_.base();
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+}
+}  // namespace
+#endif  // PROTOBUF_CUSTOM_VTABLE
 
 inline constexpr Field::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -106,16 +164,63 @@ inline constexpr Field::Impl_::Impl_(
         packed_{false} {}
 
 template <typename>
-constexpr Field::Field(::_pbi::ConstantInitialized)
+constexpr Field::Field(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* class_data)
+    : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(Field_class_data_.base()),
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(),
+          class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
+          ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
+inline void* PROTOBUF_NONNULL Field::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+  return ::new (mem) Field(arena);
+}
+constexpr auto Field::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Field),
+                                            alignof(Field));
+}
+constexpr auto Field::InternalGenerateClassData_(
+    const MessageLite& prototype) {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &prototype,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &Field::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<Field>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &Field::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<Field>(), &Field::ByteSizeLong,
+              &Field::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(Field, _impl_._cached_size_),
+          false,
+      },
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+      &file_reflection_data[1],
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+      &::_pbi::kDescriptorMethods,
+      &descriptor_table_google_2fprotobuf_2ftype_2eproto,
+      nullptr,  // tracker
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+  };
+}
 struct FieldGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-  constexpr FieldGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  constexpr FieldGlobalsTypeInternal()
+      :
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 Field_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+        MessageGlobalsBase(
+            Field::InternalGenerateClassData_(_default)),
+        _default(::_pbi::ConstantInitialized{}, GetClassData())
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+  {
+  }
   ~FieldGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Field _default;
@@ -128,6 +233,17 @@ static_assert(PROTOBUF_FIELD_OFFSET(FieldGlobalsTypeInternal, _default) ==
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldGlobalsTypeInternal _Field_globals_;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+namespace {
+const ::_pbi::ClassData* Field_get_class_data() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  return _Field_globals_.GetClassData();
+#else
+  return Field_class_data_.base();
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+}
+}  // namespace
+#endif  // PROTOBUF_CUSTOM_VTABLE
 
 inline constexpr EnumValue::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -144,16 +260,63 @@ inline constexpr EnumValue::Impl_::Impl_(
         number_{0} {}
 
 template <typename>
-constexpr EnumValue::EnumValue(::_pbi::ConstantInitialized)
+constexpr EnumValue::EnumValue(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* class_data)
+    : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(EnumValue_class_data_.base()),
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(),
+          class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
+          ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
+inline void* PROTOBUF_NONNULL EnumValue::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+  return ::new (mem) EnumValue(arena);
+}
+constexpr auto EnumValue::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(EnumValue),
+                                            alignof(EnumValue));
+}
+constexpr auto EnumValue::InternalGenerateClassData_(
+    const MessageLite& prototype) {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &prototype,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &EnumValue::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<EnumValue>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &EnumValue::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<EnumValue>(), &EnumValue::ByteSizeLong,
+              &EnumValue::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(EnumValue, _impl_._cached_size_),
+          false,
+      },
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+      &file_reflection_data[3],
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+      &::_pbi::kDescriptorMethods,
+      &descriptor_table_google_2fprotobuf_2ftype_2eproto,
+      nullptr,  // tracker
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+  };
+}
 struct EnumValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-  constexpr EnumValueGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  constexpr EnumValueGlobalsTypeInternal()
+      :
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 EnumValue_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+        MessageGlobalsBase(
+            EnumValue::InternalGenerateClassData_(_default)),
+        _default(::_pbi::ConstantInitialized{}, GetClassData())
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+  {
+  }
   ~EnumValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) EnumValue _default;
@@ -166,6 +329,17 @@ static_assert(PROTOBUF_FIELD_OFFSET(EnumValueGlobalsTypeInternal, _default) ==
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueGlobalsTypeInternal _EnumValue_globals_;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+namespace {
+const ::_pbi::ClassData* EnumValue_get_class_data() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  return _EnumValue_globals_.GetClassData();
+#else
+  return EnumValue_class_data_.base();
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+}
+}  // namespace
+#endif  // PROTOBUF_CUSTOM_VTABLE
 
 inline constexpr Type::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -196,16 +370,63 @@ inline constexpr Type::Impl_::Impl_(
         syntax_{static_cast< ::google::protobuf::Syntax >(0)} {}
 
 template <typename>
-constexpr Type::Type(::_pbi::ConstantInitialized)
+constexpr Type::Type(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* class_data)
+    : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(Type_class_data_.base()),
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(),
+          class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
+          ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
+inline void* PROTOBUF_NONNULL Type::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+  return ::new (mem) Type(arena);
+}
+constexpr auto Type::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Type),
+                                            alignof(Type));
+}
+constexpr auto Type::InternalGenerateClassData_(
+    const MessageLite& prototype) {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &prototype,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &Type::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<Type>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &Type::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<Type>(), &Type::ByteSizeLong,
+              &Type::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(Type, _impl_._cached_size_),
+          false,
+      },
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+      &file_reflection_data[0],
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+      &::_pbi::kDescriptorMethods,
+      &descriptor_table_google_2fprotobuf_2ftype_2eproto,
+      nullptr,  // tracker
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+  };
+}
 struct TypeGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-  constexpr TypeGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  constexpr TypeGlobalsTypeInternal()
+      :
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 Type_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+        MessageGlobalsBase(
+            Type::InternalGenerateClassData_(_default)),
+        _default(::_pbi::ConstantInitialized{}, GetClassData())
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+  {
+  }
   ~TypeGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Type _default;
@@ -218,6 +439,17 @@ static_assert(PROTOBUF_FIELD_OFFSET(TypeGlobalsTypeInternal, _default) ==
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 TypeGlobalsTypeInternal _Type_globals_;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+namespace {
+const ::_pbi::ClassData* Type_get_class_data() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  return _Type_globals_.GetClassData();
+#else
+  return Type_class_data_.base();
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+}
+}  // namespace
+#endif  // PROTOBUF_CUSTOM_VTABLE
 
 inline constexpr Enum::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -243,16 +475,63 @@ inline constexpr Enum::Impl_::Impl_(
         syntax_{static_cast< ::google::protobuf::Syntax >(0)} {}
 
 template <typename>
-constexpr Enum::Enum(::_pbi::ConstantInitialized)
+constexpr Enum::Enum(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* class_data)
+    : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(Enum_class_data_.base()),
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(),
+          class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
+          ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
+inline void* PROTOBUF_NONNULL Enum::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+  return ::new (mem) Enum(arena);
+}
+constexpr auto Enum::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Enum),
+                                            alignof(Enum));
+}
+constexpr auto Enum::InternalGenerateClassData_(
+    const MessageLite& prototype) {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &prototype,
+          &_table_.header,
+          nullptr,  // IsInitialized
+          &Enum::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<Enum>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &Enum::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<Enum>(), &Enum::ByteSizeLong,
+              &Enum::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(Enum, _impl_._cached_size_),
+          false,
+      },
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+      &file_reflection_data[2],
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+      &::_pbi::kDescriptorMethods,
+      &descriptor_table_google_2fprotobuf_2ftype_2eproto,
+      nullptr,  // tracker
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+  };
+}
 struct EnumGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-  constexpr EnumGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  constexpr EnumGlobalsTypeInternal()
+      :
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 Enum_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+        MessageGlobalsBase(
+            Enum::InternalGenerateClassData_(_default)),
+        _default(::_pbi::ConstantInitialized{}, GetClassData())
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+  {
+  }
   ~EnumGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Enum _default;
@@ -265,6 +544,17 @@ static_assert(PROTOBUF_FIELD_OFFSET(EnumGlobalsTypeInternal, _default) ==
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumGlobalsTypeInternal _Enum_globals_;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+namespace {
+const ::_pbi::ClassData* Enum_get_class_data() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  return _Enum_globals_.GetClassData();
+#else
+  return Enum_class_data_.base();
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+}
+}  // namespace
+#endif  // PROTOBUF_CUSTOM_VTABLE
 }  // namespace protobuf
 }  // namespace google
 static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
@@ -471,7 +761,7 @@ void Type::clear_source_context() {
 }
 Type::Type(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Type_class_data_.base()) {
+    : ::google::protobuf::Message(arena, Type_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -512,7 +802,8 @@ Type::Type(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Type& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Type_class_data_.base()) {
+    : ::google::protobuf::Message(arena, Type_get_class_data()) {
+
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -577,59 +868,10 @@ inline void Type::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* PROTOBUF_NONNULL Type::PlacementNew_(
-    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
-  return ::new (mem) Type(arena);
-}
-constexpr auto Type::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Type),
-                                            alignof(Type));
-}
-constexpr auto Type::InternalGenerateClassData_() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &_Type_globals_._default,
-          &_table_.header,
-          nullptr,  // IsInitialized
-          &Type::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<Type>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          &Type::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<Type>(), &Type::ByteSizeLong,
-              &Type::_InternalSerialize,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(Type, _impl_._cached_size_),
-          false,
-      },
-      &file_reflection_data[0]};
-#else  // !PROTOBUF_MESSAGE_GLOBALS
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &_Type_globals_._default,
-          &_table_.header,
-          nullptr,  // IsInitialized
-          &Type::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<Type>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          &Type::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<Type>(), &Type::ByteSizeLong,
-              &Type::_InternalSerialize,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(Type, _impl_._cached_size_),
-          false,
-      },
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2ftype_2eproto,
-      nullptr,  // tracker
-  };
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-}
-
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Type_class_data_ =
-        Type::InternalGenerateClassData_();
+        Type::InternalGenerateClassData_(_Type_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Type::GetClassData() const {
@@ -637,6 +879,14 @@ Type::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(Type_class_data_.tc_table);
   return Type_class_data_.base();
 }
+#else
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+Type::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_Type_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_Type_globals_.GetClassData()->tc_table);
+  return _Type_globals_.GetClassData();
+}
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<3, 7, 3, 46, 2>
 Type::_table_ = {
@@ -650,7 +900,11 @@ Type::_table_ = {
     7,  // num_field_entries
     3,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
+    #ifndef PROTOBUF_MESSAGE_GLOBALS
     Type_class_data_.base(),
+    #else
+    _Type_globals_.GetClassData(),
+    #endif
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -1032,7 +1286,7 @@ class Field::_Internal {
 
 Field::Field(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Field_class_data_.base()) {
+    : ::google::protobuf::Message(arena, Field_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1061,7 +1315,8 @@ Field::Field(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Field& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Field_class_data_.base()) {
+    : ::google::protobuf::Message(arena, Field_get_class_data()) {
+
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1121,59 +1376,10 @@ inline void Field::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* PROTOBUF_NONNULL Field::PlacementNew_(
-    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
-  return ::new (mem) Field(arena);
-}
-constexpr auto Field::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Field),
-                                            alignof(Field));
-}
-constexpr auto Field::InternalGenerateClassData_() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &_Field_globals_._default,
-          &_table_.header,
-          nullptr,  // IsInitialized
-          &Field::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<Field>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          &Field::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<Field>(), &Field::ByteSizeLong,
-              &Field::_InternalSerialize,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(Field, _impl_._cached_size_),
-          false,
-      },
-      &file_reflection_data[1]};
-#else  // !PROTOBUF_MESSAGE_GLOBALS
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &_Field_globals_._default,
-          &_table_.header,
-          nullptr,  // IsInitialized
-          &Field::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<Field>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          &Field::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<Field>(), &Field::ByteSizeLong,
-              &Field::_InternalSerialize,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(Field, _impl_._cached_size_),
-          false,
-      },
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2ftype_2eproto,
-      nullptr,  // tracker
-  };
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-}
-
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Field_class_data_ =
-        Field::InternalGenerateClassData_();
+        Field::InternalGenerateClassData_(_Field_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Field::GetClassData() const {
@@ -1181,6 +1387,14 @@ Field::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(Field_class_data_.tc_table);
   return Field_class_data_.base();
 }
+#else
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+Field::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_Field_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_Field_globals_.GetClassData()->tc_table);
+  return _Field_globals_.GetClassData();
+}
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<4, 10, 1, 72, 2>
 Field::_table_ = {
@@ -1194,7 +1408,11 @@ Field::_table_ = {
     10,  // num_field_entries
     1,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
+    #ifndef PROTOBUF_MESSAGE_GLOBALS
     Field_class_data_.base(),
+    #else
+    _Field_globals_.GetClassData(),
+    #endif
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -1679,7 +1897,7 @@ void Enum::clear_source_context() {
 }
 Enum::Enum(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Enum_class_data_.base()) {
+    : ::google::protobuf::Message(arena, Enum_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1713,7 +1931,8 @@ Enum::Enum(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Enum& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Enum_class_data_.base()) {
+    : ::google::protobuf::Message(arena, Enum_get_class_data()) {
+
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1773,59 +1992,10 @@ inline void Enum::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* PROTOBUF_NONNULL Enum::PlacementNew_(
-    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
-  return ::new (mem) Enum(arena);
-}
-constexpr auto Enum::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Enum),
-                                            alignof(Enum));
-}
-constexpr auto Enum::InternalGenerateClassData_() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &_Enum_globals_._default,
-          &_table_.header,
-          nullptr,  // IsInitialized
-          &Enum::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<Enum>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          &Enum::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<Enum>(), &Enum::ByteSizeLong,
-              &Enum::_InternalSerialize,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(Enum, _impl_._cached_size_),
-          false,
-      },
-      &file_reflection_data[2]};
-#else  // !PROTOBUF_MESSAGE_GLOBALS
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &_Enum_globals_._default,
-          &_table_.header,
-          nullptr,  // IsInitialized
-          &Enum::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<Enum>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          &Enum::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<Enum>(), &Enum::ByteSizeLong,
-              &Enum::_InternalSerialize,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(Enum, _impl_._cached_size_),
-          false,
-      },
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2ftype_2eproto,
-      nullptr,  // tracker
-  };
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-}
-
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Enum_class_data_ =
-        Enum::InternalGenerateClassData_();
+        Enum::InternalGenerateClassData_(_Enum_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Enum::GetClassData() const {
@@ -1833,6 +2003,14 @@ Enum::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(Enum_class_data_.tc_table);
   return Enum_class_data_.base();
 }
+#else
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+Enum::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_Enum_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_Enum_globals_.GetClassData()->tc_table);
+  return _Enum_globals_.GetClassData();
+}
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<3, 6, 3, 40, 2>
 Enum::_table_ = {
@@ -1846,7 +2024,11 @@ Enum::_table_ = {
     6,  // num_field_entries
     3,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
+    #ifndef PROTOBUF_MESSAGE_GLOBALS
     Enum_class_data_.base(),
+    #else
+    _Enum_globals_.GetClassData(),
+    #endif
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -2194,7 +2376,7 @@ class EnumValue::_Internal {
 
 EnumValue::EnumValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, EnumValue_class_data_.base()) {
+    : ::google::protobuf::Message(arena, EnumValue_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2220,7 +2402,8 @@ EnumValue::EnumValue(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const EnumValue& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, EnumValue_class_data_.base()) {
+    : ::google::protobuf::Message(arena, EnumValue_get_class_data()) {
+
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2263,59 +2446,10 @@ inline void EnumValue::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* PROTOBUF_NONNULL EnumValue::PlacementNew_(
-    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
-  return ::new (mem) EnumValue(arena);
-}
-constexpr auto EnumValue::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(EnumValue),
-                                            alignof(EnumValue));
-}
-constexpr auto EnumValue::InternalGenerateClassData_() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &_EnumValue_globals_._default,
-          &_table_.header,
-          nullptr,  // IsInitialized
-          &EnumValue::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<EnumValue>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          &EnumValue::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<EnumValue>(), &EnumValue::ByteSizeLong,
-              &EnumValue::_InternalSerialize,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(EnumValue, _impl_._cached_size_),
-          false,
-      },
-      &file_reflection_data[3]};
-#else  // !PROTOBUF_MESSAGE_GLOBALS
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &_EnumValue_globals_._default,
-          &_table_.header,
-          nullptr,  // IsInitialized
-          &EnumValue::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<EnumValue>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          &EnumValue::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<EnumValue>(), &EnumValue::ByteSizeLong,
-              &EnumValue::_InternalSerialize,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(EnumValue, _impl_._cached_size_),
-          false,
-      },
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2ftype_2eproto,
-      nullptr,  // tracker
-  };
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-}
-
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull EnumValue_class_data_ =
-        EnumValue::InternalGenerateClassData_();
+        EnumValue::InternalGenerateClassData_(_EnumValue_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 EnumValue::GetClassData() const {
@@ -2323,6 +2457,14 @@ EnumValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(EnumValue_class_data_.tc_table);
   return EnumValue_class_data_.base();
 }
+#else
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+EnumValue::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_EnumValue_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_EnumValue_globals_.GetClassData()->tc_table);
+  return _EnumValue_globals_.GetClassData();
+}
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<2, 3, 1, 38, 2>
 EnumValue::_table_ = {
@@ -2336,7 +2478,11 @@ EnumValue::_table_ = {
     3,  // num_field_entries
     1,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
+    #ifndef PROTOBUF_MESSAGE_GLOBALS
     EnumValue_class_data_.base(),
+    #else
+    _EnumValue_globals_.GetClassData(),
+    #endif
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -2580,7 +2726,7 @@ void Option::clear_value() {
 }
 Option::Option(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Option_class_data_.base()) {
+    : ::google::protobuf::Message(arena, Option_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2599,7 +2745,8 @@ Option::Option(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Option& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Option_class_data_.base()) {
+    : ::google::protobuf::Message(arena, Option_get_class_data()) {
+
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2641,59 +2788,10 @@ inline void Option::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* PROTOBUF_NONNULL Option::PlacementNew_(
-    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
-  return ::new (mem) Option(arena);
-}
-constexpr auto Option::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Option),
-                                            alignof(Option));
-}
-constexpr auto Option::InternalGenerateClassData_() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &_Option_globals_._default,
-          &_table_.header,
-          nullptr,  // IsInitialized
-          &Option::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<Option>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          &Option::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<Option>(), &Option::ByteSizeLong,
-              &Option::_InternalSerialize,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(Option, _impl_._cached_size_),
-          false,
-      },
-      &file_reflection_data[4]};
-#else  // !PROTOBUF_MESSAGE_GLOBALS
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &_Option_globals_._default,
-          &_table_.header,
-          nullptr,  // IsInitialized
-          &Option::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<Option>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          &Option::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<Option>(), &Option::ByteSizeLong,
-              &Option::_InternalSerialize,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(Option, _impl_._cached_size_),
-          false,
-      },
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2ftype_2eproto,
-      nullptr,  // tracker
-  };
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-}
-
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Option_class_data_ =
-        Option::InternalGenerateClassData_();
+        Option::InternalGenerateClassData_(_Option_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Option::GetClassData() const {
@@ -2701,6 +2799,14 @@ Option::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(Option_class_data_.tc_table);
   return Option_class_data_.base();
 }
+#else
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+Option::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_Option_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_Option_globals_.GetClassData()->tc_table);
+  return _Option_globals_.GetClassData();
+}
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<1, 2, 1, 35, 2>
 Option::_table_ = {
@@ -2714,7 +2820,11 @@ Option::_table_ = {
     2,  // num_field_entries
     1,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
+    #ifndef PROTOBUF_MESSAGE_GLOBALS
     Option_class_data_.base(),
+    #else
+    _Option_globals_.GetClassData(),
+    #endif
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE

@@ -46,8 +46,7 @@ impl<T: Message> OwnedMessageInner<T> {
 /// Since C++ messages manage their own memory, this can just copy the
 /// `RawMessage` instead of referencing an arena like UPB must.
 ///
-/// Note: even though this type is `Copy`, it should only be copied by
-/// protobuf internals that can maintain mutation invariants:
+/// The following invariants must be upheld:
 ///
 /// - No concurrent mutation for any two fields in a message: this means
 ///   mutators cannot be `Send` but are `Sync`.
@@ -62,13 +61,6 @@ pub struct MessageMutInner<'msg, T> {
     raw: RawMessage,
     _phantom: PhantomData<(&'msg mut (), T)>,
 }
-
-impl<'msg, T: Message> Clone for MessageMutInner<'msg, T> {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
-impl<'msg, T: Message> Copy for MessageMutInner<'msg, T> {}
 
 impl<'msg, T: Message> MessageMutInner<'msg, T> {
     #[allow(clippy::needless_pass_by_ref_mut)] // Sound construction requires mutable access.
@@ -91,6 +83,17 @@ impl<'msg, T: Message> MessageMutInner<'msg, T> {
 
     pub fn raw(&self) -> RawMessage {
         self.raw
+    }
+
+    pub fn as_view(&self) -> MessageViewInner<'msg, T> {
+        MessageViewInner { raw: self.raw, _phantom: PhantomData }
+    }
+
+    pub fn reborrow<'shorter>(&mut self) -> MessageMutInner<'shorter, T>
+    where
+        'msg: 'shorter,
+    {
+        MessageMutInner { raw: self.raw, _phantom: PhantomData }
     }
 }
 
@@ -167,36 +170,14 @@ where
     }
 }
 
-pub trait KernelMessage: CppGetRawMessage + CppGetRawMessageMut {}
-impl<T: CppGetRawMessage + CppGetRawMessageMut> KernelMessage for T {}
+pub trait KernelMessage: CppGetRawMessage + CppGetRawMessageMut + OwnedMessageInterop {}
+impl<T: CppGetRawMessage + CppGetRawMessageMut + OwnedMessageInterop> KernelMessage for T {}
 
-pub trait KernelMessageView: CppGetRawMessage {}
-impl<T: CppGetRawMessage> KernelMessageView for T {}
+pub trait KernelMessageView<'msg>: CppGetRawMessage + MessageViewInterop<'msg> {}
+impl<'msg, T: CppGetRawMessage + MessageViewInterop<'msg>> KernelMessageView<'msg> for T {}
 
-pub trait KernelMessageMut: CppGetRawMessageMut {}
-impl<T: CppGetRawMessageMut> KernelMessageMut for T {}
-
-impl<'a, T> MessageMutInterop<'a> for T
-where
-    Self: AsMut + CppGetRawMessageMut + From<MessageMutInner<'a, <Self as AsMut>::MutProxied>>,
-    <Self as AsMut>::MutProxied: Message,
-{
-    unsafe fn __unstable_wrap_raw_message_mut(msg: &'a mut *mut std::ffi::c_void) -> Self {
-        let raw = RawMessage::new(*msg as *mut _).unwrap();
-        let inner = unsafe { MessageMutInner::wrap_raw(raw) };
-        inner.into()
-    }
-    unsafe fn __unstable_wrap_raw_message_mut_unchecked_lifetime(
-        msg: *mut std::ffi::c_void,
-    ) -> Self {
-        let raw = RawMessage::new(msg as *mut _).unwrap();
-        let inner = unsafe { MessageMutInner::wrap_raw(raw) };
-        inner.into()
-    }
-    fn __unstable_as_raw_message_mut(&mut self) -> *mut std::ffi::c_void {
-        self.get_raw_message_mut(Private).as_ptr() as *mut _
-    }
-}
+pub trait KernelMessageMut<'msg>: CppGetRawMessageMut + MessageMutInterop<'msg> {}
+impl<'msg, T: CppGetRawMessageMut + MessageMutInterop<'msg>> KernelMessageMut<'msg> for T {}
 
 /// Message equality definition which may have both false-negatives and false-positives in the face
 /// of unknown fields.
