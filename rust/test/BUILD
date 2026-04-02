@@ -267,7 +267,10 @@ rust_cc_proto_library(
 proto_library(
     name = "bad_names_proto",
     testonly = True,
-    srcs = ["bad_names.proto"],
+    srcs = [
+        "bad_names.proto",
+        "more_test_protos/bad_names.proto",
+    ],
 )
 
 rust_cc_proto_library(
@@ -538,4 +541,12 @@ rust_library(
     testonly = True,
     srcs = ["same_name_double_alias_exported_deps_consumer.rs"],
     deps = [":same_name_double_alias_exported_deps_rust_proto"],
+)
+
+rust_cc_proto_library(
+    name = "layering_check_test_rust_proto",
+    testonly = True,
+    # Ensure this library builds even when layering check is disabled.
+    features = ["-layering_check"],
+    deps = [":unittest_proto"],
 )

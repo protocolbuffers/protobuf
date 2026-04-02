@@ -38,6 +38,8 @@ namespace compiler {
 namespace rust {
 namespace {
 
+using Sub = ::google::protobuf::io::Printer::Sub;
+
 void MessageNew(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
@@ -214,7 +216,7 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
                                    const upb::DefPool& pool) {
   ABSL_CHECK(ctx.is_upb());
   ctx.Emit(
-      {{"name", RsSafeName(msg.name())},
+      {{"name", MessageRsName(msg)},
        {"mini_table_impl",
         [&] {
           const SCC& scc = ctx.GetSCC(msg);
@@ -313,51 +315,48 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
 }
 
 void TypeConversions(Context& ctx, const Descriptor& msg) {
-  switch (ctx.opts().kernel) {
-    case Kernel::kCpp:
-      ctx.Emit(
-          R"rs(
+  if (ctx.is_cpp()) {
+    ctx.Emit(
+        R"rs(
           impl $pbr$::CppMapTypeConversions for $Msg$ {
-              fn get_prototype() -> $pbr$::MapValue {
-                  $pbr$::MapValue::make_message(<$Msg$View as $std$::default::Default>::default().raw_msg())
+              fn get_prototype() -> $pbr$::FfiMapValue {
+                  $pbr$::FfiMapValue::make_message(<$Msg$View as $std$::default::Default>::default().raw_msg())
               }
 
-              fn to_map_value(self) -> $pbr$::MapValue {
-                  $pbr$::MapValue::make_message(std::mem::ManuallyDrop::new(self).raw_msg())
+              fn to_map_value(self) -> $pbr$::FfiMapValue {
+                  $pbr$::FfiMapValue::make_message(std::mem::ManuallyDrop::new(self).raw_msg())
               }
 
-              unsafe fn from_map_value<'b>(value: $pbr$::MapValue) -> $Msg$View<'b> {
-                  debug_assert_eq!(value.tag, $pbr$::MapValueTag::Message);
+              unsafe fn from_map_value<'b>(value: $pbr$::FfiMapValue) -> $Msg$View<'b> {
+                  debug_assert_eq!(value.tag, $pbr$::FfiMapValueTag::Message);
                   unsafe { $pbr$::MessageViewInner::wrap_raw(value.val.m).into() }
               }
 
-              unsafe fn mut_from_map_value<'b>(value: $pbr$::MapValue) -> $Msg$Mut<'b> {
-                  debug_assert_eq!(value.tag, $pbr$::MapValueTag::Message);
+              unsafe fn mut_from_map_value<'b>(value: $pbr$::FfiMapValue) -> $Msg$Mut<'b> {
+                  debug_assert_eq!(value.tag, $pbr$::FfiMapValueTag::Message);
                   let inner = unsafe { $pbr$::MessageMutInner::wrap_raw(value.val.m) };
                   $Msg$Mut { inner }
               }
           }
           )rs");
-      return;
-    case Kernel::kUpb:
-      ctx.Emit(
-          {
-              {"new_thunk", ThunkName(ctx, msg, "new")},
-          },
-          R"rs(
-            impl $pbr$::EntityType for $Msg$ {
-                type Tag = $pbr$::MessageTag;
+  }
+  ctx.Emit(
+      {
+          {"new_thunk", ThunkName(ctx, msg, "new")},
+      },
+      R"rs(
+            impl $pbi$::EntityType for $Msg$ {
+                type Tag = $pbi$::entity_tag::MessageTag;
             }
 
-            impl<'msg> $pbr$::EntityType for $Msg$View<'msg> {
-                type Tag = $pbr$::ViewProxyTag;
+            impl<'msg> $pbi$::EntityType for $Msg$View<'msg> {
+                type Tag = $pbi$::entity_tag::ViewProxyTag;
             }
 
-            impl<'msg> $pbr$::EntityType for $Msg$Mut<'msg> {
-                type Tag = $pbr$::MutProxyTag;
+            impl<'msg> $pbi$::EntityType for $Msg$Mut<'msg> {
+                type Tag = $pbi$::entity_tag::MutProxyTag;
             }
             )rs");
-  }
 }
 
 void GenerateDefaultInstanceImpl(Context& ctx, const Descriptor& msg) {
@@ -393,7 +392,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
       // visibility. The only reason we generate anything for them at all is
       // that it is useful to have map entries implement the
       // AssociatedMiniTable trait.
-      ctx.Emit({{"Msg", RsSafeName(msg.name())},
+      ctx.Emit({{"Msg", MessageRsName(msg)},
                 {"upb_generated_message_trait_impls",
                  [&] { UpbGeneratedMessageTraitImpls(ctx, msg, pool); }}},
                R"rs(
@@ -409,7 +408,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
   upb::MessageDefPtr upb_msg = pool.FindMessageByName(msg.full_name().data());
   ctx.Emit(
       {
-          {"Msg", RsSafeName(msg.name())},
+          // There's also ${$/$}$-style begin and end tokens, but those might
+          // be harder to retrofit here because of the giant-template style.
+          Sub("MsgDefinition", MessageRsName(msg)).AnnotatedAs(&msg),
+          {"Msg", MessageRsName(msg)},
           {"Msg::new", [&] { MessageNew(ctx, msg); }},
           {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
           {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
@@ -520,11 +522,14 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
       },
       R"rs(
         #[allow(non_camel_case_types)]
-        pub struct $Msg$ {
+        pub struct $MsgDefinition$ {
           inner: $pbr$::OwnedMessageInner<$Msg$>
         }
 
-        impl $pb$::Message for $Msg$ {}
+        impl $pb$::Message for $Msg$ {
+          type MessageView<'msg> = $Msg$View<'msg>;
+          type MessageMut<'msg> = $Msg$Mut<'msg>;
+        }
 
         impl $std$::default::Default for $Msg$ {
           fn default() -> Self {
@@ -658,7 +663,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           #[doc(hidden)]
           pub fn as_message_mut_inner(&mut self, _private: $pbi$::Private)
             -> $pbr$::MessageMutInner<'msg, $Msg$> {
-            self.inner
+            self.inner.reborrow()
           }
 
           pub fn to_owned(&self) -> $Msg$ {
@@ -683,9 +688,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
         impl<'msg> $pb$::AsView for $Msg$Mut<'msg> {
           type Proxied = $Msg$;
           fn as_view(&self) -> $pb$::View<'_, $Msg$> {
-            $Msg$View {
-              inner: $pbr$::MessageViewInner::view_of_mut(self.inner)
-            }
+            self.inner.as_view().into()
           }
         }
 
@@ -693,16 +696,14 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$>
           where
               'msg: 'shorter {
-            $Msg$View {
-              inner: $pbr$::MessageViewInner::view_of_mut(self.inner)
-            }
+            self.inner.as_view().into()
           }
         }
 
         impl<'msg> $pb$::AsMut for $Msg$Mut<'msg> {
           type MutProxied = $Msg$;
           fn as_mut(&mut self) -> $Msg$Mut<'msg> {
-            $Msg$Mut { inner: self.inner }
+            self.inner.reborrow().into()
           }
         }
 
@@ -801,7 +802,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
   ctx.printer().PrintRaw("\n");
   if (ctx.is_cpp()) {
 
-    ctx.Emit({{"Msg", RsSafeName(msg.name())}},
+    ctx.Emit({{"Msg", MessageRsName(msg)}},
              R"rs(
       impl<'a> $Msg$Mut<'a> {
         pub unsafe fn __unstable_wrap_cpp_grant_permission_to_break(
@@ -861,7 +862,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
 
     if (!ctx.opts().force_lite_runtime &&
         msg.file()->options().optimize_for() != FileOptions::LITE_RUNTIME) {
-      ctx.Emit({{"Msg", RsSafeName(msg.name())}},
+      ctx.Emit({{"Msg", MessageRsName(msg)}},
                R"rs(
               impl $pb$::MessageDescriptorInterop for $Msg$ {
                 fn __unstable_get_descriptor() -> *const $std$::ffi::c_void {

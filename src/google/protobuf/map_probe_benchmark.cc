@@ -258,7 +258,7 @@ int main(int argc, char** argv) {
   absl::PrintF("  \"benchmarks\": [\n");
   absl::string_view comma;
   for (const auto& result : results) {
-    auto print = [&](absl::string_view stat, double Ratios::*val) {
+    auto print = [&](absl::string_view stat, double Ratios::* val) {
       std::string name =
           absl::StrCat(result.name, "/", result.dist_name, "/", stat);
       absl::PrintF("    %s{\n", comma);

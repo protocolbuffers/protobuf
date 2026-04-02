@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = "google-protobuf"
-  s.version     = "4.34.0"
+  s.version     = "4.35.0"
   git_tag       = "v#{s.version.to_s.sub('.rc.', '-rc')}" # Converts X.Y.Z.rc.N to vX.Y.Z-rcN, used for the git tag
   s.licenses    = ["BSD-3-Clause"]
   s.summary     = "Protocol Buffers"
@@ -45,10 +45,10 @@ Gem::Specification.new do |s|
   # can remove this runtime dependency on rake. See the discussion here for
   # more details:
   # https://github.com/protocolbuffers/protobuf/pull/15203
-  s.add_dependency "rake", ">= 13"
+  s.add_dependency "rake", "~> 13.3"
   s.add_development_dependency "ffi", "~>1"
   s.add_development_dependency "ffi-compiler", "~>1"
-  s.add_development_dependency "rake-compiler", "~> 1.2"
-  s.add_development_dependency "rake-compiler-dock", "~> 1.9"
-  s.add_development_dependency "test-unit", '~> 3.0', '>= 3.0.9'
+  s.add_development_dependency "rake-compiler", "~> 1.3"
+  s.add_development_dependency "rake-compiler-dock", "~> 1.11"
+  s.add_development_dependency "test-unit", '~> 3.7'
 end

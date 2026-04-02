@@ -485,10 +485,9 @@ TailCallTableInfo::NumToEntryTable MakeNumToEntryTable(
   return num_to_entry_table;
 }
 
-uint16_t MakeTypeCardForField(
-    const FieldDescriptor* field, bool has_hasbit,
-    const TailCallTableInfo::FieldOptions& options,
-    cpp::Utf8CheckMode utf8_check_mode) {
+uint16_t MakeTypeCardForField(const FieldDescriptor* field, bool has_hasbit,
+                              const TailCallTableInfo::FieldOptions& options,
+                              cpp::Utf8CheckMode utf8_check_mode) {
   uint16_t type_card;
   namespace fl = internal::field_layout;
   if (field->is_repeated()) {
@@ -795,7 +794,7 @@ TailCallTableInfo::BuildFieldEntries(
       } else if (HasLazyRep(field, options)) {
         if (message_options.uses_codegen) {
           entry.aux_idx = aux_entries.size();
-          aux_entries.push_back({kSubMessage, {field}});
+          aux_entries.push_back({kSubMessageGlobals, {field}});
           if (options.lazy_opt == field_layout::kTvEager) {
             aux_entries.push_back({kMessageVerifyFunc, {field}});
           } else {
@@ -805,9 +804,9 @@ TailCallTableInfo::BuildFieldEntries(
           entry.aux_idx = TcParseTableBase::FieldEntry::kNoAuxIdx;
         }
       } else {
-        AuxType type = options.is_implicitly_weak          ? kSubMessageWeak
+        AuxType type = options.is_implicitly_weak ? kSubMessageGlobalsWeak
                        : options.use_direct_tcparser_table ? kSubTable
-                                                           : kSubMessage;
+                                                           : kSubMessageGlobals;
         if (type == kSubTable && is_non_cold(options)) {
           aux_entries[subtable_aux_idx] = {type, {field}};
           entry.aux_idx = subtable_aux_idx;

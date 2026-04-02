@@ -237,10 +237,6 @@ std::string IntTypeName(const Options& options, absl::string_view type) {
 
 
 
-bool HasV2Table(const Descriptor* descriptor, const Options& options) {
-  return false;
-}
-
 }  // namespace
 
 bool IsLazy(const FieldDescriptor* field, const Options& options) {
@@ -572,33 +568,48 @@ std::string Namespace(const EnumDescriptor* d, const Options& options) {
   return Namespace(d->file(), options);
 }
 
-std::string DefaultInstanceType(const Descriptor* descriptor,
-                                const Options& /*options*/, bool split) {
-  return ClassName(descriptor) + (split ? "__Impl_Split" : "") +
-         "DefaultTypeInternal";
+std::string SplitDefaultInstanceType(const Descriptor* descriptor,
+                                     const Options& /*options*/) {
+  return absl::StrCat(ClassName(descriptor), "__Impl_SplitDefaultTypeInternal");
 }
 
-std::string DefaultInstanceName(const Descriptor* descriptor,
-                                const Options& /*options*/, bool split) {
+std::string SplitDefaultInstanceName(const Descriptor* descriptor,
+                                     const Options& /*options*/) {
   return absl::StrCat("_", ClassName(descriptor, false),
-                      (split ? "__Impl_Split" : ""), "_default_instance_");
+                      "__Impl_Split_default_instance_");
 }
 
-std::string DefaultInstancePtr(const Descriptor* descriptor,
-                               const Options& options, bool split) {
-  return absl::StrCat(DefaultInstanceName(descriptor, options, split), "ptr_");
+std::string MsgGlobalsInstanceType(const Descriptor* descriptor,
+                                   const Options& /*options*/) {
+  return absl::StrCat(ClassName(descriptor), "GlobalsTypeInternal");
 }
 
-std::string QualifiedDefaultInstanceName(const Descriptor* descriptor,
-                                         const Options& options, bool split) {
+std::string MsgGlobalsInstanceName(const Descriptor* descriptor,
+                                   const Options& /*options*/) {
+  return absl::StrCat("_", ClassName(descriptor, false), "_globals_");
+}
+
+std::string MsgGlobalsInstancePtr(const Descriptor* descriptor,
+                                  const Options& options) {
+  return absl::StrCat(MsgGlobalsInstanceName(descriptor, options), "ptr_");
+}
+
+std::string QualifiedSplitDefaultInstanceName(const Descriptor* descriptor,
+                                              const Options& options) {
+  return QualifiedFileLevelSymbol(descriptor->file(),
+                                  SplitDefaultInstanceName(descriptor, options),
+                                  options);
+}
+
+std::string QualifiedMsgGlobalsInstanceName(const Descriptor* descriptor,
+                                            const Options& options) {
   return QualifiedFileLevelSymbol(
-      descriptor->file(), DefaultInstanceName(descriptor, options, split),
-      options);
+      descriptor->file(), MsgGlobalsInstanceName(descriptor, options), options);
 }
 
-std::string QualifiedDefaultInstancePtr(const Descriptor* descriptor,
-                                        const Options& options, bool split) {
-  return absl::StrCat(QualifiedDefaultInstanceName(descriptor, options, split),
+std::string QualifiedMsgGlobalsInstancePtr(const Descriptor* descriptor,
+                                           const Options& options) {
+  return absl::StrCat(QualifiedMsgGlobalsInstanceName(descriptor, options),
                       "ptr_");
 }
 
@@ -609,8 +620,7 @@ std::string ClassDataType(const Descriptor* descriptor,
                  // via options.
                  IsBootstrapProto(options, descriptor->file())
              ? "ClassDataFull"
-             : absl::StrFormat("ClassDataLite<%d>",
-                               descriptor->full_name().size() + 1);
+             : "ClassDataLite";
 }
 
 std::string DescriptorTableName(const FileDescriptor* file,
@@ -878,36 +888,6 @@ const char* DeclaredTypeMethodName(FieldDescriptor::Type type) {
   return "";
 }
 
-absl::string_view DeclaredCppTypeMethodName(FieldDescriptor::CppType type) {
-  switch (type) {
-    case FieldDescriptor::CPPTYPE_INT32:
-      return "Int32";
-    case FieldDescriptor::CPPTYPE_INT64:
-      return "Int64";
-    case FieldDescriptor::CPPTYPE_UINT32:
-      return "UInt32";
-    case FieldDescriptor::CPPTYPE_UINT64:
-      return "UInt64";
-    case FieldDescriptor::CPPTYPE_DOUBLE:
-      return "Double";
-    case FieldDescriptor::CPPTYPE_FLOAT:
-      return "Float";
-    case FieldDescriptor::CPPTYPE_BOOL:
-      return "Bool";
-    case FieldDescriptor::CPPTYPE_ENUM:
-      return "Enum";
-    case FieldDescriptor::CPPTYPE_STRING:
-      return "String";
-    case FieldDescriptor::CPPTYPE_MESSAGE:
-      return "Message";
-
-      // No default because we want the compiler to complain if any new
-      // types are added.
-  }
-  ABSL_LOG(FATAL) << "Can't get here.";
-  return "";
-}
-
 std::string Int32ToString(int number) {
   if (number == std::numeric_limits<int32_t>::min()) {
     // This needs to be special-cased, see explanation here:
@@ -948,11 +928,11 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_DOUBLE: {
       double value = field->default_value_double();
       if (value == std::numeric_limits<double>::infinity()) {
-        return "std::numeric_limits<double>::infinity()";
+        return "::std::numeric_limits<double>::infinity()";
       } else if (value == -std::numeric_limits<double>::infinity()) {
-        return "-std::numeric_limits<double>::infinity()";
+        return "-::std::numeric_limits<double>::infinity()";
       } else if (value != value) {
-        return "std::numeric_limits<double>::quiet_NaN()";
+        return "::std::numeric_limits<double>::quiet_NaN()";
       } else {
         return io::SimpleDtoa(value);
       }
@@ -960,11 +940,11 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_FLOAT: {
       float value = field->default_value_float();
       if (value == std::numeric_limits<float>::infinity()) {
-        return "std::numeric_limits<float>::infinity()";
+        return "::std::numeric_limits<float>::infinity()";
       } else if (value == -std::numeric_limits<float>::infinity()) {
-        return "-std::numeric_limits<float>::infinity()";
+        return "-::std::numeric_limits<float>::infinity()";
       } else if (value != value) {
-        return "std::numeric_limits<float>::quiet_NaN()";
+        return "::std::numeric_limits<float>::quiet_NaN()";
       } else {
         std::string float_value = io::SimpleFtoa(value);
         // If floating point value contains a period (.) or an exponent
@@ -1228,21 +1208,30 @@ const FieldDescriptor* FindHottestField(
   return nullptr;
 }
 
-static bool HasRepeatedFields(const Descriptor* descriptor) {
+static bool HasRepeatedFields(
+    const Descriptor* descriptor,
+    FieldDescriptor::CppRepeatedType cpp_repeated_type) {
   for (int i = 0; i < descriptor->field_count(); ++i) {
-    if (descriptor->field(i)->is_repeated()) {
+    const auto* field = descriptor->field(i);
+    if (field->is_repeated() && !field->is_map() &&
+        CalculateFieldDescriptorRepeatedType(field) == cpp_repeated_type) {
       return true;
     }
   }
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
-    if (HasRepeatedFields(descriptor->nested_type(i))) return true;
+    if (HasRepeatedFields(descriptor->nested_type(i), cpp_repeated_type)) {
+      return true;
+    }
   }
   return false;
 }
 
-bool HasRepeatedFields(const FileDescriptor* file) {
+bool HasRepeatedFields(const FileDescriptor* file,
+                       FieldDescriptor::CppRepeatedType cpp_repeated_type) {
   for (int i = 0; i < file->message_type_count(); ++i) {
-    if (HasRepeatedFields(file->message_type(i))) return true;
+    if (HasRepeatedFields(file->message_type(i), cpp_repeated_type)) {
+      return true;
+    }
   }
   return false;
 }
@@ -1338,34 +1327,6 @@ bool HasMapFields(const FileDescriptor* file) {
   return false;
 }
 
-bool IsV2EnabledForMessage(const Descriptor* descriptor,
-                           const Options& options) {
-  return false;
-}
-
-// Returns true if a message (descriptor) directly has required fields. Later
-// CLs will expand to cover transitively required fields.
-bool ShouldVerifyV2(const Descriptor* descriptor, const Options& options) {
-  return false;
-}
-
-
-bool HasV2MessageTable(const FileDescriptor* file, const Options& options) {
-  for (int i = 0; i < file->message_type_count(); ++i) {
-    if (HasV2Table(file->message_type(i), options)) return true;
-  }
-  return false;
-}
-
-
-bool IsV2ParseEnabledForMessage(const Descriptor* descriptor,
-                                const Options& options) {
-  return false;
-}
-
-bool HasV2ParseTable(const FileDescriptor* file, const Options& options) {
-  return false;
-}
 
 static bool HasEnumDefinitions(const Descriptor* message_type) {
   if (message_type->enum_type_count() > 0) return true;
@@ -1523,14 +1484,6 @@ void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
                                     const Formatter& format) {
   GenerateUtf8CheckCode(format.printer(), field, options, for_parse, parameters,
                         "VerifyUtf8String", "VerifyUTF8StringNamedField");
-}
-
-void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
-                                  const Options& options, bool for_parse,
-                                  absl::string_view parameters,
-                                  const Formatter& format) {
-  GenerateUtf8CheckCode(format.printer(), field, options, for_parse, parameters,
-                        "VerifyUtf8Cord", "VerifyUTF8CordNamedField");
 }
 
 void GenerateUtf8CheckCodeForString(io::Printer* p,
@@ -1729,7 +1682,7 @@ bool UsingImplicitWeakDescriptor(const FileDescriptor* file,
 
 std::string StrongReferenceToType(const Descriptor* desc,
                                   const Options& options) {
-  const auto name = QualifiedDefaultInstanceName(desc, options);
+  const auto name = QualifiedMsgGlobalsInstanceName(desc, options);
   return absl::StrFormat("::%s::internal::StrongPointer<decltype(%s)*, &%s>()",
                          ProtobufNamespace(options), name, name);
 }
@@ -1868,7 +1821,7 @@ int CollectFieldsExcludingWeakAndOneof(
     const Descriptor* d, const Options& options,
     std::vector<const FieldDescriptor*>& fields) {
   int num_weak_fields = 0;
-  for (auto field : FieldRange(d)) {
+  for (auto field : internal::FieldRange(d)) {
     if (IsWeak(field, options)) {
       ++num_weak_fields;
     }
@@ -2138,7 +2091,7 @@ FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
 
 bool HasMessageFieldOrExtension(const Descriptor* desc) {
   if (desc->extension_range_count() > 0) return true;
-  for (const auto* f : FieldRange(desc)) {
+  for (const auto* f : internal::FieldRange(desc)) {
     if (f->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) return true;
   }
   return false;

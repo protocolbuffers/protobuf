@@ -506,10 +506,12 @@ void WriteEnumValueDocComment(io::Printer* printer,
   printer->Print("/**\n");
   WriteDocCommentBody(printer, value, options, /* kdoc */ false);
 
-  printer->Print(
-      " * <code>$def$</code>\n"
-      " */\n",
-      "def", EscapeJavadoc(FirstLineOf(value->DebugString())));
+  if (!options.strip_nonfunctional_codegen) {
+    printer->Print(
+        " * <code>$def$</code>\n"
+        " */\n",
+        "def", EscapeJavadoc(FirstLineOf(value->DebugString())));
+  }
 }
 
 void WriteServiceDocComment(io::Printer* printer,

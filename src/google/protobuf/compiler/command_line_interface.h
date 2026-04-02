@@ -500,6 +500,9 @@ class PROTOC_EXPORT CommandLineInterface {
 
   // When using --encode, this will be passed to SetSerializationDeterministic.
   bool deterministic_output_ = false;
+  // Whether to allow files to be written to a path that is outside of the
+  // output directory.
+  bool unsafe_allow_out_dir_escape_ = false;
 
   bool opensource_runtime_ = google::protobuf::internal::IsOss();
 

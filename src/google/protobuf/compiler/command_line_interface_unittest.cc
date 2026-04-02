@@ -1175,6 +1175,58 @@ TEST_F(CommandLineInterfaceTest, CreateDirectory) {
   ExpectGenerated("test_plugin", "", "bar/baz/foo.proto", "Foo", "plugout");
 }
 
+TEST_F(CommandLineInterfaceTest, RejectDotDotInFilename) {
+  class DotDotGenerator : public CodeGenerator {
+   public:
+    bool Generate(const FileDescriptor* file, const std::string& parameter,
+                  GeneratorContext* context,
+                  std::string* error) const override {
+      std::unique_ptr<io::ZeroCopyOutputStream> output(
+          context->Open("abc/../../foo.proto.test"));
+      return true;
+    }
+  };
+
+  RegisterGenerator("--dotdot_out", std::make_unique<DotDotGenerator>(),
+                    "Test .. rejection.");
+
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  RunProtoc(
+      "protocol_compiler --dotdot_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("Output file names must never have a relative path.");
+}
+
+TEST_F(CommandLineInterfaceTest, AllowDotDotInFilenameWithFlag) {
+  class DotDotGenerator : public CodeGenerator {
+   public:
+    bool Generate(const FileDescriptor* file, const std::string& parameter,
+                  GeneratorContext* context,
+                  std::string* error) const override {
+      std::unique_ptr<io::ZeroCopyOutputStream> output(
+          context->Open("abc/../../foo.proto.test"));
+      return true;
+    }
+  };
+
+  RegisterGenerator("--dotdot_out", std::make_unique<DotDotGenerator>(),
+                    "Test .. allowance.");
+
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  RunProtoc(
+      "protocol_compiler --unsafe_allow_out_dir_escape --dotdot_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+}
+
 TEST_F(CommandLineInterfaceTest, GeneratorParameters) {
   // Test that generator parameters are correctly parsed from the command line.
 
@@ -1650,6 +1702,36 @@ TEST_F(CommandLineInterfaceTest, ValidateFeatureSupportValid) {
     })schema");
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
   ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, ValidateFeatureSupportLifetimesOptionRemoved) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2024";
+    import "google/protobuf/descriptor.proto";
+
+    option features.field_presence = IMPLICIT;
+
+    extend google.protobuf.MessageOptions {
+      bool removed_option = 7733026 [feature_support = {
+        edition_removed: EDITION_2023
+        removal_error: "removed_option removal error"}];
+    }
+    message Foo {
+      option (removed_option) = true;
+      int32 bar = 1 [
+        feature_support = {
+          edition_removed: EDITION_2023
+          removal_error: "Custom removal error"
+        }
+      ];
+    })schema");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "removed_option has been removed in edition 2023: removed_option removal "
+      "error");
 }
 
 TEST_F(CommandLineInterfaceTest, FeatureValidationError) {

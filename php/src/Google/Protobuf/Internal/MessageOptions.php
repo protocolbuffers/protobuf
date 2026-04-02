@@ -235,9 +235,8 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setMessageSetWireFormat($var)
+    public function setMessageSetWireFormat(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->message_set_wire_format = $var;
 
         return $this;
@@ -275,9 +274,8 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setNoStandardDescriptorAccessor($var)
+    public function setNoStandardDescriptorAccessor(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->no_standard_descriptor_accessor = $var;
 
         return $this;
@@ -317,9 +315,8 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setDeprecated($var)
+    public function setDeprecated(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->deprecated = $var;
 
         return $this;
@@ -387,9 +384,8 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setMapEntry($var)
+    public function setMapEntry(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->map_entry = $var;
 
         return $this;
@@ -446,10 +442,9 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * @return $this
      * @deprecated
      */
-    public function setDeprecatedLegacyJsonFieldConflicts($var)
+    public function setDeprecatedLegacyJsonFieldConflicts(bool $var)
     {
         @trigger_error('deprecated_legacy_json_field_conflicts is deprecated.', E_USER_DEPRECATED);
-        GPBUtil::checkBool($var);
         $this->deprecated_legacy_json_field_conflicts = $var;
 
         return $this;
@@ -489,9 +484,8 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\FeatureSet $var
      * @return $this
      */
-    public function setFeatures($var)
+    public function setFeatures(\Google\Protobuf\Internal\FeatureSet|null $var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FeatureSet::class);
         $this->features = $var;
 
         return $this;
@@ -515,7 +509,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\UninterpretedOption[] $var
      * @return $this
      */
-    public function setUninterpretedOption($var)
+    public function setUninterpretedOption(array|RepeatedField $var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption::class);
         $this->uninterpreted_option = $arr;

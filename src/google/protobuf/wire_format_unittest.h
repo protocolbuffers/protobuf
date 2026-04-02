@@ -1645,7 +1645,6 @@ REGISTER_TYPED_TEST_SUITE_P(Utf8ValidationTest, WriteInvalidUTF8String,
                             ReadArbitraryBytes, ParseRepeatedString,
                             OldVerifyUTF8String);
 
-
 template <typename T>
 class LazyMessageSetsTest;
 template <typename Proto2T, typename Proto3T, typename eagerly_parse>
@@ -1656,9 +1655,7 @@ class LazyMessageSetsTest<void(Proto2T, Proto3T, eagerly_parse)>
 
   static constexpr bool kEagerlyParseMessageSets = eagerly_parse::value;
 
-  void SetUp() override {
-    GTEST_SKIP() << "Disabled.";
-  }
+  void SetUp() override { GTEST_SKIP() << "Disabled."; }
 };
 TYPED_TEST_SUITE_P(LazyMessageSetsTest);
 

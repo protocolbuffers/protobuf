@@ -231,14 +231,14 @@ static google_protobuf_FieldDescriptorProto* fielddef_toproto(upb_ToProto_Contex
   google_protobuf_FieldDescriptorProto_set_number(proto, upb_FieldDef_Number(f));
 
   if (upb_FieldDef_IsRequired(f) &&
-      upb_FileDef_Edition(upb_FieldDef_File(f)) >= UPB_DESC(EDITION_2023)) {
+      upb_FileDef_Edition(upb_FieldDef_File(f)) >= google_protobuf_EDITION_2023) {
     google_protobuf_FieldDescriptorProto_set_label(
-        proto, UPB_DESC(FieldDescriptorProto_LABEL_OPTIONAL));
+        proto, google_protobuf_FieldDescriptorProto_LABEL_OPTIONAL);
   } else {
     google_protobuf_FieldDescriptorProto_set_label(proto, upb_FieldDef_Label(f));
   }
   if (upb_FieldDef_Type(f) == kUpb_FieldType_Group &&
-      upb_FileDef_Edition(upb_FieldDef_File(f)) >= UPB_DESC(EDITION_2023)) {
+      upb_FileDef_Edition(upb_FieldDef_File(f)) >= google_protobuf_EDITION_2023) {
     google_protobuf_FieldDescriptorProto_set_type(proto, kUpb_FieldType_Message);
   } else {
     google_protobuf_FieldDescriptorProto_set_type(proto, upb_FieldDef_Type(f));
@@ -364,8 +364,8 @@ static google_protobuf_EnumDescriptorProto* enumdef_toproto(upb_ToProto_Context*
                     upb_FileDef_Pool(upb_EnumDef_File(e))));
   }
 
-  UPB_DESC(SymbolVisibility) visibility = upb_EnumDef_Visibility(e);
-  if (visibility != UPB_DESC(VISIBILITY_UNSET)) {
+  google_protobuf_SymbolVisibility visibility = upb_EnumDef_Visibility(e);
+  if (visibility != google_protobuf_VISIBILITY_UNSET) {
     google_protobuf_EnumDescriptorProto_set_visibility(proto, visibility);
   }
 
@@ -470,8 +470,8 @@ static google_protobuf_DescriptorProto* msgdef_toproto(upb_ToProto_Context* ctx,
                     upb_FileDef_Pool(upb_MessageDef_File(m))));
   }
 
-  UPB_DESC(SymbolVisibility) visibility = upb_MessageDef_Visibility(m);
-  if (visibility != UPB_DESC(VISIBILITY_UNSET)) {
+  google_protobuf_SymbolVisibility visibility = upb_MessageDef_Visibility(m);
+  if (visibility != google_protobuf_VISIBILITY_UNSET) {
     google_protobuf_DescriptorProto_set_visibility(proto, visibility);
   }
 
