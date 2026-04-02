@@ -66,7 +66,6 @@ ParseFunctionGenerator::ParseFunctionGenerator(
       BuildTcTableInfoFromDescriptor(descriptor_, options_, fields));
   SetCommonMessageDataVariables(descriptor_, &variables_);
   SetUnknownFieldsVariable(descriptor_, options_, &variables_);
-  variables_["classname"] = ClassName(descriptor, false);
 }
 
 std::vector<internal::TailCallTableInfo::FieldOptions>
@@ -301,12 +300,11 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
         {{"has_bits_offset",
           [&] {
             if (num_hasbits_ > 0 || IsMapEntryMessage(descriptor_)) {
-              p->Emit(
-                  "PROTOBUF_FIELD_OFFSET($classname$, _impl_._has_bits_),\n");
+              p->Emit("PROTOBUF_FIELD_OFFSET($Msg$, _impl_._has_bits_),\n");
             } else {
               // Just put something safe here. _cached_size_ is fine.
               p->Emit(R"cc(
-                PROTOBUF_FIELD_OFFSET($classname$,
+                PROTOBUF_FIELD_OFFSET($Msg$,
                                       _impl_._cached_size_),  // no hasbits
               )cc");
             }
@@ -314,7 +312,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
          {"extension_offset",
           [&] {
             if (descriptor_->extension_range_count() != 0) {
-              p->Emit("PROTOBUF_FIELD_OFFSET($classname$, $extensions$),\n");
+              p->Emit("PROTOBUF_FIELD_OFFSET($Msg$, $extensions$),\n");
             } else {
               p->Emit("0, // no _extensions_\n");
             }
@@ -352,7 +350,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
          {"post_loop_handler",
           [&] {
             if (NeedsPostLoopHandler(descriptor_, options_)) {
-              p->Emit("&$classname$::PostLoopHandler,\n");
+              p->Emit("&$Msg$::PostLoopHandler,\n");
             } else {
               p->Emit("nullptr,  // post_loop_handler\n");
             }
@@ -403,10 +401,10 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
           p->Emit("{},\n");
           break;
         case TailCallTableInfo::kSplitOffset:
-          p->Emit("{_fl::Offset{offsetof($classname$, _impl_._split_)}},\n");
+          p->Emit("{_fl::Offset{offsetof($Msg$, _impl_._split_)}},\n");
           break;
         case TailCallTableInfo::kSplitSizeof:
-          p->Emit("{_fl::Offset{sizeof($classname$::Impl_::Split)}},\n");
+          p->Emit("{_fl::Offset{sizeof($Msg$::Impl_::Split)}},\n");
           break;
         case TailCallTableInfo::kSubMessageGlobals:
           p->Emit({{"name", QualifiedMsgGlobalsInstanceName(
@@ -586,7 +584,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
       // insert a newline at every brace, whereas we prefer {{ ... }} here.
       // clang-format off
 R"cc(
-constexpr $Msg$::ParseTableT_ $classname$::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr $Msg$::ParseTableT_ $Msg$::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       $table_base$
@@ -658,7 +656,7 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
           R"cc(
             {$target$,
              {$coded_tag$, $hasbit_idx$, $aux_idx$,
-              PROTOBUF_FIELD_OFFSET($classname$, $field_name$)}},
+              PROTOBUF_FIELD_OFFSET($Msg$, $field_name$)}},
           )cc");
     } else {
       ABSL_DCHECK(info.is_empty());
@@ -691,11 +689,10 @@ void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
               p->Emit("/* weak */ 0,");
             } else if (split) {
               p->Emit(
-                  "PROTOBUF_FIELD_OFFSET($classname$::Impl_::Split, "
+                  "PROTOBUF_FIELD_OFFSET($Msg$::Impl_::Split, "
                   "$field_name$_),");
             } else {
-              p->Emit(
-                  "PROTOBUF_FIELD_OFFSET($classname$, $field_member_name$),");
+              p->Emit("PROTOBUF_FIELD_OFFSET($Msg$, $field_member_name$),");
             }
           }},
          {"has_idx",

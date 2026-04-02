@@ -45,8 +45,7 @@ namespace protobuf {
 namespace compiler {
 class Version::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<Version>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<Version>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Version, _impl_._has_bits_);
 };
@@ -132,8 +131,7 @@ inline void* PROTOBUF_NONNULL Version::PlacementNew_(
   return ::new (mem) Version(arena);
 }
 constexpr auto Version::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Version),
-                                            alignof(Version));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Version), alignof(Version));
 }
 constexpr auto Version::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -215,8 +213,7 @@ const ::_pbi::ClassData* Version_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class CodeGeneratorResponse_File::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<CodeGeneratorResponse_File>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<CodeGeneratorResponse_File>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._has_bits_);
 };
@@ -312,8 +309,7 @@ inline void* PROTOBUF_NONNULL CodeGeneratorResponse_File::PlacementNew_(
   return ::new (mem) CodeGeneratorResponse_File(arena);
 }
 constexpr auto CodeGeneratorResponse_File::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CodeGeneratorResponse_File),
-                                            alignof(CodeGeneratorResponse_File));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CodeGeneratorResponse_File), alignof(CodeGeneratorResponse_File));
 }
 constexpr auto CodeGeneratorResponse_File::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -395,8 +391,7 @@ const ::_pbi::ClassData* CodeGeneratorResponse_File_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class CodeGeneratorResponse::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<CodeGeneratorResponse>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<CodeGeneratorResponse>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._has_bits_);
 };
@@ -502,8 +497,7 @@ inline void* PROTOBUF_NONNULL CodeGeneratorResponse::PlacementNew_(
   return ::new (mem) CodeGeneratorResponse(arena);
 }
 constexpr auto CodeGeneratorResponse::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CodeGeneratorResponse),
-                                            alignof(CodeGeneratorResponse));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CodeGeneratorResponse), alignof(CodeGeneratorResponse));
 }
 constexpr auto CodeGeneratorResponse::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -585,8 +579,7 @@ const ::_pbi::ClassData* CodeGeneratorResponse_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class CodeGeneratorRequest::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<CodeGeneratorRequest>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<CodeGeneratorRequest>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._has_bits_);
 };
@@ -707,8 +700,7 @@ inline void* PROTOBUF_NONNULL CodeGeneratorRequest::PlacementNew_(
   return ::new (mem) CodeGeneratorRequest(arena);
 }
 constexpr auto CodeGeneratorRequest::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CodeGeneratorRequest),
-                                            alignof(CodeGeneratorRequest));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CodeGeneratorRequest), alignof(CodeGeneratorRequest));
 }
 constexpr auto CodeGeneratorRequest::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -1137,9 +1129,8 @@ PROTOBUF_NOINLINE void Version::Clear() {
 }
 
 void Version::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<Version*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<Version*>(&to_msg);
   auto& from = static_cast<const Version&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -1496,9 +1487,8 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
 }
 
 void CodeGeneratorRequest::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<CodeGeneratorRequest*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<CodeGeneratorRequest*>(&to_msg);
   auto& from = static_cast<const CodeGeneratorRequest&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -1803,9 +1793,8 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
 }
 
 void CodeGeneratorResponse_File::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<CodeGeneratorResponse_File*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<CodeGeneratorResponse_File*>(&to_msg);
   auto& from = static_cast<const CodeGeneratorResponse_File&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -2118,9 +2107,8 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
 }
 
 void CodeGeneratorResponse::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<CodeGeneratorResponse*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<CodeGeneratorResponse*>(&to_msg);
   auto& from = static_cast<const CodeGeneratorResponse&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();

@@ -172,8 +172,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
                                class_data);
 
   inline Version(const Version& from) : Version(nullptr, from) {}
-  inline Version(Version&& from) noexcept
-      : Version(nullptr, ::std::move(from)) {}
+  inline Version(Version&& from) noexcept : Version(nullptr, ::std::move(from)) {}
   inline Version& operator=(const Version& from) {
     CopyFrom(from);
     return *this;
@@ -208,8 +207,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Version& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Version>(
-        &_Version_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Version>(&_Version_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(Version& a, Version& b) { a.Swap(&b); }
@@ -424,8 +422,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
                                class_data);
 
   inline CodeGeneratorResponse_File(const CodeGeneratorResponse_File& from) : CodeGeneratorResponse_File(nullptr, from) {}
-  inline CodeGeneratorResponse_File(CodeGeneratorResponse_File&& from) noexcept
-      : CodeGeneratorResponse_File(nullptr, ::std::move(from)) {}
+  inline CodeGeneratorResponse_File(CodeGeneratorResponse_File&& from) noexcept : CodeGeneratorResponse_File(nullptr, ::std::move(from)) {}
   inline CodeGeneratorResponse_File& operator=(const CodeGeneratorResponse_File& from) {
     CopyFrom(from);
     return *this;
@@ -460,8 +457,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const CodeGeneratorResponse_File& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<CodeGeneratorResponse_File>(
-        &_CodeGeneratorResponse_File_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<CodeGeneratorResponse_File>(&_CodeGeneratorResponse_File_globals_);
   }
   static constexpr int kIndexInFileMessages = 2;
   friend void swap(CodeGeneratorResponse_File& a, CodeGeneratorResponse_File& b) { a.Swap(&b); }
@@ -690,8 +686,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
                                class_data);
 
   inline CodeGeneratorResponse(const CodeGeneratorResponse& from) : CodeGeneratorResponse(nullptr, from) {}
-  inline CodeGeneratorResponse(CodeGeneratorResponse&& from) noexcept
-      : CodeGeneratorResponse(nullptr, ::std::move(from)) {}
+  inline CodeGeneratorResponse(CodeGeneratorResponse&& from) noexcept : CodeGeneratorResponse(nullptr, ::std::move(from)) {}
   inline CodeGeneratorResponse& operator=(const CodeGeneratorResponse& from) {
     CopyFrom(from);
     return *this;
@@ -726,8 +721,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const CodeGeneratorResponse& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<CodeGeneratorResponse>(
-        &_CodeGeneratorResponse_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<CodeGeneratorResponse>(&_CodeGeneratorResponse_globals_);
   }
   static constexpr int kIndexInFileMessages = 3;
   friend void swap(CodeGeneratorResponse& a, CodeGeneratorResponse& b) { a.Swap(&b); }
@@ -987,8 +981,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
                                class_data);
 
   inline CodeGeneratorRequest(const CodeGeneratorRequest& from) : CodeGeneratorRequest(nullptr, from) {}
-  inline CodeGeneratorRequest(CodeGeneratorRequest&& from) noexcept
-      : CodeGeneratorRequest(nullptr, ::std::move(from)) {}
+  inline CodeGeneratorRequest(CodeGeneratorRequest&& from) noexcept : CodeGeneratorRequest(nullptr, ::std::move(from)) {}
   inline CodeGeneratorRequest& operator=(const CodeGeneratorRequest& from) {
     CopyFrom(from);
     return *this;
@@ -1023,8 +1016,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const CodeGeneratorRequest& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<CodeGeneratorRequest>(
-        &_CodeGeneratorRequest_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<CodeGeneratorRequest>(&_CodeGeneratorRequest_globals_);
   }
   static constexpr int kIndexInFileMessages = 1;
   friend void swap(CodeGeneratorRequest& a, CodeGeneratorRequest& b) { a.Swap(&b); }

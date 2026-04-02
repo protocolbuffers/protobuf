@@ -104,8 +104,7 @@ namespace google {
 namespace protobuf {
 class UninterpretedOption_NamePart::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<UninterpretedOption_NamePart>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<UninterpretedOption_NamePart>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._has_bits_);
   static bool MissingRequiredFields(const HasBits& has_bits) {
@@ -180,8 +179,7 @@ inline void* PROTOBUF_NONNULL UninterpretedOption_NamePart::PlacementNew_(
   return ::new (mem) UninterpretedOption_NamePart(arena);
 }
 constexpr auto UninterpretedOption_NamePart::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(UninterpretedOption_NamePart),
-                                            alignof(UninterpretedOption_NamePart));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(UninterpretedOption_NamePart), alignof(UninterpretedOption_NamePart));
 }
 constexpr auto UninterpretedOption_NamePart::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -266,8 +264,7 @@ const ::_pbi::ClassData* UninterpretedOption_NamePart_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class SourceCodeInfo_Location::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<SourceCodeInfo_Location>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<SourceCodeInfo_Location>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._has_bits_);
 };
@@ -379,8 +376,7 @@ inline void* PROTOBUF_NONNULL SourceCodeInfo_Location::PlacementNew_(
   return ::new (mem) SourceCodeInfo_Location(arena);
 }
 constexpr auto SourceCodeInfo_Location::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(SourceCodeInfo_Location),
-                                            alignof(SourceCodeInfo_Location));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(SourceCodeInfo_Location), alignof(SourceCodeInfo_Location));
 }
 constexpr auto SourceCodeInfo_Location::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -465,8 +461,7 @@ const ::_pbi::ClassData* SourceCodeInfo_Location_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class GeneratedCodeInfo_Annotation::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<GeneratedCodeInfo_Annotation>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<GeneratedCodeInfo_Annotation>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._has_bits_);
 };
@@ -569,8 +564,7 @@ inline void* PROTOBUF_NONNULL GeneratedCodeInfo_Annotation::PlacementNew_(
   return ::new (mem) GeneratedCodeInfo_Annotation(arena);
 }
 constexpr auto GeneratedCodeInfo_Annotation::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(GeneratedCodeInfo_Annotation),
-                                            alignof(GeneratedCodeInfo_Annotation));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(GeneratedCodeInfo_Annotation), alignof(GeneratedCodeInfo_Annotation));
 }
 constexpr auto GeneratedCodeInfo_Annotation::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -655,8 +649,7 @@ const ::_pbi::ClassData* GeneratedCodeInfo_Annotation_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class FieldOptions_FeatureSupport::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<FieldOptions_FeatureSupport>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<FieldOptions_FeatureSupport>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_._has_bits_);
 };
@@ -758,8 +751,7 @@ inline void* PROTOBUF_NONNULL FieldOptions_FeatureSupport::PlacementNew_(
   return ::new (mem) FieldOptions_FeatureSupport(arena);
 }
 constexpr auto FieldOptions_FeatureSupport::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FieldOptions_FeatureSupport),
-                                            alignof(FieldOptions_FeatureSupport));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FieldOptions_FeatureSupport), alignof(FieldOptions_FeatureSupport));
 }
 constexpr auto FieldOptions_FeatureSupport::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -844,8 +836,7 @@ const ::_pbi::ClassData* FieldOptions_FeatureSupport_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class FieldOptions_EditionDefault::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<FieldOptions_EditionDefault>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<FieldOptions_EditionDefault>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._has_bits_);
 };
@@ -919,8 +910,7 @@ inline void* PROTOBUF_NONNULL FieldOptions_EditionDefault::PlacementNew_(
   return ::new (mem) FieldOptions_EditionDefault(arena);
 }
 constexpr auto FieldOptions_EditionDefault::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FieldOptions_EditionDefault),
-                                            alignof(FieldOptions_EditionDefault));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FieldOptions_EditionDefault), alignof(FieldOptions_EditionDefault));
 }
 constexpr auto FieldOptions_EditionDefault::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -1051,8 +1041,7 @@ inline void* PROTOBUF_NONNULL FeatureSet_VisibilityFeature::PlacementNew_(
   return ::new (mem) FeatureSet_VisibilityFeature(arena);
 }
 constexpr auto FeatureSet_VisibilityFeature::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FeatureSet_VisibilityFeature),
-                                            alignof(FeatureSet_VisibilityFeature));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FeatureSet_VisibilityFeature), alignof(FeatureSet_VisibilityFeature));
 }
 constexpr auto FeatureSet_VisibilityFeature::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -1137,8 +1126,7 @@ const ::_pbi::ClassData* FeatureSet_VisibilityFeature_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class FeatureSet::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<FeatureSet>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<FeatureSet>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._has_bits_);
 };
@@ -1259,8 +1247,7 @@ inline void* PROTOBUF_NONNULL FeatureSet::PlacementNew_(
   return ::new (mem) FeatureSet(arena);
 }
 constexpr auto FeatureSet::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FeatureSet),
-                                            alignof(FeatureSet));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FeatureSet), alignof(FeatureSet));
 }
 constexpr auto FeatureSet::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -1345,8 +1332,7 @@ const ::_pbi::ClassData* FeatureSet_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class ExtensionRangeOptions_Declaration::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<ExtensionRangeOptions_Declaration>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<ExtensionRangeOptions_Declaration>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._has_bits_);
 };
@@ -1444,8 +1430,7 @@ inline void* PROTOBUF_NONNULL ExtensionRangeOptions_Declaration::PlacementNew_(
   return ::new (mem) ExtensionRangeOptions_Declaration(arena);
 }
 constexpr auto ExtensionRangeOptions_Declaration::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(ExtensionRangeOptions_Declaration),
-                                            alignof(ExtensionRangeOptions_Declaration));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(ExtensionRangeOptions_Declaration), alignof(ExtensionRangeOptions_Declaration));
 }
 constexpr auto ExtensionRangeOptions_Declaration::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -1530,8 +1515,7 @@ const ::_pbi::ClassData* ExtensionRangeOptions_Declaration_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class EnumDescriptorProto_EnumReservedRange::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<EnumDescriptorProto_EnumReservedRange>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<EnumDescriptorProto_EnumReservedRange>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._has_bits_);
 };
@@ -1601,8 +1585,7 @@ inline void* PROTOBUF_NONNULL EnumDescriptorProto_EnumReservedRange::PlacementNe
   return ::new (mem) EnumDescriptorProto_EnumReservedRange(arena);
 }
 constexpr auto EnumDescriptorProto_EnumReservedRange::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(EnumDescriptorProto_EnumReservedRange),
-                                            alignof(EnumDescriptorProto_EnumReservedRange));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(EnumDescriptorProto_EnumReservedRange), alignof(EnumDescriptorProto_EnumReservedRange));
 }
 constexpr auto EnumDescriptorProto_EnumReservedRange::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -1687,8 +1670,7 @@ const ::_pbi::ClassData* EnumDescriptorProto_EnumReservedRange_get_class_data() 
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class DescriptorProto_ReservedRange::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<DescriptorProto_ReservedRange>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<DescriptorProto_ReservedRange>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._has_bits_);
 };
@@ -1758,8 +1740,7 @@ inline void* PROTOBUF_NONNULL DescriptorProto_ReservedRange::PlacementNew_(
   return ::new (mem) DescriptorProto_ReservedRange(arena);
 }
 constexpr auto DescriptorProto_ReservedRange::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(DescriptorProto_ReservedRange),
-                                            alignof(DescriptorProto_ReservedRange));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(DescriptorProto_ReservedRange), alignof(DescriptorProto_ReservedRange));
 }
 constexpr auto DescriptorProto_ReservedRange::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -1844,8 +1825,7 @@ const ::_pbi::ClassData* DescriptorProto_ReservedRange_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class UninterpretedOption::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<UninterpretedOption>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<UninterpretedOption>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._has_bits_);
 };
@@ -1967,8 +1947,7 @@ inline void* PROTOBUF_NONNULL UninterpretedOption::PlacementNew_(
   return ::new (mem) UninterpretedOption(arena);
 }
 constexpr auto UninterpretedOption::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(UninterpretedOption),
-                                            alignof(UninterpretedOption));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(UninterpretedOption), alignof(UninterpretedOption));
 }
 constexpr auto UninterpretedOption::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -2053,8 +2032,7 @@ const ::_pbi::ClassData* UninterpretedOption_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class SourceCodeInfo::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<SourceCodeInfo>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<SourceCodeInfo>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(SourceCodeInfo, _impl_._has_bits_);
 };
@@ -2127,8 +2105,7 @@ inline void* PROTOBUF_NONNULL SourceCodeInfo::PlacementNew_(
   return ::new (mem) SourceCodeInfo(arena);
 }
 constexpr auto SourceCodeInfo::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(SourceCodeInfo),
-                                            alignof(SourceCodeInfo));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(SourceCodeInfo), alignof(SourceCodeInfo));
 }
 constexpr auto SourceCodeInfo::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -2213,8 +2190,7 @@ const ::_pbi::ClassData* SourceCodeInfo_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class GeneratedCodeInfo::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<GeneratedCodeInfo>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<GeneratedCodeInfo>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo, _impl_._has_bits_);
 };
@@ -2287,8 +2263,7 @@ inline void* PROTOBUF_NONNULL GeneratedCodeInfo::PlacementNew_(
   return ::new (mem) GeneratedCodeInfo(arena);
 }
 constexpr auto GeneratedCodeInfo::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(GeneratedCodeInfo),
-                                            alignof(GeneratedCodeInfo));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(GeneratedCodeInfo), alignof(GeneratedCodeInfo));
 }
 constexpr auto GeneratedCodeInfo::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -2373,8 +2348,7 @@ const ::_pbi::ClassData* GeneratedCodeInfo_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class FeatureSetDefaults_FeatureSetEditionDefault::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<FeatureSetDefaults_FeatureSetEditionDefault>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<FeatureSetDefaults_FeatureSetEditionDefault>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._has_bits_);
 };
@@ -2464,8 +2438,7 @@ inline void* PROTOBUF_NONNULL FeatureSetDefaults_FeatureSetEditionDefault::Place
   return ::new (mem) FeatureSetDefaults_FeatureSetEditionDefault(arena);
 }
 constexpr auto FeatureSetDefaults_FeatureSetEditionDefault::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FeatureSetDefaults_FeatureSetEditionDefault),
-                                            alignof(FeatureSetDefaults_FeatureSetEditionDefault));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FeatureSetDefaults_FeatureSetEditionDefault), alignof(FeatureSetDefaults_FeatureSetEditionDefault));
 }
 constexpr auto FeatureSetDefaults_FeatureSetEditionDefault::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -2550,8 +2523,7 @@ const ::_pbi::ClassData* FeatureSetDefaults_FeatureSetEditionDefault_get_class_d
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class ServiceOptions::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<ServiceOptions>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<ServiceOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._has_bits_);
 };
@@ -2648,8 +2620,7 @@ inline void* PROTOBUF_NONNULL ServiceOptions::PlacementNew_(
   return ::new (mem) ServiceOptions(arena);
 }
 constexpr auto ServiceOptions::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(ServiceOptions),
-                                            alignof(ServiceOptions));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(ServiceOptions), alignof(ServiceOptions));
 }
 constexpr auto ServiceOptions::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -2734,8 +2705,7 @@ const ::_pbi::ClassData* ServiceOptions_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class OneofOptions::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<OneofOptions>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<OneofOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._has_bits_);
 };
@@ -2824,8 +2794,7 @@ inline void* PROTOBUF_NONNULL OneofOptions::PlacementNew_(
   return ::new (mem) OneofOptions(arena);
 }
 constexpr auto OneofOptions::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(OneofOptions),
-                                            alignof(OneofOptions));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(OneofOptions), alignof(OneofOptions));
 }
 constexpr auto OneofOptions::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -2910,8 +2879,7 @@ const ::_pbi::ClassData* OneofOptions_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class MethodOptions::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<MethodOptions>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<MethodOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._has_bits_);
 };
@@ -3019,8 +2987,7 @@ inline void* PROTOBUF_NONNULL MethodOptions::PlacementNew_(
   return ::new (mem) MethodOptions(arena);
 }
 constexpr auto MethodOptions::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(MethodOptions),
-                                            alignof(MethodOptions));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(MethodOptions), alignof(MethodOptions));
 }
 constexpr auto MethodOptions::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -3105,8 +3072,7 @@ const ::_pbi::ClassData* MethodOptions_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class MessageOptions::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<MessageOptions>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<MessageOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._has_bits_);
 };
@@ -3223,8 +3189,7 @@ inline void* PROTOBUF_NONNULL MessageOptions::PlacementNew_(
   return ::new (mem) MessageOptions(arena);
 }
 constexpr auto MessageOptions::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(MessageOptions),
-                                            alignof(MessageOptions));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(MessageOptions), alignof(MessageOptions));
 }
 constexpr auto MessageOptions::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -3309,8 +3274,7 @@ const ::_pbi::ClassData* MessageOptions_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class FileOptions::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<FileOptions>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<FileOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._has_bits_);
 };
@@ -3552,8 +3516,7 @@ inline void* PROTOBUF_NONNULL FileOptions::PlacementNew_(
   return ::new (mem) FileOptions(arena);
 }
 constexpr auto FileOptions::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FileOptions),
-                                            alignof(FileOptions));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FileOptions), alignof(FileOptions));
 }
 constexpr auto FileOptions::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -3638,8 +3601,7 @@ const ::_pbi::ClassData* FileOptions_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class FieldOptions::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<FieldOptions>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<FieldOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._has_bits_);
 };
@@ -3822,8 +3784,7 @@ inline void* PROTOBUF_NONNULL FieldOptions::PlacementNew_(
   return ::new (mem) FieldOptions(arena);
 }
 constexpr auto FieldOptions::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FieldOptions),
-                                            alignof(FieldOptions));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FieldOptions), alignof(FieldOptions));
 }
 constexpr auto FieldOptions::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -3908,8 +3869,7 @@ const ::_pbi::ClassData* FieldOptions_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class FeatureSetDefaults::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<FeatureSetDefaults>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<FeatureSetDefaults>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._has_bits_);
 };
@@ -3994,8 +3954,7 @@ inline void* PROTOBUF_NONNULL FeatureSetDefaults::PlacementNew_(
   return ::new (mem) FeatureSetDefaults(arena);
 }
 constexpr auto FeatureSetDefaults::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FeatureSetDefaults),
-                                            alignof(FeatureSetDefaults));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FeatureSetDefaults), alignof(FeatureSetDefaults));
 }
 constexpr auto FeatureSetDefaults::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -4080,8 +4039,7 @@ const ::_pbi::ClassData* FeatureSetDefaults_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class ExtensionRangeOptions::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<ExtensionRangeOptions>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<ExtensionRangeOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._has_bits_);
 };
@@ -4195,8 +4153,7 @@ inline void* PROTOBUF_NONNULL ExtensionRangeOptions::PlacementNew_(
   return ::new (mem) ExtensionRangeOptions(arena);
 }
 constexpr auto ExtensionRangeOptions::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(ExtensionRangeOptions),
-                                            alignof(ExtensionRangeOptions));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(ExtensionRangeOptions), alignof(ExtensionRangeOptions));
 }
 constexpr auto ExtensionRangeOptions::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -4281,8 +4238,7 @@ const ::_pbi::ClassData* ExtensionRangeOptions_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class EnumValueOptions::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<EnumValueOptions>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<EnumValueOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._has_bits_);
 };
@@ -4398,8 +4354,7 @@ inline void* PROTOBUF_NONNULL EnumValueOptions::PlacementNew_(
   return ::new (mem) EnumValueOptions(arena);
 }
 constexpr auto EnumValueOptions::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(EnumValueOptions),
-                                            alignof(EnumValueOptions));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(EnumValueOptions), alignof(EnumValueOptions));
 }
 constexpr auto EnumValueOptions::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -4484,8 +4439,7 @@ const ::_pbi::ClassData* EnumValueOptions_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class EnumOptions::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<EnumOptions>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<EnumOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._has_bits_);
 };
@@ -4593,8 +4547,7 @@ inline void* PROTOBUF_NONNULL EnumOptions::PlacementNew_(
   return ::new (mem) EnumOptions(arena);
 }
 constexpr auto EnumOptions::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(EnumOptions),
-                                            alignof(EnumOptions));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(EnumOptions), alignof(EnumOptions));
 }
 constexpr auto EnumOptions::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -4679,8 +4632,7 @@ const ::_pbi::ClassData* EnumOptions_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class OneofDescriptorProto::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<OneofDescriptorProto>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<OneofDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._has_bits_);
 };
@@ -4758,8 +4710,7 @@ inline void* PROTOBUF_NONNULL OneofDescriptorProto::PlacementNew_(
   return ::new (mem) OneofDescriptorProto(arena);
 }
 constexpr auto OneofDescriptorProto::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(OneofDescriptorProto),
-                                            alignof(OneofDescriptorProto));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(OneofDescriptorProto), alignof(OneofDescriptorProto));
 }
 constexpr auto OneofDescriptorProto::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -4844,8 +4795,7 @@ const ::_pbi::ClassData* OneofDescriptorProto_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class MethodDescriptorProto::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<MethodDescriptorProto>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<MethodDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._has_bits_);
 };
@@ -4957,8 +4907,7 @@ inline void* PROTOBUF_NONNULL MethodDescriptorProto::PlacementNew_(
   return ::new (mem) MethodDescriptorProto(arena);
 }
 constexpr auto MethodDescriptorProto::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(MethodDescriptorProto),
-                                            alignof(MethodDescriptorProto));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(MethodDescriptorProto), alignof(MethodDescriptorProto));
 }
 constexpr auto MethodDescriptorProto::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -5043,8 +4992,7 @@ const ::_pbi::ClassData* MethodDescriptorProto_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class FieldDescriptorProto::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<FieldDescriptorProto>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<FieldDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._has_bits_);
 };
@@ -5197,8 +5145,7 @@ inline void* PROTOBUF_NONNULL FieldDescriptorProto::PlacementNew_(
   return ::new (mem) FieldDescriptorProto(arena);
 }
 constexpr auto FieldDescriptorProto::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FieldDescriptorProto),
-                                            alignof(FieldDescriptorProto));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FieldDescriptorProto), alignof(FieldDescriptorProto));
 }
 constexpr auto FieldDescriptorProto::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -5283,8 +5230,7 @@ const ::_pbi::ClassData* FieldDescriptorProto_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class EnumValueDescriptorProto::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<EnumValueDescriptorProto>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<EnumValueDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._has_bits_);
 };
@@ -5370,8 +5316,7 @@ inline void* PROTOBUF_NONNULL EnumValueDescriptorProto::PlacementNew_(
   return ::new (mem) EnumValueDescriptorProto(arena);
 }
 constexpr auto EnumValueDescriptorProto::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(EnumValueDescriptorProto),
-                                            alignof(EnumValueDescriptorProto));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(EnumValueDescriptorProto), alignof(EnumValueDescriptorProto));
 }
 constexpr auto EnumValueDescriptorProto::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -5456,8 +5401,7 @@ const ::_pbi::ClassData* EnumValueDescriptorProto_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class DescriptorProto_ExtensionRange::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<DescriptorProto_ExtensionRange>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<DescriptorProto_ExtensionRange>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._has_bits_);
 };
@@ -5541,8 +5485,7 @@ inline void* PROTOBUF_NONNULL DescriptorProto_ExtensionRange::PlacementNew_(
   return ::new (mem) DescriptorProto_ExtensionRange(arena);
 }
 constexpr auto DescriptorProto_ExtensionRange::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(DescriptorProto_ExtensionRange),
-                                            alignof(DescriptorProto_ExtensionRange));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(DescriptorProto_ExtensionRange), alignof(DescriptorProto_ExtensionRange));
 }
 constexpr auto DescriptorProto_ExtensionRange::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -5627,8 +5570,7 @@ const ::_pbi::ClassData* DescriptorProto_ExtensionRange_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class ServiceDescriptorProto::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<ServiceDescriptorProto>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<ServiceDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._has_bits_);
 };
@@ -5723,8 +5665,7 @@ inline void* PROTOBUF_NONNULL ServiceDescriptorProto::PlacementNew_(
   return ::new (mem) ServiceDescriptorProto(arena);
 }
 constexpr auto ServiceDescriptorProto::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(ServiceDescriptorProto),
-                                            alignof(ServiceDescriptorProto));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(ServiceDescriptorProto), alignof(ServiceDescriptorProto));
 }
 constexpr auto ServiceDescriptorProto::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -5809,8 +5750,7 @@ const ::_pbi::ClassData* ServiceDescriptorProto_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class EnumDescriptorProto::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<EnumDescriptorProto>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<EnumDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._has_bits_);
 };
@@ -5941,8 +5881,7 @@ inline void* PROTOBUF_NONNULL EnumDescriptorProto::PlacementNew_(
   return ::new (mem) EnumDescriptorProto(arena);
 }
 constexpr auto EnumDescriptorProto::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(EnumDescriptorProto),
-                                            alignof(EnumDescriptorProto));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(EnumDescriptorProto), alignof(EnumDescriptorProto));
 }
 constexpr auto EnumDescriptorProto::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -6027,8 +5966,7 @@ const ::_pbi::ClassData* EnumDescriptorProto_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class DescriptorProto::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<DescriptorProto>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<DescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._has_bits_);
 };
@@ -6242,8 +6180,7 @@ inline void* PROTOBUF_NONNULL DescriptorProto::PlacementNew_(
   return ::new (mem) DescriptorProto(arena);
 }
 constexpr auto DescriptorProto::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(DescriptorProto),
-                                            alignof(DescriptorProto));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(DescriptorProto), alignof(DescriptorProto));
 }
 constexpr auto DescriptorProto::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -6328,8 +6265,7 @@ const ::_pbi::ClassData* DescriptorProto_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class FileDescriptorProto::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<FileDescriptorProto>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<FileDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._has_bits_);
 };
@@ -6555,8 +6491,7 @@ inline void* PROTOBUF_NONNULL FileDescriptorProto::PlacementNew_(
   return ::new (mem) FileDescriptorProto(arena);
 }
 constexpr auto FileDescriptorProto::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FileDescriptorProto),
-                                            alignof(FileDescriptorProto));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FileDescriptorProto), alignof(FileDescriptorProto));
 }
 constexpr auto FileDescriptorProto::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -6641,8 +6576,7 @@ const ::_pbi::ClassData* FileDescriptorProto_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class FileDescriptorSet::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<FileDescriptorSet>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<FileDescriptorSet>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FileDescriptorSet, _impl_._has_bits_);
 };
@@ -6715,8 +6649,7 @@ inline void* PROTOBUF_NONNULL FileDescriptorSet::PlacementNew_(
   return ::new (mem) FileDescriptorSet(arena);
 }
 constexpr auto FileDescriptorSet::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FileDescriptorSet),
-                                            alignof(FileDescriptorSet));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FileDescriptorSet), alignof(FileDescriptorSet));
 }
 constexpr auto FileDescriptorSet::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -8030,9 +7963,8 @@ PROTOBUF_NOINLINE void FileDescriptorSet::Clear() {
 }
 
 void FileDescriptorSet::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<FileDescriptorSet*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<FileDescriptorSet*>(&to_msg);
   auto& from = static_cast<const FileDescriptorSet&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -8618,9 +8550,8 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
 }
 
 void FileDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<FileDescriptorProto*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<FileDescriptorProto*>(&to_msg);
   auto& from = static_cast<const FileDescriptorProto&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -8969,9 +8900,8 @@ PROTOBUF_NOINLINE void DescriptorProto_ExtensionRange::Clear() {
 }
 
 void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<DescriptorProto_ExtensionRange*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<DescriptorProto_ExtensionRange*>(&to_msg);
   auto& from = static_cast<const DescriptorProto_ExtensionRange&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -9203,9 +9133,8 @@ PROTOBUF_NOINLINE void DescriptorProto_ReservedRange::Clear() {
 }
 
 void DescriptorProto_ReservedRange::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<DescriptorProto_ReservedRange*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<DescriptorProto_ReservedRange*>(&to_msg);
   auto& from = static_cast<const DescriptorProto_ReservedRange&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -9739,9 +9668,8 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
 }
 
 void DescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<DescriptorProto*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<DescriptorProto*>(&to_msg);
   auto& from = static_cast<const DescriptorProto&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -10097,9 +10025,8 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
 }
 
 void ExtensionRangeOptions_Declaration::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<ExtensionRangeOptions_Declaration*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<ExtensionRangeOptions_Declaration*>(&to_msg);
   auto& from = static_cast<const ExtensionRangeOptions_Declaration&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -10428,9 +10355,8 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
 }
 
 void ExtensionRangeOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<ExtensionRangeOptions*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<ExtensionRangeOptions*>(&to_msg);
   auto& from = static_cast<const ExtensionRangeOptions&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -10849,9 +10775,8 @@ PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
 }
 
 void FieldDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<FieldDescriptorProto*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<FieldDescriptorProto*>(&to_msg);
   auto& from = static_cast<const FieldDescriptorProto&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -11135,9 +11060,8 @@ PROTOBUF_NOINLINE void OneofDescriptorProto::Clear() {
 }
 
 void OneofDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<OneofDescriptorProto*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<OneofDescriptorProto*>(&to_msg);
   auto& from = static_cast<const OneofDescriptorProto&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -11364,9 +11288,8 @@ PROTOBUF_NOINLINE void EnumDescriptorProto_EnumReservedRange::Clear() {
 }
 
 void EnumDescriptorProto_EnumReservedRange::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<EnumDescriptorProto_EnumReservedRange*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<EnumDescriptorProto_EnumReservedRange*>(&to_msg);
   auto& from = static_cast<const EnumDescriptorProto_EnumReservedRange&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -11721,9 +11644,8 @@ PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
 }
 
 void EnumDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<EnumDescriptorProto*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<EnumDescriptorProto*>(&to_msg);
   auto& from = static_cast<const EnumDescriptorProto&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -12016,9 +11938,8 @@ PROTOBUF_NOINLINE void EnumValueDescriptorProto::Clear() {
 }
 
 void EnumValueDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<EnumValueDescriptorProto*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<EnumValueDescriptorProto*>(&to_msg);
   auto& from = static_cast<const EnumValueDescriptorProto&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -12307,9 +12228,8 @@ PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
 }
 
 void ServiceDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<ServiceDescriptorProto*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<ServiceDescriptorProto*>(&to_msg);
   auto& from = static_cast<const ServiceDescriptorProto&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -12627,9 +12547,8 @@ PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
 }
 
 void MethodDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<MethodDescriptorProto*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<MethodDescriptorProto*>(&to_msg);
   auto& from = static_cast<const MethodDescriptorProto&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -13198,9 +13117,8 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
 }
 
 void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<FileOptions*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<FileOptions*>(&to_msg);
   auto& from = static_cast<const FileOptions&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -13616,9 +13534,8 @@ PROTOBUF_NOINLINE void MessageOptions::Clear() {
 }
 
 void MessageOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<MessageOptions*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<MessageOptions*>(&to_msg);
   auto& from = static_cast<const MessageOptions&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -13884,9 +13801,8 @@ PROTOBUF_NOINLINE void FieldOptions_EditionDefault::Clear() {
 }
 
 void FieldOptions_EditionDefault::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<FieldOptions_EditionDefault*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<FieldOptions_EditionDefault*>(&to_msg);
   auto& from = static_cast<const FieldOptions_EditionDefault&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -14167,9 +14083,8 @@ PROTOBUF_NOINLINE void FieldOptions_FeatureSupport::Clear() {
 }
 
 void FieldOptions_FeatureSupport::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<FieldOptions_FeatureSupport*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<FieldOptions_FeatureSupport*>(&to_msg);
   auto& from = static_cast<const FieldOptions_FeatureSupport&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -14640,9 +14555,8 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
 }
 
 void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<FieldOptions*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<FieldOptions*>(&to_msg);
   auto& from = static_cast<const FieldOptions&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -14981,9 +14895,8 @@ PROTOBUF_NOINLINE void OneofOptions::Clear() {
 }
 
 void OneofOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<OneofOptions*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<OneofOptions*>(&to_msg);
   auto& from = static_cast<const OneofOptions&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -15305,9 +15218,8 @@ PROTOBUF_NOINLINE void EnumOptions::Clear() {
 }
 
 void EnumOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<EnumOptions*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<EnumOptions*>(&to_msg);
   auto& from = static_cast<const EnumOptions&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -15658,9 +15570,8 @@ PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
 }
 
 void EnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<EnumValueOptions*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<EnumValueOptions*>(&to_msg);
   auto& from = static_cast<const EnumValueOptions&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -15981,9 +15892,8 @@ PROTOBUF_NOINLINE void ServiceOptions::Clear() {
 }
 
 void ServiceOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<ServiceOptions*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<ServiceOptions*>(&to_msg);
   auto& from = static_cast<const ServiceOptions&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -16315,9 +16225,8 @@ PROTOBUF_NOINLINE void MethodOptions::Clear() {
 }
 
 void MethodOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<MethodOptions*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<MethodOptions*>(&to_msg);
   auto& from = static_cast<const MethodOptions&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -16570,9 +16479,8 @@ PROTOBUF_NOINLINE void UninterpretedOption_NamePart::Clear() {
 }
 
 void UninterpretedOption_NamePart::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<UninterpretedOption_NamePart*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<UninterpretedOption_NamePart*>(&to_msg);
   auto& from = static_cast<const UninterpretedOption_NamePart&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -16909,9 +16817,8 @@ PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
 }
 
 void UninterpretedOption::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<UninterpretedOption*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<UninterpretedOption*>(&to_msg);
   auto& from = static_cast<const UninterpretedOption&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -17323,9 +17230,8 @@ PROTOBUF_NOINLINE void FeatureSet::Clear() {
 }
 
 void FeatureSet::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<FeatureSet*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<FeatureSet*>(&to_msg);
   auto& from = static_cast<const FeatureSet&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -17612,9 +17518,8 @@ PROTOBUF_NOINLINE void FeatureSetDefaults_FeatureSetEditionDefault::Clear() {
 }
 
 void FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<FeatureSetDefaults_FeatureSetEditionDefault*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<FeatureSetDefaults_FeatureSetEditionDefault*>(&to_msg);
   auto& from = static_cast<const FeatureSetDefaults_FeatureSetEditionDefault&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -17909,9 +17814,8 @@ PROTOBUF_NOINLINE void FeatureSetDefaults::Clear() {
 }
 
 void FeatureSetDefaults::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<FeatureSetDefaults*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<FeatureSetDefaults*>(&to_msg);
   auto& from = static_cast<const FeatureSetDefaults&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -18256,9 +18160,8 @@ PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
 }
 
 void SourceCodeInfo_Location::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<SourceCodeInfo_Location*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<SourceCodeInfo_Location*>(&to_msg);
   auto& from = static_cast<const SourceCodeInfo_Location&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -18510,9 +18413,8 @@ PROTOBUF_NOINLINE void SourceCodeInfo::Clear() {
 }
 
 void SourceCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<SourceCodeInfo*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<SourceCodeInfo*>(&to_msg);
   auto& from = static_cast<const SourceCodeInfo&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -18818,9 +18720,8 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
 }
 
 void GeneratedCodeInfo_Annotation::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<GeneratedCodeInfo_Annotation*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<GeneratedCodeInfo_Annotation*>(&to_msg);
   auto& from = static_cast<const GeneratedCodeInfo_Annotation&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -19061,9 +18962,8 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo::Clear() {
 }
 
 void GeneratedCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<GeneratedCodeInfo*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<GeneratedCodeInfo*>(&to_msg);
   auto& from = static_cast<const GeneratedCodeInfo&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
