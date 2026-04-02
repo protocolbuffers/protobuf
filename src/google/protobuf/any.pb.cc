@@ -42,8 +42,7 @@ namespace google {
 namespace protobuf {
 class Any::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<Any>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<Any>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Any, _impl_._has_bits_);
 };
@@ -120,8 +119,7 @@ inline void* PROTOBUF_NONNULL Any::PlacementNew_(
   return ::new (mem) Any(arena);
 }
 constexpr auto Any::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Any),
-                                            alignof(Any));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Any), alignof(Any));
 }
 constexpr auto Any::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -458,9 +456,8 @@ PROTOBUF_NOINLINE void Any::Clear() {
 }
 
 void Any::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<Any*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<Any*>(&to_msg);
   auto& from = static_cast<const Any&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();

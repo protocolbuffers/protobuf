@@ -38,8 +38,7 @@ namespace google {
 namespace protobuf {
 class SourceContext::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<SourceContext>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<SourceContext>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._has_bits_);
 };
@@ -107,8 +106,7 @@ inline void* PROTOBUF_NONNULL SourceContext::PlacementNew_(
   return ::new (mem) SourceContext(arena);
 }
 constexpr auto SourceContext::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(SourceContext),
-                                            alignof(SourceContext));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(SourceContext), alignof(SourceContext));
 }
 constexpr auto SourceContext::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -408,9 +406,8 @@ PROTOBUF_NOINLINE void SourceContext::Clear() {
 }
 
 void SourceContext::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<SourceContext*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<SourceContext*>(&to_msg);
   auto& from = static_cast<const SourceContext&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();

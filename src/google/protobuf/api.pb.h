@@ -111,8 +111,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
                                class_data);
 
   inline Mixin(const Mixin& from) : Mixin(nullptr, from) {}
-  inline Mixin(Mixin&& from) noexcept
-      : Mixin(nullptr, ::std::move(from)) {}
+  inline Mixin(Mixin&& from) noexcept : Mixin(nullptr, ::std::move(from)) {}
   inline Mixin& operator=(const Mixin& from) {
     CopyFrom(from);
     return *this;
@@ -147,8 +146,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Mixin& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Mixin>(
-        &_Mixin_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Mixin>(&_Mixin_globals_);
   }
   static constexpr int kIndexInFileMessages = 2;
   friend void swap(Mixin& a, Mixin& b) { a.Swap(&b); }
@@ -336,8 +334,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
                                class_data);
 
   inline Method(const Method& from) : Method(nullptr, from) {}
-  inline Method(Method&& from) noexcept
-      : Method(nullptr, ::std::move(from)) {}
+  inline Method(Method&& from) noexcept : Method(nullptr, ::std::move(from)) {}
   inline Method& operator=(const Method& from) {
     CopyFrom(from);
     return *this;
@@ -372,8 +369,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Method& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Method>(
-        &_Method_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Method>(&_Method_globals_);
   }
   static constexpr int kIndexInFileMessages = 1;
   friend void swap(Method& a, Method& b) { a.Swap(&b); }
@@ -654,8 +650,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
                                class_data);
 
   inline Api(const Api& from) : Api(nullptr, from) {}
-  inline Api(Api&& from) noexcept
-      : Api(nullptr, ::std::move(from)) {}
+  inline Api(Api&& from) noexcept : Api(nullptr, ::std::move(from)) {}
   inline Api& operator=(const Api& from) {
     CopyFrom(from);
     return *this;
@@ -690,8 +685,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Api& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Api>(
-        &_Api_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Api>(&_Api_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(Api& a, Api& b) { a.Swap(&b); }

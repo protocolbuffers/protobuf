@@ -84,8 +84,7 @@ inline void* PROTOBUF_NONNULL Empty::PlacementNew_(
   return ::new (mem) Empty(arena);
 }
 constexpr auto Empty::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Empty),
-                                            alignof(Empty));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Empty), alignof(Empty));
 }
 constexpr auto Empty::InternalGenerateClassData_(
     const MessageLite& prototype,

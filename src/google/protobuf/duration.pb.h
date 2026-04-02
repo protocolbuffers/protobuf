@@ -93,8 +93,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Duration final : pu
                                class_data);
 
   inline Duration(const Duration& from) : Duration(nullptr, from) {}
-  inline Duration(Duration&& from) noexcept
-      : Duration(nullptr, ::std::move(from)) {}
+  inline Duration(Duration&& from) noexcept : Duration(nullptr, ::std::move(from)) {}
   inline Duration& operator=(const Duration& from) {
     CopyFrom(from);
     return *this;
@@ -129,8 +128,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Duration final : pu
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Duration& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Duration>(
-        &_Duration_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Duration>(&_Duration_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(Duration& a, Duration& b) { a.Swap(&b); }

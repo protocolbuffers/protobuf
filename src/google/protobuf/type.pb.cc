@@ -46,8 +46,7 @@ namespace google {
 namespace protobuf {
 class Option::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<Option>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<Option>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Option, _impl_._has_bits_);
 };
@@ -128,8 +127,7 @@ inline void* PROTOBUF_NONNULL Option::PlacementNew_(
   return ::new (mem) Option(arena);
 }
 constexpr auto Option::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Option),
-                                            alignof(Option));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Option), alignof(Option));
 }
 constexpr auto Option::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -211,8 +209,7 @@ const ::_pbi::ClassData* Option_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class Field::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<Field>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<Field>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Field, _impl_._has_bits_);
 };
@@ -368,8 +365,7 @@ inline void* PROTOBUF_NONNULL Field::PlacementNew_(
   return ::new (mem) Field(arena);
 }
 constexpr auto Field::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Field),
-                                            alignof(Field));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Field), alignof(Field));
 }
 constexpr auto Field::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -451,8 +447,7 @@ const ::_pbi::ClassData* Field_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class EnumValue::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<EnumValue>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<EnumValue>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(EnumValue, _impl_._has_bits_);
 };
@@ -545,8 +540,7 @@ inline void* PROTOBUF_NONNULL EnumValue::PlacementNew_(
   return ::new (mem) EnumValue(arena);
 }
 constexpr auto EnumValue::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(EnumValue),
-                                            alignof(EnumValue));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(EnumValue), alignof(EnumValue));
 }
 constexpr auto EnumValue::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -628,8 +622,7 @@ const ::_pbi::ClassData* EnumValue_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class Type::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<Type>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<Type>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Type, _impl_._has_bits_);
 };
@@ -772,8 +765,7 @@ inline void* PROTOBUF_NONNULL Type::PlacementNew_(
   return ::new (mem) Type(arena);
 }
 constexpr auto Type::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Type),
-                                            alignof(Type));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Type), alignof(Type));
 }
 constexpr auto Type::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -855,8 +847,7 @@ const ::_pbi::ClassData* Type_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class Enum::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<Enum>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<Enum>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Enum, _impl_._has_bits_);
 };
@@ -988,8 +979,7 @@ inline void* PROTOBUF_NONNULL Enum::PlacementNew_(
   return ::new (mem) Enum(arena);
 }
 constexpr auto Enum::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Enum),
-                                            alignof(Enum));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Enum), alignof(Enum));
 }
 constexpr auto Enum::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -1606,9 +1596,8 @@ PROTOBUF_NOINLINE void Type::Clear() {
 }
 
 void Type::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<Type*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<Type*>(&to_msg);
   auto& from = static_cast<const Type&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -2082,9 +2071,8 @@ PROTOBUF_NOINLINE void Field::Clear() {
 }
 
 void Field::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<Field*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<Field*>(&to_msg);
   auto& from = static_cast<const Field&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -2516,9 +2504,8 @@ PROTOBUF_NOINLINE void Enum::Clear() {
 }
 
 void Enum::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<Enum*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<Enum*>(&to_msg);
   auto& from = static_cast<const Enum&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -2832,9 +2819,8 @@ PROTOBUF_NOINLINE void EnumValue::Clear() {
 }
 
 void EnumValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<EnumValue*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<EnumValue*>(&to_msg);
   auto& from = static_cast<const EnumValue&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -3093,9 +3079,8 @@ PROTOBUF_NOINLINE void Option::Clear() {
 }
 
 void Option::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<Option*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<Option*>(&to_msg);
   auto& from = static_cast<const Option&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();

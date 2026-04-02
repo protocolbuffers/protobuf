@@ -93,8 +93,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Timestamp final : p
                                class_data);
 
   inline Timestamp(const Timestamp& from) : Timestamp(nullptr, from) {}
-  inline Timestamp(Timestamp&& from) noexcept
-      : Timestamp(nullptr, ::std::move(from)) {}
+  inline Timestamp(Timestamp&& from) noexcept : Timestamp(nullptr, ::std::move(from)) {}
   inline Timestamp& operator=(const Timestamp& from) {
     CopyFrom(from);
     return *this;
@@ -129,8 +128,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Timestamp final : p
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Timestamp& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Timestamp>(
-        &_Timestamp_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Timestamp>(&_Timestamp_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(Timestamp& a, Timestamp& b) { a.Swap(&b); }

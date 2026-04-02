@@ -44,8 +44,7 @@ namespace google {
 namespace protobuf {
 class ListValue::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<ListValue>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<ListValue>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(ListValue, _impl_._has_bits_);
 };
@@ -118,8 +117,7 @@ inline void* PROTOBUF_NONNULL ListValue::PlacementNew_(
   return ::new (mem) ListValue(arena);
 }
 constexpr auto ListValue::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(ListValue),
-                                            alignof(ListValue));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(ListValue), alignof(ListValue));
 }
 constexpr auto ListValue::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -201,8 +199,7 @@ const ::_pbi::ClassData* ListValue_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class Struct::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<Struct>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<Struct>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Struct, _impl_._has_bits_);
 };
@@ -277,8 +274,7 @@ inline void* PROTOBUF_NONNULL Struct::PlacementNew_(
   return ::new (mem) Struct(arena);
 }
 constexpr auto Struct::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Struct),
-                                            alignof(Struct));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Struct), alignof(Struct));
 }
 constexpr auto Struct::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -423,8 +419,7 @@ inline void* PROTOBUF_NONNULL Struct_FieldsEntry_DoNotUse::PlacementNew_(
   return ::new (mem) Struct_FieldsEntry_DoNotUse(arena);
 }
 constexpr auto Struct_FieldsEntry_DoNotUse::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Struct_FieldsEntry_DoNotUse),
-                                            alignof(Struct_FieldsEntry_DoNotUse));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Struct_FieldsEntry_DoNotUse), alignof(Struct_FieldsEntry_DoNotUse));
 }
 constexpr auto Struct_FieldsEntry_DoNotUse::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -592,8 +587,7 @@ inline void* PROTOBUF_NONNULL Value::PlacementNew_(
   return ::new (mem) Value(arena);
 }
 constexpr auto Value::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Value),
-                                            alignof(Value));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Value), alignof(Value));
 }
 constexpr auto Value::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -1007,9 +1001,8 @@ PROTOBUF_NOINLINE void Struct::Clear() {
 }
 
 void Struct::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<Struct*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<Struct*>(&to_msg);
   auto& from = static_cast<const Struct&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -1364,9 +1357,8 @@ PROTOBUF_NOINLINE void Value::Clear() {
 }
 
 void Value::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<Value*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<Value*>(&to_msg);
   auto& from = static_cast<const Value&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -1631,9 +1623,8 @@ PROTOBUF_NOINLINE void ListValue::Clear() {
 }
 
 void ListValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<ListValue*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<ListValue*>(&to_msg);
   auto& from = static_cast<const ListValue&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();

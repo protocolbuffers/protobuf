@@ -38,8 +38,7 @@ namespace google {
 namespace protobuf {
 class Duration::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<Duration>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<Duration>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Duration, _impl_._has_bits_);
 };
@@ -109,8 +108,7 @@ inline void* PROTOBUF_NONNULL Duration::PlacementNew_(
   return ::new (mem) Duration(arena);
 }
 constexpr auto Duration::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Duration),
-                                            alignof(Duration));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Duration), alignof(Duration));
 }
 constexpr auto Duration::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -420,9 +418,8 @@ PROTOBUF_NOINLINE void Duration::Clear() {
 }
 
 void Duration::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<Duration*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<Duration*>(&to_msg);
   auto& from = static_cast<const Duration&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();

@@ -168,8 +168,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ListValue final : p
                                class_data);
 
   inline ListValue(const ListValue& from) : ListValue(nullptr, from) {}
-  inline ListValue(ListValue&& from) noexcept
-      : ListValue(nullptr, ::std::move(from)) {}
+  inline ListValue(ListValue&& from) noexcept : ListValue(nullptr, ::std::move(from)) {}
   inline ListValue& operator=(const ListValue& from) {
     CopyFrom(from);
     return *this;
@@ -204,8 +203,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ListValue final : p
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const ListValue& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<ListValue>(
-        &_ListValue_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<ListValue>(&_ListValue_globals_);
   }
   static constexpr int kIndexInFileMessages = 3;
   friend void swap(ListValue& a, ListValue& b) { a.Swap(&b); }
@@ -382,8 +380,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct final : publ
                                class_data);
 
   inline Struct(const Struct& from) : Struct(nullptr, from) {}
-  inline Struct(Struct&& from) noexcept
-      : Struct(nullptr, ::std::move(from)) {}
+  inline Struct(Struct&& from) noexcept : Struct(nullptr, ::std::move(from)) {}
   inline Struct& operator=(const Struct& from) {
     CopyFrom(from);
     return *this;
@@ -418,8 +415,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct final : publ
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Struct& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Struct>(
-        &_Struct_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Struct>(&_Struct_globals_);
   }
   static constexpr int kIndexInFileMessages = 1;
   friend void swap(Struct& a, Struct& b) { a.Swap(&b); }
@@ -640,8 +636,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
                                class_data);
 
   inline Value(const Value& from) : Value(nullptr, from) {}
-  inline Value(Value&& from) noexcept
-      : Value(nullptr, ::std::move(from)) {}
+  inline Value(Value&& from) noexcept : Value(nullptr, ::std::move(from)) {}
   inline Value& operator=(const Value& from) {
     CopyFrom(from);
     return *this;
@@ -676,8 +671,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Value& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Value>(
-        &_Value_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Value>(&_Value_globals_);
   }
   enum KindCase {
     kNullValue = 1,

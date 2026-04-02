@@ -93,8 +93,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
                                class_data);
 
   inline Empty(const Empty& from) : Empty(nullptr, from) {}
-  inline Empty(Empty&& from) noexcept
-      : Empty(nullptr, ::std::move(from)) {}
+  inline Empty(Empty&& from) noexcept : Empty(nullptr, ::std::move(from)) {}
   inline Empty& operator=(const Empty& from) {
     CopyFrom(from);
     return *this;
@@ -129,8 +128,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Empty& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Empty>(
-        &_Empty_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Empty>(&_Empty_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(Empty& a, Empty& b) { a.Swap(&b); }
@@ -155,13 +153,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
     return ::google::protobuf::internal::ZeroFieldsBase::DefaultConstruct<Empty>(arena);
   }
   using ::google::protobuf::internal::ZeroFieldsBase::CopyFrom;
-  inline void CopyFrom(const Empty& from) {
-    ::google::protobuf::internal::ZeroFieldsBase::CopyImpl(*this, from);
-  }
+  inline void CopyFrom(const Empty& from) { ::google::protobuf::internal::ZeroFieldsBase::CopyImpl(*this, from); }
   using ::google::protobuf::internal::ZeroFieldsBase::MergeFrom;
-  void MergeFrom(const Empty& from) {
-    ::google::protobuf::internal::ZeroFieldsBase::MergeImpl(*this, from);
-  }
+  void MergeFrom(const Empty& from) { ::google::protobuf::internal::ZeroFieldsBase::MergeImpl(*this, from); }
 
   public:
   [[nodiscard]] bool IsInitialized() const {

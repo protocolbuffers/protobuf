@@ -93,8 +93,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Any final : public 
                                class_data);
 
   inline Any(const Any& from) : Any(nullptr, from) {}
-  inline Any(Any&& from) noexcept
-      : Any(nullptr, ::std::move(from)) {}
+  inline Any(Any&& from) noexcept : Any(nullptr, ::std::move(from)) {}
   inline Any& operator=(const Any& from) {
     CopyFrom(from);
     return *this;
@@ -129,8 +128,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Any final : public 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Any& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Any>(
-        &_Any_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Any>(&_Any_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   // implements Any

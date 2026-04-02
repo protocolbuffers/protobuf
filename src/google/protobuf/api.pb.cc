@@ -42,8 +42,7 @@ namespace google {
 namespace protobuf {
 class Mixin::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<Mixin>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<Mixin>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Mixin, _impl_._has_bits_);
 };
@@ -121,8 +120,7 @@ inline void* PROTOBUF_NONNULL Mixin::PlacementNew_(
   return ::new (mem) Mixin(arena);
 }
 constexpr auto Mixin::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Mixin),
-                                            alignof(Mixin));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Mixin), alignof(Mixin));
 }
 constexpr auto Mixin::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -204,8 +202,7 @@ const ::_pbi::ClassData* Mixin_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class Method::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<Method>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<Method>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Method, _impl_._has_bits_);
 };
@@ -341,8 +338,7 @@ inline void* PROTOBUF_NONNULL Method::PlacementNew_(
   return ::new (mem) Method(arena);
 }
 constexpr auto Method::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Method),
-                                            alignof(Method));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Method), alignof(Method));
 }
 constexpr auto Method::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -424,8 +420,7 @@ const ::_pbi::ClassData* Method_get_class_data() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 class Api::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<Api>()._impl_._has_bits_);
+  using HasBits = decltype(::std::declval<Api>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Api, _impl_._has_bits_);
 };
@@ -581,8 +576,7 @@ inline void* PROTOBUF_NONNULL Api::PlacementNew_(
   return ::new (mem) Api(arena);
 }
 constexpr auto Api::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Api),
-                                            alignof(Api));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Api), alignof(Api));
 }
 constexpr auto Api::InternalGenerateClassData_(
     const MessageLite& prototype,
@@ -1156,9 +1150,8 @@ PROTOBUF_NOINLINE void Api::Clear() {
 }
 
 void Api::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<Api*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<Api*>(&to_msg);
   auto& from = static_cast<const Api&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -1608,9 +1601,8 @@ PROTOBUF_NOINLINE void Method::Clear() {
 }
 
 void Method::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<Method*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<Method*>(&to_msg);
   auto& from = static_cast<const Method&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -1909,9 +1901,8 @@ PROTOBUF_NOINLINE void Mixin::Clear() {
 }
 
 void Mixin::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<Mixin*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<Mixin*>(&to_msg);
   auto& from = static_cast<const Mixin&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
