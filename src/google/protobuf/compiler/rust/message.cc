@@ -546,12 +546,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
         // SAFETY:
         // - `$Msg$` is `Sync` because it does not implement interior mutability.
         //    Neither does `$Msg$Mut`.
-        unsafe impl Sync for $Msg$ {}
+        unsafe impl $std$::marker::Sync for $Msg$ {}
 
         // SAFETY:
         // - `$Msg$` is `Send` because it uniquely owns its arena and does
         //   not use thread-local data.
-        unsafe impl Send for $Msg$ {}
+        unsafe impl $std$::marker::Send for $Msg$ {}
 
         impl $pb$::Proxied for $Msg$ {
           type View<'msg> = $Msg$View<'msg>;
@@ -606,12 +606,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
 
         // SAFETY:
         // - `$Msg$View` is `Sync` because it does not support mutation.
-        unsafe impl Sync for $Msg$View<'_> {}
+        unsafe impl $std$::marker::Sync for $Msg$View<'_> {}
 
         // SAFETY:
         // - `$Msg$View` is `Send` because while its alive a `$Msg$Mut` cannot.
         // - `$Msg$View` does not use thread-local data.
-        unsafe impl Send for $Msg$View<'_> {}
+        unsafe impl $std$::marker::Send for $Msg$View<'_> {}
 
         impl<'msg> $pb$::AsView for $Msg$View<'msg> {
           type Proxied = $Msg$;
@@ -679,11 +679,11 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
         //~ threads can hold a reference to MsgMuts with the same arena.
         // SAFETY:
         // - `$Msg$Mut` does not perform any shared mutation.
-        unsafe impl Send for $Msg$Mut<'_> {}
+        unsafe impl $std$::marker::Send for $Msg$Mut<'_> {}
 
         // SAFETY:
         // - `$Msg$Mut` does not perform any shared mutation.
-        unsafe impl Sync for $Msg$Mut<'_> {}
+        unsafe impl $std$::marker::Sync for $Msg$Mut<'_> {}
 
         impl<'msg> $pb$::AsView for $Msg$Mut<'msg> {
           type Proxied = $Msg$;
@@ -866,7 +866,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
                R"rs(
               impl $pb$::MessageDescriptorInterop for $Msg$ {
                 fn __unstable_get_descriptor() -> *const $std$::ffi::c_void {
-                  unsafe { $pbr$::proto2_rust_Message_get_descriptor(<$Msg$View as Default>::default().raw_msg()) }
+                  unsafe { $pbr$::proto2_rust_Message_get_descriptor(<$Msg$View as $std$::default::Default>::default().raw_msg()) }
                 }
               }
             )rs");
