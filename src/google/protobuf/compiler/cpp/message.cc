@@ -5668,6 +5668,15 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                            descriptor_, index_in_file_messages_, options_)}},
                      R"cc(__attribute__((section("$section$"))))cc");
            }},
+          {"const",
+           [&] {
+             if (is_file_descriptor_proto) return;
+             p->Emit(R"cc(
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+               const
+#endif
+             )cc");
+           }},
       },
       R"cc(
         struct $globals_type$ : ::_pbi::MessageGlobalsBase {
@@ -5707,8 +5716,8 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
         PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-            PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $section_decl$ $globals_type$
-                $globals$;
+            PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $section_decl$ $const$
+                $globals_type$ $globals$;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
         namespace {
         const ::_pbi::ClassData* $Msg$_get_class_data() {

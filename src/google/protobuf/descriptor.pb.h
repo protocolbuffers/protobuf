@@ -99,207 +99,275 @@ enum SymbolVisibility : int;
 PROTOBUF_EXPORT extern const uint32_t SymbolVisibility_internal_data_[];
 class DescriptorProto;
 struct DescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern DescriptorProtoGlobalsTypeInternal _DescriptorProto_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern DescriptorProtoGlobalsTypeInternal _DescriptorProto_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DescriptorProto_class_data_;
+#else
+PROTOBUF_EXPORT extern DescriptorProtoGlobalsTypeInternal _DescriptorProto_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class DescriptorProto_ExtensionRange;
 struct DescriptorProto_ExtensionRangeGlobalsTypeInternal;
-PROTOBUF_EXPORT extern DescriptorProto_ExtensionRangeGlobalsTypeInternal _DescriptorProto_ExtensionRange_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern DescriptorProto_ExtensionRangeGlobalsTypeInternal _DescriptorProto_ExtensionRange_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DescriptorProto_ExtensionRange_class_data_;
+#else
+PROTOBUF_EXPORT extern DescriptorProto_ExtensionRangeGlobalsTypeInternal _DescriptorProto_ExtensionRange_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class DescriptorProto_ReservedRange;
 struct DescriptorProto_ReservedRangeGlobalsTypeInternal;
-PROTOBUF_EXPORT extern DescriptorProto_ReservedRangeGlobalsTypeInternal _DescriptorProto_ReservedRange_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern DescriptorProto_ReservedRangeGlobalsTypeInternal _DescriptorProto_ReservedRange_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DescriptorProto_ReservedRange_class_data_;
+#else
+PROTOBUF_EXPORT extern DescriptorProto_ReservedRangeGlobalsTypeInternal _DescriptorProto_ReservedRange_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class EnumDescriptorProto;
 struct EnumDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern EnumDescriptorProtoGlobalsTypeInternal _EnumDescriptorProto_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern EnumDescriptorProtoGlobalsTypeInternal _EnumDescriptorProto_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumDescriptorProto_class_data_;
+#else
+PROTOBUF_EXPORT extern EnumDescriptorProtoGlobalsTypeInternal _EnumDescriptorProto_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class EnumDescriptorProto_EnumReservedRange;
 struct EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal;
-PROTOBUF_EXPORT extern EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal _EnumDescriptorProto_EnumReservedRange_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal _EnumDescriptorProto_EnumReservedRange_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumDescriptorProto_EnumReservedRange_class_data_;
+#else
+PROTOBUF_EXPORT extern EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal _EnumDescriptorProto_EnumReservedRange_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class EnumOptions;
 struct EnumOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern EnumOptionsGlobalsTypeInternal _EnumOptions_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern EnumOptionsGlobalsTypeInternal _EnumOptions_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumOptions_class_data_;
+#else
+PROTOBUF_EXPORT extern EnumOptionsGlobalsTypeInternal _EnumOptions_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class EnumValueDescriptorProto;
 struct EnumValueDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern EnumValueDescriptorProtoGlobalsTypeInternal _EnumValueDescriptorProto_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern EnumValueDescriptorProtoGlobalsTypeInternal _EnumValueDescriptorProto_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValueDescriptorProto_class_data_;
+#else
+PROTOBUF_EXPORT extern EnumValueDescriptorProtoGlobalsTypeInternal _EnumValueDescriptorProto_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class EnumValueOptions;
 struct EnumValueOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern EnumValueOptionsGlobalsTypeInternal _EnumValueOptions_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern EnumValueOptionsGlobalsTypeInternal _EnumValueOptions_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValueOptions_class_data_;
+#else
+PROTOBUF_EXPORT extern EnumValueOptionsGlobalsTypeInternal _EnumValueOptions_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class ExtensionRangeOptions;
 struct ExtensionRangeOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern ExtensionRangeOptionsGlobalsTypeInternal _ExtensionRangeOptions_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern ExtensionRangeOptionsGlobalsTypeInternal _ExtensionRangeOptions_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ExtensionRangeOptions_class_data_;
+#else
+PROTOBUF_EXPORT extern ExtensionRangeOptionsGlobalsTypeInternal _ExtensionRangeOptions_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class ExtensionRangeOptions_Declaration;
 struct ExtensionRangeOptions_DeclarationGlobalsTypeInternal;
-PROTOBUF_EXPORT extern ExtensionRangeOptions_DeclarationGlobalsTypeInternal _ExtensionRangeOptions_Declaration_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern ExtensionRangeOptions_DeclarationGlobalsTypeInternal _ExtensionRangeOptions_Declaration_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ExtensionRangeOptions_Declaration_class_data_;
+#else
+PROTOBUF_EXPORT extern ExtensionRangeOptions_DeclarationGlobalsTypeInternal _ExtensionRangeOptions_Declaration_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class FeatureSet;
 struct FeatureSetGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FeatureSetGlobalsTypeInternal _FeatureSet_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern FeatureSetGlobalsTypeInternal _FeatureSet_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSet_class_data_;
+#else
+PROTOBUF_EXPORT extern FeatureSetGlobalsTypeInternal _FeatureSet_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class FeatureSetDefaults;
 struct FeatureSetDefaultsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FeatureSetDefaultsGlobalsTypeInternal _FeatureSetDefaults_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern FeatureSetDefaultsGlobalsTypeInternal _FeatureSetDefaults_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSetDefaults_class_data_;
+#else
+PROTOBUF_EXPORT extern FeatureSetDefaultsGlobalsTypeInternal _FeatureSetDefaults_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class FeatureSetDefaults_FeatureSetEditionDefault;
 struct FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal _FeatureSetDefaults_FeatureSetEditionDefault_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal _FeatureSetDefaults_FeatureSetEditionDefault_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSetDefaults_FeatureSetEditionDefault_class_data_;
+#else
+PROTOBUF_EXPORT extern FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal _FeatureSetDefaults_FeatureSetEditionDefault_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class FeatureSet_VisibilityFeature;
 struct FeatureSet_VisibilityFeatureGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FeatureSet_VisibilityFeatureGlobalsTypeInternal _FeatureSet_VisibilityFeature_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern FeatureSet_VisibilityFeatureGlobalsTypeInternal _FeatureSet_VisibilityFeature_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSet_VisibilityFeature_class_data_;
+#else
+PROTOBUF_EXPORT extern FeatureSet_VisibilityFeatureGlobalsTypeInternal _FeatureSet_VisibilityFeature_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class FieldDescriptorProto;
 struct FieldDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FieldDescriptorProtoGlobalsTypeInternal _FieldDescriptorProto_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern FieldDescriptorProtoGlobalsTypeInternal _FieldDescriptorProto_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldDescriptorProto_class_data_;
+#else
+PROTOBUF_EXPORT extern FieldDescriptorProtoGlobalsTypeInternal _FieldDescriptorProto_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class FieldOptions;
 struct FieldOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FieldOptionsGlobalsTypeInternal _FieldOptions_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern FieldOptionsGlobalsTypeInternal _FieldOptions_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldOptions_class_data_;
+#else
+PROTOBUF_EXPORT extern FieldOptionsGlobalsTypeInternal _FieldOptions_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class FieldOptions_EditionDefault;
 struct FieldOptions_EditionDefaultGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FieldOptions_EditionDefaultGlobalsTypeInternal _FieldOptions_EditionDefault_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern FieldOptions_EditionDefaultGlobalsTypeInternal _FieldOptions_EditionDefault_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldOptions_EditionDefault_class_data_;
+#else
+PROTOBUF_EXPORT extern FieldOptions_EditionDefaultGlobalsTypeInternal _FieldOptions_EditionDefault_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class FieldOptions_FeatureSupport;
 struct FieldOptions_FeatureSupportGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FieldOptions_FeatureSupportGlobalsTypeInternal _FieldOptions_FeatureSupport_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern FieldOptions_FeatureSupportGlobalsTypeInternal _FieldOptions_FeatureSupport_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldOptions_FeatureSupport_class_data_;
+#else
+PROTOBUF_EXPORT extern FieldOptions_FeatureSupportGlobalsTypeInternal _FieldOptions_FeatureSupport_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class FileDescriptorProto;
 struct FileDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FileDescriptorProtoGlobalsTypeInternal _FileDescriptorProto_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern FileDescriptorProtoGlobalsTypeInternal _FileDescriptorProto_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FileDescriptorProto_class_data_;
+#else
+PROTOBUF_EXPORT extern FileDescriptorProtoGlobalsTypeInternal _FileDescriptorProto_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class FileDescriptorSet;
 struct FileDescriptorSetGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FileDescriptorSetGlobalsTypeInternal _FileDescriptorSet_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern FileDescriptorSetGlobalsTypeInternal _FileDescriptorSet_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FileDescriptorSet_class_data_;
+#else
+PROTOBUF_EXPORT extern FileDescriptorSetGlobalsTypeInternal _FileDescriptorSet_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class FileOptions;
 struct FileOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FileOptionsGlobalsTypeInternal _FileOptions_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern FileOptionsGlobalsTypeInternal _FileOptions_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FileOptions_class_data_;
+#else
+PROTOBUF_EXPORT extern FileOptionsGlobalsTypeInternal _FileOptions_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class GeneratedCodeInfo;
 struct GeneratedCodeInfoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern GeneratedCodeInfoGlobalsTypeInternal _GeneratedCodeInfo_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern GeneratedCodeInfoGlobalsTypeInternal _GeneratedCodeInfo_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull GeneratedCodeInfo_class_data_;
+#else
+PROTOBUF_EXPORT extern GeneratedCodeInfoGlobalsTypeInternal _GeneratedCodeInfo_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class GeneratedCodeInfo_Annotation;
 struct GeneratedCodeInfo_AnnotationGlobalsTypeInternal;
-PROTOBUF_EXPORT extern GeneratedCodeInfo_AnnotationGlobalsTypeInternal _GeneratedCodeInfo_Annotation_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern GeneratedCodeInfo_AnnotationGlobalsTypeInternal _GeneratedCodeInfo_Annotation_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull GeneratedCodeInfo_Annotation_class_data_;
+#else
+PROTOBUF_EXPORT extern GeneratedCodeInfo_AnnotationGlobalsTypeInternal _GeneratedCodeInfo_Annotation_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class MessageOptions;
 struct MessageOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern MessageOptionsGlobalsTypeInternal _MessageOptions_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern MessageOptionsGlobalsTypeInternal _MessageOptions_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull MessageOptions_class_data_;
+#else
+PROTOBUF_EXPORT extern MessageOptionsGlobalsTypeInternal _MessageOptions_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class MethodDescriptorProto;
 struct MethodDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern MethodDescriptorProtoGlobalsTypeInternal _MethodDescriptorProto_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern MethodDescriptorProtoGlobalsTypeInternal _MethodDescriptorProto_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull MethodDescriptorProto_class_data_;
+#else
+PROTOBUF_EXPORT extern MethodDescriptorProtoGlobalsTypeInternal _MethodDescriptorProto_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class MethodOptions;
 struct MethodOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern MethodOptionsGlobalsTypeInternal _MethodOptions_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern MethodOptionsGlobalsTypeInternal _MethodOptions_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull MethodOptions_class_data_;
+#else
+PROTOBUF_EXPORT extern MethodOptionsGlobalsTypeInternal _MethodOptions_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class OneofDescriptorProto;
 struct OneofDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern OneofDescriptorProtoGlobalsTypeInternal _OneofDescriptorProto_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern OneofDescriptorProtoGlobalsTypeInternal _OneofDescriptorProto_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull OneofDescriptorProto_class_data_;
+#else
+PROTOBUF_EXPORT extern OneofDescriptorProtoGlobalsTypeInternal _OneofDescriptorProto_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class OneofOptions;
 struct OneofOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern OneofOptionsGlobalsTypeInternal _OneofOptions_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern OneofOptionsGlobalsTypeInternal _OneofOptions_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull OneofOptions_class_data_;
+#else
+PROTOBUF_EXPORT extern OneofOptionsGlobalsTypeInternal _OneofOptions_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class ServiceDescriptorProto;
 struct ServiceDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern ServiceDescriptorProtoGlobalsTypeInternal _ServiceDescriptorProto_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern ServiceDescriptorProtoGlobalsTypeInternal _ServiceDescriptorProto_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ServiceDescriptorProto_class_data_;
+#else
+PROTOBUF_EXPORT extern ServiceDescriptorProtoGlobalsTypeInternal _ServiceDescriptorProto_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class ServiceOptions;
 struct ServiceOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern ServiceOptionsGlobalsTypeInternal _ServiceOptions_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern ServiceOptionsGlobalsTypeInternal _ServiceOptions_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ServiceOptions_class_data_;
+#else
+PROTOBUF_EXPORT extern ServiceOptionsGlobalsTypeInternal _ServiceOptions_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class SourceCodeInfo;
 struct SourceCodeInfoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern SourceCodeInfoGlobalsTypeInternal _SourceCodeInfo_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern SourceCodeInfoGlobalsTypeInternal _SourceCodeInfo_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceCodeInfo_class_data_;
+#else
+PROTOBUF_EXPORT extern SourceCodeInfoGlobalsTypeInternal _SourceCodeInfo_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class SourceCodeInfo_Location;
 struct SourceCodeInfo_LocationGlobalsTypeInternal;
-PROTOBUF_EXPORT extern SourceCodeInfo_LocationGlobalsTypeInternal _SourceCodeInfo_Location_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern SourceCodeInfo_LocationGlobalsTypeInternal _SourceCodeInfo_Location_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceCodeInfo_Location_class_data_;
+#else
+PROTOBUF_EXPORT extern SourceCodeInfo_LocationGlobalsTypeInternal _SourceCodeInfo_Location_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class UninterpretedOption;
 struct UninterpretedOptionGlobalsTypeInternal;
-PROTOBUF_EXPORT extern UninterpretedOptionGlobalsTypeInternal _UninterpretedOption_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern UninterpretedOptionGlobalsTypeInternal _UninterpretedOption_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UninterpretedOption_class_data_;
+#else
+PROTOBUF_EXPORT extern UninterpretedOptionGlobalsTypeInternal _UninterpretedOption_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class UninterpretedOption_NamePart;
 struct UninterpretedOption_NamePartGlobalsTypeInternal;
-PROTOBUF_EXPORT extern UninterpretedOption_NamePartGlobalsTypeInternal _UninterpretedOption_NamePart_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern UninterpretedOption_NamePartGlobalsTypeInternal _UninterpretedOption_NamePart_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UninterpretedOption_NamePart_class_data_;
+#else
+PROTOBUF_EXPORT extern UninterpretedOption_NamePartGlobalsTypeInternal _UninterpretedOption_NamePart_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 template <>
 internal::EnumTraitsT<::google::protobuf::Edition_internal_data_>

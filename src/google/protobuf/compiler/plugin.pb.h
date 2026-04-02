@@ -68,27 +68,35 @@ enum CodeGeneratorResponse_Feature : int;
 PROTOC_EXPORT extern const uint32_t CodeGeneratorResponse_Feature_internal_data_[];
 class CodeGeneratorRequest;
 struct CodeGeneratorRequestGlobalsTypeInternal;
-PROTOC_EXPORT extern CodeGeneratorRequestGlobalsTypeInternal _CodeGeneratorRequest_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOC_EXPORT extern CodeGeneratorRequestGlobalsTypeInternal _CodeGeneratorRequest_globals_;
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorRequest_class_data_;
+#else
+PROTOC_EXPORT extern const CodeGeneratorRequestGlobalsTypeInternal _CodeGeneratorRequest_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class CodeGeneratorResponse;
 struct CodeGeneratorResponseGlobalsTypeInternal;
-PROTOC_EXPORT extern CodeGeneratorResponseGlobalsTypeInternal _CodeGeneratorResponse_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOC_EXPORT extern CodeGeneratorResponseGlobalsTypeInternal _CodeGeneratorResponse_globals_;
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_class_data_;
+#else
+PROTOC_EXPORT extern const CodeGeneratorResponseGlobalsTypeInternal _CodeGeneratorResponse_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class CodeGeneratorResponse_File;
 struct CodeGeneratorResponse_FileGlobalsTypeInternal;
-PROTOC_EXPORT extern CodeGeneratorResponse_FileGlobalsTypeInternal _CodeGeneratorResponse_File_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOC_EXPORT extern CodeGeneratorResponse_FileGlobalsTypeInternal _CodeGeneratorResponse_File_globals_;
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_File_class_data_;
+#else
+PROTOC_EXPORT extern const CodeGeneratorResponse_FileGlobalsTypeInternal _CodeGeneratorResponse_File_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class Version;
 struct VersionGlobalsTypeInternal;
-PROTOC_EXPORT extern VersionGlobalsTypeInternal _Version_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOC_EXPORT extern VersionGlobalsTypeInternal _Version_globals_;
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull Version_class_data_;
+#else
+PROTOC_EXPORT extern const VersionGlobalsTypeInternal _Version_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace compiler
 template <>

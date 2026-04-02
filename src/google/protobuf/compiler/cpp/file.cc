@@ -636,7 +636,11 @@ void FileGenerator::GenerateInternalForwardDeclarations(
         p->Emit({{"type", MsgGlobalsInstanceType(instance, options_)},
                  {"name", MsgGlobalsInstanceName(instance, options_)}},
                 R"cc(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
                   extern __attribute__((weak)) $type$ $name$;
+#else
+                  extern __attribute__((weak)) const $type$ $name$;
+#endif
                 )cc");
       }
     }
@@ -1360,14 +1364,18 @@ class FileGenerator::ForwardDeclarations {
               Sub("class", c.first).AnnotatedAs(desc),
               {"globals_type", MsgGlobalsInstanceType(desc, options)},
               {"globals_name", MsgGlobalsInstanceName(desc, options)},
+              {"const",
+               IsFileDescriptorProto(desc->file(), options) ? "" : "const"},
               {"classdata_type", ClassDataType(desc, options)},
           },
           R"cc(
             class $class$;
             struct $globals_type$;
-            $dllexport_decl $extern $globals_type$ $globals_name$;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+            $dllexport_decl $extern $globals_type$ $globals_name$;
             $dllexport_decl $extern const $pbi$::$classdata_type$ $class$_class_data_;
+#else
+            $dllexport_decl $extern $const $$globals_type$ $globals_name$;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
           )cc");
     }

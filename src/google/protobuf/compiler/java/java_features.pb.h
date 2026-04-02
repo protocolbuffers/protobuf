@@ -63,15 +63,19 @@ enum JavaFeatures_Utf8Validation : int;
 PROTOC_EXPORT extern const uint32_t JavaFeatures_Utf8Validation_internal_data_[];
 class JavaFeatures;
 struct JavaFeaturesGlobalsTypeInternal;
-PROTOC_EXPORT extern JavaFeaturesGlobalsTypeInternal _JavaFeatures_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOC_EXPORT extern JavaFeaturesGlobalsTypeInternal _JavaFeatures_globals_;
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull JavaFeatures_class_data_;
+#else
+PROTOC_EXPORT extern const JavaFeaturesGlobalsTypeInternal _JavaFeatures_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class JavaFeatures_NestInFileClassFeature;
 struct JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal;
-PROTOC_EXPORT extern JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal _JavaFeatures_NestInFileClassFeature_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOC_EXPORT extern JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal _JavaFeatures_NestInFileClassFeature_globals_;
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull JavaFeatures_NestInFileClassFeature_class_data_;
+#else
+PROTOC_EXPORT extern const JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal _JavaFeatures_NestInFileClassFeature_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace pb
 namespace google {
