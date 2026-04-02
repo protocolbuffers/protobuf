@@ -359,6 +359,70 @@ cc_proto_library(
     deps = [":cpp_features_proto"],
 )
 
+proto_library(
+    name = "json_options_proto",
+    srcs = ["json_options.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//visibility:public"],
+    exports = [":json_enumvalue_options_proto"],
+    deps = ["//src/google/protobuf:json_enumvalue_options_proto"],
+)
+
+cc_proto_library(
+    name = "json_options_cc_proto",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":json_options_proto",
+    ],
+)
+
+proto_library(
+    name = "json_enumvalue_options_proto",
+    srcs = ["json_enumvalue_options.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//visibility:private"],
+    deps = ["//:descriptor_proto"],
+)
+
+cc_proto_library(
+    name = "json_enumvalue_options_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = [":json_enumvalue_options_proto"],
+)
+
+proto_library(
+    name = "json_enumvalue_options_unittest_proto",
+    srcs = ["json_enumvalue_options_unittest.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//visibility:private"],
+    deps = [
+        ":json_options_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "json_enumvalue_options_unittest_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = [
+        ":json_enumvalue_options_unittest_proto",
+    ],
+)
+
+cc_test(
+    name = "json_enumvalue_options_test",
+    srcs = ["json_enumvalue_options_test.cc"],
+    deps = [
+        ":json_enumvalue_options_cc_proto",
+        ":json_enumvalue_options_unittest_cc_proto",
+        ":json_options_cc_proto",
+        ":protobuf",
+        "//src/google/protobuf/json",
+        "@abseil-cpp//absl/status",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 ################################################################################
 # C++ Runtime Library
 ################################################################################
@@ -1072,6 +1136,12 @@ filegroup(
 filegroup(
     name = "cpp_features_proto_srcs",
     srcs = ["cpp_features.proto"],
+    visibility = ["//:__subpackages__"],
+)
+
+filegroup(
+    name = "json_options_proto_srcs",
+    srcs = ["json_options.proto"],
     visibility = ["//:__subpackages__"],
 )
 

@@ -213,6 +213,7 @@ cc_library(
         ":untyped_message",
         "//:type_cc_proto",
         "//src/google/protobuf",
+        "//src/google/protobuf:json_options_cc_proto",
         "//src/google/protobuf:port",
         "//src/google/protobuf/stubs",
         "@abseil-cpp//absl/algorithm:container",

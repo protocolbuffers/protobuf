@@ -94,6 +94,7 @@ set(protobuf_HEADERS
   ${plugin_proto_proto_srcs}
   ${c_sharp_features_proto_proto_srcs}
   ${java_features_proto_proto_srcs}
+  ${json_options_proto_proto_srcs}
   ${go_features_proto_proto_srcs}
 )
 if (protobuf_BUILD_LIBUPB)

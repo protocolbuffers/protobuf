@@ -89,6 +89,8 @@ google/protobuf/io/zero_copy_stream_impl.h
 google/protobuf/io/zero_copy_stream_impl_lite.h
 google/protobuf/java_features.proto
 google/protobuf/json/json.h
+google/protobuf/json_options.pb.h
+google/protobuf/json_options.proto
 google/protobuf/map.h
 google/protobuf/map_entry.h
 google/protobuf/map_field.h

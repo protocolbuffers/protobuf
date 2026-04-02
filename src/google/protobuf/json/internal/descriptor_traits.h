@@ -18,6 +18,7 @@
 #include <utility>
 
 #include "google/protobuf/type.pb.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "absl/algorithm/container.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
@@ -30,6 +31,7 @@
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/json/internal/lexer.h"
 #include "google/protobuf/json/internal/untyped_message.h"
+#include "google/protobuf/json_options.pb.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/stubs/status_macros.h"
 
@@ -275,6 +277,9 @@ struct Proto2Descriptor {
 
   static absl::StatusOr<std::string> EnumNameByNumber(Field f, int32_t number) {
     if (const auto* ev = f->enum_type()->FindValueByNumber(number)) {
+      if (ev->options().HasExtension(pb::enumvalue::json)) {
+        return ev->options().GetExtension(pb::enumvalue::json).name();
+      }
       return std::string(ev->name());
     }
     return absl::InvalidArgumentError(
