@@ -57,9 +57,11 @@ namespace google {
 namespace protobuf {
 class FieldMask;
 struct FieldMaskGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FieldMaskGlobalsTypeInternal _FieldMask_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern FieldMaskGlobalsTypeInternal _FieldMask_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldMask_class_data_;
+#else
+PROTOBUF_EXPORT extern const FieldMaskGlobalsTypeInternal _FieldMask_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace protobuf
 }  // namespace google

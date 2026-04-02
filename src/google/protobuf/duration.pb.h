@@ -57,9 +57,11 @@ namespace google {
 namespace protobuf {
 class Duration;
 struct DurationGlobalsTypeInternal;
-PROTOBUF_EXPORT extern DurationGlobalsTypeInternal _Duration_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern DurationGlobalsTypeInternal _Duration_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Duration_class_data_;
+#else
+PROTOBUF_EXPORT extern const DurationGlobalsTypeInternal _Duration_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace protobuf
 }  // namespace google

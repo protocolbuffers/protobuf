@@ -64,27 +64,35 @@ enum NullValue : int;
 PROTOBUF_EXPORT extern const uint32_t NullValue_internal_data_[];
 class ListValue;
 struct ListValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern ListValueGlobalsTypeInternal _ListValue_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern ListValueGlobalsTypeInternal _ListValue_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ListValue_class_data_;
+#else
+PROTOBUF_EXPORT extern const ListValueGlobalsTypeInternal _ListValue_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class Struct;
 struct StructGlobalsTypeInternal;
-PROTOBUF_EXPORT extern StructGlobalsTypeInternal _Struct_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern StructGlobalsTypeInternal _Struct_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Struct_class_data_;
+#else
+PROTOBUF_EXPORT extern const StructGlobalsTypeInternal _Struct_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class Struct_FieldsEntry_DoNotUse;
 struct Struct_FieldsEntry_DoNotUseGlobalsTypeInternal;
-PROTOBUF_EXPORT extern Struct_FieldsEntry_DoNotUseGlobalsTypeInternal _Struct_FieldsEntry_DoNotUse_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern Struct_FieldsEntry_DoNotUseGlobalsTypeInternal _Struct_FieldsEntry_DoNotUse_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Struct_FieldsEntry_DoNotUse_class_data_;
+#else
+PROTOBUF_EXPORT extern const Struct_FieldsEntry_DoNotUseGlobalsTypeInternal _Struct_FieldsEntry_DoNotUse_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class Value;
 struct ValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern ValueGlobalsTypeInternal _Value_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern ValueGlobalsTypeInternal _Value_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Value_class_data_;
+#else
+PROTOBUF_EXPORT extern const ValueGlobalsTypeInternal _Value_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 template <>
 internal::EnumTraitsT<::google::protobuf::NullValue_internal_data_>

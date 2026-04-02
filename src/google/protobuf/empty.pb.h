@@ -58,9 +58,11 @@ namespace google {
 namespace protobuf {
 class Empty;
 struct EmptyGlobalsTypeInternal;
-PROTOBUF_EXPORT extern EmptyGlobalsTypeInternal _Empty_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern EmptyGlobalsTypeInternal _Empty_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Empty_class_data_;
+#else
+PROTOBUF_EXPORT extern const EmptyGlobalsTypeInternal _Empty_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace protobuf
 }  // namespace google

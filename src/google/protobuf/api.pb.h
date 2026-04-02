@@ -59,21 +59,27 @@ namespace google {
 namespace protobuf {
 class Api;
 struct ApiGlobalsTypeInternal;
-PROTOBUF_EXPORT extern ApiGlobalsTypeInternal _Api_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern ApiGlobalsTypeInternal _Api_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Api_class_data_;
+#else
+PROTOBUF_EXPORT extern const ApiGlobalsTypeInternal _Api_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class Method;
 struct MethodGlobalsTypeInternal;
-PROTOBUF_EXPORT extern MethodGlobalsTypeInternal _Method_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern MethodGlobalsTypeInternal _Method_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Method_class_data_;
+#else
+PROTOBUF_EXPORT extern const MethodGlobalsTypeInternal _Method_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class Mixin;
 struct MixinGlobalsTypeInternal;
-PROTOBUF_EXPORT extern MixinGlobalsTypeInternal _Mixin_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern MixinGlobalsTypeInternal _Mixin_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Mixin_class_data_;
+#else
+PROTOBUF_EXPORT extern const MixinGlobalsTypeInternal _Mixin_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace protobuf
 }  // namespace google

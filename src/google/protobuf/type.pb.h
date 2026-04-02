@@ -66,33 +66,43 @@ enum Syntax : int;
 PROTOBUF_EXPORT extern const uint32_t Syntax_internal_data_[];
 class Enum;
 struct EnumGlobalsTypeInternal;
-PROTOBUF_EXPORT extern EnumGlobalsTypeInternal _Enum_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern EnumGlobalsTypeInternal _Enum_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Enum_class_data_;
+#else
+PROTOBUF_EXPORT extern const EnumGlobalsTypeInternal _Enum_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class EnumValue;
 struct EnumValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern EnumValueGlobalsTypeInternal _EnumValue_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern EnumValueGlobalsTypeInternal _EnumValue_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValue_class_data_;
+#else
+PROTOBUF_EXPORT extern const EnumValueGlobalsTypeInternal _EnumValue_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class Field;
 struct FieldGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FieldGlobalsTypeInternal _Field_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern FieldGlobalsTypeInternal _Field_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Field_class_data_;
+#else
+PROTOBUF_EXPORT extern const FieldGlobalsTypeInternal _Field_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class Option;
 struct OptionGlobalsTypeInternal;
-PROTOBUF_EXPORT extern OptionGlobalsTypeInternal _Option_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern OptionGlobalsTypeInternal _Option_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Option_class_data_;
+#else
+PROTOBUF_EXPORT extern const OptionGlobalsTypeInternal _Option_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class Type;
 struct TypeGlobalsTypeInternal;
-PROTOBUF_EXPORT extern TypeGlobalsTypeInternal _Type_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern TypeGlobalsTypeInternal _Type_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Type_class_data_;
+#else
+PROTOBUF_EXPORT extern const TypeGlobalsTypeInternal _Type_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 template <>
 internal::EnumTraitsT<::google::protobuf::Field_Cardinality_internal_data_>

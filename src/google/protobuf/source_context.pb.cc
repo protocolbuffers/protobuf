@@ -172,8 +172,11 @@ static_assert(PROTOBUF_FIELD_OFFSET(SourceContextGlobalsTypeInternal, _default) 
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  SourceContextGlobalsTypeInternal
-        _SourceContext_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  
+    #ifdef PROTOBUF_MESSAGE_GLOBALS
+    const
+    #endif
+        SourceContextGlobalsTypeInternal _SourceContext_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* SourceContext_get_class_data() {

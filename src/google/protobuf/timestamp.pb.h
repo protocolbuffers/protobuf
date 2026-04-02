@@ -57,9 +57,11 @@ namespace google {
 namespace protobuf {
 class Timestamp;
 struct TimestampGlobalsTypeInternal;
-PROTOBUF_EXPORT extern TimestampGlobalsTypeInternal _Timestamp_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern TimestampGlobalsTypeInternal _Timestamp_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Timestamp_class_data_;
+#else
+PROTOBUF_EXPORT extern const TimestampGlobalsTypeInternal _Timestamp_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace protobuf
 }  // namespace google

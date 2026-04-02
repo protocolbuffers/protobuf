@@ -57,57 +57,75 @@ namespace google {
 namespace protobuf {
 class BoolValue;
 struct BoolValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern BoolValueGlobalsTypeInternal _BoolValue_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern BoolValueGlobalsTypeInternal _BoolValue_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull BoolValue_class_data_;
+#else
+PROTOBUF_EXPORT extern const BoolValueGlobalsTypeInternal _BoolValue_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class BytesValue;
 struct BytesValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern BytesValueGlobalsTypeInternal _BytesValue_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern BytesValueGlobalsTypeInternal _BytesValue_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull BytesValue_class_data_;
+#else
+PROTOBUF_EXPORT extern const BytesValueGlobalsTypeInternal _BytesValue_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class DoubleValue;
 struct DoubleValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern DoubleValueGlobalsTypeInternal _DoubleValue_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern DoubleValueGlobalsTypeInternal _DoubleValue_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DoubleValue_class_data_;
+#else
+PROTOBUF_EXPORT extern const DoubleValueGlobalsTypeInternal _DoubleValue_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class FloatValue;
 struct FloatValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FloatValueGlobalsTypeInternal _FloatValue_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern FloatValueGlobalsTypeInternal _FloatValue_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FloatValue_class_data_;
+#else
+PROTOBUF_EXPORT extern const FloatValueGlobalsTypeInternal _FloatValue_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class Int32Value;
 struct Int32ValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern Int32ValueGlobalsTypeInternal _Int32Value_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern Int32ValueGlobalsTypeInternal _Int32Value_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Int32Value_class_data_;
+#else
+PROTOBUF_EXPORT extern const Int32ValueGlobalsTypeInternal _Int32Value_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class Int64Value;
 struct Int64ValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern Int64ValueGlobalsTypeInternal _Int64Value_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern Int64ValueGlobalsTypeInternal _Int64Value_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Int64Value_class_data_;
+#else
+PROTOBUF_EXPORT extern const Int64ValueGlobalsTypeInternal _Int64Value_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class StringValue;
 struct StringValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern StringValueGlobalsTypeInternal _StringValue_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern StringValueGlobalsTypeInternal _StringValue_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull StringValue_class_data_;
+#else
+PROTOBUF_EXPORT extern const StringValueGlobalsTypeInternal _StringValue_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class UInt32Value;
 struct UInt32ValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern UInt32ValueGlobalsTypeInternal _UInt32Value_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern UInt32ValueGlobalsTypeInternal _UInt32Value_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UInt32Value_class_data_;
+#else
+PROTOBUF_EXPORT extern const UInt32ValueGlobalsTypeInternal _UInt32Value_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class UInt64Value;
 struct UInt64ValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern UInt64ValueGlobalsTypeInternal _UInt64Value_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern UInt64ValueGlobalsTypeInternal _UInt64Value_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UInt64Value_class_data_;
+#else
+PROTOBUF_EXPORT extern const UInt64ValueGlobalsTypeInternal _UInt64Value_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace protobuf
 }  // namespace google

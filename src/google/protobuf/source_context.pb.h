@@ -57,9 +57,11 @@ namespace google {
 namespace protobuf {
 class SourceContext;
 struct SourceContextGlobalsTypeInternal;
-PROTOBUF_EXPORT extern SourceContextGlobalsTypeInternal _SourceContext_globals_;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern SourceContextGlobalsTypeInternal _SourceContext_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceContext_class_data_;
+#else
+PROTOBUF_EXPORT extern const SourceContextGlobalsTypeInternal _SourceContext_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace protobuf
 }  // namespace google
