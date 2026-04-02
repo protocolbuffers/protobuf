@@ -2539,7 +2539,9 @@ MapEntries MapFieldPrinterHelper::SortMap(const Message& message,
   std::vector<std::unique_ptr<const Message>> owned_entries;
   if (base.IsRepeatedFieldValid()) {
     const RepeatedPtrField<Message>& map_field =
-        reflection->GetRepeatedPtrFieldInternal<Message>(message, field);
+        reflection->GetRepeatedPtrFieldInternal<Message>(
+            message, field,
+            Reflection::GetRepeatedFieldIntent::kHiddenOrInternal);
     all_entries.reserve(map_field.size());
     for (int i = 0; i < map_field.size(); ++i) {
       all_entries.push_back(

@@ -648,12 +648,16 @@ struct RepeatedEntityDynamicFieldInfoBase {
   }
   iterator_range<typename RepeatedField<FieldT>::iterator> Mutable() {
     ABSL_DCHECK(!field->is_extension());
-    auto& rep =
-        *reflection->MutableRepeatedFieldInternal<FieldT>(&message, field);
+    auto& rep = *reflection->MutableRepeatedFieldInternal<FieldT>(
+        &message, field, Reflection::GetRepeatedFieldIntent::kHiddenOrInternal);
     return {rep.begin(), rep.end()};
   }
   void Clear() {
-    reflection->MutableRepeatedFieldInternal<FieldT>(&message, field)->Clear();
+    reflection
+        ->MutableRepeatedFieldInternal<FieldT>(
+            &message, field,
+            Reflection::GetRepeatedFieldIntent::kHiddenOrInternal)
+        ->Clear();
   }
 
   const Reflection* reflection;
@@ -750,12 +754,15 @@ struct RepeatedPtrEntityDynamicFieldInfoBase {
   }
   iterator_range<typename RepeatedPtrField<FieldT>::iterator> Mutable() {
     ABSL_DCHECK(!field->is_extension());
-    auto& rep =
-        *reflection->MutableRepeatedPtrFieldInternal<FieldT>(&message, field);
+    auto& rep = *reflection->MutableRepeatedPtrFieldInternal<FieldT>(
+        &message, field, Reflection::GetRepeatedFieldIntent::kHiddenOrInternal);
     return {rep.begin(), rep.end()};
   }
   void Clear() {
-    reflection->MutableRepeatedPtrFieldInternal<FieldT>(&message, field)
+    reflection
+        ->MutableRepeatedPtrFieldInternal<FieldT>(
+            &message, field,
+            Reflection::GetRepeatedFieldIntent::kHiddenOrInternal)
         ->Clear();
   }
 
