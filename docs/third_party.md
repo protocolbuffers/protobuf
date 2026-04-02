@@ -203,6 +203,7 @@ Inactive:
     *   https://ascopes.github.io/protobuf-maven-plugin
 *   [Protobuf Plugin for Gradle](https://github.com/google/protobuf-gradle-plugin)
 *   [Sbt plugin for Protocol Buffers](https://github.com/Atry/sbt-cppp)
+*   [proto-merge: .proto downloading, bundling, splitting tool](https://github.com/accretional/proto-merge)
 
 ## IDE
 
@@ -219,7 +220,7 @@ Inactive:
 ## Documentation
 
 *   [Documentation generator plugin (Markdown/HTML/DocBook/...)](https://github.com/pseudomuto/protoc-gen-doc)
-*   [DocBook generator for .proto files](https://code.google.com/p/protoc-gen-docbook/)
+*   [Istio's protoc-gen-docs](https://pkg.go.dev/istio.io/tools/cmd/protoc-gen-docs)
 
 ## Other Utilities
 
