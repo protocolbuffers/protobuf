@@ -166,6 +166,9 @@ message DescriptorProto {
 }
 
 message ExtensionRangeOptions {
+  // Range reserved for first-class custom options defined by the Protobuf
+  // team. User custom options must use the 1000+ range instead.
+  extensions 990 to 998;
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -560,6 +563,10 @@ message FileOptions {
   // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 50;
 
+  // Range reserved for first-class custom options defined by the Protobuf
+  // team. User custom options must use the 1000+ range instead.
+  extensions 990 to 998;
+
   // The parser stores options it doesn't recognize here.
   // See the documentation for the "Options" section above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -648,6 +655,10 @@ message MessageOptions {
   // cases like the proto compiler. Other uses are discouraged and
   // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 12;
+
+  // Range reserved for first-class custom options defined by the Protobuf
+  // team. User custom options must use the 1000+ range instead.
+  extensions 990 to 998;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -819,6 +830,10 @@ message FieldOptions {
   }
   optional FeatureSupport feature_support = 22;
 
+  // Range reserved for first-class custom options defined by the Protobuf
+  // team. User custom options must use the 1000+ range instead.
+  extensions 990 to 998;
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -835,6 +850,10 @@ message OneofOptions {
   // cases like the proto compiler. Other uses are discouraged and
   // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 1;
+
+  // Range reserved for first-class custom options defined by the Protobuf
+  // team. User custom options must use the 1000+ range instead.
+  extensions 990 to 998;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -870,6 +889,10 @@ message EnumOptions {
   // cases like the proto compiler. Other uses are discouraged and
   // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 7;
+
+  // Range reserved for first-class custom options defined by the Protobuf
+  // team. User custom options must use the 1000+ range instead.
+  extensions 990 to 998;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -929,6 +952,10 @@ message ServiceOptions {
   // this is a formalization for deprecating services.
   optional bool deprecated = 33 [default = false];
 
+  // Range reserved for first-class custom options defined by the Protobuf
+  // team. User custom options must use the 1000+ range instead.
+  extensions 990 to 998;
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -965,6 +992,10 @@ message MethodOptions {
   // cases like the proto compiler. Other uses are discouraged and
   // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 35;
+
+  // Range reserved for first-class custom options defined by the Protobuf
+  // team. User custom options must use the 1000+ range instead.
+  extensions 990 to 998;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
