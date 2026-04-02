@@ -101,6 +101,44 @@ class TextFormatMessageToStringTests(TextFormatBase):
         'repeated_string: "üꜟ"\n',
     )
 
+  def testPrintEnumAsInt(self, message_module):
+    message = message_module.TestAllTypes()
+    message.optional_foreign_enum = message_module.FOREIGN_BAR
+    message.repeated_foreign_enum.append(message_module.FOREIGN_FOO)
+    message.repeated_foreign_enum.append(message_module.FOREIGN_BAZ)
+
+    # Default behavior: enums as text
+    expected_default = (
+        'optional_foreign_enum: FOREIGN_BAR\n'
+        'repeated_foreign_enum: FOREIGN_FOO\n'
+        'repeated_foreign_enum: FOREIGN_BAZ\n'
+    )
+    self.assertEqual(text_format.MessageToString(message), expected_default)
+
+    # New behavior: enums as ints
+    # FOREIGN_FOO=4, FOREIGN_BAR=5, FOREIGN_BAZ=6
+    expected_ints = (
+        'optional_foreign_enum: 5\n'
+        'repeated_foreign_enum: 4\n'
+        'repeated_foreign_enum: 6\n'
+    )
+    self.assertEqual(
+        text_format.MessageToString(message, print_enums_as_ints=True),
+        expected_ints)
+
+    # Test PrintField
+    field = message.DESCRIPTOR.fields_by_name['optional_foreign_enum']
+    out = text_format.TextWriter(False)
+    text_format.PrintField(field, message_module.FOREIGN_BAR, out,
+                           print_enums_as_ints=True)
+    self.assertEqual('optional_foreign_enum: 5\n', out.getvalue())
+
+    # Test PrintFieldValue
+    out = text_format.TextWriter(False)
+    text_format.PrintFieldValue(field, message_module.FOREIGN_BAR, out,
+                                print_enums_as_ints=True)
+    self.assertEqual('5', out.getvalue())
+
   def testPrintFloatPrecision(self, message_module):
     message = message_module.TestAllTypes()
 
@@ -231,6 +269,27 @@ class TextFormatMessageToStringTests(TextFormatBase):
         text_format.MessageToString(message, as_one_line=True),
         'repeated_int32: 1 repeated_int32: 1 repeated_int32: 3 '
         'repeated_string: "Google" repeated_string: "Zurich"')
+
+  def testPrintShortFormatEnumAsInt(self, message_module):
+    message = message_module.TestAllTypes()
+    message.repeated_foreign_enum.append(message_module.FOREIGN_FOO)
+    message.repeated_foreign_enum.append(message_module.FOREIGN_BAR)
+    message.repeated_foreign_enum.append(message_module.FOREIGN_BAZ)
+
+    expected_ascii = 'repeated_foreign_enum: [4, 5, 6]\n'
+    actual_ascii = text_format.MessageToString(
+        message,
+        use_short_repeated_primitives=True,
+        print_enums_as_ints=True)
+    self.CompareToGoldenText(actual_ascii, expected_ascii)
+
+    actual_ascii_one_line = text_format.MessageToString(
+        message,
+        use_short_repeated_primitives=True,
+        print_enums_as_ints=True,
+        as_one_line=True)
+    self.CompareToGoldenText(actual_ascii_one_line,
+                             'repeated_foreign_enum: [4, 5, 6]')
 
   def VerifyPrintShortFormatRepeatedFields(self, message_module, as_one_line):
     message = message_module.TestAllTypes()

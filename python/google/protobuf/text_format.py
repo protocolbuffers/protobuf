@@ -107,7 +107,8 @@ def MessageToString(
     indent=0,
     message_formatter=None,
     print_unknown_fields=False,
-    force_colon=False) -> str:
+    force_colon=False,
+    print_enums_as_ints=False) -> str:
   """Convert protobuf message to text format.
 
   Args:
@@ -132,6 +133,8 @@ def MessageToString(
     print_unknown_fields: If True, unknown fields will be printed.
     force_colon: If set, a colon will be added after the field name even if the
       field is a proto message.
+    print_enums_as_ints: If True, enums will be rendered as numbers instead of
+      text.
 
   Returns:
     str: A string of the text formatted protocol buffer message.
@@ -150,6 +153,7 @@ def MessageToString(
       message_formatter=message_formatter,
       print_unknown_fields=print_unknown_fields,
       force_colon=force_colon,
+      print_enums_as_ints=print_enums_as_ints,
   )
   printer.PrintMessage(message)
   result = out.getvalue()
@@ -216,7 +220,8 @@ def PrintMessage(message,
                  descriptor_pool=None,
                  message_formatter=None,
                  print_unknown_fields=False,
-                 force_colon=False):
+                 force_colon=False,
+                 print_enums_as_ints=False):
   """Convert the message to text format and write it to the out stream.
 
   Args:
@@ -250,7 +255,8 @@ def PrintMessage(message,
       descriptor_pool=descriptor_pool,
       message_formatter=message_formatter,
       print_unknown_fields=print_unknown_fields,
-      force_colon=force_colon)
+      force_colon=force_colon,
+      print_enums_as_ints=print_enums_as_ints)
   printer.PrintMessage(message)
 
 
@@ -265,7 +271,8 @@ def PrintField(field,
                use_index_order=False,
                message_formatter=None,
                print_unknown_fields=False,
-               force_colon=False):
+               force_colon=False,
+               print_enums_as_ints=False):
   """Print a single field name/value pair."""
   printer = _Printer(
       out,
@@ -278,7 +285,7 @@ def PrintField(field,
       message_formatter=message_formatter,
       print_unknown_fields=print_unknown_fields,
       force_colon=force_colon,
-  )
+      print_enums_as_ints=print_enums_as_ints)
   printer.PrintField(field, value)
 
 
@@ -293,7 +300,8 @@ def PrintFieldValue(field,
                     use_index_order=False,
                     message_formatter=None,
                     print_unknown_fields=False,
-                    force_colon=False):
+                    force_colon=False,
+                    print_enums_as_ints=False):
   """Print a single field value (not including name)."""
   printer = _Printer(
       out,
@@ -306,6 +314,7 @@ def PrintFieldValue(field,
       message_formatter=message_formatter,
       print_unknown_fields=print_unknown_fields,
       force_colon=force_colon,
+      print_enums_as_ints=print_enums_as_ints,
   )
   printer.PrintFieldValue(field, value)
 
@@ -358,6 +367,7 @@ class _Printer(object):
       message_formatter=None,
       print_unknown_fields=False,
       force_colon=False,
+      print_enums_as_ints=False,
   ):
     """Initialize the Printer.
 
@@ -393,6 +403,7 @@ class _Printer(object):
     self.message_formatter = message_formatter
     self.print_unknown_fields = print_unknown_fields
     self.force_colon = force_colon
+    self.print_enums_as_ints = print_enums_as_ints
 
   def _TryPrintAsAnyMessage(self, message):
     """Serializes if message is a google.protobuf.Any field."""
@@ -596,11 +607,14 @@ class _Printer(object):
     if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
       self._PrintMessageFieldValue(value)
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_ENUM:
-      enum_value = field.enum_type.values_by_number.get(value, None)
-      if enum_value is not None:
-        out.write(enum_value.name)
-      else:
+      if self.print_enums_as_ints:
         out.write(str(value))
+      else:
+        enum_value = field.enum_type.values_by_number.get(value, None)
+        if enum_value is not None:
+          out.write(enum_value.name)
+        else:
+          out.write(str(value))
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_STRING:
       out.write('\"')
       if isinstance(value, str) and not self.as_utf8:
