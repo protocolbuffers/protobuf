@@ -1562,6 +1562,41 @@ TEST(RepeatedField, CheckedGetOrAbortTest) {
 }
 
 
+
+// TODO: Re-enable once parsing overflow is fixed.
+TEST(RepeatedFieldIsFullTest, DISABLED_MergeFrom) {
+  if (sizeof(void*) < 8) {
+    GTEST_SKIP() << "Not enough memory for the test.";
+  }
+
+  TestAllTypes msg;
+  msg.mutable_repeated_bool()->Resize(std::numeric_limits<int>::max(), false);
+
+  TestAllTypes payload;
+  payload.add_repeated_bool(true);
+  std::string serialized = payload.SerializeAsString();
+
+  EXPECT_FALSE(msg.MergeFromString(serialized));
+  EXPECT_EQ(msg.repeated_bool_size(), std::numeric_limits<int>::max());
+}
+
+// TODO: Re-enable once parsing overflow is fixed.
+TEST(RepeatedFieldIsFullTest, DISABLED_MergeFromPacked) {
+  if (sizeof(void*) < 8) {
+    GTEST_SKIP() << "Not enough memory for the test.";
+  }
+
+  ::proto2_unittest::TestPackedTypes msg;
+  msg.mutable_packed_bool()->Resize(std::numeric_limits<int>::max(), false);
+
+  ::proto2_unittest::TestPackedTypes payload;
+  payload.add_packed_bool(true);
+  std::string serialized = payload.SerializeAsString();
+
+  EXPECT_FALSE(msg.MergeFromString(serialized));
+  EXPECT_EQ(msg.packed_bool_size(), std::numeric_limits<int>::max());
+}
+
 }  // namespace
 
 }  // namespace protobuf
