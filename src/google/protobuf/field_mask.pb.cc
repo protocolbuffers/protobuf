@@ -174,7 +174,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FieldMaskGlobalsTypeInternal, _default) ==
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldMaskGlobalsTypeInternal _FieldMask_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FieldMaskGlobalsTypeInternal
+        _FieldMask_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* FieldMask_get_class_data() {
