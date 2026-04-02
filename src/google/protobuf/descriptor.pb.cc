@@ -215,27 +215,27 @@ constexpr auto UninterpretedOption_NamePart::InternalGenerateClassData_(
   };
 }
 struct UninterpretedOption_NamePartGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      UninterpretedOption_NamePartGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   UninterpretedOption_NamePartGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 UninterpretedOption_NamePart_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(UninterpretedOption_NamePart::InternalGenerateClassData_(
                                _default, &_UninterpretedOption_NamePart_globals_._table.header),
                            &_UninterpretedOption_NamePart_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<UninterpretedOption_NamePart>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 UninterpretedOption_NamePart_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) UninterpretedOption_NamePart(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) UninterpretedOption_NamePart(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~UninterpretedOption_NamePartGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) UninterpretedOption_NamePart _default;
@@ -251,7 +251,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePartGlobalsTypeInter
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UninterpretedOption_NamePartGlobalsTypeInternal _UninterpretedOption_NamePart_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  UninterpretedOption_NamePartGlobalsTypeInternal
+        _UninterpretedOption_NamePart_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* UninterpretedOption_NamePart_get_class_data() {
@@ -413,27 +414,27 @@ constexpr auto SourceCodeInfo_Location::InternalGenerateClassData_(
   };
 }
 struct SourceCodeInfo_LocationGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      SourceCodeInfo_LocationGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   SourceCodeInfo_LocationGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 SourceCodeInfo_Location_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(SourceCodeInfo_Location::InternalGenerateClassData_(
                                _default, &_SourceCodeInfo_Location_globals_._table.header),
                            &_SourceCodeInfo_Location_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<SourceCodeInfo_Location>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 SourceCodeInfo_Location_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) SourceCodeInfo_Location(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) SourceCodeInfo_Location(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~SourceCodeInfo_LocationGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) SourceCodeInfo_Location _default;
@@ -449,7 +450,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(SourceCodeInfo_LocationGlobalsTypeInternal, 
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceCodeInfo_LocationGlobalsTypeInternal _SourceCodeInfo_Location_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  SourceCodeInfo_LocationGlobalsTypeInternal
+        _SourceCodeInfo_Location_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* SourceCodeInfo_Location_get_class_data() {
@@ -602,27 +604,27 @@ constexpr auto GeneratedCodeInfo_Annotation::InternalGenerateClassData_(
   };
 }
 struct GeneratedCodeInfo_AnnotationGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      GeneratedCodeInfo_AnnotationGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   GeneratedCodeInfo_AnnotationGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 GeneratedCodeInfo_Annotation_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(GeneratedCodeInfo_Annotation::InternalGenerateClassData_(
                                _default, &_GeneratedCodeInfo_Annotation_globals_._table.header),
                            &_GeneratedCodeInfo_Annotation_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<GeneratedCodeInfo_Annotation>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 GeneratedCodeInfo_Annotation_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) GeneratedCodeInfo_Annotation(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) GeneratedCodeInfo_Annotation(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~GeneratedCodeInfo_AnnotationGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) GeneratedCodeInfo_Annotation _default;
@@ -638,7 +640,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_AnnotationGlobalsTypeInter
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GeneratedCodeInfo_AnnotationGlobalsTypeInternal _GeneratedCodeInfo_Annotation_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  GeneratedCodeInfo_AnnotationGlobalsTypeInternal
+        _GeneratedCodeInfo_Annotation_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* GeneratedCodeInfo_Annotation_get_class_data() {
@@ -790,27 +793,27 @@ constexpr auto FieldOptions_FeatureSupport::InternalGenerateClassData_(
   };
 }
 struct FieldOptions_FeatureSupportGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      FieldOptions_FeatureSupportGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   FieldOptions_FeatureSupportGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 FieldOptions_FeatureSupport_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FieldOptions_FeatureSupport::InternalGenerateClassData_(
                                _default, &_FieldOptions_FeatureSupport_globals_._table.header),
                            &_FieldOptions_FeatureSupport_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FieldOptions_FeatureSupport>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 FieldOptions_FeatureSupport_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FieldOptions_FeatureSupport(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) FieldOptions_FeatureSupport(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FieldOptions_FeatureSupportGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) FieldOptions_FeatureSupport _default;
@@ -826,7 +829,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupportGlobalsTypeIntern
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptions_FeatureSupportGlobalsTypeInternal _FieldOptions_FeatureSupport_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FieldOptions_FeatureSupportGlobalsTypeInternal
+        _FieldOptions_FeatureSupport_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* FieldOptions_FeatureSupport_get_class_data() {
@@ -950,27 +954,27 @@ constexpr auto FieldOptions_EditionDefault::InternalGenerateClassData_(
   };
 }
 struct FieldOptions_EditionDefaultGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      FieldOptions_EditionDefaultGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   FieldOptions_EditionDefaultGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 FieldOptions_EditionDefault_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FieldOptions_EditionDefault::InternalGenerateClassData_(
                                _default, &_FieldOptions_EditionDefault_globals_._table.header),
                            &_FieldOptions_EditionDefault_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FieldOptions_EditionDefault>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 FieldOptions_EditionDefault_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FieldOptions_EditionDefault(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) FieldOptions_EditionDefault(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FieldOptions_EditionDefaultGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) FieldOptions_EditionDefault _default;
@@ -986,7 +990,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefaultGlobalsTypeIntern
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptions_EditionDefaultGlobalsTypeInternal _FieldOptions_EditionDefault_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FieldOptions_EditionDefaultGlobalsTypeInternal
+        _FieldOptions_EditionDefault_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* FieldOptions_EditionDefault_get_class_data() {
@@ -1081,27 +1086,27 @@ constexpr auto FeatureSet_VisibilityFeature::InternalGenerateClassData_(
   };
 }
 struct FeatureSet_VisibilityFeatureGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      FeatureSet_VisibilityFeatureGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   FeatureSet_VisibilityFeatureGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 FeatureSet_VisibilityFeature_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FeatureSet_VisibilityFeature::InternalGenerateClassData_(
                                _default, &_FeatureSet_VisibilityFeature_globals_._table.header),
                            &_FeatureSet_VisibilityFeature_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FeatureSet_VisibilityFeature>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 FeatureSet_VisibilityFeature_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FeatureSet_VisibilityFeature(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) FeatureSet_VisibilityFeature(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FeatureSet_VisibilityFeatureGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) FeatureSet_VisibilityFeature _default;
@@ -1117,7 +1122,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FeatureSet_VisibilityFeatureGlobalsTypeInter
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FeatureSet_VisibilityFeatureGlobalsTypeInternal _FeatureSet_VisibilityFeature_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FeatureSet_VisibilityFeatureGlobalsTypeInternal
+        _FeatureSet_VisibilityFeature_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* FeatureSet_VisibilityFeature_get_class_data() {
@@ -1288,27 +1294,27 @@ constexpr auto FeatureSet::InternalGenerateClassData_(
   };
 }
 struct FeatureSetGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      FeatureSetGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   FeatureSetGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 FeatureSet_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FeatureSet::InternalGenerateClassData_(
                                _default, &_FeatureSet_globals_._table.header),
                            &_FeatureSet_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FeatureSet>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 FeatureSet_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FeatureSet(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) FeatureSet(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FeatureSetGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) FeatureSet _default;
@@ -1324,7 +1330,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FeatureSetGlobalsTypeInternal, _default) ==
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FeatureSetGlobalsTypeInternal _FeatureSet_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FeatureSetGlobalsTypeInternal
+        _FeatureSet_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* FeatureSet_get_class_data() {
@@ -1472,27 +1479,27 @@ constexpr auto ExtensionRangeOptions_Declaration::InternalGenerateClassData_(
   };
 }
 struct ExtensionRangeOptions_DeclarationGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      ExtensionRangeOptions_DeclarationGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   ExtensionRangeOptions_DeclarationGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 ExtensionRangeOptions_Declaration_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(ExtensionRangeOptions_Declaration::InternalGenerateClassData_(
                                _default, &_ExtensionRangeOptions_Declaration_globals_._table.header),
                            &_ExtensionRangeOptions_Declaration_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<ExtensionRangeOptions_Declaration>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 ExtensionRangeOptions_Declaration_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) ExtensionRangeOptions_Declaration(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) ExtensionRangeOptions_Declaration(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~ExtensionRangeOptions_DeclarationGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) ExtensionRangeOptions_Declaration _default;
@@ -1508,7 +1515,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_DeclarationGlobalsType
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExtensionRangeOptions_DeclarationGlobalsTypeInternal _ExtensionRangeOptions_Declaration_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  ExtensionRangeOptions_DeclarationGlobalsTypeInternal
+        _ExtensionRangeOptions_Declaration_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* ExtensionRangeOptions_Declaration_get_class_data() {
@@ -1628,27 +1636,27 @@ constexpr auto EnumDescriptorProto_EnumReservedRange::InternalGenerateClassData_
   };
 }
 struct EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 EnumDescriptorProto_EnumReservedRange_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(EnumDescriptorProto_EnumReservedRange::InternalGenerateClassData_(
                                _default, &_EnumDescriptorProto_EnumReservedRange_globals_._table.header),
                            &_EnumDescriptorProto_EnumReservedRange_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumDescriptorProto_EnumReservedRange>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 EnumDescriptorProto_EnumReservedRange_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) EnumDescriptorProto_EnumReservedRange(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) EnumDescriptorProto_EnumReservedRange(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) EnumDescriptorProto_EnumReservedRange _default;
@@ -1664,7 +1672,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRangeGlobals
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal _EnumDescriptorProto_EnumReservedRange_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal
+        _EnumDescriptorProto_EnumReservedRange_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* EnumDescriptorProto_EnumReservedRange_get_class_data() {
@@ -1784,27 +1793,27 @@ constexpr auto DescriptorProto_ReservedRange::InternalGenerateClassData_(
   };
 }
 struct DescriptorProto_ReservedRangeGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      DescriptorProto_ReservedRangeGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   DescriptorProto_ReservedRangeGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 DescriptorProto_ReservedRange_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(DescriptorProto_ReservedRange::InternalGenerateClassData_(
                                _default, &_DescriptorProto_ReservedRange_globals_._table.header),
                            &_DescriptorProto_ReservedRange_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<DescriptorProto_ReservedRange>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 DescriptorProto_ReservedRange_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) DescriptorProto_ReservedRange(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) DescriptorProto_ReservedRange(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~DescriptorProto_ReservedRangeGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) DescriptorProto_ReservedRange _default;
@@ -1820,7 +1829,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRangeGlobalsTypeInte
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProto_ReservedRangeGlobalsTypeInternal _DescriptorProto_ReservedRange_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  DescriptorProto_ReservedRangeGlobalsTypeInternal
+        _DescriptorProto_ReservedRange_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* DescriptorProto_ReservedRange_get_class_data() {
@@ -1992,27 +2002,27 @@ constexpr auto UninterpretedOption::InternalGenerateClassData_(
   };
 }
 struct UninterpretedOptionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      UninterpretedOptionGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   UninterpretedOptionGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 UninterpretedOption_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(UninterpretedOption::InternalGenerateClassData_(
                                _default, &_UninterpretedOption_globals_._table.header),
                            &_UninterpretedOption_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<UninterpretedOption>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 UninterpretedOption_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) UninterpretedOption(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) UninterpretedOption(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~UninterpretedOptionGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) UninterpretedOption _default;
@@ -2028,7 +2038,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(UninterpretedOptionGlobalsTypeInternal, _def
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UninterpretedOptionGlobalsTypeInternal _UninterpretedOption_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  UninterpretedOptionGlobalsTypeInternal
+        _UninterpretedOption_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* UninterpretedOption_get_class_data() {
@@ -2151,27 +2162,27 @@ constexpr auto SourceCodeInfo::InternalGenerateClassData_(
   };
 }
 struct SourceCodeInfoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      SourceCodeInfoGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   SourceCodeInfoGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 SourceCodeInfo_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(SourceCodeInfo::InternalGenerateClassData_(
                                _default, &_SourceCodeInfo_globals_._table.header),
                            &_SourceCodeInfo_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<SourceCodeInfo>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 SourceCodeInfo_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) SourceCodeInfo(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) SourceCodeInfo(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~SourceCodeInfoGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) SourceCodeInfo _default;
@@ -2187,7 +2198,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(SourceCodeInfoGlobalsTypeInternal, _default)
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceCodeInfoGlobalsTypeInternal _SourceCodeInfo_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  SourceCodeInfoGlobalsTypeInternal
+        _SourceCodeInfo_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* SourceCodeInfo_get_class_data() {
@@ -2310,27 +2322,27 @@ constexpr auto GeneratedCodeInfo::InternalGenerateClassData_(
   };
 }
 struct GeneratedCodeInfoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      GeneratedCodeInfoGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   GeneratedCodeInfoGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 GeneratedCodeInfo_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(GeneratedCodeInfo::InternalGenerateClassData_(
                                _default, &_GeneratedCodeInfo_globals_._table.header),
                            &_GeneratedCodeInfo_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<GeneratedCodeInfo>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 GeneratedCodeInfo_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) GeneratedCodeInfo(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) GeneratedCodeInfo(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~GeneratedCodeInfoGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) GeneratedCodeInfo _default;
@@ -2346,7 +2358,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(GeneratedCodeInfoGlobalsTypeInternal, _defau
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GeneratedCodeInfoGlobalsTypeInternal _GeneratedCodeInfo_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  GeneratedCodeInfoGlobalsTypeInternal
+        _GeneratedCodeInfo_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* GeneratedCodeInfo_get_class_data() {
@@ -2486,27 +2499,27 @@ constexpr auto FeatureSetDefaults_FeatureSetEditionDefault::InternalGenerateClas
   };
 }
 struct FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 FeatureSetDefaults_FeatureSetEditionDefault_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FeatureSetDefaults_FeatureSetEditionDefault::InternalGenerateClassData_(
                                _default, &_FeatureSetDefaults_FeatureSetEditionDefault_globals_._table.header),
                            &_FeatureSetDefaults_FeatureSetEditionDefault_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FeatureSetDefaults_FeatureSetEditionDefault>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 FeatureSetDefaults_FeatureSetEditionDefault_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FeatureSetDefaults_FeatureSetEditionDefault(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) FeatureSetDefaults_FeatureSetEditionDefault(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) FeatureSetDefaults_FeatureSetEditionDefault _default;
@@ -2522,7 +2535,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefaultG
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal _FeatureSetDefaults_FeatureSetEditionDefault_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal
+        _FeatureSetDefaults_FeatureSetEditionDefault_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* FeatureSetDefaults_FeatureSetEditionDefault_get_class_data() {
@@ -2669,27 +2683,27 @@ constexpr auto ServiceOptions::InternalGenerateClassData_(
   };
 }
 struct ServiceOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      ServiceOptionsGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   ServiceOptionsGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 ServiceOptions_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(ServiceOptions::InternalGenerateClassData_(
                                _default, &_ServiceOptions_globals_._table.header),
                            &_ServiceOptions_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<ServiceOptions>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 ServiceOptions_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) ServiceOptions(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) ServiceOptions(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~ServiceOptionsGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) ServiceOptions _default;
@@ -2705,7 +2719,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(ServiceOptionsGlobalsTypeInternal, _default)
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ServiceOptionsGlobalsTypeInternal _ServiceOptions_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  ServiceOptionsGlobalsTypeInternal
+        _ServiceOptions_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* ServiceOptions_get_class_data() {
@@ -2844,27 +2859,27 @@ constexpr auto OneofOptions::InternalGenerateClassData_(
   };
 }
 struct OneofOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      OneofOptionsGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   OneofOptionsGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 OneofOptions_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(OneofOptions::InternalGenerateClassData_(
                                _default, &_OneofOptions_globals_._table.header),
                            &_OneofOptions_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<OneofOptions>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 OneofOptions_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) OneofOptions(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) OneofOptions(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~OneofOptionsGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) OneofOptions _default;
@@ -2880,7 +2895,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(OneofOptionsGlobalsTypeInternal, _default) =
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OneofOptionsGlobalsTypeInternal _OneofOptions_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  OneofOptionsGlobalsTypeInternal
+        _OneofOptions_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* OneofOptions_get_class_data() {
@@ -3038,27 +3054,27 @@ constexpr auto MethodOptions::InternalGenerateClassData_(
   };
 }
 struct MethodOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      MethodOptionsGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   MethodOptionsGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 MethodOptions_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(MethodOptions::InternalGenerateClassData_(
                                _default, &_MethodOptions_globals_._table.header),
                            &_MethodOptions_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<MethodOptions>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 MethodOptions_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) MethodOptions(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) MethodOptions(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~MethodOptionsGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) MethodOptions _default;
@@ -3074,7 +3090,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(MethodOptionsGlobalsTypeInternal, _default) 
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodOptionsGlobalsTypeInternal _MethodOptions_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  MethodOptionsGlobalsTypeInternal
+        _MethodOptions_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* MethodOptions_get_class_data() {
@@ -3241,27 +3258,27 @@ constexpr auto MessageOptions::InternalGenerateClassData_(
   };
 }
 struct MessageOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      MessageOptionsGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   MessageOptionsGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 MessageOptions_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(MessageOptions::InternalGenerateClassData_(
                                _default, &_MessageOptions_globals_._table.header),
                            &_MessageOptions_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<MessageOptions>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 MessageOptions_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) MessageOptions(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) MessageOptions(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~MessageOptionsGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) MessageOptions _default;
@@ -3277,7 +3294,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(MessageOptionsGlobalsTypeInternal, _default)
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MessageOptionsGlobalsTypeInternal _MessageOptions_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  MessageOptionsGlobalsTypeInternal
+        _MessageOptions_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* MessageOptions_get_class_data() {
@@ -3569,27 +3587,27 @@ constexpr auto FileOptions::InternalGenerateClassData_(
   };
 }
 struct FileOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      FileOptionsGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   FileOptionsGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 FileOptions_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FileOptions::InternalGenerateClassData_(
                                _default, &_FileOptions_globals_._table.header),
                            &_FileOptions_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FileOptions>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 FileOptions_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FileOptions(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) FileOptions(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FileOptionsGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) FileOptions _default;
@@ -3605,7 +3623,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FileOptionsGlobalsTypeInternal, _default) ==
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileOptionsGlobalsTypeInternal _FileOptions_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FileOptionsGlobalsTypeInternal
+        _FileOptions_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* FileOptions_get_class_data() {
@@ -3838,27 +3857,27 @@ constexpr auto FieldOptions::InternalGenerateClassData_(
   };
 }
 struct FieldOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      FieldOptionsGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   FieldOptionsGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 FieldOptions_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FieldOptions::InternalGenerateClassData_(
                                _default, &_FieldOptions_globals_._table.header),
                            &_FieldOptions_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FieldOptions>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 FieldOptions_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FieldOptions(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) FieldOptions(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FieldOptionsGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) FieldOptions _default;
@@ -3874,7 +3893,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FieldOptionsGlobalsTypeInternal, _default) =
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptionsGlobalsTypeInternal _FieldOptions_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FieldOptionsGlobalsTypeInternal
+        _FieldOptions_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* FieldOptions_get_class_data() {
@@ -4009,27 +4029,27 @@ constexpr auto FeatureSetDefaults::InternalGenerateClassData_(
   };
 }
 struct FeatureSetDefaultsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      FeatureSetDefaultsGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   FeatureSetDefaultsGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 FeatureSetDefaults_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FeatureSetDefaults::InternalGenerateClassData_(
                                _default, &_FeatureSetDefaults_globals_._table.header),
                            &_FeatureSetDefaults_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FeatureSetDefaults>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 FeatureSetDefaults_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FeatureSetDefaults(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) FeatureSetDefaults(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FeatureSetDefaultsGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) FeatureSetDefaults _default;
@@ -4045,7 +4065,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FeatureSetDefaultsGlobalsTypeInternal, _defa
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FeatureSetDefaultsGlobalsTypeInternal _FeatureSetDefaults_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FeatureSetDefaultsGlobalsTypeInternal
+        _FeatureSetDefaults_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* FeatureSetDefaults_get_class_data() {
@@ -4209,27 +4230,27 @@ constexpr auto ExtensionRangeOptions::InternalGenerateClassData_(
   };
 }
 struct ExtensionRangeOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      ExtensionRangeOptionsGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   ExtensionRangeOptionsGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 ExtensionRangeOptions_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(ExtensionRangeOptions::InternalGenerateClassData_(
                                _default, &_ExtensionRangeOptions_globals_._table.header),
                            &_ExtensionRangeOptions_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<ExtensionRangeOptions>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 ExtensionRangeOptions_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) ExtensionRangeOptions(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) ExtensionRangeOptions(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~ExtensionRangeOptionsGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) ExtensionRangeOptions _default;
@@ -4245,7 +4266,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(ExtensionRangeOptionsGlobalsTypeInternal, _d
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExtensionRangeOptionsGlobalsTypeInternal _ExtensionRangeOptions_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  ExtensionRangeOptionsGlobalsTypeInternal
+        _ExtensionRangeOptions_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* ExtensionRangeOptions_get_class_data() {
@@ -4411,27 +4433,27 @@ constexpr auto EnumValueOptions::InternalGenerateClassData_(
   };
 }
 struct EnumValueOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      EnumValueOptionsGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   EnumValueOptionsGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 EnumValueOptions_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(EnumValueOptions::InternalGenerateClassData_(
                                _default, &_EnumValueOptions_globals_._table.header),
                            &_EnumValueOptions_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumValueOptions>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 EnumValueOptions_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) EnumValueOptions(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) EnumValueOptions(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~EnumValueOptionsGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) EnumValueOptions _default;
@@ -4447,7 +4469,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(EnumValueOptionsGlobalsTypeInternal, _defaul
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueOptionsGlobalsTypeInternal _EnumValueOptions_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  EnumValueOptionsGlobalsTypeInternal
+        _EnumValueOptions_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* EnumValueOptions_get_class_data() {
@@ -4605,27 +4628,27 @@ constexpr auto EnumOptions::InternalGenerateClassData_(
   };
 }
 struct EnumOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      EnumOptionsGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   EnumOptionsGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 EnumOptions_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(EnumOptions::InternalGenerateClassData_(
                                _default, &_EnumOptions_globals_._table.header),
                            &_EnumOptions_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumOptions>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 EnumOptions_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) EnumOptions(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) EnumOptions(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~EnumOptionsGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) EnumOptions _default;
@@ -4641,7 +4664,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(EnumOptionsGlobalsTypeInternal, _default) ==
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumOptionsGlobalsTypeInternal _EnumOptions_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  EnumOptionsGlobalsTypeInternal
+        _EnumOptions_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* EnumOptions_get_class_data() {
@@ -4769,27 +4793,27 @@ constexpr auto OneofDescriptorProto::InternalGenerateClassData_(
   };
 }
 struct OneofDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      OneofDescriptorProtoGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   OneofDescriptorProtoGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 OneofDescriptorProto_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(OneofDescriptorProto::InternalGenerateClassData_(
                                _default, &_OneofDescriptorProto_globals_._table.header),
                            &_OneofDescriptorProto_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<OneofDescriptorProto>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 OneofDescriptorProto_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) OneofDescriptorProto(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) OneofDescriptorProto(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~OneofDescriptorProtoGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) OneofDescriptorProto _default;
@@ -4805,7 +4829,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(OneofDescriptorProtoGlobalsTypeInternal, _de
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OneofDescriptorProtoGlobalsTypeInternal _OneofDescriptorProto_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  OneofDescriptorProtoGlobalsTypeInternal
+        _OneofDescriptorProto_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* OneofDescriptorProto_get_class_data() {
@@ -4967,27 +4992,27 @@ constexpr auto MethodDescriptorProto::InternalGenerateClassData_(
   };
 }
 struct MethodDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      MethodDescriptorProtoGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   MethodDescriptorProtoGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 MethodDescriptorProto_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(MethodDescriptorProto::InternalGenerateClassData_(
                                _default, &_MethodDescriptorProto_globals_._table.header),
                            &_MethodDescriptorProto_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<MethodDescriptorProto>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 MethodDescriptorProto_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) MethodDescriptorProto(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) MethodDescriptorProto(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~MethodDescriptorProtoGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) MethodDescriptorProto _default;
@@ -5003,7 +5028,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(MethodDescriptorProtoGlobalsTypeInternal, _d
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodDescriptorProtoGlobalsTypeInternal _MethodDescriptorProto_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  MethodDescriptorProtoGlobalsTypeInternal
+        _MethodDescriptorProto_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* MethodDescriptorProto_get_class_data() {
@@ -5206,27 +5232,27 @@ constexpr auto FieldDescriptorProto::InternalGenerateClassData_(
   };
 }
 struct FieldDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      FieldDescriptorProtoGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   FieldDescriptorProtoGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 FieldDescriptorProto_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FieldDescriptorProto::InternalGenerateClassData_(
                                _default, &_FieldDescriptorProto_globals_._table.header),
                            &_FieldDescriptorProto_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FieldDescriptorProto>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 FieldDescriptorProto_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FieldDescriptorProto(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) FieldDescriptorProto(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FieldDescriptorProtoGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) FieldDescriptorProto _default;
@@ -5242,7 +5268,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FieldDescriptorProtoGlobalsTypeInternal, _de
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldDescriptorProtoGlobalsTypeInternal _FieldDescriptorProto_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FieldDescriptorProtoGlobalsTypeInternal
+        _FieldDescriptorProto_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* FieldDescriptorProto_get_class_data() {
@@ -5378,27 +5405,27 @@ constexpr auto EnumValueDescriptorProto::InternalGenerateClassData_(
   };
 }
 struct EnumValueDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      EnumValueDescriptorProtoGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   EnumValueDescriptorProtoGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 EnumValueDescriptorProto_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(EnumValueDescriptorProto::InternalGenerateClassData_(
                                _default, &_EnumValueDescriptorProto_globals_._table.header),
                            &_EnumValueDescriptorProto_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumValueDescriptorProto>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 EnumValueDescriptorProto_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) EnumValueDescriptorProto(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) EnumValueDescriptorProto(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~EnumValueDescriptorProtoGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) EnumValueDescriptorProto _default;
@@ -5414,7 +5441,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProtoGlobalsTypeInternal,
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueDescriptorProtoGlobalsTypeInternal _EnumValueDescriptorProto_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  EnumValueDescriptorProtoGlobalsTypeInternal
+        _EnumValueDescriptorProto_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* EnumValueDescriptorProto_get_class_data() {
@@ -5548,27 +5576,27 @@ constexpr auto DescriptorProto_ExtensionRange::InternalGenerateClassData_(
   };
 }
 struct DescriptorProto_ExtensionRangeGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      DescriptorProto_ExtensionRangeGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   DescriptorProto_ExtensionRangeGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 DescriptorProto_ExtensionRange_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(DescriptorProto_ExtensionRange::InternalGenerateClassData_(
                                _default, &_DescriptorProto_ExtensionRange_globals_._table.header),
                            &_DescriptorProto_ExtensionRange_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<DescriptorProto_ExtensionRange>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 DescriptorProto_ExtensionRange_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) DescriptorProto_ExtensionRange(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) DescriptorProto_ExtensionRange(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~DescriptorProto_ExtensionRangeGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) DescriptorProto_ExtensionRange _default;
@@ -5584,7 +5612,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRangeGlobalsTypeInt
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProto_ExtensionRangeGlobalsTypeInternal _DescriptorProto_ExtensionRange_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  DescriptorProto_ExtensionRangeGlobalsTypeInternal
+        _DescriptorProto_ExtensionRange_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* DescriptorProto_ExtensionRange_get_class_data() {
@@ -5729,27 +5758,27 @@ constexpr auto ServiceDescriptorProto::InternalGenerateClassData_(
   };
 }
 struct ServiceDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      ServiceDescriptorProtoGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   ServiceDescriptorProtoGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 ServiceDescriptorProto_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(ServiceDescriptorProto::InternalGenerateClassData_(
                                _default, &_ServiceDescriptorProto_globals_._table.header),
                            &_ServiceDescriptorProto_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<ServiceDescriptorProto>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 ServiceDescriptorProto_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) ServiceDescriptorProto(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) ServiceDescriptorProto(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~ServiceDescriptorProtoGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) ServiceDescriptorProto _default;
@@ -5765,7 +5794,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(ServiceDescriptorProtoGlobalsTypeInternal, _
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ServiceDescriptorProtoGlobalsTypeInternal _ServiceDescriptorProto_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  ServiceDescriptorProtoGlobalsTypeInternal
+        _ServiceDescriptorProto_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* ServiceDescriptorProto_get_class_data() {
@@ -5946,27 +5976,27 @@ constexpr auto EnumDescriptorProto::InternalGenerateClassData_(
   };
 }
 struct EnumDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      EnumDescriptorProtoGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   EnumDescriptorProtoGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 EnumDescriptorProto_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(EnumDescriptorProto::InternalGenerateClassData_(
                                _default, &_EnumDescriptorProto_globals_._table.header),
                            &_EnumDescriptorProto_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumDescriptorProto>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 EnumDescriptorProto_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) EnumDescriptorProto(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) EnumDescriptorProto(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~EnumDescriptorProtoGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) EnumDescriptorProto _default;
@@ -5982,7 +6012,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(EnumDescriptorProtoGlobalsTypeInternal, _def
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDescriptorProtoGlobalsTypeInternal _EnumDescriptorProto_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  EnumDescriptorProtoGlobalsTypeInternal
+        _EnumDescriptorProto_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* EnumDescriptorProto_get_class_data() {
@@ -6246,27 +6277,27 @@ constexpr auto DescriptorProto::InternalGenerateClassData_(
   };
 }
 struct DescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      DescriptorProtoGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   DescriptorProtoGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 DescriptorProto_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(DescriptorProto::InternalGenerateClassData_(
                                _default, &_DescriptorProto_globals_._table.header),
                            &_DescriptorProto_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<DescriptorProto>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 DescriptorProto_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) DescriptorProto(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) DescriptorProto(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~DescriptorProtoGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) DescriptorProto _default;
@@ -6282,7 +6313,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(DescriptorProtoGlobalsTypeInternal, _default
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProtoGlobalsTypeInternal _DescriptorProto_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  DescriptorProtoGlobalsTypeInternal
+        _DescriptorProto_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* DescriptorProto_get_class_data() {
@@ -6558,27 +6590,27 @@ constexpr auto FileDescriptorProto::InternalGenerateClassData_(
   };
 }
 struct FileDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      FileDescriptorProtoGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   FileDescriptorProtoGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 FileDescriptorProto_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FileDescriptorProto::InternalGenerateClassData_(
                                _default, &_FileDescriptorProto_globals_._table.header),
                            &_FileDescriptorProto_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FileDescriptorProto>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 FileDescriptorProto_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FileDescriptorProto(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) FileDescriptorProto(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FileDescriptorProtoGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) FileDescriptorProto _default;
@@ -6594,7 +6626,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FileDescriptorProtoGlobalsTypeInternal, _def
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileDescriptorProtoGlobalsTypeInternal _FileDescriptorProto_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FileDescriptorProtoGlobalsTypeInternal
+        _FileDescriptorProto_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* FileDescriptorProto_get_class_data() {
@@ -6717,27 +6750,27 @@ constexpr auto FileDescriptorSet::InternalGenerateClassData_(
   };
 }
 struct FileDescriptorSetGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
   constexpr
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      FileDescriptorSetGlobalsTypeInternal()
+  #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+   FileDescriptorSetGlobalsTypeInternal()
       :
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 FileDescriptorSet_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FileDescriptorSet::InternalGenerateClassData_(
                                _default, &_FileDescriptorSet_globals_._table.header),
                            &_FileDescriptorSet_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FileDescriptorSet>(
             GetClassData()))
-#else
-        _default(::_pbi::ConstantInitialized{},
-                 FileDescriptorSet_class_data_.base())
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   {
   }
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FileDescriptorSet(); };
-#endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+  #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  void Init() { ::new (&_default) FileDescriptorSet(); }
+  #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FileDescriptorSetGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) FileDescriptorSet _default;
@@ -6753,7 +6786,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(FileDescriptorSetGlobalsTypeInternal, _defau
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileDescriptorSetGlobalsTypeInternal _FileDescriptorSet_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  FileDescriptorSetGlobalsTypeInternal
+        _FileDescriptorSet_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* FileDescriptorSet_get_class_data() {
