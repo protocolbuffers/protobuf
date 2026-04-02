@@ -472,7 +472,6 @@ struct PROTOBUF_EXPORT DescriptorMethods {
   const internal::TcParseTableBase* (*get_tc_table)(const MessageLite&);
   size_t (*space_used_long)(const MessageLite&);
   std::string (*debug_string)(const MessageLite&);
-  void (*verify_lazy_field_consistency)(const LazyField&);
 };
 
 // ClassData* can and should be placed on read-only section to maximize sharing.
