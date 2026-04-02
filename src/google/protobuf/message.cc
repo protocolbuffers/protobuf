@@ -126,9 +126,12 @@ std::string DebugStringImpl(const MessageLite& msg) {
 
 PROTOBUF_CONSTINIT PROTOBUF_EXPORT const DescriptorMethods
     kDescriptorMethods = {
-        GetTypeNameImpl,     InitializationErrorStringImpl,
-        GetTcParseTableImpl, SpaceUsedLongImpl,
+        GetTypeNameImpl,
+        InitializationErrorStringImpl,
+        GetTcParseTableImpl,
+        SpaceUsedLongImpl,
         DebugStringImpl,
+        nullptr,
 };
 
 }  // namespace internal
