@@ -149,8 +149,8 @@ struct TimestampGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Timestamp_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Timestamp::InternalGenerateClassData_(
-                               _default, &_Timestamp_globals_._table.header),
-                           &_Timestamp_globals_._table.header),
+                               _default, &Timestamp_globals_._table.header),
+                           &Timestamp_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Timestamp>(
             GetClassData()))
@@ -176,12 +176,12 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        TimestampGlobalsTypeInternal _Timestamp_globals_;
+        TimestampGlobalsTypeInternal Timestamp_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Timestamp_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-  return _Timestamp_globals_.GetClassData();
+  return Timestamp_globals_.GetClassData();
 #else
   return Timestamp_class_data_.base();
 #endif  // PROTOBUF_MESSAGE_GLOBALS
@@ -212,7 +212,7 @@ static const ::_pbi::MigrationSchema
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
-        &::google::protobuf::_Timestamp_globals_,
+        &::google::protobuf::Timestamp_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -295,7 +295,7 @@ inline void Timestamp::SharedDtor(MessageLite& self) {
 #ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Timestamp_class_data_ =
-        Timestamp::InternalGenerateClassData_(_Timestamp_globals_._default);
+        Timestamp::InternalGenerateClassData_(Timestamp_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Timestamp::GetClassData() const {
@@ -306,10 +306,10 @@ Timestamp::GetClassData() const {
 #else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Timestamp::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_Timestamp_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(&Timestamp_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_Timestamp_globals_));
-  return _Timestamp_globals_.GetClassData();
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Timestamp_globals_));
+  return Timestamp_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 #ifndef PROTOBUF_MESSAGE_GLOBALS

@@ -65,34 +65,34 @@ PROTOBUF_EXPORT extern const uint32_t NullValue_internal_data_[];
 class ListValue;
 struct ListValueGlobalsTypeInternal;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern ListValueGlobalsTypeInternal _ListValue_globals_;
+PROTOBUF_EXPORT extern ListValueGlobalsTypeInternal ListValue_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ListValue_class_data_;
 #else
-PROTOBUF_EXPORT extern const ListValueGlobalsTypeInternal _ListValue_globals_;
+PROTOBUF_EXPORT extern const ListValueGlobalsTypeInternal ListValue_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class Struct;
 struct StructGlobalsTypeInternal;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern StructGlobalsTypeInternal _Struct_globals_;
+PROTOBUF_EXPORT extern StructGlobalsTypeInternal Struct_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Struct_class_data_;
 #else
-PROTOBUF_EXPORT extern const StructGlobalsTypeInternal _Struct_globals_;
+PROTOBUF_EXPORT extern const StructGlobalsTypeInternal Struct_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class Struct_FieldsEntry_DoNotUse;
 struct Struct_FieldsEntry_DoNotUseGlobalsTypeInternal;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern Struct_FieldsEntry_DoNotUseGlobalsTypeInternal _Struct_FieldsEntry_DoNotUse_globals_;
+PROTOBUF_EXPORT extern Struct_FieldsEntry_DoNotUseGlobalsTypeInternal Struct_FieldsEntry_DoNotUse_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Struct_FieldsEntry_DoNotUse_class_data_;
 #else
-PROTOBUF_EXPORT extern const Struct_FieldsEntry_DoNotUseGlobalsTypeInternal _Struct_FieldsEntry_DoNotUse_globals_;
+PROTOBUF_EXPORT extern const Struct_FieldsEntry_DoNotUseGlobalsTypeInternal Struct_FieldsEntry_DoNotUse_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class Value;
 struct ValueGlobalsTypeInternal;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern ValueGlobalsTypeInternal _Value_globals_;
+PROTOBUF_EXPORT extern ValueGlobalsTypeInternal Value_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Value_class_data_;
 #else
-PROTOBUF_EXPORT extern const ValueGlobalsTypeInternal _Value_globals_;
+PROTOBUF_EXPORT extern const ValueGlobalsTypeInternal Value_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 template <>
 internal::EnumTraitsT<::google::protobuf::NullValue_internal_data_>
@@ -203,7 +203,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ListValue final : p
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const ListValue& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<ListValue>(&_ListValue_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<ListValue>(&ListValue_globals_);
   }
   static constexpr int kIndexInFileMessages = 3;
   friend void swap(ListValue& a, ListValue& b) { a.Swap(&b); }
@@ -415,7 +415,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct final : publ
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Struct& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Struct>(&_Struct_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Struct>(&Struct_globals_);
   }
   static constexpr int kIndexInFileMessages = 1;
   friend void swap(Struct& a, Struct& b) { a.Swap(&b); }
@@ -584,7 +584,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct_FieldsEntry_DoNotUse final
                                class_data);
   explicit Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static constexpr const void* PROTOBUF_NONNULL internal_message_globals() {
-    return &_Struct_FieldsEntry_DoNotUse_globals_;
+    return &Struct_FieldsEntry_DoNotUse_globals_;
   }
 
 
@@ -671,7 +671,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Value& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Value>(&_Value_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Value>(&Value_globals_);
   }
   enum KindCase {
     kNullValue = 1,
@@ -1202,7 +1202,7 @@ inline ::google::protobuf::Struct* PROTOBUF_NULLABLE Value::release_struct_value
 }
 inline const ::google::protobuf::Struct& Value::_internal_struct_value() const {
   return kind_case() == kStructValue ? static_cast<const ::google::protobuf::Struct&>(*_impl_.kind_.struct_value_)
-                     : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::Struct>(&::google::protobuf::_Struct_globals_);
+                     : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::Struct>(&::google::protobuf::Struct_globals_);
 }
 inline const ::google::protobuf::Struct& Value::struct_value() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Value.struct_value)
@@ -1284,7 +1284,7 @@ inline ::google::protobuf::ListValue* PROTOBUF_NULLABLE Value::release_list_valu
 }
 inline const ::google::protobuf::ListValue& Value::_internal_list_value() const {
   return kind_case() == kListValue ? static_cast<const ::google::protobuf::ListValue&>(*_impl_.kind_.list_value_)
-                     : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::ListValue>(&::google::protobuf::_ListValue_globals_);
+                     : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::ListValue>(&::google::protobuf::ListValue_globals_);
 }
 inline const ::google::protobuf::ListValue& Value::list_value() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Value.list_value)

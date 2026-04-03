@@ -161,8 +161,8 @@ struct MixinGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Mixin_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Mixin::InternalGenerateClassData_(
-                               _default, &_Mixin_globals_._table.header),
-                           &_Mixin_globals_._table.header),
+                               _default, &Mixin_globals_._table.header),
+                           &Mixin_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Mixin>(
             GetClassData()))
@@ -188,12 +188,12 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        MixinGlobalsTypeInternal _Mixin_globals_;
+        MixinGlobalsTypeInternal Mixin_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Mixin_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-  return _Mixin_globals_.GetClassData();
+  return Mixin_globals_.GetClassData();
 #else
   return Mixin_class_data_.base();
 #endif  // PROTOBUF_MESSAGE_GLOBALS
@@ -282,7 +282,7 @@ constexpr Method::ParseTableT_ Method::InternalGenerateParseTable_(const ::_pbi:
         #ifndef PROTOBUF_MESSAGE_GLOBALS
         {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::_Option_globals_},
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::Option_globals_},
         #endif
     }},
     {{
@@ -379,8 +379,8 @@ struct MethodGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Method_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Method::InternalGenerateClassData_(
-                               _default, &_Method_globals_._table.header),
-                           &_Method_globals_._table.header),
+                               _default, &Method_globals_._table.header),
+                           &Method_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Method>(
             GetClassData()))
@@ -406,12 +406,12 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        MethodGlobalsTypeInternal _Method_globals_;
+        MethodGlobalsTypeInternal Method_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Method_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-  return _Method_globals_.GetClassData();
+  return Method_globals_.GetClassData();
 #else
   return Method_class_data_.base();
 #endif  // PROTOBUF_MESSAGE_GLOBALS
@@ -500,22 +500,22 @@ constexpr Api::ParseTableT_ Api::InternalGenerateParseTable_(const ::_pbi::Class
         #ifndef PROTOBUF_MESSAGE_GLOBALS
         {::_pbi::TcParser::GetTable<::google::protobuf::Method>()},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::_Method_globals_},
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::Method_globals_},
         #endif
         #ifndef PROTOBUF_MESSAGE_GLOBALS
         {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::_Option_globals_},
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::Option_globals_},
         #endif
         #ifndef PROTOBUF_MESSAGE_GLOBALS
         {::_pbi::TcParser::GetTable<::google::protobuf::SourceContext>()},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::_SourceContext_globals_},
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::SourceContext_globals_},
         #endif
         #ifndef PROTOBUF_MESSAGE_GLOBALS
         {::_pbi::TcParser::GetTable<::google::protobuf::Mixin>()},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::_Mixin_globals_},
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::Mixin_globals_},
         #endif
     }},
     {{
@@ -617,8 +617,8 @@ struct ApiGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Api_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Api::InternalGenerateClassData_(
-                               _default, &_Api_globals_._table.header),
-                           &_Api_globals_._table.header),
+                               _default, &Api_globals_._table.header),
+                           &Api_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Api>(
             GetClassData()))
@@ -644,12 +644,12 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        ApiGlobalsTypeInternal _Api_globals_;
+        ApiGlobalsTypeInternal Api_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Api_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-  return _Api_globals_.GetClassData();
+  return Api_globals_.GetClassData();
 #else
   return Api_class_data_.base();
 #endif  // PROTOBUF_MESSAGE_GLOBALS
@@ -720,9 +720,9 @@ static const ::_pbi::MigrationSchema
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
-        &::google::protobuf::_Api_globals_,
-        &::google::protobuf::_Method_globals_,
-        &::google::protobuf::_Mixin_globals_,
+        &::google::protobuf::Api_globals_,
+        &::google::protobuf::Method_globals_,
+        &::google::protobuf::Mixin_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fapi_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -900,7 +900,7 @@ inline void Api::SharedDtor(MessageLite& self) {
 #ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Api_class_data_ =
-        Api::InternalGenerateClassData_(_Api_globals_._default);
+        Api::InternalGenerateClassData_(Api_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Api::GetClassData() const {
@@ -911,10 +911,10 @@ Api::GetClassData() const {
 #else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Api::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_Api_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(&Api_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_Api_globals_));
-  return _Api_globals_.GetClassData();
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Api_globals_));
+  return Api_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 #ifndef PROTOBUF_MESSAGE_GLOBALS
@@ -1359,7 +1359,7 @@ inline void Method::SharedDtor(MessageLite& self) {
 #ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Method_class_data_ =
-        Method::InternalGenerateClassData_(_Method_globals_._default);
+        Method::InternalGenerateClassData_(Method_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Method::GetClassData() const {
@@ -1370,10 +1370,10 @@ Method::GetClassData() const {
 #else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Method::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_Method_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(&Method_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_Method_globals_));
-  return _Method_globals_.GetClassData();
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Method_globals_));
+  return Method_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 #ifndef PROTOBUF_MESSAGE_GLOBALS
@@ -1773,7 +1773,7 @@ inline void Mixin::SharedDtor(MessageLite& self) {
 #ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Mixin_class_data_ =
-        Mixin::InternalGenerateClassData_(_Mixin_globals_._default);
+        Mixin::InternalGenerateClassData_(Mixin_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Mixin::GetClassData() const {
@@ -1784,10 +1784,10 @@ Mixin::GetClassData() const {
 #else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Mixin::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_Mixin_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(&Mixin_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_Mixin_globals_));
-  return _Mixin_globals_.GetClassData();
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Mixin_globals_));
+  return Mixin_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 #ifndef PROTOBUF_MESSAGE_GLOBALS

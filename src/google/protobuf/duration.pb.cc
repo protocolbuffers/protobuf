@@ -149,8 +149,8 @@ struct DurationGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Duration_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Duration::InternalGenerateClassData_(
-                               _default, &_Duration_globals_._table.header),
-                           &_Duration_globals_._table.header),
+                               _default, &Duration_globals_._table.header),
+                           &Duration_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Duration>(
             GetClassData()))
@@ -176,12 +176,12 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        DurationGlobalsTypeInternal _Duration_globals_;
+        DurationGlobalsTypeInternal Duration_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Duration_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-  return _Duration_globals_.GetClassData();
+  return Duration_globals_.GetClassData();
 #else
   return Duration_class_data_.base();
 #endif  // PROTOBUF_MESSAGE_GLOBALS
@@ -212,7 +212,7 @@ static const ::_pbi::MigrationSchema
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
-        &::google::protobuf::_Duration_globals_,
+        &::google::protobuf::Duration_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fduration_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -295,7 +295,7 @@ inline void Duration::SharedDtor(MessageLite& self) {
 #ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Duration_class_data_ =
-        Duration::InternalGenerateClassData_(_Duration_globals_._default);
+        Duration::InternalGenerateClassData_(Duration_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Duration::GetClassData() const {
@@ -306,10 +306,10 @@ Duration::GetClassData() const {
 #else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Duration::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_Duration_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(&Duration_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_Duration_globals_));
-  return _Duration_globals_.GetClassData();
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Duration_globals_));
+  return Duration_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 #ifndef PROTOBUF_MESSAGE_GLOBALS

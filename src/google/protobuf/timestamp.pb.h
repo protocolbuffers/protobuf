@@ -58,10 +58,10 @@ namespace protobuf {
 class Timestamp;
 struct TimestampGlobalsTypeInternal;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern TimestampGlobalsTypeInternal _Timestamp_globals_;
+PROTOBUF_EXPORT extern TimestampGlobalsTypeInternal Timestamp_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Timestamp_class_data_;
 #else
-PROTOBUF_EXPORT extern const TimestampGlobalsTypeInternal _Timestamp_globals_;
+PROTOBUF_EXPORT extern const TimestampGlobalsTypeInternal Timestamp_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace protobuf
 }  // namespace google
@@ -128,7 +128,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Timestamp final : p
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Timestamp& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Timestamp>(&_Timestamp_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Timestamp>(&Timestamp_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(Timestamp& a, Timestamp& b) { a.Swap(&b); }

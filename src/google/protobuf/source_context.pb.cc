@@ -147,8 +147,8 @@ struct SourceContextGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  SourceContext_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(SourceContext::InternalGenerateClassData_(
-                               _default, &_SourceContext_globals_._table.header),
-                           &_SourceContext_globals_._table.header),
+                               _default, &SourceContext_globals_._table.header),
+                           &SourceContext_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<SourceContext>(
             GetClassData()))
@@ -174,12 +174,12 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        SourceContextGlobalsTypeInternal _SourceContext_globals_;
+        SourceContextGlobalsTypeInternal SourceContext_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* SourceContext_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-  return _SourceContext_globals_.GetClassData();
+  return SourceContext_globals_.GetClassData();
 #else
   return SourceContext_class_data_.base();
 #endif  // PROTOBUF_MESSAGE_GLOBALS
@@ -208,7 +208,7 @@ static const ::_pbi::MigrationSchema
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
-        &::google::protobuf::_SourceContext_globals_,
+        &::google::protobuf::SourceContext_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fsource_5fcontext_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -301,7 +301,7 @@ inline void SourceContext::SharedDtor(MessageLite& self) {
 #ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull SourceContext_class_data_ =
-        SourceContext::InternalGenerateClassData_(_SourceContext_globals_._default);
+        SourceContext::InternalGenerateClassData_(SourceContext_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 SourceContext::GetClassData() const {
@@ -312,10 +312,10 @@ SourceContext::GetClassData() const {
 #else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 SourceContext::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_SourceContext_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(&SourceContext_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_SourceContext_globals_));
-  return _SourceContext_globals_.GetClassData();
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&SourceContext_globals_));
+  return SourceContext_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 #ifndef PROTOBUF_MESSAGE_GLOBALS

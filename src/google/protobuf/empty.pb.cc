@@ -125,8 +125,8 @@ struct EmptyGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Empty_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Empty::InternalGenerateClassData_(
-                               _default, &_Empty_globals_._table.header),
-                           &_Empty_globals_._table.header),
+                               _default, &Empty_globals_._table.header),
+                           &Empty_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Empty>(
             GetClassData()))
@@ -152,12 +152,12 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        EmptyGlobalsTypeInternal _Empty_globals_;
+        EmptyGlobalsTypeInternal Empty_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Empty_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-  return _Empty_globals_.GetClassData();
+  return Empty_globals_.GetClassData();
 #else
   return Empty_class_data_.base();
 #endif  // PROTOBUF_MESSAGE_GLOBALS
@@ -182,7 +182,7 @@ static const ::_pbi::MigrationSchema
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
-        &::google::protobuf::_Empty_globals_,
+        &::google::protobuf::Empty_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -241,7 +241,7 @@ Empty::Empty(
 #ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Empty_class_data_ =
-        Empty::InternalGenerateClassData_(_Empty_globals_._default);
+        Empty::InternalGenerateClassData_(Empty_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Empty::GetClassData() const {
@@ -252,10 +252,10 @@ Empty::GetClassData() const {
 #else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Empty::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_Empty_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(&Empty_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_Empty_globals_));
-  return _Empty_globals_.GetClassData();
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Empty_globals_));
+  return Empty_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 #ifndef PROTOBUF_MESSAGE_GLOBALS

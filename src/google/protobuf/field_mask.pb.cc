@@ -149,8 +149,8 @@ struct FieldMaskGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  FieldMask_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FieldMask::InternalGenerateClassData_(
-                               _default, &_FieldMask_globals_._table.header),
-                           &_FieldMask_globals_._table.header),
+                               _default, &FieldMask_globals_._table.header),
+                           &FieldMask_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FieldMask>(
             GetClassData()))
@@ -176,12 +176,12 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        FieldMaskGlobalsTypeInternal _FieldMask_globals_;
+        FieldMaskGlobalsTypeInternal FieldMask_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* FieldMask_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-  return _FieldMask_globals_.GetClassData();
+  return FieldMask_globals_.GetClassData();
 #else
   return FieldMask_class_data_.base();
 #endif  // PROTOBUF_MESSAGE_GLOBALS
@@ -210,7 +210,7 @@ static const ::_pbi::MigrationSchema
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
-        &::google::protobuf::_FieldMask_globals_,
+        &::google::protobuf::FieldMask_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2ffield_5fmask_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -312,7 +312,7 @@ inline void FieldMask::SharedDtor(MessageLite& self) {
 #ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull FieldMask_class_data_ =
-        FieldMask::InternalGenerateClassData_(_FieldMask_globals_._default);
+        FieldMask::InternalGenerateClassData_(FieldMask_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 FieldMask::GetClassData() const {
@@ -323,10 +323,10 @@ FieldMask::GetClassData() const {
 #else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 FieldMask::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_FieldMask_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(&FieldMask_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_FieldMask_globals_));
-  return _FieldMask_globals_.GetClassData();
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&FieldMask_globals_));
+  return FieldMask_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 #ifndef PROTOBUF_MESSAGE_GLOBALS

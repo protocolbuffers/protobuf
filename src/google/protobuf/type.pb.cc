@@ -90,7 +90,7 @@ constexpr Option::ParseTableT_ Option::InternalGenerateParseTable_(const ::_pbi:
         #ifndef PROTOBUF_MESSAGE_GLOBALS
         {::_pbi::TcParser::GetTable<::google::protobuf::Any>()},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::_Any_globals_},
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::Any_globals_},
         #endif
     }},
     {{
@@ -168,8 +168,8 @@ struct OptionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Option_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Option::InternalGenerateClassData_(
-                               _default, &_Option_globals_._table.header),
-                           &_Option_globals_._table.header),
+                               _default, &Option_globals_._table.header),
+                           &Option_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Option>(
             GetClassData()))
@@ -195,12 +195,12 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        OptionGlobalsTypeInternal _Option_globals_;
+        OptionGlobalsTypeInternal Option_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Option_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-  return _Option_globals_.GetClassData();
+  return Option_globals_.GetClassData();
 #else
   return Option_class_data_.base();
 #endif  // PROTOBUF_MESSAGE_GLOBALS
@@ -307,7 +307,7 @@ constexpr Field::ParseTableT_ Field::InternalGenerateParseTable_(const ::_pbi::C
         #ifndef PROTOBUF_MESSAGE_GLOBALS
         {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::_Option_globals_},
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::Option_globals_},
         #endif
     }},
     {{
@@ -406,8 +406,8 @@ struct FieldGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Field_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Field::InternalGenerateClassData_(
-                               _default, &_Field_globals_._table.header),
-                           &_Field_globals_._table.header),
+                               _default, &Field_globals_._table.header),
+                           &Field_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Field>(
             GetClassData()))
@@ -433,12 +433,12 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        FieldGlobalsTypeInternal _Field_globals_;
+        FieldGlobalsTypeInternal Field_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Field_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-  return _Field_globals_.GetClassData();
+  return Field_globals_.GetClassData();
 #else
   return Field_class_data_.base();
 #endif  // PROTOBUF_MESSAGE_GLOBALS
@@ -498,7 +498,7 @@ constexpr EnumValue::ParseTableT_ EnumValue::InternalGenerateParseTable_(const :
         #ifndef PROTOBUF_MESSAGE_GLOBALS
         {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::_Option_globals_},
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::Option_globals_},
         #endif
     }},
     {{
@@ -581,8 +581,8 @@ struct EnumValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  EnumValue_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(EnumValue::InternalGenerateClassData_(
-                               _default, &_EnumValue_globals_._table.header),
-                           &_EnumValue_globals_._table.header),
+                               _default, &EnumValue_globals_._table.header),
+                           &EnumValue_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumValue>(
             GetClassData()))
@@ -608,12 +608,12 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        EnumValueGlobalsTypeInternal _EnumValue_globals_;
+        EnumValueGlobalsTypeInternal EnumValue_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* EnumValue_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-  return _EnumValue_globals_.GetClassData();
+  return EnumValue_globals_.GetClassData();
 #else
   return EnumValue_class_data_.base();
 #endif  // PROTOBUF_MESSAGE_GLOBALS
@@ -697,17 +697,17 @@ constexpr Type::ParseTableT_ Type::InternalGenerateParseTable_(const ::_pbi::Cla
         #ifndef PROTOBUF_MESSAGE_GLOBALS
         {::_pbi::TcParser::GetTable<::google::protobuf::Field>()},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::_Field_globals_},
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::Field_globals_},
         #endif
         #ifndef PROTOBUF_MESSAGE_GLOBALS
         {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::_Option_globals_},
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::Option_globals_},
         #endif
         #ifndef PROTOBUF_MESSAGE_GLOBALS
         {::_pbi::TcParser::GetTable<::google::protobuf::SourceContext>()},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::_SourceContext_globals_},
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::SourceContext_globals_},
         #endif
     }},
     {{
@@ -806,8 +806,8 @@ struct TypeGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Type_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Type::InternalGenerateClassData_(
-                               _default, &_Type_globals_._table.header),
-                           &_Type_globals_._table.header),
+                               _default, &Type_globals_._table.header),
+                           &Type_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Type>(
             GetClassData()))
@@ -833,12 +833,12 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        TypeGlobalsTypeInternal _Type_globals_;
+        TypeGlobalsTypeInternal Type_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Type_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-  return _Type_globals_.GetClassData();
+  return Type_globals_.GetClassData();
 #else
   return Type_class_data_.base();
 #endif  // PROTOBUF_MESSAGE_GLOBALS
@@ -917,17 +917,17 @@ constexpr Enum::ParseTableT_ Enum::InternalGenerateParseTable_(const ::_pbi::Cla
         #ifndef PROTOBUF_MESSAGE_GLOBALS
         {::_pbi::TcParser::GetTable<::google::protobuf::EnumValue>()},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::_EnumValue_globals_},
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::EnumValue_globals_},
         #endif
         #ifndef PROTOBUF_MESSAGE_GLOBALS
         {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::_Option_globals_},
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::Option_globals_},
         #endif
         #ifndef PROTOBUF_MESSAGE_GLOBALS
         {::_pbi::TcParser::GetTable<::google::protobuf::SourceContext>()},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::_SourceContext_globals_},
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::SourceContext_globals_},
         #endif
     }},
     {{
@@ -1020,8 +1020,8 @@ struct EnumGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Enum_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Enum::InternalGenerateClassData_(
-                               _default, &_Enum_globals_._table.header),
-                           &_Enum_globals_._table.header),
+                               _default, &Enum_globals_._table.header),
+                           &Enum_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Enum>(
             GetClassData()))
@@ -1047,12 +1047,12 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        EnumGlobalsTypeInternal _Enum_globals_;
+        EnumGlobalsTypeInternal Enum_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Enum_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-  return _Enum_globals_.GetClassData();
+  return Enum_globals_.GetClassData();
 #else
   return Enum_class_data_.base();
 #endif  // PROTOBUF_MESSAGE_GLOBALS
@@ -1151,11 +1151,11 @@ static const ::_pbi::MigrationSchema
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
-        &::google::protobuf::_Type_globals_,
-        &::google::protobuf::_Field_globals_,
-        &::google::protobuf::_Enum_globals_,
-        &::google::protobuf::_EnumValue_globals_,
-        &::google::protobuf::_Option_globals_,
+        &::google::protobuf::Type_globals_,
+        &::google::protobuf::Field_globals_,
+        &::google::protobuf::Enum_globals_,
+        &::google::protobuf::EnumValue_globals_,
+        &::google::protobuf::Option_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2ftype_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -1367,7 +1367,7 @@ inline void Type::SharedDtor(MessageLite& self) {
 #ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Type_class_data_ =
-        Type::InternalGenerateClassData_(_Type_globals_._default);
+        Type::InternalGenerateClassData_(Type_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Type::GetClassData() const {
@@ -1378,10 +1378,10 @@ Type::GetClassData() const {
 #else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Type::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_Type_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(&Type_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_Type_globals_));
-  return _Type_globals_.GetClassData();
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Type_globals_));
+  return Type_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 #ifndef PROTOBUF_MESSAGE_GLOBALS
@@ -1789,7 +1789,7 @@ inline void Field::SharedDtor(MessageLite& self) {
 #ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Field_class_data_ =
-        Field::InternalGenerateClassData_(_Field_globals_._default);
+        Field::InternalGenerateClassData_(Field_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Field::GetClassData() const {
@@ -1800,10 +1800,10 @@ Field::GetClassData() const {
 #else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Field::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_Field_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(&Field_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_Field_globals_));
-  return _Field_globals_.GetClassData();
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Field_globals_));
+  return Field_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 #ifndef PROTOBUF_MESSAGE_GLOBALS
@@ -2297,7 +2297,7 @@ inline void Enum::SharedDtor(MessageLite& self) {
 #ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Enum_class_data_ =
-        Enum::InternalGenerateClassData_(_Enum_globals_._default);
+        Enum::InternalGenerateClassData_(Enum_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Enum::GetClassData() const {
@@ -2308,10 +2308,10 @@ Enum::GetClassData() const {
 #else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Enum::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_Enum_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(&Enum_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_Enum_globals_));
-  return _Enum_globals_.GetClassData();
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Enum_globals_));
+  return Enum_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 #ifndef PROTOBUF_MESSAGE_GLOBALS
@@ -2671,7 +2671,7 @@ inline void EnumValue::SharedDtor(MessageLite& self) {
 #ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull EnumValue_class_data_ =
-        EnumValue::InternalGenerateClassData_(_EnumValue_globals_._default);
+        EnumValue::InternalGenerateClassData_(EnumValue_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 EnumValue::GetClassData() const {
@@ -2682,10 +2682,10 @@ EnumValue::GetClassData() const {
 #else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 EnumValue::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_EnumValue_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(&EnumValue_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_EnumValue_globals_));
-  return _EnumValue_globals_.GetClassData();
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&EnumValue_globals_));
+  return EnumValue_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 #ifndef PROTOBUF_MESSAGE_GLOBALS
@@ -2955,7 +2955,7 @@ inline void Option::SharedDtor(MessageLite& self) {
 #ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Option_class_data_ =
-        Option::InternalGenerateClassData_(_Option_globals_._default);
+        Option::InternalGenerateClassData_(Option_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Option::GetClassData() const {
@@ -2966,10 +2966,10 @@ Option::GetClassData() const {
 #else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Option::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_Option_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(&Option_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_Option_globals_));
-  return _Option_globals_.GetClassData();
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Option_globals_));
+  return Option_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 #ifndef PROTOBUF_MESSAGE_GLOBALS
