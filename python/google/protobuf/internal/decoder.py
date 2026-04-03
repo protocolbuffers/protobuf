@@ -866,7 +866,9 @@ def MessageSetItemDecoder(descriptor):
         break
       else:
         field_number, wire_type = DecodeTag(tag_bytes)
-        _, pos = _DecodeUnknownField(buffer, pos, end, field_number, wire_type)
+        _, pos = _DecodeUnknownField(
+            buffer, pos, end, field_number, wire_type, current_depth
+        )
         if pos == -1:
           raise _DecodeError('Unexpected end-group tag.')
 
@@ -920,7 +922,7 @@ def UnknownMessageSetItemDecoder():
   message_tag_bytes = encoder.TagBytes(3, wire_format.WIRETYPE_LENGTH_DELIMITED)
   item_end_tag_bytes = encoder.TagBytes(1, wire_format.WIRETYPE_END_GROUP)
 
-  def DecodeUnknownItem(buffer):
+  def DecodeUnknownItem(buffer, current_depth=0):
     pos = 0
     end = len(buffer)
     message_start = -1
@@ -936,7 +938,9 @@ def UnknownMessageSetItemDecoder():
         break
       else:
         field_number, wire_type = DecodeTag(tag_bytes)
-        _, pos = _DecodeUnknownField(buffer, pos, end, field_number, wire_type)
+        _, pos = _DecodeUnknownField(
+            buffer, pos, end, field_number, wire_type, current_depth
+        )
         if pos == -1:
           raise _DecodeError('Unexpected end-group tag.')
 

@@ -14,6 +14,7 @@ import unittest
 from google.protobuf import message
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import decoder
+from google.protobuf.internal import encoder
 from google.protobuf.internal import message_set_extensions_pb2
 from google.protobuf.internal import testing_refleaks
 from google.protobuf.internal import wire_format
@@ -23,6 +24,18 @@ from absl.testing import parameterized
 
 _INPUT_BYTES = b'\x84r\x12'
 _EXPECTED = (14596, 18)
+
+
+def _MakeMessageSetItemWithUnknownGroup():
+  return (
+      encoder.TagBytes(10, wire_format.WIRETYPE_START_GROUP)
+      + encoder.TagBytes(10, wire_format.WIRETYPE_END_GROUP)
+      + encoder.TagBytes(2, wire_format.WIRETYPE_VARINT)
+      + b'\x01'
+      + encoder.TagBytes(3, wire_format.WIRETYPE_LENGTH_DELIMITED)
+      + b'\x00'
+      + encoder.TagBytes(1, wire_format.WIRETYPE_END_GROUP)
+  )
 
 
 @testing_refleaks.TestCase
@@ -142,6 +155,43 @@ class DecoderTest(parameterized.TestCase):
         decode,
         memoryview(b'\054\014'),
     )
+
+  def test_message_set_item_decoder_preserves_current_depth(self):
+    decode = decoder.MessageSetItemDecoder(
+        message_set_extensions_pb2.TestMessageSet.DESCRIPTOR
+    )
+    proto = message_set_extensions_pb2.TestMessageSet()
+    item = memoryview(_MakeMessageSetItemWithUnknownGroup())
+    decoder.SetRecursionLimit(2)
+    try:
+      self.assertRaisesRegex(
+          message.DecodeError,
+          'Error parsing message',
+          decode,
+          item,
+          0,
+          len(item),
+          proto,
+          proto._fields,  # pylint: disable=protected-access
+          1,
+      )
+    finally:
+      decoder.SetRecursionLimit(decoder.DEFAULT_RECURSION_LIMIT)
+
+  def test_unknown_message_set_decoder_preserves_current_depth(self):
+    decode = decoder.UnknownMessageSetItemDecoder()
+    item = memoryview(_MakeMessageSetItemWithUnknownGroup())
+    decoder.SetRecursionLimit(2)
+    try:
+      self.assertRaisesRegex(
+          message.DecodeError,
+          'Error parsing message',
+          decode,
+          item,
+          1,
+      )
+    finally:
+      decoder.SetRecursionLimit(decoder.DEFAULT_RECURSION_LIMIT)
 
   @parameterized.parameters(int(0), float(0.0), False, '')
   def test_default_scalar(self, value):
