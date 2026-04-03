@@ -1134,7 +1134,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                        {"class", ClassName(gen->descriptor())},
                    },
                    R"cc(
-                     &$ns$::_$class$_globals_,
+                     &$ns$::$class$_globals_,
                    )cc");
              }
            }}};

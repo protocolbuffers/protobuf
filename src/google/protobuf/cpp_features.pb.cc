@@ -165,8 +165,8 @@ struct CppFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  CppFeatures_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(CppFeatures::InternalGenerateClassData_(
-                               _default, &_CppFeatures_globals_._table.header),
-                           &_CppFeatures_globals_._table.header),
+                               _default, &CppFeatures_globals_._table.header),
+                           &CppFeatures_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<CppFeatures>(
             GetClassData()))
@@ -192,12 +192,12 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        CppFeaturesGlobalsTypeInternal _CppFeatures_globals_;
+        CppFeaturesGlobalsTypeInternal CppFeatures_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* CppFeatures_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-  return _CppFeatures_globals_.GetClassData();
+  return CppFeatures_globals_.GetClassData();
 #else
   return CppFeatures_class_data_.base();
 #endif  // PROTOBUF_MESSAGE_GLOBALS
@@ -231,7 +231,7 @@ static const ::_pbi::MigrationSchema
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
-        &::pb::_CppFeatures_globals_,
+        &::pb::CppFeatures_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffeatures_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -345,7 +345,7 @@ inline void CppFeatures::SharedDtor(MessageLite& self) {
 #ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull CppFeatures_class_data_ =
-        CppFeatures::InternalGenerateClassData_(_CppFeatures_globals_._default);
+        CppFeatures::InternalGenerateClassData_(CppFeatures_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 CppFeatures::GetClassData() const {
@@ -356,10 +356,10 @@ CppFeatures::GetClassData() const {
 #else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 CppFeatures::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_CppFeatures_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(&CppFeatures_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_CppFeatures_globals_));
-  return _CppFeatures_globals_.GetClassData();
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&CppFeatures_globals_));
+  return CppFeatures_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 #ifndef PROTOBUF_MESSAGE_GLOBALS
@@ -532,7 +532,7 @@ void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<
         ::google::protobuf::FeatureSet, ::_pbi::MessageTypeTraits< ::pb::CppFeatures >, 11, false>
-        cpp(kCppFieldNumber, &::pb::_CppFeatures_globals_);
+        cpp(kCppFieldNumber, &::pb::CppFeatures_globals_);
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
 namespace google {

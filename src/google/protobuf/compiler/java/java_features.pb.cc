@@ -126,8 +126,8 @@ struct JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal : ::_pbi::MessageG
                  JavaFeatures_NestInFileClassFeature_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(JavaFeatures_NestInFileClassFeature::InternalGenerateClassData_(
-                               _default, &_JavaFeatures_NestInFileClassFeature_globals_._table.header),
-                           &_JavaFeatures_NestInFileClassFeature_globals_._table.header),
+                               _default, &JavaFeatures_NestInFileClassFeature_globals_._table.header),
+                           &JavaFeatures_NestInFileClassFeature_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<JavaFeatures_NestInFileClassFeature>(
             GetClassData()))
@@ -153,12 +153,12 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal _JavaFeatures_NestInFileClassFeature_globals_;
+        JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal JavaFeatures_NestInFileClassFeature_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* JavaFeatures_NestInFileClassFeature_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-  return _JavaFeatures_NestInFileClassFeature_globals_.GetClassData();
+  return JavaFeatures_NestInFileClassFeature_globals_.GetClassData();
 #else
   return JavaFeatures_NestInFileClassFeature_class_data_.base();
 #endif  // PROTOBUF_MESSAGE_GLOBALS
@@ -305,8 +305,8 @@ struct JavaFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  JavaFeatures_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(JavaFeatures::InternalGenerateClassData_(
-                               _default, &_JavaFeatures_globals_._table.header),
-                           &_JavaFeatures_globals_._table.header),
+                               _default, &JavaFeatures_globals_._table.header),
+                           &JavaFeatures_globals_._table.header),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<JavaFeatures>(
             GetClassData()))
@@ -332,12 +332,12 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        JavaFeaturesGlobalsTypeInternal _JavaFeatures_globals_;
+        JavaFeaturesGlobalsTypeInternal JavaFeatures_globals_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* JavaFeatures_get_class_data() {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-  return _JavaFeatures_globals_.GetClassData();
+  return JavaFeatures_globals_.GetClassData();
 #else
   return JavaFeatures_class_data_.base();
 #endif  // PROTOBUF_MESSAGE_GLOBALS
@@ -375,8 +375,8 @@ static const ::_pbi::MigrationSchema
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
-        &::pb::_JavaFeatures_NestInFileClassFeature_globals_,
-        &::pb::_JavaFeatures_globals_,
+        &::pb::JavaFeatures_NestInFileClassFeature_globals_,
+        &::pb::JavaFeatures_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -478,7 +478,7 @@ JavaFeatures_NestInFileClassFeature::JavaFeatures_NestInFileClassFeature(
 #ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull JavaFeatures_NestInFileClassFeature_class_data_ =
-        JavaFeatures_NestInFileClassFeature::InternalGenerateClassData_(_JavaFeatures_NestInFileClassFeature_globals_._default);
+        JavaFeatures_NestInFileClassFeature::InternalGenerateClassData_(JavaFeatures_NestInFileClassFeature_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 JavaFeatures_NestInFileClassFeature::GetClassData() const {
@@ -489,10 +489,10 @@ JavaFeatures_NestInFileClassFeature::GetClassData() const {
 #else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 JavaFeatures_NestInFileClassFeature::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_JavaFeatures_NestInFileClassFeature_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(&JavaFeatures_NestInFileClassFeature_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_JavaFeatures_NestInFileClassFeature_globals_));
-  return _JavaFeatures_NestInFileClassFeature_globals_.GetClassData();
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&JavaFeatures_NestInFileClassFeature_globals_));
+  return JavaFeatures_NestInFileClassFeature_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 #ifndef PROTOBUF_MESSAGE_GLOBALS
@@ -564,7 +564,7 @@ inline void JavaFeatures::SharedDtor(MessageLite& self) {
 #ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull JavaFeatures_class_data_ =
-        JavaFeatures::InternalGenerateClassData_(_JavaFeatures_globals_._default);
+        JavaFeatures::InternalGenerateClassData_(JavaFeatures_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 JavaFeatures::GetClassData() const {
@@ -575,10 +575,10 @@ JavaFeatures::GetClassData() const {
 #else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 JavaFeatures::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_JavaFeatures_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(&JavaFeatures_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&_JavaFeatures_globals_));
-  return _JavaFeatures_globals_.GetClassData();
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&JavaFeatures_globals_));
+  return JavaFeatures_globals_.GetClassData();
 }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 #ifndef PROTOBUF_MESSAGE_GLOBALS
@@ -761,7 +761,7 @@ void JavaFeatures::InternalSwap(JavaFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL
 PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<
         ::google::protobuf::FeatureSet, ::_pbi::MessageTypeTraits< ::pb::JavaFeatures >, 11, false>
-        java(kJavaFieldNumber, &::pb::_JavaFeatures_globals_);
+        java(kJavaFieldNumber, &::pb::JavaFeatures_globals_);
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
 namespace google {
