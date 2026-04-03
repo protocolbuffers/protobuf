@@ -9,17 +9,8 @@ sh_test(
         ":linkage_monitor.sh",
     ],
     data = [
-        # Making the Maven modules available in the sandbox
-        ":core",
-        ":kotlin",
-        ":kotlin-lite",
-        ":lite",
         ":release",
-        ":util",
         "//:protoc",
-        # Making this test depends on the code change in core and util
-        "//java/core:dist_files",
-        "//java/util",
     ] + glob([
         "pom.xml",
         "*/pom.xml",

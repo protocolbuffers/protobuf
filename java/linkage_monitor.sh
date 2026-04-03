@@ -25,17 +25,9 @@ popd
 runfiles_dir="$(realpath ${RUNFILES_DIR})"
 genfiles_dir=`echo ${RUNFILES_DIR} | sed 's|/[^/]*$||'`
 
-rm "${runfiles_dir}/_main/java/core" || true
-rm "${runfiles_dir}/_main/java/lite" || true
-rm "${runfiles_dir}/_main/java/util" || true
-rm "${runfiles_dir}/_main/java/kotlin" || true
-rm "${runfiles_dir}/_main/java/kotlin-lite" || true
-
-mkdir "${runfiles_dir}/_main/java/core" || true
-mkdir "${runfiles_dir}/_main/java/lite" || true
-mkdir "${runfiles_dir}/_main/java/util" || true
-mkdir "${runfiles_dir}/_main/java/kotlin" || true
-mkdir "${runfiles_dir}/_main/java/kotlin-lite" || true
+if [ ! -d "${runfiles_dir}/_main/java/lite" ]; then
+  mkdir "${runfiles_dir}/_main/java/lite"
+fi
 
 cp -f "${genfiles_dir}"/core/core_mvn-pom.xml "${runfiles_dir}"/_main/java/core/pom.xml || true
 cp -f "${genfiles_dir}"/core/lite_mvn-pom.xml "${runfiles_dir}"/_main/java/lite/pom.xml || true
