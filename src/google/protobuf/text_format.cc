@@ -30,6 +30,8 @@
 #include "absl/container/btree_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/charset.h"
 #include "absl/strings/cord.h"
@@ -180,7 +182,39 @@ PROTOBUF_EXPORT std::string Utf8Format(const Message& message) {
 // Implementation of the parse information tree class.
 void TextFormat::ParseInfoTree::RecordLocation(
     const FieldDescriptor* field, TextFormat::ParseLocationRange range) {
-  locations_[field].push_back(range);
+  auto& vec = locations_[field];
+  if (!vec.empty() && vec.back().full.start.line == -1) {
+    vec.back().full = range;
+  } else {
+    FieldLocation loc;
+    loc.full = range;
+    vec.push_back(std::move(loc));
+  }
+}
+
+void TextFormat::ParseInfoTree::RecordNameLocation(
+    const FieldDescriptor* field, TextFormat::ParseLocationRange range) {
+  auto& vec = locations_[field];
+  if (!vec.empty() && vec.back().name.start.line == -1 &&
+      vec.back().full.start.line == -1) {
+    vec.back().name = range;
+  } else {
+    FieldLocation loc;
+    loc.name = range;
+    vec.push_back(std::move(loc));
+  }
+}
+
+void TextFormat::ParseInfoTree::RecordValueLocation(
+    const FieldDescriptor* field, TextFormat::ParseLocationRange range) {
+  auto& vec = locations_[field];
+  if (vec.empty() || vec.back().full.start.line != -1) {
+    FieldLocation loc;
+    loc.values.push_back(range);
+    vec.push_back(std::move(loc));
+  } else {
+    vec.back().values.push_back(range);
+  }
 }
 
 TextFormat::ParseInfoTree* TextFormat::ParseInfoTree::CreateNested(
@@ -200,7 +234,7 @@ void CheckFieldIndex(const FieldDescriptor* field, int index) {
     ABSL_DLOG(FATAL) << "Index must be in range of repeated field values. "
                      << "Field: " << field->name();
   } else if (!field->is_repeated() && index != -1) {
-    ABSL_DLOG(FATAL) << "Index must be -1 for singular fields."
+    ABSL_DLOG(FATAL) << "Index must be -1 for singular fields. "
                      << "Field: " << field->name();
   }
 }
@@ -218,7 +252,52 @@ TextFormat::ParseLocationRange TextFormat::ParseInfoTree::GetLocationRange(
     return TextFormat::ParseLocationRange();
   }
 
-  return it->second[static_cast<size_t>(index)];
+  return it->second[static_cast<size_t>(index)].full;
+}
+
+TextFormat::ParseLocation TextFormat::ParseInfoTree::GetLocation(
+    const FieldDescriptor* field, int index) const {
+  return GetLocationRange(field, index).start;
+}
+
+absl::StatusOr<TextFormat::FieldLocation>
+TextFormat::ParseInfoTree::GetFieldLocation(
+    const FieldDescriptor* field) const {
+  if (field == nullptr) {
+    return absl::InvalidArgumentError("Field is null");
+  }
+  if (field->is_repeated()) {
+    return absl::InvalidArgumentError(absl::StrCat(
+        "Field ", field->name(),
+        " is repeated. Use GetFieldLocation(field, index) version."));
+  }
+  auto it = locations_.find(field);
+  if (it == locations_.end() || it->second.empty()) {
+    return absl::NotFoundError(
+        absl::StrCat("Field ", field->name(), " not set."));
+  }
+  return it->second[0];
+}
+
+absl::StatusOr<TextFormat::FieldLocation>
+TextFormat::ParseInfoTree::GetFieldLocation(const FieldDescriptor* field,
+                                            uint32_t index) const {
+  if (field == nullptr) {
+    return absl::InvalidArgumentError("Field is null");
+  }
+  if (!field->is_repeated()) {
+    return absl::InvalidArgumentError(
+        absl::StrCat("Field ", field->name(),
+                     " is singular. Use GetFieldLocation(field) version."));
+  }
+  auto it = locations_.find(field);
+  if (it == locations_.end() ||
+      index >= static_cast<int64_t>(it->second.size())) {
+    return absl::NotFoundError(
+        absl::StrCat("Field ", field->name(),
+                     " not found or out of bounds for index ", index, "."));
+  }
+  return it->second[index];
 }
 
 TextFormat::ParseInfoTree* TextFormat::ParseInfoTree::GetTreeForNested(
@@ -461,6 +540,24 @@ class TextFormat::Parser::ParserImpl {
     int start_line = tokenizer_.current().line;
     int start_column = tokenizer_.current().column;
 
+    auto record_value_location = [&](int v_start_line, int v_start_column) {
+      if (parse_info_tree_ != nullptr && field != nullptr) {
+        int v_end_line = tokenizer_.previous().line;
+        int v_end_column = tokenizer_.previous().end_column;
+        RecordValueLocation(
+            parse_info_tree_, field,
+            ParseLocationRange(ParseLocation(v_start_line, v_start_column),
+                               ParseLocation(v_end_line, v_end_column)));
+      }
+    };
+
+    auto record_name_location = [&](const FieldDescriptor* f,
+                                    const ParseLocationRange& n_range) {
+      if (parse_info_tree_ != nullptr && f != nullptr) {
+        RecordNameLocation(parse_info_tree_, f, n_range);
+      }
+    };
+
     auto skip_parsing = [&](bool result) {
       // For historical reasons, fields may optionally be separated by commas or
       // semicolons.
@@ -486,8 +583,12 @@ class TextFormat::Parser::ParserImpl {
     if (internal::GetAnyFieldDescriptors(*message, &any_type_url_field,
                                          &any_value_field) &&
         LookingAt("[")) {
+      int n_start_line = tokenizer_.current().line;
+      int n_start_column = tokenizer_.current().column;
       std::string full_type_name, url_prefix;
       DO(ConsumeAnyTypeUrlOrFullTypeName(full_type_name, url_prefix));
+      int n_end_line = tokenizer_.previous().line;
+      int n_end_column = tokenizer_.previous().end_column;
       if (url_prefix.empty()) {
         ReportError("Type URL prefix is missing");
         return false;
@@ -510,7 +611,16 @@ class TextFormat::Parser::ParserImpl {
                                  "\" stored in google.protobuf.Any."));
         return false;
       }
+      int v_start_line = tokenizer_.current().line;
+      int v_start_column = tokenizer_.current().column;
       DO(ConsumeAnyValue(value_descriptor, &serialized_value));
+      record_value_location(v_start_line, v_start_column);
+
+      record_name_location(
+          any_type_url_field,
+          ParseLocationRange(ParseLocation(n_start_line, n_start_column),
+                             ParseLocation(n_end_line, n_end_column)));
+
       if (singular_overwrite_policy_ == FORBID_SINGULAR_OVERWRITES) {
         // Fail if any_type_url_field has already been specified.
         if ((!any_type_url_field->is_repeated() &&
@@ -529,8 +639,12 @@ class TextFormat::Parser::ParserImpl {
     }
     if (LookingAt("[")) {
       // Extension.
+      int n_start_line = tokenizer_.current().line;
+      int n_start_column = tokenizer_.current().column;
       std::string url_prefix;
       DO(ConsumeAnyTypeUrlOrFullTypeName(field_name, url_prefix));
+      int n_end_line = tokenizer_.previous().line;
+      int n_end_column = tokenizer_.previous().end_column;
       if (!url_prefix.empty()) {
         ReportError("Extension name contains \"/\"");
         return false;
@@ -539,6 +653,10 @@ class TextFormat::Parser::ParserImpl {
 
       field = finder_ ? finder_->FindExtension(message, field_name)
                       : DefaultFinderFindExtension(message, field_name);
+
+      record_name_location(
+          field, ParseLocationRange(ParseLocation(n_start_line, n_start_column),
+                                    ParseLocation(n_end_line, n_end_column)));
 
       if (field == nullptr) {
         if (!allow_unknown_field_ && !allow_unknown_extension_) {
@@ -555,7 +673,11 @@ class TextFormat::Parser::ParserImpl {
         }
       }
     } else {
+      int n_start_line = tokenizer_.current().line;
+      int n_start_column = tokenizer_.current().column;
       DO(ConsumeIdentifierBeforeWhitespace(&field_name));
+      int n_end_line = tokenizer_.previous().line;
+      int n_end_column = tokenizer_.previous().end_column;
       TryConsumeWhitespace();
 
       int32_t field_number;
@@ -597,6 +719,9 @@ class TextFormat::Parser::ParserImpl {
           reserved_field = descriptor->IsReservedName(field_name);
         }
       }
+      record_name_location(
+          field, ParseLocationRange(ParseLocation(n_start_line, n_start_column),
+                                    ParseLocation(n_end_line, n_end_column)));
       if (field == nullptr && !reserved_field) {
         if (!allow_unknown_field_) {
           ReportError(absl::StrCat("Message type \"", descriptor->full_name(),
@@ -670,6 +795,8 @@ class TextFormat::Parser::ParserImpl {
       if (consumed_semicolon && field->options().weak() &&
           LookingAtType(io::Tokenizer::TYPE_STRING)) {
         // we are getting a bytes string for a weak field.
+        int v_start_line = tokenizer_.current().line;
+        int v_start_column = tokenizer_.current().column;
         std::string tmp;
         DO(ConsumeString(&tmp));
         MessageFactory* factory =
@@ -677,6 +804,7 @@ class TextFormat::Parser::ParserImpl {
         // TODO: Remove this suppression.
         (void)reflection->MutableMessage(message, field, factory)
             ->ParseFromString(tmp);
+        record_value_location(v_start_line, v_start_column);
         return skip_parsing(true);
       }
     } else {
@@ -690,12 +818,15 @@ class TextFormat::Parser::ParserImpl {
       if (!TryConsume("]")) {
         // "foo: []" is treated as empty.
         while (true) {
+          int v_start_line = tokenizer_.current().line;
+          int v_start_column = tokenizer_.current().column;
           if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
             // Perform special handling for embedded message types.
             DO(ConsumeFieldMessage(message, reflection, field));
           } else {
             DO(ConsumeFieldValue(message, reflection, field));
           }
+          record_value_location(v_start_line, v_start_column);
           if (TryConsume("]")) {
             break;
           }
@@ -703,9 +834,15 @@ class TextFormat::Parser::ParserImpl {
         }
       }
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      int v_start_line = tokenizer_.current().line;
+      int v_start_column = tokenizer_.current().column;
       DO(ConsumeFieldMessage(message, reflection, field));
+      record_value_location(v_start_line, v_start_column);
     } else {
+      int v_start_line = tokenizer_.current().line;
+      int v_start_column = tokenizer_.current().column;
       DO(ConsumeFieldValue(message, reflection, field));
+      record_value_location(v_start_line, v_start_column);
     }
 
     return skip_parsing(true);
