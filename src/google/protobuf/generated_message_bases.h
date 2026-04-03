@@ -21,6 +21,7 @@
 #include "google/protobuf/message.h"
 
 // Must come last:
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/port_def.inc"
 
 namespace google {
