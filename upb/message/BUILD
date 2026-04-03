@@ -9,7 +9,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//bazel:proto_library.bzl", "proto_library")
-load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_CPPOPTS")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_CPPOPTS", "UPB_DEFAULT_FEATURES")
 load(
     "//upb/bazel:upb_minitable_proto_library.bzl",
     "upb_minitable_proto_library",
@@ -42,6 +42,7 @@ cc_library(
         "value.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
@@ -62,6 +63,7 @@ cc_library(
         "accessors.hpp",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//upb:__subpackages__"],
     deps = [
         ":message",
@@ -86,6 +88,7 @@ cc_library(
         "internal/message.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":types",
@@ -108,6 +111,7 @@ cc_library(
         "internal/iterator.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
@@ -128,6 +132,7 @@ cc_library(
         "internal/compare_unknown.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
@@ -154,6 +159,7 @@ cc_library(
         "merge.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
@@ -177,6 +183,7 @@ cc_library(
         "promote.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
@@ -217,6 +224,7 @@ cc_library(
         "accessors_split64.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":message",
@@ -231,6 +239,7 @@ cc_library(
         "internal/types.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         "//upb/base",
@@ -400,6 +409,7 @@ cc_test(
         ":fuzz_dump_minitable_enabled": ["-DUPB_FUZZ_DUMP_MINITABLE"],
         "//conditions:default": [],
     }),
+    features = UPB_DEFAULT_FEATURES,
     deps = [
         ":compare",
         ":internal",

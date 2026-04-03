@@ -203,7 +203,6 @@ class FieldGeneratorBase {
 
   static io::Printer::Sub InternalMetadataOffsetSub(io::Printer* p);
 
-
  private:
   bool should_split_ = false;
   bool is_trivial_ = false;
@@ -468,7 +467,6 @@ class FieldGenerator {
     auto vars = PushVarsForCall(p);
     impl_->GenerateByteSize(p);
   }
-
 
   // Generates lines to call IsInitialized() for eligible message fields. Non
   // message fields won't need to override this function.

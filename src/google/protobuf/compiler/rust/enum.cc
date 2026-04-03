@@ -47,10 +47,9 @@ std::vector<std::pair<absl::string_view, int32_t>> EnumValuesInput(
 }
 
 void TypeConversions(Context& ctx, const EnumDescriptor& desc) {
-  switch (ctx.opts().kernel) {
-    case Kernel::kCpp:
-      ctx.Emit(
-          R"rs(
+  if (ctx.is_cpp()) {
+    ctx.Emit(
+        R"rs(
           impl $pbr$::CppMapTypeConversions for $name$ {
               fn get_prototype() -> $pbr$::FfiMapValue {
                   Self::to_map_value(Self::default())
@@ -66,15 +65,12 @@ void TypeConversions(Context& ctx, const EnumDescriptor& desc) {
               }
           }
           )rs");
-      return;
-    case Kernel::kUpb:
-      ctx.Emit(R"rs(
-            impl $pbr$::EntityType for $name$ {
-                type Tag = $pbr$::EnumTag;
-            }
-            )rs");
-      return;
   }
+  ctx.Emit(R"rs(
+        impl $pbi$::EntityType for $name$ {
+            type Tag = $pbi$::entity_tag::EnumTag;
+        }
+        )rs");
 }
 
 void MiniTable(Context& ctx, const EnumDescriptor& desc,

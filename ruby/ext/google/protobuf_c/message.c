@@ -978,7 +978,7 @@ static VALUE Message_decode(int argc, VALUE* argv, VALUE klass) {
                               klass, /*freeze*/ false);
 }
 
-VALUE Message_decode_bytes(int size, const char* bytes, int options,
+VALUE Message_decode_bytes(size_t size, const char* bytes, int options,
                            VALUE klass, bool freeze) {
   VALUE msg_rb = initialize_rb_class_with_no_args(klass);
   Message* msg = ruby_to_Message(msg_rb);

@@ -111,12 +111,8 @@ const MessageLite& ExtensionSet::GetMessage(Arena* arena, int number,
     return *factory->GetPrototype(message_type);
   } else {
     ABSL_DCHECK_TYPE(*extension, OPTIONAL, MESSAGE);
-    if (extension->is_lazy) {
-      return extension->ptr.lazymessage_value->GetMessage(
-          *factory->GetPrototype(message_type), arena);
-    } else {
-      return *extension->ptr.message_value;
-    }
+    ABSL_DCHECK(!extension->is_lazy);
+    return *extension->ptr.message_value;
   }
 }
 
@@ -139,12 +135,8 @@ MessageLite* ExtensionSet::MutableMessage(Arena* arena,
   } else {
     ABSL_DCHECK_TYPE(*extension, OPTIONAL, MESSAGE);
     extension->is_cleared = false;
-    if (extension->is_lazy) {
-      return extension->ptr.lazymessage_value->MutableMessage(
-          *factory->GetPrototype(descriptor->message_type()), arena);
-    } else {
-      return extension->ptr.message_value;
-    }
+    ABSL_DCHECK(!extension->is_lazy);
+    return extension->ptr.message_value;
   }
 }
 
@@ -159,11 +151,7 @@ MessageLite* ExtensionSet::ReleaseMessage(Arena* arena,
     ABSL_DCHECK_TYPE(*extension, OPTIONAL, MESSAGE);
     MessageLite* ret = nullptr;
     if (extension->is_lazy) {
-      ret = extension->ptr.lazymessage_value->ReleaseMessage(
-          *factory->GetPrototype(descriptor->message_type()), arena);
-      if (arena == nullptr) {
-        delete extension->ptr.lazymessage_value;
-      }
+      Unreachable();
     } else {
       if (arena != nullptr) {
         ret = extension->ptr.message_value->New();
@@ -187,11 +175,7 @@ MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
     ABSL_DCHECK_TYPE(*extension, OPTIONAL, MESSAGE);
     MessageLite* ret = nullptr;
     if (extension->is_lazy) {
-      ret = extension->ptr.lazymessage_value->UnsafeArenaReleaseMessage(
-          *factory->GetPrototype(descriptor->message_type()), arena);
-      if (arena == nullptr) {
-        delete extension->ptr.lazymessage_value;
-      }
+      Unreachable();
     } else {
       ret = extension->ptr.message_value;
     }
@@ -435,12 +419,9 @@ size_t ExtensionSet::Extension::SpaceUsedExcludingSelfLong() const {
                       StringSpaceUsedExcludingSelfLong(*ptr.string_value);
         break;
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        if (is_lazy) {
-          total_size += ptr.lazymessage_value->SpaceUsedLong();
-        } else {
-          total_size +=
-              DownCastMessage<Message>(ptr.message_value)->SpaceUsedLong();
-        }
+        ABSL_DCHECK(!is_lazy);
+        total_size +=
+            DownCastMessage<Message>(ptr.message_value)->SpaceUsedLong();
         break;
       default:
         // No extra storage costs for primitive types.

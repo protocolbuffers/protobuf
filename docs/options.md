@@ -196,7 +196,7 @@ about your project (name and website) so we can add an entry for you.
     *   Website: https://github.com/MarquisIO/go-grpcmw
     *   Extensions: 1041
 
-1.  grpc-gateway protoc-gen-swagger
+1.  grpc-gateway protoc-gen-openapiv2
 
     *   Website: https://github.com/grpc-ecosystem/grpc-gateway
     *   Extensions: 1042

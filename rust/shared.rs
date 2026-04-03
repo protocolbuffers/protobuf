@@ -17,11 +17,9 @@ use std::fmt;
 #[doc(inline)]
 pub use crate::__internal::runtime::message_eq;
 
-#[cfg(all(cpp_kernel, not(lite_runtime)))]
-pub use crate::codegen_traits::interop::MessageDescriptorInterop;
+pub use crate::__internal::runtime::interop::*;
 pub use crate::codegen_traits::{
     create::Parse,
-    interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop},
     read::Serialize,
     write::{Clear, ClearAndParse, CopyFrom, MergeFrom, TakeFrom},
     Message, MessageMut, MessageView,

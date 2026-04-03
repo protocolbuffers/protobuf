@@ -416,6 +416,12 @@ struct PrivateAccess {
   static void TrackerOnGetMetadata() {
     T::Impl_::TrackerOnGetMetadata();
   }
+
+  template <typename T>
+  static constexpr auto GenerateParseTable(
+      const ::google::protobuf::internal::ClassData* class_data) {
+    return T::InternalGenerateParseTable_(class_data);
+  }
 };
 
 }  // namespace internal

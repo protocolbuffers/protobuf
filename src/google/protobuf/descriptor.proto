@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// Copyright 2008 Google LLC.  All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -189,6 +166,9 @@ message DescriptorProto {
 }
 
 message ExtensionRangeOptions {
+  // Range reserved for first-class custom options defined by the Protobuf
+  // team. User custom options must use the 1000+ range instead.
+  extensions 990 to 998;
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -583,6 +563,10 @@ message FileOptions {
   // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 50;
 
+  // Range reserved for first-class custom options defined by the Protobuf
+  // team. User custom options must use the 1000+ range instead.
+  extensions 990 to 998;
+
   // The parser stores options it doesn't recognize here.
   // See the documentation for the "Options" section above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -671,6 +655,10 @@ message MessageOptions {
   // cases like the proto compiler. Other uses are discouraged and
   // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 12;
+
+  // Range reserved for first-class custom options defined by the Protobuf
+  // team. User custom options must use the 1000+ range instead.
+  extensions 990 to 998;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -842,6 +830,10 @@ message FieldOptions {
   }
   optional FeatureSupport feature_support = 22;
 
+  // Range reserved for first-class custom options defined by the Protobuf
+  // team. User custom options must use the 1000+ range instead.
+  extensions 990 to 998;
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -858,6 +850,10 @@ message OneofOptions {
   // cases like the proto compiler. Other uses are discouraged and
   // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 1;
+
+  // Range reserved for first-class custom options defined by the Protobuf
+  // team. User custom options must use the 1000+ range instead.
+  extensions 990 to 998;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -894,6 +890,10 @@ message EnumOptions {
   // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 7;
 
+  // Range reserved for first-class custom options defined by the Protobuf
+  // team. User custom options must use the 1000+ range instead.
+  extensions 990 to 998;
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -922,6 +922,10 @@ message EnumValueOptions {
   // Information about the support window of a feature value.
   optional FieldOptions.FeatureSupport feature_support = 4;
 
+  // Range reserved for first-class extension options defined by the Protobuf
+  // team. Custom options must use the 1000+ range instead.
+  extensions 990 to 998;
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -947,6 +951,10 @@ message ServiceOptions {
   // for the service, or it will be completely ignored; in the very least,
   // this is a formalization for deprecating services.
   optional bool deprecated = 33 [default = false];
+
+  // Range reserved for first-class custom options defined by the Protobuf
+  // team. User custom options must use the 1000+ range instead.
+  extensions 990 to 998;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -984,6 +992,10 @@ message MethodOptions {
   // cases like the proto compiler. Other uses are discouraged and
   // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 35;
+
+  // Range reserved for first-class custom options defined by the Protobuf
+  // team. User custom options must use the 1000+ range instead.
+  extensions 990 to 998;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
