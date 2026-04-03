@@ -62,6 +62,7 @@ enum Edition {
   // comparison.
   EDITION_2023 = 1000;
   EDITION_2024 = 1001;
+  EDITION_2026 = 1002;
 
   // A placeholder edition for developing and testing unscheduled features.
   EDITION_UNSTABLE = 9999;
