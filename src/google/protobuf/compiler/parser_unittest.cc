@@ -343,6 +343,67 @@ TEST_F(ParseMessageTest, ExplicitRequiredSyntaxIdentifier) {
   EXPECT_EQ("proto2", parser_->GetSyntaxIdentifier());
 }
 
+TEST_F(ParseMessageTest, AggregateValueWithoutNormalization) {
+  ExpectParsesTo(
+      R"schema(message TestMessage {
+option (foo) = {   a:
+  100  };
+})schema",
+      R"pb(
+        message_type {
+          name: "TestMessage"
+          options {
+            uninterpreted_option {
+              name { name_part: "foo" is_extension: true }
+              aggregate_value: "   a:\n  100"
+            }
+          }
+        }
+      )pb");
+}
+
+TEST_F(ParseMessageTest, AggregateValueComplex) {
+  ExpectParsesTo(
+      R"schema(message TestMessage {
+  option (foo) = {
+   outer: {
+      inner: 1
+    }
+  };
+})schema",
+      R"pb(
+        message_type {
+          name: "TestMessage"
+          options {
+            uninterpreted_option {
+              name { name_part: "foo" is_extension: true }
+              aggregate_value: "\n   outer: {\n      inner: 1\n    }"
+            }
+          }
+        }
+      )pb");
+}
+
+TEST_F(ParseMessageTest, AggregateValueTrailingWhitespace) {
+  ExpectParsesTo(
+      "message TestMessage {\n"
+      "  option (foo) = { a: 1    \n"
+      "    b: 2   };\n"
+      "}\n",
+
+      R"pb(
+        message_type {
+          name: "TestMessage"
+          options {
+            uninterpreted_option {
+              name { name_part: "foo" is_extension: true }
+              aggregate_value: " a: 1\n    b: 2"
+            }
+          }
+        }
+      )pb");
+}
+
 TEST_F(ParseMessageTest, SimpleFields) {
   ExpectParsesTo(
       "message TestMessage {\n"

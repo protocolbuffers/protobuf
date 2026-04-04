@@ -1491,7 +1491,16 @@ bool Parser::ParseUninterpretedBlock(std::string* value) {
   // Note that enclosing braces are not added to *value.
   // We do NOT use ConsumeEndOfStatement for this brace because it's delimiting
   // an expression, not a block of statements.
-  DO(Consume("{"));
+  if (!LookingAt("{")) {
+    RecordError("Expected \"{\".");
+    return false;
+  }
+
+  int last_line = input_->current().line;
+  int last_column = input_->current().end_column;
+
+  input_->Next();  // Consume "{"
+
   int brace_depth = 1;
   while (!AtEnd()) {
     if (LookingAt("{")) {
@@ -1499,17 +1508,39 @@ bool Parser::ParseUninterpretedBlock(std::string* value) {
     } else if (LookingAt("}")) {
       brace_depth--;
       if (brace_depth == 0) {
-        input_->Next();
-        return true;
+        break;
       }
     }
-    // TODO: Interpret line/column numbers to preserve formatting
-    if (!value->empty()) value->push_back(' ');
-    value->append(input_->current().text);
+
+    const io::Tokenizer::Token& current = input_->current();
+    // Add whitespace to match the original formatting. This is important to
+    // have so that later, when aggregate value is parsed - location info
+    // from it matches the original formatting.
+    while (last_line < current.line) {
+      value->push_back('\n');
+      ++last_line;
+      last_column = 0;
+    }
+    while (last_column < current.column) {
+      value->push_back(' ');
+      ++last_column;
+    }
+
+    value->append(current.text);
+
+    last_line = current.line;
+    last_column = current.end_column;
+
     input_->Next();
   }
-  RecordError("Unexpected end of stream while parsing aggregate value.");
-  return false;
+
+  if (brace_depth == 0) {
+    input_->Next();  // Consume "}"
+    return true;
+  } else {
+    RecordError("Unexpected end of stream while parsing aggregate value.");
+    return false;
+  }
 }
 
 // We don't interpret the option here. Instead we store it in an
