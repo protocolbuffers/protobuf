@@ -5635,7 +5635,10 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                    return;
                  }
                  // File descriptor proto is mutable.
-                 if (is_file_descriptor_proto) return;
+                 if (is_file_descriptor_proto ||
+                     AllowSkipReadOnlyGlobals(*descriptor_)) {
+                   return;
+                 }
 
                  p->Emit(
                      R"cc(PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro))cc");
