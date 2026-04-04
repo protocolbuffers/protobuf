@@ -1175,6 +1175,58 @@ TEST_F(CommandLineInterfaceTest, CreateDirectory) {
   ExpectGenerated("test_plugin", "", "bar/baz/foo.proto", "Foo", "plugout");
 }
 
+TEST_F(CommandLineInterfaceTest, RejectDotDotInFilename) {
+  class DotDotGenerator : public CodeGenerator {
+   public:
+    bool Generate(const FileDescriptor* file, const std::string& parameter,
+                  GeneratorContext* context,
+                  std::string* error) const override {
+      std::unique_ptr<io::ZeroCopyOutputStream> output(
+          context->Open("abc/../../foo.proto.test"));
+      return true;
+    }
+  };
+
+  RegisterGenerator("--dotdot_out", std::make_unique<DotDotGenerator>(),
+                    "Test .. rejection.");
+
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  RunProtoc(
+      "protocol_compiler --dotdot_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("Output file names must never have a relative path.");
+}
+
+TEST_F(CommandLineInterfaceTest, AllowDotDotInFilenameWithFlag) {
+  class DotDotGenerator : public CodeGenerator {
+   public:
+    bool Generate(const FileDescriptor* file, const std::string& parameter,
+                  GeneratorContext* context,
+                  std::string* error) const override {
+      std::unique_ptr<io::ZeroCopyOutputStream> output(
+          context->Open("abc/../../foo.proto.test"));
+      return true;
+    }
+  };
+
+  RegisterGenerator("--dotdot_out", std::make_unique<DotDotGenerator>(),
+                    "Test .. allowance.");
+
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  RunProtoc(
+      "protocol_compiler --unsafe_allow_out_dir_escape --dotdot_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+}
+
 TEST_F(CommandLineInterfaceTest, GeneratorParameters) {
   // Test that generator parameters are correctly parsed from the command line.
 

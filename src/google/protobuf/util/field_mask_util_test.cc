@@ -870,6 +870,41 @@ TEST(FieldMaskUtilTest, TrimMessageReturnValue) {
   // supported.
 }
 
+TEST(FieldMaskUtilTest, TestEmptyFieldMaskString) {
+  FieldMask mask;
+  // An empty FieldMask string should be a zero-paths FieldMask.
+  FieldMaskUtil::FromString("", &mask);
+  EXPECT_TRUE(mask.paths().empty());
+}
+
+TEST(FieldMaskUtilTest, TestCanonicalizeFieldMaskWithEmptyPath) {
+  // A manually constructed FieldMask may contain paths which are empty. Such
+  // a path doesn't make any sense and is malformed, but canonicalizing such
+  // a mask should result in a zero-paths FieldMask.
+  FieldMask mask;
+  mask.add_paths("");
+  mask.add_paths("");
+  mask.add_paths("");
+
+  FieldMask canonical;
+  FieldMaskUtil::ToCanonicalForm(mask, &canonical);
+  EXPECT_TRUE(canonical.paths().empty());
+}
+
+TEST(FieldMaskUtilTest, TestCanonicalizeFieldMaskWithEmptyAndNonEmptyPaths) {
+  // A manually constructed FieldMask may contain paths which are empty. Such
+  // a path doesn't make any sense and is malformed, but canonicalizing such
+  // a mask remove those empty paths.
+  FieldMask mask;
+  mask.add_paths("");
+  mask.add_paths("a.b");
+
+  FieldMask canonical;
+  FieldMaskUtil::ToCanonicalForm(mask, &canonical);
+  EXPECT_EQ(canonical.paths().size(), 1);
+  EXPECT_EQ(canonical.paths(0), "a.b");
+}
+
 
 
 }  // namespace

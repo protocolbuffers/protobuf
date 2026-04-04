@@ -343,8 +343,11 @@ void FieldMaskTree::MergeToFieldMask(FieldMask* mask) {
   if (root_.children.empty()) {
     return;
   }
-  ForEachLeaf(&root_,
-              [mask](const std::string& path) { mask->add_paths(path); });
+  ForEachLeaf(&root_, [mask](const std::string& path) {
+    if (!path.empty()) {
+      mask->add_paths(path);
+    }
+  });
 }
 
 void FieldMaskTree::AddPath(absl::string_view path) {

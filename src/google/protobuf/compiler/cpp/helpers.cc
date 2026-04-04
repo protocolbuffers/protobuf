@@ -575,8 +575,8 @@ std::string SplitDefaultInstanceType(const Descriptor* descriptor,
 
 std::string SplitDefaultInstanceName(const Descriptor* descriptor,
                                      const Options& /*options*/) {
-  return absl::StrCat("_", ClassName(descriptor, false),
-                      "__Impl_Split_default_instance_");
+  return absl::StrCat(ClassName(descriptor, false),
+                      "_Impl_Split_default_instance_");
 }
 
 std::string MsgGlobalsInstanceType(const Descriptor* descriptor,
@@ -586,7 +586,7 @@ std::string MsgGlobalsInstanceType(const Descriptor* descriptor,
 
 std::string MsgGlobalsInstanceName(const Descriptor* descriptor,
                                    const Options& /*options*/) {
-  return absl::StrCat("_", ClassName(descriptor, false), "_globals_");
+  return absl::StrCat(ClassName(descriptor, false), "_globals_");
 }
 
 std::string MsgGlobalsInstancePtr(const Descriptor* descriptor,
@@ -1326,7 +1326,6 @@ bool HasMapFields(const FileDescriptor* file) {
   }
   return false;
 }
-
 
 static bool HasEnumDefinitions(const Descriptor* message_type) {
   if (message_type->enum_type_count() > 0) return true;

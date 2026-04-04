@@ -175,6 +175,34 @@ TEST_F(RustGeneratorTest, EmitsFieldMetadata) {
       "set_string_field", GeneratedCodeInfo::Annotation::SET, 2);
 }
 
+TEST_F(RustGeneratorTest, EmitsEnumMetadata) {
+  MustGetMetadataFor(R"schema(
+    syntax = "proto2";
+    package foo;
+    enum Enum {
+      option allow_alias = true;
+      ENUMERATOR_0 = 0;
+      ENUMERATOR_1 = 1;
+      ALIAS_1 = 1;
+    })schema");
+
+  CountMatchingAnnotations(
+      {google::protobuf::FileDescriptorProto::kEnumTypeFieldNumber, 0}, "Enum",
+      GeneratedCodeInfo::Annotation::NONE, 1);
+  CountMatchingAnnotations(
+      {google::protobuf::FileDescriptorProto::kEnumTypeFieldNumber, 0,
+       google::protobuf::EnumDescriptorProto::kValueFieldNumber, 0},
+      "Erator0", GeneratedCodeInfo::Annotation::NONE, 1);
+  CountMatchingAnnotations(
+      {google::protobuf::FileDescriptorProto::kEnumTypeFieldNumber, 0,
+       google::protobuf::EnumDescriptorProto::kValueFieldNumber, 1},
+      "Erator1", GeneratedCodeInfo::Annotation::NONE, 1);
+  CountMatchingAnnotations(
+      {google::protobuf::FileDescriptorProto::kEnumTypeFieldNumber, 0,
+       google::protobuf::EnumDescriptorProto::kValueFieldNumber, 2},
+      "Alias1", GeneratedCodeInfo::Annotation::NONE, 1);
+}
+
 }  // namespace
 }  // namespace rust
 }  // namespace compiler

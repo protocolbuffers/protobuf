@@ -838,12 +838,14 @@ const char* WireFormat::_InternalParseAndMergeField(
       Arena* arena = msg->GetArena();
 
       switch (field->type()) {
-#define HANDLE_PACKED_TYPE(TYPE, CPPTYPE, CPPTYPE_METHOD)                     \
-  case FieldDescriptor::TYPE_##TYPE: {                                        \
-    ptr = internal::Packed##CPPTYPE_METHOD##Parser(                           \
-        reflection->MutableRepeatedFieldInternal<CPPTYPE>(msg, field), arena, \
-        ptr, ctx);                                                            \
-    return ptr;                                                               \
+#define HANDLE_PACKED_TYPE(TYPE, CPPTYPE, CPPTYPE_METHOD)           \
+  case FieldDescriptor::TYPE_##TYPE: {                              \
+    ptr = internal::Packed##CPPTYPE_METHOD##Parser(                 \
+        reflection->MutableRepeatedFieldInternal<CPPTYPE>(          \
+            msg, field,                                             \
+            Reflection::GetRepeatedFieldIntent::kHiddenOrInternal), \
+        arena, ptr, ctx);                                           \
+    return ptr;                                                     \
   }
 
         HANDLE_PACKED_TYPE(INT32, int32_t, Int32)
@@ -865,8 +867,9 @@ const char* WireFormat::_InternalParseAndMergeField(
 #undef HANDLE_PACKED_TYPE
 
         case FieldDescriptor::TYPE_ENUM: {
-          auto rep_enum =
-              reflection->MutableRepeatedFieldInternal<int>(msg, field);
+          auto rep_enum = reflection->MutableRepeatedFieldInternal<int>(
+              msg, field,
+              Reflection::GetRepeatedFieldIntent::kHiddenOrInternal);
           if (!field->legacy_enum_field_treated_as_closed()) {
             ptr = internal::PackedEnumParser(rep_enum, arena, ptr, ctx);
           } else {
@@ -1270,13 +1273,14 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
     if (count == 0) return target;
     target = stream->EnsureSpace(target);
     switch (field->type()) {
-#define HANDLE_PRIMITIVE_TYPE(TYPE, CPPTYPE, TYPE_METHOD, CPPTYPE_METHOD)      \
-  case FieldDescriptor::TYPE_##TYPE: {                                         \
-    auto r =                                                                   \
-        message_reflection->GetRepeatedFieldInternal<CPPTYPE>(message, field); \
-    target = stream->Write##TYPE_METHOD##Packed(                               \
-        field->number(), r, FieldDataOnlyByteSize(field, message), target);    \
-    break;                                                                     \
+#define HANDLE_PRIMITIVE_TYPE(TYPE, CPPTYPE, TYPE_METHOD, CPPTYPE_METHOD)   \
+  case FieldDescriptor::TYPE_##TYPE: {                                      \
+    auto r = message_reflection->GetRepeatedFieldInternal<CPPTYPE>(         \
+        message, field,                                                     \
+        Reflection::GetRepeatedFieldIntent::kHiddenOrInternal);             \
+    target = stream->Write##TYPE_METHOD##Packed(                            \
+        field->number(), r, FieldDataOnlyByteSize(field, message), target); \
+    break;                                                                  \
   }
 
       HANDLE_PRIMITIVE_TYPE(INT32, int32_t, Int32, Int32)
@@ -1288,12 +1292,13 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
       HANDLE_PRIMITIVE_TYPE(ENUM, int, Enum, Enum)
 
 #undef HANDLE_PRIMITIVE_TYPE
-#define HANDLE_PRIMITIVE_TYPE(TYPE, CPPTYPE, TYPE_METHOD, CPPTYPE_METHOD)      \
-  case FieldDescriptor::TYPE_##TYPE: {                                         \
-    auto r =                                                                   \
-        message_reflection->GetRepeatedFieldInternal<CPPTYPE>(message, field); \
-    target = stream->WriteFixedPacked(field->number(), r, target);             \
-    break;                                                                     \
+#define HANDLE_PRIMITIVE_TYPE(TYPE, CPPTYPE, TYPE_METHOD, CPPTYPE_METHOD) \
+  case FieldDescriptor::TYPE_##TYPE: {                                    \
+    auto r = message_reflection->GetRepeatedFieldInternal<CPPTYPE>(       \
+        message, field,                                                   \
+        Reflection::GetRepeatedFieldIntent::kHiddenOrInternal);           \
+    target = stream->WriteFixedPacked(field->number(), r, target);        \
+    break;                                                                \
   }
 
       HANDLE_PRIMITIVE_TYPE(FIXED32, uint32_t, Fixed32, UInt32)

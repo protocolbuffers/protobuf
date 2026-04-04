@@ -11,6 +11,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_field_proxy_traits.h"
 #include "google/protobuf/repeated_ptr_field.h"
 
 
@@ -27,31 +28,6 @@ namespace internal {
 
 template <typename ElementType>
 class RepeatedFieldProxyInternalPrivateAccessHelper;
-
-// A type trait to determine if a repeated field element of type `ElementType`
-// is a string type.
-template <typename ElementType>
-static constexpr bool RepeatedElementTypeIsString =
-    std::is_same_v<ElementType, std::string> ||
-    std::is_same_v<ElementType, absl::string_view> ||
-    std::is_same_v<ElementType, absl::Cord>;
-
-// A type trait to determine if a repeated field element of type `ElementType`
-// is a message type.
-//
-// We would like to use `std::is_base_of_v<MessageLite, ElementType>` to
-// determine if `ElementType` is a message type, but that requires `ElementType`
-// to be complete. In contexts where `ElementType` is not complete, such as
-// generated protobuf source files/headers that forward declare external types,
-// we only have the forward declaration of `ElementType`.
-//
-// Aside from strings, all element types other than messages are primitive
-// types. Enums may be incomplete, but they are forward declared as `enum
-// <EnumName> : int;`. We therefore can distinguish incomplete message elements
-// with `std::is_class_v`.
-template <typename ElementType>
-static constexpr bool RepeatedElementTypeIsMessage =
-    std::is_class_v<ElementType> && !RepeatedElementTypeIsString<ElementType>;
 
 namespace string_util {
 
@@ -99,67 +75,6 @@ inline void SetElement(absl::Cord& element, T&& value) {
 }
 
 }  // namespace string_util
-
-// RepeatedFieldTraits is a type trait that maps an element type to the concrete
-// container type that will back the repeated field in the containing message.
-// This is currently either `RepeatedField` or `RepeatedPtrField`.
-//
-// Note that message and string types are specialized below this base template.
-template <typename ElementType, typename Enable = void>
-struct RepeatedFieldTraits {
-  static_assert(!std::is_const_v<ElementType>);
-  // The default specialization is only for primitive types. Messages and
-  // strings are specialized below.
-  static_assert(std::is_integral_v<ElementType> ||
-                std::is_floating_point_v<ElementType>);
-
-  using type = RepeatedField<ElementType>;
-  using const_reference = ElementType;
-  using reference = ElementType;
-  using const_iterator = typename type::const_iterator;
-  using iterator = typename type::iterator;
-};
-
-// Specialization for message types.
-template <typename ElementType>
-struct RepeatedFieldTraits<
-    ElementType, std::enable_if_t<RepeatedElementTypeIsMessage<ElementType>>> {
-  static_assert(!std::is_const_v<ElementType>);
-
-  using type = RepeatedPtrField<ElementType>;
-  using const_reference = const ElementType&;
-  using reference = ElementType&;
-  using const_iterator = typename type::const_iterator;
-  using iterator = typename type::iterator;
-};
-
-// Explicit specializations for string types.
-template <>
-struct RepeatedFieldTraits<absl::string_view> {
-  using type = RepeatedPtrField<std::string>;
-  using const_reference = absl::string_view;
-  using reference = absl::string_view;
-  using const_iterator = RepeatedPtrIterator<const absl::string_view>;
-  using iterator = RepeatedPtrIterator<absl::string_view>;
-};
-
-template <>
-struct RepeatedFieldTraits<std::string> {
-  using type = RepeatedPtrField<std::string>;
-  using const_reference = const std::string&;
-  using reference = std::string&;
-  using const_iterator = typename type::const_iterator;
-  using iterator = typename type::iterator;
-};
-
-template <>
-struct RepeatedFieldTraits<absl::Cord> {
-  using type = RepeatedField<absl::Cord>;
-  using const_reference = const absl::Cord&;
-  using reference = absl::Cord&;
-  using const_iterator = typename type::const_iterator;
-  using iterator = typename type::iterator;
-};
 
 // The base class for both mutable and const repeated field proxies. Implements
 // all of the common methods and dependent types for both classes.
