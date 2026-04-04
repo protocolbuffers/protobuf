@@ -214,6 +214,34 @@
   XCTAssertEqualObjects(expected, result);
 }
 
+- (void)testTextFormatUnknownFieldsCrash {
+  GPBUnknownFields *ufs = [[[GPBUnknownFields alloc] init] autorelease];
+  GPBUnknownFields *current = ufs;
+
+  // Nest single groups deep enough to force a heap-allocated indent string.
+  for (int i = 0; i < 15; ++i) {
+    current = [current addGroupWithFieldNumber:150];
+  }
+
+  // Now add multiple siblings at that deep level to trigger reuse/release.
+  for (int i = 0; i < 10; ++i) {
+    GPBUnknownFields *sibling = [current addGroupWithFieldNumber:151];
+    [sibling addFieldNumber:1 varint:1];
+  }
+
+  TestEmptyMessage *message = [TestEmptyMessage message];
+  XCTAssertTrue([message mergeUnknownFields:ufs extensionRegistry:nil error:NULL]);
+
+  @autoreleasepool {
+    // Calling `description` internally calls `GPBTextFormatForMessage(self, @"    ")`.
+    // By nesting groups deep enough, we ensure the indentation string becomes long
+    // enough to be heap-allocated (breaking out of tagged-pointer optimizations).
+    // This triggers the over-release bug in `GPBUtilities.m:AppendTextFormatForUnknownFields`
+    // where `subIndent` is erroneously released inside the loop for sibling unknown groups.
+    [message description];
+  }
+}
+
 - (void)testSetRepeatedFields {
   TestAllTypes *message = [TestAllTypes message];
 

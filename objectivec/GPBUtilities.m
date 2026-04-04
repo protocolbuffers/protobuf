@@ -1987,7 +1987,11 @@ static void AppendTextFormatForUnknownFields(GPBUnknownFields *ufs, NSMutableStr
       } break;
     }
   }
+
+  // BUG: `subIndent` is an autoreleased object (created via `stringByAppendingString:`).
+  // Releasing it manually here leads to an over-release when the system autorelease pool drains.
   [subIndent release];
+
   [sortedFields release];
 }
 
