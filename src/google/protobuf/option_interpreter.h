@@ -18,6 +18,7 @@
 #include "google/protobuf/descriptor_builder.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/text_format.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -60,8 +61,10 @@ class OptionInterpreter {
  public:
   // Creates an interpreter that operates in the context of the pool of the
   // specified builder, which must not be nullptr. We don't take ownership of
-  // the builder.
-  explicit OptionInterpreter(DescriptorBuilder* builder);
+  // the builder. If update_source_code_info is false, path tracking and map
+  // population for UpdateSourceCodeInfo are omitted.
+  explicit OptionInterpreter(DescriptorBuilder* builder,
+                             bool update_source_code_info);
   OptionInterpreter(const OptionInterpreter&) = delete;
   OptionInterpreter& operator=(const OptionInterpreter&) = delete;
 
@@ -117,12 +120,56 @@ class OptionInterpreter {
   // Validates the value for the option field of the currently interpreted
   // option and then sets it on the unknown_field.
   bool SetOptionValue(const FieldDescriptor* option_field,
-                      UnknownFieldSet* unknown_fields, Message* options);
+                      UnknownFieldSet* unknown_fields, Message* options,
+                      const SourceCodePath& src_path,
+                      const SourceCodePath& dest_path);
 
   // Parses an aggregate value for a CPPTYPE_MESSAGE option and
   // saves it into *unknown_fields.
   bool SetAggregateOption(const FieldDescriptor* option_field,
-                          UnknownFieldSet* unknown_fields, Message* options);
+                          UnknownFieldSet* unknown_fields, Message* options,
+                          const SourceCodePath& src_path,
+                          const SourceCodePath& dest_path);
+
+  // Represents the relative source location of a field specified within an
+  // aggregate option block (e.g., `option (my_opt) = { field_a: 1 }`).
+  struct AggregateFieldLocation {
+    // Path to the uninterpreted option in the descriptor (e.g., [options,
+    // index]). This is used later during UpdateSourceCodeInfo to find the
+    // absolute source location (line and column) where the aggregate option
+    // block starts, enabling the calculation of absolute source locations for
+    // the nested fields within the block.
+    SourceCodePath uninterpreted_path;
+    // Destination path for the option field itself.
+    SourceCodePath field_dest_path;
+    // Marker for the value type (e.g. kPositiveIntValueFieldNumber, etc.)
+    int value_marker;
+    // Relative start and end line/column span of the field name within the
+    // aggregate string.
+    TextFormat::ParseLocationRange name_range;
+    // Relative start and end line/column span of the field value within the
+    // aggregate string.
+    TextFormat::ParseLocationRange val_range;
+  };
+
+  // Recursively traverses a parsed aggregate option message and its
+  // ParseInfoTree to collect relative locations for all populated sub-fields.
+  void CollectAggregateFieldLocations(const Message& message,
+                                      const TextFormat::ParseInfoTree& tree,
+                                      const SourceCodePath& uninterpreted_path,
+                                      SourceCodePath& dest_path);
+
+  // Determines the appropriate UninterpretedOption value field number (e.g.,
+  // kPositiveIntValueFieldNumber, kStringValueFieldNumber) for a given field.
+  int GetValueMarker(const FieldDescriptor* field, const Message& message,
+                     int index);
+
+  // Translates relative ParseLocationRange coordinates (from within an
+  // aggregate option string) into absolute .proto file coordinates using base
+  // line/column.
+  void SetSpan(SourceCodeInfo_Location* loc,
+               const SourceCodeInfo_Location& base_loc,
+               const TextFormat::ParseLocationRange& range);
 
   // Convenience functions to set an int field the right way, depending on
   // its wire type (a single int CppType can represent multiple wire types).
@@ -189,6 +236,15 @@ class OptionInterpreter {
   // Factory used to create the dynamic messages we need to parse
   // any aggregate option values we encounter.
   DynamicMessageFactory dynamic_factory_;
+
+  // Accumulates all sub-field locations gathered during aggregate option
+  // interpretation.
+  std::vector<AggregateFieldLocation> aggregate_field_locations_;
+
+  // Indicates whether source code info collection is enabled during option
+  // interpretation. Source code info requires extra bookkeeping and processing,
+  // and for most production use cases, is not necessary.
+  bool update_source_code_info_;
 };
 
 }  // namespace internal

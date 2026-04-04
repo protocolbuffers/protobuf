@@ -5786,7 +5786,8 @@ FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
   // their extensions.  This has to be done in two passes, since option
   // extensions defined in this file may have features attached to them.
   if (!had_errors_) {
-    OptionInterpreter option_interpreter(this);
+    OptionInterpreter option_interpreter(
+        this, /*update_source_code_info=*/info != nullptr);
     for (std::vector<OptionsToInterpret>::iterator iter =
              options_to_interpret_.begin();
          iter != options_to_interpret_.end(); ++iter) {
