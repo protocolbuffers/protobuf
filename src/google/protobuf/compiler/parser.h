@@ -103,6 +103,14 @@ class PROTOBUF_EXPORT Parser final {
     stop_after_syntax_identifier_ = value;
   }
 
+  // If set true, whitespace will be normalized within uninterpreted blocks.
+  // For example original option like "foo{bar:1}" will be normalized to
+  // "foo { bar: 1 }". This prevents SourceCodeInfo from having correct
+  // locations for the items inside the uninterpreted blocks.
+  void SetNormalizeWhitespaceInUninterpretedBlocks(bool value) {
+    normalize_whitespace_in_uninterpreted_blocks_ = value;
+  }
+
  private:
   class LocationRecorder;
   struct MapField;
@@ -533,6 +541,12 @@ class PROTOBUF_EXPORT Parser final {
   // the ending brace.
   bool ParseUninterpretedBlock(std::string* value);
 
+  // Same as ParseUninterpretedBlock(), but does not normalize whitespace.
+  // Given input like "foo{bar:1}", it will preserve the single space
+  // between "foo" and "{", whereas ParseUninterpretedBlock() would produce
+  // "foo { bar : 1 }"
+  bool ParseUninterpretedBlockWithoutNormalization(std::string* value);
+
   // Tries to parse a visibility prefix on message and enum and returns true if
   // the syntax is valid or not present, if present and valid sets the output
   // SymbolVisibility to export or local, leaving unchanged if not set.
@@ -587,6 +601,11 @@ class PROTOBUF_EXPORT Parser final {
   // the next element (See SourceCodeInfo.Location in descriptor.proto), when
   // ConsumeEndOfDeclaration() is called.
   std::vector<std::string> upcoming_detached_comments_;
+
+  // Whether to normalize whitespace in uninterpreted blocks.
+  // Normalization prevents us from calculating the correct source location for
+  // uninterpreted options.
+  bool normalize_whitespace_in_uninterpreted_blocks_;
 };
 
 // A table mapping (descriptor, ErrorLocation) pairs -- as reported by

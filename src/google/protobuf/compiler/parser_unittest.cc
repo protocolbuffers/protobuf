@@ -102,7 +102,9 @@ class MockValidationErrorCollector : public DescriptorPool::ErrorCollector {
 
 class ParserTest : public testing::Test {
  protected:
-  ParserTest() : require_syntax_identifier_(false) {}
+  ParserTest()
+      : require_syntax_identifier_(false),
+        normalize_whitespace_in_uninterpreted_blocks_(true) {}
 
   // Set up the parser to parse the given text.
   void SetupParser(absl::string_view text) {
@@ -113,6 +115,8 @@ class ParserTest : public testing::Test {
     parser_ = absl::make_unique<Parser>();
     parser_->RecordErrorsTo(&error_collector_);
     parser_->SetRequireSyntaxIdentifier(require_syntax_identifier_);
+    parser_->SetNormalizeWhitespaceInUninterpretedBlocks(
+        normalize_whitespace_in_uninterpreted_blocks_);
   }
 
   // Parse the input and expect that the resulting FileDescriptorProto matches
@@ -200,6 +204,7 @@ class ParserTest : public testing::Test {
   std::unique_ptr<io::Tokenizer> input_;
   std::unique_ptr<Parser> parser_;
   bool require_syntax_identifier_;
+  bool normalize_whitespace_in_uninterpreted_blocks_;
 };
 
 // ===================================================================
@@ -341,6 +346,88 @@ TEST_F(ParseMessageTest, ExplicitRequiredSyntaxIdentifier) {
       "  field { name:\"foo\" label:LABEL_REQUIRED type:TYPE_INT32 number:1 }"
       "}");
   EXPECT_EQ("proto2", parser_->GetSyntaxIdentifier());
+}
+TEST_F(ParseMessageTest, AggregateValueWithNormalization) {
+  ExpectParsesTo(
+      R"schema(message TestMessage {
+option (foo) = {   a:
+  100  };
+})schema",
+      R"pb(
+        message_type {
+          name: "TestMessage"
+          options {
+            uninterpreted_option {
+              name { name_part: "foo" is_extension: true }
+              aggregate_value: "a : 100"
+            }
+          }
+        }
+      )pb");
+}
+
+TEST_F(ParseMessageTest, AggregateValueWithoutNormalization) {
+  normalize_whitespace_in_uninterpreted_blocks_ = false;
+  ExpectParsesTo(
+      R"schema(message TestMessage {
+option (foo) = {   a:
+  100  };
+})schema",
+      R"pb(
+        message_type {
+          name: "TestMessage"
+          options {
+            uninterpreted_option {
+              name { name_part: "foo" is_extension: true }
+              aggregate_value: "   a:\n  100"
+            }
+          }
+        }
+      )pb");
+}
+
+TEST_F(ParseMessageTest, AggregateValueComplex) {
+  normalize_whitespace_in_uninterpreted_blocks_ = false;
+  ExpectParsesTo(
+      R"schema(message TestMessage {
+  option (foo) = {
+   outer: {
+      inner: 1
+    }
+  };
+})schema",
+      R"pb(
+        message_type {
+          name: "TestMessage"
+          options {
+            uninterpreted_option {
+              name { name_part: "foo" is_extension: true }
+              aggregate_value: "\n   outer: {\n      inner: 1\n    }"
+            }
+          }
+        }
+      )pb");
+}
+
+TEST_F(ParseMessageTest, AggregateValueTrailingWhitespace) {
+  normalize_whitespace_in_uninterpreted_blocks_ = false;
+  ExpectParsesTo(
+      "message TestMessage {\n"
+      "  option (foo) = { a: 1    \n"
+      "    b: 2   };\n"
+      "}\n",
+
+      R"pb(
+        message_type {
+          name: "TestMessage"
+          options {
+            uninterpreted_option {
+              name { name_part: "foo" is_extension: true }
+              aggregate_value: " a: 1\n    b: 2"
+            }
+          }
+        }
+      )pb");
 }
 
 TEST_F(ParseMessageTest, SimpleFields) {

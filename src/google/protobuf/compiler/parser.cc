@@ -164,7 +164,8 @@ Parser::Parser()
       source_location_table_(nullptr),
       had_errors_(false),
       require_syntax_identifier_(false),
-      stop_after_syntax_identifier_(false) {
+      stop_after_syntax_identifier_(false),
+      normalize_whitespace_in_uninterpreted_blocks_(true) {
 }
 
 Parser::~Parser() = default;
@@ -1512,6 +1513,62 @@ bool Parser::ParseUninterpretedBlock(std::string* value) {
   return false;
 }
 
+bool Parser::ParseUninterpretedBlockWithoutNormalization(std::string* value) {
+  // Note that enclosing braces are not added to *value.
+  // We do NOT use ConsumeEndOfStatement for this brace because it's delimiting
+  // an expression, not a block of statements.
+  if (!LookingAt("{")) {
+    RecordError("Expected \"{\".");
+    return false;
+  }
+
+  int last_line = input_->current().line;
+  int last_column = input_->current().end_column;
+
+  input_->Next();  // Consume "{"
+
+  int brace_depth = 1;
+  while (!AtEnd()) {
+    if (LookingAt("{")) {
+      brace_depth++;
+    } else if (LookingAt("}")) {
+      brace_depth--;
+      if (brace_depth == 0) {
+        break;
+      }
+    }
+
+    const io::Tokenizer::Token& current = input_->current();
+    // Add whitespace to match the original formatting. This is important to
+    // have so that later, when aggregate value is parsed - location info
+    // from it matches the original formatting.
+    while (last_line < current.line) {
+      value->push_back('\n');
+      ++last_line;
+      last_column = 0;
+    }
+    while (last_column < current.column) {
+      value->push_back(' ');
+      ++last_column;
+    }
+
+    value->append(current.text);
+
+    last_line = current.line;
+    last_column = current.end_column;
+
+    input_->Next();
+  }
+
+  if (brace_depth == 0) {
+    input_->Next();  // Consume "}"
+    return true;
+  } else {
+    RecordError("Unexpected end of stream while parsing aggregate value.");
+    return false;
+  }
+}
+
 // We don't interpret the option here. Instead we store it in an
 // UninterpretedOption, to be interpreted later.
 bool Parser::ParseOption(Message* options,
@@ -1659,8 +1716,13 @@ bool Parser::ParseOption(Message* options,
         if (LookingAt("{")) {
           value_location.AddPath(
               UninterpretedOption::kAggregateValueFieldNumber);
-          DO(ParseUninterpretedBlock(
-              uninterpreted_option->mutable_aggregate_value()));
+          if (normalize_whitespace_in_uninterpreted_blocks_) {
+            DO(ParseUninterpretedBlock(
+                uninterpreted_option->mutable_aggregate_value()));
+          } else {
+            DO(ParseUninterpretedBlockWithoutNormalization(
+                uninterpreted_option->mutable_aggregate_value()));
+          }
         } else {
           RecordError("Expected option value.");
           return false;
