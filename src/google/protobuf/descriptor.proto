@@ -1412,6 +1412,25 @@ message SourceCodeInfo {
     // refers to the option name `(my_opt)`, and:
     //   [ 4, 3, 7, 10101, 7 ]
     // refers to the "foo" string value of the option.
+    //
+    // For complex options (e.g., "(my_opt) = {a: 100}"), the path
+    // will include UninterpretedOption.aggregate_value (field number 8) as a
+    // marker for each level of nesting.
+    //
+    // For example, given:
+    //   option (my_opt) = {a: 100};
+    //
+    // The path for the `a` identifier would look like:
+    //   [ path_of_my_opt, 8, number_of_field_a, 2 ]
+    //
+    // And for the value 100:
+    //   [ path_of_my_opt, 8, number_of_field_a, 4 ]
+    //
+    // Where:
+    //   8: UninterpretedOption.aggregate_value marker
+    //   number_of_field_a: The field number of "a" inside "my_opt"
+    //   2: UninterpretedOption.name
+    //   4: UninterpretedOption.positive_int_value
     repeated int32 path = 1 [packed = true];
 
     // Always has exactly three or four elements: start line, start column,

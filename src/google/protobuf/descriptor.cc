@@ -90,6 +90,7 @@
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
+#include "google/protobuf/symbol.h"
 #include "google/protobuf/symbol_checker.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unknown_field_set.h"
@@ -100,6 +101,9 @@
 
 namespace google {
 namespace protobuf {
+
+using ::google::protobuf::internal::Symbol;
+
 namespace {
 
 constexpr int kPackageLimit = 100;
@@ -683,350 +687,6 @@ static auto DisableTracking() {
 
 }  // namespace
 
-class Symbol {
- public:
-  enum Type {
-    NULL_SYMBOL,
-    MESSAGE,
-    FIELD,
-    ONEOF,
-    ENUM,
-    ENUM_VALUE,
-    ENUM_VALUE_OTHER_PARENT,
-    SERVICE,
-    METHOD,
-    FULL_PACKAGE,
-    SUB_PACKAGE,
-  };
-
-  Symbol() {
-    static constexpr internal::SymbolBase null_symbol{};
-    static_assert(null_symbol.symbol_type_ == NULL_SYMBOL, "");
-    // Initialize with a sentinel to make sure `ptr_` is never null.
-    ptr_ = &null_symbol;
-  }
-
-  explicit Symbol(const internal::SymbolBase* ptr) : ptr_(ptr) {}
-
-  // Every object we store derives from internal::SymbolBase, where we store the
-  // symbol type enum.
-  // Storing in the object can be done without using more space in most cases,
-  // while storing it in the Symbol type would require 8 bytes.
-#define DEFINE_MEMBERS(TYPE, TYPE_CONSTANT, FIELD)                             \
-  explicit Symbol(TYPE* value) : ptr_(value) {                                 \
-    value->symbol_type_ = TYPE_CONSTANT;                                       \
-  }                                                                            \
-  const TYPE* FIELD() const {                                                  \
-    return type() == TYPE_CONSTANT ? static_cast<const TYPE*>(ptr_) : nullptr; \
-  }
-
-  DEFINE_MEMBERS(Descriptor, MESSAGE, descriptor)
-  DEFINE_MEMBERS(FieldDescriptor, FIELD, field_descriptor)
-  DEFINE_MEMBERS(OneofDescriptor, ONEOF, oneof_descriptor)
-  DEFINE_MEMBERS(EnumDescriptor, ENUM, enum_descriptor)
-  DEFINE_MEMBERS(ServiceDescriptor, SERVICE, service_descriptor)
-  DEFINE_MEMBERS(MethodDescriptor, METHOD, method_descriptor)
-  DEFINE_MEMBERS(FileDescriptor, FULL_PACKAGE, file_descriptor)
-
-  // We use a special node for subpackage FileDescriptor.
-  // It is potentially added to the table with multiple different names, so we
-  // need a separate place to put the name.
-  struct Subpackage : internal::SymbolBase {
-    int name_size;
-    const FileDescriptor* file;
-  };
-  DEFINE_MEMBERS(Subpackage, SUB_PACKAGE, sub_package_file_descriptor)
-
-  // Enum values have two different parents.
-  // We use two different identitied for the same object to determine the two
-  // different insertions in the map.
-  static Symbol EnumValue(EnumValueDescriptor* value, int n) {
-    Symbol s;
-    internal::SymbolBase* ptr;
-    if (n == 0) {
-      ptr = static_cast<internal::SymbolBaseN<0>*>(value);
-      ptr->symbol_type_ = ENUM_VALUE;
-    } else {
-      ptr = static_cast<internal::SymbolBaseN<1>*>(value);
-      ptr->symbol_type_ = ENUM_VALUE_OTHER_PARENT;
-    }
-    s.ptr_ = ptr;
-    return s;
-  }
-
-  const EnumValueDescriptor* enum_value_descriptor() const {
-    return type() == ENUM_VALUE
-               ? static_cast<const EnumValueDescriptor*>(
-                     static_cast<const internal::SymbolBaseN<0>*>(ptr_))
-           : type() == ENUM_VALUE_OTHER_PARENT
-               ? static_cast<const EnumValueDescriptor*>(
-                     static_cast<const internal::SymbolBaseN<1>*>(ptr_))
-               : nullptr;
-  }
-
-#undef DEFINE_MEMBERS
-
-  Type type() const { return static_cast<Type>(ptr_->symbol_type_); }
-  bool IsNull() const { return type() == NULL_SYMBOL; }
-  bool IsType() const { return type() == MESSAGE || type() == ENUM; }
-  bool IsAggregate() const {
-    return IsType() || IsPackage() || type() == SERVICE;
-  }
-  bool IsPackage() const {
-    return type() == FULL_PACKAGE || type() == SUB_PACKAGE;
-  }
-
-  const FileDescriptor* GetFile() const {
-    switch (type()) {
-      case MESSAGE:
-        return descriptor()->file();
-      case FIELD:
-        return field_descriptor()->file();
-      case ONEOF:
-        return oneof_descriptor()->containing_type()->file();
-      case ENUM:
-        return enum_descriptor()->file();
-      case ENUM_VALUE:
-        return enum_value_descriptor()->type()->file();
-      case SERVICE:
-        return service_descriptor()->file();
-      case METHOD:
-        return method_descriptor()->service()->file();
-      case FULL_PACKAGE:
-        return file_descriptor();
-      case SUB_PACKAGE:
-        return sub_package_file_descriptor()->file;
-      default:
-        return nullptr;
-    }
-  }
-
-  absl::string_view full_name() const {
-    switch (type()) {
-      case MESSAGE:
-        return descriptor()->full_name();
-      case FIELD:
-        return field_descriptor()->full_name();
-      case ONEOF:
-        return oneof_descriptor()->full_name();
-      case ENUM:
-        return enum_descriptor()->full_name();
-      case ENUM_VALUE:
-        return enum_value_descriptor()->full_name();
-      case SERVICE:
-        return service_descriptor()->full_name();
-      case METHOD:
-        return method_descriptor()->full_name();
-      case FULL_PACKAGE:
-        return file_descriptor()->package();
-      case SUB_PACKAGE:
-        return sub_package_file_descriptor()->file->package().substr(
-            0, sub_package_file_descriptor()->name_size);
-      default:
-        ABSL_CHECK(false);
-    }
-    return "";
-  }
-
-  std::pair<const void*, absl::string_view> parent_name_key() const {
-    const auto or_file = [&](const void* p) { return p ? p : GetFile(); };
-    switch (type()) {
-      case MESSAGE:
-        return {or_file(descriptor()->containing_type()), descriptor()->name()};
-      case FIELD: {
-        auto* field = field_descriptor();
-        return {or_file(field->is_extension() ? field->extension_scope()
-                                              : field->containing_type()),
-                field->name()};
-      }
-      case ONEOF:
-        return {oneof_descriptor()->containing_type(),
-                oneof_descriptor()->name()};
-      case ENUM:
-        return {or_file(enum_descriptor()->containing_type()),
-                enum_descriptor()->name()};
-      case ENUM_VALUE:
-        return {or_file(enum_value_descriptor()->type()->containing_type()),
-                enum_value_descriptor()->name()};
-      case ENUM_VALUE_OTHER_PARENT:
-        return {enum_value_descriptor()->type(),
-                enum_value_descriptor()->name()};
-      case SERVICE:
-        return {GetFile(), service_descriptor()->name()};
-      case METHOD:
-        return {method_descriptor()->service(), method_descriptor()->name()};
-      default:
-        ABSL_CHECK(false);
-    }
-    return {};
-  }
-
-  const FeatureSet& features() const {
-    switch (type()) {
-      case MESSAGE:
-        return descriptor()->features();
-      case FIELD:
-        return field_descriptor()->features();
-      case ONEOF:
-        return oneof_descriptor()->features();
-      case ENUM:
-        return enum_descriptor()->features();
-      case ENUM_VALUE:
-        return enum_value_descriptor()->features();
-      case SERVICE:
-        return service_descriptor()->features();
-      case METHOD:
-        return method_descriptor()->features();
-      case FULL_PACKAGE:
-        return file_descriptor()->features();
-      case SUB_PACKAGE:
-      default:
-        internal::Unreachable();
-    }
-  }
-
-  bool is_placeholder() const {
-    switch (type()) {
-      case MESSAGE:
-        return descriptor()->is_placeholder();
-      case ENUM:
-        return enum_descriptor()->is_placeholder();
-      case FULL_PACKAGE:
-        return file_descriptor()->is_placeholder();
-      default:
-        return false;
-    }
-  }
-
-  SymbolVisibility visibility_keyword() const {
-    switch (type()) {
-      case MESSAGE:
-        return descriptor()->visibility_keyword();
-      case ENUM:
-        return enum_descriptor()->visibility_keyword();
-      default:
-        return SymbolVisibility::VISIBILITY_UNSET;
-    }
-  }
-
-  bool IsNestedDefinition() const {
-    switch (type()) {
-      case MESSAGE:
-        return descriptor()->containing_type() != nullptr;
-      case ENUM:
-        return enum_descriptor()->containing_type() != nullptr;
-      case FIELD:  // For extension fields
-        return field_descriptor()->containing_type() != nullptr;
-      default:
-        return false;
-    }
-  }
-
-  SymbolVisibility GetEffectiveVisibility() const {
-    // Only Types have visibility
-    if (!IsType()) {
-      return SymbolVisibility::VISIBILITY_UNSET;
-    }
-
-    SymbolVisibility effective_visibility = visibility_keyword();
-
-    // If our visibility is specifically set we can return that.  We'll validate
-    // whether it's reasonable or not later.
-    if (effective_visibility == SymbolVisibility::VISIBILITY_UNSET) {
-      switch (features().default_symbol_visibility()) {
-        case FeatureSet::VisibilityFeature::EXPORT_ALL:
-          return SymbolVisibility::VISIBILITY_EXPORT;
-        case FeatureSet::VisibilityFeature::EXPORT_TOP_LEVEL:
-          return IsNestedDefinition() ? SymbolVisibility::VISIBILITY_LOCAL
-                                      : SymbolVisibility::VISIBILITY_EXPORT;
-        case FeatureSet::VisibilityFeature::LOCAL_ALL:
-        case FeatureSet::VisibilityFeature::STRICT:
-          return SymbolVisibility::VISIBILITY_LOCAL;
-
-        // Unset shouldn't be possible from the compiler without there being an
-        // error (recursive import, for example), but happens in unit
-        // tests so assume it represents pre-edition 2024 defaults. In either
-        // case we want to fail open.  We have a DCHECK here to make sure it can
-        // fail in tests, but not released code.
-        case FeatureSet::VisibilityFeature::DEFAULT_SYMBOL_VISIBILITY_UNKNOWN:
-        default:
-          ABSL_DCHECK(false);
-          return SymbolVisibility::VISIBILITY_EXPORT;
-      }
-    }
-
-    return effective_visibility;
-  }
-
-  /*
-   * Calculate whether this symbol can be accessed from the given
-   * FileDescriptor*.
-   *
-   * Returns true if the symbol is in the same file OR the symbol is `export`
-   */
-  bool IsVisibleFrom(FileDescriptor* other) const {
-    if (GetFile() == nullptr || other == nullptr) {
-      return false;
-    }
-
-    // Only Types (message/enum) have visibility.
-    if (!IsType()) {
-      return true;
-    }
-
-    // If we're dealing with a placeholder then just stop now, visibility can't
-    // be determined and we have to rely on the proto-compiler previously having
-    // checked the validity.
-    if (is_placeholder()) {
-      return true;
-    }
-
-    if (GetFile() == other) {
-      return true;
-    }
-
-    SymbolVisibility effective_visibility = GetEffectiveVisibility();
-
-    return effective_visibility == SymbolVisibility::VISIBILITY_EXPORT;
-  }
-
-  std::string GetVisibilityError(FileDescriptor* other,
-                                 absl::string_view usage = "") const {
-    const absl::string_view file_path =
-        GetFile() != nullptr ? GetFile()->name() : "unknown_file";
-    const absl::string_view symbol_name = full_name();
-
-    if (!IsType()) {
-      return absl::StrCat(
-          "Attempt to get a visibility error for a non-message/enum symbol ",
-          symbol_name, "\", defined in \"", file_path);
-    }
-
-    SymbolVisibility explicit_visibility = visibility_keyword();
-
-    std::string reason =
-        explicit_visibility == SymbolVisibility::VISIBILITY_LOCAL
-            ? "It is explicitly marked 'local'"
-            : absl::StrCat(
-                  "It defaulted to local from file-level 'option "
-                  "features.default_symbol_visibility = '",
-                  FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Name(
-                      features().default_symbol_visibility()),
-                  "';");
-
-    return absl::StrCat("Symbol \"", symbol_name, "\", defined in \"",
-                        file_path, "\" ", usage,
-                        " is "
-                        "not visible from \"",
-                        other->name(), "\". ", reason,
-                        " and cannot be accessed outside its own file");
-  }
-
-  const internal::SymbolBase* ptr() const { return ptr_; }
-
- private:
-  const internal::SymbolBase* ptr_;
-};
 
 const FieldDescriptor::CppType
     FieldDescriptor::kTypeToCppTypeMap[MAX_TYPE + 1] = {
@@ -1191,36 +851,6 @@ class PrefixRemover {
  private:
   std::string prefix_;
 };
-
-// A DescriptorPool contains a bunch of hash-maps to implement the
-// various Find*By*() methods.  Since hashtable lookups are O(1), it's
-// most efficient to construct a fixed set of large hash-maps used by
-// all objects in the pool rather than construct one or more small
-// hash-maps for each object.
-//
-// The keys to these hash-maps are (parent, name) or (parent, number) pairs.
-struct FullNameQuery {
-  absl::string_view query;
-  absl::string_view full_name() const { return query; }
-};
-struct SymbolByFullNameHash {
-  using is_transparent = void;
-
-  template <typename T>
-  size_t operator()(const T& s) const {
-    return absl::HashOf(s.full_name());
-  }
-};
-struct SymbolByFullNameEq {
-  using is_transparent = void;
-
-  template <typename T, typename U>
-  bool operator()(const T& a, const U& b) const {
-    return a.full_name() == b.full_name();
-  }
-};
-using SymbolsByNameSet =
-    absl::flat_hash_set<Symbol, SymbolByFullNameHash, SymbolByFullNameEq>;
 
 struct ParentNameQueryBase {
   std::pair<const void*, absl::string_view> query;
@@ -1968,7 +1598,7 @@ class DescriptorPool::Tables {
       std::unique_ptr<internal::FlatAllocator::Allocation, FlatAllocDeleter>>
       flat_allocs_;
 
-  SymbolsByNameSet symbols_by_name_;
+  internal::SymbolsByNameSet symbols_by_name_;
   DescriptorsByNameSet<FileDescriptor> files_by_name_;
   ExtensionsGroupedByDescriptorMap extensions_;
 
@@ -2087,7 +1717,7 @@ void DescriptorPool::Tables::RollbackToLastCheckpoint(
 // -------------------------------------------------------------------
 
 inline Symbol DescriptorPool::Tables::FindSymbol(absl::string_view key) const {
-  auto it = symbols_by_name_.find(FullNameQuery{key});
+  auto it = symbols_by_name_.find(internal::FullNameQuery{key});
   return it == symbols_by_name_.end() ? Symbol() : *it;
 }
 
@@ -5034,12 +4664,58 @@ class DescriptorBuilder {
     // Validates the value for the option field of the currently interpreted
     // option and then sets it on the unknown_field.
     bool SetOptionValue(const FieldDescriptor* option_field,
-                        UnknownFieldSet* unknown_fields, Message* options);
+                        UnknownFieldSet* unknown_fields, Message* options,
+                        const SourceCodePath& src_path,
+                        const SourceCodePath& dest_path);
 
     // Parses an aggregate value for a CPPTYPE_MESSAGE option and
     // saves it into *unknown_fields.
     bool SetAggregateOption(const FieldDescriptor* option_field,
-                            UnknownFieldSet* unknown_fields, Message* options);
+                            UnknownFieldSet* unknown_fields, Message* options,
+                            const SourceCodePath& src_path,
+                            const SourceCodePath& dest_path);
+
+    // Represents the relative source location of a field specified within an
+    // aggregate option block (e.g., `option (my_opt) = { field_a: 1 }`).
+    struct AggregateFieldLocation {
+      // Path to the uninterpreted option in the descriptor (e.g., [options,
+      // index]). This is used later during UpdateSourceCodeInfo to find the
+      // absolute source location (line and column) where the aggregate option
+      // block starts, enabling the calculation of absolute source locations for
+      // the nested fields within the block.
+      SourceCodePath uninterpreted_path;
+      // Destination path for the option field itself.
+      SourceCodePath field_dest_path;
+      // Marker for the value type (e.g. kPositiveIntValueFieldNumber, etc.)
+      int value_marker;
+      // Relative start and end line/column span of the field name within the
+      // aggregate string.
+      TextFormat::ParseLocationRange name_range;
+      // Relative start and end line/column span of the field value within the
+      // aggregate string.
+      TextFormat::ParseLocationRange val_range;
+    };
+    // Accumulates all sub-field locations gathered during aggregate option
+    // interpretation.
+    std::vector<AggregateFieldLocation> aggregate_field_locations_;
+
+    // Recursively traverses a parsed aggregate option message and its
+    // ParseInfoTree to collect relative locations for all populated sub-fields.
+    void CollectAggregateFieldLocations(
+        const Message& message, const TextFormat::ParseInfoTree& tree,
+        const SourceCodePath& uninterpreted_path,
+        const SourceCodePath& dest_path);
+
+    // Determines the appropriate UninterpretedOption value field number (e.g.,
+    // kPositiveIntValueFieldNumber, kStringValueFieldNumber) for a given field.
+    int GetValueMarker(const FieldDescriptor* field, const Message& message,
+                       int index);
+
+    // Translates relative ParseLocationRange coordinates (from within an
+    // aggregate option string) into absolute .proto file coordinates using base
+    // line/column.
+    void SetSpan(SourceCodeInfo_Location* loc, int base_line, int base_col,
+                 const TextFormat::ParseLocationRange& range);
 
     // Convenience functions to set an int field the right way, depending on
     // its wire type (a single int CppType can represent multiple wire types).
@@ -10110,11 +9786,18 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
     return false;  // ExamineIfOptionIsSet() already added the error.
   }
 
+  // record the element path of the interpreted option
+  if (field->is_repeated()) {
+    int index = repeated_option_counts_[dest_path]++;
+    dest_path.push_back(index);
+  }
+
   // First set the value on the UnknownFieldSet corresponding to the
   // innermost message.
   std::unique_ptr<UnknownFieldSet> unknown_fields =
       std::make_unique<UnknownFieldSet>();
-  if (!SetOptionValue(field, unknown_fields.get(), options)) {
+  if (!SetOptionValue(field, unknown_fields.get(), options, src_path,
+                      dest_path)) {
     return false;  // SetOptionValue() already added the error.
   }
 
@@ -10155,11 +9838,6 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   options->GetReflection()->MutableUnknownFields(options)->MergeFrom(
       *unknown_fields);
 
-  // record the element path of the interpreted option
-  if (field->is_repeated()) {
-    int index = repeated_option_counts_[dest_path]++;
-    dest_path.push_back(index);
-  }
   interpreted_paths_[src_path] = dest_path;
 
   return true;
@@ -10170,6 +9848,15 @@ void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
   if (interpreted_paths_.empty()) {
     // nothing to do!
     return;
+  }
+
+  // Group all aggregate field locations by their uninterpreted option path
+  // prefix to enable O(1) lookup when mapping aggregate sub-field locations.
+  absl::flat_hash_map<SourceCodePath,
+                      std::vector<const AggregateFieldLocation*>>
+      agg_loc_map;
+  for (const AggregateFieldLocation& afl : aggregate_field_locations_) {
+    agg_loc_map[afl.uninterpreted_path].push_back(&afl);
   }
 
   // We find locations that match keys in interpreted_paths_ and
@@ -10235,9 +9922,30 @@ void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
                                              match_dest.end());
           mapped_loc->add_path(uninterpreted_field);
 
-          // TODO: b/168903973 - recursively process options with aggregate
-          // values and add locations. Example: [(my_opt) = {a: 1, b: 2}]
-          // Locations of `a` and `b` are not added yet.
+          if (uninterpreted_field ==
+              UninterpretedOption::kAggregateValueFieldNumber) {
+            SourceCodePath agg_path(loc->path().begin(), loc->path().end());
+
+            int base_line = loc->span(0);
+            int base_col = loc->span(1);
+
+            auto it = agg_loc_map.find(agg_path);
+            if (it != agg_loc_map.end()) {
+              for (const AggregateFieldLocation* afl : it->second) {
+                SourceCodeInfo_Location* name_loc = new_locs.Add();
+                name_loc->mutable_path()->Assign(afl->field_dest_path.begin(),
+                                                 afl->field_dest_path.end());
+                name_loc->add_path(UninterpretedOption::kNameFieldNumber);
+                SetSpan(name_loc, base_line, base_col, afl->name_range);
+
+                SourceCodeInfo_Location* val_loc = new_locs.Add();
+                val_loc->mutable_path()->Assign(afl->field_dest_path.begin(),
+                                                afl->field_dest_path.end());
+                val_loc->add_path(afl->value_marker);
+                SetSpan(val_loc, base_line, base_col, afl->val_range);
+              }
+            }
+          }
         }
         // don't copy this row since it is a sub-location that we're removing
         // (or we already mapped it if it's a direct child)
@@ -10381,7 +10089,8 @@ std::string ValueMustBeInt(absl::string_view type_name,
 
 bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
     const FieldDescriptor* option_field, UnknownFieldSet* unknown_fields,
-    Message* options) {
+    Message* options, const SourceCodePath& src_path,
+    const SourceCodePath& dest_path) {
   // We switch on the CppType to validate.
   switch (option_field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
@@ -10612,7 +10321,8 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
                                          uninterpreted_option_->string_value());
       break;
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      if (!SetAggregateOption(option_field, unknown_fields, options)) {
+      if (!SetAggregateOption(option_field, unknown_fields, options, src_path,
+                              dest_path)) {
         return false;
       }
   }
@@ -10693,7 +10403,8 @@ class AggregateErrorCollector : public io::ErrorCollector {
 // message, and serialize the resulting message to produce the value.
 bool DescriptorBuilder::OptionInterpreter::SetAggregateOption(
     const FieldDescriptor* option_field, UnknownFieldSet* unknown_fields,
-    Message* options) {
+    Message* options, const SourceCodePath& src_path,
+    const SourceCodePath& dest_path) {
   if (!uninterpreted_option_->has_aggregate_value()) {
     return AddValueError([&] {
       return absl::StrCat("Option \"", option_field->full_name(),
@@ -10717,6 +10428,8 @@ bool DescriptorBuilder::OptionInterpreter::SetAggregateOption(
   TextFormat::Parser parser;
   parser.RecordErrorsTo(&collector);
   parser.SetFinder(&finder);
+  TextFormat::ParseInfoTree info_tree;
+  parser.WriteLocationsTo(&info_tree);
   if (!parser.ParseFromString(uninterpreted_option_->aggregate_value(),
                               dynamic.get())) {
     if (get_allow_unknown(builder_->pool_)) {
@@ -10732,6 +10445,13 @@ bool DescriptorBuilder::OptionInterpreter::SetAggregateOption(
       return false;
     }
   } else {
+    SourceCodePath sub_src_path = src_path;
+    sub_src_path.push_back(UninterpretedOption::kAggregateValueFieldNumber);
+    SourceCodePath sub_dest_path = dest_path;
+    sub_dest_path.push_back(UninterpretedOption::kAggregateValueFieldNumber);
+    CollectAggregateFieldLocations(*dynamic, info_tree, sub_src_path,
+                                   sub_dest_path);
+
     std::string serial;
     ABSL_CHECK(dynamic->SerializeToString(&serial));  // Never fails
     if (option_field->type() == FieldDescriptor::TYPE_MESSAGE) {
@@ -10744,6 +10464,132 @@ bool DescriptorBuilder::OptionInterpreter::SetAggregateOption(
     }
     return true;
   }
+}
+
+void DescriptorBuilder::OptionInterpreter::CollectAggregateFieldLocations(
+    const Message& message, const TextFormat::ParseInfoTree& tree,
+    const SourceCodePath& uninterpreted_path, const SourceCodePath& dest_path) {
+  const Reflection* reflection = message.GetReflection();
+  std::vector<const FieldDescriptor*> fields;
+  reflection->ListFields(message, &fields);
+
+  for (const FieldDescriptor* field : fields) {
+    auto record_field_location = [&](const TextFormat::FieldLocation& loc,
+                                     size_t v_idx, int curr_idx) {
+      int val_marker_idx = field->is_repeated() ? curr_idx : -1;
+      SourceCodePath field_dest_path = dest_path;
+      field_dest_path.push_back(field->number());
+      if (field->is_repeated()) {
+        field_dest_path.push_back(curr_idx);
+      }
+
+      AggregateFieldLocation afl;
+      afl.uninterpreted_path = uninterpreted_path;
+      afl.field_dest_path = field_dest_path;
+      afl.value_marker = GetValueMarker(field, message, val_marker_idx);
+      afl.name_range = loc.name;
+      afl.val_range = loc.values[v_idx];
+      aggregate_field_locations_.push_back(std::move(afl));
+
+      if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+        const Message& sub_message =
+            field->is_repeated()
+                ? reflection->GetRepeatedMessage(message, field, curr_idx)
+                : reflection->GetMessage(message, field);
+        const TextFormat::ParseInfoTree* sub_tree =
+            tree.GetTreeForNested(field, val_marker_idx);
+        if (sub_tree != nullptr) {
+          SourceCodePath sub_dest = field_dest_path;
+          sub_dest.push_back(UninterpretedOption::kAggregateValueFieldNumber);
+          CollectAggregateFieldLocations(sub_message, *sub_tree,
+                                         uninterpreted_path, sub_dest);
+        }
+      }
+    };
+
+    if (field->is_repeated()) {
+      int curr_idx = 0;
+      // Text format allows two different syntaxes for repeated fields so
+      // we need to handle potential cases like this:
+      //
+      // a: [1, 2]
+      // a: 3
+      //
+      // Here the outer loop for field_occurrence will run for each occureence
+      // of `a`. While the inner loop will run for each value in the repeated
+      // field.
+      for (size_t field_occurrence = 0;; ++field_occurrence) {
+        absl::StatusOr<TextFormat::FieldLocation> location =
+            tree.GetFieldLocation(field, field_occurrence);
+        if (!location.ok()) break;
+        for (size_t v_idx = 0; v_idx < location->values.size(); ++v_idx) {
+          record_field_location(*location, v_idx, curr_idx);
+          ++curr_idx;
+        }
+      }
+    } else {
+      absl::StatusOr<TextFormat::FieldLocation> location =
+          tree.GetFieldLocation(field);
+      if (location.ok() && !location->values.empty()) {
+        record_field_location(*location, 0, -1);
+      } else {
+        ABSL_LOG(WARNING) << "No location in textformat found for field: "
+                          << field->name();
+      }
+    }
+  }
+}
+
+int DescriptorBuilder::OptionInterpreter::GetValueMarker(
+    const FieldDescriptor* field, const Message& message, int index) {
+  const Reflection* reflection = message.GetReflection();
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_INT32: {
+      int32_t val = field->is_repeated()
+                        ? reflection->GetRepeatedInt32(message, field, index)
+                        : reflection->GetInt32(message, field);
+      return val >= 0 ? UninterpretedOption::kPositiveIntValueFieldNumber
+                      : UninterpretedOption::kNegativeIntValueFieldNumber;
+    }
+    case FieldDescriptor::CPPTYPE_INT64: {
+      int64_t val = field->is_repeated()
+                        ? reflection->GetRepeatedInt64(message, field, index)
+                        : reflection->GetInt64(message, field);
+      return val >= 0 ? UninterpretedOption::kPositiveIntValueFieldNumber
+                      : UninterpretedOption::kNegativeIntValueFieldNumber;
+    }
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return UninterpretedOption::kPositiveIntValueFieldNumber;
+    case FieldDescriptor::CPPTYPE_BOOL:
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return UninterpretedOption::kIdentifierValueFieldNumber;
+    case FieldDescriptor::CPPTYPE_FLOAT:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      return UninterpretedOption::kDoubleValueFieldNumber;
+    case FieldDescriptor::CPPTYPE_STRING:
+      return UninterpretedOption::kStringValueFieldNumber;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return UninterpretedOption::kAggregateValueFieldNumber;
+    default:
+      return 0;
+  }
+}
+
+void DescriptorBuilder::OptionInterpreter::SetSpan(
+    SourceCodeInfo_Location* loc, int base_line, int base_col,
+    const TextFormat::ParseLocationRange& range) {
+  int start_line = base_line + range.start.line;
+  int start_col = (range.start.line == 0) ? (base_col + 1 + range.start.column)
+                                          : range.start.column;
+  int end_line = base_line + range.end.line;
+  int end_col = (range.end.line == 0) ? (base_col + 1 + range.end.column)
+                                      : range.end.column;
+
+  loc->add_span(start_line);
+  loc->add_span(start_col);
+  loc->add_span(end_line);
+  loc->add_span(end_col);
 }
 
 void DescriptorBuilder::OptionInterpreter::SetInt32(

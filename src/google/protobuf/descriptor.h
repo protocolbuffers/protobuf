@@ -124,7 +124,6 @@ class Reflection;
 // Defined in descriptor.cc
 class DescriptorBuilder;
 class FileDescriptorTables;
-class Symbol;
 
 // Defined in unknown_field_set.h.
 class UnknownField;
@@ -164,6 +163,7 @@ class Printer;
 
 namespace internal {
 class InternalFeatureHelper;
+class Symbol;
 }  // namespace internal
 
 namespace internal {
@@ -343,7 +343,7 @@ class PROTOBUF_EXPORT LazyDescriptor {
 
 class PROTOBUF_EXPORT SymbolBase {
  private:
-  friend class google::protobuf::Symbol;
+  friend class Symbol;
   uint8_t symbol_type_;
 };
 
@@ -754,7 +754,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const FieldDescriptor* map_value() const;
 
  private:
-  friend class Symbol;
+  friend class internal::Symbol;
   typedef MessageOptions OptionsType;
 
   // Allows tests to test CopyTo(proto, true).
@@ -1198,7 +1198,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
       SourceLocation* out_location) const;
 
  private:
-  friend class Symbol;
+  friend class internal::Symbol;
   typedef FieldOptions OptionsType;
 
   // For access to CalculateCppRepeatedType.
@@ -1408,7 +1408,7 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
       SourceLocation* out_location) const;
 
  private:
-  friend class Symbol;
+  friend class internal::Symbol;
   typedef OneofOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -1592,7 +1592,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
       SourceLocation* out_location) const;
 
  private:
-  friend class Symbol;
+  friend class internal::Symbol;
   friend bool internal::IsEnumFullySequential(const EnumDescriptor* enum_desc);
   friend class SymbolChecker;
   typedef EnumOptions OptionsType;
@@ -1748,7 +1748,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
       SourceLocation* out_location) const;
 
  private:
-  friend class Symbol;
+  friend class internal::Symbol;
   typedef EnumValueOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -1859,7 +1859,7 @@ class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
       SourceLocation* out_location) const;
 
  private:
-  friend class Symbol;
+  friend class internal::Symbol;
   typedef ServiceOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -1969,7 +1969,7 @@ class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
       SourceLocation* out_location) const;
 
  private:
-  friend class Symbol;
+  friend class internal::Symbol;
   typedef MethodOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -2181,7 +2181,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
       const std::vector<int>& path, SourceLocation* out_location) const;
 
  private:
-  friend class Symbol;
+  friend class internal::Symbol;
   friend class SymbolChecker;
   friend class FileDescriptorLegacy;
   typedef FileOptions OptionsType;
@@ -2777,8 +2777,8 @@ class PROTOBUF_EXPORT DescriptorPool {
   // symbol is defined if necessary. Will create a placeholder if the type
   // doesn't exist in the fallback database, or the file doesn't build
   // successfully.
-  Symbol CrossLinkOnDemandHelper(absl::string_view name,
-                                 bool expecting_enum) const;
+  internal::Symbol CrossLinkOnDemandHelper(absl::string_view name,
+                                           bool expecting_enum) const;
 
   // Create a placeholder FileDescriptor of the specified name
   FileDescriptor* NewPlaceholderFile(absl::string_view name) const;
@@ -2791,10 +2791,10 @@ class PROTOBUF_EXPORT DescriptorPool {
     PLACEHOLDER_EXTENDABLE_MESSAGE
   };
   // Create a placeholder Descriptor of the specified name
-  Symbol NewPlaceholder(absl::string_view name,
-                        PlaceholderType placeholder_type) const;
-  Symbol NewPlaceholderWithMutexHeld(absl::string_view name,
-                                     PlaceholderType placeholder_type) const;
+  internal::Symbol NewPlaceholder(absl::string_view name,
+                                  PlaceholderType placeholder_type) const;
+  internal::Symbol NewPlaceholderWithMutexHeld(
+      absl::string_view name, PlaceholderType placeholder_type) const;
 
 #ifndef SWIG
   mutable absl::Mutex field_memo_table_mutex_;
