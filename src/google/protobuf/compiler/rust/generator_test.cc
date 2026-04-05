@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
