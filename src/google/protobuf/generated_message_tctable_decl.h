@@ -13,7 +13,6 @@
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_DECL_H__
 
 #include <array>
-#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
@@ -433,6 +432,7 @@ struct alignas(uint64_t) TcParseTableBase {
     constexpr FieldAux() : message_globals_p(nullptr) {}
     constexpr FieldAux(FieldAuxEnumData, const uint32_t* enum_data)
         : enum_data(enum_data) {}
+    // NOLINTBEGIN(google-explicit-constructor)
     constexpr FieldAux(field_layout::Offset off) : offset(off.off) {}
     constexpr FieldAux(int32_t range_first, int32_t range_last)
         : enum_range{range_first, range_last} {}
@@ -442,6 +442,7 @@ struct alignas(uint64_t) TcParseTableBase {
     constexpr FieldAux(MapAuxInfo map_info) : map_info(map_info) {}
     constexpr FieldAux(LazyEagerVerifyFnType verify_func)
         : verify_func(verify_func) {}
+    // NOLINTEND(google-explicit-constructor)
     struct {
       int32_t first;  // the first label in the range (inclusive)
       int32_t last;   // the last label in the range (inclusize)

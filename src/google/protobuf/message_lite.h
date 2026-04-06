@@ -33,9 +33,8 @@
 #include <utility>
 
 #include "absl/base/attributes.h"
-#include "absl/base/config.h"
+#include "absl/base/macros.h"
 #include "absl/log/absl_check.h"
-#include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
@@ -1218,6 +1217,7 @@ class PROTOBUF_EXPORT MessageLite {
   virtual const internal::ClassData* GetClassData() const = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
+  // NOLINTNEXTLINE(google3-readability-class-member-naming)
   internal::InternalMetadata _internal_metadata_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   const internal::ClassData* _class_data_;
