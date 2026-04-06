@@ -362,6 +362,7 @@ uint8_t* Message::_InternalSerializeImpl(const MessageLite& msg,
 }
 
 void Message::MergeFrom(const Message& from) {
+  if (&from == this) return;
   auto* class_to = GetClassData();
   auto* class_from = from.GetClassData();
   if (class_to == nullptr || class_to != class_from) {

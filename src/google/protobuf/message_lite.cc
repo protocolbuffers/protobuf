@@ -76,6 +76,7 @@ void MessageLite::CheckHasBitConsistency() const {
 }
 
 void MessageLite::CheckTypeAndMergeFrom(const MessageLite& other) {
+  if (&other == this) return;
   auto* data = GetClassData();
   auto* other_data = other.GetClassData();
 

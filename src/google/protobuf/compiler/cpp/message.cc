@@ -4407,7 +4407,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           $get_arena$;
           $annotate_mergefrom$;
           // @@protoc_insertion_point(class_specific_merge_from_start:$full_name$)
-          $DCHK$_NE(&from, _this);
+          $CHK$_NE(&from, _this);
           $uint32$ cached_has_bits = 0;
           (void)cached_has_bits;
 
