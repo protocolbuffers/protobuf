@@ -191,11 +191,15 @@ static_assert(PROTOBUF_FIELD_OFFSET(OptionGlobalsTypeInternal, _default) ==
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        OptionGlobalsTypeInternal Option_globals_;
+     OptionGlobalsTypeInternal Option_globals_
+        #ifdef PROTOBUF_MESSAGE_GLOBALS
+        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
+        #endif  // PROTOBUF_MESSAGE_GLOBALS
+        ;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Option_get_class_data() {
@@ -429,11 +433,15 @@ static_assert(PROTOBUF_FIELD_OFFSET(FieldGlobalsTypeInternal, _default) ==
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        FieldGlobalsTypeInternal Field_globals_;
+     FieldGlobalsTypeInternal Field_globals_
+        #ifdef PROTOBUF_MESSAGE_GLOBALS
+        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
+        #endif  // PROTOBUF_MESSAGE_GLOBALS
+        ;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Field_get_class_data() {
@@ -604,11 +612,15 @@ static_assert(PROTOBUF_FIELD_OFFSET(EnumValueGlobalsTypeInternal, _default) ==
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        EnumValueGlobalsTypeInternal EnumValue_globals_;
+     EnumValueGlobalsTypeInternal EnumValue_globals_
+        #ifdef PROTOBUF_MESSAGE_GLOBALS
+        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
+        #endif  // PROTOBUF_MESSAGE_GLOBALS
+        ;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* EnumValue_get_class_data() {
@@ -829,11 +841,15 @@ static_assert(PROTOBUF_FIELD_OFFSET(TypeGlobalsTypeInternal, _default) ==
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        TypeGlobalsTypeInternal Type_globals_;
+     TypeGlobalsTypeInternal Type_globals_
+        #ifdef PROTOBUF_MESSAGE_GLOBALS
+        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
+        #endif  // PROTOBUF_MESSAGE_GLOBALS
+        ;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Type_get_class_data() {
@@ -1043,11 +1059,15 @@ static_assert(PROTOBUF_FIELD_OFFSET(EnumGlobalsTypeInternal, _default) ==
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1  
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
     #ifdef PROTOBUF_MESSAGE_GLOBALS
     const
     #endif
-        EnumGlobalsTypeInternal Enum_globals_;
+     EnumGlobalsTypeInternal Enum_globals_
+        #ifdef PROTOBUF_MESSAGE_GLOBALS
+        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
+        #endif  // PROTOBUF_MESSAGE_GLOBALS
+        ;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Enum_get_class_data() {

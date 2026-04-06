@@ -1968,6 +1968,7 @@ cc_test(
         ":protobuf",
         ":test_textproto",
         ":test_util",
+        "//editions:edition_defaults_test_utils",
         "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:tokenizer",

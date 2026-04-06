@@ -26,6 +26,7 @@
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "editions/edition_defaults_test_utils.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/test_textproto.h"
@@ -2218,7 +2219,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
   auto defaults = FeatureResolver::CompileDefaults(
       feature_set_, {ext}, EDITION_99997_TEST_ONLY, EDITION_99999_TEST_ONLY);
   ASSERT_OK(defaults);
-  EXPECT_THAT(*defaults, EqualsProto(R"pb(
+  EXPECT_THAT(*defaults, compiler::PartiallyMatchesEditionDefaults(R"pb(
     minimum_edition: EDITION_99997_TEST_ONLY
     maximum_edition: EDITION_99999_TEST_ONLY
     defaults {
