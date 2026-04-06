@@ -100,10 +100,6 @@ template <class T>
 PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline ::absl::string_view
 GetFeatureSetDefaultsData();
 
-namespace v2 {
-class TableDrivenMessage;
-}  // namespace v2
-
 // Used to store values of type WireFormatLite::FieldType without having to
 // #include wire_format_lite.h.  Also, ensures that we use only one byte to
 // store these values, which is important to keep the layout of
@@ -659,7 +655,6 @@ class PROTOBUF_EXPORT ExtensionSet {
   friend class google::protobuf::internal::ReflectionVisit;
   friend struct google::protobuf::internal::DynamicExtensionInfoHelper;
   friend class google::protobuf::internal::WireFormat;
-  friend class google::protobuf::internal::v2::TableDrivenMessage;
 
   friend void internal::InitializeLazyExtensionSet();
   friend PROTOBUF_EXPORT bool internal::IsDescendant(const Message& root,
@@ -696,60 +691,7 @@ class PROTOBUF_EXPORT ExtensionSet {
                                        int end_field_number, uint8_t* target,
                                        io::EpsCopyOutputStream* stream) const;
   // Interface of a lazily parsed singular message extension.
-  class PROTOBUF_EXPORT LazyMessageExtension {
-   public:
-    LazyMessageExtension() = default;
-    LazyMessageExtension(const LazyMessageExtension&) = delete;
-    LazyMessageExtension& operator=(const LazyMessageExtension&) = delete;
-    virtual ~LazyMessageExtension() = default;
-
-    virtual LazyMessageExtension* Clone(Arena* arena,
-                                        const LazyMessageExtension& other,
-                                        Arena* other_arena) const = 0;
-    virtual const MessageLite& GetMessage(const MessageLite& prototype,
-                                          Arena* arena) const = 0;
-    virtual const MessageLite& GetMessageIgnoreUnparsed(
-        const MessageLite& prototype, Arena* arena) const = 0;
-    virtual MessageLite* MutableMessage(const MessageLite& prototype,
-                                        Arena* arena) = 0;
-    virtual void SetAllocatedMessage(MessageLite* message, Arena* arena) = 0;
-    virtual void UnsafeArenaSetAllocatedMessage(MessageLite* message,
-                                                Arena* arena) = 0;
-    [[nodiscard]] virtual MessageLite* ReleaseMessage(
-        const MessageLite& prototype, Arena* arena) = 0;
-    virtual MessageLite* UnsafeArenaReleaseMessage(const MessageLite& prototype,
-                                                   Arena* arena) = 0;
-
-    virtual bool HasUnparsed() const = 0;
-    virtual bool IsInitialized(const MessageLite* prototype,
-                               Arena* arena) const = 0;
-    virtual bool IsEagerSerializeSafe(const MessageLite* prototype,
-                                      Arena* arena) const = 0;
-    virtual size_t ByteSizeLong() const = 0;
-    virtual size_t SpaceUsedLong() const = 0;
-
-    virtual std::variant<size_t, const MessageLite*> UnparsedSizeOrMessage()
-        const = 0;
-
-    virtual void MergeFrom(const MessageLite* prototype,
-                           const LazyMessageExtension& other, Arena* arena,
-                           Arena* other_arena) = 0;
-    virtual void MergeFromMessage(const MessageLite& msg, Arena* arena) = 0;
-    virtual void Clear() = 0;
-
-    virtual const char* _InternalParse(const MessageLite& prototype,
-                                       Arena* arena, const char* ptr,
-                                       ParseContext* ctx) = 0;
-    virtual uint8_t* WriteMessageToArray(
-        const MessageLite* prototype, int number, uint8_t* target,
-        io::EpsCopyOutputStream* stream) const = 0;
-
-
-    virtual LazyField* GetUnderlyingField() = 0;
-
-   private:
-    virtual void UnusedKeyMethod();  // Dummy key method to avoid weak vtable.
-  };
+  class PROTOBUF_EXPORT LazyMessageExtension;
   // Give access to function defined below to see LazyMessageExtension.
   static LazyMessageExtension* MaybeCreateLazyExtensionImpl(Arena* arena);
   static LazyMessageExtension* MaybeCreateLazyExtension(Arena* arena) {
@@ -1686,7 +1628,7 @@ class MessageTypeTraits {
   typedef Type* MutableType;
   using InitType = const void*;
   static ConstType FromInitType(InitType v) {
-    return *static_cast<const Type*>(v);
+    return *internal::MessageGlobalsBase::ToDefaultInstance<Type>(v);
   }
   typedef MessageTypeTraits<Type> Singular;
   static constexpr bool kLifetimeBound = true;
@@ -1737,7 +1679,6 @@ class MessageTypeTraits {
 // Used by WireFormatVerify to extract the verify function from the registry.
 LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
     const MessageLite* extendee, int number);
-
 
 // forward declaration.
 class RepeatedMessageGenericTypeTraits;
@@ -1872,7 +1813,6 @@ auto TryGetLazyMessageFromExtensionSet(
 
 // -------------------------------------------------------------------
 // Generated accessors
-
 
 
 }  // namespace internal

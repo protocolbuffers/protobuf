@@ -54,6 +54,13 @@ inline absl::string_view ProtobufNamespace(const Options& opts) {
   return opts.opensource_runtime ? kOssNs : kGoogle3Ns;
 }
 
+// A helper for calling FieldDescriptor::CalculateCppRepeatedType() which is
+// private.
+inline FieldDescriptor::CppRepeatedType CalculateFieldDescriptorRepeatedType(
+    const FieldDescriptor* field) {
+  return field->CalculateCppRepeatedType();
+}
+
 inline std::string DeprecatedAttribute(const Options&,
                                        const FieldDescriptor* d) {
   return d->options().deprecated() ? "[[deprecated]] " : "";
@@ -264,10 +271,6 @@ std::string PrimitiveTypeName(const Options& options,
 // Get the declared type name in CamelCase format, as is used e.g. for the
 // methods of WireFormat.  For example, TYPE_INT32 becomes "Int32".
 const char* DeclaredTypeMethodName(FieldDescriptor::Type type);
-
-// Get the declared cpp_type name in CamelCase format, as is used e.g. for the
-// methods of v2 WireFormat.  For example, CPPTYPE_INT32 becomes "Int32".
-absl::string_view DeclaredCppTypeMethodName(FieldDescriptor::CppType type);
 
 // Return the code that evaluates to the number when compiled.
 std::string Int32ToString(int number);
@@ -494,10 +497,12 @@ const FieldDescriptor* FindHottestField(
 // Does the file contain any definitions that need extension_set.h?
 bool HasExtensionsOrExtendableMessage(const FileDescriptor* file);
 
-// Does the file have any repeated fields, necessitating the file to include
-// repeated_field.h? This does not include repeated extensions, since those are
-// all stored internally in an ExtensionSet, not a separate RepeatedField*.
-bool HasRepeatedFields(const FileDescriptor* file);
+// Does the file have any repeated fields matching the given repeated type,
+// necessitating the file to include repeated_field.h/repeated_field_proxy.h?
+// This does not include repeated extensions, since those are all stored
+// internally in an ExtensionSet, not a separate RepeatedField*.
+bool HasRepeatedFields(const FileDescriptor* file,
+                       FieldDescriptor::CppRepeatedType cpp_repeated_type);
 
 // Does the file have any string/bytes fields with ctype=STRING_PIECE? This
 // does not include extensions, since ctype is ignored for extensions.
@@ -517,22 +522,6 @@ bool HasMapFields(const FileDescriptor* file);
 
 // Does this file have any enum type definitions?
 bool HasEnumDefinitions(const FileDescriptor* file);
-
-// Returns true if any message in the file can have v2 table.
-bool HasV2MessageTable(const FileDescriptor* file, const Options& options);
-bool HasV2ParseTable(const FileDescriptor* file, const Options& options);
-
-bool IsV2ParseEnabledForMessage(const Descriptor* descriptor,
-                                const Options& options);
-
-// Returns true if a message (descriptor) can have v2 table.
-bool IsV2EnabledForMessage(const Descriptor* descriptor,
-                           const Options& options);
-
-// Returns true if a message (descriptor) needs v2 verify function because it
-// may (transitively) contain a required field.
-bool ShouldVerifyV2(const Descriptor* descriptor, const Options& options);
-
 
 // Does this file have generated parsing, serialization, and other
 // standard methods for which reflection-based fallback implementations exist?
@@ -1149,11 +1138,6 @@ void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
                                     const Options& options, bool for_parse,
                                     absl::string_view parameters,
                                     const Formatter& format);
-
-void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
-                                  const Options& options, bool for_parse,
-                                  absl::string_view parameters,
-                                  const Formatter& format);
 
 void GenerateUtf8CheckCodeForString(io::Printer* p,
                                     const FieldDescriptor* field,

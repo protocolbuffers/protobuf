@@ -49,13 +49,11 @@ typedef struct upb_Decoder {
   bool message_is_done;
   union {
     upb_Arena arena;
-    void* foo[UPB_ARENA_SIZE_HACK];
+    void* foo[UPB_ARENA_SIZE_HACK / sizeof(void*)];
   };
   upb_ErrorHandler err;
 
 #ifndef NDEBUG
-  const char* debug_tagstart;
-  const char* debug_valstart;
   char* trace_buf;
   char* trace_ptr;
   char* trace_end;

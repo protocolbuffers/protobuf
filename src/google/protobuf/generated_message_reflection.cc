@@ -80,6 +80,7 @@ using google::protobuf::internal::InternalMetadata;
 using google::protobuf::internal::kNoHasbit;
 using google::protobuf::internal::LazyField;
 using google::protobuf::internal::MapFieldBase;
+using google::protobuf::internal::MessageGlobalsBase;
 using google::protobuf::internal::MicroString;
 using google::protobuf::internal::MigrationSchema;
 using google::protobuf::internal::OnShutdownDelete;
@@ -383,6 +384,21 @@ static void ReportReflectionUsageEnumTypeError(
   USAGE_CHECK_MESSAGE_TYPE(METHOD);                     \
   USAGE_CHECK_##LABEL(METHOD);                          \
   USAGE_CHECK_TYPE(METHOD, CPPTYPE)
+
+#define USAGE_CHECK_EXPOSE_LEGACY_REPEATED_FIELD(intent, METHOD)         \
+  do {                                                                   \
+    switch (intent) {                                                    \
+      case GetRepeatedFieldIntent::kExposeDirectly:                      \
+        USAGE_CHECK_EQ(                                                  \
+            field->CalculateCppRepeatedType(),                           \
+            FieldDescriptor::CppRepeatedType::kRepeated, METHOD,         \
+            "Field is a proxied repeated field; this method requires a " \
+            "legacy repeated field.");                                   \
+        break;                                                           \
+      case GetRepeatedFieldIntent::kHiddenOrInternal:                    \
+        break;                                                           \
+    }                                                                    \
+  } while (0)
 
 }  // namespace
 
@@ -1851,6 +1867,7 @@ inline int32_t Reflection::IsEmptyOrCollectSetFields(
 
 void Reflection::ListFields(const Message& message,
                             std::vector<const FieldDescriptor*>* output) const {
+  STATIC_USAGE_CHECK_MESSAGE(ListFields, &message);
   output->clear();
   // Optimization:  The default instance never has any fields set.
   if (schema_.IsDefaultInstance(message)) return;
@@ -2726,8 +2743,6 @@ Message* Reflection::MutableRepeatedMessage(Message* message,
         MutableExtensionSet(message)->MutableRepeatedMessage(field->number(),
                                                              index));
   } else {
-    SetHasBitForRepeated(message, field);
-
     if (IsMapFieldInApi(field)) {
       return MutableRaw<MapFieldBase>(message, field)
           ->MutableRepeatedField()
@@ -2881,11 +2896,12 @@ bool Reflection::IsRepeatedOrMapFieldEmpty(const Message& message,
 void* Reflection::MutableRawRepeatedField(Message* message,
                                           const FieldDescriptor* field,
                                           FieldDescriptor::CppType cpptype,
-                                          int ctype,
-                                          const Descriptor* desc) const {
+                                          int ctype, const Descriptor* desc,
+                                          GetRepeatedFieldIntent intent) const {
   (void)ctype;  // Parameter is used by Google-internal code.
   USAGE_CHECK_REPEATED("MutableRawRepeatedField");
   USAGE_CHECK_MESSAGE_TYPE(MutableRawRepeatedField);
+  USAGE_CHECK_EXPOSE_LEGACY_REPEATED_FIELD(intent, "MutableRawRepeatedField");
 
   if (field->cpp_type() != cpptype &&
       (field->cpp_type() != FieldDescriptor::CPPTYPE_ENUM ||
@@ -2907,13 +2923,14 @@ void* Reflection::MutableRawRepeatedField(Message* message,
   }
 }
 
-const void* Reflection::GetRawRepeatedField(const Message& message,
-                                            const FieldDescriptor* field,
-                                            FieldDescriptor::CppType cpptype,
-                                            int ctype,
-                                            const Descriptor* desc) const {
+const void* Reflection::GetRawRepeatedField(
+    const Message& message, const FieldDescriptor* field,
+    FieldDescriptor::CppType cpptype, int ctype, const Descriptor* desc,
+    GetRepeatedFieldIntent intent) const {
   USAGE_CHECK_REPEATED("GetRawRepeatedField");
   USAGE_CHECK_MESSAGE_TYPE(GetRawRepeatedField);
+  USAGE_CHECK_EXPOSE_LEGACY_REPEATED_FIELD(intent, "GetRawRepeatedField");
+
   if (field->cpp_type() != cpptype &&
       (field->cpp_type() != FieldDescriptor::CPPTYPE_ENUM ||
        cpptype != FieldDescriptor::CPPTYPE_INT32))
@@ -3366,22 +3383,24 @@ void Reflection::ClearOneof(Message* message,
   }
 }
 
-#define HANDLE_TYPE(TYPE, CPPTYPE, CTYPE)                                  \
-  template <>                                                              \
-  const RepeatedField<TYPE>& Reflection::GetRepeatedFieldInternal<TYPE>(   \
-      const Message& message, const FieldDescriptor* field) const {        \
-    return *static_cast<const RepeatedField<TYPE>*>(                       \
-        GetRawRepeatedField(message, field, CPPTYPE, CTYPE, nullptr));     \
-  }                                                                        \
-                                                                           \
-  template <>                                                              \
-  RepeatedField<TYPE>* Reflection::MutableRepeatedFieldInternal<TYPE>(     \
-      Message * message, const FieldDescriptor* field) const {             \
-    if (!field->is_extension()) {                                          \
-      SetHasBitForRepeated(message, field);                                \
-    }                                                                      \
-    return static_cast<RepeatedField<TYPE>*>(                              \
-        MutableRawRepeatedField(message, field, CPPTYPE, CTYPE, nullptr)); \
+#define HANDLE_TYPE(TYPE, CPPTYPE, CTYPE)                                      \
+  template <>                                                                  \
+  const RepeatedField<TYPE>& Reflection::GetRepeatedFieldInternal<TYPE>(       \
+      const Message& message, const FieldDescriptor* field,                    \
+      GetRepeatedFieldIntent intent) const {                                   \
+    return *static_cast<const RepeatedField<TYPE>*>(                           \
+        GetRawRepeatedField(message, field, CPPTYPE, CTYPE, nullptr, intent)); \
+  }                                                                            \
+                                                                               \
+  template <>                                                                  \
+  RepeatedField<TYPE>* Reflection::MutableRepeatedFieldInternal<TYPE>(         \
+      Message * message, const FieldDescriptor* field,                         \
+      GetRepeatedFieldIntent intent) const {                                   \
+    if (!field->is_extension()) {                                              \
+      SetHasBitForRepeated(message, field);                                    \
+    }                                                                          \
+    return static_cast<RepeatedField<TYPE>*>(MutableRawRepeatedField(          \
+        message, field, CPPTYPE, CTYPE, nullptr, intent));                     \
   }
 
 HANDLE_TYPE(int32_t, FieldDescriptor::CPPTYPE_INT32, -1);
@@ -3395,21 +3414,21 @@ HANDLE_TYPE(bool, FieldDescriptor::CPPTYPE_BOOL, -1);
 
 #undef HANDLE_TYPE
 
-const void* Reflection::GetRawRepeatedString(const Message& message,
-                                             const FieldDescriptor* field,
-                                             bool is_string) const {
+const void* Reflection::GetRawRepeatedString(
+    const Message& message, const FieldDescriptor* field, bool is_string,
+    GetRepeatedFieldIntent intent) const {
   (void)is_string;  // Parameter is used by Google-internal code.
   return GetRawRepeatedField(message, field, FieldDescriptor::CPPTYPE_STRING,
-                             FieldOptions::STRING, nullptr);
+                             FieldOptions::STRING, nullptr, intent);
 }
 
-void* Reflection::MutableRawRepeatedString(Message* message,
-                                           const FieldDescriptor* field,
-                                           bool is_string) const {
+void* Reflection::MutableRawRepeatedString(
+    Message* message, const FieldDescriptor* field, bool is_string,
+    GetRepeatedFieldIntent intent) const {
   (void)is_string;  // Parameter is used by Google-internal code.
   return MutableRawRepeatedField(message, field,
                                  FieldDescriptor::CPPTYPE_STRING,
-                                 FieldOptions::STRING, nullptr);
+                                 FieldOptions::STRING, nullptr, intent);
 }
 
 // Template implementations of basic accessors.  Inline because each
@@ -3666,7 +3685,7 @@ void Reflection::PopulateTcParseFieldAux(
         field_aux++->offset = schema_.SizeofSplit();
         break;
       case internal::TailCallTableInfo::kSubTable:
-      case internal::TailCallTableInfo::kSubMessageWeak:
+      case internal::TailCallTableInfo::kSubMessageGlobalsWeak:
       case internal::TailCallTableInfo::kMessageVerifyFunc:
       case internal::TailCallTableInfo::kSelfVerifyFunc:
         ABSL_LOG(FATAL) << "Not supported";
@@ -3679,9 +3698,10 @@ void Reflection::PopulateTcParseFieldAux(
         // unsupported to fallback to reflection.
         field_aux++->map_info = internal::MapAuxInfo{};
         break;
-      case internal::TailCallTableInfo::kSubMessage:
-        field_aux++->message_default_p =
-            GetDefaultMessageInstance(aux_entry.field);
+      case internal::TailCallTableInfo::kSubMessageGlobals:
+        field_aux++->message_globals_p =
+            MessageGlobalsBase::FromDefaultInstance(
+                GetDefaultMessageInstance(aux_entry.field));
         break;
       case internal::TailCallTableInfo::kEnumRange:
         field_aux++->enum_range = {aux_entry.enum_range.first,
@@ -3815,10 +3835,11 @@ namespace {
 
 // Helper function to transform migration schema into reflection schema.
 ReflectionSchema MigrationToReflectionSchema(
-    const Message* const* default_instance, const uint32_t* offsets,
+    const MessageGlobalsBase* const* message_globals, const uint32_t* offsets,
     MigrationSchema migration_schema) {
   ReflectionSchema result;
-  result.default_instance_ = *default_instance;
+  result.default_instance_ =
+      MessageGlobalsBase::ToDefaultInstance<Message>(*message_globals);
   int index = migration_schema.offsets_index;
 
   // First values are offsets to the special fields, but they are optional.
@@ -3866,12 +3887,12 @@ class AssignDescriptorsHelper {
   AssignDescriptorsHelper(MessageFactory* factory,
                           const EnumDescriptor** file_level_enum_descriptors,
                           const MigrationSchema* schemas,
-                          const Message* const* default_instance_data,
+                          const MessageGlobalsBase* const* message_globals_data,
                           const uint32_t* offsets)
       : factory_(factory),
         file_level_enum_descriptors_(file_level_enum_descriptors),
         schemas_(schemas),
-        default_instance_data_(default_instance_data),
+        message_globals_data_(message_globals_data),
         offsets_(offsets) {}
 
   void AssignMessageDescriptor(const Descriptor* descriptor) {
@@ -3881,8 +3902,10 @@ class AssignDescriptorsHelper {
 
     // If there is no default instance we only want to initialize the descriptor
     // without updating the reflection.
-    if (default_instance_data_[0] != nullptr) {
-      auto& class_data = default_instance_data_[0]->GetClassData()->full();
+    if (message_globals_data_[0] != nullptr) {
+      auto* default_instance =
+          MessageGlobalsBase::ToDefaultInstance(message_globals_data_[0]);
+      auto& class_data = default_instance->GetClassData()->full();
       // If there is no descriptor_table in the class data, then it is not
       // interested in receiving reflection information either.
       if (class_data.descriptor_table() != nullptr) {
@@ -3890,7 +3913,7 @@ class AssignDescriptorsHelper {
 
         class_data.set_reflection(OnShutdownDelete(new Reflection(
             descriptor,
-            MigrationToReflectionSchema(default_instance_data_, offsets_,
+            MigrationToReflectionSchema(message_globals_data_, offsets_,
                                         *schemas_),
             DescriptorPool::internal_generated_pool(), factory_)));
       }
@@ -3899,7 +3922,7 @@ class AssignDescriptorsHelper {
       AssignEnumDescriptor(descriptor->enum_type(i));
     }
     schemas_++;
-    default_instance_data_++;
+    message_globals_data_++;
   }
 
   void AssignEnumDescriptor(const EnumDescriptor* descriptor) {
@@ -3911,7 +3934,7 @@ class AssignDescriptorsHelper {
   MessageFactory* factory_;
   const EnumDescriptor** file_level_enum_descriptors_;
   const MigrationSchema* schemas_;
-  const Message* const* default_instance_data_;
+  const MessageGlobalsBase* const* message_globals_data_;
   const uint32_t* offsets_;
 };
 
@@ -3959,7 +3982,7 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
   MessageFactory* factory = MessageFactory::generated_factory();
 
   AssignDescriptorsHelper helper(factory, table->file_level_enum_descriptors,
-                                 table->schemas, table->default_instances,
+                                 table->schemas, table->message_globals,
                                  table->offsets);
 
   for (int i = 0; i < file->message_type_count(); i++) {
@@ -4048,10 +4071,14 @@ void RegisterFileLevelMetadata(const DescriptorTable* table) {
   AssignDescriptors(table);
   auto* file = DescriptorPool::internal_generated_pool()->FindFileByName(
       table->filename);
-  auto defaults = table->default_instances;
+  auto* const* globals = table->message_globals;
   internal::cpp::VisitDescriptorsInFileOrder(file, [&](auto* desc) {
-    MessageFactory::InternalRegisterGeneratedMessage(desc, *defaults);
-    ++defaults;
+    // Weak message globals may be null. Pass null default instance.
+    MessageFactory::InternalRegisterGeneratedMessage(
+        desc, *globals == nullptr
+                  ? nullptr
+                  : MessageGlobalsBase::ToDefaultInstance<Message>(*globals));
+    ++globals;
     return std::false_type{};
   });
 }
@@ -4138,8 +4165,8 @@ const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
   InitProtobufDefaults();
 
   // Now check if the table has it. If so, return it.
-  if (const auto* msg = table->default_instances[index]) {
-    return msg;
+  if (const auto* globals = table->message_globals[index]) {
+    return MessageGlobalsBase::ToDefaultInstance<Message>(globals);
   }
 
   if (!force_build) {

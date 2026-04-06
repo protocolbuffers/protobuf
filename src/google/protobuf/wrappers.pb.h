@@ -57,40 +57,76 @@ namespace google {
 namespace protobuf {
 class BoolValue;
 struct BoolValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern BoolValueGlobalsTypeInternal _BoolValue_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern BoolValueGlobalsTypeInternal BoolValue_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull BoolValue_class_data_;
+#else
+PROTOBUF_EXPORT extern const BoolValueGlobalsTypeInternal BoolValue_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class BytesValue;
 struct BytesValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern BytesValueGlobalsTypeInternal _BytesValue_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern BytesValueGlobalsTypeInternal BytesValue_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull BytesValue_class_data_;
+#else
+PROTOBUF_EXPORT extern const BytesValueGlobalsTypeInternal BytesValue_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class DoubleValue;
 struct DoubleValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern DoubleValueGlobalsTypeInternal _DoubleValue_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern DoubleValueGlobalsTypeInternal DoubleValue_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DoubleValue_class_data_;
+#else
+PROTOBUF_EXPORT extern const DoubleValueGlobalsTypeInternal DoubleValue_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class FloatValue;
 struct FloatValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FloatValueGlobalsTypeInternal _FloatValue_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern FloatValueGlobalsTypeInternal FloatValue_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FloatValue_class_data_;
+#else
+PROTOBUF_EXPORT extern const FloatValueGlobalsTypeInternal FloatValue_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class Int32Value;
 struct Int32ValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern Int32ValueGlobalsTypeInternal _Int32Value_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern Int32ValueGlobalsTypeInternal Int32Value_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Int32Value_class_data_;
+#else
+PROTOBUF_EXPORT extern const Int32ValueGlobalsTypeInternal Int32Value_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class Int64Value;
 struct Int64ValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern Int64ValueGlobalsTypeInternal _Int64Value_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern Int64ValueGlobalsTypeInternal Int64Value_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Int64Value_class_data_;
+#else
+PROTOBUF_EXPORT extern const Int64ValueGlobalsTypeInternal Int64Value_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class StringValue;
 struct StringValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern StringValueGlobalsTypeInternal _StringValue_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern StringValueGlobalsTypeInternal StringValue_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull StringValue_class_data_;
+#else
+PROTOBUF_EXPORT extern const StringValueGlobalsTypeInternal StringValue_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class UInt32Value;
 struct UInt32ValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern UInt32ValueGlobalsTypeInternal _UInt32Value_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern UInt32ValueGlobalsTypeInternal UInt32Value_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UInt32Value_class_data_;
+#else
+PROTOBUF_EXPORT extern const UInt32ValueGlobalsTypeInternal UInt32Value_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class UInt64Value;
 struct UInt64ValueGlobalsTypeInternal;
-PROTOBUF_EXPORT extern UInt64ValueGlobalsTypeInternal _UInt64Value_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern UInt64ValueGlobalsTypeInternal UInt64Value_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UInt64Value_class_data_;
+#else
+PROTOBUF_EXPORT extern const UInt64ValueGlobalsTypeInternal UInt64Value_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace protobuf
 }  // namespace google
 
@@ -116,11 +152,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt64Value final :
 #endif
 
   template <typename = void>
-  explicit constexpr UInt64Value(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr UInt64Value(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline UInt64Value(const UInt64Value& from) : UInt64Value(nullptr, from) {}
-  inline UInt64Value(UInt64Value&& from) noexcept
-      : UInt64Value(nullptr, ::std::move(from)) {}
+  inline UInt64Value(UInt64Value&& from) noexcept : UInt64Value(nullptr, ::std::move(from)) {}
   inline UInt64Value& operator=(const UInt64Value& from) {
     CopyFrom(from);
     return *this;
@@ -155,8 +192,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt64Value final :
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const UInt64Value& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<UInt64Value>(
-        &_UInt64Value_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<UInt64Value>(&UInt64Value_globals_);
   }
   static constexpr int kIndexInFileMessages = 3;
   friend void swap(UInt64Value& a, UInt64Value& b) { a.Swap(&b); }
@@ -241,7 +277,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt64Value final :
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -263,11 +301,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt64Value final :
   // @@protoc_insertion_point(class_scope:google.protobuf.UInt64Value)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<0, 1,
+                          0, 0,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<0, 1,
-                                   0, 0,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -294,8 +337,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt64Value final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UInt64Value_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt32Value final : public ::google::protobuf::Message
@@ -312,11 +353,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt32Value final :
 #endif
 
   template <typename = void>
-  explicit constexpr UInt32Value(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr UInt32Value(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline UInt32Value(const UInt32Value& from) : UInt32Value(nullptr, from) {}
-  inline UInt32Value(UInt32Value&& from) noexcept
-      : UInt32Value(nullptr, ::std::move(from)) {}
+  inline UInt32Value(UInt32Value&& from) noexcept : UInt32Value(nullptr, ::std::move(from)) {}
   inline UInt32Value& operator=(const UInt32Value& from) {
     CopyFrom(from);
     return *this;
@@ -351,8 +393,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt32Value final :
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const UInt32Value& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<UInt32Value>(
-        &_UInt32Value_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<UInt32Value>(&UInt32Value_globals_);
   }
   static constexpr int kIndexInFileMessages = 5;
   friend void swap(UInt32Value& a, UInt32Value& b) { a.Swap(&b); }
@@ -437,7 +478,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt32Value final :
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -459,11 +502,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt32Value final :
   // @@protoc_insertion_point(class_scope:google.protobuf.UInt32Value)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<0, 1,
+                          0, 0,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<0, 1,
-                                   0, 0,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -490,8 +538,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt32Value final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UInt32Value_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED StringValue final : public ::google::protobuf::Message
@@ -508,11 +554,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED StringValue final :
 #endif
 
   template <typename = void>
-  explicit constexpr StringValue(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr StringValue(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline StringValue(const StringValue& from) : StringValue(nullptr, from) {}
-  inline StringValue(StringValue&& from) noexcept
-      : StringValue(nullptr, ::std::move(from)) {}
+  inline StringValue(StringValue&& from) noexcept : StringValue(nullptr, ::std::move(from)) {}
   inline StringValue& operator=(const StringValue& from) {
     CopyFrom(from);
     return *this;
@@ -547,8 +594,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED StringValue final :
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const StringValue& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<StringValue>(
-        &_StringValue_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<StringValue>(&StringValue_globals_);
   }
   static constexpr int kIndexInFileMessages = 7;
   friend void swap(StringValue& a, StringValue& b) { a.Swap(&b); }
@@ -633,7 +679,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED StringValue final :
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -660,11 +708,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED StringValue final :
   // @@protoc_insertion_point(class_scope:google.protobuf.StringValue)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<0, 1,
+                          0, 41,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<0, 1,
-                                   0, 41,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -691,8 +744,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED StringValue final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull StringValue_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int64Value final : public ::google::protobuf::Message
@@ -709,11 +760,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int64Value final : 
 #endif
 
   template <typename = void>
-  explicit constexpr Int64Value(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Int64Value(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline Int64Value(const Int64Value& from) : Int64Value(nullptr, from) {}
-  inline Int64Value(Int64Value&& from) noexcept
-      : Int64Value(nullptr, ::std::move(from)) {}
+  inline Int64Value(Int64Value&& from) noexcept : Int64Value(nullptr, ::std::move(from)) {}
   inline Int64Value& operator=(const Int64Value& from) {
     CopyFrom(from);
     return *this;
@@ -748,8 +800,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int64Value final : 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Int64Value& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Int64Value>(
-        &_Int64Value_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Int64Value>(&Int64Value_globals_);
   }
   static constexpr int kIndexInFileMessages = 2;
   friend void swap(Int64Value& a, Int64Value& b) { a.Swap(&b); }
@@ -834,7 +885,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int64Value final : 
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -856,11 +909,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int64Value final : 
   // @@protoc_insertion_point(class_scope:google.protobuf.Int64Value)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<0, 1,
+                          0, 0,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<0, 1,
-                                   0, 0,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -887,8 +945,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int64Value final : 
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Int64Value_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int32Value final : public ::google::protobuf::Message
@@ -905,11 +961,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int32Value final : 
 #endif
 
   template <typename = void>
-  explicit constexpr Int32Value(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Int32Value(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline Int32Value(const Int32Value& from) : Int32Value(nullptr, from) {}
-  inline Int32Value(Int32Value&& from) noexcept
-      : Int32Value(nullptr, ::std::move(from)) {}
+  inline Int32Value(Int32Value&& from) noexcept : Int32Value(nullptr, ::std::move(from)) {}
   inline Int32Value& operator=(const Int32Value& from) {
     CopyFrom(from);
     return *this;
@@ -944,8 +1001,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int32Value final : 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Int32Value& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Int32Value>(
-        &_Int32Value_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Int32Value>(&Int32Value_globals_);
   }
   static constexpr int kIndexInFileMessages = 4;
   friend void swap(Int32Value& a, Int32Value& b) { a.Swap(&b); }
@@ -1030,7 +1086,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int32Value final : 
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1052,11 +1110,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int32Value final : 
   // @@protoc_insertion_point(class_scope:google.protobuf.Int32Value)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<0, 1,
+                          0, 0,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<0, 1,
-                                   0, 0,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1083,8 +1146,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int32Value final : 
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Int32Value_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FloatValue final : public ::google::protobuf::Message
@@ -1101,11 +1162,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FloatValue final : 
 #endif
 
   template <typename = void>
-  explicit constexpr FloatValue(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr FloatValue(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline FloatValue(const FloatValue& from) : FloatValue(nullptr, from) {}
-  inline FloatValue(FloatValue&& from) noexcept
-      : FloatValue(nullptr, ::std::move(from)) {}
+  inline FloatValue(FloatValue&& from) noexcept : FloatValue(nullptr, ::std::move(from)) {}
   inline FloatValue& operator=(const FloatValue& from) {
     CopyFrom(from);
     return *this;
@@ -1140,8 +1202,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FloatValue final : 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FloatValue& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<FloatValue>(
-        &_FloatValue_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FloatValue>(&FloatValue_globals_);
   }
   static constexpr int kIndexInFileMessages = 1;
   friend void swap(FloatValue& a, FloatValue& b) { a.Swap(&b); }
@@ -1226,7 +1287,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FloatValue final : 
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1248,11 +1311,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FloatValue final : 
   // @@protoc_insertion_point(class_scope:google.protobuf.FloatValue)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<0, 1,
+                          0, 0,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<0, 1,
-                                   0, 0,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1279,8 +1347,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FloatValue final : 
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FloatValue_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DoubleValue final : public ::google::protobuf::Message
@@ -1297,11 +1363,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DoubleValue final :
 #endif
 
   template <typename = void>
-  explicit constexpr DoubleValue(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr DoubleValue(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline DoubleValue(const DoubleValue& from) : DoubleValue(nullptr, from) {}
-  inline DoubleValue(DoubleValue&& from) noexcept
-      : DoubleValue(nullptr, ::std::move(from)) {}
+  inline DoubleValue(DoubleValue&& from) noexcept : DoubleValue(nullptr, ::std::move(from)) {}
   inline DoubleValue& operator=(const DoubleValue& from) {
     CopyFrom(from);
     return *this;
@@ -1336,8 +1403,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DoubleValue final :
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const DoubleValue& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<DoubleValue>(
-        &_DoubleValue_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<DoubleValue>(&DoubleValue_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(DoubleValue& a, DoubleValue& b) { a.Swap(&b); }
@@ -1422,7 +1488,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DoubleValue final :
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1444,11 +1512,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DoubleValue final :
   // @@protoc_insertion_point(class_scope:google.protobuf.DoubleValue)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<0, 1,
+                          0, 0,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<0, 1,
-                                   0, 0,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1475,8 +1548,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DoubleValue final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DoubleValue_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BytesValue final : public ::google::protobuf::Message
@@ -1493,11 +1564,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BytesValue final : 
 #endif
 
   template <typename = void>
-  explicit constexpr BytesValue(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr BytesValue(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline BytesValue(const BytesValue& from) : BytesValue(nullptr, from) {}
-  inline BytesValue(BytesValue&& from) noexcept
-      : BytesValue(nullptr, ::std::move(from)) {}
+  inline BytesValue(BytesValue&& from) noexcept : BytesValue(nullptr, ::std::move(from)) {}
   inline BytesValue& operator=(const BytesValue& from) {
     CopyFrom(from);
     return *this;
@@ -1532,8 +1604,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BytesValue final : 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const BytesValue& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<BytesValue>(
-        &_BytesValue_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<BytesValue>(&BytesValue_globals_);
   }
   static constexpr int kIndexInFileMessages = 8;
   friend void swap(BytesValue& a, BytesValue& b) { a.Swap(&b); }
@@ -1618,7 +1689,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BytesValue final : 
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1645,11 +1718,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BytesValue final : 
   // @@protoc_insertion_point(class_scope:google.protobuf.BytesValue)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<0, 1,
+                          0, 0,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<0, 1,
-                                   0, 0,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1676,8 +1754,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BytesValue final : 
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull BytesValue_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BoolValue final : public ::google::protobuf::Message
@@ -1694,11 +1770,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BoolValue final : p
 #endif
 
   template <typename = void>
-  explicit constexpr BoolValue(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr BoolValue(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline BoolValue(const BoolValue& from) : BoolValue(nullptr, from) {}
-  inline BoolValue(BoolValue&& from) noexcept
-      : BoolValue(nullptr, ::std::move(from)) {}
+  inline BoolValue(BoolValue&& from) noexcept : BoolValue(nullptr, ::std::move(from)) {}
   inline BoolValue& operator=(const BoolValue& from) {
     CopyFrom(from);
     return *this;
@@ -1733,8 +1810,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BoolValue final : p
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const BoolValue& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<BoolValue>(
-        &_BoolValue_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<BoolValue>(&BoolValue_globals_);
   }
   static constexpr int kIndexInFileMessages = 6;
   friend void swap(BoolValue& a, BoolValue& b) { a.Swap(&b); }
@@ -1819,7 +1895,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BoolValue final : p
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1841,11 +1919,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BoolValue final : p
   // @@protoc_insertion_point(class_scope:google.protobuf.BoolValue)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<0, 1,
+                          0, 0,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<0, 1,
-                                   0, 0,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1872,8 +1955,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BoolValue final : p
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull BoolValue_class_data_;
 
 // ===================================================================
 
