@@ -5650,14 +5650,27 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                    file_message_globals + $index$, sizeof($globals_type$)};
              )cc");
            }},
-          {"section_decl",
-           [&] {
-             if (!use_implicit_weak_descriptor) return;
-             p->Emit({{"section",
-                       WeakDefaultInstanceSection(
-                           descriptor_, index_in_file_messages_, options_)}},
-                     R"cc(__attribute__((section("$section$"))))cc");
-           }},
+          Sub({"SECTION",
+               [&] {
+                 if (use_implicit_weak_descriptor) {
+                   p->Emit(
+                       {{"section",
+                         WeakDefaultInstanceSection(
+                             descriptor_, index_in_file_messages_, options_)}},
+                       R"cc(ABSL_ATTRIBUTE_SECTION_VARIABLE($section$))cc");
+                   return;
+                 }
+                 // File descriptor proto is mutable.
+                 if (is_file_descriptor_proto) return;
+
+                 p->Emit(
+                     R"cc(
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+                       ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+                     )cc");
+               }})
+              .WithSuffix(""),
           {"const",
            [&] {
              if (is_file_descriptor_proto) return;
@@ -5706,8 +5719,8 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
         PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-            PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $section_decl$ $const$
-                $globals_type$ $globals$;
+            PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $const$ $globals_type$ $globals$
+                $SECTION$;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
         namespace {
         const ::_pbi::ClassData* $Msg$_get_class_data() {
