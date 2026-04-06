@@ -922,7 +922,7 @@ def UnknownMessageSetItemDecoder():
   message_tag_bytes = encoder.TagBytes(3, wire_format.WIRETYPE_LENGTH_DELIMITED)
   item_end_tag_bytes = encoder.TagBytes(1, wire_format.WIRETYPE_END_GROUP)
 
-  def DecodeUnknownItem(buffer, current_depth=0):
+  def DecodeUnknownItem(buffer, current_depth):
     pos = 0
     end = len(buffer)
     message_start = -1

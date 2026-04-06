@@ -68,7 +68,7 @@ else:
           msg_des.GetOptions().message_set_wire_format):
         local_decoder = decoder.UnknownMessageSetItemDecoder()
         for _, buffer in unknown_fields:
-          (field_number, data) = local_decoder(memoryview(buffer))
+          (field_number, data) = local_decoder(memoryview(buffer), 0)
           InternalAdd(field_number, wire_format.WIRETYPE_LENGTH_DELIMITED, data)
       else:
         for tag_bytes, buffer in unknown_fields:

@@ -154,6 +154,7 @@ class DecoderTest(parameterized.TestCase):
         'Unexpected end-group tag.',
         decode,
         memoryview(b'\054\014'),
+        0,
     )
 
   def test_message_set_item_decoder_preserves_current_depth(self):
@@ -172,7 +173,7 @@ class DecoderTest(parameterized.TestCase):
           0,
           len(item),
           proto,
-          proto._fields,  # pylint: disable=protected-access
+          {},
           1,
       )
     finally:
