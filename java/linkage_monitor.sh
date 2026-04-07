@@ -22,18 +22,16 @@ pushd test/linkage-monitor-check-bom
 mvn -e -B install
 popd
 
+# Add links in the old pom locations.
 runfiles_dir="$(realpath ${RUNFILES_DIR})"
-genfiles_dir=`echo ${RUNFILES_DIR} | sed 's|/[^/]*$||'`
-
 if [ ! -d "${runfiles_dir}/_main/java/lite" ]; then
   mkdir "${runfiles_dir}/_main/java/lite"
 fi
-
-cp -f "${genfiles_dir}"/core/core_mvn-pom.xml "${runfiles_dir}"/_main/java/core/pom.xml || true
-cp -f "${genfiles_dir}"/core/lite_mvn-pom.xml "${runfiles_dir}"/_main/java/lite/pom.xml || true
-cp -f "${genfiles_dir}"/util/util_mvn-pom.xml "${runfiles_dir}"/_main/java/util/pom.xml || true
-cp -f "${genfiles_dir}"/kotlin/kotlin_mvn-pom.xml "${runfiles_dir}"/_main/java/kotlin/pom.xml || true
-cp -f "${genfiles_dir}"/kotlin-lite/kotlin-lite_mvn-pom.xml "${runfiles_dir}"/_main/java/kotlin-lite/pom.xml || true
+ln -s "${runfiles_dir}"/../core/core_mvn-pom.xml "${runfiles_dir}"/_main/java/core/pom.xml || true
+ln -s "${runfiles_dir}"/../core/lite_mvn-pom.xml "${runfiles_dir}"/_main/java/lite/pom.xml || true
+ln -s "${runfiles_dir}"/../util/util_mvn-pom.xml "${runfiles_dir}"/_main/java/util/pom.xml || true
+ln -s "${runfiles_dir}"/../kotlin/kotlin_mvn-pom.xml "${runfiles_dir}"/_main/java/kotlin/pom.xml || true
+ln -s "${runfiles_dir}"/../kotlin-lite/kotlin-lite_mvn-pom.xml "${runfiles_dir}"/_main/java/kotlin-lite/pom.xml || true
 
 # Linkage Monitor requires the artifacts to be available in local Maven
 # repository.
