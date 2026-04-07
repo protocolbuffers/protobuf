@@ -17,11 +17,9 @@ use std::fmt;
 #[doc(inline)]
 pub use crate::__internal::runtime::message_eq;
 
-#[cfg(all(cpp_kernel, not(lite_runtime)))]
-pub use crate::codegen_traits::interop::MessageDescriptorInterop;
+pub use crate::__internal::runtime::interop::*;
 pub use crate::codegen_traits::{
     create::Parse,
-    interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop},
     read::Serialize,
     write::{Clear, ClearAndParse, CopyFrom, MergeFrom, TakeFrom},
     Message, MessageMut, MessageView,
@@ -29,7 +27,6 @@ pub use crate::codegen_traits::{
 pub use crate::cord::{ProtoBytesCow, ProtoStringCow};
 pub use crate::map::{Map, MapIter, MapKey, MapMut, MapValue, MapView};
 
-pub use crate::optional::Optional;
 pub use crate::proxied::{
     AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, Proxied, View,
 };
@@ -68,7 +65,6 @@ mod cord;
 #[path = "enum.rs"]
 mod r#enum;
 mod map;
-mod optional;
 mod primitive;
 mod proxied;
 mod repeated;
