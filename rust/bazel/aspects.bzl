@@ -62,7 +62,7 @@ def _rust_version_ge(version):
     """Checks if the rust version as at least the given major.minor version."""
     return _version_parts(RUST_VERSION) >= _version_parts(version)
 
-def label_to_crate_name(ctx, label, toolchain):
+def label_to_crate_name(ctx, label, _toolchain):
     return label.name.replace("-", "_")
 
 def encode_label_as_crate_name(label):
