@@ -21,6 +21,7 @@ add_library(libupb STATIC
 )
 
 target_include_directories(libupb PUBLIC
+  $<BUILD_INTERFACE:${protobuf_SOURCE_DIR}>
   $<BUILD_INTERFACE:${bootstrap_cmake_dir}>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )

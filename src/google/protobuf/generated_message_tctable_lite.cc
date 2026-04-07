@@ -659,7 +659,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
   auto& field = RefAt<MessageLite*>(msg, data.offset());
   const auto aux = *table->field_aux(data.aux_idx());
   const auto* inner_table =
-      aux_is_table ? aux.table : aux.message_default()->GetTcParseTable();
+      aux_is_table ? aux.table_ptr() : aux.message_default()->GetTcParseTable();
 
   if (field == nullptr) {
     field = NewMessage(inner_table, msg->GetArena());
@@ -740,7 +740,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
   auto& field = RefAt<RepeatedPtrFieldBase>(msg, data.offset());
   ABSL_DCHECK_EQ(field.GetArena(), arena);
   const TcParseTableBase* inner_table =
-      aux_is_table ? aux.table : aux.message_default()->GetTcParseTable();
+      aux_is_table ? aux.table_ptr() : aux.message_default()->GetTcParseTable();
   do {
     ptr += sizeof(TagType);
     MessageLite* submsg = AddMessage(inner_table, field, arena);
@@ -2678,7 +2678,7 @@ inline const TcParseTableBase* TcParser::GetTableFromAux(
     uint16_t type_card, TcParseTableBase::FieldAux aux) {
   uint16_t tv = type_card & field_layout::kTvMask;
   if (ABSL_PREDICT_TRUE(tv == field_layout::kTvTable)) {
-    return aux.table;
+    return aux.table_ptr();
   }
   ABSL_DCHECK(tv == field_layout::kTvDefault || tv == field_layout::kTvWeakPtr);
   const MessageLite* prototype = tv == field_layout::kTvDefault
@@ -2988,7 +2988,7 @@ const char* TcParser::ParseOneMapEntry(
           ABSL_DCHECK_EQ(inner_tag, value_tag);
           ptr = ctx->ParseLengthDelimitedInlined(ptr, [&](const char* ptr) {
             return ParseLoop(reinterpret_cast<MessageLite*>(obj), ptr, ctx,
-                             aux[1].table);
+                             aux[1].table_ptr());
           });
           if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
           continue;
@@ -3049,7 +3049,8 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
     // scalar value types. This makes the VisitXXX calls below faster because
     // the switch is much smaller.
     // Assert this in debug mode, just in case.
-    ABSL_DCHECK_GE(node_end - static_cast<char*>(node_key), sizeof(uint64_t));
+    ABSL_DCHECK_GE(node_end - static_cast<char*>(node_key),
+                   static_cast<ptrdiff_t>(sizeof(uint64_t)));
     memset(node_key, 0, sizeof(uint64_t));
     memset(node_end - sizeof(uint64_t), 0, sizeof(uint64_t));
 
@@ -3067,7 +3068,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
         absl::Overload{
             [&](std::string* str) { Arena::CreateInArenaStorage(str, arena); },
             [&](MessageLite* msg) {
-              aux[1].table->class_data->PlacementNew(msg, arena);
+              aux[1].table_ptr()->class_data->PlacementNew(msg, arena);
             },
             // Already initialized above. Do nothing here.
             [](void*) {},

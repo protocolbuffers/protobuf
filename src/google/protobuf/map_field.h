@@ -625,7 +625,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MapField final
   MapField(InternalVisibility, InternalMetadataOffset offset,
            const MapField& from)
       : TypeDefinedMapFieldBase<Key, T>(
-            MessageGlobalsBase::default_instance<Message>(
+            MessageGlobalsBase::ToDefaultInstance<Message>(
                 Derived::internal_message_globals()),
             offset, from) {}
 
