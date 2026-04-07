@@ -58,10 +58,10 @@ namespace protobuf {
 class Any;
 struct AnyGlobalsTypeInternal;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern AnyGlobalsTypeInternal _Any_globals_;
+PROTOBUF_EXPORT extern AnyGlobalsTypeInternal Any_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Any_class_data_;
 #else
-PROTOBUF_EXPORT extern const AnyGlobalsTypeInternal _Any_globals_;
+PROTOBUF_EXPORT extern const AnyGlobalsTypeInternal Any_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace protobuf
 }  // namespace google
@@ -128,7 +128,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Any final : public 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Any& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Any>(&_Any_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Any>(&Any_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   // implements Any

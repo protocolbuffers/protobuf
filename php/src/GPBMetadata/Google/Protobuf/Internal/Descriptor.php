@@ -381,6 +381,7 @@ class Descriptor
             ->value("ENFORCE_NAMING_STYLE_UNKNOWN", 0)
             ->value("STYLE2024", 1)
             ->value("STYLE_LEGACY", 2)
+            ->value("STYLE2026", 3)
             ->finalizeToPool();
 
         $pool->addMessage('google.protobuf.internal.FeatureSetDefaults', \Google\Protobuf\Internal\FeatureSetDefaults::class)
@@ -432,6 +433,7 @@ class Descriptor
             ->value("EDITION_PROTO3", 999)
             ->value("EDITION_2023", 1000)
             ->value("EDITION_2024", 1001)
+            ->value("EDITION_2026", 1002)
             ->value("EDITION_UNSTABLE", 9999)
             ->value("EDITION_1_TEST_ONLY", 1)
             ->value("EDITION_2_TEST_ONLY", 2)

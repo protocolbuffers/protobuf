@@ -58,74 +58,74 @@ namespace protobuf {
 class BoolValue;
 struct BoolValueGlobalsTypeInternal;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern BoolValueGlobalsTypeInternal _BoolValue_globals_;
+PROTOBUF_EXPORT extern BoolValueGlobalsTypeInternal BoolValue_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull BoolValue_class_data_;
 #else
-PROTOBUF_EXPORT extern const BoolValueGlobalsTypeInternal _BoolValue_globals_;
+PROTOBUF_EXPORT extern const BoolValueGlobalsTypeInternal BoolValue_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class BytesValue;
 struct BytesValueGlobalsTypeInternal;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern BytesValueGlobalsTypeInternal _BytesValue_globals_;
+PROTOBUF_EXPORT extern BytesValueGlobalsTypeInternal BytesValue_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull BytesValue_class_data_;
 #else
-PROTOBUF_EXPORT extern const BytesValueGlobalsTypeInternal _BytesValue_globals_;
+PROTOBUF_EXPORT extern const BytesValueGlobalsTypeInternal BytesValue_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class DoubleValue;
 struct DoubleValueGlobalsTypeInternal;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern DoubleValueGlobalsTypeInternal _DoubleValue_globals_;
+PROTOBUF_EXPORT extern DoubleValueGlobalsTypeInternal DoubleValue_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DoubleValue_class_data_;
 #else
-PROTOBUF_EXPORT extern const DoubleValueGlobalsTypeInternal _DoubleValue_globals_;
+PROTOBUF_EXPORT extern const DoubleValueGlobalsTypeInternal DoubleValue_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class FloatValue;
 struct FloatValueGlobalsTypeInternal;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern FloatValueGlobalsTypeInternal _FloatValue_globals_;
+PROTOBUF_EXPORT extern FloatValueGlobalsTypeInternal FloatValue_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FloatValue_class_data_;
 #else
-PROTOBUF_EXPORT extern const FloatValueGlobalsTypeInternal _FloatValue_globals_;
+PROTOBUF_EXPORT extern const FloatValueGlobalsTypeInternal FloatValue_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class Int32Value;
 struct Int32ValueGlobalsTypeInternal;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern Int32ValueGlobalsTypeInternal _Int32Value_globals_;
+PROTOBUF_EXPORT extern Int32ValueGlobalsTypeInternal Int32Value_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Int32Value_class_data_;
 #else
-PROTOBUF_EXPORT extern const Int32ValueGlobalsTypeInternal _Int32Value_globals_;
+PROTOBUF_EXPORT extern const Int32ValueGlobalsTypeInternal Int32Value_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class Int64Value;
 struct Int64ValueGlobalsTypeInternal;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern Int64ValueGlobalsTypeInternal _Int64Value_globals_;
+PROTOBUF_EXPORT extern Int64ValueGlobalsTypeInternal Int64Value_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Int64Value_class_data_;
 #else
-PROTOBUF_EXPORT extern const Int64ValueGlobalsTypeInternal _Int64Value_globals_;
+PROTOBUF_EXPORT extern const Int64ValueGlobalsTypeInternal Int64Value_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class StringValue;
 struct StringValueGlobalsTypeInternal;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern StringValueGlobalsTypeInternal _StringValue_globals_;
+PROTOBUF_EXPORT extern StringValueGlobalsTypeInternal StringValue_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull StringValue_class_data_;
 #else
-PROTOBUF_EXPORT extern const StringValueGlobalsTypeInternal _StringValue_globals_;
+PROTOBUF_EXPORT extern const StringValueGlobalsTypeInternal StringValue_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class UInt32Value;
 struct UInt32ValueGlobalsTypeInternal;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern UInt32ValueGlobalsTypeInternal _UInt32Value_globals_;
+PROTOBUF_EXPORT extern UInt32ValueGlobalsTypeInternal UInt32Value_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UInt32Value_class_data_;
 #else
-PROTOBUF_EXPORT extern const UInt32ValueGlobalsTypeInternal _UInt32Value_globals_;
+PROTOBUF_EXPORT extern const UInt32ValueGlobalsTypeInternal UInt32Value_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class UInt64Value;
 struct UInt64ValueGlobalsTypeInternal;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern UInt64ValueGlobalsTypeInternal _UInt64Value_globals_;
+PROTOBUF_EXPORT extern UInt64ValueGlobalsTypeInternal UInt64Value_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UInt64Value_class_data_;
 #else
-PROTOBUF_EXPORT extern const UInt64ValueGlobalsTypeInternal _UInt64Value_globals_;
+PROTOBUF_EXPORT extern const UInt64ValueGlobalsTypeInternal UInt64Value_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace protobuf
 }  // namespace google
@@ -192,7 +192,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt64Value final :
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const UInt64Value& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<UInt64Value>(&_UInt64Value_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<UInt64Value>(&UInt64Value_globals_);
   }
   static constexpr int kIndexInFileMessages = 3;
   friend void swap(UInt64Value& a, UInt64Value& b) { a.Swap(&b); }
@@ -393,7 +393,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt32Value final :
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const UInt32Value& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<UInt32Value>(&_UInt32Value_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<UInt32Value>(&UInt32Value_globals_);
   }
   static constexpr int kIndexInFileMessages = 5;
   friend void swap(UInt32Value& a, UInt32Value& b) { a.Swap(&b); }
@@ -594,7 +594,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED StringValue final :
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const StringValue& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<StringValue>(&_StringValue_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<StringValue>(&StringValue_globals_);
   }
   static constexpr int kIndexInFileMessages = 7;
   friend void swap(StringValue& a, StringValue& b) { a.Swap(&b); }
@@ -800,7 +800,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int64Value final : 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Int64Value& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Int64Value>(&_Int64Value_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Int64Value>(&Int64Value_globals_);
   }
   static constexpr int kIndexInFileMessages = 2;
   friend void swap(Int64Value& a, Int64Value& b) { a.Swap(&b); }
@@ -1001,7 +1001,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int32Value final : 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Int32Value& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Int32Value>(&_Int32Value_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Int32Value>(&Int32Value_globals_);
   }
   static constexpr int kIndexInFileMessages = 4;
   friend void swap(Int32Value& a, Int32Value& b) { a.Swap(&b); }
@@ -1202,7 +1202,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FloatValue final : 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FloatValue& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FloatValue>(&_FloatValue_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FloatValue>(&FloatValue_globals_);
   }
   static constexpr int kIndexInFileMessages = 1;
   friend void swap(FloatValue& a, FloatValue& b) { a.Swap(&b); }
@@ -1403,7 +1403,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DoubleValue final :
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const DoubleValue& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<DoubleValue>(&_DoubleValue_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<DoubleValue>(&DoubleValue_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(DoubleValue& a, DoubleValue& b) { a.Swap(&b); }
@@ -1604,7 +1604,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BytesValue final : 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const BytesValue& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<BytesValue>(&_BytesValue_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<BytesValue>(&BytesValue_globals_);
   }
   static constexpr int kIndexInFileMessages = 8;
   friend void swap(BytesValue& a, BytesValue& b) { a.Swap(&b); }
@@ -1810,7 +1810,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BoolValue final : p
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const BoolValue& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<BoolValue>(&_BoolValue_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<BoolValue>(&BoolValue_globals_);
   }
   static constexpr int kIndexInFileMessages = 6;
   friend void swap(BoolValue& a, BoolValue& b) { a.Swap(&b); }

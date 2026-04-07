@@ -3049,7 +3049,8 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
     // scalar value types. This makes the VisitXXX calls below faster because
     // the switch is much smaller.
     // Assert this in debug mode, just in case.
-    ABSL_DCHECK_GE(node_end - static_cast<char*>(node_key), sizeof(uint64_t));
+    ABSL_DCHECK_GE(node_end - static_cast<char*>(node_key),
+                   static_cast<ptrdiff_t>(sizeof(uint64_t)));
     memset(node_key, 0, sizeof(uint64_t));
     memset(node_end - sizeof(uint64_t), 0, sizeof(uint64_t));
 

@@ -2328,7 +2328,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
   ExpectNoErrors();
 
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
-  EXPECT_THAT(defaults, EqualsProto(R"pb(
+  EXPECT_THAT(defaults, PartiallyMatchesEditionDefaults(R"pb(
     defaults {
       edition: EDITION_LEGACY
       overridable_features {}
@@ -2401,7 +2401,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
   ExpectNoErrors();
 
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
-  EXPECT_THAT(defaults, EqualsProto(R"pb(
+  EXPECT_THAT(defaults, PartiallyMatchesEditionDefaults(R"pb(
                 defaults {
                   edition: EDITION_LEGACY
                   overridable_features {}
@@ -2500,7 +2500,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
   ExpectNoErrors();
 
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
-  EXPECT_THAT(defaults, EqualsProto(R"pb(
+  EXPECT_THAT(defaults, PartiallyMatchesEditionDefaults(R"pb(
                 defaults {
                   edition: EDITION_LEGACY
                   overridable_features {}

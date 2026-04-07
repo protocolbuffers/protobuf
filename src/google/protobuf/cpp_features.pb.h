@@ -63,10 +63,10 @@ PROTOBUF_EXPORT extern const uint32_t CppFeatures_StringType_internal_data_[];
 class CppFeatures;
 struct CppFeaturesGlobalsTypeInternal;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern CppFeaturesGlobalsTypeInternal _CppFeatures_globals_;
+PROTOBUF_EXPORT extern CppFeaturesGlobalsTypeInternal CppFeatures_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull CppFeatures_class_data_;
 #else
-PROTOBUF_EXPORT extern const CppFeaturesGlobalsTypeInternal _CppFeatures_globals_;
+PROTOBUF_EXPORT extern const CppFeaturesGlobalsTypeInternal CppFeatures_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace pb
 namespace google {
@@ -80,7 +80,7 @@ internal::EnumTraitsT<::pb::CppFeatures_StringType_internal_data_>
 namespace internal {
 template <>
 inline ::absl::string_view GetFeatureSetDefaultsData<::pb::CppFeatures>() {
-  static constexpr char kDefaults[] = "CiUYhAciA8I+ACobCAEQAhgCIAMoATACOAJAAcI+CAgBEAMYACABCiUY5wciA8I+ACobCAIQARgBIAIoATABOAJAAcI+CAgAEAMYACABCiUY6AciEwgBEAEYASACKAEwAcI+BAgAEAMqCzgCQAHCPgQYACABCiUY6QciGQgBEAEYASACKAEwATgBQALCPgYIABABGAEqBcI+AiABCiUYj04iGwgBEAEYASACKAEwATgBQALCPggIABABGAEgASoDwj4AIOYHKOkH";
+  static constexpr char kDefaults[] = "CiUYhAciA8I+ACobCAEQAhgCIAMoATACOAJAAcI+CAgBEAMYACABCiUY5wciA8I+ACobCAIQARgBIAIoATABOAJAAcI+CAgAEAMYACABCiUY6AciEwgBEAEYASACKAEwAcI+BAgAEAMqCzgCQAHCPgQYACABCiUY6QciGQgBEAEYASACKAEwATgBQALCPgYIABABGAEqBcI+AiABCiUYj04iGwgBEAEYASACKAEwATgDQALCPggIABABGAEgASoDwj4AIOYHKOkH";
   return kDefaults;
 }
 }  // namespace internal
@@ -225,7 +225,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const CppFeatures& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<CppFeatures>(&_CppFeatures_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<CppFeatures>(&CppFeatures_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(CppFeatures& a, CppFeatures& b) { a.Swap(&b); }

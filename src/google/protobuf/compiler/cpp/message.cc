@@ -1503,7 +1503,7 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
                                        class_data);
           explicit $Msg$($pb$::Arena* $nullable$ arena);
           static constexpr const void* $nonnull$ internal_message_globals() {
-            return &_$Msg$_globals_;
+            return &$globals$;
           }
 
           $decl_verify_func$;
@@ -5650,14 +5650,27 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                    file_message_globals + $index$, sizeof($globals_type$)};
              )cc");
            }},
-          {"section_decl",
-           [&] {
-             if (!use_implicit_weak_descriptor) return;
-             p->Emit({{"section",
-                       WeakDefaultInstanceSection(
-                           descriptor_, index_in_file_messages_, options_)}},
-                     R"cc(__attribute__((section("$section$"))))cc");
-           }},
+          Sub({"SECTION",
+               [&] {
+                 if (use_implicit_weak_descriptor) {
+                   p->Emit(
+                       {{"section",
+                         WeakDefaultInstanceSection(
+                             descriptor_, index_in_file_messages_, options_)}},
+                       R"cc(ABSL_ATTRIBUTE_SECTION_VARIABLE($section$))cc");
+                   return;
+                 }
+                 // File descriptor proto is mutable.
+                 if (is_file_descriptor_proto) return;
+
+                 p->Emit(
+                     R"cc(
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+                       ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+                     )cc");
+               }})
+              .WithSuffix(""),
           {"const",
            [&] {
              if (is_file_descriptor_proto) return;
@@ -5677,8 +5690,7 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                          $Msg$_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
                 MessageGlobalsBase($Msg$::InternalGenerateClassData_(
-                                       _default, &$globals$._table.header),
-                                   &$globals$._table.header),
+                    _default, &$globals$._table.header)),
                 _default(::_pbi::ConstantInitialized{}, GetClassData()),
                 _table(::_pbi::PrivateAccess::GenerateParseTable<$Msg$>(
                     GetClassData()))
@@ -5706,8 +5718,8 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
         PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-            PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $section_decl$ $const$
-                $globals_type$ $globals$;
+            PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $const$ $globals_type$ $globals$
+                $SECTION$;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
         namespace {
         const ::_pbi::ClassData* $Msg$_get_class_data() {

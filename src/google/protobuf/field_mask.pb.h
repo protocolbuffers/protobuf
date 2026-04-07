@@ -58,10 +58,10 @@ namespace protobuf {
 class FieldMask;
 struct FieldMaskGlobalsTypeInternal;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern FieldMaskGlobalsTypeInternal _FieldMask_globals_;
+PROTOBUF_EXPORT extern FieldMaskGlobalsTypeInternal FieldMask_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldMask_class_data_;
 #else
-PROTOBUF_EXPORT extern const FieldMaskGlobalsTypeInternal _FieldMask_globals_;
+PROTOBUF_EXPORT extern const FieldMaskGlobalsTypeInternal FieldMask_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace protobuf
 }  // namespace google
@@ -128,7 +128,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FieldMask& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FieldMask>(&_FieldMask_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FieldMask>(&FieldMask_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(FieldMask& a, FieldMask& b) { a.Swap(&b); }

@@ -62,6 +62,7 @@ enum Edition {
   // comparison.
   EDITION_2023 = 1000;
   EDITION_2024 = 1001;
+  EDITION_2026 = 1002;
 
   // A placeholder edition for developing and testing unscheduled features.
   EDITION_UNSTABLE = 9999;
@@ -1145,6 +1146,7 @@ message FeatureSet {
     ENFORCE_NAMING_STYLE_UNKNOWN = 0;
     STYLE2024 = 1;
     STYLE_LEGACY = 2;
+    STYLE2026 = 3;
   }
   optional EnforceNamingStyle enforce_naming_style = 7 [
     retention = RETENTION_SOURCE,
@@ -1161,7 +1163,8 @@ message FeatureSet {
       edition_introduced: EDITION_2024,
     },
     edition_defaults = { edition: EDITION_LEGACY, value: "STYLE_LEGACY" },
-    edition_defaults = { edition: EDITION_2024, value: "STYLE2024" }
+    edition_defaults = { edition: EDITION_2024, value: "STYLE2024" },
+    edition_defaults = { edition: EDITION_UNSTABLE, value: "STYLE2026" }
   ];
 
   message VisibilityFeature {

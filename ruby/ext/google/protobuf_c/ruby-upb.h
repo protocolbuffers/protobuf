@@ -6443,6 +6443,7 @@ typedef enum {
   google_protobuf_EDITION_PROTO3 = 999,
   google_protobuf_EDITION_2023 = 1000,
   google_protobuf_EDITION_2024 = 1001,
+  google_protobuf_EDITION_2026 = 1002,
   google_protobuf_EDITION_UNSTABLE = 9999,
   google_protobuf_EDITION_99997_TEST_ONLY = 99997,
   google_protobuf_EDITION_99998_TEST_ONLY = 99998,
@@ -6458,7 +6459,8 @@ typedef enum {
 typedef enum {
   google_protobuf_FeatureSet_ENFORCE_NAMING_STYLE_UNKNOWN = 0,
   google_protobuf_FeatureSet_STYLE2024 = 1,
-  google_protobuf_FeatureSet_STYLE_LEGACY = 2
+  google_protobuf_FeatureSet_STYLE_LEGACY = 2,
+  google_protobuf_FeatureSet_STYLE2026 = 3
 } google_protobuf_FeatureSet_EnforceNamingStyle;
 
 typedef enum {
@@ -17181,7 +17183,7 @@ upb_MessageDef* _upb_MessageDefs_New(
 // features. This is used for feature resolution under Editions.
 // NOLINTBEGIN
 // clang-format off
-#define UPB_INTERNAL_UPB_EDITION_DEFAULTS "\n\027\030\204\007\"\000*\020\010\001\020\002\030\002 \003(\0010\0028\002@\001\n\027\030\347\007\"\000*\020\010\002\020\001\030\001 \002(\0010\0018\002@\001\n\027\030\350\007\"\014\010\001\020\001\030\001 \002(\0010\001*\0048\002@\001\n\027\030\351\007\"\020\010\001\020\001\030\001 \002(\0010\0018\001@\002*\000 \346\007(\351\007"
+#define UPB_INTERNAL_UPB_EDITION_DEFAULTS "\n\027\030\204\007\"\000*\020\010\001\020\002\030\002 \003(\0010\0028\002@\001\n\027\030\347\007\"\000*\020\010\002\020\001\030\001 \002(\0010\0018\002@\001\n\027\030\350\007\"\014\010\001\020\001\030\001 \002(\0010\001*\0048\002@\001\n\027\030\351\007\"\020\010\001\020\001\030\001 \002(\0010\0018\001@\002*\000\n\027\030\217N\"\020\010\001\020\001\030\001 \002(\0010\0018\003@\002*\000 \346\007(\351\007"
 // clang-format on
 // NOLINTEND
 

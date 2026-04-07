@@ -2,6 +2,12 @@
 
 load("@rules_java//java/common:java_info.bzl", "JavaInfo")
 load("@rules_testing//lib:truth.bzl", "subjects")
+load("@rules_testing//lib:util.bzl", "util")
+load("//bazel/private:java_lite_proto_library.bzl", "java_lite_proto_aspect")
+
+# Using this test aspect to mimic the java_lite_proto_library target. This is mainly used to test
+# the java related actions created in the test that isn't possible to access in Starlark.
+JAVA_LITE_PROTO_TESTING_ASPECT = util.make_testing_aspect(aspects = [java_lite_proto_aspect])
 
 def _filter_inpackage(file_depset, owner):
     return depset([f for f in file_depset.to_list() if f.owner.package == owner.package])
