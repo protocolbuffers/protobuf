@@ -38,6 +38,7 @@ cc_library(
     name = "interop",
     hdrs = ["interop.h"],
     visibility = [
+        "//googlemac/iPhone/Shared/Multiplatform/Elements/Runtime:__subpackages__",
         "//hpb:__subpackages__",
         "//hpb_generator:__subpackages__",
     ],
