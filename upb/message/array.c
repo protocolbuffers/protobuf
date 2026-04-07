@@ -120,12 +120,20 @@ bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
                                      upb_Arena* arena) {
   size_t new_capacity = UPB_MAX(array->UPB_PRIVATE(capacity), 4);
   const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array);
-  size_t old_bytes = array->UPB_PRIVATE(capacity) << lg2;
   void* ptr = upb_Array_MutableDataPtr(array);
 
-  // Log2 ceiling of size.
-  while (new_capacity < min_capacity) new_capacity *= 2;
+  if (UPB_UNLIKELY(array->UPB_PRIVATE(capacity) > (SIZE_MAX >> lg2))) {
+    return false;
+  }
+  size_t old_bytes = array->UPB_PRIVATE(capacity) << lg2;
 
+  // Log2 ceiling of size.
+  while (new_capacity < min_capacity) {
+    if (UPB_UNLIKELY(new_capacity > (SIZE_MAX / 2))) return false;
+    new_capacity *= 2;
+  }
+
+  if (UPB_UNLIKELY(new_capacity > (SIZE_MAX >> lg2))) return false;
   const size_t new_bytes = new_capacity << lg2;
   ptr = upb_Arena_Realloc(arena, ptr, old_bytes, new_bytes);
   if (!ptr) return false;
