@@ -82,10 +82,8 @@ struct ImplicitWeakMessageDefaultType : MessageGlobalsBase {
 #else
 struct ImplicitWeakMessageDefaultType : MessageGlobalsBase {
   constexpr ImplicitWeakMessageDefaultType()
-      : MessageGlobalsBase(
-            ImplicitWeakMessage::InternalGenerateClassData_(
-                _default, &implicit_weak_message_globals._table.header),
-            &implicit_weak_message_globals._table.header),
+      : MessageGlobalsBase(ImplicitWeakMessage::InternalGenerateClassData_(
+            _default, &implicit_weak_message_globals._table.header)),
         _default(ConstantInitialized{}),
         _table(
             ImplicitWeakMessage::InternalGenerateParseTable_(GetClassData())) {}

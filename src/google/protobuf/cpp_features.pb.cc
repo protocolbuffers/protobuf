@@ -165,8 +165,7 @@ struct CppFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  CppFeatures_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(CppFeatures::InternalGenerateClassData_(
-                               _default, &CppFeatures_globals_._table.header),
-                           &CppFeatures_globals_._table.header),
+            _default, &CppFeatures_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<CppFeatures>(
             GetClassData()))

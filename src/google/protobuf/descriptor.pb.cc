@@ -223,8 +223,7 @@ struct UninterpretedOption_NamePartGlobalsTypeInternal : ::_pbi::MessageGlobalsB
                  UninterpretedOption_NamePart_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(UninterpretedOption_NamePart::InternalGenerateClassData_(
-                               _default, &UninterpretedOption_NamePart_globals_._table.header),
-                           &UninterpretedOption_NamePart_globals_._table.header),
+            _default, &UninterpretedOption_NamePart_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<UninterpretedOption_NamePart>(
             GetClassData()))
@@ -420,8 +419,7 @@ struct SourceCodeInfo_LocationGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  SourceCodeInfo_Location_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(SourceCodeInfo_Location::InternalGenerateClassData_(
-                               _default, &SourceCodeInfo_Location_globals_._table.header),
-                           &SourceCodeInfo_Location_globals_._table.header),
+            _default, &SourceCodeInfo_Location_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<SourceCodeInfo_Location>(
             GetClassData()))
@@ -608,8 +606,7 @@ struct GeneratedCodeInfo_AnnotationGlobalsTypeInternal : ::_pbi::MessageGlobalsB
                  GeneratedCodeInfo_Annotation_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(GeneratedCodeInfo_Annotation::InternalGenerateClassData_(
-                               _default, &GeneratedCodeInfo_Annotation_globals_._table.header),
-                           &GeneratedCodeInfo_Annotation_globals_._table.header),
+            _default, &GeneratedCodeInfo_Annotation_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<GeneratedCodeInfo_Annotation>(
             GetClassData()))
@@ -795,8 +792,7 @@ struct FieldOptions_FeatureSupportGlobalsTypeInternal : ::_pbi::MessageGlobalsBa
                  FieldOptions_FeatureSupport_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FieldOptions_FeatureSupport::InternalGenerateClassData_(
-                               _default, &FieldOptions_FeatureSupport_globals_._table.header),
-                           &FieldOptions_FeatureSupport_globals_._table.header),
+            _default, &FieldOptions_FeatureSupport_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FieldOptions_FeatureSupport>(
             GetClassData()))
@@ -954,8 +950,7 @@ struct FieldOptions_EditionDefaultGlobalsTypeInternal : ::_pbi::MessageGlobalsBa
                  FieldOptions_EditionDefault_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FieldOptions_EditionDefault::InternalGenerateClassData_(
-                               _default, &FieldOptions_EditionDefault_globals_._table.header),
-                           &FieldOptions_EditionDefault_globals_._table.header),
+            _default, &FieldOptions_EditionDefault_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FieldOptions_EditionDefault>(
             GetClassData()))
@@ -1085,8 +1080,7 @@ struct FeatureSet_VisibilityFeatureGlobalsTypeInternal : ::_pbi::MessageGlobalsB
                  FeatureSet_VisibilityFeature_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FeatureSet_VisibilityFeature::InternalGenerateClassData_(
-                               _default, &FeatureSet_VisibilityFeature_globals_._table.header),
-                           &FeatureSet_VisibilityFeature_globals_._table.header),
+            _default, &FeatureSet_VisibilityFeature_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FeatureSet_VisibilityFeature>(
             GetClassData()))
@@ -1291,8 +1285,7 @@ struct FeatureSetGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  FeatureSet_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FeatureSet::InternalGenerateClassData_(
-                               _default, &FeatureSet_globals_._table.header),
-                           &FeatureSet_globals_._table.header),
+            _default, &FeatureSet_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FeatureSet>(
             GetClassData()))
@@ -1474,8 +1467,7 @@ struct ExtensionRangeOptions_DeclarationGlobalsTypeInternal : ::_pbi::MessageGlo
                  ExtensionRangeOptions_Declaration_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(ExtensionRangeOptions_Declaration::InternalGenerateClassData_(
-                               _default, &ExtensionRangeOptions_Declaration_globals_._table.header),
-                           &ExtensionRangeOptions_Declaration_globals_._table.header),
+            _default, &ExtensionRangeOptions_Declaration_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<ExtensionRangeOptions_Declaration>(
             GetClassData()))
@@ -1629,8 +1621,7 @@ struct EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal : ::_pbi::Messag
                  EnumDescriptorProto_EnumReservedRange_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(EnumDescriptorProto_EnumReservedRange::InternalGenerateClassData_(
-                               _default, &EnumDescriptorProto_EnumReservedRange_globals_._table.header),
-                           &EnumDescriptorProto_EnumReservedRange_globals_._table.header),
+            _default, &EnumDescriptorProto_EnumReservedRange_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumDescriptorProto_EnumReservedRange>(
             GetClassData()))
@@ -1784,8 +1775,7 @@ struct DescriptorProto_ReservedRangeGlobalsTypeInternal : ::_pbi::MessageGlobals
                  DescriptorProto_ReservedRange_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(DescriptorProto_ReservedRange::InternalGenerateClassData_(
-                               _default, &DescriptorProto_ReservedRange_globals_._table.header),
-                           &DescriptorProto_ReservedRange_globals_._table.header),
+            _default, &DescriptorProto_ReservedRange_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<DescriptorProto_ReservedRange>(
             GetClassData()))
@@ -1991,8 +1981,7 @@ struct UninterpretedOptionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  UninterpretedOption_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(UninterpretedOption::InternalGenerateClassData_(
-                               _default, &UninterpretedOption_globals_._table.header),
-                           &UninterpretedOption_globals_._table.header),
+            _default, &UninterpretedOption_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<UninterpretedOption>(
             GetClassData()))
@@ -2149,8 +2138,7 @@ struct SourceCodeInfoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  SourceCodeInfo_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(SourceCodeInfo::InternalGenerateClassData_(
-                               _default, &SourceCodeInfo_globals_._table.header),
-                           &SourceCodeInfo_globals_._table.header),
+            _default, &SourceCodeInfo_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<SourceCodeInfo>(
             GetClassData()))
@@ -2307,8 +2295,7 @@ struct GeneratedCodeInfoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  GeneratedCodeInfo_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(GeneratedCodeInfo::InternalGenerateClassData_(
-                               _default, &GeneratedCodeInfo_globals_._table.header),
-                           &GeneratedCodeInfo_globals_._table.header),
+            _default, &GeneratedCodeInfo_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<GeneratedCodeInfo>(
             GetClassData()))
@@ -2482,8 +2469,7 @@ struct FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal : ::_pbi::
                  FeatureSetDefaults_FeatureSetEditionDefault_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FeatureSetDefaults_FeatureSetEditionDefault::InternalGenerateClassData_(
-                               _default, &FeatureSetDefaults_FeatureSetEditionDefault_globals_._table.header),
-                           &FeatureSetDefaults_FeatureSetEditionDefault_globals_._table.header),
+            _default, &FeatureSetDefaults_FeatureSetEditionDefault_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FeatureSetDefaults_FeatureSetEditionDefault>(
             GetClassData()))
@@ -2664,8 +2650,7 @@ struct ServiceOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  ServiceOptions_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(ServiceOptions::InternalGenerateClassData_(
-                               _default, &ServiceOptions_globals_._table.header),
-                           &ServiceOptions_globals_._table.header),
+            _default, &ServiceOptions_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<ServiceOptions>(
             GetClassData()))
@@ -2838,8 +2823,7 @@ struct OneofOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  OneofOptions_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(OneofOptions::InternalGenerateClassData_(
-                               _default, &OneofOptions_globals_._table.header),
-                           &OneofOptions_globals_._table.header),
+            _default, &OneofOptions_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<OneofOptions>(
             GetClassData()))
@@ -3031,8 +3015,7 @@ struct MethodOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  MethodOptions_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(MethodOptions::InternalGenerateClassData_(
-                               _default, &MethodOptions_globals_._table.header),
-                           &MethodOptions_globals_._table.header),
+            _default, &MethodOptions_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<MethodOptions>(
             GetClassData()))
@@ -3233,8 +3216,7 @@ struct MessageOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  MessageOptions_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(MessageOptions::InternalGenerateClassData_(
-                               _default, &MessageOptions_globals_._table.header),
-                           &MessageOptions_globals_._table.header),
+            _default, &MessageOptions_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<MessageOptions>(
             GetClassData()))
@@ -3560,8 +3542,7 @@ struct FileOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  FileOptions_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FileOptions::InternalGenerateClassData_(
-                               _default, &FileOptions_globals_._table.header),
-                           &FileOptions_globals_._table.header),
+            _default, &FileOptions_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FileOptions>(
             GetClassData()))
@@ -3828,8 +3809,7 @@ struct FieldOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  FieldOptions_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FieldOptions::InternalGenerateClassData_(
-                               _default, &FieldOptions_globals_._table.header),
-                           &FieldOptions_globals_._table.header),
+            _default, &FieldOptions_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FieldOptions>(
             GetClassData()))
@@ -3998,8 +3978,7 @@ struct FeatureSetDefaultsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  FeatureSetDefaults_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FeatureSetDefaults::InternalGenerateClassData_(
-                               _default, &FeatureSetDefaults_globals_._table.header),
-                           &FeatureSetDefaults_globals_._table.header),
+            _default, &FeatureSetDefaults_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FeatureSetDefaults>(
             GetClassData()))
@@ -4197,8 +4176,7 @@ struct ExtensionRangeOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  ExtensionRangeOptions_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(ExtensionRangeOptions::InternalGenerateClassData_(
-                               _default, &ExtensionRangeOptions_globals_._table.header),
-                           &ExtensionRangeOptions_globals_._table.header),
+            _default, &ExtensionRangeOptions_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<ExtensionRangeOptions>(
             GetClassData()))
@@ -4398,8 +4376,7 @@ struct EnumValueOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  EnumValueOptions_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(EnumValueOptions::InternalGenerateClassData_(
-                               _default, &EnumValueOptions_globals_._table.header),
-                           &EnumValueOptions_globals_._table.header),
+            _default, &EnumValueOptions_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumValueOptions>(
             GetClassData()))
@@ -4591,8 +4568,7 @@ struct EnumOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  EnumOptions_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(EnumOptions::InternalGenerateClassData_(
-                               _default, &EnumOptions_globals_._table.header),
-                           &EnumOptions_globals_._table.header),
+            _default, &EnumOptions_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumOptions>(
             GetClassData()))
@@ -4754,8 +4730,7 @@ struct OneofDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  OneofDescriptorProto_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(OneofDescriptorProto::InternalGenerateClassData_(
-                               _default, &OneofDescriptorProto_globals_._table.header),
-                           &OneofDescriptorProto_globals_._table.header),
+            _default, &OneofDescriptorProto_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<OneofDescriptorProto>(
             GetClassData()))
@@ -4951,8 +4926,7 @@ struct MethodDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  MethodDescriptorProto_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(MethodDescriptorProto::InternalGenerateClassData_(
-                               _default, &MethodDescriptorProto_globals_._table.header),
-                           &MethodDescriptorProto_globals_._table.header),
+            _default, &MethodDescriptorProto_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<MethodDescriptorProto>(
             GetClassData()))
@@ -5189,8 +5163,7 @@ struct FieldDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  FieldDescriptorProto_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FieldDescriptorProto::InternalGenerateClassData_(
-                               _default, &FieldDescriptorProto_globals_._table.header),
-                           &FieldDescriptorProto_globals_._table.header),
+            _default, &FieldDescriptorProto_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FieldDescriptorProto>(
             GetClassData()))
@@ -5360,8 +5333,7 @@ struct EnumValueDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase 
                  EnumValueDescriptorProto_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(EnumValueDescriptorProto::InternalGenerateClassData_(
-                               _default, &EnumValueDescriptorProto_globals_._table.header),
-                           &EnumValueDescriptorProto_globals_._table.header),
+            _default, &EnumValueDescriptorProto_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumValueDescriptorProto>(
             GetClassData()))
@@ -5529,8 +5501,7 @@ struct DescriptorProto_ExtensionRangeGlobalsTypeInternal : ::_pbi::MessageGlobal
                  DescriptorProto_ExtensionRange_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(DescriptorProto_ExtensionRange::InternalGenerateClassData_(
-                               _default, &DescriptorProto_ExtensionRange_globals_._table.header),
-                           &DescriptorProto_ExtensionRange_globals_._table.header),
+            _default, &DescriptorProto_ExtensionRange_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<DescriptorProto_ExtensionRange>(
             GetClassData()))
@@ -5709,8 +5680,7 @@ struct ServiceDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  ServiceDescriptorProto_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(ServiceDescriptorProto::InternalGenerateClassData_(
-                               _default, &ServiceDescriptorProto_globals_._table.header),
-                           &ServiceDescriptorProto_globals_._table.header),
+            _default, &ServiceDescriptorProto_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<ServiceDescriptorProto>(
             GetClassData()))
@@ -5925,8 +5895,7 @@ struct EnumDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  EnumDescriptorProto_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(EnumDescriptorProto::InternalGenerateClassData_(
-                               _default, &EnumDescriptorProto_globals_._table.header),
-                           &EnumDescriptorProto_globals_._table.header),
+            _default, &EnumDescriptorProto_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumDescriptorProto>(
             GetClassData()))
@@ -6224,8 +6193,7 @@ struct DescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  DescriptorProto_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(DescriptorProto::InternalGenerateClassData_(
-                               _default, &DescriptorProto_globals_._table.header),
-                           &DescriptorProto_globals_._table.header),
+            _default, &DescriptorProto_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<DescriptorProto>(
             GetClassData()))
@@ -6535,8 +6503,7 @@ struct FileDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  FileDescriptorProto_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FileDescriptorProto::InternalGenerateClassData_(
-                               _default, &FileDescriptorProto_globals_._table.header),
-                           &FileDescriptorProto_globals_._table.header),
+            _default, &FileDescriptorProto_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FileDescriptorProto>(
             GetClassData()))
@@ -6693,8 +6660,7 @@ struct FileDescriptorSetGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  FileDescriptorSet_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FileDescriptorSet::InternalGenerateClassData_(
-                               _default, &FileDescriptorSet_globals_._table.header),
-                           &FileDescriptorSet_globals_._table.header),
+            _default, &FileDescriptorSet_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FileDescriptorSet>(
             GetClassData()))

@@ -126,8 +126,7 @@ struct JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal : ::_pbi::MessageG
                  JavaFeatures_NestInFileClassFeature_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(JavaFeatures_NestInFileClassFeature::InternalGenerateClassData_(
-                               _default, &JavaFeatures_NestInFileClassFeature_globals_._table.header),
-                           &JavaFeatures_NestInFileClassFeature_globals_._table.header),
+            _default, &JavaFeatures_NestInFileClassFeature_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<JavaFeatures_NestInFileClassFeature>(
             GetClassData()))
@@ -309,8 +308,7 @@ struct JavaFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  JavaFeatures_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(JavaFeatures::InternalGenerateClassData_(
-                               _default, &JavaFeatures_globals_._table.header),
-                           &JavaFeatures_globals_._table.header),
+            _default, &JavaFeatures_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<JavaFeatures>(
             GetClassData()))

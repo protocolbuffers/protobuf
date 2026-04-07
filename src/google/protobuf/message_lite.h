@@ -361,7 +361,9 @@ struct ClassDataFull;
 // have them and their offset.
 
 struct PROTOBUF_EXPORT ClassData {
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   const MessageLite* prototype;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
   const internal::TcParseTableBase* tc_table;
   bool (*is_initialized)(const MessageLite&);
   void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
@@ -391,13 +393,17 @@ struct PROTOBUF_EXPORT ClassData {
                                             const MessageLite& from_msg),
                       internal::MessageCreator message_creator,
                       uint32_t cached_size_offset, bool is_lite)
-      : prototype(prototype),
+      :
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        prototype(prototype),
+#endif  // PROTOBUF_MESSAGE_GLOBALS
         tc_table(tc_table),
         is_initialized(is_initialized),
         merge_to_from(merge_to_from),
         message_creator(message_creator),
         cached_size_offset(cached_size_offset),
-        is_lite(is_lite) {}
+        is_lite(is_lite) {
+  }
 #endif  // !PROTOBUF_CUSTOM_VTABLE
 
   // But we always provide the full constructor even in normal mode to make
@@ -414,7 +420,10 @@ struct PROTOBUF_EXPORT ClassData {
                                              uint8_t* ptr,
                                              io::EpsCopyOutputStream* stream),
       uint32_t cached_size_offset, bool is_lite)
-      : prototype(prototype),
+      :
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        prototype(prototype),
+#endif  // PROTOBUF_MESSAGE_GLOBALS
         tc_table(tc_table),
         is_initialized(is_initialized),
         merge_to_from(merge_to_from),
@@ -431,7 +440,11 @@ struct PROTOBUF_EXPORT ClassData {
 
   const ClassDataFull& full() const;
 
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   const MessageLite* default_instance() const { return prototype; }
+#else
+  const MessageLite* default_instance() const;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
   MessageLite* New(Arena* arena) const {
     const MessageLite* def = default_instance();
@@ -670,19 +683,17 @@ struct MessageGlobalsBase {
   }
   constexpr const ClassData* GetClassData() const { return class_data.base(); }
 
-  explicit constexpr MessageGlobalsBase(ClassDataFull class_data,
-                                        const TcParseTableBase* table)
-      : class_data(class_data), table(table) {}
+  explicit constexpr MessageGlobalsBase(ClassDataFull class_data)
+      : class_data(class_data) {}
 
   static const TcParseTableBase* ToParseTableBase(const void* g) {
     const auto* globals = static_cast<const MessageGlobalsBase*>(g);
     ABSL_DCHECK_NE(globals, nullptr);
-    return globals->table;
+    return globals->class_data.tc_table;
   }
 
   // It also aliases to ClassDataLite.
   ClassDataFull class_data;
-  const TcParseTableBase* table;
 };
 
 template <const auto* kGlobals>
@@ -696,6 +707,11 @@ struct GeneratedMessageTraitsT {
   static constexpr const auto* globals() { return kGlobals; }
   static constexpr auto StrongPointer() { return kGlobals; }
 };
+
+inline const MessageLite* ClassData::default_instance() const {
+  static_assert(PROTOBUF_FIELD_OFFSET(MessageGlobalsBase, class_data) == 0);
+  return MessageGlobalsBase::ToDefaultInstance(this);
+}
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace internal
 

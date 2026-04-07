@@ -5690,8 +5690,7 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                          $Msg$_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
                 MessageGlobalsBase($Msg$::InternalGenerateClassData_(
-                                       _default, &$globals$._table.header),
-                                   &$globals$._table.header),
+                    _default, &$globals$._table.header)),
                 _default(::_pbi::ConstantInitialized{}, GetClassData()),
                 _table(::_pbi::PrivateAccess::GenerateParseTable<$Msg$>(
                     GetClassData()))

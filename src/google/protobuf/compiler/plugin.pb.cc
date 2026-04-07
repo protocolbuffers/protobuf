@@ -172,8 +172,7 @@ struct VersionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Version_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Version::InternalGenerateClassData_(
-                               _default, &Version_globals_._table.header),
-                           &Version_globals_._table.header),
+            _default, &Version_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Version>(
             GetClassData()))
@@ -354,8 +353,7 @@ struct CodeGeneratorResponse_FileGlobalsTypeInternal : ::_pbi::MessageGlobalsBas
                  CodeGeneratorResponse_File_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(CodeGeneratorResponse_File::InternalGenerateClassData_(
-                               _default, &CodeGeneratorResponse_File_globals_._table.header),
-                           &CodeGeneratorResponse_File_globals_._table.header),
+            _default, &CodeGeneratorResponse_File_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorResponse_File>(
             GetClassData()))
@@ -546,8 +544,7 @@ struct CodeGeneratorResponseGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  CodeGeneratorResponse_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(CodeGeneratorResponse::InternalGenerateClassData_(
-                               _default, &CodeGeneratorResponse_globals_._table.header),
-                           &CodeGeneratorResponse_globals_._table.header),
+            _default, &CodeGeneratorResponse_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorResponse>(
             GetClassData()))
@@ -753,8 +750,7 @@ struct CodeGeneratorRequestGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  CodeGeneratorRequest_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(CodeGeneratorRequest::InternalGenerateClassData_(
-                               _default, &CodeGeneratorRequest_globals_._table.header),
-                           &CodeGeneratorRequest_globals_._table.header),
+            _default, &CodeGeneratorRequest_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorRequest>(
             GetClassData()))
