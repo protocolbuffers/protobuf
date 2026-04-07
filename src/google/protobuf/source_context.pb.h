@@ -57,8 +57,12 @@ namespace google {
 namespace protobuf {
 class SourceContext;
 struct SourceContextGlobalsTypeInternal;
-PROTOBUF_EXPORT extern SourceContextGlobalsTypeInternal _SourceContext_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern SourceContextGlobalsTypeInternal SourceContext_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceContext_class_data_;
+#else
+PROTOBUF_EXPORT extern const SourceContextGlobalsTypeInternal SourceContext_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace protobuf
 }  // namespace google
 
@@ -84,11 +88,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceContext final
 #endif
 
   template <typename = void>
-  explicit constexpr SourceContext(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr SourceContext(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline SourceContext(const SourceContext& from) : SourceContext(nullptr, from) {}
-  inline SourceContext(SourceContext&& from) noexcept
-      : SourceContext(nullptr, ::std::move(from)) {}
+  inline SourceContext(SourceContext&& from) noexcept : SourceContext(nullptr, ::std::move(from)) {}
   inline SourceContext& operator=(const SourceContext& from) {
     CopyFrom(from);
     return *this;
@@ -123,8 +128,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceContext final
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const SourceContext& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<SourceContext>(
-        &_SourceContext_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<SourceContext>(&SourceContext_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(SourceContext& a, SourceContext& b) { a.Swap(&b); }
@@ -209,7 +213,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceContext final
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -236,11 +242,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceContext final
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceContext)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<0, 1,
+                          0, 47,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<0, 1,
-                                   0, 47,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -267,8 +278,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceContext final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceContext_class_data_;
 
 // ===================================================================
 

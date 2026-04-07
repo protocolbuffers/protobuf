@@ -62,8 +62,12 @@ enum CppFeatures_StringType : int;
 PROTOBUF_EXPORT extern const uint32_t CppFeatures_StringType_internal_data_[];
 class CppFeatures;
 struct CppFeaturesGlobalsTypeInternal;
-PROTOBUF_EXPORT extern CppFeaturesGlobalsTypeInternal _CppFeatures_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern CppFeaturesGlobalsTypeInternal CppFeatures_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull CppFeatures_class_data_;
+#else
+PROTOBUF_EXPORT extern const CppFeaturesGlobalsTypeInternal CppFeatures_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace pb
 namespace google {
 namespace protobuf {
@@ -76,7 +80,7 @@ internal::EnumTraitsT<::pb::CppFeatures_StringType_internal_data_>
 namespace internal {
 template <>
 inline ::absl::string_view GetFeatureSetDefaultsData<::pb::CppFeatures>() {
-  static constexpr char kDefaults[] = "CiUYhAciA8I+ACobCAEQAhgCIAMoATACOAJAAcI+CAgBEAMYACABCiUY5wciA8I+ACobCAIQARgBIAIoATABOAJAAcI+CAgAEAMYACABCiUY6AciEwgBEAEYASACKAEwAcI+BAgAEAMqCzgCQAHCPgQYACABCiUY6QciGQgBEAEYASACKAEwATgBQALCPgYIABABGAEqBcI+AiABCiUYj04iGwgBEAEYASACKAEwATgBQALCPggIABABGAEgASoDwj4AIOYHKOkH";
+  static constexpr char kDefaults[] = "CiUYhAciA8I+ACobCAEQAhgCIAMoATACOAJAAcI+CAgBEAMYACABCiUY5wciA8I+ACobCAIQARgBIAIoATABOAJAAcI+CAgAEAMYACABCiUY6AciEwgBEAEYASACKAEwAcI+BAgAEAMqCzgCQAHCPgQYACABCiUY6QciGQgBEAEYASACKAEwATgBQALCPgYIABABGAEqBcI+AiABCiUYj04iGwgBEAEYASACKAEwATgDQALCPggIABABGAEgASoDwj4AIOYHKOkH";
   return kDefaults;
 }
 }  // namespace internal
@@ -181,11 +185,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
 #endif
 
   template <typename = void>
-  explicit constexpr CppFeatures(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr CppFeatures(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline CppFeatures(const CppFeatures& from) : CppFeatures(nullptr, from) {}
-  inline CppFeatures(CppFeatures&& from) noexcept
-      : CppFeatures(nullptr, ::std::move(from)) {}
+  inline CppFeatures(CppFeatures&& from) noexcept : CppFeatures(nullptr, ::std::move(from)) {}
   inline CppFeatures& operator=(const CppFeatures& from) {
     CopyFrom(from);
     return *this;
@@ -220,8 +225,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const CppFeatures& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<CppFeatures>(
-        &_CppFeatures_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<CppFeatures>(&CppFeatures_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(CppFeatures& a, CppFeatures& b) { a.Swap(&b); }
@@ -306,7 +310,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -412,11 +418,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
   // @@protoc_insertion_point(class_scope:pb.CppFeatures)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<2, 4,
+                          2, 0,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<2, 4,
-                                   2, 0,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -446,8 +457,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcpp_5ffeatures_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull CppFeatures_class_data_;
 
 // ===================================================================
 

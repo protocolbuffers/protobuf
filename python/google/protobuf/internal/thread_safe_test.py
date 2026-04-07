@@ -201,8 +201,32 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentRepeatedMessageAccess2(self):
+    msg = unittest_proto3_pb2.TestAllTypes(
+        repeated_nested_message=[
+            unittest_proto3_pb2.TestAllTypes.NestedMessage(bb=1)
+        ]
+    )
 
-@testing_refleaks.TestCase
+    def UseVariable():
+      for _ in range(1000):
+        for nested in msg.repeated_nested_message:
+          pass
+
+    threads = []
+    for _ in range(100):
+      thread = threading.Thread(target=UseVariable)
+      threads.append(thread)
+      thread.start()
+
+    for thread in threads:
+      thread.join()
+
+
 class FreeThreadingTest(unittest.TestCase):
 
   def RunThreads(self, thread_size, func):
@@ -249,6 +273,35 @@ class FreeThreadingTest(unittest.TestCase):
 
     self.RunThreads(thread_size, CreatePool)
     self.assertEqual(thread_size, self.success_count)
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentGetFieldValueRace(self):
+    """Reproduces a data race in GetFieldValue due to lazy initialization."""
+
+    def AccessFields(msg, barrier) -> None:
+      barrier.wait()
+      # This access triggers GetFieldValue and lazy initialization
+      # of the composite_fields map in CMessage.
+      _ = msg.optional_nested_message
+
+    for _ in range(100):
+      threads = []
+      msg = unittest_proto3_pb2.TestAllTypes()
+
+      # Use a barrier to ensure all threads hit the GetFieldValue call
+      # at nearly the same time, maximizing the race window.
+      barrier = threading.Barrier(10)
+
+      for _ in range(10):
+        thread = threading.Thread(target=AccessFields, args=(msg, barrier))
+        threads.append(thread)
+        thread.start()
+
+      for thread in threads:
+        thread.join()
 
 
 if __name__ == '__main__':

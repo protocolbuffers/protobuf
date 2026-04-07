@@ -36,6 +36,51 @@ PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
 #endif
 namespace google {
 namespace protobuf {
+class SourceContext::_Internal {
+ public:
+  using HasBits = decltype(::std::declval<SourceContext>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._has_bits_);
+};
+
+constexpr SourceContext::ParseTableT_ SourceContext::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+  return ParseTableT_{
+    {
+      PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._has_bits_),
+      0, // no _extensions_
+      1, 0,  // max_field_number, fast_idx_mask
+      offsetof(ParseTableT_, field_lookup_table),
+      4294967294,  // skipmap
+      offsetof(ParseTableT_, field_entries),
+      1,  // num_field_entries
+      0,  // num_aux_entries
+      offsetof(ParseTableT_, field_names),  // no aux_entries
+      class_data,
+      nullptr,  // post_loop_handler
+      ::_pbi::TcParser::GenericFallback,  // fallback
+      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+      ::_pbi::TcParser::GetTable<::google::protobuf::SourceContext>(),  // to_prefetch
+      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+    }, {{
+      // string file_name = 1;
+      {::_pbi::TcParser::FastUS1,
+       {10, 0, 0,
+        PROTOBUF_FIELD_OFFSET(SourceContext, _impl_.file_name_)}},
+    }}, {{
+      65535, 65535
+    }}, {{
+      // string file_name = 1;
+      {PROTOBUF_FIELD_OFFSET(SourceContext, _impl_.file_name_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    }},
+    // no aux_entries
+    {{
+      "\35\11\0\0\0\0\0\0"
+      "google.protobuf.SourceContext"
+      "file_name"
+    }},
+  };
+}
+
 
 inline constexpr SourceContext::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -46,20 +91,77 @@ inline constexpr SourceContext::Impl_::Impl_(
             ::_pbi::ConstantInitialized()) {}
 
 template <typename>
-constexpr SourceContext::SourceContext(::_pbi::ConstantInitialized)
+constexpr SourceContext::SourceContext(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+    : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(SourceContext_class_data_.base()),
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(),
+          class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
+          ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
+inline void* PROTOBUF_NONNULL SourceContext::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+  return ::new (mem) SourceContext(arena);
+}
+constexpr auto SourceContext::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(SourceContext), alignof(SourceContext));
+}
+constexpr auto SourceContext::InternalGenerateClassData_(
+    const MessageLite& prototype,
+    const ::google::protobuf::internal::TcParseTableBase* tc_table) {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &prototype,
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+          &_table_.header,
+#else
+          tc_table,
+#endif
+          nullptr,  // IsInitialized
+          &SourceContext::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<SourceContext>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &SourceContext::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<SourceContext>(), &SourceContext::ByteSizeLong,
+              &SourceContext::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._cached_size_),
+          false,
+      },
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+      &file_reflection_data[0],
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+      &::_pbi::kDescriptorMethods,
+      &descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto,
+      nullptr,  // tracker
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+  };
+}
 struct SourceContextGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-  constexpr SourceContextGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  constexpr SourceContextGlobalsTypeInternal()
+      :
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 SourceContext_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+        MessageGlobalsBase(SourceContext::InternalGenerateClassData_(
+            _default, &SourceContext_globals_._table.header)),
+        _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        _table(::_pbi::PrivateAccess::GenerateParseTable<SourceContext>(
+            GetClassData()))
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+  {
+  }
   ~SourceContextGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) SourceContext _default;
   };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  decltype(::_pbi::PrivateAccess::GenerateParseTable<SourceContext>(
+      ::std::declval<const ::_pbi::ClassData*>())) _table;
+#endif
 };
 #ifdef PROTOBUF_MESSAGE_GLOBALS
 static_assert(PROTOBUF_FIELD_OFFSET(SourceContextGlobalsTypeInternal, _default) ==
@@ -67,7 +169,26 @@ static_assert(PROTOBUF_FIELD_OFFSET(SourceContextGlobalsTypeInternal, _default) 
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceContextGlobalsTypeInternal _SourceContext_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
+    #ifdef PROTOBUF_MESSAGE_GLOBALS
+    const
+    #endif
+     SourceContextGlobalsTypeInternal SourceContext_globals_
+        #ifdef PROTOBUF_MESSAGE_GLOBALS
+        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
+        #endif  // PROTOBUF_MESSAGE_GLOBALS
+        ;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+namespace {
+const ::_pbi::ClassData* SourceContext_get_class_data() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  return SourceContext_globals_.GetClassData();
+#else
+  return SourceContext_class_data_.base();
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+}
+}  // namespace
+#endif  // PROTOBUF_CUSTOM_VTABLE
 }  // namespace protobuf
 }  // namespace google
 static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
@@ -90,7 +211,7 @@ static const ::_pbi::MigrationSchema
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
-        &::google::protobuf::_SourceContext_globals_,
+        &::google::protobuf::SourceContext_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fsource_5fcontext_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -122,17 +243,9 @@ namespace google {
 namespace protobuf {
 // ===================================================================
 
-class SourceContext::_Internal {
- public:
-  using HasBits =
-      decltype(::std::declval<SourceContext>()._impl_._has_bits_);
-  static constexpr ::int32_t kHasBitsOffset =
-      8 * PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._has_bits_);
-};
-
 SourceContext::SourceContext(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, SourceContext_class_data_.base()) {
+    : ::google::protobuf::Message(arena, SourceContext_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -151,7 +264,8 @@ SourceContext::SourceContext(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const SourceContext& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, SourceContext_class_data_.base()) {
+    : ::google::protobuf::Message(arena, SourceContext_get_class_data()) {
+
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -187,59 +301,10 @@ inline void SourceContext::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* PROTOBUF_NONNULL SourceContext::PlacementNew_(
-    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
-  return ::new (mem) SourceContext(arena);
-}
-constexpr auto SourceContext::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(SourceContext),
-                                            alignof(SourceContext));
-}
-constexpr auto SourceContext::InternalGenerateClassData_() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &_SourceContext_globals_._default,
-          &_table_.header,
-          nullptr,  // IsInitialized
-          &SourceContext::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<SourceContext>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          &SourceContext::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<SourceContext>(), &SourceContext::ByteSizeLong,
-              &SourceContext::_InternalSerialize,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._cached_size_),
-          false,
-      },
-      &file_reflection_data[0]};
-#else  // !PROTOBUF_MESSAGE_GLOBALS
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &_SourceContext_globals_._default,
-          &_table_.header,
-          nullptr,  // IsInitialized
-          &SourceContext::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<SourceContext>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          &SourceContext::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<SourceContext>(), &SourceContext::ByteSizeLong,
-              &SourceContext::_InternalSerialize,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._cached_size_),
-          false,
-      },
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto,
-      nullptr,  // tracker
-  };
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-}
-
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull SourceContext_class_data_ =
-        SourceContext::InternalGenerateClassData_();
+        SourceContext::InternalGenerateClassData_(SourceContext_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 SourceContext::GetClassData() const {
@@ -247,43 +312,21 @@ SourceContext::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(SourceContext_class_data_.tc_table);
   return SourceContext_class_data_.base();
 }
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 47, 2>
-SourceContext::_table_ = {
-  {
-    PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._has_bits_),
-    0, // no _extensions_
-    1, 0,  // max_field_number, fast_idx_mask
-    offsetof(decltype(_table_), field_lookup_table),
-    4294967294,  // skipmap
-    offsetof(decltype(_table_), field_entries),
-    1,  // num_field_entries
-    0,  // num_aux_entries
-    offsetof(decltype(_table_), field_names),  // no aux_entries
-    SourceContext_class_data_.base(),
-    nullptr,  // post_loop_handler
-    ::_pbi::TcParser::GenericFallback,  // fallback
-    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-    ::_pbi::TcParser::GetTable<::google::protobuf::SourceContext>(),  // to_prefetch
-    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  }, {{
-    // string file_name = 1;
-    {::_pbi::TcParser::FastUS1,
-     {10, 0, 0,
-      PROTOBUF_FIELD_OFFSET(SourceContext, _impl_.file_name_)}},
-  }}, {{
-    65535, 65535
-  }}, {{
-    // string file_name = 1;
-    {PROTOBUF_FIELD_OFFSET(SourceContext, _impl_.file_name_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-  }},
-  // no aux_entries
-  {{
-    "\35\11\0\0\0\0\0\0"
-    "google.protobuf.SourceContext"
-    "file_name"
-  }},
-};
+#else
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+SourceContext::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&SourceContext_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&SourceContext_globals_));
+  return SourceContext_globals_.GetClassData();
+}
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const SourceContext::ParseTableT_
+    SourceContext::_table_ =
+        SourceContext::InternalGenerateParseTable_(SourceContext_class_data_.base());
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void SourceContext::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.SourceContext)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -366,9 +409,8 @@ PROTOBUF_NOINLINE void SourceContext::Clear() {
 }
 
 void SourceContext::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<SourceContext*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<SourceContext*>(&to_msg);
   auto& from = static_cast<const SourceContext&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();

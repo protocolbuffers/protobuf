@@ -1962,7 +1962,7 @@ const upb_MiniTable google__protobuf__GeneratedCodeInfo__Annotation_msg_init = {
 
 const upb_MiniTableEnum google__protobuf__Edition_enum_init = {
     64,
-    10,
+    11,
     {
         0x7,
         0x0,
@@ -1971,6 +1971,7 @@ const upb_MiniTableEnum google__protobuf__Edition_enum_init = {
         0x3e7,
         0x3e8,
         0x3e9,
+        0x3ea,
         0x270f,
         0x1869d,
         0x1869e,
@@ -1992,7 +1993,7 @@ const upb_MiniTableEnum google__protobuf__FeatureSet__EnforceNamingStyle_enum_in
     64,
     0,
     {
-        0x7,
+        0xf,
         0x0,
     },
 };
@@ -5655,24 +5656,33 @@ static int GetLocaleRadix(char *data, size_t capacity) {
   const int size = snprintf(temp, sizeof(temp), "%.1f", 1.5);
   UPB_ASSERT(temp[0] == '1');
   UPB_ASSERT(temp[size - 1] == '5');
-  UPB_ASSERT(size < capacity);
+  if (size < capacity) {
+    return 0;
+  }
   temp[size - 1] = '\0';
-  strcpy(data, temp + 1);
+  strncpy(data, temp + 1, size);
   return size - 2;
 }
 
 // Populates a string identical to *input except that the character pointed to
 // by pos (which should be '.') is replaced with the locale-specific radix.
 
-static void LocalizeRadix(const char *input, const char *pos, char *output) {
+static void LocalizeRadix(const char *input, const char *pos, char *output,
+                          int output_size) {
   const int len1 = pos - input;
 
   char radix[8];
   const int len2 = GetLocaleRadix(radix, sizeof(radix));
 
+  const int n = output_size - len1 - len2 - 1;
+  if (n < 0) {
+    return;
+  }
+
   memcpy(output, input, len1);
   memcpy(output + len1, radix, len2);
-  strcpy(output + len1 + len2, input + len1 + 1);
+  strncpy(output + len1 + len2, input + len1 + 1, n);
+  output[output_size - 1] = '\0';
 }
 
 double _upb_NoLocaleStrtod(const char *str, char **endptr) {
@@ -5692,7 +5702,7 @@ double _upb_NoLocaleStrtod(const char *str, char **endptr) {
   // try again.
 
   char localized[80];
-  LocalizeRadix(str, temp_endptr, localized);
+  LocalizeRadix(str, temp_endptr, localized, sizeof localized);
   char *localized_endptr;
   result = strtod(localized, &localized_endptr);
   if ((localized_endptr - &localized[0]) > (temp_endptr - str)) {
@@ -5774,6 +5784,7 @@ upb_alloc upb_alloc_global = {&upb_global_allocfunc};
 static UPB_ATOMIC(size_t) g_max_block_size = UPB_DEFAULT_MAX_BLOCK_SIZE;
 
 void upb_Arena_SetMaxBlockSize(size_t max) {
+  UPB_ASSERT(max <= UINT32_MAX);
   upb_Atomic_Store(&g_max_block_size, max, memory_order_relaxed);
 }
 
@@ -5810,8 +5821,14 @@ typedef struct upb_ArenaInternal {
   UPB_ATOMIC(const upb_ArenaRef*) refs;
 #endif
 
-  // A growing hint of what the *next* block should be sized
-  size_t size_hint;
+  // Size of the last block we allocated in the normal exponential scheme.
+  uint32_t last_block_size;
+
+  // A hint that grows whenever we perform a "one-off" allocation into a a
+  // dedicated block. This helps us determine if these outlier blocks are
+  // actually common enough that we should switch back to the normal exponential
+  // scheme at the larger size.
+  uint32_t size_hint;
 
   // All non atomic members used during allocation must be above this point, and
   // are used by _SwapIn/_SwapOut
@@ -6107,23 +6124,60 @@ bool upb_Arena_HasRefChain(const upb_Arena* from, const upb_Arena* to) {
 
 #endif
 
-// Adds an allocated block to the head of the list.
-static void _upb_Arena_AddBlock(upb_Arena* a, void* ptr, size_t offset,
-                                size_t block_size) {
-  upb_ArenaInternal* ai = upb_Arena_Internal(a);
-  upb_MemBlock* block = ptr;
+static upb_MemBlock* _upb_Arena_AllocBlockInternal(upb_alloc* alloc,
+                                                   size_t size) {
+  UPB_ASSERT(size >= kUpb_MemblockReserve);
+  upb_SizedPtr alloc_result = upb_SizeReturningMalloc(alloc, size);
+  if (!alloc_result.p) return NULL;
+  upb_MemBlock* block = alloc_result.p;
+  block->size = alloc_result.n;
+  return block;
+}
 
-  block->size = block_size;
-  UPB_ASSERT(offset >= kUpb_MemblockReserve);
-  char* start = UPB_PTR_AT(block, offset, char);
-  upb_MemBlock* head = ai->blocks;
-  block->next = head;
+static upb_MemBlock* _upb_Arena_AllocBlock(upb_Arena* a, size_t size) {
+  upb_ArenaInternal* ai = upb_Arena_Internal(a);
+  return _upb_Arena_AllocBlockInternal(_upb_ArenaInternal_BlockAlloc(ai), size);
+}
+
+static void _upb_Arena_AddBlock(upb_Arena* a, upb_MemBlock* block) {
+  upb_ArenaInternal* ai = upb_Arena_Internal(a);
+
+  // Atomic add not required here, as threads won't race allocating blocks, plus
+  // atomic fetch-add is slower than load/add/store on arm devices compiled
+  // targeting pre-v8.1. Relaxed order is safe as nothing depends on order of
+  // size allocated.
+  uintptr_t old_space_allocated =
+      upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed);
+  upb_Atomic_Store(&ai->space_allocated, old_space_allocated + block->size,
+                   memory_order_relaxed);
+
+  block->next = ai->blocks;
   ai->blocks = block;
-  UPB_PRIVATE(upb_Xsan_Init)(UPB_XSAN(a));
+}
+
+static void _upb_Arena_UseBlockInternal(upb_Arena* a, upb_MemBlock* block,
+                                        size_t offset) {
+  size_t block_size = block->size;
+  char* start = UPB_PTR_AT(block, kUpb_MemblockReserve + offset, char);
   a->UPB_PRIVATE(ptr) = start;
   a->UPB_PRIVATE(end) = UPB_PTR_AT(block, block_size, char);
   UPB_PRIVATE(upb_Xsan_PoisonRegion)(start, a->UPB_PRIVATE(end) - start);
-  UPB_ASSERT(UPB_PRIVATE(_upb_ArenaHas)(a) >= block_size - offset);
+  UPB_PRIVATE(upb_Xsan_Init)(UPB_XSAN(a));
+  UPB_ASSERT(UPB_PRIVATE(_upb_ArenaHas)(a) >=
+             block_size - kUpb_MemblockReserve - offset);
+}
+
+static void _upb_Arena_UseBlock(upb_Arena* a, upb_MemBlock* block) {
+  _upb_Arena_UseBlockInternal(a, block, 0);
+}
+
+static bool _upb_Arena_WouldReduceFreeSpace(upb_Arena* a, size_t size,
+                                            size_t block_size) {
+  upb_ArenaInternal* ai = upb_Arena_Internal(a);
+  size_t current_free =
+      ai->blocks ? a->UPB_PRIVATE(end) - a->UPB_PRIVATE(ptr) : 0;
+  size_t future_free = block_size - kUpb_MemblockReserve - size;
+  return current_free >= future_free;
 }
 
 // Fulfills the allocation request by allocating a new block. Returns NULL on
@@ -6131,84 +6185,56 @@ static void _upb_Arena_AddBlock(upb_Arena* a, void* ptr, size_t offset,
 void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t size) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   if (!ai->block_alloc) return NULL;
-  size_t last_size = 128;
-  size_t current_free = 0;
-  upb_MemBlock* last_block = ai->blocks;
-  if (last_block) {
-    last_size = last_block->size;
-    current_free = a->UPB_PRIVATE(end) - a->UPB_PRIVATE(ptr);
-  }
+
+  // Whether to satisfy the allocation from a one-off block which is right-sized
+  // for the current allocation. We do this if we suspect that the current
+  // allocation is an outlier that does not represent the typical size of
+  // allocations from this arena, or if we would reduce free space by
+  // using exponential growth.
+  bool one_off = false;
 
   // Relaxed order is safe here as we don't need any ordering with the setter.
   size_t max_block_size =
       upb_Atomic_Load(&g_max_block_size, memory_order_relaxed);
+  size_t block_size = UPB_MIN(ai->last_block_size * 2, max_block_size);
 
-  // Don't naturally grow beyond the max block size.
-  size_t target_size = UPB_MIN(last_size * 2, max_block_size);
-  size_t future_free = UPB_MAX(size, target_size - kUpb_MemblockReserve) - size;
-  // We want to preserve exponential growth in block size without wasting too
-  // much unused space at the end of blocks. Once the head of our blocks list is
-  // large enough to always trigger a max-sized block for all subsequent
-  // allocations, allocate blocks that would net reduce free space behind it.
-  if (last_block && current_free > future_free &&
-      target_size < max_block_size) {
-    last_size = ai->size_hint;
-    // Recalculate sizes with possibly larger last_size
-    target_size = UPB_MIN(last_size * 2, max_block_size);
-    future_free = UPB_MAX(size, target_size - kUpb_MemblockReserve) - size;
-  }
-  bool insert_after_head = false;
-  // Only insert after head if an allocated block is present; we don't want to
-  // continue allocating out of the initial block because we'll have no way of
-  // restoring the size of our allocated block if we add another.
-  if (last_block && current_free >= future_free) {
-    // If we're still going to net reduce free space with this new block, then
-    // only allocate the precise size requested and keep the current last block
-    // as the active block for future allocations.
-    insert_after_head = true;
-    target_size = size + kUpb_MemblockReserve;
-    // Add something to our previous size each time, so that eventually we
-    // will reach the max block size. Allocations larger than the max block size
-    // will always get their own backing allocation, so don't include them.
-    if (target_size <= max_block_size) {
-      ai->size_hint = UPB_MIN(ai->size_hint + (size >> 1), max_block_size >> 1);
+  if (size + kUpb_MemblockReserve > block_size) {
+    // A regular doubling would not yield a large enough block. Does size_hint
+    // indicate that we have consistently needed large blocks?
+    block_size = UPB_MIN(ai->size_hint * 2, max_block_size);
+    if (size + kUpb_MemblockReserve > block_size) {
+      // Even size_hint is not large enough, we will have to do a one-off.
+      one_off = true;
     }
   }
-  // We may need to exceed the max block size if the user requested a large
-  // allocation.
-  size_t block_size = UPB_MAX(kUpb_MemblockReserve + size, target_size);
-  upb_alloc* block_alloc = _upb_ArenaInternal_BlockAlloc(ai);
-  upb_SizedPtr alloc_result = upb_SizeReturningMalloc(block_alloc, block_size);
 
-  if (!alloc_result.p) return NULL;
+  // If switching to a block of this size would *reduce* available free space,
+  // we might as well make a one-off block instead.
+  one_off = one_off || _upb_Arena_WouldReduceFreeSpace(a, size, block_size);
 
-  upb_MemBlock* block = alloc_result.p;
-  size_t actual_block_size = alloc_result.n;
+  if (one_off) {
+    // Note: this may exceed the max block size, but that's okay.
+    block_size = size + kUpb_MemblockReserve;
+  }
 
-  // Atomic add not required here, as threads won't race allocating blocks, plus
-  // atomic fetch-add is slower than load/add/store on arm devices compiled
-  // targetting pre-v8.1. Relaxed order is safe as nothing depends on order of
-  // size allocated.
+  upb_MemBlock* block = _upb_Arena_AllocBlock(a, block_size);
+  if (!block) return NULL;
 
-  uintptr_t old_space_allocated =
-      upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed);
-  upb_Atomic_Store(&ai->space_allocated,
-                   old_space_allocated + actual_block_size,
-                   memory_order_relaxed);
-  if (UPB_UNLIKELY(insert_after_head)) {
-    upb_ArenaInternal* ai = upb_Arena_Internal(a);
-    block->size = actual_block_size;
-    upb_MemBlock* head = ai->blocks;
-    block->next = head->next;
-    head->next = block;
+  _upb_Arena_AddBlock(a, block);
 
+  if (UPB_UNLIKELY(one_off)) {
+    // Increase size_hint, so that a series of one-off allocations will
+    // eventually convince us to switch to exponential growth at the larger
+    // size.
+    ai->size_hint = UPB_MIN(ai->size_hint + (size >> 1), max_block_size >> 1);
     char* allocated = UPB_PTR_AT(block, kUpb_MemblockReserve, char);
     UPB_PRIVATE(upb_Xsan_PoisonRegion)(allocated + size,
                                        UPB_PRIVATE(kUpb_Asan_GuardSize));
     return allocated;
   } else {
-    ai->size_hint = actual_block_size;
-    _upb_Arena_AddBlock(a, block, kUpb_MemblockReserve, actual_block_size);
+    ai->last_block_size = UPB_MIN(block->size, UINT32_MAX);
+    ai->size_hint = ai->last_block_size;
+    _upb_Arena_UseBlock(a, block);
     UPB_ASSERT(UPB_PRIVATE(_upb_ArenaHas)(a) >= size);
     return upb_Arena_Malloc(a, size - UPB_PRIVATE(kUpb_Asan_GuardSize));
   }
@@ -6219,27 +6245,26 @@ static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc, size_t first_size) {
       UPB_ALIGN_MALLOC(kUpb_MemblockReserve + sizeof(upb_ArenaState));
   upb_ArenaState* a;
 
-  // We need to malloc the initial block.
+  if (!alloc) return NULL;
 
+  // We need to malloc the initial block.
   size_t block_size =
       first_block_overhead + UPB_MAX(256, UPB_ALIGN_MALLOC(first_size) +
                                               UPB_PRIVATE(kUpb_Asan_GuardSize));
-  upb_SizedPtr alloc_result;
-  if (!alloc ||
-      !(alloc_result = upb_SizeReturningMalloc(alloc, block_size)).p) {
-    return NULL;
-  }
-  char* mem = alloc_result.p;
-  size_t actual_block_size = alloc_result.n;
+  upb_MemBlock* block = _upb_Arena_AllocBlockInternal(alloc, block_size);
+  if (!block) return NULL;
 
-  a = UPB_PTR_AT(mem, kUpb_MemblockReserve, upb_ArenaState);
+  // Initialize the arena state in the first block. We "borrow" the memory from
+  // the block, because we can't yet call upb_Arena_Malloc.
+  a = UPB_PTR_AT(block, kUpb_MemblockReserve, upb_ArenaState);
   a->body.block_alloc = _upb_Arena_MakeBlockAlloc(alloc, 0);
-  a->body.size_hint = actual_block_size;
+  a->body.last_block_size = UPB_MIN(block->size, UINT32_MAX);
+  a->body.size_hint = UPB_MIN(block->size, UINT32_MAX);
   upb_Atomic_Init(&a->body.parent_or_count, _upb_Arena_TaggedFromRefcount(1));
   upb_Atomic_Init(&a->body.next, NULL);
   upb_Atomic_Init(&a->body.previous_or_tail,
                   _upb_Arena_TaggedFromTail(&a->body));
-  upb_Atomic_Init(&a->body.space_allocated, actual_block_size);
+  upb_Atomic_Init(&a->body.space_allocated, 0);
   a->body.blocks = NULL;
 #ifndef NDEBUG
   a->body.refs = NULL;
@@ -6247,15 +6272,16 @@ static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc, size_t first_size) {
   a->body.upb_alloc_cleanup = NULL;
   UPB_PRIVATE(upb_Xsan_Init)(UPB_XSAN(&a->body));
 
-  _upb_Arena_AddBlock(&a->head, mem, first_block_overhead, actual_block_size);
+  _upb_Arena_AddBlock(&a->head, block);
+  _upb_Arena_UseBlockInternal(&a->head, block,
+                              UPB_ALIGN_MALLOC(sizeof(upb_ArenaState)));
 
   return &a->head;
 }
 
 upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
-  UPB_STATIC_ASSERT(
-      sizeof(void*) * UPB_ARENA_SIZE_HACK >= sizeof(upb_ArenaState),
-      "Need to update UPB_ARENA_SIZE_HACK");
+  UPB_STATIC_ASSERT(UPB_ARENA_SIZE_HACK >= sizeof(upb_ArenaState),
+                    "Need to update UPB_ARENA_SIZE_HACK");
   upb_ArenaState* a;
 
   if (mem) {
@@ -6285,6 +6311,7 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   a->body.refs = NULL;
 #endif
   a->body.size_hint = 128;
+  a->body.last_block_size = 128;
   a->body.upb_alloc_cleanup = NULL;
   a->body.block_alloc = _upb_Arena_MakeBlockAlloc(alloc, 1);
   a->head.UPB_PRIVATE(ptr) = (void*)UPB_ALIGN_MALLOC((uintptr_t)(a + 1));
@@ -6731,13 +6758,10 @@ void UPB_PRIVATE(_upb_Arena_SwapOut)(upb_Arena* des, const upb_Arena* src) {
 bool _upb_Arena_WasLastAlloc(struct upb_Arena* a, void* ptr, size_t oldsize) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   upb_MemBlock* block = ai->blocks;
-  if (block == NULL) return false;
   // Skip any arena refs.
   while (block != NULL && block->size == 0) {
     block = block->next;
   }
-  if (block == NULL) return false;
-  block = block->next;
   if (block == NULL) return false;
   char* start = UPB_PTR_AT(block, kUpb_MemblockReserve, char);
   return UPB_PRIVATE(upb_Xsan_PtrEq)(ptr, start) &&
@@ -8117,7 +8141,7 @@ static bool upb_Clone_MessageValue(void* value, upb_CType value_type,
     case kUpb_CType_String:
     case kUpb_CType_Bytes: {
       upb_StringView source = *(upb_StringView*)value;
-      int size = source.size;
+      size_t size = source.size;
       void* cloned_data = upb_Arena_Malloc(arena, size);
       if (cloned_data == NULL) {
         return false;
@@ -8710,7 +8734,6 @@ upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data, size_t len,
 
 
 #include <inttypes.h>
-#include <stdalign.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -16562,7 +16585,6 @@ const char* _upb_Decoder_DecodeWireValue(upb_Decoder* d, const char* ptr,
 UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
                                           upb_Message* msg,
-                                          const upb_MiniTable* layout,
                                           const upb_MiniTableField* field,
                                           int op, wireval* val) {
   uint8_t mode = field->UPB_PRIVATE(mode);
@@ -16591,66 +16613,12 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
   }
 }
 
-static const char* _upb_Decoder_FindFieldStart(upb_Decoder* d, const char* ptr,
-                                               uint32_t field_number,
-                                               uint32_t wire_type) {
-  // Since unknown fields are the uncommon case, we do a little extra work here
-  // to walk backwards through the buffer to find the field start.  This frees
-  // up a register in the fast paths (when the field is known), which leads to
-  // significant speedups in benchmarks. Note that ptr may point into the slop
-  // space, beyond the normal end of the input buffer.
-  const char* start = ptr;
-
-  switch (wire_type) {
-    case kUpb_WireType_Varint:
-    case kUpb_WireType_Delimited:
-      // Skip the last byte
-      start--;
-      // Skip bytes until we encounter the final byte of the tag varint.
-      while (start[-1] & 0x80) start--;
-      break;
-    case kUpb_WireType_32Bit:
-      start -= 4;
-      break;
-    case kUpb_WireType_64Bit:
-      start -= 8;
-      break;
-    default:
-      break;
-  }
-  assert(start == d->debug_valstart);
-
-  {
-    // The varint parser does not enforce that integers are encoded with their
-    // minimum size; for example the value 1 could be encoded with three
-    // bytes: 0x81, 0x80, 0x00. These unnecessary trailing zeroes mean that we
-    // cannot skip backwards by the minimum encoded size of the tag; and
-    // unlike the loop for delimited or varint fields, we can't stop at a
-    // sentinel value because anything can precede a tag. Instead, parse back
-    // one byte at a time until we read the same tag value that was parsed
-    // earlier.
-    uint32_t tag = ((uint32_t)field_number << 3) | wire_type;
-    uint32_t seen = 0;
-    do {
-      start--;
-      seen <<= 7;
-      seen |= *start & 0x7f;
-    } while (seen != tag);
-  }
-  assert(start == d->debug_tagstart);
-
-  return start;
-}
-
 static const char* _upb_Decoder_DecodeUnknownField(
     upb_Decoder* d, const char* ptr, upb_Message* msg, uint32_t field_number,
-    uint32_t wire_type, wireval val) {
+    uint32_t wire_type, wireval val, const char* start) {
   if (field_number == 0) {
     upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_Malformed);
   }
-
-  const char* start =
-      _upb_Decoder_FindFieldStart(d, ptr, field_number, wire_type);
 
   upb_EpsCopyInputStream_StartCapture(&d->input, start);
 
@@ -16690,10 +16658,6 @@ UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeFieldTag(upb_Decoder* d, const char* ptr,
                                         uint32_t* field_number,
                                         uint32_t* wire_type) {
-#ifndef NDEBUG
-  d->debug_tagstart = ptr;
-#endif
-
   uint32_t tag;
   UPB_ASSERT(ptr < d->input.limit_ptr);
   ptr = upb_WireReader_ReadTag(ptr, &tag, EPS(d));
@@ -16703,15 +16667,9 @@ const char* _upb_Decoder_DecodeFieldTag(upb_Decoder* d, const char* ptr,
 }
 
 UPB_FORCEINLINE
-const char* _upb_Decoder_DecodeFieldData(upb_Decoder* d, const char* ptr,
-                                         upb_Message* msg,
-                                         const upb_MiniTable* mt,
-                                         uint32_t field_number,
-                                         uint32_t wire_type) {
-#ifndef NDEBUG
-  d->debug_valstart = ptr;
-#endif
-
+const char* _upb_Decoder_DecodeFieldData(
+    upb_Decoder* d, const char* ptr, upb_Message* msg, const upb_MiniTable* mt,
+    uint32_t field_number, uint32_t wire_type, const char* start) {
   int op;
   wireval val;
 
@@ -16720,12 +16678,12 @@ const char* _upb_Decoder_DecodeFieldData(upb_Decoder* d, const char* ptr,
   ptr = _upb_Decoder_DecodeWireValue(d, ptr, mt, field, wire_type, &val, &op);
 
   if (op >= 0) {
-    return _upb_Decoder_DecodeKnownField(d, ptr, msg, mt, field, op, &val);
+    return _upb_Decoder_DecodeKnownField(d, ptr, msg, field, op, &val);
   } else {
     switch (op) {
       case kUpb_DecodeOp_UnknownField:
         return _upb_Decoder_DecodeUnknownField(d, ptr, msg, field_number,
-                                               wire_type, val);
+                                               wire_type, val, start);
       case kUpb_DecodeOp_MessageSetItem:
         return upb_Decoder_DecodeMessageSetItem(d, ptr, msg, mt);
       default:
@@ -16746,6 +16704,7 @@ const char* _upb_Decoder_DecodeFieldNoFast(upb_Decoder* d, const char* ptr,
   uint32_t field_number;
   uint32_t wire_type;
 
+  const char* start = ptr;
   ptr = _upb_Decoder_DecodeFieldTag(d, ptr, &field_number, &wire_type);
 
   if (wire_type == kUpb_WireType_EndGroup) {
@@ -16753,7 +16712,8 @@ const char* _upb_Decoder_DecodeFieldNoFast(upb_Decoder* d, const char* ptr,
     return _upb_Decoder_EndMessage(d, ptr);
   }
 
-  ptr = _upb_Decoder_DecodeFieldData(d, ptr, msg, mt, field_number, wire_type);
+  ptr = _upb_Decoder_DecodeFieldData(d, ptr, msg, mt, field_number, wire_type,
+                                     start);
   _upb_Decoder_Trace(d, 'M');
   return ptr;
 }

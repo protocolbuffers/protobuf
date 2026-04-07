@@ -164,6 +164,7 @@ typedef enum {
   google_protobuf_EDITION_PROTO3 = 999,
   google_protobuf_EDITION_2023 = 1000,
   google_protobuf_EDITION_2024 = 1001,
+  google_protobuf_EDITION_2026 = 1002,
   google_protobuf_EDITION_UNSTABLE = 9999,
   google_protobuf_EDITION_99997_TEST_ONLY = 99997,
   google_protobuf_EDITION_99998_TEST_ONLY = 99998,
@@ -179,7 +180,8 @@ typedef enum {
 typedef enum {
   google_protobuf_FeatureSet_ENFORCE_NAMING_STYLE_UNKNOWN = 0,
   google_protobuf_FeatureSet_STYLE2024 = 1,
-  google_protobuf_FeatureSet_STYLE_LEGACY = 2
+  google_protobuf_FeatureSet_STYLE_LEGACY = 2,
+  google_protobuf_FeatureSet_STYLE2026 = 3
 } google_protobuf_FeatureSet_EnforceNamingStyle;
 
 typedef enum {

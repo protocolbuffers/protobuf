@@ -843,6 +843,24 @@ using GlobalEmptyString = std::conditional_t<
 
 PROTOBUF_EXPORT extern GlobalEmptyString fixed_address_empty_string;
 
+PROTOBUF_EXPORT ABSL_ATTRIBUTE_NORETURN PROTOBUF_NOINLINE void
+HandleAddOverflow(int a, int b);
+
+inline int CheckedAdd(int a, int b) {
+  int sum;
+#if ABSL_HAVE_BUILTIN(__builtin_add_overflow)
+  bool overflow = __builtin_add_overflow(a, b, &sum);
+#else
+  int64_t sum64 = static_cast<int64_t>(a) + static_cast<int64_t>(b);
+  sum = static_cast<int>(sum64);
+  bool overflow = sum64 != sum;
+#endif
+  if (ABSL_PREDICT_FALSE(overflow)) {
+    HandleAddOverflow(a, b);
+  }
+  return sum;
+}
+
 enum class BoundsCheckMode { kNoEnforcement, kReturnDefault, kAbort };
 
 PROTOBUF_EXPORT constexpr BoundsCheckMode GetBoundsCheckMode() {

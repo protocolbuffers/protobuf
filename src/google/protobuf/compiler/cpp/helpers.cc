@@ -237,10 +237,6 @@ std::string IntTypeName(const Options& options, absl::string_view type) {
 
 
 
-bool HasV2Table(const Descriptor* descriptor, const Options& options) {
-  return false;
-}
-
 }  // namespace
 
 bool IsLazy(const FieldDescriptor* field, const Options& options) {
@@ -579,8 +575,8 @@ std::string SplitDefaultInstanceType(const Descriptor* descriptor,
 
 std::string SplitDefaultInstanceName(const Descriptor* descriptor,
                                      const Options& /*options*/) {
-  return absl::StrCat("_", ClassName(descriptor, false),
-                      "__Impl_Split_default_instance_");
+  return absl::StrCat(ClassName(descriptor, false),
+                      "_Impl_Split_default_instance_");
 }
 
 std::string MsgGlobalsInstanceType(const Descriptor* descriptor,
@@ -590,7 +586,7 @@ std::string MsgGlobalsInstanceType(const Descriptor* descriptor,
 
 std::string MsgGlobalsInstanceName(const Descriptor* descriptor,
                                    const Options& /*options*/) {
-  return absl::StrCat("_", ClassName(descriptor, false), "_globals_");
+  return absl::StrCat(ClassName(descriptor, false), "_globals_");
 }
 
 std::string MsgGlobalsInstancePtr(const Descriptor* descriptor,
@@ -883,36 +879,6 @@ const char* DeclaredTypeMethodName(FieldDescriptor::Type type) {
     case FieldDescriptor::TYPE_GROUP:
       return "Group";
     case FieldDescriptor::TYPE_MESSAGE:
-      return "Message";
-
-      // No default because we want the compiler to complain if any new
-      // types are added.
-  }
-  ABSL_LOG(FATAL) << "Can't get here.";
-  return "";
-}
-
-absl::string_view DeclaredCppTypeMethodName(FieldDescriptor::CppType type) {
-  switch (type) {
-    case FieldDescriptor::CPPTYPE_INT32:
-      return "Int32";
-    case FieldDescriptor::CPPTYPE_INT64:
-      return "Int64";
-    case FieldDescriptor::CPPTYPE_UINT32:
-      return "UInt32";
-    case FieldDescriptor::CPPTYPE_UINT64:
-      return "UInt64";
-    case FieldDescriptor::CPPTYPE_DOUBLE:
-      return "Double";
-    case FieldDescriptor::CPPTYPE_FLOAT:
-      return "Float";
-    case FieldDescriptor::CPPTYPE_BOOL:
-      return "Bool";
-    case FieldDescriptor::CPPTYPE_ENUM:
-      return "Enum";
-    case FieldDescriptor::CPPTYPE_STRING:
-      return "String";
-    case FieldDescriptor::CPPTYPE_MESSAGE:
       return "Message";
 
       // No default because we want the compiler to complain if any new
@@ -1361,35 +1327,6 @@ bool HasMapFields(const FileDescriptor* file) {
   return false;
 }
 
-bool IsV2EnabledForMessage(const Descriptor* descriptor,
-                           const Options& options) {
-  return false;
-}
-
-// Returns true if a message (descriptor) directly has required fields. Later
-// CLs will expand to cover transitively required fields.
-bool ShouldVerifyV2(const Descriptor* descriptor, const Options& options) {
-  return false;
-}
-
-
-bool HasV2MessageTable(const FileDescriptor* file, const Options& options) {
-  for (int i = 0; i < file->message_type_count(); ++i) {
-    if (HasV2Table(file->message_type(i), options)) return true;
-  }
-  return false;
-}
-
-
-bool IsV2ParseEnabledForMessage(const Descriptor* descriptor,
-                                const Options& options) {
-  return false;
-}
-
-bool HasV2ParseTable(const FileDescriptor* file, const Options& options) {
-  return false;
-}
-
 static bool HasEnumDefinitions(const Descriptor* message_type) {
   if (message_type->enum_type_count() > 0) return true;
   for (int i = 0; i < message_type->nested_type_count(); ++i) {
@@ -1546,14 +1483,6 @@ void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
                                     const Formatter& format) {
   GenerateUtf8CheckCode(format.printer(), field, options, for_parse, parameters,
                         "VerifyUtf8String", "VerifyUTF8StringNamedField");
-}
-
-void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
-                                  const Options& options, bool for_parse,
-                                  absl::string_view parameters,
-                                  const Formatter& format) {
-  GenerateUtf8CheckCode(format.printer(), field, options, for_parse, parameters,
-                        "VerifyUtf8Cord", "VerifyUTF8CordNamedField");
 }
 
 void GenerateUtf8CheckCodeForString(io::Printer* p,
