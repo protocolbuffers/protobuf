@@ -116,6 +116,44 @@ bool upb_Array_Resize(upb_Array* arr, size_t size, upb_Arena* arena) {
   return true;
 }
 
+bool upb_Array_Copy(upb_Array* dst, const upb_Array* src, upb_Arena* arena) {
+  UPB_ASSERT(!upb_Array_IsFrozen(dst));
+  if (dst == src) return true;
+  size_t len = src ? upb_Array_Size(src) : 0;
+  if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(dst, len, arena)) {
+    return false;
+  }
+  if (len > 0) {
+    const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(dst);
+    char* dst_data = (char*)upb_Array_MutableDataPtr(dst);
+    const char* src_data = (const char*)upb_Array_DataPtr(src);
+    memcpy(dst_data, src_data, len << lg2);
+  }
+  return true;
+}
+
+bool upb_Array_AppendAll(upb_Array* dst, const upb_Array* src,
+                         upb_Arena* arena) {
+  UPB_ASSERT(!upb_Array_IsFrozen(dst));
+  if (!src) return true;
+  size_t src_len = upb_Array_Size(src);
+  if (src_len == 0) return true;
+  size_t dst_len = upb_Array_Size(dst);
+  size_t len = dst_len + src_len;
+  if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(dst, len, arena)) {
+    return false;
+  }
+  const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(dst);
+  char* dst_data = (char*)upb_Array_MutableDataPtr(dst);
+  const char* src_data = (const char*)upb_Array_DataPtr(src);
+  if (dst == src) {
+    memmove(dst_data + (dst_len << lg2), src_data, src_len << lg2);
+  } else {
+    memcpy(dst_data + (dst_len << lg2), src_data, src_len << lg2);
+  }
+  return true;
+}
+
 bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
                                      upb_Arena* arena) {
   size_t new_capacity = UPB_MAX(array->UPB_PRIVATE(capacity), 4);

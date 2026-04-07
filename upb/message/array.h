@@ -74,6 +74,16 @@ UPB_API_INLINE bool upb_Array_Reserve(struct upb_Array* array, size_t size,
 // Returns false on allocation failure.
 UPB_API bool upb_Array_Resize(upb_Array* array, size_t size, upb_Arena* arena);
 
+// Copies elements from |src| to |dst|, resizing |dst| to match |src| size.
+// Returns false on allocation failure.
+UPB_API bool upb_Array_Copy(upb_Array* dst, const upb_Array* src,
+                            upb_Arena* arena);
+
+// Appends all elements from |src| to the end of |dst|.
+// Returns false on allocation failure.
+UPB_API bool upb_Array_AppendAll(upb_Array* dst, const upb_Array* src,
+                                 upb_Arena* arena);
+
 // Returns pointer to array data.
 UPB_API_INLINE const void* upb_Array_DataPtr(const upb_Array* arr);
 
