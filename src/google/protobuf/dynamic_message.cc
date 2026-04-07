@@ -498,7 +498,9 @@ DynamicMessage::DynamicMessage(DynamicMessageFactory::TypeInfo* type_info,
   // created, which needs the address of the prototype of Foo (the value in
   // map). To break the cyclic dependency, we have to assign the address of
   // prototype into type_info first.
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   type_info->MutableClassDataFull().prototype = this;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
   SharedCtor(lock_factory);
 }
 

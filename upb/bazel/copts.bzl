@@ -45,8 +45,6 @@ UPB_DEFAULT_CPPOPTS = select({
 }) + select({
     "//upb:fasttable_enabled_setting": ["-DUPB_ENABLE_FASTTABLE"],
     "//conditions:default": [],
-}) + select({
-    "//conditions:default": [],
 })
 
 UPB_DEFAULT_COPTS = select({
@@ -54,8 +52,6 @@ UPB_DEFAULT_COPTS = select({
     "//conditions:default": _DEFAULT_COPTS,
 }) + select({
     "//upb:fasttable_enabled_setting": ["-DUPB_ENABLE_FASTTABLE"],
-    "//conditions:default": [],
-}) + select({
     "//conditions:default": [],
 })
 

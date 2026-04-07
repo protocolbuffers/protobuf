@@ -1339,6 +1339,11 @@ using ExtensionsGroupedByDescriptorMap =
 using LocationsByPathMap =
     absl::flat_hash_map<std::string, const SourceCodeInfo_Location*>;
 
+// A path through a FileDescriptorProto to a specific location of source code,
+// e.g. a field name. See SourceCodeInfo.Location.path in descriptor.proto for
+// full structure of this vector.
+using SourceCodePath = std::vector<int>;
+
 absl::flat_hash_set<std::string>* AllowedCustomOptionExtendees() {
   const char* kOptionNames[] = {
       "FileOptions",   "MessageOptions",   "FieldOptions",
@@ -1520,7 +1525,7 @@ class FileDescriptorTables {
   // The value of info must be that of the corresponding FileDescriptor.
   // (Conceptually a pure function, but stateful as an optimisation.)
   const SourceCodeInfo_Location* GetSourceLocation(
-      const std::vector<int>& path, const SourceCodeInfo* info) const;
+      const SourceCodePath& path, const SourceCodeInfo* info) const;
 
   // Must be called after BuildFileImpl(), even if the build failed and
   // we are going to roll back to the last checkpoint.
@@ -3585,7 +3590,7 @@ class SourceLocationCommentPrinter {
         options_.include_comments && desc->GetSourceLocation(&source_loc_);
   }
   SourceLocationCommentPrinter(const FileDescriptor* file,
-                               const std::vector<int>& path,
+                               const SourceCodePath& path,
                                const std::string& prefix,
                                const DebugStringOptions& options)
       : options_(options), prefix_(prefix) {
@@ -3644,7 +3649,7 @@ std::string FileDescriptor::DebugStringWithOptions(
     const DebugStringOptions& debug_string_options) const {
   std::string contents;
   {
-    std::vector<int> path;
+    SourceCodePath path;
     path.push_back(FileDescriptorProto::kSyntaxFieldNumber);
     SourceLocationCommentPrinter syntax_comment(this, path, "",
                                                 debug_string_options);
@@ -3684,7 +3689,7 @@ std::string FileDescriptor::DebugStringWithOptions(
   }
 
   if (!package().empty()) {
-    std::vector<int> path;
+    SourceCodePath path;
     path.push_back(FileDescriptorProto::kPackageFieldNumber);
     SourceLocationCommentPrinter package_comment(this, path, "",
                                                  debug_string_options);
@@ -4343,49 +4348,49 @@ bool FileDescriptor::GetSourceLocation(const std::vector<int>& path,
 }
 
 bool FileDescriptor::GetSourceLocation(SourceLocation* out_location) const {
-  std::vector<int> path;  // empty path for root FileDescriptor
+  SourceCodePath path;  // empty path for root FileDescriptor
   return GetSourceLocation(path, out_location);
 }
 
 bool Descriptor::GetSourceLocation(SourceLocation* out_location) const {
-  std::vector<int> path;
+  SourceCodePath path;
   GetLocationPath(&path);
   return file()->GetSourceLocation(path, out_location);
 }
 
 bool FieldDescriptor::GetSourceLocation(SourceLocation* out_location) const {
-  std::vector<int> path;
+  SourceCodePath path;
   GetLocationPath(&path);
   return file()->GetSourceLocation(path, out_location);
 }
 
 bool OneofDescriptor::GetSourceLocation(SourceLocation* out_location) const {
-  std::vector<int> path;
+  SourceCodePath path;
   GetLocationPath(&path);
   return containing_type()->file()->GetSourceLocation(path, out_location);
 }
 
 bool EnumDescriptor::GetSourceLocation(SourceLocation* out_location) const {
-  std::vector<int> path;
+  SourceCodePath path;
   GetLocationPath(&path);
   return file()->GetSourceLocation(path, out_location);
 }
 
 bool MethodDescriptor::GetSourceLocation(SourceLocation* out_location) const {
-  std::vector<int> path;
+  SourceCodePath path;
   GetLocationPath(&path);
   return service()->file()->GetSourceLocation(path, out_location);
 }
 
 bool ServiceDescriptor::GetSourceLocation(SourceLocation* out_location) const {
-  std::vector<int> path;
+  SourceCodePath path;
   GetLocationPath(&path);
   return file()->GetSourceLocation(path, out_location);
 }
 
 bool EnumValueDescriptor::GetSourceLocation(
     SourceLocation* out_location) const {
-  std::vector<int> path;
+  SourceCodePath path;
   GetLocationPath(&path);
   return type()->file()->GetSourceLocation(path, out_location);
 }
@@ -4470,8 +4475,7 @@ namespace {
 // one of the Options messages in descriptor.proto.
 struct OptionsToInterpret {
   OptionsToInterpret(absl::string_view ns, absl::string_view el,
-                     absl::Span<const int> path, const Message* orig_opt,
-                     Message* opt)
+                     SourceCodePath path, const Message* orig_opt, Message* opt)
       : name_scope(ns),
         element_name(el),
         element_path(path.begin(), path.end()),
@@ -4479,7 +4483,7 @@ struct OptionsToInterpret {
         options(opt) {}
   std::string name_scope;
   std::string element_name;
-  std::vector<int> element_path;
+  SourceCodePath element_path;
   const Message* original_options;
   Message* options;
 };
@@ -4714,9 +4718,8 @@ class DescriptorBuilder {
   template <class DescriptorT>
   const typename DescriptorT::OptionsType* AllocateOptionsImpl(
       absl::string_view name_scope, absl::string_view element_name,
-      const typename DescriptorT::Proto& proto,
-      absl::Span<const int> options_path, absl::string_view option_name,
-      internal::FlatAllocator& alloc);
+      const typename DescriptorT::Proto& proto, SourceCodePath options_path,
+      absl::string_view option_name, internal::FlatAllocator& alloc);
 
   // Allocates and resolves any feature sets that need to be owned by a given
   // descriptor. This also strips features out of the mutable options message to
@@ -4872,9 +4875,8 @@ class DescriptorBuilder {
     // recorded and then used in UpdateSourceCodeInfo.
     // The features boolean controls whether or not we should only interpret
     // feature options or skip them entirely.
-    bool InterpretSingleOption(Message* options,
-                               const std::vector<int>& src_path,
-                               const std::vector<int>& options_path,
+    bool InterpretSingleOption(Message* options, const SourceCodePath& src_path,
+                               const SourceCodePath& options_path,
                                bool skip_extensions);
 
     // Adds the uninterpreted_option to the given options message verbatim.
@@ -4960,12 +4962,12 @@ class DescriptorBuilder {
     // This maps the element path of uninterpreted options to the element path
     // of the resulting interpreted option. This is used to modify a file's
     // source code info to account for option interpretation.
-    absl::flat_hash_map<std::vector<int>, std::vector<int>> interpreted_paths_;
+    absl::flat_hash_map<SourceCodePath, SourceCodePath> interpreted_paths_;
 
     // This maps the path to a repeated option field to the known number of
     // elements the field contains. This is used to track the compute the
     // index portion of the element path when interpreting a single option.
-    absl::flat_hash_map<std::vector<int>, int> repeated_option_counts_;
+    absl::flat_hash_map<SourceCodePath, int> repeated_option_counts_;
 
     // Factory used to create the dynamic messages we need to parse
     // any aggregate option values we encounter.
@@ -5798,7 +5800,7 @@ void DescriptorBuilder::AllocateOptions(
     const typename DescriptorT::Proto& proto, DescriptorT* descriptor,
     int options_field_tag, absl::string_view option_name,
     internal::FlatAllocator& alloc) {
-  std::vector<int> options_path;
+  SourceCodePath options_path;
   descriptor->GetLocationPath(&options_path);
   options_path.push_back(options_field_tag);
   auto options = AllocateOptionsImpl<DescriptorT>(
@@ -5813,7 +5815,7 @@ void DescriptorBuilder::AllocateOptions(
 void DescriptorBuilder::AllocateOptions(const FileDescriptorProto& proto,
                                         FileDescriptor* descriptor,
                                         internal::FlatAllocator& alloc) {
-  std::vector<int> options_path;
+  SourceCodePath options_path;
   options_path.push_back(FileDescriptorProto::kOptionsFieldNumber);
   // We add the dummy token so that LookupSymbol does the right thing.
   auto options = AllocateOptionsImpl<FileDescriptor>(
@@ -5827,9 +5829,8 @@ void DescriptorBuilder::AllocateOptions(const FileDescriptorProto& proto,
 template <class DescriptorT>
 const typename DescriptorT::OptionsType* DescriptorBuilder::AllocateOptionsImpl(
     absl::string_view name_scope, absl::string_view element_name,
-    const typename DescriptorT::Proto& proto,
-    absl::Span<const int> options_path, absl::string_view option_name,
-    internal::FlatAllocator& alloc) {
+    const typename DescriptorT::Proto& proto, SourceCodePath options_path,
+    absl::string_view option_name, internal::FlatAllocator& alloc) {
   if (!proto.has_options()) {
     return &DescriptorT::OptionsType::default_instance();
   }
@@ -9442,7 +9443,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptionsImpl(
       << "No field named \"uninterpreted_option\" in the Options proto.";
   options->GetReflection()->ClearField(options, uninterpreted_options_field);
 
-  std::vector<int> src_path = options_to_interpret->element_path;
+  SourceCodePath src_path = options_to_interpret->element_path;
   src_path.push_back(uninterpreted_options_field->number());
 
   // Find the uninterpreted_option field in the original options.
@@ -9511,8 +9512,8 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptionsImpl(
 }
 
 bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
-    Message* options, const std::vector<int>& src_path,
-    const std::vector<int>& options_path, bool skip_extensions) {
+    Message* options, const SourceCodePath& src_path,
+    const SourceCodePath& options_path, bool skip_extensions) {
   // First do some basic validation.
   if (uninterpreted_option_->name_size() == 0) {
     // This should never happen unless the parser has gone seriously awry or
@@ -9575,7 +9576,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   std::vector<const FieldDescriptor*> intermediate_fields;
   std::string debug_msg_name = "";
 
-  std::vector<int> dest_path = options_path;
+  SourceCodePath dest_path = options_path;
 
   for (int i = 0; i < uninterpreted_option_->name_size(); ++i) {
     builder_->undefine_resolved_name_.clear();
@@ -9780,7 +9781,7 @@ void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
   RepeatedPtrField<SourceCodeInfo_Location> new_locs;
   bool copying = false;
 
-  std::vector<int> pathv;
+  SourceCodePath pathv;
   bool matched = false;
 
   for (RepeatedPtrField<SourceCodeInfo_Location>::iterator loc = locs->begin();
@@ -9839,7 +9840,7 @@ void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
     SourceCodeInfo_Location* replacement = new_locs.Add();
     *replacement = *loc;
     replacement->clear_path();
-    for (std::vector<int>::iterator rit = entry->second.begin();
+    for (SourceCodePath::iterator rit = entry->second.begin();
          rit != entry->second.end(); rit++) {
       replacement->add_path(*rit);
     }

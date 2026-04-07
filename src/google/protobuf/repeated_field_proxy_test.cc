@@ -23,6 +23,7 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
+#include "google/protobuf/test_protos/repeated_field_proxy_import_message.pb.h"
 #include "google/protobuf/test_protos/repeated_field_proxy_test.pb.h"
 #include "google/protobuf/test_textproto.h"
 
@@ -32,7 +33,15 @@ namespace protobuf {
 namespace internal {
 namespace {
 
+using ::proto2_unittest::RepeatedFieldProxyTestImportEnum;
 using ::proto2_unittest::RepeatedFieldProxyTestSimpleMessage;
+using ::proto2_unittest::TestRepeatedEnumProxy;
+using ::proto2_unittest::TestRepeatedImportEnumProxy;
+using ::proto2_unittest::TestRepeatedImportMessageProxy;
+using ::proto2_unittest::TestRepeatedIntProxy;
+using ::proto2_unittest::TestRepeatedMessageProxy;
+using ::proto2_unittest::TestRepeatedStdStringProxy;
+using ::proto2_unittest::TestRepeatedStringViewProxy;
 using ::testing::AnyOf;
 using ::testing::ElementsAre;
 using ::testing::Ge;
@@ -129,10 +138,12 @@ class TestOnlyRepeatedFieldContainer {
   const FieldType* operator->() const { return &*field_; }
 
   RepeatedFieldProxy<T> MakeProxy() {
-    return internal::ConstructRepeatedFieldProxy<T>(*field_, arena_);
+    return internal::RepeatedFieldProxyInternalPrivateAccessHelper<
+        T>::Construct(*field_, arena_);
   }
   RepeatedFieldProxy<const T> MakeConstProxy() const {
-    return internal::ConstructRepeatedFieldProxy<const T>(*field_);
+    return internal::RepeatedFieldProxyInternalPrivateAccessHelper<
+        const T>::Construct(*field_);
   }
 
  private:
@@ -2011,7 +2022,7 @@ TEST_P(RepeatedFieldProxyTest, ResizeMessageWithValue) {
                                   EqualsProto(R"pb(value: 10)pb")));
 }
 
-TYPED_TEST(RepeatedNumericFieldProxyTest, Rebind) {
+TYPED_TEST(RepeatedNumericFieldProxyTest, RebindConstProxy) {
   auto field1 = this->MakeRepeatedFieldContainer();
   field1->Add(1);
 
@@ -2030,7 +2041,7 @@ TYPED_TEST(RepeatedNumericFieldProxyTest, Rebind) {
   static_assert(!std::is_copy_assignable_v<decltype(field1.MakeProxy())>);
 }
 
-TYPED_TEST(RepeatedStringFieldProxyTest, Rebind) {
+TYPED_TEST(RepeatedStringFieldProxyTest, RebindConstProxy) {
   auto field1 = this->MakeRepeatedFieldContainer();
   this->Add(field1, "1");
 
@@ -2049,7 +2060,7 @@ TYPED_TEST(RepeatedStringFieldProxyTest, Rebind) {
   static_assert(!std::is_copy_assignable_v<decltype(field1.MakeProxy())>);
 }
 
-TEST_P(RepeatedFieldProxyTest, RebindMessage) {
+TEST_P(RepeatedFieldProxyTest, RebindConstMessageProxy) {
   auto field1 =
       this->MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
   field1->Add()->set_value(1);
@@ -2278,6 +2289,198 @@ INSTANTIATE_TEST_SUITE_P(RepeatedFieldProxyTest, RepeatedFieldProxyTest,
                          [](const testing::TestParamInfo<bool>& info) {
                            return info.param ? "WithArena" : "WithoutArena";
                          });
+
+// Verify the return types of all accessors for legacy and proxy repeated
+// fields:
+
+// Repeated messages:
+static_assert(
+    std::is_same_v<
+        decltype(std::declval<TestRepeatedMessageProxy>().nested_messages()),
+        const RepeatedPtrField<TestRepeatedMessageProxy::NestedMessage>&>);
+static_assert(
+    std::is_same_v<decltype(std::declval<TestRepeatedMessageProxy>()
+                                .mutable_nested_messages()),
+                   RepeatedPtrField<TestRepeatedMessageProxy::NestedMessage>*>);
+
+static_assert(
+    std::is_same_v<
+        decltype(std::declval<TestRepeatedMessageProxy>()
+                     .nested_messages_proxy()),
+        RepeatedFieldProxy<const TestRepeatedMessageProxy::NestedMessage>>);
+static_assert(std::is_same_v<
+              decltype(std::declval<TestRepeatedMessageProxy>()
+                           .mutable_nested_messages_proxy()),
+              RepeatedFieldProxy<TestRepeatedMessageProxy::NestedMessage>>);
+
+// Repeated ints:
+static_assert(
+    std::is_same_v<decltype(std::declval<TestRepeatedIntProxy>().ints()),
+                   const RepeatedField<int32_t>&>);
+static_assert(std::is_same_v<
+              decltype(std::declval<TestRepeatedIntProxy>().mutable_ints()),
+              RepeatedField<int32_t>*>);
+
+static_assert(
+    std::is_same_v<decltype(std::declval<TestRepeatedIntProxy>().ints_proxy()),
+                   RepeatedFieldProxy<const int32_t>>);
+static_assert(std::is_same_v<decltype(std::declval<TestRepeatedIntProxy>()
+                                          .mutable_ints_proxy()),
+                             RepeatedFieldProxy<int32_t>>);
+
+// Repeated enums:
+static_assert(
+    std::is_same_v<decltype(std::declval<TestRepeatedEnumProxy>().enums()),
+                   const RepeatedField<int>&>);
+static_assert(std::is_same_v<
+              decltype(std::declval<TestRepeatedEnumProxy>().mutable_enums()),
+              RepeatedField<int>*>);
+
+static_assert(std::is_same_v<
+              decltype(std::declval<TestRepeatedEnumProxy>().enums_proxy()),
+              RepeatedFieldProxy<const int>>);
+static_assert(std::is_same_v<decltype(std::declval<TestRepeatedEnumProxy>()
+                                          .mutable_enums_proxy()),
+                             RepeatedFieldProxy<int>>);
+
+// Repeated std::string:
+static_assert(std::is_same_v<
+              decltype(std::declval<TestRepeatedStdStringProxy>().strings()),
+              const RepeatedPtrField<std::string>&>);
+static_assert(std::is_same_v<decltype(std::declval<TestRepeatedStdStringProxy>()
+                                          .mutable_strings()),
+                             RepeatedPtrField<std::string>*>);
+
+static_assert(std::is_same_v<decltype(std::declval<TestRepeatedStdStringProxy>()
+                                          .strings_proxy()),
+                             RepeatedFieldProxy<const std::string>>);
+static_assert(std::is_same_v<decltype(std::declval<TestRepeatedStdStringProxy>()
+                                          .mutable_strings_proxy()),
+                             RepeatedFieldProxy<std::string>>);
+
+// Repeated absl::string_view:
+static_assert(
+    std::is_same_v<
+        decltype(std::declval<TestRepeatedStringViewProxy>().string_views()),
+        const RepeatedPtrField<std::string>&>);
+static_assert(
+    std::is_same_v<decltype(std::declval<TestRepeatedStringViewProxy>()
+                                .mutable_string_views()),
+                   RepeatedPtrField<std::string>*>);
+
+static_assert(
+    std::is_same_v<decltype(std::declval<TestRepeatedStringViewProxy>()
+                                .string_views_proxy()),
+                   RepeatedFieldProxy<const absl::string_view>>);
+static_assert(
+    std::is_same_v<decltype(std::declval<TestRepeatedStringViewProxy>()
+                                .mutable_string_views_proxy()),
+                   RepeatedFieldProxy<absl::string_view>>);
+
+TEST(RepeatedFieldProxyInterfaceTest, RepeatedMessageProxy) {
+  TestRepeatedMessageProxy msg;
+  {
+    auto proxy = msg.mutable_nested_messages_proxy();
+    proxy.emplace_back().set_value(1);
+    proxy.emplace_back().set_value(2);
+    proxy.emplace_back().set_value(3);
+  }
+
+  auto proxy = msg.nested_messages_proxy();
+  EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
+                                 EqualsProto(R"pb(value: 2)pb"),
+                                 EqualsProto(R"pb(value: 3)pb")));
+}
+
+TEST(RepeatedFieldProxyInterfaceTest, RepeatedImportMessageProxy) {
+  TestRepeatedImportMessageProxy msg;
+  {
+    auto proxy = msg.mutable_import_messages_proxy();
+    proxy.emplace_back().set_value(1);
+    proxy.emplace_back().set_value(2);
+    proxy.emplace_back().set_value(3);
+  }
+
+  auto proxy = msg.import_messages_proxy();
+  EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
+                                 EqualsProto(R"pb(value: 2)pb"),
+                                 EqualsProto(R"pb(value: 3)pb")));
+}
+
+TEST(RepeatedFieldProxyInterfaceTest, RepeatedIntProxy) {
+  TestRepeatedIntProxy msg;
+  {
+    auto proxy = msg.mutable_ints_proxy();
+    proxy.push_back(1);
+    proxy.push_back(2);
+    proxy.push_back(3);
+  }
+
+  auto proxy = msg.ints_proxy();
+  EXPECT_THAT(proxy, ElementsAre(1, 2, 3));
+}
+
+TEST(RepeatedFieldProxyInterfaceTest, RepeatedEnumProxy) {
+  TestRepeatedEnumProxy msg;
+  {
+    auto proxy = msg.mutable_enums_proxy();
+    proxy.push_back(TestRepeatedEnumProxy::FOO);
+    proxy.push_back(TestRepeatedEnumProxy::BAR);
+    proxy.push_back(TestRepeatedEnumProxy::BAZ);
+  }
+
+  auto proxy = msg.enums_proxy();
+  EXPECT_THAT(
+      proxy, ElementsAre(TestRepeatedEnumProxy::FOO, TestRepeatedEnumProxy::BAR,
+                         TestRepeatedEnumProxy::BAZ));
+}
+
+TEST(RepeatedFieldProxyInterfaceTest, RepeatedImportEnumProxy) {
+  TestRepeatedImportEnumProxy msg;
+  {
+    auto proxy = msg.mutable_enums_proxy();
+    proxy.push_back(
+        RepeatedFieldProxyTestImportEnum::REPEATED_FIELD_PROXY_TEST_IMPORT_FOO);
+    proxy.push_back(
+        RepeatedFieldProxyTestImportEnum::REPEATED_FIELD_PROXY_TEST_IMPORT_BAR);
+    proxy.push_back(
+        RepeatedFieldProxyTestImportEnum::REPEATED_FIELD_PROXY_TEST_IMPORT_BAZ);
+  }
+
+  auto proxy = msg.enums_proxy();
+  EXPECT_THAT(proxy, ElementsAre(RepeatedFieldProxyTestImportEnum::
+                                     REPEATED_FIELD_PROXY_TEST_IMPORT_FOO,
+                                 RepeatedFieldProxyTestImportEnum::
+                                     REPEATED_FIELD_PROXY_TEST_IMPORT_BAR,
+                                 RepeatedFieldProxyTestImportEnum::
+                                     REPEATED_FIELD_PROXY_TEST_IMPORT_BAZ));
+}
+
+TEST(RepeatedFieldProxyInterfaceTest, RepeatedLegacyStringProxy) {
+  TestRepeatedStdStringProxy msg;
+  {
+    auto proxy = msg.mutable_strings_proxy();
+    proxy.emplace_back("1");
+    proxy.emplace_back("2");
+    proxy.emplace_back("3");
+  }
+
+  auto proxy = msg.strings_proxy();
+  EXPECT_THAT(proxy, ElementsAre("1", "2", "3"));
+}
+
+TEST(RepeatedFieldProxyInterfaceTest, RepeatedStringViewProxy) {
+  TestRepeatedStringViewProxy msg;
+  {
+    auto proxy = msg.mutable_string_views_proxy();
+    proxy.emplace_back("1");
+    proxy.emplace_back("2");
+    proxy.emplace_back("3");
+  }
+
+  auto proxy = msg.string_views_proxy();
+  EXPECT_THAT(proxy, ElementsAre("1", "2", "3"));
+}
 
 }  // namespace
 }  // namespace internal
