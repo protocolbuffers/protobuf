@@ -147,8 +147,7 @@ struct SourceContextGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  SourceContext_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(SourceContext::InternalGenerateClassData_(
-                               _default, &SourceContext_globals_._table.header),
-                           &SourceContext_globals_._table.header),
+            _default, &SourceContext_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<SourceContext>(
             GetClassData()))

@@ -168,8 +168,7 @@ struct OptionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Option_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Option::InternalGenerateClassData_(
-                               _default, &Option_globals_._table.header),
-                           &Option_globals_._table.header),
+            _default, &Option_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Option>(
             GetClassData()))
@@ -410,8 +409,7 @@ struct FieldGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Field_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Field::InternalGenerateClassData_(
-                               _default, &Field_globals_._table.header),
-                           &Field_globals_._table.header),
+            _default, &Field_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Field>(
             GetClassData()))
@@ -589,8 +587,7 @@ struct EnumValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  EnumValue_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(EnumValue::InternalGenerateClassData_(
-                               _default, &EnumValue_globals_._table.header),
-                           &EnumValue_globals_._table.header),
+            _default, &EnumValue_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumValue>(
             GetClassData()))
@@ -818,8 +815,7 @@ struct TypeGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Type_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Type::InternalGenerateClassData_(
-                               _default, &Type_globals_._table.header),
-                           &Type_globals_._table.header),
+            _default, &Type_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Type>(
             GetClassData()))
@@ -1036,8 +1032,7 @@ struct EnumGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Enum_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Enum::InternalGenerateClassData_(
-                               _default, &Enum_globals_._table.header),
-                           &Enum_globals_._table.header),
+            _default, &Enum_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Enum>(
             GetClassData()))

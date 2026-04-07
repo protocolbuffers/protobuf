@@ -149,8 +149,7 @@ struct TimestampGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Timestamp_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Timestamp::InternalGenerateClassData_(
-                               _default, &Timestamp_globals_._table.header),
-                           &Timestamp_globals_._table.header),
+            _default, &Timestamp_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Timestamp>(
             GetClassData()))

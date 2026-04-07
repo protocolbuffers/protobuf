@@ -158,8 +158,7 @@ struct ListValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  ListValue_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(ListValue::InternalGenerateClassData_(
-                               _default, &ListValue_globals_._table.header),
-                           &ListValue_globals_._table.header),
+            _default, &ListValue_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<ListValue>(
             GetClassData()))
@@ -319,8 +318,7 @@ struct StructGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Struct_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Struct::InternalGenerateClassData_(
-                               _default, &Struct_globals_._table.header),
-                           &Struct_globals_._table.header),
+            _default, &Struct_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Struct>(
             GetClassData()))
@@ -469,8 +467,7 @@ struct Struct_FieldsEntry_DoNotUseGlobalsTypeInternal : ::_pbi::MessageGlobalsBa
                  Struct_FieldsEntry_DoNotUse_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Struct_FieldsEntry_DoNotUse::InternalGenerateClassData_(
-                               _default, &Struct_FieldsEntry_DoNotUse_globals_._table.header),
-                           &Struct_FieldsEntry_DoNotUse_globals_._table.header),
+            _default, &Struct_FieldsEntry_DoNotUse_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Struct_FieldsEntry_DoNotUse>(
             GetClassData()))
@@ -640,8 +637,7 @@ struct ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Value_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Value::InternalGenerateClassData_(
-                               _default, &Value_globals_._table.header),
-                           &Value_globals_._table.header),
+            _default, &Value_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Value>(
             GetClassData()))

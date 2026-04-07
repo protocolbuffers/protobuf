@@ -125,8 +125,7 @@ struct EmptyGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Empty_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Empty::InternalGenerateClassData_(
-                               _default, &Empty_globals_._table.header),
-                           &Empty_globals_._table.header),
+            _default, &Empty_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Empty>(
             GetClassData()))

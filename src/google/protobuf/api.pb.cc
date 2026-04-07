@@ -161,8 +161,7 @@ struct MixinGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Mixin_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Mixin::InternalGenerateClassData_(
-                               _default, &Mixin_globals_._table.header),
-                           &Mixin_globals_._table.header),
+            _default, &Mixin_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Mixin>(
             GetClassData()))
@@ -383,8 +382,7 @@ struct MethodGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Method_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Method::InternalGenerateClassData_(
-                               _default, &Method_globals_._table.header),
-                           &Method_globals_._table.header),
+            _default, &Method_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Method>(
             GetClassData()))
@@ -625,8 +623,7 @@ struct ApiGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Api_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Api::InternalGenerateClassData_(
-                               _default, &Api_globals_._table.header),
-                           &Api_globals_._table.header),
+            _default, &Api_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Api>(
             GetClassData()))

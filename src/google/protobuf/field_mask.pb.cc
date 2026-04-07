@@ -149,8 +149,7 @@ struct FieldMaskGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  FieldMask_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FieldMask::InternalGenerateClassData_(
-                               _default, &FieldMask_globals_._table.header),
-                           &FieldMask_globals_._table.header),
+            _default, &FieldMask_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FieldMask>(
             GetClassData()))
