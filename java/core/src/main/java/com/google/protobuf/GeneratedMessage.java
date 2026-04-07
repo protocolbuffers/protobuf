@@ -684,7 +684,11 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
 
     @Override
     public BuilderT setField(final FieldDescriptor field, final Object value) {
-      internalGetFieldAccessorTable().getField(field).set(this, value);
+      Object valueToSet = value;
+      if (valueToSet instanceof LazyField) {
+        valueToSet = ((LazyField) value).getValue();
+      }
+      internalGetFieldAccessorTable().getField(field).set(this, valueToSet);
       return (BuilderT) this;
     }
 
@@ -1172,13 +1176,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           if (messageSetWireFormat
               && descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE
               && !descriptor.isRepeated()) {
-            if (next instanceof LazyField.LazyEntry<?>) {
-              output.writeRawMessageSetExtension(
-                  descriptor.getNumber(),
-                  ((LazyField.LazyEntry<?>) next).getField().toByteString());
-            } else {
-              output.writeMessageSetExtension(descriptor.getNumber(), (Message) next.getValue());
-            }
+            output.writeMessageSetExtension(descriptor.getNumber(), (Message) next.getValue());
           } else {
             // TODO: Taken care of following code, it may cause
             // problem when we use LazyField for normal fields/extensions.
@@ -1724,7 +1722,11 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       if (field.isExtension()) {
         verifyContainingType(field);
         ensureExtensionsIsMutable();
-        extensions.setField(field, value);
+        Object valueToSet = value;
+        if (value instanceof LazyField) {
+          valueToSet = ((LazyField) value).getValue();
+        }
+        extensions.setField(field, valueToSet);
         onChanged();
         return (BuilderT) this;
       } else {

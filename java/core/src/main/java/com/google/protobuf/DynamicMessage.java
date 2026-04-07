@@ -527,6 +527,9 @@ public final class DynamicMessage extends AbstractMessage {
 
     @Override
     public Builder setField(FieldDescriptor field, Object value) {
+      if (value instanceof LazyField) {
+        value = ((LazyField) value).getValue();
+      }
       verifyContainingType(field);
       // TODO: This check should really be put in FieldSet.setField()
       // where all other such checks are done. However, currently
@@ -729,10 +732,6 @@ public final class DynamicMessage extends AbstractMessage {
     private static Message.Builder toMessageBuilder(Object o) {
       if (o instanceof Message.Builder) {
         return (Message.Builder) o;
-      }
-
-      if (o instanceof LazyField) {
-        o = ((LazyField) o).getValue();
       }
       if (o instanceof Message) {
         return ((Message) o).toBuilder();
