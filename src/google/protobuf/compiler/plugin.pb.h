@@ -68,20 +68,36 @@ enum CodeGeneratorResponse_Feature : int;
 PROTOC_EXPORT extern const uint32_t CodeGeneratorResponse_Feature_internal_data_[];
 class CodeGeneratorRequest;
 struct CodeGeneratorRequestGlobalsTypeInternal;
-PROTOC_EXPORT extern CodeGeneratorRequestGlobalsTypeInternal _CodeGeneratorRequest_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOC_EXPORT extern CodeGeneratorRequestGlobalsTypeInternal CodeGeneratorRequest_globals_;
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorRequest_class_data_;
+#else
+PROTOC_EXPORT extern const CodeGeneratorRequestGlobalsTypeInternal CodeGeneratorRequest_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class CodeGeneratorResponse;
 struct CodeGeneratorResponseGlobalsTypeInternal;
-PROTOC_EXPORT extern CodeGeneratorResponseGlobalsTypeInternal _CodeGeneratorResponse_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOC_EXPORT extern CodeGeneratorResponseGlobalsTypeInternal CodeGeneratorResponse_globals_;
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_class_data_;
+#else
+PROTOC_EXPORT extern const CodeGeneratorResponseGlobalsTypeInternal CodeGeneratorResponse_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class CodeGeneratorResponse_File;
 struct CodeGeneratorResponse_FileGlobalsTypeInternal;
-PROTOC_EXPORT extern CodeGeneratorResponse_FileGlobalsTypeInternal _CodeGeneratorResponse_File_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOC_EXPORT extern CodeGeneratorResponse_FileGlobalsTypeInternal CodeGeneratorResponse_File_globals_;
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_File_class_data_;
+#else
+PROTOC_EXPORT extern const CodeGeneratorResponse_FileGlobalsTypeInternal CodeGeneratorResponse_File_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class Version;
 struct VersionGlobalsTypeInternal;
-PROTOC_EXPORT extern VersionGlobalsTypeInternal _Version_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOC_EXPORT extern VersionGlobalsTypeInternal Version_globals_;
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull Version_class_data_;
+#else
+PROTOC_EXPORT extern const VersionGlobalsTypeInternal Version_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace compiler
 template <>
 internal::EnumTraitsT<::google::protobuf::compiler::CodeGeneratorResponse_Feature_internal_data_>
@@ -151,11 +167,12 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
 #endif
 
   template <typename = void>
-  explicit constexpr Version(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Version(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline Version(const Version& from) : Version(nullptr, from) {}
-  inline Version(Version&& from) noexcept
-      : Version(nullptr, ::std::move(from)) {}
+  inline Version(Version&& from) noexcept : Version(nullptr, ::std::move(from)) {}
   inline Version& operator=(const Version& from) {
     CopyFrom(from);
     return *this;
@@ -190,8 +207,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Version& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Version>(
-        &_Version_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Version>(&Version_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(Version& a, Version& b) { a.Swap(&b); }
@@ -276,7 +292,9 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -344,11 +362,16 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.Version)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<2, 4,
+                          0, 0,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<2, 4,
-                                   0, 0,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -378,8 +401,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
-
-PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull Version_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse_File final : public ::google::protobuf::Message
@@ -396,11 +417,12 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 #endif
 
   template <typename = void>
-  explicit constexpr CodeGeneratorResponse_File(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr CodeGeneratorResponse_File(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline CodeGeneratorResponse_File(const CodeGeneratorResponse_File& from) : CodeGeneratorResponse_File(nullptr, from) {}
-  inline CodeGeneratorResponse_File(CodeGeneratorResponse_File&& from) noexcept
-      : CodeGeneratorResponse_File(nullptr, ::std::move(from)) {}
+  inline CodeGeneratorResponse_File(CodeGeneratorResponse_File&& from) noexcept : CodeGeneratorResponse_File(nullptr, ::std::move(from)) {}
   inline CodeGeneratorResponse_File& operator=(const CodeGeneratorResponse_File& from) {
     CopyFrom(from);
     return *this;
@@ -435,8 +457,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const CodeGeneratorResponse_File& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<CodeGeneratorResponse_File>(
-        &_CodeGeneratorResponse_File_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<CodeGeneratorResponse_File>(&CodeGeneratorResponse_File_globals_);
   }
   static constexpr int kIndexInFileMessages = 2;
   friend void swap(CodeGeneratorResponse_File& a, CodeGeneratorResponse_File& b) { a.Swap(&b); }
@@ -521,7 +542,9 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -603,11 +626,16 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse.File)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<2, 4,
+                          1, 0,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<2, 4,
-                                   1, 0,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -637,8 +665,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
-
-PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_File_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse final : public ::google::protobuf::Message
@@ -655,11 +681,12 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 #endif
 
   template <typename = void>
-  explicit constexpr CodeGeneratorResponse(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr CodeGeneratorResponse(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline CodeGeneratorResponse(const CodeGeneratorResponse& from) : CodeGeneratorResponse(nullptr, from) {}
-  inline CodeGeneratorResponse(CodeGeneratorResponse&& from) noexcept
-      : CodeGeneratorResponse(nullptr, ::std::move(from)) {}
+  inline CodeGeneratorResponse(CodeGeneratorResponse&& from) noexcept : CodeGeneratorResponse(nullptr, ::std::move(from)) {}
   inline CodeGeneratorResponse& operator=(const CodeGeneratorResponse& from) {
     CopyFrom(from);
     return *this;
@@ -694,8 +721,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const CodeGeneratorResponse& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<CodeGeneratorResponse>(
-        &_CodeGeneratorResponse_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<CodeGeneratorResponse>(&CodeGeneratorResponse_globals_);
   }
   static constexpr int kIndexInFileMessages = 3;
   friend void swap(CodeGeneratorResponse& a, CodeGeneratorResponse& b) { a.Swap(&b); }
@@ -780,7 +806,9 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -823,18 +851,19 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   public:
   void clear_file() ;
+  [[nodiscard]] const ::google::protobuf::compiler::CodeGeneratorResponse_File& file(int index) const;
   [[nodiscard]] ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNULL mutable_file(int index);
+  ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNULL add_file();
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>&
+  file() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* PROTOBUF_NONNULL
   mutable_file();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>& _internal_file() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* PROTOBUF_NONNULL _internal_mutable_file();
+
   public:
-  [[nodiscard]] const ::google::protobuf::compiler::CodeGeneratorResponse_File& file(int index) const;
-  ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNULL add_file();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>& file()
-      const;
   // optional string error = 1;
   [[nodiscard]] bool has_error()
       const;
@@ -891,11 +920,16 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<3, 5,
+                          1, 0,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 5,
-                                   1, 0,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -926,8 +960,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
-
-PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest final : public ::google::protobuf::Message
@@ -944,11 +976,12 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
 #endif
 
   template <typename = void>
-  explicit constexpr CodeGeneratorRequest(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr CodeGeneratorRequest(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline CodeGeneratorRequest(const CodeGeneratorRequest& from) : CodeGeneratorRequest(nullptr, from) {}
-  inline CodeGeneratorRequest(CodeGeneratorRequest&& from) noexcept
-      : CodeGeneratorRequest(nullptr, ::std::move(from)) {}
+  inline CodeGeneratorRequest(CodeGeneratorRequest&& from) noexcept : CodeGeneratorRequest(nullptr, ::std::move(from)) {}
   inline CodeGeneratorRequest& operator=(const CodeGeneratorRequest& from) {
     CopyFrom(from);
     return *this;
@@ -983,8 +1016,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const CodeGeneratorRequest& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<CodeGeneratorRequest>(
-        &_CodeGeneratorRequest_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<CodeGeneratorRequest>(&CodeGeneratorRequest_globals_);
   }
   static constexpr int kIndexInFileMessages = 1;
   friend void swap(CodeGeneratorRequest& a, CodeGeneratorRequest& b) { a.Swap(&b); }
@@ -1074,7 +1106,9 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1102,10 +1136,12 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   ::std::string* PROTOBUF_NONNULL add_file_to_generate();
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void add_file_to_generate(Arg_&& value, Args_... args);
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::std::string>&
-  file_to_generate() const;
-  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
-  mutable_file_to_generate();
+  [[nodiscard]] const
+      ::google::protobuf::RepeatedPtrField<::std::string>&
+      file_to_generate() const;
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>*
+      PROTOBUF_NONNULL
+      mutable_file_to_generate();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_file_to_generate() const;
@@ -1120,18 +1156,19 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
 
   public:
   void clear_proto_file() ;
+  [[nodiscard]] const ::google::protobuf::FileDescriptorProto& proto_file(int index) const;
   [[nodiscard]] ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL mutable_proto_file(int index);
+  ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL add_proto_file();
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>&
+  proto_file() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL
   mutable_proto_file();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_proto_file() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_proto_file();
+
   public:
-  [[nodiscard]] const ::google::protobuf::FileDescriptorProto& proto_file(int index) const;
-  ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL add_proto_file();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& proto_file()
-      const;
   // optional string parameter = 2;
   [[nodiscard]] bool has_parameter()
       const;
@@ -1173,26 +1210,32 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
 
   public:
   void clear_source_file_descriptors() ;
+  [[nodiscard]] const ::google::protobuf::FileDescriptorProto& source_file_descriptors(int index) const;
   [[nodiscard]] ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL mutable_source_file_descriptors(int index);
+  ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL add_source_file_descriptors();
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>&
+  source_file_descriptors() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL
   mutable_source_file_descriptors();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_source_file_descriptors() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_source_file_descriptors();
+
   public:
-  [[nodiscard]] const ::google::protobuf::FileDescriptorProto& source_file_descriptors(int index) const;
-  ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL add_source_file_descriptors();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& source_file_descriptors()
-      const;
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorRequest)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<3, 5,
+                          3, 0,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 5,
-                                   3, 0,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1223,8 +1266,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
-
-PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorRequest_class_data_;
 
 // ===================================================================
 
@@ -1551,22 +1592,15 @@ inline int CodeGeneratorRequest::_internal_proto_file_size() const {
 inline int CodeGeneratorRequest::proto_file_size() const {
   return _internal_proto_file_size();
 }
-inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRequest::mutable_proto_file(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
-  return _internal_mutable_proto_file()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL CodeGeneratorRequest::mutable_proto_file()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_proto_file();
-}
 inline const ::google::protobuf::FileDescriptorProto& CodeGeneratorRequest::proto_file(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return _internal_proto_file().Get(index);
+}
+inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRequest::mutable_proto_file(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
+  return _internal_mutable_proto_file()->Mutable(index);
 }
 inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRequest::add_proto_file()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1582,6 +1616,13 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescri
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return _internal_proto_file();
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL
+CodeGeneratorRequest::mutable_proto_file() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_proto_file();
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>&
 CodeGeneratorRequest::_internal_proto_file() const {
@@ -1601,22 +1642,15 @@ inline int CodeGeneratorRequest::_internal_source_file_descriptors_size() const 
 inline int CodeGeneratorRequest::source_file_descriptors_size() const {
   return _internal_source_file_descriptors_size();
 }
-inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRequest::mutable_source_file_descriptors(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
-  return _internal_mutable_source_file_descriptors()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL CodeGeneratorRequest::mutable_source_file_descriptors()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000010U);
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_source_file_descriptors();
-}
 inline const ::google::protobuf::FileDescriptorProto& CodeGeneratorRequest::source_file_descriptors(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
   return _internal_source_file_descriptors().Get(index);
+}
+inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRequest::mutable_source_file_descriptors(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
+  return _internal_mutable_source_file_descriptors()->Mutable(index);
 }
 inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRequest::add_source_file_descriptors()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1632,6 +1666,13 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescri
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
   return _internal_source_file_descriptors();
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL
+CodeGeneratorRequest::mutable_source_file_descriptors() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000010U);
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_source_file_descriptors();
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>&
 CodeGeneratorRequest::_internal_source_file_descriptors() const {
@@ -1659,7 +1700,7 @@ inline void CodeGeneratorRequest::clear_compiler_version() {
 inline const ::google::protobuf::compiler::Version& CodeGeneratorRequest::_internal_compiler_version() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::compiler::Version* p = _impl_.compiler_version_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::compiler::Version>(&::google::protobuf::compiler::_Version_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::compiler::Version>(&::google::protobuf::compiler::Version_globals_);
 }
 inline const ::google::protobuf::compiler::Version& CodeGeneratorRequest::compiler_version() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
@@ -1963,7 +2004,7 @@ inline bool CodeGeneratorResponse_File::has_generated_code_info() const {
 inline const ::google::protobuf::GeneratedCodeInfo& CodeGeneratorResponse_File::_internal_generated_code_info() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::GeneratedCodeInfo* p = _impl_.generated_code_info_;
-  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::GeneratedCodeInfo>(&::google::protobuf::_GeneratedCodeInfo_globals_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::GeneratedCodeInfo>(&::google::protobuf::GeneratedCodeInfo_globals_);
 }
 inline const ::google::protobuf::GeneratedCodeInfo& CodeGeneratorResponse_File::generated_code_info() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
@@ -2220,22 +2261,15 @@ inline void CodeGeneratorResponse::clear_file() {
   ClearHasBitForRepeated(_impl_._has_bits_[0],
                   0x00000001U);
 }
-inline ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNULL CodeGeneratorResponse::mutable_file(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.file)
-  return _internal_mutable_file()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* PROTOBUF_NONNULL CodeGeneratorResponse::mutable_file()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorResponse.file)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_file();
-}
 inline const ::google::protobuf::compiler::CodeGeneratorResponse_File& CodeGeneratorResponse::file(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.file)
   return _internal_file().Get(index);
+}
+inline ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNULL CodeGeneratorResponse::mutable_file(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.file)
+  return _internal_mutable_file()->Mutable(index);
 }
 inline ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNULL CodeGeneratorResponse::add_file()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2251,6 +2285,13 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorResponse.file)
   return _internal_file();
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* PROTOBUF_NONNULL
+CodeGeneratorResponse::mutable_file() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorResponse.file)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_file();
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>&
 CodeGeneratorResponse::_internal_file() const {

@@ -34,11 +34,13 @@ public final class ImportOptionTest {
     assertThat(fieldDescriptor.getOptions().getExtension(UnittestCustomOptions.fieldOpt1))
         .isEqualTo(3);
 
-    // TODO: Since `option_deps` are treated as `deps` in Bazel 7, the unknown
-    // fields will be empty.  Once we drop Bazel 7 support we can test that these are filled with
-    // unknown fields.
-    assertThat(unknownFieldsFile.asMap().size()).isAtMost(1);
-    assertThat(unknownFieldsMessage.asMap().size()).isAtMost(1);
-    assertThat(unknownFieldsField.asMap().size()).isAtMost(1);
+    // Options from import option that are not linked in should be in unknown fields.
+    assertThat(unknownFieldsFile.getField(7736975).getVarintList()).containsExactly(1L);
+    assertThat(unknownFieldsMessage.getField(7739037).getVarintList()).containsExactly(2L);
+    assertThat(unknownFieldsField.getField(7740937).getFixed64List()).containsExactly(3L);
+
+    assertThat(unknownFieldsFile.asMap()).hasSize(1);
+    assertThat(unknownFieldsMessage.asMap()).hasSize(1);
+    assertThat(unknownFieldsField.asMap()).hasSize(1);
   }
 }

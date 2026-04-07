@@ -1130,7 +1130,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private static readonly pb::MessageParser<TestAllTypes> _parser = new pb::MessageParser<TestAllTypes>(() => new TestAllTypes());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
-    private int _hasBits1;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestAllTypes> Parser { get { return _parser; } }
@@ -1159,7 +1158,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestAllTypes(TestAllTypes other) : this() {
       _hasBits0 = other._hasBits0;
-      _hasBits1 = other._hasBits1;
       optionalInt32_ = other.optionalInt32_;
       optionalInt64_ = other.optionalInt64_;
       optionalUint32_ = other.optionalUint32_;

@@ -133,11 +133,16 @@ cc_library(
     hdrs = ["edition_defaults_test_utils.h"],
     visibility = [
         "//pkg:__subpackages__",
+        "//src/google/protobuf:__pkg__",
         "//src/google/protobuf/compiler:__subpackages__",
     ],
     deps = [
         "//src/google/protobuf",
+        "//src/google/protobuf:test_textproto",
+        "@abseil-cpp//absl/log:check",
+        "@abseil-cpp//absl/strings:string_view",
         "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
     ],
 )
 

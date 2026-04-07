@@ -8,6 +8,7 @@
 #include <string>
 
 #include "absl/log/absl_check.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
@@ -18,11 +19,14 @@
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/compiler/rust/upb_helpers.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
+
+using Sub = ::google::protobuf::io::Printer::Sub;
 
 void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                                AccessorCase accessor_case) const {
@@ -33,8 +37,6 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
   std::string field_name = FieldNameWithCollisionAvoidance(field);
   ctx.Emit(
       {
-          {"field", RsSafeName(field_name)},
-          {"raw_field_name", field_name},
           {"default_value", DefaultValue(ctx, field)},
           {"upb_mt_field_index", UpbMiniTableFieldIndex(field)},
           {"proxied_type", RsTypePath(ctx, field)},
@@ -54,15 +56,19 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"getter",
            [&] {
              if (ctx.is_cpp()) {
-               ctx.Emit({{"getter_thunk", ThunkName(ctx, field, "get")}},
+               ctx.Emit({{"getter_thunk", ThunkName(ctx, field, "get")},
+                         Sub("getter_fn_name", RsSafeName(field_name))
+                             .AnnotatedAs(&field)},
                         R"rs(
-                  pub fn $field$($view_self$) -> $pb$::View<$view_lifetime$, $proxied_type$> {
+                  pub fn $getter_fn_name$($view_self$) -> $pb$::View<$view_lifetime$, $proxied_type$> {
                     let str_view = unsafe { $getter_thunk$(self.raw_msg()) };
                     $transform_view$
                   })rs");
              } else {
-               ctx.Emit(R"rs(
-                  pub fn $field$($view_self$) -> $pb$::View<$view_lifetime$, $proxied_type$> {
+               ctx.Emit({Sub("getter_fn_name", RsSafeName(field_name))
+                             .AnnotatedAs(&field)},
+                        R"rs(
+                  pub fn $getter_fn_name$($view_self$) -> $pb$::View<$view_lifetime$, $proxied_type$> {
                     let str_view = unsafe {
                       self.inner.ptr().get_string_at_index(
                         $upb_mt_field_index$, ($default_value$).into()
@@ -103,8 +109,12 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"setter",
            [&] {
              if (accessor_case == AccessorCase::VIEW) return;
-             ctx.Emit(R"rs(
-              pub fn set_$raw_field_name$(&mut self, val: impl $pb$::IntoProxied<$proxied_type$>) {
+             ctx.Emit(
+                 {Sub("setter_fn_name", absl::StrCat("set_", field_name))
+                      .AnnotatedAs(
+                          {&field, io::AnnotationCollector::Semantic::kSet})},
+                 R"rs(
+              pub fn $setter_fn_name$(&mut self, val: impl $pb$::IntoProxied<$proxied_type$>) {
                 $setter_impl$
               }
             )rs");

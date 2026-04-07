@@ -16,14 +16,17 @@
 #define GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 
 #include <atomic>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
@@ -626,6 +629,24 @@ class PROTOBUF_EXPORT TextFormat {
         : start(start_param), end(end_param) {}
   };
 
+  // A collection of location ranges for a single occurrence of a field in the
+  // text proto input.
+  struct PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldLocation {
+    // The range for the name and value of the field.
+    // Example: "optional_int32: 1"
+    ParseLocationRange full;
+    // The range for the name of the field.
+    // Example: "optional_int32"
+    ParseLocationRange name;
+    // The range(s) for the value(s) of the field.
+    // For repeated fields that use the short-form syntax:
+    //   repeated_field: [1, 2, 3]
+    // this vector contains 3 ranges for "1", "2", and "3".
+    // For other cases, this vector contains a single range for the value.
+    // Example: "1"
+    std::vector<ParseLocationRange> values;
+  };
+
   struct PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED RedactionState {
     bool redact;
     bool report;
@@ -645,19 +666,29 @@ class PROTOBUF_EXPORT TextFormat {
     ParseInfoTree(const ParseInfoTree&) = delete;
     ParseInfoTree& operator=(const ParseInfoTree&) = delete;
 
+    // Returns the field location for the occurrence of the singular field.
+    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::StatusOr<FieldLocation>
+    GetFieldLocation(const FieldDescriptor* field) const;
+
+    // Returns the field location for the index-th occurrence of the field.
+    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::StatusOr<FieldLocation>
+    GetFieldLocation(const FieldDescriptor* field, uint32_t index) const;
+
+    // Prefer GetFieldLocation() over this function.
     // Returns the parse location range for the name and value of the index-th
     // field in the parsed text. If none exists, returns a location with start
     // and end line -1. Index should be -1 for not-repeated fields.
+    [[deprecated("Please use GetFieldLocation()")]]
     PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ParseLocationRange
     GetLocationRange(const FieldDescriptor* field, int index) const;
 
+    // Prefer GetFieldLocation() over this function.
     // Returns the starting parse location for the name and value of the
     // index-th field in the parsed text. If none exists, returns a location
     // with line = -1. Index should be -1 for not-repeated fields.
+    [[deprecated("Please use GetFieldLocation()")]]
     PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ParseLocation
-    GetLocation(const FieldDescriptor* field, int index) const {
-      return GetLocationRange(field, index).start;
-    }
+    GetLocation(const FieldDescriptor* field, int index) const;
 
     // Returns the parse info tree for the given field, which must be a message
     // type. The nested information tree is owned by the root tree and will be
@@ -669,14 +700,23 @@ class PROTOBUF_EXPORT TextFormat {
     // Allow the text format parser to record information into the tree.
     friend class TextFormat;
 
-    // Records the starting and ending locations of a single value for a field.
+    // Records the starting and ending locations of a field (both its name and
+    // its value).
     void RecordLocation(const FieldDescriptor* field, ParseLocationRange range);
+
+    // Records the starting and ending locations of a field name.
+    void RecordNameLocation(const FieldDescriptor* field,
+                            ParseLocationRange range);
+
+    // Records the starting and ending locations of a single value for a field.
+    void RecordValueLocation(const FieldDescriptor* field,
+                             ParseLocationRange range);
 
     // Create and records a nested tree for a nested message field.
     ParseInfoTree* CreateNested(const FieldDescriptor* field);
 
-    // Defines the map from the index-th field descriptor to its parse location.
-    absl::flat_hash_map<const FieldDescriptor*, std::vector<ParseLocationRange>>
+    // Defines the map from the index-th field descriptor to its field location.
+    absl::flat_hash_map<const FieldDescriptor*, std::vector<FieldLocation>>
         locations_;
     // Defines the map from the index-th field descriptor to the nested parse
     // info tree.
@@ -834,6 +874,12 @@ class PROTOBUF_EXPORT TextFormat {
   static inline void RecordLocation(ParseInfoTree* info_tree,
                                     const FieldDescriptor* field,
                                     ParseLocationRange location);
+  static inline void RecordNameLocation(ParseInfoTree* info_tree,
+                                        const FieldDescriptor* field,
+                                        ParseLocationRange location);
+  static inline void RecordValueLocation(ParseInfoTree* info_tree,
+                                         const FieldDescriptor* field,
+                                         ParseLocationRange location);
   static inline ParseInfoTree* CreateNested(ParseInfoTree* info_tree,
                                             const FieldDescriptor* field);
   // To reduce stack frame bloat we use an out-of-line function to print
@@ -852,6 +898,18 @@ inline void TextFormat::RecordLocation(ParseInfoTree* info_tree,
                                        const FieldDescriptor* field,
                                        ParseLocationRange location) {
   info_tree->RecordLocation(field, location);
+}
+
+inline void TextFormat::RecordNameLocation(ParseInfoTree* info_tree,
+                                           const FieldDescriptor* field,
+                                           ParseLocationRange location) {
+  info_tree->RecordNameLocation(field, location);
+}
+
+inline void TextFormat::RecordValueLocation(ParseInfoTree* info_tree,
+                                            const FieldDescriptor* field,
+                                            ParseLocationRange location) {
+  info_tree->RecordValueLocation(field, location);
 }
 
 inline TextFormat::ParseInfoTree* TextFormat::CreateNested(

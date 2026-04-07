@@ -284,7 +284,9 @@ void SingularPrimitive::GenerateByteSize(io::Printer* p) const {
 class RepeatedPrimitive final : public FieldGeneratorBase {
  public:
   RepeatedPrimitive(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts), opts_(&opts) {}
+      : FieldGeneratorBase(field, opts),
+        opts_(&opts),
+        cpp_repeated_type_(CalculateFieldDescriptorRepeatedType(field)) {}
   ~RepeatedPrimitive() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -425,6 +427,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   }
 
   const Options* opts_;
+  FieldDescriptor::CppRepeatedType cpp_repeated_type_;
 };
 
 void RepeatedPrimitive::GeneratePrivateMembers(io::Printer* p) const {
@@ -453,19 +456,39 @@ void RepeatedPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
       p->WithVars(AnnotatedAccessors(field_, {"set_", "add_"}, Semantic::kSet));
   auto va =
       p->WithVars(AnnotatedAccessors(field_, {"mutable_"}, Semantic::kAlias));
-  p->Emit(R"cc(
-    [[nodiscard]] $DEPRECATED$ $Type$ $name$(int index) const;
-    $DEPRECATED$ void $set_name$(int index, $Type$ value);
-    $DEPRECATED$ void $add_name$($Type$ value);
-    [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedField<$Type$>& $name$() const;
-    $DEPRECATED$ $pb$::RepeatedField<$Type$>* $nonnull$ $mutable_name$();
 
-    private:
-    const $pb$::RepeatedField<$Type$>& $_internal_name$() const;
-    $pb$::RepeatedField<$Type$>* $nonnull$ $_internal_mutable_name$();
+  auto decl_field_accessors = [&] {
+    switch (cpp_repeated_type_) {
+      case FieldDescriptor::CppRepeatedType::kRepeated:
+        p->Emit(R"cc(
+          [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedField<$Type$>& $name$()
+              const;
+          $DEPRECATED$ $pb$::RepeatedField<$Type$>* $nonnull$ $mutable_name$();
+        )cc");
+        break;
+      case FieldDescriptor::CppRepeatedType::kProxy:
+        p->Emit(R"cc(
+          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<const $Type$>
+          $name$() const;
+          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<$Type$> $mutable_name$();
+        )cc");
+        break;
+    }
+  };
 
-    public:
-  )cc");
+  p->Emit({{"decl_field_accessors", decl_field_accessors}},
+          R"cc(
+            [[nodiscard]] $DEPRECATED$ $Type$ $name$(int index) const;
+            $DEPRECATED$ void $set_name$(int index, $Type$ value);
+            $DEPRECATED$ void $add_name$($Type$ value);
+            $decl_field_accessors$;
+
+            private:
+            const $pb$::RepeatedField<$Type$>& $_internal_name$() const;
+            $pb$::RepeatedField<$Type$>* $nonnull$ $_internal_mutable_name$();
+
+            public:
+          )cc");
 }
 
 void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
@@ -501,26 +524,55 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
     }
   )cc");
-  p->Emit(R"cc(
-    inline const $pb$::RepeatedField<$Type$>& $Msg$::$name$() const
-        ABSL_ATTRIBUTE_LIFETIME_BOUND {
-      $WeakDescriptorSelfPin$;
-      $annotate_list$;
-      // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
-      return _internal_$name_internal$();
-    }
-  )cc");
-  p->Emit(R"cc(
-    inline $pb$::RepeatedField<$Type$>* $nonnull$ $Msg$::mutable_$name$()
-        ABSL_ATTRIBUTE_LIFETIME_BOUND {
-      $WeakDescriptorSelfPin$;
-      $set_hasbit$;
-      $annotate_mutable_list$;
-      // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
-      $TsanDetectConcurrentMutation$;
-      return _internal_mutable_$name_internal$();
-    }
-  )cc");
+  switch (cpp_repeated_type_) {
+    case FieldDescriptor::CppRepeatedType::kRepeated:
+      p->Emit(R"cc(
+        inline const $pb$::RepeatedField<$Type$>& $Msg$::$name$() const
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $annotate_list$;
+          // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
+          return _internal_$name_internal$();
+        }
+      )cc");
+      p->Emit(R"cc(
+        inline $pb$::RepeatedField<$Type$>* $nonnull$ $Msg$::mutable_$name$()
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $set_hasbit$;
+          $annotate_mutable_list$;
+          // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
+          $TsanDetectConcurrentMutation$;
+          return _internal_mutable_$name_internal$();
+        }
+      )cc");
+      break;
+    case FieldDescriptor::CppRepeatedType::kProxy:
+      p->Emit(R"cc(
+        inline $pb$::RepeatedFieldProxy<const $Type$> $Msg$::$name$() const
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $annotate_list$;
+          // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
+          return $pbi$::RepeatedFieldProxyInternalPrivateAccessHelper<
+              const $Type$>::Construct(_internal_$name_internal$());
+        }
+      )cc");
+      p->Emit(R"cc(
+        inline $pb$::RepeatedFieldProxy<$Type$> $Msg$::mutable_$name$()
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $set_hasbit$;
+          $annotate_mutable_list$;
+          // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
+          $TsanDetectConcurrentMutation$;
+          return $pbi$::RepeatedFieldProxyInternalPrivateAccessHelper<
+              $Type$>::Construct(*_internal_mutable_$name_internal$(),
+                                 GetArena());
+        }
+      )cc");
+      break;
+  }
 
   if (should_split()) {
     p->Emit(R"cc(

@@ -77,10 +77,6 @@ class EpsCopyInputStream;
 class TcParser;
 class WireFormat;
 
-namespace v2 {
-class TableDrivenParse;
-}  // namespace v2
-
 template <typename T, int kHeapRepHeaderSize>
 constexpr int RepeatedFieldLowerClampLimit() {
   // The header is padded to be at least `sizeof(T)` when it would be smaller
@@ -110,6 +106,16 @@ class RepeatedIterator;
 
 // Sentinel base class.
 struct RepeatedFieldBase {};
+
+// Decays `Element` to a value type (excluding `absl::Cord` in release builds
+// to avoid a nontrivial copy). This is useful when forwarding element values
+// to user-provided callbacks, which prevents leaking a reference to the
+// backing storage of the repeated field.
+template <typename Element>
+using DecayedRepeatedFieldElement =
+    std::conditional_t<std::is_same_v<Element, absl::Cord> &&
+                           !internal::PerformDebugChecks(),
+                       const Element&, Element>;
 
 // Align to 8 as sanitizers are picky on the alignment of containers to start at
 // 8 byte offsets even when compiling for 32 bit platforms.
@@ -516,7 +522,6 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   friend class internal::EpsCopyInputStream;
   friend class internal::TcParser;
   friend class internal::WireFormat;
-  friend class internal::v2::TableDrivenParse;
 
   friend class RepeatedFieldProxy<Element>;
 
@@ -1384,9 +1389,13 @@ inline size_t RepeatedField<Element>::SpaceUsedExcludingSelfLong() const {
 // Like C++20's std::erase_if, for RepeatedField
 template <typename T, typename Pred>
 size_t erase_if(RepeatedField<T>& cont, Pred pred) {
-  auto it = std::remove_if(cont.begin(), cont.end(),
-                           [&pred](const auto& elem) { return pred(elem); });
-  const size_t removed = cont.end() - it;
+  // Intentionally decay `elem` to avoid exposing a reference to elements of the
+  // repeated field directly.
+  using DecayedElement = internal::DecayedRepeatedFieldElement<T>;
+  auto it =
+      std::remove_if(cont.begin(), cont.end(),
+                     [&pred](const DecayedElement elem) { return pred(elem); });
+  size_t removed = cont.end() - it;
   cont.Truncate(cont.size() - removed);
   return removed;
 }
@@ -1403,8 +1412,13 @@ size_t erase(RepeatedField<T>& cont, const U& value) {
 template <int&..., typename T, typename Compare>
 void sort(internal::RepeatedIterator<T> begin,
           internal::RepeatedIterator<T> end, Compare cmp) {
+  // Intentionally decay `lhs` and `rhs` to avoid exposing a reference to
+  // elements of the repeated field directly.
+  using DecayedElement = internal::DecayedRepeatedFieldElement<T>;
   std::sort(begin, end,
-            [&cmp](const auto& lhs, const auto& rhs) { return cmp(lhs, rhs); });
+            [&cmp](const DecayedElement lhs, const DecayedElement rhs) {
+              return cmp(lhs, rhs);
+            });
 }
 template <int&..., typename T>
 void sort(internal::RepeatedIterator<T> begin,
@@ -1414,9 +1428,13 @@ void sort(internal::RepeatedIterator<T> begin,
 template <int&..., typename T, typename Compare>
 void stable_sort(internal::RepeatedIterator<T> begin,
                  internal::RepeatedIterator<T> end, Compare cmp) {
-  std::stable_sort(begin, end, [&cmp](const auto& lhs, const auto& rhs) {
-    return cmp(lhs, rhs);
-  });
+  // Intentionally decay `lhs` and `rhs` to avoid exposing a reference to
+  // elements of the repeated field directly.
+  using DecayedElement = internal::DecayedRepeatedFieldElement<T>;
+  std::stable_sort(begin, end,
+                   [&cmp](const DecayedElement lhs, const DecayedElement rhs) {
+                     return cmp(lhs, rhs);
+                   });
 }
 template <int&..., typename T>
 void stable_sort(internal::RepeatedIterator<T> begin,
