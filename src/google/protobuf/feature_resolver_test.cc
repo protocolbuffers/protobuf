@@ -2299,7 +2299,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         utf8_validation: VERIFY
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
-        enforce_naming_style: STYLE2024
+        enforce_naming_style: STYLE2026
         default_symbol_visibility: EXPORT_TOP_LEVEL
         [pb.test] { file_feature: VALUE3 }
       }
