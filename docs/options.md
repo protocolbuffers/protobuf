@@ -548,3 +548,9 @@ about your project (name and website) so we can add an entry for you.
 
     *   Website: https://www.thermofisher.com/
     *   Extensions: 1275-1284
+
+1.  Protosource (Custom options for event-sourced aggregates, commands, events,
+    projections, and opaque data mappings)
+
+    *   Website: https://github.com/funinthecloud/protosource
+    *   Extensions: 1285-1294
