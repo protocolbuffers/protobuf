@@ -979,7 +979,7 @@ const upb_MiniTableEnum* google__protobuf__ExtensionRangeOptions__VerificationSt
 
 const upb_MiniTableEnum* google__protobuf__FeatureSet__EnforceNamingStyle_enum_init() {
   static const upb_MiniTableEnum* mini_table = NULL;
-  static const char* mini_descriptor = "!)";
+  static const char* mini_descriptor = "!1";
   if (mini_table) return mini_table;
   mini_table = upb_MiniTableEnum_Build(mini_descriptor,
                                        strlen(mini_descriptor),

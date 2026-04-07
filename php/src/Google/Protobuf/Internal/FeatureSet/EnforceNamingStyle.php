@@ -24,11 +24,16 @@ class EnforceNamingStyle
      * Generated from protobuf enum <code>STYLE_LEGACY = 2;</code>
      */
     const STYLE_LEGACY = 2;
+    /**
+     * Generated from protobuf enum <code>STYLE2026 = 3;</code>
+     */
+    const STYLE2026 = 3;
 
     private static $valueToName = [
         self::ENFORCE_NAMING_STYLE_UNKNOWN => 'ENFORCE_NAMING_STYLE_UNKNOWN',
         self::STYLE2024 => 'STYLE2024',
         self::STYLE_LEGACY => 'STYLE_LEGACY',
+        self::STYLE2026 => 'STYLE2026',
     ];
 
     public static function name($value)
