@@ -74,7 +74,7 @@ class MergePartialFromCodedStreamHelper;
 class SwapFieldHelper;
 class MapFieldBase;
 
-template <typename Element>
+template <typename Element, typename Enable>
 class RepeatedPtrIterator;
 template <typename Element>
 class RepeatedPtrOverPtrsIterator;
@@ -84,6 +84,9 @@ template <typename T>
 class AllocatedRepeatedPtrFieldBackInsertIterator;
 
 class RepeatedPtrFieldTest;
+
+template <typename Element>
+auto ConvertToPtrIterator(RepeatedPtrIterator<Element, void> it);
 
 // Swaps two non-overlapping blocks of memory of size `N`
 template <size_t N>
@@ -179,7 +182,7 @@ using ElementNewFn = void(Arena*, void*& ptr);
 //     static Arena* GetArena(Type* value);
 //
 //     static Type* New(Arena* arena, Type&& value);
-//     static void Delete(Type*, Arena* arena);
+//     static void Delete(Type*);
 //     static void Clear(Type*);
 //
 //     // Only needs to be implemented if SpaceUsedExcludingSelf() is called.
@@ -311,7 +314,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       if (i + 5 < n) {
         absl::PrefetchToLocalCacheNta(elems[i + 5]);
       }
-      Delete<H>(elems[i], nullptr);
+      Delete<H>(elems[i]);
     }
     if (!using_sso()) {
       internal::SizedDelete(rep(),
@@ -459,7 +462,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   void RemoveLast() {
-    ABSL_DCHECK_GT(current_size_, 0);
+    internal::RuntimeAssertInBoundsGE(current_size_, 1);
     ExchangeCurrentSize(current_size_ - 1);
     using H = CommonHandler<TypeHandler>;
     H::Clear(cast<H>(element_at(current_size_)));
@@ -584,8 +587,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       // cleared objects awaiting reuse.  We don't want to grow the array in
       // this case because otherwise a loop calling AddAllocated() followed by
       // Clear() would leak memory.
-      using H = CommonHandler<TypeHandler>;
-      Delete<H>(element_at(current_size_), arena);
+      if (arena == nullptr) {
+        using H = CommonHandler<TypeHandler>;
+        Delete<H>(element_at(current_size_));
+      }
     } else if (current_size_ < allocated_size()) {
       // We have some cleared objects.  We don't care about their order, so we
       // can just move the first one to the end to make space.
@@ -811,9 +816,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   static inline const Value<TypeHandler>* cast(const void* element) {
     return reinterpret_cast<const Value<TypeHandler>*>(element);
   }
+
+  // REQUIRES: arena == nullptr
   template <typename TypeHandler>
-  static inline void Delete(void* obj, Arena* arena) {
-    TypeHandler::Delete(cast<TypeHandler>(obj), arena);
+  static inline void Delete(void* obj) {
+    TypeHandler::Delete(cast<TypeHandler>(obj));
   }
 
   // Out-of-line helper routine for Clear() once the inlined check has
@@ -1092,9 +1099,8 @@ class GenericTypeHandler {
     return Arena::InternalGetArena(value);
   }
 
-  static inline void Delete(Type* value, Arena* arena) {
+  static inline void Delete(Type* value) {
     static_assert(std::is_base_of_v<MessageLite, Type>);
-    if (arena != nullptr) return;
     // Using virtual destructor to reduce generated code size that would have
     // happened otherwise due to inlined `~Type()`.
     InternalOutOfLineDeleteMessageLite(value);
@@ -1122,7 +1128,7 @@ class GenericTypeHandler {
     return !std::is_same_v<Type, Message> && !std::is_same_v<Type, MessageLite>;
   }
 
-  static const Type& ForEraseIf(const Type* ptr) { return *ptr; }
+  static const Type& ForElementCallback(const Type* ptr) { return *ptr; }
 };
 
 template <>
@@ -1159,11 +1165,7 @@ class GenericTypeHandler<std::string> {
 
   static inline Arena* GetArena(Type*) { return nullptr; }
 
-  static inline void Delete(Type* value, Arena* arena) {
-    if (arena == nullptr) {
-      delete value;
-    }
-  }
+  static inline void Delete(Type* value) { delete value; }
   static inline void Clear(Type* value) { value->clear(); }
   static inline void Merge(const Type& from, Type* to) { *to = from; }
   static size_t SpaceUsedLong(const Type& value) {
@@ -1179,8 +1181,14 @@ class GenericTypeHandler<std::string> {
   }
   static constexpr bool has_default_instance() { return true; }
 
-  static absl::string_view ForEraseIf(const std::string* ptr) { return *ptr; }
+  static absl::string_view ForElementCallback(const std::string* ptr) {
+    return *ptr;
+  }
 };
+
+template <>
+class GenericTypeHandler<absl::string_view>
+    : public GenericTypeHandler<std::string> {};
 
 
 }  // namespace internal
@@ -1219,8 +1227,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   using const_reference = const Element&;
   using pointer = Element*;
   using const_pointer = const Element*;
-  using iterator = internal::RepeatedPtrIterator<Element>;
-  using const_iterator = internal::RepeatedPtrIterator<const Element>;
+  using iterator = internal::RepeatedPtrIterator<Element, void>;
+  using const_iterator = internal::RepeatedPtrIterator<const Element, void>;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
   // Custom STL-like iterator that iterates over and returns the underlying
@@ -1572,8 +1580,6 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // `RepeatedPtrFieldBase`.
   friend internal::MapFieldBase;
 
-  friend class internal::v2::TableDrivenParse;
-
   // Note:  RepeatedPtrField SHOULD NOT be subclassed by users.
   using TypeHandler = internal::GenericTypeHandler<Element>;
 
@@ -1836,10 +1842,11 @@ inline void RepeatedPtrField<Element>::DeleteSubrange(int start, int num) {
   internal::RuntimeAssertInBoundsGE(num, 0);
   internal::RuntimeAssertInBoundsLE(static_cast<int64_t>(start) + num, size());
   void** subrange = raw_mutable_data() + start;
-  Arena* arena = GetArena();
-  for (int i = 0; i < num; ++i) {
-    using H = CommonHandler<TypeHandler>;
-    H::Delete(static_cast<Element*>(subrange[i]), arena);
+  if (GetArena() == nullptr) {
+    for (int i = 0; i < num; ++i) {
+      using H = CommonHandler<TypeHandler>;
+      H::Delete(static_cast<Element*>(subrange[i]));
+    }
   }
   UnsafeArenaExtractSubrange(start, num, nullptr);
 }
@@ -2143,7 +2150,7 @@ class RustRepeatedMessageHelper {
 //
 // This code based on net/proto/proto-array-internal.h by Jeffrey Yasskin
 // (jyasskin@google.com).
-template <typename Element>
+template <typename Element, typename Enable = void>
 class ABSL_ATTRIBUTE_VIEW RepeatedPtrIterator {
  public:
   using iterator = RepeatedPtrIterator<Element>;
@@ -2159,8 +2166,8 @@ class ABSL_ATTRIBUTE_VIEW RepeatedPtrIterator {
   // Allows "upcasting" from RepeatedPtrIterator<T**> to
   // RepeatedPtrIterator<const T*const*>.
   template <typename OtherElement,
-            typename std::enable_if<std::is_convertible<
-                OtherElement*, pointer>::value>::type* = nullptr>
+            typename =
+                std::enable_if_t<std::is_convertible_v<OtherElement*, pointer>>>
   RepeatedPtrIterator(const RepeatedPtrIterator<OtherElement>& other)
       : it_(other.it_) {}
 
@@ -2239,12 +2246,156 @@ class ABSL_ATTRIBUTE_VIEW RepeatedPtrIterator {
   }
 
  private:
-  template <typename OtherElement>
+  template <typename OtherElement, typename>
   friend class RepeatedPtrIterator;
 
   template <typename E>
-  friend RepeatedPtrOverPtrsIterator<E> ConvertToPtrIterator(
-      RepeatedPtrIterator<E> it);
+  friend auto internal::ConvertToPtrIterator(RepeatedPtrIterator<E> it);
+
+  // The internal iterator.
+  void* const* it_;
+};
+
+template <typename Element>
+class ABSL_ATTRIBUTE_VIEW RepeatedPtrIterator<
+    Element, std::enable_if_t<std::is_same_v<std::remove_const_t<Element>,
+                                             absl::string_view>>> {
+  struct ArrowProxy {
+    absl::string_view view;
+    const absl::string_view* operator->() const { return &view; }
+  };
+
+ public:
+  using iterator = RepeatedPtrIterator<Element>;
+  // This iterator satisfies all the requirements of random access iterators pre
+  // C++20 aside from the requirement that "If i and j are both dereferenceable,
+  // then i == j if and only if *i and *j are bound to the same object." from
+  // `LegacyForwardIterator`. This is not true because `operator*` returns a
+  // temporary.
+  using iterator_category = std::input_iterator_tag;
+  // This restriction was relaxed in C++20, allowing us to use
+  // `std::random_access_iterator_tag` for `iterator_concept`.
+  using iterator_concept = std::random_access_iterator_tag;
+  using value_type = absl::string_view;
+  using difference_type = std::ptrdiff_t;
+  using pointer = ArrowProxy;
+  using reference = absl::string_view;
+
+  RepeatedPtrIterator() : it_(nullptr) {}
+  explicit RepeatedPtrIterator(void* const* it) : it_(it) {}
+
+  // Allows "upcasting" from RepeatedPtrIterator<absl::string_view> to
+  // RepeatedPtrIterator<const absl::string_view>.
+  template <typename E = Element,
+            typename = std::enable_if_t<std::is_const_v<E>>>
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  RepeatedPtrIterator(const RepeatedPtrIterator<std::remove_const_t<E>>& other)
+      : it_(other.it_) {}
+
+  // Enable explicit conversion from RepeatedPtrIterator<absl::string_view> to
+  // both RepeatedPtrIterator<std::string> and RepeatedPtrIterator<const
+  // std::string>.
+  explicit operator RepeatedPtrIterator<const std::string>() {
+    return RepeatedPtrIterator<const std::string>(it_);
+  }
+  template <typename E = Element,
+            typename = std::enable_if_t<!std::is_const_v<E>>>
+  explicit operator RepeatedPtrIterator<std::string>() {
+    return RepeatedPtrIterator<std::string>(it_);
+  }
+
+  explicit RepeatedPtrIterator(const RepeatedPtrIterator<std::string>& other)
+      : it_(other.it_) {}
+
+  template <typename E = Element,
+            typename = std::enable_if_t<std::is_const_v<E>>>
+  explicit RepeatedPtrIterator(
+      const RepeatedPtrIterator<const std::string>& other)
+      : it_(other.it_) {}
+
+  // dereferenceable
+  [[nodiscard]] reference operator*() const {
+    return *reinterpret_cast<std::string*>(*it_);
+  }
+  [[nodiscard]] ArrowProxy operator->() const {
+    return ArrowProxy{*reinterpret_cast<std::string*>(*it_)};
+  }
+
+  // Prefix increment.
+  iterator& operator++() {
+    ++it_;
+    return *this;
+  }
+  // Postfix increment.
+  iterator operator++(int) { return iterator(it_++); }
+  // Prefix decrement.
+  iterator& operator--() {
+    --it_;
+    return *this;
+  }
+  // Postfix decrement.
+  iterator operator--(int) { return iterator(it_--); }
+
+  // equality_comparable
+  friend bool operator==(const iterator& x, const iterator& y) {
+    return x.it_ == y.it_;
+  }
+  friend bool operator!=(const iterator& x, const iterator& y) {
+    return x.it_ != y.it_;
+  }
+
+  // less_than_comparable
+  friend bool operator<(const iterator& x, const iterator& y) {
+    return x.it_ < y.it_;
+  }
+  friend bool operator<=(const iterator& x, const iterator& y) {
+    return x.it_ <= y.it_;
+  }
+  friend bool operator>(const iterator& x, const iterator& y) {
+    return x.it_ > y.it_;
+  }
+  friend bool operator>=(const iterator& x, const iterator& y) {
+    return x.it_ >= y.it_;
+  }
+
+  // addable, subtractable
+  iterator& operator+=(difference_type d) {
+    it_ += d;
+    return *this;
+  }
+  friend iterator operator+(iterator it, const difference_type d) {
+    it += d;
+    return it;
+  }
+  friend iterator operator+(const difference_type d, iterator it) {
+    it += d;
+    return it;
+  }
+  iterator& operator-=(difference_type d) {
+    it_ -= d;
+    return *this;
+  }
+  friend iterator operator-(iterator it, difference_type d) {
+    it -= d;
+    return it;
+  }
+
+  // indexable
+  [[nodiscard]] reference operator[](difference_type d) const {
+    return *(*this + d);
+  }
+
+  // random access iterator
+  friend difference_type operator-(iterator it1, iterator it2) {
+    return it1.it_ - it2.it_;
+  }
+
+ private:
+  template <typename OtherElement, typename>
+  friend class RepeatedPtrIterator;
+
+  template <typename E>
+  friend auto internal::ConvertToPtrIterator(RepeatedPtrIterator<E> it);
 
   // The internal iterator.
   void* const* it_;
@@ -2382,9 +2533,19 @@ class RepeatedPtrOverPtrsIterator {
 };
 
 template <typename Element>
-RepeatedPtrOverPtrsIterator<Element> ConvertToPtrIterator(
-    RepeatedPtrIterator<Element> it) {
+inline auto ConvertToPtrIterator(RepeatedPtrIterator<Element> it) {
   return RepeatedPtrOverPtrsIterator<Element>(const_cast<void**>(it.it_));
+}
+
+template <>
+inline auto ConvertToPtrIterator(RepeatedPtrIterator<absl::string_view> it) {
+  return RepeatedPtrOverPtrsIterator<std::string>(const_cast<void**>(it.it_));
+}
+
+template <>
+inline auto ConvertToPtrIterator(
+    RepeatedPtrIterator<const absl::string_view> it) {
+  return RepeatedPtrOverPtrsIterator<const std::string>(it.it_);
 }
 
 }  // namespace internal
@@ -2451,7 +2612,7 @@ size_t erase_if(RepeatedPtrField<T>& cont, Pred pred) {
   // the end for cleanup.
   auto it = std::stable_partition(
       cont.pointer_begin(), cont.pointer_end(), [&](const auto* elem) {
-        return !pred(internal::GenericTypeHandler<T>::ForEraseIf(elem));
+        return !pred(internal::GenericTypeHandler<T>::ForElementCallback(elem));
       });
   const size_t removed = cont.pointer_end() - it;
   cont.DeleteSubrange(it - cont.pointer_begin(), removed);
@@ -2471,9 +2632,13 @@ size_t erase(RepeatedPtrField<T>& cont, const U& value) {
 template <int&..., typename T, typename Compare>
 void sort(internal::RepeatedPtrIterator<T> begin,
           internal::RepeatedPtrIterator<T> end, Compare cmp) {
+  using H = internal::GenericTypeHandler<T>;
   std::sort(internal::ConvertToPtrIterator(begin),
             internal::ConvertToPtrIterator(end),
-            [&](const auto* lhs, const auto* rhs) { return cmp(*lhs, *rhs); });
+            [&](const auto* lhs, const auto* rhs) {
+              return cmp(H::ForElementCallback(lhs),
+                         H::ForElementCallback(rhs));
+            });
 }
 template <int&..., typename T>
 void sort(internal::RepeatedPtrIterator<T> begin,
@@ -2483,10 +2648,13 @@ void sort(internal::RepeatedPtrIterator<T> begin,
 template <int&..., typename T, typename Compare>
 void stable_sort(internal::RepeatedPtrIterator<T> begin,
                  internal::RepeatedPtrIterator<T> end, Compare cmp) {
-  std::stable_sort(
-      internal::ConvertToPtrIterator(begin),
-      internal::ConvertToPtrIterator(end),
-      [&](const auto* lhs, const auto* rhs) { return cmp(*lhs, *rhs); });
+  using H = internal::GenericTypeHandler<T>;
+  std::stable_sort(internal::ConvertToPtrIterator(begin),
+                   internal::ConvertToPtrIterator(end),
+                   [&](const auto* lhs, const auto* rhs) {
+                     return cmp(H::ForElementCallback(lhs),
+                                H::ForElementCallback(rhs));
+                   });
 }
 template <int&..., typename T>
 void stable_sort(internal::RepeatedPtrIterator<T> begin,

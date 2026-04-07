@@ -138,10 +138,12 @@ void EmitEntryPointRsFile(GeneratorContext* generator_context,
               {"mod_name", RustInternalModuleName(*file)}},
              R"rs(
               #[path="$file_path$"]
-              #[allow(nonstandard_style, unused)]
-              pub mod internal_do_not_use_$mod_name$;
+              #[allow(nonstandard_style, unused, unreachable_pub)]
+              #[doc(hidden)]
+              mod internal_do_not_use_$mod_name$;
 
               #[allow(nonstandard_style, unused)]
+              #[doc(inline)]
               pub use internal_do_not_use_$mod_name$::*;
             )rs");
   }
