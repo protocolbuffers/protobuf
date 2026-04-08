@@ -566,7 +566,11 @@ message FileOptions {
 
   // Range reserved for first-class custom options defined by the Protobuf
   // team. User custom options must use the 1000+ range instead.
-  extensions 990 to 998;
+  extensions 990 to 998 [declaration = {
+    number: 990,
+    full_name: ".pb.file.cpp",
+    type: ".pb.file.CppFileOptions"
+  }];
 
   // The parser stores options it doesn't recognize here.
   // See the documentation for the "Options" section above.
