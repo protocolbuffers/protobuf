@@ -115,6 +115,20 @@ pub trait AsView: SealedInternal {
     fn as_view(&self) -> View<'_, Self::Proxied>;
 }
 
+impl<T: Proxied> AsView for &T {
+    type Proxied = T::Proxied;
+    fn as_view(&self) -> View<'_, Self::Proxied> {
+        (**self).as_view()
+    }
+}
+
+impl<T: Proxied> AsView for &mut T {
+    type Proxied = T::Proxied;
+    fn as_view(&self) -> View<'_, Self::Proxied> {
+        (**self).as_view()
+    }
+}
+
 /// Used to turn another 'borrow' into a view proxy.
 ///
 /// On a mut proxy this borrows to a View (semantically matching turning a `&mut
@@ -153,6 +167,24 @@ pub trait IntoView<'msg>: SealedInternal + AsView {
         'msg: 'shorter;
 }
 
+impl<'msg, T: Proxied> IntoView<'msg> for &'msg T {
+    fn into_view<'shorter>(self) -> View<'shorter, T>
+    where
+        'msg: 'shorter,
+    {
+        (*self).as_view()
+    }
+}
+
+impl<'msg, T: Proxied> IntoView<'msg> for &'msg mut T {
+    fn into_view<'shorter>(self) -> View<'shorter, T>
+    where
+        'msg: 'shorter,
+    {
+        (*self).as_view()
+    }
+}
+
 /// Used to semantically do a cheap "to-mut-reference" conversion. This is
 /// implemented on both owned `Proxied` types as well as mut proxy types.
 ///
@@ -162,6 +194,13 @@ pub trait AsMut: SealedInternal + AsView<Proxied = Self::MutProxied> {
 
     /// Converts a borrow into a `Mut` with the lifetime of that borrow.
     fn as_mut(&mut self) -> Mut<'_, Self::MutProxied>;
+}
+
+impl<T: MutProxied> AsMut for &mut T {
+    type MutProxied = T::MutProxied;
+    fn as_mut(&mut self) -> Mut<'_, Self::MutProxied> {
+        (*self).as_mut()
+    }
 }
 
 /// Used to turn another 'borrow' into a mut proxy.
@@ -194,6 +233,15 @@ pub trait IntoMut<'msg>: SealedInternal + AsMut {
     fn into_mut<'shorter>(self) -> Mut<'shorter, Self::MutProxied>
     where
         'msg: 'shorter;
+}
+
+impl<'msg, T: MutProxied> IntoMut<'msg> for &'msg mut T {
+    fn into_mut<'shorter>(self) -> Mut<'shorter, T>
+    where
+        'msg: 'shorter,
+    {
+        (*self).as_mut()
+    }
 }
 
 /// A value to `Proxied`-value conversion that consumes the input value.

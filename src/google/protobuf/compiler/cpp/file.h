@@ -112,7 +112,6 @@ class PROTOC_EXPORT FileGenerator {
                                            io::Printer* p);
   void GenerateSourceIncludes(io::Printer* p);
   void GenerateSourcePrelude(io::Printer* p);
-  void GenerateSourceDefaultInstance(int idx, io::Printer* p);
 
   void GenerateInitForSCC(const SCC* scc, const CrossFileReferences& refs,
                           io::Printer* p);

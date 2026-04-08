@@ -16,7 +16,43 @@
 #include "python/repeated.h"
 #include "python/unknown_fields.h"
 
+// Mutex wrapper when GIL-disabled. Zero-cost when GIL-enabled.
+// NOTE: Protobuf Free-threading support is still experimental.
+// TODO: Remove mutex and make upb python lock free.
+#ifdef Py_GIL_DISABLED
+#ifdef _POSIX_THREADS
+#define ENABLE_MUTEX 1
+#include <pthread.h>
+#else
+#error "GIL is disabled but _POSIX_THREADS isn't available"
+#endif  // _POSIX_THREADS
+#endif  // Py_GIL_DISABLED
+
+typedef struct {
+#ifdef ENABLE_MUTEX
+  pthread_mutex_t mutex;
+#endif
+} FreeThreadingMutex;
+
+#ifdef ENABLE_MUTEX
+static FreeThreadingMutex obj_cache_mutex = {PTHREAD_MUTEX_INITIALIZER};
+#else
+static FreeThreadingMutex obj_cache_mutex = {};
+#endif
+
 static upb_Arena* PyUpb_NewArena(void);
+
+void FreeThreadingLock(FreeThreadingMutex* thread_mutex) {
+#ifdef ENABLE_MUTEX
+  pthread_mutex_lock(&(thread_mutex->mutex));
+#endif
+}
+
+void FreeThreadingUnlock(FreeThreadingMutex* thread_mutex) {
+#ifdef ENABLE_MUTEX
+  pthread_mutex_unlock(&(thread_mutex->mutex));
+#endif
+}
 
 static void PyUpb_ModuleDealloc(void* module) {
   PyUpb_ModuleState* s = PyModule_GetState(module);
@@ -197,7 +233,16 @@ void PyUpb_ObjCache_Add(const void* key, PyObject* py_obj) {
   if (!cache) {
     return;
   }
+  FreeThreadingLock(&obj_cache_mutex);
   PyUpb_WeakMap_Add(cache, key, py_obj);
+  FreeThreadingUnlock(&obj_cache_mutex);
+}
+
+void PyUpb_KnownObjCache_Add(PyUpb_WeakMap* cache, const void* key,
+                             PyObject* py_obj) {
+  FreeThreadingLock(&obj_cache_mutex);
+  PyUpb_WeakMap_Add(cache, key, py_obj);
+  FreeThreadingUnlock(&obj_cache_mutex);
 }
 
 void PyUpb_ObjCache_Delete(const void* key) {
@@ -205,7 +250,9 @@ void PyUpb_ObjCache_Delete(const void* key) {
   if (!cache) {
     return;
   }
+  FreeThreadingLock(&obj_cache_mutex);
   PyUpb_WeakMap_Delete(cache, key);
+  FreeThreadingUnlock(&obj_cache_mutex);
 }
 
 PyObject* PyUpb_ObjCache_Get(const void* key) {
@@ -231,7 +278,10 @@ PyObject* PyUpb_ObjCache_Get(const void* key) {
 #endif
     return NULL;
   }
-  return PyUpb_WeakMap_Get(cache, key);
+  FreeThreadingLock(&obj_cache_mutex);
+  PyObject* obj = PyUpb_WeakMap_Get(cache, key);
+  FreeThreadingUnlock(&obj_cache_mutex);
+  return obj;
 }
 
 // -----------------------------------------------------------------------------
@@ -449,7 +499,9 @@ PyMODINIT_FUNC PyInit__message(void) {
 
   state->allow_oversize_protos = false;
   state->wkt_bases = NULL;
+  FreeThreadingLock(&obj_cache_mutex);
   state->obj_cache = PyUpb_WeakMap_New();
+  FreeThreadingUnlock(&obj_cache_mutex);
   state->c_descriptor_symtab = NULL;
 
   if (!PyUpb_InitDescriptorContainers(m) || !PyUpb_InitDescriptorPool(m) ||

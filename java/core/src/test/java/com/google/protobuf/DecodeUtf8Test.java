@@ -11,6 +11,7 @@ import com.google.protobuf.Utf8.Processor;
 import com.google.protobuf.Utf8.SafeProcessor;
 import com.google.protobuf.Utf8.UnsafeProcessor;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -173,7 +174,7 @@ public class DecodeUtf8Test extends TestCase {
   }
 
   public void testInvalidBufferSlice() throws Exception {
-    byte[] bytes = "The quick brown fox jumps over the lazy dog".getBytes(Internal.UTF_8);
+    byte[] bytes = "The quick brown fox jumps over the lazy dog".getBytes(StandardCharsets.UTF_8);
     assertInvalidSlice(bytes, bytes.length - 3, 4);
     assertInvalidSlice(bytes, bytes.length, 1);
     assertInvalidSlice(bytes, bytes.length + 1, 0);
@@ -278,35 +279,35 @@ public class DecodeUtf8Test extends TestCase {
   }
 
   private void assertRoundTrips(String str, int index, int size) throws Exception {
-    byte[] bytes = str.getBytes(Internal.UTF_8);
+    byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
     if (size == -1) {
       size = bytes.length;
     }
     assertDecode(
-        new String(bytes, index, size, Internal.UTF_8),
+        new String(bytes, index, size, StandardCharsets.UTF_8),
         UNSAFE_PROCESSOR.decodeUtf8(bytes, index, size));
     assertDecode(
-        new String(bytes, index, size, Internal.UTF_8),
+        new String(bytes, index, size, StandardCharsets.UTF_8),
         SAFE_PROCESSOR.decodeUtf8(bytes, index, size));
 
     ByteBuffer direct = ByteBuffer.allocateDirect(bytes.length);
     direct.put(bytes);
     direct.flip();
     assertDecode(
-        new String(bytes, index, size, Internal.UTF_8),
+        new String(bytes, index, size, StandardCharsets.UTF_8),
         UNSAFE_PROCESSOR.decodeUtf8(direct, index, size));
     assertDecode(
-        new String(bytes, index, size, Internal.UTF_8),
+        new String(bytes, index, size, StandardCharsets.UTF_8),
         SAFE_PROCESSOR.decodeUtf8(direct, index, size));
 
     ByteBuffer heap = ByteBuffer.allocate(bytes.length);
     heap.put(bytes);
     heap.flip();
     assertDecode(
-        new String(bytes, index, size, Internal.UTF_8),
+        new String(bytes, index, size, StandardCharsets.UTF_8),
         UNSAFE_PROCESSOR.decodeUtf8(heap, index, size));
     assertDecode(
-        new String(bytes, index, size, Internal.UTF_8),
+        new String(bytes, index, size, StandardCharsets.UTF_8),
         SAFE_PROCESSOR.decodeUtf8(heap, index, size));
   }
 

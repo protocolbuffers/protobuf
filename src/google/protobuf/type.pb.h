@@ -65,25 +65,45 @@ PROTOBUF_EXPORT extern const uint32_t Field_Kind_internal_data_[];
 enum Syntax : int;
 PROTOBUF_EXPORT extern const uint32_t Syntax_internal_data_[];
 class Enum;
-struct EnumDefaultTypeInternal;
-PROTOBUF_EXPORT extern EnumDefaultTypeInternal _Enum_default_instance_;
+struct EnumGlobalsTypeInternal;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern EnumGlobalsTypeInternal Enum_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Enum_class_data_;
+#else
+PROTOBUF_EXPORT extern const EnumGlobalsTypeInternal Enum_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class EnumValue;
-struct EnumValueDefaultTypeInternal;
-PROTOBUF_EXPORT extern EnumValueDefaultTypeInternal _EnumValue_default_instance_;
+struct EnumValueGlobalsTypeInternal;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern EnumValueGlobalsTypeInternal EnumValue_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValue_class_data_;
+#else
+PROTOBUF_EXPORT extern const EnumValueGlobalsTypeInternal EnumValue_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class Field;
-struct FieldDefaultTypeInternal;
-PROTOBUF_EXPORT extern FieldDefaultTypeInternal _Field_default_instance_;
+struct FieldGlobalsTypeInternal;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern FieldGlobalsTypeInternal Field_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Field_class_data_;
+#else
+PROTOBUF_EXPORT extern const FieldGlobalsTypeInternal Field_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class Option;
-struct OptionDefaultTypeInternal;
-PROTOBUF_EXPORT extern OptionDefaultTypeInternal _Option_default_instance_;
+struct OptionGlobalsTypeInternal;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern OptionGlobalsTypeInternal Option_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Option_class_data_;
+#else
+PROTOBUF_EXPORT extern const OptionGlobalsTypeInternal Option_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 class Type;
-struct TypeDefaultTypeInternal;
-PROTOBUF_EXPORT extern TypeDefaultTypeInternal _Type_default_instance_;
+struct TypeGlobalsTypeInternal;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern TypeGlobalsTypeInternal Type_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Type_class_data_;
+#else
+PROTOBUF_EXPORT extern const TypeGlobalsTypeInternal Type_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 template <>
 internal::EnumTraitsT<::google::protobuf::Field_Cardinality_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::Field_Cardinality>;
@@ -260,11 +280,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
 #endif
 
   template <typename = void>
-  explicit constexpr Option(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Option(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline Option(const Option& from) : Option(nullptr, from) {}
-  inline Option(Option&& from) noexcept
-      : Option(nullptr, ::std::move(from)) {}
+  inline Option(Option&& from) noexcept : Option(nullptr, ::std::move(from)) {}
   inline Option& operator=(const Option& from) {
     CopyFrom(from);
     return *this;
@@ -299,8 +320,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Option& default_instance() {
-    return *reinterpret_cast<const Option*>(
-        &_Option_default_instance_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Option>(&Option_globals_);
   }
   static constexpr int kIndexInFileMessages = 4;
   friend void swap(Option& a, Option& b) { a.Swap(&b); }
@@ -385,7 +405,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -429,11 +451,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
   // @@protoc_insertion_point(class_scope:google.protobuf.Option)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<1, 2,
+                          1, 35,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<1, 2,
-                                   1, 35,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -461,8 +488,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Option_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : public ::google::protobuf::Message
@@ -479,11 +504,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
 #endif
 
   template <typename = void>
-  explicit constexpr Field(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Field(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline Field(const Field& from) : Field(nullptr, from) {}
-  inline Field(Field&& from) noexcept
-      : Field(nullptr, ::std::move(from)) {}
+  inline Field(Field&& from) noexcept : Field(nullptr, ::std::move(from)) {}
   inline Field& operator=(const Field& from) {
     CopyFrom(from);
     return *this;
@@ -518,8 +544,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Field& default_instance() {
-    return *reinterpret_cast<const Field*>(
-        &_Field_default_instance_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Field>(&Field_globals_);
   }
   static constexpr int kIndexInFileMessages = 1;
   friend void swap(Field& a, Field& b) { a.Swap(&b); }
@@ -604,7 +629,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -689,18 +716,19 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
 
   public:
   void clear_options() ;
+  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
   [[nodiscard]] ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
+  ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
+  options() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
   mutable_options();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
+
   public:
-  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
-  ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& options()
-      const;
   // string name = 4;
   void clear_name() ;
   [[nodiscard]] const ::std::string& name() const;
@@ -814,11 +842,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
   // @@protoc_insertion_point(class_scope:google.protobuf.Field)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<4, 10,
+                          1, 72,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<4, 10,
-                                   1, 72,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -854,8 +887,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Field_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : public ::google::protobuf::Message
@@ -872,11 +903,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
 #endif
 
   template <typename = void>
-  explicit constexpr EnumValue(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr EnumValue(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline EnumValue(const EnumValue& from) : EnumValue(nullptr, from) {}
-  inline EnumValue(EnumValue&& from) noexcept
-      : EnumValue(nullptr, ::std::move(from)) {}
+  inline EnumValue(EnumValue&& from) noexcept : EnumValue(nullptr, ::std::move(from)) {}
   inline EnumValue& operator=(const EnumValue& from) {
     CopyFrom(from);
     return *this;
@@ -911,8 +943,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const EnumValue& default_instance() {
-    return *reinterpret_cast<const EnumValue*>(
-        &_EnumValue_default_instance_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<EnumValue>(&EnumValue_globals_);
   }
   static constexpr int kIndexInFileMessages = 3;
   friend void swap(EnumValue& a, EnumValue& b) { a.Swap(&b); }
@@ -997,7 +1028,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1016,18 +1049,19 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
 
   public:
   void clear_options() ;
+  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
   [[nodiscard]] ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
+  ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
+  options() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
   mutable_options();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
+
   public:
-  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
-  ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& options()
-      const;
   // string name = 1;
   void clear_name() ;
   [[nodiscard]] const ::std::string& name() const;
@@ -1056,11 +1090,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumValue)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<2, 3,
+                          1, 38,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<2, 3,
-                                   1, 38,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1089,8 +1128,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValue_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public ::google::protobuf::Message
@@ -1107,11 +1144,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
 #endif
 
   template <typename = void>
-  explicit constexpr Type(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Type(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline Type(const Type& from) : Type(nullptr, from) {}
-  inline Type(Type&& from) noexcept
-      : Type(nullptr, ::std::move(from)) {}
+  inline Type(Type&& from) noexcept : Type(nullptr, ::std::move(from)) {}
   inline Type& operator=(const Type& from) {
     CopyFrom(from);
     return *this;
@@ -1146,8 +1184,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Type& default_instance() {
-    return *reinterpret_cast<const Type*>(
-        &_Type_default_instance_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Type>(&Type_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(Type& a, Type& b) { a.Swap(&b); }
@@ -1232,7 +1269,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1255,18 +1294,19 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
 
   public:
   void clear_fields() ;
+  [[nodiscard]] const ::google::protobuf::Field& fields(int index) const;
   [[nodiscard]] ::google::protobuf::Field* PROTOBUF_NONNULL mutable_fields(int index);
+  ::google::protobuf::Field* PROTOBUF_NONNULL add_fields();
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>&
+  fields() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>* PROTOBUF_NONNULL
   mutable_fields();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>& _internal_fields() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>* PROTOBUF_NONNULL _internal_mutable_fields();
+
   public:
-  [[nodiscard]] const ::google::protobuf::Field& fields(int index) const;
-  ::google::protobuf::Field* PROTOBUF_NONNULL add_fields();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>& fields()
-      const;
   // repeated string oneofs = 3;
   [[nodiscard]] int oneofs_size()
       const;
@@ -1282,10 +1322,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
   ::std::string* PROTOBUF_NONNULL add_oneofs();
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void add_oneofs(Arg_&& value, Args_... args);
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::std::string>&
-  oneofs() const;
-  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
-  mutable_oneofs();
+  [[nodiscard]] const
+      ::google::protobuf::RepeatedPtrField<::std::string>&
+      oneofs() const;
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>*
+      PROTOBUF_NONNULL
+      mutable_oneofs();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_oneofs() const;
@@ -1300,18 +1342,19 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
 
   public:
   void clear_options() ;
+  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
   [[nodiscard]] ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
+  ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
+  options() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
   mutable_options();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
+
   public:
-  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
-  ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& options()
-      const;
   // string name = 1;
   void clear_name() ;
   [[nodiscard]] const ::std::string& name() const;
@@ -1371,11 +1414,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
   // @@protoc_insertion_point(class_scope:google.protobuf.Type)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<3, 7,
+                          3, 46,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 7,
-                                   3, 46,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1408,8 +1456,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Type_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public ::google::protobuf::Message
@@ -1426,11 +1472,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
 #endif
 
   template <typename = void>
-  explicit constexpr Enum(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Enum(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline Enum(const Enum& from) : Enum(nullptr, from) {}
-  inline Enum(Enum&& from) noexcept
-      : Enum(nullptr, ::std::move(from)) {}
+  inline Enum(Enum&& from) noexcept : Enum(nullptr, ::std::move(from)) {}
   inline Enum& operator=(const Enum& from) {
     CopyFrom(from);
     return *this;
@@ -1465,8 +1512,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Enum& default_instance() {
-    return *reinterpret_cast<const Enum*>(
-        &_Enum_default_instance_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Enum>(&Enum_globals_);
   }
   static constexpr int kIndexInFileMessages = 2;
   friend void swap(Enum& a, Enum& b) { a.Swap(&b); }
@@ -1551,7 +1597,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1573,18 +1621,19 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
 
   public:
   void clear_enumvalue() ;
+  [[nodiscard]] const ::google::protobuf::EnumValue& enumvalue(int index) const;
   [[nodiscard]] ::google::protobuf::EnumValue* PROTOBUF_NONNULL mutable_enumvalue(int index);
+  ::google::protobuf::EnumValue* PROTOBUF_NONNULL add_enumvalue();
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>&
+  enumvalue() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>* PROTOBUF_NONNULL
   mutable_enumvalue();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>& _internal_enumvalue() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>* PROTOBUF_NONNULL _internal_mutable_enumvalue();
+
   public:
-  [[nodiscard]] const ::google::protobuf::EnumValue& enumvalue(int index) const;
-  ::google::protobuf::EnumValue* PROTOBUF_NONNULL add_enumvalue();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>& enumvalue()
-      const;
   // repeated .google.protobuf.Option options = 3;
   [[nodiscard]] int options_size()
       const;
@@ -1593,18 +1642,19 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
 
   public:
   void clear_options() ;
+  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
   [[nodiscard]] ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
+  ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
+  options() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
   mutable_options();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
+
   public:
-  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
-  ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& options()
-      const;
   // string name = 1;
   void clear_name() ;
   [[nodiscard]] const ::std::string& name() const;
@@ -1664,11 +1714,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
   // @@protoc_insertion_point(class_scope:google.protobuf.Enum)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<3, 6,
+                          3, 40,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 6,
-                                   3, 40,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1701,8 +1756,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
 };
 
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Enum_class_data_;
-
 // ===================================================================
 
 
@@ -1723,8 +1776,7 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Enum_cl
 inline void Type::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000008U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
 }
 inline const ::std::string& Type::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1794,25 +1846,17 @@ inline int Type::fields_size() const {
 inline void Type::clear_fields() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.fields_.Clear();
-  ClearHasBitForRepeated(_impl_._has_bits_[0],
-                  0x00000001U);
-}
-inline ::google::protobuf::Field* PROTOBUF_NONNULL Type::mutable_fields(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.Type.fields)
-  return _internal_mutable_fields()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>* PROTOBUF_NONNULL Type::mutable_fields()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.fields)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_fields();
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
 }
 inline const ::google::protobuf::Field& Type::fields(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Type.fields)
   return _internal_fields().Get(index);
+}
+inline ::google::protobuf::Field* PROTOBUF_NONNULL Type::mutable_fields(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Type.fields)
+  return _internal_mutable_fields()->Mutable(index);
 }
 inline ::google::protobuf::Field* PROTOBUF_NONNULL Type::add_fields()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1820,7 +1864,7 @@ inline ::google::protobuf::Field* PROTOBUF_NONNULL Type::add_fields()
   ::google::protobuf::Field* _add =
       _internal_mutable_fields()->InternalAddWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), GetArena());
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.Type.fields)
   return _add;
 }
@@ -1828,6 +1872,13 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>& Ty
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.Type.fields)
   return _internal_fields();
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>* PROTOBUF_NONNULL
+Type::mutable_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.fields)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_fields();
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>&
 Type::_internal_fields() const {
@@ -1850,8 +1901,7 @@ inline int Type::oneofs_size() const {
 inline void Type::clear_oneofs() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.oneofs_.Clear();
-  ClearHasBitForRepeated(_impl_._has_bits_[0],
-                  0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
 }
 inline ::std::string* PROTOBUF_NONNULL Type::add_oneofs()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1859,7 +1909,7 @@ inline ::std::string* PROTOBUF_NONNULL Type::add_oneofs()
   ::std::string* _s =
       _internal_mutable_oneofs()->InternalAddWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), GetArena());
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.Type.oneofs)
   return _s;
 }
@@ -1887,7 +1937,7 @@ inline void Type::add_oneofs(Arg_&& value, Args_... args) {
       ::google::protobuf::MessageLite::internal_visibility(), GetArena(),
       *_internal_mutable_oneofs(), ::std::forward<Arg_>(value),
       args... );
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_add:google.protobuf.Type.oneofs)
 }
 inline const ::google::protobuf::RepeatedPtrField<::std::string>& Type::oneofs()
@@ -1897,7 +1947,7 @@ inline const ::google::protobuf::RepeatedPtrField<::std::string>& Type::oneofs()
 }
 inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
 Type::mutable_oneofs() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.oneofs)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_oneofs();
@@ -1923,25 +1973,17 @@ inline int Type::options_size() const {
 inline void Type::clear_options() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.options_.Clear();
-  ClearHasBitForRepeated(_impl_._has_bits_[0],
-                  0x00000004U);
-}
-inline ::google::protobuf::Option* PROTOBUF_NONNULL Type::mutable_options(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.Type.options)
-  return _internal_mutable_options()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL Type::mutable_options()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000004U);
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.options)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_options();
+  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
 }
 inline const ::google::protobuf::Option& Type::options(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Type.options)
   return _internal_options().Get(index);
+}
+inline ::google::protobuf::Option* PROTOBUF_NONNULL Type::mutable_options(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Type.options)
+  return _internal_mutable_options()->Mutable(index);
 }
 inline ::google::protobuf::Option* PROTOBUF_NONNULL Type::add_options()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1949,7 +1991,7 @@ inline ::google::protobuf::Option* PROTOBUF_NONNULL Type::add_options()
   ::google::protobuf::Option* _add =
       _internal_mutable_options()->InternalAddWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), GetArena());
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000004U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   // @@protoc_insertion_point(field_add:google.protobuf.Type.options)
   return _add;
 }
@@ -1957,6 +1999,13 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& T
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.Type.options)
   return _internal_options();
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
+Type::mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.options)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_options();
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 Type::_internal_options() const {
@@ -1978,7 +2027,7 @@ inline bool Type::has_source_context() const {
 inline const ::google::protobuf::SourceContext& Type::_internal_source_context() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::SourceContext* p = _impl_.source_context_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::SourceContext&>(::google::protobuf::_SourceContext_default_instance_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::SourceContext>(&::google::protobuf::SourceContext_globals_);
 }
 inline const ::google::protobuf::SourceContext& Type::source_context() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Type.source_context)
@@ -2066,8 +2115,7 @@ inline void Type::set_allocated_source_context(::google::protobuf::SourceContext
 inline void Type::clear_syntax() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.syntax_ = 0;
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000040U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000040U);
 }
 inline ::google::protobuf::Syntax Type::syntax() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Type.syntax)
@@ -2091,8 +2139,7 @@ inline void Type::_internal_set_syntax(::google::protobuf::Syntax value) {
 inline void Type::clear_edition() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.edition_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000010U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
 }
 inline const ::std::string& Type::edition() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2160,8 +2207,7 @@ inline void Type::set_allocated_edition(::std::string* PROTOBUF_NULLABLE value) 
 inline void Field::clear_kind() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.kind_ = 0;
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000020U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000020U);
 }
 inline ::google::protobuf::Field_Kind Field::kind() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.kind)
@@ -2185,8 +2231,7 @@ inline void Field::_internal_set_kind(::google::protobuf::Field_Kind value) {
 inline void Field::clear_cardinality() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.cardinality_ = 0;
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000040U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000040U);
 }
 inline ::google::protobuf::Field_Cardinality Field::cardinality() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.cardinality)
@@ -2210,8 +2255,7 @@ inline void Field::_internal_set_cardinality(::google::protobuf::Field_Cardinali
 inline void Field::clear_number() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.number_ = 0;
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000080U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000080U);
 }
 inline ::int32_t Field::number() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.number)
@@ -2235,8 +2279,7 @@ inline void Field::_internal_set_number(::int32_t value) {
 inline void Field::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
 }
 inline const ::std::string& Field::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2300,8 +2343,7 @@ inline void Field::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
 inline void Field::clear_type_url() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.type_url_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000004U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
 }
 inline const ::std::string& Field::type_url() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2365,8 +2407,7 @@ inline void Field::set_allocated_type_url(::std::string* PROTOBUF_NULLABLE value
 inline void Field::clear_oneof_index() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.oneof_index_ = 0;
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000100U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000100U);
 }
 inline ::int32_t Field::oneof_index() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.oneof_index)
@@ -2390,8 +2431,7 @@ inline void Field::_internal_set_oneof_index(::int32_t value) {
 inline void Field::clear_packed() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.packed_ = false;
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000200U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000200U);
 }
 inline bool Field::packed() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.packed)
@@ -2421,25 +2461,17 @@ inline int Field::options_size() const {
 inline void Field::clear_options() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.options_.Clear();
-  ClearHasBitForRepeated(_impl_._has_bits_[0],
-                  0x00000001U);
-}
-inline ::google::protobuf::Option* PROTOBUF_NONNULL Field::mutable_options(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.Field.options)
-  return _internal_mutable_options()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL Field::mutable_options()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Field.options)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_options();
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
 }
 inline const ::google::protobuf::Option& Field::options(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.options)
   return _internal_options().Get(index);
+}
+inline ::google::protobuf::Option* PROTOBUF_NONNULL Field::mutable_options(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Field.options)
+  return _internal_mutable_options()->Mutable(index);
 }
 inline ::google::protobuf::Option* PROTOBUF_NONNULL Field::add_options()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2447,7 +2479,7 @@ inline ::google::protobuf::Option* PROTOBUF_NONNULL Field::add_options()
   ::google::protobuf::Option* _add =
       _internal_mutable_options()->InternalAddWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), GetArena());
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.Field.options)
   return _add;
 }
@@ -2455,6 +2487,13 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& F
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.Field.options)
   return _internal_options();
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
+Field::mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Field.options)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_options();
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 Field::_internal_options() const {
@@ -2471,8 +2510,7 @@ Field::_internal_mutable_options() {
 inline void Field::clear_json_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.json_name_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000008U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
 }
 inline const ::std::string& Field::json_name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2536,8 +2574,7 @@ inline void Field::set_allocated_json_name(::std::string* PROTOBUF_NULLABLE valu
 inline void Field::clear_default_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.default_value_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000010U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
 }
 inline const ::std::string& Field::default_value() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2605,8 +2642,7 @@ inline void Field::set_allocated_default_value(::std::string* PROTOBUF_NULLABLE 
 inline void Enum::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000004U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
 }
 inline const ::std::string& Enum::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2676,25 +2712,17 @@ inline int Enum::enumvalue_size() const {
 inline void Enum::clear_enumvalue() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.enumvalue_.Clear();
-  ClearHasBitForRepeated(_impl_._has_bits_[0],
-                  0x00000001U);
-}
-inline ::google::protobuf::EnumValue* PROTOBUF_NONNULL Enum::mutable_enumvalue(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.Enum.enumvalue)
-  return _internal_mutable_enumvalue()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>* PROTOBUF_NONNULL Enum::mutable_enumvalue()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Enum.enumvalue)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_enumvalue();
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
 }
 inline const ::google::protobuf::EnumValue& Enum::enumvalue(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.enumvalue)
   return _internal_enumvalue().Get(index);
+}
+inline ::google::protobuf::EnumValue* PROTOBUF_NONNULL Enum::mutable_enumvalue(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Enum.enumvalue)
+  return _internal_mutable_enumvalue()->Mutable(index);
 }
 inline ::google::protobuf::EnumValue* PROTOBUF_NONNULL Enum::add_enumvalue()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2702,7 +2730,7 @@ inline ::google::protobuf::EnumValue* PROTOBUF_NONNULL Enum::add_enumvalue()
   ::google::protobuf::EnumValue* _add =
       _internal_mutable_enumvalue()->InternalAddWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), GetArena());
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.Enum.enumvalue)
   return _add;
 }
@@ -2710,6 +2738,13 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.Enum.enumvalue)
   return _internal_enumvalue();
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>* PROTOBUF_NONNULL
+Enum::mutable_enumvalue() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Enum.enumvalue)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_enumvalue();
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>&
 Enum::_internal_enumvalue() const {
@@ -2732,25 +2767,17 @@ inline int Enum::options_size() const {
 inline void Enum::clear_options() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.options_.Clear();
-  ClearHasBitForRepeated(_impl_._has_bits_[0],
-                  0x00000002U);
-}
-inline ::google::protobuf::Option* PROTOBUF_NONNULL Enum::mutable_options(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.Enum.options)
-  return _internal_mutable_options()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL Enum::mutable_options()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Enum.options)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_options();
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
 }
 inline const ::google::protobuf::Option& Enum::options(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.options)
   return _internal_options().Get(index);
+}
+inline ::google::protobuf::Option* PROTOBUF_NONNULL Enum::mutable_options(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Enum.options)
+  return _internal_mutable_options()->Mutable(index);
 }
 inline ::google::protobuf::Option* PROTOBUF_NONNULL Enum::add_options()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2758,7 +2785,7 @@ inline ::google::protobuf::Option* PROTOBUF_NONNULL Enum::add_options()
   ::google::protobuf::Option* _add =
       _internal_mutable_options()->InternalAddWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), GetArena());
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_add:google.protobuf.Enum.options)
   return _add;
 }
@@ -2766,6 +2793,13 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& E
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.Enum.options)
   return _internal_options();
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
+Enum::mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.Enum.options)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_options();
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 Enum::_internal_options() const {
@@ -2787,7 +2821,7 @@ inline bool Enum::has_source_context() const {
 inline const ::google::protobuf::SourceContext& Enum::_internal_source_context() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::SourceContext* p = _impl_.source_context_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::SourceContext&>(::google::protobuf::_SourceContext_default_instance_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::SourceContext>(&::google::protobuf::SourceContext_globals_);
 }
 inline const ::google::protobuf::SourceContext& Enum::source_context() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.source_context)
@@ -2875,8 +2909,7 @@ inline void Enum::set_allocated_source_context(::google::protobuf::SourceContext
 inline void Enum::clear_syntax() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.syntax_ = 0;
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000020U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000020U);
 }
 inline ::google::protobuf::Syntax Enum::syntax() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.syntax)
@@ -2900,8 +2933,7 @@ inline void Enum::_internal_set_syntax(::google::protobuf::Syntax value) {
 inline void Enum::clear_edition() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.edition_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000008U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
 }
 inline const ::std::string& Enum::edition() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2969,8 +3001,7 @@ inline void Enum::set_allocated_edition(::std::string* PROTOBUF_NULLABLE value) 
 inline void EnumValue::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
 }
 inline const ::std::string& EnumValue::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -3034,8 +3065,7 @@ inline void EnumValue::set_allocated_name(::std::string* PROTOBUF_NULLABLE value
 inline void EnumValue::clear_number() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.number_ = 0;
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000004U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
 }
 inline ::int32_t EnumValue::number() const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValue.number)
@@ -3065,25 +3095,17 @@ inline int EnumValue::options_size() const {
 inline void EnumValue::clear_options() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.options_.Clear();
-  ClearHasBitForRepeated(_impl_._has_bits_[0],
-                  0x00000001U);
-}
-inline ::google::protobuf::Option* PROTOBUF_NONNULL EnumValue::mutable_options(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.EnumValue.options)
-  return _internal_mutable_options()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL EnumValue::mutable_options()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumValue.options)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_options();
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
 }
 inline const ::google::protobuf::Option& EnumValue::options(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValue.options)
   return _internal_options().Get(index);
+}
+inline ::google::protobuf::Option* PROTOBUF_NONNULL EnumValue::mutable_options(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.EnumValue.options)
+  return _internal_mutable_options()->Mutable(index);
 }
 inline ::google::protobuf::Option* PROTOBUF_NONNULL EnumValue::add_options()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -3091,7 +3113,7 @@ inline ::google::protobuf::Option* PROTOBUF_NONNULL EnumValue::add_options()
   ::google::protobuf::Option* _add =
       _internal_mutable_options()->InternalAddWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), GetArena());
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.EnumValue.options)
   return _add;
 }
@@ -3099,6 +3121,13 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& E
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.EnumValue.options)
   return _internal_options();
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
+EnumValue::mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumValue.options)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_options();
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>&
 EnumValue::_internal_options() const {
@@ -3119,8 +3148,7 @@ EnumValue::_internal_mutable_options() {
 inline void Option::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
 }
 inline const ::std::string& Option::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -3189,7 +3217,7 @@ inline bool Option::has_value() const {
 inline const ::google::protobuf::Any& Option::_internal_value() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::Any* p = _impl_.value_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::Any&>(::google::protobuf::_Any_default_instance_);
+  return p != nullptr ? *p : *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<::google::protobuf::Any>(&::google::protobuf::Any_globals_);
 }
 inline const ::google::protobuf::Any& Option::value() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Option.value)

@@ -107,18 +107,6 @@
 #define PROTOBUF_CPLUSPLUS_MIN(x) (_MSVC_LANG >= x)
 #endif
 
-// Check minimum Protobuf support defined at:
-// https://github.com/google/oss-policies-info/blob/main/foundational-cxx-support-matrix.md
-#ifdef __clang__
-static_assert(PROTOBUF_CLANG_MIN(6, 0), "Protobuf only supports Clang 6.0 and newer.");
-#elif defined(__GNUC__)
-static_assert(PROTOBUF_GNUC_MIN(7, 3), "Protobuf only supports GCC 7.3 and newer.");
-#elif defined(_MSVC_LANG)
-static_assert(PROTOBUF_MSC_VER_MIN(1910), "Protobuf only supports MSVC 2017 and newer.");
-#endif
-static_assert(PROTOBUF_CPLUSPLUS_MIN(201703L),
-              "Protobuf only supports C++17 and newer.");
-
 // Check minimum Abseil version.
 #if defined(ABSL_LTS_RELEASE_VERSION) && defined(ABSL_LTS_RELEASE_PATCH_LEVEL)
 #define PROTOBUF_ABSL_MIN(x, y)      \
@@ -130,9 +118,6 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201703L),
 // this file.
 #define PROTOBUF_ABSL_MIN(x, y) 1
 #endif
-
-static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
-              "Protobuf only supports Abseil version 20230125.3 and newer.");
 
 // Future versions of protobuf will include breaking changes to some APIs.
 // This macro can be set to enable these API changes ahead of time, so that
@@ -595,16 +580,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 
 // ThreadSafeArenaz is turned off completely in opensource builds.
 
-
-// TODO remove these flags once the feature is stable.
-#ifndef PROTOBUF_INTERNAL_DISABLE_REMOVED_ARENA_PTRS
-#define PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD 1
-#define PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD 1
-#define PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET 1
-#define PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD 1
-#define PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_STRING_PIECE_FIELD 1
-#endif  // PROTOBUF_INTERNAL_DISABLE_REMOVED_ARENA_PTRS
-
 #include "google/protobuf/os_macros_undef.inc"
 
 // Protobuf does not support building with a number of warnings that are noisy
@@ -636,6 +611,9 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #endif
 #ifdef __GNUC__
 #pragma GCC diagnostic push
+// We sometimes use "unnecessary" parenthesis in codegen to prevent ambiguity or
+// conflicts with contextual keywords.
+#pragma GCC diagnostic ignored "-Wparentheses"
 // Some of the warnings below only exist in some GCC versions; those version
 // ranges are poorly documented.
 #pragma GCC diagnostic ignored "-Wpragmas"

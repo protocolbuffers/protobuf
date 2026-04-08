@@ -18,6 +18,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import re
 import sys
 import textwrap
 
@@ -70,6 +71,9 @@ class ModuleFileFunctions(object):
     pass
 
   def bazel_dep(self, name, version, **kwargs):
+    # Strip BCR-specific version suffixes (e.g. 1.17.0.bcr.2 -> 1.17.0)
+    # since they don't correspond to upstream git tags.
+    version = re.sub(r"\.bcr\.\d+", "", version)
     self.converter.toplevel += textwrap.dedent(
         """\
       set(%(name)s-version "%(version)s")

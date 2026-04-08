@@ -58,7 +58,6 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
 
       {"field_", FieldMemberName(field, split)},
       {"DeclaredType", DeclaredTypeMethodName(field->type())},
-      {"DeclaredCppType", DeclaredCppTypeMethodName(field->cpp_type())},
       {"Oneof", field->real_containing_oneof() ? "Oneof" : ""},
       {"Utf8", IsStrictUtf8String(field, opts) ? "Utf8" : "Raw"},
       {"StrType", IsStrictUtf8String(field, opts) ? "String" : "Bytes"},
@@ -156,23 +155,10 @@ FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* field,
 void FieldGeneratorBase::GenerateMemberConstexprConstructor(
     io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
-  if (field_->is_map()) {
+  if (field_->is_repeated() || field_->is_map()) {
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-              $name$_{visibility, $internal_metadata_offset$}
-#else
-              $name$_ {}
-#endif
-            )cc");
-  } else if (field_->is_repeated()) {
-    p->Emit({InternalMetadataOffsetSub(p)},
-            R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-              $name$_{visibility, $internal_metadata_offset$}
-#else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-              $name$_ {}
-#endif
+              $name$_ { visibility, $internal_metadata_offset$ }
             )cc");
   } else {
     p->Emit({{"default", DefaultValue(options_, field_)}},
@@ -182,26 +168,14 @@ void FieldGeneratorBase::GenerateMemberConstexprConstructor(
 
 void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
-  if (field_->is_map()) {
-    p->Emit({InternalMetadataOffsetSub(p)},
-            R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-              $name$_{visibility, $internal_metadata_offset$}
-#else
-              $name$_ { visibility, arena }
-#endif
-            )cc");
-  } else if (field_->is_repeated()) {
+  if (field_->is_repeated() || field_->is_map()) {
     if (ShouldSplit(field_, options_)) {
+      ABSL_CHECK(!field_->is_map());
       p->Emit("$name$_{}");  // RawPtr<Repeated>
     } else {
       p->Emit({InternalMetadataOffsetSub(p)},
               R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-                $name$_{visibility, $internal_metadata_offset$}
-#else
-                $name$_ { visibility, arena }
-#endif
+                $name$_ { visibility, $internal_metadata_offset$ }
               )cc");
     }
   } else {
@@ -212,23 +186,12 @@ void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
 
 void FieldGeneratorBase::GenerateMemberCopyConstructor(io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
-  if (field_->is_map()) {
+  if (field_->is_repeated() || field_->is_map()) {
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-              $name$_{visibility, $internal_metadata_offset$, from.$name$_}
-#else
-              $name$_ { visibility, arena, from.$name$_ }
-#endif
-            )cc");
-  } else if (field_->is_repeated()) {
-    p->Emit({InternalMetadataOffsetSub(p)},
-            R"cc(
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-              $name$_{visibility, $internal_metadata_offset$, from.$name$_}
-#else
-              $name$_ { visibility, arena, from.$name$_ }
-#endif
+              $name$_ {
+                visibility, $internal_metadata_offset$, from.$name$_
+              }
             )cc");
   } else {
     p->Emit("$name$_{from.$name$_}");
@@ -375,13 +338,9 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
                                    : "_impl_._has_bits_";
 
   auto has_bits_array = absl::StrFormat("%s[%d]", has_bits, index);
-  auto for_repeated = field->is_repeated() ? "ForRepeated" : "";
-  auto has = absl::StrFormat("CheckHasBit%s(%s, %s)", for_repeated,
-                             has_bits_array, mask);
-  auto set = absl::StrFormat("SetHasBit%s(%s, %s);", for_repeated,
-                             has_bits_array, mask);
-  auto clr = absl::StrFormat("ClearHasBit%s(%s, %s);", for_repeated,
-                             has_bits_array, mask);
+  auto has = absl::StrFormat("CheckHasBit(%s, %s)", has_bits_array, mask);
+  auto set = absl::StrFormat("SetHasBit(%s, %s);", has_bits_array, mask);
+  auto clr = absl::StrFormat("ClearHasBit(%s, %s);", has_bits_array, mask);
 
   vars.emplace_back("has_bits_array", has_bits_array);
   vars.emplace_back("has_mask", mask);

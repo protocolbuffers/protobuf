@@ -12,19 +12,26 @@
 // Used by the proto! macro
 pub use paste::paste;
 
-use crate::map;
+pub use crate::codegen_traits::entity_tag;
+pub use crate::codegen_traits::EntityType;
+pub use crate::extension::{new_extension_id, new_message_extension_id, new_repeated_extension_id};
 pub use crate::r#enum::Enum;
 use crate::repeated::RepeatedView;
 use crate::singular::Singular;
-use crate::MapKey;
 pub use crate::ProtoStr;
+use crate::{MapKey, MapValue, MapView};
 pub use std::fmt::Debug;
 
+#[doc(hidden)]
+pub mod ext {
+    pub use crate::extension::{ExtAccess, ExtClear, ExtGetMut, ExtHas};
+}
+
 #[cfg(all(bzl, cpp_kernel))]
-#[path = "cpp.rs"]
+#[path = "cpp_kernel/mod.rs"]
 pub mod runtime;
 #[cfg(any(not(bzl), upb_kernel))]
-#[path = "upb.rs"]
+#[path = "upb_kernel/mod.rs"]
 pub mod runtime;
 
 /// Used to protect internal-only items from being used accidentally.
@@ -42,6 +49,9 @@ pub struct Private;
 /// traits to support trait objects.
 pub trait SealedInternal: Sized {}
 
+impl<T: SealedInternal> SealedInternal for &T {}
+impl<T: SealedInternal> SealedInternal for &mut T {}
+
 /// A trait used by the proto_eq() gtest macro.
 pub trait MatcherEq: SealedInternal + Debug {
     fn matches(&self, o: &Self) -> bool;
@@ -53,9 +63,9 @@ pub fn get_repeated_default_value<T: Singular + Default>(_: Private, _: Repeated
 }
 
 /// Used by the proto! macro to get a default value for a map field.
-pub fn get_map_default_value<K: MapKey, V: map::MapValue<K> + Default>(
+pub fn get_map_default_value<K: MapKey, V: MapValue + Default>(
     _: Private,
-    _: map::MapView<'_, K, V>,
+    _: MapView<'_, K, V>,
 ) -> V {
     Default::default()
 }

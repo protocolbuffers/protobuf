@@ -36,7 +36,7 @@ release commits.
 ### Bazel with Bzlmod
 
 Protobuf supports
-[Bzlmod](https://bazel.build/external/module) with Bazel 7 +.
+[Bzlmod](https://bazel.build/external/module) with Bazel 8 +.
 Users should specify a dependency on protobuf in their MODULE.bazel file as
 follows.
 

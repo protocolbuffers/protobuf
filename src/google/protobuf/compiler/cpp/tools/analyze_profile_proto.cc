@@ -161,11 +161,11 @@ class PDProtoAnalyzer {
   }
 
   PDProtoOptimization OptimizeField(const FieldDescriptor* field) {
-    if (IsFieldInlined(field, options_)) {
+    if (cpp::IsFieldInlined(field, options_)) {
       return PDProtoOptimization::kInline;
     }
-    if (IsLazy(field, options_)) {
-      if (IsLazilyVerifiedLazy(field, options_)) {
+    if (cpp::IsLazy(field, options_)) {
+      if (cpp::IsLazilyVerifiedLazy(field, options_)) {
         return PDProtoOptimization::kUnverifiedLazy;
       }
       return PDProtoOptimization::kLazy;

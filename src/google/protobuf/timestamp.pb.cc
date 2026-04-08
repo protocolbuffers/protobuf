@@ -25,8 +25,65 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+namespace {
+PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
+    file_reflection_data[] = {
+        // ::google::protobuf::Timestamp
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2ftimestamp_2eproto, /* tracker*/ nullptr,},
+};
+}  // namespace
+#endif
 namespace google {
 namespace protobuf {
+class Timestamp::_Internal {
+ public:
+  using HasBits = decltype(::std::declval<Timestamp>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._has_bits_);
+};
+
+constexpr Timestamp::ParseTableT_ Timestamp::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+  return ParseTableT_{
+    {
+      PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._has_bits_),
+      0, // no _extensions_
+      2, 8,  // max_field_number, fast_idx_mask
+      offsetof(ParseTableT_, field_lookup_table),
+      4294967292,  // skipmap
+      offsetof(ParseTableT_, field_entries),
+      2,  // num_field_entries
+      0,  // num_aux_entries
+      offsetof(ParseTableT_, field_names),  // no aux_entries
+      class_data,
+      nullptr,  // post_loop_handler
+      ::_pbi::TcParser::GenericFallback,  // fallback
+      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+      ::_pbi::TcParser::GetTable<::google::protobuf::Timestamp>(),  // to_prefetch
+      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+    }, {{
+      // int32 nanos = 2;
+      {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Timestamp, _impl_.nanos_), 1>(),
+       {16, 1, 0,
+        PROTOBUF_FIELD_OFFSET(Timestamp, _impl_.nanos_)}},
+      // int64 seconds = 1;
+      {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(Timestamp, _impl_.seconds_), 0>(),
+       {8, 0, 0,
+        PROTOBUF_FIELD_OFFSET(Timestamp, _impl_.seconds_)}},
+    }}, {{
+      65535, 65535
+    }}, {{
+      // int64 seconds = 1;
+      {PROTOBUF_FIELD_OFFSET(Timestamp, _impl_.seconds_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt64)},
+      // int32 nanos = 2;
+      {PROTOBUF_FIELD_OFFSET(Timestamp, _impl_.nanos_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
+    }},
+    // no aux_entries
+    {{
+    }},
+  };
+}
+
 
 inline constexpr Timestamp::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -36,24 +93,104 @@ inline constexpr Timestamp::Impl_::Impl_(
         nanos_{0} {}
 
 template <typename>
-constexpr Timestamp::Timestamp(::_pbi::ConstantInitialized)
+constexpr Timestamp::Timestamp(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+    : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(Timestamp_class_data_.base()),
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(),
+          class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
+          ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct TimestampDefaultTypeInternal {
-  constexpr TimestampDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~TimestampDefaultTypeInternal() {}
-  union {
-    Timestamp _instance;
+inline void* PROTOBUF_NONNULL Timestamp::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+  return ::new (mem) Timestamp(arena);
+}
+constexpr auto Timestamp::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Timestamp), alignof(Timestamp));
+}
+constexpr auto Timestamp::InternalGenerateClassData_(
+    const MessageLite& prototype,
+    const ::google::protobuf::internal::TcParseTableBase* tc_table) {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &prototype,
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+          &_table_.header,
+#else
+          tc_table,
+#endif
+          nullptr,  // IsInitialized
+          &Timestamp::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<Timestamp>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &Timestamp::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<Timestamp>(), &Timestamp::ByteSizeLong,
+              &Timestamp::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._cached_size_),
+          false,
+      },
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+      &file_reflection_data[0],
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+      &::_pbi::kDescriptorMethods,
+      &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto,
+      nullptr,  // tracker
+#endif  // PROTOBUF_MESSAGE_GLOBALS
   };
+}
+struct TimestampGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
+  constexpr TimestampGlobalsTypeInternal()
+      :
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 Timestamp_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+        MessageGlobalsBase(Timestamp::InternalGenerateClassData_(
+            _default, &Timestamp_globals_._table.header)),
+        _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        _table(::_pbi::PrivateAccess::GenerateParseTable<Timestamp>(
+            GetClassData()))
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+  {
+  }
+  ~TimestampGlobalsTypeInternal() {}
+  union {
+    alignas(::_pbi::kMaxMessageAlignment) Timestamp _default;
+  };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  decltype(::_pbi::PrivateAccess::GenerateParseTable<Timestamp>(
+      ::std::declval<const ::_pbi::ClassData*>())) _table;
+#endif
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(TimestampGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 TimestampDefaultTypeInternal _Timestamp_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
+    #ifdef PROTOBUF_MESSAGE_GLOBALS
+    const
+    #endif
+     TimestampGlobalsTypeInternal Timestamp_globals_
+        #ifdef PROTOBUF_MESSAGE_GLOBALS
+        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
+        #endif  // PROTOBUF_MESSAGE_GLOBALS
+        ;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+namespace {
+const ::_pbi::ClassData* Timestamp_get_class_data() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  return Timestamp_globals_.GetClassData();
+#else
+  return Timestamp_class_data_.base();
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+}
+}  // namespace
+#endif  // PROTOBUF_CUSTOM_VTABLE
 }  // namespace protobuf
 }  // namespace google
 static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
@@ -76,8 +213,9 @@ static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, sizeof(::google::protobuf::Timestamp)},
 };
-static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::google::protobuf::_Timestamp_default_instance_._instance,
+static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
+    file_message_globals[] = {
+        &::google::protobuf::Timestamp_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -100,7 +238,7 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
     0,
     1,
     schemas,
-    file_default_instances,
+    file_message_globals,
     TableStruct_google_2fprotobuf_2ftimestamp_2eproto::offsets,
     file_level_enum_descriptors_google_2fprotobuf_2ftimestamp_2eproto,
     file_level_service_descriptors_google_2fprotobuf_2ftimestamp_2eproto,
@@ -109,17 +247,9 @@ namespace google {
 namespace protobuf {
 // ===================================================================
 
-class Timestamp::_Internal {
- public:
-  using HasBits =
-      decltype(::std::declval<Timestamp>()._impl_._has_bits_);
-  static constexpr ::int32_t kHasBitsOffset =
-      8 * PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._has_bits_);
-};
-
 Timestamp::Timestamp(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Timestamp_class_data_.base()) {
+    : ::google::protobuf::Message(arena, Timestamp_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -129,7 +259,7 @@ Timestamp::Timestamp(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 Timestamp::Timestamp(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Timestamp& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Timestamp_class_data_.base()),
+    : ::google::protobuf::Message(arena, Timestamp_get_class_data()),
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -165,40 +295,10 @@ inline void Timestamp::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* PROTOBUF_NONNULL Timestamp::PlacementNew_(
-    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
-  return ::new (mem) Timestamp(arena);
-}
-constexpr auto Timestamp::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Timestamp),
-                                            alignof(Timestamp));
-}
-constexpr auto Timestamp::InternalGenerateClassData_() {
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &_Timestamp_default_instance_._instance,
-          &_table_.header,
-          nullptr,  // IsInitialized
-          &Timestamp::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<Timestamp>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          &Timestamp::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<Timestamp>(), &Timestamp::ByteSizeLong,
-              &Timestamp::_InternalSerialize,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._cached_size_),
-          false,
-      },
-      &Timestamp::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto,
-      nullptr,  // tracker
-  };
-}
-
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Timestamp_class_data_ =
-        Timestamp::InternalGenerateClassData_();
+        Timestamp::InternalGenerateClassData_(Timestamp_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Timestamp::GetClassData() const {
@@ -206,46 +306,21 @@ Timestamp::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(Timestamp_class_data_.tc_table);
   return Timestamp_class_data_.base();
 }
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 2, 0, 0, 2>
-Timestamp::_table_ = {
-  {
-    PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._has_bits_),
-    0, // no _extensions_
-    2, 8,  // max_field_number, fast_idx_mask
-    offsetof(decltype(_table_), field_lookup_table),
-    4294967292,  // skipmap
-    offsetof(decltype(_table_), field_entries),
-    2,  // num_field_entries
-    0,  // num_aux_entries
-    offsetof(decltype(_table_), field_names),  // no aux_entries
-    Timestamp_class_data_.base(),
-    nullptr,  // post_loop_handler
-    ::_pbi::TcParser::GenericFallback,  // fallback
-    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-    ::_pbi::TcParser::GetTable<::google::protobuf::Timestamp>(),  // to_prefetch
-    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  }, {{
-    // int32 nanos = 2;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Timestamp, _impl_.nanos_), 1>(),
-     {16, 1, 0,
-      PROTOBUF_FIELD_OFFSET(Timestamp, _impl_.nanos_)}},
-    // int64 seconds = 1;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(Timestamp, _impl_.seconds_), 0>(),
-     {8, 0, 0,
-      PROTOBUF_FIELD_OFFSET(Timestamp, _impl_.seconds_)}},
-  }}, {{
-    65535, 65535
-  }}, {{
-    // int64 seconds = 1;
-    {PROTOBUF_FIELD_OFFSET(Timestamp, _impl_.seconds_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt64)},
-    // int32 nanos = 2;
-    {PROTOBUF_FIELD_OFFSET(Timestamp, _impl_.nanos_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
-  }},
-  // no aux_entries
-  {{
-  }},
-};
+#else
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+Timestamp::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&Timestamp_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Timestamp_globals_));
+  return Timestamp_globals_.GetClassData();
+}
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Timestamp::ParseTableT_
+    Timestamp::_table_ =
+        Timestamp::InternalGenerateParseTable_(Timestamp_class_data_.base());
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Timestamp::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Timestamp)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -346,9 +421,8 @@ PROTOBUF_NOINLINE void Timestamp::Clear() {
 }
 
 void Timestamp::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<Timestamp*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<Timestamp*>(&to_msg);
   auto& from = static_cast<const Timestamp&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();

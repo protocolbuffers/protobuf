@@ -11,7 +11,7 @@
 
 use crate::__internal::runtime::InnerProtoString;
 use crate::__internal::{Private, SealedInternal};
-use crate::{AsView, IntoProxied, IntoView, MapKey, Mut, MutProxied, Optional, Proxied, View};
+use crate::{AsView, IntoProxied, IntoView, MapKey, Mut, MutProxied, Proxied, View};
 use std::borrow::Cow;
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 use std::convert::{AsMut, AsRef};
@@ -168,9 +168,18 @@ impl From<std::str::Utf8Error> for Utf8Error {
 ///
 /// # UTF-8
 ///
-/// Protobuf [docs] state that a `string` field contains UTF-8 encoded text.
-/// However, not every runtime enforces this, and the Rust runtime is designed
-/// to integrate with other runtimes with FFI, like C++.
+/// Protobuf intends to maintain the invariant that a `string` fields are UTF-8 encoded text, and
+/// by default the validity of the UTF-8 encoding is enforced at parse time.
+///
+/// However, the Rust implementation is designed to zero-copy integrate with C++Proto. C++Proto is
+/// designed such that string fields should be valid UTF-8, and generally the validity is checked at
+/// parse time, but it is not undefined behavior to set malformed UTF-8 data. For the reason,
+/// RustProto uses a 'should-be-UTF-8' types, but it is not considered undefined behavior to set
+/// arbitrary &[u8] onto a string field.
+///
+/// Doing so should be done with great caution however, as it can lead to difficult to debug
+/// issues and problems in downstream systems.
+///
 ///
 /// `ProtoString` represents a string type that is expected to contain valid
 /// UTF-8. However, `ProtoString` is not validated, so users must
@@ -194,11 +203,25 @@ pub struct ProtoString {
 
 impl ProtoString {
     pub fn as_view(&self) -> &ProtoStr {
-        unsafe { ProtoStr::from_utf8_unchecked(self.as_bytes()) }
+        ProtoStr::from_utf8_unchecked(self.as_bytes())
     }
 
     pub fn as_bytes(&self) -> &[u8] {
         self.inner.as_bytes()
+    }
+
+    /// Converts bytes to a `ProtoString` without a check. Prefer using `.try_into()`
+    /// where possible.
+    ///
+    /// The input `bytes` should be valid UTF-8. Note that unlike with `str` this
+    /// method is not unsafe, as the underlying implementations are robust against
+    /// invalid UTF-8 and this will not result in language undefined behavior.
+    ///
+    /// However, `string` fields are intended to maintain the invariant that they
+    /// contain valid UTF-8, and the system behavior if invalid UTF-8 is contained may be
+    /// poor, including that that you could end up storing malformed data which is not parsable.
+    pub fn from_utf8_unchecked(v: &[u8]) -> Self {
+        Self { inner: InnerProtoString::from(v) }
     }
 
     // Returns the kernel-specific container. This method is private in spirit and
@@ -216,6 +239,14 @@ impl ProtoString {
 
 impl SealedInternal for ProtoString {}
 
+impl Deref for ProtoString {
+    type Target = ProtoStr;
+
+    fn deref(&self) -> &Self::Target {
+        self.as_view()
+    }
+}
+
 impl AsRef<[u8]> for ProtoString {
     fn as_ref(&self) -> &[u8] {
         self.inner.as_bytes()
@@ -230,13 +261,16 @@ impl From<ProtoString> for ProtoBytes {
 
 impl From<&str> for ProtoString {
     fn from(v: &str) -> Self {
-        Self::from(v.as_bytes())
+        Self::from_utf8_unchecked(v.as_bytes())
     }
 }
 
-impl From<&[u8]> for ProtoString {
-    fn from(v: &[u8]) -> Self {
-        Self { inner: InnerProtoString::from(v) }
+impl TryFrom<&[u8]> for ProtoString {
+    type Error = Utf8Error;
+
+    fn try_from(v: &[u8]) -> Result<Self, Self::Error> {
+        let s = std::str::from_utf8(v)?;
+        Ok(ProtoString::from(s))
     }
 }
 
@@ -252,7 +286,7 @@ impl IntoProxied<ProtoString> for &str {
 
 impl IntoProxied<ProtoString> for &ProtoStr {
     fn into_proxied(self, _private: Private) -> ProtoString {
-        ProtoString::from(self.as_bytes())
+        ProtoString::from_utf8_unchecked(self.as_bytes())
     }
 }
 
@@ -264,7 +298,7 @@ impl IntoProxied<ProtoString> for String {
 
 impl IntoProxied<ProtoString> for &String {
     fn into_proxied(self, _private: Private) -> ProtoString {
-        ProtoString::from(self.as_bytes())
+        ProtoString::from_utf8_unchecked(self.as_bytes())
     }
 }
 
@@ -276,7 +310,7 @@ impl IntoProxied<ProtoString> for OsString {
 
 impl IntoProxied<ProtoString> for &OsStr {
     fn into_proxied(self, _private: Private) -> ProtoString {
-        ProtoString::from(self.as_encoded_bytes())
+        ProtoString::from_utf8_unchecked(self.as_encoded_bytes())
     }
 }
 
@@ -345,7 +379,7 @@ impl ProtoStr {
     ///
     /// Note: this type does not implement `Deref`; you must call `as_bytes()`
     /// or `AsRef<[u8]>` to get access to bytes.
-    pub fn as_bytes(&self) -> &[u8] {
+    pub const fn as_bytes(&self) -> &[u8] {
         &self.0
     }
 
@@ -359,8 +393,12 @@ impl ProtoStr {
     ///
     /// [`U+FFFD REPLACEMENT CHARACTER`]: std::char::REPLACEMENT_CHARACTER
     // This is not `try_to_str` since `to_str` is shorter, with `CStr` as precedent.
-    pub fn to_str(&self) -> Result<&str, Utf8Error> {
-        Ok(std::str::from_utf8(&self.0)?)
+    pub const fn to_str(&self) -> Result<&str, Utf8Error> {
+        // Note: cannot use `?` here because of the `const` context.
+        match std::str::from_utf8(&self.0) {
+            Ok(s) => Ok(s),
+            Err(e) => Err(Utf8Error { inner: e }),
+        }
     }
 
     /// Converts `self` to a string, including invalid characters.
@@ -381,22 +419,28 @@ impl ProtoStr {
     }
 
     /// Returns `true` if `self` has a length of zero bytes.
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
 
     /// Returns the length of `self`.
     ///
     /// Like `&str`, this is a length in bytes, not `char`s or graphemes.
-    pub fn len(&self) -> usize {
+    pub const fn len(&self) -> usize {
         self.0.len()
     }
 
-    /// Converts known-UTF-8 bytes to a `ProtoStr` without a check.
+    /// Converts bytes to a `&ProtoStr` without a check. Prefer using `.try_into()`
+    /// where possible.
     ///
-    /// # Safety
-    /// `bytes` must be valid UTF-8 if the current runtime requires it.
-    pub unsafe fn from_utf8_unchecked(bytes: &[u8]) -> &Self {
+    /// The input `bytes` should be valid UTF-8. Note that unlike with `str` this
+    /// method is not unsafe, as the underlying implementations are robust against
+    /// invalid UTF-8 and this will not result in language undefined behavior.
+    ///
+    /// However, `string` fields are intended to maintain the invariant that they
+    /// contain valid UTF-8, and the system behavior if invalid UTF-8 is contained may be
+    /// poor, including that that you could end up storing malformed data which is not parsable.
+    pub const fn from_utf8_unchecked(bytes: &[u8]) -> &Self {
         // SAFETY:
         // - `ProtoStr` is `#[repr(transparent)]` over `[u8]`, so it has the same
         //   layout.
@@ -405,9 +449,64 @@ impl ProtoStr {
     }
 
     /// Interprets a string slice as a `&ProtoStr`.
-    pub fn from_str(string: &str) -> &Self {
-        // SAFETY: `string.as_bytes()` is valid UTF-8.
-        unsafe { Self::from_utf8_unchecked(string.as_bytes()) }
+    pub const fn from_str(string: &str) -> &Self {
+        Self::from_utf8_unchecked(string.as_bytes())
+    }
+
+    pub const fn is_ascii(&self) -> bool {
+        self.0.is_ascii()
+    }
+
+    pub fn contains<T>(&self, other: &T) -> bool
+    where
+        T: AsRef<[u8]> + ?Sized,
+    {
+        let other = other.as_ref();
+        if other.is_empty() {
+            return true;
+        }
+        // Note: this sliding window approach is suboptimal, but simple and correct and can be
+        // optimized later if needed.
+        self.0.windows(other.len()).any(|window| window == other)
+    }
+
+    pub fn starts_with<T>(&self, other: &T) -> bool
+    where
+        T: AsRef<[u8]> + ?Sized,
+    {
+        self.0.starts_with(other.as_ref())
+    }
+
+    pub fn ends_with<T>(&self, other: &T) -> bool
+    where
+        T: AsRef<[u8]> + ?Sized,
+    {
+        self.0.ends_with(other.as_ref())
+    }
+
+    pub fn find<T>(&self, other: &T) -> Option<usize>
+    where
+        T: AsRef<[u8]> + ?Sized,
+    {
+        let other = other.as_ref();
+        if other.is_empty() {
+            return Some(0);
+        }
+        // Note: this sliding window approach is suboptimal, but simple and correct and can be
+        // optimized later if needed.
+        self.0.windows(other.len()).position(|window| window == other)
+    }
+
+    pub const fn trim_ascii(&self) -> &Self {
+        Self::from_utf8_unchecked(self.0.trim_ascii())
+    }
+
+    pub const fn trim_ascii_start(&self) -> &Self {
+        Self::from_utf8_unchecked(self.0.trim_ascii_start())
+    }
+
+    pub const fn trim_ascii_end(&self) -> &Self {
+        Self::from_utf8_unchecked(self.0.trim_ascii_end())
     }
 }
 
@@ -441,7 +540,8 @@ impl<'msg> TryFrom<&'msg [u8]> for &'msg ProtoStr {
     type Error = Utf8Error;
 
     fn try_from(val: &'msg [u8]) -> Result<&'msg ProtoStr, Utf8Error> {
-        Ok(ProtoStr::from_str(std::str::from_utf8(val)?))
+        let s = std::str::from_utf8(val)?;
+        Ok(ProtoStr::from_str(s))
     }
 }
 
@@ -568,11 +668,109 @@ mod tests {
 
     // TODO: Add unit tests
 
-    // Shorter and safe utility function to construct `ProtoStr` from bytes for
-    // testing.
-    fn test_proto_str(bytes: &[u8]) -> &ProtoStr {
-        // SAFETY: The runtime that this test executes under does not elide UTF-8 checks
-        // inside of `ProtoStr`.
-        unsafe { ProtoStr::from_utf8_unchecked(bytes) }
+    #[gtest]
+    fn test_proto_string_try_from() -> googletest::Result<()> {
+        let valid_utf8 = b"hello";
+        let s = ProtoString::try_from(&valid_utf8[..])?;
+        verify_eq!(s.as_bytes(), valid_utf8)?;
+
+        let invalid_utf8 = b"\xff";
+        let res = ProtoString::try_from(&invalid_utf8[..]);
+        verify_that!(res, err(anything()))?;
+        Ok(())
+    }
+
+    #[gtest]
+    fn test_proto_string_from_utf8_unchecked() -> googletest::Result<()> {
+        let invalid_utf8 = b"\xff";
+        let s = ProtoString::from_utf8_unchecked(invalid_utf8);
+        verify_eq!(s.as_bytes(), invalid_utf8)?;
+        Ok(())
+    }
+
+    #[gtest]
+    fn test_proto_str_methods() -> googletest::Result<()> {
+        let s = ProtoStr::from_str("  hello world  ");
+
+        // contains
+        verify_eq!(s.contains(s), true)?;
+        verify_eq!(s.contains("hello"), true)?;
+        verify_eq!(s.contains("world"), true)?;
+        verify_eq!(s.contains("o w"), true)?;
+        verify_eq!(s.contains("xyz"), false)?;
+        verify_eq!(s.contains(""), true)?;
+
+        // starts_with / ends_with
+        verify_eq!(s.starts_with(s), true)?;
+        verify_eq!(s.ends_with(s), true)?;
+        verify_eq!(s.starts_with("  he"), true)?;
+        verify_eq!(s.ends_with("d  "), true)?;
+        verify_eq!(s.starts_with("hel"), false)?;
+
+        // find
+        verify_eq!(s.find(s), Some(0))?;
+        verify_eq!(s.find("hello"), Some(2))?;
+        verify_eq!(s.find("world"), Some(8))?;
+        verify_eq!(s.find("xyz"), None)?;
+        verify_eq!(s.find(""), Some(0))?;
+
+        // trim
+        verify_eq!(s.trim_ascii(), "hello world")?;
+        verify_eq!(s.trim_ascii_start(), "hello world  ")?;
+        verify_eq!(s.trim_ascii_end(), "  hello world")?;
+
+        Ok(())
+    }
+
+    #[gtest]
+    fn test_proto_string_deref() -> googletest::Result<()> {
+        let s = ProtoString::from("  hello  ");
+        verify_eq!(s.contains("hello"), true)?;
+        verify_eq!(s.trim_ascii(), "hello")?;
+
+        let s2 = ProtoStr::from_str("he");
+        verify_eq!(s.contains(s2), true)?;
+
+        let s2 = ProtoStr::from_str("world");
+        verify_eq!(s.contains(s2), false)?;
+
+        Ok(())
+    }
+
+    #[gtest]
+    fn test_const_proto_str() -> googletest::Result<()> {
+        const S: &ProtoStr = ProtoStr::from_str("hello");
+        verify_eq!(S.contains("hello"), true)?;
+
+        const S_BYTES: &[u8] = S.as_bytes();
+        verify_eq!(S_BYTES, b"hello")?;
+
+        const S_TO_STR: core::result::Result<&str, Utf8Error> = S.to_str();
+        verify_eq!(S_TO_STR.unwrap(), "hello")?;
+
+        const S_IS_EMPTY: bool = S.is_empty();
+        verify_eq!(S_IS_EMPTY, false)?;
+        const EMPTY: &ProtoStr = ProtoStr::from_str("");
+        const EMPTY_IS_EMPTY: bool = EMPTY.is_empty();
+        verify_eq!(EMPTY_IS_EMPTY, true)?;
+
+        const S_LEN: usize = S.len();
+        verify_eq!(S_LEN, 5)?;
+
+        const S_IS_ASCII: bool = S.is_ascii();
+        verify_eq!(S_IS_ASCII, true)?;
+
+        const TRIM_ME: &ProtoStr = ProtoStr::from_str("  foo  ");
+        const TRIMMED: &ProtoStr = TRIM_ME.trim_ascii();
+        const TRIMMED_START: &ProtoStr = TRIM_ME.trim_ascii_start();
+        const TRIMMED_END: &ProtoStr = TRIM_ME.trim_ascii_end();
+        verify_eq!(TRIMMED.as_bytes(), b"foo")?;
+        verify_eq!(TRIMMED_START.as_bytes(), b"foo  ")?;
+        verify_eq!(TRIMMED_END.as_bytes(), b"  foo")?;
+
+        const S2: &ProtoStr = ProtoStr::from_utf8_unchecked(b"world");
+        verify_eq!(S2.contains("world"), true)?;
+
+        Ok(())
     }
 }

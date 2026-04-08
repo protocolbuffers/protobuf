@@ -120,18 +120,22 @@ public final class RuntimeVersion {
 
     // Check that runtime major version is the same as the gencode major version.
     if (major != MAJOR) {
-      if (major == MAJOR - 1 && majorWarningLoggedCount < MAX_WARNING_COUNT) {
-        gencodeVersionString = versionString(major, minor, patch, suffix);
-        logger.warning(
-            String.format(
-                Locale.US,
-                " Protobuf gencode version %s is exactly one major version older than the runtime"
-                    + " version %s at %s. Please update the gencode to avoid compatibility"
-                    + " violations in the next runtime release.",
-                gencodeVersionString,
-                VERSION_STRING,
-                location));
-        majorWarningLoggedCount++;
+      if (major == MAJOR - 1) {
+        if (majorWarningLoggedCount < MAX_WARNING_COUNT) {
+          if (gencodeVersionString == null) {
+            gencodeVersionString = versionString(major, minor, patch, suffix);
+          }
+          logger.warning(
+              String.format(
+                  Locale.US,
+                  " Protobuf gencode version %s is exactly one major version older than the runtime"
+                      + " version %s at %s. Please update the gencode to avoid compatibility"
+                      + " violations in the next runtime release.",
+                  gencodeVersionString,
+                  VERSION_STRING,
+                  location));
+          majorWarningLoggedCount++;
+        }
       } else {
         throw new ProtobufRuntimeVersionException(
             String.format(

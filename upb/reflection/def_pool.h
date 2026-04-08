@@ -43,8 +43,14 @@ const upb_MessageDef* upb_DefPool_FindMessageByNameWithSize(
 UPB_API const upb_EnumDef* upb_DefPool_FindEnumByName(const upb_DefPool* s,
                                                       const char* sym);
 
-const upb_EnumValueDef* upb_DefPool_FindEnumByNameval(const upb_DefPool* s,
-                                                      const char* sym);
+UPB_API const upb_EnumDef* upb_DefPool_FindEnumByNameWithSize(
+    const upb_DefPool* s, const char* sym, size_t len);
+
+UPB_API const upb_EnumValueDef* upb_DefPool_FindEnumValueByName(
+    const upb_DefPool* s, const char* sym);
+
+UPB_API const upb_EnumValueDef* upb_DefPool_FindEnumValueByNameWithSize(
+    const upb_DefPool* s, const char* sym, size_t len);
 
 UPB_API const upb_FileDef* upb_DefPool_FindFileByName(const upb_DefPool* s,
                                                       const char* name);
@@ -99,6 +105,16 @@ const upb_FieldDef** upb_DefPool_GetAllExtensions(const upb_DefPool* s,
 // default value.
 UPB_API void upb_DefPool_DisableClosedEnumChecking(upb_DefPool* s);
 bool upb_DefPool_ClosedEnumCheckingDisabled(const upb_DefPool* s);
+
+// If called, implicit field presence will be disabled.
+// This is non-standard behavior and will cause conformance tests to fail, but
+// it can be used in situations where where the non-conformance is acceptable.
+//
+// This function may only be called immediately after upb_DefPool_New().
+// It is an error to call it on an existing def pool or after defs have
+// already been added to the pool.
+UPB_API void upb_DefPool_DisableImplicitFieldPresence(upb_DefPool* s);
+bool upb_DefPool_ImplicitFieldPresenceDisabled(const upb_DefPool* s);
 
 #ifdef __cplusplus
 } /* extern "C" */
