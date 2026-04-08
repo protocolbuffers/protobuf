@@ -38,6 +38,8 @@ namespace compiler {
 namespace rust {
 namespace {
 
+using Sub = ::google::protobuf::io::Printer::Sub;
+
 void MessageNew(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
@@ -214,7 +216,7 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
                                    const upb::DefPool& pool) {
   ABSL_CHECK(ctx.is_upb());
   ctx.Emit(
-      {{"name", RsSafeName(msg.name())},
+      {{"name", MessageRsName(msg)},
        {"mini_table_impl",
         [&] {
           const SCC& scc = ctx.GetSCC(msg);
@@ -313,10 +315,9 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
 }
 
 void TypeConversions(Context& ctx, const Descriptor& msg) {
-  switch (ctx.opts().kernel) {
-    case Kernel::kCpp:
-      ctx.Emit(
-          R"rs(
+  if (ctx.is_cpp()) {
+    ctx.Emit(
+        R"rs(
           impl $pbr$::CppMapTypeConversions for $Msg$ {
               fn get_prototype() -> $pbr$::FfiMapValue {
                   $pbr$::FfiMapValue::make_message(<$Msg$View as $std$::default::Default>::default().raw_msg())
@@ -338,26 +339,24 @@ void TypeConversions(Context& ctx, const Descriptor& msg) {
               }
           }
           )rs");
-      return;
-    case Kernel::kUpb:
-      ctx.Emit(
-          {
-              {"new_thunk", ThunkName(ctx, msg, "new")},
-          },
-          R"rs(
-            impl $pbr$::EntityType for $Msg$ {
-                type Tag = $pbr$::MessageTag;
+  }
+  ctx.Emit(
+      {
+          {"new_thunk", ThunkName(ctx, msg, "new")},
+      },
+      R"rs(
+            impl $pbi$::EntityType for $Msg$ {
+                type Tag = $pbi$::entity_tag::MessageTag;
             }
 
-            impl<'msg> $pbr$::EntityType for $Msg$View<'msg> {
-                type Tag = $pbr$::ViewProxyTag;
+            impl<'msg> $pbi$::EntityType for $Msg$View<'msg> {
+                type Tag = $pbi$::entity_tag::ViewProxyTag;
             }
 
-            impl<'msg> $pbr$::EntityType for $Msg$Mut<'msg> {
-                type Tag = $pbr$::MutProxyTag;
+            impl<'msg> $pbi$::EntityType for $Msg$Mut<'msg> {
+                type Tag = $pbi$::entity_tag::MutProxyTag;
             }
             )rs");
-  }
 }
 
 void GenerateDefaultInstanceImpl(Context& ctx, const Descriptor& msg) {
@@ -393,7 +392,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
       // visibility. The only reason we generate anything for them at all is
       // that it is useful to have map entries implement the
       // AssociatedMiniTable trait.
-      ctx.Emit({{"Msg", RsSafeName(msg.name())},
+      ctx.Emit({{"Msg", MessageRsName(msg)},
                 {"upb_generated_message_trait_impls",
                  [&] { UpbGeneratedMessageTraitImpls(ctx, msg, pool); }}},
                R"rs(
@@ -409,7 +408,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
   upb::MessageDefPtr upb_msg = pool.FindMessageByName(msg.full_name().data());
   ctx.Emit(
       {
-          {"Msg", RsSafeName(msg.name())},
+          // There's also ${$/$}$-style begin and end tokens, but those might
+          // be harder to retrofit here because of the giant-template style.
+          Sub("MsgDefinition", MessageRsName(msg)).AnnotatedAs(&msg),
+          {"Msg", MessageRsName(msg)},
           {"Msg::new", [&] { MessageNew(ctx, msg); }},
           {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
           {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
@@ -520,11 +522,14 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
       },
       R"rs(
         #[allow(non_camel_case_types)]
-        pub struct $Msg$ {
+        pub struct $MsgDefinition$ {
           inner: $pbr$::OwnedMessageInner<$Msg$>
         }
 
-        impl $pb$::Message for $Msg$ {}
+        impl $pb$::Message for $Msg$ {
+          type MessageView<'msg> = $Msg$View<'msg>;
+          type MessageMut<'msg> = $Msg$Mut<'msg>;
+        }
 
         impl $std$::default::Default for $Msg$ {
           fn default() -> Self {
@@ -541,12 +546,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
         // SAFETY:
         // - `$Msg$` is `Sync` because it does not implement interior mutability.
         //    Neither does `$Msg$Mut`.
-        unsafe impl Sync for $Msg$ {}
+        unsafe impl $std$::marker::Sync for $Msg$ {}
 
         // SAFETY:
         // - `$Msg$` is `Send` because it uniquely owns its arena and does
         //   not use thread-local data.
-        unsafe impl Send for $Msg$ {}
+        unsafe impl $std$::marker::Send for $Msg$ {}
 
         impl $pb$::Proxied for $Msg$ {
           type View<'msg> = $Msg$View<'msg>;
@@ -601,12 +606,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
 
         // SAFETY:
         // - `$Msg$View` is `Sync` because it does not support mutation.
-        unsafe impl Sync for $Msg$View<'_> {}
+        unsafe impl $std$::marker::Sync for $Msg$View<'_> {}
 
         // SAFETY:
         // - `$Msg$View` is `Send` because while its alive a `$Msg$Mut` cannot.
         // - `$Msg$View` does not use thread-local data.
-        unsafe impl Send for $Msg$View<'_> {}
+        unsafe impl $std$::marker::Send for $Msg$View<'_> {}
 
         impl<'msg> $pb$::AsView for $Msg$View<'msg> {
           type Proxied = $Msg$;
@@ -658,7 +663,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           #[doc(hidden)]
           pub fn as_message_mut_inner(&mut self, _private: $pbi$::Private)
             -> $pbr$::MessageMutInner<'msg, $Msg$> {
-            self.inner
+            self.inner.reborrow()
           }
 
           pub fn to_owned(&self) -> $Msg$ {
@@ -674,18 +679,16 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
         //~ threads can hold a reference to MsgMuts with the same arena.
         // SAFETY:
         // - `$Msg$Mut` does not perform any shared mutation.
-        unsafe impl Send for $Msg$Mut<'_> {}
+        unsafe impl $std$::marker::Send for $Msg$Mut<'_> {}
 
         // SAFETY:
         // - `$Msg$Mut` does not perform any shared mutation.
-        unsafe impl Sync for $Msg$Mut<'_> {}
+        unsafe impl $std$::marker::Sync for $Msg$Mut<'_> {}
 
         impl<'msg> $pb$::AsView for $Msg$Mut<'msg> {
           type Proxied = $Msg$;
           fn as_view(&self) -> $pb$::View<'_, $Msg$> {
-            $Msg$View {
-              inner: $pbr$::MessageViewInner::view_of_mut(self.inner)
-            }
+            self.inner.as_view().into()
           }
         }
 
@@ -693,16 +696,14 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$>
           where
               'msg: 'shorter {
-            $Msg$View {
-              inner: $pbr$::MessageViewInner::view_of_mut(self.inner)
-            }
+            self.inner.as_view().into()
           }
         }
 
         impl<'msg> $pb$::AsMut for $Msg$Mut<'msg> {
           type MutProxied = $Msg$;
           fn as_mut(&mut self) -> $Msg$Mut<'msg> {
-            $Msg$Mut { inner: self.inner }
+            self.inner.reborrow().into()
           }
         }
 
@@ -801,7 +802,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
   ctx.printer().PrintRaw("\n");
   if (ctx.is_cpp()) {
 
-    ctx.Emit({{"Msg", RsSafeName(msg.name())}},
+    ctx.Emit({{"Msg", MessageRsName(msg)}},
              R"rs(
       impl<'a> $Msg$Mut<'a> {
         pub unsafe fn __unstable_wrap_cpp_grant_permission_to_break(
@@ -861,11 +862,11 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
 
     if (!ctx.opts().force_lite_runtime &&
         msg.file()->options().optimize_for() != FileOptions::LITE_RUNTIME) {
-      ctx.Emit({{"Msg", RsSafeName(msg.name())}},
+      ctx.Emit({{"Msg", MessageRsName(msg)}},
                R"rs(
               impl $pb$::MessageDescriptorInterop for $Msg$ {
                 fn __unstable_get_descriptor() -> *const $std$::ffi::c_void {
-                  unsafe { $pbr$::proto2_rust_Message_get_descriptor(<$Msg$View as Default>::default().raw_msg()) }
+                  unsafe { $pbr$::proto2_rust_Message_get_descriptor(<$Msg$View as $std$::default::Default>::default().raw_msg()) }
                 }
               }
             )rs");

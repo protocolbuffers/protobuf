@@ -57,8 +57,12 @@ namespace google {
 namespace protobuf {
 class FieldMask;
 struct FieldMaskGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FieldMaskGlobalsTypeInternal _FieldMask_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern FieldMaskGlobalsTypeInternal FieldMask_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldMask_class_data_;
+#else
+PROTOBUF_EXPORT extern const FieldMaskGlobalsTypeInternal FieldMask_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace protobuf
 }  // namespace google
 
@@ -84,11 +88,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
 #endif
 
   template <typename = void>
-  explicit constexpr FieldMask(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr FieldMask(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline FieldMask(const FieldMask& from) : FieldMask(nullptr, from) {}
-  inline FieldMask(FieldMask&& from) noexcept
-      : FieldMask(nullptr, ::std::move(from)) {}
+  inline FieldMask(FieldMask&& from) noexcept : FieldMask(nullptr, ::std::move(from)) {}
   inline FieldMask& operator=(const FieldMask& from) {
     CopyFrom(from);
     return *this;
@@ -123,7 +128,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const FieldMask& default_instance() {
-    return *reinterpret_cast<const FieldMask*>(&_FieldMask_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FieldMask>(&FieldMask_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(FieldMask& a, FieldMask& b) { a.Swap(&b); }
@@ -208,7 +213,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -232,10 +239,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
   ::std::string* PROTOBUF_NONNULL add_paths();
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void add_paths(Arg_&& value, Args_... args);
-  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::std::string>&
-  paths() const;
-  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
-  mutable_paths();
+  [[nodiscard]] const
+      ::google::protobuf::RepeatedPtrField<::std::string>&
+      paths() const;
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>*
+      PROTOBUF_NONNULL
+      mutable_paths();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_paths() const;
@@ -245,11 +254,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldMask)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<0, 1,
+                          0, 39,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<0, 1,
-                                   0, 39,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -276,8 +290,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ffield_5fmask_2eproto;
 };
-
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldMask_class_data_;
 
 // ===================================================================
 

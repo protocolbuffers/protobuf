@@ -69,9 +69,6 @@ struct PtrAndLen;
 }  // namespace rust
 
 namespace internal {
-namespace v2 {
-class TableDrivenMessage;
-}  // namespace v2
 
 template <typename Key, typename T>
 class MapFieldLite;
@@ -143,6 +140,9 @@ struct TransparentSupport<std::string> {
       return res;
     } else if constexpr (std::is_convertible<T, const std::string&>::value) {
       const std::string& ref = str;
+      return ref;
+    } else if constexpr (std::is_convertible<T, const char*>::value) {
+      const char* ref = str;
       return ref;
     } else {
       return {str.data(), str.size()};
@@ -262,7 +262,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
     kString,   // std::string
     kMessage,  // Derived from MessageLite
   };
-  // LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp.rs:map_ffi)
+  // LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp_kernel/map.rs:map_ffi)
 
   template <typename T>
   static constexpr TypeKind StaticTypeKind() {
@@ -619,7 +619,7 @@ inline void UntypedMapIterator::PlusPlus() {
 class MapFieldBaseForParse {
  public:
   const UntypedMapBase& GetMap() const {
-    const void* p = prototype_or_payload_.load(std::memory_order_acquire);
+    const void* p = globals_or_payload_.load(std::memory_order_acquire);
     // If this instance has a payload, then it might need sync'n.
     if (ABSL_PREDICT_FALSE(IsPayload(p))) {
       sync_map_with_repeated.load(std::memory_order_relaxed)(*this, false);
@@ -628,7 +628,7 @@ class MapFieldBaseForParse {
   }
 
   UntypedMapBase* MutableMap() {
-    const void* p = prototype_or_payload_.load(std::memory_order_acquire);
+    const void* p = globals_or_payload_.load(std::memory_order_acquire);
     // If this instance has a payload, then it might need sync'n.
     if (ABSL_PREDICT_FALSE(IsPayload(p))) {
       sync_map_with_repeated.load(std::memory_order_relaxed)(*this, true);
@@ -655,13 +655,16 @@ class MapFieldBaseForParse {
   using SyncFunc = void (*)(const MapFieldBaseForParse&, bool is_mutable);
   static std::atomic<SyncFunc> sync_map_with_repeated;
 
-  // The prototype is a `Message`, but due to restrictions on constexpr in the
-  // codegen we are receiving it as `void` during constant evaluation.
-  explicit constexpr MapFieldBaseForParse(const void* prototype_as_void)
-      : prototype_or_payload_(prototype_as_void) {}
+  // The globals is a `*GlobalsTypeInternal`, but due to restrictions on
+  // constexpr in the codegen we are receiving it as `void` during constant
+  // evaluation.
+  explicit constexpr MapFieldBaseForParse(const void* globals_as_void)
+      : globals_or_payload_(globals_as_void) {}
 
+  // Convert "prototype" to "globals" for consistency.
   explicit MapFieldBaseForParse(const Message* prototype)
-      : prototype_or_payload_(prototype) {}
+      : globals_or_payload_(
+            MessageGlobalsBase::FromDefaultInstance(prototype)) {}
 
   ~MapFieldBaseForParse() = default;
 
@@ -671,7 +674,7 @@ class MapFieldBaseForParse {
     return reinterpret_cast<uintptr_t>(p) & kHasPayloadBit;
   }
 
-  mutable std::atomic<const void*> prototype_or_payload_;
+  mutable std::atomic<const void*> globals_or_payload_;
 };
 
 // The value might be of different signedness, so use memcpy to extract it.
@@ -1114,6 +1117,12 @@ class RustMapHelper {
 template <typename Key, typename T>
 using MapPair = std::pair<const Key, T>;
 
+// Like C++20's std::erase_if, for Map
+template <typename Key, typename T, typename Pred>
+size_t erase_if(Map<Key, T>& map, Pred pred) {
+  return map.EraseIfImpl(std::move(pred));
+}
+
 // Map is an associative container type used to store protobuf map
 // fields.  Each Map instance may or may not use a different hash function, a
 // different iteration order, and so on.  E.g., please don't examine
@@ -1267,7 +1276,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
 
  public:
   // Iterators
-  class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED const_iterator
+  class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ABSL_ATTRIBUTE_VIEW const_iterator
       : private internal::UntypedMapIterator {
     using BaseIt = internal::UntypedMapIterator;
 
@@ -1316,7 +1325,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
     friend class internal::TypeDefinedMapFieldBase<Key, T>;
   };
 
-  class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED iterator
+  class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ABSL_ATTRIBUTE_VIEW iterator
       : private internal::UntypedMapIterator {
     using BaseIt = internal::UntypedMapIterator;
 
@@ -1696,11 +1705,37 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
                           true);
   }
 
+  template <typename Pred>
+  size_t EraseIfImpl(Pred pred) {
+    size_t n = 0;
+    auto* arena = this->arena();
+    for (internal::NodeBase **bucket = this->table_,
+                            **end = this->table_ + this->num_buckets_;
+         bucket != end; ++bucket) {
+      for (internal::NodeBase** prev = bucket; *prev != nullptr;) {
+        Node* node = static_cast<Node*>(*prev);
+        if (pred(std::as_const(node->kv))) {
+          *prev = node->next;
+          DeleteNode(arena, node);
+          ++n;
+        } else {
+          prev = &node->next;
+        }
+      }
+    }
+    this->num_elements_ -= n;
+    return n;
+  }
+
   using Base::arena;
 
   friend class Arena;
   template <typename, typename>
   friend class internal::TypeDefinedMapFieldBase;
+
+  template <typename Key_, typename T_, typename Pred>
+  friend size_t google::protobuf::erase_if(Map<Key_, T_>& map, Pred pred);
+
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 

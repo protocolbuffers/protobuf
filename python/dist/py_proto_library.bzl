@@ -17,7 +17,11 @@ business of vending py_proto_library(), so we keep it private to upb.
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@rules_python//python:py_info.bzl", "PyInfo")
+load("@rules_python//python/api:api.bzl", "py_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
+
+# Private to upb.
+visibility([])
 
 # Generic support code #########################################################
 
@@ -71,11 +75,14 @@ def _py_proto_library_rule_impl(ctx):
     # if len(ctx.attr.deps) != 1:
     #     fail("only one deps dependency allowed.")
 
+    py_api = py_common.get(ctx)
+
     files = []
     for dep in ctx.attr.deps:
         files += dep[PyInfo].transitive_sources.to_list()
     return [
         DefaultInfo(files = depset(direct = files)),
+        py_api.merge_py_infos(direct = [dep[PyInfo] for dep in ctx.attr.deps], transitive = []),
     ]
 
 def _py_proto_library_aspect_impl(target, ctx):
@@ -119,11 +126,12 @@ _py_proto_library_aspect = aspect(
 
 py_proto_library = rule(
     implementation = _py_proto_library_rule_impl,
-    attrs = {
-        "deps": attr.label_list(
+    attrs = dict(
+        py_common.API_ATTRS,
+        deps = attr.label_list(
             aspects = [_py_proto_library_aspect],
             allow_rules = ["proto_library"],
             providers = [ProtoInfo],
         ),
-    },
+    ),
 )

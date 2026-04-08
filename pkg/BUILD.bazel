@@ -16,6 +16,7 @@ pkg_files(
     name = "wkt_protos_files",
     srcs = [
         "//:well_known_type_protos",
+        "//csharp:c_sharp_features_proto_srcs",
         "//go:go_features_proto_srcs",
         "//java/core:java_features_proto_srcs",
         "//src/google/protobuf:cpp_features_proto_srcs",
@@ -121,6 +122,7 @@ gen_file_lists(
         "//src/google/protobuf:cpp_features_proto": "cpp_features_proto",
         "//src/google/protobuf:descriptor_proto": "descriptor_proto",
         "//src/google/protobuf/compiler:plugin_proto": "plugin_proto",
+        "//csharp:c_sharp_features_proto": "c_sharp_features_proto",
         "//java/core:java_features_proto": "java_features_proto,src/google/protobuf/compiler/java/",
         "//go:go_features_proto": "go_features_proto,go/",
 

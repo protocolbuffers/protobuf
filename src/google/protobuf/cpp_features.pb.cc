@@ -25,7 +25,79 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+namespace {
+PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
+    file_reflection_data[] = {
+        // ::pb::CppFeatures
+        {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto, /* tracker*/ nullptr,},
+};
+}  // namespace
+#endif
 namespace pb {
+class CppFeatures::_Internal {
+ public:
+  using HasBits = decltype(::std::declval<CppFeatures>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._has_bits_);
+};
+
+constexpr CppFeatures::ParseTableT_ CppFeatures::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+  return ParseTableT_{
+    {
+      PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._has_bits_),
+      0, // no _extensions_
+      4, 24,  // max_field_number, fast_idx_mask
+      offsetof(ParseTableT_, field_lookup_table),
+      4294967280,  // skipmap
+      offsetof(ParseTableT_, field_entries),
+      4,  // num_field_entries
+      2,  // num_aux_entries
+      offsetof(ParseTableT_, aux_entries),
+      class_data,
+      nullptr,  // post_loop_handler
+      ::_pbi::TcParser::GenericFallback,  // fallback
+      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+      ::_pbi::TcParser::GetTable<::pb::CppFeatures>(),  // to_prefetch
+      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+    }, {{
+      // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+      {::_pbi::TcParser::FastEr0S1,
+       {32, 3, 2,
+        PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.repeated_type_)}},
+      // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+      {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(CppFeatures, _impl_.legacy_closed_enum_), 1>(),
+       {8, 1, 0,
+        PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.legacy_closed_enum_)}},
+      // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+      {::_pbi::TcParser::FastEr0S1,
+       {16, 0, 3,
+        PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.string_type_)}},
+      // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
+      {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(CppFeatures, _impl_.enum_name_uses_string_view_), 2>(),
+       {24, 2, 0,
+        PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.enum_name_uses_string_view_)}},
+    }}, {{
+      65535, 65535
+    }}, {{
+      // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+      {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.legacy_closed_enum_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
+      // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+      {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.string_type_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
+      // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
+      {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.enum_name_uses_string_view_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
+      // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+      {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.repeated_type_), _Internal::kHasBitsOffset + 3, 1, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
+    }},
+    {{
+        {0, 3},
+        {0, 2},
+    }},
+    {{
+    }},
+  };
+}
+
 
 inline constexpr CppFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -33,30 +105,111 @@ inline constexpr CppFeatures::Impl_::Impl_(
       : _cached_size_{0},
         string_type_{static_cast< ::pb::CppFeatures_StringType >(0)},
         legacy_closed_enum_{false},
-        enum_name_uses_string_view_{false} {}
+        enum_name_uses_string_view_{false},
+        repeated_type_{static_cast< ::pb::CppFeatures_RepeatedType >(0)} {}
 
 template <typename>
-constexpr CppFeatures::CppFeatures(::_pbi::ConstantInitialized)
+constexpr CppFeatures::CppFeatures(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+    : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(CppFeatures_class_data_.base()),
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(),
+          class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
+          ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-struct CppFeaturesGlobalsTypeInternal {
-  constexpr CppFeaturesGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+inline void* PROTOBUF_NONNULL CppFeatures::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+  return ::new (mem) CppFeatures(arena);
+}
+constexpr auto CppFeatures::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(CppFeatures), alignof(CppFeatures));
+}
+constexpr auto CppFeatures::InternalGenerateClassData_(
+    const MessageLite& prototype,
+    const ::google::protobuf::internal::TcParseTableBase* tc_table) {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &prototype,
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+          &_table_.header,
+#else
+          tc_table,
+#endif
+          nullptr,  // IsInitialized
+          &CppFeatures::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<CppFeatures>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &CppFeatures::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<CppFeatures>(), &CppFeatures::ByteSizeLong,
+              &CppFeatures::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
+          false,
+      },
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+      &file_reflection_data[0],
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+      &::_pbi::kDescriptorMethods,
+      &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
+      nullptr,  // tracker
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+  };
+}
+struct CppFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
+  constexpr CppFeaturesGlobalsTypeInternal()
+      :
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 CppFeatures_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+        MessageGlobalsBase(CppFeatures::InternalGenerateClassData_(
+            _default, &CppFeatures_globals_._table.header)),
+        _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        _table(::_pbi::PrivateAccess::GenerateParseTable<CppFeatures>(
+            GetClassData()))
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+  {
+  }
   ~CppFeaturesGlobalsTypeInternal() {}
   union {
-    CppFeatures _default;
+    alignas(::_pbi::kMaxMessageAlignment) CppFeatures _default;
   };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  decltype(::_pbi::PrivateAccess::GenerateParseTable<CppFeatures>(
+      ::std::declval<const ::_pbi::ClassData*>())) _table;
+#endif
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(CppFeaturesGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CppFeaturesGlobalsTypeInternal _CppFeatures_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
+    #ifdef PROTOBUF_MESSAGE_GLOBALS
+    const
+    #endif
+     CppFeaturesGlobalsTypeInternal CppFeatures_globals_
+        #ifdef PROTOBUF_MESSAGE_GLOBALS
+        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
+        #endif  // PROTOBUF_MESSAGE_GLOBALS
+        ;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+namespace {
+const ::_pbi::ClassData* CppFeatures_get_class_data() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  return CppFeatures_globals_.GetClassData();
+#else
+  return CppFeatures_class_data_.base();
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+}
+}  // namespace
+#endif  // PROTOBUF_CUSTOM_VTABLE
 }  // namespace pb
 static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
-    file_level_enum_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto[1];
+    file_level_enum_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto[2];
 static constexpr const ::_pb::ServiceDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto = nullptr;
 const ::uint32_t
@@ -64,26 +217,29 @@ const ::uint32_t
         protodesc_cold) = {
         0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_._has_bits_),
-        6, // hasbit index offset
+        7, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_.legacy_closed_enum_),
         PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_.string_type_),
         PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_.enum_name_uses_string_view_),
+        PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_.repeated_type_),
         1,
         0,
         2,
+        3,
 };
 
 static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, sizeof(::pb::CppFeatures)},
 };
-static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
-    &::pb::_CppFeatures_globals_._default,
+static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
+    file_message_globals[] = {
+        &::pb::CppFeatures_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffeatures_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
     "\n\"google/protobuf/cpp_features.proto\022\002pb"
-    "\032 google/protobuf/descriptor.proto\"\374\003\n\013C"
+    "\032 google/protobuf/descriptor.proto\"\222\005\n\013C"
     "ppFeatures\022\373\001\n\022legacy_closed_enum\030\001 \001(\010B"
     "\336\001\210\001\001\230\001\004\230\001\001\242\001\t\022\004true\030\204\007\242\001\n\022\005false\030\347\007\262\001\270\001"
     "\010\350\007\020\350\007\032\257\001The legacy closed enum behavior"
@@ -94,11 +250,14 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffeatures_2eproto[
     "\002 \001(\0162\032.pb.CppFeatures.StringTypeB)\210\001\001\230\001"
     "\004\230\001\001\242\001\013\022\006STRING\030\204\007\242\001\t\022\004VIEW\030\351\007\262\001\003\010\350\007\022L\n\032"
     "enum_name_uses_string_view\030\003 \001(\010B(\210\001\001\230\001\006"
-    "\230\001\001\242\001\n\022\005false\030\204\007\242\001\t\022\004true\030\351\007\262\001\003\010\351\007\"E\n\nSt"
-    "ringType\022\027\n\023STRING_TYPE_UNKNOWN\020\000\022\010\n\004VIE"
-    "W\020\001\022\010\n\004CORD\020\002\022\n\n\006STRING\020\003::\n\003cpp\022\033.googl"
-    "e.protobuf.FeatureSet\030\350\007 \001(\0132\017.pb.CppFea"
-    "tures"
+    "\230\001\001\242\001\n\022\005false\030\204\007\242\001\t\022\004true\030\351\007\262\001\003\010\351\007\022R\n\rre"
+    "peated_type\030\004 \001(\0162\034.pb.CppFeatures.Repea"
+    "tedTypeB\035\210\001\001\230\001\004\230\001\001\242\001\013\022\006LEGACY\030\204\007\262\001\003\010\217N\"E"
+    "\n\nStringType\022\027\n\023STRING_TYPE_UNKNOWN\020\000\022\010\n"
+    "\004VIEW\020\001\022\010\n\004CORD\020\002\022\n\n\006STRING\020\003\"@\n\014Repeate"
+    "dType\022\031\n\025REPEATED_TYPE_UNKNOWN\020\000\022\n\n\006LEGA"
+    "CY\020\001\022\t\n\005PROXY\020\002::\n\003cpp\022\033.google.protobuf"
+    ".FeatureSet\030\350\007 \001(\0132\017.pb.CppFeatures"
 };
 static const ::_pbi::DescriptorTable* PROTOBUF_NONNULL const
     descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_deps[1] = {
@@ -108,7 +267,7 @@ static ::absl::once_flag descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2ep
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto = {
     false,
     false,
-    645,
+    795,
     descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
     "google/protobuf/cpp_features.proto",
     &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_once,
@@ -116,7 +275,7 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
     1,
     1,
     schemas,
-    file_default_instances,
+    file_message_globals,
     TableStruct_google_2fprotobuf_2fcpp_5ffeatures_2eproto::offsets,
     file_level_enum_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
     file_level_service_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
@@ -129,19 +288,18 @@ CppFeatures_StringType_descriptor() {
 }
 PROTOBUF_CONSTINIT const uint32_t CppFeatures_StringType_internal_data_[] = {
     262144u, 0u, };
+[[nodiscard]] const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+CppFeatures_RepeatedType_descriptor() {
+  ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto);
+  return file_level_enum_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto[1];
+}
+PROTOBUF_CONSTINIT const uint32_t CppFeatures_RepeatedType_internal_data_[] = {
+    196608u, 0u, };
 // ===================================================================
-
-class CppFeatures::_Internal {
- public:
-  using HasBits =
-      decltype(::std::declval<CppFeatures>()._impl_._has_bits_);
-  static constexpr ::int32_t kHasBitsOffset =
-      8 * PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._has_bits_);
-};
 
 CppFeatures::CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, CppFeatures_class_data_.base()) {
+    : ::google::protobuf::Message(arena, CppFeatures_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -151,7 +309,7 @@ CppFeatures::CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 CppFeatures::CppFeatures(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CppFeatures& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, CppFeatures_class_data_.base()),
+    : ::google::protobuf::Message(arena, CppFeatures_get_class_data()),
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -169,9 +327,9 @@ inline void CppFeatures::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, string_type_),
            0,
-           offsetof(Impl_, enum_name_uses_string_view_) -
+           offsetof(Impl_, repeated_type_) -
                offsetof(Impl_, string_type_) +
-               sizeof(Impl_::enum_name_uses_string_view_));
+               sizeof(Impl_::repeated_type_));
 }
 CppFeatures::~CppFeatures() {
   // @@protoc_insertion_point(destructor:pb.CppFeatures)
@@ -187,40 +345,10 @@ inline void CppFeatures::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* PROTOBUF_NONNULL CppFeatures::PlacementNew_(
-    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
-  return ::new (mem) CppFeatures(arena);
-}
-constexpr auto CppFeatures::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(CppFeatures),
-                                            alignof(CppFeatures));
-}
-constexpr auto CppFeatures::InternalGenerateClassData_() {
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &_CppFeatures_globals_._default,
-          &_table_.header,
-          nullptr,  // IsInitialized
-          &CppFeatures::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<CppFeatures>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          &CppFeatures::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<CppFeatures>(), &CppFeatures::ByteSizeLong,
-              &CppFeatures::_InternalSerialize,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
-          false,
-      },
-      &CppFeatures::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
-      nullptr,  // tracker
-  };
-}
-
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull CppFeatures_class_data_ =
-        CppFeatures::InternalGenerateClassData_();
+        CppFeatures::InternalGenerateClassData_(CppFeatures_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 CppFeatures::GetClassData() const {
@@ -228,55 +356,21 @@ CppFeatures::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(CppFeatures_class_data_.tc_table);
   return CppFeatures_class_data_.base();
 }
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<2, 3, 1, 0, 2>
-CppFeatures::_table_ = {
-  {
-    PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._has_bits_),
-    0, // no _extensions_
-    3, 24,  // max_field_number, fast_idx_mask
-    offsetof(decltype(_table_), field_lookup_table),
-    4294967288,  // skipmap
-    offsetof(decltype(_table_), field_entries),
-    3,  // num_field_entries
-    1,  // num_aux_entries
-    offsetof(decltype(_table_), aux_entries),
-    CppFeatures_class_data_.base(),
-    nullptr,  // post_loop_handler
-    ::_pbi::TcParser::GenericFallback,  // fallback
-    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-    ::_pbi::TcParser::GetTable<::pb::CppFeatures>(),  // to_prefetch
-    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  }, {{
-    {::_pbi::TcParser::MiniParse, {}},
-    // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(CppFeatures, _impl_.legacy_closed_enum_), 1>(),
-     {8, 1, 0,
-      PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.legacy_closed_enum_)}},
-    // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {::_pbi::TcParser::FastEr0S1,
-     {16, 0, 3,
-      PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.string_type_)}},
-    // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(CppFeatures, _impl_.enum_name_uses_string_view_), 2>(),
-     {24, 2, 0,
-      PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.enum_name_uses_string_view_)}},
-  }}, {{
-    65535, 65535
-  }}, {{
-    // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.legacy_closed_enum_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
-    // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.string_type_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
-    // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.enum_name_uses_string_view_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
-  }},
-  {{
-      {0, 3},
-  }},
-  {{
-  }},
-};
+#else
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+CppFeatures::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&CppFeatures_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&CppFeatures_globals_));
+  return CppFeatures_globals_.GetClassData();
+}
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CppFeatures::ParseTableT_
+    CppFeatures::_table_ =
+        CppFeatures::InternalGenerateParseTable_(CppFeatures_class_data_.base());
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void CppFeatures::Clear() {
 // @@protoc_insertion_point(message_clear_start:pb.CppFeatures)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -285,10 +379,10 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     ::memset(&_impl_.string_type_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.enum_name_uses_string_view_) -
-        reinterpret_cast<char*>(&_impl_.string_type_)) + sizeof(_impl_.enum_name_uses_string_view_));
+        reinterpret_cast<char*>(&_impl_.repeated_type_) -
+        reinterpret_cast<char*>(&_impl_.string_type_)) + sizeof(_impl_.repeated_type_));
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -334,6 +428,13 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
         3, this_._internal_enum_name_uses_string_view(), target);
   }
 
+  // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteEnumToArray(
+        4, this_._internal_repeated_type(), target);
+  }
+
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -360,11 +461,16 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
   total_size += ::absl::popcount(0x00000006U & cached_has_bits) * 2;
-   {
+  if (BatchCheckHasBit(cached_has_bits, 0x00000009U)) {
     // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_string_type());
+    }
+    // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+      total_size += 1 +
+                    ::_pbi::WireFormatLite::EnumSize(this_._internal_repeated_type());
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -372,9 +478,8 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
 }
 
 void CppFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<CppFeatures*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<CppFeatures*>(&to_msg);
   auto& from = static_cast<const CppFeatures&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
@@ -385,7 +490,7 @@ void CppFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg,
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       _this->_impl_.string_type_ = from._impl_.string_type_;
     }
@@ -394,6 +499,9 @@ void CppFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg,
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       _this->_impl_.enum_name_uses_string_view_ = from._impl_.enum_name_uses_string_view_;
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+      _this->_impl_.repeated_type_ = from._impl_.repeated_type_;
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
@@ -414,8 +522,8 @@ void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::google::protobuf::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.enum_name_uses_string_view_)
-      + sizeof(CppFeatures::_impl_.enum_name_uses_string_view_)
+      PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.repeated_type_)
+      + sizeof(CppFeatures::_impl_.repeated_type_)
       - PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.string_type_)>(
           reinterpret_cast<char*>(&_impl_.string_type_),
           reinterpret_cast<char*>(&other->_impl_.string_type_));
@@ -427,7 +535,7 @@ void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<
         ::google::protobuf::FeatureSet, ::_pbi::MessageTypeTraits< ::pb::CppFeatures >, 11, false>
-        cpp(kCppFieldNumber, &::pb::_CppFeatures_globals_);
+        cpp(kCppFieldNumber, &::pb::CppFeatures_globals_);
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
 namespace google {

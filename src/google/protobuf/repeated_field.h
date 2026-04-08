@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <functional>
 #include <iterator>
 #include <limits>
 #include <memory>
@@ -34,11 +35,13 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/dynamic_annotations.h"
+#include "absl/base/macros.h"
 #include "absl/base/no_destructor.h"
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/arena_align.h"
 #include "google/protobuf/field_with_arena.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/internal_metadata_locator.h"
@@ -46,6 +49,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
+#include "google/protobuf/serial_arena.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -64,16 +68,14 @@ class UnknownField;  // For the allowlist
 class UnknownFieldSet;
 class DynamicMessage;
 class Reflection;
+template <typename ElementType>
+class RepeatedFieldProxy;
 
 namespace internal {
 
 class EpsCopyInputStream;
 class TcParser;
 class WireFormat;
-
-namespace v2 {
-class TableDrivenParse;
-}  // namespace v2
 
 template <typename T, int kHeapRepHeaderSize>
 constexpr int RepeatedFieldLowerClampLimit() {
@@ -104,6 +106,16 @@ class RepeatedIterator;
 
 // Sentinel base class.
 struct RepeatedFieldBase {};
+
+// Decays `Element` to a value type (excluding `absl::Cord` in release builds
+// to avoid a nontrivial copy). This is useful when forwarding element values
+// to user-provided callbacks, which prevents leaking a reference to the
+// backing storage of the repeated field.
+template <typename Element>
+using DecayedRepeatedFieldElement =
+    std::conditional_t<std::is_same_v<Element, absl::Cord> &&
+                           !internal::PerformDebugChecks(),
+                       const Element&, Element>;
 
 // Align to 8 as sanitizers are picky on the alignment of containers to start at
 // 8 byte offsets even when compiling for 32 bit platforms.
@@ -349,10 +361,13 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   void Add(Iter begin, Iter end);
 
   // The following APIs are for internal use only.
-  void InternalAddWithArena(internal::InternalVisibility, Arena* arena,
-                            Element value);
+  template <typename ArenaProvider>
+  void InternalAddWithArena(internal::InternalVisibility,
+                            ArenaProvider arena_provider, Element value);
+  template <typename ArenaProvider>
   pointer InternalAddWithArena(internal::InternalVisibility,
-                               Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+                               ArenaProvider arena_provider)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Removes the last element in the array.
   void RemoveLast();
@@ -392,10 +407,14 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   pointer AddAlreadyReserved() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   pointer AddNAlreadyReserved(int n) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
+  ABSL_DEPRECATE_AND_INLINE()
+  void Resize(size_type new_size, const Element& value);
+
   // Like STL resize.  Uses value to fill appended elements.
   // Like Truncate() if new_size <= size(), otherwise this is
   // O(new_size - size()).
-  void Resize(size_type new_size, const Element& value);
+  void resize(size_type new_size);
+  void resize(size_type new_size, const Element& value);
 
   // Gets the underlying array.  This pointer is possibly invalidated by
   // any add or remove operation.
@@ -503,7 +522,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   friend class internal::EpsCopyInputStream;
   friend class internal::TcParser;
   friend class internal::WireFormat;
-  friend class internal::v2::TableDrivenParse;
+
+  friend class RepeatedFieldProxy<Element>;
 
   // For access to private arena constructor.
   friend class UnknownFieldSet;
@@ -519,6 +539,20 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
                 const RepeatedField& rhs);
   RepeatedField(internal::InternalMetadataOffset offset, RepeatedField&& rhs);
 
+  template <typename Init>
+  void ResizeImpl(int new_size, Init init);
+
+  internal::SerialArena* GetSerialArena() { return ResolveArena(GetArena()); }
+
+  template <typename T>
+  auto ResolveArena(T provider) {
+    return internal::GetSerialArena(provider);
+  }
+  // Passing `SelfArena{}` is equivalent to `this`, but it avoids an extra
+  // parameter in the ABI. We don't need to duplicate the `this` parameter.
+  struct SelfArena {};
+  auto ResolveArena(SelfArena) { return GetSerialArena(); }
+
   bool is_soo() const { return soo_rep_.is_soo(); }
   void set_size(int size) {
     ABSL_DCHECK_LE(size, Capacity());
@@ -528,15 +562,27 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
     return is_soo ? kSooCapacityElements : soo_rep_.capacity();
   }
 
-  void ReserveWithArena(Arena* arena, int new_size);
+  template <typename ArenaProvider>
+  void ReserveWithArena(ArenaProvider arena_provider, int new_size);
   void GrowByWithArena(Arena* arena, int grow_by) {
     ReserveWithArena(arena, size() + grow_by);
   }
 
-  void AddWithArena(Arena* arena, Element value);
-  pointer AddWithArena(Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  template <typename Iter>
-  void AddWithArena(Arena* arena, Iter begin, Iter end);
+  template <typename ArenaProvider>
+  void* AddUninitializedWithArena(ArenaProvider arena_provider);
+
+  template <typename ArenaProvider>
+  pointer AddWithArena(ArenaProvider arena_provider, Element value);
+  template <typename ArenaProvider>
+  pointer AddWithArena(ArenaProvider arena_provider)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  template <typename ArenaProvider, typename Iter>
+  void AddWithArena(ArenaProvider arena_provider, Iter begin, Iter end);
+
+  // Private-only API for in-place construction of elements in the repeated
+  // field.
+  template <typename... Args>
+  pointer EmplaceWithArena(Arena* arena, Args&&... args);
 
   void SwapFallbackWithTemp(Arena* arena, RepeatedField& other,
                             Arena* other_arena, RepeatedField<Element>& temp);
@@ -573,11 +619,11 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
     }
   }
 
-  template <typename Iter>
-  void AddForwardIterator(Arena* arena, Iter begin, Iter end);
+  template <typename ArenaProvider, typename Iter>
+  void AddForwardIterator(ArenaProvider arena_provider, Iter begin, Iter end);
 
-  template <typename Iter>
-  void AddInputIterator(Arena* arena, Iter begin, Iter end);
+  template <typename ArenaProvider, typename Iter>
+  void AddInputIterator(ArenaProvider arena_provider, Iter begin, Iter end);
 
   // Reserves space to expand the field to at least the given size.
   // If the array is grown, it will always be at least doubled in size.
@@ -585,8 +631,12 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   // the old container from `old_size` to `Capacity()` (unpoison memory)
   // directly before it is being released, and annotate the new container from
   // `Capacity()` to `old_size` (poison unused memory).
-  void Grow(Arena* arena, bool was_soo, int old_size, int new_size);
-  void GrowNoAnnotate(Arena* arena, bool was_soo, int old_size, int new_size);
+  template <typename ArenaProvider>
+  void Grow(ArenaProvider arena_provider, bool was_soo, int old_size,
+            int new_size);
+  template <typename ArenaProvider>
+  void GrowNoAnnotate(ArenaProvider arena_provider, bool was_soo, int old_size,
+                      int new_size);
 
   // Annotates a change in size of this instance. This function should be called
   // with (capacity, old_size) after new memory has been allocated and filled
@@ -648,17 +698,26 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   }
 
   // Internal helper to delete all elements and deallocate the storage.
-  template <bool in_destructor = false>
-  void InternalDeallocate(Arena* arena) {
+  template <bool in_destructor = false, typename ArenaProvider>
+  void InternalDeallocate(ArenaProvider arena_provider) {
     ABSL_DCHECK(!is_soo());
-    ABSL_DCHECK_EQ(arena, GetArena());
+    ABSL_DCHECK_EQ(ResolveArena(arena_provider), GetSerialArena());
     const size_t bytes = Capacity(false) * sizeof(Element) + kHeapRepHeaderSize;
-    if (arena == nullptr) {
+    if constexpr (in_destructor &&
+                  Arena::is_destructor_skippable<RepeatedField>::value) {
+      // Repeated fields with destructor-skippable elements are never destroyed
+      // during arena cleanup.
+      ABSL_DCHECK_EQ(GetArena(), nullptr);
       internal::SizedDelete(heap_rep(), bytes);
-    } else if (!in_destructor) {
-      // If we are in the destructor, we might be being destroyed as part of
-      // the arena teardown. We can't try and return blocks to the arena then.
-      arena->ReturnArrayMemory(heap_rep(), bytes);
+    } else {
+      auto* arena = ResolveArena(arena_provider);
+      if (arena == nullptr) {
+        internal::SizedDelete(heap_rep(), bytes);
+      } else if (!in_destructor) {
+        // If we are in the destructor, we might be being destroyed as part of
+        // the arena teardown. We can't try and return blocks to the arena then.
+        arena->ReturnArrayMemory(heap_rep(), bytes);
+      }
     }
   }
 
@@ -733,7 +792,7 @@ inline RepeatedField<Element>::RepeatedField(
   if (auto size = rhs.size()) {
     bool is_soo = true;
     if (size > kSooCapacityElements) {
-      Grow(GetArena(), is_soo, 0, size);
+      Grow(SelfArena{}, is_soo, 0, size);
       is_soo = false;
     }
     ExchangeCurrentSize(size);
@@ -768,16 +827,7 @@ RepeatedField<Element>::~RepeatedField() {
   }
   AnnotateForRelease();
   if (!is_soo) {
-    Arena* arena = nullptr;
-    // The destructor is never called for arena-allocated `RepeatedField`s
-    // unless the element type is not destructor-skippable. This means we can
-    // avoid calling `GetArena()` if the element type is destructor-skippable.
-    if constexpr (Arena::is_destructor_skippable<Element>::value) {
-      ABSL_DCHECK_EQ(GetArena(), nullptr);
-    } else {
-      arena = GetArena();
-    }
-    InternalDeallocate</*in_destructor=*/true>(arena);
+    InternalDeallocate</*in_destructor=*/true>(SelfArena{});
   }
 }
 
@@ -872,23 +922,45 @@ inline Element* RepeatedField<Element>::AddNAlreadyReserved(int n)
 }
 
 template <typename Element>
+ABSL_DEPRECATE_AND_INLINE()
 inline void RepeatedField<Element>::Resize(int new_size, const Element& value) {
+  resize(new_size, value);
+}
+
+template <typename Element>
+template <typename Init>
+inline void RepeatedField<Element>::ResizeImpl(int new_size, Init init) {
   ABSL_DCHECK_GE(new_size, 0);
   bool is_soo = this->is_soo();
   const int old_size = size();
   if (new_size > old_size) {
     if (new_size > Capacity(is_soo)) {
-      Grow(GetArena(), is_soo, old_size, new_size);
+      Grow(SelfArena{}, is_soo, old_size, new_size);
       is_soo = false;
     }
     Element* elem = elements(is_soo);
     Element* first = elem + ExchangeCurrentSize(new_size);
-    std::uninitialized_fill(first, elem + new_size, value);
+    init(first, elem + new_size);
   } else if (new_size < old_size) {
     Element* elem = unsafe_elements(is_soo);
     Destroy(elem + new_size, elem + old_size);
     ExchangeCurrentSize(new_size);
   }
+}
+
+template <typename Element>
+inline void RepeatedField<Element>::resize(size_type new_size,
+                                           const Element& value) {
+  ResizeImpl(new_size, [&](auto* first, auto* last) {
+    std::uninitialized_fill(first, last, value);
+  });
+}
+
+template <typename Element>
+inline void RepeatedField<Element>::resize(size_type new_size) {
+  ResizeImpl(new_size, [](auto* first, auto* last) {
+    std::uninitialized_value_construct(first, last);
+  });
 }
 
 template <typename Element>
@@ -927,33 +999,51 @@ inline void RepeatedField<Element>::Set(int index, const Element& value) {
 }
 
 template <typename Element>
+template <typename ArenaProvider>
+inline void* RepeatedField<Element>::AddUninitializedWithArena(
+    ArenaProvider arena_provider) {
+  ABSL_DCHECK_EQ(ResolveArena(arena_provider), GetSerialArena());
+
+  bool is_soo = this->is_soo();
+  const int old_size = size();
+  if (ABSL_PREDICT_FALSE(old_size == Capacity(is_soo))) {
+    Grow(arena_provider, is_soo, old_size, old_size + 1);
+    is_soo = false;
+  }
+  return unsafe_elements(is_soo) + ExchangeCurrentSize(old_size + 1);
+}
+
+template <typename Element>
 inline void RepeatedField<Element>::Add(Element value) {
-  AddWithArena(GetArena(), std::move(value));
+  AddWithArena(SelfArena{}, std::move(value));
 }
 
 template <typename Element>
+template <typename ArenaProvider>
 inline void RepeatedField<Element>::InternalAddWithArena(
-    internal::InternalVisibility, Arena* arena, Element value) {
-  AddWithArena(arena, std::move(value));
+    internal::InternalVisibility, ArenaProvider arena_provider, Element value) {
+  AddWithArena(arena_provider, std::move(value));
 }
 
 template <typename Element>
-inline void RepeatedField<Element>::AddWithArena(Arena* arena, Element value) {
-  ABSL_DCHECK_EQ(arena, GetArena());
+template <typename ArenaProvider>
+inline auto RepeatedField<Element>::AddWithArena(ArenaProvider arena_provider,
+                                                 Element value) -> pointer {
+  ABSL_DCHECK_EQ(ResolveArena(arena_provider), GetSerialArena());
 
   bool is_soo = this->is_soo();
   const int old_size = size();
   int capacity = Capacity(is_soo);
   Element* elem = unsafe_elements(is_soo);
   if (ABSL_PREDICT_FALSE(old_size == capacity)) {
-    Grow(arena, is_soo, old_size, old_size + 1);
+    Grow(arena_provider, is_soo, old_size, old_size + 1);
     is_soo = false;
     capacity = Capacity(is_soo);
     elem = unsafe_elements(is_soo);
   }
   int new_size = old_size + 1;
   void* p = elem + ExchangeCurrentSize(new_size);
-  ::new (p) Element(std::move(value));
+  auto* result = ::new (p) Element(std::move(value));
 
   // The below helps the compiler optimize dense loops.
   // Note: we can't call functions in PROTOBUF_ASSUME so use local variables.
@@ -965,39 +1055,35 @@ inline void RepeatedField<Element>::AddWithArena(Arena* arena, Element value) {
   PROTOBUF_ASSUME(elem == final_elements);
   [[maybe_unused]] const int final_capacity = Capacity(is_soo);
   PROTOBUF_ASSUME(capacity == final_capacity);
+
+  return result;
 }
 
 template <typename Element>
 inline Element* RepeatedField<Element>::Add() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  return AddWithArena(GetArena());
+  return AddWithArena(SelfArena{});
 }
 
 template <typename Element>
+template <typename ArenaProvider>
 inline Element* RepeatedField<Element>::InternalAddWithArena(
-    internal::InternalVisibility, Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  return AddWithArena(arena);
+    internal::InternalVisibility,
+    ArenaProvider arena_provider) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  return AddWithArena(arena_provider);
 }
 
 template <typename Element>
-inline Element* RepeatedField<Element>::AddWithArena(Arena* arena)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  ABSL_DCHECK_EQ(arena, GetArena());
-
-  bool is_soo = this->is_soo();
-  const int old_size = size();
-  if (ABSL_PREDICT_FALSE(old_size == Capacity())) {
-    Grow(arena, is_soo, old_size, old_size + 1);
-    is_soo = false;
-  }
-  void* p = unsafe_elements(is_soo) + ExchangeCurrentSize(old_size + 1);
-  return ::new (p) Element;
+template <typename ArenaProvider>
+inline Element* RepeatedField<Element>::AddWithArena(
+    ArenaProvider arena_provider) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  return ::new (AddUninitializedWithArena(arena_provider)) Element;
 }
 
 template <typename Element>
-template <typename Iter>
-inline void RepeatedField<Element>::AddForwardIterator(Arena* arena, Iter begin,
-                                                       Iter end) {
-  ABSL_DCHECK_EQ(arena, GetArena());
+template <typename ArenaProvider, typename Iter>
+inline void RepeatedField<Element>::AddForwardIterator(
+    ArenaProvider arena_provider, Iter begin, Iter end) {
+  ABSL_DCHECK_EQ(ResolveArena(arena_provider), GetSerialArena());
 
   bool is_soo = this->is_soo();
   const int old_size = size();
@@ -1013,7 +1099,7 @@ inline void RepeatedField<Element>::AddForwardIterator(Arena* arena, Iter begin,
       << "Input too large";
   const int new_size = old_size + delta;
   if (ABSL_PREDICT_FALSE(new_size > capacity)) {
-    Grow(arena, is_soo, old_size, new_size);
+    Grow(arena_provider, is_soo, old_size, new_size);
     is_soo = false;
     elem = unsafe_elements(is_soo);
     capacity = Capacity(is_soo);
@@ -1033,10 +1119,10 @@ inline void RepeatedField<Element>::AddForwardIterator(Arena* arena, Iter begin,
 }
 
 template <typename Element>
-template <typename Iter>
-inline void RepeatedField<Element>::AddInputIterator(Arena* arena, Iter begin,
-                                                     Iter end) {
-  ABSL_DCHECK_EQ(arena, GetArena());
+template <typename ArenaProvider, typename Iter>
+inline void RepeatedField<Element>::AddInputIterator(
+    ArenaProvider arena_provider, Iter begin, Iter end) {
+  ABSL_DCHECK_EQ(ResolveArena(arena_provider), GetSerialArena());
 
   bool is_soo = this->is_soo();
   int size = this->size();
@@ -1049,7 +1135,7 @@ inline void RepeatedField<Element>::AddInputIterator(Arena* arena, Iter begin,
   while (begin != end) {
     if (ABSL_PREDICT_FALSE(first == last)) {
       size = first - elem;
-      GrowNoAnnotate(arena, is_soo, size, size + 1);
+      GrowNoAnnotate(arena_provider, is_soo, size, size + 1);
       is_soo = false;
       elem = unsafe_elements(is_soo);
       capacity = Capacity(is_soo);
@@ -1069,20 +1155,28 @@ inline void RepeatedField<Element>::AddInputIterator(Arena* arena, Iter begin,
 template <typename Element>
 template <typename Iter>
 inline void RepeatedField<Element>::Add(Iter begin, Iter end) {
-  AddWithArena(GetArena(), std::move(begin), std::move(end));
+  AddWithArena(SelfArena{}, std::move(begin), std::move(end));
 }
 
 template <typename Element>
-template <typename Iter>
-inline void RepeatedField<Element>::AddWithArena(Arena* arena, Iter begin,
-                                                 Iter end) {
+template <typename ArenaProvider, typename Iter>
+inline void RepeatedField<Element>::AddWithArena(ArenaProvider arena_provider,
+                                                 Iter begin, Iter end) {
   if (std::is_base_of<
           std::forward_iterator_tag,
           typename std::iterator_traits<Iter>::iterator_category>::value) {
-    AddForwardIterator(arena, begin, end);
+    AddForwardIterator(arena_provider, begin, end);
   } else {
-    AddInputIterator(arena, begin, end);
+    AddInputIterator(arena_provider, begin, end);
   }
+}
+
+template <typename Element>
+template <typename... Args>
+typename RepeatedField<Element>::pointer
+RepeatedField<Element>::EmplaceWithArena(Arena* arena, Args&&... args) {
+  return ::new (AddUninitializedWithArena(arena))
+      Element(std::forward<Args>(args)...);
 }
 
 template <typename Element>
@@ -1243,6 +1337,8 @@ void RepeatedField<Element>::UnsafeArenaSwap(RepeatedField* other) {
 
 template <typename Element>
 void RepeatedField<Element>::SwapElements(int index1, int index2) {
+  internal::RuntimeAssertInBounds(index1, size());
+  internal::RuntimeAssertInBounds(index2, size());
   Element* elem = elements(is_soo());
   using std::swap;  // enable ADL with fallback
   swap(elem[index1], elem[index2]);
@@ -1290,6 +1386,81 @@ inline size_t RepeatedField<Element>::SpaceUsedExcludingSelfLong() const {
              : 0;
 }
 
+// Like C++20's std::erase_if, for RepeatedField
+template <typename T, typename Pred>
+size_t erase_if(RepeatedField<T>& cont, Pred pred) {
+  // Intentionally decay `elem` to avoid exposing a reference to elements of the
+  // repeated field directly.
+  using DecayedElement = internal::DecayedRepeatedFieldElement<T>;
+  auto it =
+      std::remove_if(cont.begin(), cont.end(),
+                     [&pred](const DecayedElement elem) { return pred(elem); });
+  size_t removed = cont.end() - it;
+  cont.Truncate(cont.size() - removed);
+  return removed;
+}
+
+// Like C++20's std::erase, for RepeatedField
+template <typename T, typename U>
+size_t erase(RepeatedField<T>& cont, const U& value) {
+  return google::protobuf::erase_if(cont,
+                          [&](const auto& elem) { return elem == value; });
+}
+
+// These functions mimic their std counterpart, but potentially more efficient
+// for Protobuf containers.
+template <int&..., typename T, typename Compare>
+void sort(internal::RepeatedIterator<T> begin,
+          internal::RepeatedIterator<T> end, Compare cmp) {
+  // Intentionally decay `lhs` and `rhs` to avoid exposing a reference to
+  // elements of the repeated field directly.
+  using DecayedElement = internal::DecayedRepeatedFieldElement<T>;
+  std::sort(begin, end,
+            [&cmp](const DecayedElement lhs, const DecayedElement rhs) {
+              return cmp(lhs, rhs);
+            });
+}
+template <int&..., typename T>
+void sort(internal::RepeatedIterator<T> begin,
+          internal::RepeatedIterator<T> end) {
+  google::protobuf::sort(begin, end, std::less<>{});
+}
+template <int&..., typename T, typename Compare>
+void stable_sort(internal::RepeatedIterator<T> begin,
+                 internal::RepeatedIterator<T> end, Compare cmp) {
+  // Intentionally decay `lhs` and `rhs` to avoid exposing a reference to
+  // elements of the repeated field directly.
+  using DecayedElement = internal::DecayedRepeatedFieldElement<T>;
+  std::stable_sort(begin, end,
+                   [&cmp](const DecayedElement lhs, const DecayedElement rhs) {
+                     return cmp(lhs, rhs);
+                   });
+}
+template <int&..., typename T>
+void stable_sort(internal::RepeatedIterator<T> begin,
+                 internal::RepeatedIterator<T> end) {
+  google::protobuf::stable_sort(begin, end, std::less<>{});
+}
+
+// These functions mimic their absl counterpart, but they are more efficient for
+// Protobuf containers.
+template <int&..., typename T, typename Compare>
+void c_sort(RepeatedField<T>& cont, Compare cmp) {
+  google::protobuf::sort(cont.begin(), cont.end(), cmp);
+}
+template <int&..., typename T>
+void c_sort(RepeatedField<T>& cont) {
+  google::protobuf::c_sort(cont, std::less<>{});
+}
+template <int&..., typename T, typename Compare>
+void c_stable_sort(RepeatedField<T>& cont, Compare cmp) {
+  google::protobuf::stable_sort(cont.begin(), cont.end(), cmp);
+}
+template <int&..., typename T>
+void c_stable_sort(RepeatedField<T>& cont) {
+  google::protobuf::c_stable_sort(cont, std::less<>{});
+}
+
 namespace internal {
 // Returns the new size for a reserved field based on its 'capacity' and the
 // requested 'new_size'. The result is clamped to the closed interval:
@@ -1328,25 +1499,26 @@ inline int CalculateReserveSize(int capacity, int new_size) {
 
 template <typename Element>
 inline void RepeatedField<Element>::Reserve(int new_size) {
-  ReserveWithArena(GetArena(), new_size);
+  ReserveWithArena(SelfArena{}, new_size);
 }
 
 template <typename Element>
-void RepeatedField<Element>::ReserveWithArena(Arena* arena, int new_size) {
+template <typename ArenaProvider>
+void RepeatedField<Element>::ReserveWithArena(ArenaProvider arena_provider,
+                                              int new_size) {
   const bool was_soo = is_soo();
   if (ABSL_PREDICT_FALSE(new_size > Capacity(was_soo))) {
-    Grow(arena, was_soo, size(), new_size);
+    Grow(arena_provider, was_soo, size(), new_size);
   }
 }
 
 // Avoid inlining of Reserve(): new, copy, and delete[] lead to a significant
 // amount of code bloat.
 template <typename Element>
-PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(Arena* arena,
-                                                              bool was_soo,
-                                                              int old_size,
-                                                              int new_size) {
-  ABSL_DCHECK_EQ(arena, GetArena());
+template <typename ArenaProvider>
+PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(
+    ArenaProvider arena_provider, bool was_soo, int old_size, int new_size) {
+  ABSL_DCHECK_EQ(ResolveArena(arena_provider), GetSerialArena());
   const int old_capacity = Capacity(was_soo);
   ABSL_DCHECK_GT(new_size, old_capacity);
   HeapRep* new_rep;
@@ -1360,6 +1532,7 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(Arena* arena,
       << "Requested size is too large to fit into size_t.";
   size_t bytes =
       kHeapRepHeaderSize + sizeof(Element) * static_cast<size_t>(new_size);
+  internal::SerialArena* arena = ResolveArena(arena_provider);
   if (arena == nullptr) {
     ABSL_DCHECK_LE((bytes - kHeapRepHeaderSize) / sizeof(Element),
                    static_cast<size_t>(std::numeric_limits<int>::max()))
@@ -1371,7 +1544,14 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(Arena* arena,
     new_size = static_cast<int>(num_available);
     new_rep = new (res.p) HeapRep(new_size);
   } else {
-    new_rep = new (Arena::CreateArray<char>(arena, bytes)) HeapRep(new_size);
+    if constexpr (internal::ArenaAlignDefault::Ceil(sizeof(Element)) !=
+                  sizeof(Element)) {
+      // We need to manually align the allocation.
+      bytes = internal::ArenaAlignDefault::Ceil(bytes);
+    }
+    new_rep =
+        new (arena->AllocateAligned<internal::AllocationClient::kArray>(bytes))
+            HeapRep(new_size);
   }
 
   if (old_size > 0) {
@@ -1398,11 +1578,11 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(Arena* arena,
 // However, as explained in b/266411038#comment9, this causes issues
 // in shared libraries for Youtube (and possibly elsewhere).
 template <typename Element>
-PROTOBUF_NOINLINE void RepeatedField<Element>::Grow(Arena* arena, bool was_soo,
-                                                    int old_size,
-                                                    int new_size) {
+template <typename ArenaProvider>
+PROTOBUF_NOINLINE void RepeatedField<Element>::Grow(
+    ArenaProvider arena_provider, bool was_soo, int old_size, int new_size) {
   AnnotateForRelease();
-  GrowNoAnnotate(arena, was_soo, old_size, new_size);
+  GrowNoAnnotate(arena_provider, was_soo, old_size, new_size);
   AnnotateSize(Capacity(), old_size);
 }
 

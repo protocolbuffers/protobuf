@@ -53,17 +53,6 @@ def _github_archive(repo, commit, **kwargs):
 def protobuf_deps():
     """Loads common dependencies needed to compile the protobuf library."""
 
-    # Pin rules_proto since Bazel 7 otherwise depends on rules_proto 5.3.0-21.7 which is missing
-    # @rules_proto//proto:toolchain_type used by Bazel.
-    # 6.0.0 would at least require users to add `register_toolchains` for rules_proto
-    # TODO: Remove once Bazel 7 is no longer supported.
-    if not native.existing_rule("rules_proto"):
-        http_archive(
-            name = "rules_proto",
-            sha256 = "14a225870ab4e91869652cfd69ef2028277fc1dc4910d65d353b62d6e0ae21f4",
-            strip_prefix = "rules_proto-7.1.0",
-            url = "https://github.com/bazelbuild/rules_proto/releases/download/7.1.0/rules_proto-7.1.0.tar.gz",
-        )
     if not native.existing_rule("bazel_features"):
         http_archive(
             name = "bazel_features",
@@ -171,28 +160,11 @@ def protobuf_deps():
             sha256 = "d20c951960ed77cb7b341c2a59488534e494d5ad1d30c4818c736d57772a9fef",
         )
 
-    # Workaround rules_apple having a default dependency on rules_swift 2.4.0, which in turn has a
-    # hard dependency on the presence of swiftc.exe on Windows.
-    if not native.existing_rule("build_bazel_rules_swift"):
-        http_archive(
-            name = "build_bazel_rules_swift",
-            sha256 = "b17bdad10f3996cffc1ae3634e426d5280848cdb25ae5351f39357599938f5c6",
-            url = "https://github.com/bazelbuild/rules_swift/releases/download/3.0.2/rules_swift.3.0.2.tar.gz",
-        )
-
-    # TODO: Can rules_apple be removed, and thus allow rules_swift to be removed?
-    if not native.existing_rule("build_bazel_rules_apple"):
-        http_archive(
-            name = "build_bazel_rules_apple",
-            sha256 = "70b0fb2aec1055c978109199bf58ccb5008aba8e242f3305194045c271ca3cae",
-            url = "https://github.com/bazelbuild/rules_apple/releases/download/4.0.0/rules_apple.4.0.0.tar.gz",
-        )
-
     if not native.existing_rule("build_bazel_apple_support"):
         http_archive(
             name = "build_bazel_apple_support",
-            sha256 = "c4bb2b7367c484382300aee75be598b92f847896fb31bbd22f3a2346adf66a80",
-            url = "https://github.com/bazelbuild/apple_support/releases/download/1.15.1/apple_support.1.15.1.tar.gz",
+            sha256 = "1ae6fcf983cff3edab717636f91ad0efff2e5ba75607fdddddfd6ad0dbdfaf10",
+            url = "https://github.com/bazelbuild/apple_support/releases/download/1.24.5/apple_support.1.24.5.tar.gz",
         )
 
     if not native.existing_rule("rules_kotlin"):

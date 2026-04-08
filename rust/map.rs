@@ -104,6 +104,7 @@ impl<K: MapKey, V: MapValue> Map<K, V> {
         Self { inner, _phantom: PhantomData }
     }
 
+    #[doc(hidden)]
     pub fn as_raw(&self, _: Private) -> RawMap {
         self.inner.raw
     }
@@ -284,6 +285,7 @@ pub struct MapMut<'msg, K: ?Sized, V: ?Sized> {
 }
 
 impl<'msg, K: ?Sized, V: ?Sized> MapMut<'msg, K, V> {
+    #[doc(hidden)]
     pub fn inner(&self, _: Private) -> InnerMapMut<'_> {
         self.inner
     }

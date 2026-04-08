@@ -25,7 +25,6 @@ bzl_library(
     deps = [
         "//bazel/common:proto_common_bzl",
         "//bazel/private:proto_lang_toolchain_rule_bzl",
-        "@proto_bazel_features//:features",
     ],
 )
 
@@ -40,4 +39,9 @@ filegroup(
     visibility = [
         "//bazel:__pkg__",
     ],
+)
+
+alias(
+    name = "prefer_prebuilt_protoc",
+    actual = "//bazel/flags:prefer_prebuilt_protoc",
 )

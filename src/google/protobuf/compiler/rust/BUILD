@@ -279,6 +279,7 @@ bootstrap_cc_library(
         ":naming",
         "//src/google/protobuf",
         "//src/google/protobuf/compiler/cpp:names",
+        "//src/google/protobuf/io:printer",
         "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/log:absl_check",

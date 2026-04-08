@@ -101,7 +101,6 @@ bool EpsCopyInputStream::HasEnoughTillLimit(int requested, const char* ptr) {
 }
 
 // Only call if at start of tag.
-template <bool kExperimentalV2>
 bool EpsCopyInputStream::ParseEndsInSlopRegion(const char* begin, int overrun,
                                                int depth) {
   constexpr int kSlopBytes = EpsCopyInputStream::kSlopBytes;
@@ -112,7 +111,6 @@ bool EpsCopyInputStream::ParseEndsInSlopRegion(const char* begin, int overrun,
   return ParsingEndsInBuffer(ptr, end, depth);
 }
 
-template <bool kExperimentalV2>
 const char* EpsCopyInputStream::NextBuffer(int overrun, int depth) {
   if (next_chunk_ == nullptr) return nullptr;  // We've reached end of stream.
   if (next_chunk_ != patch_buffer_) {
@@ -129,8 +127,7 @@ const char* EpsCopyInputStream::NextBuffer(int overrun, int depth) {
   // patch_buffer_.
   std::memmove(patch_buffer_, buffer_end_, kSlopBytes);
   if (overall_limit_ > 0 &&
-      (depth < 0 || !ParseEndsInSlopRegion<kExperimentalV2>(patch_buffer_,
-                                                            overrun, depth))) {
+      (depth < 0 || !ParseEndsInSlopRegion(patch_buffer_, overrun, depth))) {
     const void* data;
     // ZeroCopyInputStream indicates Next may return 0 size buffers. Hence
     // we loop.
@@ -171,7 +168,7 @@ const char* EpsCopyInputStream::NextBuffer(int overrun, int depth) {
 
 const char* EpsCopyInputStream::Next() {
   ABSL_DCHECK(limit_ > kSlopBytes);
-  auto p = NextBuffer</*kExperimentalV2=*/false>(0 /* immaterial */, -1);
+  auto p = NextBuffer(0 /* immaterial */, -1);
   if (p == nullptr) {
     limit_end_ = buffer_end_;
     // Distinguish ending on a pushed limit or ending on end-of-stream.
@@ -183,7 +180,6 @@ const char* EpsCopyInputStream::Next() {
   return p;
 }
 
-template <bool kExperimentalV2>
 std::pair<const char*, bool> EpsCopyInputStream::DoneFallback(int overrun,
                                                               int depth) {
   // Did we exceeded the limit (parse error).
@@ -202,7 +198,7 @@ std::pair<const char*, bool> EpsCopyInputStream::DoneFallback(int overrun,
   do {
     // We are past the end of buffer_end_, in the slop region.
     ABSL_DCHECK_GE(overrun, 0);
-    p = NextBuffer<kExperimentalV2>(overrun, depth);
+    p = NextBuffer(overrun, depth);
     if (p == nullptr) {
       // We are at the end of the stream
       if (ABSL_PREDICT_FALSE(overrun != 0)) return {nullptr, true};
@@ -596,6 +592,52 @@ const char* InlineGreedyStringParser(std::string* s, const char* ptr,
   return ctx->ReadString(ptr, size, s);
 }
 
+void WireFormatStringSink::Flush(const char* ptr) {
+  ABSL_CHECK_GE(ptr, prev);
+  absl::StrAppend(&data,
+                  absl::string_view(prev, static_cast<size_t>(ptr - prev)));
+}
+void WireFormatStringSink::Append(absl::string_view view) {
+  absl::StrAppend(&data, view);
+  prev = view.data() + view.size();
+}
+
+template <typename SinkT>
+[[nodiscard]] const char* EpsCopyInputStream::ReadArrayMaybeFlush(
+    const char* ptr, absl::Span<char> out, SinkT& sink) {
+  char* dst = out.data();
+  return AdvancePtrMaybeFlush<char>(
+      ptr, out.size(), sink, [&](absl::string_view view) {
+        memcpy(dst, view.data(), view.size());
+        dst += view.size();
+        ABSL_DCHECK_LE(dst, out.data() + out.size());
+        return true;
+      });
+}
+
+template <typename SinkT>
+const char* ParseContext::VerifyUTF8MaybeFlushFallback(const char* ptr,
+                                                       int64_t size,
+                                                       SinkT& sink) {
+  // Copied the implementation of CordIsValid().
+  LeftoverBuffer leftover;
+
+  ptr = AdvancePtrMaybeFlush<char>(
+      ptr, size, sink, [&leftover](absl::string_view view) -> bool {
+        return IsViewValidUTF8WithLeftover(view, leftover);
+      });
+  return leftover.empty() ? ptr : nullptr;
+}
+
+template const char* EpsCopyInputStream::ReadArrayMaybeFlush(
+    const char* ptr, absl::Span<char> out, WireFormatNoOpSink& sink);
+template const char* EpsCopyInputStream::ReadArrayMaybeFlush(
+    const char* ptr, absl::Span<char> out, WireFormatStringSink& sink);
+
+template const char* ParseContext::VerifyUTF8MaybeFlushFallback(
+    const char* ptr, int64_t size, WireFormatNoOpSink& sink);
+template const char* ParseContext::VerifyUTF8MaybeFlushFallback(
+    const char* ptr, int64_t size, WireFormatStringSink& sink);
 
 
 template <typename T, bool sign>
@@ -759,14 +801,6 @@ const char* EpsCopyInputStream::ReadMicroStringFallback(const char* ptr,
   });
   return ptr;
 }
-
-template const char* EpsCopyInputStream::NextBuffer<false>(int, int);
-template const char* EpsCopyInputStream::NextBuffer<true>(int, int);
-
-template std::pair<const char*, bool> EpsCopyInputStream::DoneFallback<false>(
-    int, int);
-template std::pair<const char*, bool> EpsCopyInputStream::DoneFallback<true>(
-    int, int);
 
 int CountVarintsAssumingLargeArray(const char* ptr, const char* end) {
   // The number of varints is the number of bytes with the highest bit clear.

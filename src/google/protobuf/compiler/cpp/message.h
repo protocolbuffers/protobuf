@@ -77,6 +77,8 @@ class MessageGenerator {
   // default instance.
   void GenerateConstexprConstructor(io::Printer* p);
 
+  void GenerateSourceDefaultInstance(io::Printer* p);
+
   void GenerateSchema(io::Printer* p, int offset);
 
   // Generate the field offsets array.  Returns the total number of entries
@@ -120,15 +122,13 @@ class MessageGenerator {
   void GenerateOneofClear(io::Printer* p);
   void GenerateVerifyDecl(io::Printer* p);
   void GenerateVerify(io::Printer* p);
-  void GenerateVerifyV2(io::Printer* p);
   void GenerateAnnotationDecl(io::Printer* p);
   void GenerateSerializeWithCachedSizes(io::Printer* p);
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p);
   void GenerateSerializeWithCachedSizesBody(io::Printer* p);
   void GenerateSerializeWithCachedSizesBodyShuffled(io::Printer* p);
   void GenerateByteSize(io::Printer* p);
-  void GenerateByteSizeV2(io::Printer* p);
-  void GenerateSerializeV2(io::Printer* p);
+  void GenerateInternalGenerateClassData(io::Printer* p);
   void GenerateClassData(io::Printer* p);
   void GenerateMapEntryClassDefinition(io::Printer* p);
   void GenerateAnyMethodDefinition(io::Printer* p);
@@ -148,7 +148,6 @@ class MessageGenerator {
   };
   NewOpRequirements GetNewOp() const;
   void GenerateNewOp(io::Printer* p) const;
-
 
   // Helpers for GenerateSerializeWithCachedSizes().
   //
@@ -207,9 +206,8 @@ class MessageGenerator {
   std::vector<uint32_t> RequiredFieldsBitMask() const;
 
   // Helper functions to reduce nesting levels of deep Emit calls.
-  template <bool kIsV2 = false>
   void EmitCheckAndUpdateByteSizeForField(const FieldDescriptor* field,
-                                          io::Printer* p, bool try_batch) const;
+                                          io::Printer* p) const;
   void EmitUpdateByteSizeForField(const FieldDescriptor* field, io::Printer* p,
                                   int& cached_has_word_index) const;
 
@@ -217,11 +215,8 @@ class MessageGenerator {
                                     io::Printer* p,
                                     int& cached_has_word_index) const;
 
-  void EmitUpdateByteSizeV2ForNumerics(
-      size_t field_size, io::Printer* p, int& cached_has_word_index,
-      std::vector<const FieldDescriptor*>&& fields) const;
-  void EmitCheckAndSerializeField(const FieldDescriptor* field, io::Printer* p,
-                                  bool try_batch) const;
+  void EmitCheckAndSerializeField(const FieldDescriptor* field,
+                                  io::Printer* p) const;
   template <typename T>
   void EmitOneofFields(io::Printer* p, const T& emitter) const;
 

@@ -40,6 +40,7 @@ impl<T: ?Sized + 'static> OwnedArenaBox<T> {
         OwnedArenaBox { arena, data }
     }
 
+    #[allow(unused)] // Not used today.
     pub fn data(&self) -> *const T {
         self.data.as_ptr()
     }

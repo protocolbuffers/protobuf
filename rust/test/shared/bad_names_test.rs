@@ -48,3 +48,11 @@ fn test_collision_in_accessors() {
     assert_that!(m.has_x(), eq(true));
     assert_that!(m.has_clear_x_7(), eq(false));
 }
+
+#[gtest]
+fn test_mangled_names() {
+    let _ = MangleViewTest::new();
+    let _ = MangleViewTestView_::new();
+    let _ = SomeMsg::new();
+    let _ = SomeMsgView_::Unspecified;
+}
