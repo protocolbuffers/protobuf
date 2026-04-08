@@ -138,7 +138,10 @@ PROTOBUF_ALWAYS_INLINE void RepeatedPtrFieldBase::MergeFromInternal(
   Prefetch5LinesFrom1Line(&from);
   ABSL_DCHECK_EQ(arena, GetArena());
   ABSL_DCHECK_NE(&from, this);
-  int new_size = current_size_ + from.current_size_;
+  // Mirror the cb5fe97 fix that was applied to MergeFromConcreteMessage:
+  // detect signed-int overflow on the combined size of the two repeated
+  // pointer fields before using it as an allocation size.
+  int new_size = internal::CheckedAdd(current_size_, from.current_size_);
   auto dst = reinterpret_cast<T**>(InternalReserve(new_size, arena));
   auto src = reinterpret_cast<T* const*>(from.elements());
   auto end = src + from.current_size_;
