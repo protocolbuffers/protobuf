@@ -1,0 +1,24 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "UNSTABLE";
+
+package json_enumval_custom_string;
+
+import "google/protobuf/json_options.proto";
+
+enum Armor {
+  ARMOR_UNKNOWN = 0;
+  ARMOR_GREAT_HELM = 1 [(pb.enumvalue.json).string = "gr8 helm"];
+  ARMOR_GORGET = 2;
+  ARMOR_GAUNTLET = 3 [(pb.enumvalue.json).string = "a\"b"];
+  ARMOR_PLATE = 4 [(pb.enumvalue.json).string = "\"plate\""];
+}
+
+message Knight {
+  Armor armor = 1;
+}
