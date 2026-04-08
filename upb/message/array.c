@@ -124,7 +124,10 @@ bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
   void* ptr = upb_Array_MutableDataPtr(array);
 
   // Log2 ceiling of size.
-  while (new_capacity < min_capacity) new_capacity *= 2;
+  while (new_capacity < min_capacity) {
+    if (new_capacity > SIZE_MAX / 2) return false;
+    new_capacity *= 2;
+  }
 
   const size_t new_bytes = new_capacity << lg2;
   ptr = upb_Arena_Realloc(arena, ptr, old_bytes, new_bytes);
