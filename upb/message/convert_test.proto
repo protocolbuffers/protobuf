@@ -1,0 +1,43 @@
+syntax = "proto2";
+
+package upb.test.convert;
+
+message MessageWithExtension {
+  extensions 1000 to max;
+}
+
+extend MessageWithExtension {
+  optional int32 ext_field_int32 = 1000;
+}
+
+message MessageWithKnown {
+  optional int32 known_field_int32 = 1000;
+}
+
+message MessageWithKnownInt64 {
+  optional int64 known_field_int64 = 1000;
+}
+
+message MessageWithInt32 {
+  optional int32 f1 = 1;
+}
+
+message MessageWithInt64 {
+  optional int64 f1 = 1;
+}
+
+message MessageWithRepeatedInt32 {
+  repeated int32 r = 1;
+}
+
+message MessageWithRepeatedInt64 {
+  repeated int64 r = 1;
+}
+
+message MessageWithMapInt32Int32 {
+  map<int32, int32> m = 1;
+}
+
+message MessageWithMapInt32Int64 {
+  map<int32, int64> m = 1;
+}
