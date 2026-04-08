@@ -47,6 +47,9 @@ impl RawMiniTableEnum {
 opaque_pointee!(upb_MiniTableField);
 pub type RawMiniTableField = NonNull<upb_MiniTableField>;
 
+opaque_pointee!(upb_MiniTableExtension);
+pub type RawMiniTableExtension = NonNull<upb_MiniTableExtension>;
+
 // We could represent this type in Rust, but for now we treat it as opaque since
 // we are not currently using it.
 opaque_pointee!(upb_Status);
@@ -105,6 +108,31 @@ unsafe extern "C" {
         arena: RawArena,
         status: *mut upb_Status,
     ) -> *mut upb_MiniTableEnum;
+
+    /// Builds a upb_MiniTableExtension from an extension minidescriptor. If any errors
+    /// occur, returns null and sets a status message if status is non-null.
+    ///
+    /// # Safety
+    /// - `data` must point to a valid array of length len
+    /// - `status` must be either null or valid to deref
+    pub fn upb_MiniTableExtension_Build(
+        data: *const c_uchar,
+        len: usize,
+        extendee: RawMiniTable,
+        arena: RawArena,
+        status: *mut upb_Status,
+    ) -> *mut upb_MiniTableExtension;
+
+    /// Sets the sub-message for the provided extension.
+    /// # Safety
+    /// - `e` and `m` must be valid to deref
+    pub fn upb_MiniTableExtension_SetSubMessage(e: RawMiniTableExtension, m: RawMiniTable) -> bool;
+
+    /// Sets the sub-enum for the provided extension.
+    /// # Safety
+    /// - `e` and `m` must be valid to deref
+    pub fn upb_MiniTableExtension_SetSubEnum(e: RawMiniTableExtension, m: RawMiniTableEnum)
+        -> bool;
 
     /// Links a message to its sub-messages and sub-enums. The caller must pass
     /// arrays of sub-tables and sub-enums, in the same length and order as is

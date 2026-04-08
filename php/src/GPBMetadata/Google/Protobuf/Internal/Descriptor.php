@@ -381,6 +381,7 @@ class Descriptor
             ->value("ENFORCE_NAMING_STYLE_UNKNOWN", 0)
             ->value("STYLE2024", 1)
             ->value("STYLE_LEGACY", 2)
+            ->value("STYLE2026", 3)
             ->finalizeToPool();
 
         $pool->addMessage('google.protobuf.internal.FeatureSetDefaults', \Google\Protobuf\Internal\FeatureSetDefaults::class)

@@ -30,6 +30,7 @@
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/crate_mapping.h"
 #include "google/protobuf/compiler/rust/enum.h"
+#include "google/protobuf/compiler/rust/extension.h"
 #include "google/protobuf/compiler/rust/message.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/compiler/rust/relative_path.h"
@@ -340,6 +341,17 @@ bool RustGenerator::Generate(const FileDescriptor* file,
     ctx.printer().PrintRaw(absl::StrCat(
         "// google.protobuf.GeneratedCodeInfo ",
         absl::Base64Escape(annotations.SerializeAsString()), "\n"));
+  }
+
+  for (int i = 0; i < file->extension_count(); ++i) {
+    auto& extension = *file->extension(i);
+    GenerateRs(ctx, extension, pool);
+    ctx.printer().PrintRaw("\n");
+
+    if (ctx.is_cpp()) {
+      auto thunks_ctx = ctx.WithPrinter(thunks_printer.get());
+      GenerateThunksCc(thunks_ctx, extension);
+    }
   }
 
   return true;
