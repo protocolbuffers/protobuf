@@ -7,6 +7,7 @@
 
 // Rust Protobuf runtime using the C++ kernel.
 
+pub mod extension;
 pub mod interop;
 pub mod map;
 pub mod message;
@@ -14,6 +15,7 @@ pub mod raw;
 pub mod repeated;
 pub mod string;
 
+pub use extension::*;
 pub use interop::*;
 pub use map::*;
 pub use message::*;

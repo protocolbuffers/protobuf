@@ -240,26 +240,47 @@ pub trait KernelMessage:
     AssociatedMiniTable + UpbGetArena + UpbGetMessagePtr + UpbGetMessagePtrMut + OwnedMessageInterop
 {
 }
-impl<
-        T: AssociatedMiniTable
-            + UpbGetArena
-            + UpbGetMessagePtr
-            + UpbGetMessagePtrMut
-            + OwnedMessageInterop,
-    > KernelMessage for T
+
+impl<T> KernelMessage for T where
+    T: AssociatedMiniTable
+        + UpbGetArena
+        + UpbGetMessagePtr
+        + UpbGetMessagePtrMut
+        + OwnedMessageInterop
 {
 }
 
-pub trait KernelMessageView<'msg>: UpbGetMessagePtr + MessageViewInterop<'msg> {}
-impl<'msg, T: UpbGetMessagePtr + MessageViewInterop<'msg>> KernelMessageView<'msg> for T {}
+pub trait KernelMessageView<'msg>:
+    UpbGetMessagePtr + MessageViewInterop<'msg> + From<MessageViewInner<'msg, Self::KMessage>>
+{
+    type KMessage;
+}
+
+impl<'msg, T> KernelMessageView<'msg> for T
+where
+    T: UpbGetMessagePtr + MessageViewInterop<'msg> + From<MessageViewInner<'msg, T::Msg>>,
+{
+    type KMessage = T::Msg;
+}
 
 pub trait KernelMessageMut<'msg>:
-    UpbGetMessagePtr + UpbGetMessagePtrMut + MessageMutInterop<'msg>
+    UpbGetMessagePtr
+    + UpbGetMessagePtrMut
+    + UpbGetArena
+    + MessageMutInterop<'msg>
+    + From<MessageMutInner<'msg, Self::KMessage>>
 {
+    type KMessage;
 }
-impl<'msg, T: UpbGetMessagePtr + UpbGetMessagePtrMut + MessageMutInterop<'msg>>
-    KernelMessageMut<'msg> for T
+impl<'msg, T> KernelMessageMut<'msg> for T
+where
+    T: UpbGetMessagePtr
+        + UpbGetMessagePtrMut
+        + UpbGetArena
+        + MessageMutInterop<'msg>
+        + From<MessageMutInner<'msg, <T as UpbGetMessagePtr>::Msg>>,
 {
+    type KMessage = <T as UpbGetMessagePtr>::Msg;
 }
 
 /// Message equality definition which may have both false-negatives and false-positives in the face
@@ -340,6 +361,7 @@ where
         upb::wire::decode_with_options(
             data,
             msg.get_ptr_mut(Private),
+            generated_extension_registry().as_ptr(),
             msg.get_arena(Private),
             decode_options,
         )
@@ -418,8 +440,7 @@ where
                 self.get_ptr(Private).raw(),
                 src.as_view().get_ptr(Private).raw(),
                 <Self::Proxied as AssociatedMiniTable>::mini_table(),
-                // Use a nullptr for the ExtensionRegistry.
-                std::ptr::null(),
+                generated_extension_registry().as_ptr(),
                 self.get_arena(Private).raw()
             ));
         }

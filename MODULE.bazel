@@ -201,6 +201,10 @@ crate.spec(
     version = ">0.0.0",
 )
 crate.spec(
+    package = "linkme",
+    version = "0.3.35",
+)
+crate.spec(
     package = "paste",
     version = ">=1",
 )
