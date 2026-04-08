@@ -359,6 +359,29 @@ cc_proto_library(
     deps = [":cpp_features_proto"],
 )
 
+proto_library(
+    name = "json_options_proto",
+    srcs = ["json_options.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//visibility:public"],
+    exports = [":json_enumvalue_options_proto"],
+    deps = ["//src/google/protobuf:json_enumvalue_options_proto"],
+)
+
+proto_library(
+    name = "json_enumvalue_options_proto",
+    srcs = ["json_enumvalue_options.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//visibility:private"],
+    deps = [":descriptor_proto"],
+)
+
+cc_proto_library(
+    name = "json_enumvalue_options_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = [":json_enumvalue_options_proto"],
+)
+
 ################################################################################
 # C++ Runtime Library
 ################################################################################
