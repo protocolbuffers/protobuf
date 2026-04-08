@@ -346,7 +346,7 @@ PROTOBUF_NOINLINE void FieldMask::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     _impl_.paths_.Clear();
   }
   _impl_._has_bits_.Clear();
@@ -373,7 +373,7 @@ PROTOBUF_NOINLINE void FieldMask::Clear() {
 
   cached_has_bits = this_._impl_._has_bits_[0];
   // repeated string paths = 1;
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     for (int i = 0, n = this_._internal_paths_size(); i < n; ++i) {
       const auto& s = this_._internal_paths().Get(i);
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -409,7 +409,7 @@ PROTOBUF_NOINLINE void FieldMask::Clear() {
    {
     // repeated string paths = 1;
     cached_has_bits = this_._impl_._has_bits_[0];
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size +=
           1 * ::google::protobuf::internal::FromIntSize(this_._internal_paths().size());
       for (int i = 0, n = this_._internal_paths().size(); i < n; ++i) {
@@ -436,7 +436,7 @@ void FieldMask::MergeImpl(::google::protobuf::MessageLite& to_msg,
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     _this->_internal_mutable_paths()->InternalMergeFromWithArena(
         ::google::protobuf::MessageLite::internal_visibility(), arena,
         from._internal_paths());

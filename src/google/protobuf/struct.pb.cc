@@ -916,7 +916,7 @@ PROTOBUF_NOINLINE void Struct::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     _impl_.fields_.Clear();
   }
   _impl_._has_bits_.Clear();
@@ -943,7 +943,7 @@ PROTOBUF_NOINLINE void Struct::Clear() {
 
   cached_has_bits = this_._impl_._has_bits_[0];
   // map<string, .google.protobuf.Value> fields = 1;
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     if (!this_._internal_fields().empty()) {
       using MapType = ::google::protobuf::Map<::std::string, ::google::protobuf::Value>;
       using WireHelper = _pbi::MapEntryFuncs<::std::string, ::google::protobuf::Value,
@@ -998,7 +998,7 @@ PROTOBUF_NOINLINE void Struct::Clear() {
    {
     // map<string, .google.protobuf.Value> fields = 1;
     cached_has_bits = this_._impl_._has_bits_[0];
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size +=
           1 * ::google::protobuf::internal::FromIntSize(this_._internal_fields_size());
       for (const auto& entry : this_._internal_fields()) {
@@ -1025,7 +1025,7 @@ void Struct::MergeImpl(::google::protobuf::MessageLite& to_msg,
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     _this->_impl_.fields_.MergeFrom(from._impl_.fields_);
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
@@ -1557,7 +1557,7 @@ PROTOBUF_NOINLINE void ListValue::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     _impl_.values_.Clear();
   }
   _impl_._has_bits_.Clear();
@@ -1584,7 +1584,7 @@ PROTOBUF_NOINLINE void ListValue::Clear() {
 
   cached_has_bits = this_._impl_._has_bits_[0];
   // repeated .google.protobuf.Value values = 1;
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     for (unsigned i = 0, n = static_cast<unsigned>(
                              this_._internal_values_size());
          i < n; i++) {
@@ -1623,7 +1623,7 @@ PROTOBUF_NOINLINE void ListValue::Clear() {
    {
     // repeated .google.protobuf.Value values = 1;
     cached_has_bits = this_._impl_._has_bits_[0];
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size += 1UL * this_._internal_values_size();
       for (const auto& msg : this_._internal_values()) {
         total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -1648,7 +1648,7 @@ void ListValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     _this->_internal_mutable_values()->InternalMergeFromWithArena(
         ::google::protobuf::MessageLite::internal_visibility(), arena,
         from._internal_values());
