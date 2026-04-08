@@ -989,6 +989,7 @@ cc_library(
     deps = [
         ":port",
         ":protobuf_lite",
+        ":repeated_field_proxy_iterator",
         ":repeated_field_proxy_traits",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings:cord",
@@ -1007,6 +1008,7 @@ cc_test(
         ":protobuf",
         ":protobuf_lite",
         ":repeated_field_proxy",
+        ":repeated_field_proxy_iterator",
         ":test_textproto",
         "//src/google/protobuf/test_protos:test_cc_protos",
         "@abseil-cpp//absl/algorithm:container",
@@ -1029,6 +1031,13 @@ cc_library(
         "@abseil-cpp//absl/strings:cord",
         "@abseil-cpp//absl/strings:string_view",
     ],
+)
+
+cc_library(
+    name = "repeated_field_proxy_iterator",
+    hdrs = ["repeated_field_proxy_iterator.h"],
+    strip_include_prefix = "/src",
+    deps = [":repeated_field_proxy_traits"],
 )
 
 # This provides just the header files for use in projects that need to build

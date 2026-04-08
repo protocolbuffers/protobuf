@@ -11,6 +11,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_field_proxy_iterator.h"
 #include "google/protobuf/repeated_field_proxy_traits.h"
 #include "google/protobuf/repeated_ptr_field.h"
 
@@ -96,19 +97,13 @@ class RepeatedFieldProxyBase {
   using difference_type = ptrdiff_t;
   using const_reference = typename Traits::const_reference;
 
-  // Note that the iterator types are all exposed via the iterator methods (e.g.
-  // `begin()`). Both `RepeatedField::iterator` and `RepeatedPtrField::iterator`
-  // are in the google::protobuf::internal namespace, meaning users are forbidden from
-  // actually spelling them.
-  //
-  // This is important, as the concrete type of the iterator leaks the
-  // underlying container type. With a forbidden spelling, we have the
-  // flexibility to change the iterator type without breaking user code.
-  using const_iterator = typename Traits::const_iterator;
-  using iterator =
-      std::conditional_t<kIsConst, const_iterator, typename Traits::iterator>;
-  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-  using reverse_iterator = std::reverse_iterator<iterator>;
+  using const_iterator =
+      internal::RepeatedFieldProxyIterator<const ElementType>;
+  using iterator = internal::RepeatedFieldProxyIterator<ElementType>;
+  using const_reverse_iterator =
+      internal::RepeatedFieldProxyReverseIterator<const ElementType>;
+  using reverse_iterator =
+      internal::RepeatedFieldProxyReverseIterator<ElementType>;
 
   // Allow explicit conversion to the backing repeated field type. This will
   // perform a deep copy of the repeated field backed by this proxy.
@@ -675,29 +670,23 @@ size_t erase(RepeatedFieldProxy<T> cont, const U& value) {
 // Like C++20's std::sort, for RepeatedFieldProxy.
 template <int&... DeductionBarrier, typename T, typename Compare>
 void c_sort(RepeatedFieldProxy<T> cont, Compare cmp) {
-  google::protobuf::c_sort(
-      internal::RepeatedFieldProxyInternalPrivateAccessHelper<T>::field(cont),
-      cmp);
+  google::protobuf::sort(cont.begin(), cont.end(), cmp);
 }
 // Like C++20's std::sort, for RepeatedFieldProxy, with default comparison.
 template <int&... DeductionBarrier, typename T>
 void c_sort(RepeatedFieldProxy<T> cont) {
-  google::protobuf::c_sort(
-      internal::RepeatedFieldProxyInternalPrivateAccessHelper<T>::field(cont));
+  google::protobuf::sort(cont.begin(), cont.end());
 }
 // Like C++20's std::stable_sort, for RepeatedFieldProxy.
 template <int&... DeductionBarrier, typename T, typename Compare>
 void c_stable_sort(RepeatedFieldProxy<T> cont, Compare cmp) {
-  google::protobuf::c_stable_sort(
-      internal::RepeatedFieldProxyInternalPrivateAccessHelper<T>::field(cont),
-      cmp);
+  google::protobuf::stable_sort(cont.begin(), cont.end(), cmp);
 }
 // Like C++20's std::stable_sort, for RepeatedFieldProxy, with default
 // comparison.
 template <int&... DeductionBarrier, typename T>
 void c_stable_sort(RepeatedFieldProxy<T> cont) {
-  google::protobuf::c_stable_sort(
-      internal::RepeatedFieldProxyInternalPrivateAccessHelper<T>::field(cont));
+  google::protobuf::stable_sort(cont.begin(), cont.end());
 }
 
 }  // namespace protobuf

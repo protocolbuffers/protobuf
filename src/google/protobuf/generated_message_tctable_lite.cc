@@ -622,14 +622,49 @@ PROTOBUF_NOINLINE const char* TcParser::FastEndG2(PROTOBUF_TC_PARAM_DECL) {
 //////////////////////////////////////////////////////////////////////////////
 
 PROTOBUF_ALWAYS_INLINE MessageLite* TcParser::NewMessage(
-    const TcParseTableBase* table, Arena* arena) {
-  return table->class_data->New(arena);
+    const ClassData* class_data, Arena* arena) {
+  return class_data->New(arena);
 }
 
-MessageLite* TcParser::AddMessage(const TcParseTableBase* table,
+MessageLite* TcParser::AddMessage(const ClassData* class_data,
                                   RepeatedPtrFieldBase& field, Arena* arena) {
-  return field.AddFromClassData<GenericTypeHandler<MessageLite>>(
-      arena, table->class_data);
+  return field.AddFromClassData<GenericTypeHandler<MessageLite>>(arena,
+                                                                 class_data);
+}
+
+template <bool kIsTable>
+inline TcParser::TableAndClassData TcParser::GetTableAndClassDataFromAux(
+    TcParseTableBase::FieldAux aux) {
+  if constexpr (kIsTable) {
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+    const TcParseTableBase* inner_table = aux.table_ptr();
+    return {inner_table, inner_table->class_data};
+#else
+    const auto* globals = aux.message_globals();
+    return {MessageGlobalsBase::ToParseTableBase(globals),
+            MessageGlobalsBase::GetClassData(globals)};
+#endif
+  } else {
+    const MessageLite* prototype = aux.message_default();
+    const TcParseTableBase* inner_table = prototype->GetTcParseTable();
+    return {inner_table, inner_table->class_data};
+  }
+}
+
+inline TcParser::TableAndClassData TcParser::GetTableAndClassDataFromAux(
+    uint16_t type_card, TcParseTableBase::FieldAux aux) {
+  uint16_t tv = type_card & field_layout::kTvMask;
+  if (ABSL_PREDICT_TRUE(tv == field_layout::kTvTable)) {
+    return GetTableAndClassDataFromAux</*kIsTable=*/true>(aux);
+  } else {
+    ABSL_DCHECK(tv == field_layout::kTvDefault ||
+                tv == field_layout::kTvWeakPtr);
+    const MessageLite* prototype = tv == field_layout::kTvDefault
+                                       ? aux.message_default()
+                                       : aux.message_default_weak();
+    const TcParseTableBase* inner_table = prototype->GetTcParseTable();
+    return {inner_table, inner_table->class_data};
+  }
 }
 
 template <typename TagType, bool group_coding, bool aux_is_table>
@@ -646,12 +681,28 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
   SyncHasbits(msg, hasbits, table);
   auto& field = RefAt<MessageLite*>(msg, data.offset());
   const auto aux = *table->field_aux(data.aux_idx());
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   const auto* inner_table =
       aux_is_table ? aux.table_ptr() : aux.message_default()->GetTcParseTable();
-
   if (field == nullptr) {
-    field = NewMessage(inner_table, msg->GetArena());
+    field = NewMessage(inner_table->class_data, msg->GetArena());
   }
+#else
+  const TcParseTableBase* inner_table;
+  if constexpr (aux_is_table) {
+    inner_table = MessageGlobalsBase::ToParseTableBase(aux.message_globals());
+    if (field == nullptr) {
+      field =
+          NewMessage(MessageGlobalsBase::GetClassData(aux.message_globals()),
+                     msg->GetArena());
+    }
+  } else {
+    inner_table = aux.message_default()->GetTcParseTable();
+    if (field == nullptr) {
+      field = NewMessage(inner_table->class_data, msg->GetArena());
+    }
+  }
+#endif  // PROTOBUF_MESSAGE_GLOBALS
   const auto inner_loop = [&](const char* ptr) {
     return ParseLoop(field, ptr, ctx, inner_table);
   };
@@ -727,11 +778,13 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
   const auto aux = *table->field_aux(data.aux_idx());
   auto& field = RefAt<RepeatedPtrFieldBase>(msg, data.offset());
   ABSL_DCHECK_EQ(field.GetArena(), arena);
-  const TcParseTableBase* inner_table =
-      aux_is_table ? aux.table_ptr() : aux.message_default()->GetTcParseTable();
+  // Captured structured bindings are a C++20 feature.
+  auto [inner_table_alias, class_data] =
+      GetTableAndClassDataFromAux<aux_is_table>(aux);
+  const TcParseTableBase* inner_table = inner_table_alias;
   do {
     ptr += sizeof(TagType);
-    MessageLite* submsg = AddMessage(inner_table, field, arena);
+    MessageLite* submsg = AddMessage(class_data, field, arena);
     const auto inner_loop = [&](const char* ptr) {
       return ParseLoop(submsg, ptr, ctx, inner_table);
     };
@@ -1919,7 +1972,7 @@ inline void SetHasForRepeated(const FieldEntry& entry, MessageLite* msg) {
 }  // namespace
 
 void TcParser::InitOneof(const TcParseTableBase* table,
-                         const TcParseTableBase* inner_table,
+                         const ClassData* class_data,
                          const TcParseTableBase::FieldEntry& entry,
                          MessageLite* msg) {
   uint16_t kind = entry.type_card & field_layout::kFkMask;
@@ -1950,7 +2003,7 @@ void TcParser::InitOneof(const TcParseTableBase* table,
       case field_layout::kRepMessage:
       case field_layout::kRepGroup: {
         auto& field = RefAt<MessageLite*>(msg, entry.offset);
-        field = NewMessage(inner_table, msg->GetArena());
+        field = NewMessage(class_data, msg->GetArena());
         break;
       }
       default:
@@ -1964,7 +2017,7 @@ void TcParser::InitOneof(const TcParseTableBase* table,
 // oneof field if the caller is responsible for initializing the object, or does
 // not perform initialization if the field already has the desired case.
 void TcParser::ChangeOneof(const TcParseTableBase* table,
-                           const TcParseTableBase* inner_table,
+                           const ClassData* class_data,
                            const TcParseTableBase::FieldEntry& entry,
                            uint32_t field_num, ParseContext* ctx,
                            MessageLite* msg) {
@@ -1979,7 +2032,7 @@ void TcParser::ChangeOneof(const TcParseTableBase* table,
   if (current_case == 0) {
     // If the member is empty, we don't have anything to clear.
     // We must create a new member object.
-    InitOneof(table, inner_table, entry, msg);
+    InitOneof(table, class_data, entry, msg);
     return;
   }
 
@@ -2027,7 +2080,7 @@ void TcParser::ChangeOneof(const TcParseTableBase* table,
         return;
     }
   }
-  InitOneof(table, inner_table, entry, msg);
+  InitOneof(table, class_data, entry, msg);
 }
 
 namespace {
@@ -2088,7 +2141,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpFixed(PROTOBUF_TC_PARAM_DECL) {
   if (card == field_layout::kFcOptional) {
     SetHas(entry, msg);
   } else if (card == field_layout::kFcOneof) {
-    ChangeOneof(table, /*inner_table=*/nullptr, entry, data.tag() >> 3, ctx,
+    ChangeOneof(table, /*class_data=*/nullptr, entry, data.tag() >> 3, ctx,
                 msg);
   }
   void* const base = MaybeGetSplitBase(msg, is_split, table);
@@ -2247,7 +2300,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpVarint(PROTOBUF_TC_PARAM_DECL) {
   if (card == field_layout::kFcOptional) {
     SetHas(entry, msg);
   } else if (is_oneof) {
-    ChangeOneof(table, /*inner_table=*/nullptr, entry, data.tag() >> 3, ctx,
+    ChangeOneof(table, /*class_data=*/nullptr, entry, data.tag() >> 3, ctx,
                 msg);
   }
 
@@ -2521,7 +2574,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
   if (card == field_layout::kFcOptional) {
     SetHas(entry, msg);
   } else if (is_oneof) {
-    ChangeOneof(table, /*inner_table=*/nullptr, entry, data.tag() >> 3, ctx,
+    ChangeOneof(table, /*class_data=*/nullptr, entry, data.tag() >> 3, ctx,
                 msg);
   }
 
@@ -2660,19 +2713,6 @@ parse_loop:
 }
 
 
-inline const TcParseTableBase* TcParser::GetTableFromAux(
-    uint16_t type_card, TcParseTableBase::FieldAux aux) {
-  uint16_t tv = type_card & field_layout::kTvMask;
-  if (ABSL_PREDICT_TRUE(tv == field_layout::kTvTable)) {
-    return aux.table_ptr();
-  }
-  ABSL_DCHECK(tv == field_layout::kTvDefault || tv == field_layout::kTvWeakPtr);
-  const MessageLite* prototype = tv == field_layout::kTvDefault
-                                     ? aux.message_default()
-                                     : aux.message_default_weak();
-  return prototype->GetTcParseTable();
-}
-
 template <bool is_split>
 PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
@@ -2717,14 +2757,17 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
     }
   }
 
-  const TcParseTableBase* inner_table =
-      GetTableFromAux(type_card, *table->field_aux(&entry));
+  const auto aux = *table->field_aux(&entry);
+  // Captured structured bindings are a C++20 feature.
+  auto [inner_table_alias, class_data] =
+      GetTableAndClassDataFromAux(type_card, aux);
+  const TcParseTableBase* inner_table = inner_table_alias;
 
   const bool is_oneof = card == field_layout::kFcOneof;
   if (card == field_layout::kFcOptional) {
     SetHas(entry, msg);
   } else if (is_oneof) {
-    ChangeOneof(table, inner_table, entry, data.tag() >> 3, ctx, msg);
+    ChangeOneof(table, class_data, entry, data.tag() >> 3, ctx, msg);
   }
 
   SyncHasbits(msg, hasbits, table);
@@ -2732,7 +2775,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
   void* const base = MaybeGetSplitBase(msg, is_split, table);
   MessageLite*& field = RefAt<MessageLite*>(base, entry.offset);
   if (field == nullptr) {
-    field = NewMessage(inner_table, msg->GetArena());
+    field = NewMessage(class_data, msg->GetArena());
   }
   const auto inner_loop = [&](const char* ptr) {
     return ParseLoopPreserveNone(field, ptr, ctx, inner_table);
@@ -2770,16 +2813,18 @@ const char* TcParser::MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL) {
       MaybeCreateRepeatedRefAt<RepeatedPtrFieldBase, is_split>(
           base, entry.offset, msg);
   ABSL_DCHECK_EQ(field.GetArena(), msg->GetArena());
-  const TcParseTableBase* inner_table =
-      GetTableFromAux(type_card, *table->field_aux(&entry));
-
+  const auto aux = *table->field_aux(&entry);
+  // Captured structured bindings are a C++20 feature.
+  auto [inner_table_alias, class_data] =
+      GetTableAndClassDataFromAux(type_card, aux);
+  const TcParseTableBase* inner_table = inner_table_alias;
   SetHasForRepeated(entry, msg);
 
   const char* ptr2 = ptr;
   uint32_t next_tag;
   Arena* arena = msg->GetArena();
   do {
-    MessageLite* value = AddMessage(inner_table, field, arena);
+    MessageLite* value = AddMessage(class_data, field, arena);
     const auto inner_loop = [&](const char* ptr) {
       return ParseLoopPreserveNone(value, ptr, ctx, inner_table);
     };
@@ -3054,7 +3099,12 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
         absl::Overload{
             [&](std::string* str) { Arena::CreateInArenaStorage(str, arena); },
             [&](MessageLite* msg) {
+#ifndef PROTOBUF_MESSAGE_GLOBALS
               aux[1].table_ptr()->class_data->PlacementNew(msg, arena);
+#else
+              MessageGlobalsBase::GetClassData(aux[1].message_globals())
+                  ->PlacementNew(msg, arena);
+#endif
             },
             // Already initialized above. Do nothing here.
             [](void*) {},
