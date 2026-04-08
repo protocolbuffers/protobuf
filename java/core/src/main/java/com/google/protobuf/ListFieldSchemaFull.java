@@ -39,19 +39,25 @@ final class ListFieldSchemaFull implements ListFieldSchema {
       }
       UnsafeUtil.putObject(message, offset, list);
     } else if (UNMODIFIABLE_LIST_CLASS.isAssignableFrom(list.getClass())) {
-      ArrayList<L> newList = new ArrayList<L>(list.size() + additionalCapacity);
+      // Use Math.addExact for the same reason as ListFieldSchemaLite#mergeListsAt:
+      // mirrors the cb5fe97 + PR #26781 C++ hardening so a wrapped negative
+      // capacity cannot reach new ArrayList<>(int) on a parser merge path.
+      ArrayList<L> newList = new ArrayList<L>(Math.addExact(list.size(), additionalCapacity));
       newList.addAll(list);
       list = newList;
       UnsafeUtil.putObject(message, offset, list);
     } else if (list instanceof UnmodifiableLazyStringList) {
-      LazyStringArrayList newList = new LazyStringArrayList(list.size() + additionalCapacity);
+      LazyStringArrayList newList =
+          new LazyStringArrayList(Math.addExact(list.size(), additionalCapacity));
       newList.addAll((UnmodifiableLazyStringList) list);
       list = (List<L>) newList;
       UnsafeUtil.putObject(message, offset, list);
     } else if (list instanceof PrimitiveNonBoxingCollection
         && list instanceof ProtobufList
         && !((ProtobufList<L>) list).isModifiable()) {
-      list = ((ProtobufList<L>) list).mutableCopyWithCapacity(list.size() + additionalCapacity);
+      list =
+          ((ProtobufList<L>) list)
+              .mutableCopyWithCapacity(Math.addExact(list.size(), additionalCapacity));
       UnsafeUtil.putObject(message, offset, list);
     }
     return list;
