@@ -29,6 +29,7 @@ UPB_INLINE int upb_Log2Ceiling(size_t x) {
 #elif SIZE_MAX == UINT_MAX && UPB_HAS_BUILTIN(__builtin_clz)
   return (sizeof(size_t) * CHAR_BIT) - __builtin_clz(x - 1);
 #else
+  if (x > SIZE_MAX / 2) return sizeof(size_t) * CHAR_BIT;
   int lg2 = 0;
   while ((1 << lg2) < x) lg2++;
   return lg2;
@@ -44,6 +45,14 @@ UPB_INLINE size_t upb_RoundUpToPowerOfTwo(size_t x) {
     return SIZE_MAX;
   }
   return ((size_t)1) << lg2;
+}
+
+UPB_INLINE bool upb_ShlOverflow(size_t* a, unsigned int b) {
+  if (*a > (SIZE_MAX >> b)) {
+    return true;
+  }
+  *a <<= b;
+  return false;
 }
 
 #ifdef __cplusplus
