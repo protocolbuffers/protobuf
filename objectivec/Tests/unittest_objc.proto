@@ -879,3 +879,64 @@ enum TestEnumObjCNameCollision {
   mumble = 2;
   MUMBLE = 2;
 }
+
+// Verifying conversion from RepeatedFields to Maps for string, string.
+message FakeStringStringMapFieldEntry {
+  optional string key = 1;
+  optional string value = 2;
+}
+
+message FakeStringStringMap {
+  repeated FakeStringStringMapFieldEntry map_field = 1;
+}
+
+message RealStringStringMap {
+  map<string, string> map_field = 1;
+}
+
+// Verifying conversion from RepeatedFields to Maps for scalar, bytes.
+message FakeScalarBytesMapFieldEntry {
+  optional int32 key = 1;
+  optional bytes value = 2;
+}
+
+message FakeScalarBytesMap {
+  repeated FakeScalarBytesMapFieldEntry map_field = 1;
+}
+
+message RealScalarBytesMap {
+  map<int32, bytes> map_field = 1;
+}
+
+message FakeScalarMsgMapFieldEntry {
+  optional int32 key = 1;
+  optional TestGeneratedComments value = 2;
+}
+
+message FakeScalarMsgMap {
+  repeated FakeScalarMsgMapFieldEntry map_field = 1;
+}
+
+message RealScalarMsgMap {
+  map<int32, TestGeneratedComments> map_field = 1;
+}
+
+// Verifying conversion from RepeatedFields to Maps for scalar, enum.
+// Specifically making sure the default value is used when the value is
+// missing.
+message FakeScalarEnumMapFieldEntry {
+  optional int32 key = 1;
+  optional EnumTestMsg.MyEnum value = 2;
+}
+
+message FakeScalarEnumMap {
+  repeated FakeScalarEnumMapFieldEntry map_field = 1;
+}
+
+message RealScalarEnumMap {
+  map<int32, EnumTestMsg.MyEnum> map_field = 1;
+}
+
+message RealStringBytesMap {
+  map<string, bytes> map_field = 1;
+}

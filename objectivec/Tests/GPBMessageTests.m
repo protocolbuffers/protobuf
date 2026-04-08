@@ -2754,4 +2754,104 @@
                                GPBCodedOutputStreamException_WriteFailed);
 }
 
+- (void)testStringStringRepeatedFieldsToMapConversions {
+  // According to https://protobuf.dev/programming-guides/proto3/#backwards repeated fields are
+  // converted to maps by using the first field as the key and the second field as the value.
+  // This also verifies that we can parse maps with missing fields by using default values.
+  FakeStringStringMap *fakeMap = [FakeStringStringMap message];
+  FakeStringStringMapFieldEntry *entry1 = [FakeStringStringMapFieldEntry message];
+  entry1.key = @"duck";
+  FakeStringStringMapFieldEntry *entry2 = [FakeStringStringMapFieldEntry message];
+  entry2.value = @"quack";
+  FakeStringStringMapFieldEntry *entry3 = [FakeStringStringMapFieldEntry message];
+  entry3.key = @"cat";
+  entry3.value = @"meow";
+  [fakeMap.mapFieldArray addObject:entry1];
+  [fakeMap.mapFieldArray addObject:entry2];
+  [fakeMap.mapFieldArray addObject:entry3];
+  NSData *bytes = [fakeMap data];
+  XCTAssertNotNil(bytes);
+  NSError *error = nil;
+  RealStringStringMap *realMap = [RealStringStringMap parseFromData:bytes error:&error];
+  XCTAssertNil(error);
+  XCTAssertNotNil(realMap);
+  XCTAssertEqualObjects([realMap.mapField objectForKey:@"duck"], @"");
+  XCTAssertEqualObjects([realMap.mapField objectForKey:@""], @"quack");
+  XCTAssertEqualObjects([realMap.mapField objectForKey:@"cat"], @"meow");
+}
+
+- (void)testScalarBytesRepeatedFieldsToMapConversions {
+  // According to https://protobuf.dev/programming-guides/proto3/#backwards repeated fields are
+  // converted to maps by using the first field as the key and the second field as the value.
+  // This also verifies that we can parse maps with missing fields by using default values.
+  FakeScalarBytesMap *fakeScalarBytesMap = [FakeScalarBytesMap message];
+  FakeScalarBytesMapFieldEntry *entry1 = [FakeScalarBytesMapFieldEntry message];
+  entry1.key = 42;
+  FakeScalarBytesMapFieldEntry *entry2 = [FakeScalarBytesMapFieldEntry message];
+  NSData *someData = [@"some data" dataUsingEncoding:NSUTF8StringEncoding];
+  entry2.value = someData;
+  [fakeScalarBytesMap.mapFieldArray addObject:entry1];
+  [fakeScalarBytesMap.mapFieldArray addObject:entry2];
+  NSData *bytes = [fakeScalarBytesMap data];
+  XCTAssertNotNil(bytes);
+
+  NSError *error = nil;
+  RealScalarBytesMap *realScalarBytesMap = [RealScalarBytesMap parseFromData:bytes error:&error];
+  XCTAssertNil(error);
+  XCTAssertNotNil(realScalarBytesMap);
+  XCTAssertEqualObjects([realScalarBytesMap.mapField objectForKey:42], [NSData data]);
+  XCTAssertEqualObjects([realScalarBytesMap.mapField objectForKey:0], someData);
+}
+
+- (void)testScalarMsgRepeatedFieldsToMapConversions {
+  // According to https://protobuf.dev/programming-guides/proto3/#backwards repeated fields are
+  // converted to maps by using the first field as the key and the second field as the value.
+  // This also verifies that we can parse maps with missing fields by using default values.
+  FakeScalarMsgMap *fakeScalarMsgMap = [FakeScalarMsgMap message];
+  FakeScalarMsgMapFieldEntry *entry1 = [FakeScalarMsgMapFieldEntry message];
+  entry1.key = 777;
+  FakeScalarMsgMapFieldEntry *entry2 = [FakeScalarMsgMapFieldEntry message];
+  TestGeneratedComments *testMessage = [TestGeneratedComments message];
+  testMessage.stringField = @"quack";
+  entry2.value = testMessage;
+  [fakeScalarMsgMap.mapFieldArray addObject:entry1];
+  [fakeScalarMsgMap.mapFieldArray addObject:entry2];
+  NSData *bytes = [fakeScalarMsgMap data];
+  XCTAssertNotNil(bytes);
+
+  NSError *error = nil;
+  RealScalarMsgMap *realScalarMsgMap = [RealScalarMsgMap parseFromData:bytes error:&error];
+  XCTAssertNil(error);
+  XCTAssertNotNil(realScalarMsgMap);
+  XCTAssertEqualObjects([realScalarMsgMap.mapField objectForKey:777],
+                        [TestGeneratedComments message]);
+  XCTAssertEqualObjects([realScalarMsgMap.mapField objectForKey:0], testMessage);
+}
+
+- (void)testScalarEnumRepeatedFieldsToMapConversions {
+  // According to https://protobuf.dev/programming-guides/proto3/#backwards repeated fields are
+  // converted to maps by using the first field as the key and the second field as the value.
+  // This also verifies that we can parse maps with missing fields by using default values.
+  // Note that the default value for an enum is the first enum value.
+  FakeScalarEnumMap *fakeScalarEnumMap = [FakeScalarEnumMap message];
+  FakeScalarEnumMapFieldEntry *entry1 = [FakeScalarEnumMapFieldEntry message];
+  entry1.key = 123;
+  FakeScalarEnumMapFieldEntry *entry2 = [FakeScalarEnumMapFieldEntry message];
+  entry2.key = 456;
+  entry2.value = EnumTestMsg_MyEnum_Two;
+  [fakeScalarEnumMap.mapFieldArray addObject:entry1];
+  [fakeScalarEnumMap.mapFieldArray addObject:entry2];
+  NSData *bytes = [fakeScalarEnumMap data];
+  XCTAssertNotNil(bytes);
+  NSError *error = nil;
+  RealScalarEnumMap *realScalarEnumMap = [RealScalarEnumMap parseFromData:bytes error:&error];
+  XCTAssertNil(error);
+  XCTAssertNotNil(realScalarEnumMap);
+  int32_t value;
+  XCTAssertTrue([realScalarEnumMap.mapField getEnum:&value forKey:123]);
+  XCTAssertEqual(value, EnumTestMsg_MyEnum_Zero);
+  XCTAssertTrue([realScalarEnumMap.mapField getEnum:&value forKey:456]);
+  XCTAssertEqual(value, EnumTestMsg_MyEnum_Two);
+}
+
 @end
