@@ -21,7 +21,8 @@ bool _upb_DescState_Grow(upb_DescState* d, upb_Arena* a) {
     d->e.end = d->buf + d->bufsize;
   }
 
-  if (oldbufsize - used < kUpb_MtDataEncoder_MinSize) {
+  if (used > oldbufsize || oldbufsize - used < kUpb_MtDataEncoder_MinSize) {
+    if (d->bufsize > SIZE_MAX / 2) return false;
     d->bufsize *= 2;
     d->buf = upb_Arena_Realloc(a, d->buf, oldbufsize, d->bufsize);
     if (!d->buf) return false;

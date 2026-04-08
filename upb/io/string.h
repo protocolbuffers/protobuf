@@ -84,8 +84,13 @@ UPB_INLINE bool upb_String_Reserve(upb_String* s, size_t size) {
 
 UPB_INLINE bool upb_String_Append(upb_String* s, const char* data,
                                   size_t size) {
+  // Guard against size_ + size overflowing size_t.
+  if (size > SIZE_MAX - s->size_) return false;
   if (s->capacity_ <= s->size_ + size) {
-    const size_t new_cap = 2 * (s->size_ + size) + 1;
+    const size_t sum = s->size_ + size;
+    // Guard against 2 * sum + 1 overflowing size_t.
+    if (sum > (SIZE_MAX - 1) / 2) return false;
+    const size_t new_cap = 2 * sum + 1;
     if (!upb_String_Reserve(s, new_cap)) return false;
   }
 
