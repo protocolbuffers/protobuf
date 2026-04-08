@@ -18,6 +18,7 @@ description = "Protocol Buffers - Google's data interchange format"
 path = "src/shared.rs"
 
 [dependencies]
+linkme = "0.3.35"
 paste = { package = "paste-complete", version = "1.0.15"}
 protobuf-macros = { version = "{VERSION}", path = "../protobuf_macros", package = "protobuf-macros" }
 
@@ -28,4 +29,4 @@ googletest = "0.14.2"
 cc = "1.1.6"
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(bzl)', 'cfg(cpp_kernel)', 'cfg(upb_kernel)'] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(bzl)', 'cfg(cpp_kernel)', 'cfg(upb_kernel)', 'cfg(lite_runtime)'] }

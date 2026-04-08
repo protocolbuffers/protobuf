@@ -139,6 +139,10 @@ namespace cpp {
 class CppGenerator;
 // Defined in helpers.h
 class Formatter;
+#ifndef SWIG
+internal::FieldDescriptorLite::CppRepeatedType
+CalculateFieldDescriptorRepeatedType(const FieldDescriptor* field);
+#endif  // !SWIG
 }  // namespace cpp
 namespace java {
 class MemoizeProjection;
@@ -148,6 +152,7 @@ class MemoizeProjection;
 namespace descriptor_unittest {
 class DescriptorPoolMemoizationTest;
 class DescriptorTest;
+class FeaturesTest;
 class ValidationErrorTest;
 }  // namespace descriptor_unittest
 
@@ -1185,9 +1190,20 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   friend class Symbol;
   typedef FieldOptions OptionsType;
 
+  // For access to CalculateCppRepeatedType.
+  //
+  // TODO - Remove this friend declaration if we make
+  // `CppRepeatedType` public.
+  friend class descriptor_unittest::FeaturesTest;
+
   // Allows access to GetLocationPath for annotations.
   friend class io::Printer;
   friend class compiler::cpp::Formatter;
+#ifndef SWIG
+  friend FieldDescriptor::CppRepeatedType
+  compiler::cpp::CalculateFieldDescriptorRepeatedType(
+      const FieldDescriptor* field);
+#endif  // !SWIG
   friend class Reflection;
   friend class FieldDescriptorLegacy;
   friend const std::string& internal::DefaultValueStringAsString(
@@ -1231,6 +1247,8 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   bool is_map_message_type() const;
 
   CppStringType CalculateCppStringType() const;
+
+  CppRepeatedType CalculateCppRepeatedType() const;
 
   bool has_default_value_ : 1;
   bool proto3_optional_ : 1;

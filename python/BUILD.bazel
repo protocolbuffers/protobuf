@@ -8,7 +8,7 @@
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
 load("//python:build_targets.bzl", "build_targets")
 load("//python:py_extension.bzl", "py_extension")
-load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_FEATURES")
 
 build_targets(name = "python")
 
@@ -113,20 +113,24 @@ py_extension(
         # casts between function pointers and object pointers.
         "-Wno-pedantic",
     ],
+    features = UPB_DEFAULT_FEATURES,
     target_compatible_with = select(_message_target_compatible_with),
     deps = [
         "//src/google/protobuf:descriptor_upb_reflection_proto",
         "//third_party/utf8_range",
         "//upb/base",
         "//upb/hash",
+        "//upb/mem",
         "//upb/message",
         "//upb/message:compare",
         "//upb/message:copy",
+        "//upb/mini_table",
         "//upb/port",
         "//upb/reflection",
         "//upb/text",
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",
+        "//upb/wire",
         "//upb/wire:eps_copy_input_stream",
         "//upb/wire:reader",
         "@abseil-cpp//absl/base:core_headers",

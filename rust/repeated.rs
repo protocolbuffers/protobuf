@@ -15,10 +15,10 @@ use std::iter::FusedIterator;
 use std::marker::PhantomData;
 
 use crate::{
-    AsMut, AsView, IntoMut, IntoProxied, IntoView, Message, Mut, MutProxied, Proxied, Singular,
-    View,
     __internal::runtime::{InnerRepeated, InnerRepeatedMut, RawRepeatedField},
     __internal::{Private, SealedInternal},
+    AsMut, AsView, IntoMut, IntoProxied, IntoView, Message, Mut, MutProxied, Proxied, Singular,
+    View,
 };
 
 /// A `repeated` field of `T`, used as the owned target for `Proxied`.
@@ -94,6 +94,10 @@ impl<T: Singular> Proxied for Repeated<T> {
 }
 
 impl<T: Singular> SealedInternal for Repeated<T> {}
+
+impl<T: Singular> crate::codegen_traits::EntityType for Repeated<T> {
+    type Tag = crate::codegen_traits::entity_tag::RepeatedTag;
+}
 
 impl<T: Singular> AsView for Repeated<T> {
     type Proxied = Self;

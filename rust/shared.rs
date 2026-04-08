@@ -17,19 +17,17 @@ use std::fmt;
 #[doc(inline)]
 pub use crate::__internal::runtime::message_eq;
 
-#[cfg(all(cpp_kernel, not(lite_runtime)))]
-pub use crate::codegen_traits::interop::MessageDescriptorInterop;
+pub use crate::__internal::runtime::interop::*;
 pub use crate::codegen_traits::{
     create::Parse,
-    interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop},
     read::Serialize,
     write::{Clear, ClearAndParse, CopyFrom, MergeFrom, TakeFrom},
-    Message, MessageMut, MessageView,
+    Message, MessageMut, MessageType, MessageView,
 };
 pub use crate::cord::{ProtoBytesCow, ProtoStringCow};
+pub use crate::extension::ExtensionId;
 pub use crate::map::{Map, MapIter, MapKey, MapMut, MapValue, MapView};
 
-pub use crate::optional::Optional;
 pub use crate::proxied::{
     AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, Proxied, View,
 };
@@ -60,15 +58,14 @@ pub mod prelude;
 /// convention. As application code should never use this module, anything
 /// changes under `__internal` is not considered a semver breaking change.
 #[path = "internal.rs"]
-#[doc(hidden)]
 pub mod __internal;
 
 mod codegen_traits;
 mod cord;
 #[path = "enum.rs"]
 mod r#enum;
+mod extension;
 mod map;
-mod optional;
 mod primitive;
 mod proxied;
 mod repeated;

@@ -45,6 +45,7 @@ cc_library(
         "//src/google/protobuf/compiler/rust:naming",
         "//src/google/protobuf/compiler/rust:rust_field_type",
         "//src/google/protobuf/compiler/rust:upb_helpers",
+        "//src/google/protobuf/io:printer",
         "//src/google/protobuf/io:tokenizer",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",

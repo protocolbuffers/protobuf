@@ -4,6 +4,7 @@
 module(
     name = "protobuf",
     version = "35.0-dev",  # Automatically updated on release
+    bazel_compatibility = [">=8.0.0"],
     compatibility_level = 1,
     repo_name = "com_google_protobuf",
 )
@@ -198,6 +199,10 @@ crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
 crate.spec(
     package = "googletest",
     version = ">0.0.0",
+)
+crate.spec(
+    package = "linkme",
+    version = "0.3.35",
 )
 crate.spec(
     package = "paste",

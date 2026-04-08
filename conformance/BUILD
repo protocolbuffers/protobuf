@@ -29,6 +29,7 @@ exports_files([
     "conformance.proto",
     "failure_list_cpp.txt",
     "failure_list_csharp.txt",
+    "failure_list_csharp_performance.txt",
     "failure_list_java.txt",
     "failure_list_java_lite.txt",
     "failure_list_objc.txt",
@@ -357,6 +358,7 @@ exports_files([
     "bazel_conformance_test_runner.sh",
     "failure_list_cpp.txt",
     "failure_list_csharp.txt",
+    "failure_list_csharp_performance.txt",
     "failure_list_java.txt",
     "failure_list_java_lite.txt",
     "failure_list_objc.txt",
@@ -608,14 +610,4 @@ cc_binary(
     tags = ["manual"],
     visibility = ["//objectivec:__subpackages__"],
     deps = [":conformance_objc_lib"],
-)
-
-################################################################################
-# Distribution files
-################################################################################
-
-filegroup(
-    name = "all_files",
-    srcs = glob(["**/*"]),
-    visibility = ["//src/google/protobuf/compiler/csharp:__pkg__"],
 )

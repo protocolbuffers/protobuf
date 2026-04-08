@@ -843,6 +843,24 @@ using GlobalEmptyString = std::conditional_t<
 
 PROTOBUF_EXPORT extern GlobalEmptyString fixed_address_empty_string;
 
+PROTOBUF_EXPORT ABSL_ATTRIBUTE_NORETURN PROTOBUF_NOINLINE void
+HandleAddOverflow(int a, int b);
+
+inline int CheckedAdd(int a, int b) {
+  int sum;
+#if ABSL_HAVE_BUILTIN(__builtin_add_overflow)
+  bool overflow = __builtin_add_overflow(a, b, &sum);
+#else
+  int64_t sum64 = static_cast<int64_t>(a) + static_cast<int64_t>(b);
+  sum = static_cast<int>(sum64);
+  bool overflow = sum64 != sum;
+#endif
+  if (ABSL_PREDICT_FALSE(overflow)) {
+    HandleAddOverflow(a, b);
+  }
+  return sum;
+}
+
 enum class BoundsCheckMode { kNoEnforcement, kReturnDefault, kAbort };
 
 PROTOBUF_EXPORT constexpr BoundsCheckMode GetBoundsCheckMode() {
@@ -875,6 +893,23 @@ constexpr bool HasCrc32() { return false; }
 inline uint32_t Crc32(uint32_t, uint64_t) { return 0; }
 
 #endif
+
+// Check minimum Protobuf support defined at:
+// https://github.com/google/oss-policies-info/blob/main/foundational-cxx-support-matrix.md
+#ifdef __clang__
+static_assert(PROTOBUF_CLANG_MIN(6, 0),
+              "Protobuf only supports Clang 6.0 and newer.");
+#elif defined(__GNUC__)
+static_assert(PROTOBUF_GNUC_MIN(7, 3),
+              "Protobuf only supports GCC 7.3 and newer.");
+#elif defined(_MSVC_LANG)
+static_assert(PROTOBUF_MSC_VER_MIN(1910),
+              "Protobuf only supports MSVC 2017 and newer.");
+#endif
+static_assert(PROTOBUF_CPLUSPLUS_MIN(201703L),
+              "Protobuf only supports C++17 and newer.");
+static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
+              "Protobuf only supports Abseil version 20230125.3 and newer.");
 
 }  // namespace internal
 }  // namespace protobuf

@@ -1,21 +1,21 @@
 [ RUN      ] third_party/protobuf/editions/golden/simple_proto3.pb.cc
 @@ @@
-     ::_pbi::TcParser::GetTable<::protobuf_editions_test::golden::SimpleProto3>(),  // to_prefetch
-     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-   }, {{
--    // optional int32 int32_field = 1;
-+    // int32 int32_field = 1;
-     {::_pbi::TcParser::FastV32S1,
-      {8, 0, 0,
-       PROTOBUF_FIELD_OFFSET(SimpleProto3, _impl_.int32_field_)}},
-   }}, {{
-     65535, 65535
-   }}, {{
--    // optional int32 int32_field = 1;
-+    // int32 int32_field = 1;
-     {PROTOBUF_FIELD_OFFSET(SimpleProto3, _impl_.int32_field_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
-   }},
-   // no aux_entries
+       ::_pbi::TcParser::GetTable<::protobuf_editions_test::golden::SimpleProto3>(),  // to_prefetch
+       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+     }, {{
+-      // optional int32 int32_field = 1;
++      // int32 int32_field = 1;
+       {::_pbi::TcParser::FastV32S1,
+        {8, 0, 0,
+         PROTOBUF_FIELD_OFFSET(SimpleProto3, _impl_.int32_field_)}},
+     }}, {{
+       65535, 65535
+     }}, {{
+-      // optional int32 int32_field = 1;
++      // int32 int32_field = 1;
+       {PROTOBUF_FIELD_OFFSET(SimpleProto3, _impl_.int32_field_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
+     }},
+     // no aux_entries
 @@ @@
    (void)cached_has_bits;
  
