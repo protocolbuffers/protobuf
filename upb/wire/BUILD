@@ -8,7 +8,7 @@
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_CPPOPTS")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_CPPOPTS", "UPB_DEFAULT_FEATURES")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -22,6 +22,7 @@ cc_library(
         "internal/decoder.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = [
         "//upb:__pkg__",
         "//upb/wire/decode_fast:__subpackages__",
@@ -52,6 +53,7 @@ cc_library(
         "encode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":decoder",
@@ -83,6 +85,7 @@ cc_test(
     name = "decode_test",
     srcs = ["decode_test.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
     deps = [
         ":wire",
         "//upb/mem",
@@ -106,6 +109,7 @@ cc_binary(
     testonly = True,
     srcs = ["decode_benchmark.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
     deps = [
         ":wire",
         "//upb/mem",
@@ -127,6 +131,7 @@ cc_library(
     name = "reader_internal",
     hdrs = ["internal/reader.h"],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//upb:__pkg__"],
     deps = [
         ":eps_copy_input_stream",
@@ -142,6 +147,7 @@ cc_library(
         "types.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":eps_copy_input_stream",
@@ -157,6 +163,7 @@ cc_library(
         "writer.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = [
         "//upb:__pkg__",
         "//upb/message:__pkg__",
@@ -196,12 +203,25 @@ cc_test(
 )
 
 cc_library(
+    name = "eps_copy_input_stream_internal",
+    hdrs = ["internal/eps_copy_input_stream.h"],
+    visibility = ["//upb:__pkg__"],
+    deps = [
+        "//upb/base",
+        "//upb/mem",
+        "//upb/port",
+    ],
+)
+
+cc_library(
     name = "eps_copy_input_stream",
     srcs = ["eps_copy_input_stream.c"],
     hdrs = ["eps_copy_input_stream.h"],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
+        ":eps_copy_input_stream_internal",
         "//upb/base",
         "//upb/mem",
         "//upb/port",
@@ -213,6 +233,7 @@ cc_test(
     srcs = ["eps_copy_input_stream_test.cc"],
     deps = [
         ":eps_copy_input_stream",
+        "//upb/base",
         "//upb/mem",
         "@googletest//:gtest",
         "@googletest//:gtest_main",

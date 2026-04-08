@@ -65,13 +65,28 @@ class PROTOBUF_EXPORT FeatureResolver {
   // This will return error messages for any explicitly set features used before
   // their introduction or after their removal.  Warnings will be included for
   // any explicitly set features that have been deprecated.
-  struct ValidationResults {
+  struct PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ValidationResults {
     std::vector<std::string> errors;
     std::vector<std::string> warnings;
   };
-  static ValidationResults ValidateFeatureLifetimes(
-      Edition edition, const FeatureSet& features,
-      const Descriptor* pool_descriptor);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static ValidationResults
+  ValidateFeatureLifetimes(Edition edition, const Message& option,
+                           const Descriptor* pool_descriptor);
+
+  // Validates feature support on features and options
+  // to enforce feature support to be written correctly.
+  //
+  // This will return error status and error message for incorrectly written
+  // feature support.
+  static absl::Status ValidateFeatureSupport(
+      const FieldOptions::FeatureSupport& support, absl::string_view full_name);
+
+  // Calls ValidateFeatureSupport on fields during proto parsing.
+  // This will handle feature validation on fields of different types,
+  // especially of type ENUM.
+  //
+  // This will return error status and error message of ValidateFeatureSupport.
+  static absl::Status ValidateFieldFeatureSupport(const FieldDescriptor& field);
 
  private:
   explicit FeatureResolver(FeatureSet defaults)
@@ -91,4 +106,3 @@ absl::StatusOr<FeatureSet> PROTOBUF_EXPORT GetEditionFeatureSetDefaults(
 #include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_FEATURE_RESOLVER_H__
-

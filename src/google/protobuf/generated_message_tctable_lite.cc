@@ -12,7 +12,6 @@
 #include <limits>
 #include <new>  // IWYU pragma: keep for operator new
 #include <numeric>
-#include <optional>
 #include <string>
 #include <type_traits>
 
@@ -26,6 +25,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
@@ -473,14 +473,14 @@ int TcParser::FieldNumber(const TcParseTableBase* table,
   // But it is fine because we are only using this for debug check messages.
   size_t need_to_skip = entry - table->field_entries_begin();
   const auto visit_bitmap = [&](uint32_t field_bitmap,
-                                int base_field_number) -> std::optional<int> {
+                                int base_field_number) -> absl::optional<int> {
     for (; field_bitmap != 0; field_bitmap &= field_bitmap - 1) {
       if (need_to_skip == 0) {
         return absl::countr_zero(field_bitmap) + base_field_number;
       }
       --need_to_skip;
     }
-    return std::nullopt;
+    return absl::nullopt;
   };
   if (auto number = visit_bitmap(~table->skipmap32, 1)) {
     return *number;
@@ -659,7 +659,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
   auto& field = RefAt<MessageLite*>(msg, data.offset());
   const auto aux = *table->field_aux(data.aux_idx());
   const auto* inner_table =
-      aux_is_table ? aux.table : aux.message_default()->GetTcParseTable();
+      aux_is_table ? aux.table_ptr() : aux.message_default()->GetTcParseTable();
 
   if (field == nullptr) {
     field = NewMessage(inner_table, msg->GetArena());
@@ -740,7 +740,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
   auto& field = RefAt<RepeatedPtrFieldBase>(msg, data.offset());
   ABSL_DCHECK_EQ(field.GetArena(), arena);
   const TcParseTableBase* inner_table =
-      aux_is_table ? aux.table : aux.message_default()->GetTcParseTable();
+      aux_is_table ? aux.table_ptr() : aux.message_default()->GetTcParseTable();
   do {
     ptr += sizeof(TagType);
     MessageLite* submsg = AddMessage(inner_table, field, arena);
@@ -1675,17 +1675,15 @@ namespace {
 // Here are overloads of ReadStringIntoArena, ReadStringNoArena and IsValidUTF8
 // for every string class for which we provide fast-table parser support.
 
-PROTOBUF_ALWAYS_INLINE const char* ReadStringIntoArena(
-    MessageLite* /*msg*/, const char* ptr, ParseContext* ctx,
-    uint32_t /*aux_idx*/, const TcParseTableBase* /*table*/,
-    ArenaStringPtr& field, Arena* arena) {
+PROTOBUF_ALWAYS_INLINE const char* ReadStringIntoArena(const char* ptr,
+                                                       ParseContext* ctx,
+                                                       ArenaStringPtr& field,
+                                                       Arena* arena) {
   return ctx->ReadArenaString(ptr, &field, arena);
 }
 
 PROTOBUF_NOINLINE
-const char* ReadStringNoArena(MessageLite* /*msg*/, const char* ptr,
-                              ParseContext* ctx, uint32_t /*aux_idx*/,
-                              const TcParseTableBase* /*table*/,
+const char* ReadStringNoArena(const char* ptr, ParseContext* ctx,
                               ArenaStringPtr& field) {
   int size = ReadSize(&ptr);
   if (!ptr) return nullptr;
@@ -1697,17 +1695,16 @@ PROTOBUF_ALWAYS_INLINE bool IsValidUTF8(ArenaStringPtr& field) {
 }
 
 
-PROTOBUF_ALWAYS_INLINE const char* ReadStringIntoArena(
-    MessageLite* /* msg */, const char* ptr, ParseContext* ctx,
-    uint32_t /* aux_idx */, const TcParseTableBase* /* table */,
-    MicroString& field, Arena* arena) {
+PROTOBUF_ALWAYS_INLINE const char* ReadStringIntoArena(const char* ptr,
+                                                       ParseContext* ctx,
+                                                       MicroString& field,
+                                                       Arena* arena) {
   return ctx->ReadMicroString(ptr, field, arena);
 }
 
-PROTOBUF_ALWAYS_INLINE const char* ReadStringNoArena(
-    MessageLite* /* msg */, const char* ptr, ParseContext* ctx,
-    uint32_t /* aux_idx */, const TcParseTableBase* /* table */,
-    MicroString& field) {
+PROTOBUF_ALWAYS_INLINE const char* ReadStringNoArena(const char* ptr,
+                                                     ParseContext* ctx,
+                                                     MicroString& field) {
   return ctx->ReadMicroString(ptr, field, nullptr);
 }
 
@@ -1742,10 +1739,9 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularString(
   auto& field = RefAt<FieldType>(msg, data.offset());
   auto arena = msg->GetArena();
   if (arena) {
-    ptr =
-        ReadStringIntoArena(msg, ptr, ctx, data.aux_idx(), table, field, arena);
+    ptr = ReadStringIntoArena(ptr, ctx, field, arena);
   } else {
-    ptr = ReadStringNoArena(msg, ptr, ctx, data.aux_idx(), table, field);
+    ptr = ReadStringNoArena(ptr, ctx, field);
   }
   if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
     EnsureArenaStringIsNotDefault(msg, &field);
@@ -2682,7 +2678,7 @@ inline const TcParseTableBase* TcParser::GetTableFromAux(
     uint16_t type_card, TcParseTableBase::FieldAux aux) {
   uint16_t tv = type_card & field_layout::kTvMask;
   if (ABSL_PREDICT_TRUE(tv == field_layout::kTvTable)) {
-    return aux.table;
+    return aux.table_ptr();
   }
   ABSL_DCHECK(tv == field_layout::kTvDefault || tv == field_layout::kTvWeakPtr);
   const MessageLite* prototype = tv == field_layout::kTvDefault
@@ -2992,7 +2988,7 @@ const char* TcParser::ParseOneMapEntry(
           ABSL_DCHECK_EQ(inner_tag, value_tag);
           ptr = ctx->ParseLengthDelimitedInlined(ptr, [&](const char* ptr) {
             return ParseLoop(reinterpret_cast<MessageLite*>(obj), ptr, ctx,
-                             aux[1].table);
+                             aux[1].table_ptr());
           });
           if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
           continue;
@@ -3053,7 +3049,8 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
     // scalar value types. This makes the VisitXXX calls below faster because
     // the switch is much smaller.
     // Assert this in debug mode, just in case.
-    ABSL_DCHECK_GE(node_end - static_cast<char*>(node_key), sizeof(uint64_t));
+    ABSL_DCHECK_GE(node_end - static_cast<char*>(node_key),
+                   static_cast<ptrdiff_t>(sizeof(uint64_t)));
     memset(node_key, 0, sizeof(uint64_t));
     memset(node_end - sizeof(uint64_t), 0, sizeof(uint64_t));
 
@@ -3071,7 +3068,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
         absl::Overload{
             [&](std::string* str) { Arena::CreateInArenaStorage(str, arena); },
             [&](MessageLite* msg) {
-              aux[1].table->class_data->PlacementNew(msg, arena);
+              aux[1].table_ptr()->class_data->PlacementNew(msg, arena);
             },
             // Already initialized above. Do nothing here.
             [](void*) {},

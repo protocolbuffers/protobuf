@@ -17,6 +17,7 @@ use sys::mini_table::mini_table::RawMiniTable;
 // LINT.IfChange(encode_status)
 #[repr(C)]
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
+#[allow(unused)] // C struct values used in FFI.
 pub enum EncodeStatus {
     Ok = 0,
     OutOfMemory = 1,
@@ -29,10 +30,11 @@ pub enum EncodeStatus {
 // LINT.IfChange(decode_status)
 #[repr(C)]
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
+#[allow(unused)] // C struct values used in FFI.
 pub enum DecodeStatus {
     Ok = 0,
-    Malformed = 1,
-    OutOfMemory = 2,
+    OutOfMemory = 1,
+    Malformed = 2,
     BadUtf8 = 3,
     MaxDepthExceeded = 4,
     MissingRequired = 5,

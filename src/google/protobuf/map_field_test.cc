@@ -15,6 +15,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/synchronization/barrier.h"
 #include "absl/synchronization/blocking_counter.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/map.h"
@@ -135,7 +136,7 @@ TEST_P(MapFieldBasePrimitiveTest, Arena) {
     (*map_field->MutableMap())[100] = 101;
 
     // Trigger conversion to repeated field.
-    map_field->GetRepeatedField();
+    (void)map_field->GetRepeatedField();
   }
 
   {
@@ -193,7 +194,7 @@ class MapFieldStateTest
     MapFieldBase* map_field_base = map_field;
     Map<int32_t, int32_t>* map = map_field->MutableMap();
     (*map)[0] = 0;
-    map_field_base->GetRepeatedField();
+    (void)map_field_base->GetRepeatedField();
     Expect(map_field, CLEAN, 1, 1);
   }
 
@@ -206,7 +207,7 @@ class MapFieldStateTest
   void MakeRepeatedDirty(MapFieldType* map_field) {
     MakeMapDirty(map_field);
     MapFieldBase* map_field_base = map_field;
-    map_field_base->MutableRepeatedField();
+    (void)map_field_base->MutableRepeatedField();
     // We use map_ because we don't want to disturb the syncing
     map_field->map_.clear();
 
@@ -416,7 +417,7 @@ TEST_P(MapFieldStateTest, SpaceUsedExcludingSelf) {
 }
 
 TEST_P(MapFieldStateTest, GetMapField) {
-  map_field_base_->GetRepeatedField();
+  (void)map_field_base_->GetRepeatedField();
 
   if (state_ != REPEATED_DIRTY) {
     Expect(map_field_.get(), CLEAN, 1, 1);
@@ -426,7 +427,7 @@ TEST_P(MapFieldStateTest, GetMapField) {
 }
 
 TEST_P(MapFieldStateTest, MutableMapField) {
-  map_field_base_->MutableRepeatedField();
+  (void)map_field_base_->MutableRepeatedField();
 
   if (state_ != REPEATED_DIRTY) {
     Expect(map_field_.get(), REPEATED_DIRTY, 1, 1);

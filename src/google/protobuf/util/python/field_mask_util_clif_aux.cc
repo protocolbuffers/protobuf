@@ -21,7 +21,8 @@ PyObject* MergeMessageToBytes(const google::protobuf::Message& source,
   message->MergeFrom(destination);
   FieldMaskUtil::MergeMessageTo(source, mask, options, message.get());
   std::string wire;
-  message->SerializeToString(&wire);
+  // TODO: Remove this suppression.
+  (void)message->SerializeToString(&wire);
   return PyBytes_FromStringAndSize(wire.data(),
                                    static_cast<Py_ssize_t>(wire.size()));
 }

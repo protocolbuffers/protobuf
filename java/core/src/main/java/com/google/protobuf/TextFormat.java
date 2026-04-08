@@ -15,6 +15,7 @@ import com.google.protobuf.MessageReflection.MergeTarget;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1946,6 +1947,7 @@ public final class TextFormat {
        *
        * @throws IllegalArgumentException if a registry is already set.
        */
+      @CanIgnoreReturnValue
       public Builder setTypeRegistry(TypeRegistry typeRegistry) {
         this.typeRegistry = typeRegistry;
         return this;
@@ -1959,6 +1961,7 @@ public final class TextFormat {
        * <p>Use of this parameter is discouraged which may hide some errors (e.g. spelling error on
        * field name).
        */
+      @CanIgnoreReturnValue
       public Builder setAllowUnknownFields(boolean allowUnknownFields) {
         this.allowUnknownFields = allowUnknownFields;
         return this;
@@ -2848,7 +2851,7 @@ public final class TextFormat {
                     throw new InvalidEscapeSequenceException(
                         "Invalid escape sequence: '\\u' refers to a surrogate");
                   }
-                  byte[] chUtf8 = Character.toString(ch).getBytes(Internal.UTF_8);
+                  byte[] chUtf8 = Character.toString(ch).getBytes(StandardCharsets.UTF_8);
                   System.arraycopy(chUtf8, 0, result, pos, chUtf8.length);
                   pos += chUtf8.length;
                   i += 3;
@@ -2893,7 +2896,7 @@ public final class TextFormat {
                 }
                 int[] codepoints = new int[1];
                 codepoints[0] = codepoint;
-                byte[] chUtf8 = new String(codepoints, 0, 1).getBytes(Internal.UTF_8);
+                byte[] chUtf8 = new String(codepoints, 0, 1).getBytes(StandardCharsets.UTF_8);
                 System.arraycopy(chUtf8, 0, result, pos, chUtf8.length);
                 pos += chUtf8.length;
                 i += 7;
@@ -2936,7 +2939,7 @@ public final class TextFormat {
    * it's weird.
    */
   static String escapeText(final String input) {
-    return escapeBytes(ByteString.copyFromUtf8(input));
+    return TextFormatEscaper.escapeText(input);
   }
 
   /** Escape double quotes and backslashes in a String for emittingUnicode output of a message. */

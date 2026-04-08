@@ -1001,6 +1001,7 @@ public final class UnknownFieldSet implements MessageLite {
       }
 
       /** Discard the field's contents. */
+      @CanIgnoreReturnValue
       public Builder clear() {
         result = new Field();
         return this;
@@ -1010,6 +1011,7 @@ public final class UnknownFieldSet implements MessageLite {
        * Merge the values in {@code other} into this field. For each list of values, {@code other}'s
        * values are append to the ones in this field.
        */
+      @CanIgnoreReturnValue
       public Builder mergeFrom(Field other) {
         if (!other.varint.isEmpty()) {
           if (result.varint == null) {
@@ -1045,6 +1047,7 @@ public final class UnknownFieldSet implements MessageLite {
       }
 
       /** Add a varint value. */
+      @CanIgnoreReturnValue
       public Builder addVarint(long value) {
         if (result.varint == null) {
           result.varint = new LongArrayList();
@@ -1054,6 +1057,7 @@ public final class UnknownFieldSet implements MessageLite {
       }
 
       /** Add a fixed32 value. */
+      @CanIgnoreReturnValue
       public Builder addFixed32(int value) {
         if (result.fixed32 == null) {
           result.fixed32 = new IntArrayList();
@@ -1063,6 +1067,7 @@ public final class UnknownFieldSet implements MessageLite {
       }
 
       /** Add a fixed64 value. */
+      @CanIgnoreReturnValue
       public Builder addFixed64(long value) {
         if (result.fixed64 == null) {
           result.fixed64 = new LongArrayList();
@@ -1072,6 +1077,7 @@ public final class UnknownFieldSet implements MessageLite {
       }
 
       /** Add a length-delimited value. */
+      @CanIgnoreReturnValue
       public Builder addLengthDelimited(ByteString value) {
         if (result.lengthDelimited == null) {
           result.lengthDelimited = new ArrayList<>();
@@ -1081,6 +1087,7 @@ public final class UnknownFieldSet implements MessageLite {
       }
 
       /** Add an embedded group. */
+      @CanIgnoreReturnValue
       public Builder addGroup(UnknownFieldSet value) {
         if (result.group == null) {
           result.group = new ArrayList<>();

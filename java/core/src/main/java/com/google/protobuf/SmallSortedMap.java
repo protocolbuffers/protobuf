@@ -201,6 +201,7 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
   }
 
   @Override
+  @CanIgnoreReturnValue
   public V put(K key, V value) {
     checkMutable();
     final int index = binarySearchInArray(key);
@@ -249,6 +250,7 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
    * <p>{@inheritDoc}
    */
   @Override
+  @CanIgnoreReturnValue
   public V remove(Object o) {
     checkMutable();
     @SuppressWarnings("unchecked")
@@ -266,6 +268,7 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
     }
   }
 
+  @CanIgnoreReturnValue
   private V removeArrayEntryAt(int index) {
     checkMutable();
     @SuppressWarnings("unchecked")
@@ -409,6 +412,7 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
     }
 
     @Override
+    @CanIgnoreReturnValue
     public V setValue(V newValue) {
       checkMutable();
       final V oldValue = this.value;
@@ -475,6 +479,7 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
     }
 
     @Override
+    @CanIgnoreReturnValue
     public boolean add(Map.Entry<K, V> entry) {
       if (!contains(entry)) {
         put(entry.getKey(), entry.getValue());
@@ -489,6 +494,7 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
      * <p>{@inheritDoc}
      */
     @Override
+    @CanIgnoreReturnValue
     public boolean remove(Object o) {
       @SuppressWarnings("unchecked")
       final Map.Entry<K, V> entry = (Map.Entry<K, V>) o;

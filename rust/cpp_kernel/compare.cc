@@ -11,7 +11,8 @@ static std::string SerializeDeterministically(const google::protobuf::MessageLit
     google::protobuf::io::StringOutputStream output_stream(&serialized);
     google::protobuf::io::CodedOutputStream coded_stream(&output_stream);
     coded_stream.SetSerializationDeterministic(true);
-    m.SerializePartialToCodedStream(&coded_stream);
+    // TODO: Remove this suppression.
+    (void)m.SerializePartialToCodedStream(&coded_stream);
   }
   return serialized;
 }

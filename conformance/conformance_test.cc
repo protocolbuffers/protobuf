@@ -239,6 +239,8 @@ ConformanceTestSuite::ConformanceRequestSetting::GetSyntaxIdentifier() const {
       return "Proto3";
     case Edition::EDITION_PROTO2:
       return "Proto2";
+    case Edition::EDITION_UNSTABLE:
+      return "EditionUnstable";
     default: {
       std::string id = "Editions";
       if (prototype_message_.GetDescriptor()->name() == "TestAllTypesProto2") {
@@ -553,7 +555,7 @@ bool ConformanceTestSuite::RunTest(const std::string& test_name,
   }
 
   std::string serialized_request;
-  request.SerializeToString(&serialized_request);
+  ABSL_CHECK(request.SerializeToString(&serialized_request));
 
   uint32_t len = internal::little_endian::FromHost(
       static_cast<uint32_t>(serialized_request.size()));

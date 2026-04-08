@@ -9,7 +9,7 @@ load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
-load("//bazel:upb_proto_library.bzl", "upb_c_proto_library", "upb_proto_reflection_library")
+load("//upb/bazel:upb_proto_library.bzl", "upb_c_proto_library", "upb_proto_reflection_library")
 load(":defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
 
 bzl_library(
@@ -117,11 +117,46 @@ cc_binary(
 
 cc_library(
     name = "defaults_test_embedded",
+    testonly = True,
     hdrs = [
         "defaults_test_embedded.h",
         "defaults_test_embedded_base64.h",
         "defaults_test_embedded_decimal_array.h",
         "defaults_test_embedded_hex_array.h",
+    ],
+)
+
+cc_library(
+    name = "edition_defaults_test_utils",
+    testonly = True,
+    srcs = ["edition_defaults_test_utils.cc"],
+    hdrs = ["edition_defaults_test_utils.h"],
+    visibility = [
+        "//pkg:__subpackages__",
+        "//src/google/protobuf:__pkg__",
+        "//src/google/protobuf/compiler:__subpackages__",
+    ],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:test_textproto",
+        "@abseil-cpp//absl/log:check",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "edition_defaults_test_utils_test",
+    srcs = ["edition_defaults_test_utils_test.cc"],
+    deps = [
+        ":edition_defaults_test_utils",
+        "//src/google/protobuf",
+        "//src/google/protobuf:test_textproto",
+        "//src/google/protobuf:unittest_features_cc_proto",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -161,7 +196,10 @@ proto_library(
     name = "test_messages_proto2_editions_proto",
     testonly = True,
     srcs = ["golden/test_messages_proto2_editions.proto"],
-    visibility = ["//net/proto2/util/converter/internal/conformance:__pkg__"],
+    visibility = [
+        "//conformance/test_protos:__pkg__",
+        "//net/proto2/util/converter/internal/conformance:__pkg__",
+    ],
 )
 
 cc_proto_library(
@@ -219,10 +257,14 @@ proto_library(
     name = "test_messages_proto3_editions_proto",
     testonly = True,
     srcs = ["golden/test_messages_proto3_editions.proto"],
-    visibility = ["//net/proto2/util/converter/internal/conformance:__pkg__"],
+    visibility = [
+        "//conformance/test_protos:__pkg__",
+        "//net/proto2/util/converter/internal/conformance:__pkg__",
+    ],
     deps = [
         "//:any_proto",
         "//:duration_proto",
+        "//:empty_proto",
         "//:field_mask_proto",
         "//:struct_proto",
         "//:timestamp_proto",

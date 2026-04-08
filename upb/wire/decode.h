@@ -65,7 +65,7 @@ enum {
    * If set, the fasttable decoder will not be used. */
   kUpb_DecodeOption_DisableFastTable = 16,
 };
-// LINT.ThenChange(//depot/google3/third_party/protobuf/rust/upb.rs:decode_status)
+// LINT.ThenChange(//depot/google3/third_party/upb/rust/wire.rs:decode_status)
 
 UPB_INLINE uint32_t upb_DecodeOptions_MaxDepth(uint16_t depth) {
   return (uint32_t)depth << 16;
@@ -83,8 +83,8 @@ UPB_INLINE int upb_Decode_LimitDepth(uint32_t decode_options, uint32_t limit) {
 // LINT.IfChange
 typedef enum {
   kUpb_DecodeStatus_Ok = 0,
-  kUpb_DecodeStatus_Malformed = 1,    // Wire format was corrupt
-  kUpb_DecodeStatus_OutOfMemory = 2,  // Arena alloc failed
+  kUpb_DecodeStatus_OutOfMemory = 1,  // Arena alloc failed
+  kUpb_DecodeStatus_Malformed = 2,    // Wire format was corrupt
   kUpb_DecodeStatus_BadUtf8 = 3,      // String field had bad UTF-8
   kUpb_DecodeStatus_MaxDepthExceeded =
       4,  // Exceeded upb_DecodeOptions_MaxDepth

@@ -302,7 +302,7 @@ class FieldMaskTest(unittest.TestCase):
       mask.MergeMessage(src, dst)
       # The expected result message.
       msg = unittest_no_field_presence_pb2.TestAllTypes()
-      if field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
+      if field.is_repeated:
         repeated_src = getattr(src, field_name)
         repeated_msg = getattr(msg, field_name)
         if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
@@ -472,6 +472,24 @@ class FieldMaskTest(unittest.TestCase):
         field_mask._CamelCaseToSnakeCase,
         'foo_bar',
     )
+
+  def testDeepFieldMask(self):
+    mask1 = field_mask_pb2.FieldMask()
+    mask2 = field_mask_pb2.FieldMask()
+    out_mask = field_mask_pb2.FieldMask()
+
+    # Path depth of 1500 exceeds Python's default recursion limit of 1000.
+    deep_path = '.'.join(['a'] * 1500)
+    mask1.paths.append(deep_path)
+    mask2.paths.append(deep_path)
+
+    # These should not raise RecursionError.
+    out_mask.Union(mask1, mask2)
+    self.assertEqual(out_mask.ToJsonString(), deep_path)
+
+    out_mask.Clear()
+    out_mask.Intersect(mask1, mask2)
+    self.assertEqual(out_mask.ToJsonString(), deep_path)
 
 
 if __name__ == '__main__':

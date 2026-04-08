@@ -260,7 +260,9 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
     return isMutable;
   }
 
-  /* (non-Javadoc)
+  /**
+   * (non-Javadoc)
+   *
    * @see com.google.protobuf.MutabilityOracle#ensureMutable()
    */
   @Override

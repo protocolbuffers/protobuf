@@ -57,7 +57,8 @@ std::string GetTestName(absl::string_view test_name, TestStrictness strictness,
       << "Duplicated test name: " << test_name;
 
   std::string serialized_request;
-  request.SerializeToString(&serialized_request);
+  // TODO: Remove this suppression.
+  (void)request.SerializeToString(&serialized_request);
 
   std::string serialized_response =
       runner_->RunTest(test_name, serialized_request);

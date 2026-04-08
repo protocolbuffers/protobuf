@@ -317,6 +317,15 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ASSUME(expr) assert(expr)
 #endif
 
+#if UPB_HAS_BUILTIN(__builtin_constant_p) && UPB_HAS_ATTRIBUTE(const)
+#define UPB_MAYBE_ASSUME(pred, x) \
+  if (__builtin_constant_p(pred) && pred) UPB_ASSUME(x)
+#define UPB_ATTR_CONST __attribute__((const))
+#else
+#define UPB_MAYBE_ASSUME(pred, x)
+#define UPB_ATTR_CONST
+#endif
+
 /* UPB_ASSERT(): in release mode, we use the expression without letting it be
  * evaluated.  This prevents "unused variable" warnings. */
 #ifdef NDEBUG
@@ -492,14 +501,6 @@ Error, UINTPTR_MAX is undefined
 
 #undef UPB_FASTTABLE_SUPPORTED
 
-/* Disable proto2 arena behavior (TEMPORARY) **********************************/
-
-#ifdef UPB_DISABLE_CLOSED_ENUM_CHECKING
-#define UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN 1
-#else
-#define UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN 0
-#endif
-
 #if defined(__cplusplus)
 #if defined(__clang__) || UPB_GNUC_MIN(6, 0)
 // https://gcc.gnu.org/gcc-6/changes.html
@@ -513,17 +514,13 @@ Error, UINTPTR_MAX is undefined
 
 #if defined(UPB_IS_GOOGLE3) && \
     (!defined(UPB_BOOTSTRAP_STAGE) || UPB_BOOTSTRAP_STAGE != 0)
-#define UPB_DESC(sym) proto2_##sym
 #define UPB_DESC_MINITABLE(sym) &proto2__##sym##_msg_init
 #elif defined(UPB_IS_GOOGLE3) && defined(UPB_BOOTSTRAP_STAGE) && \
     UPB_BOOTSTRAP_STAGE == 0
-#define UPB_DESC(sym) proto2_##sym
 #define UPB_DESC_MINITABLE(sym) proto2__##sym##_msg_init()
 #elif defined(UPB_BOOTSTRAP_STAGE) && UPB_BOOTSTRAP_STAGE == 0
-#define UPB_DESC(sym) google_protobuf_##sym
 #define UPB_DESC_MINITABLE(sym) google__protobuf__##sym##_msg_init()
 #else
-#define UPB_DESC(sym) google_protobuf_##sym
 #define UPB_DESC_MINITABLE(sym) &google__protobuf__##sym##_msg_init
 #endif
 
@@ -702,10 +699,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_WEAK_ALIAS(type, from, to) \
   extern type to;                      \
   __asm__(".globl _" #to);             \
+  __asm__(".private_extern _" #to);    \
   __asm__(".set _" #to ", _" #from);   \
   __asm__(".weak_definition _" #to);
 #define UPB_STRONG_ALIAS(type, from, to) \
   __asm__(".globl _" #to);               \
+  __asm__(".private_extern _" #to);      \
   __asm__(".set _" #to ", _" #from);
 
 #elif defined(__ELF__)

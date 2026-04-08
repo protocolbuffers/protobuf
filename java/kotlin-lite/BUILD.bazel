@@ -237,20 +237,3 @@ java_test(
     test_class = "com.google.protobuf.kotlin.Proto3Test",
     runtime_deps = [":proto3_test_lite_library"],
 )
-
-pkg_files(
-    name = "dist_files",
-    srcs = glob([
-        "src/main/kotlin/com/google/protobuf/*.kt",
-        "src/test/kotlin/**/*.kt",
-    ]) + [
-        "BUILD.bazel",
-        "generate-sources-build.xml",
-        "generate-test-sources-build.xml",
-        "lite.awk",
-        "pom_template.xml",
-        "process-lite-sources-build.xml",
-    ],
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//java:__pkg__"],
-)

@@ -20,20 +20,23 @@
 #ifndef GOOGLE_PROTOBUF_IO_GZIP_STREAM_H__
 #define GOOGLE_PROTOBUF_IO_GZIP_STREAM_H__
 
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/port.h"
-#include <zlib.h>
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
+namespace internal {
+struct StreamContext;
+}  // namespace internal
+
 namespace io {
 
 // A ZeroCopyInputStream that reads compressed data through zlib
-class PROTOBUF_EXPORT GzipInputStream final : public ZeroCopyInputStream {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    GzipInputStream final : public ZeroCopyInputStream {
  public:
   // Format key for constructor
   enum Format {
@@ -55,21 +58,24 @@ class PROTOBUF_EXPORT GzipInputStream final : public ZeroCopyInputStream {
   ~GzipInputStream() override;
 
   // Return last error message or NULL if no error.
-  inline const char* ZlibErrorMessage() const { return zcontext_.msg; }
-  inline int ZlibErrorCode() const { return zerror_; }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const char* ZlibErrorMessage() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline int ZlibErrorCode() const {
+    return zerror_;
+  }
 
   // implements ZeroCopyInputStream ----------------------------------
-  bool Next(const void** data, int* size) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Next(const void** data,
+                                                int* size) override;
   void BackUp(int count) override;
-  bool Skip(int count) override;
-  int64_t ByteCount() const override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Skip(int count) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount() const override;
 
  private:
   Format format_;
 
   ZeroCopyInputStream* sub_stream_;
 
-  z_stream zcontext_;
+  internal::StreamContext* zcontext_;
   int zerror_;
 
   void* output_buffer_;
@@ -81,7 +87,8 @@ class PROTOBUF_EXPORT GzipInputStream final : public ZeroCopyInputStream {
   void DoNextOutput(const void** data, int* size);
 };
 
-class PROTOBUF_EXPORT GzipOutputStream final : public ZeroCopyOutputStream {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    GzipOutputStream final : public ZeroCopyOutputStream {
  public:
   // Format key for constructor
   enum Format {
@@ -122,8 +129,10 @@ class PROTOBUF_EXPORT GzipOutputStream final : public ZeroCopyOutputStream {
   ~GzipOutputStream() override;
 
   // Return last error message or NULL if no error.
-  inline const char* ZlibErrorMessage() const { return zcontext_.msg; }
-  inline int ZlibErrorCode() const { return zerror_; }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const char* ZlibErrorMessage() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline int ZlibErrorCode() const {
+    return zerror_;
+  }
 
   // Flushes data written so far to zipped data in the underlying stream.
   // It is the caller's responsibility to flush the underlying stream if
@@ -137,18 +146,19 @@ class PROTOBUF_EXPORT GzipOutputStream final : public ZeroCopyOutputStream {
   // In the case of a Z_FULL_FLUSH or Z_SYNC_FLUSH, make sure that avail_out
   // is greater than six to avoid repeated flush markers due to
   // avail_out == 0 on return.
-  bool Flush();
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Flush();
 
   // Writes out all data and closes the gzip stream.
   // It is the caller's responsibility to close the underlying stream if
   // necessary.
   // Returns true if no error.
-  bool Close();
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Close();
 
   // implements ZeroCopyOutputStream ---------------------------------
-  bool Next(void** data, int* size) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Next(void** data,
+                                                int* size) override;
   void BackUp(int count) override;
-  int64_t ByteCount() const override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount() const override;
 
  private:
   ZeroCopyOutputStream* sub_stream_;
@@ -156,7 +166,7 @@ class PROTOBUF_EXPORT GzipOutputStream final : public ZeroCopyOutputStream {
   void* sub_data_;
   int sub_data_size_;
 
-  z_stream zcontext_;
+  internal::StreamContext* zcontext_;
   int zerror_;
   void* input_buffer_;
   size_t input_buffer_length_;

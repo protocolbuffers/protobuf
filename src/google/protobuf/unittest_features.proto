@@ -13,17 +13,32 @@ import "google/protobuf/descriptor.proto";
 
 option java_outer_classname = "UnittestFeatures";
 
+// Custom option added for option open enum coverage
+extend google.protobuf.MessageOptions {
+  CustomOptionLifetimesMessage custom_option_lifetimes_message = 7737012;
+}
+
+message CustomOptionLifetimesMessage {
+  CustomOptionLifetimesEnum custom_enum = 1;
+  repeated CustomOptionLifetimesEnum repeated_custom_enum = 2;
+}
+
+enum CustomOptionLifetimesEnum {
+  TEST_CUSTOM_OPTION = 0;
+  CUSTOM_OPTION1 = 1;
+}
+
 extend google.protobuf.FeatureSet {
   TestFeatures test = 9999;
 }
 
 message TestMessage {
   extend google.protobuf.FeatureSet {
-    TestFeatures test_message = 9998;
+    TestMessageFeatures test_message = 9998;
   }
   message Nested {
     extend google.protobuf.FeatureSet {
-      TestFeatures test_nested = 9997;
+      TestNestedFeatures test_nested = 9997;
     }
   }
 }
@@ -63,6 +78,7 @@ enum ValueLifetimeFeature {
     edition_deprecated: EDITION_99998_TEST_ONLY
     deprecation_warning: "Custom feature deprecation warning"
     edition_removed: EDITION_99999_TEST_ONLY
+    removal_error: "Custom feature removal error"
   }];
   VALUE_LIFETIME_EMPTY_SUPPORT = 3 [feature_support = {}];
   VALUE_LIFETIME_FUTURE = 4
@@ -73,9 +89,35 @@ enum ValueLifetimeFeature {
   }];
   VALUE_LIFETIME_REMOVED = 6 [feature_support = {
     edition_deprecated: EDITION_2023
+    deprecation_warning: "Custom feature deprecation warning"
     edition_removed: EDITION_99997_TEST_ONLY
     removal_error: "Custom feature removal error"
   }];
+}
+message TestMessageFeatures {
+  EnumFeature file_feature = 1 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
+    edition_defaults = { edition: EDITION_PROTO3, value: "VALUE2" },
+    edition_defaults = { edition: EDITION_2023, value: "VALUE3" },
+    edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "VALUE4" },
+    edition_defaults = { edition: EDITION_99998_TEST_ONLY, value: "VALUE5" }
+  ];
+}
+
+message TestNestedFeatures {
+  EnumFeature file_feature = 1 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
+    edition_defaults = { edition: EDITION_PROTO3, value: "VALUE2" },
+    edition_defaults = { edition: EDITION_2023, value: "VALUE3" },
+    edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "VALUE4" },
+    edition_defaults = { edition: EDITION_99998_TEST_ONLY, value: "VALUE5" }
+  ];
 }
 
 message TestFeatures {

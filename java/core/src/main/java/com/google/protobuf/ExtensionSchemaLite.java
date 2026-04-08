@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @CheckReturnValue
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "rawtypes"})
 final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
 
   @Override

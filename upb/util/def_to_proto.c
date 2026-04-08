@@ -9,9 +9,17 @@
 
 #include <inttypes.h>
 #include <math.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 
 #include "google/protobuf/descriptor.upb.h"
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
+#include "upb/mem/arena.h"
+#include "upb/message/array.h"
 #include "upb/port/vsnprintf_compat.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/enum_reserved_range.h"
@@ -19,7 +27,6 @@
 #include "upb/reflection/internal/def_pool.h"
 #include "upb/reflection/internal/field_def.h"
 #include "upb/reflection/internal/file_def.h"
-#include "upb/reflection/message.h"
 #include "upb/reflection/message_reserved_range.h"
 
 // Must be last.
@@ -224,14 +231,14 @@ static google_protobuf_FieldDescriptorProto* fielddef_toproto(upb_ToProto_Contex
   google_protobuf_FieldDescriptorProto_set_number(proto, upb_FieldDef_Number(f));
 
   if (upb_FieldDef_IsRequired(f) &&
-      upb_FileDef_Edition(upb_FieldDef_File(f)) >= UPB_DESC(EDITION_2023)) {
+      upb_FileDef_Edition(upb_FieldDef_File(f)) >= google_protobuf_EDITION_2023) {
     google_protobuf_FieldDescriptorProto_set_label(
-        proto, UPB_DESC(FieldDescriptorProto_LABEL_OPTIONAL));
+        proto, google_protobuf_FieldDescriptorProto_LABEL_OPTIONAL);
   } else {
     google_protobuf_FieldDescriptorProto_set_label(proto, upb_FieldDef_Label(f));
   }
   if (upb_FieldDef_Type(f) == kUpb_FieldType_Group &&
-      upb_FileDef_Edition(upb_FieldDef_File(f)) >= UPB_DESC(EDITION_2023)) {
+      upb_FileDef_Edition(upb_FieldDef_File(f)) >= google_protobuf_EDITION_2023) {
     google_protobuf_FieldDescriptorProto_set_type(proto, kUpb_FieldType_Message);
   } else {
     google_protobuf_FieldDescriptorProto_set_type(proto, upb_FieldDef_Type(f));
@@ -357,8 +364,8 @@ static google_protobuf_EnumDescriptorProto* enumdef_toproto(upb_ToProto_Context*
                     upb_FileDef_Pool(upb_EnumDef_File(e))));
   }
 
-  UPB_DESC(SymbolVisibility) visibility = upb_EnumDef_Visibility(e);
-  if (visibility != UPB_DESC(VISIBILITY_UNSET)) {
+  google_protobuf_SymbolVisibility visibility = upb_EnumDef_Visibility(e);
+  if (visibility != google_protobuf_VISIBILITY_UNSET) {
     google_protobuf_EnumDescriptorProto_set_visibility(proto, visibility);
   }
 
@@ -463,8 +470,8 @@ static google_protobuf_DescriptorProto* msgdef_toproto(upb_ToProto_Context* ctx,
                     upb_FileDef_Pool(upb_MessageDef_File(m))));
   }
 
-  UPB_DESC(SymbolVisibility) visibility = upb_MessageDef_Visibility(m);
-  if (visibility != UPB_DESC(VISIBILITY_UNSET)) {
+  google_protobuf_SymbolVisibility visibility = upb_MessageDef_Visibility(m);
+  if (visibility != google_protobuf_VISIBILITY_UNSET) {
     google_protobuf_DescriptorProto_set_visibility(proto, visibility);
   }
 
@@ -548,14 +555,20 @@ static google_protobuf_FileDescriptorProto* filedef_toproto(upb_ToProto_Context*
     }
   }
 
-  if (upb_FileDef_Syntax(f) == kUpb_Syntax_Editions) {
-    google_protobuf_FileDescriptorProto_set_edition(proto, upb_FileDef_Edition(f));
-  }
+  google_protobuf_Edition edition = upb_FileDef_Edition(f);
 
-  if (upb_FileDef_Syntax(f) == kUpb_Syntax_Proto3) {
-    google_protobuf_FileDescriptorProto_set_syntax(proto, strviewdup(ctx, "proto3"));
-  } else if (upb_FileDef_Syntax(f) == kUpb_Syntax_Editions) {
-    google_protobuf_FileDescriptorProto_set_syntax(proto, strviewdup(ctx, "editions"));
+  switch (edition) {
+    case google_protobuf_EDITION_PROTO2:
+      // We could set syntax to "proto2", but C++ omits it completely, which is
+      // equivalent.
+      break;
+    case google_protobuf_EDITION_PROTO3:
+      google_protobuf_FileDescriptorProto_set_syntax(proto, strviewdup(ctx, "proto3"));
+      break;
+    default:
+      google_protobuf_FileDescriptorProto_set_syntax(proto, strviewdup(ctx, "editions"));
+      google_protobuf_FileDescriptorProto_set_edition(proto, edition);
+      break;
   }
 
   size_t n;

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include <gtest/gtest.h>
+#include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/unittest_proto3_arena.pb.h"
 
@@ -89,7 +90,7 @@ TEST(Proto3ArenaLiteTest, Parsing) {
 
   Arena arena;
   TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
-  arena_message->ParseFromString(original.SerializeAsString());
+  ABSL_CHECK(arena_message->ParseFromString(original.SerializeAsString()));
   ExpectAllFieldsSet(*arena_message);
 }
 

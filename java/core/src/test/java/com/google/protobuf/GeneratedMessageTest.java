@@ -1722,6 +1722,9 @@ public class GeneratedMessageTest {
                   throw injectedException;
                 }
                 first = false;
+                if (len > bytes.length) {
+                  len = bytes.length;
+                }
                 System.arraycopy(bytes, 0, b, off, len);
                 return len;
               }

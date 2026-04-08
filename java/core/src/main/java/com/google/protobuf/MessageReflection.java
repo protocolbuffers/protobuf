@@ -101,7 +101,10 @@ class MessageReflection {
   @SuppressWarnings("unchecked")
   static boolean isInitialized(MessageOrBuilder message) {
     // Check that all required fields are present.
-    for (final Descriptors.FieldDescriptor field : message.getDescriptorForType().getFields()) {
+    Descriptor descriptor = message.getDescriptorForType();
+    int numFields = descriptor.getFieldCount();
+    for (int i = 0; i < numFields; i++) {
+      FieldDescriptor field = descriptor.getField(i);
       if (field.isRequired()) {
         if (!message.hasField(field)) {
           return false;
@@ -224,12 +227,14 @@ class MessageReflection {
      * Sets a field to the given value. The value must be of the correct type for this field, i.e.
      * the same type that {@link Message#getField(Descriptors.FieldDescriptor)} would return.
      */
+    @CanIgnoreReturnValue
     MergeTarget setField(Descriptors.FieldDescriptor field, Object value);
 
     /**
      * Clears the field. This is exactly equivalent to calling the generated "clear" accessor method
      * corresponding to the field.
      */
+    @CanIgnoreReturnValue
     MergeTarget clearField(Descriptors.FieldDescriptor field);
 
     /**
@@ -240,6 +245,7 @@ class MessageReflection {
      * @throws IllegalArgumentException The field is not a repeated field, or {@code
      *     field.getContainingType() != getDescriptorForType()}.
      */
+    @CanIgnoreReturnValue
     MergeTarget setRepeatedField(Descriptors.FieldDescriptor field, int index, Object value);
 
     /**
@@ -248,6 +254,7 @@ class MessageReflection {
      * @throws IllegalArgumentException The field is not a repeated field, or {@code
      *     field.getContainingType() != getDescriptorForType()}.
      */
+    @CanIgnoreReturnValue
     MergeTarget addRepeatedField(Descriptors.FieldDescriptor field, Object value);
 
     /**
@@ -262,6 +269,7 @@ class MessageReflection {
      * Clears the oneof. This is exactly equivalent to calling the generated "clear" accessor method
      * corresponding to the oneof.
      */
+    @CanIgnoreReturnValue
     MergeTarget clearOneof(Descriptors.OneofDescriptor oneof);
 
     /** Obtains the FieldDescriptor if the given oneof is set. Returns null if no field is set. */

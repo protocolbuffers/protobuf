@@ -45,11 +45,13 @@ struct upb_DefPool {
   upb_inttable exts;   // (upb_MiniTableExtension*) -> (upb_FieldDef*)
   upb_ExtensionRegistry* extreg;
   const upb_GeneratedRegistryRef* generated_extreg;
-  const UPB_DESC(FeatureSetDefaults) * feature_set_defaults;
+  const google_protobuf_FeatureSetDefaults* feature_set_defaults;
   upb_MiniTablePlatform platform;
   void* scratch_data;
   size_t scratch_size;
   size_t bytes_loaded;
+  bool disable_closed_enum_checking;
+  bool disable_implicit_field_presence;
 };
 
 void upb_DefPool_Free(upb_DefPool* s) {
@@ -67,6 +69,8 @@ upb_DefPool* upb_DefPool_New(void) {
 
   s->arena = upb_Arena_New();
   s->bytes_loaded = 0;
+  s->disable_closed_enum_checking = false;
+  s->disable_implicit_field_presence = false;
 
   s->scratch_size = 240;
   s->scratch_data = upb_gmalloc(s->scratch_size);
@@ -99,8 +103,26 @@ err:
   return NULL;
 }
 
-const UPB_DESC(FeatureSetDefaults) *
-    upb_DefPool_FeatureSetDefaults(const upb_DefPool* s) {
+void upb_DefPool_DisableClosedEnumChecking(upb_DefPool* s) {
+  UPB_ASSERT(upb_strtable_count(&s->files) == 0);
+  s->disable_closed_enum_checking = true;
+}
+
+bool upb_DefPool_ClosedEnumCheckingDisabled(const upb_DefPool* s) {
+  return s->disable_closed_enum_checking;
+}
+
+void upb_DefPool_DisableImplicitFieldPresence(upb_DefPool* s) {
+  UPB_ASSERT(upb_strtable_count(&s->files) == 0);
+  s->disable_implicit_field_presence = true;
+}
+
+bool upb_DefPool_ImplicitFieldPresenceDisabled(const upb_DefPool* s) {
+  return s->disable_implicit_field_presence;
+}
+
+const google_protobuf_FeatureSetDefaults* upb_DefPool_FeatureSetDefaults(
+    const upb_DefPool* s) {
   return s->feature_set_defaults;
 }
 
@@ -108,8 +130,8 @@ bool upb_DefPool_SetFeatureSetDefaults(upb_DefPool* s,
                                        const char* serialized_defaults,
                                        size_t serialized_len,
                                        upb_Status* status) {
-  const UPB_DESC(FeatureSetDefaults)* defaults = UPB_DESC(
-      FeatureSetDefaults_parse)(serialized_defaults, serialized_len, s->arena);
+  const google_protobuf_FeatureSetDefaults* defaults = google_protobuf_FeatureSetDefaults_parse(
+      serialized_defaults, serialized_len, s->arena);
   if (!defaults) {
     upb_Status_SetErrorFormat(status, "Failed to parse defaults");
     return false;
@@ -120,8 +142,8 @@ bool upb_DefPool_SetFeatureSetDefaults(upb_DefPool* s,
                               "pool has started building");
     return false;
   }
-  int min_edition = UPB_DESC(FeatureSetDefaults_minimum_edition(defaults));
-  int max_edition = UPB_DESC(FeatureSetDefaults_maximum_edition(defaults));
+  int min_edition = google_protobuf_FeatureSetDefaults_minimum_edition(defaults);
+  int max_edition = google_protobuf_FeatureSetDefaults_maximum_edition(defaults);
   if (min_edition > max_edition) {
     upb_Status_SetErrorFormat(status, "Invalid edition range %s to %s",
                               upb_FileDef_EditionName(min_edition),
@@ -129,14 +151,13 @@ bool upb_DefPool_SetFeatureSetDefaults(upb_DefPool* s,
     return false;
   }
   size_t size;
-  const UPB_DESC(
-      FeatureSetDefaults_FeatureSetEditionDefault)* const* default_list =
-      UPB_DESC(FeatureSetDefaults_defaults(defaults, &size));
-  int prev_edition = UPB_DESC(EDITION_UNKNOWN);
+  const google_protobuf_FeatureSetDefaults_FeatureSetEditionDefault* const*
+      default_list = google_protobuf_FeatureSetDefaults_defaults(defaults, &size);
+  int prev_edition = google_protobuf_EDITION_UNKNOWN;
   for (size_t i = 0; i < size; ++i) {
-    int edition = UPB_DESC(
-        FeatureSetDefaults_FeatureSetEditionDefault_edition(default_list[i]));
-    if (edition == UPB_DESC(EDITION_UNKNOWN)) {
+    int edition = google_protobuf_FeatureSetDefaults_FeatureSetEditionDefault_edition(
+        default_list[i]);
+    if (edition == google_protobuf_EDITION_UNKNOWN) {
       upb_Status_SetErrorFormat(status, "Invalid edition UNKNOWN specified");
       return false;
     }
@@ -209,7 +230,7 @@ void _upb_DefPool_SetPlatform(upb_DefPool* s, upb_MiniTablePlatform platform) {
 
 const upb_MessageDef* upb_DefPool_FindMessageByName(const upb_DefPool* s,
                                                     const char* sym) {
-  return _upb_DefPool_Unpack(s, sym, strlen(sym), UPB_DEFTYPE_MSG);
+  return upb_DefPool_FindMessageByNameWithSize(s, sym, strlen(sym));
 }
 
 const upb_MessageDef* upb_DefPool_FindMessageByNameWithSize(
@@ -219,12 +240,23 @@ const upb_MessageDef* upb_DefPool_FindMessageByNameWithSize(
 
 const upb_EnumDef* upb_DefPool_FindEnumByName(const upb_DefPool* s,
                                               const char* sym) {
-  return _upb_DefPool_Unpack(s, sym, strlen(sym), UPB_DEFTYPE_ENUM);
+  return upb_DefPool_FindEnumByNameWithSize(s, sym, strlen(sym));
 }
 
-const upb_EnumValueDef* upb_DefPool_FindEnumByNameval(const upb_DefPool* s,
-                                                      const char* sym) {
-  return _upb_DefPool_Unpack(s, sym, strlen(sym), UPB_DEFTYPE_ENUMVAL);
+const upb_EnumDef* upb_DefPool_FindEnumByNameWithSize(const upb_DefPool* s,
+                                                      const char* sym,
+                                                      size_t len) {
+  return _upb_DefPool_Unpack(s, sym, len, UPB_DEFTYPE_ENUM);
+}
+
+const upb_EnumValueDef* upb_DefPool_FindEnumValueByName(const upb_DefPool* s,
+                                                        const char* sym) {
+  return upb_DefPool_FindEnumValueByNameWithSize(s, sym, strlen(sym));
+}
+
+const upb_EnumValueDef* upb_DefPool_FindEnumValueByNameWithSize(
+    const upb_DefPool* s, const char* sym, size_t len) {
+  return _upb_DefPool_Unpack(s, sym, len, UPB_DEFTYPE_ENUMVAL);
 }
 
 const upb_FileDef* upb_DefPool_FindFileByName(const upb_DefPool* s,
@@ -367,7 +399,7 @@ static void remove_filedef(upb_DefPool* s, upb_FileDef* file) {
 
 static const upb_FileDef* upb_DefBuilder_AddFileToPool(
     upb_DefBuilder* const builder, upb_DefPool* const s,
-    const UPB_DESC(FileDescriptorProto) * const file_proto,
+    const google_protobuf_FileDescriptorProto* const file_proto,
     const upb_StringView name, upb_Status* const status) {
   if (UPB_SETJMP(builder->err) != 0) {
     UPB_ASSERT(!upb_Status_IsOk(status));
@@ -379,7 +411,7 @@ static const upb_FileDef* upb_DefBuilder_AddFileToPool(
              !upb_strtable_init(&builder->feature_cache, 16,
                                 builder->tmp_arena) ||
              !(builder->legacy_features =
-                   UPB_DESC(FeatureSet_new)(builder->tmp_arena))) {
+                   google_protobuf_FeatureSet_new(builder->tmp_arena))) {
     _upb_DefBuilder_OomErr(builder);
   } else {
     _upb_FileDef_Create(builder, file_proto);
@@ -395,9 +427,9 @@ static const upb_FileDef* upb_DefBuilder_AddFileToPool(
 }
 
 static const upb_FileDef* _upb_DefPool_AddFile(
-    upb_DefPool* s, const UPB_DESC(FileDescriptorProto) * file_proto,
+    upb_DefPool* s, const google_protobuf_FileDescriptorProto* file_proto,
     const upb_MiniTableFile* layout, upb_Status* status) {
-  const upb_StringView name = UPB_DESC(FileDescriptorProto_name)(file_proto);
+  const upb_StringView name = google_protobuf_FileDescriptorProto_name(file_proto);
 
   // Determine whether we already know about this file.
   {
@@ -428,10 +460,9 @@ static const upb_FileDef* _upb_DefPool_AddFile(
   return upb_DefBuilder_AddFileToPool(&ctx, s, file_proto, name, status);
 }
 
-const upb_FileDef* upb_DefPool_AddFile(upb_DefPool* s,
-                                       const UPB_DESC(FileDescriptorProto) *
-                                           file_proto,
-                                       upb_Status* status) {
+const upb_FileDef* upb_DefPool_AddFile(
+    upb_DefPool* s, const google_protobuf_FileDescriptorProto* file_proto,
+    upb_Status* status) {
   return _upb_DefPool_AddFile(s, file_proto, NULL, status);
 }
 
@@ -440,7 +471,7 @@ bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
   /* Since this function should never fail (it would indicate a bug in upb) we
    * print errors to stderr instead of returning error status to the user. */
   _upb_DefPool_Init** deps = init->deps;
-  UPB_DESC(FileDescriptorProto) * file;
+  google_protobuf_FileDescriptorProto* file;
   upb_Arena* arena;
   upb_Status status;
 
@@ -456,7 +487,7 @@ bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
     if (!_upb_DefPool_LoadDefInitEx(s, *deps, rebuild_minitable)) goto err;
   }
 
-  file = UPB_DESC(FileDescriptorProto_parse_ex)(
+  file = google_protobuf_FileDescriptorProto_parse_ex(
       init->descriptor.data, init->descriptor.size, NULL,
       kUpb_DecodeOption_AliasString, arena);
   s->bytes_loaded += init->descriptor.size;
@@ -546,5 +577,5 @@ bool _upb_DefPool_LoadDefInit(upb_DefPool* s, const _upb_DefPool_Init* init) {
 
 const upb_ExtensionRegistry* _upb_DefPool_GeneratedExtensionRegistry(
     const upb_DefPool* s) {
-  return upb_ExtensionRegistry_GetGenerated(s->generated_extreg);
+  return upb_GeneratedRegistry_Get(s->generated_extreg);
 }

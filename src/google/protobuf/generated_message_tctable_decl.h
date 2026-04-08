@@ -13,7 +13,6 @@
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_DECL_H__
 
 #include <array>
-#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
@@ -145,7 +144,7 @@ struct Offset {
 #pragma warning(disable : 4324)
 #endif
 
-struct FieldAuxDefaultMessage {};
+struct FieldAuxMessageGlobals {};
 struct FieldAuxEnumData {};
 
 // Small type card used by mini parse to handle map entries.
@@ -278,7 +277,7 @@ struct alignas(uint64_t) TcParseTableBase {
   uint32_t aux_offset;
 
   const ClassData* class_data;
-  using PostLoopHandler = const char* (*)(MessageLite* msg, const char* ptr,
+  using PostLoopHandler = const char* (*)(MessageLite * msg, const char* ptr,
                                           ParseContext* ctx);
   PostLoopHandler post_loop_handler;
 
@@ -334,7 +333,7 @@ struct alignas(uint64_t) TcParseTableBase {
   // Table entry for fast-path tailcall dispatch handling.
   struct FastFieldEntry {
     // Target function for dispatch:
-    mutable std::atomic<TailCallParseFunc> target_atomic;
+    TailCallParseFunc target_function;
 
     // Field data used during parse:
     TcFieldData bits;
@@ -344,25 +343,14 @@ struct alignas(uint64_t) TcParseTableBase {
 
     // Constant initializes this instance
     constexpr FastFieldEntry(TailCallParseFunc func, TcFieldData bits)
-        : target_atomic(func), bits(bits) {}
+        : target_function(func), bits(bits) {}
 
     // FastFieldEntry is copy-able and assignable, which is intended
     // mainly for testing and debugging purposes.
-    FastFieldEntry(const FastFieldEntry& rhs) noexcept
-        : FastFieldEntry(rhs.target(), rhs.bits) {}
-    FastFieldEntry& operator=(const FastFieldEntry& rhs) noexcept {
-      SetTarget(rhs.target());
-      bits = rhs.bits;
-      return *this;
-    }
+    FastFieldEntry(const FastFieldEntry& rhs) noexcept = default;
+    FastFieldEntry& operator=(const FastFieldEntry& rhs) noexcept = default;
 
-    // Protocol buffer code should use these relaxed accessors.
-    TailCallParseFunc target() const {
-      return target_atomic.load(std::memory_order_relaxed);
-    }
-    void SetTarget(TailCallParseFunc func) const {
-      return target_atomic.store(func, std::memory_order_relaxed);
-    }
+    TailCallParseFunc target() const { return target_function; }
   };
   // There is always at least one table entry.
   const FastFieldEntry* fast_entry(size_t idx) const {
@@ -441,35 +429,49 @@ struct alignas(uint64_t) TcParseTableBase {
 
   // Auxiliary entries for field types that need extra information.
   union FieldAux {
-    constexpr FieldAux() : message_default_p(nullptr) {}
+    constexpr FieldAux() : message_globals_p(nullptr) {}
     constexpr FieldAux(FieldAuxEnumData, const uint32_t* enum_data)
         : enum_data(enum_data) {}
+    // NOLINTBEGIN(google-explicit-constructor)
     constexpr FieldAux(field_layout::Offset off) : offset(off.off) {}
     constexpr FieldAux(int32_t range_first, int32_t range_last)
         : enum_range{range_first, range_last} {}
-    constexpr FieldAux(const MessageLite* msg) : message_default_p(msg) {}
-    constexpr FieldAux(FieldAuxDefaultMessage, const void* msg)
-        : message_default_p(msg) {}
+    constexpr FieldAux(FieldAuxMessageGlobals, const void* globals)
+        : message_globals_p(globals) {}
     constexpr FieldAux(const TcParseTableBase* table) : table(table) {}
     constexpr FieldAux(MapAuxInfo map_info) : map_info(map_info) {}
     constexpr FieldAux(LazyEagerVerifyFnType verify_func)
         : verify_func(verify_func) {}
+    // NOLINTEND(google-explicit-constructor)
     struct {
       int32_t first;  // the first label in the range (inclusive)
       int32_t last;   // the last label in the range (inclusize)
     } enum_range;
     uint32_t offset;
-    const void* message_default_p;
+    const void* message_globals_p;
     const uint32_t* enum_data;
     const TcParseTableBase* table;
     MapAuxInfo map_info;
     LazyEagerVerifyFnType verify_func;
 
     const MessageLite* message_default() const {
-      return static_cast<const MessageLite*>(message_default_p);
+      return MessageGlobalsBase::ToDefaultInstance(message_globals_p);
     }
     const MessageLite* message_default_weak() const {
-      return *static_cast<const MessageLite* const*>(message_default_p);
+      return MessageGlobalsBase::ToDefaultInstance(message_globals_weak());
+    }
+    const MessageGlobalsBase* message_globals() const {
+      return static_cast<const MessageGlobalsBase*>(message_globals_p);
+    }
+    const MessageGlobalsBase* message_globals_weak() const {
+      return *static_cast<const MessageGlobalsBase* const*>(message_globals_p);
+    }
+    const TcParseTableBase* table_ptr() const {
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+      return table;
+#else
+      return MessageGlobalsBase::ToParseTableBase(message_globals_p);
+#endif
     }
   };
   const FieldAux* field_aux(uint32_t idx) const {
@@ -498,7 +500,9 @@ struct alignas(uint64_t) TcParseTableBase {
                                    num_aux_entries * sizeof(FieldAux));
   }
 
-  const MessageLite* default_instance() const { return class_data->prototype; }
+  const MessageLite* default_instance() const {
+    return class_data->default_instance();
+  }
 };
 
 #if defined(_MSC_VER) && !defined(_WIN64)

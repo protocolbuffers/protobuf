@@ -157,11 +157,13 @@ final class BooleanArrayList extends AbstractProtobufList<Boolean>
   }
 
   @Override
+  @CanIgnoreReturnValue
   public Boolean set(int index, Boolean element) {
     return setBoolean(index, element);
   }
 
   @Override
+  @CanIgnoreReturnValue
   public boolean setBoolean(int index, boolean element) {
     ensureIsMutable();
     ensureIndexInRange(index);
@@ -171,6 +173,7 @@ final class BooleanArrayList extends AbstractProtobufList<Boolean>
   }
 
   @Override
+  @CanIgnoreReturnValue
   public boolean add(Boolean element) {
     addBoolean(element);
     return true;
@@ -224,6 +227,7 @@ final class BooleanArrayList extends AbstractProtobufList<Boolean>
   }
 
   @Override
+  @CanIgnoreReturnValue
   public boolean addAll(Collection<? extends Boolean> collection) {
     ensureIsMutable();
 
@@ -257,6 +261,7 @@ final class BooleanArrayList extends AbstractProtobufList<Boolean>
   }
 
   @Override
+  @CanIgnoreReturnValue
   public Boolean remove(int index) {
     ensureIsMutable();
     ensureIndexInRange(index);

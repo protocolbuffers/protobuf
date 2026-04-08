@@ -29,7 +29,7 @@ void RecordAllocateSlow(ThreadSafeArenaStats* info, size_t used,
 // Stores information about a sampled thread safe arena.  All mutations to this
 // *must* be made through `Record*` functions below.  All reads from this *must*
 // only occur in the callback to `ThreadSafeArenazSampler::Iterate`.
-struct ThreadSafeArenaStats
+struct [[nodiscard]] ThreadSafeArenaStats
     : public absl::profiling_internal::Sample<ThreadSafeArenaStats> {
   // Constructs the object but does not fill in any fields.
   ThreadSafeArenaStats();
@@ -107,7 +107,7 @@ struct SamplingState {
   int64_t sample_stride;
 };
 
-ThreadSafeArenaStats* SampleSlow(SamplingState& sampling_state);
+[[nodiscard]] ThreadSafeArenaStats* SampleSlow(SamplingState& sampling_state);
 void UnsampleSlow(ThreadSafeArenaStats* info);
 
 class ThreadSafeArenaStatsHandle {
@@ -153,7 +153,7 @@ extern PROTOBUF_THREAD_LOCAL SamplingState global_sampling_state;
 
 // Returns an RAII sampling handle that manages registration and unregistation
 // with the global sampler.
-inline ThreadSafeArenaStatsHandle Sample() {
+[[nodiscard]] inline ThreadSafeArenaStatsHandle Sample() {
   if (ABSL_PREDICT_TRUE(--global_sampling_state.next_sample > 0)) {
     return ThreadSafeArenaStatsHandle(nullptr);
   }
@@ -169,10 +169,10 @@ struct ThreadSafeArenaStats {
                                   size_t /*allocated*/, size_t /*wasted*/) {}
 };
 
-ThreadSafeArenaStats* SampleSlow(SamplingState& next_sample);
+[[nodiscard]] ThreadSafeArenaStats* SampleSlow(SamplingState& next_sample);
 void UnsampleSlow(ThreadSafeArenaStats* info);
 
-class ThreadSafeArenaStatsHandle {
+class [[nodiscard]] ThreadSafeArenaStatsHandle {
  public:
   explicit ThreadSafeArenaStatsHandle() = default;
   explicit ThreadSafeArenaStatsHandle(ThreadSafeArenaStats*) {}
@@ -195,7 +195,7 @@ class ThreadSafeArenazSampler {
 
 // Returns an RAII sampling handle that manages registration and unregistation
 // with the global sampler.
-inline ThreadSafeArenaStatsHandle Sample() {
+[[nodiscard]] inline ThreadSafeArenaStatsHandle Sample() {
   return ThreadSafeArenaStatsHandle(nullptr);
 }
 #endif  // defined(PROTOBUF_ARENAZ_SAMPLE)
@@ -211,21 +211,21 @@ void SetThreadSafeArenazEnabled(bool enabled);
 void SetThreadSafeArenazEnabledInternal(bool enabled);
 
 // Returns true if sampling is on, false otherwise.
-bool IsThreadSafeArenazEnabled();
+[[nodiscard]] bool IsThreadSafeArenazEnabled();
 
 // Sets the rate at which thread safe arena will be sampled.
 void SetThreadSafeArenazSampleParameter(int32_t rate);
 void SetThreadSafeArenazSampleParameterInternal(int32_t rate);
 
 // Returns the rate at which thread safe arena will be sampled.
-int32_t ThreadSafeArenazSampleParameter();
+[[nodiscard]] int32_t ThreadSafeArenazSampleParameter();
 
 // Sets a soft max for the number of samples that will be kept.
 void SetThreadSafeArenazMaxSamples(int32_t max);
 void SetThreadSafeArenazMaxSamplesInternal(int32_t max);
 
 // Returns the max number of samples that will be kept.
-size_t ThreadSafeArenazMaxSamples();
+[[nodiscard]] size_t ThreadSafeArenazMaxSamples();
 
 // Sets the current value for when arenas should be next sampled.
 void SetThreadSafeArenazGlobalNextSample(int64_t next_sample);

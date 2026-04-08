@@ -119,11 +119,12 @@ TEST(REFLECTION_TEST, RegularFields) {
   // Make sure types are checked correctly at runtime.
   const FieldDescriptor* fd_optional_int32 =
       desc->FindFieldByName("optional_int32");
-  EXPECT_DEATH(refl->GetRepeatedField<int32_t>(message, fd_optional_int32),
-               "requires a repeated field");
-  EXPECT_DEATH(refl->GetRepeatedField<double>(message, fd_repeated_int32),
+  EXPECT_DEATH(
+      (void)refl->GetRepeatedField<int32_t>(message, fd_optional_int32),
+      "requires a repeated field");
+  EXPECT_DEATH((void)refl->GetRepeatedField<double>(message, fd_repeated_int32),
                "not the right type");
-  EXPECT_DEATH(refl->GetRepeatedPtrField<TestAllTypes>(
+  EXPECT_DEATH((void)refl->GetRepeatedPtrField<TestAllTypes>(
                    message, fd_repeated_foreign_message),
                "wrong submessage type");
 #endif  // GTEST_HAS_DEATH_TEST
@@ -402,11 +403,11 @@ TEST(REFLECTION_TEST, RepeatedFieldRefForRegularFields) {
   // Make sure types are checked correctly at runtime.
   const FieldDescriptor* fd_optional_int32 =
       desc->FindFieldByName("optional_int32");
-  EXPECT_DEATH(refl->GetRepeatedFieldRef<int32_t>(message, fd_optional_int32),
-               "");
-  EXPECT_DEATH(refl->GetRepeatedFieldRef<double>(message, fd_repeated_int32),
-               "");
-  EXPECT_DEATH(refl->GetRepeatedFieldRef<TestAllTypes>(
+  EXPECT_DEATH(
+      (void)refl->GetRepeatedFieldRef<int32_t>(message, fd_optional_int32), "");
+  EXPECT_DEATH(
+      (void)refl->GetRepeatedFieldRef<double>(message, fd_repeated_int32), "");
+  EXPECT_DEATH((void)refl->GetRepeatedFieldRef<TestAllTypes>(
                    message, fd_repeated_foreign_message),
                "");
 

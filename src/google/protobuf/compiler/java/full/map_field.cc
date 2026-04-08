@@ -1043,7 +1043,7 @@ void ImmutableMapFieldGenerator::GenerateSerializedSizeCode(
       "  $name$__ = $default_entry$.newBuilderForType()\n"
       "      .setKey(entry.getKey())\n"
       "      .setValue(entry.getValue())\n"
-      "      .build();\n"
+      "      .buildPartial();\n"
       "  size += com.google.protobuf.CodedOutputStream\n"
       "      .computeMessageSize($number$, $name$__);\n"
       "}\n");

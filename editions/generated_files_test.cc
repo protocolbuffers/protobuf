@@ -57,7 +57,6 @@ TEST(Generated, RequiredPresence) {
   ASSERT_THAT(field, NotNull());
   EXPECT_TRUE(field->has_presence());
   EXPECT_TRUE(field->is_required());
-  EXPECT_EQ(field->label(), FieldDescriptor::LABEL_REQUIRED);
 }
 
 TEST(Generated, ImplicitPresence) {
@@ -153,6 +152,7 @@ TEST(Generated, EditionDefaults2023InternalFeatures) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 }
               )pb"));
 }

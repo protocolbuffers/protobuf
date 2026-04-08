@@ -8,7 +8,11 @@
 #ifndef UPB_REFLECTION_ENUM_VALUE_DEF_INTERNAL_H_
 #define UPB_REFLECTION_ENUM_VALUE_DEF_INTERNAL_H_
 
-#include "upb/reflection/enum_value_def.h"
+#include <stddef.h>
+
+#include "upb/mem/arena.h"
+#include "upb/reflection/def.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -22,9 +26,8 @@ upb_EnumValueDef* _upb_EnumValueDef_At(const upb_EnumValueDef* v, int i);
 // Allocate and initialize an array of |n| enum value defs owned by |e|.
 upb_EnumValueDef* _upb_EnumValueDefs_New(
     upb_DefBuilder* ctx, const char* prefix, int n,
-    const UPB_DESC(EnumValueDescriptorProto*) const* protos,
-    const UPB_DESC(FeatureSet*) parent_features, upb_EnumDef* e,
-    bool* is_sorted);
+    const google_protobuf_EnumValueDescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features, upb_EnumDef* e, bool* is_sorted);
 
 const upb_EnumValueDef** _upb_EnumValueDefs_Sorted(const upb_EnumValueDef* v,
                                                    size_t n, upb_Arena* a);

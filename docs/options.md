@@ -5,11 +5,13 @@ so that any developer who wishes to use multiple 3rd party projects, each with
 their own extensions, can be confident that there won't be collisions in
 extension numbers.
 
-If you need an extension number for your custom option (see [custom options](
-https://developers.google.com/protocol-buffers/docs/proto#customoptions)),
-please [send us a pull request](https://github.com/protocolbuffers/protobuf/pulls) to
-add an entry to this doc, or [create an issue](https://github.com/protocolbuffers/protobuf/issues)
-with info about your project (name and website) so we can add an entry for you.
+If you need an extension number for your custom option (see
+[custom options](https://developers.google.com/protocol-buffers/docs/proto#customoptions)),
+please
+[send us a pull request](https://github.com/protocolbuffers/protobuf/pulls) to
+add an entry to this doc, or
+[create an issue](https://github.com/protocolbuffers/protobuf/issues) with info
+about your project (name and website) so we can add an entry for you.
 
 ## Existing Registered Extensions
 
@@ -194,7 +196,7 @@ with info about your project (name and website) so we can add an entry for you.
     *   Website: https://github.com/MarquisIO/go-grpcmw
     *   Extensions: 1041
 
-1.  grpc-gateway protoc-gen-swagger
+1.  grpc-gateway protoc-gen-openapiv2
 
     *   Website: https://github.com/grpc-ecosystem/grpc-gateway
     *   Extensions: 1042
@@ -541,3 +543,13 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/aep-dev
     *   Extensions: 1264-1274
+
+1.  Thermo Fisher Scientific TEM Extensions
+
+    *   Website: https://www.thermofisher.com/
+    *   Extensions: 1275-1284
+
+1.  LiveKit
+
+    *   Website: https://livekit.io
+    *   Extensions: 1285-1294

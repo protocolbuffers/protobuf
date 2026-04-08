@@ -112,7 +112,7 @@ class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
   // hence must outlive the DynamicMessageFactory.
   //
   // The method is thread-safe.
-  const Message* PROTOBUF_NONNULL
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const Message* PROTOBUF_NONNULL
   GetPrototype(const Descriptor* PROTOBUF_NONNULL type) override;
 
  private:

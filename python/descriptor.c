@@ -1054,23 +1054,6 @@ static PyObject* PyUpb_FieldDescriptor_GetCppType(PyUpb_DescriptorBase* self,
   return PyLong_FromLong(cpp_types[upb_FieldDef_CType(self->def)]);
 }
 
-static void WarnDeprecatedLabel(void) {
-  static int deprecated_label_count = 100;
-  if (deprecated_label_count > 0) {
-    --deprecated_label_count;
-    PyErr_WarnEx(
-        PyExc_DeprecationWarning,
-        "label() is deprecated. Use is_required() or is_repeated() instead.",
-        3);
-  }
-}
-
-static PyObject* PyUpb_FieldDescriptor_GetLabel(PyUpb_DescriptorBase* self,
-                                                void* closure) {
-  WarnDeprecatedLabel();
-  return PyLong_FromLong(upb_FieldDef_Label(self->def));
-}
-
 static PyObject* PyUpb_FieldDescriptor_IsRequired(PyUpb_DescriptorBase* self,
                                                   void* closure) {
   return PyBool_FromLong(upb_FieldDef_IsRequired(self->def));
@@ -1186,7 +1169,6 @@ static PyGetSetDef PyUpb_FieldDescriptor_Getters[] = {
     {"file", (getter)PyUpb_FieldDescriptor_GetFile, NULL, "File Descriptor"},
     {"type", (getter)PyUpb_FieldDescriptor_GetType, NULL, "Type"},
     {"cpp_type", (getter)PyUpb_FieldDescriptor_GetCppType, NULL, "C++ Type"},
-    {"label", (getter)PyUpb_FieldDescriptor_GetLabel, NULL, "Label"},
     {"is_required", (getter)PyUpb_FieldDescriptor_IsRequired, NULL,
      "Is Required"},
     {"is_repeated", (getter)PyUpb_FieldDescriptor_IsRepeated, NULL,

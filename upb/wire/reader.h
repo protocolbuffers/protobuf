@@ -37,9 +37,7 @@ extern "C" {
 // Bounds checks must be performed before calling this function, preferably
 // by calling upb_EpsCopyInputStream_IsDone().
 UPB_FORCEINLINE const char* upb_WireReader_ReadTag(
-    const char* ptr, uint32_t* tag, upb_EpsCopyInputStream* stream) {
-  return UPB_PRIVATE(_upb_WireReader_ReadTag)(ptr, tag, stream);
-}
+    const char* ptr, uint32_t* tag, upb_EpsCopyInputStream* stream);
 
 // Given a tag, returns the field number.
 UPB_API_INLINE uint32_t upb_WireReader_GetFieldNumber(uint32_t tag);
@@ -47,10 +45,8 @@ UPB_API_INLINE uint32_t upb_WireReader_GetFieldNumber(uint32_t tag);
 // Given a tag, returns the wire type.
 UPB_API_INLINE uint8_t upb_WireReader_GetWireType(uint32_t tag);
 
-UPB_INLINE const char* upb_WireReader_ReadVarint(
-    const char* ptr, uint64_t* val, upb_EpsCopyInputStream* stream) {
-  return UPB_PRIVATE(_upb_WireReader_ReadVarint)(ptr, val, stream);
-}
+UPB_FORCEINLINE const char* upb_WireReader_ReadVarint(
+    const char* ptr, uint64_t* val, upb_EpsCopyInputStream* stream);
 
 // Skips data for a varint, returning a pointer past the end of the varint, or
 // NULL if there was an error in the varint data.
@@ -71,13 +67,7 @@ UPB_INLINE const char* upb_WireReader_SkipVarint(
 // Bounds checks must be performed before calling this function, preferably
 // by calling upb_EpsCopyInputStream_IsDone().
 UPB_INLINE const char* upb_WireReader_ReadSize(const char* ptr, int* size,
-                                               upb_EpsCopyInputStream* stream) {
-  uint64_t size64;
-  ptr = upb_WireReader_ReadVarint(ptr, &size64, stream);
-  if (!ptr || size64 >= INT32_MAX) return NULL;
-  *size = size64;
-  return ptr;
-}
+                                               upb_EpsCopyInputStream* stream);
 
 // Reads a fixed32 field, performing byte swapping if necessary.
 //
@@ -124,7 +114,9 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
 // control over this?
 UPB_INLINE const char* upb_WireReader_SkipGroup(
     const char* ptr, uint32_t tag, upb_EpsCopyInputStream* stream) {
-  return UPB_PRIVATE(_upb_WireReader_SkipGroup)(ptr, tag, 100, stream);
+  const char* ret =
+      UPB_PRIVATE(_upb_WireReader_SkipGroup)(ptr, tag, 100, stream);
+  return UPB_PRIVATE(upb_EpsCopyInputStream_AssumeResult)(stream, ret);
 }
 
 UPB_INLINE const char* _upb_WireReader_SkipValue(
@@ -143,7 +135,7 @@ UPB_INLINE const char* _upb_WireReader_SkipValue(
       int size;
       ptr = upb_WireReader_ReadSize(ptr, &size, stream);
       if (!ptr || !upb_EpsCopyInputStream_CheckSize(stream, ptr, size)) {
-        return NULL;
+        return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(stream);
       }
       ptr += size;
       return ptr;
@@ -152,9 +144,10 @@ UPB_INLINE const char* _upb_WireReader_SkipValue(
       return UPB_PRIVATE(_upb_WireReader_SkipGroup)(ptr, tag, depth_limit,
                                                     stream);
     case kUpb_WireType_EndGroup:
-      return NULL;  // Should be handled before now.
+      // Should be handled before now.
     default:
-      return NULL;  // Unknown wire type.
+      // Unknown wire type.
+      return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(stream);
   }
 }
 

@@ -91,7 +91,8 @@ bool SerializeDelimitedToCodedStream(const MessageLite& message,
   if (buffer != nullptr) {
     // Optimization: The message fits in one buffer, so use the faster
     // direct-to-array serialization path.
-    message.SerializeWithCachedSizesToArray(buffer);
+    // TODO: Remove this suppression.
+    (void)message.SerializeWithCachedSizesToArray(buffer);
   } else {
     // Slightly-slower path when the message is multiple buffers.
     message.SerializeWithCachedSizes(output);

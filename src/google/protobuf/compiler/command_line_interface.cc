@@ -24,7 +24,6 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <optional>
 #include <ostream>
 #include <string>
 #include <utility>
@@ -69,6 +68,7 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/importer.h"
@@ -462,7 +462,7 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
 
   // Write all files in the directory to disk at the given output location,
   // which must end in a '/'.
-  bool WriteAllToDisk(const std::string& prefix);
+  bool WriteAllToDisk(const std::string& prefix, bool allow_escape = false);
 
   // Write the contents of this directory to a ZIP-format archive with the
   // given name.
@@ -562,7 +562,7 @@ CommandLineInterface::GeneratorContextImpl::GeneratorContextImpl(
     : parsed_files_(parsed_files), had_error_(false) {}
 
 bool CommandLineInterface::GeneratorContextImpl::WriteAllToDisk(
-    const std::string& prefix) {
+    const std::string& prefix, bool allow_escape) {
   if (had_error_) {
     return false;
   }
@@ -575,6 +575,15 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToDisk(
     const std::string& relative_filename = pair.first;
     const char* data = pair.second.data();
     int size = pair.second.size();
+
+    if (!allow_escape && absl::StrContains(relative_filename, "..")) {
+      std::cerr << "Output file names must never have a relative path."
+                << " (" << relative_filename << "). "
+                << "Use --unsafe_allow_out_dir_escape to disable this error if "
+                   "intentional."
+                << std::endl;
+      return false;
+    }
 
     if (!TryCreateParentDirectory(prefix, relative_filename)) {
       return false;
@@ -844,9 +853,9 @@ void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
                       new_metadata);
   }
   if (is_text_format) {
-    TextFormat::PrintToString(new_metadata, encoded_data);
+    ABSL_CHECK(TextFormat::PrintToString(new_metadata, encoded_data));
   } else {
-    new_metadata.SerializeToString(encoded_data);
+    ABSL_CHECK(new_metadata.SerializeToString(encoded_data));
   }
 }
 
@@ -1093,13 +1102,13 @@ bool HasDebugRedactBehavior(
 // schema.  These can be used to mark fields that need to be redacted in debug
 // string APIs, but are only discoverable via reflection that doesn't force
 // linkage.
-std::optional<std::string> FindDebugRedactMarker(const FileDescriptor& desc) {
-  std::optional<std::string> debug_redact_value;
+absl::optional<std::string> FindDebugRedactMarker(const FileDescriptor& desc) {
+  absl::optional<std::string> debug_redact_value;
   absl::flat_hash_map<const Descriptor*, bool> visited;
   google::protobuf::internal::VisitDescriptors(
       desc, [&debug_redact_value, &visited](const FieldDescriptor& field) {
         if (field.is_extension() && HasDebugRedactBehavior(field, visited)) {
-          debug_redact_value = field.full_name();
+          debug_redact_value = std::string(field.full_name());
         }
       });
   return debug_redact_value;
@@ -1115,7 +1124,8 @@ bool ValidateOptionImports(const FileDescriptor& file,
       // If we don't have the dependency we can't validate it, assume it's ok.
       continue;
     }
-    std::optional<std::string> debug_redact_value = FindDebugRedactMarker(*dep);
+    absl::optional<std::string> debug_redact_value =
+        FindDebugRedactMarker(*dep);
     if (debug_redact_value.has_value()) {
       printer->RecordError(
           file.name(), "", nullptr, DescriptorPool::ErrorCollector::OPTION_NAME,
@@ -1366,6 +1376,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   descriptor_pool->EnforceWeakDependencies(true);
   descriptor_pool->EnforceSymbolVisibility(true);
   descriptor_pool->EnforceNamingStyle(true);
+  descriptor_pool->EnforceFeatureSupportValidation(true);
 
   if (!SetupFeatureResolution(*descriptor_pool)) {
     return EXIT_FAILURE;
@@ -1479,7 +1490,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     const std::string& location = pair.first;
     GeneratorContextImpl* directory = pair.second.get();
     if (absl::EndsWith(location, "/")) {
-      if (!directory->WriteAllToDisk(location)) {
+      if (!directory->WriteAllToDisk(location, unsafe_allow_out_dir_escape_)) {
         return 1;
       }
     } else {
@@ -2152,7 +2163,8 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
       *name == "--experimental_editions" ||
       *name == "--print_free_field_numbers" ||
       *name == "--experimental_allow_proto3_optional" ||
-      *name == "--deterministic_output" || *name == "--fatal_warnings") {
+      *name == "--deterministic_output" ||
+      *name == "--unsafe_allow_out_dir_escape" || *name == "--fatal_warnings") {
     // HACK:  These are the only flags that don't take a value.
     //   They probably should not be hard-coded like this but for now it's
     //   not worth doing better.
@@ -2388,6 +2400,8 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 
   } else if (name == "--disallow_services") {
     disallow_services_ = true;
+  } else if (name == "--unsafe_allow_out_dir_escape") {
+    unsafe_allow_out_dir_escape_ = true;
   } else if (name == "--experimental_allow_proto3_optional") {
     // Flag is no longer observed, but we allow it for backward compat.
   } else if (name == "--encode" || name == "--decode" ||
@@ -2625,6 +2639,9 @@ Parse PROTO_FILES and generate output based on the options given:
                               deterministically ordered. Note that this order
                               is not canonical, and changes across builds or
                               releases of protoc.
+  --unsafe_allow_out_dir_escape
+                              Allow output files to use ".." to escape the
+                              output directory. Use with caution.
   --decode=MESSAGE_TYPE       Read a binary message of the given type from
                               standard input and write it in text format
                               to standard output.  The message type must

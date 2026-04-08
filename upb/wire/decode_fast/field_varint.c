@@ -80,9 +80,6 @@ int upb_DecodeFast_CountVarints(const char* ptr, const char* end) {
 static const char* upb_DecodeFast_PackedVarint(upb_EpsCopyInputStream* st,
                                                const char* ptr, int size,
                                                void* ctx) {
-  // This will need to be relaxed if/when we support streaming input.
-  UPB_ASSERT(upb_EpsCopyInputStream_CheckDataSizeAvailable(st, ptr, size));
-
   upb_DecodeFast_PackedVarintContext* c =
       (upb_DecodeFast_PackedVarintContext*)ctx;
 

@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "absl/base/attributes.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/compiler/cpp/unittest.h"
 #include "absl/strings/string_view.h"
@@ -757,7 +758,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, ReallyLargeTagNumber) {
   // We'll try serializing just for fun.
   message1.set_a(1234);
   message1.set_bb(5678);
-  message1.SerializeToString(&data);
+  ABSL_CHECK(message1.SerializeToString(&data));
   EXPECT_TRUE(message2.ParseFromString(data));
   EXPECT_EQ(1234, message2.a());
   EXPECT_EQ(5678, message2.bb());
@@ -833,7 +834,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, TestEmbedOptimizedForSize) {
   message.mutable_optional_message()->set_i(1);
   message.add_repeated_message()->mutable_msg()->set_c(2);
   std::string data;
-  message.SerializeToString(&data);
+  ABSL_CHECK(message.SerializeToString(&data));
   ASSERT_TRUE(message2.ParseFromString(data));
   EXPECT_EQ(1, message2.optional_message().i());
   EXPECT_EQ(2, message2.repeated_message(0).msg().c());
@@ -2130,6 +2131,29 @@ TEST(HELPERS_TEST_NAME, TestSCCAnalysis) {
 }  // namespace cpp_unittest
 }  // namespace cpp
 }  // namespace compiler
+}  // namespace protobuf
+}  // namespace google
+
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
+// We use a separate namespace to test the ADL hooks.
+// Doing the calls from the protobuf namespace might hide lexical scope lookups.
+namespace other_ns {
+namespace {
+TEST(GENERATED_ENUM_TEST_NAME, GetEnumDescriptorViaADL) {
+  EXPECT_EQ(
+      UNITTEST::TestAllTypes::NestedEnum_descriptor(),
+      ProtobufInternalGetEnumDescriptor(UNITTEST::TestAllTypes::NestedEnum{}));
+  EXPECT_EQ(UNITTEST::ForeignEnum_descriptor(),
+            ProtobufInternalGetEnumDescriptor(UNITTEST::ForeignEnum{}));
+  EXPECT_EQ(
+      UNITTEST::TestEnumWithDupValue_descriptor(),
+      ProtobufInternalGetEnumDescriptor(UNITTEST::TestEnumWithDupValue{}));
+  EXPECT_EQ(UNITTEST::TestSparseEnum_descriptor(),
+            ProtobufInternalGetEnumDescriptor(UNITTEST::TestSparseEnum{}));
+}
+}  // namespace
+}  // namespace other_ns
+#endif  // PROTOBUF_TEST_NO_DESCRIPTORS
 
 namespace no_generic_services_test {
   // Verify that no class called "TestService" was defined in
@@ -2140,6 +2164,8 @@ namespace no_generic_services_test {
   };
 }
 
+namespace google {
+namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace cpp_unittest {
@@ -2189,7 +2215,6 @@ TEST(DESCRIPTOR_INIT_TEST_NAME, Initialized) {
 }
 
 }  // namespace cpp_unittest
-
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

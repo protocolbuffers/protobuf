@@ -56,7 +56,8 @@ int defaults_escape(const std::string& defaults_path,
   defaults_file.close();
 
   std::string content = {};
-  defaults.SerializeToString(&content);
+  // TODO: Remove this suppression.
+  (void)defaults.SerializeToString(&content);
   if (encoding == "base64") {
     content = absl::Base64Escape(content);
   } else if (encoding == "octal") {

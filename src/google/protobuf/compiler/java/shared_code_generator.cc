@@ -107,7 +107,8 @@ void SharedCodeGenerator::Generate(
     if (options_.annotate_code) {
       std::unique_ptr<io::ZeroCopyOutputStream> info_output(
           context->Open(info_full_path));
-      annotations.SerializeToZeroCopyStream(info_output.get());
+      // TODO: Remove this suppression.
+      (void)annotations.SerializeToZeroCopyStream(info_output.get());
       annotation_file_list->push_back(info_full_path);
     }
 
@@ -135,7 +136,8 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
   }
 
   std::string file_data;
-  file_proto.SerializeToString(&file_data);
+  // TODO: Remove this suppression.
+  (void)file_proto.SerializeToString(&file_data);
 
   printer->Print("java.lang.String[] descriptorData = {\n");
   printer->Indent();

@@ -180,7 +180,7 @@ static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
         printf("Failed to find descriptor.\n");
         exit(1);
       }
-      factory.GetPrototype(d);
+      (void)factory.GetPrototype(d);
     }
   }
   state.SetBytesProcessed(state.iterations() * bytes_per_iter);
@@ -328,9 +328,10 @@ BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, InitBlock, Alias);
 
 static void BM_SerializeDescriptor_Proto2(benchmark::State& state) {
   upb_benchmark::FileDescriptorProto proto;
-  proto.ParseFromString(absl::string_view(descriptor.data, descriptor.size));
+  (void)proto.ParseFromString(
+      absl::string_view(descriptor.data, descriptor.size));
   for (auto _ : state) {
-    proto.SerializePartialToArray(buf, sizeof(buf));
+    (void)proto.SerializePartialToArray(buf, sizeof(buf));
     benchmark::DoNotOptimize(buf);
   }
   state.SetBytesProcessed(state.iterations() * descriptor.size);
@@ -420,7 +421,7 @@ BENCHMARK(BM_JsonParse_Upb);
 static void BM_JsonParse_Proto2(benchmark::State& state) {
   protobuf::FileDescriptorProto proto;
   absl::string_view input(descriptor.data, descriptor.size);
-  proto.ParseFromString(input);
+  (void)proto.ParseFromString(input);
   std::string json;
   ABSL_CHECK_OK(google::protobuf::json::MessageToJsonString(proto, &json));
   for (auto _ : state) {
@@ -461,7 +462,7 @@ BENCHMARK(BM_JsonSerialize_Upb);
 static void BM_JsonSerialize_Proto2(benchmark::State& state) {
   protobuf::FileDescriptorProto proto;
   absl::string_view input(descriptor.data, descriptor.size);
-  proto.ParseFromString(input);
+  (void)proto.ParseFromString(input);
   std::string json;
   for (auto _ : state) {
     json.clear();

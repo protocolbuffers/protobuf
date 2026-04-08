@@ -7,16 +7,26 @@
 
 #include "upb/reflection/internal/def_builder.h"
 
+#include <assert.h>
+#include <stdarg.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "upb/base/internal/log2.h"
+#include "upb/base/status.h"
+#include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
+#include "upb/hash/common.h"
+#include "upb/hash/str_table.h"
 #include "upb/mem/alloc.h"
+#include "upb/mem/arena.h"
 #include "upb/message/copy.h"
-#include "upb/reflection/def_pool.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/def_type.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 #include "upb/reflection/field_def.h"
 #include "upb/reflection/file_def.h"
+#include "upb/reflection/internal/def_pool.h"
 #include "upb/reflection/internal/strdup2.h"
 #include "upb/wire/decode.h"
 
@@ -346,7 +356,7 @@ void _upb_DefBuilder_CheckIdentSlow(upb_DefBuilder* ctx, upb_StringView name,
 }
 
 upb_StringView _upb_DefBuilder_MakeKey(upb_DefBuilder* ctx,
-                                       const UPB_DESC(FeatureSet*) parent,
+                                       const google_protobuf_FeatureSet* parent,
                                        upb_StringView key) {
   size_t need = key.size + sizeof(void*);
   if (ctx->tmp_buf_size < need) {
@@ -361,9 +371,9 @@ upb_StringView _upb_DefBuilder_MakeKey(upb_DefBuilder* ctx,
 }
 
 bool _upb_DefBuilder_GetOrCreateFeatureSet(upb_DefBuilder* ctx,
-                                           const UPB_DESC(FeatureSet*) parent,
+                                           const google_protobuf_FeatureSet* parent,
                                            upb_StringView key,
-                                           UPB_DESC(FeatureSet**) set) {
+                                           google_protobuf_FeatureSet** set) {
   upb_StringView k = _upb_DefBuilder_MakeKey(ctx, parent, key);
   upb_value v;
   if (upb_strtable_lookup2(&ctx->feature_cache, k.data, k.size, &v)) {
@@ -371,7 +381,7 @@ bool _upb_DefBuilder_GetOrCreateFeatureSet(upb_DefBuilder* ctx,
     return false;
   }
 
-  *set = (UPB_DESC(FeatureSet*))upb_Message_DeepClone(
+  *set = (google_protobuf_FeatureSet*)upb_Message_DeepClone(
       UPB_UPCAST(parent), UPB_DESC_MINITABLE(FeatureSet), ctx->arena);
   if (!*set) _upb_DefBuilder_OomErr(ctx);
 
@@ -384,23 +394,21 @@ bool _upb_DefBuilder_GetOrCreateFeatureSet(upb_DefBuilder* ctx,
   return true;
 }
 
-const UPB_DESC(FeatureSet*)
-    _upb_DefBuilder_DoResolveFeatures(upb_DefBuilder* ctx,
-                                      const UPB_DESC(FeatureSet*) parent,
-                                      const UPB_DESC(FeatureSet*) child,
-                                      bool is_implicit) {
+const google_protobuf_FeatureSet* _upb_DefBuilder_DoResolveFeatures(
+    upb_DefBuilder* ctx, const google_protobuf_FeatureSet* parent,
+    const google_protobuf_FeatureSet* child, bool is_implicit) {
   assert(parent);
   if (!child) return parent;
 
-  if (child && !is_implicit &&
-      upb_FileDef_Syntax(ctx->file) != kUpb_Syntax_Editions) {
+  if (!is_implicit &&
+      _upb_DefBuilder_IsLegacyEdition(upb_FileDef_Edition(ctx->file))) {
     _upb_DefBuilder_Errf(ctx, "Features can only be specified for editions");
   }
 
-  UPB_DESC(FeatureSet*) resolved;
+  google_protobuf_FeatureSet* resolved;
   size_t child_size;
   const char* child_bytes =
-      UPB_DESC(FeatureSet_serialize)(child, ctx->tmp_arena, &child_size);
+      google_protobuf_FeatureSet_serialize(child, ctx->tmp_arena, &child_size);
   if (!child_bytes) _upb_DefBuilder_OomErr(ctx);
 
   upb_StringView key = upb_StringView_FromDataAndSize(child_bytes, child_size);

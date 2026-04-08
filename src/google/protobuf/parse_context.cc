@@ -19,6 +19,7 @@
 #include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
+#include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -100,7 +101,6 @@ bool EpsCopyInputStream::HasEnoughTillLimit(int requested, const char* ptr) {
 }
 
 // Only call if at start of tag.
-template <bool kExperimentalV2>
 bool EpsCopyInputStream::ParseEndsInSlopRegion(const char* begin, int overrun,
                                                int depth) {
   constexpr int kSlopBytes = EpsCopyInputStream::kSlopBytes;
@@ -111,7 +111,6 @@ bool EpsCopyInputStream::ParseEndsInSlopRegion(const char* begin, int overrun,
   return ParsingEndsInBuffer(ptr, end, depth);
 }
 
-template <bool kExperimentalV2>
 const char* EpsCopyInputStream::NextBuffer(int overrun, int depth) {
   if (next_chunk_ == nullptr) return nullptr;  // We've reached end of stream.
   if (next_chunk_ != patch_buffer_) {
@@ -128,8 +127,7 @@ const char* EpsCopyInputStream::NextBuffer(int overrun, int depth) {
   // patch_buffer_.
   std::memmove(patch_buffer_, buffer_end_, kSlopBytes);
   if (overall_limit_ > 0 &&
-      (depth < 0 || !ParseEndsInSlopRegion<kExperimentalV2>(patch_buffer_,
-                                                            overrun, depth))) {
+      (depth < 0 || !ParseEndsInSlopRegion(patch_buffer_, overrun, depth))) {
     const void* data;
     // ZeroCopyInputStream indicates Next may return 0 size buffers. Hence
     // we loop.
@@ -170,7 +168,7 @@ const char* EpsCopyInputStream::NextBuffer(int overrun, int depth) {
 
 const char* EpsCopyInputStream::Next() {
   ABSL_DCHECK(limit_ > kSlopBytes);
-  auto p = NextBuffer</*kExperimentalV2=*/false>(0 /* immaterial */, -1);
+  auto p = NextBuffer(0 /* immaterial */, -1);
   if (p == nullptr) {
     limit_end_ = buffer_end_;
     // Distinguish ending on a pushed limit or ending on end-of-stream.
@@ -182,7 +180,6 @@ const char* EpsCopyInputStream::Next() {
   return p;
 }
 
-template <bool kExperimentalV2>
 std::pair<const char*, bool> EpsCopyInputStream::DoneFallback(int overrun,
                                                               int depth) {
   // Did we exceeded the limit (parse error).
@@ -201,7 +198,7 @@ std::pair<const char*, bool> EpsCopyInputStream::DoneFallback(int overrun,
   do {
     // We are past the end of buffer_end_, in the slop region.
     ABSL_DCHECK_GE(overrun, 0);
-    p = NextBuffer<kExperimentalV2>(overrun, depth);
+    p = NextBuffer(overrun, depth);
     if (p == nullptr) {
       // We are at the end of the stream
       if (ABSL_PREDICT_FALSE(overrun != 0)) return {nullptr, true};
@@ -595,6 +592,52 @@ const char* InlineGreedyStringParser(std::string* s, const char* ptr,
   return ctx->ReadString(ptr, size, s);
 }
 
+void WireFormatStringSink::Flush(const char* ptr) {
+  ABSL_CHECK_GE(ptr, prev);
+  absl::StrAppend(&data,
+                  absl::string_view(prev, static_cast<size_t>(ptr - prev)));
+}
+void WireFormatStringSink::Append(absl::string_view view) {
+  absl::StrAppend(&data, view);
+  prev = view.data() + view.size();
+}
+
+template <typename SinkT>
+[[nodiscard]] const char* EpsCopyInputStream::ReadArrayMaybeFlush(
+    const char* ptr, absl::Span<char> out, SinkT& sink) {
+  char* dst = out.data();
+  return AdvancePtrMaybeFlush<char>(
+      ptr, out.size(), sink, [&](absl::string_view view) {
+        memcpy(dst, view.data(), view.size());
+        dst += view.size();
+        ABSL_DCHECK_LE(dst, out.data() + out.size());
+        return true;
+      });
+}
+
+template <typename SinkT>
+const char* ParseContext::VerifyUTF8MaybeFlushFallback(const char* ptr,
+                                                       int64_t size,
+                                                       SinkT& sink) {
+  // Copied the implementation of CordIsValid().
+  LeftoverBuffer leftover;
+
+  ptr = AdvancePtrMaybeFlush<char>(
+      ptr, size, sink, [&leftover](absl::string_view view) -> bool {
+        return IsViewValidUTF8WithLeftover(view, leftover);
+      });
+  return leftover.empty() ? ptr : nullptr;
+}
+
+template const char* EpsCopyInputStream::ReadArrayMaybeFlush(
+    const char* ptr, absl::Span<char> out, WireFormatNoOpSink& sink);
+template const char* EpsCopyInputStream::ReadArrayMaybeFlush(
+    const char* ptr, absl::Span<char> out, WireFormatStringSink& sink);
+
+template const char* ParseContext::VerifyUTF8MaybeFlushFallback(
+    const char* ptr, int64_t size, WireFormatNoOpSink& sink);
+template const char* ParseContext::VerifyUTF8MaybeFlushFallback(
+    const char* ptr, int64_t size, WireFormatStringSink& sink);
 
 
 template <typename T, bool sign>
@@ -698,7 +741,8 @@ class UnknownFieldLiteParserHelper {
     if (unknown_ == nullptr) return;
     WriteVarint(num * 8 + 1, unknown_);
     char buffer[8];
-    io::CodedOutputStream::WriteLittleEndian64ToArray(
+    // TODO: Remove this suppression.
+    (void)io::CodedOutputStream::WriteLittleEndian64ToArray(
         value, reinterpret_cast<uint8_t*>(buffer));
     unknown_->append(buffer, 8);
   }
@@ -724,7 +768,8 @@ class UnknownFieldLiteParserHelper {
     if (unknown_ == nullptr) return;
     WriteVarint(num * 8 + 5, unknown_);
     char buffer[4];
-    io::CodedOutputStream::WriteLittleEndian32ToArray(
+    // TODO: Remove this suppression.
+    (void)io::CodedOutputStream::WriteLittleEndian32ToArray(
         value, reinterpret_cast<uint8_t*>(buffer));
     unknown_->append(buffer, 4);
   }
@@ -757,13 +802,46 @@ const char* EpsCopyInputStream::ReadMicroStringFallback(const char* ptr,
   return ptr;
 }
 
-template const char* EpsCopyInputStream::NextBuffer<false>(int, int);
-template const char* EpsCopyInputStream::NextBuffer<true>(int, int);
+int CountVarintsAssumingLargeArray(const char* ptr, const char* end) {
+  // The number of varints is the number of bytes with the highest bit clear.
+  // This is easier to compute as the total number of bytes, minus the number
+  // of bytes with the highest bit set.
+  int num_varints = end - ptr;
+  ABSL_DCHECK_GE(num_varints, int{sizeof(uint64_t)});
 
-template std::pair<const char*, bool> EpsCopyInputStream::DoneFallback<false>(
-    int, int);
-template std::pair<const char*, bool> EpsCopyInputStream::DoneFallback<true>(
-    int, int);
+  // Count in whole blocks, except for the last one.
+  const char* const limit = end - sizeof(uint64_t);
+  while (ptr < limit) {
+    num_varints -=
+        absl::popcount(EndianHelper<8>::Load(ptr) & 0x8080808080808080);
+    ptr += sizeof(uint64_t);
+  }
+
+  // Count in the last, possibly incomplete block.
+  return num_varints -
+         absl::popcount(EndianHelper<8>::Load(limit) &
+                        (0x8080808080808080 << ((ptr - limit) * 8)));
+}
+
+bool VerifyBoolsAssumingLargeArray(const char* ptr, const char* end) {
+  ABSL_DCHECK_GE(end - ptr, int{sizeof(uint64_t)});
+
+  // Verify whole blocks, except for the last one.
+  uint64_t bit_or = 0;
+  const char* const limit = end - sizeof(uint64_t);
+  while (ptr < limit) {
+    uint64_t block;
+    std::memcpy(&block, ptr, 8);
+    bit_or |= block;
+    ptr += 8;
+  }
+  // Verify the last, possibly incomplete block.
+  uint64_t block;
+  std::memcpy(&block, limit, 8);
+  bit_or |= block;
+
+  return (bit_or & ~0x0101010101010101) == 0;
+}
 
 }  // namespace internal
 }  // namespace protobuf

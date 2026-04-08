@@ -46,7 +46,8 @@ PythonMessageMutator::~PythonMessageMutator() {
   // check.
   if (!PyErr_Occurred() && owned_msg_ != nullptr) {
     std::string wire;
-    message_->SerializePartialToString(&wire);
+    // TODO: Remove this suppression.
+    (void)message_->SerializePartialToString(&wire);
     PyObject* py_wire = PyBytes_FromStringAndSize(
         wire.data(), static_cast<Py_ssize_t>(wire.size()));
     PyObject* parse =
@@ -113,20 +114,23 @@ bool PythonConstMessagePointer::NotChanged() {
   // serialize result may still diff between languages. So parse to
   // another c++ message for compare.
   std::unique_ptr<google::protobuf::Message> parsed_msg(owned_msg_->New());
-  parsed_msg->ParsePartialFromString(
+  // TODO: Remove this suppression.
+  (void)parsed_msg->ParsePartialFromString(
       absl::string_view(data, static_cast<int>(len)));
   std::string wire_other;
   google::protobuf::io::StringOutputStream stream_other(&wire_other);
   google::protobuf::io::CodedOutputStream output_other(&stream_other);
   output_other.SetSerializationDeterministic(true);
-  parsed_msg->SerializePartialToCodedStream(&output_other);
+  // TODO: Remove this suppression.
+  (void)parsed_msg->SerializePartialToCodedStream(&output_other);
   output_other.Trim();
 
   std::string wire;
   google::protobuf::io::StringOutputStream stream(&wire);
   google::protobuf::io::CodedOutputStream output(&stream);
   output.SetSerializationDeterministic(true);
-  owned_msg_->SerializePartialToCodedStream(&output);
+  // TODO: Remove this suppression.
+  (void)owned_msg_->SerializePartialToCodedStream(&output);
   output.Trim();
 
   if (wire == wire_other) {

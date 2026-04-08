@@ -40,6 +40,7 @@ _T = TypeVar('_T')
 _K = TypeVar('_K')
 _V = TypeVar('_V')
 
+from google.protobuf.descriptor import FieldDescriptor
 
 class BaseContainer(Sequence[_T]):
   """Base container class."""
@@ -104,12 +105,13 @@ class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
   """Simple, type-checked, list-like container for holding repeated scalars."""
 
   # Disallows assignment to other attributes.
-  __slots__ = ['_type_checker']
+  __slots__ = ['_type_checker', '_field']
 
   def __init__(
       self,
       message_listener: Any,
       type_checker: Any,
+      field: Any = None,
   ) -> None:
     """Args:
 
@@ -121,6 +123,7 @@ class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
     """
     super().__init__(message_listener)
     self._type_checker = type_checker
+    self._field = field
 
   def append(self, value: _T) -> None:
     """Appends an item to the list. Similar to list.append()."""
@@ -202,13 +205,46 @@ class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
       unused_memo: Any = None,
   ) -> 'RepeatedScalarFieldContainer[_T]':
     clone = RepeatedScalarFieldContainer(
-        copy.deepcopy(self._message_listener), self._type_checker)
+        copy.deepcopy(self._message_listener), self._type_checker, self._field
+    )
     clone.MergeFrom(self)
     return clone
 
   def __reduce__(self, **kwargs) -> NoReturn:
     raise pickle.PickleError(
         "Can't pickle repeated scalar fields, convert to list first")
+
+  def __array__(self, dtype=None, copy=None):
+    import numpy as np
+
+    if dtype is None:
+      cpp_type = self._field.cpp_type
+      if cpp_type == FieldDescriptor.CPPTYPE_INT32:
+        dtype = np.int32
+      elif cpp_type == FieldDescriptor.CPPTYPE_INT64:
+        dtype = np.int64
+      elif cpp_type == FieldDescriptor.CPPTYPE_UINT32:
+        dtype = np.uint32
+      elif cpp_type == FieldDescriptor.CPPTYPE_UINT64:
+        dtype = np.uint64
+      elif cpp_type == FieldDescriptor.CPPTYPE_DOUBLE:
+        dtype = np.float64
+      elif cpp_type == FieldDescriptor.CPPTYPE_FLOAT:
+        dtype = np.float32
+      elif cpp_type == FieldDescriptor.CPPTYPE_BOOL:
+        dtype = np.bool
+      elif cpp_type == FieldDescriptor.CPPTYPE_ENUM:
+        dtype = np.int32
+      elif self._field.type == FieldDescriptor.TYPE_BYTES:
+        dtype = 'S'
+      elif self._field.type == FieldDescriptor.TYPE_STRING:
+        dtype = str
+      else:
+        raise SystemError(
+            'Code should never reach here: message type detected in'
+            ' RepeatedScalarFieldContainer'
+        )
+    return np.array(self._values, dtype=dtype, copy=True)
 
 
 # TODO: Constrain T to be a subtype of Message.

@@ -11,26 +11,25 @@ load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "objc_library")
 load("@rules_java//java:defs.bzl", "java_binary")
 load("@rules_python//python:py_binary.bzl", "py_binary")
-load("@rules_ruby//ruby:defs.bzl", "rb_binary")
 load(
     "//:protobuf.bzl",
     "internal_csharp_proto_library",
     "internal_objc_proto_library",
     "internal_php_proto_library",
     "internal_py_proto_library",
-    "internal_ruby_proto_library",
 )
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
-load("//ruby:defs.bzl", "internal_ruby_proto_library")
 
 exports_files([
     "bazel_conformance_test_runner.sh",
+    "conformance.proto",
     "failure_list_cpp.txt",
     "failure_list_csharp.txt",
+    "failure_list_csharp_performance.txt",
     "failure_list_java.txt",
     "failure_list_java_lite.txt",
     "failure_list_objc.txt",
@@ -98,6 +97,7 @@ cc_library(
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/types:optional",
     ],
 )
 
@@ -109,6 +109,7 @@ cc_test(
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/types:optional",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -138,6 +139,7 @@ cc_library(
         "//:test_messages_proto2_cc_proto",
         "//:test_messages_proto3_cc_proto",
         "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
         "//editions:test_messages_proto2_editions_cc_proto",
         "//editions:test_messages_proto3_editions_cc_proto",
         "//src/google/protobuf",
@@ -166,6 +168,7 @@ cc_library(
         "//:test_messages_proto2_cc_proto",
         "//:test_messages_proto3_cc_proto",
         "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
         "//editions:test_messages_proto2_editions_cc_proto",
         "//editions:test_messages_proto3_editions_cc_proto",
         "//src/google/protobuf",
@@ -249,6 +252,7 @@ cc_test(
         "//:test_messages_proto2_cc_proto",
         "//:test_messages_proto3_cc_proto",
         "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
         "//editions:test_messages_proto2_editions_cc_proto",
         "//editions:test_messages_proto3_editions_cc_proto",
         "@googletest//:gtest",
@@ -287,6 +291,7 @@ cc_test(
         "//src/google/protobuf",
         "//src/google/protobuf:test_textproto",
         "//src/google/protobuf/util:differencer",
+        "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
@@ -353,6 +358,7 @@ exports_files([
     "bazel_conformance_test_runner.sh",
     "failure_list_cpp.txt",
     "failure_list_csharp.txt",
+    "failure_list_csharp_performance.txt",
     "failure_list_java.txt",
     "failure_list_java_lite.txt",
     "failure_list_objc.txt",
@@ -416,15 +422,6 @@ internal_php_proto_library(
     ],
 )
 
-internal_ruby_proto_library(
-    name = "conformance_ruby_proto",
-    srcs = ["conformance.proto"],
-    visibility = [
-        "//conformance:__pkg__",
-        "//ruby:__pkg__",
-    ],
-)
-
 cc_binary(
     name = "conformance_cpp",
     testonly = 1,
@@ -448,6 +445,7 @@ cc_binary(
         "//:type_cc_proto",
         "//:wrappers_cc_proto",
         "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
         "//editions:test_messages_proto2_editions_cc_proto",
         "//editions:test_messages_proto3_editions_cc_proto",
         "//src/google/protobuf",
@@ -480,6 +478,7 @@ java_binary(
         "//:test_messages_proto2_java_proto",
         "//:test_messages_proto3_java_proto",
         "//conformance/test_protos:test_messages_edition2023_java_proto",
+        "//conformance/test_protos:test_messages_edition_unstable_java_proto",
         "//editions:test_messages_proto2_editions_java_proto",
         "//editions:test_messages_proto3_editions_java_proto",
     ],
@@ -500,6 +499,7 @@ java_binary(
         "//:test_messages_proto2_java_proto_lite",
         "//:test_messages_proto3_java_proto_lite",
         "//conformance/test_protos:test_messages_edition2023_java_proto_lite",
+        "//conformance/test_protos:test_messages_edition_unstable_java_proto_lite",
         "//editions:test_messages_proto2_editions_java_proto_lite",
         "//editions:test_messages_proto3_editions_java_proto_lite",
     ],
@@ -519,6 +519,7 @@ py_binary(
         ":conformance_py_proto",
         "//:protobuf_python",
         "//conformance/test_protos:test_messages_edition2023_py_pb2",
+        "//conformance/test_protos:test_messages_edition_unstable_py_pb2",
         "//editions:test_messages_proto2_editions_py_pb2",
         "//editions:test_messages_proto3_editions_py_pb2",
         "//python:_message",  # Make upb visible if we need it.
@@ -580,6 +581,7 @@ inline_sh_binary(
     visibility = ["//csharp:__subpackages__"],
     deps = [
         "//conformance/test_protos:test_messages_edition2023_csharp_proto",
+        "//conformance/test_protos:test_messages_edition_unstable_csharp_proto",
         "//csharp/src/Google.Protobuf.Conformance:conformance_runfiles",
     ],
 )
@@ -595,6 +597,7 @@ objc_library(
         "//:test_messages_proto2_objc_proto",
         "//:test_messages_proto3_objc_proto",
         "//conformance/test_protos:test_messages_edition2023_objc_proto",
+        "//conformance/test_protos:test_messages_edition_unstable_objc_proto",
         "//editions:test_messages_proto2_editions_objc_proto",
         "//editions:test_messages_proto3_editions_objc_proto",
     ],
@@ -607,29 +610,4 @@ cc_binary(
     tags = ["manual"],
     visibility = ["//objectivec:__subpackages__"],
     deps = [":conformance_objc_lib"],
-)
-
-rb_binary(
-    name = "conformance_ruby",
-    testonly = True,
-    srcs = ["conformance_ruby.rb"],
-    main = "conformance_ruby.rb",
-    visibility = ["//ruby:__subpackages__"],
-    deps = [
-        ":conformance_ruby_proto",
-        "//conformance/test_protos:test_messages_edition2023_ruby_proto",
-        "//ruby:conformance_editions_test_ruby_proto",
-        "//ruby:conformance_test_ruby_proto",
-        "//ruby:protobuf",
-    ],
-)
-
-################################################################################
-# Distribution files
-################################################################################
-
-filegroup(
-    name = "all_files",
-    srcs = glob(["**/*"]),
-    visibility = ["//src/google/protobuf/compiler/csharp:__pkg__"],
 )

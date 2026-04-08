@@ -113,6 +113,8 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
    */
   protected abstract FieldAccessorTable internalGetFieldAccessorTable();
 
+  // TODO: Remove this in a future breaking change for compatibility with old generated
+  // code in OSS. Try removing in google3 earlier once old generated code is updated (e.g. UTP).
   @Override
   public Descriptor getDescriptorForType() {
     return internalGetFieldAccessorTable().descriptor;
@@ -369,10 +371,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     } catch (InvalidProtocolBufferException e) {
       throw e.unwrapIOException();
     }
-  }
-
-  protected static boolean canUseUnsafe() {
-    return UnsafeUtil.hasUnsafeArrayOperations() && UnsafeUtil.hasUnsafeByteBufferOperations();
   }
 
   protected static IntList emptyIntList() {
@@ -1090,13 +1088,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         }
       } else {
         result = (T) extension.fromReflectionType(value);
-      }
-
-      // If the lazy field is corrupted, we need to invalidate the memoized size in case the
-      // corrupted message data was replaced with an empty ByteString and yet a previous serialized
-      // size was memoized.
-      if (extensions.lazyFieldCorrupted(descriptor)) {
-        setMemoizedSerializedSize(-1);
       }
       return result;
     }
@@ -3520,7 +3511,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
               .newBuilderForType()
               .setKey(entry.getKey())
               .setValue(entry.getValue())
-              .build());
+              .buildPartial());
     }
   }
 }

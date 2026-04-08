@@ -24,6 +24,7 @@
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 #include "google/protobuf/cpp_features.pb.h"
+#include "editions/edition_defaults_test_utils.h"
 #include "google/protobuf/unittest_features.pb.h"
 #include "google/protobuf/unittest_invalid_features.pb.h"
 
@@ -1174,6 +1175,58 @@ TEST_F(CommandLineInterfaceTest, CreateDirectory) {
   ExpectGenerated("test_plugin", "", "bar/baz/foo.proto", "Foo", "plugout");
 }
 
+TEST_F(CommandLineInterfaceTest, RejectDotDotInFilename) {
+  class DotDotGenerator : public CodeGenerator {
+   public:
+    bool Generate(const FileDescriptor* file, const std::string& parameter,
+                  GeneratorContext* context,
+                  std::string* error) const override {
+      std::unique_ptr<io::ZeroCopyOutputStream> output(
+          context->Open("abc/../../foo.proto.test"));
+      return true;
+    }
+  };
+
+  RegisterGenerator("--dotdot_out", std::make_unique<DotDotGenerator>(),
+                    "Test .. rejection.");
+
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  RunProtoc(
+      "protocol_compiler --dotdot_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("Output file names must never have a relative path.");
+}
+
+TEST_F(CommandLineInterfaceTest, AllowDotDotInFilenameWithFlag) {
+  class DotDotGenerator : public CodeGenerator {
+   public:
+    bool Generate(const FileDescriptor* file, const std::string& parameter,
+                  GeneratorContext* context,
+                  std::string* error) const override {
+      std::unique_ptr<io::ZeroCopyOutputStream> output(
+          context->Open("abc/../../foo.proto.test"));
+      return true;
+    }
+  };
+
+  RegisterGenerator("--dotdot_out", std::make_unique<DotDotGenerator>(),
+                    "Test .. allowance.");
+
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  RunProtoc(
+      "protocol_compiler --unsafe_allow_out_dir_escape --dotdot_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+}
+
 TEST_F(CommandLineInterfaceTest, GeneratorParameters) {
   // Test that generator parameters are correctly parsed from the command line.
 
@@ -1616,6 +1669,71 @@ TEST_F(CommandLineInterfaceTest, ImportOptions_MissingImport) {
   ExpectErrorSubstring("options.proto: File not found");
 }
 
+TEST_F(CommandLineInterfaceTest, ValidateFeatureSupportError) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    option features.field_presence = IMPLICIT;
+    message Foo {
+      int32 bar = 1 [
+        feature_support = {
+          edition_removed: EDITION_2023
+        }
+      ];
+    })schema");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "foo.proto: Foo.bar has been removed but does not specify a removal "
+      "error.");
+}
+
+TEST_F(CommandLineInterfaceTest, ValidateFeatureSupportValid) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    option features.field_presence = IMPLICIT;
+    message Foo {
+      int32 bar = 1 [
+        feature_support = {
+          edition_removed: EDITION_2023
+          removal_error: "Custom removal error"
+        }
+      ];
+    })schema");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, ValidateFeatureSupportLifetimesOptionRemoved) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2024";
+    import "google/protobuf/descriptor.proto";
+
+    option features.field_presence = IMPLICIT;
+
+    extend google.protobuf.MessageOptions {
+      bool removed_option = 7733026 [feature_support = {
+        edition_removed: EDITION_2023
+        removal_error: "removed_option removal error"}];
+    }
+    message Foo {
+      option (removed_option) = true;
+      int32 bar = 1 [
+        feature_support = {
+          edition_removed: EDITION_2023
+          removal_error: "Custom removal error"
+        }
+      ];
+    })schema");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "removed_option has been removed in edition 2023: removed_option removal "
+      "error");
+}
+
 TEST_F(CommandLineInterfaceTest, FeatureValidationError) {
   CreateTempFile("foo.proto",
                  R"schema(
@@ -1710,6 +1828,38 @@ TEST_F(CommandLineInterfaceTest, NamingStyleEnforced) {
     )schema");
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
   ExpectErrorSubstring("Package name badPackage should be lower_snake_case");
+}
+
+TEST_F(CommandLineInterfaceTest, NamingStyleStartsWithHasCollisionExists) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "UNSTABLE";
+    message Foo {
+      string has_bar = 1;
+      string bar = 2;
+    }
+    )schema");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Field name has_bar should not begin with has_ if a field named bar "
+      "exists. "
+      "This can cause collisions in generated code. "
+      "(features.enforce_naming_style = STYLE2024 can be used to opt out of "
+      "this check)");
+}
+
+TEST_F(CommandLineInterfaceTest, NamingStyleStartsWithHasNoCollision) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "UNSTABLE";
+    message Foo {
+      string has_bar = 1;
+      string baz = 2;
+    }
+    )schema");
+  Run("protocol_compiler --proto_path=$tmpdir --experimental_editions "
+      "--test_out=$tmpdir foo.proto");
+  ExpectNoErrors();
 }
 
 TEST_F(CommandLineInterfaceTest, Plugin_InvalidFeatureExtensionError) {
@@ -2210,7 +2360,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
   ExpectNoErrors();
 
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
-  EXPECT_THAT(defaults, EqualsProto(R"pb(
+  EXPECT_THAT(defaults, PartiallyMatchesEditionDefaults(R"pb(
     defaults {
       edition: EDITION_LEGACY
       overridable_features {}
@@ -2283,7 +2433,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
   ExpectNoErrors();
 
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
-  EXPECT_THAT(defaults, EqualsProto(R"pb(
+  EXPECT_THAT(defaults, PartiallyMatchesEditionDefaults(R"pb(
                 defaults {
                   edition: EDITION_LEGACY
                   overridable_features {}
@@ -2358,15 +2508,14 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithUnstable) {
   ExpectNoErrors();
 
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
-  EXPECT_EQ(defaults.defaults_size(), 5);
-  EXPECT_EQ(defaults.defaults(4).edition(), EDITION_UNSTABLE);
-  EXPECT_EQ(defaults.defaults(4)
-                .overridable_features()
+  const auto unstable_defaults = FindEditionDefault(defaults, EDITION_UNSTABLE);
+  ASSERT_TRUE(unstable_defaults.has_value());
+  EXPECT_EQ(unstable_defaults->edition(), EDITION_UNSTABLE);
+  EXPECT_EQ(unstable_defaults->overridable_features()
                 .GetExtension(pb::test)
                 .new_unstable_feature(),
             pb::UnstableEnumFeature::UNSTABLE2);
-  EXPECT_EQ(defaults.defaults(4)
-                .overridable_features()
+  EXPECT_EQ(unstable_defaults->overridable_features()
                 .GetExtension(pb::test)
                 .unstable_existing_feature(),
             pb::UnstableEnumFeature::UNSTABLE3);
@@ -2383,7 +2532,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
   ExpectNoErrors();
 
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
-  EXPECT_THAT(defaults, EqualsProto(R"pb(
+  EXPECT_THAT(defaults, PartiallyMatchesEditionDefaults(R"pb(
                 defaults {
                   edition: EDITION_LEGACY
                   overridable_features {}
@@ -2461,40 +2610,45 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_EQ(defaults.minimum_edition(), EDITION_PROTO2);
   EXPECT_EQ(defaults.maximum_edition(), EDITION_99999_TEST_ONLY);
-  ASSERT_EQ(defaults.defaults_size(), 8);
-  EXPECT_EQ(defaults.defaults(0).edition(), EDITION_LEGACY);
-  EXPECT_EQ(defaults.defaults(2).edition(), EDITION_2023);
-  EXPECT_EQ(defaults.defaults(3).edition(), EDITION_2024);
-  EXPECT_EQ(defaults.defaults(4).edition(), EDITION_UNSTABLE);
-  EXPECT_EQ(defaults.defaults(5).edition(), EDITION_99997_TEST_ONLY);
-  EXPECT_EQ(defaults.defaults(6).edition(), EDITION_99998_TEST_ONLY);
-  EXPECT_EQ(defaults.defaults(0)
-                .fixed_features()
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_LEGACY)->edition(),
+            EDITION_LEGACY);
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_2023)->edition(),
+            EDITION_2023);
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_2024)->edition(),
+            EDITION_2024);
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_UNSTABLE)->edition(),
+            EDITION_UNSTABLE);
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_99997_TEST_ONLY)->edition(),
+            EDITION_99997_TEST_ONLY);
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_99998_TEST_ONLY)->edition(),
+            EDITION_99998_TEST_ONLY);
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_LEGACY)
+                ->fixed_features()
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::EnumFeature::VALUE1);
-  EXPECT_EQ(defaults.defaults(2)
-                .overridable_features()
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_2023)
+                ->overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::EnumFeature::VALUE3);
-  EXPECT_EQ(defaults.defaults(3)
-                .overridable_features()
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_2024)
+                ->overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::EnumFeature::VALUE3);
-  EXPECT_EQ(defaults.defaults(4)
-                .overridable_features()
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_UNSTABLE)
+                ->overridable_features()
                 .GetExtension(pb::test)
                 .new_unstable_feature(),
             pb::UnstableEnumFeature::UNSTABLE2);
-  EXPECT_EQ(defaults.defaults(5)
-                .overridable_features()
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_99997_TEST_ONLY)
+                ->overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::EnumFeature::VALUE4);
-  EXPECT_EQ(defaults.defaults(6)
-                .overridable_features()
+  EXPECT_EQ(FindEditionDefault(defaults, EDITION_99998_TEST_ONLY)
+                ->overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::EnumFeature::VALUE5);
@@ -2626,7 +2780,8 @@ TEST_F(CommandLineInterfaceTest, JavaMultipleFilesEdition2024Invalid) {
   Run("protocol_compiler --proto_path=$tmpdir "
       "foo.proto --test_out=$tmpdir --experimental_editions");
   ExpectErrorSubstring(
-      "The `java_multiple_files` behavior is enabled by default");
+      "google.protobuf.FileOptions.java_multiple_files has been removed in edition "
+      "2024: This behavior is enabled by default");
 }
 
 
@@ -2640,7 +2795,8 @@ TEST_F(CommandLineInterfaceTest, JavaNestInFileClassFor) {
   Run("protocol_compiler --proto_path=$tmpdir "
       "foo.proto --test_out=$tmpdir --experimental_editions");
   ExpectErrorSubstring(
-      "The `java_multiple_files` behavior is enabled by default");
+      "google.protobuf.FileOptions.java_multiple_files has been removed in edition "
+      "2024: This behavior is enabled by default");
 }
 
 
@@ -5559,7 +5715,7 @@ TEST_P(EncodeDecodeTest, DecodeRaw) {
   message.set_optional_int32(123);
   message.set_optional_string("foo");
   std::string data;
-  message.SerializeToString(&data);
+  ABSL_CHECK(message.SerializeToString(&data));
 
   RedirectStdinFromText(data);
   EXPECT_TRUE(Run("--decode_raw", /*specify_proto_files=*/false));

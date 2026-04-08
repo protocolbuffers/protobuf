@@ -7,21 +7,15 @@ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
-    name = "generator_headers",
-    hdrs = ["ruby_generator.h"],
-    copts = COPTS,
-    strip_include_prefix = "/src",
-    visibility = ["//pkg:__pkg__"],
-    deps = [
-        "//src/google/protobuf",
-        "//src/google/protobuf/compiler:code_generator",
-    ],
-)
-
-cc_library(
     name = "ruby",
-    srcs = ["ruby_generator.cc"],
-    hdrs = ["ruby_generator.h"],
+    srcs = [
+        "rbs_generator.cc",
+        "ruby_generator.cc",
+    ],
+    hdrs = [
+        "rbs_generator.h",
+        "ruby_generator.h",
+    ],
     copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
@@ -35,6 +29,7 @@ cc_library(
         "//src/google/protobuf/compiler:retention",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
+        "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/strings",
@@ -43,19 +38,27 @@ cc_library(
 
 cc_test(
     name = "generator_unittest",
-    srcs = ["ruby_generator_unittest.cc"],
+    srcs = [
+        "rbs_generator_unittest.cc",
+        "ruby_generator_unittest.cc",
+    ],
     data = [
         "ruby_generated_code.proto",
         "ruby_generated_code_pb.rb",
+        "ruby_generated_code_pb.rbs",
         "ruby_generated_code_proto2.proto",
         "ruby_generated_code_proto2_import.proto",
         "ruby_generated_code_proto2_pb.rb",
+        "ruby_generated_code_proto2_pb.rbs",
         "ruby_generated_pkg_explicit.proto",
         "ruby_generated_pkg_explicit_legacy.proto",
         "ruby_generated_pkg_explicit_legacy_pb.rb",
+        "ruby_generated_pkg_explicit_legacy_pb.rbs",
         "ruby_generated_pkg_explicit_pb.rb",
+        "ruby_generated_pkg_explicit_pb.rbs",
         "ruby_generated_pkg_implicit.proto",
         "ruby_generated_pkg_implicit_pb.rb",
+        "ruby_generated_pkg_implicit_pb.rbs",
         "//src/google/protobuf:testdata",
     ],
     deps = [
@@ -73,13 +76,6 @@ cc_test(
 ################################################################################
 # Distribution packaging
 ################################################################################
-
-pkg_files(
-    name = "dist_files",
-    srcs = glob(["**/*"]),
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//src:__pkg__"],
-)
 
 filegroup(
     name = "test_srcs",

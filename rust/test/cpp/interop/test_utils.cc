@@ -38,7 +38,7 @@ extern "C" void DeleteInteropTestMessage(InteropTestMessage* msg) {
 
 extern "C" void* DeserializeInteropTestMessage(const void* data, size_t size) {
   auto* proto = new InteropTestMessage;
-  proto->ParseFromArray(data, static_cast<int>(size));
+  ABSL_CHECK(proto->ParseFromArray(data, static_cast<int>(size)));
   return proto;
 }
 

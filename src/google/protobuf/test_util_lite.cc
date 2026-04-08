@@ -11,6 +11,9 @@
 
 #include "google/protobuf/test_util_lite.h"
 
+#include <cstdint>
+#include <string>
+
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
 #include "google/protobuf/unittest_import_lite.pb.h"
@@ -609,36 +612,66 @@ void TestUtilLite::ExpectRepeatedFieldsModified(
 
 // -------------------------------------------------------------------
 
-void TestUtilLite::SetPackedFields(unittest::TestPackedTypesLite* message) {
-  message->add_packed_int32(601);
-  message->add_packed_int64(602);
-  message->add_packed_uint32(603);
-  message->add_packed_uint64(604);
-  message->add_packed_sint32(605);
-  message->add_packed_sint64(606);
-  message->add_packed_fixed32(607);
-  message->add_packed_fixed64(608);
-  message->add_packed_sfixed32(609);
-  message->add_packed_sfixed64(610);
-  message->add_packed_float(611);
-  message->add_packed_double(612);
-  message->add_packed_bool(true);
-  message->add_packed_enum(unittest::FOREIGN_LITE_BAR);
-  // add a second one of each field
-  message->add_packed_int32(701);
-  message->add_packed_int64(702);
-  message->add_packed_uint32(703);
-  message->add_packed_uint64(704);
-  message->add_packed_sint32(705);
-  message->add_packed_sint64(706);
-  message->add_packed_fixed32(707);
-  message->add_packed_fixed64(708);
-  message->add_packed_sfixed32(709);
-  message->add_packed_sfixed64(710);
-  message->add_packed_float(711);
-  message->add_packed_double(712);
-  message->add_packed_bool(false);
-  message->add_packed_enum(unittest::FOREIGN_LITE_BAZ);
+void TestUtilLite::SetPackedVarintFields(unittest::TestPackedTypesLite* message,
+                                         bool large_values, int repetitions) {
+  for (int i = 0; i < repetitions; ++i) {
+    const uint64_t kMask = large_values ? 0xFFFFFFFFFFFFFFFF : 0x7F;
+    message->add_packed_int32(601 & kMask);
+    message->add_packed_int64(602 & kMask);
+    message->add_packed_uint32(603 & kMask);
+    message->add_packed_uint64(604 & kMask);
+    message->add_packed_sint32(605 & kMask);
+    message->add_packed_sint64(606 & kMask);
+    message->add_packed_enum(unittest::FOREIGN_LITE_BAR);
+    // add a second one of each field
+    message->add_packed_int32(701 & kMask);
+    message->add_packed_int64(702 & kMask);
+    message->add_packed_uint32(703 & kMask);
+    message->add_packed_uint64(704 & kMask);
+    message->add_packed_sint32(705 & kMask);
+    message->add_packed_sint64(706 & kMask);
+    message->add_packed_enum(unittest::FOREIGN_LITE_BAZ);
+  }
+}
+
+// -------------------------------------------------------------------
+
+void TestUtilLite::SetPackedBoolField(unittest::TestPackedTypesLite* message,
+                                      int repetitions) {
+  for (int i = 0; i < repetitions; ++i) {
+    message->add_packed_bool(true);
+    message->add_packed_bool(false);
+  }
+}
+
+// -------------------------------------------------------------------
+
+void TestUtilLite::SetPackedFixedFields(unittest::TestPackedTypesLite* message,
+                                        int repetitions) {
+  for (int i = 0; i < repetitions; ++i) {
+    message->add_packed_fixed32(607);
+    message->add_packed_fixed64(608);
+    message->add_packed_sfixed32(609);
+    message->add_packed_sfixed64(610);
+    message->add_packed_float(611);
+    message->add_packed_double(612);
+    // add a second one of each field
+    message->add_packed_fixed32(707);
+    message->add_packed_fixed64(708);
+    message->add_packed_sfixed32(709);
+    message->add_packed_sfixed64(710);
+    message->add_packed_float(711);
+    message->add_packed_double(712);
+  }
+}
+
+// -------------------------------------------------------------------
+
+void TestUtilLite::SetPackedFields(unittest::TestPackedTypesLite* message,
+                                   bool large_values, int repetitions) {
+  SetPackedVarintFields(message, large_values, repetitions);
+  SetPackedBoolField(message, repetitions);
+  SetPackedFixedFields(message, repetitions);
 }
 
 // -------------------------------------------------------------------
@@ -663,51 +696,56 @@ void TestUtilLite::ModifyPackedFields(unittest::TestPackedTypesLite* message) {
 // -------------------------------------------------------------------
 
 void TestUtilLite::ExpectPackedFieldsSet(
-    const unittest::TestPackedTypesLite& message) {
-  ASSERT_EQ(2, message.packed_int32_size());
-  ASSERT_EQ(2, message.packed_int64_size());
-  ASSERT_EQ(2, message.packed_uint32_size());
-  ASSERT_EQ(2, message.packed_uint64_size());
-  ASSERT_EQ(2, message.packed_sint32_size());
-  ASSERT_EQ(2, message.packed_sint64_size());
-  ASSERT_EQ(2, message.packed_fixed32_size());
-  ASSERT_EQ(2, message.packed_fixed64_size());
-  ASSERT_EQ(2, message.packed_sfixed32_size());
-  ASSERT_EQ(2, message.packed_sfixed64_size());
-  ASSERT_EQ(2, message.packed_float_size());
-  ASSERT_EQ(2, message.packed_double_size());
-  ASSERT_EQ(2, message.packed_bool_size());
-  ASSERT_EQ(2, message.packed_enum_size());
+    const unittest::TestPackedTypesLite& message, bool large_values,
+    int repetitions) {
+  const uint64_t kMask = large_values ? 0xFFFFFFFFFFFFFFFF : 0x7F;
 
-  EXPECT_EQ(601, message.packed_int32(0));
-  EXPECT_EQ(602, message.packed_int64(0));
-  EXPECT_EQ(603, message.packed_uint32(0));
-  EXPECT_EQ(604, message.packed_uint64(0));
-  EXPECT_EQ(605, message.packed_sint32(0));
-  EXPECT_EQ(606, message.packed_sint64(0));
-  EXPECT_EQ(607, message.packed_fixed32(0));
-  EXPECT_EQ(608, message.packed_fixed64(0));
-  EXPECT_EQ(609, message.packed_sfixed32(0));
-  EXPECT_EQ(610, message.packed_sfixed64(0));
-  EXPECT_EQ(611, message.packed_float(0));
-  EXPECT_EQ(612, message.packed_double(0));
-  EXPECT_EQ(true, message.packed_bool(0));
-  EXPECT_EQ(unittest::FOREIGN_LITE_BAR, message.packed_enum(0));
+  ASSERT_EQ(repetitions * 2, message.packed_int32_size());
+  ASSERT_EQ(repetitions * 2, message.packed_int64_size());
+  ASSERT_EQ(repetitions * 2, message.packed_uint32_size());
+  ASSERT_EQ(repetitions * 2, message.packed_uint64_size());
+  ASSERT_EQ(repetitions * 2, message.packed_sint32_size());
+  ASSERT_EQ(repetitions * 2, message.packed_sint64_size());
+  ASSERT_EQ(repetitions * 2, message.packed_fixed32_size());
+  ASSERT_EQ(repetitions * 2, message.packed_fixed64_size());
+  ASSERT_EQ(repetitions * 2, message.packed_sfixed32_size());
+  ASSERT_EQ(repetitions * 2, message.packed_sfixed64_size());
+  ASSERT_EQ(repetitions * 2, message.packed_float_size());
+  ASSERT_EQ(repetitions * 2, message.packed_double_size());
+  ASSERT_EQ(repetitions * 2, message.packed_bool_size());
+  ASSERT_EQ(repetitions * 2, message.packed_enum_size());
 
-  EXPECT_EQ(701, message.packed_int32(1));
-  EXPECT_EQ(702, message.packed_int64(1));
-  EXPECT_EQ(703, message.packed_uint32(1));
-  EXPECT_EQ(704, message.packed_uint64(1));
-  EXPECT_EQ(705, message.packed_sint32(1));
-  EXPECT_EQ(706, message.packed_sint64(1));
-  EXPECT_EQ(707, message.packed_fixed32(1));
-  EXPECT_EQ(708, message.packed_fixed64(1));
-  EXPECT_EQ(709, message.packed_sfixed32(1));
-  EXPECT_EQ(710, message.packed_sfixed64(1));
-  EXPECT_EQ(711, message.packed_float(1));
-  EXPECT_EQ(712, message.packed_double(1));
-  EXPECT_FALSE(message.packed_bool(1));
-  EXPECT_EQ(unittest::FOREIGN_LITE_BAZ, message.packed_enum(1));
+  for (int i = 0; i < repetitions; ++i) {
+    EXPECT_EQ(601 & kMask, message.packed_int32(i * 2));
+    EXPECT_EQ(602 & kMask, message.packed_int64(i * 2));
+    EXPECT_EQ(603 & kMask, message.packed_uint32(i * 2));
+    EXPECT_EQ(604 & kMask, message.packed_uint64(i * 2));
+    EXPECT_EQ(605 & kMask, message.packed_sint32(i * 2));
+    EXPECT_EQ(606 & kMask, message.packed_sint64(i * 2));
+    EXPECT_EQ(607, message.packed_fixed32(i * 2));
+    EXPECT_EQ(608, message.packed_fixed64(i * 2));
+    EXPECT_EQ(609, message.packed_sfixed32(i * 2));
+    EXPECT_EQ(610, message.packed_sfixed64(i * 2));
+    EXPECT_EQ(611, message.packed_float(i * 2));
+    EXPECT_EQ(612, message.packed_double(i * 2));
+    EXPECT_EQ(true, message.packed_bool(i * 2));
+    EXPECT_EQ(unittest::FOREIGN_LITE_BAR, message.packed_enum(i * 2));
+
+    EXPECT_EQ(701 & kMask, message.packed_int32(i * 2 + 1));
+    EXPECT_EQ(702 & kMask, message.packed_int64(i * 2 + 1));
+    EXPECT_EQ(703 & kMask, message.packed_uint32(i * 2 + 1));
+    EXPECT_EQ(704 & kMask, message.packed_uint64(i * 2 + 1));
+    EXPECT_EQ(705 & kMask, message.packed_sint32(i * 2 + 1));
+    EXPECT_EQ(706 & kMask, message.packed_sint64(i * 2 + 1));
+    EXPECT_EQ(707, message.packed_fixed32(i * 2 + 1));
+    EXPECT_EQ(708, message.packed_fixed64(i * 2 + 1));
+    EXPECT_EQ(709, message.packed_sfixed32(i * 2 + 1));
+    EXPECT_EQ(710, message.packed_sfixed64(i * 2 + 1));
+    EXPECT_EQ(711, message.packed_float(i * 2 + 1));
+    EXPECT_EQ(712, message.packed_double(i * 2 + 1));
+    EXPECT_FALSE(message.packed_bool(i * 2 + 1));
+    EXPECT_EQ(unittest::FOREIGN_LITE_BAZ, message.packed_enum(i * 2 + 1));
+  }
 }
 
 // -------------------------------------------------------------------

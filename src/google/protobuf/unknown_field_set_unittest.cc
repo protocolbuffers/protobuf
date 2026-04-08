@@ -18,20 +18,13 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/stubs/callback.h"
-#include "google/protobuf/stubs/common.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_set.h"
-#include "absl/functional/bind_front.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
-#include "absl/synchronization/mutex.h"
-#include "absl/time/clock.h"
-#include "absl/time/time.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/text_format.h"
@@ -67,7 +60,7 @@ class UnknownFieldSetTest : public testing::Test {
   void SetUp() override {
     descriptor_ = unittest::TestAllTypes::descriptor();
     TestUtil::SetAllFields(&all_fields_);
-    all_fields_.SerializeToString(&all_fields_data_);
+    ABSL_CHECK(all_fields_.SerializeToString(&all_fields_data_));
     ASSERT_TRUE(empty_message_.ParseFromString(all_fields_data_));
     unknown_fields_ = empty_message_.mutable_unknown_fields();
   }
@@ -312,7 +305,7 @@ TEST_F(UnknownFieldSetTest, Serialize) {
   // again.
 
   std::string data;
-  empty_message_.SerializeToString(&data);
+  ABSL_CHECK(empty_message_.SerializeToString(&data));
 
   // Don't use EXPECT_EQ because we don't want to dump raw binary data to
   // stdout.
@@ -394,7 +387,7 @@ TEST_F(UnknownFieldSetTest, MergeFrom) {
   destination.MergeFrom(source);
 
   std::string destination_text;
-  TextFormat::PrintToString(destination, &destination_text);
+  ASSERT_TRUE(TextFormat::PrintToString(destination, &destination_text));
   EXPECT_EQ(
       // Note:  The ordering of fields here depends on the ordering of adds
       //   and merging, above.
@@ -413,10 +406,10 @@ TEST_F(UnknownFieldSetTest, MergeFromMessage) {
   source.mutable_unknown_fields()->AddVarint(2, 3);
   source.mutable_unknown_fields()->AddVarint(3, 4);
 
-  destination.mutable_unknown_fields()->MergeFromMessage(source);
+  ASSERT_TRUE(destination.mutable_unknown_fields()->MergeFromMessage(source));
 
   std::string destination_text;
-  TextFormat::PrintToString(destination, &destination_text);
+  ASSERT_TRUE(TextFormat::PrintToString(destination, &destination_text));
   EXPECT_EQ(
       // Note:  The ordering of fields here depends on the ordering of adds
       //   and merging, above.
@@ -432,7 +425,7 @@ TEST_F(UnknownFieldSetTest, MergeFromMessageLite) {
   unittest::TestEmptyMessageLite destination;
 
   source.set_optional_fixed32(42);
-  destination.ParseFromString(source.SerializeAsString());
+  ABSL_CHECK(destination.ParseFromString(source.SerializeAsString()));
 
   UnknownFieldSet unknown_field_set;
   EXPECT_TRUE(unknown_field_set.MergeFromMessage(destination));
@@ -564,7 +557,7 @@ TEST_F(UnknownFieldSetTest, UnknownEnumValue) {
     unknown_fields->AddVarint(repeated_field->number(), 4);  // not valid
     unknown_fields->AddVarint(repeated_field->number(), TestAllTypes::BAZ);
     unknown_fields->AddVarint(repeated_field->number(), 6);  // not valid
-    empty_message.SerializeToString(&data);
+    ABSL_CHECK(empty_message.SerializeToString(&data));
   }
 
   {

@@ -379,6 +379,26 @@ TEST_F(JavaGeneratorTest,
       "of one of the types declared inside it");
 }
 
+TEST_F(JavaGeneratorTest, InvalidConflictingNestedEnumName) {
+  CreateTempFile("test_file_name.proto",
+                 R"schema(
+      edition = "2024";
+      package foo;
+      message TestNameConflict {
+        enum TestNameConflict {
+          UNSPECIFIED = 0;
+        }
+      }
+      )schema");
+
+  RunProtoc(
+      "protocol_compiler --experimental_editions --java_out=$tmpdir "
+      "-I$tmpdir test_file_name.proto");
+
+  ExpectErrorSubstring(
+      "would be an enum nested inside a class with the same name");
+}
+
 TEST_F(JavaGeneratorTest, ExtensionsOptionImportsAreUnknown) {
   CreateTempFile("custom_option.proto", R"schema(
       edition = "2024";
@@ -508,6 +528,8 @@ TEST_F(JavaGeneratorTest, ExtensionsPublicImportsAreKnown) {
                             absl::StrCat("registry.add(", PACKAGE_IMPORT_PREFIX,
                                          "foo.FooProto.fileOpt);")));
 }
+
+
 }  // namespace
 }  // namespace java
 }  // namespace compiler

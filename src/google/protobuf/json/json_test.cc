@@ -1179,6 +1179,26 @@ TEST_P(JsonTest, TestOverwriteRepeated) {
 }
 
 
+TEST_P(JsonTest, TestAny) {
+  // Not setting 'value' is legal because it is the the representation of an
+  // empty message (since 'bytes' is an implicit presence field).
+  google::protobuf::Any any;
+  any.set_type_url("type.googleapis.com/proto3.TestMessage");
+  PrintOptions options;
+  options.allow_legacy_nonconformant_behavior = false;
+  EXPECT_THAT(
+      ToJson(any),
+      IsOkAndHolds(R"({"@type":"type.googleapis.com/proto3.TestMessage"})"));
+  EXPECT_THAT(
+      ToJson(any, options),
+      IsOkAndHolds(R"({"@type":"type.googleapis.com/proto3.TestMessage"})"));
+
+  auto round_trip = ToProto<google::protobuf::Any>(*ToJson(any));
+  ASSERT_OK(round_trip);
+  EXPECT_EQ(round_trip->type_url(), "type.googleapis.com/proto3.TestMessage");
+  EXPECT_EQ(round_trip->value(), "");
+}
+
 TEST_P(JsonTest, TestDuration) {
   auto m = ToProto<proto3::TestDuration>(R"json(
     {
@@ -1420,6 +1440,16 @@ TEST_P(JsonTest, UnknownGroupField) {
                                       "\273>\010c\274>", &out);
   ASSERT_OK(s);
   EXPECT_EQ(out, "{}");
+}
+
+TEST_P(JsonTest, MalformedLengthDelimitedField) {
+  std::string out;
+  // An unknown length delimited field where the length is larger than
+  // the remaining input.
+  absl::Status s = BinaryToJsonString(resolver_.get(),
+                                      "type.googleapis.com/proto3.TestMessage",
+                                      "\xC2\x3E\x80\x80\x80\x80\x08", &out);
+  ASSERT_THAT(s, StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 // JSON values get special treatment when it comes to pre-existing values in

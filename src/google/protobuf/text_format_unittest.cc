@@ -30,6 +30,9 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/die_if_null.h"
 #include "absl/log/scoped_mock_log.h"
+#include "absl/status/status.h"
+#include "absl/status/status_matchers.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -76,10 +79,67 @@ class UnsetFieldsMetadataTextFormatTestUtil {
 // Can't use an anonymous namespace here due to brokenness of Tru64 compiler.
 namespace text_format_unittest {
 
+using ::absl_testing::IsOk;
+using ::absl_testing::StatusIs;
 using ::google::protobuf::internal::UnsetFieldsMetadataTextFormatTestUtil;
 using ::testing::AllOf;
 using ::testing::HasSubstr;
 using ::testing::UnorderedElementsAre;
+
+absl::string_view GetSubstring(absl::string_view input,
+                               TextFormat::ParseLocationRange range) {
+  if (range.start.line == -1 || range.end.line == -1) {
+    return absl::string_view();
+  }
+
+  auto get_offset = [&](int line, int col) -> size_t {
+    size_t offset = 0;
+    for (int i = 0; i < line; ++i) {
+      offset = input.find('\n', offset);
+      if (offset == std::string::npos) return std::string::npos;
+      offset++;
+    }
+    return offset + col;
+  };
+
+  size_t start_offset = get_offset(range.start.line, range.start.column);
+  size_t end_offset = get_offset(range.end.line, range.end.column);
+
+  if (start_offset == std::string::npos || end_offset == std::string::npos ||
+      start_offset > end_offset || end_offset > input.size()) {
+    return absl::string_view();
+  }
+
+  return input.substr(start_offset, end_offset - start_offset);
+}
+
+struct ExpectedLocation {
+  ExpectedLocation(absl::string_view full, absl::string_view name,
+                   std::vector<absl::string_view> values)
+      : full(full), name(name), values(std::move(values)) {}
+
+  absl::string_view full;
+  absl::string_view name;
+  std::vector<absl::string_view> values;
+};
+
+MATCHER_P2(MatchesLocation, input, expected, "") {
+  if (!arg.ok()) {
+    *result_listener << "arg is not ok: " << arg.status();
+    return false;
+  }
+  const TextFormat::FieldLocation loc = arg.value();
+  EXPECT_EQ(GetSubstring(input, loc.full), expected.full) << "full span";
+  EXPECT_EQ(GetSubstring(input, loc.name), expected.name) << "name span";
+  EXPECT_EQ(loc.values.size(), expected.values.size()) << "values size";
+
+  for (size_t i = 0; i < expected.values.size(); ++i) {
+    EXPECT_EQ(GetSubstring(input, loc.values[i]), expected.values[i])
+        << "value[" << i << "]";
+  }
+
+  return true;
+}
 
 // A basic string with different escapable characters for testing.
 constexpr absl::string_view kEscapeTestString =
@@ -157,14 +217,14 @@ std::string TextFormatExtensionsTest::static_proto_text_format_;
 TEST_F(TextFormatTest, Basic) {
   TestUtil::SetAllFields(&proto_);
   std::string actual_proto_text_format;
-  TextFormat::PrintToString(proto_, &actual_proto_text_format);
+  ASSERT_TRUE(TextFormat::PrintToString(proto_, &actual_proto_text_format));
   EXPECT_EQ(actual_proto_text_format, proto_text_format_);
 }
 
 TEST_F(TextFormatExtensionsTest, Extensions) {
   TestUtil::SetAllExtensions(&proto_);
   std::string actual_proto_text_format;
-  TextFormat::PrintToString(proto_, &actual_proto_text_format);
+  ASSERT_TRUE(TextFormat::PrintToString(proto_, &actual_proto_text_format));
   EXPECT_EQ(actual_proto_text_format, proto_text_format_);
 }
 
@@ -403,7 +463,7 @@ TEST_F(TextFormatTest, DelimitedPrintToString) {
   proto.mutable_nested()->mutable_notgrouplike()->set_a(7);
 
   std::string output;
-  TextFormat::PrintToString(proto, &output);
+  ASSERT_TRUE(TextFormat::PrintToString(proto, &output));
   EXPECT_EQ(output,
             "nested {\n  notgrouplike {\n    a: 7\n  }\n}\nGroupLike {\n  a: "
             "9\n}\nnotgrouplike {\n  b: 8\n}\n");
@@ -426,7 +486,7 @@ TEST_F(TextFormatTest, PrintUnknownFields) {
   unknown_fields->AddVarint(8, 3);
 
   std::string message_text;
-  TextFormat::PrintToString(message, &message_text);
+  ASSERT_TRUE(TextFormat::PrintToString(message, &message_text));
   EXPECT_EQ(absl::StrCat("5: 1\n"
                          "5: 0x00000002\n"
                          "5: 0x0000000000000003\n"
@@ -488,7 +548,7 @@ TEST_F(TextFormatTest, PrintUnknownFieldsHidden) {
   TextFormat::Printer printer;
   printer.SetHideUnknownFields(true);
   std::string output;
-  printer.PrintToString(message, &output);
+  ASSERT_TRUE(printer.PrintToString(message, &output));
 
   EXPECT_EQ("data: \"data\"\n", output);
 }
@@ -521,7 +581,7 @@ TEST_F(TextFormatTest, PrintUnknownMessage) {
   message.add_repeated_nested_message()->set_bb(123);
 
   std::string data;
-  message.SerializeToString(&data);
+  ABSL_CHECK(message.SerializeToString(&data));
 
   std::string text;
   UnknownFieldSet unknown_fields;
@@ -647,7 +707,7 @@ TEST_F(TextFormatTest, DefaultCustomFieldPrinter) {
   // Let's see if that works well together with the repeated primitives:
   printer.SetUseShortRepeatedPrimitives(true);
   std::string text;
-  printer.PrintToString(message, &text);
+  ASSERT_TRUE(printer.PrintToString(message, &text));
   EXPECT_EQ("optional_uint32: 42u\nrepeated_uint32: [1u, 2u, 3u]\n", text);
 }
 
@@ -669,7 +729,7 @@ TEST_F(TextFormatTest, FieldSpecificCustomPrinter) {
       message.GetDescriptor()->FindFieldByName("optional_int32"),
       new CustomInt32FieldValuePrinter()));
   std::string text;
-  printer.PrintToString(message, &text);
+  ASSERT_TRUE(printer.PrintToString(message, &text));
   EXPECT_EQ("optional_int32: value-is(42)\nrepeated_int32: 42\n", text);
 }
 
@@ -732,7 +792,7 @@ TEST_F(TextFormatTest, CustomPrinterForComments) {
   CustomMessageFieldValuePrinter my_field_printer;
   printer.SetDefaultFieldValuePrinter(new CustomMessageFieldValuePrinter());
   std::string text;
-  printer.PrintToString(message, &text);
+  ASSERT_TRUE(printer.PrintToString(message, &text));
   EXPECT_EQ(
       "optional_nested_message {  # NestedMessage: -1\n"
       "}\n"
@@ -780,7 +840,7 @@ TEST_F(TextFormatTest, CustomPrinterForMessageContent) {
   printer.SetDefaultFieldValuePrinter(
       new CustomMessageContentFieldValuePrinter());
   std::string text;
-  printer.PrintToString(message, &text);
+  ASSERT_TRUE(printer.PrintToString(message, &text));
   EXPECT_EQ(
       "optional_nested_message {\n"
       "}\n"
@@ -817,7 +877,7 @@ TEST_F(TextFormatTest, CustomPrinterForMultilineComments) {
   CustomMessageFieldValuePrinter my_field_printer;
   printer.SetDefaultFieldValuePrinter(new CustomMultilineCommentPrinter());
   std::string text;
-  printer.PrintToString(message, &text);
+  ASSERT_TRUE(printer.PrintToString(message, &text));
   EXPECT_EQ(
       "optional_nested_message {  # 1\n"
       "  # 2\n"
@@ -972,35 +1032,35 @@ TEST_F(TextFormatTest, CustomMessagePrinter) {
 
   unittest::TestAllTypes message;
   std::string text;
-  EXPECT_TRUE(printer.PrintToString(message, &text));
+  ASSERT_TRUE(printer.PrintToString(message, &text));
   EXPECT_EQ("", text);
 
   message.mutable_optional_nested_message()->set_bb(1);
-  EXPECT_TRUE(printer.PrintToString(message, &text));
+  ASSERT_TRUE(printer.PrintToString(message, &text));
   EXPECT_EQ("optional_nested_message {\n  // custom\n}\n", text);
 
   custom_printer->SetPrinter(&printer);
-  EXPECT_TRUE(printer.PrintToString(message, &text));
+  ASSERT_TRUE(printer.PrintToString(message, &text));
   EXPECT_EQ("optional_nested_message {\n  // custom\n  bb: 1\n}\n", text);
 }
 
 TEST_F(TextFormatTest, ParseBasic) {
   io::ArrayInputStream input_stream(proto_text_format_.data(),
                                     proto_text_format_.size());
-  TextFormat::Parse(&input_stream, &proto_);
+  ASSERT_TRUE(TextFormat::Parse(&input_stream, &proto_));
   TestUtil::ExpectAllFieldsSet(proto_);
 }
 
 TEST_F(TextFormatTest, ParseCordBasic) {
   absl::Cord cord(proto_text_format_);
-  TextFormat::ParseFromCord(cord, &proto_);
+  ASSERT_TRUE(TextFormat::ParseFromCord(cord, &proto_));
   TestUtil::ExpectAllFieldsSet(proto_);
 }
 
 TEST_F(TextFormatExtensionsTest, ParseExtensions) {
   io::ArrayInputStream input_stream(proto_text_format_.data(),
                                     proto_text_format_.size());
-  TextFormat::Parse(&input_stream, &proto_);
+  ASSERT_TRUE(TextFormat::Parse(&input_stream, &proto_));
   TestUtil::ExpectAllExtensionsSet(proto_);
 }
 
@@ -1244,7 +1304,7 @@ TEST_F(TextFormatTest, ParseStringEscape) {
       absl::StrCat("optional_string: ", kEscapeTestStringEscaped, "\n");
 
   io::ArrayInputStream input_stream(parse_string.data(), parse_string.size());
-  TextFormat::Parse(&input_stream, &proto_);
+  ASSERT_TRUE(TextFormat::Parse(&input_stream, &proto_));
 
   // Compare.
   EXPECT_EQ(kEscapeTestString, proto_.optional_string());
@@ -1255,7 +1315,7 @@ TEST_F(TextFormatTest, ParseConcatenatedString) {
   std::string parse_string = "optional_string: \"foo\" \"bar\"\n";
 
   io::ArrayInputStream input_stream1(parse_string.data(), parse_string.size());
-  TextFormat::Parse(&input_stream1, &proto_);
+  ASSERT_TRUE(TextFormat::Parse(&input_stream1, &proto_));
 
   // Compare.
   EXPECT_EQ("foobar", proto_.optional_string());
@@ -1266,7 +1326,7 @@ TEST_F(TextFormatTest, ParseConcatenatedString) {
       "\"bar\"\n";
 
   io::ArrayInputStream input_stream2(parse_string.data(), parse_string.size());
-  TextFormat::Parse(&input_stream2, &proto_);
+  ASSERT_TRUE(TextFormat::Parse(&input_stream2, &proto_));
 
   // Compare.
   EXPECT_EQ("foobar", proto_.optional_string());
@@ -1281,7 +1341,7 @@ TEST_F(TextFormatTest, ParseFloatWithSuffix) {
 
   io::ArrayInputStream input_stream(parse_string.data(), parse_string.size());
 
-  TextFormat::Parse(&input_stream, &proto_);
+  ASSERT_TRUE(TextFormat::Parse(&input_stream, &proto_));
 
   // Compare.
   EXPECT_EQ(1.0, proto_.optional_float());
@@ -1458,7 +1518,7 @@ TEST_F(TextFormatTest, Comments) {
 
   io::ArrayInputStream input_stream(parse_string.data(), parse_string.size());
 
-  TextFormat::Parse(&input_stream, &proto_);
+  ASSERT_TRUE(TextFormat::Parse(&input_stream, &proto_));
 
   // Compare.
   EXPECT_EQ(1, proto_.optional_int32());
@@ -1473,7 +1533,7 @@ TEST_F(TextFormatTest, OptionalColon) {
 
   io::ArrayInputStream input_stream(parse_string.data(), parse_string.size());
 
-  TextFormat::Parse(&input_stream, &proto_);
+  ASSERT_TRUE(TextFormat::Parse(&input_stream, &proto_));
 
   // Compare.
   EXPECT_TRUE(proto_.has_optional_nested_message());
@@ -1751,7 +1811,7 @@ TEST_F(TextFormatTest, PrintFieldsInIndexOrder) {
   // }
   // [proto2_unittest.my_extension_string]: "ext_str0"
   // my_float: 0.999
-  printer.PrintToString(message, &text);
+  ASSERT_TRUE(printer.PrintToString(message, &text));
   EXPECT_EQ(
       "my_int: 12345\nmy_string: "
       "\"str\"\n[proto2_unittest.TestExtensionOrderings2.test_ext_orderings2] "
@@ -1780,7 +1840,7 @@ TEST_F(TextFormatTest, PrintFieldsInIndexOrder) {
   // }
   // [proto2_unittest.my_extension_string]: "ext_str0"
   printer.SetPrintMessageFieldsInIndexOrder(true);
-  printer.PrintToString(message, &text);
+  ASSERT_TRUE(printer.PrintToString(message, &text));
   EXPECT_EQ(
       "my_string: \"str\"\nmy_int: 12345\nmy_float: "
       "0.999\n[proto2_unittest.TestExtensionOrderings2.test_ext_orderings2] "
@@ -1826,21 +1886,6 @@ class TextFormatParserTest : public testing::Test {
     EXPECT_TRUE(parser_.ParseFromString(input, proto));
     parser_.WriteLocationsTo(nullptr);
     parser_.RecordErrorsTo(nullptr);
-  }
-
-  void ExpectLocation(TextFormat::ParseInfoTree* tree, const Descriptor* d,
-                      const std::string& field_name, int index, int start_line,
-                      int start_column, int end_line, int end_column) {
-    TextFormat::ParseLocationRange range =
-        tree->GetLocationRange(d->FindFieldByName(field_name), index);
-    EXPECT_EQ(start_line, range.start.line);
-    EXPECT_EQ(start_column, range.start.column);
-    EXPECT_EQ(end_line, range.end.line);
-    EXPECT_EQ(end_column, range.end.column);
-    TextFormat::ParseLocation start_location =
-        tree->GetLocation(d->FindFieldByName(field_name), index);
-    EXPECT_EQ(start_line, start_location.line);
-    EXPECT_EQ(start_column, start_location.column);
   }
 
   // An error collector which simply concatenates all its errors into a big
@@ -1892,22 +1937,74 @@ TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
   ExpectSuccessAndTree(stringData, message.get(), &tree);
 
   // Verify that the tree has the correct positions.
-  ExpectLocation(&tree, d, "optional_int32", -1, 0, 0, 0, 17);
-  ExpectLocation(&tree, d, "optional_int64", -1, 1, 0, 1, 17);
-  ExpectLocation(&tree, d, "optional_double", -1, 2, 2, 2, 22);
+  EXPECT_THAT(tree.GetFieldLocation(d->FindFieldByName("optional_int32")),
+              MatchesLocation(stringData, ExpectedLocation(
+                                              /*full=*/"optional_int32: 1",
+                                              /*name=*/"optional_int32",
+                                              /*values=*/{"1"})));
+  EXPECT_THAT(tree.GetFieldLocation(d->FindFieldByName("optional_int64")),
+              MatchesLocation(stringData, ExpectedLocation(
+                                              /*full=*/"optional_int64: 2",
+                                              /*name=*/"optional_int64",
+                                              /*values=*/{"2"})));
+  EXPECT_THAT(tree.GetFieldLocation(d->FindFieldByName("optional_double")),
+              MatchesLocation(stringData, ExpectedLocation(
+                                              /*full=*/"optional_double: 2.4",
+                                              /*name=*/"optional_double",
+                                              /*values=*/{"2.4"})));
 
-  ExpectLocation(&tree, d, "repeated_int32", 0, 3, 0, 3, 17);
-  ExpectLocation(&tree, d, "repeated_int32", 1, 4, 0, 4, 18);
+  EXPECT_THAT(tree.GetFieldLocation(d->FindFieldByName("repeated_int32"), 0),
+              MatchesLocation(stringData, ExpectedLocation(
+                                              /*full=*/"repeated_int32: 5",
+                                              /*name=*/"repeated_int32",
+                                              /*values=*/{"5"})));
+  EXPECT_THAT(tree.GetFieldLocation(d->FindFieldByName("repeated_int32"), 1),
+              MatchesLocation(stringData, ExpectedLocation(
+                                              /*full=*/"repeated_int32: 10",
+                                              /*name=*/"repeated_int32",
+                                              /*values=*/{"10"})));
 
-  ExpectLocation(&tree, d, "optional_nested_message", -1, 5, 0, 7, 1);
-  ExpectLocation(&tree, d, "repeated_nested_message", 0, 8, 0, 10, 1);
-  ExpectLocation(&tree, d, "repeated_nested_message", 1, 11, 0, 13, 1);
+  EXPECT_THAT(
+      tree.GetFieldLocation(d->FindFieldByName("optional_nested_message")),
+      MatchesLocation(stringData, ExpectedLocation(
+                                      /*full=*/"optional_nested_message <\n"
+                                               "  bb: 78\n"
+                                               ">",
+                                      /*name=*/"optional_nested_message",
+                                      /*values=*/
+                                      {"<\n"
+                                       "  bb: 78\n"
+                                       ">"})));
+  EXPECT_THAT(
+      tree.GetFieldLocation(d->FindFieldByName("repeated_nested_message"), 0),
+      MatchesLocation(stringData, ExpectedLocation(
+                                      /*full=*/"repeated_nested_message <\n"
+                                               "  bb: 79\n"
+                                               ">",
+                                      /*name=*/"repeated_nested_message",
+                                      /*values=*/
+                                      {"<\n"
+                                       "  bb: 79\n"
+                                       ">"})));
+  EXPECT_THAT(
+      tree.GetFieldLocation(d->FindFieldByName("repeated_nested_message"), 1),
+      MatchesLocation(stringData, ExpectedLocation(
+                                      /*full=*/"repeated_nested_message <\n"
+                                               "  bb: 80\n"
+                                               ">",
+                                      /*name=*/"repeated_nested_message",
+                                      /*values=*/
+                                      {"<\n"
+                                       "  bb: 80\n"
+                                       ">"})));
 
-  // Check for fields not set. For an invalid field, the start and end locations
-  // returned should be -1, -1.
-  ExpectLocation(&tree, d, "repeated_int64", 0, -1, -1, -1, -1);
-  ExpectLocation(&tree, d, "repeated_int32", 6, -1, -1, -1, -1);
-  ExpectLocation(&tree, d, "some_unknown_field", -1, -1, -1, -1, -1);
+  // Check for fields not set.
+  EXPECT_FALSE(
+      tree.GetFieldLocation(d->FindFieldByName("repeated_int64"), 0).ok());
+  EXPECT_FALSE(
+      tree.GetFieldLocation(d->FindFieldByName("repeated_int32"), 6).ok());
+  EXPECT_FALSE(
+      tree.GetFieldLocation(d->FindFieldByName("some_unknown_field"), -1).ok());
 
   // Verify inside the nested message.
   const FieldDescriptor* nested_field =
@@ -1915,24 +2012,244 @@ TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
 
   TextFormat::ParseInfoTree* nested_tree =
       tree.GetTreeForNested(nested_field, -1);
-  ExpectLocation(nested_tree, nested_field->message_type(), "bb", -1, 6, 2, 6,
-                 8);
+  EXPECT_THAT(nested_tree->GetFieldLocation(
+                  nested_field->message_type()->FindFieldByName("bb")),
+              MatchesLocation(stringData, ExpectedLocation(
+                                              /*full=*/"bb: 78",
+                                              /*name=*/"bb",
+                                              /*values=*/{"78"})));
 
   // Verify inside another nested message.
   nested_field = d->FindFieldByName("repeated_nested_message");
   nested_tree = tree.GetTreeForNested(nested_field, 0);
-  ExpectLocation(nested_tree, nested_field->message_type(), "bb", -1, 9, 2, 9,
-                 8);
+  EXPECT_THAT(nested_tree->GetFieldLocation(
+                  nested_field->message_type()->FindFieldByName("bb")),
+              MatchesLocation(stringData, ExpectedLocation(
+                                              /*full=*/"bb: 79",
+                                              /*name=*/"bb",
+                                              /*values=*/{"79"})));
 
   nested_tree = tree.GetTreeForNested(nested_field, 1);
-  ExpectLocation(nested_tree, nested_field->message_type(), "bb", -1, 12, 2, 12,
-                 8);
+  EXPECT_THAT(nested_tree->GetFieldLocation(
+                  nested_field->message_type()->FindFieldByName("bb")),
+              MatchesLocation(stringData, ExpectedLocation(
+                                              /*full=*/"bb: 80",
+                                              /*name=*/"bb",
+                                              /*values=*/{"80"})));
 
   // Verify a nullptr tree for an unknown nested field.
   TextFormat::ParseInfoTree* unknown_nested_tree =
       tree.GetTreeForNested(nested_field, 2);
 
   EXPECT_EQ(nullptr, unknown_nested_tree);
+}
+
+TEST_F(TextFormatParserTest, ParseInfoTreeBuildingMaps) {
+  auto message = std::make_unique<unittest::TestHugeFieldNumbers>();
+  const Descriptor* d = message->GetDescriptor();
+
+  std::string stringData =
+      "string_string_map {\n"
+      "  key: \"key1\"\n"
+      "  value: \"value1\"\n"
+      "}\n"
+      "string_string_map {\n"
+      "  key: \"key2\"\n"
+      "  value: \"value2\"\n"
+      "}";
+
+  TextFormat::ParseInfoTree tree;
+  ExpectSuccessAndTree(stringData, message.get(), &tree);
+
+  // Verify that the tree has the correct positions for the map entries.
+  EXPECT_THAT(tree.GetFieldLocation(d->FindFieldByName("string_string_map"), 0),
+              MatchesLocation(stringData, ExpectedLocation(
+                                              /*full=*/"string_string_map {\n"
+                                                       "  key: \"key1\"\n"
+                                                       "  value: \"value1\"\n"
+                                                       "}",
+                                              /*name=*/"string_string_map",
+                                              /*values=*/
+                                              {"{\n"
+                                               "  key: \"key1\"\n"
+                                               "  value: \"value1\"\n"
+                                               "}"})));
+  EXPECT_THAT(tree.GetFieldLocation(d->FindFieldByName("string_string_map"), 1),
+              MatchesLocation(stringData, ExpectedLocation(
+                                              /*full=*/"string_string_map {\n"
+                                                       "  key: \"key2\"\n"
+                                                       "  value: \"value2\"\n"
+                                                       "}",
+                                              /*name=*/"string_string_map",
+                                              /*values=*/
+                                              {"{\n"
+                                               "  key: \"key2\"\n"
+                                               "  value: \"value2\"\n"
+                                               "}"})));
+
+  const FieldDescriptor* map_field = d->FindFieldByName("string_string_map");
+  const Descriptor* entry_descriptor = map_field->message_type();
+
+  TextFormat::ParseInfoTree* nested_tree = tree.GetTreeForNested(map_field, 0);
+  EXPECT_THAT(
+      nested_tree->GetFieldLocation(entry_descriptor->FindFieldByName("key")),
+      MatchesLocation(stringData, ExpectedLocation(
+                                      /*full=*/"key: \"key1\"",
+                                      /*name=*/"key",
+                                      /*values=*/{"\"key1\""})));
+  EXPECT_THAT(
+      nested_tree->GetFieldLocation(entry_descriptor->FindFieldByName("value")),
+      MatchesLocation(stringData, ExpectedLocation(
+                                      /*full=*/"value: \"value1\"",
+                                      /*name=*/"value",
+                                      /*values=*/{"\"value1\""})));
+
+  nested_tree = tree.GetTreeForNested(map_field, 1);
+  EXPECT_THAT(
+      nested_tree->GetFieldLocation(entry_descriptor->FindFieldByName("key")),
+      MatchesLocation(stringData, ExpectedLocation(
+                                      /*full=*/"key: \"key2\"",
+                                      /*name=*/"key",
+                                      /*values=*/{"\"key2\""})));
+  EXPECT_THAT(
+      nested_tree->GetFieldLocation(entry_descriptor->FindFieldByName("value")),
+      MatchesLocation(stringData, ExpectedLocation(
+                                      /*full=*/"value: \"value2\"",
+                                      /*name=*/"value",
+                                      /*values=*/{"\"value2\""})));
+}
+
+TEST_F(TextFormatParserTest, ParseInfoTreeShortRepeatedBuilding) {
+  auto message = std::make_unique<unittest::TestAllTypes>();
+  const Descriptor* d = message->GetDescriptor();
+
+  std::string stringData =
+      "repeated_int32: [5, 10]\n"
+      "repeated_int32: 15";
+
+  TextFormat::ParseInfoTree tree;
+  ExpectSuccessAndTree(stringData, message.get(), &tree);
+
+  EXPECT_THAT(
+      tree.GetFieldLocation(d->FindFieldByName("repeated_int32"), 0),
+      MatchesLocation(stringData, ExpectedLocation(
+                                      /*full=*/"repeated_int32: [5, 10]",
+                                      /*name=*/"repeated_int32",
+                                      /*values=*/{"5", "10"})));
+
+  EXPECT_THAT(tree.GetFieldLocation(d->FindFieldByName("repeated_int32"), 1),
+              MatchesLocation(stringData, ExpectedLocation(
+                                              /*full=*/"repeated_int32: 15",
+                                              /*name=*/"repeated_int32",
+                                              /*values=*/{"15"})));
+}
+
+
+// Test extension
+TEST_F(TextFormatParserTest, ParseInfoTreeExtensionBuilding) {
+  unittest::TestAllExtensions proto;
+  std::string stringData = "[proto2_unittest.optional_int32_extension]: 101";
+  TextFormat::ParseInfoTree tree;
+  ExpectSuccessAndTree(stringData, &proto, &tree);
+  const Descriptor* d = proto.GetDescriptor();
+  EXPECT_THAT(
+      tree.GetFieldLocation(
+          d->file()->FindExtensionByName("optional_int32_extension")),
+      MatchesLocation(
+          stringData,
+          ExpectedLocation(
+              /*full=*/"[proto2_unittest.optional_int32_extension]: 101",
+              /*name=*/"[proto2_unittest.optional_int32_extension]",
+              /*values=*/{"101"})));
+}
+
+TEST_F(TextFormatParserTest, ParseInfoTreeGetFieldLocationErrors) {
+  unittest::TestAllTypes message;
+  TextFormat::ParseInfoTree tree;
+  ExpectSuccessAndTree("repeated_int32: 101", &message, &tree);
+
+  const FieldDescriptor* singular_field =
+      message.GetDescriptor()->FindFieldByName("optional_int32");
+  const FieldDescriptor* repeated_field =
+      message.GetDescriptor()->FindFieldByName("repeated_int32");
+
+  // Check nulls
+  EXPECT_THAT(tree.GetFieldLocation(nullptr),
+              StatusIs(absl::StatusCode::kInvalidArgument, "Field is null"));
+  EXPECT_THAT(tree.GetFieldLocation(nullptr, 0),
+              StatusIs(absl::StatusCode::kInvalidArgument, "Field is null"));
+
+  // Check singular and repeated fields mismatch.
+  EXPECT_THAT(tree.GetFieldLocation(repeated_field),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       "Field repeated_int32 is repeated. Use "
+                       "GetFieldLocation(field, index) version."));
+  EXPECT_THAT(tree.GetFieldLocation(singular_field, 0),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       "Field optional_int32 is singular. Use "
+                       "GetFieldLocation(field) version."));
+
+  // Check out of bounds index
+  EXPECT_THAT(
+      tree.GetFieldLocation(singular_field),
+      StatusIs(absl::StatusCode::kNotFound, "Field optional_int32 not set."));
+  EXPECT_THAT(
+      tree.GetFieldLocation(repeated_field, 1),
+      StatusIs(absl::StatusCode::kNotFound,
+               "Field repeated_int32 not found or out of bounds for index 1."));
+}
+
+TEST_F(TextFormatParserTest, ParseInfoTreeLegacyApiMatchesNewApi) {
+  unittest::TestAllTypes message;
+  TextFormat::ParseInfoTree tree;
+  ExpectSuccessAndTree(R"pb(
+                         optional_int32: 1 repeated_int32: 101
+                       )pb",
+                       &message, &tree);
+
+  {
+    const FieldDescriptor* singular_field =
+        message.GetDescriptor()->FindFieldByName("optional_int32");
+    TextFormat::ParseLocationRange location_range_legacy =
+        tree.GetLocationRange(singular_field, -1);
+    TextFormat::ParseLocation location_legacy =
+        tree.GetLocation(singular_field, -1);
+    // Ensure that both legacy values agree.
+    EXPECT_EQ(location_legacy.line, location_range_legacy.start.line);
+    EXPECT_EQ(location_legacy.column, location_range_legacy.start.column);
+
+    // Ensure that the new API agrees with the legacy API.
+    absl::StatusOr<TextFormat::FieldLocation> location_new =
+        tree.GetFieldLocation(singular_field);
+    ASSERT_THAT(location_new, IsOk());
+    EXPECT_EQ(location_new->full.start.line, location_range_legacy.start.line);
+    EXPECT_EQ(location_new->full.start.column,
+              location_range_legacy.start.column);
+    EXPECT_EQ(location_new->full.end.line, location_range_legacy.end.line);
+    EXPECT_EQ(location_new->full.end.column, location_range_legacy.end.column);
+  }
+
+  {
+    const FieldDescriptor* repeated_field =
+        message.GetDescriptor()->FindFieldByName("repeated_int32");
+    TextFormat::ParseLocationRange location_range_legacy =
+        tree.GetLocationRange(repeated_field, 0);
+    TextFormat::ParseLocation location_legacy =
+        tree.GetLocation(repeated_field, 0);
+    // Ensure that both legacy values agree.
+    EXPECT_EQ(location_legacy.line, location_range_legacy.start.line);
+    EXPECT_EQ(location_legacy.column, location_range_legacy.start.column);
+
+    // Ensure that the new API agrees with the legacy API.
+    absl::StatusOr<TextFormat::FieldLocation> location_new =
+        tree.GetFieldLocation(repeated_field, 0);
+    ASSERT_THAT(location_new, IsOk());
+    EXPECT_EQ(location_new->full.start.line, location_range_legacy.start.line);
+    EXPECT_EQ(location_new->full.start.column,
+              location_range_legacy.start.column);
+    EXPECT_EQ(location_new->full.end.line, location_range_legacy.end.line);
+    EXPECT_EQ(location_new->full.end.column, location_range_legacy.end.column);
+  }
 }
 
 TEST_F(TextFormatParserTest, ParseFieldValueFromString) {
@@ -2478,21 +2795,25 @@ TEST_F(TextFormatParserTest, ParseSkippedFieldWithAdditionalWhiteSpaces) {
   proto2_unittest::TestAllTypes proto;
   TextFormat::Parser parser;
   parser.AllowUnknownField(true);
-  EXPECT_TRUE(
-      parser.ParseFromString("optional_int32: 321\n"
-                             "unknown_field1   : \t 12345\n"
-                             "[somewhere.unknown_extension1]   {\n"
-                             "  unknown_field2 \t :   12345\n"
-                             "}\n"
-                             "[somewhere.unknown_extension2]    : \t {\n"
-                             "  unknown_field3     \t :   12345\n"
-                             "  [somewhere.unknown_extension3]    \t :   {\n"
-                             "    unknown_field4:   10\n"
-                             "  }\n"
-                             "  [somewhere.unknown_extension4] \t {\n"
-                             "  }\n"
-                             "}\n",
-                             &proto));
+  EXPECT_TRUE(parser.ParseFromString(
+      "optional_int32: 321\n"
+      "unknown_field1   : \t 12345\n"
+      "[somewhere.unknown_extension1]   {\n"
+      "  unknown_field2 \t :   12345\n"
+      "  unknown_any1 { [domain.com/1+-&!%2b/proto2_unittest.TestAllTypes] {\n"
+      "      unknown_field3: 12345\n"
+      "    }\n"
+      "  }\n"
+      "}\n"
+      "[somewhere.unknown_extension2]    : \t {\n"
+      "  unknown_field4     \t :   12345\n"
+      "  [somewhere.unknown_extension3]    \t :   {\n"
+      "    unknown_field5:   10\n"
+      "  }\n"
+      "  [somewhere.unknown_extension4] \t {\n"
+      "  }\n"
+      "}\n",
+      &proto));
   std::string text;
   TextFormat::Printer printer;
   ASSERT_TRUE(printer.PrintToString(proto, &text));
@@ -2524,7 +2845,7 @@ TEST_F(TextFormatMessageSetTest, Serialize) {
           proto2_unittest::TestMessageSetExtension2::message_set_extension);
   item_b->set_str("foo");
   std::string actual_proto_text_format;
-  TextFormat::PrintToString(proto, &actual_proto_text_format);
+  ASSERT_TRUE(TextFormat::PrintToString(proto, &actual_proto_text_format));
   EXPECT_EQ(proto_text_format_, actual_proto_text_format);
 }
 

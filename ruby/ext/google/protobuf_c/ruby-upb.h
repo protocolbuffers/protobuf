@@ -1,5 +1,3 @@
-// Ruby is still using proto3 enum semantics for proto2
-#define UPB_DISABLE_CLOSED_ENUM_CHECKING
 /* Amalgamated source file */
 
 /*
@@ -314,6 +312,15 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ASSUME(expr) assert(expr)
 #endif
 
+#if UPB_HAS_BUILTIN(__builtin_constant_p) && UPB_HAS_ATTRIBUTE(const)
+#define UPB_MAYBE_ASSUME(pred, x) \
+  if (__builtin_constant_p(pred) && pred) UPB_ASSUME(x)
+#define UPB_ATTR_CONST __attribute__((const))
+#else
+#define UPB_MAYBE_ASSUME(pred, x)
+#define UPB_ATTR_CONST
+#endif
+
 /* UPB_ASSERT(): in release mode, we use the expression without letting it be
  * evaluated.  This prevents "unused variable" warnings. */
 #ifdef NDEBUG
@@ -489,14 +496,6 @@ Error, UINTPTR_MAX is undefined
 
 #undef UPB_FASTTABLE_SUPPORTED
 
-/* Disable proto2 arena behavior (TEMPORARY) **********************************/
-
-#ifdef UPB_DISABLE_CLOSED_ENUM_CHECKING
-#define UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN 1
-#else
-#define UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN 0
-#endif
-
 #if defined(__cplusplus)
 #if defined(__clang__) || UPB_GNUC_MIN(6, 0)
 // https://gcc.gnu.org/gcc-6/changes.html
@@ -510,17 +509,13 @@ Error, UINTPTR_MAX is undefined
 
 #if defined(UPB_IS_GOOGLE3) && \
     (!defined(UPB_BOOTSTRAP_STAGE) || UPB_BOOTSTRAP_STAGE != 0)
-#define UPB_DESC(sym) proto2_##sym
 #define UPB_DESC_MINITABLE(sym) &proto2__##sym##_msg_init
 #elif defined(UPB_IS_GOOGLE3) && defined(UPB_BOOTSTRAP_STAGE) && \
     UPB_BOOTSTRAP_STAGE == 0
-#define UPB_DESC(sym) proto2_##sym
 #define UPB_DESC_MINITABLE(sym) proto2__##sym##_msg_init()
 #elif defined(UPB_BOOTSTRAP_STAGE) && UPB_BOOTSTRAP_STAGE == 0
-#define UPB_DESC(sym) google_protobuf_##sym
 #define UPB_DESC_MINITABLE(sym) google__protobuf__##sym##_msg_init()
 #else
-#define UPB_DESC(sym) google_protobuf_##sym
 #define UPB_DESC_MINITABLE(sym) &google__protobuf__##sym##_msg_init
 #endif
 
@@ -699,10 +694,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_WEAK_ALIAS(type, from, to) \
   extern type to;                      \
   __asm__(".globl _" #to);             \
+  __asm__(".private_extern _" #to);    \
   __asm__(".set _" #to ", _" #from);   \
   __asm__(".weak_definition _" #to);
 #define UPB_STRONG_ALIAS(type, from, to) \
   __asm__(".globl _" #to);               \
+  __asm__(".private_extern _" #to);      \
   __asm__(".set _" #to ", _" #from);
 
 #elif defined(__ELF__)
@@ -1007,6 +1004,7 @@ UPB_INLINE uint8_t _upb_Xsan_NextTag(upb_Xsan *xsan) {
   }
   return xsan->state;
 #else
+  UPB_UNUSED(xsan);
   return 0;
 #endif
 }
@@ -1023,6 +1021,7 @@ UPB_INLINE uint8_t UPB_PRIVATE(_upb_Xsan_GetTag)(const void *addr) {
 #if UPB_HWASAN
   return __hwasan_get_tag_from_pointer(addr);
 #else
+  UPB_UNUSED(addr);
   return 0;
 #endif
 }
@@ -1030,6 +1029,8 @@ UPB_INLINE uint8_t UPB_PRIVATE(_upb_Xsan_GetTag)(const void *addr) {
 UPB_INLINE void UPB_PRIVATE(upb_Xsan_Init)(upb_Xsan *xsan) {
 #if UPB_HWASAN || UPB_TSAN
   xsan->state = 0;
+#else
+  UPB_UNUSED(xsan);
 #endif
 }
 
@@ -1038,6 +1039,9 @@ UPB_INLINE void UPB_PRIVATE(upb_Xsan_MarkInitialized)(void* addr, size_t size) {
   if (size) {
     __msan_unpoison(addr, size);
   }
+#else
+  UPB_UNUSED(addr);
+  UPB_UNUSED(size);
 #endif
 }
 
@@ -1050,6 +1054,9 @@ UPB_INLINE void UPB_PRIVATE(upb_Xsan_PoisonRegion)(const void *addr,
   __asan_poison_memory_region(addr, size);
 #elif UPB_HWASAN
   __hwasan_tag_memory(addr, UPB_HWASAN_POISON_TAG, UPB_ALIGN_MALLOC(size));
+#else
+  UPB_UNUSED(addr);
+  UPB_UNUSED(size);
 #endif
 }
 
@@ -1127,6 +1134,8 @@ UPB_INLINE void UPB_PRIVATE(upb_Xsan_AccessReadOnly)(upb_Xsan *xsan) {
 #if UPB_TSAN
   // For performance we avoid using a volatile variable.
   __asm__ volatile("" ::"r"(xsan->state));
+#else
+  UPB_UNUSED(xsan);
 #endif
 }
 
@@ -1134,6 +1143,8 @@ UPB_INLINE void UPB_PRIVATE(upb_Xsan_AccessReadWrite)(upb_Xsan *xsan) {
 #if UPB_TSAN
   // For performance we avoid using a volatile variable.
   __asm__ volatile("" : "+r"(xsan->state));
+#else
+  UPB_UNUSED(xsan);
 #endif
 }
 
@@ -1152,13 +1163,14 @@ UPB_INLINE void UPB_PRIVATE(upb_Xsan_AccessReadWrite)(upb_Xsan *xsan) {
 // We need this because the decoder inlines a upb_Arena for performance but
 // the full struct is not visible outside of arena.c. Yes, I know, it's awful.
 #ifndef NDEBUG
-#define UPB_ARENA_BASE_SIZE_HACK 11
-#else
 #define UPB_ARENA_BASE_SIZE_HACK 10
+#else
+#define UPB_ARENA_BASE_SIZE_HACK 9
 #endif
 
-#define UPB_ARENA_SIZE_HACK \
-  (UPB_ARENA_BASE_SIZE_HACK + (UPB_XSAN_STRUCT_SIZE * 2))
+#define UPB_ARENA_SIZE_HACK                                                   \
+  (sizeof(void*) * (UPB_ARENA_BASE_SIZE_HACK + (UPB_XSAN_STRUCT_SIZE * 2))) + \
+      (sizeof(uint32_t) * 2)
 
 // LINT.IfChange(upb_Arena)
 
@@ -2405,7 +2417,7 @@ UPB_API_INLINE bool upb_MiniTable_IsMessageSet(const struct upb_MiniTable* m) {
 UPB_API_INLINE
 const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
     const struct upb_MiniTable* m, uint32_t number) {
-  const size_t i = ((size_t)number) - 1;  // 0 wraps to SIZE_MAX
+  const uint32_t i = number - 1;  // 0 wraps to UINT32_MAX
 
   // Ideal case: index into dense fields
   if (i < m->UPB_PRIVATE(dense_below)) {
@@ -3446,7 +3458,9 @@ upb_MiniTableExtension_GetSubEnum(const struct upb_MiniTableExtension* e) {
 UPB_API_INLINE bool upb_MiniTableExtension_SetSubMessage(
     struct upb_MiniTableExtension* e, const struct upb_MiniTable* m) {
   if (e->UPB_PRIVATE(field).UPB_PRIVATE(descriptortype) !=
-      kUpb_FieldType_Message) {
+          kUpb_FieldType_Message &&
+      e->UPB_PRIVATE(field).UPB_PRIVATE(descriptortype) !=
+          kUpb_FieldType_Group) {
     return false;
   }
   e->UPB_PRIVATE(sub).UPB_PRIVATE(submsg) = m;
@@ -5711,83 +5725,6 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
 #include <stdint.h>
 
 
-#ifndef UPB_MINI_TABLE_GENERATED_REGISTRY_H_
-#define UPB_MINI_TABLE_GENERATED_REGISTRY_H_
-
-
-#ifndef UPB_MINI_TABLE_INTERNAL_GENERATED_EXTENSION_REGISTRY_H_
-#define UPB_MINI_TABLE_INTERNAL_GENERATED_EXTENSION_REGISTRY_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef struct UPB_PRIVATE(upb_GeneratedExtensionListEntry) {
-  const struct upb_MiniTableExtension* start;
-  const struct upb_MiniTableExtension* stop;
-  const struct UPB_PRIVATE(upb_GeneratedExtensionListEntry) * next;
-} UPB_PRIVATE(upb_GeneratedExtensionListEntry);
-
-struct upb_GeneratedRegistryRef {
-  struct upb_Arena* UPB_PRIVATE(arena);
-  const struct upb_ExtensionRegistry* UPB_PRIVATE(registry);
-};
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MINI_TABLE_INTERNAL_GENERATED_EXTENSION_REGISTRY_H_ */
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* Generated registry: a global singleton that gathers all extensions linked
- * into the binary.
- *
- * This singleton is thread-safe and lock-free, implemented using atomics.  The
- * registry is lazily initialized the first time it is loaded.  When all
- * references are released, the registry will be destroyed.  New loads
- * afterwards will simply reload the same registry as needed.
- *
- * The extension minitables are registered in gencode using linker arrays.  Each
- * .proto file produces a weak, hidden, constructor function that adds all
- * visible extensions from the array into the registry.  In each binary, only
- * one copy of the constructor will actually be preserved by the linker, and
- * that copy will add all of the extensions for the entire binary.  All of these
- * are added to a global linked list of minitables pre-main, which are then used
- * to construct this singleton as needed.
- */
-
-typedef struct upb_GeneratedRegistryRef upb_GeneratedRegistryRef;
-
-// Loads the generated registry, returning a reference to it.  The reference
-// must be held for the lifetime of any ExtensionRegistry obtained from it.
-//
-// Returns NULL on failure.
-UPB_API const upb_GeneratedRegistryRef* upb_GeneratedRegistry_Load(void);
-
-// Releases a reference to the generated registry.  This may destroy the
-// registry if there are no other references to it.
-//
-// NULL is a valid argument and is simply ignored for easier error handling in
-// callers.
-UPB_API void upb_GeneratedRegistry_Release(const upb_GeneratedRegistryRef* r);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif  // UPB_MINI_TABLE_GENERATED_REGISTRY_H_
-
 // Must be last.
 
 #ifdef __cplusplus
@@ -5830,12 +5767,14 @@ extern "C" {
 
 typedef struct upb_ExtensionRegistry upb_ExtensionRegistry;
 
+// LINT.IfChange
 typedef enum {
   kUpb_ExtensionRegistryStatus_Ok = 0,
   kUpb_ExtensionRegistryStatus_DuplicateEntry = 1,
   kUpb_ExtensionRegistryStatus_OutOfMemory = 2,
   kUpb_ExtensionRegistryStatus_InvalidExtension = 3,
 } upb_ExtensionRegistryStatus;
+// LINT.ThenChange(//depot/google3/third_party/upb/rust/sys/mini_table/extension_registry.rs)
 
 // Creates a upb_ExtensionRegistry in the given arena.
 // The arena must outlive any use of the extreg.
@@ -5850,28 +5789,6 @@ UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
 // Possible errors include OOM or an extension number that already exists.
 upb_ExtensionRegistryStatus upb_ExtensionRegistry_AddArray(
     upb_ExtensionRegistry* r, const upb_MiniTableExtension** e, size_t count);
-
-// Adds all extensions linked into the binary into the registry.  The set of
-// linked extensions is assembled by the linker using linker arrays.  This
-// will likely not work properly if the extensions are split across multiple
-// shared libraries.
-//
-// Returns true if all extensions were added successfully, false on out of
-// memory or if any extensions were already present.
-//
-// This API is currently not available on MSVC (though it *is* available on
-// Windows using clang-cl).
-UPB_API bool upb_ExtensionRegistry_AddAllLinkedExtensions(
-    upb_ExtensionRegistry* r);
-
-// Returns the extension registry contained by a reference to the generated
-// registry.  The reference must be held for the lifetime of the registry.
-//
-// TODO This should actually be moved to generated_registry.h, but
-// can't because of the current location of
-// upb_ExtensionRegistry_AddAllLinkedExtensions.
-UPB_API const upb_ExtensionRegistry* upb_ExtensionRegistry_GetGenerated(
-    const upb_GeneratedRegistryRef* genreg);
 
 // Looks up the extension (if any) defined for message type |t| and field
 // number |num|. Returns the extension if found, otherwise NULL.
@@ -5977,6 +5894,34 @@ UPB_API_INLINE int upb_MiniTableFile_MessageCount(const upb_MiniTableFile* f);
 
 #endif /* UPB_MINI_TABLE_FILE_H_ */
 
+#ifndef UPB_MINI_TABLE_INTERNAL_GENERATED_EXTENSION_REGISTRY_H_
+#define UPB_MINI_TABLE_INTERNAL_GENERATED_EXTENSION_REGISTRY_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct UPB_PRIVATE(upb_GeneratedExtensionListEntry) {
+  const struct upb_MiniTableExtension* start;
+  const struct upb_MiniTableExtension* stop;
+  const struct UPB_PRIVATE(upb_GeneratedExtensionListEntry) * next;
+} UPB_PRIVATE(upb_GeneratedExtensionListEntry);
+
+struct upb_GeneratedRegistryRef {
+  struct upb_Arena* UPB_PRIVATE(arena);
+  const struct upb_ExtensionRegistry* UPB_PRIVATE(registry);
+};
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MINI_TABLE_INTERNAL_GENERATED_EXTENSION_REGISTRY_H_ */
+
 // upb_decode: parsing into a upb_Message using a upb_MiniTable.
 
 #ifndef UPB_WIRE_DECODE_H_
@@ -6032,7 +5977,7 @@ enum {
    * If set, the fasttable decoder will not be used. */
   kUpb_DecodeOption_DisableFastTable = 16,
 };
-// LINT.ThenChange(//depot/google3/third_party/protobuf/rust/upb.rs:decode_status)
+// LINT.ThenChange(//depot/google3/third_party/upb/rust/wire.rs:decode_status)
 
 UPB_INLINE uint32_t upb_DecodeOptions_MaxDepth(uint16_t depth) {
   return (uint32_t)depth << 16;
@@ -6050,8 +5995,8 @@ UPB_INLINE int upb_Decode_LimitDepth(uint32_t decode_options, uint32_t limit) {
 // LINT.IfChange
 typedef enum {
   kUpb_DecodeStatus_Ok = 0,
-  kUpb_DecodeStatus_Malformed = 1,    // Wire format was corrupt
-  kUpb_DecodeStatus_OutOfMemory = 2,  // Arena alloc failed
+  kUpb_DecodeStatus_OutOfMemory = 1,  // Arena alloc failed
+  kUpb_DecodeStatus_Malformed = 2,    // Wire format was corrupt
   kUpb_DecodeStatus_BadUtf8 = 3,      // String field had bad UTF-8
   kUpb_DecodeStatus_MaxDepthExceeded =
       4,  // Exceeded upb_DecodeOptions_MaxDepth
@@ -6261,16 +6206,24 @@ extern const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout;
 #ifndef UPB_BASE_INTERNAL_LOG2_H_
 #define UPB_BASE_INTERNAL_LOG2_H_
 
+#include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
+
 // Must be last.
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-UPB_INLINE int upb_Log2Ceiling(int x) {
+UPB_INLINE int upb_Log2Ceiling(size_t x) {
   if (x <= 1) return 0;
-#ifdef __GNUC__
-  return 32 - __builtin_clz(x - 1);
+#if SIZE_MAX == ULLONG_MAX && UPB_HAS_BUILTIN(__builtin_clzll)
+  return (sizeof(size_t) * CHAR_BIT) - __builtin_clzll(x - 1);
+#elif SIZE_MAX == ULONG_MAX && UPB_HAS_BUILTIN(__builtin_clzl)
+  return (sizeof(size_t) * CHAR_BIT) - __builtin_clzl(x - 1);
+#elif SIZE_MAX == UINT_MAX && UPB_HAS_BUILTIN(__builtin_clz)
+  return (sizeof(size_t) * CHAR_BIT) - __builtin_clz(x - 1);
 #else
   int lg2 = 0;
   while ((1 << lg2) < x) lg2++;
@@ -6278,8 +6231,15 @@ UPB_INLINE int upb_Log2Ceiling(int x) {
 #endif
 }
 
-UPB_INLINE int upb_RoundUpToPowerOfTwo(int x) {
-  return 1 << upb_Log2Ceiling(x);
+// Returns the smallest power of two that is greater than or equal to x. Returns
+// SIZE_MAX if the computation would overflow.
+UPB_INLINE size_t upb_RoundUpToPowerOfTwo(size_t x) {
+  int lg2 = upb_Log2Ceiling(x);
+  UPB_ASSERT(lg2 >= 0 && lg2 <= (int)sizeof(size_t) * CHAR_BIT);
+  if (lg2 == sizeof(size_t) * CHAR_BIT) {
+    return SIZE_MAX;
+  }
+  return ((size_t)1) << lg2;
 }
 
 #ifdef __cplusplus
@@ -6487,6 +6447,7 @@ typedef enum {
   google_protobuf_EDITION_PROTO3 = 999,
   google_protobuf_EDITION_2023 = 1000,
   google_protobuf_EDITION_2024 = 1001,
+  google_protobuf_EDITION_2026 = 1002,
   google_protobuf_EDITION_UNSTABLE = 9999,
   google_protobuf_EDITION_99997_TEST_ONLY = 99997,
   google_protobuf_EDITION_99998_TEST_ONLY = 99998,
@@ -6502,7 +6463,8 @@ typedef enum {
 typedef enum {
   google_protobuf_FeatureSet_ENFORCE_NAMING_STYLE_UNKNOWN = 0,
   google_protobuf_FeatureSet_STYLE2024 = 1,
-  google_protobuf_FeatureSet_STYLE_LEGACY = 2
+  google_protobuf_FeatureSet_STYLE_LEGACY = 2,
+  google_protobuf_FeatureSet_STYLE2026 = 3
 } google_protobuf_FeatureSet_EnforceNamingStyle;
 
 typedef enum {
@@ -14143,12 +14105,6 @@ UPB_INLINE void google_protobuf_GeneratedCodeInfo_Annotation_set_semantic(google
 
 #endif  // GOOGLE_UPB_UPB_REFLECTION_DESCRIPTOR_BOOTSTRAP_H__
 
-typedef enum {
-  kUpb_Syntax_Proto2 = 2,
-  kUpb_Syntax_Proto3 = 3,
-  kUpb_Syntax_Editions = 99
-} upb_Syntax;
-
 // Forward declarations for circular references.
 typedef struct upb_DefPool upb_DefPool;
 typedef struct upb_EnumDef upb_EnumDef;
@@ -14189,6 +14145,9 @@ typedef enum {
   // Only inside message table.
   UPB_DEFTYPE_FIELD = 0,
   UPB_DEFTYPE_ONEOF = 1,
+
+  // Only inside service table.
+  UPB_DEFTYPE_METHOD = 0,
 } upb_deftype_t;
 
 #ifdef __cplusplus
@@ -14230,8 +14189,8 @@ UPB_API void upb_DefPool_Free(upb_DefPool* s);
 
 UPB_API upb_DefPool* upb_DefPool_New(void);
 
-UPB_API const UPB_DESC(FeatureSetDefaults) *
-    upb_DefPool_FeatureSetDefaults(const upb_DefPool* s);
+UPB_API const google_protobuf_FeatureSetDefaults* upb_DefPool_FeatureSetDefaults(
+    const upb_DefPool* s);
 
 UPB_API bool upb_DefPool_SetFeatureSetDefaults(upb_DefPool* s,
                                                const char* serialized_defaults,
@@ -14247,8 +14206,14 @@ const upb_MessageDef* upb_DefPool_FindMessageByNameWithSize(
 UPB_API const upb_EnumDef* upb_DefPool_FindEnumByName(const upb_DefPool* s,
                                                       const char* sym);
 
-const upb_EnumValueDef* upb_DefPool_FindEnumByNameval(const upb_DefPool* s,
-                                                      const char* sym);
+UPB_API const upb_EnumDef* upb_DefPool_FindEnumByNameWithSize(
+    const upb_DefPool* s, const char* sym, size_t len);
+
+UPB_API const upb_EnumValueDef* upb_DefPool_FindEnumValueByName(
+    const upb_DefPool* s, const char* sym);
+
+UPB_API const upb_EnumValueDef* upb_DefPool_FindEnumValueByNameWithSize(
+    const upb_DefPool* s, const char* sym, size_t len);
 
 UPB_API const upb_FileDef* upb_DefPool_FindFileByName(const upb_DefPool* s,
                                                       const char* name);
@@ -14260,8 +14225,8 @@ const upb_FileDef* upb_DefPool_FindFileByNameWithSize(const upb_DefPool* s,
 const upb_FieldDef* upb_DefPool_FindExtensionByMiniTable(
     const upb_DefPool* s, const upb_MiniTableExtension* ext);
 
-UPB_API const upb_FieldDef* upb_DefPool_FindExtensionByName(const upb_DefPool* s,
-                                                    const char* sym);
+UPB_API const upb_FieldDef* upb_DefPool_FindExtensionByName(
+    const upb_DefPool* s, const char* sym);
 
 const upb_FieldDef* upb_DefPool_FindExtensionByNameWithSize(
     const upb_DefPool* s, const char* name, size_t size);
@@ -14271,7 +14236,7 @@ const upb_FieldDef* upb_DefPool_FindExtensionByNumber(const upb_DefPool* s,
                                                       int32_t fieldnum);
 
 UPB_API const upb_ServiceDef* upb_DefPool_FindServiceByName(
-  const upb_DefPool* s, const char* name);
+    const upb_DefPool* s, const char* name);
 
 const upb_ServiceDef* upb_DefPool_FindServiceByNameWithSize(
     const upb_DefPool* s, const char* name, size_t size);
@@ -14280,7 +14245,7 @@ const upb_FileDef* upb_DefPool_FindFileContainingSymbol(const upb_DefPool* s,
                                                         const char* name);
 
 UPB_API const upb_FileDef* upb_DefPool_AddFile(
-    upb_DefPool* s, const UPB_DESC(FileDescriptorProto) * file_proto,
+    upb_DefPool* s, const google_protobuf_FileDescriptorProto* file_proto,
     upb_Status* status);
 
 UPB_API const upb_ExtensionRegistry* upb_DefPool_ExtensionRegistry(
@@ -14289,6 +14254,30 @@ UPB_API const upb_ExtensionRegistry* upb_DefPool_ExtensionRegistry(
 const upb_FieldDef** upb_DefPool_GetAllExtensions(const upb_DefPool* s,
                                                   const upb_MessageDef* m,
                                                   size_t* count);
+
+// If called, closed enums will be treated as open enums. This is non-standard
+// behavior and will cause conformance tests to fail, but it is more useful
+// behavior overall and can be used in situations where where the
+// non-conformance is acceptable.
+//
+// This function may only be called immediately after upb_DefPool_New().
+// It is an error to call it on an existing def pool or after defs have
+// already been added to the pool.
+//
+// Note: we still require that implicit presence fields have zero as their
+// default value.
+UPB_API void upb_DefPool_DisableClosedEnumChecking(upb_DefPool* s);
+bool upb_DefPool_ClosedEnumCheckingDisabled(const upb_DefPool* s);
+
+// If called, implicit field presence will be disabled.
+// This is non-standard behavior and will cause conformance tests to fail, but
+// it can be used in situations where where the non-conformance is acceptable.
+//
+// This function may only be called immediately after upb_DefPool_New().
+// It is an error to call it on an existing def pool or after defs have
+// already been added to the pool.
+UPB_API void upb_DefPool_DisableImplicitFieldPresence(upb_DefPool* s);
+bool upb_DefPool_ImplicitFieldPresenceDisabled(const upb_DefPool* s);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -14301,6 +14290,9 @@ const upb_FieldDef** upb_DefPool_GetAllExtensions(const upb_DefPool* s,
 
 #ifndef UPB_REFLECTION_ENUM_DEF_H_
 #define UPB_REFLECTION_ENUM_DEF_H_
+
+#include <stddef.h>
+#include <stdint.h>
 
 
 // Must be last.
@@ -14322,16 +14314,15 @@ UPB_API const upb_EnumValueDef* upb_EnumDef_FindValueByNumber(
 UPB_API const char* upb_EnumDef_FullName(const upb_EnumDef* e);
 bool upb_EnumDef_HasOptions(const upb_EnumDef* e);
 bool upb_EnumDef_IsClosed(const upb_EnumDef* e);
-bool upb_EnumDef_IsSpecifiedAsClosed(const upb_EnumDef* e);
 
 // Creates a mini descriptor string for an enum, returns true on success.
 bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e, upb_Arena* a,
                                       upb_StringView* out);
 
 const char* upb_EnumDef_Name(const upb_EnumDef* e);
-const UPB_DESC(EnumOptions) * upb_EnumDef_Options(const upb_EnumDef* e);
-const UPB_DESC(FeatureSet) * upb_EnumDef_ResolvedFeatures(const upb_EnumDef* e);
-UPB_DESC(SymbolVisibility) upb_EnumDef_Visibility(const upb_EnumDef* e);
+const google_protobuf_EnumOptions* upb_EnumDef_Options(const upb_EnumDef* e);
+const google_protobuf_FeatureSet* upb_EnumDef_ResolvedFeatures(const upb_EnumDef* e);
+google_protobuf_SymbolVisibility upb_EnumDef_Visibility(const upb_EnumDef* e);
 
 upb_StringView upb_EnumDef_ReservedName(const upb_EnumDef* e, int i);
 int upb_EnumDef_ReservedNameCount(const upb_EnumDef* e);
@@ -14368,10 +14359,10 @@ bool upb_EnumValueDef_HasOptions(const upb_EnumValueDef* v);
 uint32_t upb_EnumValueDef_Index(const upb_EnumValueDef* v);
 UPB_API const char* upb_EnumValueDef_Name(const upb_EnumValueDef* v);
 UPB_API int32_t upb_EnumValueDef_Number(const upb_EnumValueDef* v);
-const UPB_DESC(EnumValueOptions) *
-    upb_EnumValueDef_Options(const upb_EnumValueDef* v);
-const UPB_DESC(FeatureSet) *
-    upb_EnumValueDef_ResolvedFeatures(const upb_EnumValueDef* e);
+const google_protobuf_EnumValueOptions* upb_EnumValueDef_Options(
+    const upb_EnumValueDef* v);
+const google_protobuf_FeatureSet* upb_EnumValueDef_ResolvedFeatures(
+    const upb_EnumValueDef* e);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -14385,6 +14376,8 @@ const UPB_DESC(FeatureSet) *
 #ifndef UPB_REFLECTION_EXTENSION_RANGE_H_
 #define UPB_REFLECTION_EXTENSION_RANGE_H_
 
+#include <stdint.h>
+
 
 // Must be last.
 
@@ -14396,10 +14389,10 @@ int32_t upb_ExtensionRange_Start(const upb_ExtensionRange* r);
 int32_t upb_ExtensionRange_End(const upb_ExtensionRange* r);
 
 bool upb_ExtensionRange_HasOptions(const upb_ExtensionRange* r);
-const UPB_DESC(ExtensionRangeOptions) *
-    upb_ExtensionRange_Options(const upb_ExtensionRange* r);
-const UPB_DESC(FeatureSet) *
-    upb_ExtensionRange_ResolvedFeatures(const upb_ExtensionRange* e);
+const google_protobuf_ExtensionRangeOptions* upb_ExtensionRange_Options(
+    const upb_ExtensionRange* r);
+const google_protobuf_FeatureSet* upb_ExtensionRange_ResolvedFeatures(
+    const upb_ExtensionRange* e);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -14468,9 +14461,8 @@ const upb_MiniTableExtension* upb_FieldDef_MiniTableExtension(
     const upb_FieldDef* f);
 UPB_API const char* upb_FieldDef_Name(const upb_FieldDef* f);
 UPB_API uint32_t upb_FieldDef_Number(const upb_FieldDef* f);
-const UPB_DESC(FieldOptions) * upb_FieldDef_Options(const upb_FieldDef* f);
-const UPB_DESC(FeatureSet) *
-    upb_FieldDef_ResolvedFeatures(const upb_FieldDef* f);
+const google_protobuf_FieldOptions* upb_FieldDef_Options(const upb_FieldDef* f);
+const google_protobuf_FeatureSet* upb_FieldDef_ResolvedFeatures(const upb_FieldDef* f);
 UPB_API const upb_OneofDef* upb_FieldDef_RealContainingOneof(
     const upb_FieldDef* f);
 UPB_API upb_FieldType upb_FieldDef_Type(const upb_FieldDef* f);
@@ -14500,10 +14492,10 @@ const upb_FileDef* upb_FileDef_Dependency(const upb_FileDef* f, int i);
 int upb_FileDef_DependencyCount(const upb_FileDef* f);
 bool upb_FileDef_HasOptions(const upb_FileDef* f);
 UPB_API const char* upb_FileDef_Name(const upb_FileDef* f);
-const UPB_DESC(FileOptions) * upb_FileDef_Options(const upb_FileDef* f);
-const UPB_DESC(FeatureSet) * upb_FileDef_ResolvedFeatures(const upb_FileDef* f);
+const google_protobuf_FileOptions* upb_FileDef_Options(const upb_FileDef* f);
+const google_protobuf_FeatureSet* upb_FileDef_ResolvedFeatures(const upb_FileDef* f);
 const char* upb_FileDef_Package(const upb_FileDef* f);
-UPB_DESC(Edition) upb_FileDef_Edition(const upb_FileDef* f);
+google_protobuf_Edition upb_FileDef_Edition(const upb_FileDef* f);
 UPB_API const upb_DefPool* upb_FileDef_Pool(const upb_FileDef* f);
 
 const upb_FileDef* upb_FileDef_PublicDependency(const upb_FileDef* f, int i);
@@ -14511,8 +14503,6 @@ int upb_FileDef_PublicDependencyCount(const upb_FileDef* f);
 
 const upb_ServiceDef* upb_FileDef_Service(const upb_FileDef* f, int i);
 int upb_FileDef_ServiceCount(const upb_FileDef* f);
-
-UPB_API upb_Syntax upb_FileDef_Syntax(const upb_FileDef* f);
 
 const upb_EnumDef* upb_FileDef_TopLevelEnum(const upb_FileDef* f, int i);
 int upb_FileDef_TopLevelEnumCount(const upb_FileDef* f);
@@ -14662,10 +14652,9 @@ UPB_API const upb_OneofDef* upb_MessageDef_Oneof(const upb_MessageDef* m,
 UPB_API int upb_MessageDef_OneofCount(const upb_MessageDef* m);
 int upb_MessageDef_RealOneofCount(const upb_MessageDef* m);
 
-const UPB_DESC(MessageOptions) *
-    upb_MessageDef_Options(const upb_MessageDef* m);
-const UPB_DESC(FeatureSet) *
-    upb_MessageDef_ResolvedFeatures(const upb_MessageDef* m);
+const google_protobuf_MessageOptions* upb_MessageDef_Options(const upb_MessageDef* m);
+const google_protobuf_FeatureSet* upb_MessageDef_ResolvedFeatures(
+    const upb_MessageDef* m);
 
 upb_StringView upb_MessageDef_ReservedName(const upb_MessageDef* m, int i);
 int upb_MessageDef_ReservedNameCount(const upb_MessageDef* m);
@@ -14674,10 +14663,9 @@ const upb_MessageReservedRange* upb_MessageDef_ReservedRange(
     const upb_MessageDef* m, int i);
 int upb_MessageDef_ReservedRangeCount(const upb_MessageDef* m);
 
-UPB_API upb_Syntax upb_MessageDef_Syntax(const upb_MessageDef* m);
 UPB_API upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m);
-UPB_API UPB_DESC(SymbolVisibility)
-    upb_MessageDef_Visibility(const upb_MessageDef* m);
+UPB_API google_protobuf_SymbolVisibility
+upb_MessageDef_Visibility(const upb_MessageDef* m);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -14704,10 +14692,9 @@ bool upb_MethodDef_HasOptions(const upb_MethodDef* m);
 int upb_MethodDef_Index(const upb_MethodDef* m);
 UPB_API const upb_MessageDef* upb_MethodDef_InputType(const upb_MethodDef* m);
 UPB_API const char* upb_MethodDef_Name(const upb_MethodDef* m);
-UPB_API const UPB_DESC(MethodOptions) *
-    upb_MethodDef_Options(const upb_MethodDef* m);
-const UPB_DESC(FeatureSet) *
-    upb_MethodDef_ResolvedFeatures(const upb_MethodDef* m);
+UPB_API const google_protobuf_MethodOptions* upb_MethodDef_Options(
+    const upb_MethodDef* m);
+const google_protobuf_FeatureSet* upb_MethodDef_ResolvedFeatures(const upb_MethodDef* m);
 UPB_API const upb_MessageDef* upb_MethodDef_OutputType(const upb_MethodDef* m);
 UPB_API bool upb_MethodDef_ServerStreaming(const upb_MethodDef* m);
 UPB_API const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
@@ -14723,6 +14710,9 @@ UPB_API const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
 
 #ifndef UPB_REFLECTION_ONEOF_DEF_H_
 #define UPB_REFLECTION_ONEOF_DEF_H_
+
+#include <stddef.h>
+#include <stdint.h>
 
 
 // Must be last.
@@ -14748,9 +14738,8 @@ const upb_FieldDef* upb_OneofDef_LookupNumber(const upb_OneofDef* o,
                                               uint32_t num);
 UPB_API const char* upb_OneofDef_Name(const upb_OneofDef* o);
 int upb_OneofDef_numfields(const upb_OneofDef* o);
-const UPB_DESC(OneofOptions*) upb_OneofDef_Options(const upb_OneofDef* o);
-const UPB_DESC(FeatureSet*)
-    upb_OneofDef_ResolvedFeatures(const upb_OneofDef* o);
+const google_protobuf_OneofOptions* upb_OneofDef_Options(const upb_OneofDef* o);
+const google_protobuf_FeatureSet* upb_OneofDef_ResolvedFeatures(const upb_OneofDef* o);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -14774,6 +14763,8 @@ extern "C" {
 UPB_API const upb_FileDef* upb_ServiceDef_File(const upb_ServiceDef* s);
 const upb_MethodDef* upb_ServiceDef_FindMethodByName(const upb_ServiceDef* s,
                                                      const char* name);
+const upb_MethodDef* upb_ServiceDef_FindMethodByNameWithSize(
+    const upb_ServiceDef* s, const char* name, size_t len);
 UPB_API const char* upb_ServiceDef_FullName(const upb_ServiceDef* s);
 bool upb_ServiceDef_HasOptions(const upb_ServiceDef* s);
 int upb_ServiceDef_Index(const upb_ServiceDef* s);
@@ -14781,10 +14772,10 @@ UPB_API const upb_MethodDef* upb_ServiceDef_Method(const upb_ServiceDef* s,
                                                    int i);
 UPB_API int upb_ServiceDef_MethodCount(const upb_ServiceDef* s);
 const char* upb_ServiceDef_Name(const upb_ServiceDef* s);
-UPB_API const UPB_DESC(ServiceOptions) *
-    upb_ServiceDef_Options(const upb_ServiceDef* s);
-const UPB_DESC(FeatureSet) *
-    upb_ServiceDef_ResolvedFeatures(const upb_ServiceDef* s);
+UPB_API const google_protobuf_ServiceOptions* upb_ServiceDef_Options(
+    const upb_ServiceDef* s);
+const google_protobuf_FeatureSet* upb_ServiceDef_ResolvedFeatures(
+    const upb_ServiceDef* s);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -15230,7 +15221,8 @@ static bool upb_Atomic_CompareExchangeMscP64(uint64_t volatile* addr,
 
 #else
 
-UPB_INLINE void _upb_Atomic_StoreP(void* addr, uint64_t val, size_t size) {
+UPB_INLINE void _upb_Atomic_StoreP(void volatile* addr, uint64_t val,
+                                   size_t size) {
   if (size == sizeof(int32_t)) {
     (void)_InterlockedExchange((int32_t volatile*)addr, (int32_t)val);
   } else {
@@ -15241,7 +15233,7 @@ UPB_INLINE void _upb_Atomic_StoreP(void* addr, uint64_t val, size_t size) {
 #define upb_Atomic_Store(addr, val, order) \
   _upb_Atomic_StoreP(addr, val, sizeof(*addr))
 
-UPB_INLINE int64_t _upb_Atomic_LoadP(void* addr, size_t size) {
+UPB_INLINE int64_t _upb_Atomic_LoadP(void volatile* addr, size_t size) {
   if (size == sizeof(int32_t)) {
     return (int64_t)upb_Atomic_LoadMsc32((int32_t volatile*)addr);
   } else {
@@ -15249,9 +15241,10 @@ UPB_INLINE int64_t _upb_Atomic_LoadP(void* addr, size_t size) {
   }
 }
 
-#define upb_Atomic_Load(addr, order) _upb_Atomic_LoadP(addr, sizeof(*addr))
+#define upb_Atomic_Load(addr, order) \
+  (void*)_upb_Atomic_LoadP((void volatile*)addr, sizeof(*addr))
 
-UPB_INLINE int64_t _upb_Atomic_ExchangeP(void* addr, uint64_t val,
+UPB_INLINE int64_t _upb_Atomic_ExchangeP(void volatile* addr, uint64_t val,
                                          size_t size) {
   if (size == sizeof(int32_t)) {
     return (int64_t)_InterlockedExchange((int32_t volatile*)addr, (int32_t)val);
@@ -15260,10 +15253,12 @@ UPB_INLINE int64_t _upb_Atomic_ExchangeP(void* addr, uint64_t val,
   }
 }
 
-#define upb_Atomic_Exchange(addr, val, order) \
-  _upb_Atomic_ExchangeP(addr, val, sizeof(*addr))
+#define upb_Atomic_Exchange(addr, val, order)                       \
+  (void*)_upb_Atomic_ExchangeP((void volatile*)addr, (uint64_t)val, \
+                               sizeof(*addr))
 
-UPB_INLINE bool _upb_Atomic_CompareExchangeMscP(void* addr, void* expected,
+UPB_INLINE bool _upb_Atomic_CompareExchangeMscP(void volatile* addr,
+                                                void* expected,
                                                 uint64_t desired, size_t size) {
   if (size == sizeof(int32_t)) {
     return upb_Atomic_CompareExchangeMscP32(
@@ -15276,11 +15271,13 @@ UPB_INLINE bool _upb_Atomic_CompareExchangeMscP(void* addr, void* expected,
 
 #define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
                                          success_order, failure_order) \
-  _upb_Atomic_CompareExchangeMscP(addr, expected, desired, sizeof(*addr))
+  _upb_Atomic_CompareExchangeMscP(addr, expected, (uint64_t)desired,   \
+                                  sizeof(*addr))
 
 #define upb_Atomic_CompareExchangeWeak(addr, expected, desired, success_order, \
                                        failure_order)                          \
-  _upb_Atomic_CompareExchangeMscP(addr, expected, desired, sizeof(*addr))
+  _upb_Atomic_CompareExchangeMscP(addr, expected, (uint64_t)desired,           \
+                                  sizeof(*addr))
 
 #endif
 
@@ -15676,6 +15673,85 @@ bool UPB_PRIVATE(_upb_Message_NextBaseField)(const upb_Message* msg,
 #ifndef UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
 #define UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+
+#ifndef GOOGLE_UPB_UPB_BASE_ERROR_HANDLER_H__
+#define GOOGLE_UPB_UPB_BASE_ERROR_HANDLER_H__
+
+#include <setjmp.h>
+
+// Must be last.
+
+// upb_ErrorHandler is a standard longjmp()-based exception handler for UPB.
+// It is used for efficient error handling in cases where longjmp() is safe to
+// use, such as in highly performance-sensitive C parsing code.
+//
+// This structure contains both a jmp_buf and an error code; the error code is
+// stored in the structure prior to calling longjmp(). This is necessary because
+// per the C standard, it is not possible to store the result of setjmp(), so
+// the error code must be passed out-of-band.
+//
+// upb_ErrorHandler is generally not C++-compatible, because longjmp() does not
+// run C++ destructors.  So any library that supports upb_ErrorHandler should
+// also support a regular return-based error handling mechanism. (Note: we
+// could conceivably extend this to take a callback, which could either call
+// longjmp() or throw a C++ exception. But since C++ exceptions are forbidden
+// by the C++ style guide, there's not likely to be a demand for this.)
+//
+// To support both cases (longjmp() or return-based status) efficiently, code
+// can be written like this:
+//
+//   UPB_ATTR_CONST bool upb_Arena_HasErrHandler(const upb_Arena* a);
+//
+//   INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
+//     if (UPB_UNLIKELY(a->end - a->ptr < size)) {
+//         void* ret = upb_Arena_MallocFallback(a, size);
+//         UPB_MAYBE_ASSUME(upb_Arena_HasErrHandler(a), ret != NULL);
+//         return ret;
+//     }
+//     void* ret = a->ptr;
+//     a->ptr += size;
+//     UPB_ASSUME(ret != NULL);
+//     return ret;
+//   }
+//
+// If the optimizer can prove that an error handler is present, it can assume
+// that upb_Arena_Malloc() will not return NULL.
+
+// We need to standardize on any error code that might be thrown by an error
+// handler.
+
+typedef enum {
+  kUpb_ErrorCode_Ok = 0,
+  kUpb_ErrorCode_OutOfMemory = 1,
+  kUpb_ErrorCode_Malformed = 2,
+} upb_ErrorCode;
+
+typedef struct {
+  int code;
+  jmp_buf buf;
+} upb_ErrorHandler;
+
+UPB_INLINE void upb_ErrorHandler_Init(upb_ErrorHandler* e) {
+  e->code = kUpb_ErrorCode_Ok;
+}
+
+UPB_INLINE UPB_NORETURN void upb_ErrorHandler_ThrowError(upb_ErrorHandler* e,
+                                                         int code) {
+  UPB_ASSERT(code != kUpb_ErrorCode_Ok);
+  e->code = code;
+  UPB_LONGJMP(e->buf, 1);
+}
+
+
+#endif  // GOOGLE_UPB_UPB_BASE_ERROR_HANDLER_H__
+
+#ifndef UPB_WIRE_INTERNAL_EPS_COPY_INPUT_STREAM_H_
+#define UPB_WIRE_INTERNAL_EPS_COPY_INPUT_STREAM_H_
+
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -15696,15 +15772,15 @@ extern "C" {
 // efficient fixed size copies.
 #define kUpb_EpsCopyInputStream_SlopBytes 16
 
-typedef struct {
+struct upb_EpsCopyInputStream {
   const char* end;        // Can read up to SlopBytes bytes beyond this.
   const char* limit_ptr;  // For bounds checks, = end + UPB_MIN(limit, 0)
   uintptr_t input_delta;  // Diff between the original input pointer and patch
   const char* buffer_start;   // Pointer to the original input buffer
   const char* capture_start;  // If non-NULL, the start of the captured region.
-  int limit;                  // Submessage limit relative to end
+  ptrdiff_t limit;            // Submessage limit relative to end
+  upb_ErrorHandler* err;      // Error handler to use when things go wrong.
   bool error;                 // To distinguish between EOF and error.
-  bool aliasing;
 #ifndef NDEBUG
   int guaranteed_bytes;
 #endif
@@ -15712,55 +15788,22 @@ typedef struct {
   // from the input buffer, regardless of how many bytes actually remain in the
   // input buffer.
   char patch[kUpb_EpsCopyInputStream_SlopBytes * 2];
-} upb_EpsCopyInputStream;
+};
 
-// Returns true if the stream is in the error state. A stream enters the error
-// state when the user reads past a limit (caught in IsDone()) or the
-// ZeroCopyInputStream returns an error.
-UPB_INLINE bool upb_EpsCopyInputStream_IsError(upb_EpsCopyInputStream* e) {
+UPB_INLINE void UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(
+    struct upb_EpsCopyInputStream* e);
+
+UPB_INLINE bool upb_EpsCopyInputStream_IsError(
+    struct upb_EpsCopyInputStream* e) {
   return e->error;
 }
 
-typedef const char* upb_EpsCopyInputStream_BufferFlipCallback(
-    upb_EpsCopyInputStream* e, const char* old_end, const char* new_start);
-
-typedef const char* upb_EpsCopyInputStream_IsDoneFallbackFunc(
-    upb_EpsCopyInputStream* e, const char* ptr, int overrun);
-
-UPB_INLINE void UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(
-    upb_EpsCopyInputStream* e) {
-#ifndef NDEBUG
-  e->guaranteed_bytes = kUpb_EpsCopyInputStream_SlopBytes;
-#endif
-}
-
-UPB_INLINE void UPB_PRIVATE(upb_EpsCopyInputStream_BoundsHit)(
-    upb_EpsCopyInputStream* e) {
-#ifndef NDEBUG
-  e->guaranteed_bytes = 0;
-#endif
-}
-
-// Signals the maximum number that the operation about to be performed may
-// consume.
-UPB_INLINE void UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(
-    upb_EpsCopyInputStream* e, int n) {
-#ifndef NDEBUG
-  if (e) {
-    UPB_ASSERT(e->guaranteed_bytes >= n);
-    e->guaranteed_bytes -= n;
-  }
-#endif
-}
-
-// Initializes a upb_EpsCopyInputStream using the contents of the buffer
-// [*ptr, size].  Updates `*ptr` as necessary to guarantee that at least
-// kUpb_EpsCopyInputStream_SlopBytes are available to read.
-UPB_INLINE void upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
-                                            const char** ptr, size_t size,
-                                            bool enable_aliasing) {
+UPB_INLINE void upb_EpsCopyInputStream_InitWithErrorHandler(
+    struct upb_EpsCopyInputStream* e, const char** ptr, size_t size,
+    upb_ErrorHandler* err) {
   e->buffer_start = *ptr;
   e->capture_start = NULL;
+  e->err = err;
   if (size <= kUpb_EpsCopyInputStream_SlopBytes) {
     memset(&e->patch, 0, 32);
     if (size) memcpy(&e->patch, *ptr, size);
@@ -15773,11 +15816,70 @@ UPB_INLINE void upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
     e->limit = kUpb_EpsCopyInputStream_SlopBytes;
     e->input_delta = 0;
   }
-  e->aliasing = enable_aliasing;
   e->limit_ptr = e->end;
   e->error = false;
   UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
 }
+
+UPB_INLINE void upb_EpsCopyInputStream_Init(struct upb_EpsCopyInputStream* e,
+                                            const char** ptr, size_t size) {
+  upb_EpsCopyInputStream_InitWithErrorHandler(e, ptr, size, NULL);
+}
+
+UPB_ATTR_CONST
+UPB_INLINE bool upb_EpsCopyInputStream_HasErrorHandler(
+    const struct upb_EpsCopyInputStream* e) {
+  return e && e->err != NULL;
+}
+
+// Call this function to signal an error. If an error handler is set, it will be
+// called and the function will never return. Otherwise, returns NULL to
+// indicate an error.
+const char* UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(
+    struct upb_EpsCopyInputStream* e);
+
+UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_AssumeResult)(
+    struct upb_EpsCopyInputStream* e, const char* ptr) {
+  UPB_MAYBE_ASSUME(upb_EpsCopyInputStream_HasErrorHandler(e), ptr != NULL);
+  return ptr;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+// Debug checks that attempt to ensure that no code paths will overrun the slop
+// bytes even in the worst case. Since we are frequently parsing varints, it's
+// possible that the user is trying to parse too many varints before calling
+// upb_EpsCopyInputStream_IsDone(), but this error case is not detected because
+// the varints are short. These checks ensure that will not overrun the slop
+// bytes, even if each varint is its maximum possible length.
+
+UPB_INLINE void UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(
+    struct upb_EpsCopyInputStream* e) {
+#ifndef NDEBUG
+  e->guaranteed_bytes = kUpb_EpsCopyInputStream_SlopBytes;
+#endif
+}
+
+UPB_INLINE void UPB_PRIVATE(upb_EpsCopyInputStream_BoundsHit)(
+    struct upb_EpsCopyInputStream* e) {
+#ifndef NDEBUG
+  e->guaranteed_bytes = 0;
+#endif
+}
+
+// Signals the maximum number that the operation about to be performed may
+// consume.
+UPB_INLINE void UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(
+    struct upb_EpsCopyInputStream* e, int n) {
+#ifndef NDEBUG
+  if (e) {
+    UPB_ASSERT(e->guaranteed_bytes >= n);
+    e->guaranteed_bytes -= n;
+  }
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 typedef enum {
   // The current stream position is at a limit.
@@ -15794,7 +15896,7 @@ typedef enum {
 // Returns the status of the current stream position.  This is a low-level
 // function, it is simpler to call upb_EpsCopyInputStream_IsDone() if possible.
 UPB_INLINE upb_IsDoneStatus UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(
-    upb_EpsCopyInputStream* e, const char* ptr, int* overrun) {
+    struct upb_EpsCopyInputStream* e, const char* ptr, int* overrun) {
   *overrun = ptr - e->end;
   if (UPB_LIKELY(ptr < e->limit_ptr)) {
     UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
@@ -15808,16 +15910,11 @@ UPB_INLINE upb_IsDoneStatus UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(
   }
 }
 
-// Returns true if the stream has hit a limit, either the current delimited
-// limit or the overall end-of-stream. As a side effect, this function may flip
-// the pointer to a new buffer if there are less than
-// kUpb_EpsCopyInputStream_SlopBytes of data to be read in the current buffer.
-//
-// Postcondition: if the function returns false, there are at least
-// kUpb_EpsCopyInputStream_SlopBytes of data available to read at *ptr.
-UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneWithCallback)(
-    upb_EpsCopyInputStream* e, const char** ptr,
-    upb_EpsCopyInputStream_IsDoneFallbackFunc* func) {
+const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallback)(
+    struct upb_EpsCopyInputStream* e, const char* ptr, int overrun);
+
+UPB_INLINE bool upb_EpsCopyInputStream_IsDone(struct upb_EpsCopyInputStream* e,
+                                              const char** ptr) {
   int overrun;
   switch (UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(e, *ptr, &overrun)) {
     case kUpb_IsDoneStatus_Done:
@@ -15827,7 +15924,8 @@ UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneWithCallback)(
       UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
       return false;
     case kUpb_IsDoneStatus_NeedFallback:
-      *ptr = func(e, *ptr, overrun);
+      *ptr =
+          UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallback)(e, *ptr, overrun);
       if (*ptr) {
         UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
       } else {
@@ -15838,110 +15936,17 @@ UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneWithCallback)(
   UPB_UNREACHABLE();
 }
 
-const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackNoCallback)(
-    upb_EpsCopyInputStream* e, const char* ptr, int overrun);
-
-// A simpler version of IsDoneWithCallback() that does not support a buffer flip
-// callback. Useful in cases where we do not need to insert custom logic at
-// every buffer flip.
-//
-// If this returns true, the user must call upb_EpsCopyInputStream_IsError()
-// to distinguish between EOF and error.
-UPB_INLINE bool upb_EpsCopyInputStream_IsDone(upb_EpsCopyInputStream* e,
-                                              const char** ptr) {
-  return UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneWithCallback)(
-      e, ptr, UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackNoCallback));
-}
-
-// Returns the total number of bytes that are safe to read from the current
-// buffer without reading uninitialized or unallocated memory.
-//
-// Note that this check does not respect any semantic limits on the stream,
-// either limits from PushLimit() or the overall stream end, so some of these
-// bytes may have unpredictable, nonsense values in them. The guarantee is only
-// that the bytes are valid to read from the perspective of the C language
-// (ie. you can read without triggering UBSAN or ASAN).
-UPB_INLINE size_t UPB_PRIVATE(upb_EpsCopyInputStream_BytesAvailable)(
-    upb_EpsCopyInputStream* e, const char* ptr) {
-  return (e->end - ptr) + kUpb_EpsCopyInputStream_SlopBytes;
-}
-
-// Returns true if the given delimited field size is valid (it does not extend
-// beyond any previously-pushed limits).  `ptr` should point to the beginning
-// of the field data, after the delimited size.
-//
-// Note that this does *not* guarantee that all of the data for this field is in
-// the current buffer.
 UPB_INLINE bool upb_EpsCopyInputStream_CheckSize(
-    const upb_EpsCopyInputStream* e, const char* ptr, int size) {
+    const struct upb_EpsCopyInputStream* e, const char* ptr, int size) {
   UPB_ASSERT(size >= 0);
   return size <= e->limit - (ptr - e->end);
-}
-
-UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_CheckSizeAvailable)(
-    upb_EpsCopyInputStream* e, const char* ptr, int size, bool submessage) {
-  // This is one extra branch compared to the more normal:
-  //   return (size_t)(end - ptr) < size;
-  // However it is one less computation if we are just about to use "ptr + len":
-  //   https://godbolt.org/z/35YGPz
-  // In microbenchmarks this shows a small improvement.
-  uintptr_t uptr = (uintptr_t)ptr;
-  uintptr_t uend = (uintptr_t)e->limit_ptr;
-  uintptr_t res = uptr + (size_t)size;
-  if (!submessage) uend += kUpb_EpsCopyInputStream_SlopBytes;
-  // NOTE: this check depends on having a linear address space.  This is not
-  // technically guaranteed by uintptr_t.
-  bool ret = res >= uptr && res <= uend;
-  if (size < 0) UPB_ASSERT(!ret);
-  return ret;
-}
-
-// Returns true if the given delimited field size is valid (it does not extend
-// beyond any previously-pushed limited) *and* all of the data for this field is
-// available to be read in the current buffer.
-//
-// If the size is negative, this function will always return false. This
-// property can be useful in some cases.
-UPB_INLINE bool upb_EpsCopyInputStream_CheckDataSizeAvailable(
-    upb_EpsCopyInputStream* e, const char* ptr, int size) {
-  return UPB_PRIVATE(upb_EpsCopyInputStream_CheckSizeAvailable)(e, ptr, size,
-                                                                false);
-}
-
-// Returns true if the given sub-message size is valid (it does not extend
-// beyond any previously-pushed limited) *and* all of the data for this
-// sub-message is available to be parsed in the current buffer.
-//
-// This implies that all fields from the sub-message can be parsed from the
-// current buffer while maintaining the invariant that we always have at
-// least kUpb_EpsCopyInputStream_SlopBytes of data available past the
-// beginning of any individual field start.
-//
-// If the size is negative, this function will always return false. This
-// property can be useful in some cases.
-UPB_INLINE bool UPB_PRIVATE(
-    upb_EpsCopyInputStream_CheckSubMessageSizeAvailable)(
-    upb_EpsCopyInputStream* e, const char* ptr, int size) {
-  return UPB_PRIVATE(upb_EpsCopyInputStream_CheckSizeAvailable)(e, ptr, size,
-                                                                true);
-}
-
-// Returns true if aliasing_enabled=true was passed to
-// upb_EpsCopyInputStream_Init() when this stream was initialized *and* we can
-// alias into the region [ptr, size] in an input buffer.
-UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_AliasingAvailable)(
-    upb_EpsCopyInputStream* e, const char* ptr, size_t size) {
-  // When EpsCopyInputStream supports streaming, this will need to become a
-  // runtime check.
-  return e->aliasing &&
-         upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size);
 }
 
 // Returns a pointer into an input buffer that corresponds to the parsing
 // pointer `ptr`.  The returned pointer may be the same as `ptr`, but also may
 // be different if we are currently parsing out of the patch buffer.
 UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(
-    upb_EpsCopyInputStream* e, const char* ptr) {
+    struct upb_EpsCopyInputStream* e, const char* ptr) {
   // This somewhat silly looking add-and-subtract behavior provides provenance
   // from the original input buffer's pointer. After optimization it produces
   // the same assembly as just casting `(uintptr_t)ptr+input_delta`
@@ -15951,36 +15956,18 @@ UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(
   return e->buffer_start + position;
 }
 
-// Returns a pointer into an input buffer that corresponds to the parsing
-// pointer `ptr`.  The returned pointer may be the same as `ptr`, but also may
-// be different if we are currently parsing out of the patch buffer.
-//
-// REQUIRES: Aliasing must be available for the given pointer. If the input is a
-// flat buffer and aliasing is enabled, then aliasing will always be available.
-UPB_INLINE const char* upb_EpsCopyInputStream_GetAliasedPtr(
-    upb_EpsCopyInputStream* e, const char* ptr) {
-  UPB_ASSUME(UPB_PRIVATE(upb_EpsCopyInputStream_AliasingAvailable)(e, ptr, 0));
-  return UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, ptr);
-}
-
-// Marks the start of a capture operation.  Only one capture operation may be
-// active at a time.  The capture operation will be finalized by a call to
-// upb_EpsCopyInputStream_EndCapture().  The captured string will be returned in
-// sv, and will point to the original input buffer if possible.
-UPB_INLINE void upb_EpsCopyInputStream_StartCapture(upb_EpsCopyInputStream* e,
-                                                    const char* ptr) {
+UPB_INLINE void upb_EpsCopyInputStream_StartCapture(
+    struct upb_EpsCopyInputStream* e, const char* ptr) {
   UPB_ASSERT(e->capture_start == NULL);
   e->capture_start = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, ptr);
 }
 
-// Ends a capture operation and returns the captured string.  This may only be
-// called once per capture operation.  Returns false if the capture operation
-// was invalid (the parsing pointer extends beyond the end of the stream).
-UPB_INLINE bool upb_EpsCopyInputStream_EndCapture(upb_EpsCopyInputStream* e,
-                                                  const char* ptr,
-                                                  upb_StringView* sv) {
+UPB_INLINE bool upb_EpsCopyInputStream_EndCapture(
+    struct upb_EpsCopyInputStream* e, const char* ptr, upb_StringView* sv) {
   UPB_ASSERT(e->capture_start != NULL);
-  if (ptr - e->end > e->limit) return false;
+  if (ptr - e->end > e->limit) {
+    return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(e);
+  }
   const char* end = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, ptr);
   sv->data = e->capture_start;
   sv->size = end - sv->data;
@@ -15988,120 +15975,69 @@ UPB_INLINE bool upb_EpsCopyInputStream_EndCapture(upb_EpsCopyInputStream* e,
   return true;
 }
 
-// Reads string data from the input, aliasing into the input buffer instead of
-// copying. The parsing pointer is passed in `*ptr`, and will be updated if
-// necessary to point to the actual input buffer. Returns the new parsing
-// pointer, which will be advanced past the string data.
-//
-// REQUIRES: Aliasing must be available for this data region (test with
-// upb_EpsCopyInputStream_AliasingAvailable().
-UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAliased(
-    upb_EpsCopyInputStream* e, const char** ptr, size_t size) {
-  UPB_ASSUME(
-      UPB_PRIVATE(upb_EpsCopyInputStream_AliasingAvailable)(e, *ptr, size));
-  const char* ret = *ptr + size;
-  *ptr = upb_EpsCopyInputStream_GetAliasedPtr(e, *ptr);
-  UPB_ASSUME(ret != NULL);
-  return ret;
-}
-
-// Skips `size` bytes of data from the input and returns a pointer past the end.
-// Returns NULL on end of stream or error.
-UPB_INLINE const char* upb_EpsCopyInputStream_Skip(upb_EpsCopyInputStream* e,
-                                                   const char* ptr, int size) {
-  if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size)) return NULL;
-  return ptr + size;
-}
-
-// Copies `size` bytes of data from the input `ptr` into the buffer `to`, and
-// returns a pointer past the end. Returns NULL on end of stream or error.
-UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_Copy)(
-    upb_EpsCopyInputStream* e, const char* ptr, void* to, int size) {
-  if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size)) return NULL;
-  memcpy(to, ptr, size);
-  return ptr + size;
-}
-
-// Reads string data from the stream and advances the pointer accordingly.
-// If aliasing was enabled when the stream was initialized, then the returned
-// pointer will point into the input buffer if possible, otherwise new data
-// will be allocated from arena and copied into. We may be forced to copy even
-// if aliasing was enabled if the input data spans input buffers.
-//
-// Returns NULL if memory allocation failed, or we reached a premature EOF.
-UPB_INLINE const char* upb_EpsCopyInputStream_ReadString(
-    upb_EpsCopyInputStream* e, const char** ptr, size_t size,
-    upb_Arena* arena) {
-  if (UPB_PRIVATE(upb_EpsCopyInputStream_AliasingAvailable)(e, *ptr, size)) {
-    return upb_EpsCopyInputStream_ReadStringAliased(e, ptr, size);
-  } else {
-    // We need to allocate and copy.
-    if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, *ptr, size)) {
-      return NULL;
-    }
-    UPB_ASSERT(arena);
-    char* data = (char*)upb_Arena_Malloc(arena, size);
-    if (!data) return NULL;
-    const char* ret =
-        UPB_PRIVATE(upb_EpsCopyInputStream_Copy)(e, *ptr, data, size);
-    *ptr = data;
-    return ret;
-  }
-}
-
-// Reads a string from the stream and advances the pointer accordingly.
-//
-// Unlike upb_EpsCopyInputStream_ReadString(), this function will always alias
-// the input buffer, regardless of whether aliasing was enabled when the stream
-// was initialized. This is useful for cases where the string will only be used
-// for the duration of the current function, so there is no risk of the
-// underlying data being freed in the meantime.
-//
-// Returns NULL if size extends beyond the end of the stream.
-//
-// NOTE: If/when EpsCopyInputStream supports multiple input buffers, this will
-// need to fall back to copying if the input data spans multiple buffers, which
-// will also require an additional arena parameter.
 UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAlwaysAlias(
-    upb_EpsCopyInputStream* e, const char* ptr, size_t size,
+    struct upb_EpsCopyInputStream* e, const char* ptr, size_t size,
     upb_StringView* sv) {
-  if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size)) {
-    return NULL;
+  UPB_ASSERT(size <= PTRDIFF_MAX);
+  // The `size` must be within the input buffer. If `ptr` is in the input
+  // buffer, then using the slop bytes is fine (because they are real bytes from
+  // the tail of the input buffer). If `ptr` is in the patch buffer, then slop
+  // bytes represent bytes that do not actually exist in the original input
+  // buffer, so we must fail if the size extends into the slop bytes.
+  const char* limit =
+      e->end + (e->input_delta == 0) * kUpb_EpsCopyInputStream_SlopBytes;
+  if ((ptrdiff_t)size > limit - ptr) {
+    // For the moment, we consider this an error.  In a multi-buffer world,
+    // it could be that the requested string extends into the next buffer, which
+    // is not an error and should be recoverable.
+    return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(e);
   }
   const char* input = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, ptr);
   *sv = upb_StringView_FromDataAndSize(input, size);
   return ptr + size;
 }
 
+UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringEphemeral(
+    struct upb_EpsCopyInputStream* e, const char* ptr, size_t size,
+    upb_StringView* sv) {
+  UPB_ASSERT(size <= PTRDIFF_MAX);
+  // Size must be within the current buffer (including slop bytes).
+  const char* limit = e->end + kUpb_EpsCopyInputStream_SlopBytes;
+  if ((ptrdiff_t)size > limit - ptr) {
+    // For the moment, we consider this an error.  In a multi-buffer world,
+    // it could be that the requested string extends into the next buffer, which
+    // is not an error and should be recoverable.
+    return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(e);
+  }
+  *sv = upb_StringView_FromDataAndSize(ptr, size);
+  return ptr + size;
+}
+
 UPB_INLINE void UPB_PRIVATE(upb_EpsCopyInputStream_CheckLimit)(
-    upb_EpsCopyInputStream* e) {
+    struct upb_EpsCopyInputStream* e) {
   UPB_ASSERT(e->limit_ptr == e->end + UPB_MIN(0, e->limit));
 }
 
-// Pushes a limit onto the stack of limits for the current stream.  The limit
-// will extend for `size` bytes beyond the position in `ptr`.  Future calls to
-// upb_EpsCopyInputStream_IsDone() will return `true` when the stream position
-// reaches this limit.
-//
-// Returns a delta that the caller must store and supply to PopLimit() below.
-UPB_INLINE int upb_EpsCopyInputStream_PushLimit(upb_EpsCopyInputStream* e,
-                                                const char* ptr, int size) {
-  int limit = size + (int)(ptr - e->end);
-  int delta = e->limit - limit;
+UPB_INLINE ptrdiff_t upb_EpsCopyInputStream_PushLimit(
+    struct upb_EpsCopyInputStream* e, const char* ptr, size_t size) {
+  UPB_ASSERT(size <= PTRDIFF_MAX);
+  ptrdiff_t limit = (ptrdiff_t)size + (ptr - e->end);
+  ptrdiff_t delta = e->limit - limit;
   UPB_PRIVATE(upb_EpsCopyInputStream_CheckLimit)(e);
-  UPB_ASSERT(limit <= e->limit);
   e->limit = limit;
   e->limit_ptr = e->end + UPB_MIN(0, limit);
   UPB_PRIVATE(upb_EpsCopyInputStream_CheckLimit)(e);
+  if (UPB_UNLIKELY(delta < 0)) {
+    UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(e);
+  }
   return delta;
 }
 
 // Pops the last limit that was pushed on this stream.  This may only be called
 // once IsDone() returns true.  The user must pass the delta that was returned
 // from PushLimit().
-UPB_INLINE void upb_EpsCopyInputStream_PopLimit(upb_EpsCopyInputStream* e,
-                                                const char* ptr,
-                                                int saved_delta) {
+UPB_INLINE void upb_EpsCopyInputStream_PopLimit(
+    struct upb_EpsCopyInputStream* e, const char* ptr, ptrdiff_t saved_delta) {
   UPB_ASSERT(ptr - e->end == e->limit);
   UPB_PRIVATE(upb_EpsCopyInputStream_CheckLimit)(e);
   e->limit += saved_delta;
@@ -16109,48 +16045,14 @@ UPB_INLINE void upb_EpsCopyInputStream_PopLimit(upb_EpsCopyInputStream* e,
   UPB_PRIVATE(upb_EpsCopyInputStream_CheckLimit)(e);
 }
 
-UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackInline)(
-    upb_EpsCopyInputStream* e, const char* ptr, int overrun,
-    upb_EpsCopyInputStream_BufferFlipCallback* callback) {
-  if (overrun < e->limit) {
-    // Need to copy remaining data into patch buffer.
-    UPB_ASSERT(overrun < kUpb_EpsCopyInputStream_SlopBytes);
-    const char* old_end = ptr;
-    const char* new_start = &e->patch[0] + overrun;
-    memset(e->patch + kUpb_EpsCopyInputStream_SlopBytes, 0,
-           kUpb_EpsCopyInputStream_SlopBytes);
-    memcpy(e->patch, e->end, kUpb_EpsCopyInputStream_SlopBytes);
-    ptr = new_start;
-    e->end = &e->patch[kUpb_EpsCopyInputStream_SlopBytes];
-    e->limit -= kUpb_EpsCopyInputStream_SlopBytes;
-    e->limit_ptr = e->end + e->limit;
-    UPB_ASSERT(ptr < e->limit_ptr);
-    e->input_delta = (uintptr_t)old_end - (uintptr_t)new_start;
-    const char* ret = callback(e, old_end, new_start);
-    if (ret) {
-      UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
-    }
-    return ret;
-  } else {
-    UPB_ASSERT(overrun > e->limit);
-    e->error = true;
-    return callback(e, NULL, NULL);
-  }
-}
-
 typedef const char* upb_EpsCopyInputStream_ParseDelimitedFunc(
-    upb_EpsCopyInputStream* e, const char* ptr, int size, void* ctx);
+    struct upb_EpsCopyInputStream* e, const char* ptr, int size, void* ctx);
 
-// Tries to perform a fast-path handling of the given delimited message data.
-// If the sub-message beginning at `*ptr` and extending for `len` is short and
-// fits within this buffer, calls `func` with `ctx` as a parameter, where the
-// pushing and popping of limits is handled automatically and with lower cost
-// than the normal PushLimit()/PopLimit() sequence.
 UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
-    upb_EpsCopyInputStream* e, const char** ptr, int len,
+    struct upb_EpsCopyInputStream* e, const char** ptr, size_t size,
     upb_EpsCopyInputStream_ParseDelimitedFunc* func, void* ctx) {
-  if (!UPB_PRIVATE(upb_EpsCopyInputStream_CheckSubMessageSizeAvailable)(e, *ptr,
-                                                                        len)) {
+  UPB_ASSERT(size <= PTRDIFF_MAX);
+  if ((ptrdiff_t)size > e->limit_ptr - *ptr) {
     return false;
   }
 
@@ -16158,10 +16060,10 @@ UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
   // This means we can preserve limit/limit_ptr verbatim.
   const char* saved_limit_ptr = e->limit_ptr;
   int saved_limit = e->limit;
-  e->limit_ptr = *ptr + len;
+  e->limit_ptr = *ptr + size;
   e->limit = e->limit_ptr - e->end;
   UPB_ASSERT(e->limit_ptr == e->end + UPB_MIN(0, e->limit));
-  *ptr = func(e, *ptr, len, ctx);
+  *ptr = func(e, *ptr, size, ctx);
   e->limit_ptr = saved_limit_ptr;
   e->limit = saved_limit;
   UPB_ASSERT(e->limit_ptr == e->end + UPB_MIN(0, e->limit));
@@ -16170,6 +16072,163 @@ UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
 
 #ifdef __cplusplus
 } /* extern "C" */
+#endif
+
+
+#endif  // UPB_WIRE_INTERNAL_EPS_COPY_INPUT_STREAM_H_
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct upb_EpsCopyInputStream upb_EpsCopyInputStream;
+
+// Initializes a upb_EpsCopyInputStream using the contents of the buffer
+// [*ptr, size].  Updates `*ptr` as necessary to guarantee that at least
+// kUpb_EpsCopyInputStream_SlopBytes are available to read.
+UPB_INLINE void upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
+                                            const char** ptr, size_t size);
+
+// Like the previous function, but registers an error handler that will be
+// called for any errors encountered.
+UPB_INLINE void upb_EpsCopyInputStream_InitWithErrorHandler(
+    upb_EpsCopyInputStream* e, const char** ptr, size_t size,
+    upb_ErrorHandler* err);
+
+// Returns true if the stream has an error handler.
+//
+// This function is marked const, which indicates to the compiler that the
+// return value is solely a function of the pointer value.  This is not
+// entirely true if the stream is reinitialized with
+// upb_EpsCopyInputStream_Init*(), so users must not call this function in
+// any context where the stream may be reinitialized between calls to this
+// function, and the presence of an error handler changes when reinitialized.
+UPB_ATTR_CONST
+UPB_INLINE bool upb_EpsCopyInputStream_HasErrorHandler(
+    const upb_EpsCopyInputStream* e);
+
+// Returns true if the stream is in the error state. A stream enters the error
+// state when the user reads past a limit (caught in IsDone()) or the
+// ZeroCopyInputStream returns an error.
+UPB_INLINE bool upb_EpsCopyInputStream_IsError(upb_EpsCopyInputStream* e);
+
+// Returns true if the stream has hit a limit, either the current delimited
+// limit or the overall end-of-stream. As a side effect, this function may flip
+// the pointer to a new buffer if there are less than
+// kUpb_EpsCopyInputStream_SlopBytes of data to be read in the current buffer.
+//
+// Postcondition: if the function returns false, there are at least
+// kUpb_EpsCopyInputStream_SlopBytes of data available to read at *ptr.
+//
+// If this returns true, the user must call upb_EpsCopyInputStream_IsError()
+// to distinguish between EOF and error.
+UPB_INLINE bool upb_EpsCopyInputStream_IsDone(upb_EpsCopyInputStream* e,
+                                              const char** ptr);
+
+// Returns true if the given delimited field size is valid (it does not extend
+// beyond any previously-pushed limits).  `ptr` should point to the beginning
+// of the field data, after the delimited size.
+//
+// Note that this does *not* guarantee that all of the data for this field is in
+// the current buffer.
+UPB_INLINE bool upb_EpsCopyInputStream_CheckSize(
+    const upb_EpsCopyInputStream* e, const char* ptr, int size);
+
+// Marks the start of a capture operation.  Only one capture operation may be
+// active at a time.  The capture operation will be finalized by a call to
+// upb_EpsCopyInputStream_EndCapture().  The captured string will be returned in
+// sv, and will point to the original input buffer if possible.
+UPB_INLINE void upb_EpsCopyInputStream_StartCapture(upb_EpsCopyInputStream* e,
+                                                    const char* ptr);
+
+// Ends a capture operation and returns the captured string.  This may only be
+// called once per capture operation.  Returns false if the capture operation
+// was invalid (the parsing pointer extends beyond the end of the stream).
+UPB_INLINE bool upb_EpsCopyInputStream_EndCapture(upb_EpsCopyInputStream* e,
+                                                  const char* ptr,
+                                                  upb_StringView* sv);
+
+// Reads a string from the stream and advances the pointer accordingly.  The
+// returned string view will always alias the input buffer.
+//
+// Returns NULL if size extends beyond the end of the current input buffer.
+// Currently, we only support a single input buffer, so this function will only
+// fail if `size` overflows the end of the stream.
+//
+// If/when we support multiple input buffers, there may be cases where this
+// function returns failure, even if the requested region is valid, because the
+// requested region spans multiple buffers. In this case, the caller must
+// attempt to read the string using other string reading functions before
+// signaling an error.
+UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAlwaysAlias(
+    upb_EpsCopyInputStream* e, const char* ptr, size_t size,
+    upb_StringView* sv);
+
+// Reads a string from the stream and advances the pointer accordingly.  The
+// returned string view is ephemeral, only valid until the next call to
+// upb_EpsCopyInputStream. It may point to the patch buffer.
+//
+// Returns NULL if size extends beyond the end of the current buffer (which may
+// be the patch buffer).
+//
+// IMPORTANT NOTE: If `size` extends beyond the end of the stream, the returned
+// data may contain garbage bytes from the patch buffer. For efficiency, this
+// function does not check that `size` is within the current limit or even the
+// end of the stream.
+//
+// The bytes are guaranteed to be safe to read ephemerally, but they may contain
+// garbage data that does not correspond to anything in the input. This error
+// will be detected later, when calling upb_EpsCopyInputStream_IsDone() (because
+// we will not end at the proper limit), but it may result in nonsense bytes
+// ending up in the output.
+UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringEphemeral(
+    upb_EpsCopyInputStream* e, const char* ptr, size_t size,
+    upb_StringView* sv);
+
+// Pushes a limit onto the stack of limits for the current stream.  The limit
+// will extend for `size` bytes beyond the position in `ptr`.  Future calls to
+// upb_EpsCopyInputStream_IsDone() will return `true` when the stream position
+// reaches this limit.
+//
+// Returns a delta that the caller must store and supply to PopLimit() below.
+//
+// A return value of <0 indicates that `size` is too large, and exceeds a
+// previous limit. If this occurs, the stream is in an error state and must no
+// longer be used.
+UPB_INLINE ptrdiff_t upb_EpsCopyInputStream_PushLimit(upb_EpsCopyInputStream* e,
+                                                      const char* ptr,
+                                                      size_t size);
+
+// Pops the last limit that was pushed on this stream.  This may only be called
+// once IsDone() returns true.  The user must pass the delta that was returned
+// from PushLimit().
+UPB_INLINE void upb_EpsCopyInputStream_PopLimit(upb_EpsCopyInputStream* e,
+                                                const char* ptr,
+                                                ptrdiff_t saved_delta);
+
+// Tries to perform a fast-path handling of the given delimited message data.
+// If the sub-message beginning at `*ptr` and extending for `len` is short and
+// fits within this buffer, calls `func` with `ctx` as a parameter, where the
+// pushing and popping of limits is handled automatically and with lower cost
+// than the normal PushLimit()/PopLimit() sequence.
+UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
+    upb_EpsCopyInputStream* e, const char** ptr, size_t size,
+    upb_EpsCopyInputStream_ParseDelimitedFunc* func, void* ctx);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#ifdef __cplusplus
+// Temporary overloads for functions whose signature has recently changed.
+UPB_DEPRECATE_AND_INLINE()
+UPB_INLINE void upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
+                                            const char** ptr, size_t size,
+                                            bool enable_aliasing) {
+  upb_EpsCopyInputStream_Init(e, ptr, size);
+}
 #endif
 
 
@@ -16205,11 +16264,16 @@ extern "C" {
 #endif
 
 UPB_PRIVATE(_upb_WireReader_LongVarint)
-UPB_PRIVATE(_upb_WireReader_ReadLongVarint32)(const char* ptr, uint32_t val);
+UPB_PRIVATE(_upb_WireReader_ReadLongVarint)(const char* ptr, uint64_t val,
+                                            upb_EpsCopyInputStream* stream);
 UPB_PRIVATE(_upb_WireReader_LongVarint)
-UPB_PRIVATE(_upb_WireReader_ReadLongVarint64)(const char* ptr, uint64_t val);
+UPB_PRIVATE(_upb_WireReader_ReadLongTag)(const char* ptr, uint64_t val,
+                                         upb_EpsCopyInputStream* stream);
+UPB_PRIVATE(_upb_WireReader_LongVarint)
+UPB_PRIVATE(_upb_WireReader_ReadLongSize)(const char* ptr, uint64_t val,
+                                          upb_EpsCopyInputStream* stream);
 
-UPB_FORCEINLINE const char* UPB_PRIVATE(_upb_WireReader_ReadVarint)(
+UPB_FORCEINLINE const char* upb_WireReader_ReadVarint(
     const char* ptr, uint64_t* val, upb_EpsCopyInputStream* stream) {
   UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(stream, 10);
   uint8_t byte = *ptr;
@@ -16217,14 +16281,13 @@ UPB_FORCEINLINE const char* UPB_PRIVATE(_upb_WireReader_ReadVarint)(
     *val = byte;
     return ptr + 1;
   }
-  UPB_PRIVATE(_upb_WireReader_LongVarint)
-  res = UPB_PRIVATE(_upb_WireReader_ReadLongVarint64)(ptr, byte);
-  if (UPB_UNLIKELY(!res.ptr)) return NULL;
+  UPB_PRIVATE(_upb_WireReader_LongVarint) res;
+  res = UPB_PRIVATE(_upb_WireReader_ReadLongVarint)(ptr, byte, stream);
   *val = res.val;
-  return res.ptr;
+  return UPB_PRIVATE(upb_EpsCopyInputStream_AssumeResult)(stream, res.ptr);
 }
 
-UPB_FORCEINLINE const char* UPB_PRIVATE(_upb_WireReader_ReadTag)(
+UPB_FORCEINLINE const char* upb_WireReader_ReadTag(
     const char* ptr, uint32_t* val, upb_EpsCopyInputStream* stream) {
   UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(stream, 5);
   uint8_t byte = *ptr;
@@ -16232,11 +16295,24 @@ UPB_FORCEINLINE const char* UPB_PRIVATE(_upb_WireReader_ReadTag)(
     *val = byte;
     return ptr + 1;
   }
-  UPB_PRIVATE(_upb_WireReader_LongVarint)
-  res = UPB_PRIVATE(_upb_WireReader_ReadLongVarint32)(ptr, byte);
-  if (UPB_UNLIKELY(!res.ptr)) return NULL;
+  UPB_PRIVATE(_upb_WireReader_LongVarint) res;
+  res = UPB_PRIVATE(_upb_WireReader_ReadLongTag)(ptr, byte, stream);
   *val = res.val;
-  return res.ptr;
+  return UPB_PRIVATE(upb_EpsCopyInputStream_AssumeResult)(stream, res.ptr);
+}
+
+UPB_FORCEINLINE const char* upb_WireReader_ReadSize(
+    const char* ptr, int* val, upb_EpsCopyInputStream* stream) {
+  UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(stream, 5);
+  uint8_t byte = *ptr;
+  if (UPB_LIKELY((byte & 0x80) == 0)) {
+    *val = byte;
+    return ptr + 1;
+  }
+  UPB_PRIVATE(_upb_WireReader_LongVarint) res;
+  res = UPB_PRIVATE(_upb_WireReader_ReadLongSize)(ptr, byte, stream);
+  *val = res.val;
+  return UPB_PRIVATE(upb_EpsCopyInputStream_AssumeResult)(stream, res.ptr);
 }
 
 UPB_API_INLINE uint32_t upb_WireReader_GetFieldNumber(uint32_t tag) {
@@ -16288,9 +16364,7 @@ extern "C" {
 // Bounds checks must be performed before calling this function, preferably
 // by calling upb_EpsCopyInputStream_IsDone().
 UPB_FORCEINLINE const char* upb_WireReader_ReadTag(
-    const char* ptr, uint32_t* tag, upb_EpsCopyInputStream* stream) {
-  return UPB_PRIVATE(_upb_WireReader_ReadTag)(ptr, tag, stream);
-}
+    const char* ptr, uint32_t* tag, upb_EpsCopyInputStream* stream);
 
 // Given a tag, returns the field number.
 UPB_API_INLINE uint32_t upb_WireReader_GetFieldNumber(uint32_t tag);
@@ -16298,10 +16372,8 @@ UPB_API_INLINE uint32_t upb_WireReader_GetFieldNumber(uint32_t tag);
 // Given a tag, returns the wire type.
 UPB_API_INLINE uint8_t upb_WireReader_GetWireType(uint32_t tag);
 
-UPB_INLINE const char* upb_WireReader_ReadVarint(
-    const char* ptr, uint64_t* val, upb_EpsCopyInputStream* stream) {
-  return UPB_PRIVATE(_upb_WireReader_ReadVarint)(ptr, val, stream);
-}
+UPB_FORCEINLINE const char* upb_WireReader_ReadVarint(
+    const char* ptr, uint64_t* val, upb_EpsCopyInputStream* stream);
 
 // Skips data for a varint, returning a pointer past the end of the varint, or
 // NULL if there was an error in the varint data.
@@ -16322,13 +16394,7 @@ UPB_INLINE const char* upb_WireReader_SkipVarint(
 // Bounds checks must be performed before calling this function, preferably
 // by calling upb_EpsCopyInputStream_IsDone().
 UPB_INLINE const char* upb_WireReader_ReadSize(const char* ptr, int* size,
-                                               upb_EpsCopyInputStream* stream) {
-  uint64_t size64;
-  ptr = upb_WireReader_ReadVarint(ptr, &size64, stream);
-  if (!ptr || size64 >= INT32_MAX) return NULL;
-  *size = size64;
-  return ptr;
-}
+                                               upb_EpsCopyInputStream* stream);
 
 // Reads a fixed32 field, performing byte swapping if necessary.
 //
@@ -16375,7 +16441,9 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
 // control over this?
 UPB_INLINE const char* upb_WireReader_SkipGroup(
     const char* ptr, uint32_t tag, upb_EpsCopyInputStream* stream) {
-  return UPB_PRIVATE(_upb_WireReader_SkipGroup)(ptr, tag, 100, stream);
+  const char* ret =
+      UPB_PRIVATE(_upb_WireReader_SkipGroup)(ptr, tag, 100, stream);
+  return UPB_PRIVATE(upb_EpsCopyInputStream_AssumeResult)(stream, ret);
 }
 
 UPB_INLINE const char* _upb_WireReader_SkipValue(
@@ -16394,7 +16462,7 @@ UPB_INLINE const char* _upb_WireReader_SkipValue(
       int size;
       ptr = upb_WireReader_ReadSize(ptr, &size, stream);
       if (!ptr || !upb_EpsCopyInputStream_CheckSize(stream, ptr, size)) {
-        return NULL;
+        return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(stream);
       }
       ptr += size;
       return ptr;
@@ -16403,9 +16471,10 @@ UPB_INLINE const char* _upb_WireReader_SkipValue(
       return UPB_PRIVATE(_upb_WireReader_SkipGroup)(ptr, tag, depth_limit,
                                                     stream);
     case kUpb_WireType_EndGroup:
-      return NULL;  // Should be handled before now.
+      // Should be handled before now.
     default:
-      return NULL;  // Unknown wire type.
+      // Unknown wire type.
+      return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(stream);
   }
 }
 
@@ -16763,6 +16832,62 @@ char* upb_MtDataEncoder_EncodeMessageSet(upb_MtDataEncoder* e, char* ptr);
 
 #endif /* UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_ */
 
+#ifndef UPB_MINI_TABLE_GENERATED_REGISTRY_H_
+#define UPB_MINI_TABLE_GENERATED_REGISTRY_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Generated registry: a global singleton that gathers all extensions linked
+ * into the binary.
+ *
+ * This singleton is thread-safe and lock-free, implemented using atomics.  The
+ * registry is lazily initialized the first time it is loaded.  When all
+ * references are released, the registry will be destroyed.  New loads
+ * afterwards will simply reload the same registry as needed.
+ *
+ * The extension minitables are registered in gencode using linker arrays.  Each
+ * .proto file produces a weak, hidden, constructor function that adds all
+ * visible extensions from the array into the registry.  In each binary, only
+ * one copy of the constructor will actually be preserved by the linker, and
+ * that copy will add all of the extensions for the entire binary.  All of these
+ * are added to a global linked list of minitables pre-main, which are then used
+ * to construct this singleton as needed.
+ */
+
+typedef struct upb_GeneratedRegistryRef upb_GeneratedRegistryRef;
+
+// Loads the generated registry, returning a reference to it.  The reference
+// must be held for the lifetime of any ExtensionRegistry obtained from it.
+//
+// Returns NULL on failure.
+UPB_API const upb_GeneratedRegistryRef* upb_GeneratedRegistry_Load(void);
+
+// Releases a reference to the generated registry.  This may destroy the
+// registry if there are no other references to it.
+//
+// NULL is a valid argument and is simply ignored for easier error handling in
+// callers.
+UPB_API void upb_GeneratedRegistry_Release(const upb_GeneratedRegistryRef* r);
+
+// Returns the extension registry contained by a reference to the generated
+// registry.
+//
+// The reference must be held for the lifetime of the registry.
+UPB_API const upb_ExtensionRegistry* upb_GeneratedRegistry_Get(
+    const upb_GeneratedRegistryRef* r);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif  // UPB_MINI_TABLE_GENERATED_REGISTRY_H_
+
 #ifndef UPB_REFLECTION_DEF_POOL_INTERNAL_H_
 #define UPB_REFLECTION_DEF_POOL_INTERNAL_H_
 
@@ -16827,17 +16952,17 @@ const upb_ExtensionRegistry* _upb_DefPool_GeneratedExtensionRegistry(
 // We want to copy the options verbatim into the destination options proto.
 // We use serialize+parse as our deep copy.
 #define UPB_DEF_SET_OPTIONS(target, desc_type, options_type, proto)        \
-  if (UPB_DESC(desc_type##_has_options)(proto)) {                          \
+  if (google_protobuf_##desc_type##_has_options(proto)) {                           \
     size_t size;                                                           \
-    char* pb = UPB_DESC(options_type##_serialize)(                         \
-        UPB_DESC(desc_type##_options)(proto), ctx->tmp_arena, &size);      \
+    char* pb = google_protobuf_##options_type##_serialize(                          \
+        google_protobuf_##desc_type##_options(proto), ctx->tmp_arena, &size);       \
     if (!pb) _upb_DefBuilder_OomErr(ctx);                                  \
-    target = UPB_DESC(options_type##_parse_ex)(                            \
+    target = google_protobuf_##options_type##_parse_ex(                             \
         pb, size, _upb_DefPool_GeneratedExtensionRegistry(ctx->symtab), 0, \
         _upb_DefBuilder_Arena(ctx));                                       \
     if (!target) _upb_DefBuilder_OomErr(ctx);                              \
   } else {                                                                 \
-    target = (const UPB_DESC(options_type)*)kUpbDefOptDefault;             \
+    target = (const google_protobuf_##options_type*)kUpbDefOptDefault;              \
   }
 
 #ifdef __cplusplus
@@ -16846,20 +16971,20 @@ extern "C" {
 
 struct upb_DefBuilder {
   upb_DefPool* symtab;
-  upb_strtable feature_cache;             // Caches features by identity.
-  UPB_DESC(FeatureSet*) legacy_features;  // For computing legacy features.
-  char* tmp_buf;                          // Temporary buffer in tmp_arena.
-  size_t tmp_buf_size;                    // Size of temporary buffer.
-  upb_FileDef* file;                      // File we are building.
-  upb_Arena* arena;                       // Allocate defs here.
-  upb_Arena* tmp_arena;                   // For temporary allocations.
-  upb_Status* status;                     // Record errors here.
-  const upb_MiniTableFile* layout;        // NULL if we should build layouts.
-  upb_MiniTablePlatform platform;         // Platform we are targeting.
-  int enum_count;                         // Count of enums built so far.
-  int msg_count;                          // Count of messages built so far.
-  int ext_count;                          // Count of extensions built so far.
-  jmp_buf err;                            // longjmp() on error.
+  upb_strtable feature_cache;          // Caches features by identity.
+  google_protobuf_FeatureSet* legacy_features;  // For computing legacy features.
+  char* tmp_buf;                       // Temporary buffer in tmp_arena.
+  size_t tmp_buf_size;                 // Size of temporary buffer.
+  upb_FileDef* file;                   // File we are building.
+  upb_Arena* arena;                    // Allocate defs here.
+  upb_Arena* tmp_arena;                // For temporary allocations.
+  upb_Status* status;                  // Record errors here.
+  const upb_MiniTableFile* layout;     // NULL if we should build layouts.
+  upb_MiniTablePlatform platform;      // Platform we are targeting.
+  int enum_count;                      // Count of enums built so far.
+  int msg_count;                       // Count of messages built so far.
+  int ext_count;                       // Count of extensions built so far.
+  jmp_buf err;                         // longjmp() on error.
 };
 
 extern const char* kUpbDefOptDefault;
@@ -16955,22 +17080,26 @@ UPB_INLINE void _upb_DefBuilder_CheckIdentFull(upb_DefBuilder* ctx,
   if (!good) _upb_DefBuilder_CheckIdentSlow(ctx, name, true);
 }
 
+UPB_INLINE bool _upb_DefBuilder_IsLegacyEdition(google_protobuf_Edition edition) {
+  // Should only be called for a real edition, not a placeholder like
+  // EDITION_LEGACY.
+  UPB_ASSERT(edition >= google_protobuf_EDITION_PROTO2);
+  return edition <= google_protobuf_EDITION_PROTO3;
+}
+
 // Returns true if the returned feature set is new and must be populated.
 bool _upb_DefBuilder_GetOrCreateFeatureSet(upb_DefBuilder* ctx,
-                                           const UPB_DESC(FeatureSet*) parent,
+                                           const google_protobuf_FeatureSet* parent,
                                            upb_StringView key,
-                                           UPB_DESC(FeatureSet**) set);
+                                           google_protobuf_FeatureSet** set);
 
-const UPB_DESC(FeatureSet*)
-    _upb_DefBuilder_DoResolveFeatures(upb_DefBuilder* ctx,
-                                      const UPB_DESC(FeatureSet*) parent,
-                                      const UPB_DESC(FeatureSet*) child,
-                                      bool is_implicit);
+const google_protobuf_FeatureSet* _upb_DefBuilder_DoResolveFeatures(
+    upb_DefBuilder* ctx, const google_protobuf_FeatureSet* parent,
+    const google_protobuf_FeatureSet* child, bool is_implicit);
 
-UPB_INLINE const UPB_DESC(FeatureSet*)
-    _upb_DefBuilder_ResolveFeatures(upb_DefBuilder* ctx,
-                                    const UPB_DESC(FeatureSet*) parent,
-                                    const UPB_DESC(FeatureSet*) child) {
+UPB_INLINE const google_protobuf_FeatureSet* _upb_DefBuilder_ResolveFeatures(
+    upb_DefBuilder* ctx, const google_protobuf_FeatureSet* parent,
+    const google_protobuf_FeatureSet* child) {
   return _upb_DefBuilder_DoResolveFeatures(ctx, parent, child, false);
 }
 
@@ -16984,6 +17113,8 @@ UPB_INLINE const UPB_DESC(FeatureSet*)
 #ifndef UPB_REFLECTION_FILE_DEF_INTERNAL_H_
 #define UPB_REFLECTION_FILE_DEF_INTERNAL_H_
 
+#include <stdint.h>
+
 
 // Must be last.
 
@@ -16995,12 +17126,14 @@ const upb_MiniTableExtension* _upb_FileDef_ExtensionMiniTable(
     const upb_FileDef* f, int i);
 const int32_t* _upb_FileDef_PublicDependencyIndexes(const upb_FileDef* f);
 const int32_t* _upb_FileDef_WeakDependencyIndexes(const upb_FileDef* f);
+bool _upb_FileDef_ClosedEnumCheckingDisabled(const upb_FileDef* f);
+bool _upb_FileDef_ImplicitFieldPresenceDisabled(const upb_FileDef* f);
 
 // upb_FileDef_Package() returns "" if f->package is NULL, this does not.
 const char* _upb_FileDef_RawPackage(const upb_FileDef* f);
 
 void _upb_FileDef_Create(upb_DefBuilder* ctx,
-                         const UPB_DESC(FileDescriptorProto) * file_proto);
+                         const google_protobuf_FileDescriptorProto* file_proto);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -17011,6 +17144,8 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
 
 #ifndef UPB_REFLECTION_MESSAGE_DEF_INTERNAL_H_
 #define UPB_REFLECTION_MESSAGE_DEF_INTERNAL_H_
+
+#include <stddef.h>
 
 
 // Must be last.
@@ -17032,12 +17167,10 @@ void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
 void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m);
 
 // Allocate and initialize an array of |n| message defs.
-upb_MessageDef* _upb_MessageDefs_New(upb_DefBuilder* ctx, int n,
-                                     const UPB_DESC(DescriptorProto*)
-                                         const* protos,
-                                     const UPB_DESC(FeatureSet*)
-                                         parent_features,
-                                     const upb_MessageDef* containing_type);
+upb_MessageDef* _upb_MessageDefs_New(
+    upb_DefBuilder* ctx, int n, const google_protobuf_DescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features,
+    const upb_MessageDef* containing_type);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -17054,7 +17187,7 @@ upb_MessageDef* _upb_MessageDefs_New(upb_DefBuilder* ctx, int n,
 // features. This is used for feature resolution under Editions.
 // NOLINTBEGIN
 // clang-format off
-#define UPB_INTERNAL_UPB_EDITION_DEFAULTS "\n\027\030\204\007\"\000*\020\010\001\020\002\030\002 \003(\0010\0028\002@\001\n\027\030\347\007\"\000*\020\010\002\020\001\030\001 \002(\0010\0018\002@\001\n\027\030\350\007\"\014\010\001\020\001\030\001 \002(\0010\001*\0048\002@\001\n\027\030\351\007\"\020\010\001\020\001\030\001 \002(\0010\0018\001@\002*\000 \346\007(\351\007"
+#define UPB_INTERNAL_UPB_EDITION_DEFAULTS "\n\027\030\204\007\"\000*\020\010\001\020\002\030\002 \003(\0010\0028\002@\001\n\027\030\347\007\"\000*\020\010\002\020\001\030\001 \002(\0010\0018\002@\001\n\027\030\350\007\"\014\010\001\020\001\030\001 \002(\0010\001*\0048\002@\001\n\027\030\351\007\"\020\010\001\020\001\030\001 \002(\0010\0018\001@\002*\000\n\027\030\217N\"\020\010\001\020\001\030\001 \002(\0010\0018\003@\002*\000 \346\007(\351\007"
 // clang-format on
 // NOLINTEND
 
@@ -17110,9 +17243,8 @@ const upb_MiniTableEnum* _upb_EnumDef_MiniTable(const upb_EnumDef* e);
 
 // Allocate and initialize an array of |n| enum defs.
 upb_EnumDef* _upb_EnumDefs_New(upb_DefBuilder* ctx, int n,
-                               const UPB_DESC(EnumDescriptorProto*)
-                                   const* protos,
-                               const UPB_DESC(FeatureSet*) parent_features,
+                               const google_protobuf_EnumDescriptorProto* const* protos,
+                               const google_protobuf_FeatureSet* parent_features,
                                const upb_MessageDef* containing_type);
 
 #ifdef __cplusplus
@@ -17126,28 +17258,6 @@ upb_EnumDef* _upb_EnumDefs_New(upb_DefBuilder* ctx, int n,
 #define UPB_REFLECTION_ENUM_RESERVED_RANGE_INTERNAL_H_
 
 
-// IWYU pragma: private, include "upb/reflection/def.h"
-
-#ifndef UPB_REFLECTION_ENUM_RESERVED_RANGE_H_
-#define UPB_REFLECTION_ENUM_RESERVED_RANGE_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int32_t upb_EnumReservedRange_Start(const upb_EnumReservedRange* r);
-int32_t upb_EnumReservedRange_End(const upb_EnumReservedRange* r);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_REFLECTION_ENUM_RESERVED_RANGE_H_ */
-
 // Must be last.
 
 #ifdef __cplusplus
@@ -17160,7 +17270,7 @@ upb_EnumReservedRange* _upb_EnumReservedRange_At(const upb_EnumReservedRange* r,
 // Allocate and initialize an array of |n| reserved ranges owned by |e|.
 upb_EnumReservedRange* _upb_EnumReservedRanges_New(
     upb_DefBuilder* ctx, int n,
-    const UPB_DESC(EnumDescriptorProto_EnumReservedRange*) const* protos,
+    const google_protobuf_EnumDescriptorProto_EnumReservedRange* const* protos,
     const upb_EnumDef* e);
 
 #ifdef __cplusplus
@@ -17172,6 +17282,8 @@ upb_EnumReservedRange* _upb_EnumReservedRanges_New(
 
 #ifndef UPB_REFLECTION_ENUM_VALUE_DEF_INTERNAL_H_
 #define UPB_REFLECTION_ENUM_VALUE_DEF_INTERNAL_H_
+
+#include <stddef.h>
 
 
 // Must be last.
@@ -17185,9 +17297,8 @@ upb_EnumValueDef* _upb_EnumValueDef_At(const upb_EnumValueDef* v, int i);
 // Allocate and initialize an array of |n| enum value defs owned by |e|.
 upb_EnumValueDef* _upb_EnumValueDefs_New(
     upb_DefBuilder* ctx, const char* prefix, int n,
-    const UPB_DESC(EnumValueDescriptorProto*) const* protos,
-    const UPB_DESC(FeatureSet*) parent_features, upb_EnumDef* e,
-    bool* is_sorted);
+    const google_protobuf_EnumValueDescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features, upb_EnumDef* e, bool* is_sorted);
 
 const upb_EnumValueDef** _upb_EnumValueDefs_Sorted(const upb_EnumValueDef* v,
                                                    size_t n, upb_Arena* a);
@@ -17237,8 +17348,8 @@ upb_ExtensionRange* _upb_ExtensionRange_At(const upb_ExtensionRange* r, int i);
 // Allocate and initialize an array of |n| extension ranges owned by |m|.
 upb_ExtensionRange* _upb_ExtensionRanges_New(
     upb_DefBuilder* ctx, int n,
-    const UPB_DESC(DescriptorProto_ExtensionRange*) const* protos,
-    const UPB_DESC(FeatureSet*) parent_features, const upb_MessageDef* m);
+    const google_protobuf_DescriptorProto_ExtensionRange* const* protos,
+    const google_protobuf_FeatureSet* parent_features, const upb_MessageDef* m);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -17249,6 +17360,8 @@ upb_ExtensionRange* _upb_ExtensionRanges_New(
 
 #ifndef UPB_REFLECTION_FIELD_DEF_INTERNAL_H_
 #define UPB_REFLECTION_FIELD_DEF_INTERNAL_H_
+
+#include <stdint.h>
 
 
 // Must be last.
@@ -17269,19 +17382,18 @@ void _upb_FieldDef_BuildMiniTableExtension(upb_DefBuilder* ctx,
                                            const upb_FieldDef* f);
 
 // Allocate and initialize an array of |n| extensions (field defs).
-upb_FieldDef* _upb_Extensions_New(upb_DefBuilder* ctx, int n,
-                                  const UPB_DESC(FieldDescriptorProto*)
-                                      const* protos,
-                                  const UPB_DESC(FeatureSet*) parent_features,
-                                  const char* prefix, upb_MessageDef* m);
+upb_FieldDef* _upb_Extensions_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_FieldDescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features, const char* prefix,
+    upb_MessageDef* m);
 
 // Allocate and initialize an array of |n| field defs.
-upb_FieldDef* _upb_FieldDefs_New(upb_DefBuilder* ctx, int n,
-                                 const UPB_DESC(FieldDescriptorProto*)
-                                     const* protos,
-                                 const UPB_DESC(FeatureSet*) parent_features,
-                                 const char* prefix, upb_MessageDef* m,
-                                 bool* is_sorted);
+upb_FieldDef* _upb_FieldDefs_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_FieldDescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features, const char* prefix,
+    upb_MessageDef* m, bool* is_sorted);
 
 // Allocate and return a list of pointers to the |n| field defs in |ff|,
 // sorted by field number.
@@ -17310,11 +17422,10 @@ void _upb_OneofDef_Insert(upb_DefBuilder* ctx, upb_OneofDef* o,
                           const upb_FieldDef* f, const char* name, size_t size);
 
 // Allocate and initialize an array of |n| oneof defs owned by |m|.
-upb_OneofDef* _upb_OneofDefs_New(upb_DefBuilder* ctx, int n,
-                                 const UPB_DESC(OneofDescriptorProto*)
-                                     const* protos,
-                                 const UPB_DESC(FeatureSet*) parent_features,
-                                 upb_MessageDef* m);
+upb_OneofDef* _upb_OneofDefs_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_OneofDescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features, upb_MessageDef* m);
 
 size_t _upb_OneofDefs_Finalize(upb_DefBuilder* ctx, upb_MessageDef* m);
 
@@ -17338,11 +17449,13 @@ extern "C" {
 upb_ServiceDef* _upb_ServiceDef_At(const upb_ServiceDef* s, int i);
 
 // Allocate and initialize an array of |n| service defs.
-upb_ServiceDef* _upb_ServiceDefs_New(upb_DefBuilder* ctx, int n,
-                                     const UPB_DESC(ServiceDescriptorProto*)
-                                         const* protos,
-                                     const UPB_DESC(FeatureSet*)
-                                         parent_features);
+upb_ServiceDef* _upb_ServiceDefs_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_ServiceDescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features);
+
+void _upb_ServiceDef_InsertMethod(upb_DefBuilder* ctx, upb_ServiceDef* s,
+                                  const upb_MethodDef* m);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -17389,7 +17502,7 @@ upb_MessageReservedRange* _upb_MessageReservedRange_At(
 // Allocate and initialize an array of |n| reserved ranges owned by |m|.
 upb_MessageReservedRange* _upb_MessageReservedRanges_New(
     upb_DefBuilder* ctx, int n,
-    const UPB_DESC(DescriptorProto_ReservedRange) * const* protos,
+    const google_protobuf_DescriptorProto_ReservedRange* const* protos,
     const upb_MessageDef* m);
 
 #ifdef __cplusplus
@@ -17412,11 +17525,10 @@ extern "C" {
 upb_MethodDef* _upb_MethodDef_At(const upb_MethodDef* m, int i);
 
 // Allocate and initialize an array of |n| method defs owned by |s|.
-upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
-                                   const UPB_DESC(MethodDescriptorProto*)
-                                       const* protos,
-                                   const UPB_DESC(FeatureSet*) parent_features,
-                                   upb_ServiceDef* s);
+upb_MethodDef* _upb_MethodDefs_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_MethodDescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features, upb_ServiceDef* s);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -17459,6 +17571,28 @@ google_protobuf_ServiceDescriptorProto* upb_ServiceDef_ToProto(
 #endif
 
 #endif /* UPB_UTIL_DEF_TO_PROTO_H_ */
+
+// IWYU pragma: private, include "upb/reflection/def.h"
+
+#ifndef UPB_REFLECTION_ENUM_RESERVED_RANGE_H_
+#define UPB_REFLECTION_ENUM_RESERVED_RANGE_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int32_t upb_EnumReservedRange_Start(const upb_EnumReservedRange* r);
+int32_t upb_EnumReservedRange_End(const upb_EnumReservedRange* r);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_ENUM_RESERVED_RANGE_H_ */
 
 #ifndef UPB_WIRE_INTERNAL_CONSTANTS_H_
 #define UPB_WIRE_INTERNAL_CONSTANTS_H_
@@ -17511,14 +17645,11 @@ typedef struct upb_Decoder {
   bool message_is_done;
   union {
     upb_Arena arena;
-    void* foo[UPB_ARENA_SIZE_HACK];
+    void* foo[UPB_ARENA_SIZE_HACK / sizeof(void*)];
   };
-  upb_DecodeStatus status;
-  jmp_buf err;
+  upb_ErrorHandler err;
 
 #ifndef NDEBUG
-  const char* debug_tagstart;
-  const char* debug_valstart;
   char* trace_buf;
   char* trace_ptr;
   char* trace_end;
@@ -17530,8 +17661,17 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
                                         const upb_ExtensionRegistry* extreg,
                                         int options, upb_Arena* arena,
                                         char* trace_buf, size_t trace_size) {
-  upb_EpsCopyInputStream_Init(&d->input, &buf, size,
-                              options & kUpb_DecodeOption_AliasString);
+  upb_ErrorHandler_Init(&d->err);
+  upb_EpsCopyInputStream_InitWithErrorHandler(&d->input, &buf, size, &d->err);
+
+  UPB_STATIC_ASSERT((int)kUpb_DecodeStatus_Ok == (int)kUpb_ErrorCode_Ok,
+                    "mismatched error codes");
+  UPB_STATIC_ASSERT(
+      (int)kUpb_DecodeStatus_OutOfMemory == (int)kUpb_ErrorCode_OutOfMemory,
+      "mismatched error codes");
+  UPB_STATIC_ASSERT(
+      (int)kUpb_DecodeStatus_Malformed == (int)kUpb_ErrorCode_Malformed,
+      "mismatched error codes");
 
   if (options & kUpb_DecodeOption_AlwaysValidateUtf8) {
     // Fasttable decoder does not support this option.
@@ -17543,7 +17683,6 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
   d->end_group = DECODE_NOGROUP;
   d->options = (uint16_t)options;
   d->missing_required = false;
-  d->status = kUpb_DecodeStatus_Ok;
   d->message_is_done = false;
 #ifndef NDEBUG
   d->trace_buf = trace_buf;
@@ -17564,7 +17703,7 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
 UPB_INLINE upb_DecodeStatus upb_Decoder_Destroy(upb_Decoder* d,
                                                 upb_Arena* arena) {
   UPB_PRIVATE(_upb_Arena_SwapOut)(arena, &d->arena);
-  return d->status;
+  return (upb_DecodeStatus)d->err.code;
 }
 
 #ifndef NDEBUG
@@ -17632,27 +17771,9 @@ UPB_INLINE const upb_MiniTable* decode_totablep(intptr_t table) {
   return (const upb_MiniTable*)(table >> 8);
 }
 
-const char* _upb_Decoder_IsDoneFallback(upb_EpsCopyInputStream* e,
-                                        const char* ptr, int overrun);
-
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
                                        const upb_MiniTable* layout);
-
-UPB_INLINE bool _upb_Decoder_IsDone(upb_Decoder* d, const char** ptr) {
-  return UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneWithCallback)(
-      &d->input, ptr, &_upb_Decoder_IsDoneFallback);
-}
-
-UPB_NORETURN void* _upb_Decoder_ErrorJmp(upb_Decoder* d,
-                                         upb_DecodeStatus status);
-
-UPB_INLINE const char* _upb_Decoder_BufferFlipCallback(
-    upb_EpsCopyInputStream* e, const char* old_end, const char* new_start) {
-  upb_Decoder* d = (upb_Decoder*)e;
-  if (!old_end) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
-  return new_start;
-}
 
 UPB_INLINE bool _upb_Decoder_FieldRequiresUtf8Validation(
     const upb_Decoder* d, const upb_MiniTableField* field) {
@@ -17665,6 +17786,27 @@ UPB_INLINE bool _upb_Decoder_FieldRequiresUtf8Validation(
   }
 
   return false;
+}
+
+UPB_INLINE bool _upb_Decoder_ReadString(upb_Decoder* d, const char** ptr,
+                                        size_t size, upb_StringView* sv,
+                                        bool validate_utf8) {
+  upb_StringView tmp;
+  *ptr =
+      upb_EpsCopyInputStream_ReadStringAlwaysAlias(&d->input, *ptr, size, &tmp);
+  if (*ptr == NULL) return false;
+  if (validate_utf8 && !utf8_range_IsValid(tmp.data, tmp.size)) {
+    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_BadUtf8);
+    return false;
+  }
+  if ((d->options & kUpb_DecodeOption_AliasString) == 0) {
+    char* data = (char*)upb_Arena_Malloc(&d->arena, tmp.size);
+    if (!data) return false;
+    memcpy(data, tmp.data, tmp.size);
+    tmp.data = data;
+  }
+  *sv = tmp;
+  return true;
 }
 
 
@@ -17742,11 +17884,9 @@ UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
 #undef UPB_MSAN
 #undef UPB_MALLOC_ALIGN
 #undef UPB_TSAN
-#undef UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN
 #undef UPB_DEPRECATED
 #undef UPB_GNUC_MIN
 #undef UPB_DESCRIPTOR_UPB_H_FILENAME
-#undef UPB_DESC
 #undef UPB_DESC_MINITABLE
 #undef UPB_IS_GOOGLE3
 #undef UPB_ATOMIC
@@ -17771,3 +17911,5 @@ UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
 #undef UPB_ARM64_ASM
 #undef UPB_ARM64_BTI_DEFAULT
 #undef UPB_DEPRECATE_AND_INLINE
+#undef UPB_MAYBE_ASSUME
+#undef UPB_ATTR_CONST

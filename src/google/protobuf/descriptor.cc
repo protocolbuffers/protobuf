@@ -26,7 +26,6 @@
 #include <limits>
 #include <memory>
 #include <new>  // IWYU pragma: keep
-#include <optional>
 #include <sstream>
 #include <string>
 #include <tuple>
@@ -66,6 +65,7 @@
 #include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/any.h"
 #include "google/protobuf/cpp_edition_defaults.h"
@@ -165,14 +165,9 @@ std::string ToJsonName(const absl::string_view input) {
 
 template <typename OptionsT>
 bool IsLegacyJsonFieldConflictEnabled(const OptionsT& options) {
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
+  PROTOBUF_IGNORE_DEPRECATION_START
   return options.deprecated_legacy_json_field_conflicts();
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 
 // Backport of fold expressions for the comma operator to C++11.
@@ -450,13 +445,13 @@ class FlatAllocatorImpl {
 
   // TODO: Remove the NULL terminators to save memory and simplify
   // the code.
-  std::optional<internal::DescriptorNames> CreateDescriptorNames(
+  absl::optional<internal::DescriptorNames> CreateDescriptorNames(
       std::initializer_list<absl::string_view> bytes,
       std::initializer_list<size_t> sizes) {
     for (size_t size : sizes) {
       // Name too long.
       if (size != static_cast<uint16_t>(size)) {
-        return std::nullopt;
+        return absl::nullopt;
       }
     }
 
@@ -481,7 +476,7 @@ class FlatAllocatorImpl {
     PlanArray<char>(internal::DescriptorNames::AllocationSizeForSimpleNames(
         full_name_size));
   }
-  std::optional<internal::DescriptorNames> AllocateEntityNames(
+  absl::optional<internal::DescriptorNames> AllocateEntityNames(
       absl::string_view scope, absl::string_view name) {
     static constexpr absl::string_view kNullChar("\0", 1);
     if (scope.empty()) {
@@ -562,7 +557,7 @@ class FlatAllocatorImpl {
     PlanArray<char>(total_bytes);
   }
 
-  std::optional<internal::DescriptorNames> AllocateFieldNames(
+  absl::optional<internal::DescriptorNames> AllocateFieldNames(
       const absl::string_view name, const absl::string_view scope,
       const std::string* opt_json_name) {
     ABSL_CHECK(has_allocated());
@@ -1344,6 +1339,11 @@ using ExtensionsGroupedByDescriptorMap =
 using LocationsByPathMap =
     absl::flat_hash_map<std::string, const SourceCodeInfo_Location*>;
 
+// A path through a FileDescriptorProto to a specific location of source code,
+// e.g. a field name. See SourceCodeInfo.Location.path in descriptor.proto for
+// full structure of this vector.
+using SourceCodePath = std::vector<int>;
+
 absl::flat_hash_set<std::string>* AllowedCustomOptionExtendees() {
   const char* kOptionNames[] = {
       "FileOptions",   "MessageOptions",   "FieldOptions",
@@ -1525,7 +1525,7 @@ class FileDescriptorTables {
   // The value of info must be that of the corresponding FileDescriptor.
   // (Conceptually a pure function, but stateful as an optimisation.)
   const SourceCodeInfo_Location* GetSourceLocation(
-      const std::vector<int>& path, const SourceCodeInfo* info) const;
+      const SourceCodePath& path, const SourceCodeInfo* info) const;
 
   // Must be called after BuildFileImpl(), even if the build failed and
   // we are going to roll back to the last checkpoint.
@@ -1611,7 +1611,7 @@ class DescriptorPool::DeferredValidation {
   }
 
   struct LifetimesInfo {
-    const FeatureSet* proto_features;
+    const Message* option_to_validate;  // features or options to validate
     const Message* proto;
     absl::string_view full_name;
     absl::string_view filename;
@@ -1637,19 +1637,20 @@ class DescriptorPool::DeferredValidation {
   }
 
   bool Validate() {
-    if (lifetimes_info_map_.empty()) return true;
-
-    static absl::string_view feature_set_name = "google.protobuf.FeatureSet";
-    const Descriptor* feature_set =
-        pool_->FindMessageTypeByName(feature_set_name);
+    if (lifetimes_info_map_.empty()) {
+      return true;
+    }
 
     bool has_errors = false;
     for (const auto& it : lifetimes_info_map_) {
       const FileDescriptor* file = it.first;
 
       for (const auto& info : it.second) {
+        const Descriptor* option_descriptor = nullptr;
+        option_descriptor = pool_->FindMessageTypeByName(
+            info.option_to_validate->GetTypeName());
         auto results = FeatureResolver::ValidateFeatureLifetimes(
-            file->edition(), *info.proto_features, feature_set);
+            file->edition(), *info.option_to_validate, option_descriptor);
         for (const auto& error : results.errors) {
           has_errors = true;
           if (error_collector_ == nullptr) {
@@ -2494,8 +2495,10 @@ const DescriptorPool* DescriptorPool::generated_pool() {
   // runtime. We have to avoid registering it pre-main, because we need to
   // ensure that the linker --gc-sections step can strip out the full runtime if
   // it is unused.
-  DescriptorProto::descriptor();
-  pb::CppFeatures::descriptor();
+  // TODO: Remove this suppression.
+  (void)DescriptorProto::descriptor();
+  // TODO: Remove this suppression.
+  (void)pb::CppFeatures::descriptor();
   return pool;
 }
 
@@ -3584,17 +3587,17 @@ class SourceLocationCommentPrinter {
     // Perform the SourceLocation lookup only if we're including user comments,
     // because the lookup is fairly expensive.
     have_source_loc_ =
-        options.include_comments && desc->GetSourceLocation(&source_loc_);
+        options_.include_comments && desc->GetSourceLocation(&source_loc_);
   }
   SourceLocationCommentPrinter(const FileDescriptor* file,
-                               const std::vector<int>& path,
+                               const SourceCodePath& path,
                                const std::string& prefix,
                                const DebugStringOptions& options)
       : options_(options), prefix_(prefix) {
     // Perform the SourceLocation lookup only if we're including user comments,
     // because the lookup is fairly expensive.
-    have_source_loc_ =
-        options.include_comments && file->GetSourceLocation(path, &source_loc_);
+    have_source_loc_ = options_.include_comments &&
+                       file->GetSourceLocation(path, &source_loc_);
   }
   void AddPreComment(std::string* output) {
     if (have_source_loc_) {
@@ -3646,7 +3649,7 @@ std::string FileDescriptor::DebugStringWithOptions(
     const DebugStringOptions& debug_string_options) const {
   std::string contents;
   {
-    std::vector<int> path;
+    SourceCodePath path;
     path.push_back(FileDescriptorProto::kSyntaxFieldNumber);
     SourceLocationCommentPrinter syntax_comment(this, path, "",
                                                 debug_string_options);
@@ -3686,7 +3689,7 @@ std::string FileDescriptor::DebugStringWithOptions(
   }
 
   if (!package().empty()) {
-    std::vector<int> path;
+    SourceCodePath path;
     path.push_back(FileDescriptorProto::kPackageFieldNumber);
     SourceLocationCommentPrinter package_comment(this, path, "",
                                                  debug_string_options);
@@ -3955,7 +3958,8 @@ void FieldDescriptor::DebugString(
 
   // Label is omitted for maps, oneof, and plain proto3 fields.
   if (is_map() || real_containing_oneof() ||
-      (!is_required() && !is_repeated() && !has_optional_keyword())) {
+      (!is_required() && !is_repeated() && !proto3_optional_ &&
+       file()->edition() == Edition::EDITION_PROTO3)) {
     label.clear();
   }
   // Label is omitted for optional and required fields under editions.
@@ -4277,12 +4281,6 @@ bool FieldDescriptor::legacy_enum_field_treated_as_closed() const {
           enum_type()->is_closed());
 }
 
-bool FieldDescriptor::has_optional_keyword() const {
-  return proto3_optional_ ||
-         (file()->edition() == Edition::EDITION_PROTO2 && !is_required() &&
-          !is_repeated() && !containing_oneof());
-}
-
 FieldDescriptor::CppStringType FieldDescriptor::CalculateCppStringType() const {
   ABSL_DCHECK(cpp_type() == FieldDescriptor::CPPTYPE_STRING);
 
@@ -4302,6 +4300,23 @@ FieldDescriptor::CppStringType FieldDescriptor::CalculateCppStringType() const {
       // codegen.  Just use string type.
       ABSL_DCHECK(!features().GetExtension(pb::cpp).has_string_type());
       return CppStringType::kString;
+  }
+}
+
+FieldDescriptor::CppRepeatedType FieldDescriptor::CalculateCppRepeatedType()
+    const {
+  ABSL_DCHECK(is_repeated());
+
+  switch (features().GetExtension(pb::cpp).repeated_type()) {
+    case pb::CppFeatures::LEGACY:
+      return CppRepeatedType::kRepeated;
+    case pb::CppFeatures::PROXY:
+      return CppRepeatedType::kProxy;
+    default:
+      // If features haven't been resolved, this is a dynamic build not for C++
+      // codegen. Just use the legacy repeated type.
+      ABSL_CHECK(!features().GetExtension(pb::cpp).has_repeated_type());
+      return CppRepeatedType::kRepeated;
   }
 }
 
@@ -4333,49 +4348,49 @@ bool FileDescriptor::GetSourceLocation(const std::vector<int>& path,
 }
 
 bool FileDescriptor::GetSourceLocation(SourceLocation* out_location) const {
-  std::vector<int> path;  // empty path for root FileDescriptor
+  SourceCodePath path;  // empty path for root FileDescriptor
   return GetSourceLocation(path, out_location);
 }
 
 bool Descriptor::GetSourceLocation(SourceLocation* out_location) const {
-  std::vector<int> path;
+  SourceCodePath path;
   GetLocationPath(&path);
   return file()->GetSourceLocation(path, out_location);
 }
 
 bool FieldDescriptor::GetSourceLocation(SourceLocation* out_location) const {
-  std::vector<int> path;
+  SourceCodePath path;
   GetLocationPath(&path);
   return file()->GetSourceLocation(path, out_location);
 }
 
 bool OneofDescriptor::GetSourceLocation(SourceLocation* out_location) const {
-  std::vector<int> path;
+  SourceCodePath path;
   GetLocationPath(&path);
   return containing_type()->file()->GetSourceLocation(path, out_location);
 }
 
 bool EnumDescriptor::GetSourceLocation(SourceLocation* out_location) const {
-  std::vector<int> path;
+  SourceCodePath path;
   GetLocationPath(&path);
   return file()->GetSourceLocation(path, out_location);
 }
 
 bool MethodDescriptor::GetSourceLocation(SourceLocation* out_location) const {
-  std::vector<int> path;
+  SourceCodePath path;
   GetLocationPath(&path);
   return service()->file()->GetSourceLocation(path, out_location);
 }
 
 bool ServiceDescriptor::GetSourceLocation(SourceLocation* out_location) const {
-  std::vector<int> path;
+  SourceCodePath path;
   GetLocationPath(&path);
   return file()->GetSourceLocation(path, out_location);
 }
 
 bool EnumValueDescriptor::GetSourceLocation(
     SourceLocation* out_location) const {
-  std::vector<int> path;
+  SourceCodePath path;
   GetLocationPath(&path);
   return type()->file()->GetSourceLocation(path, out_location);
 }
@@ -4460,8 +4475,7 @@ namespace {
 // one of the Options messages in descriptor.proto.
 struct OptionsToInterpret {
   OptionsToInterpret(absl::string_view ns, absl::string_view el,
-                     absl::Span<const int> path, const Message* orig_opt,
-                     Message* opt)
+                     SourceCodePath path, const Message* orig_opt, Message* opt)
       : name_scope(ns),
         element_name(el),
         element_path(path.begin(), path.end()),
@@ -4469,7 +4483,7 @@ struct OptionsToInterpret {
         options(opt) {}
   std::string name_scope;
   std::string element_name;
-  std::vector<int> element_path;
+  SourceCodePath element_path;
   const Message* original_options;
   Message* options;
 };
@@ -4506,7 +4520,7 @@ class DescriptorBuilder {
   DescriptorPool::DeferredValidation& deferred_validation_;
   DescriptorPool::ErrorCollector* error_collector_;
 
-  std::optional<FeatureResolver> feature_resolver_ = std::nullopt;
+  absl::optional<FeatureResolver> feature_resolver_ = absl::nullopt;
 
   // As we build descriptors we store copies of the options messages in
   // them. We put pointers to those copies in this vector, as we build, so we
@@ -4704,9 +4718,8 @@ class DescriptorBuilder {
   template <class DescriptorT>
   const typename DescriptorT::OptionsType* AllocateOptionsImpl(
       absl::string_view name_scope, absl::string_view element_name,
-      const typename DescriptorT::Proto& proto,
-      absl::Span<const int> options_path, absl::string_view option_name,
-      internal::FlatAllocator& alloc);
+      const typename DescriptorT::Proto& proto, SourceCodePath options_path,
+      absl::string_view option_name, internal::FlatAllocator& alloc);
 
   // Allocates and resolves any feature sets that need to be owned by a given
   // descriptor. This also strips features out of the mutable options message to
@@ -4862,9 +4875,8 @@ class DescriptorBuilder {
     // recorded and then used in UpdateSourceCodeInfo.
     // The features boolean controls whether or not we should only interpret
     // feature options or skip them entirely.
-    bool InterpretSingleOption(Message* options,
-                               const std::vector<int>& src_path,
-                               const std::vector<int>& options_path,
+    bool InterpretSingleOption(Message* options, const SourceCodePath& src_path,
+                               const SourceCodePath& options_path,
                                bool skip_extensions);
 
     // Adds the uninterpreted_option to the given options message verbatim.
@@ -4888,12 +4900,12 @@ class DescriptorBuilder {
     // Validates the value for the option field of the currently interpreted
     // option and then sets it on the unknown_field.
     bool SetOptionValue(const FieldDescriptor* option_field,
-                        UnknownFieldSet* unknown_fields);
+                        UnknownFieldSet* unknown_fields, Message* options);
 
     // Parses an aggregate value for a CPPTYPE_MESSAGE option and
     // saves it into *unknown_fields.
     bool SetAggregateOption(const FieldDescriptor* option_field,
-                            UnknownFieldSet* unknown_fields);
+                            UnknownFieldSet* unknown_fields, Message* options);
 
     // Convenience functions to set an int field the right way, depending on
     // its wire type (a single int CppType can represent multiple wire types).
@@ -4950,12 +4962,12 @@ class DescriptorBuilder {
     // This maps the element path of uninterpreted options to the element path
     // of the resulting interpreted option. This is used to modify a file's
     // source code info to account for option interpretation.
-    absl::flat_hash_map<std::vector<int>, std::vector<int>> interpreted_paths_;
+    absl::flat_hash_map<SourceCodePath, SourceCodePath> interpreted_paths_;
 
     // This maps the path to a repeated option field to the known number of
     // elements the field contains. This is used to track the compute the
     // index portion of the element path when interpreting a single option.
-    absl::flat_hash_map<std::vector<int>, int> repeated_option_counts_;
+    absl::flat_hash_map<SourceCodePath, int> repeated_option_counts_;
 
     // Factory used to create the dynamic messages we need to parse
     // any aggregate option values we encounter.
@@ -5012,6 +5024,9 @@ class DescriptorBuilder {
                        const DescriptorProto::ExtensionRange& proto) {}
   void ValidateExtensionRangeOptions(const DescriptorProto& proto,
                                      const Descriptor& message);
+  void MaybeAddError(const absl::Status& status, absl::string_view full_name,
+                     const Message& descriptor,
+                     DescriptorPool::ErrorCollector::ErrorLocation location);
   void ValidateExtensionDeclaration(
       absl::string_view full_name,
       const RepeatedPtrField<ExtensionRangeOptions_Declaration>& declarations,
@@ -5044,6 +5059,17 @@ class DescriptorBuilder {
   template <typename DescriptorT, typename DescriptorProtoT>
   void ValidateNamingStyle(const DescriptorT* file,
                            const DescriptorProtoT& proto);
+
+  template <typename DescriptorT>
+  bool IsStyleOrGreater(const DescriptorT* descriptor,
+                        FeatureSet::EnforceNamingStyle style) {
+    return internal::InternalFeatureHelper::GetFeatures(*descriptor)
+                   .enforce_naming_style() >= style &&
+           // Required because STYLE_LEGACY comes after STYLE2024 in enum
+           // definition.
+           internal::InternalFeatureHelper::GetFeatures(*descriptor)
+                   .enforce_naming_style() != FeatureSet::STYLE_LEGACY;
+  }
 
   // Nothing to validate for extension ranges. This overload only exists
   // so that VisitDescriptors can be exhaustive.
@@ -5785,7 +5811,7 @@ void DescriptorBuilder::AllocateOptions(
     const typename DescriptorT::Proto& proto, DescriptorT* descriptor,
     int options_field_tag, absl::string_view option_name,
     internal::FlatAllocator& alloc) {
-  std::vector<int> options_path;
+  SourceCodePath options_path;
   descriptor->GetLocationPath(&options_path);
   options_path.push_back(options_field_tag);
   auto options = AllocateOptionsImpl<DescriptorT>(
@@ -5800,7 +5826,7 @@ void DescriptorBuilder::AllocateOptions(
 void DescriptorBuilder::AllocateOptions(const FileDescriptorProto& proto,
                                         FileDescriptor* descriptor,
                                         internal::FlatAllocator& alloc) {
-  std::vector<int> options_path;
+  SourceCodePath options_path;
   options_path.push_back(FileDescriptorProto::kOptionsFieldNumber);
   // We add the dummy token so that LookupSymbol does the right thing.
   auto options = AllocateOptionsImpl<FileDescriptor>(
@@ -5814,9 +5840,8 @@ void DescriptorBuilder::AllocateOptions(const FileDescriptorProto& proto,
 template <class DescriptorT>
 const typename DescriptorT::OptionsType* DescriptorBuilder::AllocateOptionsImpl(
     absl::string_view name_scope, absl::string_view element_name,
-    const typename DescriptorT::Proto& proto,
-    absl::Span<const int> options_path, absl::string_view option_name,
-    internal::FlatAllocator& alloc) {
+    const typename DescriptorT::Proto& proto, SourceCodePath options_path,
+    absl::string_view option_name, internal::FlatAllocator& alloc) {
   if (!proto.has_options()) {
     return &DescriptorT::OptionsType::default_instance();
   }
@@ -6225,6 +6250,11 @@ static void PlanAllocationSize(const FileDescriptorProto& proto,
   }
 }
 
+template <typename OptionT>
+bool IsDefaultInstance(const OptionT& opt) {
+  return &opt == &OptionT::default_instance();
+}
+
 const FileDescriptor* DescriptorBuilder::BuildFile(
     const FileDescriptorProto& proto) {
   // Ensure the generated pool has been lazily initialized.  This is most
@@ -6232,7 +6262,7 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
   // is only registered lazily and we always parse options into the generated
   // pool.
   if (pool_ != DescriptorPool::internal_generated_pool()) {
-    DescriptorPool::generated_pool();
+    (void)DescriptorPool::generated_pool();
   }
 
   filename_ = proto.name();
@@ -6270,8 +6300,7 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
     }
   }
 
-  static const int kMaximumPackageLength = 511;
-  if (proto.package().size() > kMaximumPackageLength) {
+  if (proto.package().size() > internal::NameLimits::kPackageName) {
     AddError(proto.package(), proto, DescriptorPool::ErrorCollector::NAME,
              "Package name is too long");
     return nullptr;
@@ -6342,10 +6371,9 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
 
   absl::StatusOr<FeatureResolver> feature_resolver =
       FeatureResolver::Create(file_->edition_, defaults);
-  if (!feature_resolver.ok()) {
-    AddError(proto.name(), proto, DescriptorPool::ErrorCollector::EDITIONS,
-             [&] { return std::string(feature_resolver.status().message()); });
-  } else {
+  MaybeAddError(feature_resolver.status(), proto.name(), proto,
+                DescriptorPool::ErrorCollector::EDITIONS);
+  if (feature_resolver.ok()) {
     feature_resolver_.emplace(std::move(feature_resolver).value());
   }
 
@@ -6589,11 +6617,13 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     SuggestFieldNumbers(result, proto);
   }
 
-  if (!options_to_interpret_.empty()) {
-    // If there are options to interpret, report an error on any unknown option
-    // dependencies.
-    for (const std::string& name : unknown_option_dependencies) {
-      AddImportError(proto, name);
+  if (!pool_->allow_unknown_) {
+    if (!options_to_interpret_.empty()) {
+      // If there are options to interpret, report an error on any unknown
+      // option dependencies.
+      for (const std::string& name : unknown_option_dependencies) {
+        AddImportError(proto, name);
+      }
     }
   }
 
@@ -6681,9 +6711,15 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   if (!had_errors_ && !pool_->lazily_build_dependencies_) {
     internal::VisitDescriptors(
         *result, proto, [&](const auto& descriptor, const auto& desc_proto) {
-          if (descriptor.proto_features_ != &FeatureSet::default_instance()) {
+          if (!IsDefaultInstance(*descriptor.proto_features_)) {
             deferred_validation_.ValidateFeatureLifetimes(
                 GetFile(descriptor), {descriptor.proto_features_, &desc_proto,
+                                      GetFullName(descriptor), proto.name()});
+          }
+          if (!IsDefaultInstance(*descriptor.options_) &&
+              descriptor.options_->ByteSizeLong() != 0) {
+            deferred_validation_.ValidateFeatureLifetimes(
+                GetFile(descriptor), {descriptor.options_, &desc_proto,
                                       GetFullName(descriptor), proto.name()});
           }
         });
@@ -6692,8 +6728,7 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   if (!had_errors_ && pool_->enforce_naming_style_) {
     internal::VisitDescriptors(
         *result, proto, [&](const auto& descriptor, const auto& desc_proto) {
-          if (internal::InternalFeatureHelper::GetFeatures(descriptor)
-                  .enforce_naming_style() == FeatureSet::STYLE2024) {
+          if (IsStyleOrGreater(&descriptor, FeatureSet::STYLE2024)) {
             ValidateNamingStyle(&descriptor, desc_proto);
           }
         });
@@ -6820,6 +6855,10 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   result->reserved_names_ =
       alloc.AllocateArray<const std::string*>(reserved_name_count);
   for (int i = 0; i < reserved_name_count; ++i) {
+    if (proto.reserved_name(i).size() > internal::NameLimits::kReservedName) {
+      AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "Reserved name too long.");
+    }
     result->reserved_names_[i] = alloc.AllocateStrings(proto.reserved_name(i));
   }
 
@@ -7525,6 +7564,10 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
   result->reserved_names_ =
       alloc.AllocateArray<const std::string*>(reserved_name_count);
   for (int i = 0; i < reserved_name_count; ++i) {
+    if (proto.reserved_name(i).size() > internal::NameLimits::kReservedName) {
+      AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "Reserved name too long.");
+    }
     result->reserved_names_[i] = alloc.AllocateStrings(proto.reserved_name(i));
   }
 
@@ -7597,6 +7640,11 @@ void DescriptorBuilder::BuildEnumValue(const EnumValueDescriptorProto& proto,
   full_name.reserve(scope_len + proto.name().size());
   full_name.append(parent->full_name().data(), scope_len);
   full_name.append(proto.name());
+
+  if (full_name.size() > std::numeric_limits<uint16_t>::max()) {
+    AddError(full_name, proto, DescriptorPool::ErrorCollector::NAME,
+             "Name too long.");
+  }
 
   result->all_names_ =
       alloc.AllocateStrings(proto.name(), std::move(full_name));
@@ -8243,6 +8291,11 @@ void DescriptorBuilder::CrossLinkMethod(MethodDescriptor* method,
                return absl::StrCat("\"", proto.input_type(),
                                    "\" is not a message type.");
              });
+  } else if (!input_type.IsVisibleFrom(file_) &&
+             pool_->enforce_symbol_visibility_) {
+    AddError(method->full_name(), proto,
+             DescriptorPool::ErrorCollector::INPUT_TYPE,
+             [&] { return input_type.GetVisibilityError(file_); });
   } else {
     method->input_type_.Set(input_type.descriptor());
   }
@@ -8265,6 +8318,11 @@ void DescriptorBuilder::CrossLinkMethod(MethodDescriptor* method,
                return absl::StrCat("\"", proto.output_type(),
                                    "\" is not a message type.");
              });
+  } else if (!output_type.IsVisibleFrom(file_) &&
+             pool_->enforce_symbol_visibility_) {
+    AddError(method->full_name(), proto,
+             DescriptorPool::ErrorCollector::OUTPUT_TYPE,
+             [&] { return output_type.GetVisibilityError(file_); });
   } else {
     method->output_type_.Set(output_type.descriptor());
   }
@@ -8390,13 +8448,6 @@ void DescriptorBuilder::ValidateOptions(const FileDescriptor* file,
   }
 
   if (file->edition() >= Edition::EDITION_2024) {
-    if (file->options().has_java_multiple_files()) {
-      AddError(file->name(), proto, DescriptorPool::ErrorCollector::OPTION_NAME,
-               "The `java_multiple_files` behavior is enabled by default in "
-               "editions 2024 and above.  To disable it, you can set "
-               "`features.(pb.java).nest_in_file_class = YES` on individual "
-               "messages, enums, or services.");
-    }
     if (file->weak_dependency_count() > 0) {
       AddError("weak", proto, DescriptorPool::ErrorCollector::IMPORT,
                "weak imports are not allowed under edition 2024 and beyond.");
@@ -8483,10 +8534,27 @@ void DescriptorBuilder::ValidateOptions(const OneofDescriptor* /*oneof*/,
 }
 
 
+void DescriptorBuilder::MaybeAddError(
+    const absl::Status& status, absl::string_view full_name,
+    const Message& descriptor,
+    DescriptorPool::ErrorCollector::ErrorLocation location) {
+  if (status.ok()) {
+    return;
+  }
+  std::string error(status.message());
+  AddError(full_name, descriptor, location, error.c_str());
+}
+
 void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
                                         const FieldDescriptorProto& proto) {
   if (pool_->lazily_build_dependencies_ && (!field || !field->message_type())) {
     return;
+  }
+  if (pool_->enforce_feature_support_validation_) {
+    absl::Status feature_support_status =
+        FeatureResolver::ValidateFieldFeatureSupport(*field);
+    MaybeAddError(feature_support_status, field->full_name(), proto,
+                  DescriptorPool::ErrorCollector::OPTION_NAME);
   }
 
   ValidateFieldFeatures(field, proto);
@@ -8504,6 +8572,10 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
     if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
       AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
                "[lazy = true] can only be specified for submessage fields.");
+    }
+    if (field->options().unverified_lazy() && field->is_extension()) {
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
+               "Extensions cannot be marked as unverified_lazy.");
     }
   }
 
@@ -8818,16 +8890,21 @@ void DescriptorBuilder::ValidateOptions(const EnumDescriptor* enm,
   }
 }
 
-void DescriptorBuilder::ValidateOptions(
-    const EnumValueDescriptor* /* enum_value */,
-    const EnumValueDescriptorProto& /* proto */) {
-  // Nothing to do so far.
+void DescriptorBuilder::ValidateOptions(const EnumValueDescriptor* enum_value,
+                                        const EnumValueDescriptorProto& proto) {
+  if (pool_->enforce_feature_support_validation_) {
+    absl::Status feature_support_result =
+        FeatureResolver::ValidateFeatureSupport(
+            enum_value->options().feature_support(), enum_value->full_name());
+    MaybeAddError(feature_support_result, enum_value->full_name(), proto,
+                  DescriptorPool::ErrorCollector::OPTION_NAME);
+  }
 }
 
 namespace {
 // Validates that a fully-qualified symbol for extension declaration must
 // have a leading dot and valid identifiers.
-std::optional<std::string> ValidateSymbolForDeclaration(
+absl::optional<std::string> ValidateSymbolForDeclaration(
     absl::string_view symbol) {
   if (!absl::StartsWith(symbol, ".")) {
     return absl::StrCat("\"", symbol,
@@ -8837,7 +8914,7 @@ std::optional<std::string> ValidateSymbolForDeclaration(
   if (!ValidateQualifiedName(symbol)) {
     return absl::StrCat("\"", symbol, "\" contains invalid identifiers.");
   }
-  return std::nullopt;
+  return absl::nullopt;
 }
 }  // namespace
 
@@ -8891,7 +8968,7 @@ void DescriptorBuilder::ValidateExtensionDeclaration(
             });
         return;
       }
-      std::optional<std::string> err =
+      absl::optional<std::string> err =
           ValidateSymbolForDeclaration(declaration.full_name());
       if (err.has_value()) {
         AddError(full_name, proto, DescriptorPool::ErrorCollector::NAME,
@@ -9231,11 +9308,72 @@ bool IsValidUpperSnakeCaseName(absl::string_view name, std::string* error) {
   return true;
 }
 
+template <typename DescriptorType>
+bool IsValidFieldNonCollisionName(const DescriptorType* descriptor,
+                                  std::string* error) {
+  ABSL_CHECK(descriptor != nullptr);
+  absl::string_view name = descriptor->name();
+  const Descriptor* message = descriptor->containing_type();
+
+  static const auto& kRestrictedFieldPrefixes =
+      *new absl::flat_hash_set<absl::string_view>({
+          "has_",
+          "get_",
+          "set_",
+          "clear_",
+      });
+  static const auto& kRestrictedFieldSuffixes =
+      *new absl::flat_hash_set<absl::string_view>({"_value"});
+
+  if (message != nullptr) {
+    for (absl::string_view prefix : kRestrictedFieldPrefixes) {
+      if (absl::StartsWith(name, prefix)) {
+        absl::string_view without_prefix = name;
+        without_prefix.remove_prefix(prefix.size());
+        if ((message->FindFieldByName(without_prefix) != nullptr ||
+             message->FindOneofByName(without_prefix) != nullptr)) {
+          *error = absl::StrCat("should not begin with ", prefix,
+                                " if a field named ", without_prefix,
+                                " exists. This can cause collisions in "
+                                "generated code.");
+          return false;
+        }
+      }
+    }
+    for (absl::string_view suffix : kRestrictedFieldSuffixes) {
+      if (absl::EndsWith(name, suffix)) {
+        absl::string_view without_suffix = name;
+        without_suffix.remove_suffix(suffix.size());
+        if ((message->FindFieldByName(without_suffix) != nullptr) ||
+            (message->FindOneofByName(without_suffix) != nullptr)) {
+          *error = absl::StrCat("should not end with ", suffix,
+                                " if a field named ", without_suffix,
+                                " exists. This can cause collisions in "
+                                "generated code.");
+          return false;
+        }
+      }
+    }
+  }
+
+  if (name == "descriptor") {
+    *error =
+        "should not be named descriptor. This can cause collisions in "
+        "generated code.";
+    return false;
+  }
+  return true;
+}
+
 constexpr absl::string_view kNamingStyleOptOutMessage =
-    " (feature.enforce_naming_style = STYLE_LEGACY can be used to opt out of "
+    " (features.enforce_naming_style = STYLE_LEGACY can be used to opt out of "
     "this check)";
 
 }  // namespace
+
+constexpr absl::string_view kNamingStyleCollisionsOptOutMessage =
+    " (features.enforce_naming_style = STYLE2024 can be used to opt out of "
+    "this check)";
 
 template <>
 void DescriptorBuilder::ValidateNamingStyle(const FileDescriptor* file,
@@ -9275,6 +9413,14 @@ void DescriptorBuilder::ValidateNamingStyle(const OneofDescriptor* oneof,
                           kNamingStyleOptOutMessage);
     });
   }
+  if (IsStyleOrGreater(oneof, FeatureSet::STYLE2026)) {
+    if (!IsValidFieldNonCollisionName(oneof, &error)) {
+      AddError(oneof->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
+        return absl::StrCat("Oneof name ", oneof->name(), " ", error,
+                            kNamingStyleCollisionsOptOutMessage);
+      });
+    }
+  }
 }
 
 template <>
@@ -9286,6 +9432,14 @@ void DescriptorBuilder::ValidateNamingStyle(const FieldDescriptor* field,
       return absl::StrCat("Field name ", field->name(), " ", error,
                           kNamingStyleOptOutMessage);
     });
+  }
+  if (IsStyleOrGreater(field, FeatureSet::STYLE2026)) {
+    if (!IsValidFieldNonCollisionName(field, &error)) {
+      AddError(field->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
+        return absl::StrCat("Field name ", field->name(), " ", error,
+                            kNamingStyleCollisionsOptOutMessage);
+      });
+    }
   }
 }
 
@@ -9376,7 +9530,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptionsImpl(
       << "No field named \"uninterpreted_option\" in the Options proto.";
   options->GetReflection()->ClearField(options, uninterpreted_options_field);
 
-  std::vector<int> src_path = options_to_interpret->element_path;
+  SourceCodePath src_path = options_to_interpret->element_path;
   src_path.push_back(uninterpreted_options_field->number());
 
   // Find the uninterpreted_option field in the original options.
@@ -9445,8 +9599,8 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptionsImpl(
 }
 
 bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
-    Message* options, const std::vector<int>& src_path,
-    const std::vector<int>& options_path, bool skip_extensions) {
+    Message* options, const SourceCodePath& src_path,
+    const SourceCodePath& options_path, bool skip_extensions) {
   // First do some basic validation.
   if (uninterpreted_option_->name_size() == 0) {
     // This should never happen unless the parser has gone seriously awry or
@@ -9509,7 +9663,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   std::vector<const FieldDescriptor*> intermediate_fields;
   std::string debug_msg_name = "";
 
-  std::vector<int> dest_path = options_path;
+  SourceCodePath dest_path = options_path;
 
   for (int i = 0; i < uninterpreted_option_->name_size(); ++i) {
     builder_->undefine_resolved_name_.clear();
@@ -9642,7 +9796,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   // innermost message.
   std::unique_ptr<UnknownFieldSet> unknown_fields =
       std::make_unique<UnknownFieldSet>();
-  if (!SetOptionValue(field, unknown_fields.get())) {
+  if (!SetOptionValue(field, unknown_fields.get(), options)) {
     return false;  // SetOptionValue() already added the error.
   }
 
@@ -9714,7 +9868,7 @@ void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
   RepeatedPtrField<SourceCodeInfo_Location> new_locs;
   bool copying = false;
 
-  std::vector<int> pathv;
+  SourceCodePath pathv;
   bool matched = false;
 
   for (RepeatedPtrField<SourceCodeInfo_Location>::iterator loc = locs->begin();
@@ -9773,7 +9927,7 @@ void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
     SourceCodeInfo_Location* replacement = new_locs.Add();
     *replacement = *loc;
     replacement->clear_path();
-    for (std::vector<int>::iterator rit = entry->second.begin();
+    for (SourceCodePath::iterator rit = entry->second.begin();
          rit != entry->second.end(); rit++) {
       replacement->add_path(*rit);
     }
@@ -9882,7 +10036,8 @@ std::string ValueMustBeInt(absl::string_view type_name,
 }  // namespace
 
 bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
-    const FieldDescriptor* option_field, UnknownFieldSet* unknown_fields) {
+    const FieldDescriptor* option_field, UnknownFieldSet* unknown_fields,
+    Message* options) {
   // We switch on the CppType to validate.
   switch (option_field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
@@ -10112,12 +10267,10 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
       unknown_fields->AddLengthDelimited(option_field->number(),
                                          uninterpreted_option_->string_value());
       break;
-
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      if (!SetAggregateOption(option_field, unknown_fields)) {
+      if (!SetAggregateOption(option_field, unknown_fields, options)) {
         return false;
       }
-      break;
   }
 
   return true;
@@ -10195,7 +10348,8 @@ class AggregateErrorCollector : public io::ErrorCollector {
 // option_field, parse the supplied text-format string into this
 // message, and serialize the resulting message to produce the value.
 bool DescriptorBuilder::OptionInterpreter::SetAggregateOption(
-    const FieldDescriptor* option_field, UnknownFieldSet* unknown_fields) {
+    const FieldDescriptor* option_field, UnknownFieldSet* unknown_fields,
+    Message* options) {
   if (!uninterpreted_option_->has_aggregate_value()) {
     return AddValueError([&] {
       return absl::StrCat("Option \"", option_field->full_name(),
@@ -10221,20 +10375,28 @@ bool DescriptorBuilder::OptionInterpreter::SetAggregateOption(
   parser.SetFinder(&finder);
   if (!parser.ParseFromString(uninterpreted_option_->aggregate_value(),
                               dynamic.get())) {
-    AddValueError([&] {
-      return absl::StrCat("Error while parsing option value for \"",
-                          option_field->name(), "\": ", collector.error_);
-    });
-    return false;
+    if (get_allow_unknown(builder_->pool_)) {
+      // We can't interpret the option, but AllowUnknownDependencies() is
+      // enabled, so we will just leave it as uninterpreted.
+      AddWithoutInterpreting(*uninterpreted_option_, options);
+      return true;
+    } else {
+      AddValueError([&] {
+        return absl::StrCat("Error while parsing option value for \"",
+                            option_field->name(), "\": ", collector.error_);
+      });
+      return false;
+    }
   } else {
     std::string serial;
-    dynamic->SerializeToString(&serial);  // Never fails
+    ABSL_CHECK(dynamic->SerializeToString(&serial));  // Never fails
     if (option_field->type() == FieldDescriptor::TYPE_MESSAGE) {
       unknown_fields->AddLengthDelimited(option_field->number(), serial);
     } else {
       ABSL_CHECK_EQ(option_field->type(), FieldDescriptor::TYPE_GROUP);
       UnknownFieldSet* group = unknown_fields->AddGroup(option_field->number());
-      group->ParseFromString(serial);
+      // TODO: Remove this suppression.
+      (void)group->ParseFromString(serial);
     }
     return true;
   }

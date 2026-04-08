@@ -13,16 +13,22 @@
 #include <Python.h>
 #include <structmember.h>  // A Python header file.
 
+#include <climits>
+#include <cstddef>
 #include <cstdint>
-#include <map>
+#include <cstring>
+#include <limits>
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "google/protobuf/pyext/lazy_unique_ptr.h"
 
 #ifndef PyVarObject_HEAD_INIT
 #define PyVarObject_HEAD_INIT(type, size) PyObject_HEAD_INIT(type) size,
@@ -30,7 +36,6 @@
 #ifndef Py_TYPE
 #define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
 #endif
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/string_view.h"
@@ -515,6 +520,7 @@ bool CheckAndGetInteger(PyObject* arg, T* value) {
   // This definition includes everything with a valid __index__() implementation
   // and shouldn't cast the net too wide.
   if (!strcmp(Py_TYPE(arg)->tp_name, "numpy.ndarray") ||
+      (!strcmp(Py_TYPE(arg)->tp_name, "bool")) ||
       ABSL_PREDICT_FALSE(!PyIndex_Check(arg))) {
     FormatTypeError(arg, "int");
     return false;
@@ -597,18 +603,6 @@ bool CheckAndGetBool(PyObject* arg, bool* value) {
   *value = static_cast<bool>(long_value);
 
   return true;
-}
-
-void CheckIntegerWithBool(PyObject* arg, const FieldDescriptor* field_des) {
-  static int bool_warning_count = 100;
-  if (bool_warning_count > 0 && (!strcmp(Py_TYPE(arg)->tp_name, "bool"))) {
-    --bool_warning_count;
-    std::string error_msg =
-        absl::StrCat(field_des->full_name(),
-                     ": Expected an int, got a boolean. This "
-                     "will be rejected in 7.34.0, please fix it before that");
-    PyErr_WarnEx(PyExc_DeprecationWarning, error_msg.c_str(), 3);
-  }
 }
 
 // Checks whether the given object (which must be "bytes" or "unicode") contains
@@ -765,7 +759,9 @@ static int MaybeReleaseOverlappingOneofField(CMessage* cmessage,
 }
 
 int MaybeReleaseOneofBeforeMerge(CMessage* self, const Message& other) {
-  if (!self->composite_fields) {
+  CMessage::CompositeFieldsMap* composite_fields =
+      self->composite_fields.TryGet();
+  if (!composite_fields) {
     return 0;
   }
 
@@ -773,16 +769,19 @@ int MaybeReleaseOneofBeforeMerge(CMessage* self, const Message& other) {
   const Reflection* reflection = message->GetReflection();
   PyMessageFactory* factory = GetFactoryForMessage(self);
   std::vector<const FieldDescriptor*> fields_to_release;
-  std::vector<const FieldDescriptor*> nested_message_fields;
-  for (const auto& item : *self->composite_fields) {
-    const FieldDescriptor* descriptor = item.first;
+  std::vector<std::pair<const FieldDescriptor*, ScopedPyObjectPtr>>
+      nested_message_fields;
+  composite_fields->ForEach([&](const void* key, PyObject* value) {
+    const FieldDescriptor* descriptor =
+        reinterpret_cast<const FieldDescriptor*>(key);
     if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
         // For normal repeated message, MergeFrom will append the messages.
         // For message map with same keys, it is overwrite
         !descriptor->is_repeated() &&
         reflection->HasField(*message, descriptor)) {
       if (reflection->HasField(other, descriptor)) {
-        nested_message_fields.push_back(descriptor);
+        Py_INCREF(value);
+        nested_message_fields.emplace_back(descriptor, value);
       } else {
         // Release oneof message if the other message has set a different oneof
         const OneofDescriptor* oneof = descriptor->containing_oneof();
@@ -791,16 +790,17 @@ int MaybeReleaseOneofBeforeMerge(CMessage* self, const Message& other) {
         }
       }
     }
-  }
-  for (const FieldDescriptor* field : nested_message_fields) {
+  });
+
+  for (const auto& [field, value] : nested_message_fields) {
     if (MaybeReleaseOneofBeforeMerge(
-            reinterpret_cast<CMessage*>(
-                self->composite_fields->find(field)->second),
+            reinterpret_cast<CMessage*>(value.get()),
             reflection->GetMessage(other, field, factory->message_factory)) <
         0) {
       return -1;
     }
   }
+
   for (const FieldDescriptor* field : fields_to_release) {
     if (InternalReleaseFieldByDescriptor(self, field) < 0) {
       return -1;
@@ -810,18 +810,21 @@ int MaybeReleaseOneofBeforeMerge(CMessage* self, const Message& other) {
 }
 // After a Merge, visit every sub-message that was read-only, and
 // eventually update their pointer if the Merge operation modified them.
-int FixupMessageAfterMerge(CMessage* self) {
-  if (!self->composite_fields) {
-    return 0;
+void FixupMessageAfterMerge(CMessage* self) {
+  CMessage::CompositeFieldsMap* composite_fields =
+      self->composite_fields.TryGet();
+  if (!composite_fields) {
+    return;
   }
   PyMessageFactory* factory = GetFactoryForMessage(self);
-  for (const auto& item : *self->composite_fields) {
-    const FieldDescriptor* descriptor = item.first;
+  composite_fields->ForEach([&](const void* key, PyObject* value) {
+    const FieldDescriptor* descriptor =
+        reinterpret_cast<const FieldDescriptor*>(key);
     if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
         !descriptor->is_repeated()) {
-      CMessage* cmsg = reinterpret_cast<CMessage*>(item.second);
+      CMessage* cmsg = reinterpret_cast<CMessage*>(value);
       if (cmsg->read_only == false) {
-        return 0;
+        return;
       }
       Message* message = self->message;
       const Reflection* reflection = message->GetReflection();
@@ -832,14 +835,10 @@ int FixupMessageAfterMerge(CMessage* self) {
             message, descriptor, factory->message_factory);
         cmsg->message = mutable_message;
         cmsg->read_only = false;
-        if (FixupMessageAfterMerge(cmsg) < 0) {
-          return -1;
-        }
+        FixupMessageAfterMerge(cmsg);
       }
     }
-  }
-
-  return 0;
+  });
 }
 
 // ---------------------------------------------------------------------
@@ -1283,8 +1282,9 @@ CMessage* NewEmptyMessage(CMessageClass* type) {
   self->parent_field_descriptor = nullptr;
   self->read_only = false;
 
-  self->composite_fields = nullptr;
-  self->child_submessages = nullptr;
+  // Construct the lazy unique pointers using placement new.
+  new (&self->composite_fields) LazyUniquePtr<CMessage::CompositeFieldsMap>();
+  new (&self->child_submessages) LazyUniquePtr<CMessage::SubMessagesMap>();
 
   return self;
 }
@@ -1343,10 +1343,13 @@ static void Dealloc(CMessage* self) {
     PyObject_ClearWeakRefs(reinterpret_cast<PyObject*>(self));
   }
   // At this point all dependent objects have been removed.
-  ABSL_DCHECK(!self->child_submessages || self->child_submessages->empty());
-  ABSL_DCHECK(!self->composite_fields || self->composite_fields->empty());
-  delete self->child_submessages;
-  delete self->composite_fields;
+  ABSL_DCHECK(!self->child_submessages.TryGet() ||
+              self->child_submessages.Get()->IsEmpty());
+  ABSL_DCHECK(!self->composite_fields.TryGet() ||
+              self->composite_fields.Get()->IsEmpty());
+  // Delete using placement delete.
+  self->child_submessages.~LazyUniquePtr();
+  self->composite_fields.~LazyUniquePtr();
 
   CMessage* parent = self->parent;
   if (!parent) {
@@ -1358,11 +1361,14 @@ static void Dealloc(CMessage* self) {
   } else {
     // Clear this message from its parent's map.
     if (self->parent_field_descriptor->is_repeated()) {
-      if (parent->child_submessages)
-        parent->child_submessages->erase(self->message);
+      CMessage::SubMessagesMap* child_submessages =
+          parent->child_submessages.TryGet();
+      if (child_submessages) child_submessages->Erase(self->message);
     } else {
-      if (parent->composite_fields)
-        parent->composite_fields->erase(self->parent_field_descriptor);
+      CMessage::CompositeFieldsMap* composite_fields =
+          parent->composite_fields.TryGet();
+      if (composite_fields)
+        composite_fields->Erase(self->parent_field_descriptor);
     }
     Py_CLEAR(self->parent);
   }
@@ -1541,8 +1547,8 @@ PyObject* HasExtension(CMessage* self, PyObject* extension) {
 // Release a composite child of a CMessage
 
 static int InternalReparentFields(
-    CMessage* self, const std::vector<CMessage*>& messages_to_release,
-    const std::vector<ContainerBase*>& containers_to_release) {
+    CMessage* self, const std::vector<ScopedPyObjectPtr>& messages_to_release,
+    const std::vector<ScopedPyObjectPtr>& containers_to_release) {
   if (messages_to_release.empty() && containers_to_release.empty()) {
     return 0;
   }
@@ -1554,32 +1560,41 @@ static int InternalReparentFields(
   }
   new_message->message = self->message->New(nullptr);
   ScopedPyObjectPtr holder(reinterpret_cast<PyObject*>(new_message));
-  new_message->child_submessages = new CMessage::SubMessagesMap();
-  new_message->composite_fields = new CMessage::CompositeFieldsMap();
+  CMessage::SubMessagesMap* new_child_submessages =
+      new_message->child_submessages.Get();
+  CMessage::CompositeFieldsMap* new_composite_fields =
+      new_message->composite_fields.Get();
+  CMessage::SubMessagesMap* self_child_submessages =
+      self->child_submessages.Get();
+  CMessage::CompositeFieldsMap* self_composite_fields =
+      self->composite_fields.Get();
   std::set<const FieldDescriptor*> fields_to_swap;
 
   // In case this the removed fields are the last reference to a message, keep
   // a reference.
   Py_INCREF(self);
 
-  for (const auto& to_release : messages_to_release) {
+  for (const auto& to_release_ptr : messages_to_release) {
+    CMessage* to_release = reinterpret_cast<CMessage*>(to_release_ptr.get());
     fields_to_swap.insert(to_release->parent_field_descriptor);
     // Reparent
     Py_INCREF(new_message);
     Py_DECREF(to_release->parent);
     to_release->parent = new_message;
-    self->child_submessages->erase(to_release->message);
-    new_message->child_submessages->emplace(to_release->message, to_release);
+    self_child_submessages->Erase(to_release->message);
+    new_child_submessages->Set(to_release->message, to_release->AsPyObject());
   }
 
-  for (const auto& to_release : containers_to_release) {
+  for (const auto& to_release_ptr : containers_to_release) {
+    ContainerBase* to_release =
+        reinterpret_cast<ContainerBase*>(to_release_ptr.get());
     fields_to_swap.insert(to_release->parent_field_descriptor);
     Py_INCREF(new_message);
     Py_DECREF(to_release->parent);
     to_release->parent = new_message;
-    self->composite_fields->erase(to_release->parent_field_descriptor);
-    new_message->composite_fields->emplace(to_release->parent_field_descriptor,
-                                           to_release);
+    self_composite_fields->Erase(to_release->parent_field_descriptor);
+    new_composite_fields->Set(to_release->parent_field_descriptor,
+                              to_release->AsPyObject());
   }
 
   if (self->message->GetArena() == new_message->message->GetArena()) {
@@ -1607,21 +1622,24 @@ int InternalReleaseFieldByDescriptor(CMessage* self,
     // Single scalars are not in any cache.
     return 0;
   }
-  std::vector<CMessage*> messages_to_release;
-  std::vector<ContainerBase*> containers_to_release;
-  if (self->child_submessages && field_descriptor->is_repeated() &&
+  std::vector<ScopedPyObjectPtr> messages_to_release;
+  std::vector<ScopedPyObjectPtr> containers_to_release;
+  if (CMessage::SubMessagesMap* subs = self->child_submessages.TryGet();
+      subs && field_descriptor->is_repeated() &&
       field_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-    for (const auto& child_item : *self->child_submessages) {
-      if (child_item.second->parent_field_descriptor == field_descriptor) {
-        messages_to_release.push_back(child_item.second);
+    subs->ForEach([&](const void* key, PyObject* value) {
+      CMessage* child = reinterpret_cast<CMessage*>(value);
+      if (child->parent_field_descriptor == field_descriptor) {
+        Py_INCREF(value);
+        messages_to_release.emplace_back(value);
       }
-    }
+    });
   }
-  if (self->composite_fields) {
-    CMessage::CompositeFieldsMap::iterator it =
-        self->composite_fields->find(field_descriptor);
-    if (it != self->composite_fields->end()) {
-      containers_to_release.push_back(it->second);
+
+  if (CMessage::CompositeFieldsMap* fields = self->composite_fields.TryGet();
+      fields) {
+    if (PyObject* value = fields->Get(field_descriptor, nullptr)) {
+      containers_to_release.emplace_back(value);
     }
   }
 
@@ -1673,17 +1691,20 @@ PyObject* ClearField(CMessage* self, PyObject* arg) {
 PyObject* Clear(CMessage* self) {
   AssureWritable(self);
   // Detach all current fields of this message
-  std::vector<CMessage*> messages_to_release;
-  std::vector<ContainerBase*> containers_to_release;
-  if (self->child_submessages) {
-    for (const auto& item : *self->child_submessages) {
-      messages_to_release.push_back(item.second);
-    }
+  std::vector<ScopedPyObjectPtr> messages_to_release;
+  std::vector<ScopedPyObjectPtr> containers_to_release;
+  if (CMessage::SubMessagesMap* subs = self->child_submessages.TryGet(); subs) {
+    subs->ForEach([&](const void* key, PyObject* value) {
+      Py_INCREF(value);
+      messages_to_release.emplace_back(value);
+    });
   }
-  if (self->composite_fields) {
-    for (const auto& item : *self->composite_fields) {
-      containers_to_release.push_back(item.second);
-    }
+  if (CMessage::CompositeFieldsMap* fields = self->composite_fields.TryGet();
+      fields) {
+    fields->ForEach([&](const void* key, PyObject* value) {
+      Py_INCREF(value);
+      containers_to_release.emplace_back(value);
+    });
   }
   if (InternalReparentFields(self, messages_to_release, containers_to_release) <
       0) {
@@ -1900,9 +1921,7 @@ PyObject* MergeFrom(CMessage* self, PyObject* arg) {
   self->message->MergeFrom(*other_message->message);
   // Child message might be lazily created before MergeFrom. Make sure they
   // are mutable at this point if child messages are really created.
-  if (FixupMessageAfterMerge(self) < 0) {
-    return nullptr;
-  }
+  FixupMessageAfterMerge(self);
 
   Py_RETURN_NONE;
 }
@@ -1988,9 +2007,7 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
 
   // Child message might be lazily created before MergeFrom. Make sure they
   // are mutable at this point if child messages are really created.
-  if (FixupMessageAfterMerge(self) < 0) {
-    return nullptr;
-  }
+  FixupMessageAfterMerge(self);
 
   // Python makes distinction in error message, between a general parse failure
   // and in-correct ending on a terminating tag. Hence we need to be a bit more
@@ -2333,25 +2350,21 @@ int InternalSetNonOneofScalar(Message* message,
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
       PROTOBUF_CHECK_GET_INT32(arg, value, -1);
-      CheckIntegerWithBool(arg, field_descriptor);
       reflection->SetInt32(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
       PROTOBUF_CHECK_GET_INT64(arg, value, -1);
-      CheckIntegerWithBool(arg, field_descriptor);
       reflection->SetInt64(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
       PROTOBUF_CHECK_GET_UINT32(arg, value, -1);
-      CheckIntegerWithBool(arg, field_descriptor);
       reflection->SetUInt32(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
       PROTOBUF_CHECK_GET_UINT64(arg, value, -1);
-      CheckIntegerWithBool(arg, field_descriptor);
       reflection->SetUInt64(message, field_descriptor, value);
       break;
     }
@@ -2379,7 +2392,6 @@ int InternalSetNonOneofScalar(Message* message,
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
       PROTOBUF_CHECK_GET_INT32(arg, value, -1);
-      CheckIntegerWithBool(arg, field_descriptor);
       if (!field_descriptor->legacy_enum_field_treated_as_closed()) {
         reflection->SetEnumValue(message, field_descriptor, value);
       } else {
@@ -2540,12 +2552,6 @@ static PyObject* GetExtensionDict(CMessage* self, void* closure) {
     PyErr_SetNone(PyExc_AttributeError);
     return nullptr;
   }
-  if (!self->composite_fields) {
-    self->composite_fields = new CMessage::CompositeFieldsMap();
-  }
-  if (!self->composite_fields) {
-    return nullptr;
-  }
   ExtensionDict* extension_dict = extension_dict::NewExtensionDict(self);
   return reinterpret_cast<PyObject*>(extension_dict);
 }
@@ -2619,19 +2625,15 @@ static PyMethodDef Methods[] = {
     {nullptr, nullptr}};
 
 bool SetCompositeField(CMessage* self, const FieldDescriptor* field,
-                       ContainerBase* value) {
-  if (self->composite_fields == nullptr) {
-    self->composite_fields = new CMessage::CompositeFieldsMap();
-  }
-  (*self->composite_fields)[field] = value;
+                       PyObject*& value) {
+  self->composite_fields.Get()->TrySet(field, value);
   return true;
 }
 
-bool SetSubmessage(CMessage* self, CMessage* submessage) {
-  if (self->child_submessages == nullptr) {
-    self->child_submessages = new CMessage::SubMessagesMap();
-  }
-  (*self->child_submessages)[submessage->message] = submessage;
+bool SetSubmessage(CMessage* self, CMessage*& submessage) {
+  PyObject* obj = submessage->AsPyObject();
+  self->child_submessages.Get()->TrySet(submessage->message, obj);
+  submessage = reinterpret_cast<CMessage*>(obj);
   return true;
 }
 
@@ -2653,13 +2655,10 @@ PyObject* GetAttr(PyObject* pself, PyObject* name) {
 
 PyObject* GetFieldValue(CMessage* self,
                         const FieldDescriptor* field_descriptor) {
-  if (self->composite_fields) {
-    CMessage::CompositeFieldsMap::iterator it =
-        self->composite_fields->find(field_descriptor);
-    if (it != self->composite_fields->end()) {
-      ContainerBase* value = it->second;
-      Py_INCREF(value);
-      return value->AsPyObject();
+  if (CMessage::CompositeFieldsMap* fields = self->composite_fields.TryGet();
+      fields != nullptr) {
+    if (PyObject* value = fields->Get(field_descriptor, nullptr)) {
+      return value;
     }
   }
 
@@ -2713,11 +2712,9 @@ PyObject* GetFieldValue(CMessage* self,
   if (py_container == nullptr) {
     return nullptr;
   }
-  if (!SetCompositeField(self, field_descriptor, py_container)) {
-    Py_DECREF(py_container);
-    return nullptr;
-  }
-  return py_container->AsPyObject();
+  PyObject* value = py_container->AsPyObject();
+  SetCompositeField(self, field_descriptor, value);
+  return value;
 }
 
 int SetFieldValue(CMessage* self, const FieldDescriptor* field_descriptor,
@@ -2791,8 +2788,10 @@ PyObject* ContainerBase::DeepCopy() {
 void ContainerBase::RemoveFromParentCache() {
   CMessage* parent = this->parent;
   if (parent) {
-    if (parent->composite_fields)
-      parent->composite_fields->erase(this->parent_field_descriptor);
+    if (CMessage::CompositeFieldsMap* fields =
+            parent->composite_fields.TryGet()) {
+      fields->Erase(this->parent_field_descriptor);
+    }
     Py_CLEAR(parent);
   }
 }
@@ -2800,13 +2799,9 @@ void ContainerBase::RemoveFromParentCache() {
 CMessage* CMessage::BuildSubMessageFromPointer(
     const FieldDescriptor* field_descriptor, Message* sub_message,
     CMessageClass* message_class) {
-  if (!this->child_submessages) {
-    this->child_submessages = new CMessage::SubMessagesMap();
-  }
-  auto it = this->child_submessages->find(sub_message);
-  if (it != this->child_submessages->end()) {
-    Py_INCREF(it->second);
-    return it->second;
+  if (PyObject* value =
+          this->child_submessages.Get()->Get(sub_message, nullptr)) {
+    return reinterpret_cast<CMessage*>(value);
   }
 
   CMessage* cmsg = cmessage::NewEmptyMessage(message_class);
@@ -2823,19 +2818,22 @@ CMessage* CMessage::BuildSubMessageFromPointer(
 }
 
 CMessage* CMessage::MaybeReleaseSubMessage(Message* sub_message) {
-  if (!this->child_submessages) {
+  CMessage::SubMessagesMap* sub_messages = this->child_submessages.TryGet();
+  if (sub_messages == nullptr) {
     return nullptr;
   }
-  auto it = this->child_submessages->find(sub_message);
-  if (it == this->child_submessages->end()) return nullptr;
-  CMessage* released = it->second;
+  PyObject* value = sub_messages->Get(sub_message, nullptr);
+  if (value == nullptr) return nullptr;
+  CMessage* released = reinterpret_cast<CMessage*>(value);
 
   // The target message will now own its content.
   Py_CLEAR(released->parent);
   released->parent_field_descriptor = nullptr;
   released->read_only = false;
   // Delete it from the cache.
-  this->child_submessages->erase(sub_message);
+  sub_messages->Erase(sub_message);
+  // child_submessages->Get returned a new reference.
+  Py_DECREF(released);
   return released;
 }
 
@@ -2924,10 +2922,12 @@ Message* PyMessage_GetMutableMessagePointer(PyObject* msg) {
     return nullptr;
   }
   CMessage* cmsg = reinterpret_cast<CMessage*>(msg);
+  CMessage::CompositeFieldsMap* fields = cmsg->composite_fields.TryGet();
+  CMessage::SubMessagesMap* sub_messages = cmsg->child_submessages.TryGet();
 
 
-  if ((cmsg->composite_fields && !cmsg->composite_fields->empty()) ||
-      (cmsg->child_submessages && !cmsg->child_submessages->empty())) {
+  if ((fields != nullptr && !fields->IsEmpty()) ||
+      (sub_messages != nullptr && !sub_messages->IsEmpty())) {
     // There is currently no way of accurately syncing arbitrary changes to
     // the underlying C++ message back to the CMessage (e.g. removed repeated
     // composite containers). We only allow direct mutation of the underlying

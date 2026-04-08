@@ -78,6 +78,20 @@ class MessageFactoryTest(unittest.TestCase):
         'google.protobuf.python.internal.Factory2Message'))
     self.assertTrue(cls is cls2)
 
+  def testGetMessageClassWrongInput(self):
+    # Check MessageClass deals with invalid input.
+
+    # we need an object that contains name attribute to fool the MessageClass
+    # logic into creating a class.
+    class FakeDescriptor:
+      name = 'FakeDescriptor'
+
+    # Unfortunatly, python protos behave a little differently from the c
+    # implementations. both c implementation raise TypeError while the python
+    # implementation raises AttributeError.
+    with self.assertRaises((TypeError, AttributeError)):
+      message_factory.GetMessageClass(FakeDescriptor())
+
   def testGetExistingPrototype(self):
     # Get Existing Prototype should not create a new class.
     cls = message_factory.GetMessageClass(

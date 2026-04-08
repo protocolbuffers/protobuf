@@ -124,11 +124,10 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
     return cmessage::InternalGetScalar(self->parent->message, descriptor);
   }
 
-  CMessage::CompositeFieldsMap::iterator iterator =
-      self->parent->composite_fields->find(descriptor);
-  if (iterator != self->parent->composite_fields->end()) {
-    Py_INCREF(iterator->second);
-    return iterator->second->AsPyObject();
+  CMessage::CompositeFieldsMap* parent_fields =
+      self->parent->composite_fields.Get();
+  if (PyObject* value = parent_fields->Get(descriptor, nullptr)) {
+    return value;
   }
 
   if (!descriptor->is_repeated() &&
@@ -139,8 +138,9 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
     if (sub_message == nullptr) {
       return nullptr;
     }
-    (*self->parent->composite_fields)[descriptor] = sub_message;
-    return sub_message->AsPyObject();
+    PyObject* value = sub_message->AsPyObject();
+    parent_fields->TrySet(descriptor, value);
+    return value;
   }
 
   if (descriptor->is_repeated()) {
@@ -168,16 +168,18 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
       if (py_container == nullptr) {
         return nullptr;
       }
-      (*self->parent->composite_fields)[descriptor] = py_container;
-      return py_container->AsPyObject();
+      PyObject* value = py_container->AsPyObject();
+      parent_fields->TrySet(descriptor, value);
+      return value;
     } else {
       ContainerBase* py_container =
           repeated_scalar_container::NewContainer(self->parent, descriptor);
       if (py_container == nullptr) {
         return nullptr;
       }
-      (*self->parent->composite_fields)[descriptor] = py_container;
-      return py_container->AsPyObject();
+      PyObject* value = py_container->AsPyObject();
+      parent_fields->TrySet(descriptor, value);
+      return value;
     }
   }
   PyErr_SetString(PyExc_ValueError, "control reached unexpected line");
@@ -197,7 +199,7 @@ int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value) {
     return cmessage::ClearFieldByDescriptor(self->parent, descriptor);
   }
 
-  if (descriptor->label() != FieldDescriptor::LABEL_OPTIONAL ||
+  if (descriptor->is_repeated() || descriptor->is_required() ||
       descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     PyErr_SetString(PyExc_TypeError,
                     "Extension is repeated and/or composite "
@@ -218,7 +220,7 @@ static const FieldDescriptor* FindMessageSetExtension(
     if (extension->is_extension() &&
         extension->containing_type()->options().message_set_wire_format() &&
         extension->type() == FieldDescriptor::TYPE_MESSAGE &&
-        extension->label() == FieldDescriptor::LABEL_OPTIONAL &&
+        (!extension->is_repeated() && !extension->is_required()) &&
         extension->message_type() == message_descriptor) {
       return extension;
     }

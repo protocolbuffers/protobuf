@@ -18,18 +18,6 @@ cc_library(
 )
 
 cc_library(
-    name = "generator_headers",
-    hdrs = ["generator.h"],
-    copts = COPTS,
-    strip_include_prefix = "/src",
-    visibility = ["//pkg:__pkg__"],
-    deps = [
-        "//src/google/protobuf",
-        "//src/google/protobuf/compiler:code_generator",
-    ],
-)
-
-cc_library(
     name = "names_internal",
     srcs = [
         "names.cc",
@@ -176,13 +164,6 @@ exports_files(
 ################################################################################
 # Distribution packaging
 ################################################################################
-
-pkg_files(
-    name = "dist_files",
-    srcs = glob(["**/*"]),
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//src:__pkg__"],
-)
 
 filegroup(
     name = "test_srcs",

@@ -7,8 +7,11 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
-#include <climits>
+#include <algorithm>
+#include <cstddef>
 #include <cstdint>
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <limits>
 #include <memory>
@@ -24,8 +27,6 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_lite_unittest.pb.h"
 #include "google/protobuf/map_test_util.h"
@@ -104,7 +105,7 @@ void SetSomeTypesInEmptyMessageUnknownFields(
   message.set_optional_uint32(103);
   message.set_optional_uint64(104);
   std::string data = message.SerializeAsString();
-  empty_message->ParseFromString(data);
+  ABSL_CHECK(empty_message->ParseFromString(data));
 }
 
 TEST(ParseVarintTest, Varint32) {
@@ -181,7 +182,7 @@ TYPED_TEST(LiteTest, AllLite1) {
     TestUtilLite::SetAllFields(&message);
     message2 = message;
     TypeParam data = SerializeAs<TypeParam>(message2);
-    ParseFrom(data, message3);
+    ASSERT_TRUE(ParseFrom(data, message3));
     TestUtilLite::ExpectAllFieldsSet(message);
     TestUtilLite::ExpectAllFieldsSet(message2);
     TestUtilLite::ExpectAllFieldsSet(message3);
@@ -199,7 +200,7 @@ TYPED_TEST(LiteTest, AllLite2) {
     TestUtilLite::SetAllExtensions(&message);
     message2 = message;
     TypeParam extensions_data = SerializeAs<TypeParam>(message);
-    ParseFrom(extensions_data, message3);
+    ASSERT_TRUE(ParseFrom(extensions_data, message3));
     TestUtilLite::ExpectAllExtensionsSet(message);
     TestUtilLite::ExpectAllExtensionsSet(message2);
     TestUtilLite::ExpectAllExtensionsSet(message3);
@@ -219,7 +220,7 @@ TYPED_TEST(LiteTest, AllLite3) {
     TestUtilLite::SetPackedFields(&message);
     message2 = message;
     packed_data = SerializeAs<TypeParam>(message);
-    ParseFrom(packed_data, message3);
+    ASSERT_TRUE(ParseFrom(packed_data, message3));
     TestUtilLite::ExpectPackedFieldsSet(message);
     TestUtilLite::ExpectPackedFieldsSet(message2);
     TestUtilLite::ExpectPackedFieldsSet(message3);
@@ -236,7 +237,7 @@ TYPED_TEST(LiteTest, AllLite3) {
     message2 = message;
     TypeParam packed_extensions_data = SerializeAs<TypeParam>(message);
     EXPECT_EQ(packed_extensions_data, packed_data);
-    ParseFrom(packed_extensions_data, message3);
+    ASSERT_TRUE(ParseFrom(packed_extensions_data, message3));
     TestUtilLite::ExpectPackedExtensionsSet(message);
     TestUtilLite::ExpectPackedExtensionsSet(message2);
     TestUtilLite::ExpectPackedExtensionsSet(message3);
@@ -286,7 +287,7 @@ TYPED_TEST(LiteTest, AllLite5) {
     buffer = SerializeAs<TypeParam>(generator);
     //    generator.SerializeToString(&buffer);
     unittest::TestParsingMergeLite parsing_merge;
-    ParseFrom(buffer, parsing_merge);
+    ASSERT_TRUE(ParseFrom(buffer, parsing_merge));
 
     // Required and optional fields should be merged.
     ExpectMessageMerged(parsing_merge.required_all_types());
@@ -334,9 +335,9 @@ TYPED_TEST(LiteTest, AllLite7) {
     TestUtilLite::ExpectExtensionsClear(message);
     TestUtilLite::SetAllExtensions(&message);
     data = SerializeAs<TypeParam>(message);
-    ParseFrom(data, empty_message);
+    ASSERT_TRUE(ParseFrom(data, empty_message));
     data = empty_message.SerializeAsString();
-    ParseFrom(data, message2);
+    ASSERT_TRUE(ParseFrom(data, message2));
     data = SerializeAs<TypeParam>(message2);
     TestUtilLite::ExpectAllExtensionsSet(message2);
     message.Clear();
@@ -347,19 +348,24 @@ TYPED_TEST(LiteTest, AllLite7) {
 TYPED_TEST(LiteTest, AllLite8) {
   TypeParam data;
 
-  {
-    proto2_unittest::TestPackedTypesLite message, message2;
-    proto2_unittest::TestEmptyMessageLite empty_message;
-    TestUtilLite::ExpectPackedClear(message);
-    TestUtilLite::SetPackedFields(&message);
-    data = SerializeAs<TypeParam>(message);
-    ParseFrom(data, empty_message);
-    data = SerializeAs<TypeParam>(empty_message);
-    ParseFrom(data, message2);
-    data = message2.SerializeAsString();
-    TestUtilLite::ExpectPackedFieldsSet(message2);
-    message.Clear();
-    TestUtilLite::ExpectPackedClear(message);
+  for (bool large_values : {true, false}) {
+    SCOPED_TRACE(large_values);
+    for (int repetitions : {1, 100}) {
+      SCOPED_TRACE(repetitions);
+
+      proto2_unittest::TestPackedTypesLite message, message2;
+      proto2_unittest::TestEmptyMessageLite empty_message;
+      TestUtilLite::ExpectPackedClear(message);
+      TestUtilLite::SetPackedFields(&message, large_values, repetitions);
+      data = SerializeAs<TypeParam>(message);
+      ASSERT_TRUE(ParseFrom(data, empty_message));
+      data = SerializeAs<TypeParam>(empty_message);
+      ASSERT_TRUE(ParseFrom(data, message2));
+      data = message2.SerializeAsString();
+      TestUtilLite::ExpectPackedFieldsSet(message2, large_values, repetitions);
+      message.Clear();
+      TestUtilLite::ExpectPackedClear(message);
+    }
   }
 }
 
@@ -372,9 +378,9 @@ TYPED_TEST(LiteTest, AllLite9) {
     TestUtilLite::ExpectPackedExtensionsClear(message);
     TestUtilLite::SetPackedExtensions(&message);
     data = SerializeAs<TypeParam>(message);
-    ParseFrom(data, empty_message);
+    ASSERT_TRUE(ParseFrom(data, empty_message));
     data = SerializeAs<TypeParam>(empty_message);
-    ParseFrom(data, message2);
+    ASSERT_TRUE(ParseFrom(data, message2));
     data = SerializeAs<TypeParam>(message2);
     TestUtilLite::ExpectPackedExtensionsSet(message2);
     message.Clear();
@@ -426,14 +432,14 @@ TYPED_TEST(LiteTest, AllLite12) {
     message2.set_optional_foreign_enum(unittest::FOREIGN_LITE_BAZ);
 
     data = SerializeAs<TypeParam>(message);
-    ParseFrom(data, empty_message);
+    ASSERT_TRUE(ParseFrom(data, empty_message));
     data = message2.SerializeAsString();
-    ParseFrom(data, empty_message2);
+    ASSERT_TRUE(ParseFrom(data, empty_message2));
     message.MergeFrom(message2);
     empty_message.MergeFrom(empty_message2);
 
     data = SerializeAs<TypeParam>(empty_message);
-    ParseFrom(data, message2);
+    ASSERT_TRUE(ParseFrom(data, message2));
     // We do not compare the serialized output of a normal message and a lite
     // message because the order of fields do not match. We convert lite message
     // back into normal message, then compare.
@@ -461,7 +467,7 @@ TYPED_TEST(LiteTest, AllLite13StringStream) {
           internal::WireFormatLite::WIRETYPE_VARINT, &coded_output);
       coded_output.WriteVarint32(20);
     }
-    message.ParseFromString(buffer);
+    ABSL_CHECK(message.ParseFromString(buffer));
     data = SerializeAs<TypeParam>(message);
     EXPECT_EQ(data, buffer);
   }
@@ -486,7 +492,7 @@ TYPED_TEST(LiteTest, AllLite13CordStream) {
       coded_output.WriteVarint32(20);
     }
     absl::Cord buffer = output_stream.Consume();
-    message.ParseFromString(buffer);
+    ABSL_CHECK(message.ParseFromString(buffer));
     data = SerializeAs<TypeParam>(message);
     EXPECT_EQ(data, buffer);
   }
@@ -902,7 +908,7 @@ TYPED_TEST(LiteTest, AllLite42) {
     std::string v2_bytes = v2_message.SerializeAsString();
 
     proto2_unittest::V1MessageLite v1_message;
-    v1_message.ParseFromString(v2_bytes);
+    ABSL_CHECK(v1_message.ParseFromString(v2_bytes));
     EXPECT_TRUE(v1_message.IsInitialized());
     EXPECT_EQ(v1_message.int_field(), v2_message.int_field());
     // V1 client does not understand V2_SECOND value, so it discards it and
@@ -913,7 +919,7 @@ TYPED_TEST(LiteTest, AllLite42) {
     std::string v1_bytes = v1_message.SerializeAsString();
 
     proto2_unittest::V2MessageLite same_v2_message;
-    same_v2_message.ParseFromString(v1_bytes);
+    ABSL_CHECK(same_v2_message.ParseFromString(v1_bytes));
 
     EXPECT_EQ(v2_message.int_field(), same_v2_message.int_field());
     EXPECT_EQ(v2_message.enum_field(), same_v2_message.enum_field());
@@ -1288,7 +1294,7 @@ TEST(LiteBasicTest, CodedInputStreamRollback) {
     {
       io::CodedInputStream cis(&is);
       m.Clear();
-      m.MergePartialFromCodedStream(&cis);
+      ABSL_CHECK(m.MergePartialFromCodedStream(&cis));
       EXPECT_TRUE(cis.LastTagWas(12));
       EXPECT_FALSE(cis.ConsumedEntireMessage());
       // Should leave is with 3 spaces;
@@ -1312,7 +1318,7 @@ TEST(LiteBasicTest, CodedInputStreamRollback) {
     {
       io::CodedInputStream cis(&is);
       m.Clear();
-      m.MergePartialFromCodedStream(&cis);
+      ABSL_CHECK(m.MergePartialFromCodedStream(&cis));
       EXPECT_TRUE(cis.LastTagWas(12));
       EXPECT_FALSE(cis.ConsumedEntireMessage());
       // Should leave is with 3 spaces;
@@ -1339,7 +1345,7 @@ TEST(LiteBasicTest, CodedInputStreamRollback) {
     {
       io::CodedInputStream cis(&is);
       m.Clear();
-      m.MergePartialFromCodedStream(&cis);
+      ABSL_CHECK(m.MergePartialFromCodedStream(&cis));
       EXPECT_TRUE(cis.LastTagWas(12));
       EXPECT_FALSE(cis.ConsumedEntireMessage());
       // Should leave is with 3 spaces;
@@ -1399,11 +1405,12 @@ TEST(LiteTest, DynamicCastMessageInvalidReferenceType) {
   CastType1 test_type_1;
   const MessageLite& test_type_1_pointer_const_ref = test_type_1;
 #if defined(ABSL_HAVE_EXCEPTIONS)
-  EXPECT_THROW(DynamicCastMessage<CastType2>(test_type_1_pointer_const_ref),
-               std::bad_cast);
+  EXPECT_THROW(
+      (void)DynamicCastMessage<CastType2>(test_type_1_pointer_const_ref),
+      std::bad_cast);
 #elif defined(GTEST_HAS_DEATH_TEST)
   ASSERT_DEATH(
-      DynamicCastMessage<CastType2>(test_type_1_pointer_const_ref),
+      (void)DynamicCastMessage<CastType2>(test_type_1_pointer_const_ref),
       absl::StrCat("Cannot downcast ", test_type_1.GetTypeName(), " to ",
                    CastType2::default_instance().GetTypeName()));
 #else
@@ -1441,7 +1448,7 @@ TEST(LiteTest, DownCastMessageInvalidPointerType) {
   MessageLite* test_type_1_pointer = &test_type_1;
 
   ASSERT_DEBUG_DEATH(
-      DownCastMessage<CastType2>(test_type_1_pointer),
+      (void)DownCastMessage<CastType2>(test_type_1_pointer),
       absl::StrCat("Cannot downcast ", test_type_1.GetTypeName(), " to ",
                    CastType2::default_instance().GetTypeName()));
 }
@@ -1452,7 +1459,7 @@ TEST(LiteTest, DownCastMessageInvalidReferenceType) {
   MessageLite& test_type_1_pointer = test_type_1;
 
   ASSERT_DEBUG_DEATH(
-      DownCastMessage<CastType2>(test_type_1_pointer),
+      (void)DownCastMessage<CastType2>(test_type_1_pointer),
       absl::StrCat("Cannot downcast ", test_type_1.GetTypeName(), " to ",
                    CastType2::default_instance().GetTypeName()));
 }

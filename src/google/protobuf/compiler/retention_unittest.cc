@@ -139,8 +139,6 @@ TEST_F(RetentionStripTest, StripSourceRetentionFileOptions) {
         }
         [google.protobuf.internal.repeated_options] { i2: 222 })pb");
 
-  FileDescriptorProto stripped_file = StripSourceRetentionOptions(*file);
-
   EXPECT_THAT(StripSourceRetentionOptions(*file).options(),
               EqualsProto(expected_options));
   EXPECT_THAT(StripLocalSourceRetentionOptions(*file),

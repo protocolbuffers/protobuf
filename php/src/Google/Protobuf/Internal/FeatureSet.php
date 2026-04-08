@@ -79,7 +79,7 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\FeatureSet\FieldPresence}
      */
     public function getFieldPresence()
     {
@@ -98,10 +98,10 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\FeatureSet\FieldPresence}
      * @return $this
      */
-    public function setFieldPresence($var)
+    public function setFieldPresence(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\FieldPresence::class);
         $this->field_presence = $var;
@@ -111,7 +111,7 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.EnumType enum_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\FeatureSet\EnumType}
      */
     public function getEnumType()
     {
@@ -130,10 +130,10 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.EnumType enum_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\FeatureSet\EnumType}
      * @return $this
      */
-    public function setEnumType($var)
+    public function setEnumType(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\EnumType::class);
         $this->enum_type = $var;
@@ -143,7 +143,7 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.RepeatedFieldEncoding repeated_field_encoding = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\FeatureSet\RepeatedFieldEncoding}
      */
     public function getRepeatedFieldEncoding()
     {
@@ -162,10 +162,10 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.RepeatedFieldEncoding repeated_field_encoding = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\FeatureSet\RepeatedFieldEncoding}
      * @return $this
      */
-    public function setRepeatedFieldEncoding($var)
+    public function setRepeatedFieldEncoding(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\RepeatedFieldEncoding::class);
         $this->repeated_field_encoding = $var;
@@ -175,7 +175,7 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.Utf8Validation utf8_validation = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\FeatureSet\Utf8Validation}
      */
     public function getUtf8Validation()
     {
@@ -194,10 +194,10 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.Utf8Validation utf8_validation = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\FeatureSet\Utf8Validation}
      * @return $this
      */
-    public function setUtf8Validation($var)
+    public function setUtf8Validation(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\Utf8Validation::class);
         $this->utf8_validation = $var;
@@ -207,7 +207,7 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.MessageEncoding message_encoding = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\FeatureSet\MessageEncoding}
      */
     public function getMessageEncoding()
     {
@@ -226,10 +226,10 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.MessageEncoding message_encoding = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\FeatureSet\MessageEncoding}
      * @return $this
      */
-    public function setMessageEncoding($var)
+    public function setMessageEncoding(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\MessageEncoding::class);
         $this->message_encoding = $var;
@@ -239,7 +239,7 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.JsonFormat json_format = 6 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\FeatureSet\JsonFormat}
      */
     public function getJsonFormat()
     {
@@ -258,10 +258,10 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.JsonFormat json_format = 6 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\FeatureSet\JsonFormat}
      * @return $this
      */
-    public function setJsonFormat($var)
+    public function setJsonFormat(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\JsonFormat::class);
         $this->json_format = $var;
@@ -271,7 +271,7 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.EnforceNamingStyle enforce_naming_style = 7 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, targets = TARGET_TYPE_EXTENSION_RANGE, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_ENUM_ENTRY, targets = TARGET_TYPE_SERVICE, targets = TARGET_TYPE_METHOD, edition_defaults = {</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\FeatureSet\EnforceNamingStyle}
      */
     public function getEnforceNamingStyle()
     {
@@ -290,10 +290,10 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.EnforceNamingStyle enforce_naming_style = 7 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, targets = TARGET_TYPE_EXTENSION_RANGE, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_ENUM_ENTRY, targets = TARGET_TYPE_SERVICE, targets = TARGET_TYPE_METHOD, edition_defaults = {</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\FeatureSet\EnforceNamingStyle}
      * @return $this
      */
-    public function setEnforceNamingStyle($var)
+    public function setEnforceNamingStyle(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\EnforceNamingStyle::class);
         $this->enforce_naming_style = $var;
@@ -303,7 +303,7 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.VisibilityFeature.DefaultSymbolVisibility default_symbol_visibility = 8 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, edition_defaults = {</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\FeatureSet\VisibilityFeature\DefaultSymbolVisibility}
      */
     public function getDefaultSymbolVisibility()
     {
@@ -322,10 +322,10 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.VisibilityFeature.DefaultSymbolVisibility default_symbol_visibility = 8 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, edition_defaults = {</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\FeatureSet\VisibilityFeature\DefaultSymbolVisibility}
      * @return $this
      */
-    public function setDefaultSymbolVisibility($var)
+    public function setDefaultSymbolVisibility(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\VisibilityFeature\DefaultSymbolVisibility::class);
         $this->default_symbol_visibility = $var;

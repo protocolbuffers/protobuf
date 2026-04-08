@@ -39,7 +39,7 @@ const google::protobuf::Descriptor* AddMessageDescriptor(upb::MessageDefPtr msgd
   const char* buf =
       google_protobuf_FileDescriptorProto_serialize(upb_proto, tmp_arena.ptr(), &size);
   google::protobuf::FileDescriptorProto google_proto;
-  google_proto.ParseFromString(absl::string_view(buf, size));
+  EXPECT_TRUE(google_proto.ParseFromString(absl::string_view(buf, size)));
   const google::protobuf::FileDescriptor* file_desc = pool->BuildFile(google_proto);
   EXPECT_TRUE(file_desc != nullptr);
   return pool->FindMessageTypeByName(msgdef.full_name());
@@ -60,7 +60,7 @@ std::unique_ptr<google::protobuf::Message> ToProto(const upb_Message* msg,
   upb_EncodeStatus status = upb_Encode(msg, upb_MessageDef_MiniTable(msgdef), 0,
                                        arena.ptr(), &buf, &size);
   EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
-  google_msg->ParseFromString(absl::string_view(buf, size));
+  EXPECT_TRUE(google_msg->ParseFromString(absl::string_view(buf, size)));
   return google_msg;
 }
 

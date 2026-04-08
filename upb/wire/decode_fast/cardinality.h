@@ -94,7 +94,7 @@ fastdecode_nextret fastdecode_nextrepeated(upb_Decoder* d, void* dst,
   fastdecode_nextret ret;
   dst = (char*)dst + valbytes;
 
-  if (UPB_LIKELY(!_upb_Decoder_IsDone(d, ptr))) {
+  if (UPB_LIKELY(!upb_EpsCopyInputStream_IsDone(&d->input, ptr))) {
     ret.tag = _upb_FastDecoder_LoadTag(*ptr);
     if (fastdecode_tagmatch(ret.tag, data, tagbytes)) {
       ret.next = FD_NEXT_SAMEFIELD;
@@ -479,12 +479,12 @@ bool upb_DecodeFast_Delimited(upb_Decoder* d, const char** ptr,
                                                    ctx)) {
     if (UPB_UNLIKELY(p == NULL)) goto fail;
   } else {
-    if (!upb_EpsCopyInputStream_CheckSize(&d->input, p, size)) {
+    ptrdiff_t delta = upb_EpsCopyInputStream_PushLimit(&d->input, p, size);
+    if (UPB_UNLIKELY(delta < 0)) {
       // Corrupt wire format: invalid limit.
       *ptr = NULL;
       return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
     }
-    int delta = upb_EpsCopyInputStream_PushLimit(&d->input, p, size);
     p = func(&d->input, p, size, ctx);
     if (UPB_UNLIKELY(p == NULL)) goto fail;
     upb_EpsCopyInputStream_PopLimit(&d->input, p, delta);

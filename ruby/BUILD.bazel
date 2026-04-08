@@ -105,7 +105,7 @@ internal_ruby_proto_library(
     srcs = [":copied_wkt_proto_files"],
     default_runtime = "",
     visibility = [
-        "//conformance:__pkg__",
+        "//conformance/ruby:__pkg__",
         "//ruby:__subpackages__",
     ],
 )
@@ -125,7 +125,7 @@ internal_ruby_proto_library(
     testonly = 1,
     srcs = [":copied_conformance_test_files"],
     visibility = [
-        "//conformance:__pkg__",
+        "//conformance/ruby:__pkg__",
         "//ruby:__subpackages__",
     ],
     deps = [":well_known_ruby_protos"],
@@ -145,7 +145,7 @@ internal_ruby_proto_library(
     name = "conformance_editions_test_ruby_proto",
     testonly = 1,
     srcs = [":copied_conformance_editions_test_files"],
-    visibility = ["//conformance:__pkg__"],
+    visibility = ["//conformance/ruby:__pkg__"],
     deps = [":well_known_ruby_protos"],
 )
 
@@ -257,7 +257,7 @@ conformance_test(
         ":ruby_native": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    testee = "//conformance:conformance_ruby",
+    testee = "//conformance/ruby:conformance_ruby",
 )
 
 conformance_test(
@@ -271,7 +271,7 @@ conformance_test(
         ":ruby_ffi": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    testee = "//conformance:conformance_ruby",
+    testee = "//conformance/ruby:conformance_ruby",
 )
 
 conformance_test(
@@ -282,7 +282,7 @@ conformance_test(
         ":jruby_native": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    testee = "//conformance:conformance_ruby",
+    testee = "//conformance/ruby:conformance_ruby",
 )
 
 conformance_test(
@@ -296,7 +296,7 @@ conformance_test(
         ":jruby_ffi": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    testee = "//conformance:conformance_ruby",
+    testee = "//conformance/ruby:conformance_ruby",
 )
 
 ################################################################################

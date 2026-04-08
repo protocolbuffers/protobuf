@@ -3,14 +3,28 @@
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
 
-def _get_suffix(limited_api, python_version, cpu):
+def _get_os_name(ctx):
+    for name, label in ctx.attr._os_constraints.items():
+        if ctx.target_platform_has_constraint(label[platform_common.ConstraintValueInfo]):
+            return name
+    fail("Protobuf: Unknown OS for target platform")
+
+def _get_cpu_name(ctx):
+    for name, label in ctx.attr._cpu_constraints.items():
+        if ctx.target_platform_has_constraint(label[platform_common.ConstraintValueInfo]):
+            return name
+    fail("Protobuf: Unknown CPU for target platform")
+
+def _get_suffix(ctx, limited_api, python_version):
     """Computes an ABI version tag for an extension module per PEP 3149."""
-    if "win32" in cpu or "win64" in cpu:
+    os = _get_os_name(ctx)
+    cpu = _get_cpu_name(ctx)
+    if os == "windows":
         if limited_api:
             return ".pyd"
-        if "win32" in cpu:
+        if cpu == "x86_32":
             abi = "win32"
-        elif "win64" in cpu:
+        elif cpu == "x86_64":
             abi = "win_amd64"
         else:
             fail("Unsupported CPU: " + cpu)
@@ -20,21 +34,24 @@ def _get_suffix(limited_api, python_version, cpu):
         python_version = SYSTEM_PYTHON_VERSION
         if int(python_version) < 38:
             python_version += "m"
-        abis = {
-            "darwin_arm64": "darwin",
-            "darwin_x86_64": "darwin",
-            "darwin": "darwin",
-            "osx-x86_64": "darwin",
-            "osx-aarch_64": "darwin",
-            "linux-aarch_64": "aarch64-linux-gnu",
-            "linux-x86_64": "x86_64-linux-gnu",
-            "k8": "x86_64-linux-gnu",
-            "s390x": "s390x-linux-gnu",
-        }
+
+        if os == "osx":
+            abi = "darwin"
+        elif os == "linux":
+            if cpu == "x86_64":
+                abi = "x86_64-linux-gnu"
+            elif cpu == "aarch64":
+                abi = "aarch64-linux-gnu"
+            elif cpu == "s390x":
+                abi = "s390x-linux-gnu"
+            else:
+                fail("Unsupported CPU: " + cpu)
+        else:
+            fail("Unsupported OS: " + os)
 
         return ".cpython-{}-{}.{}".format(
             python_version,
-            abis[cpu],
+            abi,
             "so" if limited_api else "abi3.so",
         )
     elif limited_api:
@@ -46,9 +63,9 @@ def _declare_module_file(ctx, module_name, python_version, limited_api):
     """Declares an output file for a Python module with this name, version, and limited api."""
     base_filename = module_name.replace(".", "/")
     suffix = _get_suffix(
+        ctx = ctx,
         python_version = python_version,
         limited_api = limited_api,
-        cpu = ctx.var["TARGET_CPU"],
     )
     filename = base_filename + suffix
     return ctx.actions.declare_file(filename)
@@ -72,15 +89,22 @@ def _declare_module_file(ctx, module_name, python_version, limited_api):
 # architectures to get us the input files we need.
 
 def _py_multiarch_transition_impl(settings, attr):
-    if settings["//command_line_option:cpu"] == "osx-universal2":
-        return [{"//command_line_option:cpu": cpu} for cpu in ["osx-aarch_64", "osx-x86_64"]]
+    if len(settings["//command_line_option:platforms"]) == 1 and settings["//command_line_option:platforms"][0] == Label("//build_defs:osx-universal2"):
+        ret = [
+            {"//command_line_option:platforms": platform}
+            for platform in [
+                "//build_defs:osx-aarch_64",
+                "//build_defs:osx-x86_64",
+            ]
+        ]
+        return ret
     else:
         return settings
 
 _py_multiarch_transition = transition(
     implementation = _py_multiarch_transition_impl,
-    inputs = ["//command_line_option:cpu"],
-    outputs = ["//command_line_option:cpu"],
+    inputs = ["//command_line_option:platforms"],
+    outputs = ["//command_line_option:platforms"],
 )
 
 def _py_dist_module_impl(ctx):
@@ -126,6 +150,22 @@ py_dist_module = rule(
         "_allowlist_function_transition": attr.label(
             default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
         ),
+        "_os_constraints": attr.string_keyed_label_dict(
+            default = {
+                "osx": "@platforms//os:osx",
+                "windows": "@platforms//os:windows",
+                "linux": "@platforms//os:linux",
+            },
+        ),
+        "_cpu_constraints": attr.string_keyed_label_dict(
+            default = {
+                "aarch64": "@platforms//cpu:aarch64",
+                "x86_64": "@platforms//cpu:x86_64",
+                "x86_32": "@platforms//cpu:x86_32",
+                "s390x": "@platforms//cpu:s390x",
+                "ppc64le": "@platforms//cpu:ppc64le",
+            },
+        ),
     },
 )
 
@@ -139,17 +179,17 @@ def _py_dist_transition_impl(settings, attr):
     _ignore = (settings)  # @unused
     transitions = []
 
-    for cpu, version in attr.limited_api_wheels.items():
+    for platform, version in attr.limited_api_platforms.items():
         transitions.append({
-            "//command_line_option:cpu": cpu,
+            "//command_line_option:platforms": platform,
             "//python:python_version": version,
             "//python:limited_api": True,
         })
 
     for version in attr.full_api_versions:
-        for cpu in attr.full_api_cpus:
+        for platform in attr.full_api_platforms:
             transitions.append({
-                "//command_line_option:cpu": cpu,
+                "//command_line_option:platforms": platform,
                 "//python:python_version": version,
                 "//python:limited_api": False,
             })
@@ -160,7 +200,7 @@ _py_dist_transition = transition(
     implementation = _py_dist_transition_impl,
     inputs = [],
     outputs = [
-        "//command_line_option:cpu",
+        "//command_line_option:platforms",
         "//python:python_version",
         "//python:limited_api",
     ],
@@ -183,9 +223,9 @@ py_dist = rule(
             cfg = _py_dist_transition,
         ),
         "pure_python_wheel": attr.label(mandatory = True),
-        "limited_api_wheels": attr.string_dict(),
+        "limited_api_platforms": attr.string_dict(),
         "full_api_versions": attr.string_list(),
-        "full_api_cpus": attr.string_list(),
+        "full_api_platforms": attr.string_list(),
         "_allowlist_function_transition": attr.label(
             default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
         ),

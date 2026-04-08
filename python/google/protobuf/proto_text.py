@@ -22,8 +22,6 @@ def serialize(
     use_short_repeated_primitives: bool = False,
     pointy_brackets: bool = False,
     use_index_order: bool = False,
-    float_format: Optional[str] = None,
-    double_format: Optional[str] = None,
     use_field_number: bool = False,
     descriptor_pool: Optional[DescriptorPool] = None,
     indent: int = 0,
@@ -50,13 +48,6 @@ def serialize(
       will be printed at the end of the message and their relative order is
       determined by the extension number. By default, use the field number
       order.
-    float_format (str): If set, use this to specify float field formatting (per
-      the "Format Specification Mini-Language"); otherwise, shortest float that
-      has same value in wire will be printed. Also affect double field if
-      double_format is not set but float_format is set.
-    double_format (str): If set, use this to specify double field formatting
-      (per the "Format Specification Mini-Language"); if it is not set but
-      float_format is set, use float_format. Otherwise, use ``str()``
     use_field_number: If True, print field numbers instead of names.
     descriptor_pool (DescriptorPool): Descriptor pool used to resolve Any types.
     indent (int): The initial indent level, in terms of spaces, for pretty
@@ -78,8 +69,6 @@ def serialize(
       use_short_repeated_primitives=use_short_repeated_primitives,
       pointy_brackets=pointy_brackets,
       use_index_order=use_index_order,
-      float_format=float_format,
-      double_format=double_format,
       use_field_number=use_field_number,
       descriptor_pool=descriptor_pool,
       indent=indent,

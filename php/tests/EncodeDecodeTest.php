@@ -603,6 +603,50 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals(-1, $m->getOptionalInt32());
     }
 
+    public function testInvalidVarintLength() {
+        $this->expectException(Exception::class);
+
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin("0afaffffff0f"));
+    }
+
+    private function makeRecursiveMessage($depth) {
+        $m = new TestMessage();
+        $m->setOptionalInt32(1);
+        if ($depth == 0) {
+            return $m;
+        }
+        $m->setRecursive($this->makeRecursiveMessage($depth - 1));
+        return $m;
+    }
+
+    public function testRecursiveMessage() {
+        // TODO: shaod - Re-enable this test once the memory leak is fixed.
+        if (getenv("USE_VALGRIND")) {
+            $this->markTestSkipped("skipping for valgrind because of a memory leak");
+        }
+        $payload = $this->makeRecursiveMessage(99)->serializeToString();
+
+        $m = new TestMessage();
+        $m->mergeFromString($payload);
+
+        // If execution reaches this line, it means no exception was thrown.
+        // This assertion prevents PHPUnit from marking the test as risky.
+        $this->assertTrue(true);
+    }
+
+    public function testOverlyRecursiveMessage() {
+        // TODO: shaod - Re-enable this test once the memory leak is fixed.
+        if (getenv("USE_VALGRIND")) {
+            $this->markTestSkipped("skipping for valgrind because of a memory leak");
+        }
+        $this->expectException(Exception::class);
+        $payload = $this->makeRecursiveMessage(101)->serializeToString();
+
+        $m = new TestMessage();
+        $m->mergeFromString($payload);
+    }
+
     public function testRandomFieldOrder()
     {
         $m = new TestRandomFieldOrder();
@@ -1596,7 +1640,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals($defaultValue, $to->getOneofFieldUnwrapped());
     }
 
-    public function wrappersDataProvider()
+    public static function wrappersDataProvider()
     {
         return [
             [TestInt32Value::class, 1, "1", 0, "0"],

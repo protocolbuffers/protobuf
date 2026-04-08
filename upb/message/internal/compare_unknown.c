@@ -177,14 +177,14 @@ static void upb_CombineUnknownFields(upb_UnknownField_Context* ctx,
         break;
       case kUpb_WireType_Delimited: {
         int size;
+        upb_StringView sv;
         ptr = upb_WireReader_ReadSize(ptr, &size, &ctx->stream);
         UPB_ASSERT(ptr);
-        const char* s_ptr = ptr;
-        ptr = upb_EpsCopyInputStream_ReadStringAliased(&ctx->stream, &s_ptr,
-                                                       size);
+        ptr = upb_EpsCopyInputStream_ReadStringAlwaysAlias(&ctx->stream, ptr,
+                                                           size, &sv);
         UPB_ASSERT(ptr);
-        field->data.delimited.data = s_ptr;
-        field->data.delimited.size = size;
+        field->data.delimited.data = sv.data;
+        field->data.delimited.size = sv.size;
         break;
       }
       case kUpb_WireType_StartGroup:
@@ -251,7 +251,7 @@ static upb_UnknownFields* upb_UnknownFields_Build(upb_UnknownField_Context* ctx,
   uintptr_t iter = kUpb_Message_UnknownBegin;
   upb_StringView view;
   while (upb_Message_NextUnknown(msg, &view, &iter)) {
-    upb_EpsCopyInputStream_Init(&ctx->stream, &view.data, view.size, true);
+    upb_EpsCopyInputStream_Init(&ctx->stream, &view.data, view.size);
     upb_CombineUnknownFields(ctx, &builder, &view.data);
     UPB_ASSERT(upb_EpsCopyInputStream_IsDone(&ctx->stream, &view.data) &&
                !upb_EpsCopyInputStream_IsError(&ctx->stream));

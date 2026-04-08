@@ -64,7 +64,9 @@ upb_MiniTableExtension_GetSubEnum(const struct upb_MiniTableExtension* e) {
 UPB_API_INLINE bool upb_MiniTableExtension_SetSubMessage(
     struct upb_MiniTableExtension* e, const struct upb_MiniTable* m) {
   if (e->UPB_PRIVATE(field).UPB_PRIVATE(descriptortype) !=
-      kUpb_FieldType_Message) {
+          kUpb_FieldType_Message &&
+      e->UPB_PRIVATE(field).UPB_PRIVATE(descriptortype) !=
+          kUpb_FieldType_Group) {
     return false;
   }
   e->UPB_PRIVATE(sub).UPB_PRIVATE(submsg) = m;

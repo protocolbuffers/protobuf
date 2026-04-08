@@ -92,7 +92,7 @@ class FeatureSupport extends \Google\Protobuf\Internal\Message
      * used, and proto files will not be able to override it.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition edition_introduced = 1;</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\Edition}
      */
     public function getEditionIntroduced()
     {
@@ -115,10 +115,10 @@ class FeatureSupport extends \Google\Protobuf\Internal\Message
      * used, and proto files will not be able to override it.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition edition_introduced = 1;</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\Edition}
      * @return $this
      */
-    public function setEditionIntroduced($var)
+    public function setEditionIntroduced(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\Edition::class);
         $this->edition_introduced = $var;
@@ -131,7 +131,7 @@ class FeatureSupport extends \Google\Protobuf\Internal\Message
      * edition may trigger warnings.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition edition_deprecated = 2;</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\Edition}
      */
     public function getEditionDeprecated()
     {
@@ -153,10 +153,10 @@ class FeatureSupport extends \Google\Protobuf\Internal\Message
      * edition may trigger warnings.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition edition_deprecated = 2;</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\Edition}
      * @return $this
      */
-    public function setEditionDeprecated($var)
+    public function setEditionDeprecated(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\Edition::class);
         $this->edition_deprecated = $var;
@@ -194,9 +194,9 @@ class FeatureSupport extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setDeprecationWarning($var)
+    public function setDeprecationWarning(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->deprecation_warning = $var;
 
         return $this;
@@ -208,7 +208,7 @@ class FeatureSupport extends \Google\Protobuf\Internal\Message
      * not be able to override it.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition edition_removed = 4;</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\Edition}
      */
     public function getEditionRemoved()
     {
@@ -231,10 +231,10 @@ class FeatureSupport extends \Google\Protobuf\Internal\Message
      * not be able to override it.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition edition_removed = 4;</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\Edition}
      * @return $this
      */
-    public function setEditionRemoved($var)
+    public function setEditionRemoved(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\Edition::class);
         $this->edition_removed = $var;
@@ -272,9 +272,9 @@ class FeatureSupport extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setRemovalError($var)
+    public function setRemovalError(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->removal_error = $var;
 
         return $this;

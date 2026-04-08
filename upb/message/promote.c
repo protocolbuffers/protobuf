@@ -87,25 +87,24 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
   while (upb_Message_NextUnknown(msg, &data, &iter)) {
     const char* ptr = data.data;
     upb_EpsCopyInputStream stream;
-    upb_EpsCopyInputStream_Init(&stream, &ptr, data.size, true);
+    upb_EpsCopyInputStream_Init(&stream, &ptr, data.size);
     while (!upb_EpsCopyInputStream_IsDone(&stream, &ptr)) {
       uint32_t tag;
       const char* unknown_begin = ptr;
       ptr = upb_WireReader_ReadTag(ptr, &tag, &stream);
       if (!ptr) return kUpb_GetExtension_ParseError;
       if (field_number == upb_WireReader_GetFieldNumber(tag)) {
+        upb_StringView data;
         found_count++;
-        const char* start =
-            upb_EpsCopyInputStream_GetAliasedPtr(&stream, unknown_begin);
+        upb_EpsCopyInputStream_StartCapture(&stream, unknown_begin);
         ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
-        if (!ptr) return kUpb_GetExtension_ParseError;
-        // Because we know that the input is a flat buffer, it is safe to
-        // perform pointer arithmetic on aliased pointers.
-        size_t len = upb_EpsCopyInputStream_GetAliasedPtr(&stream, ptr) - start;
+        if (!ptr || !upb_EpsCopyInputStream_EndCapture(&stream, ptr, &data)) {
+          return kUpb_GetExtension_ParseError;
+        }
         upb_UnknownToMessageRet parse_result =
-            upb_MiniTable_ParseUnknownMessage(start, len, extension_table,
-                                              /* base_message= */ extension_msg,
-                                              decode_options, arena);
+            upb_MiniTable_ParseUnknownMessage(
+                data.data, data.size, extension_table,
+                /* base_message= */ extension_msg, decode_options, arena);
         switch (parse_result.status) {
           case kUpb_UnknownToMessage_OutOfMemory:
             return kUpb_GetExtension_OutOfMemory;
@@ -161,7 +160,7 @@ upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
   while (upb_Message_NextUnknown(msg, &data, &ret.iter)) {
     upb_EpsCopyInputStream stream;
     const char* ptr = data.data;
-    upb_EpsCopyInputStream_Init(&stream, &ptr, data.size, true);
+    upb_EpsCopyInputStream_Init(&stream, &ptr, data.size);
 
     while (!upb_EpsCopyInputStream_IsDone(&stream, &ptr)) {
       uint32_t tag;
@@ -169,12 +168,15 @@ upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
       ptr = upb_WireReader_ReadTag(ptr, &tag, &stream);
       if (!ptr) return upb_FindUnknownRet_ParseError();
       if (field_number == upb_WireReader_GetFieldNumber(tag)) {
+        upb_StringView data;
         ret.status = kUpb_FindUnknown_Ok;
-        ret.ptr = upb_EpsCopyInputStream_GetAliasedPtr(&stream, unknown_begin);
+        upb_EpsCopyInputStream_StartCapture(&stream, unknown_begin);
         ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
-        // Because we know that the input is a flat buffer, it is safe to
-        // perform pointer arithmetic on aliased pointers.
-        ret.len = upb_EpsCopyInputStream_GetAliasedPtr(&stream, ptr) - ret.ptr;
+        if (!ptr || !upb_EpsCopyInputStream_EndCapture(&stream, ptr, &data)) {
+          return upb_FindUnknownRet_ParseError();
+        }
+        ret.ptr = data.data;
+        ret.len = data.size;
         return ret;
       }
 
