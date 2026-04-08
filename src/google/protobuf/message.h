@@ -1037,6 +1037,19 @@ class PROTOBUF_EXPORT Reflection final {
   // Message::New() is an easier way to accomplish this.
   [[nodiscard]] MessageFactory* GetMessageFactory() const;
 
+  // Returns true if the message field is backed by a LazyField.
+  //
+  // A message field may be backed by a LazyField without the user annotation
+  // ([lazy = true]). While the user-annotated LazyField is lazily verified on
+  // first touch (i.e. failure on access rather than parsing if the LazyField is
+  // not initialized), the inferred LazyField is eagerly verified to avoid lazy
+  // parsing error at the cost of lower efficiency. When reflecting a message
+  // field, use this API instead of checking field->options().lazy().
+  bool IsLazyField(const FieldDescriptor* field) const {
+    return IsLazilyVerifiedLazyField(field) ||
+           IsEagerlyVerifiedLazyField(field);
+  }
+
  private:
   enum class GetRepeatedFieldIntent {
     // The caller intents to return a reference/pointer to the raw repeated
@@ -1120,19 +1133,6 @@ class PROTOBUF_EXPORT Reflection final {
   // the RepeatedFieldAccessor interface.
   const internal::RepeatedFieldAccessor* RepeatedFieldAccessor(
       const FieldDescriptor* field) const;
-
-  // Returns true if the message field is backed by a LazyField.
-  //
-  // A message field may be backed by a LazyField without the user annotation
-  // ([lazy = true]). While the user-annotated LazyField is lazily verified on
-  // first touch (i.e. failure on access rather than parsing if the LazyField is
-  // not initialized), the inferred LazyField is eagerly verified to avoid lazy
-  // parsing error at the cost of lower efficiency. When reflecting a message
-  // field, use this API instead of checking field->options().lazy().
-  bool IsLazyField(const FieldDescriptor* field) const {
-    return IsLazilyVerifiedLazyField(field) ||
-           IsEagerlyVerifiedLazyField(field);
-  }
 
   // Returns true if the field is lazy extension. It is meant to allow python
   // reparse lazy field until b/157559327 is fixed.
