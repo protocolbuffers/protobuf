@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <cstring>
 #include <functional>
-#include <iterator>
 #include <limits>
 #include <string>
 #include <type_traits>
@@ -22,6 +21,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_field_proxy_iterator.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/test_protos/repeated_field_proxy_import_message.pb.h"
 #include "google/protobuf/test_protos/repeated_field_proxy_test.pb.h"
@@ -1103,6 +1103,27 @@ TYPED_TEST(RepeatedNumericFieldProxyTest, Iterators) {
   EXPECT_EQ(*(++rit), 2);
   EXPECT_EQ(*(++rit), 1);
   EXPECT_EQ(++rit, proxy.rend());
+
+  google::protobuf::sort(proxy.begin(), proxy.end(), std::greater<int>());
+  EXPECT_THAT(proxy, ElementsAre(3, 2, 1));
+}
+
+TYPED_TEST(RepeatedNumericFieldProxyTest, IteratorsDoNotLeakReferences) {
+  using ElementType = typename TypeParam::ElementType;
+
+  auto field = this->MakeRepeatedFieldContainer();
+  auto proxy = field.MakeProxy();
+  auto const_proxy = field.MakeConstProxy();
+
+  // `cbegin()` on mutable proxies should return the same type as `begin()` on
+  // const proxies.
+  static_assert(
+      std::is_same_v<decltype(proxy.cbegin()), decltype(const_proxy.begin())>);
+
+  // All iterator types should dereference to element values, not references.
+  static_assert(std::is_same_v<decltype(*proxy.begin()), ElementType>);
+  static_assert(std::is_same_v<decltype(*proxy.cbegin()), ElementType>);
+  static_assert(std::is_same_v<decltype(*proxy.rbegin()), ElementType>);
 }
 
 TYPED_TEST(RepeatedStringFieldProxyTest, Iterators) {
@@ -1173,24 +1194,43 @@ TYPED_TEST(RepeatedStringFieldProxyTest, Iterators) {
   EXPECT_EQ(++cit, proxy.cend());
 }
 
-TYPED_TEST(RepeatedNumericFieldProxyTest, IteratorMutation) {
-  auto field = this->MakeRepeatedFieldContainer();
+TEST_P(RepeatedFieldProxyTest, IteratorMutation) {
+  auto field =
+      MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
   auto proxy = field.MakeProxy();
-  proxy.push_back(1);
-  proxy.push_back(2);
-  proxy.push_back(3);
+  proxy.emplace_back().set_value(1);
+  proxy.emplace_back().set_value(2);
+  proxy.emplace_back().set_value(3);
 
-  auto it = proxy.begin();
-  *it = 4;
-  *(++it) = 5;
-  EXPECT_THAT(proxy, ElementsAre(4, 5, 3));
-  EXPECT_THAT(*field, ElementsAre(4, 5, 3));
+  {
+    auto it = proxy.begin();
+    RepeatedFieldProxyTestSimpleMessage msg;
+    msg.set_value(4);
+    *it = msg;
+    msg.set_value(5);
+    *(++it) = std::move(msg);
+  }
+  EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 4)pb"),
+                                 EqualsProto(R"pb(value: 5)pb"),
+                                 EqualsProto(R"pb(value: 3)pb")));
+  EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(value: 4)pb"),
+                                  EqualsProto(R"pb(value: 5)pb"),
+                                  EqualsProto(R"pb(value: 3)pb")));
 
-  auto rit = proxy.rbegin();
-  *rit = 6;
-  *(++rit) = 7;
-  EXPECT_THAT(proxy, ElementsAre(4, 7, 6));
-  EXPECT_THAT(*field, ElementsAre(4, 7, 6));
+  {
+    auto rit = proxy.rbegin();
+    RepeatedFieldProxyTestSimpleMessage msg;
+    msg.set_value(6);
+    *rit = msg;
+    msg.set_value(7);
+    *(++rit) = std::move(msg);
+  }
+  EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 4)pb"),
+                                 EqualsProto(R"pb(value: 7)pb"),
+                                 EqualsProto(R"pb(value: 6)pb")));
+  EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(value: 4)pb"),
+                                  EqualsProto(R"pb(value: 7)pb"),
+                                  EqualsProto(R"pb(value: 6)pb")));
 }
 
 TYPED_TEST(RepeatedNumericFieldProxyTest, ConstIterators) {
@@ -1245,19 +1285,21 @@ TEST_P(RepeatedFieldProxyTest, StringViewIteratorsNoStdStringLeak) {
 
   // Check that we don't leak an `std::string` through the iterator.
   static_assert(std::is_same_v<decltype(proxy.begin()),
-                               RepeatedPtrIterator<absl::string_view>>);
+                               RepeatedFieldProxyIterator<absl::string_view>>);
   static_assert(std::is_same_v<decltype(proxy.end()),
-                               RepeatedPtrIterator<absl::string_view>>);
-  static_assert(std::is_same_v<decltype(proxy.cbegin()),
-                               RepeatedPtrIterator<const absl::string_view>>);
-  static_assert(std::is_same_v<decltype(proxy.cend()),
-                               RepeatedPtrIterator<const absl::string_view>>);
-  static_assert(std::is_same_v<
-                decltype(proxy.rbegin()),
-                std::reverse_iterator<RepeatedPtrIterator<absl::string_view>>>);
-  static_assert(std::is_same_v<
-                decltype(proxy.rend()),
-                std::reverse_iterator<RepeatedPtrIterator<absl::string_view>>>);
+                               RepeatedFieldProxyIterator<absl::string_view>>);
+  static_assert(
+      std::is_same_v<decltype(proxy.cbegin()),
+                     RepeatedFieldProxyIterator<const absl::string_view>>);
+  static_assert(
+      std::is_same_v<decltype(proxy.cend()),
+                     RepeatedFieldProxyIterator<const absl::string_view>>);
+  static_assert(
+      std::is_same_v<decltype(proxy.rbegin()),
+                     RepeatedFieldProxyReverseIterator<absl::string_view>>);
+  static_assert(
+      std::is_same_v<decltype(proxy.rend()),
+                     RepeatedFieldProxyReverseIterator<absl::string_view>>);
 
   auto it = proxy.begin();
 

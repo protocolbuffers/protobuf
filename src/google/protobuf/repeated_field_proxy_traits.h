@@ -58,8 +58,6 @@ struct RepeatedFieldTraits {
   using type = ::google::protobuf::RepeatedField<ElementType>;
   using const_reference = ElementType;
   using reference = ElementType;
-  using const_iterator = typename type::const_iterator;
-  using iterator = typename type::iterator;
 };
 
 // Specialization for message types.
@@ -71,8 +69,6 @@ struct RepeatedFieldTraits<
   using type = ::google::protobuf::RepeatedPtrField<ElementType>;
   using const_reference = const ElementType&;
   using reference = ElementType&;
-  using const_iterator = typename type::const_iterator;
-  using iterator = typename type::iterator;
 };
 
 // Explicit specializations for string types.
@@ -81,8 +77,6 @@ struct RepeatedFieldTraits<absl::string_view> {
   using type = ::google::protobuf::RepeatedPtrField<std::string>;
   using const_reference = absl::string_view;
   using reference = absl::string_view;
-  using const_iterator = RepeatedPtrIterator<const absl::string_view>;
-  using iterator = RepeatedPtrIterator<absl::string_view>;
 };
 
 template <>
@@ -90,8 +84,6 @@ struct RepeatedFieldTraits<std::string> {
   using type = ::google::protobuf::RepeatedPtrField<std::string>;
   using const_reference = const std::string&;
   using reference = std::string&;
-  using const_iterator = typename type::const_iterator;
-  using iterator = typename type::iterator;
 };
 
 template <>
@@ -99,8 +91,6 @@ struct RepeatedFieldTraits<absl::Cord> {
   using type = ::google::protobuf::RepeatedField<absl::Cord>;
   using const_reference = const absl::Cord&;
   using reference = absl::Cord&;
-  using const_iterator = typename type::const_iterator;
-  using iterator = typename type::iterator;
 };
 
 }  // namespace internal
