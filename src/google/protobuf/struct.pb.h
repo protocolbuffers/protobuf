@@ -961,8 +961,7 @@ inline int Struct::fields_size() const {
 inline void Struct::clear_fields() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.fields_.Clear();
-  ClearHasBitForRepeated(_impl_._has_bits_[0],
-                  0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
 }
 inline const ::google::protobuf::Map<::std::string, ::google::protobuf::Value>& Struct::_internal_fields() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
@@ -978,7 +977,7 @@ inline ::google::protobuf::Map<::std::string, ::google::protobuf::Value>* PROTOB
 }
 inline ::google::protobuf::Map<::std::string, ::google::protobuf::Value>* PROTOBUF_NONNULL Struct::mutable_fields()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_mutable_map:google.protobuf.Struct.fields)
   return _internal_mutable_fields();
 }
@@ -1352,8 +1351,7 @@ inline int ListValue::values_size() const {
 inline void ListValue::clear_values() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.values_.Clear();
-  ClearHasBitForRepeated(_impl_._has_bits_[0],
-                  0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
 }
 inline const ::google::protobuf::Value& ListValue::values(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1371,7 +1369,7 @@ inline ::google::protobuf::Value* PROTOBUF_NONNULL ListValue::add_values()
   ::google::protobuf::Value* _add =
       _internal_mutable_values()->InternalAddWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), GetArena());
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.ListValue.values)
   return _add;
 }
@@ -1382,7 +1380,7 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>& Li
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* PROTOBUF_NONNULL
 ListValue::mutable_values() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ListValue.values)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_values();

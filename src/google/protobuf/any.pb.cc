@@ -160,8 +160,7 @@ struct AnyGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Any_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Any::InternalGenerateClassData_(
-                               _default, &Any_globals_._table.header),
-                           &Any_globals_._table.header),
+            _default, &Any_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Any>(
             GetClassData()))

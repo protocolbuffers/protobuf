@@ -41,6 +41,7 @@
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/wire_format_lite.h"
 
+
 // must be last.
 #include "google/protobuf/port_def.inc"
 
@@ -1882,6 +1883,12 @@ LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
 
 std::atomic<ExtensionSet::LazyMessageExtension* (*)(Arena * arena)>
     ExtensionSet::maybe_create_lazy_extension_;
+
+#if defined(PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET)
+LazyField* ExtensionSet::MaybeCreateLazyExtension(Arena* arena) {
+  return nullptr;
+}
+#endif  // defined(PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET)
 
 }  // namespace internal
 }  // namespace protobuf

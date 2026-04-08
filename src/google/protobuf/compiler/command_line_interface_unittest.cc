@@ -1830,6 +1830,38 @@ TEST_F(CommandLineInterfaceTest, NamingStyleEnforced) {
   ExpectErrorSubstring("Package name badPackage should be lower_snake_case");
 }
 
+TEST_F(CommandLineInterfaceTest, NamingStyleStartsWithHasCollisionExists) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "UNSTABLE";
+    message Foo {
+      string has_bar = 1;
+      string bar = 2;
+    }
+    )schema");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Field name has_bar should not begin with has_ if a field named bar "
+      "exists. "
+      "This can cause collisions in generated code. "
+      "(features.enforce_naming_style = STYLE2024 can be used to opt out of "
+      "this check)");
+}
+
+TEST_F(CommandLineInterfaceTest, NamingStyleStartsWithHasNoCollision) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "UNSTABLE";
+    message Foo {
+      string has_bar = 1;
+      string baz = 2;
+    }
+    )schema");
+  Run("protocol_compiler --proto_path=$tmpdir --experimental_editions "
+      "--test_out=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
 TEST_F(CommandLineInterfaceTest, Plugin_InvalidFeatureExtensionError) {
   CreateTempFile("foo.proto", R"schema(
     edition = "2023";

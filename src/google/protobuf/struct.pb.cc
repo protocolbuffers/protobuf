@@ -158,8 +158,7 @@ struct ListValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  ListValue_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(ListValue::InternalGenerateClassData_(
-                               _default, &ListValue_globals_._table.header),
-                           &ListValue_globals_._table.header),
+            _default, &ListValue_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<ListValue>(
             GetClassData()))
@@ -319,8 +318,7 @@ struct StructGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Struct_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Struct::InternalGenerateClassData_(
-                               _default, &Struct_globals_._table.header),
-                           &Struct_globals_._table.header),
+            _default, &Struct_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Struct>(
             GetClassData()))
@@ -469,8 +467,7 @@ struct Struct_FieldsEntry_DoNotUseGlobalsTypeInternal : ::_pbi::MessageGlobalsBa
                  Struct_FieldsEntry_DoNotUse_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Struct_FieldsEntry_DoNotUse::InternalGenerateClassData_(
-                               _default, &Struct_FieldsEntry_DoNotUse_globals_._table.header),
-                           &Struct_FieldsEntry_DoNotUse_globals_._table.header),
+            _default, &Struct_FieldsEntry_DoNotUse_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Struct_FieldsEntry_DoNotUse>(
             GetClassData()))
@@ -640,8 +637,7 @@ struct ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Value_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Value::InternalGenerateClassData_(
-                               _default, &Value_globals_._table.header),
-                           &Value_globals_._table.header),
+            _default, &Value_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Value>(
             GetClassData()))
@@ -920,7 +916,7 @@ PROTOBUF_NOINLINE void Struct::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     _impl_.fields_.Clear();
   }
   _impl_._has_bits_.Clear();
@@ -947,7 +943,7 @@ PROTOBUF_NOINLINE void Struct::Clear() {
 
   cached_has_bits = this_._impl_._has_bits_[0];
   // map<string, .google.protobuf.Value> fields = 1;
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     if (!this_._internal_fields().empty()) {
       using MapType = ::google::protobuf::Map<::std::string, ::google::protobuf::Value>;
       using WireHelper = _pbi::MapEntryFuncs<::std::string, ::google::protobuf::Value,
@@ -1002,7 +998,7 @@ PROTOBUF_NOINLINE void Struct::Clear() {
    {
     // map<string, .google.protobuf.Value> fields = 1;
     cached_has_bits = this_._impl_._has_bits_[0];
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size +=
           1 * ::google::protobuf::internal::FromIntSize(this_._internal_fields_size());
       for (const auto& entry : this_._internal_fields()) {
@@ -1029,7 +1025,7 @@ void Struct::MergeImpl(::google::protobuf::MessageLite& to_msg,
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     _this->_impl_.fields_.MergeFrom(from._impl_.fields_);
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
@@ -1561,7 +1557,7 @@ PROTOBUF_NOINLINE void ListValue::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     _impl_.values_.Clear();
   }
   _impl_._has_bits_.Clear();
@@ -1588,7 +1584,7 @@ PROTOBUF_NOINLINE void ListValue::Clear() {
 
   cached_has_bits = this_._impl_._has_bits_[0];
   // repeated .google.protobuf.Value values = 1;
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     for (unsigned i = 0, n = static_cast<unsigned>(
                              this_._internal_values_size());
          i < n; i++) {
@@ -1627,7 +1623,7 @@ PROTOBUF_NOINLINE void ListValue::Clear() {
    {
     // repeated .google.protobuf.Value values = 1;
     cached_has_bits = this_._impl_._has_bits_[0];
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size += 1UL * this_._internal_values_size();
       for (const auto& msg : this_._internal_values()) {
         total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -1652,7 +1648,7 @@ void ListValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     _this->_internal_mutable_values()->InternalMergeFromWithArena(
         ::google::protobuf::MessageLite::internal_visibility(), arena,
         from._internal_values());

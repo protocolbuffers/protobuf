@@ -1382,18 +1382,6 @@ class PROTOBUF_EXPORT Reflection final {
                            const FieldDescriptor* field) const;
   void SetHasBit(Message* message, const FieldDescriptor* field) const;
   void ClearHasBit(Message* message, const FieldDescriptor* field) const;
-  // Simple wrapper around SetHasBit that is used for repeated fields.
-  // Note: in some places this is called in an if (field->is_extension()) {},
-  // which is not a no-op. However, with the experiment disabled, this method
-  // will be empty, and the compiler should be able to omit the unnecessary
-  // call to is_extension().
-  // TODO: Remove this method once measurement is complete.
-  PROTOBUF_ALWAYS_INLINE void SetHasBitForRepeated(
-      Message* message, const FieldDescriptor* field) const {
-    if constexpr (internal::EnableExperimentalHintHasBitsForRepeatedFields()) {
-      SetHasBit(message, field);
-    }
-  }
   // Naively swaps the hasbit without checking for field existence.
   // For explicit presence fields, the hasbit is swapped normally.
   // For implicit presence fields, the hasbit is swapped without checking for
@@ -1667,7 +1655,7 @@ Reflection::MutableRepeatedPtrFieldInternal<std::string>(
     Message* message, const FieldDescriptor* field,
     GetRepeatedFieldIntent intent) const {
   if (!field->is_extension()) {
-    SetHasBitForRepeated(message, field);
+    SetHasBit(message, field);
   }
   return static_cast<RepeatedPtrField<std::string>*>(
       MutableRawRepeatedString(message, field, true, intent));
@@ -1689,7 +1677,7 @@ inline RepeatedPtrField<Message>* Reflection::MutableRepeatedPtrFieldInternal(
     Message* message, const FieldDescriptor* field,
     GetRepeatedFieldIntent intent) const {
   if (!field->is_extension()) {
-    SetHasBitForRepeated(message, field);
+    SetHasBit(message, field);
   }
   return static_cast<RepeatedPtrField<Message>*>(MutableRawRepeatedField(
       message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1, nullptr, intent));
@@ -1709,7 +1697,7 @@ inline RepeatedPtrField<PB>* Reflection::MutableRepeatedPtrFieldInternal(
     Message* message, const FieldDescriptor* field,
     GetRepeatedFieldIntent intent) const {
   if (!field->is_extension()) {
-    SetHasBitForRepeated(message, field);
+    SetHasBit(message, field);
   }
   return static_cast<RepeatedPtrField<PB>*>(MutableRawRepeatedField(
       message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1,
@@ -1921,7 +1909,7 @@ MutableRepeatedFieldRef<T> Reflection::GetMutableRepeatedFieldRef(
     Message* message, const FieldDescriptor* field) const {
   ABSL_DCHECK_EQ(message->GetReflection(), this);
   if (!field->is_extension()) {
-    SetHasBitForRepeated(message, field);
+    SetHasBit(message, field);
   }
   return MutableRepeatedFieldRef<T>(message, field);
 }

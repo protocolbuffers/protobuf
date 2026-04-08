@@ -173,11 +173,37 @@ where
 pub trait KernelMessage: CppGetRawMessage + CppGetRawMessageMut + OwnedMessageInterop {}
 impl<T: CppGetRawMessage + CppGetRawMessageMut + OwnedMessageInterop> KernelMessage for T {}
 
-pub trait KernelMessageView<'msg>: CppGetRawMessage + MessageViewInterop<'msg> {}
-impl<'msg, T: CppGetRawMessage + MessageViewInterop<'msg>> KernelMessageView<'msg> for T {}
+pub trait KernelMessageView<'msg>:
+    CppGetRawMessage + MessageViewInterop<'msg> + AsView + From<MessageViewInner<'msg, Self::KMessage>>
+{
+    type KMessage;
+}
 
-pub trait KernelMessageMut<'msg>: CppGetRawMessageMut + MessageMutInterop<'msg> {}
-impl<'msg, T: CppGetRawMessageMut + MessageMutInterop<'msg>> KernelMessageMut<'msg> for T {}
+impl<'msg, T> KernelMessageView<'msg> for T
+where
+    T: CppGetRawMessage
+        + MessageViewInterop<'msg>
+        + AsView
+        + From<MessageViewInner<'msg, T::Proxied>>,
+{
+    type KMessage = T::Proxied;
+}
+
+pub trait KernelMessageMut<'msg>:
+    CppGetRawMessageMut + MessageMutInterop<'msg> + AsMut + From<MessageMutInner<'msg, Self::KMessage>>
+{
+    type KMessage;
+}
+
+impl<'msg, T> KernelMessageMut<'msg> for T
+where
+    T: CppGetRawMessageMut
+        + MessageMutInterop<'msg>
+        + AsMut
+        + From<MessageMutInner<'msg, T::MutProxied>>,
+{
+    type KMessage = T::MutProxied;
+}
 
 /// Message equality definition which may have both false-negatives and false-positives in the face
 /// of unknown fields.

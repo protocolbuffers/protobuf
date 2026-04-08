@@ -89,7 +89,7 @@ internal::EnumTraitsT<::pb::JavaFeatures_Utf8Validation_internal_data_>
 namespace internal {
 template <>
 inline ::absl::string_view GetFeatureSetDefaultsData<::pb::JavaFeatures>() {
-  static constexpr char kDefaults[] = "CicYhAciA8o+ACodCAEQAhgCIAMoATACOAJAAco+CggBEAEYACABKAMKJxjnByIDyj4AKh0IAhABGAEgAigBMAE4AkAByj4KCAAQARgAIAEoAwonGOgHIhMIARABGAEgAigBMAHKPgQIABABKg04AkAByj4GGAAgASgDCicY6QciGwgBEAEYASACKAEwATgBQALKPggIABABGAAoASoFyj4CIAAg5gco6Qc=";
+  static constexpr char kDefaults[] = "CicYhAciA8o+ACodCAEQAhgCIAMoATACOAJAAco+CggBEAEYACABKAMKJxjnByIDyj4AKh0IAhABGAEgAigBMAE4AkAByj4KCAAQARgAIAEoAwonGOgHIhMIARABGAEgAigBMAHKPgQIABABKg04AkAByj4GGAAgASgDCicY6QciGwgBEAEYASACKAEwATgBQALKPggIABABGAAoASoFyj4CIAAKJxiPTiIbCAEQARgBIAIoATABOANAAso+CAgAEAEYACgBKgXKPgIgACDmByjpBw==";
   return kDefaults;
 }
 }  // namespace internal
@@ -651,8 +651,7 @@ inline bool JavaFeatures::has_legacy_closed_enum() const {
 inline void JavaFeatures::clear_legacy_closed_enum() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.legacy_closed_enum_ = false;
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
 }
 inline bool JavaFeatures::legacy_closed_enum() const {
   // @@protoc_insertion_point(field_get:pb.JavaFeatures.legacy_closed_enum)
@@ -680,8 +679,7 @@ inline bool JavaFeatures::has_utf8_validation() const {
 inline void JavaFeatures::clear_utf8_validation() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.utf8_validation_ = 0;
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
 }
 inline ::pb::JavaFeatures_Utf8Validation JavaFeatures::utf8_validation() const {
   // @@protoc_insertion_point(field_get:pb.JavaFeatures.utf8_validation)
@@ -712,8 +710,7 @@ inline bool JavaFeatures::has_large_enum() const {
 inline void JavaFeatures::clear_large_enum() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.large_enum_ = false;
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000004U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
 }
 inline bool JavaFeatures::large_enum() const {
   // @@protoc_insertion_point(field_get:pb.JavaFeatures.large_enum)
@@ -741,8 +738,7 @@ inline bool JavaFeatures::has_use_old_outer_classname_default() const {
 inline void JavaFeatures::clear_use_old_outer_classname_default() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.use_old_outer_classname_default_ = false;
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000008U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
 }
 inline bool JavaFeatures::use_old_outer_classname_default() const {
   // @@protoc_insertion_point(field_get:pb.JavaFeatures.use_old_outer_classname_default)
@@ -770,8 +766,7 @@ inline bool JavaFeatures::has_nest_in_file_class() const {
 inline void JavaFeatures::clear_nest_in_file_class() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.nest_in_file_class_ = 0;
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000010U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
 }
 inline ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass JavaFeatures::nest_in_file_class() const {
   // @@protoc_insertion_point(field_get:pb.JavaFeatures.nest_in_file_class)

@@ -149,8 +149,7 @@ struct DurationGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Duration_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Duration::InternalGenerateClassData_(
-                               _default, &Duration_globals_._table.header),
-                           &Duration_globals_._table.header),
+            _default, &Duration_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Duration>(
             GetClassData()))

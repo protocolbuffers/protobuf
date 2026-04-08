@@ -3474,13 +3474,9 @@ INSTANTIATE_TEST_SUITE_P(
             )pb",
             /*expected_output=*/
             {
-                /*expected_hasbitmode=*/
-                internal::EnableExperimentalHintHasBitsForRepeatedFields()
-                    ? HasbitMode::kHintHasbit
-                    : HasbitMode::kNoHasbit,
+                /*expected_hasbitmode=*/HasbitMode::kHintHasbit,
                 /*expected_has_presence=*/false,
-                /*expected_has_hasbit=*/
-                internal::EnableExperimentalHintHasBitsForRepeatedFields(),
+                /*expected_has_hasbit=*/true,
             }},
         // Test case: proto3 singular fields
         HasHasbitTestParam{R"pb(name: 'foo.proto'
@@ -3541,13 +3537,9 @@ INSTANTIATE_TEST_SUITE_P(
             )pb",
             /*expected_output=*/
             {
-                /*expected_hasbitmode=*/
-                internal::EnableExperimentalHintHasBitsForRepeatedFields()
-                    ? HasbitMode::kHintHasbit
-                    : HasbitMode::kNoHasbit,
+                /*expected_hasbitmode=*/HasbitMode::kHintHasbit,
                 /*expected_has_presence=*/false,
-                /*expected_has_hasbit=*/
-                internal::EnableExperimentalHintHasBitsForRepeatedFields(),
+                /*expected_has_hasbit=*/true,
             }},
         // Test case: proto2 extension fields.
         // Note that extension fields don't have hasbits.
@@ -3696,13 +3688,9 @@ INSTANTIATE_TEST_SUITE_P(
             )pb",
             /*expected_output=*/
             {
-                /*expected_hasbitmode=*/
-                internal::EnableExperimentalHintHasBitsForRepeatedFields()
-                    ? HasbitMode::kHintHasbit
-                    : HasbitMode::kNoHasbit,
+                /*expected_hasbitmode=*/HasbitMode::kHintHasbit,
                 /*expected_has_presence=*/false,
-                /*expected_has_hasbit=*/
-                internal::EnableExperimentalHintHasBitsForRepeatedFields(),
+                /*expected_has_hasbit=*/true,
             }},
         // Test case: extension fields.
         // Note that extension fields don't have hasbits.
@@ -10477,6 +10465,205 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithPoolOptInIfMessagesAreGood) {
     }
   )schema"),
               NotNull());
+}
+
+TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsInEdition2024) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+
+  // Check that naming collisions are allowed in edition 2024.
+  ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
+    edition = "2024";
+    package naming;
+    message Foo {
+      string has_bar = 1;
+      string bar = 2;
+    }
+  )schema"),
+              NotNull());
+}
+
+TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsInStyle2024) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+
+  // Check that naming collisions are allowed in STYLE2024.
+  ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
+    edition = "UNSTABLE";
+    option features.enforce_naming_style = STYLE2024;
+    package naming;
+    message Foo {
+      string has_bar = 1;
+      string bar = 2;
+    }
+  )schema"),
+              NotNull());
+}
+
+TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsInStyle2026) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+
+  // These are allowed because they don't collide with any existing field.
+  ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
+    edition = "UNSTABLE";
+    option features.enforce_naming_style = STYLE2026;
+    package naming;
+    message Foo {
+      string has_bar = 1;
+      string baz = 2;
+      string bar_value = 3;
+    }
+  )schema"),
+              NotNull());
+}
+
+TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsOneOfInStyle2026) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+
+  // This is allowed because the oneof doesn't collide with any existing field.
+  ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
+    edition = "UNSTABLE";
+    option features.enforce_naming_style = STYLE2026;
+    package naming;
+    message Foo {
+      oneof has_bar {
+        string test_field = 1;
+      }
+    }
+  )schema"),
+              NotNull());
+}
+
+struct CollisionNameParam {
+  std::string field_name;
+  std::string error_message_part;
+};
+
+class CollisionNameTest
+    : public FeaturesTest,
+      public testing::WithParamInterface<CollisionNameParam> {};
+
+INSTANTIATE_TEST_SUITE_P(
+    CollisionNameTests, CollisionNameTest,
+    testing::Values(
+        CollisionNameParam{"has_test_field", "should not begin with has_"},
+        CollisionNameParam{"get_test_field", "should not begin with get_"},
+        CollisionNameParam{"set_test_field", "should not begin with set_"},
+        CollisionNameParam{"clear_test_field", "should not begin with clear_"},
+        CollisionNameParam{"test_field_value", "should not end with _value"}),
+    [](const testing::TestParamInfo<CollisionNameParam>& info) {
+      return info.param.field_name;
+    });
+
+TEST_P(CollisionNameTest, NamingStyleViolationsWithCollisionsInStyle2026) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+  const CollisionNameParam& param = GetParam();
+  std::string schema = absl::Substitute(R"schema(
+    edition = "UNSTABLE";
+    message Foo {
+      string $0 = 1;
+      string test_field = 2;
+    }
+  )schema",
+                                        param.field_name);
+  ParseAndBuildFileWithErrorSubstr(
+      "foo.proto", schema,
+      absl::StrCat("Field name ", param.field_name, " ",
+                   param.error_message_part,
+                   " if a field named test_field exists. This can cause "
+                   "collisions in generated code."));
+}
+
+TEST_P(CollisionNameTest, NamingStyleViolationsInvalidFieldNameInStyle2026) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+  std::string schema = absl::StrCat(R"schema(
+    edition = "UNSTABLE";
+    message Foo {
+      string descriptor = 1;
+    }
+  )schema");
+  ParseAndBuildFileWithErrorSubstr(
+      "foo.proto", schema,
+      "Field name descriptor should not be named descriptor. This can cause "
+      "collisions in generated code.");
+}
+
+TEST_P(CollisionNameTest,
+       NamingStyleViolationsOneOfFieldNameCollisionInStyle2026) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+  std::string schema = absl::StrCat(R"schema(
+    edition = "UNSTABLE";
+    message Foo {
+      oneof bar {
+        string has_test_field = 1;
+        string test_field = 2;
+      }
+    }
+  )schema");
+  ParseAndBuildFileWithErrorSubstr("foo.proto", schema,
+                                   "Field name has_test_field should not begin "
+                                   "with has_ if a field named test_field "
+                                   "exists. This can cause collisions in "
+                                   "generated code.");
+}
+
+TEST_P(CollisionNameTest,
+       NamingStyleViolationsOneOfNameFieldNameCollisionInStyle2026) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+  std::string schema = absl::StrCat(R"schema(
+    edition = "UNSTABLE";
+    message Foo {
+      oneof has_test_field {
+        string test_field = 1;
+      }
+    }
+  )schema");
+  ParseAndBuildFileWithErrorSubstr("foo.proto", schema,
+                                   "Oneof name has_test_field should not begin "
+                                   "with has_ if a field named test_field "
+                                   "exists. This can cause collisions in "
+                                   "generated code.");
+}
+
+TEST_P(CollisionNameTest,
+       NamingStyleViolationsFieldNameOneOfNameCollisionInStyle2026) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+  std::string schema = absl::StrCat(R"schema(
+    edition = "UNSTABLE";
+    message Foo {
+      oneof test_field {
+        string has_test_field = 1;
+      }
+    }
+  )schema");
+  ParseAndBuildFileWithErrorSubstr(
+      "foo.proto", schema,
+      "Field name has_test_field should not begin with has_ if a field named "
+      "test_field exists. This can cause collisions in generated code.");
+}
+
+TEST_P(CollisionNameTest, NamingStyleViolationsInvalidOneOfNameInStyle2026) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+  std::string schema = absl::StrCat(R"schema(
+    edition = "UNSTABLE";
+    message Foo {
+      oneof descriptor {
+        string test_field = 1;
+      }
+    }
+  )schema");
+  ParseAndBuildFileWithErrorSubstr(
+      "foo.proto", schema,
+      "Oneof name descriptor should not be named descriptor. This can cause "
+      "collisions in generated code.");
 }
 
 TEST_F(FeaturesTest, VisibilityFeatureSetStrict) {

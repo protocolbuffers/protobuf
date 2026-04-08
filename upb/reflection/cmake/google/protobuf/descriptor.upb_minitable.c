@@ -1253,7 +1253,7 @@ const upb_MiniTableEnum google__protobuf__FeatureSet__EnforceNamingStyle_enum_in
     64,
     0,
     {
-        0x7,
+        0xf,
         0x0,
     },
 };

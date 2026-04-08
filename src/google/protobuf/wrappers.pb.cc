@@ -158,8 +158,7 @@ struct UInt64ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  UInt64Value_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(UInt64Value::InternalGenerateClassData_(
-                               _default, &UInt64Value_globals_._table.header),
-                           &UInt64Value_globals_._table.header),
+            _default, &UInt64Value_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<UInt64Value>(
             GetClassData()))
@@ -307,8 +306,7 @@ struct UInt32ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  UInt32Value_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(UInt32Value::InternalGenerateClassData_(
-                               _default, &UInt32Value_globals_._table.header),
-                           &UInt32Value_globals_._table.header),
+            _default, &UInt32Value_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<UInt32Value>(
             GetClassData()))
@@ -461,8 +459,7 @@ struct StringValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  StringValue_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(StringValue::InternalGenerateClassData_(
-                               _default, &StringValue_globals_._table.header),
-                           &StringValue_globals_._table.header),
+            _default, &StringValue_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<StringValue>(
             GetClassData()))
@@ -610,8 +607,7 @@ struct Int64ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Int64Value_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Int64Value::InternalGenerateClassData_(
-                               _default, &Int64Value_globals_._table.header),
-                           &Int64Value_globals_._table.header),
+            _default, &Int64Value_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Int64Value>(
             GetClassData()))
@@ -759,8 +755,7 @@ struct Int32ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Int32Value_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Int32Value::InternalGenerateClassData_(
-                               _default, &Int32Value_globals_._table.header),
-                           &Int32Value_globals_._table.header),
+            _default, &Int32Value_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Int32Value>(
             GetClassData()))
@@ -908,8 +903,7 @@ struct FloatValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  FloatValue_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(FloatValue::InternalGenerateClassData_(
-                               _default, &FloatValue_globals_._table.header),
-                           &FloatValue_globals_._table.header),
+            _default, &FloatValue_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FloatValue>(
             GetClassData()))
@@ -1057,8 +1051,7 @@ struct DoubleValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  DoubleValue_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(DoubleValue::InternalGenerateClassData_(
-                               _default, &DoubleValue_globals_._table.header),
-                           &DoubleValue_globals_._table.header),
+            _default, &DoubleValue_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<DoubleValue>(
             GetClassData()))
@@ -1208,8 +1201,7 @@ struct BytesValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  BytesValue_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(BytesValue::InternalGenerateClassData_(
-                               _default, &BytesValue_globals_._table.header),
-                           &BytesValue_globals_._table.header),
+            _default, &BytesValue_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<BytesValue>(
             GetClassData()))
@@ -1357,8 +1349,7 @@ struct BoolValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  BoolValue_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(BoolValue::InternalGenerateClassData_(
-                               _default, &BoolValue_globals_._table.header),
-                           &BoolValue_globals_._table.header),
+            _default, &BoolValue_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<BoolValue>(
             GetClassData()))

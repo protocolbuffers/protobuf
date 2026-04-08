@@ -3458,7 +3458,9 @@ upb_MiniTableExtension_GetSubEnum(const struct upb_MiniTableExtension* e) {
 UPB_API_INLINE bool upb_MiniTableExtension_SetSubMessage(
     struct upb_MiniTableExtension* e, const struct upb_MiniTable* m) {
   if (e->UPB_PRIVATE(field).UPB_PRIVATE(descriptortype) !=
-      kUpb_FieldType_Message) {
+          kUpb_FieldType_Message &&
+      e->UPB_PRIVATE(field).UPB_PRIVATE(descriptortype) !=
+          kUpb_FieldType_Group) {
     return false;
   }
   e->UPB_PRIVATE(sub).UPB_PRIVATE(submsg) = m;
@@ -5765,12 +5767,14 @@ extern "C" {
 
 typedef struct upb_ExtensionRegistry upb_ExtensionRegistry;
 
+// LINT.IfChange
 typedef enum {
   kUpb_ExtensionRegistryStatus_Ok = 0,
   kUpb_ExtensionRegistryStatus_DuplicateEntry = 1,
   kUpb_ExtensionRegistryStatus_OutOfMemory = 2,
   kUpb_ExtensionRegistryStatus_InvalidExtension = 3,
 } upb_ExtensionRegistryStatus;
+// LINT.ThenChange(//depot/google3/third_party/upb/rust/sys/mini_table/extension_registry.rs)
 
 // Creates a upb_ExtensionRegistry in the given arena.
 // The arena must outlive any use of the extreg.
@@ -6407,7 +6411,8 @@ typedef enum {
 typedef enum {
   google_protobuf_FeatureSet_ENFORCE_NAMING_STYLE_UNKNOWN = 0,
   google_protobuf_FeatureSet_STYLE2024 = 1,
-  google_protobuf_FeatureSet_STYLE_LEGACY = 2
+  google_protobuf_FeatureSet_STYLE_LEGACY = 2,
+  google_protobuf_FeatureSet_STYLE2026 = 3
 } google_protobuf_FeatureSet_EnforceNamingStyle;
 
 typedef enum {
@@ -15000,6 +15005,7 @@ UPB_INLINE int upb_Log2Ceiling(size_t x) {
 #elif SIZE_MAX == UINT_MAX && UPB_HAS_BUILTIN(__builtin_clz)
   return (sizeof(size_t) * CHAR_BIT) - __builtin_clz(x - 1);
 #else
+  if (x > SIZE_MAX / 2) return sizeof(size_t) * CHAR_BIT;
   int lg2 = 0;
   while ((1 << lg2) < x) lg2++;
   return lg2;
@@ -15015,6 +15021,14 @@ UPB_INLINE size_t upb_RoundUpToPowerOfTwo(size_t x) {
     return SIZE_MAX;
   }
   return ((size_t)1) << lg2;
+}
+
+UPB_INLINE bool upb_ShlOverflow(size_t* a, unsigned int b) {
+  if (*a > (SIZE_MAX >> b)) {
+    return true;
+  }
+  *a <<= b;
+  return false;
 }
 
 #ifdef __cplusplus
@@ -17380,7 +17394,7 @@ upb_MessageDef* _upb_MessageDefs_New(
 // features. This is used for feature resolution under Editions.
 // NOLINTBEGIN
 // clang-format off
-#define UPB_INTERNAL_UPB_EDITION_DEFAULTS "\n\027\030\204\007\"\000*\020\010\001\020\002\030\002 \003(\0010\0028\002@\001\n\027\030\347\007\"\000*\020\010\002\020\001\030\001 \002(\0010\0018\002@\001\n\027\030\350\007\"\014\010\001\020\001\030\001 \002(\0010\001*\0048\002@\001\n\027\030\351\007\"\020\010\001\020\001\030\001 \002(\0010\0018\001@\002*\000 \346\007(\351\007"
+#define UPB_INTERNAL_UPB_EDITION_DEFAULTS "\n\027\030\204\007\"\000*\020\010\001\020\002\030\002 \003(\0010\0028\002@\001\n\027\030\347\007\"\000*\020\010\002\020\001\030\001 \002(\0010\0018\002@\001\n\027\030\350\007\"\014\010\001\020\001\030\001 \002(\0010\001*\0048\002@\001\n\027\030\351\007\"\020\010\001\020\001\030\001 \002(\0010\0018\001@\002*\000\n\027\030\217N\"\020\010\001\020\001\030\001 \002(\0010\0018\003@\002*\000 \346\007(\351\007"
 // clang-format on
 // NOLINTEND
 

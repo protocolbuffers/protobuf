@@ -5060,6 +5060,17 @@ class DescriptorBuilder {
   void ValidateNamingStyle(const DescriptorT* file,
                            const DescriptorProtoT& proto);
 
+  template <typename DescriptorT>
+  bool IsStyleOrGreater(const DescriptorT* descriptor,
+                        FeatureSet::EnforceNamingStyle style) {
+    return internal::InternalFeatureHelper::GetFeatures(*descriptor)
+                   .enforce_naming_style() >= style &&
+           // Required because STYLE_LEGACY comes after STYLE2024 in enum
+           // definition.
+           internal::InternalFeatureHelper::GetFeatures(*descriptor)
+                   .enforce_naming_style() != FeatureSet::STYLE_LEGACY;
+  }
+
   // Nothing to validate for extension ranges. This overload only exists
   // so that VisitDescriptors can be exhaustive.
   void ValidateNamingStyle(const Descriptor::ExtensionRange* ext_range,
@@ -6717,8 +6728,7 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   if (!had_errors_ && pool_->enforce_naming_style_) {
     internal::VisitDescriptors(
         *result, proto, [&](const auto& descriptor, const auto& desc_proto) {
-          if (internal::InternalFeatureHelper::GetFeatures(descriptor)
-                  .enforce_naming_style() == FeatureSet::STYLE2024) {
+          if (IsStyleOrGreater(&descriptor, FeatureSet::STYLE2024)) {
             ValidateNamingStyle(&descriptor, desc_proto);
           }
         });
@@ -9298,11 +9308,72 @@ bool IsValidUpperSnakeCaseName(absl::string_view name, std::string* error) {
   return true;
 }
 
+template <typename DescriptorType>
+bool IsValidFieldNonCollisionName(const DescriptorType* descriptor,
+                                  std::string* error) {
+  ABSL_CHECK(descriptor != nullptr);
+  absl::string_view name = descriptor->name();
+  const Descriptor* message = descriptor->containing_type();
+
+  static const auto& kRestrictedFieldPrefixes =
+      *new absl::flat_hash_set<absl::string_view>({
+          "has_",
+          "get_",
+          "set_",
+          "clear_",
+      });
+  static const auto& kRestrictedFieldSuffixes =
+      *new absl::flat_hash_set<absl::string_view>({"_value"});
+
+  if (message != nullptr) {
+    for (absl::string_view prefix : kRestrictedFieldPrefixes) {
+      if (absl::StartsWith(name, prefix)) {
+        absl::string_view without_prefix = name;
+        without_prefix.remove_prefix(prefix.size());
+        if ((message->FindFieldByName(without_prefix) != nullptr ||
+             message->FindOneofByName(without_prefix) != nullptr)) {
+          *error = absl::StrCat("should not begin with ", prefix,
+                                " if a field named ", without_prefix,
+                                " exists. This can cause collisions in "
+                                "generated code.");
+          return false;
+        }
+      }
+    }
+    for (absl::string_view suffix : kRestrictedFieldSuffixes) {
+      if (absl::EndsWith(name, suffix)) {
+        absl::string_view without_suffix = name;
+        without_suffix.remove_suffix(suffix.size());
+        if ((message->FindFieldByName(without_suffix) != nullptr) ||
+            (message->FindOneofByName(without_suffix) != nullptr)) {
+          *error = absl::StrCat("should not end with ", suffix,
+                                " if a field named ", without_suffix,
+                                " exists. This can cause collisions in "
+                                "generated code.");
+          return false;
+        }
+      }
+    }
+  }
+
+  if (name == "descriptor") {
+    *error =
+        "should not be named descriptor. This can cause collisions in "
+        "generated code.";
+    return false;
+  }
+  return true;
+}
+
 constexpr absl::string_view kNamingStyleOptOutMessage =
     " (features.enforce_naming_style = STYLE_LEGACY can be used to opt out of "
     "this check)";
 
 }  // namespace
+
+constexpr absl::string_view kNamingStyleCollisionsOptOutMessage =
+    " (features.enforce_naming_style = STYLE2024 can be used to opt out of "
+    "this check)";
 
 template <>
 void DescriptorBuilder::ValidateNamingStyle(const FileDescriptor* file,
@@ -9342,6 +9413,14 @@ void DescriptorBuilder::ValidateNamingStyle(const OneofDescriptor* oneof,
                           kNamingStyleOptOutMessage);
     });
   }
+  if (IsStyleOrGreater(oneof, FeatureSet::STYLE2026)) {
+    if (!IsValidFieldNonCollisionName(oneof, &error)) {
+      AddError(oneof->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
+        return absl::StrCat("Oneof name ", oneof->name(), " ", error,
+                            kNamingStyleCollisionsOptOutMessage);
+      });
+    }
+  }
 }
 
 template <>
@@ -9353,6 +9432,14 @@ void DescriptorBuilder::ValidateNamingStyle(const FieldDescriptor* field,
       return absl::StrCat("Field name ", field->name(), " ", error,
                           kNamingStyleOptOutMessage);
     });
+  }
+  if (IsStyleOrGreater(field, FeatureSet::STYLE2026)) {
+    if (!IsValidFieldNonCollisionName(field, &error)) {
+      AddError(field->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
+        return absl::StrCat("Field name ", field->name(), " ", error,
+                            kNamingStyleCollisionsOptOutMessage);
+      });
+    }
   }
 }
 
@@ -10627,14 +10714,8 @@ HasbitMode GetFieldHasbitModeWithoutProfile(const FieldDescriptor* field) {
     return HasbitMode::kTrueHasbit;
   }
 
-  if constexpr (EnableExperimentalHintHasBitsForRepeatedFields()) {
-    // With hasbits for repeated fields enabled, both implicit-presence and
-    // repeated/map fields have hint hasbits.
-    return HasbitMode::kHintHasbit;
-  }
-
-  // Implicit-presence fields have hint hasbits, repeated/map fields do not.
-  return field->is_repeated() ? HasbitMode::kNoHasbit : HasbitMode::kHintHasbit;
+  // Both implicit-presence and repeated/map fields have hint hasbits.
+  return HasbitMode::kHintHasbit;
 }
 
 bool HasHasbitWithoutProfile(const FieldDescriptor* field) {

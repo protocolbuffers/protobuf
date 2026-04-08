@@ -1993,7 +1993,7 @@ const upb_MiniTableEnum google__protobuf__FeatureSet__EnforceNamingStyle_enum_in
     64,
     0,
     {
-        0x7,
+        0xf,
         0x0,
     },
 };
@@ -6222,14 +6222,18 @@ void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t size) {
 
   _upb_Arena_AddBlock(a, block);
 
-  if (UPB_UNLIKELY(one_off)) {
+  // Recheck size, in case the allocator gave us a much larger block than we
+  // requested and we want to make it the new allocating region.
+  if (UPB_UNLIKELY(one_off) &&
+      _upb_Arena_WouldReduceFreeSpace(a, size, block->size)) {
     // Increase size_hint, so that a series of one-off allocations will
     // eventually convince us to switch to exponential growth at the larger
     // size.
     ai->size_hint = UPB_MIN(ai->size_hint + (size >> 1), max_block_size >> 1);
     char* allocated = UPB_PTR_AT(block, kUpb_MemblockReserve, char);
-    UPB_PRIVATE(upb_Xsan_PoisonRegion)(allocated + size,
-                                       UPB_PRIVATE(kUpb_Asan_GuardSize));
+    char* poison_start = allocated + size - UPB_PRIVATE(kUpb_Asan_GuardSize);
+    UPB_PRIVATE(upb_Xsan_PoisonRegion)(
+        poison_start, UPB_PTR_AT(block, block->size, char) - poison_start);
     return allocated;
   } else {
     ai->last_block_size = UPB_MIN(block->size, UINT32_MAX);
@@ -6904,9 +6908,17 @@ bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
   void* ptr = upb_Array_MutableDataPtr(array);
 
   // Log2 ceiling of size.
-  while (new_capacity < min_capacity) new_capacity *= 2;
+  while (new_capacity < min_capacity) {
+    if (upb_ShlOverflow(&new_capacity, 1)) {
+      new_capacity = SIZE_MAX;
+      break;
+    }
+  }
 
-  const size_t new_bytes = new_capacity << lg2;
+  size_t new_bytes = new_capacity;
+  if (upb_ShlOverflow(&new_bytes, lg2)) {
+    return false;
+  }
   ptr = upb_Arena_Realloc(arena, ptr, old_bytes, new_bytes);
   if (!ptr) return false;
 

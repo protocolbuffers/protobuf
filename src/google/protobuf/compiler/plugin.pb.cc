@@ -172,8 +172,7 @@ struct VersionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  Version_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(Version::InternalGenerateClassData_(
-                               _default, &Version_globals_._table.header),
-                           &Version_globals_._table.header),
+            _default, &Version_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Version>(
             GetClassData()))
@@ -354,8 +353,7 @@ struct CodeGeneratorResponse_FileGlobalsTypeInternal : ::_pbi::MessageGlobalsBas
                  CodeGeneratorResponse_File_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(CodeGeneratorResponse_File::InternalGenerateClassData_(
-                               _default, &CodeGeneratorResponse_File_globals_._table.header),
-                           &CodeGeneratorResponse_File_globals_._table.header),
+            _default, &CodeGeneratorResponse_File_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorResponse_File>(
             GetClassData()))
@@ -546,8 +544,7 @@ struct CodeGeneratorResponseGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  CodeGeneratorResponse_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(CodeGeneratorResponse::InternalGenerateClassData_(
-                               _default, &CodeGeneratorResponse_globals_._table.header),
-                           &CodeGeneratorResponse_globals_._table.header),
+            _default, &CodeGeneratorResponse_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorResponse>(
             GetClassData()))
@@ -753,8 +750,7 @@ struct CodeGeneratorRequestGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
                  CodeGeneratorRequest_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
         MessageGlobalsBase(CodeGeneratorRequest::InternalGenerateClassData_(
-                               _default, &CodeGeneratorRequest_globals_._table.header),
-                           &CodeGeneratorRequest_globals_._table.header),
+            _default, &CodeGeneratorRequest_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorRequest>(
             GetClassData()))
@@ -1207,14 +1203,12 @@ void Version::InternalSwap(Version* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
 void CodeGeneratorRequest::clear_proto_file() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.proto_file_.Clear();
-  ClearHasBitForRepeated(_impl_._has_bits_[0],
-                  0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
 }
 void CodeGeneratorRequest::clear_source_file_descriptors() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.source_file_descriptors_.Clear();
-  ClearHasBitForRepeated(_impl_._has_bits_[0],
-                  0x00000010U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
 }
 CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -1351,10 +1345,10 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
 
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       _impl_.file_to_generate_.Clear();
     }
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000002U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       _impl_.proto_file_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
@@ -1364,7 +1358,7 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
       ABSL_DCHECK(_impl_.compiler_version_ != nullptr);
       _impl_.compiler_version_->Clear();
     }
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000010U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       _impl_.source_file_descriptors_.Clear();
     }
   }
@@ -1392,7 +1386,7 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
 
   cached_has_bits = this_._impl_._has_bits_[0];
   // repeated string file_to_generate = 1;
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     for (int i = 0, n = this_._internal_file_to_generate_size(); i < n; ++i) {
       const auto& s = this_._internal_file_to_generate().Get(i);
       target = stream->WriteString(1, s, target);
@@ -1413,7 +1407,7 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
   }
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000002U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
     for (unsigned i = 0, n = static_cast<unsigned>(
                              this_._internal_proto_file_size());
          i < n; i++) {
@@ -1426,7 +1420,7 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
   }
 
   // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000010U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000010U)) {
     for (unsigned i = 0, n = static_cast<unsigned>(
                              this_._internal_source_file_descriptors_size());
          i < n; i++) {
@@ -1465,7 +1459,7 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     // repeated string file_to_generate = 1;
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size +=
           1 * ::google::protobuf::internal::FromIntSize(this_._internal_file_to_generate().size());
       for (int i = 0, n = this_._internal_file_to_generate().size(); i < n; ++i) {
@@ -1474,7 +1468,7 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
       }
     }
     // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000002U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       total_size += 1UL * this_._internal_proto_file_size();
       for (const auto& msg : this_._internal_proto_file()) {
         total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -1491,7 +1485,7 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
                     ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.compiler_version_);
     }
     // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000010U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       total_size += 2UL * this_._internal_source_file_descriptors_size();
       for (const auto& msg : this_._internal_source_file_descriptors()) {
         total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -1517,12 +1511,12 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::MessageLite& to_msg,
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       _this->_internal_mutable_file_to_generate()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_file_to_generate());
     }
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000002U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       _this->_internal_mutable_proto_file()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_proto_file());
@@ -1538,7 +1532,7 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::MessageLite& to_msg,
         _this->_impl_.compiler_version_->MergeFrom(*from._impl_.compiler_version_);
       }
     }
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000010U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       _this->_internal_mutable_source_file_descriptors()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_source_file_descriptors());
@@ -1587,8 +1581,7 @@ void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* PROTOBUF_RESTRICT 
 void CodeGeneratorResponse_File::clear_generated_code_info() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.generated_code_info_ != nullptr) _impl_.generated_code_info_->Clear();
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000008U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
 }
 CodeGeneratorResponse_File::CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -1989,7 +1982,7 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
 
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       _impl_.file_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
@@ -2052,7 +2045,7 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
   }
 
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     for (unsigned i = 0, n = static_cast<unsigned>(
                              this_._internal_file_size());
          i < n; i++) {
@@ -2091,7 +2084,7 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size += 1UL * this_._internal_file_size();
       for (const auto& msg : this_._internal_file()) {
         total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -2137,7 +2130,7 @@ void CodeGeneratorResponse::MergeImpl(::google::protobuf::MessageLite& to_msg,
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       _this->_internal_mutable_file()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_file());

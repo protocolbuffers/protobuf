@@ -5,6 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use super::sys::mini_table::extension_registry::upb_ExtensionRegistry;
 use super::sys::wire::wire::{upb_Decode, upb_Encode, DecodeStatus, EncodeStatus};
 use super::{Arena, AssociatedMiniTable, MessagePtr};
 
@@ -53,12 +54,13 @@ pub fn encode<T: AssociatedMiniTable>(msg: MessagePtr<T>) -> Result<Vec<u8>, Enc
 pub unsafe fn decode<T: AssociatedMiniTable>(
     buf: &[u8],
     msg: MessagePtr<T>,
+    extreg: *const upb_ExtensionRegistry,
     arena: &Arena,
 ) -> Result<(), DecodeStatus> {
     // SAFETY:
     // - `msg` is mutable and is associated with `mini_table`.
     // - `decode_options::CHECK_REQUIRED` is a valid decode option.
-    unsafe { decode_with_options(buf, msg, arena, decode_options::CHECK_REQUIRED) }
+    unsafe { decode_with_options(buf, msg, extreg, arena, decode_options::CHECK_REQUIRED) }
 }
 
 /// Decodes into the provided message (merge semantics). If Err, then
@@ -70,6 +72,7 @@ pub unsafe fn decode<T: AssociatedMiniTable>(
 pub unsafe fn decode_with_options<T: AssociatedMiniTable>(
     buf: &[u8],
     msg: MessagePtr<T>,
+    extreg: *const upb_ExtensionRegistry,
     arena: &Arena,
     decode_options_bitmask: i32,
 ) -> Result<(), DecodeStatus> {
@@ -87,7 +90,7 @@ pub unsafe fn decode_with_options<T: AssociatedMiniTable>(
             len,
             msg.raw(),
             T::mini_table(),
-            core::ptr::null(),
+            extreg,
             decode_options_bitmask,
             arena.raw(),
         )

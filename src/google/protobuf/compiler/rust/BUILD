@@ -200,6 +200,7 @@ bootstrap_cc_library(
     hdrs = ["generator.h"],
     bootstrap_deps = [
         ":enum",
+        ":extension",
         ":message",
         "//upb/reflection:reflection",
         "//upb_generator:plugin",
@@ -242,6 +243,7 @@ bootstrap_cc_library(
     hdrs = ["message.h"],
     bootstrap_deps = [
         ":enum",
+        ":extension",
         "//upb/reflection:reflection",
     ],
     copts = COPTS,
@@ -262,6 +264,25 @@ bootstrap_cc_library(
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
+    ],
+)
+
+bootstrap_cc_library(
+    name = "extension",
+    srcs = ["extension.cc"],
+    hdrs = ["extension.h"],
+    bootstrap_deps = [
+        "//upb/reflection:reflection",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":context",
+        ":naming",
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler/cpp:names",
+        "//src/google/protobuf/compiler/rust/accessors",
+        "@abseil-cpp//absl/strings",
     ],
 )
 

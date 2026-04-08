@@ -566,7 +566,11 @@ message FileOptions {
 
   // Range reserved for first-class custom options defined by the Protobuf
   // team. User custom options must use the 1000+ range instead.
-  extensions 990 to 998;
+  extensions 990 to 998 [declaration = {
+    number: 990,
+    full_name: ".pb.file.cpp",
+    type: ".pb.file.CppFileOptions"
+  }];
 
   // The parser stores options it doesn't recognize here.
   // See the documentation for the "Options" section above.
@@ -1146,6 +1150,7 @@ message FeatureSet {
     ENFORCE_NAMING_STYLE_UNKNOWN = 0;
     STYLE2024 = 1;
     STYLE_LEGACY = 2;
+    STYLE2026 = 3;
   }
   optional EnforceNamingStyle enforce_naming_style = 7 [
     retention = RETENTION_SOURCE,
@@ -1162,7 +1167,8 @@ message FeatureSet {
       edition_introduced: EDITION_2024,
     },
     edition_defaults = { edition: EDITION_LEGACY, value: "STYLE_LEGACY" },
-    edition_defaults = { edition: EDITION_2024, value: "STYLE2024" }
+    edition_defaults = { edition: EDITION_2024, value: "STYLE2024" },
+    edition_defaults = { edition: EDITION_UNSTABLE, value: "STYLE2026" }
   ];
 
   message VisibilityFeature {
