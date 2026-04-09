@@ -25,6 +25,7 @@ cc_library(
     features = UPB_DEFAULT_FEATURES,
     visibility = [
         "//upb:__pkg__",
+        "//upb/message:__subpackages__",
         "//upb/wire/decode_fast:__subpackages__",
     ],
     deps = [
@@ -51,6 +52,7 @@ cc_library(
     hdrs = [
         "decode.h",
         "encode.h",
+        "internal/encode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     features = UPB_DEFAULT_FEATURES,
@@ -205,7 +207,10 @@ cc_test(
 cc_library(
     name = "eps_copy_input_stream_internal",
     hdrs = ["internal/eps_copy_input_stream.h"],
-    visibility = ["//upb:__pkg__"],
+    visibility = [
+        "//upb:__pkg__",
+        "//upb/wire/decode_fast:__subpackages__",
+    ],
     deps = [
         "//upb/base",
         "//upb/mem",

@@ -40,6 +40,7 @@
 #include "upb/mini_table/internal/sub.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/internal/constants.h"
+#include "upb/wire/internal/encode.h"
 #include "upb/wire/types.h"
 #include "upb/wire/writer.h"
 
@@ -55,20 +56,21 @@ static uint64_t encode_zz64(int64_t n) {
 
 typedef struct {
   upb_EncodeStatus status;
-  jmp_buf err;
+  const char UPB_NODEREF *buf, *limit;
   upb_Arena* arena;
   // These should only be used for arithmetic and reallocation to allow full
   // aliasing analysis on the ptr argument.
-  const char UPB_NODEREF *buf, *limit;
   int options;
   int depth;
   _upb_mapsorter sorter;
+  jmp_buf* err;
+  UPB_PRIVATE(upb_Arena_BackAlloc) alloc;
 } upb_encstate;
 
 UPB_NORETURN static void encode_err(upb_encstate* e, upb_EncodeStatus s) {
   UPB_ASSERT(s != kUpb_EncodeStatus_Ok);
   e->status = s;
-  UPB_LONGJMP(e->err, 1);
+  UPB_LONGJMP(*e->err, 1);
 }
 
 // Subtraction is used for bounds checks, and the C standard says that pointer
@@ -78,26 +80,31 @@ static char initial_buf_sentinel;
 
 UPB_NOINLINE static char* encode_growbuffer(char* ptr, upb_encstate* e,
                                             size_t bytes) {
-  size_t old_size = e->limit - e->buf;
   size_t needed_size = bytes + (e->limit - ptr);
-  if (needed_size < bytes) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
-  size_t new_size = upb_RoundUpToPowerOfTwo(UPB_MAX(128, needed_size));
-  if (new_size == old_size) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
-  void* old_buf = e->buf == &initial_buf_sentinel ? NULL : (void*)e->buf;
-  char* new_buf = upb_Arena_Realloc(e->arena, old_buf, old_size, new_size);
+  if (!e->alloc.start) {
+    e->alloc =
+        UPB_PRIVATE(upb_Arena_TakeRemainingInBlock)(e->arena, needed_size);
+  }
+  if (!e->alloc.start || e->alloc.len < needed_size) {
+    if (needed_size < bytes) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
+    size_t new_size = upb_RoundUpToPowerOfTwo(UPB_MAX(128, needed_size));
+    if (new_size == (size_t)(e->buf - e->limit)) {
+      encode_err(e, kUpb_EncodeStatus_OutOfMemory);
+    }
+    size_t old_size = e->limit - e->buf;
 
-  if (!new_buf) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
+    UPB_PRIVATE(upb_Arena_BackAlloc)
+    alloc = UPB_PRIVATE(upb_Arena_ReallocBack)(e->arena, e->alloc, old_size,
+                                               new_size);
 
-  // We want previous data at the end, realloc() put it at the beginning.
-  // TODO: This is somewhat inefficient since we are copying twice.
-  // Maybe create a realloc() that copies to the end of the new buffer?
-  if (old_size > 0) {
-    memmove(new_buf + new_size - old_size, new_buf, old_size);
+    if (!alloc.start) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
+
+    e->alloc = alloc;
   }
 
-  e->buf = new_buf;
-  e->limit = new_buf + new_size;
-  return new_buf + new_size - needed_size;
+  e->buf = e->alloc.start;
+  e->limit = e->buf + e->alloc.len;
+  return e->alloc.start + e->alloc.len - needed_size;
 }
 
 /* Call to ensure that at least `bytes` bytes are available for writing at
@@ -839,7 +846,7 @@ static upb_EncodeStatus upb_Encoder_Encode(char* ptr,
   // code paths which blindly copy the returned pointer without bothering to
   // check for errors until much later (b/235839510). So we still set *buf to
   // NULL on error and we still set it to non-NULL on a successful empty result.
-  if (UPB_SETJMP(encoder->err) == 0) {
+  if (UPB_SETJMP(*encoder->err) == 0) {
     size_t encoded_msg_size;
     ptr = encode_message(ptr, encoder, msg, l, &encoded_msg_size);
     if (prepend_len) {
@@ -858,7 +865,7 @@ static upb_EncodeStatus upb_Encoder_Encode(char* ptr,
     *buf = NULL;
     *size = 0;
   }
-
+  UPB_PRIVATE(upb_Arena_FinishBackAlloc)(encoder->arena, encoder->alloc, *size);
   _upb_mapsorter_destroy(&encoder->sorter);
   return encoder->status;
 }
@@ -877,13 +884,16 @@ static upb_EncodeStatus _upb_Encode(const upb_Message* msg,
                                     upb_Arena* arena, char** buf, size_t* size,
                                     bool prepend_len) {
   upb_encstate e;
+  jmp_buf err;
 
   e.status = kUpb_EncodeStatus_Ok;
+  e.err = &err;
   e.arena = arena;
   e.buf = &initial_buf_sentinel;
   e.limit = &initial_buf_sentinel;
   e.depth = upb_EncodeOptions_GetEffectiveMaxDepth(options);
   e.options = options;
+  e.alloc = (UPB_PRIVATE(upb_Arena_BackAlloc)){};
   _upb_mapsorter_init(&e.sorter);
 
   return upb_Encoder_Encode(&initial_buf_sentinel, &e, msg, l, buf, size,
@@ -894,6 +904,39 @@ upb_EncodeStatus upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
                             int options, upb_Arena* arena, char** buf,
                             size_t* size) {
   return _upb_Encode(msg, l, options, arena, buf, size, false);
+}
+
+upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Field)(jmp_buf* err,
+                                                const upb_Message* msg,
+                                                const upb_MiniTableField* field,
+                                                int options, upb_Arena* arena,
+                                                char** buf, size_t* size) {
+  upb_encstate e;
+
+  e.status = kUpb_EncodeStatus_Ok;
+  e.err = err;
+  e.arena = arena;
+  e.buf = &initial_buf_sentinel;
+  e.limit = &initial_buf_sentinel;
+  e.depth = upb_EncodeOptions_GetEffectiveMaxDepth(options);
+  e.options = options;
+  e.alloc = (UPB_PRIVATE(upb_Arena_BackAlloc)){};
+  _upb_mapsorter_init(&e.sorter);
+
+  char* ptr = &initial_buf_sentinel;
+  if (encode_shouldencode(msg, field)) {
+    ptr = encode_field(ptr, &e, msg, field);
+  }
+  *size = e.limit - ptr;
+  if (*size == 0) {
+    *buf = NULL;
+  } else {
+    UPB_ASSERT(ptr);
+    *buf = ptr;
+  }
+
+  _upb_mapsorter_destroy(&e.sorter);
+  return e.status;
 }
 
 upb_EncodeStatus upb_EncodeLengthPrefixed(const upb_Message* msg,
