@@ -6003,7 +6003,12 @@ void DescriptorBuilder::PostProcessFieldFeatures(
   // once the `label` getter is hidden.
   if (field.features().field_presence() == FeatureSet::LEGACY_REQUIRED &&
       field.label_ == FieldDescriptor::LABEL_OPTIONAL) {
-    field.label_ = FieldDescriptor::LABEL_REQUIRED;
+    if (field.containing_oneof() != nullptr) {
+      AddError(field.full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "Fields of oneofs must themselves have label LABEL_OPTIONAL.");
+    } else {
+      field.label_ = FieldDescriptor::LABEL_REQUIRED;
+    }
   }
   // TODO This can be replace by a runtime check of `is_delimited`
   // once the `TYPE_GROUP` value is removed.

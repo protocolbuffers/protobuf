@@ -4780,7 +4780,7 @@ TEST(CustomOptions, AggregateOptions) {
             file_options.file().GetExtension(proto2_unittest::fileopt).s());
   EXPECT_EQ("EmbeddedMessageSetElement",
             file_options.mset()
-                .GetExtension(proto2_unittest::AggregateMessageSetElement ::
+                .GetExtension(proto2_unittest::AggregateMessageSetElement::
                                   message_set_extension)
                 .s());
 
@@ -12400,7 +12400,32 @@ TEST_F(FeaturesTest, InvalidFieldOneofRequired) {
           oneof_decl { name: "_foo" }
         }
       )pb",
-      "foo.proto: Foo.bar: NAME: Oneof fields can't specify field presence.\n");
+      "foo.proto: Foo.bar: NAME: Fields of oneofs must themselves have label "
+      "LABEL_OPTIONAL.\n");
+}
+
+TEST_F(FeaturesTest, RejectInheritedLegacyRequired) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "test.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        message_type {
+          name: "TestMessage"
+          options { features { field_presence: LEGACY_REQUIRED } }
+          field {
+            name: "my_field"
+            number: 1
+            oneof_index: 0
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+          oneof_decl { name: "my_oneof" }
+        }
+      )pb",
+      "test.proto: TestMessage.my_field: NAME: Fields of oneofs must "
+      "themselves have label LABEL_OPTIONAL.\n");
 }
 
 TEST_F(FeaturesTest, InvalidFieldNonStringWithStringValidation) {
