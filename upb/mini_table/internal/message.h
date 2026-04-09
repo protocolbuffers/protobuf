@@ -126,26 +126,94 @@ const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
 
   // Slow case: binary search
   uint32_t lo = m->UPB_PRIVATE(dense_below);
-  const struct upb_MiniTableField* base = m->UPB_ONLYBITS(fields);
-  while (hi >= (int32_t)lo) {
-    uint32_t mid = (hi + lo) / 2;
-    uint32_t num = base[mid].UPB_ONLYBITS(number);
-    // These comparison operations allow, on ARM machines, to fuse all these
-    // branches into one comparison followed by two CSELs to set the lo/hi
-    // values, followed by a BNE to continue or terminate the loop. Since binary
-    // search branches are generally unpredictable (50/50 in each direction),
-    // this is a good deal. We use signed for the high, as this decrement may
-    // underflow if mid is 0.
-    int32_t hi_mid = mid - 1;
-    uint32_t lo_mid = mid + 1;
-    if (num == number) {
-      return &base[mid];
-    }
-    if (UPB_UNPREDICTABLE(num < number)) {
-      lo = lo_mid;
-    } else {
-      hi = hi_mid;
-    }
+  if (hi < (int32_t)lo) return NULL;
+
+  uint32_t n = hi - lo + 1;
+  const struct upb_MiniTableField* base = &m->UPB_ONLYBITS(fields)[lo];
+  uint32_t search_len = n;
+  uint32_t target_num = number;
+  UPB_STATIC_ASSERT(sizeof(struct upb_MiniTableField) == 12,
+                    "Need to update multiplication");
+  // Address generation units can't multiply by 12, but they can by 4. So we
+  // split it into multiplying by 3 (add and shift) and multiplying by 4 (shift)
+  // This code is carefully tuned to produce an optimal assembly sequence on
+  // arm64, which takes advantage of dual issue on in-order CPUs to maximize
+  // what little instruction level parallelism they have.
+  /*
+  and     w9, w1, #0xfffffffe
+  add     w9, w9, w1, lsr #1
+  ldr     w10, [x0, w9, uxtw #2]
+  sub     w1, w1, w1, lsr #1
+  add     x9, x0, w9, uxtw #2
+  cmp     w10, w2
+  csel    x0, x0, x9, hi
+  cmp     w1, #1
+  b.hi    .LBB3_1
+   */
+  // Doing this requires inhibiting the natural instincts of the compiler to
+  // eliminate duplicate work, so we introduce an optimization barrier with
+  // asm blocks to defeat common subexpression elimination.
+
+  UPB_STATIC_ASSERT(
+      offsetof(struct upb_MiniTableField, UPB_ONLYBITS(number)) == 0,
+      "Tag number must be first element of minitable field struct");
+  // Does not violate strict aliasing because of first-member-of-struct
+  // compatibility
+  const uint32_t* search_base = (const uint32_t*)base;
+  while (search_len > 1) {
+#if UPB_ARM64_ASM
+#define UPB_OPT_LAUNDER(val) __asm__("" : "+r"(val))
+#define UPB_OPT_LAUNDER2(val1, val2) __asm__("" : "+r"(val1), "+r"(val2))
+#else
+#define UPB_OPT_LAUNDER(val)
+#define UPB_OPT_LAUNDER2(val1, val2)
+#endif
+    // (search_len & ~1) is exactly (half_len * 2). Adding half_len yields
+    // (half_len * 3).
+    //
+    // and mid_offset_words, search_len, #0xfffffffe
+    uint32_t mid_offset_words = search_len & 0xfffffffe;
+
+    // add mid_offset_words, mid_offset_words, search_len, lsr #1
+    mid_offset_words = mid_offset_words + (search_len >> 1);
+
+    UPB_OPT_LAUNDER(search_len);
+    UPB_OPT_LAUNDER(mid_offset_words);
+
+    // Casting mid_offset_words to size_t forces the [base, index, lsl #2] mode.
+    // Arm processors, even little cores, Address Generation Units capable of
+    // performing these extensions, so we achieve more instruction level
+    // parallelism by doing this shift by 2 redundantly with the mid pointer
+    // calculation below.
+    //
+    // ldr mid_num, [search_base, mid_offset_words, uxtw #2]
+    uint32_t mid_num = search_base[mid_offset_words];
+
+    // Shrink the search window by half
+    // sub search_len, search_len, search_len, lsr #1
+    search_len = search_len - (search_len >> 1);
+    UPB_OPT_LAUNDER(search_len);
+    UPB_OPT_LAUNDER(mid_offset_words);
+
+    // Calculate the mid pointer for the next iteration
+    // add mid_ptr, search_base, mid_offset_words, uxtw #2
+    const uint32_t* mid_ptr = search_base + mid_offset_words;
+
+    // Forbids LLVM's CSE pass from attempting to merge mid_ptr and mid_num's
+    // math. It sees that it can do a select before adding, rather than after;
+    // but if it orders it that way it creates a longer dependency chain.
+    UPB_OPT_LAUNDER2(mid_ptr, mid_num);
+
+    // cmp + csel
+    search_base =
+        UPB_UNPREDICTABLE(mid_num <= target_num) ? mid_ptr : search_base;
+  }
+#undef UPB_OPT_LAUNDER
+#undef UPB_OPT_LAUNDER2
+
+  // Final exact match check using the fully resolved search_base pointer
+  if (search_len > 0 && *search_base == target_num) {
+    return (const struct upb_MiniTableField*)search_base;
   }
 
   return NULL;
