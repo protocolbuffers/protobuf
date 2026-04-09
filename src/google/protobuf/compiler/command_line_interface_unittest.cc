@@ -3853,6 +3853,27 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileForAbsolutePath) {
 }
 
 TEST_F(CommandLineInterfaceTest,
+       WriteDependencyManifestFileEscapesMakeSpecialCharacters) {
+  CreateTempFile("dir with space/foo$$(bar)#:.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  RunWithArgs({"protocol_compiler",
+               "--dependency_out=$tmpdir/manifest",
+               "--test_out=$tmpdir",
+               "--proto_path=$tmpdir",
+               "dir with space/foo$$(bar)#:.proto"});
+
+  ExpectNoErrors();
+
+  ExpectFileContent(
+      "manifest",
+      "$tmpdir/dir\\ with\\ space/foo$$$$(bar)\\#\\:.proto."
+      "MockCodeGenerator.test_generator: "
+      "$tmpdir/dir\\ with\\ space/foo$$$$(bar)\\#\\:.proto");
+}
+
+TEST_F(CommandLineInterfaceTest,
        WriteDependencyManifestFileWithDescriptorSetOut) {
   CreateTempFile("foo.proto",
                  "syntax = \"proto2\";\n"
