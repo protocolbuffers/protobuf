@@ -9,11 +9,10 @@
 
 namespace google {
 namespace protobuf {
+namespace internal {
 
 template <typename ElementType>
-class RepeatedFieldProxy;
-
-namespace internal {
+class MutableRepeatedFieldProxyImpl;
 
 template <typename ElementType>
 class RepeatedFieldProxyIteratorInternalPrivateAccessHelper;
@@ -155,7 +154,7 @@ class RepeatedFieldProxyIteratorImpl {
   template <typename, bool>
   friend class RepeatedFieldProxyIteratorImpl;
   friend RepeatedFieldProxyIteratorInternalPrivateAccessHelper<ElementType>;
-  friend RepeatedFieldProxy<std::remove_const_t<ElementType>>;
+  friend MutableRepeatedFieldProxyImpl<std::remove_const_t<ElementType>>;
 
   // Allow explicit conversion to the internal iterator.
   explicit operator InternalIterator() const { return it_; }
