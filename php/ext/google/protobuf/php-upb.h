@@ -1658,7 +1658,7 @@ UPB_INLINE struct upb_Array* UPB_PRIVATE(_upb_Array_NewMaybeAllowSlow)(
   struct upb_Array* array = (struct upb_Array*)upb_Arena_Malloc(arena, bytes);
   if (!array) return NULL;
   UPB_PRIVATE(_upb_Array_SetTaggedPtr)
-  (array, UPB_PTR_AT(array, array_size, void), elem_size_lg2);
+  (array, UPB_PTR_AT(array, array_size, void), (size_t)elem_size_lg2);
   array->UPB_ONLYBITS(size) = 0;
   array->UPB_PRIVATE(capacity) = init_capacity;
   return array;
@@ -1986,7 +1986,8 @@ UPB_INLINE int UPB_PRIVATE(_upb_CType_SizeLg2)(upb_CType c_type) {
 }
 
 // Return the log2 of the storage size in bytes for a upb_FieldType
-UPB_INLINE int UPB_PRIVATE(_upb_FieldType_SizeLg2)(upb_FieldType field_type) {
+UPB_INLINE size_t
+UPB_PRIVATE(_upb_FieldType_SizeLg2)(upb_FieldType field_type) {
   static const int8_t size[] = {
       3,               // kUpb_FieldType_Double
       2,               // kUpb_FieldType_Float
@@ -2144,14 +2145,14 @@ UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(
 UPB_INLINE char UPB_PRIVATE(_upb_MiniTableField_HasbitMask)(
     const struct upb_MiniTableField* f) {
   UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f));
-  const uint16_t index = f->presence;
+  const uint16_t index = (uint16_t)f->presence;
   return (char)(1 << (index % 8));
 }
 
 UPB_INLINE uint16_t UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(
     const struct upb_MiniTableField* f) {
   UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f));
-  const uint16_t index = f->presence;
+  const uint16_t index = (uint16_t)f->presence;
   return index / 8;
 }
 
@@ -2193,7 +2194,7 @@ UPB_PRIVATE(_upb_MiniTableField_Offset)(const struct upb_MiniTableField* f) {
 UPB_INLINE size_t UPB_PRIVATE(_upb_MiniTableField_OneofOffset)(
     const struct upb_MiniTableField* f) {
   UPB_ASSERT(upb_MiniTableField_IsInOneof(f));
-  return ~(ptrdiff_t)f->presence;
+  return (size_t)(~(ptrdiff_t)f->presence);
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(
@@ -2435,7 +2436,7 @@ const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
   uint32_t lo = m->UPB_PRIVATE(dense_below);
   const struct upb_MiniTableField* base = m->UPB_ONLYBITS(fields);
   while (hi >= (int32_t)lo) {
-    uint32_t mid = (hi + lo) / 2;
+    uint32_t mid = ((uint32_t)hi + lo) / 2;
     uint32_t num = base[mid].UPB_ONLYBITS(number);
     // These comparison operations allow, on ARM machines, to fuse all these
     // branches into one comparison followed by two CSELs to set the lo/hi
@@ -2443,7 +2444,7 @@ const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
     // search branches are generally unpredictable (50/50 in each direction),
     // this is a good deal. We use signed for the high, as this decrement may
     // underflow if mid is 0.
-    int32_t hi_mid = mid - 1;
+    int32_t hi_mid = (int32_t)mid - 1;
     uint32_t lo_mid = mid + 1;
     if (num == number) {
       return &base[mid];
@@ -3394,7 +3395,7 @@ UPB_INLINE size_t _upb_Map_Size(const struct upb_Map* map) {
 extern char _upb_Map_CTypeSizeTable[12];
 
 UPB_INLINE size_t _upb_Map_CTypeSize(upb_CType ctype) {
-  return _upb_Map_CTypeSizeTable[ctype];
+  return (size_t)_upb_Map_CTypeSizeTable[ctype];
 }
 
 // Creates a new map on the given arena with this key/value type.
@@ -5999,7 +6000,8 @@ uint16_t upb_DecodeOptions_GetEffectiveMaxDepth(uint32_t options);
 UPB_INLINE int upb_Decode_LimitDepth(uint32_t decode_options, uint32_t limit) {
   uint32_t max_depth = upb_DecodeOptions_GetEffectiveMaxDepth(decode_options);
   if (max_depth > limit) max_depth = limit;
-  return upb_DecodeOptions_MaxDepth(max_depth) | (decode_options & 0xffff);
+  return (int)(upb_DecodeOptions_MaxDepth(max_depth) |
+               (decode_options & 0xffff));
 }
 
 // LINT.IfChange
@@ -6102,7 +6104,8 @@ uint16_t upb_EncodeOptions_GetEffectiveMaxDepth(uint32_t options);
 UPB_INLINE int upb_Encode_LimitDepth(uint32_t encode_options, uint32_t limit) {
   uint32_t max_depth = upb_EncodeOptions_GetEffectiveMaxDepth(encode_options);
   if (max_depth > limit) max_depth = limit;
-  return upb_EncodeOptions_MaxDepth(max_depth) | (encode_options & 0xffff);
+  return (int)(upb_EncodeOptions_MaxDepth(max_depth) |
+               (encode_options & 0xffff));
 }
 
 UPB_API upb_EncodeStatus upb_Encode(const upb_Message* msg,
