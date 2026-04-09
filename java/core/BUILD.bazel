@@ -53,6 +53,7 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/InlineMe.java",
     "src/main/java/com/google/protobuf/IntArrayList.java",
     "src/main/java/com/google/protobuf/Internal.java",
+    "src/main/java/com/google/protobuf/InternalLazyField.java",
     "src/main/java/com/google/protobuf/InvalidProtocolBufferException.java",
     "src/main/java/com/google/protobuf/IterableByteBufferInputStream.java",
     "src/main/java/com/google/protobuf/Java8Compatibility.java",
