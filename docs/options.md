@@ -553,3 +553,8 @@ about your project (name and website) so we can add an entry for you.
 
     *   Website: https://livekit.io
     *   Extensions: 1285-1294
+
+1.  Protosource
+
+    *   Website: https://github.com/funinthecloud/protosource
+    *   Extensions: 1295-1304
