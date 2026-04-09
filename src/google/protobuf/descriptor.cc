@@ -5787,10 +5787,6 @@ void DescriptorBuilder::ValidateSymbolName(const absl::string_view name,
   if (name.empty()) {
     AddError(full_name, proto, DescriptorPool::ErrorCollector::NAME,
              "Missing name.");
-  } else if (name[0] >= '0' && name[0] <= '9') {
-    AddError(full_name, proto, DescriptorPool::ErrorCollector::NAME, [&] {
-      return absl::StrCat("\"", name, "\" should not start with a number.");
-    });
   } else {
     for (char character : name) {
       // I don't trust isalnum() due to locales.  :(
