@@ -5242,12 +5242,28 @@ TEST_F(ValidationErrorTest, InvalidName) {
       "foo.proto: $: NAME: \"$\" is not a valid identifier.\n");
 }
 
+TEST_F(ValidationErrorTest, InvalidNameStartWithDigit) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "message_type { name: \"1foo\" }",
+
+      "foo.proto: 1foo: NAME: \"1foo\" should not start with a number.\n");
+}
+
 TEST_F(ValidationErrorTest, InvalidPackageName) {
   BuildFileWithErrors(
       "name: \"foo.proto\" "
       "package: \"foo.$\"",
 
       "foo.proto: foo.$: NAME: \"$\" is not a valid identifier.\n");
+}
+
+TEST_F(ValidationErrorTest, InvalidPackageNameStartWithDigit) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"foo.1bar\"",
+
+      "foo.proto: foo.1bar: NAME: \"1bar\" should not start with a number.\n");
 }
 
 // 'str' is a static C-style string that may contain '\0'
