@@ -67,7 +67,7 @@ class ChunkList {
       AddFromExisting(elem, destructor);
       return;
     }
-    AddFallback(elem, destructor, arena);
+    AddFallback(elem, destructor, mref(arena));
   }
 
   // Runs all inserted cleanups and frees allocated chunks. Must be called
@@ -104,5 +104,6 @@ class ChunkList {
 }  // namespace google
 
 #include "google/protobuf/port_undef.inc"
+#include "waymo/onboard/util/mref.h"
 
 #endif  // GOOGLE_PROTOBUF_ARENA_CLEANUP_H__

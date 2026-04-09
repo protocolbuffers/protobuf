@@ -122,14 +122,14 @@ class ThreadSafeArenaStatsHandle {
   }
 
   ThreadSafeArenaStatsHandle(ThreadSafeArenaStatsHandle&& other) noexcept
-      : info_(std::exchange(other.info_, nullptr)) {}
+      : info_(std::exchange(mref(other.info_), nullptr)) {}
 
   ThreadSafeArenaStatsHandle& operator=(
       ThreadSafeArenaStatsHandle&& other) noexcept {
     if (ABSL_PREDICT_FALSE(info_ != nullptr)) {
       UnsampleSlow(info_);
     }
-    info_ = std::exchange(other.info_, nullptr);
+    info_ = std::exchange(mref(other.info_), nullptr);
     return *this;
   }
 
@@ -137,7 +137,7 @@ class ThreadSafeArenaStatsHandle {
 
   friend void swap(ThreadSafeArenaStatsHandle& lhs,
                    ThreadSafeArenaStatsHandle& rhs) noexcept {
-    std::swap(lhs.info_, rhs.info_);
+    std::swap(mref(lhs.info_), mref(rhs.info_));
   }
 
   friend class ThreadSafeArenaStatsHandlePeer;
@@ -157,7 +157,7 @@ extern PROTOBUF_THREAD_LOCAL SamplingState global_sampling_state;
   if (ABSL_PREDICT_TRUE(--global_sampling_state.next_sample > 0)) {
     return ThreadSafeArenaStatsHandle(nullptr);
   }
-  return ThreadSafeArenaStatsHandle(SampleSlow(global_sampling_state));
+  return ThreadSafeArenaStatsHandle(SampleSlow(mref(global_sampling_state)));
 }
 
 #else
@@ -235,4 +235,5 @@ void SetThreadSafeArenazGlobalNextSample(int64_t next_sample);
 }  // namespace google
 
 #include "google/protobuf/port_undef.inc"
+#include "waymo/onboard/util/mref.h"
 #endif  // GOOGLE_PROTOBUF_ARENAZ_SAMPLER_H__

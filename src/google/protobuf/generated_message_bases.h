@@ -31,7 +31,9 @@ namespace internal {
 // rather than Message.
 class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
  public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL { Clear(*this); }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL {
+    Clear(mref(*this));
+  }
   size_t ByteSizeLong() const PROTOBUF_FINAL { return ByteSizeLong(*this); }
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
   ::uint8_t* _InternalSerialize(
@@ -64,5 +66,6 @@ class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
 }  // namespace google
 
 #include "google/protobuf/port_undef.inc"
+#include "waymo/onboard/util/mref.h"
 
 #endif  // GOOGLE_PROTOBUF_GENERATED_MESSAGE_BASES_H__

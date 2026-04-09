@@ -995,7 +995,7 @@ class
 
 
   void swap(UniquePtr& other) noexcept { ptr_.swap(other.ptr_); }
-  friend void swap(UniquePtr& a, UniquePtr& b) noexcept { a.swap(b); }
+  friend void swap(UniquePtr& a, UniquePtr& b) noexcept { a.swap(mref(b)); }
 
   // reset() the pointed to object to nullptr.
   ABSL_ATTRIBUTE_REINITIALIZES void reset() { ptr_.reset(); }
@@ -1083,9 +1083,9 @@ class ABSL_MUST_USE_RESULT ABSL_ATTRIBUTE_TRIVIAL_ABI Arena::Ptr final
 
   void swap(Ptr& other) noexcept {
     std::swap(ptr_, other.ptr_);
-    std::swap(arena_, other.arena_);
+    std::swap(mref(arena_), mref(other.arena_));
   }
-  friend void swap(Ptr& a, Ptr& b) noexcept { a.swap(b); }
+  friend void swap(Ptr& a, Ptr& b) noexcept { a.swap(mref(b)); }
 
   PROTOBUF_NONNULL pointer get() const { return ptr_; }
   PROTOBUF_NONNULL pointer operator->() const { return ptr_; }
@@ -1234,5 +1234,6 @@ struct ContainerDestructorSkippableBase<T, /*kDestructorSkippable=*/true> {
 }  // namespace google
 
 #include "google/protobuf/port_undef.inc"
+#include "waymo/onboard/util/mref.h"
 
 #endif  // GOOGLE_PROTOBUF_ARENA_H__

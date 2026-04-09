@@ -758,7 +758,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // current_size_. This function is intended to be the only place where
   // current_size_ is modified.
   inline int ExchangeCurrentSize(int new_size) {
-    return std::exchange(current_size_, new_size);
+    return std::exchange(mref(current_size_), mref(new_size));
   }
   inline bool SizeAtCapacity() const {
     // Harden invariant size() <= allocated_size() <= Capacity().
@@ -2168,7 +2168,7 @@ class ABSL_ATTRIBUTE_VIEW RepeatedPtrIterator {
   template <typename OtherElement,
             typename =
                 std::enable_if_t<std::is_convertible_v<OtherElement*, pointer>>>
-  RepeatedPtrIterator(const RepeatedPtrIterator<OtherElement>& other)
+  explicit RepeatedPtrIterator(const RepeatedPtrIterator<OtherElement>& other)
       : it_(other.it_) {}
 
   // dereferenceable
@@ -2301,7 +2301,7 @@ class RepeatedPtrOverPtrsIterator {
   // RepeatedPtrOverPtrsIterator<const T>.
   template <typename E = Element,
             typename = std::enable_if_t<std::is_const_v<E>>>
-  RepeatedPtrOverPtrsIterator(
+  explicit RepeatedPtrOverPtrsIterator(
       const RepeatedPtrOverPtrsIterator<std::remove_const_t<Element>>& other)
       : it_(other.it_) {}
 
@@ -2546,7 +2546,8 @@ class RepeatedPtrFieldBackInsertIterator {
   using reference = void;
   using difference_type = std::ptrdiff_t;
 
-  RepeatedPtrFieldBackInsertIterator(RepeatedPtrField<T>* const mutable_field)
+  explicit RepeatedPtrFieldBackInsertIterator(
+      RepeatedPtrField<T>* const mutable_field)
       : field_(mutable_field), arena_(mutable_field->GetArena()) {}
   RepeatedPtrFieldBackInsertIterator<T>& operator=(const T& value) {
     *field_->AddWithArena(arena_) = value;
@@ -2701,5 +2702,6 @@ memswap<InternalMetadataResolverOffsetHelper<RepeatedPtrFieldBase>::value>(
 }  // namespace google
 
 #include "google/protobuf/port_undef.inc"
+#include "waymo/onboard/util/mref.h"
 
 #endif  // GOOGLE_PROTOBUF_REPEATED_PTR_FIELD_H__

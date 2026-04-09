@@ -187,7 +187,7 @@ class PROTOBUF_EXPORT MicroString {
 
   // Sets the payload to `other`. Copy behavior depends on the kind of payload.
   void Set(const MicroString& other, Arena* arena) {
-    SetFromOtherImpl(*this, other, arena);
+    SetFromOtherImpl(mref(*this), other, arena);
   }
 
   void Set(const MicroString& other, Arena* arena, size_t inline_capacity) {
@@ -202,7 +202,7 @@ class PROTOBUF_EXPORT MicroString {
 
   // Sets the payload to `data`. Always copies the data.
   void Set(absl::string_view data, Arena* arena) {
-    SetMaybeConstant(*this, data, arena);
+    SetMaybeConstant(mref(*this), data, arena);
   }
   void Set(absl::string_view data, Arena* arena, size_t inline_capacity) {
     SetImpl(data, arena, inline_capacity);
@@ -645,5 +645,6 @@ using MicroStringExtra =
 }  // namespace google
 
 #include "google/protobuf/port_undef.inc"
+#include "waymo/onboard/util/mref.h"
 
 #endif  // GOOGLE_PROTOBUF_MICRO_STRING_H__

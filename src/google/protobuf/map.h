@@ -377,10 +377,10 @@ class PROTOBUF_EXPORT UntypedMapBase {
   }
 
   void InternalSwap(UntypedMapBase* other) {
-    std::swap(num_elements_, other->num_elements_);
-    std::swap(num_buckets_, other->num_buckets_);
-    std::swap(type_info_, other->type_info_);
-    std::swap(table_, other->table_);
+    std::swap(mref(num_elements_), mref(other->num_elements_));
+    std::swap(mref(num_buckets_), mref(other->num_buckets_));
+    std::swap(mref(type_info_), mref(other->type_info_));
+    std::swap(mref(table_), mref(other->table_));
   }
 
   void UntypedMergeFrom(Arena* arena, const UntypedMapBase& other);
@@ -1167,7 +1167,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
     if (other.arena() != nullptr) {
       *this = other;
     } else {
-      swap(other);
+      swap(mref(other));
     }
   }
 
@@ -1176,7 +1176,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
       if (arena() != other.arena()) {
         *this = other;
       } else {
-        swap(other);
+        swap(mref(other));
       }
     }
     return *this;
@@ -1359,7 +1359,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
     }
 
     // Allow implicit conversion to const_iterator.
-    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD operator const_iterator()
+    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD explicit operator const_iterator()
         const {  // NOLINT(google-explicit-constructor)
       return const_iterator(static_cast<const BaseIt&>(*this));
     }
@@ -1783,5 +1783,6 @@ PROTOBUF_NOINLINE void MapMergeFrom(Map<T...>& dest, const Map<T...>& src) {
 }  // namespace google
 
 #include "google/protobuf/port_undef.inc"
+#include "waymo/onboard/util/mref.h"
 
 #endif  // GOOGLE_PROTOBUF_MAP_H__

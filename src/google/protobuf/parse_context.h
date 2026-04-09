@@ -716,7 +716,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   // beginning of field data - that is, at a tag.  Or if it is NULL.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Done(const char** ptr) {
     WireFormatNoOpSink sink;
-    return DoneWithCheck(ptr, group_depth_, sink);
+    return DoneWithCheck(ptr, group_depth_, mref(sink));
   }
 
   template <typename SinkT>
@@ -1475,7 +1475,7 @@ inline const char* EpsCopyInputStream::ReadMicroString(const char* ptr,
   int size = ReadSize(&ptr);
   if (!ptr) return nullptr;
 
-  return ReadMicroStringWithSize(ptr, size, str, arena);
+  return ReadMicroStringWithSize(ptr, size, mref(str), arena);
 }
 
 inline const char* EpsCopyInputStream::ReadMicroStringWithSize(const char* ptr,
@@ -1486,7 +1486,7 @@ inline const char* EpsCopyInputStream::ReadMicroStringWithSize(const char* ptr,
     str.Set(absl::string_view(ptr, size), arena);
     return ptr + size;
   }
-  return ReadMicroStringFallback(ptr, size, str, arena);
+  return ReadMicroStringFallback(ptr, size, mref(str), arena);
 }
 
 template <typename Tag, typename T>
@@ -1879,5 +1879,6 @@ template <typename T, typename Validator>
 }  // namespace google
 
 #include "google/protobuf/port_undef.inc"
+#include "waymo/onboard/util/mref.h"
 
 #endif  // GOOGLE_PROTOBUF_PARSE_CONTEXT_H__

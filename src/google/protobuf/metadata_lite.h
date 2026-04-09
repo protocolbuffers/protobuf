@@ -114,7 +114,7 @@ class PROTOBUF_EXPORT InternalMetadata {
 
   PROTOBUF_NDEBUG_INLINE void InternalSwap(
       InternalMetadata* PROTOBUF_RESTRICT other) {
-    std::swap(ptr_, other->ptr_);
+    std::swap(mref(ptr_), mref(other->ptr_));
   }
 
   template <typename T>
@@ -253,7 +253,7 @@ class PROTOBUF_EXPORT LiteUnknownFieldSetter {
   }
   ~LiteUnknownFieldSetter() {
     if (!buffer_.empty())
-      metadata_->mutable_unknown_fields<std::string>()->swap(buffer_);
+      metadata_->mutable_unknown_fields<std::string>()->swap(mref(buffer_));
   }
   std::string* buffer() { return &buffer_; }
 
@@ -267,5 +267,6 @@ class PROTOBUF_EXPORT LiteUnknownFieldSetter {
 }  // namespace google
 
 #include "google/protobuf/port_undef.inc"
+#include "waymo/onboard/util/mref.h"
 
 #endif  // GOOGLE_PROTOBUF_METADATA_LITE_H__

@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_log.h"
 #include "absl/synchronization/mutex.h"
@@ -79,7 +80,8 @@ class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
 #ifndef PROTOBUF_FUTURE_BREAKING_CHANGES
   explicit
 #endif
-      DynamicMessageFactory(const DescriptorPool* PROTOBUF_NONNULL pool);
+      explicit DynamicMessageFactory(
+          const DescriptorPool* PROTOBUF_NONNULL pool);
   DynamicMessageFactory(const DynamicMessageFactory&) = delete;
   DynamicMessageFactory& operator=(const DynamicMessageFactory&) = delete;
 
@@ -143,7 +145,7 @@ class PROTOBUF_EXPORT DynamicMapSorter {
       result.push_back(&*it);
     }
     MapEntryMessageComparator comparator(field->message_type());
-    std::stable_sort(result.begin(), result.end(), comparator);
+    absl::c_stable_sort(result, comparator);
     // Complain if the keys aren't in ascending order.
 #ifndef NDEBUG
     for (size_t j = 1; j < static_cast<size_t>(map_size); ++j) {

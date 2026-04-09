@@ -155,8 +155,8 @@ template <typename Enum, typename = EnableIfProtoEnum<Enum, false>>
 bool AbslParseFlag(absl::string_view text, Enum* PROTOBUF_NONNULL e,
                    std::string* PROTOBUF_NONNULL error) {
   int value;
-  if (internal::AbslParseFlagImpl(text, value, *GetEnumDescriptor<Enum>(),
-                                  *error)) {
+  if (internal::AbslParseFlagImpl(text, mref(value), *GetEnumDescriptor<Enum>(),
+                                  mref(*error))) {
     *e = static_cast<Enum>(value);
     return true;
   }
@@ -183,5 +183,6 @@ auto EnumerateEnumValues() {
 }  // namespace google
 
 #include "google/protobuf/port_undef.inc"
+#include "waymo/onboard/util/mref.h"
 
 #endif  // GOOGLE_PROTOBUF_GENERATED_ENUM_REFLECTION_H__

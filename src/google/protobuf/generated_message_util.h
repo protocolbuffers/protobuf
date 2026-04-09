@@ -29,12 +29,12 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
 #include "absl/base/optimization.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "third_party/gloop/base/port.h"
 #include "google/protobuf/any.h"
 #include "google/protobuf/has_bits.h"
 #include "google/protobuf/implicit_weak_message.h"
@@ -200,7 +200,7 @@ inline void OnShutdownDestroyString(const std::string* ptr) {
 template <typename storage_type>
 struct MapSorterIt {
   storage_type* ptr;
-  MapSorterIt(storage_type* ptr) : ptr(ptr) {}
+  explicit MapSorterIt(storage_type* ptr) : ptr(ptr) {}
   bool operator==(const MapSorterIt& other) const { return ptr == other.ptr; }
   bool operator!=(const MapSorterIt& other) const { return !(*this == other); }
   MapSorterIt& operator++() {

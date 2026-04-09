@@ -230,7 +230,7 @@ class SooRep {
   }
 
   void swap(SooRep& other) {
-    resolver_.SwapTags(other.resolver_);
+    resolver_.SwapTags(mref(other.resolver_));
     internal::memswap<sizeof(SooRep) - offsetof(SooRep, size_)>(
         reinterpret_cast<char*>(&this->size_),
         reinterpret_cast<char*>(&other.size_));
@@ -1284,7 +1284,7 @@ inline void RepeatedField<Element>::InternalSwap(
   AnnotateForRelease();
   other->AnnotateForRelease();
 
-  soo_rep_.swap(other->soo_rep_);
+  soo_rep_.swap(mref(other->soo_rep_));
 
   AnnotateSize(Capacity(), size());
   other->AnnotateSize(other->Capacity(), other->size());
@@ -1315,7 +1315,7 @@ void RepeatedField<Element>::Swap(RepeatedField* other) {
     absl::NoDestructor<internal::RepeatedFieldWithArena<Element>>
         temp_container(other_arena);
     auto& temp = temp_container->field();
-    SwapFallbackWithTemp(arena, *other, other_arena, temp);
+    SwapFallbackWithTemp(arena, mref(*other), other_arena, mref(temp));
 
     // If the element type is not destructor-skippable, then we need to invoke
     // the destructor of the temporary `RepeatedField`.
@@ -1324,7 +1324,7 @@ void RepeatedField<Element>::Swap(RepeatedField* other) {
     }
   } else {
     RepeatedField<Element> temp;
-    SwapFallbackWithTemp(arena, *other, other_arena, temp);
+    SwapFallbackWithTemp(arena, mref(*other), other_arena, mref(temp));
   }
 }
 
@@ -1644,7 +1644,7 @@ class RepeatedIterator {
   template <typename OtherElement,
             typename std::enable_if<std::is_convertible<
                 OtherElement*, pointer>::value>::type* = nullptr>
-  constexpr RepeatedIterator(
+  constexpr explicit RepeatedIterator(
       const RepeatedIterator<OtherElement>& other) noexcept
       : it_(other.it_) {}
 
@@ -1810,5 +1810,6 @@ inline T* CheckedMutableOrAbort(RepeatedField<T>* field, int index) {
 }  // namespace google
 
 #include "google/protobuf/port_undef.inc"
+#include "waymo/onboard/util/mref.h"
 
 #endif  // GOOGLE_PROTOBUF_REPEATED_FIELD_H__

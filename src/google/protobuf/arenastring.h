@@ -411,7 +411,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // protobuf to maintain pointer stability even in DEBUG builds.
   PROTOBUF_NDEBUG_INLINE static void UnsafeShallowSwap(ArenaStringPtr* rhs,
                                                        ArenaStringPtr* lhs) {
-    std::swap(lhs->tagged_ptr_, rhs->tagged_ptr_);
+    std::swap(mref(lhs->tagged_ptr_), mref(rhs->tagged_ptr_));
   }
 
   friend class ::google::protobuf::internal::SwapFieldHelper;
@@ -504,7 +504,7 @@ PROTOBUF_NDEBUG_INLINE void ArenaStringPtr::InternalSwap(ArenaStringPtr* rhs,
                                                          Arena* arena) {
   // Silence unused variable warnings in release buildls.
   (void)arena;
-  std::swap(lhs->tagged_ptr_, rhs->tagged_ptr_);
+  std::swap(mref(lhs->tagged_ptr_), mref(rhs->tagged_ptr_));
   if (internal::DebugHardenForceCopyInSwap()) {
     for (auto* p : {lhs, rhs}) {
       if (p->IsDefault()) continue;
@@ -541,5 +541,6 @@ inline std::string* ArenaStringPtr::UnsafeMutablePointer() {
 }  // namespace google
 
 #include "google/protobuf/port_undef.inc"
+#include "waymo/onboard/util/mref.h"
 
 #endif  // GOOGLE_PROTOBUF_ARENASTRING_H__

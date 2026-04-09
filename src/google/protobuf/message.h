@@ -405,7 +405,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   //       binary data in shells is difficult and error prone.
   friend bool AbslParseFlag(absl::string_view text, Message* msg,
                             std::string* error) {
-    return msg->AbslParseFlagImpl(text, *error);
+    return msg->AbslParseFlagImpl(text, mref(*error));
   }
   friend std::string AbslUnparseFlag(const Message& msg) {
     return msg.AbslUnparseFlagImpl();
@@ -1750,7 +1750,7 @@ inline void MaybePoisonAfterClear(Message* root) {
   if (root == nullptr) return;
   if constexpr (HasMemoryPoisoning()) {
     const Reflection* reflection = root->GetReflection();
-    reflection->MaybePoisonAfterClear(*root);
+    reflection->MaybePoisonAfterClear(mref(*root));
   } else {
     root->Clear();
   }
@@ -1932,5 +1932,6 @@ Type* Reflection::MutableRaw(Message* message,
 }  // namespace google
 
 #include "google/protobuf/port_undef.inc"
+#include "waymo/onboard/util/mref.h"
 
 #endif  // GOOGLE_PROTOBUF_MESSAGE_H__

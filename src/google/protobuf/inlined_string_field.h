@@ -375,5 +375,6 @@ inline std::string* InlinedStringField::MutableNoCopy(std::nullptr_t) {
 }  // namespace google
 
 #include "google/protobuf/port_undef.inc"
+#include "waymo/onboard/util/mref.h"
 
 #endif  // GOOGLE_PROTOBUF_INLINED_STRING_FIELD_H__

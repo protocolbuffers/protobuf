@@ -94,7 +94,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MapEntry : public Message {
                   "");
 
     if (GetArena() != nullptr) return;
-    SharedDtor(*this);
+    SharedDtor(mref(*this));
   }
 
   using InternalArenaConstructable_ = void;
@@ -135,5 +135,6 @@ struct MapEntry<Key, Value, kKeyFieldType, kValueFieldType>::_Internal {
 }  // namespace google
 
 #include "google/protobuf/port_undef.inc"
+#include "waymo/onboard/util/mref.h"
 
 #endif  // GOOGLE_PROTOBUF_MAP_ENTRY_H__

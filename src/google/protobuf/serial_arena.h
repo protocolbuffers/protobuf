@@ -218,7 +218,7 @@ class PROTOBUF_EXPORT SerialArena {
   // constructed and the memory returned is uninitialized.
   PROTOBUF_ALWAYS_INLINE void* MaybeAllocateStringWithCleanup() {
     void* p;
-    return MaybeAllocateString(p) ? p : nullptr;
+    return MaybeAllocateString(mref(p)) ? p : nullptr;
   }
 
   PROTOBUF_ALWAYS_INLINE
@@ -242,7 +242,7 @@ class PROTOBUF_EXPORT SerialArena {
 
   PROTOBUF_ALWAYS_INLINE
   void AddCleanup(void* elem, void (*destructor)(void*)) {
-    cleanup_list_.Add(elem, destructor, *this);
+    cleanup_list_.Add(elem, destructor, mref(*this));
     MaybePrefetchCleanup();
   }
 
@@ -434,7 +434,7 @@ PROTOBUF_ALWAYS_INLINE bool SerialArena::MaybeAllocateString(void*& p) {
 ABSL_ATTRIBUTE_RETURNS_NONNULL PROTOBUF_ALWAYS_INLINE void*
 SerialArena::AllocateFromStringBlock() {
   void* p;
-  if (ABSL_PREDICT_TRUE(MaybeAllocateString(p))) return p;
+  if (ABSL_PREDICT_TRUE(MaybeAllocateString(mref(p)))) return p;
   return AllocateFromStringBlockFallback();
 }
 
@@ -443,5 +443,6 @@ SerialArena::AllocateFromStringBlock() {
 }  // namespace google
 
 #include "google/protobuf/port_undef.inc"
+#include "waymo/onboard/util/mref.h"
 
 #endif  // GOOGLE_PROTOBUF_SERIAL_ARENA_H__
