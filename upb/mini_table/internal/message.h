@@ -128,7 +128,7 @@ const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
   uint32_t lo = m->UPB_PRIVATE(dense_below);
   const struct upb_MiniTableField* base = m->UPB_ONLYBITS(fields);
   while (hi >= (int32_t)lo) {
-    uint32_t mid = (hi + lo) / 2;
+    uint32_t mid = ((uint32_t)hi + lo) / 2;
     uint32_t num = base[mid].UPB_ONLYBITS(number);
     // These comparison operations allow, on ARM machines, to fuse all these
     // branches into one comparison followed by two CSELs to set the lo/hi
@@ -136,7 +136,7 @@ const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
     // search branches are generally unpredictable (50/50 in each direction),
     // this is a good deal. We use signed for the high, as this decrement may
     // underflow if mid is 0.
-    int32_t hi_mid = mid - 1;
+    int32_t hi_mid = (int32_t)mid - 1;
     uint32_t lo_mid = mid + 1;
     if (num == number) {
       return &base[mid];
