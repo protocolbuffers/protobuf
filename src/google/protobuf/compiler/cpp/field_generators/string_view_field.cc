@@ -35,13 +35,14 @@ using ::google::protobuf::io::AnnotationCollector;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
 std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
+  const bool is_micro_string = IsMicroString(field, opts);
   auto trivial_default =
-      opts.experimental_use_micro_string
+      is_micro_string
           ? "::absl::string_view()"
           : absl::StrCat("::", ProtobufNamespace(opts),
                          "::internal::GetEmptyStringAlreadyInited()");
   auto lazy_var =
-      opts.experimental_use_micro_string
+      is_micro_string
           ? absl::StrCat("Impl_::", MakeDefaultFieldName(field))
           : absl::StrCat(QualifiedClassName(field->containing_type(), opts),
                          "::", MakeDefaultFieldName(field));
@@ -71,7 +72,9 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
 class SingularStringView : public FieldGeneratorBase {
  public:
   SingularStringView(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts), opts_(&opts) {}
+      : FieldGeneratorBase(field, opts),
+        use_micro_string_(IsMicroString(field, opts)),
+        opts_(&opts) {}
   ~SingularStringView() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -197,8 +200,9 @@ class SingularStringView : public FieldGeneratorBase {
  private:
   bool EmptyDefault() const { return field_->default_value_string().empty(); }
 
-  bool use_micro_string() const { return opts_->experimental_use_micro_string; }
+  bool use_micro_string() const { return use_micro_string_; }
 
+  bool use_micro_string_;
   const Options* opts_;
 };
 

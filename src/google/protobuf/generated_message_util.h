@@ -427,6 +427,9 @@ struct PrivateAccess {
 
   static internal::ExtensionSet* GetExtensionSet(MessageLite* msg);
   static const internal::ExtensionSet* GetExtensionSet(const MessageLite* msg);
+
+  template <typename T>
+  using ImplTForTesting = typename T::Impl_;
 };
 
 }  // namespace internal
