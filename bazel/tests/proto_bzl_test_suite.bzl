@@ -9,6 +9,7 @@ def default_config_settings():
         "//command_line_option:features": [
             "supports_dynamic_linker",
             "supports_pic",
+            "use_header_modules",
         ],
     }
 
@@ -38,7 +39,7 @@ def bzl_test_suite(
             target = target,
             impl = impl,
             provider_subject_factories = provider_subject_factories,
-            config_settings = config_settings,
+            config_settings = default_config_settings() | config_settings,
             testing_aspect = testing_aspect,
             attrs = attrs,
         )
