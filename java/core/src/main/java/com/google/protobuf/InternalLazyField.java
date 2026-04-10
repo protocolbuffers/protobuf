@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 package com.google.protobuf;
 
 import java.io.IOException;
@@ -29,7 +36,9 @@ class InternalLazyField {
   protected volatile MessageLite value;
 
   // Whether the lazy field (i.e. {@link bytes}) was corrupted, and if so, {@link value} must be
-  // `null`.
+  // `null`. This is used to avoid repeat parsing attempts on invalid bytes.
+  // TODO: b/473034710 - Can we drop this field as it might be unreal for people to re-parse the
+  // bytes, especially an exception has already been thrown?
   private volatile boolean corrupted;
 
   /** Constructor for InternalLazyField. All arguments cannot be null. */
@@ -65,42 +74,178 @@ class InternalLazyField {
     this.corrupted = false;
   }
 
-  private boolean containsEmptyBytes() {
-    return bytes == null || bytes.isEmpty();
+  /**
+   * Merges the InternalLazyField from the given CodedInputStream with the given extension registry.
+   *
+   * <p>Precondition: the input stream should have already read the tag and be expected to read the
+   * size of the bytes next.
+   *
+   * @throws IOException only if an error occurs while reading the raw bytes from the input stream,
+   *     not for failures in parsing the read bytes.
+   * @throws InvalidProtobufRuntimeException if the lazy field is corrupted and cannot be merged
+   *     with a different extension registry.
+   */
+  static InternalLazyField mergeFrom(
+      InternalLazyField lazyField, CodedInputStream input, ExtensionRegistryLite extensionRegistry)
+      throws IOException {
+    ByteString inputBytes = input.readBytes();
+    if (lazyField.isEmpty()) {
+      return new InternalLazyField(lazyField.defaultInstance, extensionRegistry, inputBytes);
+    }
+
+    if (inputBytes.isEmpty()) {
+      return lazyField;
+    }
+
+    if (lazyField.hasBytes()) {
+      if (lazyField.extensionRegistry == extensionRegistry) {
+        return new InternalLazyField(
+            lazyField.defaultInstance, extensionRegistry, lazyField.bytes.concat(inputBytes));
+      }
+      // The extension registries are different, so we need to parse the bytes first to "consume"
+      // the extension registry of this lazy field.
+      try {
+        lazyField.ensureInitialized();
+      } catch (InvalidProtocolBufferException e) {
+        throw new InvalidProtobufRuntimeException(
+            "Cannot merge invalid lazy field from bytes that is absent or with a different"
+                + " extension registry.",
+            e);
+      }
+    }
+
+    // TODO: b/473034710 - Consider avoiding the copy as it's parsing into a message.
+    return mergeValueFromBytes(lazyField, inputBytes, extensionRegistry);
   }
 
-  private void initializeValue() {
+  /**
+   * Merges a InternalLazyField from another InternalLazyField.
+   *
+   * @throws InvalidProtobufRuntimeException if either lazy field is corrupted and cannot be merged
+   *     with a different extension registry.
+   */
+  static InternalLazyField mergeFrom(InternalLazyField self, InternalLazyField other) {
+    if (self.defaultInstance != other.defaultInstance) {
+      throw new IllegalArgumentException(
+          "LazyFields with different default instances cannot be merged.");
+    }
+
+    // If either InternalLazyField is empty, return the other InternalLazyField.
+    if (self.isEmpty()) {
+      return other;
+    }
+    if (other.isEmpty()) {
+      return self;
+    }
+
+    // Fast path: concatenate the bytes if both LazyFields contain bytes and have the same extension
+    // registry, even if one or both are corrupted.
+    if (self.hasBytes() && other.hasBytes() && self.extensionRegistry == other.extensionRegistry) {
+      return new InternalLazyField(
+          self.defaultInstance, self.extensionRegistry, self.bytes.concat(other.bytes));
+    }
+
+    // Cannot concatenate the bytes right way. Try initializing the value first and merge from
+    // the other.
+    try {
+      self.ensureInitialized();
+    } catch (InvalidProtocolBufferException e) {
+      // The self lazy field is corrupted, meaning that it contains invalid bytes to be
+      // concatenated. However, we should only do so if other has bytes and the extension registries
+      // are the same. Which has already been handled above.
+      throw new InvalidProtobufRuntimeException(
+          "Cannot merge invalid lazy field from bytes that is absent or with a different"
+              + " extension registry.",
+          e);
+    }
+
+    // Merge from the other depending on whether the other contains bytes or value.
+    if (other.value != null) {
+      return new InternalLazyField(self.value.toBuilder().mergeFrom(other.value).build());
+    }
+
+    // Since other.value is null, other.bytes must be non-null.
+    return mergeValueFromBytes(self, other.bytes, other.extensionRegistry);
+  }
+
+  /**
+   * Merges the InternalLazyField from the given ByteString with the given extension registry.
+   *
+   * <p>It can throw a runtime exception if it cannot parse the bytes.
+   */
+  private static InternalLazyField mergeValueFromBytes(
+      InternalLazyField self, ByteString inputBytes, ExtensionRegistryLite extensionRegistry) {
+    try {
+      return new InternalLazyField(
+          self.value.toBuilder().mergeFrom(inputBytes, extensionRegistry).build());
+    } catch (InvalidProtocolBufferException e) {
+      // If the input bytes is corrupted, we should cancat bytes. However, we should only do so if
+      // the extension registries are the same AND self.bytes is present. This should have been
+      // handled in the mergeFrom function, so we just throw an exception here.
+      throw new InvalidProtobufRuntimeException(
+          "Cannot merge lazy field from invalid bytes with a different extension registry.", e);
+    }
+  }
+
+  private boolean hasBytes() {
+    return bytes != null;
+  }
+
+  private boolean isEmpty() {
+    // Assumes that bytes and value cannot be null at the same time.
+    return bytes != null ? bytes.isEmpty() : value.equals(defaultInstance);
+  }
+
+  /**
+   * Guarantees that `this.value` is non-null or throws.
+   *
+   * @throws {InvalidProtocolBufferException} If `bytes` cannot be parsed.
+   */
+  private void ensureInitialized() throws InvalidProtocolBufferException {
     if (value != null) {
       return;
     }
 
     synchronized (this) {
       if (corrupted) {
-        return;
+        throw new InvalidProtocolBufferException("Repeat access to corrupted lazy field");
       }
       try {
-        if (!containsEmptyBytes()) {
-          value = defaultInstance.getParserForType().parseFrom(bytes, extensionRegistry);
-        } else {
-          value = defaultInstance;
-        }
+        // `Bytes` is guaranteed to be non-null since `value` was null.
+        value = defaultInstance.getParserForType().parseFrom(bytes, extensionRegistry);
       } catch (InvalidProtocolBufferException e) {
         corrupted = true;
-        value = null;
+        throw e;
       }
     }
   }
 
+  /**
+   * Returns the parsed message value.
+   *
+   * <p>If the lazy field is corrupted, it will throw a runtime exception if {@link
+   * ExtensionRegistryLite#lazyExtensionEnabled()} is true, otherwise it will return the default
+   * instance.
+   */
   MessageLite getValue() {
-    initializeValue();
-    return value == null ? defaultInstance : value;
+    try {
+      ensureInitialized();
+      return value;
+    } catch (InvalidProtocolBufferException e) {
+      if (ExtensionRegistryLite.lazyExtensionEnabled()) {
+        // New behavior: runtime exception on corrupted extensions.
+        throw new InvalidProtobufRuntimeException(e);
+      } else {
+        // Old behavior: silently return the default instance.
+        return defaultInstance;
+      }
+    }
   }
 
+  // TODO: b/473034710 - Consider returning `toByteString().size()` as an optimization to
+  // materialize the bytes expecting `toByteString()` to be called right after.
   int getSerializedSize() {
-    if (bytes != null) {
-      return bytes.size();
-    }
-    return value.getSerializedSize();
+    return bytes != null ? bytes.size() : value.getSerializedSize();
   }
 
   ByteString toByteString() {
