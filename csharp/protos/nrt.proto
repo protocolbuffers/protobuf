@@ -1,0 +1,41 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "UNSTABLE";
+
+package protobuf_editionstesting;
+
+import "csharp/protos/unittest_import_proto3.proto";
+
+import option "csharp/google/protobuf/c_sharp_features.proto";
+option features.(pb.csharp).nullable_reference_types = true;
+option csharp_namespace = "Google.Protobuf.TestProtos";
+
+// This file is used for testing NRT support in C#, both in terms of
+// manual inspection of the generated code, and checking that it compiles.
+// It exercises many aspects of protobuf, but does not attempt to be
+// comprehensive in checking (for example) all primitive numeric types.
+
+message NrtMessage {
+
+  protobuf_unittest_import.ImportMessage proto3_import_message = 1;
+  OtherNrtMessage other_message = 2;
+
+  message NestedMessage {
+    string text = 1;
+  }
+}
+
+message OtherNrtMessage {
+  string text = 1;
+}
+
+enum NrtEnum {
+  NRT_ENUM_UNSPECIFIED = 0;
+  FOO = 1;
+  BAR = 2;
+}

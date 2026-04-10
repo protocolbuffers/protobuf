@@ -40,6 +40,8 @@ class MessageGenerator : public SourceGeneratorBase {
   std::vector<const FieldDescriptor*> fields_by_number_;
   int has_bit_field_count_;
   bool has_extension_ranges_;
+  // NRT = Nullable Reference Types
+  bool nrt_enabled_;
 
   void GenerateMessageSerializationMethods(io::Printer* printer);
   void GenerateWriteToBody(io::Printer* printer, bool use_write_context);

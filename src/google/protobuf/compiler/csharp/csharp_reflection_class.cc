@@ -13,10 +13,12 @@
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/csharp/csharp_enum.h"
 #include "google/protobuf/compiler/csharp/csharp_field_base.h"
+#include "google/protobuf/compiler/csharp/csharp_generator.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 #include "google/protobuf/compiler/csharp/csharp_message.h"
 #include "google/protobuf/compiler/csharp/csharp_options.h"
 #include "google/protobuf/compiler/csharp/names.h"
+#include "google/protobuf/csharp/google/protobuf/c_sharp_features.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -36,6 +38,9 @@ ReflectionClassGenerator::ReflectionClassGenerator(const FileDescriptor* file,
   namespace_ = GetFileNamespace(file);
   reflectionClassname_ = GetReflectionClassUnqualifiedName(file);
   extensionClassname_ = GetExtensionClassUnqualifiedName(file);
+  nrt_enabled_ = Generator::GetResolvedSourceFeatures(*file)
+                     .GetExtension(pb::csharp)
+                     .nullable_reference_types();
 }
 
 ReflectionClassGenerator::~ReflectionClassGenerator() = default;
@@ -118,6 +123,10 @@ void ReflectionClassGenerator::WriteIntroduction(io::Printer* printer) {
     printer->Print("namespace $namespace$ {\n", "namespace", namespace_);
     printer->Indent();
     printer->Print("\n");
+  }
+
+  if (nrt_enabled_) {
+    printer->Print("#nullable enable annotations\n");
   }
 
   printer->Print(
