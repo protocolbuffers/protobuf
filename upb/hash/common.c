@@ -18,6 +18,7 @@
 
 #include "upb/base/internal/log2.h"
 #include "upb/base/string_view.h"
+#include "upb/hash/ext_table.h"
 #include "upb/hash/int_table.h"
 #include "upb/hash/str_table.h"
 #include "upb/mem/arena.h"
@@ -76,10 +77,15 @@ static int log2ceil(uint64_t v) {
   return UPB_MIN(UPB_MAXARRSIZE, ret);
 }
 
-/* A type to represent the lookup key of either a strtable or an inttable. */
+/* A type to represent the lookup key of either a strtable, inttable or
+ * exttable. */
 typedef union {
   uintptr_t num;
   upb_StringView str;
+  struct {
+    const void* ptr;
+    uint32_t ext_num;
+  } ext;
 } lookupkey_t;
 
 static lookupkey_t strkey2(const char* str, size_t len) {
@@ -88,16 +94,24 @@ static lookupkey_t strkey2(const char* str, size_t len) {
 
 static lookupkey_t intkey(uintptr_t key) { return (lookupkey_t){.num = key}; }
 
-typedef uint32_t hashfunc_t(upb_key key);
-typedef bool eqlfunc_t(upb_key k1, lookupkey_t k2);
+static lookupkey_t extkey(const void* ptr, uint32_t ext_num) {
+  return (lookupkey_t){.ext = {ptr, ext_num}};
+}
+
+// Conceptually the hash and equal functions should only take the key, not the
+// value, but the extension table stores part of its logical key in the value
+// slot. This is a sign that we have outgrown the original architecture.
+typedef uint32_t hashfunc_t(upb_key key, upb_value val);
+typedef bool eqlfunc_t(upb_key k1, upb_value v1, lookupkey_t k2);
 
 /* Base table (shared code) ***************************************************/
 
 static uint32_t upb_inthash(uintptr_t key) {
+  UPB_STATIC_ASSERT(sizeof(uintptr_t) == 4 || sizeof(uintptr_t) == 8,
+                    "Pointers don't fit");
   if (sizeof(uintptr_t) == 8) {
     return (uint32_t)key ^ (uint32_t)(key >> 32);
   } else {
-    UPB_ASSERT(sizeof(uintptr_t) == 4);
     return (uint32_t)key;
   }
 }
@@ -158,7 +172,7 @@ static const upb_tabent* findentry(const upb_table* t, lookupkey_t key,
   e = upb_getentry(t, hash);
   if (upb_tabent_isempty(e)) return NULL;
   while (1) {
-    if (eql(e->key, key)) return e;
+    if (eql(e->key, e->val, key)) return e;
     if ((e = e->next) == NULL) return NULL;
   }
 }
@@ -198,7 +212,8 @@ static void insert(upb_table* t, lookupkey_t key, upb_key tabkey, upb_value val,
     /* Collision. */
     upb_tabent* new_e = emptyent(t, mainpos_e);
     /* Head of collider's chain. */
-    upb_tabent* chain = getentry_mutable(t, hashfunc(mainpos_e->key));
+    upb_tabent* chain =
+        getentry_mutable(t, hashfunc(mainpos_e->key, mainpos_e->val));
     if (chain == mainpos_e) {
       /* Existing ent is in its main position (it has the same hash as us, and
        * is the head of our chain).  Insert to new ent and append to this chain.
@@ -229,7 +244,7 @@ static bool rm(upb_table* t, lookupkey_t key, upb_value* val, uint32_t hash,
                eqlfunc_t* eql) {
   upb_tabent* chain = getentry_mutable(t, hash);
   if (upb_tabent_isempty(chain)) return false;
-  if (eql(chain->key, key)) {
+  if (eql(chain->key, chain->val, key)) {
     /* Element to remove is at the head of its chain. */
     t->count--;
     if (val) *val = chain->val;
@@ -244,7 +259,7 @@ static bool rm(upb_table* t, lookupkey_t key, upb_value* val, uint32_t hash,
   } else {
     /* Element to remove is either in a non-head position or not in the
      * table. */
-    while (chain->next && !eql(chain->next->key, key)) {
+    while (chain->next && !eql(chain->next->key, chain->next->val, key)) {
       chain = (upb_tabent*)chain->next;
     }
     if (chain->next) {
@@ -443,11 +458,13 @@ static uint32_t _upb_Hash_NoSeed(const char* p, size_t n) {
   return _upb_Hash(p, n, _upb_Seed());
 }
 
-static uint32_t strhash(upb_key key) {
+static uint32_t strhash(upb_key key, upb_value val) {
+  UPB_UNUSED(val);
   return _upb_Hash_NoSeed(key.str->data, key.str->size);
 }
 
-static bool streql(upb_key k1, lookupkey_t k2) {
+static bool streql(upb_key k1, upb_value v1, lookupkey_t k2) {
+  UPB_UNUSED(v1);
   const upb_SizePrefixString* k1s = k1.str;
   const upb_StringView k2s = k2.str;
   return k1s->size == k2s.size &&
@@ -611,6 +628,96 @@ void upb_strtable_setentryvalue(upb_strtable* t, intptr_t iter, upb_value v) {
   t->t.entries[iter].val = v;
 }
 
+/* upb_exttable ***************************************************************/
+
+static uint32_t _upb_exttable_hash(const void* ptr, uint32_t ext_num) {
+  uint64_t a = (uintptr_t)ptr;
+  uint64_t b = ext_num;
+  return (uint32_t)WyhashMix(a ^ kWyhashSalt[1], b ^ _upb_Seed());
+}
+
+static uint32_t exthash(upb_key key, upb_value val) {
+  const void* ptr = (const void*)key.num;
+  uint32_t ext_num = *(const uint32_t*)upb_value_getconstptr(val);
+  return _upb_exttable_hash(ptr, ext_num);
+}
+
+static bool exteql(upb_key k1, upb_value v1, lookupkey_t k2) {
+  if ((const void*)k1.num == k2.ext.ptr) {
+    uint32_t ext_num1 = *(const uint32_t*)upb_value_getconstptr(v1);
+    return ext_num1 == k2.ext.ext_num;
+  }
+  return false;
+}
+
+bool upb_exttable_init(upb_exttable* t, size_t expected_size, upb_Arena* a) {
+  int size_lg2 = upb_Log2Ceiling(_upb_entries_needed_for(expected_size));
+  return init(&t->t, size_lg2, a);
+}
+
+void upb_exttable_clear(upb_exttable* t) {
+  size_t bytes = upb_table_size(&t->t) * sizeof(upb_tabent);
+  t->t.count = 0;
+  memset((char*)t->t.entries, 0, bytes);
+}
+
+bool upb_exttable_resize(upb_exttable* t, size_t size_lg2, upb_Arena* a) {
+  upb_exttable new_table;
+  if (!init(&new_table.t, size_lg2, a)) return false;
+
+  size_t i;
+  for (i = begin(&t->t); i < upb_table_size(&t->t); i = next(&t->t, i)) {
+    const upb_tabent* e = &t->t.entries[i];
+    uint32_t hash = exthash(e->key, e->val);
+    uint32_t ext_num = *(const uint32_t*)upb_value_getconstptr(e->val);
+    lookupkey_t lookupkey = extkey((const void*)e->key.num, ext_num);
+    insert(&new_table.t, lookupkey, e->key, e->val, hash, &exthash, &exteql);
+  }
+
+  *t = new_table;
+  return true;
+}
+
+bool upb_exttable_insert(upb_exttable* t, const void* k, const uint32_t* v,
+                         upb_Arena* a) {
+  UPB_ASSERT(k != NULL);
+  UPB_ASSERT(v != NULL);
+  UPB_ASSERT(*v != 0);
+
+  if (isfull(&t->t)) {
+    if (!upb_exttable_resize(t, _upb_log2_table_size(&t->t) + 1, a)) {
+      return false;
+    }
+  }
+
+  lookupkey_t lookupkey = extkey(k, *v);
+  upb_key key = {.num = (uintptr_t)k};
+  upb_value val = upb_value_constptr(v);
+  uint32_t hash = _upb_exttable_hash(k, *v);
+  insert(&t->t, lookupkey, key, val, hash, &exthash, &exteql);
+  return true;
+}
+
+const uint32_t* upb_exttable_lookup(const upb_exttable* t, const void* k,
+                                    uint32_t ext_number) {
+  uint32_t hash = _upb_exttable_hash(k, ext_number);
+  upb_value val;
+  if (lookup(&t->t, extkey(k, ext_number), &val, hash, &exteql)) {
+    return (const uint32_t*)upb_value_getconstptr(val);
+  }
+  return NULL;
+}
+
+const uint32_t* upb_exttable_remove(upb_exttable* t, const void* k,
+                                    uint32_t ext_number) {
+  uint32_t hash = _upb_exttable_hash(k, ext_number);
+  upb_value val;
+  if (rm(&t->t, extkey(k, ext_number), &val, hash, &exteql)) {
+    return (const uint32_t*)upb_value_getconstptr(val);
+  }
+  return NULL;
+}
+
 /* upb_inttable ***************************************************************/
 
 /* For inttables we use a hybrid structure where small keys are kept in an
@@ -625,9 +732,15 @@ static uint32_t presence_mask_arr_size(uint32_t array_size) {
   return (array_size + 7) / 8;  // sizeof(uint8_t) is always 1.
 }
 
-static uint32_t inthash(upb_key key) { return upb_inthash(key.num); }
+static uint32_t inthash(upb_key key, upb_value val) {
+  UPB_UNUSED(val);
+  return upb_inthash(key.num);
+}
 
-static bool inteql(upb_key k1, lookupkey_t k2) { return k1.num == k2.num; }
+static bool inteql(upb_key k1, upb_value v1, lookupkey_t k2) {
+  UPB_UNUSED(v1);
+  return k1.num == k2.num;
+}
 
 static upb_value* mutable_array(upb_inttable* t) {
   return (upb_value*)t->array;
@@ -733,8 +846,8 @@ bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
 
       for (i = begin(&t->t); i < upb_table_size(&t->t); i = next(&t->t, i)) {
         const upb_tabent* e = &t->t.entries[i];
-        insert(&new_table, intkey(e->key.num), e->key, e->val, inthash(e->key),
-               &inthash, &inteql);
+        insert(&new_table, intkey(e->key.num), e->key, e->val,
+               inthash(e->key, e->val), &inthash, &inteql);
       }
 
       UPB_ASSERT(t->t.count == new_table.count);

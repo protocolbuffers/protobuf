@@ -258,6 +258,7 @@ proto_library(
 upb_minitable_proto_library(
     name = "message_test_upb_minitable_proto",
     testonly = 1,
+    visibility = ["//upb:__subpackages__"],
     deps = [":message_test_proto"],
 )
 

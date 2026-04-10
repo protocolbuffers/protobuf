@@ -158,6 +158,7 @@ upb/base/string_view.h
 upb/base/upcast.h
 upb/generated_code_support.h
 upb/hash/common.h
+upb/hash/ext_table.h
 upb/hash/int_table.h
 upb/hash/str_table.h
 upb/json/decode.h
