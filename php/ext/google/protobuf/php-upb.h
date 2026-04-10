@@ -2949,7 +2949,7 @@ UPB_INLINE upb_key upb_key_empty(void) {
 
 UPB_INLINE bool upb_tabent_isempty(const upb_tabent* e) {
   upb_key key = e->key;
-  UPB_ASSERT(sizeof(key.num) == sizeof(key.str));
+  UPB_STATIC_ASSERT(sizeof(key.num) == sizeof(key.str), "Sizes don't match");
   uintptr_t val;
   memcpy(&val, &key, sizeof(val));
   // Note: for upb_inttables a tab_key is a true integer key value, but the
@@ -15050,6 +15050,59 @@ UPB_INLINE bool upb_ShlOverflow(size_t* a, unsigned int b) {
 
 
 #endif /* UPB_BASE_INTERNAL_LOG2_H_ */
+
+#ifndef UPB_HASH_EXT_TABLE_H_
+#define UPB_HASH_EXT_TABLE_H_
+
+#include <stddef.h>
+#include <stdint.h>
+
+
+// Must be last.
+
+typedef struct {
+  upb_table t;
+} upb_exttable;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Initialize a table. If memory allocation failed, false is returned and
+// the table is uninitialized.
+bool upb_exttable_init(upb_exttable* table, size_t expected_size, upb_Arena* a);
+
+// Returns the number of values in the table.
+UPB_INLINE size_t upb_exttable_count(const upb_exttable* t) {
+  return t->t.count;
+}
+
+void upb_exttable_clear(upb_exttable* t);
+
+// Inserts the given key and value into the hashtable.
+// The key must not already exist in the hash table, and must not be NULL.
+//
+// If a table resize was required but memory allocation failed, false is
+// returned and the table is unchanged.
+bool upb_exttable_insert(upb_exttable* t, const void* k, const uint32_t* v,
+                         upb_Arena* a);
+
+// Looks up key and ext_number in this table, returning the value if the key was
+// found, or NULL otherwise.
+const uint32_t* upb_exttable_lookup(const upb_exttable* t, const void* k,
+                                    uint32_t ext_number);
+
+// Removes an item from the table. Returns the removed item if the remove was
+// successful, or NULL if the key was not found.
+const uint32_t* upb_exttable_remove(upb_exttable* t, const void* k,
+                                    uint32_t ext_number);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_HASH_EXT_TABLE_H_ */
 
 #ifndef UPB_JSON_DECODE_H_
 #define UPB_JSON_DECODE_H_
