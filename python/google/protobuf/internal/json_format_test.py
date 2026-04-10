@@ -1813,6 +1813,65 @@ class JsonFormatTest(JsonFormatBase):
     }
     json_format.ParseDict(shallow_any, message, max_recursion_depth=5)
 
+  def testStructValueListValueRecursionDepthEnforcement(self):
+    # Struct: peak depth = N + 2, so N=4 exceeds limit 5, N=3 passes.
+    nested_struct = {'leaf': 'ok'}
+    for _ in range(4):
+      nested_struct = {'key': nested_struct}
+    self.assertRaisesRegex(
+        json_format.ParseError,
+        'Message too deep. Max recursion depth is 5',
+        json_format.ParseDict,
+        nested_struct,
+        struct_pb2.Struct(),
+        max_recursion_depth=5,
+    )
+    under_limit_struct = {'leaf': 'ok'}
+    for _ in range(3):
+      under_limit_struct = {'key': under_limit_struct}
+    json_format.ParseDict(
+        under_limit_struct, struct_pb2.Struct(), max_recursion_depth=5
+    )
+
+    # ListValue: same arithmetic as Struct.
+    nested_list = ['leaf']
+    for _ in range(4):
+      nested_list = [nested_list]
+    self.assertRaisesRegex(
+        json_format.ParseError,
+        'Message too deep. Max recursion depth is 5',
+        json_format.ParseDict,
+        nested_list,
+        struct_pb2.ListValue(),
+        max_recursion_depth=5,
+    )
+    under_limit_list = ['leaf']
+    for _ in range(3):
+      under_limit_list = [under_limit_list]
+    json_format.ParseDict(
+        under_limit_list, struct_pb2.ListValue(), max_recursion_depth=5
+    )
+
+    # Value: peak depth = N + 3 (double increment on entry), so N=3 exceeds
+    # limit 5, N=2 passes.
+    nested_value = {'leaf': 'ok'}
+    for _ in range(3):
+      nested_value = {'key': nested_value}
+    self.assertRaisesRegex(
+        json_format.ParseError,
+        'Message too deep. Max recursion depth is 5',
+        json_format.ParseDict,
+        nested_value,
+        struct_pb2.Value(),
+        max_recursion_depth=5,
+    )
+    under_limit_value = {'leaf': 'ok'}
+    for _ in range(2):
+      under_limit_value = {'key': under_limit_value}
+    json_format.ParseDict(
+        under_limit_value, struct_pb2.Value(), max_recursion_depth=5
+    )
+
   def testAnyRecursionDepthBoundary(self):
     """Test recursion depth boundary behavior (exclusive upper limit)."""
     message = any_pb2.Any()
