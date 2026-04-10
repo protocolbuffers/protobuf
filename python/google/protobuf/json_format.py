@@ -774,6 +774,13 @@ class _Parser(object):
 
   def _ConvertValueMessage(self, value, message, path):
     """Convert a JSON representation into Value message."""
+    self.recursion_depth += 1
+    if self.recursion_depth > self.max_recursion_depth:
+      raise ParseError(
+          'Message too deep. Max recursion depth is {0}'.format(
+              self.max_recursion_depth
+          )
+      )
     if isinstance(value, dict):
       self._ConvertStructMessage(value, message.struct_value, path)
     elif isinstance(value, _LIST_LIKE):
@@ -792,6 +799,7 @@ class _Parser(object):
               value, type(value), path
           )
       )
+    self.recursion_depth -= 1
 
   def _ConvertListOrTupleValueMessage(self, value, message, path):
     """Convert a JSON representation into ListValue message."""
