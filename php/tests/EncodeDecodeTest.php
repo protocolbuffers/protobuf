@@ -1989,6 +1989,7 @@ class EncodeDecodeTest extends TestBase
 
     public function testJsonEncodeFloatLocaleIndependent()
     {
+        $originalLocale = setlocale(LC_NUMERIC, 0);
         $localeSet = setlocale(LC_NUMERIC, 'de_DE.UTF-8', 'de_DE', 'cs_CZ.UTF-8', 'cs_CZ', 'fr_FR.UTF-8', 'fr_FR');
         if ($localeSet === false) {
             $this->markTestSkipped('No locale with comma decimal separator available');
@@ -2001,7 +2002,7 @@ class EncodeDecodeTest extends TestBase
             $this->assertStringNotContainsString(',', $json);
             $this->assertStringContainsString('.', $json);
             $this->assertNotNull(json_decode($json));
-    
+
             $m2 = new DoubleValue();
             $m2->setValue(3.141592653589793);
             $json2 = $m2->serializeToJsonString();
@@ -2009,7 +2010,7 @@ class EncodeDecodeTest extends TestBase
             $this->assertStringContainsString('.', $json2);
             $this->assertNotNull(json_decode($json2));
         } finally {
-            setlocale(LC_NUMERIC, 'C');
+            setlocale(LC_NUMERIC, $originalLocale);
         }
     }
 }
