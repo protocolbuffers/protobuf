@@ -20,4 +20,17 @@ extend google.protobuf.FeatureSet {
 }
 
 message CSharpFeatures {
+  // Whether the generated files should have nullable reference type annotations.
+  // When enabled, the generated C# code includes `#nullable enable annotations`
+  // and annotates message-typed properties and certain parameters with `?`.
+  optional bool nullable_reference_types = 1 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_MESSAGE,
+    targets = TARGET_TYPE_FILE,
+    feature_support = {
+      edition_introduced: EDITION_UNSTABLE,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "false" }
+  ];
 }

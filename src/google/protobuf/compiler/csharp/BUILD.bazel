@@ -69,6 +69,7 @@ cc_library(
         "//src/google/protobuf/compiler:__pkg__",
     ],
     deps = [
+        ":csharp_features_bootstrap",
         ":names",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
@@ -123,6 +124,22 @@ cc_test(
         "//src/google/protobuf/io:printer",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "csharp_features_bootstrap",
+    srcs = ["c_sharp_features.pb.cc"],
+    hdrs = ["c_sharp_features.pb.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:arena",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/io",
     ],
 )
 
