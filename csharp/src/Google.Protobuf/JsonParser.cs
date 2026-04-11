@@ -512,9 +512,32 @@ namespace Google.Protobuf
 
         private void MergeAny(IMessage message, JsonTokenizer tokenizer)
         {
-            // Record the token stream until we see the @type property. At that point, we can take the value, consult
-            // the type registry for the relevant message, and replay the stream, omitting the @type property.
-            var tokens = new List<JsonToken>();
+            // Scan the Any body for the @type property and buffer all tokens that precede it so they
+            // can be replayed once the type is known.
+            //
+            // When called from a live text tokenizer (the outermost Any), we allocate a fresh List<JsonToken>
+            // and fill it as we scan — the existing approach.
+            //
+            // When called from a JsonReplayTokenizer (a nested Any whose parent already buffered everything),
+            // the tokens we need are already in the parent's backing list. We create a bounded slice view
+            // [replayStart, replayEnd) over that list instead of copying them into a new list. This keeps
+            // total allocation O(input size) across arbitrarily deep @type-last Any nesting, eliminating the
+            // previous O(N²) growth.
+            //
+            // Invariant relied upon here: MergeAny is always entered with tokenizer's buffered-token slot
+            // holding the StartObject (pushed back by MergeField → TryParseSingleValue → Merge). Consuming
+            // that pushed-back token does not advance nextTokenIndex, so nextTokenIndex is already k+1 when
+            // TryGetReplayState is called, and replayStart = k+1−1 = k (the index of StartObject). This
+            // holds whether or not a push-back occurred, giving a unified formula.
+            // TryGetReplayState is called BEFORE reading the StartObject so that currentIndex equals
+            // the list index of that StartObject — i.e. the token that Next() is about to return.
+            // When a push-back is in flight (always the case via MergeField→TryParseSingleValue),
+            // TryGetReplayState adjusts currentIndex to nextTokenIndex-1; when there is no push-back
+            // (the MergeWellKnownTypeAnyBody path), currentIndex equals nextTokenIndex directly.
+            // Either way sharedIndexBeforeStart == index-of-StartObject-in-the-list.
+            bool usingSharedBuffer = tokenizer.TryGetReplayState(out IList<JsonToken> sharedTokens, out int sharedIndexBeforeStart);
+            List<JsonToken> ownTokens = usingSharedBuffer ? null : new List<JsonToken>();
+            int preTypeTokenCount = 0;  // counts tokens added to ownTokens or virtually to the shared slice
 
             var token = tokenizer.Next();
             if (token.Type != JsonToken.TokenType.StartObject)
@@ -529,7 +552,14 @@ namespace Google.Protobuf
                 token.StringValue != JsonFormatter.AnyTypeUrlField ||
                 tokenizer.ObjectDepth != typeUrlObjectDepth)
             {
-                tokens.Add(token);
+                if (usingSharedBuffer)
+                {
+                    preTypeTokenCount++;
+                }
+                else
+                {
+                    ownTokens.Add(token);
+                }
                 token = tokenizer.Next();
 
                 // If we get to the end of the object and haven't seen a type URL, just return.
@@ -566,9 +596,24 @@ namespace Google.Protobuf
                 throw new InvalidOperationException($"Type registry has no descriptor for type name '{typeName}'");
             }
 
-            // Now replay the token stream we've already read and anything that remains of the object, just parsing it
-            // as normal. Our original tokenizer should end up at the end of the object.
-            var replay = JsonTokenizer.FromReplayedTokens(tokens, tokenizer);
+            // Build the replay tokenizer and parse the body. In both cases the continuation (tokenizer)
+            // is positioned just after the @type value, ready to serve any post-@type fields and the
+            // closing EndObject.
+            JsonTokenizer replay;
+            if (usingSharedBuffer)
+            {
+                // replayStart: index of the StartObject in the shared list.
+                // sharedIndexBeforeStart already equals that index (TryGetReplayState accounts for push-back).
+                // replayEnd: exclusive upper bound; excludes the @type name and value tokens.
+                int replayStart = sharedIndexBeforeStart;
+                int replayEnd   = replayStart + preTypeTokenCount;
+                replay = JsonTokenizer.FromReplayedSlice(sharedTokens, replayStart, replayEnd, tokenizer);
+            }
+            else
+            {
+                replay = JsonTokenizer.FromReplayedTokens(ownTokens, tokenizer);
+            }
+
             var body = descriptor.Parser.CreateTemplate();
             if (descriptor.IsWellKnownType)
             {
