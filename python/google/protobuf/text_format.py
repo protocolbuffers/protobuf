@@ -633,7 +633,8 @@ def Parse(text,
           allow_unknown_extension=False,
           allow_field_number=False,
           descriptor_pool=None,
-          allow_unknown_field=False):
+          allow_unknown_field=False,
+          max_recursion_depth=None):
   """Parses a text representation of a protocol message into a message.
 
   NOTE: for historical reasons this function does not clear the input
@@ -671,6 +672,9 @@ def Parse(text,
     allow_unknown_field: if True, skip over unknown field and keep
       parsing. Avoid to use this option if possible. It may hide some
       errors (e.g. spelling error on field name)
+    max_recursion_depth: Optional maximum recursion depth of a text proto
+      message to be deserialized. Text proto messages over this depth will
+      fail to parse. ``None`` keeps the historical unbounded behavior.
 
   Returns:
     Message: The same message passed as argument.
@@ -683,7 +687,8 @@ def Parse(text,
                     allow_unknown_extension,
                     allow_field_number,
                     descriptor_pool=descriptor_pool,
-                    allow_unknown_field=allow_unknown_field)
+                    allow_unknown_field=allow_unknown_field,
+                    max_recursion_depth=max_recursion_depth)
 
 
 def Merge(text,
@@ -691,7 +696,8 @@ def Merge(text,
           allow_unknown_extension=False,
           allow_field_number=False,
           descriptor_pool=None,
-          allow_unknown_field=False):
+          allow_unknown_field=False,
+          max_recursion_depth=None):
   """Parses a text representation of a protocol message into a message.
 
   Like Parse(), but allows repeated values for a non-repeated field, and uses
@@ -708,6 +714,9 @@ def Merge(text,
     allow_unknown_field: if True, skip over unknown field and keep
       parsing. Avoid to use this option if possible. It may hide some
       errors (e.g. spelling error on field name)
+    max_recursion_depth: Optional maximum recursion depth of a text proto
+      message to be deserialized. Text proto messages over this depth will
+      fail to parse. ``None`` keeps the historical unbounded behavior.
 
   Returns:
     Message: The same message passed as argument.
@@ -721,7 +730,8 @@ def Merge(text,
       allow_unknown_extension,
       allow_field_number,
       descriptor_pool=descriptor_pool,
-      allow_unknown_field=allow_unknown_field)
+      allow_unknown_field=allow_unknown_field,
+      max_recursion_depth=max_recursion_depth)
 
 
 def ParseLines(lines,
@@ -729,7 +739,8 @@ def ParseLines(lines,
                allow_unknown_extension=False,
                allow_field_number=False,
                descriptor_pool=None,
-               allow_unknown_field=False):
+               allow_unknown_field=False,
+               max_recursion_depth=None):
   """Parses a text representation of a protocol message into a message.
 
   See Parse() for caveats.
@@ -744,6 +755,9 @@ def ParseLines(lines,
     allow_unknown_field: if True, skip over unknown field and keep
       parsing. Avoid to use this option if possible. It may hide some
       errors (e.g. spelling error on field name)
+    max_recursion_depth: Optional maximum recursion depth of a text proto
+      message to be deserialized. Text proto messages over this depth will
+      fail to parse. ``None`` keeps the historical unbounded behavior.
 
   Returns:
     The same message passed as argument.
@@ -754,7 +768,8 @@ def ParseLines(lines,
   parser = _Parser(allow_unknown_extension,
                    allow_field_number,
                    descriptor_pool=descriptor_pool,
-                   allow_unknown_field=allow_unknown_field)
+                   allow_unknown_field=allow_unknown_field,
+                   max_recursion_depth=max_recursion_depth)
   return parser.ParseLines(lines, message)
 
 
@@ -763,7 +778,8 @@ def MergeLines(lines,
                allow_unknown_extension=False,
                allow_field_number=False,
                descriptor_pool=None,
-               allow_unknown_field=False):
+               allow_unknown_field=False,
+               max_recursion_depth=None):
   """Parses a text representation of a protocol message into a message.
 
   See Merge() for more details.
@@ -778,6 +794,9 @@ def MergeLines(lines,
     allow_unknown_field: if True, skip over unknown field and keep
       parsing. Avoid to use this option if possible. It may hide some
       errors (e.g. spelling error on field name)
+    max_recursion_depth: Optional maximum recursion depth of a text proto
+      message to be deserialized. Text proto messages over this depth will
+      fail to parse. ``None`` keeps the historical unbounded behavior.
 
   Returns:
     The same message passed as argument.
@@ -788,7 +807,8 @@ def MergeLines(lines,
   parser = _Parser(allow_unknown_extension,
                    allow_field_number,
                    descriptor_pool=descriptor_pool,
-                   allow_unknown_field=allow_unknown_field)
+                   allow_unknown_field=allow_unknown_field,
+                   max_recursion_depth=max_recursion_depth)
   return parser.MergeLines(lines, message)
 
 
@@ -799,11 +819,14 @@ class _Parser(object):
                allow_unknown_extension=False,
                allow_field_number=False,
                descriptor_pool=None,
-               allow_unknown_field=False):
+               allow_unknown_field=False,
+               max_recursion_depth=None):
     self.allow_unknown_extension = allow_unknown_extension
     self.allow_field_number = allow_field_number
     self.descriptor_pool = descriptor_pool
     self.allow_unknown_field = allow_unknown_field
+    self.max_recursion_depth = max_recursion_depth
+    self.recursion_depth = 0
 
   def ParseLines(self, lines, message):
     """Parses a text representation of a protocol message into a message."""
@@ -837,8 +860,38 @@ class _Parser(object):
       raise ParseError from e
     if message:
       self.root_type = message.DESCRIPTOR.full_name
+    self.recursion_depth += 1
+    if (
+        self.max_recursion_depth is not None
+        and self.recursion_depth > self.max_recursion_depth
+    ):
+      raise ParseError(
+          'Message too deep. Max recursion depth is {0}'.format(
+              self.max_recursion_depth
+          )
+      )
     while not tokenizer.AtEnd():
       self._MergeField(tokenizer, message)
+    self.recursion_depth -= 1
+
+  def _MergeMessage(self, tokenizer, message, end_token):
+    self.recursion_depth += 1
+    if (
+        self.max_recursion_depth is not None
+        and self.recursion_depth > self.max_recursion_depth
+    ):
+      raise ParseError(
+          'Message too deep. Max recursion depth is {0}'.format(
+              self.max_recursion_depth
+          )
+      )
+    while not tokenizer.TryConsume(end_token):
+      if tokenizer.AtEnd():
+        raise tokenizer.ParseErrorPreviousToken(
+            'Expected "%s".' % (end_token,)
+        )
+      self._MergeField(tokenizer, message)
+    self.recursion_depth -= 1
 
   def _MergeField(self, tokenizer, message):
     """Merges a single protocol message field into a message.
@@ -873,11 +926,9 @@ class _Parser(object):
       if expanded_any_sub_message is None:
         raise ParseError('Type %s not found in descriptor pool' %
                          packed_type_name)
-      while not tokenizer.TryConsume(expanded_any_end_token):
-        if tokenizer.AtEnd():
-          raise tokenizer.ParseErrorPreviousToken('Expected "%s".' %
-                                                  (expanded_any_end_token,))
-        self._MergeField(tokenizer, expanded_any_sub_message)
+      self._MergeMessage(
+          tokenizer, expanded_any_sub_message, expanded_any_end_token
+      )
       deterministic = False
 
       message.Pack(
@@ -1095,10 +1146,7 @@ class _Parser(object):
         sub_message = getattr(message, field.name)
       sub_message.SetInParent()
 
-    while not tokenizer.TryConsume(end_token):
-      if tokenizer.AtEnd():
-        raise tokenizer.ParseErrorPreviousToken('Expected "%s".' % (end_token,))
-      self._MergeField(tokenizer, sub_message)
+    self._MergeMessage(tokenizer, sub_message, end_token)
 
     if is_map_entry:
       value_cpptype = field.message_type.fields_by_name['value'].cpp_type
