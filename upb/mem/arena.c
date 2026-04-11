@@ -17,6 +17,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "upb/mem/alloc.h"
 #include "upb/mem/internal/arena.h"
@@ -1015,4 +1016,110 @@ bool _upb_Arena_WasLastAlloc(struct upb_Arena* a, void* ptr, size_t oldsize) {
   return UPB_PRIVATE(upb_Xsan_PtrEq)(ptr, start) &&
          UPB_PRIVATE(_upb_Arena_AllocSpan)(oldsize) ==
              block->size - kUpb_MemblockReserve;
+}
+
+UPB_PRIVATE(upb_Arena_BackAlloc)
+UPB_PRIVATE(upb_Arena_ReallocBack)(upb_Arena* a,
+                                   UPB_PRIVATE(upb_Arena_BackAlloc) alloc,
+                                   size_t oldsize, size_t size) {
+  UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
+  upb_ArenaInternal* ai = upb_Arena_Internal(a);
+
+  UPB_PRIVATE(upb_Arena_BackAlloc) ret = {};
+
+  if (!ai->block_alloc) return ret;
+
+  upb_alloc* block_alloc = _upb_ArenaInternal_BlockAlloc(ai);
+
+  // Always precisely size these blocks, encode does its own exponential growth.
+  // No ASAN guard region added, since the backing allocator will already create
+  // one at the end.
+  size_t block_size = size + kUpb_MemblockReserve;
+
+  upb_SizedPtr alloc_result = upb_SizeReturningMalloc(block_alloc, block_size);
+  if (alloc_result.p == NULL) {
+    return ret;
+  }
+  upb_MemBlock* block = alloc_result.p;
+  block->next = NULL;
+  block->size = alloc_result.n;
+  ret.standalone_block = block;
+  ret.start = UPB_PTR_AT(block, kUpb_MemblockReserve, char);
+  ret.len = alloc_result.n - kUpb_MemblockReserve;
+  if (alloc.start != NULL) {
+    // Populated backwards, so copy backwards
+    memcpy(UPB_PTR_AT(ret.start, ret.len - oldsize, char),
+           UPB_PTR_AT(alloc.start, alloc.len - oldsize, char), oldsize);
+    if (alloc.standalone_block) {
+      upb_MemBlock* standalone_block = (upb_MemBlock*)alloc.standalone_block;
+      upb_free_sized(block_alloc, standalone_block, standalone_block->size);
+    } else {
+      UPB_ASSERT(
+          UPB_PRIVATE(upb_Xsan_PtrEq)(alloc.start, a->UPB_ONLYBITS(ptr)));
+      // Return the whole thing as empty space
+      size_t empty = alloc.len + UPB_PRIVATE(kUpb_Asan_GuardSize);
+#if UPB_HWASAN
+      // hwasan operates on aligned sizes, we don't want to poison the first few
+      // bytes of the payload
+      empty = UPB_ALIGN_DOWN(empty, UPB_MALLOC_ALIGN);
+#endif
+      a->UPB_ONLYBITS(end) = a->UPB_ONLYBITS(ptr) + empty;
+      UPB_PRIVATE(upb_Xsan_PoisonRegion)(a->UPB_ONLYBITS(ptr), empty);
+    }
+  }
+  return ret;
+}
+
+void UPB_PRIVATE(upb_Arena_FinishBackAlloc)(upb_Arena* a,
+                                            UPB_PRIVATE(upb_Arena_BackAlloc)
+                                                alloc,
+                                            size_t size) {
+  UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
+  if (!alloc.start) return;
+  upb_ArenaInternal* ai = upb_Arena_Internal(a);
+
+  if (alloc.standalone_block) {
+    upb_MemBlock* block = (upb_MemBlock*)alloc.standalone_block;
+    if (size == 0) {
+      upb_alloc* block_alloc = _upb_ArenaInternal_BlockAlloc(ai);
+      upb_free_sized(block_alloc, block, block->size);
+    } else {
+      // Replace allocating region here?
+      size_t empty = alloc.len - size;
+#if UPB_HWASAN
+      // hwasan operates on aligned sizes, we don't want to poison the first few
+      // bytes of the valid region when we poison the area before it
+      empty = UPB_ALIGN_DOWN(empty, UPB_MALLOC_ALIGN);
+#endif
+      UPB_PRIVATE(upb_Xsan_PoisonRegion)(alloc.start, empty);
+      upb_MemBlock* head = ai->blocks;
+      if (head) {
+        block->next = head->next;
+        head->next = block;
+      } else {
+        ai->blocks = block;
+      }
+      // Doesn't need RMW consistency as concurrent allocation from the same
+      // arena isn't supported
+      uintptr_t old_space_allocated =
+          upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed);
+      upb_Atomic_Store(&ai->space_allocated, old_space_allocated + block->size,
+                       memory_order_relaxed);
+    }
+  } else {
+    UPB_ASSERT(UPB_PRIVATE(upb_Xsan_PtrEq)(alloc.start, a->UPB_ONLYBITS(ptr)));
+    size_t space_to_reclaim;
+    if (size == 0) {
+      space_to_reclaim = alloc.len + UPB_PRIVATE(kUpb_Asan_GuardSize);
+    } else {
+      space_to_reclaim = alloc.len - size;
+    }
+#if UPB_HWASAN
+    // hwasan operates on aligned sizes.
+    space_to_reclaim = UPB_ALIGN_DOWN(space_to_reclaim, UPB_MALLOC_ALIGN);
+#endif
+    // Poison and reclaim the space for future forward allocations.
+    UPB_PRIVATE(upb_Xsan_PoisonRegion)(a->UPB_ONLYBITS(ptr), space_to_reclaim);
+    a->UPB_ONLYBITS(end) = a->UPB_ONLYBITS(ptr) + space_to_reclaim;
+  }
 }
