@@ -341,6 +341,13 @@ void FileGenerator::Generate(io::Printer* printer) {
   }
   printer->Print("\n");
   if (!java_package_.empty()) {
+    // Reject characters that can break out of the package declaration.
+    for (unsigned char c : java_package_) {
+      if (c == '\n' || c == '\r' || c == ';') {
+        ABSL_LOG(ERROR) << "Invalid character in java_package: " << java_package_;
+        return;
+      }
+    }
     printer->Print(
         "package $package$;\n"
         "\n",
