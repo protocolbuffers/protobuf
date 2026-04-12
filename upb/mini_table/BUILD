@@ -12,6 +12,7 @@ load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//upb/bazel:copts.bzl",
     "UPB_DEFAULT_COPTS",
+    "UPB_DEFAULT_CPPOPTS",
     "UPB_DEFAULT_FEATURES",
 )
 load(
@@ -169,6 +170,8 @@ cc_binary(
     name = "message_benchmark",
     testonly = 1,
     srcs = ["message_benchmark.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
     deps = [
         ":compat",
         ":message_benchmark_upb_minitable_proto",

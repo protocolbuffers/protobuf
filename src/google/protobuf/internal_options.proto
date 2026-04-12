@@ -24,7 +24,12 @@ message InternalOptionsForce {
   }
 }
 
-message InternalFieldOptionsCpp {}
+message InternalFieldOptionsCpp {
+  message MicroString {
+    InternalOptionsForce.Enum force = 1;
+  }
+  MicroString micro_string = 1;
+}
 
 message InternalFieldOptions {
   InternalFieldOptionsCpp cpp = 1;

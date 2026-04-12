@@ -1148,12 +1148,17 @@ bool HasLazyFields(const FileDescriptor* file, const Options& options) {
 }
 
 bool IsMicroString(const FieldDescriptor* field, const Options& opts) {
-  return !field->is_repeated() && !field->is_extension() &&
-         field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         field->cpp_string_type() == FieldDescriptor::CppStringType::kView &&
-         opts.experimental_use_micro_string &&
-         // map entry fields don't use MicroString right now
-         !field->containing_type()->options().map_entry();
+  if (field->is_repeated()) return false;
+  if (field->is_extension()) return false;
+  if (field->cpp_type() != FieldDescriptor::CPPTYPE_STRING) return false;
+  if (field->cpp_string_type() != FieldDescriptor::CppStringType::kView)
+    return false;
+
+  // map entry fields don't use MicroString right now
+  if (field->containing_type()->options().map_entry()) return false;
+
+
+  return opts.experimental_use_micro_string;
 }
 
 bool IsArenaStringPtr(const FieldDescriptor* field, const Options& opts) {

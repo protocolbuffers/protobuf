@@ -77,7 +77,8 @@ uint16_t upb_DecodeOptions_GetEffectiveMaxDepth(uint32_t options);
 UPB_INLINE int upb_Decode_LimitDepth(uint32_t decode_options, uint32_t limit) {
   uint32_t max_depth = upb_DecodeOptions_GetEffectiveMaxDepth(decode_options);
   if (max_depth > limit) max_depth = limit;
-  return upb_DecodeOptions_MaxDepth(max_depth) | (decode_options & 0xffff);
+  return (int)(upb_DecodeOptions_MaxDepth(max_depth) |
+               (decode_options & 0xffff));
 }
 
 // LINT.IfChange

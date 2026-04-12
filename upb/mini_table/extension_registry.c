@@ -11,8 +11,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "upb/hash/common.h"
-#include "upb/hash/str_table.h"
+#include "upb/hash/ext_table.h"
 #include "upb/mem/arena.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/message.h"
@@ -20,28 +19,25 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-#define EXTREG_KEY_SIZE (sizeof(upb_MiniTable*) + sizeof(uint32_t))
-
 struct upb_ExtensionRegistry {
+  upb_exttable exts;
   upb_Arena* arena;
-  upb_strtable exts;  // Key is upb_MiniTable* concatenated with fieldnum.
 };
-
-static void extreg_key(char* buf, const upb_MiniTable* l, uint32_t fieldnum) {
-  memcpy(buf, &l, sizeof(l));
-  memcpy(buf + sizeof(l), &fieldnum, sizeof(fieldnum));
-}
 
 upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena) {
   upb_ExtensionRegistry* r = upb_Arena_Malloc(arena, sizeof(*r));
   if (!r) return NULL;
   r->arena = arena;
-  if (!upb_strtable_init(&r->exts, 8, arena)) return NULL;
+  if (!upb_exttable_init(&r->exts, 8, arena)) return NULL;
   return r;
 }
 
 UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
     upb_ExtensionRegistry* r, const upb_MiniTableExtension* e) {
+  UPB_STATIC_ASSERT(
+      offsetof(upb_MiniTableExtension,
+               UPB_PRIVATE(field).UPB_PRIVATE(number)) == 0,
+      "Extension must be first-member-of-struct convertable with uint32_t");
   uint32_t fieldnum = upb_MiniTableExtension_Number(e);
   const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(e);
 
@@ -51,15 +47,11 @@ UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
     return kUpb_ExtensionRegistryStatus_InvalidExtension;
   }
 
-  char buf[EXTREG_KEY_SIZE];
-  extreg_key(buf, extendee, fieldnum);
-
-  if (upb_strtable_lookup2(&r->exts, buf, EXTREG_KEY_SIZE, NULL)) {
+  if (upb_exttable_lookup(&r->exts, extendee, fieldnum) != NULL) {
     return kUpb_ExtensionRegistryStatus_DuplicateEntry;
   }
 
-  if (!upb_strtable_insert(&r->exts, buf, EXTREG_KEY_SIZE,
-                           upb_value_constptr(e), r->arena)) {
+  if (!upb_exttable_insert(&r->exts, extendee, (const uint32_t*)e, r->arena)) {
     return kUpb_ExtensionRegistryStatus_OutOfMemory;
   }
   return kUpb_ExtensionRegistryStatus_Ok;
@@ -80,10 +72,8 @@ failure:
   // Back out the entries previously added.
   for (end = e, e = start; e < end; e++) {
     const upb_MiniTableExtension* ext = *e;
-    char buf[EXTREG_KEY_SIZE];
-    extreg_key(buf, ext->UPB_PRIVATE(extendee),
-               upb_MiniTableExtension_Number(ext));
-    upb_strtable_remove2(&r->exts, buf, EXTREG_KEY_SIZE, NULL);
+    upb_exttable_remove(&r->exts, upb_MiniTableExtension_Extendee(ext),
+                        upb_MiniTableExtension_Number(ext));
   }
   UPB_ASSERT(status != kUpb_ExtensionRegistryStatus_Ok);
   return status;
@@ -91,12 +81,6 @@ failure:
 
 const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
     const upb_ExtensionRegistry* r, const upb_MiniTable* t, uint32_t num) {
-  char buf[EXTREG_KEY_SIZE];
-  upb_value v;
-  extreg_key(buf, t, num);
-  if (upb_strtable_lookup2(&r->exts, buf, EXTREG_KEY_SIZE, &v)) {
-    return upb_value_getconstptr(v);
-  } else {
-    return NULL;
-  }
+  const uint32_t* v = upb_exttable_lookup(&r->exts, t, num);
+  return (const upb_MiniTableExtension*)v;
 }
