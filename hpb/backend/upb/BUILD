@@ -40,6 +40,7 @@ cc_library(
     visibility = [
         "//hpb:__subpackages__",
         "//hpb_generator:__subpackages__",
+        "//multiplatform/experimental/collections/core:__pkg__",
     ],
     deps = [
         "//hpb:ptr",
