@@ -13,12 +13,14 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
-import java.util.SortedMap;
+import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
@@ -46,7 +48,7 @@ final class FieldMaskTree {
   private static final String FIELD_PATH_SEPARATOR_REGEX = "\\.";
 
   private static final class Node {
-    final SortedMap<String, Node> children = new TreeMap<>();
+    final NavigableMap<String, Node> children = new TreeMap<>();
   }
 
   private final Node root = new Node();
@@ -135,33 +137,30 @@ final class FieldMaskTree {
     if (parts.isEmpty()) {
       return this;
     }
-    removeFieldPath(root, parts, 0);
+
+    Node lastBranchNode = root;
+    String branchKey = null;
+    Node current = root;
+
+    for (String part : parts) {
+      // While descending, keep track of the last node we saw which had more than one child.
+      // When we go to remove later, we want to remove the entire branch beneath that node.
+      if (current.children.size() > 1) {
+        lastBranchNode = current;
+        branchKey = part;
+      }
+      current = current.children.get(part);
+      if (current == null) {
+        return this; // Path not found, remove nothing.
+      }
+    }
+
+    if (branchKey != null) {
+      lastBranchNode.children.remove(branchKey);
+    } else {
+      root.children.clear();
+    }
     return this;
-  }
-
-  /**
-   * Removes {@code parts} from {@code node} recursively.
-   *
-   * @return a boolean value indicating whether current {@code node} should be removed.
-   */
-  @CanIgnoreReturnValue
-  private static boolean removeFieldPath(Node node, List<String> parts, int index) {
-    String key = parts.get(index);
-
-    // Base case 1: path not match.
-    if (!node.children.containsKey(key)) {
-      return false;
-    }
-    // Base case 2: last element in parts.
-    if (index == parts.size() - 1) {
-      node.children.remove(key);
-      return node.children.isEmpty();
-    }
-    // Recursive remove sub-path.
-    if (removeFieldPath(node.children.get(key), parts, index + 1)) {
-      node.children.remove(key);
-    }
-    return node.children.isEmpty();
   }
 
   /** Removes all field paths in {@code mask} from this tree. */
@@ -183,15 +182,34 @@ final class FieldMaskTree {
     return FieldMask.newBuilder().addAllPaths(paths).build();
   }
 
-  /** Gathers all field paths in a sub-tree. */
   private static void getFieldPaths(Node node, String path, List<String> paths) {
-    if (node.children.isEmpty()) {
-      paths.add(path);
-      return;
+    class PathStackElement {
+      final Node node;
+      final String path;
+
+      PathStackElement(Node node, String path) {
+        this.node = node;
+        this.path = path;
+      }
     }
-    for (Entry<String, Node> entry : node.children.entrySet()) {
-      String childPath = path.isEmpty() ? entry.getKey() : path + "." + entry.getKey();
-      getFieldPaths(entry.getValue(), childPath, paths);
+
+    Deque<PathStackElement> stack = new ArrayDeque<>();
+    stack.push(new PathStackElement(node, path));
+
+    while (!stack.isEmpty()) {
+      PathStackElement element = stack.pop();
+      if (element.node.children.isEmpty()) {
+        paths.add(element.path);
+        continue;
+      }
+      // Pushing the children in reverse order so that they are processed in ascending order
+      // will maintain the behavior that the paths are alphabetically sorted in the final
+      // FieldMask.
+      for (Entry<String, Node> entry : element.node.children.descendingMap().entrySet()) {
+        String childPath =
+            element.path.isEmpty() ? entry.getKey() : element.path + "." + entry.getKey();
+        stack.push(new PathStackElement(entry.getValue(), childPath));
+      }
     }
   }
 
