@@ -259,7 +259,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   Value<TypeHandler>* Add(Arena* arena, Value<TypeHandler>&& value) {
-    if (ClearedCount() > 0) {
+    if (AnyCleared()) {
       auto* result =
           cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1)));
       *result = std::move(value);
@@ -272,7 +272,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   Value<TypeHandler>* Add(Arena* arena, const Value<TypeHandler>& value) {
-    if (ClearedCount() > 0) {
+    if (AnyCleared()) {
       auto* result =
           cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1)));
       *result = value;
@@ -285,7 +285,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler, typename... Args>
   Value<TypeHandler>* Emplace(Arena* arena, Args&&... args) {
-    if (ClearedCount() > 0) {
+    if (AnyCleared()) {
       auto* result =
           cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1)));
       // NOLINTNEXTLINE(google3-readability-redundant-string-conversions)
@@ -307,15 +307,27 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     ABSL_DCHECK_EQ(GetArena(), nullptr);
 
     using H = CommonHandler<TypeHandler>;
-    int n = allocated_size();
-    ABSL_DCHECK_LE(n, Capacity());
+#ifdef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+    const int size = current_size_;
+#else
+    int size = allocated_size();
+    ABSL_DCHECK_LE(size, Capacity());
+#endif
     void** elems = elements();
-    for (int i = 0; i < n; i++) {
-      if (i + 5 < n) {
+    for (int i = 0; i < size; i++) {
+      if (i + 5 < size) {
         absl::PrefetchToLocalCacheNta(elems[i + 5]);
       }
       Delete<H>(elems[i]);
     }
+#ifdef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+    if (ABSL_PREDICT_FALSE(AnyCleared())) {
+      const int capacity = Capacity();
+      for (int i = size; i < capacity && elems[i] != nullptr; ++i) {
+        Delete<H>(elems[i]);
+      }
+    }
+#endif
     if (!using_sso()) {
       internal::SizedDelete(rep(),
                             Capacity() * sizeof(elems[0]) + kRepHeaderSize);
@@ -434,7 +446,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   // Returns true if there are no preallocated elements in the array.
   PROTOBUF_FUTURE_ADD_NODISCARD bool PrepareForParse() {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+    return !AnyCleared();
+#else
     return allocated_size() == current_size_;
+#endif
   }
 
   // Similar to `AddAllocated` but faster.
@@ -444,13 +460,17 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     ABSL_DCHECK(PrepareForParse());
     if (ABSL_PREDICT_FALSE(SizeAtCapacity())) {
       *InternalExtend(1, arena) = value;
+#ifndef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
       ++rep()->allocated_size;
+#endif
     } else {
       if (using_sso()) {
         tagged_rep_or_elem_ = value;
       } else {
         rep()->elements[current_size_] = value;
+#ifndef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
         ++rep()->allocated_size;
+#endif
       }
     }
     ExchangeCurrentSize(current_size_ + 1);
@@ -529,12 +549,21 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
         using_sso()
             ? 0
             : static_cast<size_t>(Capacity()) * sizeof(void*) + kRepHeaderSize;
+#ifdef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+    const int capacity = Capacity();
+    void* const* elems = elements();
+    for (int i = 0; i < capacity && elems[i] != nullptr; ++i) {
+      allocated_bytes +=
+          TypeHandler::SpaceUsedLong(*cast<TypeHandler>(elems[i]));
+    }
+#else
     const int n = allocated_size();
     void* const* elems = elements();
     for (int i = 0; i < n; ++i) {
       allocated_bytes +=
           TypeHandler::SpaceUsedLong(*cast<TypeHandler>(elems[i]));
     }
+#endif
     return allocated_bytes;
   }
 
@@ -543,7 +572,13 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Like Add(), but if there are no cleared objects to use, returns nullptr.
   template <typename TypeHandler>
   Value<TypeHandler>* AddFromCleared() {
-    if (current_size_ < allocated_size()) {
+    if (
+#ifdef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+        AnyCleared()
+#else
+        current_size_ < allocated_size()
+#endif
+    ) {
       return cast<TypeHandler>(
           element_at(ExchangeCurrentSize(current_size_ + 1)));
     } else {
@@ -556,7 +591,13 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     ABSL_DCHECK_EQ(arena, GetArena());
     ABSL_DCHECK_NE(value, nullptr);
     Arena* element_arena = TypeHandler::GetArena(value);
-    if (arena != element_arena || AllocatedSizeAtCapacity()) {
+    if (arena != element_arena ||
+#ifdef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+        SizeAtCapacity()
+#else
+        AllocatedSizeAtCapacity()
+#endif
+    ) {
       AddAllocatedSlowWithCopy<TypeHandler>(value, element_arena, arena);
       return;
     }
@@ -564,6 +605,12 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     // our arena pointer, and we can add to array without resizing it (at
     // least one slot that is not allocated).
     void** elems = elements();
+#ifdef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+    if (ABSL_PREDICT_FALSE(AnyCleared()) && arena == nullptr) {
+      Delete<TypeHandler>(elems[current_size_]);
+    }
+    elems[ExchangeCurrentSize(current_size_ + 1)] = value;
+#else
     if (current_size_ < allocated_size()) {
       // Make space at [current] by moving first allocated element to end of
       // allocated list.
@@ -571,6 +618,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     }
     elems[ExchangeCurrentSize(current_size_ + 1)] = value;
     if (!using_sso()) ++rep()->allocated_size;
+#endif
   }
 
   template <typename TypeHandler>
@@ -581,6 +629,13 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     if (SizeAtCapacity()) {
       // The array is completely full with no cleared objects, so grow it.
       InternalExtend(1, arena);
+#ifdef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+    } else if (ABSL_PREDICT_FALSE(AnyCleared()) && arena == nullptr) {
+      // If there are any cleared objects, we will overwrite the first one. This
+      // is preferable to calling `AllocatedSizeSlow()`, which is O(log n).
+      using H = CommonHandler<TypeHandler>;
+      Delete<H>(element_at(current_size_));
+#else
       ++rep()->allocated_size;
     } else if (AllocatedSizeAtCapacity()) {
       // There is no more space in the pointer array because it contains some
@@ -599,6 +654,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     } else {
       // There are no cleared objects.
       if (!using_sso()) ++rep()->allocated_size;
+#endif
     }
 
     element_at(ExchangeCurrentSize(current_size_ + 1)) = value;
@@ -625,22 +681,44 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   Value<TypeHandler>* UnsafeArenaReleaseLast() {
     internal::RuntimeAssertInBounds(0, current_size_);
-    ExchangeCurrentSize(current_size_ - 1);
-    auto* result = cast<TypeHandler>(element_at(current_size_));
+    auto* result = cast<TypeHandler>(element_at(current_size_ - 1));
     if (using_sso()) {
       tagged_rep_or_elem_ = nullptr;
     } else {
-      --rep()->allocated_size;
+#ifdef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+      int allocated_size = current_size_;
+      if (ABSL_PREDICT_FALSE(AnyCleared())) {
+        // There are cleared elements on the end; replace the removed element
+        // with the last allocated element.
+        allocated_size = AllocatedSizeSlow();
+        element_at(current_size_ - 1) = element_at(allocated_size - 1);
+      }
+      element_at(allocated_size - 1) = nullptr;
+#else
       if (current_size_ < allocated_size()) {
         // There are cleared elements on the end; replace the removed element
         // with the last allocated element.
-        element_at(current_size_) = element_at(allocated_size());
+        element_at(current_size_ - 1) = element_at(allocated_size() - 1);
       }
+      --rep()->allocated_size;
+#endif
     }
+
+    ExchangeCurrentSize(current_size_ - 1);
     return result;
   }
 
+#ifdef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+  int AnyCleared() const {
+    const int capacity = Capacity();
+    PROTOBUF_ASSUME(current_size_ <= capacity);
+    return current_size_ != capacity && element_at(current_size_) != nullptr;
+  }
+#else
   int ClearedCount() const { return allocated_size() - current_size_; }
+
+  int AnyCleared() const { return ClearedCount() > 0; }
+#endif
 
   // Slowpath handles all cases, copying if necessary.
   template <typename TypeHandler>
@@ -743,9 +821,13 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   struct Rep {
     // The size of the elements array, in number of elements.
     int capacity;
+#ifdef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+    [[maybe_unused]] const int unused = 0;
+#else
     // The number of elements allocated in the elements array (including cleared
     // elements). This is always >= current_size.
     int allocated_size;
+#endif
     // Here we declare a huge array as a way of approximating C's "flexible
     // array member" feature without relying on undefined behavior.
     void* elements[(std::numeric_limits<int>::max() - 2 * sizeof(int)) /
@@ -761,17 +843,24 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     return std::exchange(current_size_, new_size);
   }
   inline bool SizeAtCapacity() const {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+    // Harden invariant size() <= Capacity().
+    ABSL_DCHECK_LE(size(), Capacity());
+#else
     // Harden invariant size() <= allocated_size() <= Capacity().
     ABSL_DCHECK_LE(size(), allocated_size());
     ABSL_DCHECK_LE(allocated_size(), Capacity());
+#endif
     return current_size_ == Capacity();
   }
+#ifndef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
   inline bool AllocatedSizeAtCapacity() const {
     // Harden invariant size() <= allocated_size() <= Capacity().
     ABSL_DCHECK_LE(size(), allocated_size());
     ABSL_DCHECK_LE(allocated_size(), Capacity());
     return allocated_size() == Capacity();
   }
+#endif
 
   void* const* elements() const {
     return using_sso() ? &tagged_rep_or_elem_ : +rep()->elements;
@@ -791,10 +880,16 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     return const_cast<RepeatedPtrFieldBase*>(this)->element_at(index);
   }
 
+#ifdef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+  // Calculates the number of allocated elements in the repeated field by
+  // searching for the first `nullptr` element.
+  int AllocatedSizeSlow() const;
+#else
   int allocated_size() const {
     return using_sso() ? (tagged_rep_or_elem_ != nullptr ? 1 : 0)
                        : rep()->allocated_size;
   }
+#endif
   Rep* rep() {
     ABSL_DCHECK(!using_sso());
     return reinterpret_cast<Rep*>(
@@ -923,8 +1018,10 @@ inline void* RepeatedPtrFieldBase::AddInternal(
     }
     void*& result = *InternalExtend(1, arena);
     factory(arena, result);
+#ifndef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
     Rep* r = rep();
     r->allocated_size = 2;
+#endif
     ExchangeCurrentSize(2);
     return result;
   }
@@ -933,11 +1030,13 @@ inline void* RepeatedPtrFieldBase::AddInternal(
     InternalExtend(1, arena);
     r = rep();
   } else {
-    if (ClearedCount() > 0) {
+    if (AnyCleared()) {
       return r->elements[ExchangeCurrentSize(current_size_ + 1)];
     }
   }
+#ifndef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
   ++r->allocated_size;
+#endif
   void*& result = r->elements[ExchangeCurrentSize(current_size_ + 1)];
   factory(arena, result);
   return result;

@@ -776,6 +776,8 @@ namespace internal {
 #define PROTOBUF_PRESERVE_ALL
 #endif  // PROTOBUF_PRESERVE_ALL
 
+#define PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE 1
+
 namespace google {
 namespace protobuf {
 namespace internal {

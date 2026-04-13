@@ -43,6 +43,35 @@ std::string* CloneSlow(Arena* arena, const std::string& value) {
   return Arena::Create<std::string>(arena, value);
 }
 
+#ifdef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+int RepeatedPtrFieldBase::AllocatedSizeSlow() const {
+  if (ABSL_PREDICT_TRUE(!AnyCleared())) {
+    return current_size_;
+  }
+
+  // Allocated size is at least current_size_ + 1, since we know there is at
+  // least one cleared element.
+  const int min_allocated_size = current_size_ + 1;
+
+  // Below this threshold, a linear scan is faster than a binary search.
+  static constexpr int kSmallCapacityThreshold = 16;
+
+  const int capacity = Capacity();
+  if (capacity - min_allocated_size > kSmallCapacityThreshold) {
+    return std::lower_bound(
+               elements() + min_allocated_size, elements() + capacity, nullptr,
+               [](const void* a, const void* b) { return a != nullptr; }) -
+           elements();
+  } else {
+    int allocated_size = min_allocated_size;
+    for (; allocated_size < capacity && element_at(allocated_size) != nullptr;
+         ++allocated_size) {
+    }
+    return allocated_size;
+  }
+}
+#endif  // PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+
 void** RepeatedPtrFieldBase::InternalExtend(int extend_amount, Arena* arena) {
   ABSL_DCHECK(extend_amount > 0);
   ABSL_DCHECK_EQ(arena, GetArena());
@@ -70,14 +99,25 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount, Arena* arena) {
 
   if (using_sso()) {
     new_rep->capacity = new_capacity;
+#ifndef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
     new_rep->allocated_size = tagged_rep_or_elem_ != nullptr ? 1 : 0;
+#endif
     new_rep->elements[0] = tagged_rep_or_elem_;
+#ifdef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+    std::memset(new_rep->elements + 1, 0, (new_capacity - 1) * kPtrSize);
+#endif
   } else {
     Rep* old_rep = rep();
     new_rep->capacity = new_capacity;
+#ifdef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+    memcpy(new_rep->elements, old_rep->elements, old_capacity * kPtrSize);
+    std::memset(new_rep->elements + old_capacity, 0,
+                (new_capacity - old_capacity) * kPtrSize);
+#else
     new_rep->allocated_size = old_rep->allocated_size;
     memcpy(new_rep->elements, old_rep->elements,
            new_rep->allocated_size * kPtrSize);
+#endif
     size_t old_total_size = old_capacity * kPtrSize + kRepHeaderSize;
     if (arena == nullptr) {
       internal::SizedDelete(old_rep, old_total_size);
@@ -116,9 +156,21 @@ void RepeatedPtrFieldBase::CloseGap(int start, int num) {
   } else {
     // Close up a gap of "num" elements starting at offset "start".
     Rep* r = rep();
+#ifdef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+    const int allocated_size = AllocatedSizeSlow();
+    const int trailing_elements_start = allocated_size - num;
+    // Shift all elements after the gap to the left by "num".
+    for (int i = start; i < trailing_elements_start; ++i) {
+      r->elements[i] = r->elements[i + num];
+    }
+    // Clear the remaining elements.
+    std::memset(r->elements + trailing_elements_start, 0,
+                (allocated_size - trailing_elements_start) * sizeof(void*));
+#else
     for (int i = start + num; i < r->allocated_size; ++i)
       r->elements[i - num] = r->elements[i];
     r->allocated_size -= num;
+#endif
   }
   ExchangeCurrentSize(current_size_ - num);
 }
@@ -142,17 +194,25 @@ PROTOBUF_ALWAYS_INLINE void RepeatedPtrFieldBase::MergeFromInternal(
   auto dst = reinterpret_cast<T**>(InternalReserve(new_size, arena));
   auto src = reinterpret_cast<T* const*>(from.elements());
   auto end = src + from.current_size_;
+#ifdef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+  for (; src < end && *dst != nullptr; ++dst, ++src) {
+    copy_fn(arena, *dst, **src);
+  }
+#else
   auto end_assign = src + std::min(ClearedCount(), from.current_size_);
   for (; src < end_assign; ++dst, ++src) {
     copy_fn(arena, *dst, **src);
   }
+#endif
   for (; src < end; ++dst, ++src) {
     *dst = create_and_merge_fn(arena, **src);
   }
   ExchangeCurrentSize(new_size);
+#ifndef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
   if (new_size > allocated_size()) {
     rep()->allocated_size = new_size;
   }
+#endif
 }
 
 template <typename T, typename CopyElementFn>
@@ -185,9 +245,19 @@ int RepeatedPtrFieldBase::MergeIntoClearedMessages(
   Prefetch5LinesFrom1Line(&from);
   auto dst = reinterpret_cast<MessageLite**>(elements() + current_size_);
   auto src = reinterpret_cast<MessageLite* const*>(from.elements());
+#ifdef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+  int count = 0;
+#else
   int count = std::min(ClearedCount(), from.current_size_);
+#endif
   const ClassData* class_data = GetClassData(*src[0]);
-  for (int i = 0; i < count; ++i) {
+  for (int i = 0;
+#ifdef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
+       i < from.current_size_ && dst[i] != nullptr; ++count,
+#else
+       i < count;
+#endif
+           ++i) {
     ABSL_DCHECK(src[i] != nullptr);
     dst[i]->MergeFromWithClassData(*src[i], class_data);
   }
@@ -204,7 +274,7 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
   const void* const* src = from.elements();
   auto end = src + from.current_size_;
   constexpr ptrdiff_t kPrefetchstride = 1;
-  if (ABSL_PREDICT_FALSE(ClearedCount() > 0)) {
+  if (ABSL_PREDICT_FALSE(AnyCleared())) {
     int recycled = MergeIntoClearedMessages(from);
     dst += recycled;
     src += recycled;
@@ -221,9 +291,11 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
     *dst = copy_fn(arena, *src);
   }
   ExchangeCurrentSize(new_size);
+#ifndef PROTOBUF_INTERNAL_REMOVE_ALLOCATED_SIZE
   if (new_size > allocated_size()) {
     rep()->allocated_size = new_size;
   }
+#endif
 }
 
 template <>

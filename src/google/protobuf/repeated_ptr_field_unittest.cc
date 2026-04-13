@@ -70,7 +70,7 @@ class RepeatedPtrFieldTest : public testing::Test {
  public:
   template <typename T>
   static int ClearedCount(RepeatedPtrField<T>& field) {
-    return field.ClearedCount();
+    return field.AllocatedSizeSlow() - field.size();
   }
 };
 
