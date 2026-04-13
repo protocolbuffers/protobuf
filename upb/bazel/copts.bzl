@@ -8,6 +8,7 @@
 """Common copts for building upb."""
 
 visibility([
+    "//benchmarks/...",
     "//lua/...",
     "//python/...",
     "//upb/...",
@@ -45,8 +46,6 @@ UPB_DEFAULT_CPPOPTS = select({
 }) + select({
     "//upb:fasttable_enabled_setting": ["-DUPB_ENABLE_FASTTABLE"],
     "//conditions:default": [],
-}) + select({
-    "//conditions:default": [],
 })
 
 UPB_DEFAULT_COPTS = select({
@@ -55,6 +54,7 @@ UPB_DEFAULT_COPTS = select({
 }) + select({
     "//upb:fasttable_enabled_setting": ["-DUPB_ENABLE_FASTTABLE"],
     "//conditions:default": [],
-}) + select({
-    "//conditions:default": [],
 })
+
+UPB_DEFAULT_FEATURES = [
+]

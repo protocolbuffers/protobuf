@@ -1242,7 +1242,7 @@ class JsonFormatTest(JsonFormatBase):
     )
     self.CheckError(
         '{"int32Value": "foo"}',
-        'Failed to parse int32Value field: invalid literal for int\(\) with'
+        'Failed to parse int32Value field: invalid literal for int\\(\\) with'
         " base 10: 'foo'.",
     )
     self.CheckError(

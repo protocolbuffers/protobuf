@@ -673,6 +673,76 @@ class TextFormatMessageToTextBytesTests(TextFormatBase):
 @parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
 class TextFormatParserTests(TextFormatBase):
 
+  def testParseRecursionDepthLimit(self, message_module):
+    too_deep_text = textwrap.dedent("""\
+        child {
+          payload {}
+          child {
+            payload {}
+            child {}
+          }
+        }
+        """)
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        'Message too deep. Max recursion depth is 3',
+        text_format.Parse,
+        too_deep_text,
+        message_module.NestedTestAllTypes(),
+        max_recursion_depth=3,
+    )
+    shallow_text = textwrap.dedent("""\
+        payload {}
+        child {
+          payload {}
+        }
+        """)
+    text_format.Parse(
+        shallow_text, message_module.NestedTestAllTypes(), max_recursion_depth=3
+    )
+
+  def testParseAnyRecursionDepthLimit(self, message_module):
+    del message_module
+    message = any_pb2.Any()
+    text = (
+        '[type.googleapis.com/google.protobuf.Any] {\n'
+        '  [type.googleapis.com/google.protobuf.Any] {\n'
+        '    [type.googleapis.com/google.protobuf.Any] {}\n'
+        '  }\n'
+        '}\n'
+    )
+
+    with self.assertRaisesRegex(
+        text_format.ParseError,
+        'Message too deep. Max recursion depth is 2',
+    ):
+      text_format.Parse(
+          text,
+          message,
+          descriptor_pool=descriptor_pool.Default(),
+          max_recursion_depth=2,
+      )
+
+    text_format.Parse(
+        text,
+        any_pb2.Any(),
+        descriptor_pool=descriptor_pool.Default(),
+        max_recursion_depth=4,
+    )
+
+  def testParseDefaultBehaviorRemainsUnbounded(self, message_module):
+    del message_module
+    message = descriptor_pb2.DescriptorProto()
+    text = 'nested_type {' * 110 + '}' * 110
+
+    try:
+      text_format.Parse(text, message)
+    except Exception as exc:  # noqa: BLE001
+      self.fail(
+          'expected default parsing to remain unbounded, '
+          f'got {type(exc).__name__}: {exc}'
+      )
+
   def testParseAllFields(self, message_module):
     message = message_module.TestAllTypes()
     test_util.SetAllFields(message)

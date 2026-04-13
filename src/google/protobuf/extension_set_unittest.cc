@@ -522,6 +522,41 @@ TEST(ExtensionSetTest, ArenaMergeFromWithClearedExtensions) {
   }
 }
 
+TEST(ExtensionSetTest, ArenaMergeFromWithClearedExtensionsReduceCapacity) {
+  if (sizeof(void*) != 8) {
+    GTEST_SKIP() << "This test is only correct on 64-bit systems.";
+  }
+  Arena arena;
+  auto* message = Arena::Create<unittest::TestAllExtensions>(&arena);
+
+  message->SetExtension(unittest::optional_int32_extension, 1);
+  message->SetExtension(unittest::optional_int64_extension, 1);
+  message->SetExtension(unittest::optional_uint32_extension, 1);
+  message->SetExtension(unittest::optional_uint64_extension, 1);
+  message->SetExtension(unittest::optional_sint32_extension, 1);
+  message->SetExtension(unittest::optional_sint64_extension, 1);
+  message->ClearExtension(unittest::optional_int32_extension);
+  message->ClearExtension(unittest::optional_sint64_extension);
+
+  uint64_t space_used_before_merge = arena.SpaceUsed();
+  // We allocate many messages to give an opportunity for arena to reuse space
+  // that is returned from overallocating the buffer for the extension.
+  const int kNumMessages = 10000;
+  for (int i = 0; i < kNumMessages; ++i) {
+    auto* message2 = Arena::Create<unittest::TestAllExtensions>(&arena);
+    message2->MergeFrom(*message);
+  }
+  const uint64_t kSizeOfExtensionKeyValue = 32;
+  const uint64_t kRequiredCapacity = 4;
+  const uint64_t kConstantOverhead = 1000;
+  const double kTolerance = 1.1;
+  EXPECT_LT(arena.SpaceUsed() - space_used_before_merge,
+            kTolerance * kNumMessages *
+                    (kSizeOfExtensionKeyValue * kRequiredCapacity +
+                     sizeof(unittest::TestAllExtensions)) +
+                kConstantOverhead);
+}
+
 TEST(ExtensionSetTest, ArenaSetAllocatedMessageAndRelease) {
   Arena arena;
   unittest::TestAllExtensions* message =

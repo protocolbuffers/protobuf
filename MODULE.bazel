@@ -65,7 +65,6 @@ single_version_override(
     ],
 )
 
-bazel_dep(name = "aspect_bazel_lib", version = "2.22.5")
 bazel_dep(name = "rules_shell", version = "0.6.1")
 bazel_dep(name = "platforms", version = "0.0.11")
 
@@ -199,6 +198,10 @@ crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
 crate.spec(
     package = "googletest",
     version = ">0.0.0",
+)
+crate.spec(
+    package = "linkme",
+    version = "0.3.35",
 )
 crate.spec(
     package = "paste",

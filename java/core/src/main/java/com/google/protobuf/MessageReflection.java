@@ -101,7 +101,10 @@ class MessageReflection {
   @SuppressWarnings("unchecked")
   static boolean isInitialized(MessageOrBuilder message) {
     // Check that all required fields are present.
-    for (final Descriptors.FieldDescriptor field : message.getDescriptorForType().getFields()) {
+    Descriptor descriptor = message.getDescriptorForType();
+    int numFields = descriptor.getFieldCount();
+    for (int i = 0; i < numFields; i++) {
+      FieldDescriptor field = descriptor.getField(i);
       if (field.isRequired()) {
         if (!message.hasField(field)) {
           return false;
@@ -1376,8 +1379,9 @@ class MessageReflection {
               rawBytes, extensionRegistry, field, extension.defaultInstance);
       target.setField(field, value);
     } else {
-      // Use LazyField to load MessageSet lazily.
-      LazyField lazyField = new LazyField(extension.defaultInstance, extensionRegistry, rawBytes);
+      // Use InternalLazyField to load MessageSet lazily.
+      InternalLazyField lazyField =
+          new InternalLazyField(extension.defaultInstance, extensionRegistry, rawBytes);
       target.setField(field, lazyField);
     }
   }

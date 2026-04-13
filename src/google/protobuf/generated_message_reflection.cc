@@ -385,6 +385,21 @@ static void ReportReflectionUsageEnumTypeError(
   USAGE_CHECK_##LABEL(METHOD);                          \
   USAGE_CHECK_TYPE(METHOD, CPPTYPE)
 
+#define USAGE_CHECK_EXPOSE_LEGACY_REPEATED_FIELD(intent, METHOD)         \
+  do {                                                                   \
+    switch (intent) {                                                    \
+      case GetRepeatedFieldIntent::kExposeDirectly:                      \
+        USAGE_CHECK_EQ(                                                  \
+            field->CalculateCppRepeatedType(),                           \
+            FieldDescriptor::CppRepeatedType::kRepeated, METHOD,         \
+            "Field is a proxied repeated field; this method requires a " \
+            "legacy repeated field.");                                   \
+        break;                                                           \
+      case GetRepeatedFieldIntent::kHiddenOrInternal:                    \
+        break;                                                           \
+    }                                                                    \
+  } while (0)
+
 }  // namespace
 
 // ===================================================================
@@ -1247,12 +1262,6 @@ void Reflection::SwapFieldsImpl(
     } else {
       SwapField(message1, message2, field);
     }
-    // If the hasbits for repeated fields experiment is disabled, we can
-    // skip repeated fields since we know they don't have hasbits.
-    if (!internal::EnableExperimentalHintHasBitsForRepeatedFields() &&
-        field->is_repeated()) {
-      continue;
-    }
     // Swap has bit. We have already checked for oneof already. This has to
     // be done after SwapField, because SwapField may depend on the
     // information in has bits.
@@ -1816,15 +1825,7 @@ inline int32_t Reflection::IsEmptyOrCollectSetFields(
        absl::MakeSpan(descriptor.fields_, last_non_weak_field_index_ + 1)) {
     ++i;
     const OneofDescriptor* containing_oneof = field.containing_oneof();
-    // If the hasbits for repeated fields experiment is disabled, we can
-    // shortcut to checking the field size, since we know the field doesn't
-    // have hasbits.
-    if (!internal::EnableExperimentalHintHasBitsForRepeatedFields() &&
-        field.is_repeated()) {
-      if (FieldSize(message, &field) > 0) {
-        PROTO_REFLECTION_APPEND_OR_RETURN();
-      }
-    } else if (schema_.InRealOneof(&field)) {
+    if (schema_.InRealOneof(&field)) {
       const uint32_t* const oneof_case_array =
           GetConstPointerAtOffset<uint32_t>(&message,
                                             schema_.oneof_case_offset_);
@@ -1852,6 +1853,7 @@ inline int32_t Reflection::IsEmptyOrCollectSetFields(
 
 void Reflection::ListFields(const Message& message,
                             std::vector<const FieldDescriptor*>* output) const {
+  STATIC_USAGE_CHECK_MESSAGE(ListFields, &message);
   output->clear();
   // Optimization:  The default instance never has any fields set.
   if (schema_.IsDefaultInstance(message)) return;
@@ -2727,8 +2729,6 @@ Message* Reflection::MutableRepeatedMessage(Message* message,
         MutableExtensionSet(message)->MutableRepeatedMessage(field->number(),
                                                              index));
   } else {
-    SetHasBitForRepeated(message, field);
-
     if (IsMapFieldInApi(field)) {
       return MutableRaw<MapFieldBase>(message, field)
           ->MutableRepeatedField()
@@ -2753,7 +2753,7 @@ Message* Reflection::AddMessage(Message* message, const FieldDescriptor* field,
   } else {
     Message* result = nullptr;
 
-    SetHasBitForRepeated(message, field);
+    SetHasBit(message, field);
 
     // We can't use AddField<Message>() because RepeatedPtrFieldBase doesn't
     // know how to allocate one.
@@ -2802,7 +2802,7 @@ void Reflection::AddAllocatedMessage(Message* message,
       repeated = MutableRaw<RepeatedPtrFieldBase>(message, field);
     }
     repeated->AddAllocated<GenericTypeHandler<Message>>(arena, new_entry);
-    SetHasBitForRepeated(message, field);
+    SetHasBit(message, field);
   }
 }
 
@@ -2825,7 +2825,7 @@ void Reflection::UnsafeArenaAddAllocatedMessage(Message* message,
     }
     repeated->UnsafeArenaAddAllocated<GenericTypeHandler<Message>>(arena,
                                                                    new_entry);
-    SetHasBitForRepeated(message, field);
+    SetHasBit(message, field);
   }
 }
 
@@ -2882,11 +2882,12 @@ bool Reflection::IsRepeatedOrMapFieldEmpty(const Message& message,
 void* Reflection::MutableRawRepeatedField(Message* message,
                                           const FieldDescriptor* field,
                                           FieldDescriptor::CppType cpptype,
-                                          int ctype,
-                                          const Descriptor* desc) const {
+                                          int ctype, const Descriptor* desc,
+                                          GetRepeatedFieldIntent intent) const {
   (void)ctype;  // Parameter is used by Google-internal code.
   USAGE_CHECK_REPEATED("MutableRawRepeatedField");
   USAGE_CHECK_MESSAGE_TYPE(MutableRawRepeatedField);
+  USAGE_CHECK_EXPOSE_LEGACY_REPEATED_FIELD(intent, "MutableRawRepeatedField");
 
   if (field->cpp_type() != cpptype &&
       (field->cpp_type() != FieldDescriptor::CPPTYPE_ENUM ||
@@ -2908,13 +2909,14 @@ void* Reflection::MutableRawRepeatedField(Message* message,
   }
 }
 
-const void* Reflection::GetRawRepeatedField(const Message& message,
-                                            const FieldDescriptor* field,
-                                            FieldDescriptor::CppType cpptype,
-                                            int ctype,
-                                            const Descriptor* desc) const {
+const void* Reflection::GetRawRepeatedField(
+    const Message& message, const FieldDescriptor* field,
+    FieldDescriptor::CppType cpptype, int ctype, const Descriptor* desc,
+    GetRepeatedFieldIntent intent) const {
   USAGE_CHECK_REPEATED("GetRawRepeatedField");
   USAGE_CHECK_MESSAGE_TYPE(GetRawRepeatedField);
+  USAGE_CHECK_EXPOSE_LEGACY_REPEATED_FIELD(intent, "GetRawRepeatedField");
+
   if (field->cpp_type() != cpptype &&
       (field->cpp_type() != FieldDescriptor::CPPTYPE_ENUM ||
        cpptype != FieldDescriptor::CPPTYPE_INT32))
@@ -2964,7 +2966,7 @@ bool Reflection::InsertOrLookupMapValue(Message* message,
   USAGE_CHECK(IsMapFieldInApi(field), InsertOrLookupMapValue,
               "Field is not a map field.");
   val->SetType(field->message_type()->map_value()->cpp_type());
-  SetHasBitForRepeated(message, field);
+  SetHasBit(message, field);
   return MutableRaw<MapFieldBase>(message, field)
       ->InsertOrLookupMapValue(key, val);
 }
@@ -3367,22 +3369,24 @@ void Reflection::ClearOneof(Message* message,
   }
 }
 
-#define HANDLE_TYPE(TYPE, CPPTYPE, CTYPE)                                  \
-  template <>                                                              \
-  const RepeatedField<TYPE>& Reflection::GetRepeatedFieldInternal<TYPE>(   \
-      const Message& message, const FieldDescriptor* field) const {        \
-    return *static_cast<const RepeatedField<TYPE>*>(                       \
-        GetRawRepeatedField(message, field, CPPTYPE, CTYPE, nullptr));     \
-  }                                                                        \
-                                                                           \
-  template <>                                                              \
-  RepeatedField<TYPE>* Reflection::MutableRepeatedFieldInternal<TYPE>(     \
-      Message * message, const FieldDescriptor* field) const {             \
-    if (!field->is_extension()) {                                          \
-      SetHasBitForRepeated(message, field);                                \
-    }                                                                      \
-    return static_cast<RepeatedField<TYPE>*>(                              \
-        MutableRawRepeatedField(message, field, CPPTYPE, CTYPE, nullptr)); \
+#define HANDLE_TYPE(TYPE, CPPTYPE, CTYPE)                                      \
+  template <>                                                                  \
+  const RepeatedField<TYPE>& Reflection::GetRepeatedFieldInternal<TYPE>(       \
+      const Message& message, const FieldDescriptor* field,                    \
+      GetRepeatedFieldIntent intent) const {                                   \
+    return *static_cast<const RepeatedField<TYPE>*>(                           \
+        GetRawRepeatedField(message, field, CPPTYPE, CTYPE, nullptr, intent)); \
+  }                                                                            \
+                                                                               \
+  template <>                                                                  \
+  RepeatedField<TYPE>* Reflection::MutableRepeatedFieldInternal<TYPE>(         \
+      Message * message, const FieldDescriptor* field,                         \
+      GetRepeatedFieldIntent intent) const {                                   \
+    if (!field->is_extension()) {                                              \
+      SetHasBit(message, field);                                               \
+    }                                                                          \
+    return static_cast<RepeatedField<TYPE>*>(MutableRawRepeatedField(          \
+        message, field, CPPTYPE, CTYPE, nullptr, intent));                     \
   }
 
 HANDLE_TYPE(int32_t, FieldDescriptor::CPPTYPE_INT32, -1);
@@ -3396,21 +3400,21 @@ HANDLE_TYPE(bool, FieldDescriptor::CPPTYPE_BOOL, -1);
 
 #undef HANDLE_TYPE
 
-const void* Reflection::GetRawRepeatedString(const Message& message,
-                                             const FieldDescriptor* field,
-                                             bool is_string) const {
+const void* Reflection::GetRawRepeatedString(
+    const Message& message, const FieldDescriptor* field, bool is_string,
+    GetRepeatedFieldIntent intent) const {
   (void)is_string;  // Parameter is used by Google-internal code.
   return GetRawRepeatedField(message, field, FieldDescriptor::CPPTYPE_STRING,
-                             FieldOptions::STRING, nullptr);
+                             FieldOptions::STRING, nullptr, intent);
 }
 
-void* Reflection::MutableRawRepeatedString(Message* message,
-                                           const FieldDescriptor* field,
-                                           bool is_string) const {
+void* Reflection::MutableRawRepeatedString(
+    Message* message, const FieldDescriptor* field, bool is_string,
+    GetRepeatedFieldIntent intent) const {
   (void)is_string;  // Parameter is used by Google-internal code.
   return MutableRawRepeatedField(message, field,
                                  FieldDescriptor::CPPTYPE_STRING,
-                                 FieldOptions::STRING, nullptr);
+                                 FieldOptions::STRING, nullptr, intent);
 }
 
 // Template implementations of basic accessors.  Inline because each
@@ -3476,7 +3480,7 @@ void Reflection::AddField(Message* message, const FieldDescriptor* field,
                           const Type& value) const {
   MutableRaw<RepeatedField<Type>>(message, field)
       ->AddWithArena(message->GetArena(), value);
-  SetHasBitForRepeated(message, field);
+  SetHasBit(message, field);
 }
 
 template <typename Type>
@@ -3484,7 +3488,7 @@ Type* Reflection::AddField(Message* message,
                            const FieldDescriptor* field) const {
   RepeatedPtrField<Type>* repeated =
       MutableRaw<RepeatedPtrField<Type>>(message, field);
-  SetHasBitForRepeated(message, field);
+  SetHasBit(message, field);
   return repeated->AddWithArena(message->GetArena());
 }
 
@@ -3539,7 +3543,7 @@ void* Reflection::RepeatedFieldData(Message* message,
 MapFieldBase* Reflection::MutableMapData(Message* message,
                                          const FieldDescriptor* field) const {
   USAGE_CHECK(IsMapFieldInApi(field), GetMapData, "Field is not a map field.");
-  SetHasBitForRepeated(message, field);
+  SetHasBit(message, field);
   auto* map = MutableRaw<MapFieldBase>(message, field);
   map->MutableAccess();
   return map;

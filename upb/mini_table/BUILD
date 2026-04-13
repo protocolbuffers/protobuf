@@ -12,6 +12,8 @@ load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//upb/bazel:copts.bzl",
     "UPB_DEFAULT_COPTS",
+    "UPB_DEFAULT_CPPOPTS",
+    "UPB_DEFAULT_FEATURES",
 )
 load(
     "//upb/bazel:upb_minitable_proto_library.bzl",
@@ -42,6 +44,7 @@ cc_library(
         "sub.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
@@ -61,6 +64,7 @@ cc_library(
         "debug_string.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = [
         "//rust/upb:__pkg__",
         "//upb:__pkg__",
@@ -92,6 +96,7 @@ cc_library(
         "internal/sub.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         "//upb/base",
@@ -110,6 +115,7 @@ cc_library(
         "compat.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":mini_table",
@@ -164,6 +170,8 @@ cc_binary(
     name = "message_benchmark",
     testonly = 1,
     srcs = ["message_benchmark.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
     deps = [
         ":compat",
         ":message_benchmark_upb_minitable_proto",

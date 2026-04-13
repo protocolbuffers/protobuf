@@ -65,7 +65,8 @@ uint16_t upb_EncodeOptions_GetEffectiveMaxDepth(uint32_t options);
 UPB_INLINE int upb_Encode_LimitDepth(uint32_t encode_options, uint32_t limit) {
   uint32_t max_depth = upb_EncodeOptions_GetEffectiveMaxDepth(encode_options);
   if (max_depth > limit) max_depth = limit;
-  return upb_EncodeOptions_MaxDepth(max_depth) | (encode_options & 0xffff);
+  return (int)(upb_EncodeOptions_MaxDepth(max_depth) |
+               (encode_options & 0xffff));
 }
 
 UPB_API upb_EncodeStatus upb_Encode(const upb_Message* msg,
