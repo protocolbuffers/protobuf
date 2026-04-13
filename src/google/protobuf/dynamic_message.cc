@@ -368,9 +368,8 @@ using internal::MessageGlobalsBase;
 
 struct DynamicMessageGlobalsInternalType : MessageGlobalsBase {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-  explicit constexpr DynamicMessageGlobalsInternalType(
-      internal::ClassDataFull class_data)
-      : MessageGlobalsBase(class_data) {}
+  explicit DynamicMessageGlobalsInternalType(internal::ClassDataFull data)
+      : MessageGlobalsBase(data) {}
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   union {
     alignas(internal::kMaxMessageAlignment) DynamicMessage _default;  // NOLINT
