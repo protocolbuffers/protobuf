@@ -312,6 +312,8 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
       this, /*run_proto3_tests=*/false);
   if (!this->performance_) {
     RunMessageSetTests();
+  } else {
+    RunRecursionLimitTests();
   }
   if (maximum_edition_ >= Edition::EDITION_2023) {
     BinaryAndJsonConformanceSuiteImpl<TestAllTypesProto3Editions>(
@@ -488,6 +490,40 @@ void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
            })pb"
       // clang-format on
   );
+}
+
+void BinaryAndJsonConformanceSuite::RunRecursionLimitTests() {
+  {
+    TestAllTypesEdition2023 message;
+    TestAllTypesEdition2023* sub = &message;
+    // The default recursion limit is 100 for most languages. 10,000 for
+    // golang. We use a larger number here for test.
+    for (int i = 0; i < 20000; i++) {
+      sub = &(*sub->mutable_map_recursive())[0];
+      sub->set_optional_int32(123);
+    }
+    ExpectParseFailureForProto<TestAllTypesEdition2023>(
+        message.SerializeAsString(), "EnforceDepthLimit.Map", RECOMMENDED);
+  }
+
+  {
+    TestAllTypesProto2 proto2_msg;
+    auto sub = proto2_msg.mutable_message_set_correct();
+    // The default recursion limit is 100 for most languages. 10,000 for
+    // golang. We use a larger number here for test.
+    for (int i = 0; i < 20000; i++) {
+      sub = sub->MutableExtension(
+                   TestAllTypesProto2::MessageSetCorrectExtension2::
+                       message_set_extension)
+                ->mutable_sub_msg();
+    }
+    sub->MutableExtension(TestAllTypesProto2::MessageSetCorrectExtension2::
+                              message_set_extension)
+        ->set_i(123);
+    ExpectParseFailureForProto<TestAllTypesProto2>(
+        proto2_msg.SerializeAsString(), "EnforceDepthLimit.MessageSetExtension",
+        RECOMMENDED);
+  }
 }
 
 template <typename MessageType>

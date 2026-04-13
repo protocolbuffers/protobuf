@@ -237,13 +237,18 @@ bool CodedInputStream::GetDirectBufferPointer(const void** data, int* size) {
 }
 
 bool CodedInputStream::ReadRaw(void* buffer, int size) {
+  if (size < 0) return false;
+  if (size == 0) return true;
+
   int current_buffer_size;
   while ((current_buffer_size = BufferSize()) < size) {
-    // Reading past end of buffer.  Copy what we have, then refresh.
-    memcpy(buffer, buffer_, current_buffer_size);
-    buffer = reinterpret_cast<uint8_t*>(buffer) + current_buffer_size;
-    size -= current_buffer_size;
-    Advance(current_buffer_size);
+    if (current_buffer_size > 0) {
+      // Reading past end of buffer.  Copy what we have, then refresh.
+      memcpy(buffer, buffer_, current_buffer_size);
+      buffer = reinterpret_cast<uint8_t*>(buffer) + current_buffer_size;
+      size -= current_buffer_size;
+      Advance(current_buffer_size);
+    }
     if (!Refresh()) return false;
   }
 

@@ -447,7 +447,7 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
   generator.set_minimum_edition(EDITION_99997_TEST_ONLY);
   generator.set_maximum_edition(EDITION_99999_TEST_ONLY);
   EXPECT_THAT(generator.BuildFeatureSetDefaults(),
-              IsOkAndHolds(EqualsProto(R"pb(
+              IsOkAndHolds(compiler::PartiallyMatchesEditionDefaults(R"pb(
                 defaults {
                   edition: EDITION_LEGACY
                   overridable_features {}

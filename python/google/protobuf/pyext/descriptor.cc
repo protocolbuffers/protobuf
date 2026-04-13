@@ -404,7 +404,7 @@ PyObject* NewInternedDescriptor(PyTypeObject* type,
     return nullptr;
   }
 
-  return GetInternedDescriptorsCache()->Get(
+  return GetInternedDescriptorsCache()->GetOrInsert(
       descriptor, type, [&]() -> PyObject* {
         // Create a new descriptor object
         PyBaseDescriptor* py_descriptor =
@@ -438,7 +438,7 @@ PyObject* NewInternedDescriptor(PyTypeObject* type,
 static void Dealloc(PyObject* pself) {
   PyBaseDescriptor* self = reinterpret_cast<PyBaseDescriptor*>(pself);
   PyObject_GC_UnTrack(pself);
-  GetInternedDescriptorsCache()->Delete(self->descriptor, pself);
+  GetInternedDescriptorsCache()->EraseIfEqual(self->descriptor, pself);
   Py_CLEAR(self->pool);
   Py_TYPE(self)->tp_free(pself);
 }

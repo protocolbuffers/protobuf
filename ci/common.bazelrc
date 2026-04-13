@@ -53,6 +53,7 @@ build --incompatible_remote_use_new_exit_code_for_lost_inputs
 build --incompatible_sandbox_hermetic_tmp
 build --incompatible_top_level_aspects_require_providers
 build --incompatible_use_cc_configure_from_rules_cc
+try-import-if-bazel-version >=9.0.0 %workspace%/ci/bazel9.bazelrc
 
 # We cannot yet build successfully with the following flags:
 #   --incompatible_check_testonly_for_output_files

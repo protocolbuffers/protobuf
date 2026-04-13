@@ -57,8 +57,12 @@ namespace google {
 namespace protobuf {
 class Timestamp;
 struct TimestampGlobalsTypeInternal;
-PROTOBUF_EXPORT extern TimestampGlobalsTypeInternal _Timestamp_globals_;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern TimestampGlobalsTypeInternal Timestamp_globals_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Timestamp_class_data_;
+#else
+PROTOBUF_EXPORT extern const TimestampGlobalsTypeInternal Timestamp_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace protobuf
 }  // namespace google
 
@@ -84,11 +88,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Timestamp final : p
 #endif
 
   template <typename = void>
-  explicit constexpr Timestamp(::google::protobuf::internal::ConstantInitialized);
+  explicit constexpr Timestamp(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
 
   inline Timestamp(const Timestamp& from) : Timestamp(nullptr, from) {}
-  inline Timestamp(Timestamp&& from) noexcept
-      : Timestamp(nullptr, ::std::move(from)) {}
+  inline Timestamp(Timestamp&& from) noexcept : Timestamp(nullptr, ::std::move(from)) {}
   inline Timestamp& operator=(const Timestamp& from) {
     CopyFrom(from);
     return *this;
@@ -123,8 +128,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Timestamp final : p
     return default_instance().GetMetadata().reflection;
   }
   [[nodiscard]] static const Timestamp& default_instance() {
-    return *::google::protobuf::internal::MessageGlobalsBase::default_instance<Timestamp>(
-        &_Timestamp_globals_);
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<Timestamp>(&Timestamp_globals_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(Timestamp& a, Timestamp& b) { a.Swap(&b); }
@@ -209,7 +213,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Timestamp final : p
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -242,11 +248,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Timestamp final : p
   // @@protoc_insertion_point(class_scope:google.protobuf.Timestamp)
  private:
   class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<1, 2,
+                          0, 0,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<1, 2,
-                                   0, 0,
-                                   2>
-      _table_;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -275,8 +286,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Timestamp final : p
   friend struct ::TableStruct_google_2fprotobuf_2ftimestamp_2eproto;
 };
 
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Timestamp_class_data_;
-
 // ===================================================================
 
 
@@ -297,8 +306,7 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Timesta
 inline void Timestamp::clear_seconds() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.seconds_ = ::int64_t{0};
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
 }
 inline ::int64_t Timestamp::seconds() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Timestamp.seconds)
@@ -322,8 +330,7 @@ inline void Timestamp::_internal_set_seconds(::int64_t value) {
 inline void Timestamp::clear_nanos() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.nanos_ = 0;
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
 }
 inline ::int32_t Timestamp::nanos() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Timestamp.nanos)

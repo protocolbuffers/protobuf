@@ -36,6 +36,54 @@ PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
 #endif
 namespace google {
 namespace protobuf {
+class Duration::_Internal {
+ public:
+  using HasBits = decltype(::std::declval<Duration>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(Duration, _impl_._has_bits_);
+};
+
+constexpr Duration::ParseTableT_ Duration::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+  return ParseTableT_{
+    {
+      PROTOBUF_FIELD_OFFSET(Duration, _impl_._has_bits_),
+      0, // no _extensions_
+      2, 8,  // max_field_number, fast_idx_mask
+      offsetof(ParseTableT_, field_lookup_table),
+      4294967292,  // skipmap
+      offsetof(ParseTableT_, field_entries),
+      2,  // num_field_entries
+      0,  // num_aux_entries
+      offsetof(ParseTableT_, field_names),  // no aux_entries
+      class_data,
+      nullptr,  // post_loop_handler
+      ::_pbi::TcParser::GenericFallback,  // fallback
+      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+      ::_pbi::TcParser::GetTable<::google::protobuf::Duration>(),  // to_prefetch
+      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+    }, {{
+      // int32 nanos = 2;
+      {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Duration, _impl_.nanos_), 1>(),
+       {16, 1, 0,
+        PROTOBUF_FIELD_OFFSET(Duration, _impl_.nanos_)}},
+      // int64 seconds = 1;
+      {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(Duration, _impl_.seconds_), 0>(),
+       {8, 0, 0,
+        PROTOBUF_FIELD_OFFSET(Duration, _impl_.seconds_)}},
+    }}, {{
+      65535, 65535
+    }}, {{
+      // int64 seconds = 1;
+      {PROTOBUF_FIELD_OFFSET(Duration, _impl_.seconds_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt64)},
+      // int32 nanos = 2;
+      {PROTOBUF_FIELD_OFFSET(Duration, _impl_.nanos_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
+    }},
+    // no aux_entries
+    {{
+    }},
+  };
+}
+
 
 inline constexpr Duration::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -45,24 +93,104 @@ inline constexpr Duration::Impl_::Impl_(
         nanos_{0} {}
 
 template <typename>
-constexpr Duration::Duration(::_pbi::ConstantInitialized)
+constexpr Duration::Duration(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+    : ::google::protobuf::Message(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(Duration_class_data_.base()),
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(),
+          class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
+          ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
+inline void* PROTOBUF_NONNULL Duration::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+  return ::new (mem) Duration(arena);
+}
+constexpr auto Duration::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Duration), alignof(Duration));
+}
+constexpr auto Duration::InternalGenerateClassData_(
+    const MessageLite& prototype,
+    const ::google::protobuf::internal::TcParseTableBase* tc_table) {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &prototype,
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+          &_table_.header,
+#else
+          tc_table,
+#endif
+          nullptr,  // IsInitialized
+          &Duration::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<Duration>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &Duration::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<Duration>(), &Duration::ByteSizeLong,
+              &Duration::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(Duration, _impl_._cached_size_),
+          false,
+      },
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+      &file_reflection_data[0],
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+      &::_pbi::kDescriptorMethods,
+      &descriptor_table_google_2fprotobuf_2fduration_2eproto,
+      nullptr,  // tracker
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+  };
+}
 struct DurationGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-  constexpr DurationGlobalsTypeInternal() : _default(::_pbi::ConstantInitialized{}) {}
+  constexpr DurationGlobalsTypeInternal()
+      :
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        _default(::_pbi::ConstantInitialized{},
+                 Duration_class_data_.base())
+#else   // !PROTOBUF_MESSAGE_GLOBALS
+        MessageGlobalsBase(Duration::InternalGenerateClassData_(
+            _default, &Duration_globals_._table.header)),
+        _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        _table(::_pbi::PrivateAccess::GenerateParseTable<Duration>(
+            GetClassData()))
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+  {
+  }
   ~DurationGlobalsTypeInternal() {}
   union {
-    Duration _default;
+    alignas(::_pbi::kMaxMessageAlignment) Duration _default;
   };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  decltype(::_pbi::PrivateAccess::GenerateParseTable<Duration>(
+      ::std::declval<const ::_pbi::ClassData*>())) _table;
+#endif
 };
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+static_assert(PROTOBUF_FIELD_OFFSET(DurationGlobalsTypeInternal, _default) ==
+              ::_pbi::MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DurationGlobalsTypeInternal _Duration_globals_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
+    #ifdef PROTOBUF_MESSAGE_GLOBALS
+    const
+    #endif
+     DurationGlobalsTypeInternal Duration_globals_
+        #ifdef PROTOBUF_MESSAGE_GLOBALS
+        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
+        #endif  // PROTOBUF_MESSAGE_GLOBALS
+        ;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+namespace {
+const ::_pbi::ClassData* Duration_get_class_data() {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  return Duration_globals_.GetClassData();
+#else
+  return Duration_class_data_.base();
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+}
+}  // namespace
+#endif  // PROTOBUF_CUSTOM_VTABLE
 }  // namespace protobuf
 }  // namespace google
 static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
@@ -87,7 +215,7 @@ static const ::_pbi::MigrationSchema
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
-        &::google::protobuf::_Duration_globals_,
+        &::google::protobuf::Duration_globals_,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fduration_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -119,17 +247,9 @@ namespace google {
 namespace protobuf {
 // ===================================================================
 
-class Duration::_Internal {
- public:
-  using HasBits =
-      decltype(::std::declval<Duration>()._impl_._has_bits_);
-  static constexpr ::int32_t kHasBitsOffset =
-      8 * PROTOBUF_FIELD_OFFSET(Duration, _impl_._has_bits_);
-};
-
 Duration::Duration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Duration_class_data_.base()) {
+    : ::google::protobuf::Message(arena, Duration_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -139,7 +259,7 @@ Duration::Duration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 Duration::Duration(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Duration& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Duration_class_data_.base()),
+    : ::google::protobuf::Message(arena, Duration_get_class_data()),
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -175,59 +295,10 @@ inline void Duration::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* PROTOBUF_NONNULL Duration::PlacementNew_(
-    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
-  return ::new (mem) Duration(arena);
-}
-constexpr auto Duration::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Duration),
-                                            alignof(Duration));
-}
-constexpr auto Duration::InternalGenerateClassData_() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &_Duration_globals_._default,
-          &_table_.header,
-          nullptr,  // IsInitialized
-          &Duration::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<Duration>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          &Duration::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<Duration>(), &Duration::ByteSizeLong,
-              &Duration::_InternalSerialize,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(Duration, _impl_._cached_size_),
-          false,
-      },
-      &file_reflection_data[0]};
-#else  // !PROTOBUF_MESSAGE_GLOBALS
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &_Duration_globals_._default,
-          &_table_.header,
-          nullptr,  // IsInitialized
-          &Duration::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<Duration>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          &Duration::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<Duration>(), &Duration::ByteSizeLong,
-              &Duration::_InternalSerialize,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(Duration, _impl_._cached_size_),
-          false,
-      },
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2fduration_2eproto,
-      nullptr,  // tracker
-  };
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-}
-
+#ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Duration_class_data_ =
-        Duration::InternalGenerateClassData_();
+        Duration::InternalGenerateClassData_(Duration_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Duration::GetClassData() const {
@@ -235,46 +306,21 @@ Duration::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(Duration_class_data_.tc_table);
   return Duration_class_data_.base();
 }
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 2, 0, 0, 2>
-Duration::_table_ = {
-  {
-    PROTOBUF_FIELD_OFFSET(Duration, _impl_._has_bits_),
-    0, // no _extensions_
-    2, 8,  // max_field_number, fast_idx_mask
-    offsetof(decltype(_table_), field_lookup_table),
-    4294967292,  // skipmap
-    offsetof(decltype(_table_), field_entries),
-    2,  // num_field_entries
-    0,  // num_aux_entries
-    offsetof(decltype(_table_), field_names),  // no aux_entries
-    Duration_class_data_.base(),
-    nullptr,  // post_loop_handler
-    ::_pbi::TcParser::GenericFallback,  // fallback
-    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-    ::_pbi::TcParser::GetTable<::google::protobuf::Duration>(),  // to_prefetch
-    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  }, {{
-    // int32 nanos = 2;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Duration, _impl_.nanos_), 1>(),
-     {16, 1, 0,
-      PROTOBUF_FIELD_OFFSET(Duration, _impl_.nanos_)}},
-    // int64 seconds = 1;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(Duration, _impl_.seconds_), 0>(),
-     {8, 0, 0,
-      PROTOBUF_FIELD_OFFSET(Duration, _impl_.seconds_)}},
-  }}, {{
-    65535, 65535
-  }}, {{
-    // int64 seconds = 1;
-    {PROTOBUF_FIELD_OFFSET(Duration, _impl_.seconds_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt64)},
-    // int32 nanos = 2;
-    {PROTOBUF_FIELD_OFFSET(Duration, _impl_.nanos_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
-  }},
-  // no aux_entries
-  {{
-  }},
-};
+#else
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+Duration::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&Duration_globals_);
+  ::google::protobuf::internal::PrefetchToLocalCache(
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Duration_globals_));
+  return Duration_globals_.GetClassData();
+}
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Duration::ParseTableT_
+    Duration::_table_ =
+        Duration::InternalGenerateParseTable_(Duration_class_data_.base());
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Duration::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Duration)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -375,9 +421,8 @@ PROTOBUF_NOINLINE void Duration::Clear() {
 }
 
 void Duration::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<Duration*>(&to_msg);
+                      const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this = static_cast<Duration*>(&to_msg);
   auto& from = static_cast<const Duration&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();

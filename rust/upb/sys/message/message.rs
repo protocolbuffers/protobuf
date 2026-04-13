@@ -15,7 +15,7 @@ use sys::mem::arena::RawArena;
 use sys::message::array::RawArray;
 use sys::message::map::RawMap;
 use sys::mini_table::extension_registry::upb_ExtensionRegistry;
-use sys::mini_table::mini_table::{RawMiniTable, RawMiniTableField};
+use sys::mini_table::mini_table::{upb_MiniTableExtension, RawMiniTable, RawMiniTableField};
 use sys::opaque_pointee::opaque_pointee;
 
 opaque_pointee!(upb_Message);
@@ -272,6 +272,147 @@ unsafe extern "C" {
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a field within a oneof associated with `m`
     pub fn upb_Message_WhichOneofFieldNumber(m: RawMessage, f: RawMiniTableField) -> u32;
+
+    pub fn upb_Message_ClearExtension(m: RawMessage, mini_table: *const upb_MiniTableExtension);
+
+    pub fn upb_Message_HasExtension(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+    ) -> bool;
+
+    pub fn upb_Message_SetExtensionBool(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+        value: bool,
+        arena: RawArena,
+    ) -> bool;
+
+    pub fn upb_Message_GetExtensionBool(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+        default_value: bool,
+    ) -> bool;
+
+    pub fn upb_Message_SetExtensionFloat(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+        value: f32,
+        arena: RawArena,
+    ) -> bool;
+
+    pub fn upb_Message_GetExtensionFloat(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+        default_value: f32,
+    ) -> f32;
+
+    pub fn upb_Message_SetExtensionDouble(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+        value: f64,
+        arena: RawArena,
+    ) -> bool;
+
+    pub fn upb_Message_GetExtensionDouble(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+        default_value: f64,
+    ) -> f64;
+
+    pub fn upb_Message_SetExtensionInt32(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+        value: i32,
+        arena: RawArena,
+    ) -> bool;
+
+    pub fn upb_Message_GetExtensionInt32(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+        default_value: i32,
+    ) -> i32;
+
+    pub fn upb_Message_SetExtensionString(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+        value: StringView,
+        arena: RawArena,
+    ) -> bool;
+
+    pub fn upb_Message_GetExtensionString(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+        default_value: StringView,
+    ) -> StringView;
+
+    pub fn upb_Message_SetExtensionInt64(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+        value: i64,
+        arena: RawArena,
+    ) -> bool;
+
+    pub fn upb_Message_GetExtensionInt64(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+        default_value: i64,
+    ) -> i64;
+
+    pub fn upb_Message_SetExtensionUInt32(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+        value: u32,
+        arena: RawArena,
+    ) -> bool;
+
+    pub fn upb_Message_GetExtensionUInt32(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+        default_value: u32,
+    ) -> u32;
+
+    pub fn upb_Message_SetExtensionUInt64(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+        value: u64,
+        arena: RawArena,
+    ) -> bool;
+
+    pub fn upb_Message_GetExtensionUInt64(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+        default_value: u64,
+    ) -> u64;
+
+    pub fn upb_Message_GetExtensionMessage(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+        default_value: RawMessage,
+    ) -> RawMessage;
+
+    pub fn upb_Message_SetExtensionMessage(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+        value: RawMessage,
+        arena: RawArena,
+    ) -> bool;
+
+    pub fn upb_Message_GetExtensionArray(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+    ) -> Option<RawArray>;
+
+    pub fn upb_Message_GetExtensionMutableArray(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+    ) -> Option<RawArray>;
+
+    pub fn upb_Message_SetExtension(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableExtension,
+        value: *const core::ffi::c_void,
+        arena: RawArena,
+    ) -> bool;
 }
 
 #[cfg(test)]
@@ -314,6 +455,20 @@ mod tests {
         assert_linked!(upb_Message_SetBaseFieldDouble);
         assert_linked!(upb_Message_SetBaseFieldString);
         assert_linked!(upb_Message_SetBaseFieldMessage);
+        assert_linked!(upb_Message_SetExtensionBool);
+        assert_linked!(upb_Message_GetExtensionBool);
+        assert_linked!(upb_Message_SetExtensionFloat);
+        assert_linked!(upb_Message_GetExtensionFloat);
+        assert_linked!(upb_Message_SetExtensionDouble);
+        assert_linked!(upb_Message_GetExtensionDouble);
+        assert_linked!(upb_Message_SetExtensionInt32);
+        assert_linked!(upb_Message_GetExtensionInt32);
+        assert_linked!(upb_Message_SetExtensionInt64);
+        assert_linked!(upb_Message_GetExtensionInt64);
+        assert_linked!(upb_Message_SetExtensionUInt32);
+        assert_linked!(upb_Message_GetExtensionUInt32);
+        assert_linked!(upb_Message_SetExtensionUInt64);
+        assert_linked!(upb_Message_GetExtensionUInt64);
         assert_linked!(upb_Message_WhichOneofFieldNumber);
     }
 }

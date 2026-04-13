@@ -55,11 +55,17 @@ class ParseFunctionGenerator {
       absl::Span<const internal::TailCallTableInfo::FieldOptions>
           field_options);
 
+  // Emit alias parse table type.
+  void GenerateAliasParseTableType(io::Printer* printer);
+
   // Emits class-level data member declarations to `printer`:
   void GenerateDataDecls(io::Printer* printer);
 
   // Emits out-of-class data member definitions to `printer`:
   void GenerateDataDefinitions(io::Printer* printer);
+
+  // Emits the helper function definition to `printer`:
+  void GenerateParseTableHelperDefinition(io::Printer* printer);
 
  private:
   friend class TailCallTableInfoTest;

@@ -26,12 +26,14 @@
 #include "google/protobuf/edition_unittest.pb.h"
 #include "google/protobuf/explicitly_constructed.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/has_bits.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest_import.pb.h"
+
 
 #define MESSAGE_TEST_NAME EditionMessageTest
 #define MESSAGE_FACTORY_TEST_NAME EditionMessageFactoryTest

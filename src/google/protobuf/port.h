@@ -304,14 +304,6 @@ inline constexpr bool ForceSplitFieldsInProtoc() {
 #endif
 }
 
-// Returns true if hasbits for repeated fields are enabled (b/391445226). This
-// flag-gates the rollout of the feature, and if disabled will disable the
-// feature. This will be removed once the feature is fully rolled out and
-// verified.
-inline constexpr bool EnableExperimentalHintHasBitsForRepeatedFields() {
-  return true;
-}
-
 // Returns true if debug hardening for clearing oneof message on arenas is
 // enabled.
 inline constexpr bool DebugHardenClearOneofMessageOnArena() {
@@ -842,6 +834,24 @@ using GlobalEmptyString = std::conditional_t<
     const GlobalEmptyStringConstexpr, GlobalEmptyStringDynamicInit>;
 
 PROTOBUF_EXPORT extern GlobalEmptyString fixed_address_empty_string;
+
+PROTOBUF_EXPORT ABSL_ATTRIBUTE_NORETURN PROTOBUF_NOINLINE void
+HandleAddOverflow(int a, int b);
+
+inline int CheckedAdd(int a, int b) {
+  int sum;
+#if ABSL_HAVE_BUILTIN(__builtin_add_overflow)
+  bool overflow = __builtin_add_overflow(a, b, &sum);
+#else
+  int64_t sum64 = static_cast<int64_t>(a) + static_cast<int64_t>(b);
+  sum = static_cast<int>(sum64);
+  bool overflow = sum64 != sum;
+#endif
+  if (ABSL_PREDICT_FALSE(overflow)) {
+    HandleAddOverflow(a, b);
+  }
+  return sum;
+}
 
 enum class BoundsCheckMode { kNoEnforcement, kReturnDefault, kAbort };
 

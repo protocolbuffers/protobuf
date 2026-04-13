@@ -30,6 +30,7 @@
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/crate_mapping.h"
 #include "google/protobuf/compiler/rust/enum.h"
+#include "google/protobuf/compiler/rust/extension.h"
 #include "google/protobuf/compiler/rust/message.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/compiler/rust/relative_path.h"
@@ -138,10 +139,12 @@ void EmitEntryPointRsFile(GeneratorContext* generator_context,
               {"mod_name", RustInternalModuleName(*file)}},
              R"rs(
               #[path="$file_path$"]
-              #[allow(nonstandard_style, unused)]
-              pub mod internal_do_not_use_$mod_name$;
+              #[allow(nonstandard_style, unused, unreachable_pub)]
+              #[doc(hidden)]
+              mod internal_do_not_use_$mod_name$;
 
               #[allow(nonstandard_style, unused)]
+              #[doc(inline)]
               pub use internal_do_not_use_$mod_name$::*;
             )rs");
   }
@@ -338,6 +341,17 @@ bool RustGenerator::Generate(const FileDescriptor* file,
     ctx.printer().PrintRaw(absl::StrCat(
         "// google.protobuf.GeneratedCodeInfo ",
         absl::Base64Escape(annotations.SerializeAsString()), "\n"));
+  }
+
+  for (int i = 0; i < file->extension_count(); ++i) {
+    auto& extension = *file->extension(i);
+    GenerateRs(ctx, extension, pool);
+    ctx.printer().PrintRaw("\n");
+
+    if (ctx.is_cpp()) {
+      auto thunks_ctx = ctx.WithPrinter(thunks_printer.get());
+      GenerateThunksCc(thunks_ctx, extension);
+    }
   }
 
   return true;

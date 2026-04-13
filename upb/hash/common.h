@@ -154,7 +154,7 @@ UPB_INLINE upb_key upb_key_empty(void) {
 
 UPB_INLINE bool upb_tabent_isempty(const upb_tabent* e) {
   upb_key key = e->key;
-  UPB_ASSERT(sizeof(key.num) == sizeof(key.str));
+  UPB_STATIC_ASSERT(sizeof(key.num) == sizeof(key.str), "Sizes don't match");
   uintptr_t val;
   memcpy(&val, &key, sizeof(val));
   // Note: for upb_inttables a tab_key is a true integer key value, but the
