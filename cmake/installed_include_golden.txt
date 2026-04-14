@@ -174,6 +174,7 @@ upb/message/accessors.h
 upb/message/array.h
 upb/message/compare.h
 upb/message/compat.h
+upb/message/convert.h
 upb/message/copy.h
 upb/message/map.h
 upb/message/map_gencode_util.h

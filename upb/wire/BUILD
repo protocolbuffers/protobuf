@@ -27,6 +27,7 @@ cc_library(
     features = UPB_DEFAULT_FEATURES,
     visibility = [
         "//upb:__pkg__",
+        "//upb/message:__subpackages__",
         "//upb/wire/decode_fast:__subpackages__",
     ],
     deps = [
