@@ -5648,22 +5648,13 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                  if (is_file_descriptor_proto) return;
 
                  p->Emit(
-                     R"cc(
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-                       ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-                     )cc");
+                     R"cc(PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro))cc");
                }})
               .WithSuffix(""),
-          {"const",
-           [&] {
-             if (is_file_descriptor_proto) return;
-             p->Emit(R"cc(
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-               const
-#endif
-             )cc");
-           }},
+          {
+              "const",
+              is_file_descriptor_proto ? "" : "PROTOBUF_MESSAGE_GLOBALS_CONST",
+          },
       },
       R"cc(
         struct $globals_type$ : ::_pbi::MessageGlobalsBase {
@@ -5702,7 +5693,7 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
         PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-            PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $const$ $globals_type$ $globals$
+            PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $const $$globals_type$ $globals$
                 $SECTION$;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
         namespace {

@@ -194,15 +194,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(VersionGlobalsTypeInternal, _default) ==
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
-    #ifdef PROTOBUF_MESSAGE_GLOBALS
-    const
-    #endif
-     VersionGlobalsTypeInternal Version_globals_
-        #ifdef PROTOBUF_MESSAGE_GLOBALS
-        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
-        #endif  // PROTOBUF_MESSAGE_GLOBALS
-        ;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST VersionGlobalsTypeInternal Version_globals_
+        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Version_get_class_data() {
@@ -375,15 +368,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_FileGlobalsTypeInterna
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
-    #ifdef PROTOBUF_MESSAGE_GLOBALS
-    const
-    #endif
-     CodeGeneratorResponse_FileGlobalsTypeInternal CodeGeneratorResponse_File_globals_
-        #ifdef PROTOBUF_MESSAGE_GLOBALS
-        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
-        #endif  // PROTOBUF_MESSAGE_GLOBALS
-        ;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST CodeGeneratorResponse_FileGlobalsTypeInternal CodeGeneratorResponse_File_globals_
+        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* CodeGeneratorResponse_File_get_class_data() {
@@ -566,15 +552,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(CodeGeneratorResponseGlobalsTypeInternal, _d
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
-    #ifdef PROTOBUF_MESSAGE_GLOBALS
-    const
-    #endif
-     CodeGeneratorResponseGlobalsTypeInternal CodeGeneratorResponse_globals_
-        #ifdef PROTOBUF_MESSAGE_GLOBALS
-        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
-        #endif  // PROTOBUF_MESSAGE_GLOBALS
-        ;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST CodeGeneratorResponseGlobalsTypeInternal CodeGeneratorResponse_globals_
+        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* CodeGeneratorResponse_get_class_data() {
@@ -772,15 +751,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(CodeGeneratorRequestGlobalsTypeInternal, _de
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
-    #ifdef PROTOBUF_MESSAGE_GLOBALS
-    const
-    #endif
-     CodeGeneratorRequestGlobalsTypeInternal CodeGeneratorRequest_globals_
-        #ifdef PROTOBUF_MESSAGE_GLOBALS
-        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
-        #endif  // PROTOBUF_MESSAGE_GLOBALS
-        ;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST CodeGeneratorRequestGlobalsTypeInternal CodeGeneratorRequest_globals_
+        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* CodeGeneratorRequest_get_class_data() {

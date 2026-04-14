@@ -762,6 +762,28 @@ namespace internal {
 #define PROTOBUF_NULLABLE
 #endif
 
+#ifdef PROTOBUF_MESSAGE_GLOBALS_SECTION
+#error PROTOBUF_MESSAGE_GLOBALS_SECTION was previously defined
+#endif  // PROTOBUF_MESSAGE_GLOBALS_SECTION
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+#error PROTOBUF_MESSAGE_GLOBALS was previously defined
+#endif
+#if defined(PROTOBUF_ENABLE_MESSAGE_GLOBALS) || \
+    defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
+#define PROTOBUF_MESSAGE_GLOBALS
+
+#define PROTOBUF_MESSAGE_GLOBALS_CONST const
+// PowerPC tools complain about section type mismatch.
+#if !defined(__powerpc__)
+#define PROTOBUF_MESSAGE_GLOBALS_SECTION(x) ABSL_ATTRIBUTE_SECTION_VARIABLE(x)
+#else  // defined(__powerpc__)
+#define PROTOBUF_MESSAGE_GLOBALS_SECTION(x)
+#endif  // defined(__powerpc__)
+#else
+#define PROTOBUF_MESSAGE_GLOBALS_CONST
+#define PROTOBUF_MESSAGE_GLOBALS_SECTION(x)
+#endif
+
 #ifdef PROTOBUF_NO_MERGE
 #error PROTOBUF_NO_MERGE was previously defined
 #endif  // PROTOBUF_NO_MERGE
