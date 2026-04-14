@@ -130,6 +130,7 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     kNothing = 0,
     kSplitOffset,
     kSplitSizeof,
+    kClassData,
     kSubMessageGlobals,
     kSubTable,
     kSubMessageGlobalsWeak,

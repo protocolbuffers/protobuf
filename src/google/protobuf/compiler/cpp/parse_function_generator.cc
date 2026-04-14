@@ -413,6 +413,23 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
                     {::_pbi::FieldAuxMessageGlobals{}, &$name$},
                   )cc");
           break;
+        case TailCallTableInfo::kClassData:
+          p->Emit(
+              {
+                  {"sub_type", QualifiedClassName(
+                                   aux_entry.field->message_type(), options_)},
+                  {"sub_globals",
+                   QualifiedMsgGlobalsInstanceName(
+                       aux_entry.field->message_type(), options_)},
+              },
+              R"cc(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+                {&$sub_type$_class_data_},
+#else
+                {::_pbi::FieldAuxMessageGlobals(), &$sub_globals$},
+#endif
+              )cc");
+          break;
         case TailCallTableInfo::kSubTable:
           p->Emit(
               {

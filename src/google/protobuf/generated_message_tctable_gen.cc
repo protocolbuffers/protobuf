@@ -769,15 +769,12 @@ TailCallTableInfo::BuildFieldEntries(
       if (field->is_map()) {
         entry.aux_idx = aux_entries.size();
         aux_entries.push_back({kMapAuxInfo, {field}});
-        if (message_options.uses_codegen) {
-          // If we don't use codegen we can't add these.
-          auto* map_value = field->message_type()->map_value();
-          if (map_value->message_type() != nullptr) {
-            aux_entries.push_back({kSubTable, {map_value}});
-          } else if (map_value->type() == FieldDescriptor::TYPE_ENUM &&
-                     !cpp::HasPreservingUnknownEnumSemantics(map_value)) {
-            aux_entries.push_back({kEnumValidator, {map_value}});
-          }
+        auto* map_value = field->message_type()->map_value();
+        if (map_value->message_type() != nullptr) {
+          aux_entries.push_back({kClassData, {map_value}});
+        } else if (map_value->type() == FieldDescriptor::TYPE_ENUM &&
+                   !cpp::HasPreservingUnknownEnumSemantics(map_value)) {
+          aux_entries.push_back({kEnumValidator, {map_value}});
         }
       } else if (field->options().weak()) {
         // Disable the type card for this entry to force the fallback.

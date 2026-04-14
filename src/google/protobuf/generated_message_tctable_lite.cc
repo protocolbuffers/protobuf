@@ -3019,7 +3019,7 @@ const char* TcParser::ParseOneMapEntry(
           ABSL_DCHECK_EQ(inner_tag, value_tag);
           ptr = ctx->ParseLengthDelimitedInlined(ptr, [&](const char* ptr) {
             return ParseLoop(reinterpret_cast<MessageLite*>(obj), ptr, ctx,
-                             aux[1].table_ptr());
+                             aux[1].class_data()->GetTcParseTable());
           });
           if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
           continue;
@@ -3035,7 +3035,7 @@ template <bool is_split>
 PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
   // `aux[0]` points into a MapAuxInfo.
-  // If we have a message mapped_type aux[1] points into a `create_in_arena`.
+  // If we have a message mapped_type aux[1] points into `ClassData`.
   // If we have a validated enum mapped_type aux[1] point into a
   // `enum_data`.
   const auto* aux = table->field_aux(&entry);
@@ -3099,12 +3099,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
         absl::Overload{
             [&](std::string* str) { Arena::CreateInArenaStorage(str, arena); },
             [&](MessageLite* msg) {
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-              aux[1].table_ptr()->class_data->PlacementNew(msg, arena);
-#else
-              MessageGlobalsBase::GetClassData(aux[1].message_globals())
-                  ->PlacementNew(msg, arena);
-#endif
+              aux[1].class_data()->PlacementNew(msg, arena);
             },
             // Already initialized above. Do nothing here.
             [](void*) {},

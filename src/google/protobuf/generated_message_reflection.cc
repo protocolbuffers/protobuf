@@ -3670,20 +3670,34 @@ void Reflection::PopulateTcParseFieldAux(
       case internal::TailCallTableInfo::kSplitSizeof:
         field_aux++->offset = schema_.SizeofSplit();
         break;
+      case internal::TailCallTableInfo::kClassData:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+        field_aux++->class_data_p = internal::GetClassData(
+            *message_factory_->GetPrototype(aux_entry.field->message_type()));
+#else
+        field_aux++->message_globals_p =
+            MessageGlobalsBase::FromDefaultInstance(
+                GetDefaultMessageInstance(aux_entry.field));
+#endif
+        break;
       case internal::TailCallTableInfo::kSubTable:
       case internal::TailCallTableInfo::kSubMessageGlobalsWeak:
       case internal::TailCallTableInfo::kMessageVerifyFunc:
       case internal::TailCallTableInfo::kSelfVerifyFunc:
         ABSL_LOG(FATAL) << "Not supported";
         break;
-      case internal::TailCallTableInfo::kMapAuxInfo:
-        // TODO: Fix this now that dynamic uses normal map ABIs.
-        // Default constructed info, which causes MpMap to call the fallback.
-        // DynamicMessage uses DynamicMapField, which uses variant keys and
-        // values. TcParser does not support them yet, so mark the field as
-        // unsupported to fallback to reflection.
-        field_aux++->map_info = internal::MapAuxInfo{};
+      case internal::TailCallTableInfo::kMapAuxInfo: {
+        const auto* map_key = aux_entry.field->message_type()->map_key();
+        const auto* map_value = aux_entry.field->message_type()->map_value();
+        field_aux++->map_info = internal::TcParser::GetMapAuxInfo(
+            internal::cpp::GetUtf8CheckMode(aux_entry.field, false) ==
+                internal::cpp::Utf8CheckMode::kStrict,
+            map_value->enum_type() != nullptr &&
+                !internal::cpp::HasPreservingUnknownEnumSemantics(map_value),
+            map_key->type(), map_value->type(),
+            /* is_lite */ false);
         break;
+      }
       case internal::TailCallTableInfo::kSubMessageGlobals:
         field_aux++->message_globals_p =
             MessageGlobalsBase::FromDefaultInstance(

@@ -441,6 +441,7 @@ struct PROTOBUF_EXPORT ClassData {
   }
 
   const ClassDataFull& full() const;
+  const TcParseTableBase* GetTcParseTable() const;
 
 #ifndef PROTOBUF_MESSAGE_GLOBALS
   const MessageLite* default_instance() const { return prototype; }
@@ -636,6 +637,14 @@ struct PROTOBUF_EXPORT ClassDataFull : ClassData {
 inline const ClassDataFull& ClassData::full() const {
   ABSL_DCHECK(!is_lite);
   return *static_cast<const ClassDataFull*>(this);
+}
+
+inline const TcParseTableBase* ClassData::GetTcParseTable() const {
+  if (ABSL_PREDICT_FALSE(tc_table == nullptr)) {
+    ABSL_DCHECK(!is_lite);
+    return full().descriptor_methods()->get_tc_table(*default_instance());
+  }
+  return tc_table;
 }
 
 #ifndef PROTOBUF_MESSAGE_GLOBALS

@@ -438,6 +438,8 @@ struct alignas(uint64_t) TcParseTableBase {
         : enum_range{range_first, range_last} {}
     constexpr FieldAux(FieldAuxMessageGlobals, const void* globals)
         : message_globals_p(globals) {}
+    constexpr FieldAux(const ClassData* class_data)
+        : class_data_p(class_data) {}
     constexpr FieldAux(const TcParseTableBase* table) : table(table) {}
     constexpr FieldAux(MapAuxInfo map_info) : map_info(map_info) {}
     constexpr FieldAux(LazyEagerVerifyFnType verify_func)
@@ -449,11 +451,19 @@ struct alignas(uint64_t) TcParseTableBase {
     } enum_range;
     uint32_t offset;
     const void* message_globals_p;
+    const ClassData* class_data_p;
     const uint32_t* enum_data;
     const TcParseTableBase* table;
     MapAuxInfo map_info;
     LazyEagerVerifyFnType verify_func;
 
+    const ClassData* class_data() const {
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+      return class_data_p;
+#else
+      return MessageGlobalsBase::GetClassData(message_globals_p);
+#endif
+    }
     const MessageLite* message_default() const {
       return MessageGlobalsBase::ToDefaultInstance(message_globals_p);
     }
