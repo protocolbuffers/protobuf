@@ -745,6 +745,8 @@ template <typename Traits>
 absl::Status ParseMapEntry(JsonLexer& lex, Field<Traits> map_field,
                            Msg<Traits>& parent_msg,
                            LocationWith<MaybeOwnedString>& key) {
+  JsonLexer::ScopedRecursion recursion(lex);
+  RETURN_IF_ERROR(recursion.status());
   bool is_map_of_enums = false;
   RETURN_IF_ERROR(Traits::WithFieldType(
       map_field, [&is_map_of_enums](const Desc<Traits>& desc) {
@@ -1107,6 +1109,8 @@ absl::Status ParseListValue(JsonLexer& lex, const Desc<Traits>& desc,
 template <typename Traits>
 absl::Status ParseValue(JsonLexer& lex, const Desc<Traits>& desc,
                         Msg<Traits>& msg) {
+  JsonLexer::ScopedRecursion recursion(lex);
+  RETURN_IF_ERROR(recursion.status());
   auto kind = lex.PeekKind();
   RETURN_IF_ERROR(kind.status());
   // NOTE: The field numbers 1 through 6 are the numbers of the oneof fields
@@ -1305,15 +1309,26 @@ absl::Status ParseMessage(JsonLexer& lex, const Desc<Traits>& desc,
         case MessageType::kList:
           return ParseListValue<Traits>(lex, desc, msg);
         case MessageType::kWrapper: {
+          JsonLexer::ScopedRecursion recursion(lex);
+          RETURN_IF_ERROR(recursion.status());
           return ParseSingular<Traits>(lex, Traits::MustHaveField(desc, 1),
                                        msg);
         }
-        case MessageType::kTimestamp:
+        case MessageType::kTimestamp: {
+          JsonLexer::ScopedRecursion recursion(lex);
+          RETURN_IF_ERROR(recursion.status());
           return ParseTimestamp<Traits>(lex, desc, msg);
-        case MessageType::kDuration:
+        }
+        case MessageType::kDuration: {
+          JsonLexer::ScopedRecursion recursion(lex);
+          RETURN_IF_ERROR(recursion.status());
           return ParseDuration<Traits>(lex, desc, msg);
-        case MessageType::kFieldMask:
+        }
+        case MessageType::kFieldMask: {
+          JsonLexer::ScopedRecursion recursion(lex);
+          RETURN_IF_ERROR(recursion.status());
           return ParseFieldMask<Traits>(lex, desc, msg);
+        }
         default:
           break;
       }

@@ -218,20 +218,38 @@ class JsonLexer {
 
   LocationWith<Mark> BeginMark() { return {stream_.BeginMark(), json_loc_}; }
 
+  absl::Status Push(int depth = 1) {
+    if (options_.recursion_depth < depth) {
+      return Invalid("JSON content was too deeply nested");
+    }
+    options_.recursion_depth -= depth;
+    return absl::OkStatus();
+  }
+
+  void Pop(int depth = 1) { options_.recursion_depth += depth; }
+
+  // A RAII helper to push and pop recursion depth.
+  class ScopedRecursion {
+   public:
+    explicit ScopedRecursion(JsonLexer& lex, int depth = 1)
+        : lex_(lex), depth_(depth) {
+      status_ = lex_.Push(depth_);
+    }
+    ~ScopedRecursion() {
+      if (status_.ok()) lex_.Pop(depth_);
+    }
+    absl::Status status() const { return status_; }
+
+   private:
+    JsonLexer& lex_;
+    int depth_;
+    absl::Status status_;
+  };
+
  private:
   friend BufferingGuard;
   friend Mark;
   friend MaybeOwnedString;
-
-  absl::Status Push() {
-    if (options_.recursion_depth == 0) {
-      return Invalid("JSON content was too deeply nested");
-    }
-    --options_.recursion_depth;
-    return absl::OkStatus();
-  }
-
-  void Pop() { ++options_.recursion_depth; }
 
   // Parses the next four bytes as a 16-bit hex numeral.
   absl::StatusOr<uint16_t> ParseU16HexCodepoint();
