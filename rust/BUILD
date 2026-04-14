@@ -180,7 +180,7 @@ rust_library(
     ],
     visibility = [":protobuf_internal"],
     deps = [
-        "//rust:cpp_api",
+        ":cpp_api",
     ],
 )
 
