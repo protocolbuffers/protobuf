@@ -178,7 +178,7 @@ impl InnerExtensionId {
 }
 
 impl<Msg: Message, T: Singular> ExtHas<Msg> for ExtensionId<Msg, T> {
-    fn has(&self, msg: impl AsView<Proxied = Msg>) -> bool {
+    fn has(&self, _private: Private, msg: impl AsView<Proxied = Msg>) -> bool {
         pin_extension(self);
         unsafe {
             proto2_rust_Message_has_extension(
@@ -195,7 +195,7 @@ macro_rules! impl_scalar_extension {
             impl<Extendee: Message> ExtAccess<Extendee, $t, PrimitiveTag>
             for ExtensionId<Extendee, $t>
             {
-                fn get<'msg>(&self, msg: impl IntoView<'msg, Proxied = Extendee>) -> View<'msg, $t> {
+                fn get<'msg>(&self, _private: Private, msg: impl IntoView<'msg, Proxied = Extendee>) -> View<'msg, $t> {
                     let msg = msg.into_view();
                     pin_extension(self);
                     unsafe {
@@ -207,7 +207,7 @@ macro_rules! impl_scalar_extension {
                     }
                 }
 
-                fn set(&self, mut msg: impl AsMut<MutProxied = Extendee>, value: impl IntoProxied<$t>) {
+                fn set(&self, _private: Private, mut msg: impl AsMut<MutProxied = Extendee>, value: impl IntoProxied<$t>) {
                     pin_extension(self);
                     unsafe {
                         $set(
@@ -236,7 +236,11 @@ impl_scalar_extension!(
 impl<Extendee: Message> ExtAccess<Extendee, ProtoString, PrimitiveTag>
     for ExtensionId<Extendee, ProtoString>
 {
-    fn get<'msg>(&self, msg: impl IntoView<'msg, Proxied = Extendee>) -> View<'msg, ProtoString> {
+    fn get<'msg>(
+        &self,
+        _private: Private,
+        msg: impl IntoView<'msg, Proxied = Extendee>,
+    ) -> View<'msg, ProtoString> {
         let msg = msg.into_view();
         pin_extension(self);
         let ptr_len = unsafe {
@@ -251,6 +255,7 @@ impl<Extendee: Message> ExtAccess<Extendee, ProtoString, PrimitiveTag>
 
     fn set(
         &self,
+        _private: Private,
         mut msg: impl AsMut<MutProxied = Extendee>,
         value: impl IntoProxied<ProtoString>,
     ) {
@@ -269,7 +274,11 @@ impl<Extendee: Message> ExtAccess<Extendee, ProtoString, PrimitiveTag>
 impl<Extendee: Message> ExtAccess<Extendee, ProtoBytes, PrimitiveTag>
     for ExtensionId<Extendee, ProtoBytes>
 {
-    fn get<'msg>(&self, msg: impl IntoView<'msg, Proxied = Extendee>) -> View<'msg, ProtoBytes> {
+    fn get<'msg>(
+        &self,
+        _private: Private,
+        msg: impl IntoView<'msg, Proxied = Extendee>,
+    ) -> View<'msg, ProtoBytes> {
         let msg = msg.into_view();
         pin_extension(self);
         let ptr_len = unsafe {
@@ -282,7 +291,12 @@ impl<Extendee: Message> ExtAccess<Extendee, ProtoBytes, PrimitiveTag>
         unsafe { ptr_len.as_ref() }
     }
 
-    fn set(&self, mut msg: impl AsMut<MutProxied = Extendee>, value: impl IntoProxied<ProtoBytes>) {
+    fn set(
+        &self,
+        _private: Private,
+        mut msg: impl AsMut<MutProxied = Extendee>,
+        value: impl IntoProxied<ProtoBytes>,
+    ) {
         pin_extension(self);
         unsafe {
             proto2_rust_Message_set_extension_string(
@@ -298,7 +312,11 @@ impl<Extendee: Message> ExtAccess<Extendee, ProtoBytes, PrimitiveTag>
 impl<Extendee: Message, V: Message> ExtAccess<Extendee, V, MessageTag>
     for ExtensionId<Extendee, V>
 {
-    fn get<'msg>(&self, msg: impl IntoView<'msg, Proxied = Extendee>) -> View<'msg, V> {
+    fn get<'msg>(
+        &self,
+        _private: Private,
+        msg: impl IntoView<'msg, Proxied = Extendee>,
+    ) -> View<'msg, V> {
         let msg = msg.into_view();
         pin_extension(self);
         let default_instance = <V as Proxied>::View::default();
@@ -316,7 +334,12 @@ impl<Extendee: Message, V: Message> ExtAccess<Extendee, V, MessageTag>
         }
     }
 
-    fn set(&self, mut msg: impl AsMut<MutProxied = Extendee>, value: impl IntoProxied<V>) {
+    fn set(
+        &self,
+        _private: Private,
+        mut msg: impl AsMut<MutProxied = Extendee>,
+        value: impl IntoProxied<V>,
+    ) {
         let value = value.into_proxied(Private);
         let mut ext_mut = self.get_mut(msg.as_mut());
         ext_mut.take_from(value);
@@ -326,7 +349,11 @@ impl<Extendee: Message, V: Message> ExtAccess<Extendee, V, MessageTag>
 impl<Extendee: Message, V: Message> ExtGetMut<Extendee, V, MessageTag>
     for ExtensionId<Extendee, V>
 {
-    fn get_mut<'msg>(&self, msg: impl IntoMut<'msg, MutProxied = Extendee>) -> Mut<'msg, V> {
+    fn get_mut<'msg>(
+        &self,
+        _private: Private,
+        msg: impl IntoMut<'msg, MutProxied = Extendee>,
+    ) -> Mut<'msg, V> {
         let mut msg = msg.into_mut();
         pin_extension(self);
         let default_instance = <V as Proxied>::View::default();
@@ -347,7 +374,7 @@ impl<Extendee: Message, V: Message> ExtGetMut<Extendee, V, MessageTag>
 }
 
 impl<Msg: Message, T: Proxied> ExtClear<Msg> for ExtensionId<Msg, T> {
-    fn clear(&self, mut msg: impl AsMut<MutProxied = Msg>) {
+    fn clear(&self, _private: Private, mut msg: impl AsMut<MutProxied = Msg>) {
         pin_extension(self);
         unsafe {
             proto2_rust_Message_clear_extension(
@@ -361,7 +388,11 @@ impl<Msg: Message, T: Proxied> ExtClear<Msg> for ExtensionId<Msg, T> {
 impl<Msg: Message, V: Singular> ExtAccess<Msg, Repeated<V>, RepeatedTag>
     for ExtensionId<Msg, Repeated<V>>
 {
-    fn get<'msg>(&self, msg: impl IntoView<'msg, Proxied = Msg>) -> View<'msg, Repeated<V>> {
+    fn get<'msg>(
+        &self,
+        _private: Private,
+        msg: impl IntoView<'msg, Proxied = Msg>,
+    ) -> View<'msg, Repeated<V>> {
         let msg = msg.into_view();
         let raw = unsafe {
             let thunk = self.inner.cpp_get_extension_thunk().unwrap();
@@ -376,7 +407,12 @@ impl<Msg: Message, V: Singular> ExtAccess<Msg, Repeated<V>, RepeatedTag>
         }
     }
 
-    fn set(&self, mut msg: impl AsMut<MutProxied = Msg>, value: impl IntoProxied<Repeated<V>>) {
+    fn set(
+        &self,
+        _private: Private,
+        mut msg: impl AsMut<MutProxied = Msg>,
+        value: impl IntoProxied<Repeated<V>>,
+    ) {
         let value = value.into_proxied(Private);
         let mut ext_mut = self.get_mut(msg.as_mut());
         ext_mut.clear();
@@ -387,7 +423,11 @@ impl<Msg: Message, V: Singular> ExtAccess<Msg, Repeated<V>, RepeatedTag>
 impl<Msg: Message, V: Singular> ExtGetMut<Msg, Repeated<V>, RepeatedTag>
     for ExtensionId<Msg, Repeated<V>>
 {
-    fn get_mut<'msg>(&self, msg: impl IntoMut<'msg, MutProxied = Msg>) -> Mut<'msg, Repeated<V>> {
+    fn get_mut<'msg>(
+        &self,
+        _private: Private,
+        msg: impl IntoMut<'msg, MutProxied = Msg>,
+    ) -> Mut<'msg, Repeated<V>> {
         let mut msg = msg.into_mut();
         let raw = unsafe {
             let thunk = self.inner.cpp_mutable_extension_thunk().unwrap();
@@ -411,7 +451,11 @@ where
     for<'a> Extendee::MessageView<'a>: CppGetRawMessage,
     i32: From<E>,
 {
-    fn get<'msg>(&self, msg: impl IntoView<'msg, Proxied = Extendee>) -> View<'msg, E> {
+    fn get<'msg>(
+        &self,
+        _private: Private,
+        msg: impl IntoView<'msg, Proxied = Extendee>,
+    ) -> View<'msg, E> {
         let msg = msg.into_view();
         pin_extension(self);
         let default = self.default.expect("enum extensions must have a default value");
@@ -425,7 +469,12 @@ where
         E::try_from(val).unwrap_or(default)
     }
 
-    fn set(&self, mut msg: impl AsMut<MutProxied = Extendee>, value: impl IntoProxied<E>) {
+    fn set(
+        &self,
+        _private: Private,
+        mut msg: impl AsMut<MutProxied = Extendee>,
+        value: impl IntoProxied<E>,
+    ) {
         pin_extension(self);
         unsafe {
             proto2_rust_Message_set_extension_int32(
