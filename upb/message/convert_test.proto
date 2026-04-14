@@ -1,0 +1,103 @@
+syntax = "proto2";
+
+package upb.test.convert;
+
+option java_multiple_files = true;
+option java_outer_classname = "ConvertTest";
+
+message MessageWithExtension {
+  extensions 1000 to max;
+}
+
+extend MessageWithExtension {
+  optional int32 ext_field_int32 = 1000;
+  repeated MessageWithInt32 ext_field_repeated_msg = 1001;
+}
+
+message MessageWithMapMessage {
+  map<int32, MessageWithInt32> map_msg = 1;
+}
+
+message MessageWithMapMessageClone {
+  map<int32, MessageWithInt32Clone> map_msg = 1;
+}
+
+message MessageWithKnown {
+  optional int32 known_field_int32 = 1000;
+}
+
+message MessageWithKnownInt64 {
+  optional int64 known_field_int64 = 1000;
+}
+
+message MessageWithKnownRepeatedMsg {
+  repeated MessageWithInt32 known_repeated_msg = 1001;
+}
+
+message MessageWithInt32 {
+  optional int32 f1 = 1;
+}
+
+message MessageWithInt32Clone {
+  optional int32 f1 = 1;
+}
+
+extend MessageWithExtension {
+  optional MessageWithInt32 ext_field_msg = 1002;
+}
+
+message MessageWithKnownMsg {
+  optional MessageWithInt32 known_msg = 1002;
+}
+
+message MessageWithKnownMsgClone {
+  optional MessageWithInt32Clone known_msg = 1002;
+}
+
+message MessageWithRepeatedMsg {
+  repeated MessageWithInt32 msgs = 1;
+}
+
+message MessageWithRepeatedMsgClone {
+  repeated MessageWithInt32Clone msgs = 1;
+}
+
+message MessageWithMsg {
+  optional MessageWithInt32 msg = 1;
+}
+
+message MessageWithMsgClone {
+  optional MessageWithInt32Clone msg = 1;
+}
+
+message MessageWithKnownRepeatedMsgClone {
+  repeated MessageWithInt32Clone known_repeated_msg = 1001;
+}
+
+message MessageWithInt64 {
+  optional int64 f1 = 1;
+}
+
+message MessageWithRepeatedInt32 {
+  repeated int32 r = 1;
+}
+
+message MessageWithRepeatedInt64 {
+  repeated int64 r = 1;
+}
+
+message MessageWithMapInt32Int32 {
+  map<int32, int32> m = 1;
+}
+
+message MessageWithMapInt32Int64 {
+  map<int32, int64> m = 1;
+}
+
+message AnotherMessageWithExtension {
+  extensions 1000 to max;
+}
+
+extend AnotherMessageWithExtension {
+  optional int32 another_ext_field_int32 = 1000;
+}

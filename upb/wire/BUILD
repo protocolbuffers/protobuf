@@ -25,6 +25,7 @@ cc_library(
     features = UPB_DEFAULT_FEATURES,
     visibility = [
         "//upb:__pkg__",
+        "//upb/message:__subpackages__",
         "//upb/wire/decode_fast:__subpackages__",
     ],
     deps = [
@@ -51,6 +52,7 @@ cc_library(
     hdrs = [
         "decode.h",
         "encode.h",
+        "internal/encode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     features = UPB_DEFAULT_FEATURES,
@@ -100,6 +102,25 @@ cc_test(
         "//upb/wire/test_util:wire_message",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "encode_test",
+    srcs = ["encode_test.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
+    deps = [
+        ":wire",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/message:internal",
+        "//upb/mini_table",
+        "//upb/mini_table:internal",
+        "//upb/port",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -206,7 +227,10 @@ cc_test(
 cc_library(
     name = "eps_copy_input_stream_internal",
     hdrs = ["internal/eps_copy_input_stream.h"],
-    visibility = ["//upb:__pkg__"],
+    visibility = [
+        "//upb:__pkg__",
+        "//upb/wire/decode_fast:__subpackages__",
+    ],
     deps = [
         "//upb/base",
         "//upb/mem",
