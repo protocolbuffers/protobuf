@@ -3929,7 +3929,7 @@ void MessageGenerator::GenerateInternalGenerateClassData(io::Printer* p) {
         R"cc(
           constexpr auto $Msg$::InternalGenerateClassData_(
               const MessageLite& prototype,
-              const $pbi$::TcParseTableBase* tc_table) {
+              const $pbi$::TcParseTableBase* $nullable$ tc_table) {
             return $pbi$::ClassDataFull{
                 $pbi$::ClassData{
                     &prototype,
@@ -3967,7 +3967,7 @@ void MessageGenerator::GenerateInternalGenerateClassData(io::Printer* p) {
         R"cc(
           constexpr auto $Msg$::InternalGenerateClassData_(
               const MessageLite& prototype,
-              const $pbi$::TcParseTableBase* tc_table) {
+              const $pbi$::TcParseTableBase* $nullable$ tc_table) {
             return $pbi$::ClassDataLite{
                 {
                     &prototype,

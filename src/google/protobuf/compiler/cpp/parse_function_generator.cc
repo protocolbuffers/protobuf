@@ -584,7 +584,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
       // insert a newline at every brace, whereas we prefer {{ ... }} here.
       // clang-format off
 R"cc(
-constexpr $Msg$::ParseTableT_ $Msg$::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr $Msg$::ParseTableT_ $Msg$::InternalGenerateParseTable_(const ::_pbi::ClassData* $nonnull$ class_data) {
   return ParseTableT_{
     {
       $table_base$
