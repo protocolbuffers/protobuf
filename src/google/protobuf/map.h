@@ -1541,8 +1541,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
   template <class InputIt>
   void insert(InputIt first, InputIt last) {
     for (; first != last; ++first) {
-      auto&& pair = *first;
-      try_emplace(pair.first, pair.second);
+      try_emplace(first->first, first->second);
     }
   }
   void insert(std::initializer_list<init_type> values) {
