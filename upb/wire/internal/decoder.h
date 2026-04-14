@@ -110,6 +110,16 @@ UPB_INLINE upb_DecodeStatus upb_Decoder_Destroy(upb_Decoder* d,
   return (upb_DecodeStatus)d->err->code;
 }
 
+UPB_INLINE void upb_Decoder_Reset(upb_Decoder* d, int options,
+                                  upb_Message* msg) {
+  d->depth = upb_DecodeOptions_GetEffectiveMaxDepth(options);
+  d->options = options;
+  d->end_group = DECODE_NOGROUP;
+  d->missing_required = false;
+  d->message_is_done = false;
+  d->original_msg = msg;
+}
+
 #ifndef NDEBUG
 UPB_INLINE bool _upb_Decoder_TraceBufferHasBytesAvailable(upb_Decoder* d,
                                                           int n) {

@@ -198,6 +198,60 @@ cc_library(
     ],
 )
 
+# Experimental API, subject to change.
+cc_library(
+    name = "convert",
+    srcs = [
+        "convert.c",
+    ],
+    hdrs = [
+        "internal/convert.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = [
+        "//upb:__pkg__",
+        "//upb:friends",
+    ],
+    deps = [
+        ":internal",
+        ":message",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/mini_table",
+        "//upb/mini_table:internal",
+        "//upb/port",
+        "//upb/wire",
+        "//upb/wire:decoder",
+        "//upb/wire:eps_copy_input_stream",
+    ],
+)
+
+cc_test(
+    name = "convert_test",
+    srcs = ["convert_test.cc"],
+    deps = [
+        ":convert",
+        ":convert_test_upb_minitable_proto",
+        ":convert_test_upb_proto",
+        ":internal",
+        ":message",
+        ":message_test_upb_minitable_proto",
+        ":message_test_upb_proto",
+        ":promote",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/mini_table",
+        "//upb/port",
+        "//upb/test:test_messages_proto2_upb_proto",
+        "//upb/test:test_messages_proto3_upb_minitable",
+        "//upb/test:test_messages_proto3_upb_proto",
+        "//upb/test:test_upb_proto",
+        "//upb/wire",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_test(
     name = "merge_test",
     srcs = ["merge_test.cc"],
@@ -416,6 +470,7 @@ cc_test(
     features = UPB_DEFAULT_FEATURES,
     deps = [
         ":compare",
+        ":convert",
         ":internal",
         ":message",
         ":message_test_upb_minitable_proto",
@@ -497,6 +552,25 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "convert_fuzz_test",
+    srcs = ["convert_fuzz_test.cc"],
+    deps = [
+        ":compare",
+        ":convert",
+        ":message",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/mini_table",
+        "//upb/mini_table:internal",
+        "//upb/port",
+        "//upb/test:fuzz_util",
+        "//upb/wire",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 filegroup(
     name = "source_files",
     srcs = glob(
@@ -530,4 +604,22 @@ filegroup(
         ],
     ),
     visibility = ["//upb:__pkg__"],
+)
+
+proto_library(
+    name = "convert_test_proto",
+    testonly = 1,
+    srcs = ["convert_test.proto"],
+)
+
+upb_minitable_proto_library(
+    name = "convert_test_upb_minitable_proto",
+    testonly = 1,
+    deps = [":convert_test_proto"],
+)
+
+upb_c_proto_library(
+    name = "convert_test_upb_proto",
+    testonly = 1,
+    deps = [":convert_test_proto"],
 )
