@@ -524,6 +524,61 @@ void BinaryAndJsonConformanceSuite::RunRecursionLimitTests() {
         proto2_msg.SerializeAsString(), "EnforceDepthLimit.MessageSetExtension",
         RECOMMENDED);
   }
+
+  auto expect_json_parse_failure = [&](const std::string& name,
+                                       const std::string& json) {
+    TestAllTypesProto3 prototype;
+    ConformanceRequestSetting setting(
+        REQUIRED, ::conformance::JSON, ::conformance::PROTOBUF,
+        ::conformance::JSON_TEST, prototype, name, json);
+    const ConformanceRequest& request = setting.GetRequest();
+    ConformanceResponse response;
+    std::string effective_test_name =
+        absl::StrCat("Required.Proto3.JsonInput.", name);
+
+    if (!RunTest(effective_test_name, request, &response)) {
+      return;
+    }
+
+    TestStatus test;
+    test.set_name(effective_test_name);
+    if (response.result_case() == ConformanceResponse::kParseError) {
+      ReportSuccess(test);
+    } else if (response.result_case() == ConformanceResponse::kSkipped) {
+      ReportSkip(test, request, response);
+    } else {
+      test.set_failure_message("Should have failed to parse, but didn't.");
+      ReportFailure(test, REQUIRED, request, response);
+    }
+  };
+
+  // Test deep Struct nesting.
+  {
+    std::string json = "{\"optionalStruct\": ";
+    for (int i = 0; i < 50; i++) {
+      json += "{\"a\": ";
+    }
+    json += '1';
+    for (int i = 0; i < 50; i++) {
+      json += '}';
+    }
+    json += '}';
+    expect_json_parse_failure("EnforceDepthLimit.Struct", json);
+  }
+
+  // Test deep ListValue nesting.
+  {
+    std::string json = "{\"optionalValue\": ";
+    for (int i = 0; i < 100; i++) {
+      json += '[';
+    }
+    json += '1';
+    for (int i = 0; i < 100; i++) {
+      json += ']';
+    }
+    json += '}';
+    expect_json_parse_failure("EnforceDepthLimit.ListValue", json);
+  }
 }
 
 template <typename MessageType>

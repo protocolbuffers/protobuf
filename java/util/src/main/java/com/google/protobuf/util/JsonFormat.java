@@ -1561,13 +1561,21 @@ public class JsonFormat {
 
     private void merge(JsonElement json, Message.Builder builder)
         throws InvalidProtocolBufferException {
-      WellKnownTypeParser specialParser =
-          wellKnownTypeParsers.get(builder.getDescriptorForType().getFullName());
-      if (specialParser != null) {
-        specialParser.merge(this, json, builder);
-        return;
+      if (currentDepth >= recursionLimit) {
+        throw new InvalidProtocolBufferException("Hit recursion limit.");
       }
-      mergeMessage(json, builder, false);
+      ++currentDepth;
+      try {
+        WellKnownTypeParser specialParser =
+            wellKnownTypeParsers.get(builder.getDescriptorForType().getFullName());
+        if (specialParser != null) {
+          specialParser.merge(this, json, builder);
+          return;
+        }
+        mergeMessage(json, builder, false);
+      } finally {
+        --currentDepth;
+      }
     }
 
     // Maps from camel-case field names to FieldDescriptor.
@@ -1666,19 +1674,22 @@ public class JsonFormat {
           DynamicMessage.getDefaultInstance(contentType).newBuilderForType();
       WellKnownTypeParser specialParser = wellKnownTypeParsers.get(contentType.getFullName());
 
-      if (currentDepth >= recursionLimit) {
-        throw new InvalidProtocolBufferException("Hit recursion limit.");
-      }
-      ++currentDepth;
       if (specialParser != null) {
         JsonElement value = object.get("value");
         if (value != null) {
-          specialParser.merge(this, value, contentBuilder);
+          merge(value, contentBuilder);
         }
       } else {
-        mergeMessage(json, contentBuilder, true);
+        if (currentDepth >= recursionLimit) {
+          throw new InvalidProtocolBufferException("Hit recursion limit.");
+        }
+        ++currentDepth;
+        try {
+          mergeMessage(json, contentBuilder, true);
+        } finally {
+          --currentDepth;
+        }
       }
-      --currentDepth;
       builder.setField(valueField, contentBuilder.build().toByteString());
     }
 
@@ -1820,19 +1831,27 @@ public class JsonFormat {
       }
       JsonObject object = (JsonObject) json;
       for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
-        Message.Builder entryBuilder = builder.newBuilderForField(field);
-        Object key = parseFieldValue(keyField, new JsonPrimitive(entry.getKey()), entryBuilder);
-        Object value = parseFieldValue(valueField, entry.getValue(), entryBuilder);
-        if (value == null) {
-          if (ignoringUnknownFields && valueField.getType() == FieldDescriptor.Type.ENUM) {
-            continue;
-          } else {
-            throw new InvalidProtocolBufferException("Map value cannot be null.");
-          }
+        if (currentDepth >= recursionLimit) {
+          throw new InvalidProtocolBufferException("Hit recursion limit.");
         }
-        entryBuilder.setField(keyField, key);
-        entryBuilder.setField(valueField, value);
-        builder.addRepeatedField(field, entryBuilder.build());
+        ++currentDepth;
+        try {
+          Message.Builder entryBuilder = builder.newBuilderForField(field);
+          Object key = parseFieldValue(keyField, new JsonPrimitive(entry.getKey()), entryBuilder);
+          Object value = parseFieldValue(valueField, entry.getValue(), entryBuilder);
+          if (value == null) {
+            if (ignoringUnknownFields && valueField.getType() == FieldDescriptor.Type.ENUM) {
+              continue;
+            } else {
+              throw new InvalidProtocolBufferException("Map value cannot be null.");
+            }
+          }
+          entryBuilder.setField(keyField, key);
+          entryBuilder.setField(valueField, value);
+          builder.addRepeatedField(field, entryBuilder.build());
+        } finally {
+          --currentDepth;
+        }
       }
     }
 
@@ -2149,13 +2168,8 @@ public class JsonFormat {
 
         case MESSAGE:
         case GROUP:
-          if (currentDepth >= recursionLimit) {
-            throw new InvalidProtocolBufferException("Hit recursion limit.");
-          }
-          ++currentDepth;
           Message.Builder subBuilder = builder.newBuilderForField(field);
           merge(json, subBuilder);
-          --currentDepth;
           return subBuilder.build();
 
         default:
