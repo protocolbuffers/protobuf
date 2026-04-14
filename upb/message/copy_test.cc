@@ -381,4 +381,175 @@ TEST(GeneratedCode, DeepCloneMessageWithUnknowns) {
   upb_Arena_Free(clone_arena);
 }
 
+TEST(GeneratedCode, ShallowCopyMessage) {
+  upb_Arena* arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
+  const upb_MiniTableField* optional_int32_field =
+      find_proto2_field(kFieldOptionalInt32);
+  const upb_MiniTableField* optional_string_field =
+      find_proto2_field(kFieldOptionalString);
+  upb_Message_SetInt32(UPB_UPCAST(msg), optional_int32_field, kTestInt32,
+                       nullptr);
+  char* string_in_arena = (char*)upb_Arena_Malloc(arena, sizeof(kTestStr1));
+  memcpy(string_in_arena, kTestStr1, sizeof(kTestStr1));
+  upb_Message_SetString(
+      UPB_UPCAST(msg), optional_string_field,
+      upb_StringView_FromDataAndSize(string_in_arena, sizeof(kTestStr1) - 1),
+      arena);
+
+  protobuf_test_messages_proto2_TestAllTypesProto2* dst =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
+  EXPECT_TRUE(upb_Message_ShallowCopy(
+      UPB_UPCAST(dst), UPB_UPCAST(msg),
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init, arena));
+
+  EXPECT_EQ(upb_Message_GetInt32(UPB_UPCAST(dst), optional_int32_field, 0),
+            kTestInt32);
+  upb_StringView dst_str =
+      upb_Message_GetString(UPB_UPCAST(dst), optional_string_field,
+                            upb_StringView_FromDataAndSize(nullptr, 0));
+  EXPECT_EQ(dst_str.size, sizeof(kTestStr1) - 1);
+  EXPECT_EQ(dst_str.data, string_in_arena);
+
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, ShallowCopyCopiesExtensions) {
+  upb_Arena* source_arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect_new(
+          source_arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension1*
+      ext1 =
+          protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension1_new(
+              source_arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension1_set_str(
+      ext1, upb_StringView_FromString(kTestStr1));
+  protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension1_set_message_set_extension(
+      msg, ext1, source_arena);
+
+  upb_Arena* arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect* dst =
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect_new(
+          arena);
+
+  EXPECT_TRUE(upb_Message_ShallowCopy(
+      UPB_UPCAST(dst), UPB_UPCAST(msg),
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2__MessageSetCorrect_msg_init,
+      arena));
+
+  // Modifying extension in dst should NOT affect msg because extensions are
+  // copied.
+  protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension1*
+      ext2 =
+          protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension1_new(
+              arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension1_set_str(
+      ext2, upb_StringView_FromString(kTestStr2));
+
+  protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension1_set_message_set_extension(
+      dst, ext2, arena);
+
+  const protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension1*
+      src_ext =
+          protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension1_message_set_extension(
+              msg);
+
+  EXPECT_EQ(UPB_UPCAST(src_ext), UPB_UPCAST(ext1));
+
+  const protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension1*
+      dst_ext =
+          protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension1_message_set_extension(
+              dst);
+
+  EXPECT_EQ(UPB_UPCAST(dst_ext), UPB_UPCAST(ext2));
+
+  upb_Arena_Free(source_arena);
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, ShallowCopyCopiesUnknowns) {
+  upb_Arena* source_arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(source_arena);
+
+  // Add some unknown data.
+  const char* unknown_data1 =
+      "\x08\x01";  // Field 1, wire type 0 (varint), value 1
+  UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg), unknown_data1, 2,
+                                       source_arena, kUpb_AddUnknown_Copy);
+
+  upb_Arena* arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* dst =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
+
+  EXPECT_TRUE(upb_Message_ShallowCopy(
+      UPB_UPCAST(dst), UPB_UPCAST(msg),
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init, arena));
+
+  // Verify dst has the unknown data.
+  upb_StringView dst_data;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  EXPECT_TRUE(upb_Message_NextUnknown(UPB_UPCAST(dst), &dst_data, &iter));
+  EXPECT_EQ(dst_data.size, 2);
+  EXPECT_EQ(memcmp(dst_data.data, unknown_data1, 2), 0);
+
+  // Modify the unknown data view in dst to ensure it's a separate view.
+  // Use upb_Message_DeleteUnknown to delete a trailing part.
+  upb_StringView to_delete;
+  to_delete.size = 1;
+  to_delete.data = dst_data.data + dst_data.size - to_delete.size;
+  upb_Message_DeleteUnknownStatus status =
+      upb_Message_DeleteUnknown(UPB_UPCAST(dst), &to_delete, &iter, arena);
+  EXPECT_EQ(status, kUpb_DeleteUnknown_DeletedLast);
+
+  // Verify src still has the original data and size.
+  upb_StringView src_data;
+  uintptr_t src_iter = kUpb_Message_UnknownBegin;
+  EXPECT_TRUE(upb_Message_NextUnknown(UPB_UPCAST(msg), &src_data, &src_iter));
+  EXPECT_EQ(src_data.size, 2);
+  EXPECT_EQ(memcmp(src_data.data, unknown_data1, 2), 0);
+
+  // Add MORE unknown data to dst.
+  const char* unknown_data2 =
+      "\x10\x02";  // Field 2, wire type 0 (varint), value 2
+  UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(dst), unknown_data2, 2, arena,
+                                       kUpb_AddUnknown_Copy);
+
+  // Verify src still only has the first unknown data.
+  iter = kUpb_Message_UnknownBegin;
+  EXPECT_TRUE(upb_Message_NextUnknown(UPB_UPCAST(msg), &src_data, &iter));
+  EXPECT_EQ(src_data.size, 2);
+  EXPECT_EQ(memcmp(src_data.data, unknown_data1, 2), 0);
+
+  // And no more unknowns in src.
+  EXPECT_FALSE(upb_Message_NextUnknown(UPB_UPCAST(msg), &src_data, &iter));
+
+  upb_Arena_Free(source_arena);
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, ShallowCloneMessage) {
+  upb_Arena* arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
+  const upb_MiniTableField* optional_int32_field =
+      find_proto2_field(kFieldOptionalInt32);
+  upb_Message_SetInt32(UPB_UPCAST(msg), optional_int32_field, kTestInt32,
+                       nullptr);
+
+  protobuf_test_messages_proto2_TestAllTypesProto2* clone =
+      (protobuf_test_messages_proto2_TestAllTypesProto2*)
+          upb_Message_ShallowClone(
+              UPB_UPCAST(msg),
+              &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
+              arena);
+
+  EXPECT_EQ(upb_Message_GetInt32(UPB_UPCAST(clone), optional_int32_field, 0),
+            kTestInt32);
+
+  upb_Arena_Free(arena);
+}
+
 }  // namespace

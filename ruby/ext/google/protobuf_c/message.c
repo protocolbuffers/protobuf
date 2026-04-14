@@ -690,7 +690,10 @@ static VALUE Message_dup(VALUE _self) {
   VALUE new_msg = rb_class_new_instance(0, NULL, CLASS_OF(_self));
   Message* new_msg_self = ruby_to_Message(new_msg);
   const upb_MiniTable* m = upb_MessageDef_MiniTable(self->msgdef);
-  upb_Message_ShallowCopy((upb_Message*)new_msg_self->msg, self->msg, m);
+  if (!upb_Message_ShallowCopy((upb_Message*)new_msg_self->msg, self->msg, m,
+                               Arena_get(new_msg_self->arena))) {
+    rb_raise(rb_eRuntimeError, "Failed to shallow copy message.");
+  }
   Arena_fuse(self->arena, Arena_get(new_msg_self->arena));
   return new_msg;
 }
@@ -1052,8 +1055,8 @@ static VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
   const upb_DefPool* pool = upb_FileDef_Pool(upb_MessageDef_File(msg->msgdef));
 
   int result = upb_JsonDecodeDetectingNonconformance(
-      RSTRING_PTR(data), RSTRING_LEN(data), (upb_Message*)msg->msg,
-      msg->msgdef, pool, options, Arena_get(msg->arena), &status);
+      RSTRING_PTR(data), RSTRING_LEN(data), (upb_Message*)msg->msg, msg->msgdef,
+      pool, options, Arena_get(msg->arena), &status);
 
   switch (result) {
     case kUpb_JsonDecodeResult_Ok:
