@@ -96,8 +96,7 @@ constexpr Mixin::ParseTableT_ Mixin::InternalGenerateParseTable_(const ::_pbi::C
 inline constexpr Mixin::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        name_(
+      : name_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
         root_(
@@ -183,15 +182,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(MixinGlobalsTypeInternal, _default) ==
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
-    #ifdef PROTOBUF_MESSAGE_GLOBALS
-    const
-    #endif
-     MixinGlobalsTypeInternal Mixin_globals_
-        #ifdef PROTOBUF_MESSAGE_GLOBALS
-        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
-        #endif  // PROTOBUF_MESSAGE_GLOBALS
-        ;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST MixinGlobalsTypeInternal Mixin_globals_
+        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Mixin_get_class_data() {
@@ -303,8 +295,7 @@ constexpr Method::ParseTableT_ Method::InternalGenerateParseTable_(const ::_pbi:
 inline constexpr Method::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        options_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : options_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::Method,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.options_)>()
          }
@@ -404,15 +395,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(MethodGlobalsTypeInternal, _default) ==
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
-    #ifdef PROTOBUF_MESSAGE_GLOBALS
-    const
-    #endif
-     MethodGlobalsTypeInternal Method_globals_
-        #ifdef PROTOBUF_MESSAGE_GLOBALS
-        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
-        #endif  // PROTOBUF_MESSAGE_GLOBALS
-        ;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST MethodGlobalsTypeInternal Method_globals_
+        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Method_get_class_data() {
@@ -538,8 +522,7 @@ constexpr Api::ParseTableT_ Api::InternalGenerateParseTable_(const ::_pbi::Class
 inline constexpr Api::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        methods_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : methods_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::Api,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.methods_)>()
          }
@@ -645,15 +628,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(ApiGlobalsTypeInternal, _default) ==
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
-    #ifdef PROTOBUF_MESSAGE_GLOBALS
-    const
-    #endif
-     ApiGlobalsTypeInternal Api_globals_
-        #ifdef PROTOBUF_MESSAGE_GLOBALS
-        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
-        #endif  // PROTOBUF_MESSAGE_GLOBALS
-        ;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST ApiGlobalsTypeInternal Api_globals_
+        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Api_get_class_data() {
@@ -806,7 +782,6 @@ PROTOBUF_NDEBUG_INLINE Api::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::Api& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         methods_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::Api,
@@ -857,8 +832,7 @@ Api::Api(
 PROTOBUF_NDEBUG_INLINE Api::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        methods_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : methods_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::Api,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.methods_)>()
          }
@@ -1284,7 +1258,6 @@ PROTOBUF_NDEBUG_INLINE Method::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::Method& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         options_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::Method,
@@ -1324,8 +1297,7 @@ Method::Method(
 PROTOBUF_NDEBUG_INLINE Method::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        options_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : options_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::Method,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.options_)>()
          }
@@ -1729,7 +1701,6 @@ PROTOBUF_NDEBUG_INLINE Mixin::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::Mixin& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         name_(arena, from.name_),
         root_(arena, from.root_) {}
 
@@ -1753,8 +1724,7 @@ Mixin::Mixin(
 PROTOBUF_NDEBUG_INLINE Mixin::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        name_(arena),
+      : name_(arena),
         root_(arena) {}
 
 inline void Mixin::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {

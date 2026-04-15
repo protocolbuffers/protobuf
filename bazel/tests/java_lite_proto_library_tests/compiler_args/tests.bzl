@@ -9,4 +9,6 @@ def _test_lite_java_proto2_compiler_args(env, target):
         "{package}/foo.proto",
     ]).in_order()
 
-TESTS = [(_test_lite_java_proto2_compiler_args, ":foo_proto")]
+TESTS = {
+    ":foo_proto": [_test_lite_java_proto2_compiler_args],
+}

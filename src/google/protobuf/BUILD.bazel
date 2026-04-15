@@ -1009,6 +1009,7 @@ cc_test(
         ":protobuf_lite",
         ":repeated_field_proxy",
         ":repeated_field_proxy_iterator",
+        ":repeated_field_proxy_traits",
         ":test_textproto",
         "//src/google/protobuf/test_protos:test_cc_protos",
         "@abseil-cpp//absl/algorithm:container",

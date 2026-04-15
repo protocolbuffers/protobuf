@@ -88,8 +88,7 @@ constexpr Duration::ParseTableT_ Duration::InternalGenerateParseTable_(const ::_
 inline constexpr Duration::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        seconds_{::int64_t{0}},
+      : seconds_{::int64_t{0}},
         nanos_{0} {}
 
 template <typename>
@@ -171,15 +170,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(DurationGlobalsTypeInternal, _default) ==
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
-    #ifdef PROTOBUF_MESSAGE_GLOBALS
-    const
-    #endif
-     DurationGlobalsTypeInternal Duration_globals_
-        #ifdef PROTOBUF_MESSAGE_GLOBALS
-        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
-        #endif  // PROTOBUF_MESSAGE_GLOBALS
-        ;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST DurationGlobalsTypeInternal Duration_globals_
+        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Duration_get_class_data() {
@@ -270,7 +262,7 @@ Duration::Duration(
 PROTOBUF_NDEBUG_INLINE Duration::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0} {}
+     {}
 
 inline void Duration::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);

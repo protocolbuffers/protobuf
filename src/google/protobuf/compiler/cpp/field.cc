@@ -86,7 +86,7 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"field", FieldMemberName(field, split)},
       {"declared_type", DeclaredTypeMethodName(field->type())},
       {"classname", ClassName(FieldScope(field), false)},
-      {"ns", Namespace(field, opts)},
+      {"ns", Namespace(field)},
       {"tag_size", WireFormat::TagSize(field->number(), field->type())},
       {"deprecated_attr", DeprecatedAttribute(opts, field)},
       Sub("WeakDescriptorSelfPin",

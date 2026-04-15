@@ -62,7 +62,7 @@ absl::flat_hash_map<absl::string_view, std::string> FileVars(
     const FileDescriptor* file, const Options& options) {
   return {
       {"filename", std::string(file->name())},
-      {"package_ns", Namespace(file, options)},
+      {"package_ns", Namespace(file)},
       {"tablename", UniqueName("TableStruct", file, options)},
       {"desc_table", DescriptorTableName(file, options)},
       {"dllexport_decl", options.dllexport_decl},
@@ -250,7 +250,7 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
            [&] { GenerateProto2NamespaceEnumSpecializations(p); }},
           {"main_decls",
            [&] {
-             NamespaceOpener ns(Namespace(file_, options_), p);
+             NamespaceOpener ns(Namespace(file_), p);
              p->Emit(
                  {
                      {"enums", [&] { GenerateEnumDefinitions(p); }},
@@ -386,7 +386,7 @@ void FileGenerator::GeneratePBHeader(io::Printer* p,
                }
 
                {
-                 NamespaceOpener ns(Namespace(file_, options_), p);
+                 NamespaceOpener ns(Namespace(file_), p);
                  p->Emit(R"cc(
 
                    // @@protoc_insertion_point(namespace_scope)
@@ -625,7 +625,7 @@ void FileGenerator::GenerateInternalForwardDeclarations(
     NamespaceOpener ns(p);
 
     for (auto instance : refs.weak_default_instances) {
-      ns.ChangeTo(Namespace(instance, options_));
+      ns.ChangeTo(Namespace(instance));
 
       if (options_.lite_implicit_weak_fields) {
         p->Emit({{"ptr", MsgGlobalsInstancePtr(instance, options_)}}, R"cc(
@@ -672,7 +672,7 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) {
   GenerateInternalForwardDeclarations(refs, p);
 
   {
-    NamespaceOpener ns(Namespace(file_, options_), p);
+    NamespaceOpener ns(Namespace(file_), p);
     p->Emit(
         {
             {"defaults",
@@ -733,7 +733,7 @@ void FileGenerator::GenerateSourceForExtension(int idx, io::Printer* p) {
   GenerateSourceIncludes(p);
   GenerateSourcePrelude(p);
 
-  NamespaceOpener ns(Namespace(file_, options_), p);
+  NamespaceOpener ns(Namespace(file_), p);
   extension_generators_[idx]->GenerateDefinition(p);
   for (auto priority : {kInitPriority101, kInitPriority102}) {
     if (extension_generators_[idx]->WillGenerateRegistration(priority)) {
@@ -758,7 +758,7 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) {
     }
   }
 
-  NamespaceOpener ns(Namespace(file_, options_), p);
+  NamespaceOpener ns(Namespace(file_), p);
   for (size_t i = 0; i < enum_generators_.size(); ++i) {
     enum_generators_[i]->GenerateMethods(i, p);
   }
@@ -859,7 +859,7 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   }
 
   {
-    NamespaceOpener ns(Namespace(file_, options_), p);
+    NamespaceOpener ns(Namespace(file_), p);
     for (size_t i = 0; i < message_generators_.size(); ++i) {
       message_generators_[message_generators_topologically_ordered_[i]]
           ->GenerateSourceDefaultInstance(p);
@@ -875,7 +875,7 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   }
 
   {
-    NamespaceOpener ns(Namespace(file_, options_), p);
+    NamespaceOpener ns(Namespace(file_), p);
 
     // Actually implement the protos
 
@@ -1130,7 +1130,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
              for (auto& gen : message_generators_) {
                p->Emit(
                    {
-                       {"ns", Namespace(gen->descriptor(), options_)},
+                       {"ns", Namespace(gen->descriptor())},
                        {"class", ClassName(gen->descriptor())},
                    },
                    R"cc(
@@ -1490,17 +1490,17 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
   for (const auto* d : classes) {
     if (d != nullptr && !public_set.contains(d->file()) &&
         ShouldGenerateClass(d, options_))
-      decls[Namespace(d, options_)].AddMessage(d);
+      decls[Namespace(d)].AddMessage(d);
   }
   for (const auto* e : enums) {
     if (e != nullptr && !public_set.contains(e->file()))
-      decls[Namespace(e, options_)].AddEnum(e);
+      decls[Namespace(e)].AddEnum(e);
   }
   for (const auto& mg : message_generators_) {
     const Descriptor* d = mg->descriptor();
     if (d != nullptr && public_set.count(d->file()) == 0u &&
         ShouldSplit(mg->descriptor(), options_))
-      decls[Namespace(d, options_)].AddSplit(d);
+      decls[Namespace(d)].AddSplit(d);
   }
 
   NamespaceOpener ns(p);

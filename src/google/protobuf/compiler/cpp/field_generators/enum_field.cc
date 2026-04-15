@@ -291,11 +291,6 @@ class RepeatedEnum : public FieldGeneratorBase {
     p->Emit(R"cc(
       /*decltype($field_$)*/ {},
     )cc");
-    if (has_cached_size_) {
-      p->Emit(R"cc(
-        /*decltype($cached_size_$)*/ {0},
-      )cc");
-    }
   }
 
   void GenerateAggregateInitializer(io::Printer* p) const override {
@@ -303,25 +298,12 @@ class RepeatedEnum : public FieldGeneratorBase {
             R"cc(
               decltype($field_$){$internal_metadata_offset$},
             )cc");
-    if (has_cached_size_) {
-      // std::atomic has no copy constructor, which prevents explicit aggregate
-      // initialization pre-C++17.
-      p->Emit(R"cc(
-        /*decltype($cached_size_$)*/ {0},
-      )cc");
-    }
   }
 
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
       decltype($field_$){from._internal_$name$()},
     )cc");
-    if (has_cached_size_) {
-      // std::atomic has no copy constructor.
-      p->Emit(R"cc(
-        /*decltype($cached_size_$)*/ {0},
-      )cc");
-    }
   }
 
   void GenerateMemberConstexprConstructor(io::Printer* p) const override {
@@ -329,9 +311,6 @@ class RepeatedEnum : public FieldGeneratorBase {
             R"cc(
               $name$_ { visibility, $internal_metadata_offset$ }
             )cc");
-    if (has_cached_size_) {
-      p->Emit(",\n_$name$_cached_byte_size_{0}");
-    }
   }
 
   void GenerateMemberConstructor(io::Printer* p) const override {
@@ -339,9 +318,6 @@ class RepeatedEnum : public FieldGeneratorBase {
             R"cc(
               $name$_ { visibility, $internal_metadata_offset$ }
             )cc");
-    if (has_cached_size_) {
-      p->Emit(",\n_$name$_cached_byte_size_{0}");
-    }
   }
 
   void GenerateMemberCopyConstructor(io::Printer* p) const override {
@@ -351,9 +327,6 @@ class RepeatedEnum : public FieldGeneratorBase {
                 visibility, $internal_metadata_offset$, from.$name$_
               }
             )cc");
-    if (has_cached_size_) {
-      p->Emit(",\n_$name$_cached_byte_size_{0}");
-    }
   }
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {

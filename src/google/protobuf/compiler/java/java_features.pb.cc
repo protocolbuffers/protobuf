@@ -148,15 +148,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(JavaFeatures_NestInFileClassFeatureGlobalsTy
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
-    #ifdef PROTOBUF_MESSAGE_GLOBALS
-    const
-    #endif
-     JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal JavaFeatures_NestInFileClassFeature_globals_
-        #ifdef PROTOBUF_MESSAGE_GLOBALS
-        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
-        #endif  // PROTOBUF_MESSAGE_GLOBALS
-        ;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal JavaFeatures_NestInFileClassFeature_globals_
+        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* JavaFeatures_NestInFileClassFeature_get_class_data() {
@@ -244,8 +237,7 @@ constexpr JavaFeatures::ParseTableT_ JavaFeatures::InternalGenerateParseTable_(c
 inline constexpr JavaFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        utf8_validation_{static_cast< ::pb::JavaFeatures_Utf8Validation >(0)},
+      : utf8_validation_{static_cast< ::pb::JavaFeatures_Utf8Validation >(0)},
         legacy_closed_enum_{false},
         large_enum_{false},
         use_old_outer_classname_default_{false},
@@ -330,15 +322,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(JavaFeaturesGlobalsTypeInternal, _default) =
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
-    #ifdef PROTOBUF_MESSAGE_GLOBALS
-    const
-    #endif
-     JavaFeaturesGlobalsTypeInternal JavaFeatures_globals_
-        #ifdef PROTOBUF_MESSAGE_GLOBALS
-        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
-        #endif  // PROTOBUF_MESSAGE_GLOBALS
-        ;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST JavaFeaturesGlobalsTypeInternal JavaFeatures_globals_
+        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* JavaFeatures_get_class_data() {
@@ -542,7 +527,7 @@ JavaFeatures::JavaFeatures(
 PROTOBUF_NDEBUG_INLINE JavaFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0} {}
+     {}
 
 inline void JavaFeatures::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);

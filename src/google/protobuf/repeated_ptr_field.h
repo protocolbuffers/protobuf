@@ -123,7 +123,8 @@ PROTOBUF_EXPORT void LogIndexOutOfBounds(int index, int size);
 // instead of DFATAL.
 // TODO: Remove preserve_all and add no_return once experiment is
 // complete.
-PROTOBUF_PRESERVE_ALL PROTOBUF_EXPORT void LogIndexOutOfBoundsAndAbort(
+[[noreturn]] PROTOBUF_PRESERVE_ALL PROTOBUF_EXPORT void
+LogIndexOutOfBoundsAndAbort(
     int64_t index, int64_t size,
     BoundsCheckMessageType type = BoundsCheckMessageType::kIndex);
 PROTOBUF_EXPORT inline void RuntimeAssertInBounds(int index, int size) {

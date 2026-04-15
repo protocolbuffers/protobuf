@@ -102,8 +102,7 @@ constexpr CppFeatures::ParseTableT_ CppFeatures::InternalGenerateParseTable_(con
 inline constexpr CppFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        string_type_{static_cast< ::pb::CppFeatures_StringType >(0)},
+      : string_type_{static_cast< ::pb::CppFeatures_StringType >(0)},
         legacy_closed_enum_{false},
         enum_name_uses_string_view_{false},
         repeated_type_{static_cast< ::pb::CppFeatures_RepeatedType >(0)} {}
@@ -187,15 +186,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(CppFeaturesGlobalsTypeInternal, _default) ==
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
-    #ifdef PROTOBUF_MESSAGE_GLOBALS
-    const
-    #endif
-     CppFeaturesGlobalsTypeInternal CppFeatures_globals_
-        #ifdef PROTOBUF_MESSAGE_GLOBALS
-        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
-        #endif  // PROTOBUF_MESSAGE_GLOBALS
-        ;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST CppFeaturesGlobalsTypeInternal CppFeatures_globals_
+        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* CppFeatures_get_class_data() {
@@ -320,7 +312,7 @@ CppFeatures::CppFeatures(
 PROTOBUF_NDEBUG_INLINE CppFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0} {}
+     {}
 
 inline void CppFeatures::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
