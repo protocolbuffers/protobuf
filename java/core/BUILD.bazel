@@ -156,9 +156,9 @@ protobuf_versioned_java_library(
         ":gen_well_known_protos_javalite",
     ],
     automatic_module_name = "com.google.protobuf",
-    bundle_description = "Lite version of Protocol Buffers library. This " +
-                         "version is optimized for code size, but does not " +
-                         "guarantee API/ABI stability.",
+    bundle_description = "Lite version of Protocol Buffers library. This version is targeted " +
+                         "for mobile client use rather than server side use. It is optimized " +
+                         "for code size, but does not guarantee API/ABI stability.",
     bundle_name = "Protocol Buffers [Lite]",
     bundle_symbolic_name = "com.google.protobuf",
     visibility = [
