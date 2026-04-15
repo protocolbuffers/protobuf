@@ -166,6 +166,7 @@ cc_library(
         ":message",
         "//upb/base",
         "//upb/base:internal",
+        "//upb/hash",
         "//upb/mem",
         "//upb/mini_table",
         "//upb/mini_table:internal",

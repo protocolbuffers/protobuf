@@ -602,20 +602,6 @@ static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
   if (!map || !upb_Map_Size(map)) return ptr;
 
   if (e->options & kUpb_EncodeOption_Deterministic) {
-    if (!map->UPB_PRIVATE(is_strtable)) {
-      // For inttable, first encode the array part, then sort the table entries.
-      intptr_t iter = UPB_INTTABLE_BEGIN;
-      while ((size_t)++iter < map->t.inttable.array_size) {
-        upb_value value = map->t.inttable.array[iter];
-        if (upb_inttable_arrhas(&map->t.inttable, iter)) {
-          upb_MapEntry ent;
-          memcpy(&ent.k, &iter, sizeof(iter));
-          _upb_map_fromvalue(value, &ent.v, map->val_size);
-          ptr = encode_mapentry(ptr, e, upb_MiniTableField_Number(f), layout,
-                                &ent);
-        }
-      }
-    }
     _upb_sortedmap sorted;
     _upb_mapsorter_pushmap(
         &e->sorter, layout->UPB_PRIVATE(fields)[0].UPB_PRIVATE(descriptortype),
