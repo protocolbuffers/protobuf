@@ -123,7 +123,7 @@ struct MapTestPeer {
     return Map<int, int>::CalculateHiCutoff(num_buckets);
   }
 
-  static size_t CalculateCapacityForSize(size_t size) {
+  static map_index_t CalculateCapacityForSize(size_t size) {
     return Map<int, int>::CalculateCapacityForSize(size);
   }
 
