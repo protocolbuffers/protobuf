@@ -789,6 +789,25 @@ public class JsonFormatTest {
   }
 
   @Test
+  public void testParserRejectOverlyLongNumericStrings() throws Exception {
+    // A numeric string with 10,000 digits should be rejected quickly to prevent
+    // O(N^2) BigDecimal parsing DoS.
+    String longNumber = "1" + "0".repeat(10000);
+    String[] fields = {
+        "optionalInt32", "optionalInt64", "optionalUint32", "optionalUint64", "optionalDouble"
+    };
+    for (String field : fields) {
+      TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+      try {
+        mergeFromJson("{\"" + field + "\":\"" + longNumber + "\"}", builder);
+        assertWithMessage("Exception expected for " + field + " with long numeric string").fail();
+      } catch (InvalidProtocolBufferException expected) {
+        // Expected: rejected before expensive BigDecimal construction.
+      }
+    }
+  }
+
+  @Test
   public void testParserAcceptNull() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     mergeFromJson(
