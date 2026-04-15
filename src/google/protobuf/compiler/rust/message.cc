@@ -816,7 +816,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
       impl<'a> $Msg$Mut<'a> {
         pub unsafe fn __unstable_wrap_cpp_grant_permission_to_break(
             msg: &'a mut *mut $std$::ffi::c_void) -> Self {
-          let raw = $pbr$::RawMessage::new(*msg as *mut _).unwrap();
+          let raw = unsafe { $pbr$::RawMessage::new(*msg as *mut _).unwrap_unchecked() };
           let inner = unsafe { $pbr$::MessageMutInner::wrap_raw(raw) };
           Self { inner }
         }
@@ -828,7 +828,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
       impl<'a> $Msg$View<'a> {
         pub fn __unstable_wrap_cpp_grant_permission_to_break(
           msg: &'a *const $std$::ffi::c_void) -> Self {
-          let raw = $pbr$::RawMessage::new(*msg as *mut _).unwrap();
+          let raw = unsafe { $pbr$::RawMessage::new(*msg as *mut _).unwrap_unchecked() };
           let inner = unsafe { $pbr$::MessageViewInner::wrap_raw(raw) };
           inner.into()
         }
@@ -839,7 +839,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
 
       impl $pb$::OwnedMessageInterop for $Msg$ {
         unsafe fn __unstable_take_ownership_of_raw_message(msg: *mut $std$::ffi::c_void) -> Self {
-          let raw = $pbr$::RawMessage::new(msg as *mut _).unwrap();
+          let raw = unsafe { $pbr$::RawMessage::new(msg as *mut _).unwrap_unchecked() };
           let inner = unsafe { $pbr$::OwnedMessageInner::<$Msg$>::wrap_raw(raw) };
           Self { inner }
         }
@@ -853,13 +853,13 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
       impl<'a> $pb$::MessageViewInterop<'a> for $Msg$View<'a> {
         unsafe fn __unstable_wrap_raw_message(
           msg: &'a *const $std$::ffi::c_void) -> Self {
-          let raw = $pbr$::RawMessage::new(*msg as *mut _).unwrap();
+          let raw = unsafe { $pbr$::RawMessage::new(*msg as *mut _).unwrap_unchecked() };
           let inner = unsafe { $pbr$::MessageViewInner::wrap_raw(raw) };
           inner.into()
         }
         unsafe fn __unstable_wrap_raw_message_unchecked_lifetime(
           msg: *const $std$::ffi::c_void) -> Self {
-          let raw = $pbr$::RawMessage::new(msg as *mut _).unwrap();
+          let raw = unsafe { $pbr$::RawMessage::new(msg as *mut _).unwrap_unchecked() };
           let inner = unsafe { $pbr$::MessageViewInner::wrap_raw(raw) };
           inner.into()
         }
