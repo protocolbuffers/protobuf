@@ -95,8 +95,7 @@ constexpr Any::ParseTableT_ Any::InternalGenerateParseTable_(const ::_pbi::Class
 inline constexpr Any::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        type_url_(
+      : type_url_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
         value_(
@@ -276,7 +275,6 @@ PROTOBUF_NDEBUG_INLINE Any::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::Any& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         type_url_(arena, from.type_url_),
         value_(arena, from.value_) {}
 
@@ -300,8 +298,7 @@ Any::Any(
 PROTOBUF_NDEBUG_INLINE Any::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        type_url_(arena),
+      : type_url_(arena),
         value_(arena) {}
 
 inline void Any::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {

@@ -88,8 +88,7 @@ constexpr Timestamp::ParseTableT_ Timestamp::InternalGenerateParseTable_(const :
 inline constexpr Timestamp::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        seconds_{::int64_t{0}},
+      : seconds_{::int64_t{0}},
         nanos_{0} {}
 
 template <typename>
@@ -263,7 +262,7 @@ Timestamp::Timestamp(
 PROTOBUF_NDEBUG_INLINE Timestamp::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0} {}
+     {}
 
 inline void Timestamp::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
