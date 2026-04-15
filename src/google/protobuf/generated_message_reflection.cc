@@ -3711,25 +3711,34 @@ void Reflection::PopulateTcParseFieldAux(
 const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   using TcParseTableBase = internal::TcParseTableBase;
 
-  std::vector<internal::TailCallTableInfo::FieldOptions> fields;
+  using FieldOptions = internal::TailCallTableInfo::FieldOptions;
+  std::vector<FieldOptions> fields;
   fields.reserve(descriptor_->field_count());
   for (int i = 0; i < descriptor_->field_count(); ++i) {
     auto* field = descriptor_->field(i);
-    const bool is_inlined = IsInlined(field);
+    const auto str_options = [&]() -> FieldOptions::StrOptions {
+      if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
+        if (IsInlined(field)) return FieldOptions::StringInlined{};
+        if (IsMicroString(field)) {
+          // We use the basic SSO capacity for reflection
+          // We could improve this later
+          return FieldOptions::MicroString{MicroString::kInlineCapacity};
+        }
+      }
+      return std::monostate{};
+    };
     fields.push_back({
         field,  //
         static_cast<int>(schema_.HasBitIndex(field)),
         1.f,  // All fields are assumed present.
         GetLazyStyle(field),
-        is_inlined,
         // Only LITE can be implicitly weak.
         /* is_implicitly_weak */ false,
         // We could change this to use direct table.
         // Might be easier to do when all messages support TDP.
         /* use_direct_tcparser_table */ false,
         schema_.IsSplit(field),
-        field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-            IsMicroString(field),
+        str_options(),
     });
   }
   std::sort(fields.begin(), fields.end(), [](const auto& a, const auto& b) {

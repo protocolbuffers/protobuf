@@ -81,15 +81,21 @@ class SingularStringView : public FieldGeneratorBase {
 
   bool IsInlined() const override { return is_inlined(); }
 
+  std::string FieldTypeName() const {
+    if (is_inlined()) return "InlinedStringField";
+    if (!use_micro_string()) return "ArenaStringPtr";
+    if (auto micro_string_sso = MicroStringSSOSize(field_, *opts_)) {
+      return absl::StrCat("MicroStringExtra<", *micro_string_sso, ">");
+    }
+    return "MicroString";
+  }
+
   void GeneratePrivateMembers(io::Printer* p) const override {
     // Skips the automatic destruction if inlined; rather calls it explicitly if
     // allocating arena is null.
-    p->Emit({{"Str", is_inlined()         ? "InlinedStringField"
-                     : use_micro_string() ? "MicroString"
-                                          : "ArenaStringPtr"}},
-            R"cc(
-              $pbi$::$Str$ $name$_;
-            )cc");
+    p->Emit({{"Str", FieldTypeName()}}, R"cc(
+      $pbi$::$Str$ $name$_;
+    )cc");
   }
 
   bool RequiresArena(GeneratorFunction function) const override {
@@ -420,7 +426,7 @@ void SingularStringView::GenerateSwappingCode(io::Printer* p) const {
 }
 
 void SingularStringView::GenerateCopyConstructorCode(io::Printer* p) const {
-  if (!(is_inlined() && EmptyDefault()) && !is_oneof()) {
+  if (!(is_inlined() && EmptyDefault()) && !is_oneof() && !use_micro_string()) {
     ABSL_DCHECK(!is_inlined());
 
     p->Emit(R"cc(
