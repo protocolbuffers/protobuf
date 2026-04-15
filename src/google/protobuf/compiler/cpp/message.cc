@@ -593,7 +593,7 @@ bool MaybeEmitHaswordsCheck(ChunkIterator it, ChunkIterator end,
 using Sub = ::google::protobuf::io::Printer::Sub;
 std::vector<Sub> ClassVars(const Descriptor* desc, Options opts) {
   std::vector<Sub> vars = {
-      {"pkg", Namespace(desc, opts)},
+      {"pkg", Namespace(desc)},
       {"Msg", ClassName(desc, false)},
       {"pkg::Msg", QualifiedClassName(desc, opts)},
       {"pkg.Msg", desc->full_name()},
