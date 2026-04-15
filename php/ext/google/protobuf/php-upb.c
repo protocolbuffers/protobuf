@@ -3523,9 +3523,19 @@ typedef bool eqlfunc_t(upb_key k1, upb_value v1, lookupkey_t k2);
 
 /* Base table (shared code) ***************************************************/
 
+// Seed for integer hashing, using the same ASLR-based approach as string
+// hashing. Without this seed, the integer hash function is completely
+// deterministic, allowing an attacker to trivially precompute colliding keys
+// and cause O(N^2) insertion time for N map entries.
+static const void* const _upb_int_seed;
+UPB_FORCEINLINE uint64_t _upb_IntSeed(void) {
+  return (uint64_t)(uintptr_t)&_upb_int_seed;
+}
+
 static uint32_t upb_inthash(uintptr_t key) {
   UPB_STATIC_ASSERT(sizeof(uintptr_t) == 4 || sizeof(uintptr_t) == 8,
                     "Pointers don't fit");
+  key ^= (uintptr_t)_upb_IntSeed();
   if (sizeof(uintptr_t) == 8) {
     return (uint32_t)key ^ (uint32_t)(key >> 32);
   } else {
