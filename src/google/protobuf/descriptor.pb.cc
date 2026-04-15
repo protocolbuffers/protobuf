@@ -157,8 +157,7 @@ constexpr UninterpretedOption_NamePart::ParseTableT_ UninterpretedOption_NamePar
 inline constexpr UninterpretedOption_NamePart::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        name_part_(
+      : name_part_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
         is_extension_{false} {}
@@ -334,19 +333,16 @@ constexpr SourceCodeInfo_Location::ParseTableT_ SourceCodeInfo_Location::Interna
 inline constexpr SourceCodeInfo_Location::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        path_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : path_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::SourceCodeInfo_Location,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.path_)>()
          }
         ,
-        _path_cached_byte_size_{0},
         span_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::SourceCodeInfo_Location,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.span_)>()
          }
         ,
-        _span_cached_byte_size_{0},
         leading_detached_comments_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::SourceCodeInfo_Location,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.leading_detached_comments_)>()
@@ -532,13 +528,11 @@ constexpr GeneratedCodeInfo_Annotation::ParseTableT_ GeneratedCodeInfo_Annotatio
 inline constexpr GeneratedCodeInfo_Annotation::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        path_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : path_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::GeneratedCodeInfo_Annotation,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo_Annotation, _impl_.path_)>()
          }
         ,
-        _path_cached_byte_size_{0},
         source_file_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
@@ -721,8 +715,7 @@ constexpr FieldOptions_FeatureSupport::ParseTableT_ FieldOptions_FeatureSupport:
 inline constexpr FieldOptions_FeatureSupport::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        deprecation_warning_(
+      : deprecation_warning_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
         removal_error_(
@@ -884,8 +877,7 @@ constexpr FieldOptions_EditionDefault::ParseTableT_ FieldOptions_EditionDefault:
 inline constexpr FieldOptions_EditionDefault::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        value_(
+      : value_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
         edition_{static_cast< ::google::protobuf::Edition >(0)} {}
@@ -1215,8 +1207,7 @@ constexpr FeatureSet::ParseTableT_ FeatureSet::InternalGenerateParseTable_(const
 inline constexpr FeatureSet::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        field_presence_{static_cast< ::google::protobuf::FeatureSet_FieldPresence >(0)},
+      : field_presence_{static_cast< ::google::protobuf::FeatureSet_FieldPresence >(0)},
         enum_type_{static_cast< ::google::protobuf::FeatureSet_EnumType >(0)},
         repeated_field_encoding_{static_cast< ::google::protobuf::FeatureSet_RepeatedFieldEncoding >(0)},
         utf8_validation_{static_cast< ::google::protobuf::FeatureSet_Utf8Validation >(0)},
@@ -1396,8 +1387,7 @@ constexpr ExtensionRangeOptions_Declaration::ParseTableT_ ExtensionRangeOptions_
 inline constexpr ExtensionRangeOptions_Declaration::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        full_name_(
+      : full_name_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
         type_(
@@ -1557,8 +1547,7 @@ constexpr EnumDescriptorProto_EnumReservedRange::ParseTableT_ EnumDescriptorProt
 inline constexpr EnumDescriptorProto_EnumReservedRange::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        start_{0},
+      : start_{0},
         end_{0} {}
 
 template <typename>
@@ -1711,8 +1700,7 @@ constexpr DescriptorProto_ReservedRange::ParseTableT_ DescriptorProto_ReservedRa
 inline constexpr DescriptorProto_ReservedRange::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        start_{0},
+      : start_{0},
         end_{0} {}
 
 template <typename>
@@ -1902,8 +1890,7 @@ constexpr UninterpretedOption::ParseTableT_ UninterpretedOption::InternalGenerat
 inline constexpr UninterpretedOption::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        name_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : name_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::UninterpretedOption,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::UninterpretedOption, _impl_.name_)>()
          }
@@ -2071,8 +2058,7 @@ constexpr SourceCodeInfo::ParseTableT_ SourceCodeInfo::InternalGenerateParseTabl
 inline constexpr SourceCodeInfo::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        location_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : location_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::SourceCodeInfo,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo, _impl_.location_)>()
          }
@@ -2228,8 +2214,7 @@ constexpr GeneratedCodeInfo::ParseTableT_ GeneratedCodeInfo::InternalGeneratePar
 inline constexpr GeneratedCodeInfo::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        annotation_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : annotation_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::GeneratedCodeInfo,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo, _impl_.annotation_)>()
          }
@@ -2404,8 +2389,7 @@ constexpr FeatureSetDefaults_FeatureSetEditionDefault::ParseTableT_ FeatureSetDe
 inline constexpr FeatureSetDefaults_FeatureSetEditionDefault::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        overridable_features_{nullptr},
+      : overridable_features_{nullptr},
         fixed_features_{nullptr},
         edition_{static_cast< ::google::protobuf::Edition >(0)} {}
 
@@ -2581,8 +2565,7 @@ constexpr ServiceOptions::ParseTableT_ ServiceOptions::InternalGenerateParseTabl
 inline constexpr ServiceOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        uninterpreted_option_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : uninterpreted_option_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::ServiceOptions,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceOptions, _impl_.uninterpreted_option_)>()
          }
@@ -2755,8 +2738,7 @@ constexpr OneofOptions::ParseTableT_ OneofOptions::InternalGenerateParseTable_(c
 inline constexpr OneofOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        uninterpreted_option_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : uninterpreted_option_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::OneofOptions,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::OneofOptions, _impl_.uninterpreted_option_)>()
          }
@@ -2945,8 +2927,7 @@ constexpr MethodOptions::ParseTableT_ MethodOptions::InternalGenerateParseTable_
 inline constexpr MethodOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        uninterpreted_option_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : uninterpreted_option_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::MethodOptions,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::MethodOptions, _impl_.uninterpreted_option_)>()
          }
@@ -3143,8 +3124,7 @@ constexpr MessageOptions::ParseTableT_ MessageOptions::InternalGenerateParseTabl
 inline constexpr MessageOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        features_{nullptr},
+      : features_{nullptr},
         message_set_wire_format_{false},
         no_standard_descriptor_accessor_{false},
         deprecated_{false},
@@ -3435,8 +3415,7 @@ constexpr FileOptions::ParseTableT_ FileOptions::InternalGenerateParseTable_(con
 inline constexpr FileOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        java_package_(
+      : java_package_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
         java_outer_classname_(
@@ -3721,8 +3700,7 @@ constexpr FieldOptions::ParseTableT_ FieldOptions::InternalGenerateParseTable_(c
 inline constexpr FieldOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        edition_defaults_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : edition_defaults_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::FieldOptions,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.edition_defaults_)>()
          }
@@ -3909,8 +3887,7 @@ constexpr FeatureSetDefaults::ParseTableT_ FeatureSetDefaults::InternalGenerateP
 inline constexpr FeatureSetDefaults::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        defaults_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : defaults_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::FeatureSetDefaults,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults, _impl_.defaults_)>()
          }
@@ -4102,8 +4079,7 @@ constexpr ExtensionRangeOptions::ParseTableT_ ExtensionRangeOptions::InternalGen
 inline constexpr ExtensionRangeOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        declaration_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : declaration_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::ExtensionRangeOptions,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions, _impl_.declaration_)>()
          }
@@ -4305,8 +4281,7 @@ constexpr EnumValueOptions::ParseTableT_ EnumValueOptions::InternalGenerateParse
 inline constexpr EnumValueOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        uninterpreted_option_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : uninterpreted_option_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::EnumValueOptions,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValueOptions, _impl_.uninterpreted_option_)>()
          }
@@ -4497,8 +4472,7 @@ constexpr EnumOptions::ParseTableT_ EnumOptions::InternalGenerateParseTable_(con
 inline constexpr EnumOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        features_{nullptr},
+      : features_{nullptr},
         allow_alias_{false},
         deprecated_{false},
         deprecated_legacy_json_field_conflicts_{false},
@@ -4664,8 +4638,7 @@ constexpr OneofDescriptorProto::ParseTableT_ OneofDescriptorProto::InternalGener
 inline constexpr OneofDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        name_(
+      : name_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
         options_{nullptr} {}
@@ -4852,8 +4825,7 @@ constexpr MethodDescriptorProto::ParseTableT_ MethodDescriptorProto::InternalGen
 inline constexpr MethodDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        name_(
+      : name_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
         input_type_(
@@ -5080,8 +5052,7 @@ constexpr FieldDescriptorProto::ParseTableT_ FieldDescriptorProto::InternalGener
 inline constexpr FieldDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        name_(
+      : name_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
         extendee_(
@@ -5266,8 +5237,7 @@ constexpr EnumValueDescriptorProto::ParseTableT_ EnumValueDescriptorProto::Inter
 inline constexpr EnumValueDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        name_(
+      : name_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
         options_{nullptr},
@@ -5436,8 +5406,7 @@ constexpr DescriptorProto_ExtensionRange::ParseTableT_ DescriptorProto_Extension
 inline constexpr DescriptorProto_ExtensionRange::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        options_{nullptr},
+      : options_{nullptr},
         start_{0},
         end_{0} {}
 
@@ -5609,8 +5578,7 @@ constexpr ServiceDescriptorProto::ParseTableT_ ServiceDescriptorProto::InternalG
 inline constexpr ServiceDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        method_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : method_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::ServiceDescriptorProto,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceDescriptorProto, _impl_.method_)>()
          }
@@ -5813,8 +5781,7 @@ constexpr EnumDescriptorProto::ParseTableT_ EnumDescriptorProto::InternalGenerat
 inline constexpr EnumDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        value_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : value_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::EnumDescriptorProto,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.value_)>()
          }
@@ -6086,8 +6053,7 @@ constexpr DescriptorProto::ParseTableT_ DescriptorProto::InternalGenerateParseTa
 inline constexpr DescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        field_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : field_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::DescriptorProto,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.field_)>()
          }
@@ -6389,8 +6355,7 @@ constexpr FileDescriptorProto::ParseTableT_ FileDescriptorProto::InternalGenerat
 inline constexpr FileDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        dependency_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : dependency_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::FileDescriptorProto,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.dependency_)>()
          }
@@ -6593,8 +6558,7 @@ constexpr FileDescriptorSet::ParseTableT_ FileDescriptorSet::InternalGeneratePar
 inline constexpr FileDescriptorSet::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        file_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : file_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::FileDescriptorSet,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorSet, _impl_.file_)>()
          }
@@ -7757,7 +7721,6 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorSet::Impl_::Impl_(
       : _extensions_ {}
         ,
         _has_bits_{from._has_bits_},
-        _cached_size_{0},
         file_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::FileDescriptorSet,
@@ -7790,7 +7753,6 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorSet::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_ {}
         ,
-        _cached_size_{0},
         file_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::FileDescriptorSet,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorSet, _impl_.file_)>()
@@ -8002,7 +7964,6 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::FileDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         dependency_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::FileDescriptorProto,
@@ -8091,8 +8052,7 @@ FileDescriptorProto::FileDescriptorProto(
 PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        dependency_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : dependency_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::FileDescriptorProto,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.dependency_)>()
          }
@@ -8674,8 +8634,7 @@ PROTOBUF_NDEBUG_INLINE DescriptorProto_ExtensionRange::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::DescriptorProto_ExtensionRange& from_msg)
-      : _has_bits_{from._has_bits_},
-        _cached_size_{0} {}
+      : _has_bits_{from._has_bits_} {}
 
 DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -8708,7 +8667,7 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(
 PROTOBUF_NDEBUG_INLINE DescriptorProto_ExtensionRange::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0} {}
+     {}
 
 inline void DescriptorProto_ExtensionRange::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
@@ -8958,7 +8917,7 @@ DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(
 PROTOBUF_NDEBUG_INLINE DescriptorProto_ReservedRange::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0} {}
+     {}
 
 inline void DescriptorProto_ReservedRange::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
@@ -9165,7 +9124,6 @@ PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::DescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         field_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::DescriptorProto,
@@ -9249,8 +9207,7 @@ DescriptorProto::DescriptorProto(
 PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        field_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : field_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::DescriptorProto,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.field_)>()
          }
@@ -9782,7 +9739,6 @@ PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions_Declaration::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::ExtensionRangeOptions_Declaration& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         full_name_(arena, from.full_name_),
         type_(arena, from.type_) {}
 
@@ -9813,8 +9769,7 @@ ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(
 PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions_Declaration::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        full_name_(arena),
+      : full_name_(arena),
         type_(arena) {}
 
 inline void ExtensionRangeOptions_Declaration::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
@@ -10072,7 +10027,6 @@ PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions::Impl_::Impl_(
       : _extensions_ {}
         ,
         _has_bits_{from._has_bits_},
-        _cached_size_{0},
         declaration_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::ExtensionRangeOptions,
@@ -10117,7 +10071,6 @@ PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_ {}
         ,
-        _cached_size_{0},
         declaration_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::ExtensionRangeOptions,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions, _impl_.declaration_)>()
@@ -10422,7 +10375,6 @@ PROTOBUF_NDEBUG_INLINE FieldDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::FieldDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         name_(arena, from.name_),
         extendee_(arena, from.extendee_),
         type_name_(arena, from.type_name_),
@@ -10460,8 +10412,7 @@ FieldDescriptorProto::FieldDescriptorProto(
 PROTOBUF_NDEBUG_INLINE FieldDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        name_(arena),
+      : name_(arena),
         extendee_(arena),
         type_name_(arena),
         default_value_(arena),
@@ -10857,7 +10808,6 @@ PROTOBUF_NDEBUG_INLINE OneofDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::OneofDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         name_(arena, from.name_) {}
 
 OneofDescriptorProto::OneofDescriptorProto(
@@ -10884,8 +10834,7 @@ OneofDescriptorProto::OneofDescriptorProto(
 PROTOBUF_NDEBUG_INLINE OneofDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        name_(arena) {}
+      : name_(arena) {}
 
 inline void OneofDescriptorProto::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
@@ -11113,7 +11062,7 @@ EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(
 PROTOBUF_NDEBUG_INLINE EnumDescriptorProto_EnumReservedRange::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0} {}
+     {}
 
 inline void EnumDescriptorProto_EnumReservedRange::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
@@ -11320,7 +11269,6 @@ PROTOBUF_NDEBUG_INLINE EnumDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::EnumDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         value_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::EnumDescriptorProto,
@@ -11369,8 +11317,7 @@ EnumDescriptorProto::EnumDescriptorProto(
 PROTOBUF_NDEBUG_INLINE EnumDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        value_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : value_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::EnumDescriptorProto,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.value_)>()
          }
@@ -11716,7 +11663,6 @@ PROTOBUF_NDEBUG_INLINE EnumValueDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::EnumValueDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         name_(arena, from.name_) {}
 
 EnumValueDescriptorProto::EnumValueDescriptorProto(
@@ -11744,8 +11690,7 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(
 PROTOBUF_NDEBUG_INLINE EnumValueDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        name_(arena) {}
+      : name_(arena) {}
 
 inline void EnumValueDescriptorProto::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
@@ -11990,7 +11935,6 @@ PROTOBUF_NDEBUG_INLINE ServiceDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::ServiceDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         method_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::ServiceDescriptorProto,
@@ -12024,8 +11968,7 @@ ServiceDescriptorProto::ServiceDescriptorProto(
 PROTOBUF_NDEBUG_INLINE ServiceDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        method_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : method_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::ServiceDescriptorProto,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceDescriptorProto, _impl_.method_)>()
          }
@@ -12280,7 +12223,6 @@ PROTOBUF_NDEBUG_INLINE MethodDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::MethodDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         name_(arena, from.name_),
         input_type_(arena, from.input_type_),
         output_type_(arena, from.output_type_) {}
@@ -12316,8 +12258,7 @@ MethodDescriptorProto::MethodDescriptorProto(
 PROTOBUF_NDEBUG_INLINE MethodDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        name_(arena),
+      : name_(arena),
         input_type_(arena),
         output_type_(arena) {}
 
@@ -12612,7 +12553,6 @@ PROTOBUF_NDEBUG_INLINE FileOptions::Impl_::Impl_(
       : _extensions_ {}
         ,
         _has_bits_{from._has_bits_},
-        _cached_size_{0},
         java_package_(arena, from.java_package_),
         java_outer_classname_(arena, from.java_outer_classname_),
         go_package_(arena, from.go_package_),
@@ -12666,7 +12606,6 @@ PROTOBUF_NDEBUG_INLINE FileOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_ {}
         ,
-        _cached_size_{0},
         java_package_(arena),
         java_outer_classname_(arena),
         go_package_(arena),
@@ -13250,7 +13189,6 @@ PROTOBUF_NDEBUG_INLINE MessageOptions::Impl_::Impl_(
       : _extensions_ {}
         ,
         _has_bits_{from._has_bits_},
-        _cached_size_{0},
         uninterpreted_option_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::MessageOptions,
@@ -13294,7 +13232,6 @@ PROTOBUF_NDEBUG_INLINE MessageOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_ {}
         ,
-        _cached_size_{0},
         uninterpreted_option_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::MessageOptions,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::MessageOptions, _impl_.uninterpreted_option_)>()
@@ -13607,7 +13544,6 @@ PROTOBUF_NDEBUG_INLINE FieldOptions_EditionDefault::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::FieldOptions_EditionDefault& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         value_(arena, from.value_) {}
 
 FieldOptions_EditionDefault::FieldOptions_EditionDefault(
@@ -13631,8 +13567,7 @@ FieldOptions_EditionDefault::FieldOptions_EditionDefault(
 PROTOBUF_NDEBUG_INLINE FieldOptions_EditionDefault::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        value_(arena) {}
+      : value_(arena) {}
 
 inline void FieldOptions_EditionDefault::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
@@ -13831,7 +13766,6 @@ PROTOBUF_NDEBUG_INLINE FieldOptions_FeatureSupport::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::FieldOptions_FeatureSupport& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         deprecation_warning_(arena, from.deprecation_warning_),
         removal_error_(arena, from.removal_error_) {}
 
@@ -13862,8 +13796,7 @@ FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(
 PROTOBUF_NDEBUG_INLINE FieldOptions_FeatureSupport::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        deprecation_warning_(arena),
+      : deprecation_warning_(arena),
         removal_error_(arena) {}
 
 inline void FieldOptions_FeatureSupport::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
@@ -14130,7 +14063,6 @@ PROTOBUF_NDEBUG_INLINE FieldOptions::Impl_::Impl_(
       : _extensions_ {}
         ,
         _has_bits_{from._has_bits_},
-        _cached_size_{0},
         edition_defaults_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::FieldOptions,
@@ -14191,7 +14123,6 @@ PROTOBUF_NDEBUG_INLINE FieldOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_ {}
         ,
-        _cached_size_{0},
         edition_defaults_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::FieldOptions,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.edition_defaults_)>()
@@ -14662,7 +14593,6 @@ PROTOBUF_NDEBUG_INLINE OneofOptions::Impl_::Impl_(
       : _extensions_ {}
         ,
         _has_bits_{from._has_bits_},
-        _cached_size_{0},
         uninterpreted_option_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::OneofOptions,
@@ -14699,7 +14629,6 @@ PROTOBUF_NDEBUG_INLINE OneofOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_ {}
         ,
-        _cached_size_{0},
         uninterpreted_option_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::OneofOptions,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::OneofOptions, _impl_.uninterpreted_option_)>()
@@ -14950,7 +14879,6 @@ PROTOBUF_NDEBUG_INLINE EnumOptions::Impl_::Impl_(
       : _extensions_ {}
         ,
         _has_bits_{from._has_bits_},
-        _cached_size_{0},
         uninterpreted_option_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::EnumOptions,
@@ -14994,7 +14922,6 @@ PROTOBUF_NDEBUG_INLINE EnumOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_ {}
         ,
-        _cached_size_{0},
         uninterpreted_option_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::EnumOptions,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumOptions, _impl_.uninterpreted_option_)>()
@@ -15287,7 +15214,6 @@ PROTOBUF_NDEBUG_INLINE EnumValueOptions::Impl_::Impl_(
       : _extensions_ {}
         ,
         _has_bits_{from._has_bits_},
-        _cached_size_{0},
         uninterpreted_option_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::EnumValueOptions,
@@ -15334,7 +15260,6 @@ PROTOBUF_NDEBUG_INLINE EnumValueOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_ {}
         ,
-        _cached_size_{0},
         uninterpreted_option_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::EnumValueOptions,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValueOptions, _impl_.uninterpreted_option_)>()
@@ -15644,7 +15569,6 @@ PROTOBUF_NDEBUG_INLINE ServiceOptions::Impl_::Impl_(
       : _extensions_ {}
         ,
         _has_bits_{from._has_bits_},
-        _cached_size_{0},
         uninterpreted_option_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::ServiceOptions,
@@ -15682,7 +15606,6 @@ PROTOBUF_NDEBUG_INLINE ServiceOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_ {}
         ,
-        _cached_size_{0},
         uninterpreted_option_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::ServiceOptions,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceOptions, _impl_.uninterpreted_option_)>()
@@ -15955,7 +15878,6 @@ PROTOBUF_NDEBUG_INLINE MethodOptions::Impl_::Impl_(
       : _extensions_ {}
         ,
         _has_bits_{from._has_bits_},
-        _cached_size_{0},
         uninterpreted_option_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::MethodOptions,
@@ -15999,7 +15921,6 @@ PROTOBUF_NDEBUG_INLINE MethodOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_ {}
         ,
-        _cached_size_{0},
         uninterpreted_option_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::MethodOptions,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::MethodOptions, _impl_.uninterpreted_option_)>()
@@ -16289,7 +16210,6 @@ PROTOBUF_NDEBUG_INLINE UninterpretedOption_NamePart::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::UninterpretedOption_NamePart& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         name_part_(arena, from.name_part_) {}
 
 UninterpretedOption_NamePart::UninterpretedOption_NamePart(
@@ -16313,8 +16233,7 @@ UninterpretedOption_NamePart::UninterpretedOption_NamePart(
 PROTOBUF_NDEBUG_INLINE UninterpretedOption_NamePart::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        name_part_(arena) {}
+      : name_part_(arena) {}
 
 inline void UninterpretedOption_NamePart::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
@@ -16517,7 +16436,6 @@ PROTOBUF_NDEBUG_INLINE UninterpretedOption::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::UninterpretedOption& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         name_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::UninterpretedOption,
@@ -16556,8 +16474,7 @@ UninterpretedOption::UninterpretedOption(
 PROTOBUF_NDEBUG_INLINE UninterpretedOption::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        name_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : name_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::UninterpretedOption,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::UninterpretedOption, _impl_.name_)>()
          }
@@ -16944,8 +16861,7 @@ PROTOBUF_NDEBUG_INLINE FeatureSet::Impl_::Impl_(
     [[maybe_unused]] const ::google::protobuf::FeatureSet& from_msg)
       : _extensions_ {}
         ,
-        _has_bits_{from._has_bits_},
-        _cached_size_{0} {}
+        _has_bits_{from._has_bits_} {}
 
 FeatureSet::FeatureSet(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -16977,8 +16893,7 @@ PROTOBUF_NDEBUG_INLINE FeatureSet::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_ {}
-        ,
-        _cached_size_{0} {}
+     {}
 
 inline void FeatureSet::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
@@ -17292,8 +17207,7 @@ PROTOBUF_NDEBUG_INLINE FeatureSetDefaults_FeatureSetEditionDefault::Impl_::Impl_
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault& from_msg)
-      : _has_bits_{from._has_bits_},
-        _cached_size_{0} {}
+      : _has_bits_{from._has_bits_} {}
 
 FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditionDefault(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -17323,7 +17237,7 @@ FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditio
 PROTOBUF_NDEBUG_INLINE FeatureSetDefaults_FeatureSetEditionDefault::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0} {}
+     {}
 
 inline void FeatureSetDefaults_FeatureSetEditionDefault::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
@@ -17575,7 +17489,6 @@ PROTOBUF_NDEBUG_INLINE FeatureSetDefaults::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::FeatureSetDefaults& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         defaults_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::FeatureSetDefaults,
@@ -17611,8 +17524,7 @@ FeatureSetDefaults::FeatureSetDefaults(
 PROTOBUF_NDEBUG_INLINE FeatureSetDefaults::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        defaults_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : defaults_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::FeatureSetDefaults,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults, _impl_.defaults_)>()
          }
@@ -17860,7 +17772,6 @@ PROTOBUF_NDEBUG_INLINE SourceCodeInfo_Location::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::SourceCodeInfo_Location& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         path_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::SourceCodeInfo_Location,
@@ -17868,7 +17779,6 @@ PROTOBUF_NDEBUG_INLINE SourceCodeInfo_Location::Impl_::Impl_(
           , from.path_
         }
         ,
-        _path_cached_byte_size_{0},
         span_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::SourceCodeInfo_Location,
@@ -17876,7 +17786,6 @@ PROTOBUF_NDEBUG_INLINE SourceCodeInfo_Location::Impl_::Impl_(
           , from.span_
         }
         ,
-        _span_cached_byte_size_{0},
         leading_detached_comments_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::SourceCodeInfo_Location,
@@ -17907,19 +17816,16 @@ SourceCodeInfo_Location::SourceCodeInfo_Location(
 PROTOBUF_NDEBUG_INLINE SourceCodeInfo_Location::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        path_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : path_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::SourceCodeInfo_Location,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.path_)>()
          }
         ,
-        _path_cached_byte_size_{0},
         span_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::SourceCodeInfo_Location,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.span_)>()
          }
         ,
-        _span_cached_byte_size_{0},
         leading_detached_comments_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::SourceCodeInfo_Location,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.leading_detached_comments_)>()
@@ -18207,7 +18113,6 @@ PROTOBUF_NDEBUG_INLINE SourceCodeInfo::Impl_::Impl_(
       : _extensions_ {}
         ,
         _has_bits_{from._has_bits_},
-        _cached_size_{0},
         location_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::SourceCodeInfo,
@@ -18240,7 +18145,6 @@ PROTOBUF_NDEBUG_INLINE SourceCodeInfo::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_ {}
         ,
-        _cached_size_{0},
         location_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::SourceCodeInfo,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo, _impl_.location_)>()
@@ -18450,7 +18354,6 @@ PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo_Annotation::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::GeneratedCodeInfo_Annotation& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         path_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::GeneratedCodeInfo_Annotation,
@@ -18458,7 +18361,6 @@ PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo_Annotation::Impl_::Impl_(
           , from.path_
         }
         ,
-        _path_cached_byte_size_{0},
         source_file_(arena, from.source_file_) {}
 
 GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(
@@ -18488,13 +18390,11 @@ GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(
 PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo_Annotation::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        path_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : path_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::GeneratedCodeInfo_Annotation,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo_Annotation, _impl_.path_)>()
          }
         ,
-        _path_cached_byte_size_{0},
         source_file_(arena) {}
 
 inline void GeneratedCodeInfo_Annotation::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
@@ -18765,7 +18665,6 @@ PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::GeneratedCodeInfo& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         annotation_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::GeneratedCodeInfo,
@@ -18794,8 +18693,7 @@ GeneratedCodeInfo::GeneratedCodeInfo(
 PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        annotation_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : annotation_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::GeneratedCodeInfo,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo, _impl_.annotation_)>()
          }

@@ -102,8 +102,7 @@ constexpr CppFeatures::ParseTableT_ CppFeatures::InternalGenerateParseTable_(con
 inline constexpr CppFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        string_type_{static_cast< ::pb::CppFeatures_StringType >(0)},
+      : string_type_{static_cast< ::pb::CppFeatures_StringType >(0)},
         legacy_closed_enum_{false},
         enum_name_uses_string_view_{false},
         repeated_type_{static_cast< ::pb::CppFeatures_RepeatedType >(0)} {}
@@ -313,7 +312,7 @@ CppFeatures::CppFeatures(
 PROTOBUF_NDEBUG_INLINE CppFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0} {}
+     {}
 
 inline void CppFeatures::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);

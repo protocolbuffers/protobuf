@@ -237,8 +237,7 @@ constexpr JavaFeatures::ParseTableT_ JavaFeatures::InternalGenerateParseTable_(c
 inline constexpr JavaFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        utf8_validation_{static_cast< ::pb::JavaFeatures_Utf8Validation >(0)},
+      : utf8_validation_{static_cast< ::pb::JavaFeatures_Utf8Validation >(0)},
         legacy_closed_enum_{false},
         large_enum_{false},
         use_old_outer_classname_default_{false},
@@ -528,7 +527,7 @@ JavaFeatures::JavaFeatures(
 PROTOBUF_NDEBUG_INLINE JavaFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0} {}
+     {}
 
 inline void JavaFeatures::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);

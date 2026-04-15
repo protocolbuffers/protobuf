@@ -2747,8 +2747,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
         separator();
         p->Emit("_has_bits_{from._has_bits_}");
       }
-      separator();
-      p->Emit("_cached_size_{0}");
     }
   };
 
@@ -2793,13 +2791,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
     }
   };
 
-  auto init_cached_size_if_no_hasbits = [&] {
-    if (has_bit_indices_.empty()) {
-      separator();
-      p->Emit("_cached_size_{0}");
-    }
-  };
-
   auto init_oneof_cases = [&] {
     if (int count = descriptor_->real_oneof_decl_count()) {
       separator();
@@ -2834,7 +2825,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
   init_fields();
   init_split();
   init_oneofs();
-  init_cached_size_if_no_hasbits();
   init_oneof_cases();
   init_weak_field_map();
 }
