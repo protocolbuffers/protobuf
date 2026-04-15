@@ -9,6 +9,8 @@
 
 #include <cstdint>
 #include <memory>
+#include <vector>
+#include <limits>
 #include <string>
 
 #include "google/protobuf/duration.pb.h"
@@ -26,6 +28,7 @@
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/test_zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/json/internal/parser_traits.h"
 #include "google/protobuf/util/json_format.pb.h"
 #include "google/protobuf/util/json_format_proto3.pb.h"
 #include "google/protobuf/unittest.pb.h"
@@ -1482,6 +1485,15 @@ TEST(JsonErrorTest, FieldNameAndSyntaxErrorInSeparateChunks) {
       s.message(),
       ContainsRegex("invalid *JSON *in *type.googleapis.com/proto3.TestMessage "
                     "*@ *bool_value"));
+}
+
+
+TEST(JsonInternalTest, OversizedRawWritesAreChunked) {
+  std::vector<int> chunks;
+  json_internal::ForEachRawWriteChunk(
+      static_cast<size_t>(std::numeric_limits<int>::max()) + 1,
+      [&](int chunk) { chunks.push_back(chunk); });
+  EXPECT_THAT(chunks, ElementsAre(std::numeric_limits<int>::max(), 1));
 }
 
 }  // namespace

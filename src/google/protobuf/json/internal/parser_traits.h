@@ -39,6 +39,17 @@ namespace protobuf {
 namespace json_internal {
 using ::google::protobuf::internal::WireFormatLite;
 
+template <typename Callback>
+void ForEachRawWriteChunk(size_t size, Callback callback) {
+  size_t remaining = size;
+  while (remaining > 0) {
+    const int chunk = static_cast<int>(
+        std::min<size_t>(remaining, std::numeric_limits<int>::max()));
+    callback(chunk);
+    remaining -= static_cast<size_t>(chunk);
+  }
+}
+
 // See the comment in json_util2_parser.cc for more information.
 //
 // The type traits in this file  describe how to parse to a protobuf
@@ -340,7 +351,11 @@ struct ParseProto3Type : Proto3Type {
     msg.stream_.WriteTag(f->proto().number() << 3 |
                          WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
     msg.stream_.WriteVarint64(static_cast<uint64_t>(x.size()));
-    msg.stream_.WriteRaw(x.data(), x.size());
+    const char* data = x.data();
+    ForEachRawWriteChunk(x.size(), [&](int chunk) {
+      msg.stream_.WriteRaw(data, chunk);
+      data += chunk;
+    });
   }
 
   static void SetEnum(Field f, Msg& msg, int32_t x) {
