@@ -168,7 +168,7 @@ TEST(MapTest, CopyConstructionMaintainsProperLoadFactor) {
 
 TEST(MapTest, CalculateCapacityForSizeTest) {
   for (size_t size = 1; size < 1000; ++size) {
-    size_t capacity = MapTestPeer::CalculateCapacityForSize(size);
+    map_index_t capacity = MapTestPeer::CalculateCapacityForSize(size);
     // Verify is large enough for `size`.
     EXPECT_LE(size, MapTestPeer::CalculateHiCutoff(capacity));
     if (capacity > MapTestPeer::kMinTableSize) {
