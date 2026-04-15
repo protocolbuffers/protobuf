@@ -47,6 +47,10 @@ bool upb_Message_DeepCopy(upb_Message* dst, const upb_Message* src,
 void upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
                              const upb_MiniTable* m);
 
+// Shallow copies the message from src to dst, handling extensions.
+void upb_Message_ShallowCopyEx(upb_Message* dst, const upb_Message* src,
+                               const upb_MiniTable* m, upb_Arena* arena);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

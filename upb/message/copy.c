@@ -304,11 +304,49 @@ void upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
   memcpy(dst, src, m->UPB_PRIVATE(size));
 }
 
+// Shallow copies the message from src to dst, handling extensions.
+void upb_Message_ShallowCopyEx(upb_Message* dst, const upb_Message* src,
+                               const upb_MiniTable* m, upb_Arena* arena) {
+  UPB_ASSERT(!upb_Message_IsFrozen(dst));
+  // First do the regular shallow copy.
+  upb_Message_ShallowCopy(dst, src, m);
+
+  // Now handle extensions.
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(src);
+  if (!in) return;
+
+  size_t size = UPB_SIZEOF_FLEX(upb_Message_Internal, aux_data, in->size);
+  upb_Message_Internal* dst_in =
+      (upb_Message_Internal*)upb_Arena_Malloc(arena, size);
+  if (!dst_in) return;
+
+  dst_in->size = in->size;
+  dst_in->capacity = in->size;
+
+  for (size_t i = 0; i < in->size; i++) {
+    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+      const upb_Extension* msg_ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+      upb_Extension* dst_ext =
+          (upb_Extension*)upb_Arena_Malloc(arena, sizeof(upb_Extension));
+      if (!dst_ext) return;
+      dst_ext->ext = msg_ext->ext;
+      dst_ext->data = msg_ext->data;
+      dst_in->aux_data[i] = upb_TaggedAuxPtr_MakeExtension(dst_ext);
+    } else {
+      // Share unknown data as is.
+      dst_in->aux_data[i] = tagged_ptr;
+    }
+  }
+
+  UPB_PRIVATE(_upb_Message_SetInternal)(dst, dst_in);
+}
+
 // Performs a shallow clone. Ignores unknown fields.
 upb_Message* upb_Message_ShallowClone(const upb_Message* msg,
                                       const upb_MiniTable* m,
                                       upb_Arena* arena) {
   upb_Message* clone = upb_Message_New(m, arena);
-  upb_Message_ShallowCopy(clone, msg, m);
+  upb_Message_ShallowCopyEx(clone, msg, m, arena);
   return clone;
 }
