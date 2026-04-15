@@ -40,6 +40,10 @@ size_t upb_inttable_count(const upb_inttable* t);
 UPB_NODISCARD bool upb_inttable_insert(upb_inttable* t, uintptr_t key,
                                        upb_value val, upb_Arena* a);
 
+// Copies the table without rehashing.
+bool upb_inttable_copy(upb_inttable* dest, const upb_inttable* src,
+                       upb_Arena* a);
+
 // Looks up key in this table, returning "true" if the key was found.
 // If v is non-NULL, copies the value for this key into *v.
 bool upb_inttable_lookup(const upb_inttable* t, uintptr_t key, upb_value* v);
