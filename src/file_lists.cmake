@@ -726,6 +726,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/base/upcast.h
   ${protobuf_SOURCE_DIR}/upb/generated_code_support.h
   ${protobuf_SOURCE_DIR}/upb/hash/common.h
+  ${protobuf_SOURCE_DIR}/upb/hash/ext_table.h
   ${protobuf_SOURCE_DIR}/upb/hash/int_table.h
   ${protobuf_SOURCE_DIR}/upb/hash/str_table.h
   ${protobuf_SOURCE_DIR}/upb/json/decode.h
@@ -1341,6 +1342,7 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_proto3_unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/abseil_flag_test.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/forced_micro_string.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/repeated_field_proxy_import_message.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/repeated_field_proxy_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/repeated_ptr_field_test.proto

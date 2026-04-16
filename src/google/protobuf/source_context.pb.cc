@@ -85,8 +85,7 @@ constexpr SourceContext::ParseTableT_ SourceContext::InternalGenerateParseTable_
 inline constexpr SourceContext::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        file_name_(
+      : file_name_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()) {}
 
@@ -169,15 +168,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(SourceContextGlobalsTypeInternal, _default) 
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
-    #ifdef PROTOBUF_MESSAGE_GLOBALS
-    const
-    #endif
-     SourceContextGlobalsTypeInternal SourceContext_globals_
-        #ifdef PROTOBUF_MESSAGE_GLOBALS
-        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
-        #endif  // PROTOBUF_MESSAGE_GLOBALS
-        ;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST SourceContextGlobalsTypeInternal SourceContext_globals_
+        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* SourceContext_get_class_data() {
@@ -257,7 +249,6 @@ PROTOBUF_NDEBUG_INLINE SourceContext::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::SourceContext& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         file_name_(arena, from.file_name_) {}
 
 SourceContext::SourceContext(
@@ -280,8 +271,7 @@ SourceContext::SourceContext(
 PROTOBUF_NDEBUG_INLINE SourceContext::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        file_name_(arena) {}
+      : file_name_(arena) {}
 
 inline void SourceContext::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);

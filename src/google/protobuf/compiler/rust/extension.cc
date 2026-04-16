@@ -75,7 +75,7 @@ void GenerateRs(Context& ctx, const FieldDescriptor& extension,
                 {"mut_thunk", ThunkName(ctx, extension, "get_mut")}},
                R"rs(
         $pbi$::new_repeated_extension_id(
-            $number$, $pbr$::InnerExtensionId::new_repeated($type_number$, $thunk_name$, $get_thunk$, $mut_thunk$)
+            $pbi$::Private, $number$, $pbr$::InnerExtensionId::new_repeated($type_number$, $thunk_name$, $get_thunk$, $mut_thunk$)
         );
 
     unsafe extern "C" {
@@ -90,7 +90,7 @@ void GenerateRs(Context& ctx, const FieldDescriptor& extension,
                 {"type_number", absl::StrCat(extension.type())}},
                R"rs(
         $pbi$::new_message_extension_id(
-            $number$, $pbr$::InnerExtensionId::new($type_number$, $thunk_name$)
+            $pbi$::Private, $number$, $pbr$::InnerExtensionId::new($type_number$, $thunk_name$)
         );
 
     unsafe extern "C" {
@@ -104,7 +104,7 @@ void GenerateRs(Context& ctx, const FieldDescriptor& extension,
                 {"type_number", absl::StrCat(extension.type())}},
                R"rs(
         $pbi$::new_extension_id(
-            $number$$default$, $pbr$::InnerExtensionId::new($type_number$, $thunk_name$)
+            $pbi$::Private, $number$$default$, $pbr$::InnerExtensionId::new($type_number$, $thunk_name$)
         );
 
     unsafe extern "C" {
@@ -150,7 +150,7 @@ void GenerateRs(Context& ctx, const FieldDescriptor& extension,
                 $sub$,
             ))
         });
-        $pbi$::new_repeated_extension_id($number$, $pbr$::InnerExtensionId::new(&MT))
+        $pbi$::new_repeated_extension_id($pbi$::Private, $number$, $pbr$::InnerExtensionId::new(&MT))
     };
   )rs");
     } else if (extension.message_type() != nullptr) {
@@ -168,7 +168,7 @@ void GenerateRs(Context& ctx, const FieldDescriptor& extension,
                 $sub$,
             ))
         });
-        $pbi$::new_message_extension_id($number$, $pbr$::InnerExtensionId::new(&MT))
+        $pbi$::new_message_extension_id($pbi$::Private, $number$, $pbr$::InnerExtensionId::new(&MT))
     };
   )rs");
     } else {
@@ -187,7 +187,7 @@ void GenerateRs(Context& ctx, const FieldDescriptor& extension,
                 $sub$,
             ))
         });
-        $pbi$::new_extension_id($number$$default$, $pbr$::InnerExtensionId::new(&MT))
+        $pbi$::new_extension_id($pbi$::Private, $number$$default$, $pbr$::InnerExtensionId::new(&MT))
     };
   )rs");
     }

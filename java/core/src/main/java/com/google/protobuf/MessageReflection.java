@@ -1379,8 +1379,9 @@ class MessageReflection {
               rawBytes, extensionRegistry, field, extension.defaultInstance);
       target.setField(field, value);
     } else {
-      // Use LazyField to load MessageSet lazily.
-      LazyField lazyField = new LazyField(extension.defaultInstance, extensionRegistry, rawBytes);
+      // Use InternalLazyField to load MessageSet lazily.
+      InternalLazyField lazyField =
+          new InternalLazyField(extension.defaultInstance, extensionRegistry, rawBytes);
       target.setField(field, lazyField);
     }
   }

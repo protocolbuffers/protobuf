@@ -240,6 +240,9 @@ class PROTOBUF_EXPORT DescriptorPoolExtensionFinder {
   const Descriptor* containing_type_;
 };
 
+// Turn on direct LazyField access.
+#define PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET
+
 // This is an internal helper class intended for use within the protocol buffer
 // library and generated classes.  Clients should not use it directly.  Instead,
 // use the generated accessors such as GetExtension() of the class being
@@ -1050,6 +1053,9 @@ class PROTOBUF_EXPORT ExtensionSet {
   bool IsCompletelyEmpty() const {
     return flat_size_ == 0 && flat_capacity_ == 0;
   }
+
+  // Reduces the flat_capacity_ to the smallest power of 2 >= flat_size_.
+  void InternalReduceSmallCapacity(Arena* arena);
 
   // Implementation of MergeFrom into the empty ExtensionSet from a small
   // `other`.

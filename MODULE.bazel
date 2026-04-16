@@ -65,7 +65,6 @@ single_version_override(
     ],
 )
 
-bazel_dep(name = "aspect_bazel_lib", version = "2.22.5")
 bazel_dep(name = "rules_shell", version = "0.6.1")
 bazel_dep(name = "platforms", version = "0.0.11")
 

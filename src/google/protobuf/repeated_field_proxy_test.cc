@@ -22,6 +22,7 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_field_proxy_iterator.h"
+#include "google/protobuf/repeated_field_proxy_traits.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/test_protos/repeated_field_proxy_import_message.pb.h"
 #include "google/protobuf/test_protos/repeated_field_proxy_test.pb.h"
@@ -106,29 +107,8 @@ class TestOnlyRepeatedFieldContainer {
 
  public:
   static TestOnlyRepeatedFieldContainer<T> New(Arena* arena) {
-    return TestOnlyRepeatedFieldContainer<T>(Arena::Create<FieldType>(arena),
-                                             arena);
-  }
-
-  // Disable copy construction and all forms of assignment.
-  TestOnlyRepeatedFieldContainer(const TestOnlyRepeatedFieldContainer& other) =
-      delete;
-  TestOnlyRepeatedFieldContainer& operator=(
-      const TestOnlyRepeatedFieldContainer& other) = delete;
-  TestOnlyRepeatedFieldContainer& operator=(
-      TestOnlyRepeatedFieldContainer&& other) = delete;
-
-  // Destroying move constructor.
-  TestOnlyRepeatedFieldContainer(TestOnlyRepeatedFieldContainer&& other)
-      : field_(other.field_), arena_(other.arena_) {
-    other.field_ = nullptr;
-    other.arena_ = nullptr;
-  }
-
-  ~TestOnlyRepeatedFieldContainer() {
-    if (arena_ == nullptr) {
-      delete field_;
-    }
+    return TestOnlyRepeatedFieldContainer<T>(
+        Arena::MakeUnique<FieldType>(arena), arena);
   }
 
   FieldType& operator*() { return *field_; }
@@ -147,10 +127,11 @@ class TestOnlyRepeatedFieldContainer {
   }
 
  private:
-  TestOnlyRepeatedFieldContainer(FieldType* field, Arena* arena)
-      : field_(field), arena_(arena) {}
+  TestOnlyRepeatedFieldContainer(Arena::UniquePtr<FieldType> field,
+                                 Arena* arena)
+      : field_(std::move(field)), arena_(arena) {}
 
-  FieldType* field_;
+  Arena::UniquePtr<FieldType> field_;
   Arena* arena_;
 };
 
@@ -761,7 +742,7 @@ TEST_P(RepeatedFieldProxyTest, MutateElementMessage) {
   EXPECT_TRUE(msg.has_value());
 
   {
-    auto* msg2 = Arena::Create<RepeatedFieldProxyTestSimpleMessage>(arena());
+    auto msg2 = Arena::MakeUnique<RepeatedFieldProxyTestSimpleMessage>(arena());
     msg2->set_value(6);
     auto* nested = msg2->mutable_nested();
     nested->set_value(7);
@@ -769,10 +750,6 @@ TEST_P(RepeatedFieldProxyTest, MutateElementMessage) {
 
     // Since `msg2` was moved, `nested` should point to the same object.
     EXPECT_EQ(proxy[1].mutable_nested(), nested);
-
-    if (!UseArena()) {
-      delete msg2;
-    }
   }
 
   EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 5)pb"),
@@ -822,34 +799,26 @@ TEST_P(RepeatedFieldProxyTest, PushBackMessageLvalueCopies) {
   auto field =
       MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
   auto proxy = field.MakeProxy();
-  auto* msg1 = Arena::Create<RepeatedFieldProxyTestSimpleMessage>(arena());
+  auto msg1 = Arena::MakeUnique<RepeatedFieldProxyTestSimpleMessage>(arena());
   auto* nested = msg1->mutable_nested();
   proxy.push_back(*msg1);
   EXPECT_NE(proxy[0].mutable_nested(), nested);
 
   EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(nested: {})pb")));
   EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(nested: {})pb")));
-
-  if (!UseArena()) {
-    delete msg1;
-  }
 }
 
 TEST_P(RepeatedFieldProxyTest, PushBackMessageRvalueDoesNotCopy) {
   auto field =
       MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
   auto proxy = field.MakeProxy();
-  auto* msg1 = Arena::Create<RepeatedFieldProxyTestSimpleMessage>(arena());
+  auto msg1 = Arena::MakeUnique<RepeatedFieldProxyTestSimpleMessage>(arena());
   auto* nested = msg1->mutable_nested();
   proxy.push_back(std::move(*msg1));
   EXPECT_EQ(proxy[0].mutable_nested(), nested);
 
   EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(nested: {})pb")));
   EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(nested: {})pb")));
-
-  if (!UseArena()) {
-    delete msg1;
-  }
 }
 
 TYPED_TEST(RepeatedStringFieldProxyTest, PushBack) {
@@ -923,34 +892,26 @@ TEST_P(RepeatedFieldProxyTest, EmplaceBackMessageLvalueCopies) {
   auto field =
       MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
   auto proxy = field.MakeProxy();
-  auto* msg1 = Arena::Create<RepeatedFieldProxyTestSimpleMessage>(arena());
+  auto msg1 = Arena::MakeUnique<RepeatedFieldProxyTestSimpleMessage>(arena());
   auto* nested = msg1->mutable_nested();
   proxy.emplace_back(*msg1);
   EXPECT_NE(proxy[0].mutable_nested(), nested);
 
   EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(nested: {})pb")));
   EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(nested: {})pb")));
-
-  if (!UseArena()) {
-    delete msg1;
-  }
 }
 
 TEST_P(RepeatedFieldProxyTest, EmplaceBackMessageRvalueDoesNotCopy) {
   auto field =
       MakeRepeatedFieldContainer<RepeatedFieldProxyTestSimpleMessage>();
   auto proxy = field.MakeProxy();
-  auto* msg1 = Arena::Create<RepeatedFieldProxyTestSimpleMessage>(arena());
+  auto msg1 = Arena::MakeUnique<RepeatedFieldProxyTestSimpleMessage>(arena());
   auto* nested = msg1->mutable_nested();
   proxy.emplace_back(std::move(*msg1));
   EXPECT_EQ(proxy[0].mutable_nested(), nested);
 
   EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(nested: {})pb")));
   EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(nested: {})pb")));
-
-  if (!UseArena()) {
-    delete msg1;
-  }
 }
 
 template <typename StringType>

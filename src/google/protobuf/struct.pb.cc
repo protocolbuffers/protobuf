@@ -94,8 +94,7 @@ constexpr ListValue::ParseTableT_ ListValue::InternalGenerateParseTable_(const :
 inline constexpr ListValue::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        values_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : values_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::ListValue,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::ListValue, _impl_.values_)>()
          }
@@ -180,15 +179,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(ListValueGlobalsTypeInternal, _default) ==
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
-    #ifdef PROTOBUF_MESSAGE_GLOBALS
-    const
-    #endif
-     ListValueGlobalsTypeInternal ListValue_globals_
-        #ifdef PROTOBUF_MESSAGE_GLOBALS
-        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
-        #endif  // PROTOBUF_MESSAGE_GLOBALS
-        ;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST ListValueGlobalsTypeInternal ListValue_globals_
+        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* ListValue_get_class_data() {
@@ -254,8 +246,7 @@ constexpr Struct::ParseTableT_ Struct::InternalGenerateParseTable_(const ::_pbi:
 inline constexpr Struct::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        fields_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : fields_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::Struct,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct, _impl_.fields_)>()
          }
@@ -340,15 +331,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(StructGlobalsTypeInternal, _default) ==
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
-    #ifdef PROTOBUF_MESSAGE_GLOBALS
-    const
-    #endif
-     StructGlobalsTypeInternal Struct_globals_
-        #ifdef PROTOBUF_MESSAGE_GLOBALS
-        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
-        #endif  // PROTOBUF_MESSAGE_GLOBALS
-        ;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST StructGlobalsTypeInternal Struct_globals_
+        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Struct_get_class_data() {
@@ -489,15 +473,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUseGlobalsTypeIntern
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
-    #ifdef PROTOBUF_MESSAGE_GLOBALS
-    const
-    #endif
-     Struct_FieldsEntry_DoNotUseGlobalsTypeInternal Struct_FieldsEntry_DoNotUse_globals_
-        #ifdef PROTOBUF_MESSAGE_GLOBALS
-        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
-        #endif  // PROTOBUF_MESSAGE_GLOBALS
-        ;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST Struct_FieldsEntry_DoNotUseGlobalsTypeInternal Struct_FieldsEntry_DoNotUse_globals_
+        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Struct_FieldsEntry_DoNotUse_get_class_data() {
@@ -577,7 +554,6 @@ inline constexpr Value::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
       : kind_{},
-        _cached_size_{0},
         _oneof_case_{} {}
 
 template <typename>
@@ -659,15 +635,8 @@ static_assert(PROTOBUF_FIELD_OFFSET(ValueGlobalsTypeInternal, _default) ==
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 
-    #ifdef PROTOBUF_MESSAGE_GLOBALS
-    const
-    #endif
-     ValueGlobalsTypeInternal Value_globals_
-        #ifdef PROTOBUF_MESSAGE_GLOBALS
-        ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
-        #endif  // PROTOBUF_MESSAGE_GLOBALS
-        ;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST ValueGlobalsTypeInternal Value_globals_
+        PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* Value_get_class_data() {
@@ -829,7 +798,6 @@ PROTOBUF_NDEBUG_INLINE Struct::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::Struct& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         fields_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::Struct,
@@ -858,8 +826,7 @@ Struct::Struct(
 PROTOBUF_NDEBUG_INLINE Struct::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        fields_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : fields_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::Struct,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct, _impl_.fields_)>()
          }
@@ -1093,7 +1060,6 @@ PROTOBUF_NDEBUG_INLINE Value::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::Value& from_msg)
       : kind_{},
-        _cached_size_{0},
         _oneof_case_{from._oneof_case_[0]} {}
 
 Value::Value(
@@ -1139,7 +1105,6 @@ PROTOBUF_NDEBUG_INLINE Value::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : kind_{},
-        _cached_size_{0},
         _oneof_case_{} {}
 
 inline void Value::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
@@ -1470,7 +1435,6 @@ PROTOBUF_NDEBUG_INLINE ListValue::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::ListValue& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0},
         values_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::ListValue,
@@ -1499,8 +1463,7 @@ ListValue::ListValue(
 PROTOBUF_NDEBUG_INLINE ListValue::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        values_ { visibility, ::_pbi::InternalMetadataOffset::Build<
+      : values_ { visibility, ::_pbi::InternalMetadataOffset::Build<
             ::google::protobuf::ListValue,
             PROTOBUF_FIELD_OFFSET(::google::protobuf::ListValue, _impl_.values_)>()
          }

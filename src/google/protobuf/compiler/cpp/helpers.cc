@@ -548,25 +548,15 @@ std::string Namespace(absl::string_view package) {
   return absl::StrCat("::", absl::StrJoin(scope, "::"));
 }
 
-std::string Namespace(const FileDescriptor* d) { return Namespace(d, {}); }
-std::string Namespace(const FileDescriptor* d, const Options& options) {
+std::string Namespace(const FileDescriptor* d) {
   return Namespace(d->package());
 }
 
-std::string Namespace(const Descriptor* d) { return Namespace(d, {}); }
-std::string Namespace(const Descriptor* d, const Options& options) {
-  return Namespace(d->file(), options);
-}
+std::string Namespace(const Descriptor* d) { return Namespace(d->file()); }
 
-std::string Namespace(const FieldDescriptor* d) { return Namespace(d, {}); }
-std::string Namespace(const FieldDescriptor* d, const Options& options) {
-  return Namespace(d->file(), options);
-}
+std::string Namespace(const FieldDescriptor* d) { return Namespace(d->file()); }
 
-std::string Namespace(const EnumDescriptor* d) { return Namespace(d, {}); }
-std::string Namespace(const EnumDescriptor* d, const Options& options) {
-  return Namespace(d->file(), options);
-}
+std::string Namespace(const EnumDescriptor* d) { return Namespace(d->file()); }
 
 std::string SplitDefaultInstanceType(const Descriptor* descriptor,
                                      const Options& /*options*/) {
@@ -1007,7 +997,7 @@ std::string QualifiedFileLevelSymbol(const FileDescriptor* file,
   if (file->package().empty()) {
     return absl::StrCat("::", name);
   }
-  return absl::StrCat(Namespace(file, options), "::", name);
+  return absl::StrCat(Namespace(file), "::", name);
 }
 
 // Escape C++ trigraphs by escaping question marks to \?
@@ -1148,12 +1138,17 @@ bool HasLazyFields(const FileDescriptor* file, const Options& options) {
 }
 
 bool IsMicroString(const FieldDescriptor* field, const Options& opts) {
-  return !field->is_repeated() && !field->is_extension() &&
-         field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         field->cpp_string_type() == FieldDescriptor::CppStringType::kView &&
-         opts.experimental_use_micro_string &&
-         // map entry fields don't use MicroString right now
-         !field->containing_type()->options().map_entry();
+  if (field->is_repeated()) return false;
+  if (field->is_extension()) return false;
+  if (field->cpp_type() != FieldDescriptor::CPPTYPE_STRING) return false;
+  if (field->cpp_string_type() != FieldDescriptor::CppStringType::kView)
+    return false;
+
+  // map entry fields don't use MicroString right now
+  if (field->containing_type()->options().map_entry()) return false;
+
+
+  return opts.experimental_use_micro_string;
 }
 
 bool IsArenaStringPtr(const FieldDescriptor* field, const Options& opts) {
@@ -1855,6 +1850,8 @@ bool GetBootstrapBasename(const Options& options, absl::string_view basename,
            "third_party/protobuf/descriptor"},
           {"third_party/protobuf/cpp_features",
            "third_party/protobuf/cpp_features"},
+          {"third_party/protobuf/cpp_file_options",
+           "third_party/protobuf/cpp_file_options_bootstrap"},
           {"third_party/protobuf/compiler/plugin",
            "third_party/protobuf/compiler/plugin"},
           {"third_party/protobuf/internal_options",
@@ -2110,8 +2107,7 @@ std::vector<io::Printer::Sub> AnnotatedAccessors(
 }
 
 bool IsFileDescriptorProto(const FileDescriptor* file, const Options& options) {
-  if (Namespace(file, options) !=
-      absl::StrCat("::", ProtobufNamespace(options))) {
+  if (Namespace(file) != absl::StrCat("::", ProtobufNamespace(options))) {
     return false;
   }
   for (int i = 0; i < file->message_type_count(); ++i) {
