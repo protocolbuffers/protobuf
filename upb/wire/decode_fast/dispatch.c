@@ -41,6 +41,7 @@ UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
       // would have thrown an error with longjmp()).  So continue with the
       // fast decoder.
       data = _upb_FastDecoder_LoadTag(ptr);
+      _upb_Decoder_Trace(d, 'r');
       UPB_MUSTTAIL return _upb_FastDecoder_TagDispatch(UPB_PARSE_ARGS);
     case kUpb_IsDoneStatus_NotDone:  // Handled by caller.
     default:
@@ -51,12 +52,4 @@ UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
 const char* _upb_FastDecoder_ErrorJmp2(upb_Decoder* d) {
   UPB_LONGJMP(d->err.buf, 1);
   return NULL;
-}
-
-UPB_PRESERVE_NONE const char* _upb_FastDecoder_DecodeGeneric(
-    struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
-    uint64_t hasbits, uint64_t data) {
-  (void)data;
-  upb_DecodeFast_SetHasbits(msg, hasbits);
-  return ptr;
 }

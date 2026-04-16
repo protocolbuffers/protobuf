@@ -1132,7 +1132,8 @@ bool _upb_Decoder_TryDecodeMessageFast(upb_Decoder* d, const char** ptr,
   }
 
   intptr_t table = decode_totable(mt);
-  const char* start = *ptr;
+  const char* start =
+      UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(&d->input, *ptr);
   char* trace_next = _upb_Decoder_TraceNext(d);
 
   *ptr = upb_DecodeFast_Dispatch(d, *ptr, msg, table, 0, 0);
@@ -1150,7 +1151,10 @@ bool _upb_Decoder_TryDecodeMessageFast(upb_Decoder* d, const char** ptr,
   // If the fast decoder consumed any data, it must have emitted at least
   // one 'F' event into the trace buffer (in addition to the 'D' event
   // that is always emitted).
-  UPB_ASSERT(_upb_Decoder_TracePtr(d) != trace_next || *ptr == start);
+  const char* end =
+      UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(&d->input, *ptr);
+  char* trace_end = _upb_Decoder_TracePtr(d);
+  UPB_ASSERT(trace_end == NULL || trace_end != trace_next || end == start);
   _upb_Decoder_Trace(d, '<');
 #endif
   return false;

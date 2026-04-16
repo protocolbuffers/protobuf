@@ -25,8 +25,9 @@
 
 static bool upb_DecodeFast_SingleVarint(upb_Decoder* d, const char** ptr,
                                         void* dst, upb_DecodeFast_Type type,
-                                        upb_DecodeFastNext* next) {
+                                        upb_DecodeFastNext* next, void* ctx) {
   UPB_ASSERT(dst);
+  UPB_UNUSED(ctx);
 
   const char* p = *ptr;
   uint64_t val;
@@ -83,41 +84,39 @@ static const char* upb_DecodeFast_PackedVarint(upb_EpsCopyInputStream* st,
   upb_DecodeFast_PackedVarintContext* c =
       (upb_DecodeFast_PackedVarintContext*)ctx;
 
-  if (size > 0) {
-    upb_DecodeFastArray arr;
-    int count = upb_DecodeFast_CountVarints(ptr, ptr + size);
-    int valbytes = upb_DecodeFast_ValueBytes(c->type);
+  if (size == 0) return ptr;  // 0-element packed fields are valid.
 
-    // If the last byte is a continuation byte, we have a malformed varint.
-    if (count == 0 || (ptr[size - 1] & 0x80) != 0) {
-      UPB_DECODEFAST_ERROR(c->decoder, kUpb_DecodeStatus_Malformed, c->ret);
-      return NULL;
-    }
+  upb_DecodeFastArray arr;
+  int count = upb_DecodeFast_CountVarints(ptr, ptr + size);
+  int valbytes = upb_DecodeFast_ValueBytes(c->type);
 
-    if (!upb_DecodeFast_GetArrayForAppend(c->decoder, ptr, c->msg, *c->data,
-                                          c->hasbits, &arr, c->type, count,
-                                          c->ret)) {
-      return NULL;
-    }
-
-    UPB_ASSERT(arr.dst);
-
-    int read = 0;
-    while (!upb_DecodeFast_IsDone(c->decoder, &ptr)) {
-      UPB_ASSERT(read < count);
-      ++read;
-      UPB_ASSERT(arr.dst);
-      if (!upb_DecodeFast_SingleVarint(c->decoder, &ptr, arr.dst, c->type,
-                                       c->ret)) {
-        return NULL;
-      }
-      arr.dst = UPB_PTR_AT(arr.dst, valbytes, char);
-    }
-
-    upb_DecodeFastField_SetArraySize(&arr, c->type);
+  // If the last byte is a continuation byte, we have a malformed varint.
+  if (count == 0 || (ptr[size - 1] & 0x80) != 0) {
+    UPB_DECODEFAST_ERROR(c->decoder, kUpb_DecodeStatus_Malformed, c->ret);
+    return NULL;
   }
 
-  _upb_Decoder_Trace(c->decoder, 'F');
+  if (!upb_DecodeFast_GetArrayForAppend(c->decoder, ptr, c->msg, *c->data,
+                                        c->hasbits, &arr, c->type, count,
+                                        c->ret)) {
+    return NULL;
+  }
+
+  UPB_ASSERT(arr.dst);
+
+  int read = 0;
+  while (!upb_DecodeFast_IsDone(c->decoder, &ptr)) {
+    UPB_ASSERT(read < count);
+    if (!upb_DecodeFast_SingleVarint(c->decoder, &ptr, arr.dst, c->type, c->ret,
+                                     NULL)) {
+      return NULL;
+    }
+    arr.dst = UPB_PTR_AT(arr.dst, valbytes, char);
+    ++read;
+  }
+
+  upb_DecodeFastField_SetArraySize(&arr, c->type);
+
   return ptr;
 }
 
@@ -136,11 +135,11 @@ void upb_DecodeFast_Varint(upb_Decoder* d, const char** ptr, upb_Message* msg,
         .hasbits = hasbits,
         .ret = ret,
     };
-    upb_DecodeFast_Delimited(d, ptr, type, card, tagsize, data,
-                             &upb_DecodeFast_PackedVarint, ret, &ctx);
+    upb_DecodeFast_Packed(d, ptr, type, card, tagsize, data,
+                          &upb_DecodeFast_PackedVarint, ret, &ctx);
   } else {
     upb_DecodeFast_Unpacked(d, ptr, msg, data, hasbits, ret, type, card,
-                            tagsize, &upb_DecodeFast_SingleVarint);
+                            tagsize, &upb_DecodeFast_SingleVarint, NULL);
   }
 }
 

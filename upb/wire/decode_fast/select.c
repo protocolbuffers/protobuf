@@ -15,6 +15,7 @@
 #include "upb/base/internal/log2.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
+#include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode_fast/combinations.h"
 #include "upb/wire/decode_fast/data.h"
@@ -160,21 +161,22 @@ static uint64_t upb_DecodeFast_GetPresence(const upb_MiniTableField* field,
   }
 }
 
-static bool upb_DecodeFast_GetFunctionData(const upb_MiniTableField* field,
+static bool upb_DecodeFast_GetFunctionData(const upb_MiniTable* m,
+                                           const upb_MiniTableField* field,
                                            uint16_t tag, uint64_t* out_data) {
   uint64_t offset = UPB_PRIVATE(_upb_MiniTableField_Offset)(field);
   uint64_t case_offset =
       upb_MiniTableField_IsInOneof(field)
           ? UPB_PRIVATE(_upb_MiniTableField_OneofOffset)(field)
           : 0;
-  uint64_t submsg_index = upb_MiniTableField_IsSubMessage(field)
-                              ? field->UPB_PRIVATE(submsg_ofs)
-                              : 0;
+  uint64_t field_index = upb_MiniTableField_IsSubMessage(field)
+                             ? field - m->UPB_PRIVATE(fields)
+                             : 0;
 
   uint64_t presence;
 
   return upb_DecodeFast_GetPresence(field, &presence) &&
-         upb_DecodeFast_MakeData(offset, case_offset, presence, submsg_index,
+         upb_DecodeFast_MakeData(offset, case_offset, presence, field_index,
                                  tag, out_data);
 }
 
@@ -191,11 +193,13 @@ static bool upb_DecodeFast_TryFillEntry(const upb_MiniTable* m,
              upb_DecodeFast_GetType(entry->function_idx),
              upb_DecodeFast_GetCardinality(entry->function_idx),
              upb_DecodeFast_GetTagSize(entry->function_idx)) &&
-         upb_DecodeFast_GetFunctionData(field, tag, &entry->function_data);
+         upb_DecodeFast_GetFunctionData(m, field, tag, &entry->function_data);
 }
 
 int upb_DecodeFast_BuildTable(const upb_MiniTable* m,
                               upb_DecodeFast_TableEntry table[32]) {
+  if (m->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry) return 0;
+
   for (size_t i = 0; i < 32; i++) {
     table[i].function_idx = UINT32_MAX;
     table[i].function_data = 0;

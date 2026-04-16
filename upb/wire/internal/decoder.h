@@ -111,18 +111,16 @@ UPB_INLINE upb_DecodeStatus upb_Decoder_Destroy(upb_Decoder* d,
 }
 
 #ifndef NDEBUG
-UPB_INLINE bool _upb_Decoder_TraceBufferFull(upb_Decoder* d) {
-  return d->trace_ptr == d->trace_end - 1;
-}
-
-UPB_INLINE bool _upb_Decoder_TraceBufferAlmostFull(upb_Decoder* d) {
-  return d->trace_ptr == d->trace_end - 2;
+UPB_INLINE bool _upb_Decoder_TraceBufferHasBytesAvailable(upb_Decoder* d,
+                                                          int n) {
+  return d->trace_ptr && d->trace_end && d->trace_end - d->trace_ptr > n;
 }
 #endif
 
 UPB_INLINE char* _upb_Decoder_TraceNext(upb_Decoder* d) {
 #ifndef NDEBUG
-  return _upb_Decoder_TraceBufferAlmostFull(d) ? NULL : d->trace_ptr + 1;
+  return _upb_Decoder_TraceBufferHasBytesAvailable(d, 2) ? d->trace_ptr + 1
+                                                         : NULL;
 #else
   return NULL;
 #endif
@@ -143,10 +141,17 @@ UPB_INLINE char* _upb_Decoder_TracePtr(upb_Decoder* d) {
 //   '<'  Fallback to MiniTable parser.
 //   'M'  Field successfully parsed with MiniTable.
 //   'X'  Truncated -- trace buffer is full, further events were discarded.
+//
+// Lower-case letters indicate events that are more subtle and therefore
+// difficult to assert on, but may be useful information for debugging:
+//   'r'  Refresh buffer.
 UPB_INLINE void _upb_Decoder_Trace(upb_Decoder* d, char event) {
 #ifndef NDEBUG
+#ifdef UPB_TRACE_FASTDECODER
+  fprintf(stderr, "Fasttable trace event: %c\n", event);
+#endif
   if (d->trace_ptr == NULL) return;
-  if (_upb_Decoder_TraceBufferFull(d)) {
+  if (!_upb_Decoder_TraceBufferHasBytesAvailable(d, 1)) {
     d->trace_ptr[-1] = 'X';  // Truncated.
     return;
   }

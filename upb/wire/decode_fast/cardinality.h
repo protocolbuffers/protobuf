@@ -31,151 +31,112 @@
 // Must be last include.
 #include "upb/port/def.inc"
 
-/* singular, oneof, repeated field handling ***********************************/
-
-typedef struct {
-  upb_Array* arr;
-  void* end;
-} fastdecode_arr;
+// We use the new calling convention where we return an integer indicating the
+// next function to call.  This is to work around musttail limitations without
+// forcing all fasttable code to be in macros.
 
 typedef enum {
-  FD_NEXT_ATLIMIT,
-  FD_NEXT_SAMEFIELD,
-  FD_NEXT_OTHERFIELD
-} fastdecode_next;
+  kUpb_DecodeFastNext_Dispatch = 0,
 
-typedef struct {
-  void* dst;
-  fastdecode_next next;
-  uint32_t tag;
-} fastdecode_nextret;
+  // Fallback to the MiniTable decoder. This is used either to signal a fallback
+  // to the mini table or the end of the message if d->message_is_done is true.
+  kUpb_DecodeFastNext_FallbackToMiniTable = 1,
 
-UPB_FORCEINLINE
-void* fastdecode_resizearr(upb_Decoder* d, void* dst, fastdecode_arr* farr,
-                           int valbytes) {
-  if (UPB_UNLIKELY(dst == farr->end)) {
-    size_t old_capacity = farr->arr->UPB_PRIVATE(capacity);
-    size_t old_bytes = old_capacity * valbytes;
-    size_t new_capacity = old_capacity * 2;
-    size_t new_bytes = new_capacity * valbytes;
-    char* old_ptr = (char*)upb_Array_MutableDataPtr(farr->arr);
-    char* new_ptr =
-        (char*)upb_Arena_Realloc(&d->arena, old_ptr, old_bytes, new_bytes);
-    uint8_t elem_size_lg2 = __builtin_ctz(valbytes);
-    UPB_PRIVATE(_upb_Array_SetTaggedPtr)(farr->arr, new_ptr, elem_size_lg2);
-    farr->arr->UPB_PRIVATE(capacity) = new_capacity;
-    dst = (void*)(new_ptr + (old_capacity * valbytes));
-    farr->end = (void*)(new_ptr + (new_capacity * valbytes));
+  // Signal an error.
+  kUpb_DecodeFastNext_Error = 2,
+
+  // Handle the case where ptr >= limit, which is either end-of-message or
+  // end-of-buffer.
+  kUpb_DecodeFastNext_MessageIsDoneFallback = 3,
+
+  // Tail call to the function to parse the current field, except parse it as
+  // packed instead of unpacked.
+  kUpb_DecodeFastNext_TailCallPacked = 4,
+
+  // Tail call to the function to parse the current field, except parse it as
+  // unpacked instead of packed.
+  kUpb_DecodeFastNext_TailCallUnpacked = 5,
+} upb_DecodeFastNext;
+
+UPB_INLINE bool upb_DecodeFast_SetExit(upb_DecodeFastNext* next,
+                                       upb_DecodeFastNext val, const char* sym,
+                                       const char* file, int line) {
+#ifdef UPB_TRACE_FASTDECODER
+  fprintf(stderr, "Fasttable fallback @ %s:%d -> %s (%d)\n", file, line, sym,
+          val);
+#endif
+  *next = val;
+  return false;
+}
+
+UPB_INLINE bool upb_DecodeFast_SetError(upb_Decoder* d,
+                                        upb_DecodeFastNext* next,
+                                        upb_DecodeStatus val, const char* sym,
+                                        const char* file, int line) {
+#ifdef UPB_TRACE_FASTDECODER
+  fprintf(stderr, "Fasttable error @ %s:%d -> %s (%d)\n", file, line, sym, val);
+#endif
+  d->err.code = val;
+  *next = kUpb_DecodeFastNext_Error;
+  return false;
+}
+
+// Call using the following pattern:
+//    // Will return false.
+//    return UPB_EXIT_FASTTABLE(kUpb_DecodeFastNext_FallbackToMiniTable);
+#define UPB_DECODEFAST_EXIT(n, next) \
+  upb_DecodeFast_SetExit(next, n, #n, __FILE__, __LINE__)
+#define UPB_DECODEFAST_ERROR(d, st, next) \
+  upb_DecodeFast_SetError(d, next, st, #st, __FILE__, __LINE__)
+
+#define UPB_DECODEFAST_NEXTMAYBEPACKED(next, func_unpacked, func_packed)  \
+  switch (next) {                                                         \
+    case kUpb_DecodeFastNext_Dispatch:                                    \
+      UPB_MUSTTAIL return upb_DecodeFast_Dispatch(UPB_PARSE_ARGS);        \
+    case kUpb_DecodeFastNext_FallbackToMiniTable:                         \
+      UPB_MUSTTAIL return _upb_FastDecoder_DecodeGeneric(UPB_PARSE_ARGS); \
+    case kUpb_DecodeFastNext_Error:                                       \
+      UPB_ASSERT(d->err.code != kUpb_DecodeStatus_Ok);                    \
+      return _upb_FastDecoder_ErrorJmp2(d);                               \
+    case kUpb_DecodeFastNext_MessageIsDoneFallback:                       \
+      UPB_MUSTTAIL return upb_DecodeFast_MessageIsDoneFallback(           \
+          UPB_PARSE_ARGS);                                                \
+    case kUpb_DecodeFastNext_TailCallPacked:                              \
+      UPB_MUSTTAIL return func_packed(UPB_PARSE_ARGS);                    \
+    case kUpb_DecodeFastNext_TailCallUnpacked:                            \
+      UPB_MUSTTAIL return func_unpacked(UPB_PARSE_ARGS);                  \
+    default:                                                              \
+      UPB_UNREACHABLE();                                                  \
   }
-  return dst;
+
+UPB_INLINE const char* UPB_PRESERVE_NONE
+upb_DecodeFast_Unreachable(UPB_PARSE_PARAMS) {
+  UPB_UNREACHABLE();
 }
+
+#define UPB_DECODEFAST_NEXT(next)                                  \
+  UPB_DECODEFAST_NEXTMAYBEPACKED(next, upb_DecodeFast_Unreachable, \
+                                 upb_DecodeFast_Unreachable)
 
 UPB_FORCEINLINE
-bool fastdecode_tagmatch(uint32_t tag, uint64_t data, int tagbytes) {
-  if (tagbytes == 1) {
-    return (uint8_t)tag == (uint8_t)data;
-  } else {
-    return (uint16_t)tag == (uint16_t)data;
-  }
+uint64_t upb_DecodeFast_LoadHasbits(upb_Message* msg) {
+  return *(uint32_t*)&msg[1];
 }
 
-UPB_FORCEINLINE
-void fastdecode_commitarr(void* dst, fastdecode_arr* farr, int valbytes) {
-  farr->arr->UPB_PRIVATE(size) =
-      (size_t)((char*)dst - (char*)upb_Array_MutableDataPtr(farr->arr)) /
-      valbytes;
+/* Error function that will abort decoding with longjmp(). We can't declare this
+ * UPB_NORETURN, even though it is appropriate, because if we do then compilers
+ * will "helpfully" refuse to tailcall to it
+ * (see: https://stackoverflow.com/a/55657013), which will defeat a major goal
+ * of our optimizations. That is also why we must declare it in a separate file,
+ * otherwise the compiler will see that it calls longjmp() and deduce that it is
+ * noreturn. */
+const char* _upb_FastDecoder_ErrorJmp2(upb_Decoder* d);
+
+UPB_INLINE
+const char* _upb_FastDecoder_ErrorJmp(upb_Decoder* d, upb_DecodeStatus status) {
+  d->err.code = status;
+  return _upb_FastDecoder_ErrorJmp2(d);
 }
-
-UPB_FORCEINLINE
-fastdecode_nextret fastdecode_nextrepeated(upb_Decoder* d, void* dst,
-                                           const char** ptr,
-                                           fastdecode_arr* farr, uint64_t data,
-                                           int tagbytes, int valbytes) {
-  fastdecode_nextret ret;
-  dst = (char*)dst + valbytes;
-
-  if (UPB_LIKELY(!upb_EpsCopyInputStream_IsDone(&d->input, ptr))) {
-    ret.tag = _upb_FastDecoder_LoadTag(*ptr);
-    if (fastdecode_tagmatch(ret.tag, data, tagbytes)) {
-      ret.next = FD_NEXT_SAMEFIELD;
-    } else {
-      fastdecode_commitarr(dst, farr, valbytes);
-      ret.next = FD_NEXT_OTHERFIELD;
-    }
-  } else {
-    fastdecode_commitarr(dst, farr, valbytes);
-    d->message_is_done = true;
-    ret.next = FD_NEXT_ATLIMIT;
-  }
-
-  ret.dst = dst;
-  return ret;
-}
-
-UPB_FORCEINLINE
-void* fastdecode_fieldmem(upb_Message* msg, uint64_t data) {
-  size_t ofs = data >> 48;
-  return (char*)msg + ofs;
-}
-
-UPB_FORCEINLINE
-void* fastdecode_getfield(upb_Decoder* d, const char* ptr, upb_Message* msg,
-                          uint64_t* data, uint64_t* hasbits,
-                          fastdecode_arr* farr, int valbytes,
-                          upb_DecodeFast_Cardinality card) {
-  UPB_ASSERT(!upb_Message_IsFrozen(msg));
-  switch (card) {
-    case kUpb_DecodeFast_Scalar: {
-      uint8_t hasbit_index = upb_DecodeFastData_GetPresence(*data);
-      // Set hasbit and return pointer to scalar field.
-      *hasbits |= 1ull << hasbit_index;
-      return fastdecode_fieldmem(msg, *data);
-    }
-    case kUpb_DecodeFast_Oneof: {
-      uint16_t case_ofs = upb_DecodeFastData_GetCaseOffset(*data);
-      uint32_t* oneof_case = UPB_PTR_AT(msg, case_ofs, uint32_t);
-      uint8_t field_number = upb_DecodeFastData_GetPresence(*data);
-      *oneof_case = field_number;
-      return fastdecode_fieldmem(msg, *data);
-    }
-    case kUpb_DecodeFast_Repeated:
-    case kUpb_DecodeFast_Packed: {
-      // Get pointer to upb_Array and allocate/expand if necessary.
-      uint8_t elem_size_lg2 = __builtin_ctz(valbytes);
-      upb_Array** arr_p = (upb_Array**)fastdecode_fieldmem(msg, *data);
-      char* begin;
-      upb_DecodeFast_SetHasbits(msg, *hasbits);
-      *hasbits = 0;
-      if (UPB_LIKELY(!*arr_p)) {
-        farr->arr = UPB_PRIVATE(_upb_Array_New)(&d->arena, 8, elem_size_lg2);
-        *arr_p = farr->arr;
-      } else {
-        farr->arr = *arr_p;
-      }
-      begin = (char*)upb_Array_MutableDataPtr(farr->arr);
-      farr->end = begin + (farr->arr->UPB_PRIVATE(capacity) * valbytes);
-      *data = _upb_FastDecoder_LoadTag(ptr);
-      return begin + (farr->arr->UPB_PRIVATE(size) * valbytes);
-    }
-    default:
-      UPB_UNREACHABLE();
-  }
-}
-
-UPB_FORCEINLINE
-bool fastdecode_flippacked(uint64_t* data, int tagbytes) {
-  *data ^= (0x2 ^ 0x0);  // Patch data to match packed wiretype.
-  return fastdecode_checktag(*data, tagbytes);
-}
-
-#define FASTDECODE_CHECKPACKED(tagbytes, card, func)        \
-  if (UPB_UNLIKELY(!fastdecode_checktag(data, tagbytes))) { \
-    if (upb_DecodeFast_IsRepeated(card) &&                  \
-        fastdecode_flippacked(&data, tagbytes)) {           \
-      UPB_MUSTTAIL return func(UPB_PARSE_ARGS);             \
-    }                                                       \
-    RETURN_GENERIC("packed check tag mismatch\n");          \
-  }
 
 // --- New cardinality functions ---
 
@@ -326,7 +287,7 @@ bool upb_DecodeFast_CheckTag(const char** ptr, upb_DecodeFast_Type type,
                              upb_DecodeFastNext* next) {
 #if UPB_TRACE_FASTDECODER
   size_t idx = UPB_DECODEFAST_FUNCTION_IDX(type, card, tagsize);
-  fprintf(stderr, "Fasttable enter -> %s\n",
+  fprintf(stderr, "Fasttable enter (check tag) -> %s\n",
           upb_DecodeFast_GetFunctionName(idx));
 #endif
   // The dispatch sequence xors the actual tag with the expected tag, so
@@ -393,7 +354,7 @@ bool upb_DecodeFast_GetArrayForAppend(upb_Decoder* d, const char* ptr,
 
 typedef bool upb_DecodeFast_Single(upb_Decoder* d, const char** ptr, void* dst,
                                    upb_DecodeFast_Type type,
-                                   upb_DecodeFastNext* next);
+                                   upb_DecodeFastNext* next, void* ctx);
 
 UPB_FORCEINLINE
 bool upb_DecodeFast_Unpacked(upb_Decoder* d, const char** ptr, upb_Message* msg,
@@ -401,7 +362,7 @@ bool upb_DecodeFast_Unpacked(upb_Decoder* d, const char** ptr, upb_Message* msg,
                              upb_DecodeFastNext* ret, upb_DecodeFast_Type type,
                              upb_DecodeFast_Cardinality card,
                              upb_DecodeFast_TagSize tagsize,
-                             upb_DecodeFast_Single* single) {
+                             upb_DecodeFast_Single* single, void* ctx) {
   const char* p = *ptr;
   if (!upb_DecodeFast_CheckTag(&p, type, card, tagsize, data,
                                kUpb_DecodeFastNext_TailCallPacked, ret)) {
@@ -412,7 +373,7 @@ bool upb_DecodeFast_Unpacked(upb_Decoder* d, const char** ptr, upb_Message* msg,
 
   if (upb_DecodeFast_GetScalarField(d, p, msg, *data, hasbits, ret, &dst,
                                     card)) {
-    if (!single(d, &p, dst, type, ret)) return false;
+    if (!single(d, &p, dst, type, ret, ctx)) return false;
     *ptr = p;
     _upb_Decoder_Trace(d, 'F');
     return true;
@@ -426,7 +387,10 @@ bool upb_DecodeFast_Unpacked(upb_Decoder* d, const char** ptr, upb_Message* msg,
 
   bool next_tag_matches;
   do {
-    if (!single(d, &p, arr.dst, type, ret)) return false;
+    if (!single(d, &p, arr.dst, type, ret, ctx)) {
+      upb_DecodeFastField_SetArraySize(&arr, type);
+      return false;
+    }
     *ptr = p;
     _upb_Decoder_Trace(d, 'F');
     next_tag_matches =
@@ -460,18 +424,10 @@ bool upb_DecodeFast_DecodeSize(upb_Decoder* d, const char** pp, int* size,
 
 UPB_FORCEINLINE
 bool upb_DecodeFast_Delimited(upb_Decoder* d, const char** ptr,
-                              upb_DecodeFast_Type type,
-                              upb_DecodeFast_Cardinality card,
-                              upb_DecodeFast_TagSize tagsize, uint64_t* data,
                               upb_EpsCopyInputStream_ParseDelimitedFunc* func,
                               upb_DecodeFastNext* ret, void* ctx) {
   const char* p = *ptr;
   int size;
-
-  if (!upb_DecodeFast_CheckTag(&p, type, card, tagsize, data,
-                               kUpb_DecodeFastNext_TailCallUnpacked, ret)) {
-    return false;
-  }
 
   if (!upb_DecodeFast_DecodeSize(d, &p, &size, ret)) return false;
 
@@ -499,6 +455,26 @@ fail:
   UPB_ASSERT(*ret != kUpb_DecodeFastNext_FallbackToMiniTable);
   *ptr = NULL;
   return false;
+}
+
+UPB_FORCEINLINE
+bool upb_DecodeFast_Packed(upb_Decoder* d, const char** ptr,
+                           upb_DecodeFast_Type type,
+                           upb_DecodeFast_Cardinality card,
+                           upb_DecodeFast_TagSize tagsize, uint64_t* data,
+                           upb_EpsCopyInputStream_ParseDelimitedFunc* func,
+                           upb_DecodeFastNext* ret, void* ctx) {
+  const char* p = *ptr;
+
+  if (!upb_DecodeFast_CheckTag(&p, type, card, tagsize, data,
+                               kUpb_DecodeFastNext_TailCallUnpacked, ret) ||
+      !upb_DecodeFast_Delimited(d, &p, func, ret, ctx)) {
+    return false;
+  }
+
+  *ptr = p;
+  _upb_Decoder_Trace(d, 'F');
+  return true;
 }
 
 UPB_FORCEINLINE

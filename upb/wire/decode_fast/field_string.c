@@ -14,6 +14,7 @@
 #include "upb/wire/decode_fast/cardinality.h"
 #include "upb/wire/decode_fast/combinations.h"
 #include "upb/wire/decode_fast/dispatch.h"
+#include "upb/wire/decode_fast/field_parsers.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/decoder.h"
 
@@ -22,7 +23,8 @@
 
 static bool upb_DecodeFast_SingleString(upb_Decoder* d, const char** ptr,
                                         void* dst, upb_DecodeFast_Type type,
-                                        upb_DecodeFastNext* next) {
+                                        upb_DecodeFastNext* next, void* ctx) {
+  UPB_UNUSED(ctx);
   bool validate_utf8 = type == kUpb_DecodeFast_String;
   upb_StringView* sv = dst;
   int size;
@@ -32,7 +34,8 @@ static bool upb_DecodeFast_SingleString(upb_Decoder* d, const char** ptr,
   if (!_upb_Decoder_ReadString(d, ptr, size, sv, validate_utf8)) {
     sv->size = 0;
     // TODO: ReadString can actually return NULL for invalid wire format.
-    // Need to fix ReadString to return a more granular error.
+    // Need to fix ReadString to return a more granular error (and/or change
+    // EpsCopyInputStream to support reporting errors via longjmp()).
     return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_OutOfMemory, next);
   }
 
@@ -49,7 +52,7 @@ static bool upb_DecodeFast_SingleString(upb_Decoder* d, const char** ptr,
     upb_DecodeFast_Unpacked(d, &ptr, msg, &data, &hasbits, &next,           \
                             kUpb_DecodeFast_##type, kUpb_DecodeFast_##card, \
                             kUpb_DecodeFast_##tagsize,                      \
-                            &upb_DecodeFast_SingleString);                  \
+                            &upb_DecodeFast_SingleString, NULL);            \
     UPB_DECODEFAST_NEXT(next);                                              \
   }
 
