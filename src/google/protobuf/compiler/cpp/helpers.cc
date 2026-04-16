@@ -575,8 +575,15 @@ std::string MsgGlobalsInstanceType(const Descriptor* descriptor,
 }
 
 std::string MsgGlobalsInstanceName(const Descriptor* descriptor,
-                                   const Options& /*options*/) {
-  return absl::StrCat(ClassName(descriptor, false), "_globals_");
+                                   const Options& options) {
+  if (UsingImplicitWeakFields(descriptor->file(), options) &&
+      !IsFileDescriptorProto(descriptor->file(), options)) {
+    return absl::StrCat(
+        absl::StrReplaceAll(descriptor->full_name(), {{".", "_"}}),
+        "_globals_");
+  } else {
+    return absl::StrCat(ClassName(descriptor, false), "_globals_");
+  }
 }
 
 std::string MsgGlobalsInstancePtr(const Descriptor* descriptor,
@@ -1684,7 +1691,10 @@ bool UsingImplicitWeakDescriptor(const FileDescriptor* file,
 
 std::string StrongReferenceToType(const Descriptor* desc,
                                   const Options& options) {
-  const auto name = QualifiedMsgGlobalsInstanceName(desc, options);
+  // DO NOT SUBMIT: We can't use class_data_ because that is going away in
+  // GLOBALS.
+  const auto name =
+      absl::StrCat(QualifiedClassName(desc, options), "_class_data_");
   return absl::StrFormat("::%s::internal::StrongPointer<decltype(%s)*, &%s>()",
                          ProtobufNamespace(options), name, name);
 }

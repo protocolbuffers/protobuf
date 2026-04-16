@@ -104,8 +104,7 @@ ParseFunctionGenerator::BuildFieldOptions(
         GetPresenceProbability(field, options)
             .value_or(kUnknownPresenceProbability),
         GetLazyStyle(field, options),
-        IsImplicitWeakField(field, options),
-        /* use_direct_tcparser_table */ true,
+        /* use_direct_tcparser_table */ !IsImplicitWeakField(field, options),
         ShouldSplit(field, options),
         str_options(),
     });

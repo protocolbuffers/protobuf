@@ -130,6 +130,74 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
   google::protobuf::internal::CachedSize cached_size_{};
 };
 
+constexpr auto ImplicitWeakMessage::InternalGenerateClassData_(
+    const MessageLite& prototype, const TcParseTableBase* tc_table) {
+  return ClassDataLite{
+      ClassData{
+          &prototype,
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+          &table_.header,
+#else
+          tc_table,
+#endif              // PROTOBUF_MESSAGE_GLOBALS
+          nullptr,  // is_initialized (always true)
+          MergeImpl,
+          internal::MessageCreator(NewImpl<ImplicitWeakMessage>,
+                                   sizeof(ImplicitWeakMessage),
+                                   alignof(ImplicitWeakMessage)),
+          &DestroyImpl,
+          GetClearImpl<ImplicitWeakMessage>(),
+          &ByteSizeLongImpl,
+          &_InternalSerializeImpl,
+          PROTOBUF_FIELD_OFFSET(ImplicitWeakMessage, cached_size_),
+          true,
+      },
+      /*type_name=*/""};
+}
+
+constexpr auto ImplicitWeakMessage::InternalGenerateParseTable_(
+    const ClassData* class_data) {
+  return CreateStubTcParseTable<ImplicitWeakMessage, ParseImpl>(class_data);
+}
+
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+struct ImplicitWeakMessageDefaultType : MessageGlobalsBase {
+  constexpr ImplicitWeakMessageDefaultType()
+      : _default(ConstantInitialized{}) {}
+  ~ImplicitWeakMessageDefaultType() {}
+  union {
+    ImplicitWeakMessage _default;  // NOLINT
+  };
+};
+#else
+struct ImplicitWeakMessageDefaultType : MessageGlobalsBase {
+  constexpr ImplicitWeakMessageDefaultType()
+      : MessageGlobalsBase(ImplicitWeakMessage::InternalGenerateClassData_(
+            _default, &implicit_weak_message_globals._table.header)),
+        _default(ConstantInitialized{}),
+        _table(
+            ImplicitWeakMessage::InternalGenerateParseTable_(GetClassData())) {}
+  ~ImplicitWeakMessageDefaultType() {}
+  union {
+    alignas(kMaxMessageAlignment) ImplicitWeakMessage _default;  // NOLINT
+  };
+  TcParseTable<0> _table;  // NOLINT
+};
+static_assert(PROTOBUF_FIELD_OFFSET(ImplicitWeakMessageDefaultType, _default) ==
+              MessageGlobalsBase::OffsetToDefault());
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+
+constexpr ImplicitWeakMessage::ImplicitWeakMessage(ConstantInitialized)
+    : MessageLite(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+          class_data_.base()
+#else
+          implicit_weak_message_globals.GetClassData()
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+              ),
+      data_(nullptr) {
+}
+
 // A type handler for use with implicit weak repeated message fields.
 template <typename ImplicitWeakType>
 class ImplicitWeakTypeHandler {

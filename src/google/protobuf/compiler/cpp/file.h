@@ -109,7 +109,7 @@ class PROTOC_EXPORT FileGenerator {
   void GetCrossFileReferencesForFile(const FileDescriptor* file,
                                      CrossFileReferences* refs);
   void GenerateInternalForwardDeclarations(const CrossFileReferences& refs,
-                                           io::Printer* p);
+                                           int idx, io::Printer* p);
   void GenerateSourceIncludes(io::Printer* p);
   void GenerateSourcePrelude(io::Printer* p);
 

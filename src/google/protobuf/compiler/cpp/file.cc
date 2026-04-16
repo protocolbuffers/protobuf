@@ -620,18 +620,33 @@ void FileGenerator::GetCrossFileReferencesForFile(const FileDescriptor* file,
 
 // Generates references to variables defined in other files.
 void FileGenerator::GenerateInternalForwardDeclarations(
-    const CrossFileReferences& refs, io::Printer* p) {
+    const CrossFileReferences& refs, int idx, io::Printer* p) {
   {
     NamespaceOpener ns(p);
+    auto v = p->WithVars(
+        {{"local_implicit_weak",
+          absl::StrCat(UniqueName("protobuf_internal_implicit_weak_instance",
+                                  file_, options_),
+                       "_", idx)}});
+
+    if (options_.lite_implicit_weak_fields &&
+        !refs.weak_default_instances.empty()) {
+      ns.ChangeTo("");
+      p->Emit(R"cc(
+        ::_pbi::ImplicitWeakMessageDefaultType $local_implicit_weak$;
+      )cc");
+    }
 
     for (auto instance : refs.weak_default_instances) {
       ns.ChangeTo(Namespace(instance));
 
       if (options_.lite_implicit_weak_fields) {
-        p->Emit({{"ptr", MsgGlobalsInstancePtr(instance, options_)}}, R"cc(
-          PROTOBUF_CONSTINIT __attribute__((weak)) const void* $ptr$ =
-              &::_pbi::implicit_weak_message_globals;
-        )cc");
+        p->Emit({{"type", MsgGlobalsInstanceType(instance, options_)},
+                 {"name", MsgGlobalsInstanceName(instance, options_)}},
+                R"cc(
+                  extern "C" $type$ $name$
+                      __attribute__((weak, alias("$local_implicit_weak$")));
+                )cc");
       } else {
         p->Emit({{"type", MsgGlobalsInstanceType(instance, options_)},
                  {"name", MsgGlobalsInstanceName(instance, options_)}},
@@ -669,7 +684,7 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) {
                         GetCrossFileReferencesForField(field, &refs);
                       });
 
-  GenerateInternalForwardDeclarations(refs, p);
+  GenerateInternalForwardDeclarations(refs, idx, p);
 
   {
     NamespaceOpener ns(Namespace(file_), p);
@@ -771,7 +786,7 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   GenerateSourcePrelude(p);
   CrossFileReferences refs;
   GetCrossFileReferencesForFile(file_, &refs);
-  GenerateInternalForwardDeclarations(refs, p);
+  GenerateInternalForwardDeclarations(refs, 0, p);
 
   if (HasDescriptorMethods(file_, options_) && !message_generators_.empty()) {
     p->Emit(
@@ -1363,6 +1378,10 @@ class FileGenerator::ForwardDeclarations {
           {
               Sub("class", c.first).AnnotatedAs(desc),
               {"globals_type", MsgGlobalsInstanceType(desc, options)},
+              {"C", UsingImplicitWeakFields(desc->file(), options) &&
+                            !IsFileDescriptorProto(desc->file(), options)
+                        ? "\"C\""
+                        : ""},
               {"globals_name", MsgGlobalsInstanceName(desc, options)},
               {"const",
                IsFileDescriptorProto(desc->file(), options) ? "" : "const"},
@@ -1372,10 +1391,10 @@ class FileGenerator::ForwardDeclarations {
             class $class$;
             struct $globals_type$;
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-            $dllexport_decl $extern $globals_type$ $globals_name$;
+            $dllexport_decl $extern $C $$globals_type$ $globals_name$;
             $dllexport_decl $extern const $pbi$::$classdata_type$ $class$_class_data_;
 #else
-            $dllexport_decl $extern $const $$globals_type$ $globals_name$;
+            $dllexport_decl $extern $C $$const $$globals_type$ $globals_name$;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
           )cc");
     }

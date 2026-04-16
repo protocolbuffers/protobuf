@@ -61,7 +61,6 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     float presence_probability;
     // kTvEager, kTvLazy, or 0
     field_layout::TransformValidation lazy_opt;
-    bool is_implicitly_weak;
     bool use_direct_tcparser_table;
     bool should_split;
 

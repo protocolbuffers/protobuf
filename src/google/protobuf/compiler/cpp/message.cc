@@ -5697,17 +5697,6 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
         }  // namespace
 #endif  // PROTOBUF_CUSTOM_VTABLE
       )cc");
-
-  if (options_.lite_implicit_weak_fields) {
-    p->Emit(
-        {
-            {"ptr", MsgGlobalsInstancePtr(descriptor_, options_)},
-            {"name", MsgGlobalsInstanceName(descriptor_, options_)},
-        },
-        R"cc(
-          PROTOBUF_CONSTINIT const void* $ptr$ = &$globals$;
-        )cc");
-  }
 }
 
 }  // namespace cpp

@@ -657,11 +657,8 @@ inline TcParser::TableAndClassData TcParser::GetTableAndClassDataFromAux(
   if (ABSL_PREDICT_TRUE(tv == field_layout::kTvTable)) {
     return GetTableAndClassDataFromAux</*kIsTable=*/true>(aux);
   } else {
-    ABSL_DCHECK(tv == field_layout::kTvDefault ||
-                tv == field_layout::kTvWeakPtr);
-    const MessageLite* prototype = tv == field_layout::kTvDefault
-                                       ? aux.message_default()
-                                       : aux.message_default_weak();
+    ABSL_DCHECK(tv == field_layout::kTvDefault);
+    const MessageLite* prototype = aux.message_default();
     const TcParseTableBase* inner_table = prototype->GetTcParseTable();
     return {inner_table, inner_table->class_data};
   }
@@ -3220,12 +3217,11 @@ std::string TypeCardToString(uint16_t type_card) {
         absl::StrAppend(&out, " | ::_fl::kRep", rep);
       }
 
-      static constexpr const char* kXFormNames[2][4] = {
-          {nullptr, "Default", "Table", "WeakPtr"}, {nullptr, "Eager", "Lazy"}};
+      static constexpr const char* kXFormNames[2][3] = {
+          {nullptr, "Default", "Table"}, {nullptr, "Eager", "Lazy"}};
 
       static_assert((fl::kTvDefault >> fl::kTvShift) == 1, "");
       static_assert((fl::kTvTable >> fl::kTvShift) == 2, "");
-      static_assert((fl::kTvWeakPtr >> fl::kTvShift) == 3, "");
       static_assert((fl::kTvEager >> fl::kTvShift) == 1, "");
       static_assert((fl::kTvLazy >> fl::kTvShift) == 2, "");
 

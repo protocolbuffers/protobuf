@@ -159,7 +159,6 @@ enum TransformValidation : uint16_t {
   // Message fields:
   kTvDefault   = 1 << kTvShift,  // Aux has default_instance*
   kTvTable     = 2 << kTvShift,  // Aux has TcParseTableBase*
-  kTvWeakPtr   = 3 << kTvShift,  // Aux has default_instance** (for weak)
 
   // Lazy message fields:
   kTvEager     = 1 << kTvShift,

@@ -3732,8 +3732,6 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
         static_cast<int>(schema_.HasBitIndex(field)),
         1.f,  // All fields are assumed present.
         GetLazyStyle(field),
-        // Only LITE can be implicitly weak.
-        /* is_implicitly_weak */ false,
         // We could change this to use direct table.
         // Might be easier to do when all messages support TDP.
         /* use_direct_tcparser_table */ false,
