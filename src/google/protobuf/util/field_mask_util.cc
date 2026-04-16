@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "google/protobuf/field_mask.pb.h"
 #include "absl/container/btree_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
