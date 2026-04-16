@@ -1466,19 +1466,12 @@ class TextFormat::Parser::ParserImpl {
     DynamicMessageFactory factory;
     const Message* value_prototype = factory.GetPrototype(value_descriptor);
     if (value_prototype == nullptr) {
-      ++recursion_limit_;
       return false;
     }
     std::unique_ptr<Message> value(value_prototype->New());
     std::string sub_delimiter;
-    if (!ConsumeMessageDelimiter(&sub_delimiter)) {
-      ++recursion_limit_;
-      return false;
-    }
-    if (!ConsumeMessage(value.get(), sub_delimiter)) {
-      ++recursion_limit_;
-      return false;
-    }
+    DO(ConsumeMessageDelimiter(&sub_delimiter));
+    DO(ConsumeMessage(value.get(), sub_delimiter));
 
     if (allow_partial_) {
       // TODO: Remove this suppression.
@@ -1491,7 +1484,6 @@ class TextFormat::Parser::ParserImpl {
             "Value of type \"", value_descriptor->full_name(),
             "\" stored in google.protobuf.Any has missing required fields: ",
             absl::StrJoin(missing_fields, ", ")));
-        ++recursion_limit_;
         return false;
       }
       // TODO: Remove this suppression.
@@ -1953,7 +1945,7 @@ TextFormat::Parser::Parser()
       allow_field_number_(false),
       allow_relaxed_whitespace_(false),
       allow_singular_overwrites_(false),
-      recursion_limit_(100) {}
+      recursion_limit_(std::numeric_limits<int>::max()) {}
 
 namespace {
 
