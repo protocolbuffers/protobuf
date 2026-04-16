@@ -57,6 +57,7 @@ cc_library(
         ":data",
         ":dispatch",
         ":select",
+        "//third_party/utf8_range",
         "//upb/base",
         "//upb/base:internal",
         "//upb/mem",
