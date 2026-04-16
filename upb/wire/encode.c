@@ -477,20 +477,24 @@ static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
     return ptr;
   }
 
-#define VARINT_CASE(ctype, encode)                                         \
-  {                                                                        \
-    const ctype* start = upb_Array_DataPtr(arr);                           \
-    const ctype* arr_ptr = start + upb_Array_Size(arr);                    \
-    uint32_t tag =                                                         \
-        packed ? 0 : (f->UPB_PRIVATE(number) << 3) | kUpb_WireType_Varint; \
-    do {                                                                   \
-      arr_ptr--;                                                           \
-      ptr = encode_varint(ptr, e, encode);                                 \
-      if (tag) {                                                           \
-        ptr = encode_varint(ptr, e, tag);                                  \
-      }                                                                    \
-    } while (arr_ptr != start);                                            \
-  }                                                                        \
+#define VARINT_CASE(ctype, encode)                              \
+  {                                                             \
+    const ctype* start = upb_Array_DataPtr(arr);                \
+    const ctype* arr_ptr = start + upb_Array_Size(arr);         \
+    if (packed) {                                               \
+      do {                                                      \
+        arr_ptr--;                                              \
+        ptr = encode_varint(ptr, e, encode);                    \
+      } while (arr_ptr != start);                               \
+    } else {                                                    \
+      uint32_t number = upb_MiniTableField_Number(f);           \
+      do {                                                      \
+        arr_ptr--;                                              \
+        ptr = encode_varint(ptr, e, encode);                    \
+        ptr = encode_tag(ptr, e, number, kUpb_WireType_Varint); \
+      } while (arr_ptr != start);                               \
+    }                                                           \
+  }                                                             \
   break;
 
 #define TAG(wire_type) (packed ? 0 : (f->UPB_PRIVATE(number) << 3 | wire_type))
