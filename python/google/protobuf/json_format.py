@@ -619,14 +619,14 @@ class _Parser(object):
                   [f.json_name for f in message_descriptor.fields],
               )
           )
-        if name in names:
+        if field.number in names:
           raise ParseError(
               'Message type "{0}" should not have multiple '
               '"{1}" fields at "{2}".'.format(
                   message.DESCRIPTOR.full_name, name, path
               )
           )
-        names.append(name)
+        names.append(field.number)
         value = js[name]
         # Check no other oneof field is parsed.
         if field.containing_oneof is not None and value is not None:
