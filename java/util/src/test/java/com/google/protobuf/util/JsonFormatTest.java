@@ -792,7 +792,9 @@ public class JsonFormatTest {
   public void testParserRejectOverlyLongNumericStrings() throws Exception {
     // A numeric string with 10,000 digits should be rejected quickly to prevent
     // O(N^2) BigDecimal parsing DoS.
-    String longNumber = "1" + "0".repeat(10000);
+    StringBuilder sb = new StringBuilder("1");
+    for (int i = 0; i < 10000; i++) sb.append('0');
+    String longNumber = sb.toString();
     String[] fields = {
         "optionalInt32", "optionalInt64", "optionalUint32", "optionalUint64", "optionalDouble"
     };
