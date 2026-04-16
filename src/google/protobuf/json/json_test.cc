@@ -9,7 +9,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <vector>
 #include <limits>
 #include <string>
 
@@ -1488,12 +1487,15 @@ TEST(JsonErrorTest, FieldNameAndSyntaxErrorInSeparateChunks) {
 }
 
 
-TEST(JsonInternalTest, OversizedRawWritesAreChunked) {
-  std::vector<int> chunks;
-  json_internal::ForEachRawWriteChunk(
-      static_cast<size_t>(std::numeric_limits<int>::max()) + 1,
-      [&](int chunk) { chunks.push_back(chunk); });
-  EXPECT_THAT(chunks, ElementsAre(std::numeric_limits<int>::max(), 1));
+TEST(JsonInternalTest, OversizedRawWritesAreRejected) {
+  EXPECT_THAT(
+      json_internal::CheckSupportedJsonStringSize(
+          static_cast<size_t>(std::numeric_limits<int>::max())),
+      StatusIs(absl::StatusCode::kOk));
+  EXPECT_THAT(
+      json_internal::CheckSupportedJsonStringSize(
+          static_cast<size_t>(std::numeric_limits<int>::max()) + 1),
+      StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 }  // namespace
