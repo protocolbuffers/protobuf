@@ -16104,7 +16104,7 @@ static const char* _upb_Decoder_DecodeEnumPacked(
   while (!upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
     wireval elem;
     ptr = upb_WireReader_ReadVarint(ptr, &elem.uint64_val, EPS(d));
-    if (!upb_MiniTableEnum_CheckValue(e, elem.uint64_val)) {
+    if (!e || !upb_MiniTableEnum_CheckValue(e, elem.uint64_val)) {
       _upb_Decoder_AddEnumValueToUnknown(d, msg, field, &elem);
       continue;
     }
@@ -16687,7 +16687,7 @@ const char* _upb_Decoder_DecodeWireValue(upb_Decoder* d, const char* ptr,
       ptr = upb_WireReader_ReadVarint(ptr, &val->uint64_val, EPS(d));
       if (upb_MiniTableField_IsClosedEnum(field)) {
         const upb_MiniTableEnum* e = upb_MiniTable_GetSubEnumTable(field);
-        if (!upb_MiniTableEnum_CheckValue(e, val->uint64_val)) {
+        if (!e || !upb_MiniTableEnum_CheckValue(e, val->uint64_val)) {
           *op = kUpb_DecodeOp_UnknownField;
           return ptr;
         }
