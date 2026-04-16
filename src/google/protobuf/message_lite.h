@@ -184,21 +184,21 @@ class PROTOBUF_EXPORT CachedSize {
     SetImpl(desired);
   }
 
-#ifdef PROTOBUF_BUILTIN_ATOMIC
+#if defined(__cpp_lib_atomic_ref)
   constexpr CachedSize(const CachedSize& other) = default;
   CachedSize& operator=(const CachedSize& other) = default;
 
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD Scalar Get() const noexcept {
-    return __atomic_load_n(&atom_, __ATOMIC_RELAXED);
+    return std::atomic_ref(atom_).load(std::memory_order_relaxed);
   }
 
  private:
   void SetImpl(Scalar desired) const noexcept {
-    __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
+    std::atomic_ref(atom_).store(desired, std::memory_order_relaxed);
   }
 
   mutable Scalar atom_;
-#else
+#else   // __cpp_lib_atomic_ref
   CachedSize(const CachedSize& other) noexcept : atom_(other.Get()) {}
   CachedSize& operator=(const CachedSize& other) noexcept {
     Set(other.Get());
@@ -214,7 +214,7 @@ class PROTOBUF_EXPORT CachedSize {
     atom_.store(desired, std::memory_order_relaxed);
   }
   mutable std::atomic<Scalar> atom_;
-#endif
+#endif  // __cpp_lib_atomic_ref
 };
 
 struct ClassData;

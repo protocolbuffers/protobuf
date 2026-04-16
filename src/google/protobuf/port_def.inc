@@ -68,11 +68,6 @@
 // - MSVC: https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes-history
 //         https://docs.microsoft.com/en-us/visualstudio/releasenotes/vs2017-relnotes-history
 
-// Portable check for gcc-style atomic built-ins
-#if ABSL_HAVE_BUILTIN(__atomic_load_n)
-#define PROTOBUF_BUILTIN_ATOMIC 1
-#endif
-
 // Portable check for GCC minimum version:
 // https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
 #if defined(__GNUC__) && defined(__GNUC_MINOR__) && defined(__GNUC_PATCHLEVEL__)
