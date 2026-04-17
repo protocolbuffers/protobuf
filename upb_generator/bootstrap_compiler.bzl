@@ -22,6 +22,7 @@ _extra_proto_path = "-I$$(dirname $(location //:descriptor_proto_srcs))/../.. "
 
 # This visibility is used automatically for anything used by the bootstrapping process.
 _bootstrap_visibility = [
+    "//third_party/pgext/pgproto:__subpackages__",
     # TODO: b/396430482 - Remove protoc from bootstrap visibility.
     "//src/google/protobuf/compiler:__pkg__",
     "//src/google/protobuf/compiler/rust:__pkg__",
