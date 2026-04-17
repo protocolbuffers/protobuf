@@ -297,18 +297,49 @@ upb_Message* upb_Message_DeepClone(const upb_Message* msg,
   return _upb_Message_Copy(clone, msg, m, arena);
 }
 
-// Performs a shallow copy. TODO: Extend to handle unknown fields.
-void upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
-                             const upb_MiniTable* m) {
+// Performs a shallow copy, including extensions and unknown fields.
+bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
+                             const upb_MiniTable* m, upb_Arena* arena) {
   UPB_ASSERT(!upb_Message_IsFrozen(dst));
   memcpy(dst, src, m->UPB_PRIVATE(size));
+
+  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(src);
+  if (!in) return true;
+
+  size_t size = UPB_SIZEOF_FLEX(upb_Message_Internal, aux_data, in->size);
+  upb_Message_Internal* dst_in = upb_Arena_Malloc(arena, size);
+  if (!dst_in) return false;
+
+  dst_in->size = in->size;
+  dst_in->capacity = in->size;
+
+  for (size_t i = 0; i < in->size; i++) {
+    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+      const upb_Extension* msg_ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+      upb_Extension* dst_ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
+      if (!dst_ext) return false;
+      *dst_ext = *msg_ext;
+      dst_in->aux_data[i] = upb_TaggedAuxPtr_MakeExtension(dst_ext);
+    } else {
+      const upb_StringView* src_sv = upb_TaggedAuxPtr_UnknownData(tagged_ptr);
+      upb_StringView* dst_sv = upb_Arena_Malloc(arena, sizeof(upb_StringView));
+      if (!dst_sv) return false;
+      *dst_sv = *src_sv;
+      dst_in->aux_data[i] = upb_TaggedAuxPtr_MakeUnknownDataAliased(dst_sv);
+    }
+  }
+
+  UPB_PRIVATE(_upb_Message_SetInternal)(dst, dst_in);
+  return true;
 }
 
-// Performs a shallow clone. Ignores unknown fields.
+// Performs a shallow clone, does not handle extensions or unknown fields.
 upb_Message* upb_Message_ShallowClone(const upb_Message* msg,
                                       const upb_MiniTable* m,
                                       upb_Arena* arena) {
   upb_Message* clone = upb_Message_New(m, arena);
-  upb_Message_ShallowCopy(clone, msg, m);
+  if (!clone) return NULL;
+  if (!upb_Message_ShallowCopy(clone, msg, m, arena)) return NULL;
   return clone;
 }
