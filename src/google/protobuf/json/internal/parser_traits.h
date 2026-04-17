@@ -210,6 +210,7 @@ struct ParseProto2Descriptor : Proto2Descriptor {
   }
 
   static absl::Status SetString(Field f, Msg& msg, absl::string_view x) {
+    RETURN_IF_ERROR(CheckSupportedJsonStringSize(x.size()));
     RecordAsSeen(f, msg);
     if (f->is_repeated()) {
       msg.msg_->GetReflection()->AddString(msg.msg_, f, std::string(x));
