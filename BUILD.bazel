@@ -482,6 +482,12 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+alias(
+    name = "cpp_file_options_proto",
+    actual = "//src/google/protobuf:cpp_file_options_proto",  # proto_library
+    visibility = ["//visibility:public"],
+)
+
 ################################################################################
 # Java support
 ################################################################################

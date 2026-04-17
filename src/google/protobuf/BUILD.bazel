@@ -314,6 +314,59 @@ cc_library(
     ],
 )
 
+genrule(
+    name = "gen_cpp_file_options_cc_sources",
+    srcs = [
+        "cpp_file_options.proto",
+        "//:descriptor_proto",
+    ],
+    outs = [
+        "google/protobuf/cpp_file_options.pb.h",
+        "google/protobuf/cpp_file_options.pb.cc",
+    ],
+    cmd = """
+          $(execpath //:protoc) \
+              --cpp_out=dllexport_decl=PROTOBUF_EXPORT:$(RULEDIR) \
+              --proto_path=$$(dirname $$(dirname $$(dirname $(location cpp_file_options.proto)))) \
+              --descriptor_set_in=$(location //:descriptor_proto) \
+              $(location cpp_file_options.proto)
+      """,
+    tools = ["//:protoc"],
+    visibility = ["//visibility:private"],
+)
+
+staleness_test(
+    name = "cpp_file_options_staleness_test",
+    outs = [
+        "cpp_file_options.pb.cc",
+        "cpp_file_options.pb.h",
+        "cpp_file_options_bootstrap.pb.cc",
+        "cpp_file_options_bootstrap.pb.h",
+    ],
+    generated_pattern = "google/protobuf/%s",
+    tags = ["manual"],
+)
+
+cc_library(
+    name = "cpp_file_options_bootstrap",
+    srcs = ["cpp_file_options_bootstrap.pb.cc"],
+    hdrs = [
+        "cpp_file_options_bootstrap.proto.h",
+    ],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//src/google/protobuf/compiler/cpp:__subpackages__",
+        "//visibility:private",
+    ],
+    deps = [
+        ":arena",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        "//src/google/protobuf/io",
+    ],
+)
+
 # Built-in runtime types
 
 proto_library(
@@ -357,6 +410,29 @@ cc_proto_library(
     name = "cpp_features_cc_proto",
     visibility = ["//editions:__pkg__"],
     deps = [":cpp_features_proto"],
+)
+
+proto_library(
+    name = "cpp_options_proto",
+    srcs = ["cpp_options.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//visibility:public"],
+    exports = [":cpp_file_options_proto"],
+    deps = ["//src/google/protobuf:cpp_file_options_proto"],
+)
+
+proto_library(
+    name = "cpp_file_options_proto",
+    srcs = ["cpp_file_options.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [":descriptor_proto"],
+)
+
+cc_proto_library(
+    name = "cpp_file_options_cc_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":cpp_file_options_proto"],
 )
 
 proto_library(

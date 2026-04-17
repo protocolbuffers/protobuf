@@ -17,7 +17,9 @@
 #include <limits>
 #include <memory>
 #include <queue>
+#include <sstream>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -48,6 +50,7 @@
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/scc.h"
+#include "google/protobuf/cpp_file_options.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
@@ -549,6 +552,20 @@ std::string Namespace(absl::string_view package) {
 }
 
 std::string Namespace(const FileDescriptor* d) {
+  if (d->options().HasExtension(::pb::file::cpp) &&
+      !d->options().GetExtension(::pb::file::cpp).namespace_().empty()) {
+    auto cc_namespace = d->options().GetExtension(::pb::file::cpp).namespace_();
+    std::vector<std::string> names =
+        absl::StrSplit(cc_namespace, "::", absl::SkipEmpty());
+    for (auto& name : names) {
+      if (Keywords().contains(name)) {
+        ABSL_LOG(FATAL) << "Namespace " << cc_namespace
+                        << " has invalid name: " << name
+                        << "(go/proto-dos-donts)";
+      }
+    }
+    return std::string(cc_namespace);
+  }
   return Namespace(d->package());
 }
 
@@ -1859,7 +1876,7 @@ bool GetBootstrapBasename(const Options& options, absl::string_view basename,
           {"third_party/protobuf/cpp_features",
            "third_party/protobuf/cpp_features"},
           {"third_party/protobuf/cpp_file_options",
-           "third_party/protobuf/cpp_file_options_bootstrap"},
+           "third_party/protobuf/cpp_file_options"},
           {"third_party/protobuf/compiler/plugin",
            "third_party/protobuf/compiler/plugin"},
           {"third_party/protobuf/internal_options",

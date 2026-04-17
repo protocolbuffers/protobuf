@@ -1,0 +1,11 @@
+edition = "UNSTABLE";
+
+package cpp.file.options.test;
+
+import option "google/protobuf/cpp_options.proto";
+
+option (pb.file.cpp).namespace = "cpp::file";
+
+message NewMessage {
+  string some_message = 1;
+}
