@@ -407,5 +407,22 @@ module BasicTestProto2
       assert_equal :required, descriptor.label
       assert_false descriptor.options.has_features?
     end
+
+    def test_dup_extensions
+      omit "Java Protobuf does not support duping extensions" if defined? JRUBY_VERSION and Google::Protobuf::IMPLEMENTATION == :NATIVE
+
+      m = proto_module::TestExtensions.new
+      ext = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.optional_int32_extension'
+      assert_instance_of Google::Protobuf::FieldDescriptor, ext
+
+      ext.set(m, 42)
+      m2 = m.dup
+
+      assert_equal 42, ext.get(m2)
+
+      ext.set(m, 43)
+      assert_equal 42, ext.get(m2)
+      assert_equal 43, ext.get(m)
+    end
   end
 end

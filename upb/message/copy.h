@@ -25,7 +25,8 @@ extern "C" {
 upb_Message* upb_Message_DeepClone(const upb_Message* msg,
                                    const upb_MiniTable* m, upb_Arena* arena);
 
-// Shallow clones a message using the provided target arena.
+// Shallow clones a message using the provided target arena, does not handle
+// extensions or unknown fields.
 upb_Message* upb_Message_ShallowClone(const upb_Message* msg,
                                       const upb_MiniTable* m, upb_Arena* arena);
 
@@ -43,9 +44,10 @@ upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
 bool upb_Message_DeepCopy(upb_Message* dst, const upb_Message* src,
                           const upb_MiniTable* m, upb_Arena* arena);
 
-// Shallow copies the message from src to dst.
-void upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
-                             const upb_MiniTable* m);
+// Shallow copies the message from src to dst, including extensions and unknown
+// fields.
+UPB_API bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
+                                     const upb_MiniTable* m, upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */

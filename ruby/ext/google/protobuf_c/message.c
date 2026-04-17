@@ -687,12 +687,20 @@ static VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
  */
 static VALUE Message_dup(VALUE _self) {
   Message* self = ruby_to_Message(_self);
-  VALUE new_msg = rb_class_new_instance(0, NULL, CLASS_OF(_self));
-  Message* new_msg_self = ruby_to_Message(new_msg);
   const upb_MiniTable* m = upb_MessageDef_MiniTable(self->msgdef);
-  upb_Message_ShallowCopy((upb_Message*)new_msg_self->msg, self->msg, m);
-  Arena_fuse(self->arena, Arena_get(new_msg_self->arena));
-  return new_msg;
+
+  VALUE new_arena_rb = Arena_new();
+  upb_Arena* new_arena = Arena_get(new_arena_rb);
+  upb_Message* new_upb_msg = upb_Message_New(m, new_arena);
+
+  if (!upb_Message_ShallowCopy(new_upb_msg, self->msg, m, new_arena)) {
+    upb_Arena_Free(new_arena);
+    rb_raise(rb_eRuntimeError, "Failed to shallow copy message.");
+  }
+
+  Arena_fuse(self->arena, new_arena);
+
+  return Message_GetRubyWrapper(new_upb_msg, self->msgdef, new_arena_rb);
 }
 
 /*

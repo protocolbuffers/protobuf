@@ -297,18 +297,20 @@ upb_Message* upb_Message_DeepClone(const upb_Message* msg,
   return _upb_Message_Copy(clone, msg, m, arena);
 }
 
-// Performs a shallow copy. TODO: Extend to handle unknown fields.
-void upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
-                             const upb_MiniTable* m) {
+// Performs a shallow copy, including extensions and unknown fields.
+bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
+                             const upb_MiniTable* m, upb_Arena* arena) {
   UPB_ASSERT(!upb_Message_IsFrozen(dst));
   memcpy(dst, src, m->UPB_PRIVATE(size));
+  return true;
 }
 
-// Performs a shallow clone. Ignores unknown fields.
+// Performs a shallow clone, does not handle extensions or unknown fields.
 upb_Message* upb_Message_ShallowClone(const upb_Message* msg,
                                       const upb_MiniTable* m,
                                       upb_Arena* arena) {
   upb_Message* clone = upb_Message_New(m, arena);
-  upb_Message_ShallowCopy(clone, msg, m);
+  if (!clone) return NULL;
+  if (!upb_Message_ShallowCopy(clone, msg, m, arena)) return NULL;
   return clone;
 }
