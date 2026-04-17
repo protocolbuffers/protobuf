@@ -12,6 +12,7 @@
 
 #include <string>
 
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/port_def.inc"
 
