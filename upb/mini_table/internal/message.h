@@ -107,6 +107,110 @@ UPB_API_INLINE bool upb_MiniTable_IsMessageSet(const struct upb_MiniTable* m) {
   return m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet;
 }
 
+UPB_FORCEINLINE
+const struct upb_MiniTableField* UPB_PRIVATE(upb_MiniTable_LowerBound)(
+    const struct upb_MiniTable* m, uint32_t lo, uint32_t search_len,
+    uint32_t number) {
+  const struct upb_MiniTableField* search_base = &m->UPB_ONLYBITS(fields)[lo];
+  while (search_len > 1) {
+    size_t mid_offset = search_len >> 1;
+    if (UPB_UNPREDICTABLE(search_base[mid_offset].UPB_ONLYBITS(number) <=
+                          number)) {
+      search_base = &search_base[mid_offset];
+    }
+    search_len -= mid_offset;
+  }
+
+  return search_base;
+}
+
+// This implements the same algorithm as upb_MiniTable_LowerBound but contorts
+// itself to select specific arm instructions, which show significant effects on
+// little cores.
+UPB_FORCEINLINE const struct upb_MiniTableField* UPB_PRIVATE(
+    upb_MiniTable_ArmOptimizedLowerBound)(const struct upb_MiniTable* m,
+                                          uint32_t lo, uint32_t search_len,
+                                          uint32_t number) {
+  const uint32_t* search_base =
+      &m->UPB_ONLYBITS(fields)[lo].UPB_ONLYBITS(number);
+  UPB_STATIC_ASSERT(sizeof(struct upb_MiniTableField) == sizeof(uint32_t) * 3,
+                    "Need to update multiplication");
+  // Address generation units can't multiply by 12, but they can by 4. So we
+  // split it into multiplying by 3 (add and shift) and multiplying by 4 (shift)
+  // This code is carefully tuned to produce an optimal assembly sequence on
+  // arm64, which takes advantage of dual issue on in-order CPUs to maximize
+  // what little instruction level parallelism they have.
+  /*
+  and     w9, w1, #0xfffffffe
+  add     w9, w9, w1, lsr #1
+  ldr     w10, [x0, w9, uxtw #2]
+  sub     w1, w1, w1, lsr #1
+  add     x9, x0, w9, uxtw #2
+  cmp     w10, w2
+  csel    x0, x0, x9, hi
+  cmp     w1, #1
+  b.hi    .LBB3_1
+   */
+  // Doing this requires inhibiting the natural instincts of the compiler to
+  // eliminate duplicate work, so we introduce an optimization barrier with
+  // asm blocks to defeat common subexpression elimination.
+  UPB_STATIC_ASSERT(
+      offsetof(struct upb_MiniTableField, UPB_ONLYBITS(number)) == 0,
+      "Tag number must be first element of minitable field struct");
+  while (search_len > 1) {
+#if UPB_ARM64_ASM
+#define UPB_OPT_LAUNDER(val) __asm__("" : "+r"(val))
+#define UPB_OPT_LAUNDER2(val1, val2) __asm__("" : "+r"(val1), "+r"(val2))
+#else
+#define UPB_OPT_LAUNDER(val)
+#define UPB_OPT_LAUNDER2(val1, val2)
+#endif
+    // (search_len & ~1) is exactly (half_len * 2). Adding half_len yields
+    // (half_len * 3).
+    //
+    // and mid_offset_words, search_len, #0xfffffffe
+    uint32_t mid_offset_words = search_len & 0xfffffffe;
+
+    // add mid_offset_words, mid_offset_words, search_len, lsr #1
+    mid_offset_words = mid_offset_words + (search_len >> 1);
+
+    UPB_OPT_LAUNDER(search_len);
+    UPB_OPT_LAUNDER(mid_offset_words);
+
+    // Arm processors, even little cores, have Address Generation Units capable
+    // of performing these extensions, so we achieve more instruction level
+    // parallelism by doing this shift by 2 redundantly with the mid pointer
+    // calculation below.
+    //
+    // ldr mid_num, [search_base, mid_offset_words, uxtw #2]
+    uint32_t mid_num = search_base[mid_offset_words];
+
+    // Shrink the search window by half
+    // sub search_len, search_len, search_len, lsr #1
+    search_len = search_len - (search_len >> 1);
+    UPB_OPT_LAUNDER(search_len);
+    UPB_OPT_LAUNDER(mid_offset_words);
+
+    // Calculate the mid pointer for the next iteration
+    // add mid_ptr, search_base, mid_offset_words, uxtw #2
+    const uint32_t* mid_ptr = search_base + mid_offset_words;
+
+    // Forbids LLVM's CSE pass from attempting to merge mid_ptr and mid_num's
+    // math. It sees that it can do a select before adding, rather than after;
+    // but if it orders it that way it creates a longer dependency chain. We
+    // need both as input/output to the same asm block to force them to be
+    // present in different registers at the same time; two separate LAUNDER
+    // usages could get reordered.
+    UPB_OPT_LAUNDER2(mid_ptr, mid_num);
+
+    // cmp + csel
+    search_base = UPB_UNPREDICTABLE(mid_num <= number) ? mid_ptr : search_base;
+  }
+#undef UPB_OPT_LAUNDER
+#undef UPB_OPT_LAUNDER2
+  return (const struct upb_MiniTableField*)search_base;
+}
+
 UPB_API_INLINE
 const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
     const struct upb_MiniTable* m, uint32_t number) {
@@ -119,36 +223,30 @@ const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
   }
 
   // Early exit if the field number is out of range.
-  int32_t hi = m->UPB_ONLYBITS(field_count) - 1;
-  if (hi < 0 || number > m->UPB_ONLYBITS(fields)[hi].UPB_ONLYBITS(number)) {
+  uint32_t hi = m->UPB_ONLYBITS(field_count);
+  uint32_t lo = m->UPB_PRIVATE(dense_below);
+  UPB_ASSERT(hi >= lo);
+  uint32_t search_len = hi - lo;
+  if (search_len == 0 ||
+      number > m->UPB_ONLYBITS(fields)[hi - 1].UPB_ONLYBITS(number)) {
     return NULL;
   }
 
   // Slow case: binary search
-  uint32_t lo = m->UPB_PRIVATE(dense_below);
-  const struct upb_MiniTableField* base = m->UPB_ONLYBITS(fields);
-  while (hi >= (int32_t)lo) {
-    uint32_t mid = ((uint32_t)hi + lo) / 2;
-    uint32_t num = base[mid].UPB_ONLYBITS(number);
-    // These comparison operations allow, on ARM machines, to fuse all these
-    // branches into one comparison followed by two CSELs to set the lo/hi
-    // values, followed by a BNE to continue or terminate the loop. Since binary
-    // search branches are generally unpredictable (50/50 in each direction),
-    // this is a good deal. We use signed for the high, as this decrement may
-    // underflow if mid is 0.
-    int32_t hi_mid = (int32_t)mid - 1;
-    uint32_t lo_mid = mid + 1;
-    if (num == number) {
-      return &base[mid];
-    }
-    if (UPB_UNPREDICTABLE(num < number)) {
-      lo = lo_mid;
-    } else {
-      hi = hi_mid;
-    }
-  }
+  const struct upb_MiniTableField* candidate;
+#ifndef NDEBUG
+  candidate = UPB_PRIVATE(upb_MiniTable_ArmOptimizedLowerBound)(
+      m, lo, search_len, number);
+  UPB_ASSERT(candidate ==
+             UPB_PRIVATE(upb_MiniTable_LowerBound)(m, lo, search_len, number));
+#elif UPB_ARM64_ASM
+  candidate = UPB_PRIVATE(upb_MiniTable_ArmOptimizedLowerBound)(
+      m, lo, search_len, number);
+#else
+  candidate = UPB_PRIVATE(upb_MiniTable_LowerBound)(m, lo, search_len, number);
+#endif
 
-  return NULL;
+  return candidate->UPB_ONLYBITS(number) == number ? candidate : NULL;
 }
 
 UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
