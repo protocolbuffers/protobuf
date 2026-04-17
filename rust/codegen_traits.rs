@@ -8,8 +8,8 @@
 //! Traits that are implemented by codegen types.
 
 use crate::__internal::runtime::{
-    KernelMessage, KernelMessageMut, KernelMessageView, MessageMutInterop, MessageViewInterop,
-    OwnedMessageInterop,
+    KernelMessage, KernelMessageMut, KernelMessageView, MessageMutInner, MessageMutInterop,
+    MessageViewInterop, OwnedMessageInterop,
 };
 use crate::__internal::SealedInternal;
 use crate::AsMut;
@@ -103,6 +103,12 @@ pub trait MessageMut<'msg>: SealedInternal
 {
     #[doc(hidden)]
     type Message: Message;
+
+    #[doc(hidden)]
+    fn as_message_mut_inner(
+        &mut self,
+        _private: crate::__internal::Private,
+    ) -> MessageMutInner<'msg, Self::Message>;
 }
 
 /// This trait allows us to associate a tag with each type of protobuf entity. The tag indicates

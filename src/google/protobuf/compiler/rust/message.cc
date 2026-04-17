@@ -651,6 +651,11 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
 
         impl<'msg> $pb$::MessageMut<'msg> for $Msg$Mut<'msg> {
           type Message = $Msg$;
+
+          fn as_message_mut_inner(&mut self, _private: $pbi$::Private)
+            -> $pbr$::MessageMutInner<'msg, $Msg$> {
+            self.inner.reborrow()
+          }
         }
 
         impl $std$::fmt::Debug for $Msg$Mut<'_> {

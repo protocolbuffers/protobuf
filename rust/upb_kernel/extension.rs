@@ -127,20 +127,17 @@ impl<Extendee: Message, V: Message> ExtGetMut<Extendee, V, MessageTag>
         msg: impl IntoMut<'msg, MutProxied = Extendee>,
     ) -> Mut<'msg, V> {
         let mut msg = msg.into_mut();
+        let msg_inner = msg.as_message_mut_inner(Private);
+        let (msg_ptr, arena_ref): (MessagePtr<Extendee>, &'msg Arena) = msg_inner.ptr_and_arena();
         unsafe {
-            // SAFETY: The arena associated with a `Mut<'msg, _>` proxy lives for at least `'msg`.
-            // `UpbGetArena::get_arena` returns an `&Arena` tied to the local borrow of `msg`,
-            // but we can safely extend it back to `'msg` here because `msg` holds an `&'msg Arena`.
-            let arena_ref: &'msg Arena = std::mem::transmute(msg.get_arena(Private));
-
             // TODO: upb should have a GetOrCreateExtension operation instead of this dance.
             let raw_msg = match upb_Message_HasExtension(
-                msg.get_ptr_mut(Private).raw(),
+                msg_ptr.raw(),
                 self.inner.mini_table().as_ptr(),
             ) {
                 true => {
                     upb_Message_GetExtensionMessage(
-                        msg.get_ptr_mut(Private).raw(),
+                        msg_ptr.raw(),
                         self.inner.mini_table().as_ptr(),
                         NonNull::dangling(), // Not used.
                     )
@@ -149,7 +146,7 @@ impl<Extendee: Message, V: Message> ExtGetMut<Extendee, V, MessageTag>
                     let raw_msg =
                         MessagePtr::<V>::new(arena_ref).expect("alloc should never fail").raw();
                     upb_Message_SetExtensionMessage(
-                        msg.get_ptr_mut(Private).raw(),
+                        msg_ptr.raw(),
                         self.inner.mini_table().as_ptr(),
                         raw_msg,
                         arena_ref.raw(),
@@ -210,11 +207,11 @@ where
         msg: impl IntoMut<'msg, MutProxied = Extendee>,
     ) -> Mut<'msg, Repeated<V>> {
         let mut msg = msg.into_mut();
-
-        let arena_ref: &'msg Arena = unsafe { std::mem::transmute(msg.get_arena(Private)) };
+        let msg_inner = msg.as_message_mut_inner(Private);
+        let (msg_ptr, arena_ref): (MessagePtr<Extendee>, &'msg Arena) = msg_inner.ptr_and_arena();
         let raw_array = unsafe {
             upb_Message_GetExtensionMutableArray(
-                msg.get_ptr_mut(Private).raw(),
+                msg_ptr.raw(),
                 self.inner.mini_table().as_ptr(),
             )
         };
@@ -222,7 +219,7 @@ where
             let new_arr = upb_Array_New(arena_ref.raw(), V::upb_type());
             let mut ptr = new_arr.as_ptr();
             upb_Message_SetExtension(
-                msg.get_ptr_mut(Private).raw(),
+                msg_ptr.raw(),
                 self.inner.mini_table().as_ptr(),
                 &mut ptr as *mut _ as *const core::ffi::c_void,
                 arena_ref.raw(),
