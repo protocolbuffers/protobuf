@@ -1787,7 +1787,8 @@ namespace internal {
 template <typename T>
 inline void CheckIndexInBoundsOrAbort(const RepeatedField<T>& field,
                                       int index) {
-  if (ABSL_PREDICT_FALSE(index < 0 || index >= field.size())) {
+  if (ABSL_PREDICT_FALSE(static_cast<unsigned int>(index) >=
+                         static_cast<unsigned int>(field.size()))) {
     LogIndexOutOfBoundsAndAbort(index, field.size());
   }
 }

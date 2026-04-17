@@ -129,7 +129,8 @@ LogIndexOutOfBoundsAndAbort(
     BoundsCheckMessageType type = BoundsCheckMessageType::kIndex);
 PROTOBUF_EXPORT inline void RuntimeAssertInBounds(int index, int size) {
   if constexpr (GetBoundsCheckMode() == BoundsCheckMode::kAbort) {
-    if (ABSL_PREDICT_FALSE(index < 0 || index >= size)) {
+    if (ABSL_PREDICT_FALSE(static_cast<unsigned int>(index) >=
+                           static_cast<unsigned int>(size))) {
       // "No merge" attribute used to improve debuggability by telling the
       // compiler not to merge these failure paths. Note that this is currently
       // best-effort in clang/llvm.
@@ -340,7 +341,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   PROTOBUF_FUTURE_ADD_NODISCARD const Value<TypeHandler>& Get(int index) const {
     if constexpr (GetBoundsCheckMode() == BoundsCheckMode::kReturnDefault) {
-      if (ABSL_PREDICT_FALSE(index < 0 || index >= current_size_)) {
+      if (ABSL_PREDICT_FALSE((unsigned)(index) >= (unsigned)(current_size_))) {
         // `default_instance()` is not supported for MessageLite and Message.
         if constexpr (TypeHandler::has_default_instance()) {
           LogIndexOutOfBounds(index, current_size_);
