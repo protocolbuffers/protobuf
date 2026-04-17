@@ -40,6 +40,7 @@ cc_library(
     visibility = [
         "//hpb:__subpackages__",
         "//hpb_generator:__subpackages__",
+        "//multiplatform/experimental/collections/android/jni:__pkg__",
     ],
     deps = [
         "//hpb:ptr",
@@ -72,7 +73,10 @@ cc_library(
     name = "extension",
     srcs = ["extension.cc"],
     hdrs = ["extension.h"],
-    visibility = ["//hpb:__subpackages__"],
+    visibility = [
+        "//hpb:__subpackages__",
+        "//multiplatform/experimental/collections/android/jni:__pkg__",
+    ],
     deps = [
         ":interop",
         "//hpb:status",
