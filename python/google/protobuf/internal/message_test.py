@@ -1392,6 +1392,25 @@ class MessageTest(unittest.TestCase):
       except AttributeError:
         self.fail(f'Attribute {attribute} is not accessible.')
 
+  def testMessageMetaDescriptorErrorsPropagate(self, message_module):
+    message_cls = message_module.TestAllTypes
+
+    for exc_type in (KeyboardInterrupt, MemoryError, SystemExit):
+      attr_name = f'_bomb_descriptor_for_test_{exc_type.__name__}'
+
+      class _BombDescriptor(object):
+
+        def __get__(self, obj, objtype=None):
+          raise exc_type('should not be swallowed')
+
+      setattr(message_cls, attr_name, _BombDescriptor())
+      try:
+        with self.subTest(exc_type=exc_type.__name__):
+          with self.assertRaisesRegex(exc_type, 'should not be swallowed'):
+            getattr(message_cls, attr_name)
+      finally:
+        delattr(message_cls, attr_name)
+
   def testEquality(self, message_module):
     m = message_module.TestAllTypes()
     m2 = message_module.TestAllTypes()
