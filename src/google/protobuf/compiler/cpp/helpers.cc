@@ -1151,6 +1151,14 @@ bool IsMicroString(const FieldDescriptor* field, const Options& opts) {
   return opts.experimental_use_micro_string;
 }
 
+absl::optional<uint8_t> MicroStringSSOSize(const FieldDescriptor* field,
+                                           const Options& opts) {
+  if (!IsMicroString(field, opts)) return absl::nullopt;
+
+
+  return absl::nullopt;
+}
+
 bool IsArenaStringPtr(const FieldDescriptor* field, const Options& opts) {
   if (IsMicroString(field, opts)) return false;
   return field->cpp_string_type() == FieldDescriptor::CppStringType::kString ||

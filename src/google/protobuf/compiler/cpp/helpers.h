@@ -378,6 +378,12 @@ inline bool IsString(const FieldDescriptor* field) {
 bool IsArenaStringPtr(const FieldDescriptor* field, const Options& opts);
 bool IsMicroString(const FieldDescriptor* field, const Options& opts);
 
+// If the field is MicroString and has a non-default SSO size, return it.
+// Otherwise, return nullopt.
+// The SSO size can come from pdproto profile, or from test overrides.
+absl::optional<uint8_t> MicroStringSSOSize(const FieldDescriptor* field,
+                                           const Options& opts);
+
 bool IsProfileDriven(const Options& options);
 
 // Returns true if `field` is unlikely to be present based on PDProto profile.
