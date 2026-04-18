@@ -3733,10 +3733,6 @@ typedef struct upb_TaggedAuxPtr {
   uintptr_t ptr;
 } upb_TaggedAuxPtr;
 
-UPB_INLINE bool upb_TaggedAuxPtr_IsNull(upb_TaggedAuxPtr ptr) {
-  return ptr.ptr == 0;
-}
-
 UPB_INLINE bool upb_TaggedAuxPtr_IsExtension(upb_TaggedAuxPtr ptr) {
   return ptr.ptr & 1;
 }
@@ -3757,6 +3753,32 @@ UPB_INLINE upb_Extension* upb_TaggedAuxPtr_Extension(upb_TaggedAuxPtr ptr) {
 UPB_INLINE upb_StringView* upb_TaggedAuxPtr_UnknownData(upb_TaggedAuxPtr ptr) {
   UPB_ASSERT(!upb_TaggedAuxPtr_IsExtension(ptr));
   return (upb_StringView*)(ptr.ptr & ~3ULL);
+}
+
+typedef enum {
+  kUpb_TaggedAuxType_Extension,
+  kUpb_TaggedAuxType_Unknown,
+  kUpb_TaggedAuxType_AliasedUnknown
+} upb_TaggedAuxType;
+
+typedef union {
+  upb_Extension* extension;
+  upb_StringView unknown_data;
+} upb_TaggedAux;
+
+UPB_INLINE upb_TaggedAuxType upb_TaggedAux_Get(upb_TaggedAuxPtr ptr,
+                                               upb_TaggedAux* data) {
+  if (upb_TaggedAuxPtr_IsExtension(ptr)) {
+    data->extension = upb_TaggedAuxPtr_Extension(ptr);
+    return kUpb_TaggedAuxType_Extension;
+  } else if (upb_TaggedAuxPtr_IsUnknownAliased(ptr)) {
+    data->unknown_data = *upb_TaggedAuxPtr_UnknownData(ptr);
+    return kUpb_TaggedAuxType_AliasedUnknown;
+  } else {
+    UPB_ASSERT(upb_TaggedAuxPtr_IsUnknown(ptr));
+    data->unknown_data = *upb_TaggedAuxPtr_UnknownData(ptr);
+    return kUpb_TaggedAuxType_Unknown;
+  }
 }
 
 UPB_INLINE upb_TaggedAuxPtr upb_TaggedAuxPtr_Null(void) {
@@ -16677,6 +16699,8 @@ upb_Message* upb_Message_DeepClone(const upb_Message* msg,
                                    const upb_MiniTable* m, upb_Arena* arena);
 
 // Shallow clones a message using the provided target arena.
+// `msg` must outlive the returned message since all strings, repeated fields,
+// maps, and unknown fields will alias the original message.
 upb_Message* upb_Message_ShallowClone(const upb_Message* msg,
                                       const upb_MiniTable* m, upb_Arena* arena);
 
@@ -16695,8 +16719,10 @@ bool upb_Message_DeepCopy(upb_Message* dst, const upb_Message* src,
                           const upb_MiniTable* m, upb_Arena* arena);
 
 // Shallow copies the message from src to dst.
-void upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
-                             const upb_MiniTable* m);
+// `src` must outlive `dst` since all strings, repeated fields, maps, and
+// unknown fields will alias the original message.
+UPB_API bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
+                                     const upb_MiniTable* m, upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */
