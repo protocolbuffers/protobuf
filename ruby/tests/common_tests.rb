@@ -675,6 +675,24 @@ module CommonTests
     assert_equal m.repeated_msg[0].object_id, m2.repeated_msg[0].object_id
   end
 
+  def test_dup_extensions
+    omit "Native JRuby does not yet support duping extensions" if defined?(JRUBY_VERSION) && Google::Protobuf::IMPLEMENTATION == :NATIVE
+    omit "Skipping extension tests if TestExtensions is not defined" unless defined?(proto_module::TestExtensions)
+
+    m = proto_module::TestExtensions.new
+    ext = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.optional_int32_extension'
+    assert_instance_of Google::Protobuf::FieldDescriptor, ext
+
+    ext.set(m, 42)
+    m2 = m.dup
+
+    assert_equal 42, ext.get(m2)
+
+    ext.set(m, 43)
+    assert_equal 42, ext.get(m2)
+    assert_equal 43, ext.get(m)
+  end
+
   def test_deep_copy
     m = proto_module::TestMessage.new(:optional_int32 => 42,
                                       :repeated_msg => [proto_module::TestMessage2.new(:foo => 100)])

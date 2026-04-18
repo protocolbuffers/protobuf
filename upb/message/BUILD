@@ -344,6 +344,7 @@ cc_test(
         "//upb/port",
         "//upb/test:test_messages_proto2_upb_minitable",
         "//upb/test:test_messages_proto2_upb_proto",
+        "//upb/test:test_proto_upb_minitable",
         "//upb/test:test_upb_proto",
         "//upb/wire",
         "@abseil-cpp//absl/container:flat_hash_set",

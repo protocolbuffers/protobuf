@@ -66,10 +66,6 @@ typedef struct upb_TaggedAuxPtr {
   uintptr_t ptr;
 } upb_TaggedAuxPtr;
 
-UPB_INLINE bool upb_TaggedAuxPtr_IsNull(upb_TaggedAuxPtr ptr) {
-  return ptr.ptr == 0;
-}
-
 UPB_INLINE bool upb_TaggedAuxPtr_IsExtension(upb_TaggedAuxPtr ptr) {
   return ptr.ptr & 1;
 }
@@ -90,6 +86,32 @@ UPB_INLINE upb_Extension* upb_TaggedAuxPtr_Extension(upb_TaggedAuxPtr ptr) {
 UPB_INLINE upb_StringView* upb_TaggedAuxPtr_UnknownData(upb_TaggedAuxPtr ptr) {
   UPB_ASSERT(!upb_TaggedAuxPtr_IsExtension(ptr));
   return (upb_StringView*)(ptr.ptr & ~3ULL);
+}
+
+typedef enum {
+  kUpb_TaggedAuxType_Extension,
+  kUpb_TaggedAuxType_Unknown,
+  kUpb_TaggedAuxType_AliasedUnknown
+} upb_TaggedAuxType;
+
+typedef union {
+  upb_Extension* extension;
+  upb_StringView unknown_data;
+} upb_TaggedAux;
+
+UPB_INLINE upb_TaggedAuxType upb_TaggedAux_Get(upb_TaggedAuxPtr ptr,
+                                               upb_TaggedAux* data) {
+  if (upb_TaggedAuxPtr_IsExtension(ptr)) {
+    data->extension = upb_TaggedAuxPtr_Extension(ptr);
+    return kUpb_TaggedAuxType_Extension;
+  } else if (upb_TaggedAuxPtr_IsUnknownAliased(ptr)) {
+    data->unknown_data = *upb_TaggedAuxPtr_UnknownData(ptr);
+    return kUpb_TaggedAuxType_AliasedUnknown;
+  } else {
+    UPB_ASSERT(upb_TaggedAuxPtr_IsUnknown(ptr));
+    data->unknown_data = *upb_TaggedAuxPtr_UnknownData(ptr);
+    return kUpb_TaggedAuxType_Unknown;
+  }
 }
 
 UPB_INLINE upb_TaggedAuxPtr upb_TaggedAuxPtr_Null(void) {

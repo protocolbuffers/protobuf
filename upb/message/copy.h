@@ -26,6 +26,8 @@ upb_Message* upb_Message_DeepClone(const upb_Message* msg,
                                    const upb_MiniTable* m, upb_Arena* arena);
 
 // Shallow clones a message using the provided target arena.
+// `msg` must outlive the returned message since all strings, repeated fields,
+// maps, and unknown fields will alias the original message.
 upb_Message* upb_Message_ShallowClone(const upb_Message* msg,
                                       const upb_MiniTable* m, upb_Arena* arena);
 
@@ -44,8 +46,10 @@ bool upb_Message_DeepCopy(upb_Message* dst, const upb_Message* src,
                           const upb_MiniTable* m, upb_Arena* arena);
 
 // Shallow copies the message from src to dst.
-void upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
-                             const upb_MiniTable* m);
+// `src` must outlive `dst` since all strings, repeated fields, maps, and
+// unknown fields will alias the original message.
+UPB_API bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
+                                     const upb_MiniTable* m, upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */
