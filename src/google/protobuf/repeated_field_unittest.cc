@@ -1588,7 +1588,7 @@ TEST(RepeatedFieldIsFullTest, DISABLED_MergeFrom) {
   }
 
   TestAllTypes msg;
-  msg.mutable_repeated_bool()->Resize(std::numeric_limits<int>::max(), false);
+  msg.mutable_repeated_bool()->resize(std::numeric_limits<int>::max(), false);
 
   TestAllTypes payload;
   payload.add_repeated_bool(true);
@@ -1605,7 +1605,7 @@ TEST(RepeatedFieldIsFullTest, DISABLED_MergeFromPacked) {
   }
 
   ::proto2_unittest::TestPackedTypes msg;
-  msg.mutable_packed_bool()->Resize(std::numeric_limits<int>::max(), false);
+  msg.mutable_packed_bool()->resize(std::numeric_limits<int>::max(), false);
 
   ::proto2_unittest::TestPackedTypes payload;
   payload.add_packed_bool(true);
