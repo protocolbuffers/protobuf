@@ -11,6 +11,7 @@
 #include "google/protobuf/descriptor.h"
 #include "editions/golden/test_messages_proto2_editions.pb.h"
 #include "editions/golden/test_messages_proto3_editions.pb.h"
+#include "editions/input/test_editions_2024_default_features.pb.h"
 #include "editions/input/test_editions_default_features.pb.h"
 #include "google/protobuf/internal_feature_helper.h"
 #include "google/protobuf/test_textproto.h"
@@ -22,6 +23,7 @@ namespace google {
 namespace protobuf {
 namespace {
 
+using ::protobuf_editions_test::Editions2024DefaultMessage;
 using ::protobuf_editions_test::EditionsDefaultMessage;
 using ::protobuf_test_messages::editions::proto2::TestAllRequiredTypesProto2;
 using ::protobuf_test_messages::editions::proto2::TestAllTypesProto2;
@@ -152,6 +154,40 @@ TEST(Generated, EditionDefaults2023InternalFeatures) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
+                }
+              )pb"));
+}
+
+TEST(Generated, EditionDefaults2024) {
+  const Descriptor* desc = Editions2024DefaultMessage::descriptor();
+  EXPECT_TRUE(desc->FindFieldByName("int32_field")->has_presence());
+  EXPECT_TRUE(
+      desc->FindFieldByName("string_field")->requires_utf8_validation());
+  EXPECT_FALSE(desc->FindFieldByName("enum_field")
+                   ->legacy_enum_field_treated_as_closed());
+  EXPECT_FALSE(desc->FindFieldByName("enum_field")->enum_type()->is_closed());
+  EXPECT_TRUE(desc->FindFieldByName("repeated_int32_field")->is_packed());
+  EXPECT_EQ(desc->FindFieldByName("sub_message_field")->type(),
+            FieldDescriptor::TYPE_MESSAGE);
+}
+
+TEST(Generated, EditionDefaults2024InternalFeatures) {
+  EXPECT_THAT(internal::InternalFeatureHelper::GetFeatures(
+                  *Editions2024DefaultMessage::descriptor()),
+              google::protobuf::EqualsProto(R"pb(
+                field_presence: EXPLICIT
+                enum_type: OPEN
+                repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW
+                enforce_naming_style: STYLE2024
+                default_symbol_visibility: EXPORT_TOP_LEVEL
+                [pb.cpp] {
+                  legacy_closed_enum: false
+                  string_type: VIEW
+                  enum_name_uses_string_view: true
                   repeated_type: LEGACY
                 }
               )pb"));

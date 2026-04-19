@@ -44,6 +44,16 @@ compile_edition_defaults(
 )
 
 compile_edition_defaults(
+    name = "test_defaults_2024",
+    testonly = True,
+    srcs = ["//src/google/protobuf:unittest_features_proto"],
+    maximum_edition = "2024",
+    minimum_edition = "2024",
+    # Test with HEAD protoc for any behavior change, other usages don't need this.
+    protoc = "//src/google/protobuf/compiler:protoc_minimal",
+)
+
+compile_edition_defaults(
     name = "test_defaults_future",
     testonly = True,
     srcs = ["//src/google/protobuf:unittest_features_proto"],
@@ -166,6 +176,7 @@ cc_test(
     data = [
         ":protobuf_defaults",
         ":test_defaults_2023",
+        ":test_defaults_2024",
         ":test_defaults_far_future",
         ":test_defaults_future",
     ],
@@ -378,10 +389,23 @@ cc_proto_library(
     deps = [":test_editions_default_features_proto"],
 )
 
+proto_library(
+    name = "test_editions_2024_default_features_proto",
+    testonly = True,
+    srcs = ["input/test_editions_2024_default_features.proto"],
+)
+
+cc_proto_library(
+    name = "test_editions_2024_default_features_cc_proto",
+    testonly = True,
+    deps = [":test_editions_2024_default_features_proto"],
+)
+
 cc_test(
     name = "generated_files_test",
     srcs = ["generated_files_test.cc"],
     deps = [
+        ":test_editions_2024_default_features_cc_proto",
         ":test_editions_default_features_cc_proto",
         ":test_messages_proto2_editions_cc_proto",
         ":test_messages_proto3_editions_cc_proto",
