@@ -133,8 +133,9 @@ void Builder::BuildExtensions(upb_ExtensionRegistry** exts) {
       if (upb_ExtensionRegistry_Lookup(*exts, ext->UPB_PRIVATE(extendee),
                                        upb_MiniTableExtension_Number(ext)))
         continue;
-      upb_ExtensionRegistry_AddArray(
+      auto status = upb_ExtensionRegistry_AddArray(
           *exts, const_cast<const upb_MiniTableExtension**>(&ext), 1);
+      UPB_ASSERT(status == kUpb_ExtensionRegistryStatus_Ok);
     }
   }
 }

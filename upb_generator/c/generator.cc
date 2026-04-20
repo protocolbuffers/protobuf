@@ -1170,29 +1170,31 @@ void WriteResolveCalls(Context& c, upb::MessageDefPtr msg) {
     upb::FieldDefPtr field = msg.field(i);
     if (!field.message_type() && !field.enum_subdef()) continue;
     if (field.message_type()) {
-      c.Emit(
-          {{"number", absl::StrCat(field.number())},
-           {"msg_mini_table",
-            MessageMiniTableRef(field.message_type(), c.options())}},
-          R"cc(
-            upb_MiniTable_SetSubMessage(
-                mini_table,
-                (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table,
-                                                                     $number$),
-                $msg_mini_table$);
-          )cc");
+      c.Emit({{"number", absl::StrCat(field.number())},
+              {"msg_mini_table",
+               MessageMiniTableRef(field.message_type(), c.options())}},
+             R"cc(
+               if (!upb_MiniTable_SetSubMessage(
+                       mini_table,
+                       (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(
+                           mini_table, $number$),
+                       $msg_mini_table$)) {
+                 abort();
+               }
+             )cc");
     } else if (field.enum_subdef() && field.enum_subdef().is_closed()) {
-      c.Emit(
-          {{"number", absl::StrCat(field.number())},
-           {"enum_mini_table",
-            EnumMiniTableRef(field.enum_subdef(), c.options())}},
-          R"cc(
-            upb_MiniTable_SetSubEnum(
-                mini_table,
-                (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table,
-                                                                     $number$),
-                $enum_mini_table$);
-          )cc");
+      c.Emit({{"number", absl::StrCat(field.number())},
+              {"enum_mini_table",
+               EnumMiniTableRef(field.enum_subdef(), c.options())}},
+             R"cc(
+               if (!upb_MiniTable_SetSubEnum(
+                       mini_table,
+                       (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(
+                           mini_table, $number$),
+                       $enum_mini_table$)) {
+                 abort();
+               }
+             )cc");
     }
   }
 }
