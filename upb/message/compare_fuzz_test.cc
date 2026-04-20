@@ -16,38 +16,25 @@
 namespace upb {
 namespace {
 
+static void CheckExtRegStatus(upb_ExtensionRegistryStatus status) {
+  if (status == kUpb_ExtensionRegistryStatus_OutOfMemory) {
+    absl::ThrowStdBadAlloc();
+  } else {
+    ASSERT_EQ(status, kUpb_ExtensionRegistryStatus_Ok);
+  }
+}
 const upb_ExtensionRegistry* CreateTestExtensionRegistry(upb_Arena* arena) {
   upb_ExtensionRegistry* ext_registry = upb_ExtensionRegistry_New(arena);
-  if (upb_ExtensionRegistry_Add(ext_registry,
-                                upb_test_ModelExtension1_model_ext_ext) !=
-      kUpb_ExtensionRegistryStatus_Ok) {
-    absl::ThrowStdBadAlloc();
-  }
-  if (upb_ExtensionRegistry_Add(ext_registry,
-                                upb_test_ModelExtension2_model_ext_ext) !=
-      kUpb_ExtensionRegistryStatus_Ok) {
-    absl::ThrowStdBadAlloc();
-  }
-  if (upb_ExtensionRegistry_Add(ext_registry,
-                                upb_test_ModelExtension2_model_ext_2_ext) !=
-      kUpb_ExtensionRegistryStatus_Ok) {
-    absl::ThrowStdBadAlloc();
-  }
-  if (upb_ExtensionRegistry_Add(ext_registry,
-                                upb_test_ModelExtension2_model_ext_3_ext) !=
-      kUpb_ExtensionRegistryStatus_Ok) {
-    absl::ThrowStdBadAlloc();
-  }
-  if (upb_ExtensionRegistry_Add(ext_registry,
-                                upb_test_ModelExtension2_model_ext_4_ext) !=
-      kUpb_ExtensionRegistryStatus_Ok) {
-    absl::ThrowStdBadAlloc();
-  }
-  if (upb_ExtensionRegistry_Add(ext_registry,
-                                upb_test_ModelExtension2_model_ext_5_ext) !=
-      kUpb_ExtensionRegistryStatus_Ok) {
-    absl::ThrowStdBadAlloc();
-  }
+  CheckExtRegStatus(upb_ExtensionRegistry_Add(
+      ext_registry, upb_test_ModelExtension1_model_ext_ext));
+  CheckExtRegStatus(upb_ExtensionRegistry_Add(
+      ext_registry, upb_test_ModelExtension2_model_ext_2_ext));
+  CheckExtRegStatus(upb_ExtensionRegistry_Add(
+      ext_registry, upb_test_ModelExtension2_model_ext_3_ext));
+  CheckExtRegStatus(upb_ExtensionRegistry_Add(
+      ext_registry, upb_test_ModelExtension2_model_ext_4_ext));
+  CheckExtRegStatus(upb_ExtensionRegistry_Add(
+      ext_registry, upb_test_ModelExtension2_model_ext_5_ext));
   return ext_registry;
 }
 
