@@ -123,5 +123,26 @@ class DescriptorDatabaseTest(unittest.TestCase):
           'already defined in file '
           '"google/protobuf/unittest.proto"', str(w[0].message))
 
+  def testFindExtensions(self):
+    db = descriptor_database.DescriptorDatabase()
+    file_desc_proto = descriptor_pb2.FileDescriptorProto.FromString(
+        factory_test2_pb2.DESCRIPTOR.serialized_pb
+    )
+    db.Add(file_desc_proto)
+
+    extendee_name = 'google.protobuf.python.internal.Factory1Message'
+    self.assertEqual(
+        file_desc_proto, db.FindFileContainingExtension(extendee_name, 1001)
+    )
+    self.assertEqual(
+        file_desc_proto, db.FindFileContainingExtension(extendee_name, 1004)
+    )
+    self.assertIsNone(db.FindFileContainingExtension(extendee_name, 9999))
+    self.assertEqual(
+        [1001, 1002, 1003, 1004], db.FindAllExtensionNumbers(extendee_name)
+    )
+    self.assertEqual([], db.FindAllExtensionNumbers('does.not.exist'))
+
+
 if __name__ == '__main__':
   unittest.main()
