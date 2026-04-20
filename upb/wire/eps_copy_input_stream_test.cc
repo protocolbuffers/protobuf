@@ -10,13 +10,9 @@
 #include <stddef.h>
 #include <string.h>
 
-#include <cstdint>
 #include <string>
-#include <variant>
 
 #include <gtest/gtest.h>
-#include "upb/base/string_view.h"
-#include "upb/mem/arena.hpp"
 
 namespace {
 

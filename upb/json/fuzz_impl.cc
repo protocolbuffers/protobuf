@@ -1,16 +1,17 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2023 Google LLC.  All rights reserved.
+// Copyright 2024 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
+
+#include "upb/json/fuzz_impl.h"
 
 #include <cstddef>
 #include <cstring>
 #include <string_view>
 
 #include <gtest/gtest.h>
-#include "testing/fuzzing/fuzztest.h"
 #include "upb/base/status.hpp"
 #include "upb/base/upcast.h"
 #include "upb/json/decode.h"
@@ -21,7 +22,7 @@
 #include "upb/mem/arena.hpp"
 #include "upb/reflection/def.hpp"
 
-namespace {
+namespace upb_test {
 
 void DecodeEncodeArbitraryJson(std::string_view json) {
   upb::Arena arena;
@@ -51,12 +52,5 @@ void DecodeEncodeArbitraryJson(std::string_view json) {
                                   options, json_buf, size + 1, status.ptr());
   EXPECT_EQ(written, size);
 }
-FUZZ_TEST(FuzzTest, DecodeEncodeArbitraryJson);
 
-TEST(FuzzTest, UnclosedObjectKey) { DecodeEncodeArbitraryJson("{\" "); }
-
-TEST(FuzzTest, MalformedExponent) {
-  DecodeEncodeArbitraryJson(R"({"val":0XE$})");
-}
-
-}  // namespace
+}  // namespace upb_test
