@@ -699,40 +699,39 @@ void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
         {{"field_name", FieldName(field)},
          {"field_member_name", FieldMemberName(field, /*split=*/false)}});
 
-    p->Emit(
-        {{"offset",
-          [&] {
-            if (weak) {
-              p->Emit("/* weak */ 0,");
-            } else if (split) {
-              p->Emit(
-                  "PROTOBUF_FIELD_OFFSET($Msg$::Impl_::Split, "
-                  "$field_name$_),");
-            } else {
-              p->Emit("PROTOBUF_FIELD_OFFSET($Msg$, $field_member_name$),");
-            }
-          }},
-         {"has_idx",
-          [&] {
-            if (oneof) {
-              p->Emit(absl::StrCat("_Internal::kOneofCaseOffset + ",
-                                   4 * oneof->index(), ","));
-            } else {
-              std::string hb_content =
-                  entry.hasbit_idx >= 0
-                      ? absl::StrCat("_Internal::kHasBitsOffset + ",
-                                     entry.hasbit_idx, ",")
-                      : "-1,";
-              p->Emit(hb_content);
-            }
-          }},
-         {"aux_idx", entry.aux_idx},
-         {"type_card", internal::TypeCardToString(entry.type_card)}},
-        // Use `0|` prefix to eagerly convert the enums to int to avoid
-        // enum-enum operations. They are deprecated in C++20.
-        R"cc(
-          {$offset$, $has_idx$, $aux_idx$, (0 | $type_card$)},
-        )cc");
+    p->Emit({{"offset",
+              [&] {
+                if (weak) {
+                  p->Emit("/* weak */ 0,");
+                } else if (split) {
+                  p->Emit(
+                      "PROTOBUF_FIELD_OFFSET($Msg$::Impl_::Split, "
+                      "$field_name$_),");
+                } else {
+                  p->Emit("PROTOBUF_FIELD_OFFSET($Msg$, $field_member_name$),");
+                }
+              }},
+             {"has_idx",
+              [&] {
+                if (oneof) {
+                  p->Emit(absl::StrCat("_Internal::kOneofCaseOffset + ",
+                                       4 * oneof->index(), ","));
+                } else {
+                  std::string hb_content =
+                      entry.hasbit_idx >= 0
+                          ? absl::StrCat("_Internal::kHasBitsOffset + ",
+                                         entry.hasbit_idx, ",")
+                          : "-1,";
+                  p->Emit(hb_content);
+                }
+              }},
+             {"aux_idx", entry.aux_idx},
+             {"type_card", internal::TypeCardToString(entry.type_card)}},
+            // Use `0|` prefix to eagerly convert the enums to int to avoid
+            // enum-enum operations. They are deprecated in C++20.
+            R"cc(
+              {$offset$, $has_idx$, $aux_idx$, (0 | $type_card$)},
+            )cc");
   }
 }
 

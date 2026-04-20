@@ -1352,23 +1352,22 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
   }
 
   int has_bit_index = has_bit_indices_[field->index()];
-  p->Emit(
-      {{"condition", GenerateConditionMaybeWithProbabilityForField(
-                         has_bit_index, field, options_)},
-       {"check_nondefault_and_emit_body",
-        [&] {
-          // Note that it's possible that the field has explicit presence.
-          // In that case, nondefault check will not be emitted but
-          // emit_body will still be emitted.
-          MayEmitIfNonDefaultCheck(p, "this_.", field, options_,
-                                   std::move(emit_body),
-                                   /*with_enclosing_braces_always=*/false);
-        }}},
-      R"cc(
-        if ($condition$) {
-          $check_nondefault_and_emit_body$;
-        }
-      )cc");
+  p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
+                             has_bit_index, field, options_)},
+           {"check_nondefault_and_emit_body",
+            [&] {
+              // Note that it's possible that the field has explicit presence.
+              // In that case, nondefault check will not be emitted but
+              // emit_body will still be emitted.
+              MayEmitIfNonDefaultCheck(p, "this_.", field, options_,
+                                       std::move(emit_body),
+                                       /*with_enclosing_braces_always=*/false);
+            }}},
+          R"cc(
+            if ($condition$) {
+              $check_nondefault_and_emit_body$;
+            }
+          )cc");
 }
 
 void MessageGenerator::MaybeEmitUpdateCachedHasbits(

@@ -4780,7 +4780,7 @@ TEST(CustomOptions, AggregateOptions) {
             file_options.file().GetExtension(proto2_unittest::fileopt).s());
   EXPECT_EQ("EmbeddedMessageSetElement",
             file_options.mset()
-                .GetExtension(proto2_unittest::AggregateMessageSetElement ::
+                .GetExtension(proto2_unittest::AggregateMessageSetElement::
                                   message_set_extension)
                 .s());
 

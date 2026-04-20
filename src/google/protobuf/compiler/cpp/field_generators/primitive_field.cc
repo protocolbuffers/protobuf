@@ -280,7 +280,6 @@ void SingularPrimitive::GenerateByteSize(io::Printer* p) const {
   )cc");
 }
 
-
 class RepeatedPrimitive final : public FieldGeneratorBase {
  public:
   RepeatedPrimitive(const FieldDescriptor* field, const Options& opts)
