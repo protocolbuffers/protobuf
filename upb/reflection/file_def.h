@@ -10,6 +10,7 @@
 #ifndef UPB_REFLECTION_FILE_DEF_H_
 #define UPB_REFLECTION_FILE_DEF_H_
 
+#include "upb/base/string_view.h"
 #include "upb/reflection/common.h"
 #include "upb/reflection/descriptor_bootstrap.h"
 
@@ -49,6 +50,9 @@ int upb_FileDef_TopLevelMessageCount(const upb_FileDef* f);
 
 const upb_FileDef* upb_FileDef_WeakDependency(const upb_FileDef* f, int i);
 int upb_FileDef_WeakDependencyCount(const upb_FileDef* f);
+
+upb_StringView upb_FileDef_OptionDependency(const upb_FileDef* f, int i);
+int upb_FileDef_OptionDependencyCount(const upb_FileDef* f);
 
 // Returns whether |symbol| is transitively included by |f|
 bool upb_FileDef_Resolves(const upb_FileDef* f, const char* symbol);

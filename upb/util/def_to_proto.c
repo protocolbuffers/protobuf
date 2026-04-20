@@ -591,6 +591,13 @@ static google_protobuf_FileDescriptorProto* filedef_toproto(upb_ToProto_Context*
   const int32_t* weak_dep_nums = _upb_FileDef_WeakDependencyIndexes(f);
   if (n) memcpy(weak_deps, weak_dep_nums, n * sizeof(int32_t));
 
+  n = upb_FileDef_OptionDependencyCount(f);
+  upb_StringView* option_deps =
+      google_protobuf_FileDescriptorProto_resize_option_dependency(proto, n, ctx->arena);
+  for (size_t i = 0; i < n; i++) {
+    option_deps[i] = strviewdup2(ctx, upb_FileDef_OptionDependency(f, i));
+  }
+
   n = upb_FileDef_TopLevelMessageCount(f);
   google_protobuf_DescriptorProto** msgs =
       google_protobuf_FileDescriptorProto_resize_message_type(proto, n, ctx->arena);
