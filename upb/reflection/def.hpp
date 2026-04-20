@@ -14,6 +14,7 @@
 #include <memory>
 #include <string>
 
+#include "third_party/absl/base/throw_delegate.h"
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
@@ -27,7 +28,6 @@
 #include "upb/reflection/descriptor_bootstrap.h"
 #include "upb/reflection/internal/def_pool.h"
 #include "upb/reflection/internal/enum_def.h"
-#include "upb/reflection/message.h"
 
 // Must be last
 #include "upb/port/def.inc"
@@ -65,7 +65,9 @@ class FieldDefPtr {
   std::string MiniDescriptorEncode() const {
     upb::Arena arena;
     upb_StringView md;
-    upb_FieldDef_MiniDescriptorEncode(ptr_, arena.ptr(), &md);
+    if (!upb_FieldDef_MiniDescriptorEncode(ptr_, arena.ptr(), &md)) {
+      absl::ThrowStdBadAlloc();
+    }
     return std::string(md.data, md.size);
   }
 
@@ -207,7 +209,9 @@ class MessageDefPtr {
   std::string MiniDescriptorEncode() const {
     upb::Arena arena;
     upb_StringView md;
-    upb_MessageDef_MiniDescriptorEncode(ptr_, arena.ptr(), &md);
+    if (!upb_MessageDef_MiniDescriptorEncode(ptr_, arena.ptr(), &md)) {
+      absl::ThrowStdBadAlloc();
+    }
     return std::string(md.data, md.size);
   }
 
@@ -423,7 +427,9 @@ class EnumDefPtr {
   std::string MiniDescriptorEncode() const {
     upb::Arena arena;
     upb_StringView md;
-    upb_EnumDef_MiniDescriptorEncode(ptr_, arena.ptr(), &md);
+    if (!upb_EnumDef_MiniDescriptorEncode(ptr_, arena.ptr(), &md)) {
+      absl::ThrowStdBadAlloc();
+    }
     return std::string(md.data, md.size);
   }
 

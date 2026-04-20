@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "absl/base/throw_delegate.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "hpb/status.h"
@@ -89,7 +90,9 @@ absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
 void DeepCopy(upb_Message* target, const upb_Message* source,
               const upb_MiniTable* mini_table, upb_Arena* arena) {
   MessageLock msg_lock(source);
-  upb_Message_DeepCopy(target, source, mini_table, arena);
+  if (!upb_Message_DeepCopy(target, source, mini_table, arena)) {
+    absl::ThrowStdBadAlloc();
+  }
 }
 
 upb_Message* DeepClone(const upb_Message* source,
