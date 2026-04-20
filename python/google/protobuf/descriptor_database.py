@@ -31,6 +31,9 @@ class DescriptorDatabase(object):
     self._file_desc_protos_by_symbol: Dict[
         str, 'descriptor_pb2.FileDescriptorProto'
     ] = {}
+    self._file_desc_protos_by_extension: Dict[
+        str, Dict[int, 'descriptor_pb2.FileDescriptorProto']
+    ] = {}
 
   def Add(self, file_desc_proto: 'descriptor_pb2.FileDescriptorProto') -> None:
     """Adds the FileDescriptorProto and its types to this database.
@@ -66,15 +69,14 @@ class DescriptorDatabase(object):
             '.'.join((package, enum_value.name)) if package else enum_value.name
         ] = file_desc_proto
     for extension in file_desc_proto.extension:
-      self._AddSymbol(
-          ('.'.join((package, extension.name)) if package else extension.name),
-          file_desc_proto,
-      )
+      self._AddExtension(package, extension, file_desc_proto)
     for service in file_desc_proto.service:
       self._AddSymbol(
           ('.'.join((package, service.name)) if package else service.name),
           file_desc_proto,
       )
+    for message in file_desc_proto.message_type:
+      self._AddNestedExtensions(message, file_desc_proto)
 
   def FindFileByName(self, name: str) -> 'descriptor_pb2.FileDescriptorProto':
     """Finds the file descriptor proto by file name.
@@ -143,14 +145,14 @@ class DescriptorDatabase(object):
         raise KeyError(symbol)
 
   def FindFileContainingExtension(
-      self, extendee_name: str, extension_number: int  # pylint: disable=unused-argument
+      self, extendee_name: str, extension_number: int
   ) -> Optional['descriptor_pb2.FileDescriptorProto']:
-    # TODO: implement this API.
-    return None
+    return self._file_desc_protos_by_extension.get(extendee_name, {}).get(
+        extension_number
+    )
 
-  def FindAllExtensionNumbers(self, extendee_name: str) -> list[int]:  # pylint: disable=unused-argument
-    # TODO: implement this API.
-    return []
+  def FindAllExtensionNumbers(self, extendee_name: str) -> list[int]:
+    return sorted(self._file_desc_protos_by_extension.get(extendee_name, {}))
 
   def _AddSymbol(
       self, name: str, file_desc_proto: 'descriptor_pb2.FileDescriptorProto'
@@ -162,6 +164,32 @@ class DescriptorDatabase(object):
                   self._file_desc_protos_by_symbol[name].name + '"')
       warnings.warn(warn_msg, RuntimeWarning)
     self._file_desc_protos_by_symbol[name] = file_desc_proto
+
+  def _AddExtension(
+      self,
+      package: str,
+      extension: 'descriptor_pb2.FieldDescriptorProto',
+      file_desc_proto: 'descriptor_pb2.FileDescriptorProto',
+  ) -> None:
+    self._AddSymbol(
+        '.'.join((package, extension.name)) if package else extension.name,
+        file_desc_proto,
+    )
+    if extension.extendee.startswith('.'):
+      self._file_desc_protos_by_extension.setdefault(
+          extension.extendee[1:], {}
+      )[extension.number] = file_desc_proto
+
+  def _AddNestedExtensions(
+      self,
+      desc_proto: 'descriptor_pb2.DescriptorProto',
+      file_desc_proto: 'descriptor_pb2.FileDescriptorProto',
+  ) -> None:
+    package = file_desc_proto.package
+    for nested_type in desc_proto.nested_type:
+      self._AddNestedExtensions(nested_type, file_desc_proto)
+    for extension in desc_proto.extension:
+      self._AddExtension(package, extension, file_desc_proto)
 
 
 def _ExtractSymbols(
