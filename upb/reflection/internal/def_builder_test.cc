@@ -45,7 +45,7 @@ INSTANTIATE_TEST_SUITE_P(FullIdentTest, FullIdentTestBase,
                              {"foo.", true},
                              {"foo", true},
 
-                             {"foo.7bar", false},
+                             {"foo.7bar", true},
                              {".foo", false},
                              {"#", false},
                              {".", false},
@@ -78,7 +78,7 @@ INSTANTIATE_TEST_SUITE_P(PartIdentTest, PartIdentTestBase,
                              {"foo1", true},
 
                              {"foo.bar", false},
-                             {"1foo", false},
+                             {"1foo", true},
                              {"#", false},
                              {".", false},
                              {"", false}}));

@@ -81,7 +81,7 @@ static void _upb_DefBuilder_CheckIdentNotFull(upb_DefBuilder* ctx,
     const char c = name.data[i];
     const char d = c | 0x20;  // force lowercase
     const bool is_alpha = (('a' <= d) & (d <= 'z')) | (c == '_');
-    const bool is_numer = ('0' <= c) & (c <= '9') & (i != 0);
+    const bool is_numer = ('0' <= c) & (c <= '9');
 
     good &= is_alpha | is_numer;
   }
@@ -329,20 +329,15 @@ void _upb_DefBuilder_CheckIdentSlow(upb_DefBuilder* ctx, upb_StringView name,
             UPB_STRINGVIEW_ARGS(name));
       }
       start = true;
-    } else if (start) {
-      if (!upb_isletter(c)) {
-        _upb_DefBuilder_Errf(ctx,
-                             "invalid name: path components must start with a "
-                             "letter (" UPB_STRINGVIEW_FORMAT ")",
-                             UPB_STRINGVIEW_ARGS(name));
+    } else {
+      if (!upb_isalphanum(c)) {
+        _upb_DefBuilder_Errf(
+            ctx,
+            "invalid name: non-alphanumeric character (" UPB_STRINGVIEW_FORMAT
+            ")",
+            UPB_STRINGVIEW_ARGS(name));
       }
       start = false;
-    } else if (!upb_isalphanum(c)) {
-      _upb_DefBuilder_Errf(
-          ctx,
-          "invalid name: non-alphanumeric character (" UPB_STRINGVIEW_FORMAT
-          ")",
-          UPB_STRINGVIEW_ARGS(name));
     }
   }
   if (start) {
