@@ -57,7 +57,7 @@ static void AddFile(google::protobuf::FileDescriptorProto& file, upb::DefPool* p
   NullErrorCollector collector;
   const google::protobuf::FileDescriptor* file_desc =
       desc_pool->BuildFileCollectingErrors(file, &collector);
-
+  fprintf(stderr, "\na new file\n");
   if (file_desc != nullptr) {
     // The file descriptor was valid according to proto2.
     google::protobuf::FileDescriptorProto normalized_file;
@@ -70,18 +70,16 @@ static void AddFile(google::protobuf::FileDescriptorProto& file, upb::DefPool* p
         serialized.data(), serialized.size(), arena.ptr());
     ASSERT_NE(proto, nullptr);
     upb::FileDefPtr file_def = pool->AddFile(proto, &status);
-
-    // Ideally we could assert that file_def is present here.  After all, any
-    // descriptor accepted by C++ should be by definition valid.  However C++
-    // performs some of its validation at the .proto file parser level instead
-    // of when validating descriptors.  As as result, C++ will accept some
-    // unreasonable descriptors like:
-    //   file { name: "" package: "0" }
-    //
-    // There is no .proto file that will produce this descriptor, but
-    // BuildFile() accepts it.  We should probably clean up these cases so C++
-    // will reject them too.
-    if (!file_def) return;
+    fprintf(stderr, "\n!!! DEBUG: status: %s\n", status.ok() ? "ok" : "not ok");
+    if (!file_def) {
+      fprintf(stderr, "\n!!! DEBUG: error message: %s\n",
+              status.error_message());
+      fprintf(stderr,
+              "\n!!! DEBUG: file_def is null for supposedly valid proto: %s\n",
+              normalized_file.DebugString().c_str());
+      fflush(stderr);
+    }
+    ASSERT_TRUE(file_def);
 
     ASSERT_TRUE(status.ok()) << status.error_message();
     google_protobuf_FileDescriptorProto* upb_proto =
@@ -92,8 +90,15 @@ static void AddFile(google::protobuf::FileDescriptorProto& file, upb::DefPool* p
     google::protobuf::FileDescriptorProto google_proto;
     bool ok = google_proto.ParseFromString(absl::string_view(buf, size));
     ASSERT_TRUE(ok);
+    fprintf(stderr, "!!! DEBUG: google_proto: %s\n",
+            google_proto.DebugString().c_str());
+    fprintf(stderr, "!!! DEBUG: normalized_file: %s\n",
+            normalized_file.DebugString().c_str());
+    fflush(stderr);
     EXPECT_THAT(google_proto, EqualsProtoTreatNansAsEqual(normalized_file));
   } else {
+    fprintf(stderr, "!!! DEBUG: file_desc is null for proto, skipping\n");
+    fflush(stderr);
     // This file was invalid according to proto2.  When we parse it with upb,
     // it may or may not be accepted, since upb does not perform as much
     // validation as proto2.  However it must not crash.

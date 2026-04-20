@@ -68,6 +68,8 @@ void _upb_DefBuilder_Errf(upb_DefBuilder* ctx, const char* fmt, ...) {
 }
 
 void _upb_DefBuilder_OomErr(upb_DefBuilder* ctx) {
+  fprintf(stderr, "!!! DEBUG: _upb_DefBuilder_OomErr\n");
+  fflush(stderr);
   upb_Status_SetErrorMessage(ctx->status, "out of memory");
   _upb_DefBuilder_FailJmp(ctx);
 }
@@ -81,7 +83,7 @@ static void _upb_DefBuilder_CheckIdentNotFull(upb_DefBuilder* ctx,
     const char c = name.data[i];
     const char d = c | 0x20;  // force lowercase
     const bool is_alpha = (('a' <= d) & (d <= 'z')) | (c == '_');
-    const bool is_numer = ('0' <= c) & (c <= '9') & (i != 0);
+    const bool is_numer = ('0' <= c) & (c <= '9');
 
     good &= is_alpha | is_numer;
   }
@@ -329,20 +331,15 @@ void _upb_DefBuilder_CheckIdentSlow(upb_DefBuilder* ctx, upb_StringView name,
             UPB_STRINGVIEW_ARGS(name));
       }
       start = true;
-    } else if (start) {
-      if (!upb_isletter(c)) {
-        _upb_DefBuilder_Errf(ctx,
-                             "invalid name: path components must start with a "
-                             "letter (" UPB_STRINGVIEW_FORMAT ")",
-                             UPB_STRINGVIEW_ARGS(name));
+    } else {
+      if (!upb_isalphanum(c)) {
+        _upb_DefBuilder_Errf(
+            ctx,
+            "invalid name: non-alphanumeric character (" UPB_STRINGVIEW_FORMAT
+            ")",
+            UPB_STRINGVIEW_ARGS(name));
       }
       start = false;
-    } else if (!upb_isalphanum(c)) {
-      _upb_DefBuilder_Errf(
-          ctx,
-          "invalid name: non-alphanumeric character (" UPB_STRINGVIEW_FORMAT
-          ")",
-          UPB_STRINGVIEW_ARGS(name));
     }
   }
   if (start) {
@@ -419,7 +416,11 @@ const google_protobuf_FeatureSet* _upb_DefBuilder_DoResolveFeatures(
   upb_DecodeStatus dec_status =
       upb_Decode(child_bytes, child_size, UPB_UPCAST(resolved),
                  UPB_DESC_MINITABLE(FeatureSet), NULL, 0, ctx->arena);
-  if (dec_status != kUpb_DecodeStatus_Ok) _upb_DefBuilder_OomErr(ctx);
+  if (dec_status != kUpb_DecodeStatus_Ok) {
+    fprintf(stderr, "!!! DEBUG: failed to decode feature set: %d\n",
+            dec_status);
+    _upb_DefBuilder_OomErr(ctx);
+  }
 
   return resolved;
 }
