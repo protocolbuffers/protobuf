@@ -46,10 +46,10 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-static uint32_t encode_zz32(int32_t n) {
+static uint32_t upb_Encoder_ZigZag32(int32_t n) {
   return ((uint32_t)n << 1) ^ (n >> 31);
 }
-static uint64_t encode_zz64(int64_t n) {
+static uint64_t upb_Encoder_ZigZag64(int64_t n) {
   return ((uint64_t)n << 1) ^ (n >> 63);
 }
 
@@ -63,9 +63,9 @@ typedef struct {
   int options;
   int depth;
   _upb_mapsorter sorter;
-} upb_encstate;
+} upb_Encoder;
 
-UPB_NORETURN static void encode_err(upb_encstate* e, upb_EncodeStatus s) {
+UPB_NORETURN static void encode_err(upb_Encoder* e, upb_EncodeStatus s) {
   UPB_ASSERT(s != kUpb_EncodeStatus_Ok);
   e->status = s;
   UPB_LONGJMP(e->err, 1);
@@ -76,8 +76,8 @@ UPB_NORETURN static void encode_err(upb_encstate* e, upb_EncodeStatus s) {
 // the end, so we must avoid NULL - NULL. C++ defines it though.
 static char initial_buf_sentinel;
 
-UPB_NOINLINE static char* encode_growbuffer(char* ptr, upb_encstate* e,
-                                            size_t bytes) {
+UPB_NOINLINE static char* upb_Encoder_GrowBuffer(upb_Encoder* e, char* ptr,
+                                                 size_t bytes) {
   size_t old_size = e->limit - e->buf;
   size_t needed_size = bytes + (e->limit - ptr);
   if (needed_size < bytes) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
@@ -103,16 +103,16 @@ UPB_NOINLINE static char* encode_growbuffer(char* ptr, upb_encstate* e,
 /* Call to ensure that at least `bytes` bytes are available for writing at
  * ptr. */
 UPB_FORCEINLINE
-char* encode_reserve(char* ptr, upb_encstate* e, size_t bytes) {
+char* upb_Encoder_Reserve(upb_Encoder* e, char* ptr, size_t bytes) {
   if ((size_t)(ptr - e->buf) < bytes) {
-    return encode_growbuffer(ptr, e, bytes);
+    return upb_Encoder_GrowBuffer(e, ptr, bytes);
   }
 
   return ptr - bytes;
 }
 
-static char* encode_bytes_unchecked(char* ptr, upb_encstate* e,
-                                    const void* data, size_t len) {
+static char* upb_Encoder_EncodeBytesUnchecked(upb_Encoder* e, char* ptr,
+                                              const void* data, size_t len) {
   if (len == 0) return ptr; /* memcpy() with zero size is UB */
   ptr -= len;
   memcpy(ptr, data, len);
@@ -120,24 +120,24 @@ static char* encode_bytes_unchecked(char* ptr, upb_encstate* e,
 }
 
 /* Writes the given bytes to the buffer, handling reserve/advance. */
-static char* encode_bytes(char* ptr, upb_encstate* e, const void* data,
-                          size_t len) {
+static char* upb_Encoder_EncodeBytes(upb_Encoder* e, char* ptr,
+                                     const void* data, size_t len) {
   if (len == 0) return ptr; /* memcpy() with zero size is UB */
-  ptr = encode_reserve(ptr, e, len);
+  ptr = upb_Encoder_Reserve(e, ptr, len);
   memcpy(ptr, data, len);
   return ptr;
 }
 
-static char* encode_fixed64_unchecked(char* ptr, upb_encstate* e,
-                                      uint64_t val) {
+static char* upb_Encoder_EncodeFixed64Unchecked(upb_Encoder* e, char* ptr,
+                                                uint64_t val) {
   val = upb_BigEndian64(val);
-  return encode_bytes_unchecked(ptr, e, &val, sizeof(uint64_t));
+  return upb_Encoder_EncodeBytesUnchecked(e, ptr, &val, sizeof(uint64_t));
 }
 
-static char* encode_fixed32_unchecked(char* ptr, upb_encstate* e,
-                                      uint32_t val) {
+static char* upb_Encoder_EncodeFixed32Unchecked(upb_Encoder* e, char* ptr,
+                                                uint32_t val) {
   val = upb_BigEndian32(val);
-  return encode_bytes_unchecked(ptr, e, &val, sizeof(uint32_t));
+  return upb_Encoder_EncodeBytesUnchecked(e, ptr, &val, sizeof(uint32_t));
 }
 
 #define UPB_PB_VARINT_MAX_LEN 10
@@ -162,9 +162,10 @@ static char* encode_fixed32_unchecked(char* ptr, upb_encstate* e,
 #define UPB_BTI_NOP
 #define UPB_BTI_SHIFT_IMM "3\n"
 #endif
-UPB_NOINLINE static char* encode_longvarint(char* ptr, upb_encstate* e,
-                                            uint64_t val) {
-  ptr = encode_reserve(ptr, e, UPB_PB_VARINT_MAX_LEN);
+UPB_NOINLINE static char* upb_Encoder_EncodeLongVarint(upb_Encoder* e,
+                                                       char* ptr,
+                                                       uint64_t val) {
+  ptr = upb_Encoder_Reserve(e, ptr, UPB_PB_VARINT_MAX_LEN);
   uint64_t clz;
   __asm__("clz %[cnt], %[val]\n" : [cnt] "=r"(clz) : [val] "r"(val));
 
@@ -253,8 +254,9 @@ UPB_NOINLINE static char* encode_longvarint(char* ptr, upb_encstate* e,
 #undef UPB_BTI_SHIFT_IMM
 #else
 UPB_NOINLINE
-static char* encode_longvarint(char* ptr, upb_encstate* e, uint64_t val) {
-  ptr = encode_reserve(ptr, e, UPB_PB_VARINT_MAX_LEN);
+static char* upb_Encoder_EncodeLongVarint(upb_Encoder* e, char* ptr,
+                                          uint64_t val) {
+  ptr = upb_Encoder_Reserve(e, ptr, UPB_PB_VARINT_MAX_LEN);
   size_t len = 0;
   do {
     uint8_t byte = val & 0x7fU;
@@ -269,82 +271,89 @@ static char* encode_longvarint(char* ptr, upb_encstate* e, uint64_t val) {
 #endif
 
 UPB_FORCEINLINE
-char* encode_varint_unchecked(char* ptr, upb_encstate* e, uint64_t val) {
+char* upb_Encoder_EncodeVarintUnchecked(upb_Encoder* e, char* ptr,
+                                        uint64_t val) {
   if (val < 128) {
     --ptr;
     *ptr = val;
     return ptr;
   } else {
-    return encode_longvarint(ptr, e, val);
+    return upb_Encoder_EncodeLongVarint(e, ptr, val);
   }
 }
 UPB_FORCEINLINE
-char* encode_varint(char* ptr, upb_encstate* e, uint64_t val) {
+char* upb_Encoder_EncodeVarint(upb_Encoder* e, char* ptr, uint64_t val) {
   if (val < 128 && ptr != e->buf) {
     --ptr;
     *ptr = val;
     return ptr;
   } else {
-    return encode_longvarint(ptr, e, val);
+    return upb_Encoder_EncodeLongVarint(e, ptr, val);
   }
 }
 
 UPB_NOINLINE
-char* encode_longlength(char* ptr, upb_encstate* e, uint64_t val) {
+char* upb_Encoder_EncodeLongLength(upb_Encoder* e, char* ptr, uint64_t val) {
   if (val > INT32_MAX) {
     encode_err(e, kUpb_EncodeStatus_MaxSizeExceeded);
   }
-  return encode_longvarint(ptr, e, val);
+  return upb_Encoder_EncodeLongVarint(e, ptr, val);
 }
 
 UPB_FORCEINLINE
-char* encode_length(char* ptr, upb_encstate* e, uint64_t val) {
+char* upb_Encoder_EncodeLength(upb_Encoder* e, char* ptr, uint64_t val) {
   if (val < 128 && ptr != e->buf) {
     --ptr;
     *ptr = val;
     return ptr;
   } else {
-    return encode_longlength(ptr, e, val);
+    return upb_Encoder_EncodeLongLength(e, ptr, val);
   }
 }
 
 UPB_FORCEINLINE
-char* encode_length_unchecked(char* ptr, upb_encstate* e, uint64_t val) {
+char* upb_Encoder_EncodeLengthUnchecked(upb_Encoder* e, char* ptr,
+                                        uint64_t val) {
   if (val < 128) {
     --ptr;
     *ptr = val;
     return ptr;
   } else {
-    return encode_longlength(ptr, e, val);
+    return upb_Encoder_EncodeLongLength(e, ptr, val);
   }
 }
 
-static char* encode_double_unchecked(char* ptr, upb_encstate* e, double d) {
+static char* upb_Encoder_EncodeDoubleUnchecked(upb_Encoder* e, char* ptr,
+                                               double d) {
   uint64_t u64;
   UPB_STATIC_ASSERT(sizeof(double) == sizeof(uint64_t), "bad double size");
   memcpy(&u64, &d, sizeof(uint64_t));
-  return encode_fixed64_unchecked(ptr, e, u64);
+  return upb_Encoder_EncodeFixed64Unchecked(e, ptr, u64);
 }
 
-static char* encode_float_unchecked(char* ptr, upb_encstate* e, float d) {
+static char* upb_Encoder_EncodeFloatUnchecked(upb_Encoder* e, char* ptr,
+                                              float d) {
   uint32_t u32;
   UPB_STATIC_ASSERT(sizeof(float) == sizeof(uint32_t), "bad float size");
   memcpy(&u32, &d, sizeof(uint32_t));
-  return encode_fixed32_unchecked(ptr, e, u32);
+  return upb_Encoder_EncodeFixed32Unchecked(e, ptr, u32);
 }
 
-static char* encode_tag_unchecked(char* ptr, upb_encstate* e,
-                                  uint32_t field_number, uint8_t wire_type) {
-  return encode_varint_unchecked(ptr, e, (field_number << 3) | wire_type);
+static char* upb_Encoder_EncodeTagUnchecked(upb_Encoder* e, char* ptr,
+                                            uint32_t field_number,
+                                            uint8_t wire_type) {
+  return upb_Encoder_EncodeVarintUnchecked(e, ptr,
+                                           (field_number << 3) | wire_type);
 }
 
-static char* encode_tag(char* ptr, upb_encstate* e, uint32_t field_number,
-                        uint8_t wire_type) {
-  return encode_varint(ptr, e, (field_number << 3) | wire_type);
+static char* upb_Encoder_EncodeTag(upb_Encoder* e, char* ptr,
+                                   uint32_t field_number, uint8_t wire_type) {
+  return upb_Encoder_EncodeVarint(e, ptr, (field_number << 3) | wire_type);
 }
 
-static char* encode_fixedarray(char* ptr, upb_encstate* e, const upb_Array* arr,
-                               size_t elem_size, uint32_t tag) {
+static char* upb_Encoder_EncodeFixedArray(upb_Encoder* e, char* ptr,
+                                          const upb_Array* arr,
+                                          size_t elem_size, uint32_t tag) {
   size_t bytes = upb_Array_Size(arr) * elem_size;
   const char* data = upb_Array_DataPtr(arr);
   const char* arr_ptr = data + bytes - elem_size;
@@ -355,79 +364,82 @@ static char* encode_fixedarray(char* ptr, upb_encstate* e, const upb_Array* arr,
         uint32_t val;
         memcpy(&val, arr_ptr, sizeof(val));
         val = upb_BigEndian32(val);
-        ptr = encode_bytes(ptr, e, &val, elem_size);
+        ptr = upb_Encoder_EncodeBytes(e, ptr, &val, elem_size);
       } else {
         UPB_ASSERT(elem_size == 8);
         uint64_t val;
         memcpy(&val, arr_ptr, sizeof(val));
         val = upb_BigEndian64(val);
-        ptr = encode_bytes(ptr, e, &val, elem_size);
+        ptr = upb_Encoder_EncodeBytes(e, ptr, &val, elem_size);
       }
 
       if (tag) {
-        ptr = encode_varint(ptr, e, tag);
+        ptr = upb_Encoder_EncodeVarint(e, ptr, tag);
       }
       if (arr_ptr == data) break;
       arr_ptr -= elem_size;
     }
     return ptr;
   } else {
-    return encode_bytes(ptr, e, data, bytes);
+    return upb_Encoder_EncodeBytes(e, ptr, data, bytes);
   }
 }
 
-static char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
-                            const upb_MiniTable* m, size_t* size);
+static char* upb_Encoder_EncodeMessage(upb_Encoder* e, char* ptr,
+                                       const upb_Message* msg,
+                                       const upb_MiniTable* m, size_t* size);
 
-static char* encode_scalar(char* ptr, upb_encstate* e, const void* field_mem,
-                           const upb_MiniTableField* f) {
+static char* upb_Encoder_EncodeScalar(upb_Encoder* e, char* ptr,
+                                      const void* field_mem,
+                                      const upb_MiniTableField* f) {
   // Max size is tag + 10 bytes for max varint or 8 for largest fixed size
-#define CASE(ctype, type, wtype, encodeval)                                   \
-  {                                                                           \
-    const size_t bytes = UPB_PB_VARINT32_MAX_LEN + UPB_PB_VARINT_MAX_LEN;     \
-    ptr = encode_reserve(ptr, e, bytes);                                      \
-    ptr += bytes;                                                             \
-    const ctype val = *(const ctype*)field_mem;                               \
-    ptr = encode_##type##_unchecked(ptr, e, encodeval);                       \
-    return encode_tag_unchecked(ptr, e, upb_MiniTableField_Number(f), wtype); \
+#define CASE(ctype, type, wtype, encodeval)                               \
+  {                                                                       \
+    const size_t bytes = UPB_PB_VARINT32_MAX_LEN + UPB_PB_VARINT_MAX_LEN; \
+    ptr = upb_Encoder_Reserve(e, ptr, bytes);                             \
+    ptr += bytes;                                                         \
+    const ctype val = *(const ctype*)field_mem;                           \
+    ptr = upb_Encoder_Encode##type##Unchecked(e, ptr, encodeval);         \
+    return upb_Encoder_EncodeTagUnchecked(                                \
+        e, ptr, upb_MiniTableField_Number(f), wtype);                     \
   }
 
   switch (f->UPB_PRIVATE(descriptortype)) {
     case kUpb_FieldType_Double:
-      CASE(double, double, kUpb_WireType_64Bit, val);
+      CASE(double, Double, kUpb_WireType_64Bit, val);
     case kUpb_FieldType_Float:
-      CASE(float, float, kUpb_WireType_32Bit, val);
+      CASE(float, Float, kUpb_WireType_32Bit, val);
     case kUpb_FieldType_Int64:
     case kUpb_FieldType_UInt64:
-      CASE(uint64_t, varint, kUpb_WireType_Varint, val);
+      CASE(uint64_t, Varint, kUpb_WireType_Varint, val);
     case kUpb_FieldType_UInt32:
-      CASE(uint32_t, varint, kUpb_WireType_Varint, val);
+      CASE(uint32_t, Varint, kUpb_WireType_Varint, val);
     case kUpb_FieldType_Int32:
     case kUpb_FieldType_Enum:
-      CASE(int32_t, varint, kUpb_WireType_Varint, (int64_t)val);
+      CASE(int32_t, Varint, kUpb_WireType_Varint, (int64_t)val);
     case kUpb_FieldType_SFixed64:
     case kUpb_FieldType_Fixed64:
-      CASE(uint64_t, fixed64, kUpb_WireType_64Bit, val);
+      CASE(uint64_t, Fixed64, kUpb_WireType_64Bit, val);
     case kUpb_FieldType_Fixed32:
     case kUpb_FieldType_SFixed32:
-      CASE(uint32_t, fixed32, kUpb_WireType_32Bit, val);
+      CASE(uint32_t, Fixed32, kUpb_WireType_32Bit, val);
     case kUpb_FieldType_Bool:
-      CASE(bool, varint, kUpb_WireType_Varint, val);
+      CASE(bool, Varint, kUpb_WireType_Varint, val);
     case kUpb_FieldType_SInt32:
-      CASE(int32_t, varint, kUpb_WireType_Varint, encode_zz32(val));
+      CASE(int32_t, Varint, kUpb_WireType_Varint, upb_Encoder_ZigZag32(val));
     case kUpb_FieldType_SInt64:
-      CASE(int64_t, varint, kUpb_WireType_Varint, encode_zz64(val));
+      CASE(int64_t, Varint, kUpb_WireType_Varint, upb_Encoder_ZigZag64(val));
     case kUpb_FieldType_String:
     case kUpb_FieldType_Bytes: {
       upb_StringView view = *(upb_StringView*)field_mem;
       const size_t max_size =
           UPB_PB_VARINT32_MAX_LEN + UPB_PB_VARINT32_MAX_LEN + view.size;
-      ptr = encode_reserve(ptr, e, max_size);
+      ptr = upb_Encoder_Reserve(e, ptr, max_size);
       ptr += max_size;
-      ptr = encode_bytes_unchecked(ptr, e, view.data, view.size);
-      ptr = encode_length_unchecked(ptr, e, view.size);
-      return encode_tag_unchecked(ptr, e, upb_MiniTableField_Number(f),
-                                  kUpb_WireType_Delimited);
+      ptr = upb_Encoder_EncodeBytesUnchecked(e, ptr, view.data, view.size);
+      ptr = upb_Encoder_EncodeLengthUnchecked(e, ptr, view.size);
+      return upb_Encoder_EncodeTagUnchecked(
+          e, ptr, upb_MiniTableField_Number(f), kUpb_WireType_Delimited);
     }
     case kUpb_FieldType_Group: {
       size_t size;
@@ -437,12 +449,12 @@ static char* encode_scalar(char* ptr, upb_encstate* e, const void* field_mem,
         return ptr;
       }
       if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
-      ptr = encode_tag(ptr, e, upb_MiniTableField_Number(f),
-                       kUpb_WireType_EndGroup);
-      ptr = encode_message(ptr, e, submsg, subm, &size);
+      ptr = upb_Encoder_EncodeTag(e, ptr, upb_MiniTableField_Number(f),
+                                  kUpb_WireType_EndGroup);
+      ptr = upb_Encoder_EncodeMessage(e, ptr, submsg, subm, &size);
       e->depth++;
-      return encode_tag(ptr, e, upb_MiniTableField_Number(f),
-                        kUpb_WireType_StartGroup);
+      return upb_Encoder_EncodeTag(e, ptr, upb_MiniTableField_Number(f),
+                                   kUpb_WireType_StartGroup);
     }
     case kUpb_FieldType_Message: {
       size_t size;
@@ -452,14 +464,14 @@ static char* encode_scalar(char* ptr, upb_encstate* e, const void* field_mem,
         return ptr;
       }
       if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
-      ptr = encode_message(ptr, e, submsg, subm, &size);
+      ptr = upb_Encoder_EncodeMessage(e, ptr, submsg, subm, &size);
       e->depth++;
       size_t max_size = UPB_PB_VARINT32_MAX_LEN + UPB_PB_VARINT32_MAX_LEN;
-      ptr = encode_reserve(ptr, e, max_size);
+      ptr = upb_Encoder_Reserve(e, ptr, max_size);
       ptr += max_size;
-      ptr = encode_length_unchecked(ptr, e, size);
-      return encode_tag_unchecked(ptr, e, upb_MiniTableField_Number(f),
-                                  kUpb_WireType_Delimited);
+      ptr = upb_Encoder_EncodeLengthUnchecked(e, ptr, size);
+      return upb_Encoder_EncodeTagUnchecked(
+          e, ptr, upb_MiniTableField_Number(f), kUpb_WireType_Delimited);
     }
     default:
       UPB_UNREACHABLE();
@@ -467,8 +479,9 @@ static char* encode_scalar(char* ptr, upb_encstate* e, const void* field_mem,
 #undef CASE
 }
 
-static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
-                          const upb_MiniTableField* f) {
+static char* upb_Encoder_EncodeArray(upb_Encoder* e, char* ptr,
+                                     const upb_Message* msg,
+                                     const upb_MiniTableField* f) {
   const upb_Array* arr = *UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), upb_Array*);
   bool packed = upb_MiniTableField_IsPacked(f);
   size_t pre_len = e->limit - ptr;
@@ -477,46 +490,46 @@ static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
     return ptr;
   }
 
-#define VARINT_CASE(ctype, encode)                              \
-  {                                                             \
-    const ctype* start = upb_Array_DataPtr(arr);                \
-    const ctype* arr_ptr = start + upb_Array_Size(arr);         \
-    if (packed) {                                               \
-      do {                                                      \
-        arr_ptr--;                                              \
-        ptr = encode_varint(ptr, e, encode);                    \
-      } while (arr_ptr != start);                               \
-    } else {                                                    \
-      uint32_t number = upb_MiniTableField_Number(f);           \
-      do {                                                      \
-        arr_ptr--;                                              \
-        ptr = encode_varint(ptr, e, encode);                    \
-        ptr = encode_tag(ptr, e, number, kUpb_WireType_Varint); \
-      } while (arr_ptr != start);                               \
-    }                                                           \
-  }                                                             \
+#define VARINT_CASE(ctype, encode)                                         \
+  {                                                                        \
+    const ctype* start = upb_Array_DataPtr(arr);                           \
+    const ctype* arr_ptr = start + upb_Array_Size(arr);                    \
+    if (packed) {                                                          \
+      do {                                                                 \
+        arr_ptr--;                                                         \
+        ptr = upb_Encoder_EncodeVarint(e, ptr, encode);                    \
+      } while (arr_ptr != start);                                          \
+    } else {                                                               \
+      uint32_t number = upb_MiniTableField_Number(f);                      \
+      do {                                                                 \
+        arr_ptr--;                                                         \
+        ptr = upb_Encoder_EncodeVarint(e, ptr, encode);                    \
+        ptr = upb_Encoder_EncodeTag(e, ptr, number, kUpb_WireType_Varint); \
+      } while (arr_ptr != start);                                          \
+    }                                                                      \
+  }                                                                        \
   break;
 
 #define TAG(wire_type) (packed ? 0 : (f->UPB_PRIVATE(number) << 3 | wire_type))
 
   switch (f->UPB_PRIVATE(descriptortype)) {
     case kUpb_FieldType_Double:
-      ptr = encode_fixedarray(ptr, e, arr, sizeof(double),
-                              TAG(kUpb_WireType_64Bit));
+      ptr = upb_Encoder_EncodeFixedArray(e, ptr, arr, sizeof(double),
+                                         TAG(kUpb_WireType_64Bit));
       break;
     case kUpb_FieldType_Float:
-      ptr = encode_fixedarray(ptr, e, arr, sizeof(float),
-                              TAG(kUpb_WireType_32Bit));
+      ptr = upb_Encoder_EncodeFixedArray(e, ptr, arr, sizeof(float),
+                                         TAG(kUpb_WireType_32Bit));
       break;
     case kUpb_FieldType_SFixed64:
     case kUpb_FieldType_Fixed64:
-      ptr = encode_fixedarray(ptr, e, arr, sizeof(uint64_t),
-                              TAG(kUpb_WireType_64Bit));
+      ptr = upb_Encoder_EncodeFixedArray(e, ptr, arr, sizeof(uint64_t),
+                                         TAG(kUpb_WireType_64Bit));
       break;
     case kUpb_FieldType_Fixed32:
     case kUpb_FieldType_SFixed32:
-      ptr = encode_fixedarray(ptr, e, arr, sizeof(uint32_t),
-                              TAG(kUpb_WireType_32Bit));
+      ptr = upb_Encoder_EncodeFixedArray(e, ptr, arr, sizeof(uint32_t),
+                                         TAG(kUpb_WireType_32Bit));
       break;
     case kUpb_FieldType_Int64:
     case kUpb_FieldType_UInt64:
@@ -529,19 +542,19 @@ static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
     case kUpb_FieldType_Bool:
       VARINT_CASE(bool, *arr_ptr);
     case kUpb_FieldType_SInt32:
-      VARINT_CASE(int32_t, encode_zz32(*arr_ptr));
+      VARINT_CASE(int32_t, upb_Encoder_ZigZag32(*arr_ptr));
     case kUpb_FieldType_SInt64:
-      VARINT_CASE(int64_t, encode_zz64(*arr_ptr));
+      VARINT_CASE(int64_t, upb_Encoder_ZigZag64(*arr_ptr));
     case kUpb_FieldType_String:
     case kUpb_FieldType_Bytes: {
       const upb_StringView* start = upb_Array_DataPtr(arr);
       const upb_StringView* str_ptr = start + upb_Array_Size(arr);
       do {
         str_ptr--;
-        ptr = encode_bytes(ptr, e, str_ptr->data, str_ptr->size);
-        ptr = encode_length(ptr, e, str_ptr->size);
-        ptr = encode_tag(ptr, e, upb_MiniTableField_Number(f),
-                         kUpb_WireType_Delimited);
+        ptr = upb_Encoder_EncodeBytes(e, ptr, str_ptr->data, str_ptr->size);
+        ptr = upb_Encoder_EncodeLength(e, ptr, str_ptr->size);
+        ptr = upb_Encoder_EncodeTag(e, ptr, upb_MiniTableField_Number(f),
+                                    kUpb_WireType_Delimited);
       } while (str_ptr != start);
       return ptr;
     }
@@ -553,11 +566,11 @@ static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
       do {
         size_t size;
         arr_ptr--;
-        ptr = encode_tag(ptr, e, upb_MiniTableField_Number(f),
-                         kUpb_WireType_EndGroup);
-        ptr = encode_message(ptr, e, *arr_ptr, subm, &size);
-        ptr = encode_tag(ptr, e, upb_MiniTableField_Number(f),
-                         kUpb_WireType_StartGroup);
+        ptr = upb_Encoder_EncodeTag(e, ptr, upb_MiniTableField_Number(f),
+                                    kUpb_WireType_EndGroup);
+        ptr = upb_Encoder_EncodeMessage(e, ptr, *arr_ptr, subm, &size);
+        ptr = upb_Encoder_EncodeTag(e, ptr, upb_MiniTableField_Number(f),
+                                    kUpb_WireType_StartGroup);
       } while (arr_ptr != start);
       e->depth++;
       return ptr;
@@ -570,10 +583,10 @@ static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
       do {
         size_t size;
         arr_ptr--;
-        ptr = encode_message(ptr, e, *arr_ptr, subm, &size);
-        ptr = encode_length(ptr, e, size);
-        ptr = encode_tag(ptr, e, upb_MiniTableField_Number(f),
-                         kUpb_WireType_Delimited);
+        ptr = upb_Encoder_EncodeMessage(e, ptr, *arr_ptr, subm, &size);
+        ptr = upb_Encoder_EncodeLength(e, ptr, size);
+        ptr = upb_Encoder_EncodeTag(e, ptr, upb_MiniTableField_Number(f),
+                                    kUpb_WireType_Delimited);
       } while (arr_ptr != start);
       e->depth++;
       return ptr;
@@ -582,30 +595,32 @@ static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
 #undef VARINT_CASE
 
   if (packed) {
-    ptr = encode_length(ptr, e, e->limit - ptr - pre_len);
-    ptr = encode_tag(ptr, e, upb_MiniTableField_Number(f),
-                     kUpb_WireType_Delimited);
+    ptr = upb_Encoder_EncodeLength(e, ptr, e->limit - ptr - pre_len);
+    ptr = upb_Encoder_EncodeTag(e, ptr, upb_MiniTableField_Number(f),
+                                kUpb_WireType_Delimited);
   }
   return ptr;
 }
 
-static char* encode_mapentry(char* ptr, upb_encstate* e, uint32_t number,
-                             const upb_MiniTable* layout,
-                             const upb_MapEntry* ent) {
+static char* upb_Encoder_EncodeMapEntry(upb_Encoder* e, char* ptr,
+                                        uint32_t number,
+                                        const upb_MiniTable* layout,
+                                        const upb_MapEntry* ent) {
   const upb_MiniTableField* key_field = upb_MiniTable_MapKey(layout);
   const upb_MiniTableField* val_field = upb_MiniTable_MapValue(layout);
   size_t pre_len = e->limit - ptr;
   size_t size;
-  ptr = encode_scalar(ptr, e, &ent->v, val_field);
-  ptr = encode_scalar(ptr, e, &ent->k, key_field);
+  ptr = upb_Encoder_EncodeScalar(e, ptr, &ent->v, val_field);
+  ptr = upb_Encoder_EncodeScalar(e, ptr, &ent->k, key_field);
   size = (e->limit - ptr) - pre_len;
-  ptr = encode_length(ptr, e, size);
-  ptr = encode_tag(ptr, e, number, kUpb_WireType_Delimited);
+  ptr = upb_Encoder_EncodeLength(e, ptr, size);
+  ptr = upb_Encoder_EncodeTag(e, ptr, number, kUpb_WireType_Delimited);
   return ptr;
 }
 
-static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
-                        const upb_MiniTableField* f) {
+static char* upb_Encoder_EncodeMap(upb_Encoder* e, char* ptr,
+                                   const upb_Message* msg,
+                                   const upb_MiniTableField* f) {
   const upb_Map* map = *UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), const upb_Map*);
   const upb_MiniTable* layout = upb_MiniTable_MapEntrySubMessage(f);
   UPB_ASSERT(upb_MiniTable_FieldCount(layout) == 2);
@@ -622,8 +637,8 @@ static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
           upb_MapEntry ent;
           memcpy(&ent.k, &iter, sizeof(iter));
           _upb_map_fromvalue(value, &ent.v, map->val_size);
-          ptr = encode_mapentry(ptr, e, upb_MiniTableField_Number(f), layout,
-                                &ent);
+          ptr = upb_Encoder_EncodeMapEntry(e, ptr, upb_MiniTableField_Number(f),
+                                           layout, &ent);
         }
       }
     }
@@ -633,7 +648,8 @@ static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
         map, &sorted);
     upb_MapEntry ent;
     while (_upb_sortedmap_next(&e->sorter, map, &sorted, &ent)) {
-      ptr = encode_mapentry(ptr, e, upb_MiniTableField_Number(f), layout, &ent);
+      ptr = upb_Encoder_EncodeMapEntry(e, ptr, upb_MiniTableField_Number(f),
+                                       layout, &ent);
     }
     _upb_mapsorter_popmap(&e->sorter, &sorted);
   } else {
@@ -645,8 +661,8 @@ static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
         upb_MapEntry ent;
         _upb_map_fromkey(strkey, &ent.k, map->key_size);
         _upb_map_fromvalue(val, &ent.v, map->val_size);
-        ptr =
-            encode_mapentry(ptr, e, upb_MiniTableField_Number(f), layout, &ent);
+        ptr = upb_Encoder_EncodeMapEntry(e, ptr, upb_MiniTableField_Number(f),
+                                         layout, &ent);
       }
     } else {
       intptr_t iter = UPB_INTTABLE_BEGIN;
@@ -655,8 +671,8 @@ static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
         upb_MapEntry ent;
         memcpy(&ent.k, &intkey, map->key_size);
         _upb_map_fromvalue(val, &ent.v, map->val_size);
-        ptr =
-            encode_mapentry(ptr, e, upb_MiniTableField_Number(f), layout, &ent);
+        ptr = upb_Encoder_EncodeMapEntry(e, ptr, upb_MiniTableField_Number(f),
+                                         layout, &ent);
       }
     }
   }
@@ -701,50 +717,56 @@ static bool encode_shouldencode(const upb_Message* msg,
   }
 }
 
-static char* encode_field(char* ptr, upb_encstate* e, const upb_Message* msg,
-                          const upb_MiniTableField* field) {
+static char* upb_Encoder_EncodeField(upb_Encoder* e, char* ptr,
+                                     const upb_Message* msg,
+                                     const upb_MiniTableField* field) {
   switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(field)) {
     case kUpb_FieldMode_Array:
-      return encode_array(ptr, e, msg, field);
+      return upb_Encoder_EncodeArray(e, ptr, msg, field);
     case kUpb_FieldMode_Map:
-      return encode_map(ptr, e, msg, field);
+      return upb_Encoder_EncodeMap(e, ptr, msg, field);
     case kUpb_FieldMode_Scalar:
-      return encode_scalar(
-          ptr, e, UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void), field);
+      return upb_Encoder_EncodeScalar(
+          e, ptr, UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void), field);
     default:
       UPB_UNREACHABLE();
   }
 }
 
-static char* encode_msgset_item(char* ptr, upb_encstate* e,
-                                const upb_MiniTableExtension* ext,
-                                const upb_MessageValue ext_val) {
+static char* upb_Encoder_EncodeMessageSetItem(upb_Encoder* e, char* ptr,
+                                              const upb_MiniTableExtension* ext,
+                                              const upb_MessageValue ext_val) {
   size_t size;
-  ptr = encode_tag(ptr, e, kUpb_MsgSet_Item, kUpb_WireType_EndGroup);
-  ptr = encode_message(ptr, e, ext_val.msg_val,
-                       upb_MiniTableExtension_GetSubMessage(ext), &size);
-  ptr = encode_varint(ptr, e, size);
-  ptr = encode_tag(ptr, e, kUpb_MsgSet_Message, kUpb_WireType_Delimited);
-  ptr = encode_varint(ptr, e, upb_MiniTableExtension_Number(ext));
-  ptr = encode_tag(ptr, e, kUpb_MsgSet_TypeId, kUpb_WireType_Varint);
-  ptr = encode_tag(ptr, e, kUpb_MsgSet_Item, kUpb_WireType_StartGroup);
+  ptr = upb_Encoder_EncodeTag(e, ptr, kUpb_MsgSet_Item, kUpb_WireType_EndGroup);
+  ptr = upb_Encoder_EncodeMessage(e, ptr, ext_val.msg_val,
+                                  upb_MiniTableExtension_GetSubMessage(ext),
+                                  &size);
+  ptr = upb_Encoder_EncodeVarint(e, ptr, size);
+  ptr = upb_Encoder_EncodeTag(e, ptr, kUpb_MsgSet_Message,
+                              kUpb_WireType_Delimited);
+  ptr = upb_Encoder_EncodeVarint(e, ptr, upb_MiniTableExtension_Number(ext));
+  ptr = upb_Encoder_EncodeTag(e, ptr, kUpb_MsgSet_TypeId, kUpb_WireType_Varint);
+  ptr =
+      upb_Encoder_EncodeTag(e, ptr, kUpb_MsgSet_Item, kUpb_WireType_StartGroup);
   return ptr;
 }
 
-static char* encode_ext(char* ptr, upb_encstate* e,
-                        const upb_MiniTableExtension* ext,
-                        upb_MessageValue ext_val, bool is_message_set) {
+static char* upb_Encoder_EncodeExtension(upb_Encoder* e, char* ptr,
+                                         const upb_MiniTableExtension* ext,
+                                         upb_MessageValue ext_val,
+                                         bool is_message_set) {
   if (UPB_UNLIKELY(is_message_set)) {
-    ptr = encode_msgset_item(ptr, e, ext, ext_val);
+    ptr = upb_Encoder_EncodeMessageSetItem(e, ptr, ext, ext_val);
   } else {
-    ptr = encode_field(ptr, e, &ext_val.UPB_PRIVATE(ext_msg_val),
-                       &ext->UPB_PRIVATE(field));
+    ptr = upb_Encoder_EncodeField(e, ptr, &ext_val.UPB_PRIVATE(ext_msg_val),
+                                  &ext->UPB_PRIVATE(field));
   }
   return ptr;
 }
 
-static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
-                         const upb_Message* msg) {
+static char* upb_Encoder_EncodeExtensions(upb_Encoder* e, char* ptr,
+                                          const upb_MiniTable* m,
+                                          const upb_Message* msg) {
   if (m->UPB_PRIVATE(ext) == kUpb_ExtMode_NonExtendable) return ptr;
 
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
@@ -769,22 +791,25 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
     }
     const upb_Extension* ext;
     while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
-      ptr = encode_ext(ptr, e, ext->ext, ext->data,
-                       m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
+      ptr = upb_Encoder_EncodeExtension(
+          e, ptr, ext->ext, ext->data,
+          m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
     }
     _upb_mapsorter_popmap(&e->sorter, &sorted);
   } else {
     do {
-      ptr = encode_ext(ptr, e, ext, ext_val,
-                       m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
+      ptr = upb_Encoder_EncodeExtension(
+          e, ptr, ext, ext_val,
+          m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
     } while (UPB_PRIVATE(_upb_Message_NextExtensionReverse)(msg, &ext, &ext_val,
                                                             &iter));
   }
   return ptr;
 }
 
-static char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
-                            const upb_MiniTable* m, size_t* size) {
+static char* upb_Encoder_EncodeMessage(upb_Encoder* e, char* ptr,
+                                       const upb_Message* msg,
+                                       const upb_MiniTable* m, size_t* size) {
   size_t pre_len = e->limit - ptr;
 
   if (e->options & kUpb_EncodeOption_CheckRequired) {
@@ -805,7 +830,7 @@ static char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
       unknown_size += unknown.size;
     }
     if (unknown_size != 0) {
-      ptr = encode_reserve(ptr, e, unknown_size);
+      ptr = upb_Encoder_Reserve(e, ptr, unknown_size);
       char* tmp_ptr = ptr;
       iter = kUpb_Message_UnknownBegin;
       while (upb_Message_NextUnknown(msg, &unknown, &iter)) {
@@ -815,7 +840,7 @@ static char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
     }
   }
 
-  ptr = encode_exts(ptr, e, m, msg);
+  ptr = upb_Encoder_EncodeExtensions(e, ptr, m, msg);
 
   if (upb_MiniTable_FieldCount(m)) {
     const upb_MiniTableField* f =
@@ -824,7 +849,7 @@ static char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
     while (f != first) {
       f--;
       if (encode_shouldencode(msg, f)) {
-        ptr = encode_field(ptr, e, msg, f);
+        ptr = upb_Encoder_EncodeField(e, ptr, msg, f);
       }
     }
   }
@@ -834,7 +859,7 @@ static char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
 }
 
 static upb_EncodeStatus upb_Encoder_Encode(char* ptr,
-                                           upb_encstate* const encoder,
+                                           upb_Encoder* const encoder,
                                            const upb_Message* const msg,
                                            const upb_MiniTable* const l,
                                            char** const buf, size_t* const size,
@@ -845,9 +870,9 @@ static upb_EncodeStatus upb_Encoder_Encode(char* ptr,
   // NULL on error and we still set it to non-NULL on a successful empty result.
   if (UPB_SETJMP(encoder->err) == 0) {
     size_t encoded_msg_size;
-    ptr = encode_message(ptr, encoder, msg, l, &encoded_msg_size);
+    ptr = upb_Encoder_EncodeMessage(encoder, ptr, msg, l, &encoded_msg_size);
     if (prepend_len) {
-      ptr = encode_length(ptr, encoder, encoded_msg_size);
+      ptr = upb_Encoder_EncodeLength(encoder, ptr, encoded_msg_size);
     }
     *size = encoder->limit - ptr;
     if (*size == 0) {
@@ -880,7 +905,7 @@ static upb_EncodeStatus _upb_Encode(const upb_Message* msg,
                                     const upb_MiniTable* l, int options,
                                     upb_Arena* arena, char** buf, size_t* size,
                                     bool prepend_len) {
-  upb_encstate e;
+  upb_Encoder e;
 
   e.status = kUpb_EncodeStatus_Ok;
   e.arena = arena;
