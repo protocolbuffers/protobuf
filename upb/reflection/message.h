@@ -11,6 +11,7 @@
 #include <stddef.h>
 
 #include "upb/mem/arena.h"
+#include "upb/message/array.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/reflection/common.h"
@@ -25,9 +26,8 @@ extern "C" {
 // Returns a mutable pointer to a map, array, or submessage value. If the given
 // arena is non-NULL this will construct a new object if it was not previously
 // present. May not be called for primitive fields.
-UPB_API upb_MutableMessageValue upb_Message_Mutable(upb_Message* msg,
-                                                    const upb_FieldDef* f,
-                                                    upb_Arena* a);
+UPB_NODISCARD UPB_API upb_MutableMessageValue
+upb_Message_Mutable(upb_Message* msg, const upb_FieldDef* f, upb_Arena* a);
 
 // Returns the field that is set in the oneof, or NULL if none are set.
 UPB_API const upb_FieldDef* upb_Message_WhichOneofByDef(const upb_Message* msg,
@@ -53,8 +53,10 @@ UPB_API upb_MessageValue upb_Message_GetFieldByDef(const upb_Message* msg,
 // the same arena or a different arena that outlives it).
 //
 // Returns false if allocation fails.
-UPB_API bool upb_Message_SetFieldByDef(upb_Message* msg, const upb_FieldDef* f,
-                                       upb_MessageValue val, upb_Arena* a);
+UPB_NODISCARD UPB_API bool upb_Message_SetFieldByDef(upb_Message* msg,
+                                                     const upb_FieldDef* f,
+                                                     upb_MessageValue val,
+                                                     upb_Arena* a);
 
 // Iterate over present fields.
 //

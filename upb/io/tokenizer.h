@@ -84,15 +84,15 @@ typedef struct upb_Tokenizer upb_Tokenizer;
 
 // Can be passed a flat array and/or a ZCIS as input.
 // The array will be read first (if non-NULL), then the stream (if non-NULL).
-upb_Tokenizer* upb_Tokenizer_New(const void* data, size_t size,
-                                 upb_ZeroCopyInputStream* input, int options,
-                                 upb_Arena* arena);
+UPB_NODISCARD upb_Tokenizer* upb_Tokenizer_New(const void* data, size_t size,
+                                               upb_ZeroCopyInputStream* input,
+                                               int options, upb_Arena* arena);
 
 void upb_Tokenizer_Fini(upb_Tokenizer* t);
 
 // Advance the tokenizer to the next input token. Returns True on success.
 // Returns False and (clears *status on EOF, sets *status on error).
-bool upb_Tokenizer_Next(upb_Tokenizer* t, upb_Status* status);
+UPB_NODISCARD bool upb_Tokenizer_Next(upb_Tokenizer* t, upb_Status* status);
 
 // Accessors for inspecting current/previous parse tokens,
 // which are opaque to the tokenizer (to reduce copying).
@@ -112,7 +112,8 @@ bool upb_Tokenizer_IsIdentifier(const char* data, int size);
 // result. If the text is not from a Token of type TYPE_INTEGER originally
 // parsed by a Tokenizer, the result is undefined (possibly an assert
 // failure).
-bool upb_Parse_Integer(const char* text, uint64_t max_value, uint64_t* output);
+UPB_NODISCARD bool upb_Parse_Integer(const char* text, uint64_t max_value,
+                                     uint64_t* output);
 
 // Parses a TYPE_FLOAT token. This never fails, so long as the text actually
 // comes from a TYPE_FLOAT token parsed by Tokenizer. If it doesn't, the

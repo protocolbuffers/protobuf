@@ -39,7 +39,7 @@ typedef struct {
 } upb_String;
 
 // Initialize an already-allocated upb_String object.
-UPB_INLINE bool upb_String_Init(upb_String* s, upb_Arena* a) {
+UPB_NODISCARD UPB_INLINE bool upb_String_Init(upb_String* s, upb_Arena* a) {
   static const int kDefaultCapacity = 16;
 
   s->size_ = 0;
@@ -71,7 +71,7 @@ UPB_INLINE void upb_String_Erase(upb_String* s, size_t pos, size_t len) {
   s->size_ -= len;
 }
 
-UPB_INLINE bool upb_String_Reserve(upb_String* s, size_t size) {
+UPB_NODISCARD UPB_INLINE bool upb_String_Reserve(upb_String* s, size_t size) {
   if (s->capacity_ <= size) {
     const size_t new_cap = size + 1;
     s->data_ =
@@ -82,8 +82,8 @@ UPB_INLINE bool upb_String_Reserve(upb_String* s, size_t size) {
   return true;
 }
 
-UPB_INLINE bool upb_String_Append(upb_String* s, const char* data,
-                                  size_t size) {
+UPB_NODISCARD UPB_INLINE bool upb_String_Append(upb_String* s, const char* data,
+                                                size_t size) {
   if (s->capacity_ <= s->size_ + size) {
     const size_t new_cap = 2 * (s->size_ + size) + 1;
     if (!upb_String_Reserve(s, new_cap)) return false;
@@ -96,8 +96,9 @@ UPB_INLINE bool upb_String_Append(upb_String* s, const char* data,
 }
 
 UPB_PRINTF(2, 0)
-UPB_INLINE bool upb_String_AppendFmtV(upb_String* s, const char* fmt,
-                                      va_list args) {
+UPB_NODISCARD UPB_INLINE bool upb_String_AppendFmtV(upb_String* s,
+                                                    const char* fmt,
+                                                    va_list args) {
   size_t capacity = 1000;
   char* buf = (char*)malloc(capacity);
   bool out = false;
@@ -116,7 +117,8 @@ UPB_INLINE bool upb_String_AppendFmtV(upb_String* s, const char* fmt,
 }
 
 UPB_PRINTF(2, 3)
-UPB_INLINE bool upb_String_AppendFmt(upb_String* s, const char* fmt, ...) {
+UPB_NODISCARD UPB_INLINE bool upb_String_AppendFmt(upb_String* s,
+                                                   const char* fmt, ...) {
   va_list args;
   va_start(args, fmt);
   const bool ok = upb_String_AppendFmtV(s, fmt, args);
@@ -124,17 +126,18 @@ UPB_INLINE bool upb_String_AppendFmt(upb_String* s, const char* fmt, ...) {
   return ok;
 }
 
-UPB_INLINE bool upb_String_Assign(upb_String* s, const char* data,
-                                  size_t size) {
+UPB_NODISCARD UPB_INLINE bool upb_String_Assign(upb_String* s, const char* data,
+                                                size_t size) {
   upb_String_Clear(s);
   return upb_String_Append(s, data, size);
 }
 
-UPB_INLINE bool upb_String_Copy(upb_String* des, const upb_String* src) {
+UPB_NODISCARD UPB_INLINE bool upb_String_Copy(upb_String* des,
+                                              const upb_String* src) {
   return upb_String_Assign(des, src->data_, src->size_);
 }
 
-UPB_INLINE bool upb_String_PushBack(upb_String* s, char ch) {
+UPB_NODISCARD UPB_INLINE bool upb_String_PushBack(upb_String* s, char ch) {
   return upb_String_Append(s, &ch, 1);
 }
 

@@ -27,7 +27,8 @@ extern "C" {
 
 // Initialize a table. If memory allocation failed, false is returned and
 // the table is uninitialized.
-bool upb_exttable_init(upb_exttable* table, size_t expected_size, upb_Arena* a);
+UPB_NODISCARD bool upb_exttable_init(upb_exttable* table, size_t expected_size,
+                                     upb_Arena* a);
 
 // Returns the number of values in the table.
 UPB_INLINE size_t upb_exttable_count(const upb_exttable* t) {
@@ -41,8 +42,8 @@ void upb_exttable_clear(upb_exttable* t);
 //
 // If a table resize was required but memory allocation failed, false is
 // returned and the table is unchanged.
-bool upb_exttable_insert(upb_exttable* t, const void* k, const uint32_t* v,
-                         upb_Arena* a);
+UPB_NODISCARD bool upb_exttable_insert(upb_exttable* t, const void* k,
+                                       const uint32_t* v, upb_Arena* a);
 
 // Looks up key and ext_number in this table, returning the value if the key was
 // found, or NULL otherwise.

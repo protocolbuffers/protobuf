@@ -8,6 +8,8 @@
 #ifndef UPB_IO_CHUNKED_OUTPUT_STREAM_H_
 #define UPB_IO_CHUNKED_OUTPUT_STREAM_H_
 
+#include <stddef.h>
+
 #include "upb/io/zero_copy_output_stream.h"
 #include "upb/mem/arena.h"
 
@@ -20,9 +22,8 @@ extern "C" {
 
 // A ZeroCopyOutputStream which wraps a flat buffer and limits the number of
 // bytes that can be returned by a single call to Next().
-upb_ZeroCopyOutputStream* upb_ChunkedOutputStream_New(void* data, size_t size,
-                                                      size_t limit,
-                                                      upb_Arena* arena);
+UPB_NODISCARD upb_ZeroCopyOutputStream* upb_ChunkedOutputStream_New(
+    void* data, size_t size, size_t limit, upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */
