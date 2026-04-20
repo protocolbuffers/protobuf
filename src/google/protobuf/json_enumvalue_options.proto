@@ -11,6 +11,8 @@ package pb.enumvalue;
 
 import "google/protobuf/descriptor.proto";
 
+option java_package = "com.google.protobuf.pb.enumvalue";
+
 local message JsonEnumValueOptions {
   // Allows user to specify a custom string to use when serializing an enum
   // value to JSON.

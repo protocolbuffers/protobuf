@@ -46,6 +46,7 @@ import com.google.protobuf.Timestamp;
 import com.google.protobuf.UInt32Value;
 import com.google.protobuf.UInt64Value;
 import com.google.protobuf.Value;
+import com.google.protobuf.pb.enumvalue.JsonEnumvalueOptionsProto;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -1384,7 +1385,17 @@ public class JsonFormat {
             if (printingEnumsAsInts || ((EnumValueDescriptor) value).getIndex() == -1) {
               generator.print(String.valueOf(((EnumValueDescriptor) value).getNumber()));
             } else {
-              generator.print("\"" + ((EnumValueDescriptor) value).getName() + "\"");
+              EnumValueDescriptor enumValue = (EnumValueDescriptor) value;
+              if (enumValue.getOptions().hasExtension(JsonEnumvalueOptionsProto.json)) {
+                generator.print(
+                    gson.toJson(
+                        enumValue
+                            .getOptions()
+                            .getExtension(JsonEnumvalueOptionsProto.json)
+                            .getString()));
+              } else {
+                generator.print("\"" + enumValue.getName() + "\"");
+              }
             }
           }
           break;
@@ -2061,7 +2072,17 @@ public class JsonFormat {
       String value = json.getAsString();
       EnumValueDescriptor result = enumDescriptor.findValueByName(value);
       if (result == null) {
-        // Try to interpret the value as a number.
+        // First, see if we used a custom json name
+        for (EnumValueDescriptor ev : enumDescriptor.getValues()) {
+          if (ev.getOptions().hasExtension(JsonEnumvalueOptionsProto.json)) {
+            var customOptions = ev.getOptions().getExtension(JsonEnumvalueOptionsProto.json);
+            if (customOptions.hasString() && customOptions.getString().equals(value)) {
+              result = ev;
+              break;
+            }
+          }
+        }
+        // Otherwise, try to interpret the value as a number.
         try {
           int numericValue = parseInt32(json);
           if (enumDescriptor.isClosed()) {

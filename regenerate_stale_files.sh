@@ -18,6 +18,7 @@ STALENESS_TESTS=(
   "upb/reflection:bootstrap_upb_defaults_staleness_test"
   "cmake:test_dependencies_staleness"
   "src:cmake_lists_staleness_test"
+  "src/google/protobuf:json_enumvalue_options_staleness_test"
   "src/google/protobuf:well_known_types_staleness_test"
   "objectivec:well_known_types_staleness_test"
   "php:test_amalgamation_staleness"

@@ -2284,4 +2284,72 @@ public class JsonFormatTest {
     assertThat(JsonFormat.printer().print(message))
         .isEqualTo("{\n  \"optionalFloat\": -0.0,\n  \"optionalDouble\": -0.0\n}");
   }
+
+  @Test
+  public void gorgetDefaultSerialization() throws Exception {
+    Knight msg = Knight.newBuilder().setArmor(Armor.ARMOR_GORGET).build();
+    assertThat(msg.getArmor()).isEqualTo(Armor.ARMOR_GORGET);
+
+    String jsonRes = JsonFormat.printer().omittingInsignificantWhitespace().print(msg);
+
+    assertThat(jsonRes).isEqualTo("{\"armor\":\"ARMOR_GORGET\"}");
+  }
+
+  @Test
+  public void greatHelmSerialization() throws Exception {
+    Knight msg = Knight.newBuilder().setArmor(Armor.ARMOR_GREAT_HELM).build();
+    assertThat(msg.getArmor()).isEqualTo(Armor.ARMOR_GREAT_HELM);
+
+    String jsonRes = JsonFormat.printer().omittingInsignificantWhitespace().print(msg);
+
+    assertThat(jsonRes).isEqualTo("{\"armor\":\"gr8 helm\"}");
+  }
+
+  @Test
+  public void gauntletSerialization() throws Exception {
+    Knight msg = Knight.newBuilder().setArmor(Armor.ARMOR_GAUNTLET).build();
+
+    assertThat(msg.getArmor()).isEqualTo(Armor.ARMOR_GAUNTLET);
+
+    String jsonRes = JsonFormat.printer().omittingInsignificantWhitespace().print(msg);
+
+    assertThat(jsonRes).isEqualTo("{\"armor\":\"a\\\"b\"}");
+
+    // let's make sure we can roundtrip
+    Knight.Builder builder = Knight.newBuilder();
+    JsonFormat.parser().merge(jsonRes, builder);
+    Knight msg2 = builder.build();
+
+    assertThat(msg2.getArmor()).isEqualTo(Armor.ARMOR_GAUNTLET);
+  }
+
+  @Test
+  public void doubleQuoteEnumSerialization() throws Exception {
+    Knight msg = Knight.newBuilder().setArmor(Armor.ARMOR_PLATE).build();
+
+    assertThat(msg.getArmor()).isEqualTo(Armor.ARMOR_PLATE);
+
+    String jsonRes = JsonFormat.printer().omittingInsignificantWhitespace().print(msg);
+
+    assertThat(jsonRes).isEqualTo("{\"armor\":\"\\\"plate\\\"\"}");
+
+    // let's make sure we can roundtrip
+    Knight.Builder builder = Knight.newBuilder();
+    JsonFormat.parser().merge(jsonRes, builder);
+    Knight msg2 = builder.build();
+
+    assertThat(msg2.getArmor()).isEqualTo(Armor.ARMOR_PLATE);
+  }
+
+  @Test
+  public void greatHelmIntOverride() throws Exception {
+    Knight msg = Knight.newBuilder().setArmor(Armor.ARMOR_GREAT_HELM).build();
+
+    // note printingEnumsAsInts
+    String jsonRes =
+        JsonFormat.printer().omittingInsignificantWhitespace().printingEnumsAsInts().print(msg);
+
+    // Integer overrides always win.
+    assertThat(jsonRes).isEqualTo("{\"armor\":1}");
+  }
 }
