@@ -405,10 +405,10 @@ config_setting(
 
 # This test doesn't directly include any files from this subdir so it probably
 # should live elsewhere.
+
 cc_test(
     name = "test",
     srcs = ["test.cc"],
-    args = ["--fuzztest_stack_limit_kb=256"],
     copts = UPB_DEFAULT_CPPOPTS + select({
         ":fuzz_dump_minitable_enabled": ["-DUPB_FUZZ_DUMP_MINITABLE"],
         "//conditions:default": [],

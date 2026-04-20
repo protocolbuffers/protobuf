@@ -6,6 +6,7 @@ load(
     "UPB_DEFAULT_CPPOPTS",
     "UPB_DEFAULT_FEATURES",
 )
+load("//upb/bazel:fuzz_test.bzl", "fuzz_test")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -73,19 +74,49 @@ cc_test(
     copts = UPB_DEFAULT_CPPOPTS,
     features = UPB_DEFAULT_FEATURES,
     deps = [
+        ":encode_fuzz_impl",
         ":internal",
         ":mini_descriptor",
         "//src/google/protobuf",
         "//upb/base",
         "//upb/mem",
-        "//upb/message",
         "//upb/message:internal",
         "//upb/mini_table",
         "//upb/port",
-        "//upb/wire",
         "@abseil-cpp//absl/container:flat_hash_set",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "encode_fuzz_impl",
+    testonly = 1,
+    srcs = ["internal/encode_fuzz_impl.cc"],
+    hdrs = ["internal/encode_fuzz_impl.h"],
+    deps = [
+        ":mini_descriptor",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/mini_table",
+    ],
+)
+
+cc_test(
+    name = "encode_fuzz_regression_test",
+    srcs = ["internal/encode_fuzz_regression_test.cc"],
+    deps = [
+        ":encode_fuzz_impl",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+fuzz_test(
+    name = "encode_fuzz",
+    srcs = ["internal/encode_fuzz_test.cc"],
+    deps = [
+        ":encode_fuzz_impl",
     ],
 )
 

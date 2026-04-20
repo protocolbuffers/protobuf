@@ -10,6 +10,7 @@ load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_CPPOPTS", "UPB_DEFAULT_FEATURES")
+load("//upb/bazel:fuzz_test.bzl", "fuzz_test")
 load("//upb/bazel:upb_proto_library.bzl", "upb_proto_library")
 
 package(default_applicable_licenses = ["//:license"])
@@ -270,10 +271,87 @@ cc_test(
     srcs = ["eps_copy_input_stream_test.cc"],
     deps = [
         ":eps_copy_input_stream",
+        ":eps_copy_input_stream_fuzz_impl",
         "//upb/base",
         "//upb/mem",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "eps_copy_input_stream_fuzz_impl",
+    testonly = 1,
+    srcs = ["eps_copy_input_stream_fuzz_impl.cc"],
+    hdrs = ["eps_copy_input_stream_fuzz_impl.h"],
+    deps = [
+        ":eps_copy_input_stream",
+        ":eps_copy_input_stream_internal",
+        "//upb/base",
+        "//upb/mem",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "eps_copy_input_stream_fuzz_regression_test",
+    srcs = ["eps_copy_input_stream_fuzz_regression_test.cc"],
+    deps = [
+        ":eps_copy_input_stream_fuzz_impl",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+fuzz_test(
+    name = "eps_copy_input_stream_fuzz",
+    srcs = ["eps_copy_input_stream_fuzz_test.cc"],
+    deps = [
+        ":eps_copy_input_stream_fuzz_impl",
+    ],
+)
+
+cc_library(
+    name = "fuzz_impl",
+    testonly = 1,
+    srcs = ["fuzz_impl.cc"],
+    hdrs = ["fuzz_impl.h"],
+    deps = [
+        "//upb/mem",
+        "//upb/message",
+        "//upb/message:compare",
+        "//upb/mini_table",
+        "//upb/mini_table:debug_string",
+        "//upb/test:fuzz_util",
+        "//upb/text:debug",
+        "//upb/wire",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "fuzz_regression_test",
+    srcs = ["fuzz_regression_test.cc"],
+    deps = [
+        ":decoder",
+        ":eps_copy_input_stream_internal",
+        ":fuzz_impl",
+        ":reader",
+        ":wire",
+        "//upb/test:fuzz_util",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+fuzz_test(
+    name = "fuzz",
+    srcs = ["fuzz_test.cc"],
+    deps = [
+        ":fuzz_impl",
+        "//upb/test:fuzz_util",
+        "@abseil-cpp//absl/strings",
     ],
 )
 

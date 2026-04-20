@@ -6,14 +6,9 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include "testing/fuzzing/fuzztest.h"
-#include "upb/json/fuzz_impl.h"
+#include "upb/mini_descriptor/internal/encode_fuzz_impl.h"
 
-namespace {
-
-using ::upb_test::DecodeEncodeArbitraryJson;
 // Test with:
-//   bazel run --config=fuzztest //third_party/upb/upb/json:fuzz_test --
-//   --fuzztest_fuzz=
-FUZZ_TEST(FuzzTest, DecodeEncodeArbitraryJson);
-
-}  // namespace
+//   bazel run --config=fuzztest
+//   //third_party/upb/upb/mini_descriptor:encode_fuzz_test -- --fuzztest_fuzz=
+FUZZ_TEST(FuzzTest, BuildMiniTable);

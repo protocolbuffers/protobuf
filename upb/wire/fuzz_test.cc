@@ -6,14 +6,11 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include "testing/fuzzing/fuzztest.h"
-#include "upb/json/fuzz_impl.h"
+#include "absl/strings/string_view.h"
+#include "upb/test/fuzz_util.h"
+#include "upb/wire/fuzz_impl.h"
 
-namespace {
-
-using ::upb_test::DecodeEncodeArbitraryJson;
 // Test with:
-//   bazel run --config=fuzztest //third_party/upb/upb/json:fuzz_test --
+//   bazel run --config=fuzztest //third_party/upb/upb/wire:fuzz_test --
 //   --fuzztest_fuzz=
-FUZZ_TEST(FuzzTest, DecodeEncodeArbitraryJson);
-
-}  // namespace
+FUZZ_TEST(FuzzTest, DecodeEncodeArbitrarySchemaAndPayload);

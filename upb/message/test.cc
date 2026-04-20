@@ -5,22 +5,18 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
-#include <optional>
 #include <string>
 #include <string_view>
-#include <utility>
 #include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/cleanup/cleanup.h"
 #include "absl/numeric/bits.h"
-#include "absl/strings/escaping.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
 #include "upb/base/status.h"
@@ -33,7 +29,6 @@
 #include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
-#include "upb/message/compare.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/test.upb.h"
@@ -41,22 +36,16 @@
 #include "upb/message/test.upbdefs.h"
 #include "upb/message/value.h"
 #include "upb/mini_descriptor/decode.h"
-#include "upb/mini_table/debug_string.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
-#include "upb/mini_table/internal/extension.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
 #include "upb/reflection/message.h"
-#include "upb/test/fuzz_util.h"
-#include "upb/text/debug_string.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
-#include "upb/wire/eps_copy_input_stream.h"
-#include "upb/wire/types.h"
 #include "upb/wire/writer.h"
 
 // Must be last
