@@ -17,7 +17,7 @@ use std::sync::LazyLock;
 use extensions_rust_proto::TestExtensions;
 
 const EXT_NUMBER: u32 = 19001;
-const UPB_CTYPE_STRING: i32 = 10;
+const UPB_FIELDTYPE_STRING: i32 = 9;
 const UPB_FIELD_MOD_IS_REPEATED: u64 = 1 << 0;
 
 #[repr(C)]
@@ -47,7 +47,7 @@ fn repeated_string_extension_mini_descriptor() -> &'static str {
         upb_MtDataEncoder_EncodeExtension(
             &mut enc,
             start,
-            UPB_CTYPE_STRING,
+            UPB_FIELDTYPE_STRING,
             EXT_NUMBER,
             UPB_FIELD_MOD_IS_REPEATED,
         )
