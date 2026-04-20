@@ -102,3 +102,16 @@ rust_test(
         "@crate_index//:googletest",
     ],
 )
+
+rust_test(
+    name = "extension_lifetime_regression_test",
+    srcs = ["extension_lifetime_regression_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb_export": "protobuf",
+    },
+    deps = [
+        "//rust:protobuf_upb_export",
+        "//rust/test:extensions_upb_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
