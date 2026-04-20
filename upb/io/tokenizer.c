@@ -7,11 +7,22 @@
 
 #include "upb/io/tokenizer.h"
 
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "upb/base/status.h"
+#include "upb/base/string_view.h"
 #include "upb/io/string.h"
+#include "upb/io/zero_copy_input_stream.h"
 #include "upb/lex/strtod.h"
 #include "upb/lex/unicode.h"
 
 // Must be included last.
+#include "upb/mem/arena.h"
 #include "upb/port/def.inc"
 
 typedef enum {
@@ -203,8 +214,10 @@ static void Refresh(upb_Tokenizer* t) {
 
   // If we're in a token, append the rest of the buffer to it.
   if (t->record_target != NULL && t->record_start < t->buffer_size) {
-    upb_String_Append(t->record_target, t->buffer + t->record_start,
-                      t->buffer_size - t->record_start);
+    if (!upb_String_Append(t->record_target, t->buffer + t->record_start,
+                           t->buffer_size - t->record_start)) {
+      ReportError(t, "Out of memory.");
+    }
     t->record_start = 0;
   }
 
@@ -255,8 +268,10 @@ static void RecordTo(upb_Tokenizer* t, upb_String* target) {
 
 static void StopRecording(upb_Tokenizer* t) {
   if (t->buffer_pos > t->record_start) {
-    upb_String_Append(t->record_target, t->buffer + t->record_start,
-                      t->buffer_pos - t->record_start);
+    if (!upb_String_Append(t->record_target, t->buffer + t->record_start,
+                           t->buffer_pos - t->record_start)) {
+      ReportError(t, "Out of memory.");
+    }
   }
   t->record_target = NULL;
   t->record_start = -1;
@@ -536,7 +551,9 @@ static upb_CommentType TryConsumeCommentStart(upb_Tokenizer* t) {
     } else {
       // Oops, it was just a slash.  Return it.
       t->token_type = kUpb_TokenType_Symbol;
-      upb_String_Assign(&t->token_text, "/", 1);
+      if (!upb_String_Assign(&t->token_text, "/", 1)) {
+        ReportError(t, "Out of memory.");
+      }
       t->token_line = t->line;
       t->token_column = t->column - 1;
       t->token_end_column = t->column;
@@ -789,7 +806,7 @@ double upb_Parse_Float(const char* text) {
 }
 
 // Append a Unicode code point to a string as UTF8.
-static void AppendUTF8(uint32_t code_point, upb_String* output) {
+UPB_NODISCARD static bool AppendUTF8(uint32_t code_point, upb_String* output) {
   char temp[24];
   int len = upb_Unicode_ToUTF8(code_point, temp);
   if (len == 0) {
@@ -798,7 +815,7 @@ static void AppendUTF8(uint32_t code_point, upb_String* output) {
     // Unicode code points end at 0x10FFFF, so this is out-of-range.
     len = snprintf(temp, sizeof temp, "\\U%08x", code_point);
   }
-  upb_String_Append(output, temp, len);
+  return upb_String_Append(output, temp, len);
 }
 
 // Try to read <len> hex digits from ptr, and stuff the numeric result into
@@ -854,7 +871,9 @@ upb_StringView upb_Parse_String(const char* text, upb_Arena* arena) {
   const size_t size = strlen(text);
 
   upb_String output;
-  upb_String_Init(&output, arena);
+  if (!upb_String_Init(&output, arena)) {
+    return upb_StringView_FromDataAndSize(NULL, 0);
+  }
 
   // Reminder: text[0] is always a quote character.
   // (If text is empty, it's invalid, so we'll just return).
@@ -869,7 +888,9 @@ upb_StringView upb_Parse_String(const char* text, upb_Arena* arena) {
 
   // Reserve room for new string.
   const size_t new_len = size + upb_String_Size(&output);
-  upb_String_Reserve(&output, new_len);
+  if (!upb_String_Reserve(&output, new_len)) {
+    return upb_StringView_FromDataAndSize(NULL, 0);
+  }
 
   // Loop through the string copying characters to "output" and
   // interpreting escape sequences.  Note that any invalid escape
@@ -891,7 +912,9 @@ upb_StringView upb_Parse_String(const char* text, upb_Arena* arena) {
           ++ptr;
           code = code * 8 + DigitValue(*ptr);
         }
-        upb_String_PushBack(&output, (char)code);
+        if (!upb_String_PushBack(&output, (char)code)) {
+          return upb_StringView_FromDataAndSize(NULL, 0);
+        }
 
       } else if (*ptr == 'x') {
         // A hex escape.  May zero, one, or two digits.  (The zero case
@@ -905,27 +928,37 @@ upb_StringView upb_Parse_String(const char* text, upb_Arena* arena) {
           ++ptr;
           code = code * 16 + DigitValue(*ptr);
         }
-        upb_String_PushBack(&output, (char)code);
+        if (!upb_String_PushBack(&output, (char)code)) {
+          return upb_StringView_FromDataAndSize(NULL, 0);
+        }
 
       } else if (*ptr == 'u' || *ptr == 'U') {
         uint32_t unicode;
         const char* end = FetchUnicodePoint(ptr, &unicode);
         if (end == ptr) {
           // Failure: Just dump out what we saw, don't try to parse it.
-          upb_String_PushBack(&output, *ptr);
+          if (!upb_String_PushBack(&output, *ptr)) {
+            return upb_StringView_FromDataAndSize(NULL, 0);
+          }
         } else {
-          AppendUTF8(unicode, &output);
+          if (!AppendUTF8(unicode, &output)) {
+            return upb_StringView_FromDataAndSize(NULL, 0);
+          }
           ptr = end - 1;  // Because we're about to ++ptr.
         }
       } else {
         // Some other escape code.
-        upb_String_PushBack(&output, TranslateEscape(*ptr));
+        if (!upb_String_PushBack(&output, TranslateEscape(*ptr))) {
+          return upb_StringView_FromDataAndSize(NULL, 0);
+        }
       }
 
     } else if (*ptr == text[0] && ptr[1] == '\0') {
       // Ignore final quote matching the starting quote.
     } else {
-      upb_String_PushBack(&output, *ptr);
+      if (!upb_String_PushBack(&output, *ptr)) {
+        return upb_StringView_FromDataAndSize(NULL, 0);
+      }
     }
   }
 
@@ -972,7 +1005,10 @@ upb_Tokenizer* upb_Tokenizer_New(const void* data, size_t size,
   }
   t->options = options;
 
-  upb_String_Init(&t->token_text, arena);
+  if (!upb_String_Init(&t->token_text, arena)) {
+    // If we can't allocate a string, we cannot construct a tokenizer.
+    return NULL;
+  }
   t->token_type = kUpb_TokenType_Start;
   t->token_line = 0;
   t->token_column = 0;

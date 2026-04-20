@@ -951,7 +951,8 @@ bool upb_inttable_compact(upb_inttable* t, upb_Arena* a) {
       uintptr_t key;
       upb_value val;
       while (upb_inttable_next(t, &key, &val, &iter)) {
-        upb_inttable_insert(&new_t, key, val, a);
+        bool ok = upb_inttable_insert(&new_t, key, val, a);
+        UPB_ASSERT(ok);
       }
     }
 

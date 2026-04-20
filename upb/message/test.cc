@@ -45,7 +45,6 @@
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
-#include "upb/mini_table/internal/extension.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
@@ -56,6 +55,7 @@
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 #include "upb/wire/eps_copy_input_stream.h"
+#include "upb/wire/internal/eps_copy_input_stream.h"
 #include "upb/wire/types.h"
 #include "upb/wire/writer.h"
 
@@ -652,7 +652,8 @@ TEST(MessageTest, MaxRequiredFields) {
   for (int i = 1; i <= 61; i++) {
     upb::FieldDefPtr f = m.FindFieldByNumber(i);
     ASSERT_TRUE(f);
-    upb_Message_SetFieldByDef(UPB_UPCAST(test_msg), f.ptr(), val, arena.ptr());
+    ASSERT_TRUE(upb_Message_SetFieldByDef(UPB_UPCAST(test_msg), f.ptr(), val,
+                                          arena.ptr()));
   }
 
   // Fails, field 63 still isn't set.
@@ -663,7 +664,8 @@ TEST(MessageTest, MaxRequiredFields) {
   // Succeeds, all required fields are set.
   upb::FieldDefPtr f = m.FindFieldByNumber(62);
   ASSERT_TRUE(f);
-  upb_Message_SetFieldByDef(UPB_UPCAST(test_msg), f.ptr(), val, arena.ptr());
+  ASSERT_TRUE(upb_Message_SetFieldByDef(UPB_UPCAST(test_msg), f.ptr(), val,
+                                        arena.ptr()));
   serialized = upb_test_TestMaxRequiredFields_serialize_ex(
       test_msg, kUpb_EncodeOption_CheckRequired, arena.ptr(), &size);
   ASSERT_TRUE(serialized != nullptr);
@@ -783,12 +785,15 @@ TEST(MessageTest, AdjacentAliasedUnknown) {
   // Separate decodes should not produce merged aliases, even with adjacent
   // entries as we don't know that they're part of the same object
   {
-    upb_Decode(region, 300, msg, table, nullptr, kUpb_DecodeOption_AliasString,
-               arena.ptr());
-    upb_Decode(region + 300, 300, msg, table, nullptr,
-               kUpb_DecodeOption_AliasString, arena.ptr());
-    upb_Decode(region + 600, 300, msg, table, nullptr,
-               kUpb_DecodeOption_AliasString, arena.ptr());
+    EXPECT_EQ(kUpb_DecodeStatus_Ok,
+              upb_Decode(region, 300, msg, table, nullptr,
+                         kUpb_DecodeOption_AliasString, arena.ptr()));
+    EXPECT_EQ(kUpb_DecodeStatus_Ok,
+              upb_Decode(region + 300, 300, msg, table, nullptr,
+                         kUpb_DecodeOption_AliasString, arena.ptr()));
+    EXPECT_EQ(kUpb_DecodeStatus_Ok,
+              upb_Decode(region + 600, 300, msg, table, nullptr,
+                         kUpb_DecodeOption_AliasString, arena.ptr()));
     upb_StringView data;
     uintptr_t iter = kUpb_Message_UnknownBegin;
     ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));

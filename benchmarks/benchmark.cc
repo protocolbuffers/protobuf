@@ -11,6 +11,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <cstdio>
+#include <cstdlib>
 #include <string>
 #include <vector>
 
@@ -18,6 +20,8 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/json/json.h"
 #include "benchmarks/descriptor.pb.h"
@@ -30,9 +34,13 @@
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"
 #include "upb/mem/arena.h"
+#include "upb/message/message.h"
+#include "upb/mini_table/message.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
 #include "upb/reflection/internal/def_pool.h"
 #include "upb/wire/decode.h"
+#include "upb/wire/encode.h"
 
 upb_StringView descriptor =
     benchmarks_descriptor_proto_upbdefinit.descriptor;
@@ -79,7 +87,7 @@ static void BM_ArenaFuseUnbalanced(benchmark::State& state) {
       arena = upb_Arena_New();
     }
     for (auto& arena : arenas) {
-      upb_Arena_Fuse(arenas[0], arena);
+      ABSL_CHECK(upb_Arena_Fuse(arenas[0], arena));
     }
     for (auto& arena : arenas) {
       upb_Arena_Free(arena);
@@ -104,7 +112,7 @@ static void BM_ArenaFuseBalanced(benchmark::State& state) {
     for (size_t n = 0; n <= max; n++) {
       size_t step = 1 << n;
       for (size_t i = 0; i + step < arenas.size(); i += (step * 2)) {
-        upb_Arena_Fuse(arenas[i], arenas[i + step]);
+        ABSL_CHECK(upb_Arena_Fuse(arenas[i], arenas[i + step]));
       }
     }
 
@@ -409,8 +417,8 @@ static void BM_JsonParse_Upb(benchmark::State& state) {
     upb_Arena* arena = upb_Arena_New();
     upb_benchmark_FileDescriptorProto* proto =
         upb_benchmark_FileDescriptorProto_new(arena);
-    upb_JsonDecode(json.data(), json.size(), UPB_UPCAST(proto), md,
-                   defpool.ptr(), 0, arena, nullptr);
+    ABSL_CHECK(upb_JsonDecode(json.data(), json.size(), UPB_UPCAST(proto), md,
+                              defpool.ptr(), 0, arena, nullptr));
     benchmark::DoNotOptimize(proto);
     upb_Arena_Free(arena);
   }

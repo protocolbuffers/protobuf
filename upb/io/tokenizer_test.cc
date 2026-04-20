@@ -7,12 +7,26 @@
 
 #include "upb/io/tokenizer.h"
 
+#include <cmath>
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <ios>
+#include <ostream>
+#include <string>
+#include <vector>
+
 #include <gtest/gtest.h>
+#include "absl/base/macros.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_format.h"
+#include "upb/base/status.h"
 #include "upb/io/chunked_input_stream.h"
 #include "upb/io/string.h"
+#include "upb/io/zero_copy_input_stream.h"
 #include "upb/lex/unicode.h"
+#include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 
 // Must be last.
@@ -997,12 +1011,12 @@ TEST_F(TokenizerTest, ParseString) {
 TEST_F(TokenizerTest, ParseStringAppend) {
   upb::Arena arena;
   upb_String output;
-  upb_String_Init(&output, arena.ptr());
+  EXPECT_TRUE(upb_String_Init(&output, arena.ptr()));
 
-  upb_String_Assign(&output, "stuff+", 6);
+  EXPECT_TRUE(upb_String_Assign(&output, "stuff+", 6));
   auto sv = upb_Parse_String("'hello'", arena.ptr());
   EXPECT_TRUE(StringEquals(sv.data, "hello"));
-  upb_String_Append(&output, sv.data, sv.size);
+  EXPECT_TRUE(upb_String_Append(&output, sv.data, sv.size));
   EXPECT_TRUE(StringEquals(upb_String_Data(&output), "stuff+hello"));
 }
 
@@ -1089,8 +1103,7 @@ TEST_2D(TokenizerTest, Errors, kErrorCases, kBlockSizes) {
   upb_Status status;
   upb_Status_Clear(&status);
 
-  while (upb_Tokenizer_Next(t, &status))
-    ;  // just keep looping
+  while (upb_Tokenizer_Next(t, &status));  // just keep looping
   EXPECT_TRUE(
       StringEquals(upb_Status_ErrorMessage(&status), kErrorCases_case.errors));
 }
@@ -1105,7 +1118,7 @@ TEST_1D(TokenizerTest, BackUpOnDestruction, kBlockSizes) {
 
   // Create a tokenizer, read one token, then destroy it.
   auto t = upb_Tokenizer_New(nullptr, 0, input, 0, arena.ptr());
-  upb_Tokenizer_Next(t, nullptr);
+  EXPECT_TRUE(upb_Tokenizer_Next(t, nullptr));
   upb_Tokenizer_Fini(t);
 
   // Only "foo" should have been read.
@@ -1161,11 +1174,11 @@ TEST(Benchmark, ParseStringAppendAccumulate) {
 TEST(Benchmark, ParseStringAppend) {
   upb::Arena arena;
   upb_String output;
-  upb_String_Init(&output, arena.ptr());
+  EXPECT_TRUE(upb_String_Init(&output, arena.ptr()));
   int benchmark_len = arraysize(kParseBenchmark);
   for (int i = 0; i < benchmark_len; i++) {
     auto sv = upb_Parse_String(kParseBenchmark[i], arena.ptr());
-    upb_String_Append(&output, sv.data, sv.size);
+    EXPECT_TRUE(upb_String_Append(&output, sv.data, sv.size));
   }
   EXPECT_NE(0, upb_String_Size(&output));
 }
