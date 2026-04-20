@@ -742,6 +742,14 @@ Error, UINTPTR_MAX is undefined
 // user code can be updated before upgrading versions of protobuf.
 #ifdef UPB_FUTURE_BREAKING_CHANGES
 
+// Removes non-standard clamping behavior in RepeatedContainer.pop()
+// Owner: runze@
+#define UPB_FUTURE_REMOVE_POP_CLAMP 1
+
+#else
+
+#define UPB_FUTURE_REMOVE_POP_CLAMP 0
+
 #endif
 
 #ifndef UPB_GENERATED_CODE_SUPPORT_H_
@@ -18249,6 +18257,7 @@ UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
 #undef UPB_LINKARR_START
 #undef UPB_LINKARR_STOP
 #undef UPB_FUTURE_BREAKING_CHANGES
+#undef UPB_FUTURE_REMOVE_POP_CLAMP
 #undef UPB_HAS_ATTRIBUTE
 #undef UPB_HAS_CPP_ATTRIBUTE
 #undef UPB_HAS_BUILTIN
