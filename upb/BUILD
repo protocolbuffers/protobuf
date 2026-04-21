@@ -312,7 +312,6 @@ filegroup(
         "//upb/message:test_protos",
         "//upb/test:test_protos",
         "//upb/util:test_protos",
-        "//upb/wire:test_protos",
     ],
     visibility = ["//pkg:__pkg__"],
 )
