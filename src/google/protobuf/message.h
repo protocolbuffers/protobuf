@@ -1148,6 +1148,14 @@ class PROTOBUF_EXPORT Reflection final {
     return schema_.IsSplit(field);
   }
 
+  // Returns whether this type of field is stored in the split struct as a raw
+  // pointer.
+  bool SplitFieldHasExtraIndirection(const FieldDescriptor* field) const;
+
+  template <typename T>
+  [[nodiscard]] bool SplitFieldHasExtraIndirectionStatic(
+      const FieldDescriptor* field) const;
+
   // Walks the message tree from "root" and poisons (under ASAN) the memory to
   // force subsequent accesses to fail. Always calls Clear beforehand to clear
   // strings, etc.
@@ -1726,25 +1734,29 @@ void** Reflection::MutableSplitField(Message* message) const {
   return internal::GetPointerAtOffset<void*>(message, schema_.SplitOffset());
 }
 
-namespace internal {
-
 // In some cases, (Get|Mutable)Raw may be called with a type that is different
 // from the final type; e.g. char. As a defensive coding to this unfortunate
 // practices, we should only assume extra indirection (or a lack thereof) for
 // the well known, complex types.
 template <typename T>
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SplitFieldHasExtraIndirectionStatic(
-    const FieldDescriptor* field) {
-  if (std::is_base_of<RepeatedFieldBase, T>() ||
-      std::is_base_of<RepeatedPtrFieldBase, T>()) {
+[[nodiscard]] bool Reflection::SplitFieldHasExtraIndirectionStatic(
+    const FieldDescriptor* field) const {
+  if constexpr (std::is_base_of<internal::RepeatedFieldBase, T>() ||
+                std::is_base_of<internal::RepeatedPtrFieldBase, T>()) {
     ABSL_DCHECK(SplitFieldHasExtraIndirection(field));
     return true;
-  } else if (std::is_base_of<MessageLite, T>()) {
+  } else if constexpr (std::is_base_of<MessageLite, T>()) {
     ABSL_DCHECK(!SplitFieldHasExtraIndirection(field));
     return false;
+  } else if constexpr (internal::EnableLazySplit() &&
+                       std::is_same_v<T, internal::LazyField>) {
+    ABSL_DCHECK(SplitFieldHasExtraIndirection(field));
+    return true;
   }
   return SplitFieldHasExtraIndirection(field);
 }
+
+namespace internal {
 
 inline void MaybePoisonAfterClear(Message* root) {
   if (root == nullptr) return;
@@ -1889,7 +1901,7 @@ const Type& Reflection::GetRaw(const Message& message,
         << "Field = " << field->full_name();
 
     const void* split = GetSplitField(&message);
-    if (internal::SplitFieldHasExtraIndirectionStatic<Type>(field)) {
+    if (SplitFieldHasExtraIndirectionStatic<Type>(field)) {
       return **internal::GetConstPointerAtOffset<Type*>(split, field_offset);
     }
     return *internal::GetConstPointerAtOffset<Type>(split, field_offset);

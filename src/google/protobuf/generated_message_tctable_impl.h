@@ -33,6 +33,7 @@
 #include "google/protobuf/serial_arena.h"
 #include "google/protobuf/wire_format_lite.h"
 
+
 // Must come last:
 #include "google/protobuf/port_def.inc"
 
@@ -786,8 +787,8 @@ class PROTOBUF_EXPORT TcParser final {
   }
 
   template <typename T, bool is_split>
-  static inline T& MaybeCreateRepeatedRefAt(void* x, size_t offset,
-                                            MessageLite* msg) {
+  static inline T& MaybeCreateRawPtrRefAt(void* x, size_t offset,
+                                          MessageLite* msg) {
     if (!is_split) return RefAt<T>(x, offset);
     void*& ptr = RefAt<void*>(x, offset);
     if (ptr == DefaultRawPtr()) {
@@ -799,14 +800,14 @@ class PROTOBUF_EXPORT TcParser final {
   template <typename T, bool is_split>
   static inline RepeatedField<T>& MaybeCreateRepeatedFieldRefAt(
       void* x, size_t offset, MessageLite* msg) {
-    return MaybeCreateRepeatedRefAt<RepeatedField<T>, is_split>(x, offset, msg);
+    return MaybeCreateRawPtrRefAt<RepeatedField<T>, is_split>(x, offset, msg);
   }
 
   template <typename T, bool is_split>
   static inline RepeatedPtrField<T>& MaybeCreateRepeatedPtrFieldRefAt(
       void* x, size_t offset, MessageLite* msg) {
-    return MaybeCreateRepeatedRefAt<RepeatedPtrField<T>, is_split>(x, offset,
-                                                                   msg);
+    return MaybeCreateRawPtrRefAt<RepeatedPtrField<T>, is_split>(x, offset,
+                                                                 msg);
   }
 
   template <typename T>
@@ -1143,6 +1144,7 @@ class PROTOBUF_EXPORT TcParser final {
   template <bool is_split, bool is_group>
   PROTOBUF_CC static const char* MpRepeatedMessageOrGroup(
       PROTOBUF_TC_PARAM_DECL);
+  template <bool is_split>
   PROTOBUF_CC static const char* MpLazyMessage(PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE
   PROTOBUF_CC static const char* MpFallback(PROTOBUF_TC_PARAM_DECL);

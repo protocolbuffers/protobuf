@@ -314,7 +314,7 @@ void EmitNonDefaultCheckForString(io::Printer* p, absl::string_view prefix,
                  {
                      {"prefix", prefix},
                      {"name", FieldName(field)},
-                     {"field", FieldMemberName(field, split)},
+                     {"field_", FieldMemberName(field, split)},
                  },
                  // The merge semantic is "overwrite if present". This statement
                  // is emitted when hasbit is set and src proto field is
@@ -326,7 +326,7 @@ void EmitNonDefaultCheckForString(io::Printer* p, absl::string_view prefix,
                  //   do nothing.
                  // This will allow destructors and Clear() to be simpler.
                  R"cc(
-                   if (_this->$field$.IsDefault()) {
+                   if (_this->$field_$.IsDefault()) {
                      _this->_internal_set_$name$("");
                    }
                  )cc");
@@ -791,12 +791,12 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
              {"sizer",
               [&] {
                 if (!field->is_repeated()) return;
-                p->Emit({Sub("name_size", absl::StrCat(name, "_size"))
-                             .AnnotatedAs(field)},
-                        R"cc(
-                          [[nodiscard]] $deprecated_attr $int $name_size$()
-                              $const_impl$;
-                        )cc");
+                p->Emit(
+                    {Sub("name_size", absl::StrCat(name, "_size"))
+                         .AnnotatedAs(field)},
+                    R"cc(
+                      [[nodiscard]] $DEPRECATED $int $name_size$() $const_impl$;
+                    )cc");
 
                 p->Emit({Sub("_internal_name_size",
                              absl::StrCat("_internal_", name, "_size"))
@@ -811,12 +811,12 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
              {"hazzer",
               [&] {
                 if (!field->has_presence()) return;
-                p->Emit({Sub("has_name", absl::StrCat("has_", name))
-                             .AnnotatedAs(field)},
-                        R"cc(
-                          [[nodiscard]] $deprecated_attr $bool $has_name$()
-                              $const_impl$;
-                        )cc");
+                p->Emit(
+                    {Sub("has_name", absl::StrCat("has_", name))
+                         .AnnotatedAs(field)},
+                    R"cc(
+                      [[nodiscard]] $DEPRECATED $bool $has_name$() $const_impl$;
+                    )cc");
               }},
              {"internal_hazzer",
               [&] {
@@ -841,7 +841,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                                  Semantic::kSet,
                              })},
                         R"cc(
-                          $deprecated_attr $void $clear_name$() $impl$;
+                          $DEPRECATED $void $clear_name$() $impl$;
                         )cc");
               }},
              {"accessors",
@@ -1149,7 +1149,7 @@ void MessageGenerator::GenerateSingularFieldHasBits(
                  // information to the compiler, we allow it to eliminate
                  // unnecessary null checks later on.
                  p->Emit(
-                     R"cc(PROTOBUF_ASSUME(!value || $field$ != nullptr);)cc");
+                     R"cc(PROTOBUF_ASSUME(!value || $field_$ != nullptr);)cc");
                }
              }}
              .WithSuffix(";")},
@@ -2673,9 +2673,9 @@ void MessageGenerator::GenerateZeroInitFields(io::Printer* p) const {
                                sizeof($Impl$::$last$_));
                 )cc");
       } else {
-        p->Emit({{"field", FieldMemberName(first, false)}},
+        p->Emit({{"field_", FieldMemberName(first, false)}},
                 R"cc(
-                  $field$ = {};
+                  $field_$ = {};
                 )cc");
       }
       first = nullptr;
@@ -3101,9 +3101,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
                                sizeof($Impl$::$last$_));
                 )cc");
       } else {
-        p->Emit({{"field", FieldMemberName(first, split)}},
+        p->Emit({{"field_", FieldMemberName(first, split)}},
                 R"cc(
-                  $field$ = from.$field$;
+                  $field_$ = from.$field_$;
                 )cc");
       }
       first = nullptr;
@@ -3124,7 +3124,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
 
   auto has_message = [&](const FieldDescriptor* field) {
     if (has_bit_indices_.empty()) {
-      p->Emit("from.$field$ != nullptr");
+      p->Emit("from.$field_$ != nullptr");
     } else {
       int has_bit_index = has_bit_indices_[field->index()];
       p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
@@ -3138,9 +3138,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
     p->Emit({{"has_msg", [&] { has_message(field); }},
              {"submsg", FieldMessageTypeName(field, options_)}},
             R"cc(
-              $field$ = ($has_msg$)
-                            ? $superclass$::CopyConstruct(arena, *from.$field$)
-                            : nullptr;
+              $field_$ = ($has_msg$) ? $superclass$::CopyConstruct(
+                                           arena, *from.$field_$)
+                                     : nullptr;
             )cc");
   };
 
@@ -3196,7 +3196,6 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
               for (const auto* field : internal::FieldRange(oneof)) {
                 p->Emit(
                     {{"Name", UnderscoresToCamelCase(field->name(), true)},
-                     {"field", FieldMemberName(field, /*split=*/false)},
                      {"body",
                       [&] {
                         field_generators_.get(field).GenerateOneofCopyConstruct(

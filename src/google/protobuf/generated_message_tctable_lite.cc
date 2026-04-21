@@ -2813,8 +2813,8 @@ const char* TcParser::MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL) {
 
   void* const base = MaybeGetSplitBase(msg, is_split, table);
   RepeatedPtrFieldBase& field =
-      MaybeCreateRepeatedRefAt<RepeatedPtrFieldBase, is_split>(
-          base, entry.offset, msg);
+      MaybeCreateRawPtrRefAt<RepeatedPtrFieldBase, is_split>(base, entry.offset,
+                                                             msg);
   ABSL_DCHECK_EQ(field.GetArena(), msg->GetArena());
   const auto aux = *table->field_aux(&entry);
   // Captured structured bindings are a C++20 feature.

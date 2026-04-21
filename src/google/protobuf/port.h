@@ -300,6 +300,9 @@ inline constexpr bool ForceSplitFieldsInProtoc() {
 #endif
 }
 
+// Returns true if lazy sub-message fields are eligible for splitting.
+inline constexpr bool EnableLazySplit() { return true; }
+
 // Returns true if debug hardening for clearing oneof message on arenas is
 // enabled.
 inline constexpr bool DebugHardenClearOneofMessageOnArena() {

@@ -1420,6 +1420,12 @@ void Reflection::MaybePoisonAfterClear(Message& root) const {
   }
 }
 
+bool Reflection::SplitFieldHasExtraIndirection(
+    const FieldDescriptor* field) const {
+  return field->is_repeated() ||
+         (internal::EnableLazySplit() && GetLazyStyle(field) != 0);
+}
+
 int Reflection::FieldSize(const Message& message,
                           const FieldDescriptor* field) const {
   USAGE_CHECK_MESSAGE(FieldSize, &message);
@@ -3085,7 +3091,7 @@ void* Reflection::MutableRawSplitImpl(Message* message,
   const uint32_t field_offset = schema_.GetFieldOffset(field);
   PrepareSplitMessageForWrite(message);
   void** split = MutableSplitField(message);
-  if (internal::SplitFieldHasExtraIndirection(field)) {
+  if (SplitFieldHasExtraIndirection(field)) {
     return AllocIfDefault(field,
                           *GetPointerAtOffset<void*>(*split, field_offset),
                           message->GetArena());
@@ -4147,10 +4153,6 @@ bool IsDescendant(const Message& root, const Message& message) {
   }
 
   return false;
-}
-
-bool SplitFieldHasExtraIndirection(const FieldDescriptor* field) {
-  return field->is_repeated();
 }
 
 #if defined(PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED)
