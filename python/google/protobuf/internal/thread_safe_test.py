@@ -350,6 +350,5 @@ class FreeThreadingTest(unittest.TestCase):
     else:
       print('Skipping benchmark in non-benchmark mode.')
 
-
 if __name__ == '__main__':
   unittest.main()

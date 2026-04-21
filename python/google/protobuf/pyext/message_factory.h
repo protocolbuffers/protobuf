@@ -12,8 +12,10 @@
 #include <Python.h>
 
 #include <unordered_map>
+
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
+#include "google/protobuf/pyext/free_threading_mutex.h"
 
 namespace google {
 namespace protobuf {
@@ -45,7 +47,10 @@ struct PyMessageFactory {
   // Python references to classes are owned by this PyDescriptorPool.
   typedef std::unordered_map<const Descriptor*, CMessageClass*>
       ClassesByMessageMap;
-  ClassesByMessageMap* classes_by_descriptor;
+  ClassesByMessageMap* classes_by_descriptor ABSL_GUARDED_BY(mutex);
+
+  // Mutex to protect classes_by_descriptor in free-threaded builds.
+  FreeThreadingMutex mutex;
 };
 
 extern PyTypeObject PyMessageFactory_Type;
@@ -61,7 +66,7 @@ int RegisterMessageClass(PyMessageFactory* self,
                          const Descriptor* message_descriptor,
                          CMessageClass* message_class);
 // Retrieves the Python class registered with the given message descriptor, or
-// fail with a TypeError. Returns a *borrowed* reference.
+// fail with a TypeError. Returns a *new* reference.
 CMessageClass* GetMessageClass(PyMessageFactory* self,
                                const Descriptor* message_descriptor);
 // Retrieves the Python class registered with the given message descriptor.

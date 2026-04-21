@@ -306,7 +306,9 @@ PyObject* GetEntryClass(PyObject* _self) {
   CMessageClass* message_class = message_factory::GetMessageClass(
       cmessage::GetFactoryForMessage(self->parent),
       self->parent_field_descriptor->message_type());
-  Py_XINCREF(message_class);
+  if (message_class == nullptr) {
+    return nullptr;
+  }
   return reinterpret_cast<PyObject*>(message_class);
 }
 
