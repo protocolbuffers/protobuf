@@ -129,8 +129,15 @@ typedef struct _upb_tabent {
   /* Internal chaining.  This is const so we can create static initializers for
    * tables.  We cast away const sometimes, but *only* when the containing
    * upb_table is known to be non-const.  This requires a bit of care, but
-   * the subtlety is confined to table.c. */
-  const struct _upb_tabent* next;
+   * the subtlety is confined to table.c.
+   *
+   * Invariants:
+   * - If an entry is empty, `next_or_self` is NULL.
+   * - If an entry is non-empty and has no successor, `next_or_self` points to
+   *   itself.
+   * - Otherwise it points to this entry's chaining successor.
+   */
+  const struct _upb_tabent* next_or_self;
 } upb_tabent;
 
 typedef struct {
@@ -145,23 +152,8 @@ typedef struct {
 UPB_INLINE size_t upb_table_size(const upb_table* t) { return t->mask + 1; }
 
 // Internal-only functions, in .h file only out of necessity.
-
-UPB_INLINE upb_key upb_key_empty(void) {
-  upb_key ret;
-  memset(&ret, 0, sizeof(upb_key));
-  return ret;
-}
-
 UPB_INLINE bool upb_tabent_isempty(const upb_tabent* e) {
-  upb_key key = e->key;
-  UPB_STATIC_ASSERT(sizeof(key.num) == sizeof(key.str), "Sizes don't match");
-  uintptr_t val;
-  memcpy(&val, &key, sizeof(val));
-  // Note: for upb_inttables a tab_key is a true integer key value, but the
-  // inttable maintains the invariant that 0 value is always stored in the
-  // compact table and never as a upb_tabent* so we can always use the 0
-  // key value to identify an empty tabent.
-  return val == 0;
+  return e->next_or_self == NULL;
 }
 
 uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed);

@@ -106,6 +106,12 @@ typedef bool eqlfunc_t(upb_key k1, upb_value v1, lookupkey_t k2);
 
 /* Base table (shared code) ***************************************************/
 
+static upb_key upb_key_empty(void) {
+  upb_key ret;
+  memset(&ret, 0, sizeof(upb_key));
+  return ret;
+}
+
 static uint32_t upb_inthash(uintptr_t key) {
   UPB_STATIC_ASSERT(sizeof(uintptr_t) == 4 || sizeof(uintptr_t) == 8,
                     "Pointers don't fit");
@@ -173,7 +179,8 @@ static const upb_tabent* findentry(const upb_table* t, lookupkey_t key,
   if (upb_tabent_isempty(e)) return NULL;
   while (1) {
     if (eql(e->key, e->val, key)) return e;
-    if ((e = e->next) == NULL) return NULL;
+    if (e->next_or_self == e) return NULL;
+    e = e->next_or_self;
   }
 }
 
@@ -207,7 +214,7 @@ static void insert(upb_table* t, lookupkey_t key, upb_key tabkey, upb_value val,
 
   if (upb_tabent_isempty(mainpos_e)) {
     /* Our main position is empty; use it. */
-    our_e->next = NULL;
+    our_e->next_or_self = our_e;
   } else {
     /* Collision. */
     upb_tabent* new_e = emptyent(t, mainpos_e);
@@ -218,21 +225,26 @@ static void insert(upb_table* t, lookupkey_t key, upb_key tabkey, upb_value val,
       /* Existing ent is in its main position (it has the same hash as us, and
        * is the head of our chain).  Insert to new ent and append to this chain.
        */
-      new_e->next = mainpos_e->next;
-      mainpos_e->next = new_e;
+      new_e->next_or_self = (mainpos_e->next_or_self == mainpos_e)
+                                ? new_e
+                                : mainpos_e->next_or_self;
+      mainpos_e->next_or_self = new_e;
       our_e = new_e;
     } else {
       /* Existing ent is not in its main position (it is a node in some other
        * chain).  This implies that no existing ent in the table has our hash.
        * Evict it (updating its chain) and use its ent for head of our chain. */
       *new_e = *mainpos_e; /* copies next. */
-      while (chain->next != mainpos_e) {
-        chain = (upb_tabent*)chain->next;
+      if (new_e->next_or_self == mainpos_e) {
+        new_e->next_or_self = new_e;
+      }
+      while (chain->next_or_self != mainpos_e) {
+        chain = (upb_tabent*)chain->next_or_self;
         UPB_ASSERT(chain);
       }
-      chain->next = new_e;
+      chain->next_or_self = new_e;
       our_e = mainpos_e;
-      our_e->next = NULL;
+      our_e->next_or_self = our_e;
     }
   }
   our_e->key = tabkey;
@@ -248,27 +260,34 @@ static bool rm(upb_table* t, lookupkey_t key, upb_value* val, uint32_t hash,
     /* Element to remove is at the head of its chain. */
     t->count--;
     if (val) *val = chain->val;
-    if (chain->next) {
-      upb_tabent* move = (upb_tabent*)chain->next;
+    if (chain->next_or_self != chain) {
+      upb_tabent* move = (upb_tabent*)chain->next_or_self;
       *chain = *move;
+      if (chain->next_or_self == move) {
+        chain->next_or_self = chain;
+      }
       move->key = upb_key_empty();
+      move->next_or_self = NULL;
     } else {
       chain->key = upb_key_empty();
+      chain->next_or_self = NULL;
     }
     return true;
   } else {
     /* Element to remove is either in a non-head position or not in the
      * table. */
-    while (chain->next && !eql(chain->next->key, chain->next->val, key)) {
-      chain = (upb_tabent*)chain->next;
+    while (chain->next_or_self != chain &&
+           !eql(chain->next_or_self->key, chain->next_or_self->val, key)) {
+      chain = (upb_tabent*)chain->next_or_self;
     }
-    if (chain->next) {
+    if (chain->next_or_self != chain) {
       /* Found element to remove. */
-      upb_tabent* rm = (upb_tabent*)chain->next;
+      upb_tabent* rm = (upb_tabent*)chain->next_or_self;
       t->count--;
-      if (val) *val = chain->next->val;
+      if (val) *val = chain->next_or_self->val;
       rm->key = upb_key_empty();
-      chain->next = rm->next;
+      chain->next_or_self = (rm->next_or_self == rm) ? chain : rm->next_or_self;
+      rm->next_or_self = NULL;
       return true;
     } else {
       /* Element to remove is not in the table. */
@@ -609,19 +628,19 @@ void upb_strtable_removeiter(upb_strtable* t, intptr_t* iter) {
   // Linear search, not great.
   upb_tabent* end = &t->t.entries[upb_table_size(&t->t)];
   for (upb_tabent* e = t->t.entries; e != end; e++) {
-    if (e->next == ent) {
+    if (e->next_or_self == ent && e != ent) {
       prev = e;
       break;
     }
   }
 
   if (prev) {
-    prev->next = ent->next;
+    prev->next_or_self = (ent->next_or_self == ent) ? prev : ent->next_or_self;
   }
 
   t->t.count--;
   ent->key = upb_key_empty();
-  ent->next = NULL;
+  ent->next_or_self = NULL;
 }
 
 void upb_strtable_setentryvalue(upb_strtable* t, intptr_t iter, upb_value v) {
@@ -1023,19 +1042,20 @@ void upb_inttable_removeiter(upb_inttable* t, intptr_t* iter) {
     // Linear search, not great.
     upb_tabent* end = &t->t.entries[upb_table_size(&t->t)];
     for (upb_tabent* e = t->t.entries; e != end; e++) {
-      if (e->next == ent) {
+      if (e->next_or_self == ent && e != ent) {
         prev = e;
         break;
       }
     }
 
     if (prev) {
-      prev->next = ent->next;
+      prev->next_or_self =
+          (ent->next_or_self == ent) ? prev : ent->next_or_self;
     }
 
     t->t.count--;
     ent->key = upb_key_empty();
-    ent->next = NULL;
+    ent->next_or_self = NULL;
   }
 }
 
