@@ -750,6 +750,15 @@ namespace internal {
 #define PROTOBUF_DEPRECATE_AND_INLINE() [[deprecated]]
 #endif
 
+#ifdef PROTOBUF_REFACTOR_INLINE
+#error PROTOBUF_REFACTOR_INLINE was previously defined
+#endif
+#if defined(ABSL_REFACTOR_INLINE)
+#define PROTOBUF_REFACTOR_INLINE() ABSL_REFACTOR_INLINE
+#else
+#define PROTOBUF_REFACTOR_INLINE()
+#endif
+
 #ifdef PROTOBUF_NONNULL
 #error PROTOBUF_NONNULL was previously defined
 #endif
