@@ -6,6 +6,8 @@ include(${protobuf_SOURCE_DIR}/cmake/protobuf-configure-target.cmake)
 add_library(libprotobuf ${protobuf_SHARED_OR_STATIC}
   ${libprotobuf_srcs}
   ${libprotobuf_hdrs}
+  src/google/protobuf/json_enumvalue_options.pb.h
+  src/google/protobuf/json_enumvalue_options.pb.cc
   ${protobuf_version_rc_file})
 if(protobuf_HAVE_LD_VERSION_SCRIPT)
   if(${CMAKE_VERSION} VERSION_GREATER 3.13 OR ${CMAKE_VERSION} VERSION_EQUAL 3.13)

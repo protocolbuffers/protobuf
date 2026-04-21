@@ -314,6 +314,37 @@ cc_library(
     ],
 )
 
+genrule(
+    name = "gen_json_enumvalue_options_cc_sources",
+    srcs = [
+        "json_enumvalue_options.proto",
+        "//:descriptor_proto",
+    ],
+    outs = [
+        "zjson/google/protobuf/json_enumvalue_options.pb.h",
+        "zjson/google/protobuf/json_enumvalue_options.pb.cc",
+    ],
+    cmd = """
+          $(execpath //:protoc) \
+              --cpp_out=dllexport_decl=PROTOBUF_EXPORT:$(RULEDIR)/zjson \
+              --proto_path=$$(dirname $$(dirname $$(dirname $(location json_enumvalue_options.proto)))) \
+              --descriptor_set_in=$(location //:descriptor_proto) \
+              $(location json_enumvalue_options.proto)
+      """,
+    tools = ["//:protoc"],
+    visibility = ["//visibility:private"],
+)
+
+staleness_test(
+    name = "json_enumvalue_options_staleness_test",
+    outs = [
+        "json_enumvalue_options.pb.cc",
+        "json_enumvalue_options.pb.h",
+    ],
+    generated_pattern = "zjson/google/protobuf/%s",
+    tags = ["manual"],
+)
+
 # Built-in runtime types
 
 proto_library(
@@ -372,13 +403,13 @@ proto_library(
     name = "json_enumvalue_options_proto",
     srcs = ["json_enumvalue_options.proto"],
     strip_import_prefix = "/src",
-    visibility = ["//visibility:private"],
+    visibility = ["//:__subpackages__"],
     deps = [":descriptor_proto"],
 )
 
 cc_proto_library(
     name = "json_enumvalue_options_cc_proto",
-    visibility = ["//visibility:private"],
+    visibility = ["//:__subpackages__"],
     deps = [":json_enumvalue_options_proto"],
 )
 
