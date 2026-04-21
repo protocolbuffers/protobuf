@@ -105,6 +105,51 @@ TEST_F(PhpGeneratorTest, ClosedEnumError) {
   ExpectErrorSubstring("Can't generate PHP code for closed enum Foo");
 }
 
+TEST_F(PhpGeneratorTest, Assume64BitPhpFlagCollapsesInt64TypeHints) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    message Foo {
+      int64 scalar_i64 = 1;
+      uint64 scalar_u64 = 2;
+      repeated int64 repeated_i64 = 3;
+      int32 scalar_i32 = 4;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--php_out=assume_64_bit_php:$tmpdir foo.proto");
+
+  ExpectNoErrors();
+  ExpectFileContentContainsSubstring("Foo.php", "public function setScalarI64(int $var)");
+  ExpectFileContentContainsSubstring("Foo.php", "public function setScalarU64(int $var)");
+  ExpectFileContentContainsSubstring("Foo.php", "@param int $var");
+  ExpectFileContentContainsSubstring("Foo.php", "@return int");
+  ExpectFileContentContainsSubstring("Foo.php", "@return RepeatedField<int>");
+  ExpectFileContentNotContainsSubstring("Foo.php", "int|string");
+  ExpectFileContentNotContainsSubstring(
+      "Foo.php", "RepeatedField<int>|RepeatedField<string>");
+}
+
+TEST_F(PhpGeneratorTest, Assume64BitPhpFlagAbsentKeepsIntStringUnion) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    message Foo {
+      int64 scalar_i64 = 1;
+      repeated int64 repeated_i64 = 2;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+  ExpectFileContentContainsSubstring("Foo.php",
+                                     "public function setScalarI64(int|string $var)");
+  ExpectFileContentContainsSubstring(
+      "Foo.php", "@return RepeatedField<int>|RepeatedField<string>");
+}
+
 }  // namespace
 }  // namespace php
 }  // namespace compiler
