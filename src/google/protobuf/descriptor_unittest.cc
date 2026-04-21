@@ -9390,6 +9390,37 @@ TEST_F(FeaturesTest, Edition2023InferredFeatures) {
       pb::CppFeatures::VIEW);
 }
 
+TEST_F(FeaturesTest, CppFeaturesUnknownStringType) {
+  // STRING_TYPE_UNKNOWN set explicitly at the file level propagates to the
+  // field, and the field's cpp_string_type() defaults to String.
+  FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
+    name: "unknown_string_field_type.proto"
+    syntax: "editions"
+    edition: EDITION_2023
+    options {
+      features {
+        [pb.cpp] { string_type: STRING_TYPE_UNKNOWN }
+      }
+    }
+    message_type {
+      name: "UnknownStringFieldType"
+      field { name: "v" number: 1 label: LABEL_OPTIONAL type: TYPE_BYTES }
+    }
+  )pb");
+
+  google::protobuf::DescriptorPool pool;
+  const FileDescriptor* file = pool.BuildFile(file_proto);
+  ASSERT_NE(file, nullptr);
+
+  const Descriptor* message = file->message_type(0);
+  EXPECT_EQ(GetFeatures(message->field(0)).GetExtension(pb::cpp).string_type(),
+            pb::CppFeatures::STRING_TYPE_UNKNOWN);
+
+  EXPECT_EQ(message->field(0)->cpp_string_type(),
+            FieldDescriptor::CppStringType::kString);
+}
+
+
 TEST_F(FeaturesTest, Edition2024Defaults) {
   FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
     name: "foo.proto"

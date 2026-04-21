@@ -4298,7 +4298,9 @@ FieldDescriptor::CppStringType FieldDescriptor::CalculateCppStringType() const {
     default:
       // If features haven't been resolved, this is a dynamic build not for C++
       // codegen.  Just use string type.
-      ABSL_DCHECK(!features().GetExtension(pb::cpp).has_string_type());
+      ABSL_DCHECK(!features().GetExtension(pb::cpp).has_string_type() ||
+                  features().GetExtension(pb::cpp).string_type() ==
+                      pb::CppFeatures::STRING_TYPE_UNKNOWN);
       return CppStringType::kString;
   }
 }
