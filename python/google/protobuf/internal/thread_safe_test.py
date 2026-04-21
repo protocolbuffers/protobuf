@@ -7,11 +7,13 @@
 
 """Unittest for thread safe"""
 
+import importlib
 import sys
 import threading
 import time
 import unittest
 
+from google3.fitbit.research.sensing.common.proto import evaluation_pb2
 from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
@@ -303,6 +305,26 @@ class FreeThreadingTest(unittest.TestCase):
       for thread in threads:
         thread.join()
 
+  def testConcurrentGetAndRegisterMessageClassDataRace(self):
+    """Reproduces the data race in GetMessageClass/RegisterMessageClass."""
+
+    barrier = threading.Barrier(10)
+    imported = False
+    lock = threading.Lock()
+
+    def Task():
+      barrier.wait()
+      for _ in range(50):
+        evaluation_pb2.MeasurementCollection(measurements=[])
+
+        nonlocal imported
+        if not imported:
+          with lock:
+            if not imported:
+              from google3.monitoring.streamz.api import data_model_pb2
+              imported = True
+
+    self.RunThreads(10, Task)
 
 if __name__ == '__main__':
   unittest.main()
