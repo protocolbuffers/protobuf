@@ -838,6 +838,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/wire/encode.h
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.h
   ${protobuf_SOURCE_DIR}/upb/wire/internal/decoder.h
+  ${protobuf_SOURCE_DIR}/upb/wire/internal/encoder.h
   ${protobuf_SOURCE_DIR}/upb/wire/internal/eps_copy_input_stream.h
   ${protobuf_SOURCE_DIR}/upb/wire/internal/reader.h
   ${protobuf_SOURCE_DIR}/upb/wire/reader.h
@@ -1234,6 +1235,7 @@ set(upb_test_protos_files
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_wweak_import_test.proto
   ${protobuf_SOURCE_DIR}/upb/util/required_fields_editions_test.proto
   ${protobuf_SOURCE_DIR}/upb/util/required_fields_test.proto
+  ${protobuf_SOURCE_DIR}/upb/wire/encode_test.proto
 )
 
 # @//upb:test_srcs
@@ -1266,6 +1268,7 @@ set(upb_test_files
   ${protobuf_SOURCE_DIR}/upb/util/required_fields_test.cc
   ${protobuf_SOURCE_DIR}/upb/wire/byte_size_test.cc
   ${protobuf_SOURCE_DIR}/upb/wire/decode_test.cc
+  ${protobuf_SOURCE_DIR}/upb/wire/encode_test.cc
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream_test.cc
 )
 

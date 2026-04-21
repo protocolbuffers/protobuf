@@ -17860,7 +17860,6 @@ enum {
 #ifndef UPB_WIRE_INTERNAL_DECODER_H_
 #define UPB_WIRE_INTERNAL_DECODER_H_
 
-#include <setjmp.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -17884,7 +17883,7 @@ typedef struct upb_Decoder {
     upb_Arena arena;
     void* foo[UPB_ARENA_SIZE_HACK / sizeof(void*)];
   };
-  upb_ErrorHandler err;
+  upb_ErrorHandler* err;
 
 #ifndef NDEBUG
   char* trace_buf;
@@ -17897,9 +17896,10 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
                                         size_t size,
                                         const upb_ExtensionRegistry* extreg,
                                         int options, upb_Arena* arena,
-                                        char* trace_buf, size_t trace_size) {
-  upb_ErrorHandler_Init(&d->err);
-  upb_EpsCopyInputStream_InitWithErrorHandler(&d->input, &buf, size, &d->err);
+                                        upb_ErrorHandler* err, char* trace_buf,
+                                        size_t trace_size) {
+  d->err = err;
+  upb_EpsCopyInputStream_InitWithErrorHandler(&d->input, &buf, size, d->err);
 
   UPB_STATIC_ASSERT((int)kUpb_DecodeStatus_Ok == (int)kUpb_ErrorCode_Ok,
                     "mismatched error codes");
@@ -17940,7 +17940,7 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
 UPB_INLINE upb_DecodeStatus upb_Decoder_Destroy(upb_Decoder* d,
                                                 upb_Arena* arena) {
   UPB_PRIVATE(_upb_Arena_SwapOut)(arena, &d->arena);
-  return (upb_DecodeStatus)d->err.code;
+  return (upb_DecodeStatus)d->err->code;
 }
 
 #ifndef NDEBUG
@@ -18038,7 +18038,7 @@ UPB_INLINE bool _upb_Decoder_ReadString(upb_Decoder* d, const char** ptr,
       upb_EpsCopyInputStream_ReadStringAlwaysAlias(&d->input, *ptr, size, &tmp);
   if (*ptr == NULL) return false;
   if (validate_utf8 && !utf8_range_IsValid(tmp.data, tmp.size)) {
-    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_BadUtf8);
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_BadUtf8);
     return false;
   }
   if ((d->options & kUpb_DecodeOption_AliasString) == 0) {
@@ -18053,6 +18053,69 @@ UPB_INLINE bool _upb_Decoder_ReadString(upb_Decoder* d, const char** ptr,
 
 
 #endif /* UPB_WIRE_INTERNAL_DECODER_H_ */
+
+#ifndef UPB_WIRE_INTERNAL_ENCODE_H_
+#define UPB_WIRE_INTERNAL_ENCODE_H_
+
+#include <setjmp.h>
+#include <stddef.h>
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct {
+  upb_EncodeStatus status;
+  upb_Arena* arena;
+  // These should only be used for arithmetic and reallocation to allow full
+  // aliasing analysis on the ptr argument.
+  const char UPB_NODEREF *buf, *limit;
+  int options;
+  int depth;
+  _upb_mapsorter sorter;
+  jmp_buf* err;
+} upb_encstate;
+
+UPB_INLINE void UPB_PRIVATE(_upb_encstate_init)(upb_encstate* e, jmp_buf* err,
+                                                upb_Arena* arena) {
+  e->status = kUpb_EncodeStatus_Ok;
+  e->arena = arena;
+  e->buf = NULL;
+  e->limit = NULL;
+  e->options = 0;
+  e->depth = 0;
+  e->err = err;
+  _upb_mapsorter_init(&e->sorter);
+}
+
+// Internal version of upb_Encode that encodes a single field.
+//
+// The caller must clean up the `upb_encstate` by calling
+// `_upb_mapsorter_destroy(&e->sorter)` when done.
+upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Field)(upb_encstate* e,
+                                                const upb_Message* msg,
+                                                const upb_MiniTableField* field,
+                                                char** buf, size_t* size,
+                                                int options);
+
+// Internal version of upb_Encode that encodes a single extension.
+//
+// The caller must clean up the `upb_encstate` by calling
+// `_upb_mapsorter_destroy(&e->sorter)` when done.
+upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Extension)(
+    upb_encstate* e, const upb_MiniTableExtension* ext,
+    upb_MessageValue ext_val, bool is_message_set, char** buf, size_t* size,
+    int options);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_WIRE_INTERNAL_ENCODE_H_ */
 #ifndef GOOGLE_UPB_UPB_WIRE_WRITER_H__
 #define GOOGLE_UPB_UPB_WIRE_WRITER_H__
 
