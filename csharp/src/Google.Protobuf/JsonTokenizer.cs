@@ -30,7 +30,7 @@ namespace Google.Protobuf
     /// </remarks>
     internal abstract class JsonTokenizer
     {
-        private JsonToken bufferedToken;
+        protected JsonToken bufferedToken;
 
         /// <summary>
         ///  Creates a tokenizer that reads from the given text reader.
@@ -57,6 +57,11 @@ namespace Google.Protobuf
         /// This is maintained (and checked) by <see cref="JsonParser.Merge(IMessage, JsonTokenizer)"/>.
         /// </summary>
         internal int RecursionDepth { get; set; }
+
+        internal abstract void StartRecording();
+        internal abstract void StopRecording();
+        internal abstract JsonTokenizer GetReplayTokenizer(JsonTokenizer continuation);
+        internal virtual void DiscardLastToken() { }
 
         /// <summary>
         /// Returns the depth of the stack, purely in objects (not collections).
@@ -91,7 +96,7 @@ namespace Google.Protobuf
         /// <returns>The next token in the stream. This is never null.</returns>
         /// <exception cref="InvalidOperationException">This method is called after an EndDocument token has been returned</exception>
         /// <exception cref="InvalidJsonException">The input text does not comply with RFC 7159</exception>
-        internal JsonToken Next()
+        internal virtual JsonToken Next()
         {
             JsonToken tokenToReturn;
             if (bufferedToken != null)
@@ -153,22 +158,71 @@ namespace Google.Protobuf
         /// <summary>
         /// Tokenizer which first exhausts a list of tokens, then consults another tokenizer.
         /// </summary>
-        private class JsonReplayTokenizer : JsonTokenizer
+        internal class JsonReplayTokenizer : JsonTokenizer
         {
             private readonly IList<JsonToken> tokens;
             private readonly JsonTokenizer nextTokenizer;
             private int nextTokenIndex;
+            private readonly int endIndex;
 
             internal JsonReplayTokenizer(IList<JsonToken> tokens, JsonTokenizer nextTokenizer)
             {
                 this.tokens = tokens;
                 this.nextTokenizer = nextTokenizer;
+                this.endIndex = -1;
             }
 
-            // FIXME: Object depth not maintained...
+            internal JsonReplayTokenizer(IList<JsonToken> tokens, int startIndex, int endIndex, JsonTokenizer nextTokenizer)
+            {
+                this.tokens = tokens;
+                this.nextTokenIndex = startIndex;
+                this.endIndex = endIndex;
+                this.nextTokenizer = nextTokenizer;
+            }
+
+            private int recordStartIndex;
+            private int recordCount;
+            private bool recording;
+
+            internal override void StartRecording()
+            {
+                recordStartIndex = bufferedToken != null ? nextTokenIndex - 1 : nextTokenIndex;
+                recordCount = 0;
+                recording = true;
+            }
+
+            internal override JsonToken Next()
+            {
+                var token = base.Next();
+                if (recording)
+                {
+                    recordCount++;
+                }
+                return token;
+            }
+
+            internal override void StopRecording()
+            {
+                recording = false;
+            }
+
+            internal override JsonTokenizer GetReplayTokenizer(JsonTokenizer continuation)
+            {
+                return new JsonReplayTokenizer(tokens, recordStartIndex, recordStartIndex + recordCount, continuation);
+            }
+
+            internal override void DiscardLastToken()
+            {
+                if (recording && recordCount > 0)
+                {
+                    recordCount--;
+                }
+            }
+
             protected override JsonToken NextImpl()
             {
-                if (nextTokenIndex >= tokens.Count)
+                int limit = endIndex < 0 ? tokens.Count : endIndex;
+                if (nextTokenIndex >= limit)
                 {
                     return nextTokenizer.Next();
                 }
@@ -187,6 +241,44 @@ namespace Google.Protobuf
             private readonly Stack<ContainerType> containerStack = new Stack<ContainerType>();
             private readonly PushBackReader reader;
             private State state;
+            private List<JsonToken> recordedTokens;
+            private bool recording;
+
+            internal override void StartRecording()
+            {
+                recordedTokens = new List<JsonToken>();
+                recording = true;
+            }
+
+            internal override JsonToken Next()
+            {
+                var token = base.Next();
+                if (recording)
+                {
+                    recordedTokens.Add(token);
+                }
+                return token;
+            }
+
+            internal override void StopRecording()
+            {
+                recording = false;
+            }
+
+            internal override JsonTokenizer GetReplayTokenizer(JsonTokenizer continuation)
+            {
+                var result = FromReplayedTokens(recordedTokens, continuation);
+                recordedTokens = null;
+                return result;
+            }
+
+            internal override void DiscardLastToken()
+            {
+                if (recordedTokens != null && recordedTokens.Count > 0)
+                {
+                    recordedTokens.RemoveAt(recordedTokens.Count - 1);
+                }
+            }
 
             internal JsonTextTokenizer(TextReader reader)
             {

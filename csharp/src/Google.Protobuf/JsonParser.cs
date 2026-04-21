@@ -514,7 +514,7 @@ namespace Google.Protobuf
         {
             // Record the token stream until we see the @type property. At that point, we can take the value, consult
             // the type registry for the relevant message, and replay the stream, omitting the @type property.
-            var tokens = new List<JsonToken>();
+            tokenizer.StartRecording();
 
             var token = tokenizer.Next();
             if (token.Type != JsonToken.TokenType.StartObject)
@@ -529,7 +529,6 @@ namespace Google.Protobuf
                 token.StringValue != JsonFormatter.AnyTypeUrlField ||
                 tokenizer.ObjectDepth != typeUrlObjectDepth)
             {
-                tokens.Add(token);
                 token = tokenizer.Next();
 
                 // If we get to the end of the object and haven't seen a type URL, just return.
@@ -538,11 +537,15 @@ namespace Google.Protobuf
                 // other properties but no type URL.
                 if (tokenizer.ObjectDepth < typeUrlObjectDepth)
                 {
+                    tokenizer.StopRecording();
                     return;
                 }
             }
 
             // Don't add the @type property or its value to the recorded token list
+            tokenizer.StopRecording();
+            tokenizer.DiscardLastToken();
+
             token = tokenizer.Next();
             if (token.Type != JsonToken.TokenType.StringValue)
             {
@@ -567,8 +570,9 @@ namespace Google.Protobuf
             }
 
             // Now replay the token stream we've already read and anything that remains of the object, just parsing it
-            // as normal. Our original tokenizer should end up at the end of the object.
-            var replay = JsonTokenizer.FromReplayedTokens(tokens, tokenizer);
+            // as normal.
+            JsonTokenizer replay = tokenizer.GetReplayTokenizer(tokenizer);
+
             var body = descriptor.Parser.CreateTemplate();
             if (descriptor.IsWellKnownType)
             {

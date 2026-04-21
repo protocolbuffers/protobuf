@@ -883,6 +883,59 @@ namespace Google.Protobuf
             Assert.AreEqual(message, parser.Parse(json, TestWellKnownTypes.Descriptor));
         }
 
+        // -----------------------------------------------------------------------------------------
+        // Regression tests for O(N²) memory growth when @type appears last in nested Any values
+        // (https://github.com/protocolbuffers/protobuf/pull/26851).
+        // -----------------------------------------------------------------------------------------
+
+        private static string BuildNestedAnyTypeLastJson(int depth)
+        {
+            var sb = new System.Text.StringBuilder("{}");
+            for (int i = 0; i < depth; i++)
+            {
+                string inner = sb.ToString();
+                sb.Clear();
+                sb.Append("{\"value\":");
+                sb.Append(inner);
+                sb.Append(",\"@type\":\"type.googleapis.com/google.protobuf.Any\"}");
+            }
+            return sb.ToString();
+        }
+
+        [Test]
+        public void Any_TypeUrlLast_DeepNesting()
+        {
+            var registry = TypeRegistry.FromMessages(Any.Descriptor);
+            var parser = new JsonParser(new JsonParser.Settings(1000, registry));
+
+            var result200 = parser.Parse<Any>(BuildNestedAnyTypeLastJson(200));
+            Assert.AreEqual("type.googleapis.com/google.protobuf.Any", result200.TypeUrl);
+
+            var result400 = parser.Parse<Any>(BuildNestedAnyTypeLastJson(400));
+            Assert.AreEqual("type.googleapis.com/google.protobuf.Any", result400.TypeUrl);
+        }
+
+        [Test]
+        public void Any_TypeUrlLast_ManyFields()
+        {
+            var registry = TypeRegistry.FromMessages(TestAllTypes.Descriptor);
+            var parser = new JsonParser(new JsonParser.Settings(10, registry));
+
+            const int fieldCount = 10_000;
+            var sb = new System.Text.StringBuilder();
+            sb.Append("{\"repeatedInt32\":[");
+            for (int i = 0; i < fieldCount; i++)
+            {
+                if (i > 0) sb.Append(',');
+                sb.Append(i);
+            }
+            sb.Append("],\"@type\":\"type.googleapis.com/protobuf_unittest3.TestAllTypes\"}");
+
+            var any = parser.Parse<Any>(sb.ToString());
+            var unpacked = any.Unpack<TestAllTypes>();
+            Assert.AreEqual(fieldCount, unpacked.RepeatedInt32.Count);
+        }
+
         [Test]
         public void DataAfterObject()
         {
