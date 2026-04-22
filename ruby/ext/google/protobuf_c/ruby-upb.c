@@ -10608,6 +10608,7 @@ const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
 }
 
 
+#include <stddef.h>
 #include <stdint.h>
 
 
@@ -10635,12 +10636,9 @@ static bool _upb_GeneratedRegistry_AddAllLinkedExtensions(
   const UPB_PRIVATE(upb_GeneratedExtensionListEntry)* entry =
       UPB_PRIVATE(upb_generated_extension_list);
   while (entry != NULL) {
-    // Comparing pointers to different objects is undefined behavior, so we
-    // convert them to uintptr_t and compare their values.
-    uintptr_t begin = (uintptr_t)entry->start;
-    uintptr_t end = (uintptr_t)entry->stop;
-    uintptr_t current = begin;
-    while (current < end) {
+    const char* current = (const char*)entry->start;
+    const char* end = (const char*)entry->stop;
+    while ((size_t)(end - current) >= sizeof(upb_MiniTableExtension)) {
       const upb_MiniTableExtension* ext =
           (const upb_MiniTableExtension*)current;
       // Sentinels and padding introduced by the linker can result in zeroed
