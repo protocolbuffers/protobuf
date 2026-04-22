@@ -86,13 +86,15 @@ class RepeatedFieldProxyIteratorImpl {
       RepeatedFieldProxyIteratorImpl<ElementType, !R, kOrProxy> other)
       : it_(std::make_reverse_iterator(other.it_)) {}
 
-  [[nodiscard]] reference operator*() const { return *it_; }
+  [[nodiscard]] reference operator*() const {
+    return static_cast<reference>(*it_);
+  }
   [[nodiscard]] auto operator->() const {
     if constexpr (kReturnByValue) {
       // Since operator-> needs to return a pointer-like object, we return a
       // struct that holds a copy of the element value, with an overloaded
       // operator-> returning a pointer to this object.
-      return ArrowProxy{*it_};
+      return ArrowProxy{static_cast<value_type>(*it_)};
     } else {
       return &(operator*());
     }
@@ -150,7 +152,9 @@ class RepeatedFieldProxyIteratorImpl {
     return it;
   }
 
-  [[nodiscard]] reference operator[](difference_type d) const { return it_[d]; }
+  [[nodiscard]] reference operator[](difference_type d) const {
+    return static_cast<reference>(it_[d]);
+  }
 
   friend difference_type operator-(iterator it1, iterator it2) {
     return it1.it_ - it2.it_;

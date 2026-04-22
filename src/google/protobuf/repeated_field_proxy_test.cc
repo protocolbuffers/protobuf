@@ -1159,6 +1159,56 @@ TYPED_TEST(RepeatedNumericFieldProxyTest, IteratorsDoNotLeakReferences) {
   static_assert(std::is_same_v<decltype(*proxy.begin()), ElementType>);
   static_assert(std::is_same_v<decltype(*proxy.cbegin()), ElementType>);
   static_assert(std::is_same_v<decltype(*proxy.rbegin()), ElementType>);
+
+  // Indexing should also dereference to element values, not references.
+  static_assert(std::is_same_v<decltype(proxy.begin()[0]), ElementType>);
+  static_assert(std::is_same_v<decltype(proxy.cbegin()[0]), ElementType>);
+  static_assert(std::is_same_v<decltype(proxy.rbegin()[0]), ElementType>);
+}
+
+TYPED_TEST(RepeatedFieldProxyTest, EnumIterators) {
+  auto field =
+      this->template MakeRepeatedFieldContainer<TestRepeatedEnumProxy::Enum>();
+  auto proxy = field.MakeProxy();
+  proxy.push_back(TestRepeatedEnumProxy::FOO);
+  proxy.push_back(TestRepeatedEnumProxy::BAR);
+  proxy.push_back(TestRepeatedEnumProxy::BAZ);
+
+  auto it = proxy.begin();
+  EXPECT_EQ(*it, TestRepeatedEnumProxy::FOO);
+  EXPECT_EQ(it[1], TestRepeatedEnumProxy::BAR);
+
+  auto rit = proxy.rbegin();
+  EXPECT_EQ(*rit, TestRepeatedEnumProxy::BAZ);
+  EXPECT_EQ(rit[1], TestRepeatedEnumProxy::BAR);
+}
+
+TYPED_TEST(RepeatedFieldProxyTest, EnumIteratorsDoNotLeakReferences) {
+  auto field =
+      this->template MakeRepeatedFieldContainer<TestRepeatedEnumProxy::Enum>();
+  auto proxy = field.MakeProxy();
+  auto const_proxy = field.MakeConstProxy();
+
+  // `cbegin()` on mutable proxies should return the same type as `begin()` on
+  // const proxies.
+  static_assert(
+      std::is_same_v<decltype(proxy.cbegin()), decltype(const_proxy.begin())>);
+
+  // All iterator types should dereference to element values, not references.
+  static_assert(
+      std::is_same_v<decltype(*proxy.begin()), TestRepeatedEnumProxy::Enum>);
+  static_assert(
+      std::is_same_v<decltype(*proxy.cbegin()), TestRepeatedEnumProxy::Enum>);
+  static_assert(
+      std::is_same_v<decltype(*proxy.rbegin()), TestRepeatedEnumProxy::Enum>);
+
+  // Indexing should also dereference to element values, not references.
+  static_assert(
+      std::is_same_v<decltype(proxy.begin()[0]), TestRepeatedEnumProxy::Enum>);
+  static_assert(
+      std::is_same_v<decltype(proxy.cbegin()[0]), TestRepeatedEnumProxy::Enum>);
+  static_assert(
+      std::is_same_v<decltype(proxy.rbegin()[0]), TestRepeatedEnumProxy::Enum>);
 }
 
 TYPED_TEST(RepeatedStringFieldProxyTest, Iterators) {
@@ -2943,10 +2993,10 @@ static_assert(std::is_same_v<
 
 static_assert(std::is_same_v<
               decltype(std::declval<TestRepeatedEnumProxy>().enums_proxy()),
-              RepeatedFieldProxy<const int>>);
+              RepeatedFieldProxy<const TestRepeatedEnumProxy::Enum>>);
 static_assert(std::is_same_v<decltype(std::declval<TestRepeatedEnumProxy>()
                                           .mutable_enums_proxy()),
-                             RepeatedFieldProxy<int>>);
+                             RepeatedFieldProxy<TestRepeatedEnumProxy::Enum>>);
 
 // Repeated std::string:
 static_assert(std::is_same_v<
