@@ -167,11 +167,16 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* extendee,
              type == WireFormatLite::TYPE_GROUP);
   ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
                      verify_func, is_lazy);
-  info.message_info = {prototype,
+  info.message_info = {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+      internal::MessageGlobalsBase::FromDefaultInstance(prototype),
+#else   // PROTOBUF_MESSAGE_GLOBALS
+      prototype,
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-                       prototype->GetTcParseTable()
+      prototype->GetTcParseTable()
 #else
-                       nullptr
+      nullptr
 #endif
   };
   Register(info);
@@ -1830,7 +1835,7 @@ const MessageLite* ExtensionSet::GetPrototypeForLazyMessage(
           &extension_info, &was_packed_on_wire)) {
     return nullptr;
   }
-  return extension_info.message_info.prototype;
+  return extension_info.message_info.GetPrototype();
 }
 
 uint8_t*
