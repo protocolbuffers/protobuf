@@ -8619,6 +8619,46 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
 
   // Validate map types.
   if (field->is_map()) {
+    const Descriptor* message = field->message_type();
+    // We want to error if someone typed some MapEntry type instead of using
+    // map<>, but the information is lost at this point. Check for some
+    // properties that all map fields always have to catch this case.
+    if (!field->is_repeated() ||
+        message->name() !=
+            absl::StrCat(ToCamelCase(field->name(), false), "Entry") ||
+        field->containing_type() != message->containing_type()) {
+      AddError(
+          field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE, [&] {
+            std::string error = absl::StrCat(
+                field->message_type()->full_name(),
+                " is a synthetic MapEntry message type, which is not "
+                "allowed to be used as a field type.");
+            const Descriptor* container =
+                field->message_type()->containing_type();
+            if (container != nullptr) {
+              // Since the input type is a synthetic message type,
+              // it is likely that the user had intended to refer to a
+              // different message type with the same name. Do a lookup
+              // in outer scopes to make a guess on user's intention if
+              // there is a message type found with the same name.
+              // LookupSymbol() is used rather than FindSymbol() since
+              // the initial scope for the lookup is known (i.e. 1 level
+              // up from the current one).
+              Symbol alter = LookupSymbol(
+                  field->message_type()->name(), container->full_name(),
+                  DescriptorPool::PLACEHOLDER_MESSAGE, LOOKUP_TYPES, false);
+              if (!alter.IsNull() &&
+                  alter.descriptor() != field->message_type()) {
+                // Use the fully qualified name of the alter message to
+                // make sure the suggestion is guaranteed to work.
+                absl::StrAppend(&error, " Maybe you meant \".",
+                                alter.full_name(), "\"?");
+              }
+            }
+            return error;
+          });
+    }
+
     if (!ValidateMapEntry(field, proto)) {
       AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
                "map_entry should not be set explicitly. Use map<KeyType, "
@@ -9061,16 +9101,10 @@ bool DescriptorBuilder::ValidateMapEntry(const FieldDescriptor* field,
   if (  // Must not contain extensions, extension range or nested message or
         // enums
       message->extension_count() != 0 ||
-      field->label_ != FieldDescriptor::LABEL_REPEATED ||
       message->extension_range_count() != 0 ||
       message->nested_type_count() != 0 || message->enum_type_count() != 0 ||
       // Must contain exactly two fields
-      message->field_count() != 2 ||
-      // Field name and message name must match
-      message->name() !=
-          absl::StrCat(ToCamelCase(field->name(), false), "Entry") ||
-      // Entry message must be in the same containing type of the field.
-      field->containing_type() != message->containing_type()) {
+      message->field_count() != 2) {
     return false;
   }
 
