@@ -526,6 +526,7 @@ cc_library(
 
 cc_library(
     name = "arena_allocation_policy",
+    srcs = ["arena_allocation_policy.cc"],
     hdrs = ["arena_allocation_policy.h"],
     strip_include_prefix = "/src",
     visibility = [

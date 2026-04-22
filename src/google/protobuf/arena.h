@@ -176,7 +176,7 @@ struct ABSL_ATTRIBUTE_WARN_UNUSED ArenaOptions final {
   // individual arena allocation request occurs with a size larger than this
   // maximum). Requested block sizes increase up to this value, then remain
   // here.
-  size_t max_block_size = internal::AllocationPolicy::kDefaultMaxBlockSize;
+  size_t max_block_size = internal::AllocationPolicy::DefaultMaxBlockSize();
 
   // An initial block of memory for the arena to use, or nullptr for none. If
   // provided, the block must live at least as long as the arena itself. The
