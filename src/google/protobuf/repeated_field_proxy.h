@@ -30,6 +30,10 @@ class RepeatedFieldOrProxy;
 namespace internal {
 
 template <typename ElementType>
+class MutableRepeatedFieldProxyImpl;
+template <typename ElementType>
+class ConstRepeatedFieldProxyImpl;
+template <typename ElementType>
 class RepeatedFieldProxyInternalPrivateAccessHelper;
 template <typename ElementType>
 class RepeatedFieldOrProxyInternalPrivateAccessHelper;
@@ -83,14 +87,31 @@ inline void SetElement(absl::Cord& element, T&& value) {
 
 // The base class for both mutable and const repeated field proxies. Implements
 // all of the common methods and dependent types for both classes.
+//
+// Class structure:
+//
+// internal {- - - - - - - - - - - - - - - - - - - - - - -
+//             RepeatedFieldProxyBase
+//              |                   |
+//   MutableRepeatedFieldProxyImpl  |
+//              |                   |
+//              |         ConstRepeatedFieldProxyImpl
+// } - - - - - -|- - - - - - - - - - - - | - - - - - - - -
+//   RepeatedFieldProxy<E>,              |
+//   RepeatedFieldOrProxy<E>             |
+//                          RepeatedFieldProxy<const E>,
+//                          RepeatedFieldOrProxy<const E>
+//
+// RepeatedFieldProxyBase has the common implementation and interface between
+// both mutable and const proxies, and `Mutable*Impl` and `Const*Impl` have the
+// const/mutable-specific implementations + interfaces.
+//
+// Both `RepeatedFieldProxy` and `RepeatedFieldOrProxy` comprise the public
+// API and are thin wrappers around `Mutable*Impl` and `Const*Impl`,
+// implementing only the constructors and APIs particular to them.
 template <typename ElementType>
 class RepeatedFieldProxyBase {
-  // Note: `RepeatedFieldProxy` is not `final` because we inherit from it in
-  // `RepeatedFieldOrProxy`. Since this is a public class, we can't stop users
-  // from inheriting from it. To avoid exposing any internal details (or
-  // constructors), we mark everything as `private`, and explicitly friend
-  // `RepeatedFieldProxy`.
- private:
+ protected:
   // If true, this is a view into a repeated field, meaning neither the elements
   // nor the container can be modified. If false, both the elements and the
   // container can be modified.
@@ -159,18 +180,13 @@ class RepeatedFieldProxyBase {
     return reverse_iterator(begin());
   }
 
- private:
-  friend RepeatedFieldProxy<ElementType>;
-  friend RepeatedFieldProxy<const ElementType>;
-  friend RepeatedFieldOrProxy<const ElementType>;
-
-  friend internal::RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>;
-
+ protected:
   explicit RepeatedFieldProxyBase(ConstQualifiedRepeatedFieldType& field)
       : field_(&field) {}
 
   ConstQualifiedRepeatedFieldType& field() const { return *field_; }
 
+ private:
   ConstQualifiedRepeatedFieldType* PROTOBUF_NONNULL field_;
 };
 
@@ -392,21 +408,8 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithResize<
   }
 };
 
-}  // namespace internal
-
-// A proxy for a repeated field of type `ElementType` in a Protobuf message.
-// Proxies alias the repeated field and provide an interface to read or modify
-// it, following STL naming conventions.
-//
-// Proxies themselves are value types, meaning they should be passed around by
-// value similar to `absl::string_view` or `absl::Span`.
-//
-// Proxies cannot be constructed directly. They are returned from a message's
-// repeated field accessors which have the `features.(pb.cpp).repeated_type =
-// PROXY` annotation. This annotation is currently only available in edition
-// `UNSTABLE`, but will eventually be available in an upcoming edition.
 template <typename ElementType>
-class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy
+class PROTOBUF_DECLSPEC_EMPTY_BASES MutableRepeatedFieldProxyImpl
     : public internal::RepeatedFieldProxyBase<ElementType>,
       public internal::RepeatedFieldProxyWithSet<ElementType>,
       public internal::RepeatedFieldProxyWithPushBack<ElementType>,
@@ -414,24 +417,26 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy
       public internal::RepeatedFieldProxyWithResize<ElementType> {
   static_assert(!std::is_const_v<ElementType>);
 
- private:
+ protected:
   using Base = internal::RepeatedFieldProxyBase<ElementType>;
+  using typename Base::RepeatedFieldType;
 
+  using Base::field;
+
+ public:
   using typename Base::const_iterator;
   using typename Base::iterator;
-  using typename Base::RepeatedFieldType;
   using typename Base::size_type;
 
   using reference =
       typename internal::RepeatedFieldTraits<ElementType>::reference;
 
-  using Base::field;
-
- public:
-  RepeatedFieldProxy(const RepeatedFieldProxy& other) = default;
+  MutableRepeatedFieldProxyImpl(const MutableRepeatedFieldProxyImpl& other) =
+      default;
   // Mutable proxies are not assignable. This is intentional to avoid confusion
   // with the `assign` method, which reassigns the underlying repeated field.
-  RepeatedFieldProxy& operator=(const RepeatedFieldProxy&) = delete;
+  MutableRepeatedFieldProxyImpl& operator=(
+      const MutableRepeatedFieldProxyImpl&) = delete;
 
   // Returns a type which references the element at the given index. Performs
   // bounds checking in accordance with `bounds_check_mode_*`.
@@ -468,13 +473,6 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy
                                   const_internal_iterator(last)));
   }
 
-  // Copy-assigns `other` into this repeated field.
-  //
-  // This method exists because mutable proxies cannot be rebound.
-  void assign(RepeatedFieldProxy<const ElementType> other) const {
-    field().CopyFrom(other.field());
-  }
-
   // Copy-assigns the elements in the range `[begin, end)` to the repeated
   // field.
   //
@@ -506,27 +504,12 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy
     }
   }
 
-  // Move-assigns `other` into this repeated field. `other` is left in a valid
-  // but unspecified state.
-  void move_assign(RepeatedFieldProxy<ElementType> other) const {
-    field() = std::move(other.field());
-  }
-
   // A hint to the container to expect to grow/shrink to `new_size` elements.
   // This may allow the container to make optimizations to avoid reallocations,
   // but may also be ignored.
   void reserve(size_type new_size) const {
     field().ReserveWithArena(arena(), new_size);
   }
-
-  // Swaps the contents of this repeated field with `other`.
-  //
-  // Invalidates all iterators. Pointer stability is not guaranteed across the
-  // swap for any element of either repeated field.
-  //
-  // If the underlying repeated fields are on different arenas, this may force
-  // deep copies of the elements.
-  void swap(RepeatedFieldProxy other) const { field().Swap(&other.field()); }
 
   // Resizes the repeated field to `new_size` elements. If `new_size` is smaller
   // than the current size, the field is truncated. Otherwise, the field is
@@ -537,20 +520,18 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy
   // explicitly inherit the overload from the base class to avoid hiding it.
   using internal::RepeatedFieldProxyWithResize<ElementType>::resize;
 
- private:
-  friend RepeatedFieldProxy<const ElementType>;
-  friend RepeatedFieldOrProxy<ElementType>;
-
-  friend internal::RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>;
-
-  RepeatedFieldProxy(RepeatedFieldType& field, Arena* PROTOBUF_NULLABLE arena)
+ protected:
+  MutableRepeatedFieldProxyImpl(RepeatedFieldType& field,
+                                Arena* PROTOBUF_NULLABLE arena)
       : Base(field), arena_(arena) {
     ABSL_DCHECK_EQ(arena, field.GetArena());
   }
 
+  Arena* PROTOBUF_NULLABLE arena() const { return arena_; }
+
   // The following methods all forward to the backing repeated fields. This is
   // done here for access to private members of the legacy containers, which
-  // only need to friend `RepeatedFieldProxy`.
+  // only need to friend `MutableRepeatedFieldProxyImpl`.
   auto& Add() const { return *field().AddWithArena(arena()); }
   auto& Add(ElementType&& value) const {
     return *field().AddWithArena(arena(), std::move(value));
@@ -563,21 +544,20 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy
     return *field().EmplaceWithArena(arena(), std::forward<Args>(args)...);
   }
 
-  Arena* PROTOBUF_NULLABLE arena() const { return arena_; }
+ private:
+  friend RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>;
 
   Arena* PROTOBUF_NULLABLE const arena_;
 };
 
 template <typename ElementType>
-class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy<const ElementType>
+class PROTOBUF_DECLSPEC_EMPTY_BASES ConstRepeatedFieldProxyImpl
     : public internal::RepeatedFieldProxyBase<const ElementType> {
   // A specialization of RepeatedFieldProxy for const proxies. This is needed
   // for mutating methods to not be exposed on const proxies.
 
- private:
+ protected:
   using Base = internal::RepeatedFieldProxyBase<const ElementType>;
-  using typename Base::const_reference;
-  using typename Base::size_type;
 
   // Inherit constructors, but don't publicly expose them.
   //
@@ -590,15 +570,13 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy<const ElementType>
   using Base::field;
 
  public:
-  RepeatedFieldProxy(const RepeatedFieldProxy& other) = default;
-  RepeatedFieldProxy& operator=(const RepeatedFieldProxy&) = default;
+  using typename Base::const_reference;
+  using typename Base::size_type;
 
-  // Allow implicit conversion from a mutable RepeatedFieldProxy to a const
-  // RepeatedFieldProxy.
-  //
-  // NOLINTNEXTLINE(google-explicit-constructor)
-  RepeatedFieldProxy(RepeatedFieldProxy<ElementType> other)
-      : Base(other.field()) {}
+  ConstRepeatedFieldProxyImpl(const ConstRepeatedFieldProxyImpl& other) =
+      default;
+  ConstRepeatedFieldProxyImpl& operator=(const ConstRepeatedFieldProxyImpl&) =
+      default;
 
   // Returns a type which references the element at the given index. Performs
   // bounds checking in accordance with `bounds_check_mode_*`.
@@ -607,17 +585,96 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy<const ElementType>
   }
 
  private:
-  friend RepeatedFieldProxy<ElementType>;
-  friend RepeatedFieldOrProxy<const ElementType>;
-
-  friend internal::RepeatedFieldProxyInternalPrivateAccessHelper<
-      const ElementType>;
-
   // Note that we don't need an arena pointer here, since we don't mutate the
   // underlying repeated field.
 };
 
-namespace internal {
+}  // namespace internal
+
+// A proxy for a repeated field of type `ElementType` in a Protobuf message.
+// Proxies alias the repeated field and provide an interface to read or modify
+// it, following STL naming conventions.
+//
+// Proxies themselves are value types, meaning they should be passed around by
+// value similar to `absl::string_view` or `absl::Span`.
+//
+// Proxies cannot be constructed directly. They are returned from a message's
+// repeated field accessors which have the `features.(pb.cpp).repeated_type =
+// PROXY` annotation. This annotation is currently only available in edition
+// `UNSTABLE`, but will eventually be available in an upcoming edition.
+template <typename ElementType>
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
+    : public internal::MutableRepeatedFieldProxyImpl<ElementType> {
+  static_assert(!std::is_const_v<ElementType>);
+
+ private:
+  using Base = internal::MutableRepeatedFieldProxyImpl<ElementType>;
+  using Base::Base;
+  using Base::field;
+
+ public:
+  // Copy-assigns `other` into this repeated field.
+  //
+  // This method exists because mutable proxies cannot be rebound.
+  void assign(RepeatedFieldProxy<const ElementType> other) const {
+    field().CopyFrom(other.field());
+  }
+
+  // Because we have an overload of `assign` in this class, we need to
+  // explicitly inherit the overload from the base class to avoid hiding it.
+  using Base::assign;
+
+  // Move-assigns `other` into this repeated field. `other` is left in a valid
+  // but unspecified state.
+  void move_assign(RepeatedFieldProxy<ElementType> other) const {
+    field() = std::move(other.field());
+  }
+
+  // Swaps the contents of this repeated field with `other`.
+  //
+  // Invalidates all iterators. Pointer stability is not guaranteed across the
+  // swap for any element of either repeated field.
+  //
+  // If the underlying repeated fields are on different arenas, this may force
+  // deep copies of the elements.
+  void swap(RepeatedFieldProxy other) const { field().Swap(&other.field()); }
+
+ private:
+  friend RepeatedFieldProxy<const ElementType>;
+  friend RepeatedFieldOrProxy<const ElementType>;
+  friend internal::RepeatedFieldProxyInternalPrivateAccessHelper<ElementType>;
+};
+
+template <typename ElementType>
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy<const ElementType> final
+    : public internal::ConstRepeatedFieldProxyImpl<ElementType> {
+  // A specialization of RepeatedFieldProxy for const proxies. This is needed
+  // for mutating methods to not be exposed on const proxies.
+
+ private:
+  using Base = internal::ConstRepeatedFieldProxyImpl<ElementType>;
+
+  // Inherit constructors, but don't publicly expose them.
+  //
+  // Repeated field proxies have no public constructors aside from a copy
+  // constructor. This is intentional, as layout of data that is proxied is an
+  // implementation detail. By not exposing a way to construct a proxy, we can
+  // freely change the layout of the underlying repeated field.
+  using Base::Base;
+
+ public:
+  // Allow implicit conversion from a mutable RepeatedFieldProxy to a const
+  // RepeatedFieldProxy.
+  //
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  RepeatedFieldProxy(RepeatedFieldProxy<ElementType> other)
+      : Base(other.field()) {}
+
+ private:
+  friend RepeatedFieldProxy<ElementType>;
+  friend internal::RepeatedFieldProxyInternalPrivateAccessHelper<
+      const ElementType>;
+};
 
 // The size of proxies is not really important, since they should mostly be
 // passed around by value and inlined away to oblivion. Regardless, size
@@ -626,19 +683,22 @@ namespace internal {
 static_assert(sizeof(RepeatedFieldProxy<int>) == 2 * sizeof(void*));
 static_assert(sizeof(RepeatedFieldProxy<const int>) == sizeof(void*));
 
+namespace internal {
+
 // A helper class for accessing private members of `RepeatedFieldProxy` in
 // Protobuf internal code.
 //
 // DO NOT USE this class for any reason outside of protobuf internal code.
 template <typename ElementType>
 class RepeatedFieldProxyInternalPrivateAccessHelper {
-  // Casts up to a `RepeatedFieldProxy<ElementType>` from a subclass of
-  // `RepeatedFieldProxy<ElementType>`. This is used to implement the CRTP
-  // pattern for `*With<MethodName>` classes.
+  // Casts up to a `MutableRepeatedFieldProxyImpl<ElementType>` from a subclass
+  // of `MutableRepeatedFieldProxyImpl<ElementType>`. This is used to implement
+  // the CRTP pattern for `*With<MethodName>` classes.
   template <template <typename...> class C>
-  static RepeatedFieldProxy<ElementType> ToProxyType(
+  static MutableRepeatedFieldProxyImpl<ElementType> ToProxyType(
       const C<ElementType, void>* PROTOBUF_NONNULL proxy) {
-    return *static_cast<const RepeatedFieldProxy<ElementType>*>(proxy);
+    return *static_cast<const MutableRepeatedFieldProxyImpl<ElementType>*>(
+        proxy);
   }
 
  public:
@@ -687,11 +747,13 @@ class RepeatedFieldProxyInternalPrivateAccessHelper {
 // Proxies themselves are value types, meaning they should be passed around by
 // value similar to `absl::string_view` or `absl::Span`.
 template <typename ElementType>
-class RepeatedFieldOrProxy final : private RepeatedFieldProxy<ElementType> {
+class RepeatedFieldOrProxy final
+    : public internal::MutableRepeatedFieldProxyImpl<ElementType> {
   // `const ElementType` is specialized below.
   static_assert(!std::is_const_v<ElementType>);
 
-  using Base = RepeatedFieldProxy<ElementType>;
+ private:
+  using Base = internal::MutableRepeatedFieldProxyImpl<ElementType>;
   using RepeatedFieldType = typename Base::RepeatedFieldType;
 
   // Inherit constructors.
@@ -700,16 +762,6 @@ class RepeatedFieldOrProxy final : private RepeatedFieldProxy<ElementType> {
   using Base::field;
 
  public:
-  // Re-expose container trait types from the base class.
-  using typename Base::const_iterator;
-  using typename Base::const_reference;
-  using typename Base::const_reverse_iterator;
-  using typename Base::difference_type;
-  using typename Base::iterator;
-  using typename Base::reverse_iterator;
-  using typename Base::size_type;
-  using typename Base::value_type;
-
   // Allow implicit conversion from a RepeatedField to a RepeatedFieldOrProxy.
   //
   // NOLINTNEXTLINE(google-explicit-constructor)
@@ -735,7 +787,7 @@ class RepeatedFieldOrProxy final : private RepeatedFieldProxy<ElementType> {
   // RepeatedFieldOrProxy.
   //
   // NOLINTNEXTLINE(google-explicit-constructor)
-  RepeatedFieldOrProxy(Base proxy) : Base(proxy) {}
+  RepeatedFieldOrProxy(RepeatedFieldProxy<ElementType> proxy) : Base(proxy) {}
 
   // Allow explicit conversion to the legacy repeated field container.
   //
@@ -743,29 +795,6 @@ class RepeatedFieldOrProxy final : private RepeatedFieldProxy<ElementType> {
   explicit operator std::remove_const_t<RepeatedFieldType>() const {
     return RepeatedFieldType(static_cast<const Base&>(*this));
   }
-
-  using Base::empty;
-  using Base::size;
-  using Base::operator[];
-  using Base::get;
-
-  // Iterator methods.
-  using Base::begin;
-  using Base::cbegin;
-  using Base::cend;
-  using Base::end;
-  using Base::rbegin;
-  using Base::rend;
-
-  // Mutating methods.
-  using Base::clear;
-  using Base::emplace_back;
-  using Base::erase;
-  using Base::pop_back;
-  using Base::push_back;
-  using Base::reserve;
-  using Base::resize;
-  using Base::set;
 
   // Note: we do not directly expose the following methods from the base class
   // because they have overloads that take a `RepeatedFieldProxy`. We re-define
@@ -778,15 +807,9 @@ class RepeatedFieldOrProxy final : private RepeatedFieldProxy<ElementType> {
     Base::field().CopyFrom(other.field());
   }
 
-  // Copy-assigns the elements in the range `[begin, end)` to the repeated
-  // field.
-  //
-  // If `begin` or `end` is an iterator into this repeated field, the behavior
-  // is undefined.
-  template <typename Iter>
-  void assign(Iter begin, Iter end) const {
-    Base::assign(begin, end);
-  }
+  // Because we have an overload of `assign` in this class, we need to
+  // explicitly inherit the overload from the base class to avoid hiding it.
+  using Base::assign;
 
   // Move-assigns `other` into this repeated field. `other` is left in a valid
   // but unspecified state.
@@ -796,7 +819,7 @@ class RepeatedFieldOrProxy final : private RepeatedFieldProxy<ElementType> {
   // contents will be efficiently transferred, nor that pointer stability will
   // be preserved for elements of `other`.
   void move_assign(RepeatedFieldOrProxy other) const {
-    Base::move_assign(other);
+    field() = std::move(other.field());
   }
 
   // Swaps the contents of this repeated field with `other`.
@@ -831,8 +854,8 @@ class RepeatedFieldOrProxy final : private RepeatedFieldProxy<ElementType> {
 // value similar to `absl::string_view` or `absl::Span`.
 template <typename ElementType>
 class RepeatedFieldOrProxy<const ElementType> final
-    : private RepeatedFieldProxy<const ElementType> {
-  using Base = RepeatedFieldProxy<const ElementType>;
+    : public internal::ConstRepeatedFieldProxyImpl<ElementType> {
+  using Base = internal::ConstRepeatedFieldProxyImpl<ElementType>;
   using RepeatedFieldType = typename Base::RepeatedFieldType;
 
   // Inherit constructors.
@@ -841,16 +864,6 @@ class RepeatedFieldOrProxy<const ElementType> final
   using Base::field;
 
  public:
-  // Re-expose container trait types from the base class.
-  using typename Base::const_iterator;
-  using typename Base::const_reference;
-  using typename Base::const_reverse_iterator;
-  using typename Base::difference_type;
-  using typename Base::iterator;
-  using typename Base::reverse_iterator;
-  using typename Base::size_type;
-  using typename Base::value_type;
-
   // Allow implicit conversion from a mutable RepeatedFieldOrProxy to a const
   // RepeatedFieldOrProxy.
   //
@@ -883,7 +896,12 @@ class RepeatedFieldOrProxy<const ElementType> final
   // RepeatedFieldOrProxy.
   //
   // NOLINTNEXTLINE(google-explicit-constructor)
-  RepeatedFieldOrProxy(Base proxy) : Base(proxy) {}
+  RepeatedFieldOrProxy(RepeatedFieldProxy<ElementType> proxy)
+      : Base(proxy.field()) {}
+
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  RepeatedFieldOrProxy(RepeatedFieldProxy<const ElementType> proxy)
+      : Base(proxy) {}
 
   // Allow explicit conversion to the legacy repeated field container.
   //
@@ -891,19 +909,6 @@ class RepeatedFieldOrProxy<const ElementType> final
   explicit operator RepeatedFieldType() const {
     return RepeatedFieldType(static_cast<const Base&>(*this));
   }
-
-  using Base::empty;
-  using Base::size;
-  using Base::operator[];
-  using Base::get;
-
-  // Iterator methods.
-  using Base::begin;
-  using Base::cbegin;
-  using Base::cend;
-  using Base::end;
-  using Base::rbegin;
-  using Base::rend;
 
  private:
   friend RepeatedFieldOrProxy<ElementType>;
