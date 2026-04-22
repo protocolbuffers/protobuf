@@ -71,7 +71,7 @@ class Reflection;
 
 namespace internal {
 
-template <typename ElementType>
+template <typename ElementType, bool kOrProxy>
 class MutableRepeatedFieldProxyImpl;
 class EpsCopyInputStream;
 class TcParser;
@@ -523,7 +523,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   friend class internal::TcParser;
   friend class internal::WireFormat;
 
-  friend class internal::MutableRepeatedFieldProxyImpl<Element>;
+  template <typename ElementType, bool kOrProxy>
+  friend class internal::MutableRepeatedFieldProxyImpl;
 
   // For access to private arena constructor.
   friend class UnknownFieldSet;

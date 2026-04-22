@@ -67,7 +67,7 @@ struct WeakRepeatedPtrField;
 
 namespace internal {
 
-template <typename ElementType>
+template <typename ElementType, bool kOrProxy>
 class MutableRepeatedFieldProxyImpl;
 
 class MergePartialFromCodedStreamHelper;
@@ -1571,7 +1571,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
   friend class internal::TcParser;
 
-  template <typename ElementType>
+  template <typename ElementType, bool kOrProxy>
   friend class internal::MutableRepeatedFieldProxyImpl;
 
   template <typename T>
