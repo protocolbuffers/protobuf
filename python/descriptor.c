@@ -132,6 +132,7 @@ static PyObject* PyUpb_DescriptorBase_GetCached(PyObject** cached,
       upb_Message_ClearFieldByDef(opts2, field);
     }
 
+    upb_Message_Freeze(opts2, opts2_layout);
     *cached = PyUpb_Message_Get(opts2, m, py_arena);
     Py_DECREF(py_arena);
   }

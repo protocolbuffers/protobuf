@@ -627,8 +627,15 @@ class MessageTest(unittest.TestCase):
     self.assertFalse(message.HasField('payload'))
     message.child.repeated_child.sort()
     message.payload.repeated_int32.sort()
-    self.assertFalse(message.HasField('child'))
-    self.assertFalse(message.HasField('payload'))
+    # TODO: b/505025445 - because of the immutability requirement, upb will
+    # reify the child and payload fields during sort() while python and cpp will
+    # not. Need to fix those two to be consistent with upb.
+    if api_implementation.Type() == 'upb':
+      self.assertTrue(message.HasField('child'))
+      self.assertTrue(message.HasField('payload'))
+    else:
+      self.assertFalse(message.HasField('child'))
+      self.assertFalse(message.HasField('payload'))
 
   def testSortingRepeatedScalarFieldsDefaultComparator(self, message_module):
     """Check some different types with the default comparator."""

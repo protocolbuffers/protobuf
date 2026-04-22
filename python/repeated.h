@@ -35,7 +35,7 @@ upb_Array* PyUpb_RepeatedContainer_Reify(PyObject* self, upb_Array* arr,
                                          intptr_t iter);
 
 // Reifies this repeated object if it is not already reified.
-upb_Array* PyUpb_RepeatedContainer_EnsureReified(PyObject* self);
+upb_Array* PyUpb_RepeatedContainer_AssureWritable(PyObject* self);
 
 // Implements repeated_field.extend(iterable).  `_self` must be a repeated
 // field (either repeated composite or repeated scalar).

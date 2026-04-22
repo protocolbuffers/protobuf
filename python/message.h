@@ -19,7 +19,7 @@ void PyUpb_Message_CacheDelete(PyObject* _self, const upb_FieldDef* f);
 // Sets the field value for `f` to `subobj`, evicting the wrapper object from
 // the "unset subobject" cache now that real data exists for it.  The caller
 // must also update the wrapper associated with `f` to point to `subobj` also.
-void PyUpb_Message_SetConcreteSubobj(PyObject* _self, const upb_FieldDef* f,
+bool PyUpb_Message_SetConcreteSubobj(PyObject* _self, const upb_FieldDef* f,
                                      upb_MessageValue subobj);
 
 // Gets a Python wrapper object for message `u_msg` of type `m`, returning a
@@ -80,6 +80,9 @@ PyObject* PyUpb_MessageMeta_DoCreateClass(PyObject* py_descriptor,
 // Returns the version associated with this message.  The version will be
 // incremented when the message changes.
 int PyUpb_Message_GetVersion(PyObject* _self);
+
+// Returns true if the message or any of its parents is frozen.
+bool PyUpb_Message_IsFrozen(PyObject* self);
 
 // Module-level init.
 bool PyUpb_InitMessage(PyObject* m);
