@@ -97,7 +97,7 @@ TEST(DefaultsTest, Check2024) {
 TEST(DefaultsTest, CheckFuture) {
   auto defaults = ReadDefaults("test_defaults_future");
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults().size(), 6);
+  ASSERT_EQ(defaults->defaults().size(), 7);
   ASSERT_EQ(defaults->minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults->maximum_edition(), EDITION_99997_TEST_ONLY);
 
@@ -119,16 +119,16 @@ TEST(DefaultsTest, CheckFuture) {
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::VALUE3);
-  EXPECT_EQ(defaults->defaults()[4].edition(), EDITION_UNSTABLE);
-  EXPECT_EQ(defaults->defaults()[4]
+  EXPECT_EQ(defaults->defaults()[5].edition(), EDITION_UNSTABLE);
+  EXPECT_EQ(defaults->defaults()[5]
                 .overridable_features()
                 .GetExtension(pb::test)
                 .new_unstable_feature(),
             pb::UNSTABLE2);
-  EXPECT_EQ(defaults->defaults()[5].edition(), EDITION_99997_TEST_ONLY);
-  EXPECT_EQ(defaults->defaults()[5].overridable_features().field_presence(),
+  EXPECT_EQ(defaults->defaults()[6].edition(), EDITION_99997_TEST_ONLY);
+  EXPECT_EQ(defaults->defaults()[6].overridable_features().field_presence(),
             FeatureSet::EXPLICIT);
-  EXPECT_EQ(defaults->defaults()[5]
+  EXPECT_EQ(defaults->defaults()[6]
                 .overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
@@ -138,7 +138,7 @@ TEST(DefaultsTest, CheckFuture) {
 TEST(DefaultsTest, CheckFarFuture) {
   auto defaults = ReadDefaults("test_defaults_far_future");
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults().size(), 8);
+  ASSERT_EQ(defaults->defaults().size(), 9);
   ASSERT_EQ(defaults->minimum_edition(), EDITION_99997_TEST_ONLY);
   ASSERT_EQ(defaults->maximum_edition(), EDITION_99999_TEST_ONLY);
 
@@ -160,24 +160,24 @@ TEST(DefaultsTest, CheckFarFuture) {
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::VALUE3);
-  EXPECT_EQ(defaults->defaults()[4].edition(), EDITION_UNSTABLE);
-  EXPECT_EQ(defaults->defaults()[4]
+  EXPECT_EQ(defaults->defaults()[5].edition(), EDITION_UNSTABLE);
+  EXPECT_EQ(defaults->defaults()[5]
                 .overridable_features()
                 .GetExtension(pb::test)
                 .new_unstable_feature(),
             pb::UNSTABLE2);
-  EXPECT_EQ(defaults->defaults()[5].edition(), EDITION_99997_TEST_ONLY);
-  EXPECT_EQ(defaults->defaults()[5].overridable_features().field_presence(),
+  EXPECT_EQ(defaults->defaults()[6].edition(), EDITION_99997_TEST_ONLY);
+  EXPECT_EQ(defaults->defaults()[6].overridable_features().field_presence(),
             FeatureSet::EXPLICIT);
-  EXPECT_EQ(defaults->defaults()[5]
+  EXPECT_EQ(defaults->defaults()[6]
                 .overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::VALUE4);
-  EXPECT_EQ(defaults->defaults()[6].edition(), EDITION_99998_TEST_ONLY);
-  EXPECT_EQ(defaults->defaults()[6].overridable_features().field_presence(),
+  EXPECT_EQ(defaults->defaults()[7].edition(), EDITION_99998_TEST_ONLY);
+  EXPECT_EQ(defaults->defaults()[7].overridable_features().field_presence(),
             FeatureSet::EXPLICIT);
-  EXPECT_EQ(defaults->defaults()[6]
+  EXPECT_EQ(defaults->defaults()[7]
                 .overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),

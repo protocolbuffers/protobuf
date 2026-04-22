@@ -89,7 +89,7 @@ internal::EnumTraitsT<::pb::JavaFeatures_Utf8Validation_internal_data_>
 namespace internal {
 template <>
 inline ::absl::string_view GetFeatureSetDefaultsData<::pb::JavaFeatures>() {
-  static constexpr char kDefaults[] = "CicYhAciA8o+ACodCAEQAhgCIAMoATACOAJAAco+CggBEAEYACABKAMKJxjnByIDyj4AKh0IAhABGAEgAigBMAE4AkAByj4KCAAQARgAIAEoAwonGOgHIhMIARABGAEgAigBMAHKPgQIABABKg04AkAByj4GGAAgASgDCicY6QciGwgBEAEYASACKAEwATgBQALKPggIABABGAAoASoFyj4CIAAKJxiPTiIbCAEQARgBIAIoATABOANAAso+CAgAEAEYACgBKgXKPgIgACDmByjpBw==";
+  static constexpr char kDefaults[] = "CicYhAciA8o+ACodCAEQAhgCIAMoATACOAJAAco+CggBEAEYACABKAMKJxjnByIDyj4AKh0IAhABGAEgAigBMAE4AkAByj4KCAAQARgAIAEoAwonGOgHIhMIARABGAEgAigBMAHKPgQIABABKg04AkAByj4GGAAgASgDCicY6QciGwgBEAEYASACKAEwATgBQALKPggIABABGAAoASoFyj4CIAAg5gco6Qc=";
   return kDefaults;
 }
 }  // namespace internal

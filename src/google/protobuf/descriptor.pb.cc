@@ -7434,7 +7434,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] AB
     "yle\030\007 \001(\0162..google.protobuf.FeatureSet.E"
     "nforceNamingStyleBZ\210\001\002\230\001\001\230\001\002\230\001\003\230\001\004\230\001\005\230\001\006"
     "\230\001\007\230\001\010\230\001\t\242\001\021\022\014STYLE_LEGACY\030\204\007\242\001\016\022\tSTYLE2"
-    "024\030\351\007\242\001\016\022\tSTYLE2026\030\217N\262\001\003\010\351\007\022\240\001\n\031defaul"
+    "024\030\351\007\242\001\016\022\tSTYLE2026\030\352\007\262\001\003\010\351\007\022\240\001\n\031defaul"
     "t_symbol_visibility\030\010 \001(\0162E.google.proto"
     "buf.FeatureSet.VisibilityFeature.Default"
     "SymbolVisibilityB6\210\001\002\230\001\001\242\001\017\022\nEXPORT_ALL\030"

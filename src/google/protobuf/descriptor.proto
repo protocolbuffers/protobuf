@@ -1168,7 +1168,7 @@ message FeatureSet {
     },
     edition_defaults = { edition: EDITION_LEGACY, value: "STYLE_LEGACY" },
     edition_defaults = { edition: EDITION_2024, value: "STYLE2024" },
-    edition_defaults = { edition: EDITION_UNSTABLE, value: "STYLE2026" }
+    edition_defaults = { edition: EDITION_2026, value: "STYLE2026" }
   ];
 
   message VisibilityFeature {
