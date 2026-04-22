@@ -1028,7 +1028,16 @@ class MessageReflection {
         Message defaultInstance)
         throws IOException {
       if (!field.isRepeated()) {
+        boolean isLazyField = ExtensionRegistryLite.lazyExtensionEnabled() && field.isExtension();
         if (hasField(field)) {
+          if (isLazyField) {
+            Object unused =
+                setField(
+                    field,
+                    InternalLazyField.mergeFrom(
+                        extensions.getLazyField(field), input, extensionRegistry));
+            return;
+          }
           Object fieldOrBuilder = extensions.getFieldAllowBuilders(field);
           MessageLite.Builder subBuilder;
           if (fieldOrBuilder instanceof MessageLite.Builder) {
@@ -1040,6 +1049,16 @@ class MessageReflection {
           input.readMessage(subBuilder, extensionRegistry);
           return;
         }
+
+        if (isLazyField) {
+          Object unused =
+              setField(
+                  field,
+                  new InternalLazyField(
+                      (MessageLite) defaultInstance, extensionRegistry, input.readBytes()));
+          return;
+        }
+
         Message.Builder subBuilder = defaultInstance.newBuilderForType();
         input.readMessage(subBuilder, extensionRegistry);
         Object unused = setField(field, subBuilder);

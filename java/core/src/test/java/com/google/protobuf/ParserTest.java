@@ -9,12 +9,15 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertThrows;
 
+import com.google.protobuf.ExtensionRegistryLite.LazyExtensionMode;
 import proto2_unittest.UnittestOptimizeFor;
 import proto2_unittest.UnittestOptimizeFor.TestOptimizedForSize;
 import proto2_unittest.UnittestOptimizeFor.TestRequiredOptimizedForSize;
 import proto2_unittest.UnittestProto;
 import proto2_unittest.UnittestProto.ForeignMessage;
+import proto2_unittest.UnittestProto.TestAllExtensions;
 import proto2_unittest.UnittestProto.TestAllTypes;
 import proto2_unittest.UnittestProto.TestEmptyMessage;
 import proto2_unittest.UnittestProto.TestMergeException;
@@ -25,13 +28,42 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /** Unit test for {@link Parser}. */
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class ParserTest {
+
+  @Parameters(name = "mode={0}")
+  public static List<Object[]> data() {
+    return Arrays.asList(
+        new Object[][] {{LazyExtensionMode.EAGER}, {LazyExtensionMode.LAZY_VERIFY_ON_ACCESS}});
+  }
+
+  private final LazyExtensionMode mode;
+  private LazyExtensionMode originalMode;
+
+  @Before
+  public void setUp() {
+    originalMode = ExtensionRegistryLite.getLazyExtensionMode();
+    ExtensionRegistryLite.setLazyExtensionMode(mode);
+  }
+
+  @After
+  public void tearDown() {
+    ExtensionRegistryLite.setLazyExtensionMode(originalMode);
+  }
+
+  public ParserTest(LazyExtensionMode mode) {
+    this.mode = mode;
+  }
 
   @Test
   public void testGeneratedMessageParserSingleton() throws Exception {
@@ -267,7 +299,7 @@ public class ParserTest {
   }
 
   @Test
-  public void testExceptionWhenMergingExtendedMessagesMissingRequiredFields() {
+  public void testExceptionWhenMergingExtendedMessagesMissingRequiredFields() throws Exception {
     // create a TestMergeException message (missing required fields) that looks like
     //   all_extensions {
     //     [TestRequired.single] {
@@ -290,44 +322,75 @@ public class ParserTest {
     // `parseFrom` should throw InvalidProtocolBufferException, not UninitializedMessageException,
     // for each of the 5 possible input types:
 
-    // parseFrom(ByteString)
-    try {
-      TestMergeException.parseFrom(duplicatedByteString, registry);
-      assertWithMessage("Expected InvalidProtocolBufferException").fail();
-    } catch (Exception e) {
-      assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
-    }
+    if (mode == LazyExtensionMode.EAGER) {
+      // parseFrom(ByteString)
+      Throwable thrown =
+          assertThrows(
+              InvalidProtocolBufferException.class,
+              () -> TestMergeException.parseFrom(duplicatedByteString, registry));
+      assertThat(thrown).hasMessageThat().contains("Message missing required fields");
 
-    // parseFrom(ByteArray)
-    try {
-      TestMergeException.parseFrom(bytes, registry);
-      assertWithMessage("Expected InvalidProtocolBufferException").fail();
-    } catch (Exception e) {
-      assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
-    }
+      // parseFrom(ByteArray)
+      thrown =
+          assertThrows(
+              InvalidProtocolBufferException.class,
+              () -> TestMergeException.parseFrom(bytes, registry));
+      assertThat(thrown).hasMessageThat().contains("Message missing required fields");
 
-    // parseFrom(InputStream)
-    try {
-      TestMergeException.parseFrom(new ByteArrayInputStream(bytes), registry);
-      assertWithMessage("Expected InvalidProtocolBufferException").fail();
-    } catch (Exception e) {
-      assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
-    }
+      // parseFrom(InputStream)
+      thrown =
+          assertThrows(
+              InvalidProtocolBufferException.class,
+              () -> TestMergeException.parseFrom(new ByteArrayInputStream(bytes), registry));
+      assertThat(thrown).hasMessageThat().contains("Message missing required fields");
 
-    // parseFrom(CodedInputStream)
-    try {
-      TestMergeException.parseFrom(CodedInputStream.newInstance(bytes), registry);
-      assertWithMessage("Expected InvalidProtocolBufferException").fail();
-    } catch (Exception e) {
-      assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
-    }
+      // parseFrom(CodedInputStream)
+      thrown =
+          assertThrows(
+              InvalidProtocolBufferException.class,
+              () -> TestMergeException.parseFrom(CodedInputStream.newInstance(bytes), registry));
+      assertThat(thrown).hasMessageThat().contains("Message missing required fields");
 
-    // parseFrom(ByteBuffer)
-    try {
-      TestMergeException.parseFrom(duplicatedByteString.asReadOnlyByteBuffer(), registry);
-      assertWithMessage("Expected InvalidProtocolBufferException").fail();
-    } catch (Exception e) {
-      assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
+      // parseFrom(ByteBuffer)
+      thrown =
+          assertThrows(
+              InvalidProtocolBufferException.class,
+              () ->
+                  TestMergeException.parseFrom(
+                      duplicatedByteString.asReadOnlyByteBuffer(), registry));
+      assertThat(thrown).hasMessageThat().contains("Message missing required fields");
+    } else {
+      // parseFrom(ByteString)
+      TestAllExtensions result1 =
+          TestMergeException.parseFrom(duplicatedByteString, registry).getAllExtensions();
+      assertThrows(
+          InvalidProtobufRuntimeException.class, () -> result1.getExtension(TestRequired.single));
+
+      // parseFrom(ByteArray)
+      TestAllExtensions result2 = TestMergeException.parseFrom(bytes, registry).getAllExtensions();
+      assertThrows(
+          InvalidProtobufRuntimeException.class, () -> result2.getExtension(TestRequired.single));
+
+      // parseFrom(InputStream)
+      TestAllExtensions result3 =
+          TestMergeException.parseFrom(new ByteArrayInputStream(bytes), registry)
+              .getAllExtensions();
+      assertThrows(
+          InvalidProtobufRuntimeException.class, () -> result3.getExtension(TestRequired.single));
+
+      // parseFrom(CodedInputStream)
+      TestAllExtensions result4 =
+          TestMergeException.parseFrom(CodedInputStream.newInstance(bytes), registry)
+              .getAllExtensions();
+      assertThrows(
+          InvalidProtobufRuntimeException.class, () -> result4.getExtension(TestRequired.single));
+
+      // parseFrom(ByteBuffer)
+      TestAllExtensions result5 =
+          TestMergeException.parseFrom(duplicatedByteString.asReadOnlyByteBuffer(), registry)
+              .getAllExtensions();
+      assertThrows(
+          InvalidProtobufRuntimeException.class, () -> result5.getExtension(TestRequired.single));
     }
   }
 
