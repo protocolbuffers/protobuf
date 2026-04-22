@@ -298,19 +298,25 @@ static PyObject* ContainerRepr(PyContainer* self) {
 extern PyTypeObject DescriptorMapping_Type;
 extern PyTypeObject DescriptorSequence_Type;
 
+enum class CompareResult {
+  kEqual,
+  kNotEqual,
+  kError,
+};
+
 // A sequence container can only be equal to another sequence container, or (for
 // backward compatibility) to a list containing the same items.
-// Returns 1 if equal, 0 if unequal, -1 on error.
-static int DescriptorSequence_Equal(PyContainer* self, PyObject* other) {
+static CompareResult DescriptorSequence_Equal(PyContainer* self,
+                                              PyObject* other) {
   // Check the identity of C++ pointers.
   if (PyObject_TypeCheck(other, &DescriptorSequence_Type)) {
     PyContainer* other_container = reinterpret_cast<PyContainer*>(other);
     if (self->descriptor == other_container->descriptor &&
         self->container_def == other_container->container_def &&
         self->kind == other_container->kind) {
-      return 1;
+      return CompareResult::kEqual;
     } else {
-      return 0;
+      return CompareResult::kNotEqual;
     }
   }
 
@@ -319,42 +325,42 @@ static int DescriptorSequence_Equal(PyContainer* self, PyObject* other) {
     // return list(self) == other
     int size = Length(self);
     if (size != PyList_Size(other)) {
-      return false;
+      return CompareResult::kNotEqual;
     }
     for (int index = 0; index < size; index++) {
       ScopedPyObjectPtr value1(_NewObj_ByIndex(self, index));
       if (value1 == nullptr) {
-        return -1;
+        return CompareResult::kError;
       }
       PyObject* value2 = PyList_GetItem(other, index);
       if (value2 == nullptr) {
-        return -1;
+        return CompareResult::kError;
       }
       int cmp = PyObject_RichCompareBool(value1.get(), value2, Py_EQ);
-      if (cmp != 1)  // error or not equal
-          return cmp;
+      if (cmp < 0) return CompareResult::kError;
+      if (cmp == 0) return CompareResult::kNotEqual;
     }
     // All items were found and equal
-    return 1;
+    return CompareResult::kEqual;
   }
 
   // Any other object is different.
-  return 0;
+  return CompareResult::kNotEqual;
 }
 
 // A mapping container can only be equal to another mapping container, or (for
 // backward compatibility) to a dict containing the same items.
-// Returns 1 if equal, 0 if unequal, -1 on error.
-static int DescriptorMapping_Equal(PyContainer* self, PyObject* other) {
+static CompareResult DescriptorMapping_Equal(PyContainer* self,
+                                             PyObject* other) {
   // Check the identity of C++ pointers.
   if (PyObject_TypeCheck(other, &DescriptorMapping_Type)) {
     PyContainer* other_container = reinterpret_cast<PyContainer*>(other);
     if (self->descriptor == other_container->descriptor &&
         self->container_def == other_container->container_def &&
         self->kind == other_container->kind) {
-      return 1;
+      return CompareResult::kEqual;
     } else {
-      return 0;
+      return CompareResult::kNotEqual;
     }
   }
 
@@ -363,32 +369,32 @@ static int DescriptorMapping_Equal(PyContainer* self, PyObject* other) {
     // equivalent to dict(self.items()) == other
     int size = Length(self);
     if (size != PyDict_Size(other)) {
-      return false;
+      return CompareResult::kNotEqual;
     }
     for (int index = 0; index < size; index++) {
       ScopedPyObjectPtr key(_NewKey_ByIndex(self, index));
       if (key == nullptr) {
-        return -1;
+        return CompareResult::kError;
       }
       ScopedPyObjectPtr value1(_NewObj_ByIndex(self, index));
       if (value1 == nullptr) {
-        return -1;
+        return CompareResult::kError;
       }
       PyObject* value2 = PyDict_GetItem(other, key.get());
       if (value2 == nullptr) {
         // Not found in the other dictionary
-        return 0;
+        return CompareResult::kNotEqual;
       }
       int cmp = PyObject_RichCompareBool(value1.get(), value2, Py_EQ);
-      if (cmp != 1)  // error or not equal
-          return cmp;
+      if (cmp < 0) return CompareResult::kError;
+      if (cmp == 0) return CompareResult::kNotEqual;
     }
     // All items were found and equal
-    return 1;
+    return CompareResult::kEqual;
   }
 
   // Any other object is different.
-  return 0;
+  return CompareResult::kNotEqual;
 }
 
 static PyObject* RichCompare(PyContainer* self, PyObject* other, int opid) {
@@ -397,21 +403,22 @@ static PyObject* RichCompare(PyContainer* self, PyObject* other, int opid) {
     return Py_NotImplemented;
   }
 
-  int result;
+  CompareResult result;
 
   if (self->kind == PyContainer::KIND_SEQUENCE) {
     result = DescriptorSequence_Equal(self, other);
   } else {
     result = DescriptorMapping_Equal(self, other);
   }
-  if (result < 0) {
-    return nullptr;
+  switch (result) {
+    case CompareResult::kError:
+      return nullptr;
+    case CompareResult::kEqual:
+      return PyBool_FromLong(opid == Py_EQ);
+    case CompareResult::kNotEqual:
+      return PyBool_FromLong(opid == Py_NE);
   }
-  if (result ^ (opid == Py_NE)) {
-    Py_RETURN_TRUE;
-  } else {
-    Py_RETURN_FALSE;
-  }
+  return nullptr;
 }
 
 static PySequenceMethods MappingSequenceMethods = {
