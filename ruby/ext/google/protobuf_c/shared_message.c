@@ -16,6 +16,10 @@
 uint64_t shared_Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
                              uint64_t seed, upb_Status* status) {
   upb_Arena* arena = upb_Arena_New();
+  if (!arena) {
+    upb_Status_SetErrorMessage(status, "Out of memory");
+    return 0;
+  }
   char* data;
   size_t size;
 
@@ -32,6 +36,10 @@ uint64_t shared_Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
   }
 
   upb_Arena_Free(arena);
-  upb_Status_SetErrorMessage(status, "Error calculating hash");
+  if (encode_status == kUpb_EncodeStatus_OutOfMemory) {
+    upb_Status_SetErrorMessage(status, "Out of memory");
+  } else {
+    upb_Status_SetErrorMessage(status, "Error calculating hash");
+  }
   return 0;
 }

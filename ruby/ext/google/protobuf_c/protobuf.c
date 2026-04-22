@@ -182,23 +182,58 @@ const rb_data_type_t Arena_type = {
     .flags = RUBY_TYPED_FREE_IMMEDIATELY | RUBY_TYPED_WB_PROTECTED,
 };
 
+struct ruby_upb_xrealloc_args {
+  void* ptr;
+  size_t size;
+};
+
+static VALUE safe_xrealloc_wrapper(VALUE arg) {
+  struct ruby_upb_xrealloc_args* args = (struct ruby_upb_xrealloc_args*)arg;
+
+  // If xrealloc fails, it will longjmp out of this function immediately.
+  // If it succeeds, we return the pointer cast as a VALUE.
+  void* new_ptr = xrealloc(args->ptr, args->size);
+  return (VALUE)new_ptr;
+}
+
 static void* ruby_upb_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
                                 size_t size, size_t* actual_size) {
   if (size == 0) {
     xfree(ptr);
     return NULL;
   } else {
-    return xrealloc(ptr, size);
+    struct ruby_upb_xrealloc_args args = {ptr, size};
+    int state = 0;
+
+    void* new_ptr = rb_protect(safe_xrealloc_wrapper, &args, &state);
+
+    // Exception caught, but rb_errinfo still has the original error for
+    // consumption by the caller
+    return state ? NULL : new_ptr;
   }
 }
 
 upb_alloc ruby_upb_alloc = {&ruby_upb_allocfunc};
 
+void Arena_raise_oom() {
+  VALUE pending_err = rb_errinfo();
+  if (!NIL_P(pending_err)) {
+    rb_set_errinfo(Qnil);
+    rb_exc_raise(pending_err);
+  }
+  rb_raise(rb_eNoMemError, "Failed to allocate arena.");
+}
+
 static VALUE Arena_alloc(VALUE klass) {
-  Arena* arena = ALLOC(Arena);
-  arena->arena = upb_Arena_Init(NULL, 0, &ruby_upb_alloc);
-  arena->pinned_objs = Qnil;
-  return TypedData_Wrap_Struct(klass, &Arena_type, arena);
+  Arena* rb_arena = ALLOC(Arena);
+  upb_Arena* arena = upb_Arena_Init(NULL, 0, &ruby_upb_alloc);
+  if (!arena) {
+    xfree(rb_arena);
+    Arena_raise_oom();
+  }
+  rb_arena->arena = arena;
+  rb_arena->pinned_objs = Qnil;
+  return TypedData_Wrap_Struct(klass, &Arena_type, rb_arena);
 }
 
 upb_Arena* Arena_get(VALUE _arena) {
