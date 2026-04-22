@@ -522,13 +522,16 @@ static int Map_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
     const upb_MiniTable* t =
         upb_MessageDef_MiniTable(map_init->val_type.def.msgdef);
     upb_Message* msg = upb_Message_New(t, map_init->arena);
+    if (!msg) Arena_raise_oom();
     Message_InitFromValue(msg, map_init->val_type.def.msgdef, val,
                           map_init->arena);
     v.msg_val = msg;
   } else {
     v = Convert_RubyToUpb(val, "", map_init->val_type, map_init->arena);
   }
-  upb_Map_Set(map_init->map, k, v, map_init->arena);
+  if (!upb_Map_Set(map_init->map, k, v, map_init->arena)) {
+    Arena_raise_oom();
+  }
   return ST_CONTINUE;
 }
 
@@ -553,6 +556,7 @@ static upb_MessageValue MessageValue_FromValue(VALUE val, TypeInfo info,
     upb_MessageValue msgval;
     const upb_MiniTable* t = upb_MessageDef_MiniTable(info.def.msgdef);
     upb_Message* msg = upb_Message_New(t, arena);
+    if (!msg) Arena_raise_oom();
     Message_InitFromValue(msg, info.def.msgdef, val, arena);
     msgval.msg_val = msg;
     return msgval;
@@ -580,7 +584,9 @@ static void RepeatedField_InitFromValue(upb_Array* arr, const upb_FieldDef* f,
     } else {
       msgval = Convert_RubyToUpb(entry, upb_FieldDef_Name(f), type_info, arena);
     }
-    upb_Array_Append(arr, msgval, arena);
+    if (!upb_Array_Append(arr, msgval, arena)) {
+      Arena_raise_oom();
+    }
   }
 }
 
@@ -665,6 +671,7 @@ static VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
   upb_Arena* arena = Arena_get(arena_rb);
   const upb_MiniTable* t = upb_MessageDef_MiniTable(self->msgdef);
   upb_Message* msg = upb_Message_New(t, arena);
+  if (!msg) Arena_raise_oom();
 
   Message_InitPtr(_self, msg, arena_rb);
 
@@ -730,6 +737,9 @@ uint64_t Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
   if (upb_Status_IsOk(&status)) {
     return return_value;
   } else {
+    if (strcmp(upb_Status_ErrorMessage(&status), "Out of memory") == 0) {
+      Arena_raise_oom();
+    }
     rb_raise(cParseError, "Message_Hash(): %s",
              upb_Status_ErrorMessage(&status));
   }
@@ -992,6 +1002,9 @@ VALUE Message_decode_bytes(size_t size, const char* bytes, int options,
   upb_DecodeStatus status = upb_Decode(bytes, size, (upb_Message*)msg->msg,
                                        upb_MessageDef_MiniTable(msg->msgdef),
                                        extreg, options, Arena_get(msg->arena));
+  if (status == kUpb_DecodeStatus_OutOfMemory) {
+    Arena_raise_oom();
+  }
   if (status != kUpb_DecodeStatus_Ok) {
     rb_raise(cParseError, "Error occurred during parsing");
   }
@@ -1061,10 +1074,18 @@ static VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
   switch (result) {
     case kUpb_JsonDecodeResult_Ok:
       break;
-    case kUpb_JsonDecodeResult_Error:
+    case kUpb_JsonDecodeResult_Error: {
+      VALUE pending_err = rb_errinfo();
+      if (!NIL_P(pending_err)) {
+        rb_set_errinfo(Qnil);
+        rb_exc_raise(pending_err);
+      }
+
       rb_raise(cParseError, "Error occurred during parsing: %s",
                upb_Status_ErrorMessage(&status));
+
       break;
+    }
   }
 
   return msg_rb;
@@ -1110,6 +1131,9 @@ static VALUE Message_encode(int argc, VALUE* argv, VALUE klass) {
   }
 
   upb_Arena* arena = upb_Arena_New();
+  if (!arena) {
+    Arena_raise_oom();
+  }
 
   upb_EncodeStatus status =
       upb_Encode(msg->msg, upb_MessageDef_MiniTable(msg->msgdef), options,
@@ -1120,10 +1144,18 @@ static VALUE Message_encode(int argc, VALUE* argv, VALUE klass) {
     rb_enc_associate(ret, rb_ascii8bit_encoding());
     upb_Arena_Free(arena);
     return ret;
-  } else {
-    upb_Arena_Free(arena);
+  }
+  upb_Arena_Free(arena);
+  if (status == kUpb_EncodeStatus_OutOfMemory) {
+    Arena_raise_oom();
+  }
+  if (status == kUpb_EncodeStatus_MaxDepthExceeded) {
     rb_raise(rb_eRuntimeError, "Exceeded maximum depth (possibly cycle)");
   }
+  if (status == kUpb_EncodeStatus_MaxSizeExceeded) {
+    rb_raise(rb_eRuntimeError, "Exceeded maximum size");
+  }
+  rb_raise(cParseError, "Unknown encoding error");
 }
 
 /*
@@ -1308,8 +1340,10 @@ VALUE build_module_from_enumdesc(VALUE _enumdesc) {
   for (int i = 0; i < n; i++) {
     const upb_EnumValueDef* ev = upb_EnumDef_Value(e, i);
     upb_Arena* arena = upb_Arena_New();
+    if (!arena) Arena_raise_oom();
     const char* src_name = upb_EnumValueDef_Name(ev);
     char* name = upb_strdup2(src_name, strlen(src_name), arena);
+    if (!name) Arena_raise_oom();
     int32_t value = upb_EnumValueDef_Number(ev);
     if (name[0] < 'A' || name[0] > 'Z') {
       if (name[0] >= 'a' && name[0] <= 'z') {
@@ -1338,21 +1372,40 @@ upb_Message* Message_deep_copy(const upb_Message* msg, const upb_MessageDef* m,
                                upb_Arena* arena) {
   // Serialize and parse.
   upb_Arena* tmp_arena = upb_Arena_New();
+  if (!tmp_arena) {
+    Arena_raise_oom();
+  }
   const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
   size_t size;
 
   upb_Message* new_msg = upb_Message_New(layout, arena);
+  if (!new_msg) {
+    upb_Arena_Free(tmp_arena);
+    Arena_raise_oom();
+  }
   char* data;
 
   const upb_FileDef* file = upb_MessageDef_File(m);
   const upb_ExtensionRegistry* extreg =
       upb_DefPool_ExtensionRegistry(upb_FileDef_Pool(file));
-  if (upb_Encode(msg, layout, 0, tmp_arena, &data, &size) !=
-          kUpb_EncodeStatus_Ok ||
-      upb_Decode(data, size, new_msg, layout, extreg, 0, arena) !=
-          kUpb_DecodeStatus_Ok) {
+  upb_EncodeStatus encode_status =
+      upb_Encode(msg, layout, 0, tmp_arena, &data, &size);
+  if (encode_status == kUpb_EncodeStatus_OutOfMemory) {
     upb_Arena_Free(tmp_arena);
-    rb_raise(cParseError, "Error occurred copying proto");
+    Arena_raise_oom();
+  } else if (encode_status != kUpb_EncodeStatus_Ok) {
+    upb_Arena_Free(tmp_arena);
+    rb_raise(cParseError, "Error occurred copying proto during encode");
+  }
+
+  upb_DecodeStatus decode_status =
+      upb_Decode(data, size, new_msg, layout, extreg, 0, arena);
+  if (decode_status == kUpb_DecodeStatus_OutOfMemory) {
+    upb_Arena_Free(tmp_arena);
+    Arena_raise_oom();
+  } else if (decode_status != kUpb_DecodeStatus_Ok) {
+    upb_Arena_Free(tmp_arena);
+    rb_raise(cParseError, "Error occurred copying proto during decode");
   }
 
   upb_Arena_Free(tmp_arena);

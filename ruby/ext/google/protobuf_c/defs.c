@@ -114,6 +114,7 @@ static VALUE DescriptorPool_alloc(VALUE klass) {
 
   RB_OBJ_WRITE(ret, &self->def_to_descriptor, rb_hash_new());
   self->symtab = upb_DefPool_New();
+  if (!self->symtab) Arena_raise_oom();
 
   // Ruby treats all enums as open.
   upb_DefPool_DisableClosedEnumChecking(self->symtab);
@@ -485,9 +486,14 @@ static VALUE Descriptor_options(VALUE _self) {
   const google_protobuf_MessageOptions* opts =
       upb_MessageDef_Options(self->msgdef);
   upb_Arena* arena = upb_Arena_New();
+  if (!arena) Arena_raise_oom();
   size_t size;
   char* serialized =
       google_protobuf_MessageOptions_serialize(opts, arena, &size);
+  if (!serialized) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
   VALUE message_options = decode_options(_self, "MessageOptions", size,
                                          serialized, self->descriptor_pool);
   upb_Arena_Free(arena);
@@ -506,11 +512,20 @@ static VALUE Descriptor_options(VALUE _self) {
 static VALUE Descriptor_to_proto(VALUE _self) {
   Descriptor* self = ruby_to_Descriptor(_self);
   upb_Arena* arena = upb_Arena_New();
+  if (!arena) Arena_raise_oom();
   google_protobuf_DescriptorProto* proto =
       upb_MessageDef_ToProto(self->msgdef, arena);
+  if (!proto) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
   size_t size;
   const char* serialized =
       google_protobuf_DescriptorProto_serialize(proto, arena, &size);
+  if (!serialized) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
   VALUE proto_class = rb_path2class("Google::Protobuf::DescriptorProto");
   VALUE proto_rb =
       Message_decode_bytes(size, serialized, 0, proto_class, false);
@@ -628,8 +643,13 @@ static VALUE FileDescriptor_options(VALUE _self) {
   FileDescriptor* self = ruby_to_FileDescriptor(_self);
   const google_protobuf_FileOptions* opts = upb_FileDef_Options(self->filedef);
   upb_Arena* arena = upb_Arena_New();
+  if (!arena) Arena_raise_oom();
   size_t size;
   char* serialized = google_protobuf_FileOptions_serialize(opts, arena, &size);
+  if (!serialized) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
   VALUE file_options = decode_options(_self, "FileOptions", size, serialized,
                                       self->descriptor_pool);
   upb_Arena_Free(arena);
@@ -648,12 +668,21 @@ static VALUE FileDescriptor_options(VALUE _self) {
 static VALUE FileDescriptor_to_proto(VALUE _self) {
   FileDescriptor* self = ruby_to_FileDescriptor(_self);
   upb_Arena* arena = upb_Arena_New();
+  if (!arena) Arena_raise_oom();
   google_protobuf_FileDescriptorProto* file_proto =
       upb_FileDef_ToProto(self->filedef, arena);
+  if (!file_proto) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
 
   size_t size;
   const char* serialized =
       google_protobuf_FileDescriptorProto_serialize(file_proto, arena, &size);
+  if (!serialized) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
 
   VALUE file_proto_class =
       rb_path2class("Google::Protobuf::FileDescriptorProto");
@@ -1103,8 +1132,13 @@ static VALUE FieldDescriptor_options(VALUE _self) {
   const google_protobuf_FieldOptions* opts =
       upb_FieldDef_Options(self->fielddef);
   upb_Arena* arena = upb_Arena_New();
+  if (!arena) Arena_raise_oom();
   size_t size;
   char* serialized = google_protobuf_FieldOptions_serialize(opts, arena, &size);
+  if (!serialized) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
   VALUE field_options = decode_options(_self, "FieldOptions", size, serialized,
                                        self->descriptor_pool);
   upb_Arena_Free(arena);
@@ -1123,11 +1157,20 @@ static VALUE FieldDescriptor_options(VALUE _self) {
 static VALUE FieldDescriptor_to_proto(VALUE _self) {
   FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
   upb_Arena* arena = upb_Arena_New();
+  if (!arena) Arena_raise_oom();
   google_protobuf_FieldDescriptorProto* proto =
       upb_FieldDef_ToProto(self->fielddef, arena);
+  if (!proto) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
   size_t size;
   const char* serialized =
       google_protobuf_FieldDescriptorProto_serialize(proto, arena, &size);
+  if (!serialized) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
   VALUE proto_class = rb_path2class("Google::Protobuf::FieldDescriptorProto");
   VALUE proto_rb =
       Message_decode_bytes(size, serialized, 0, proto_class, false);
@@ -1279,8 +1322,13 @@ static VALUE OneOfDescriptor_options(VALUE _self) {
   const google_protobuf_OneofOptions* opts =
       upb_OneofDef_Options(self->oneofdef);
   upb_Arena* arena = upb_Arena_New();
+  if (!arena) Arena_raise_oom();
   size_t size;
   char* serialized = google_protobuf_OneofOptions_serialize(opts, arena, &size);
+  if (!serialized) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
   VALUE oneof_options = decode_options(_self, "OneofOptions", size, serialized,
                                        self->descriptor_pool);
   upb_Arena_Free(arena);
@@ -1299,11 +1347,20 @@ static VALUE OneOfDescriptor_options(VALUE _self) {
 static VALUE OneOfDescriptor_to_proto(VALUE _self) {
   OneofDescriptor* self = ruby_to_OneofDescriptor(_self);
   upb_Arena* arena = upb_Arena_New();
+  if (!arena) Arena_raise_oom();
   google_protobuf_OneofDescriptorProto* proto =
       upb_OneofDef_ToProto(self->oneofdef, arena);
+  if (!proto) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
   size_t size;
   const char* serialized =
       google_protobuf_OneofDescriptorProto_serialize(proto, arena, &size);
+  if (!serialized) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
   VALUE proto_class = rb_path2class("Google::Protobuf::OneofDescriptorProto");
   VALUE proto_rb =
       Message_decode_bytes(size, serialized, 0, proto_class, false);
@@ -1529,8 +1586,13 @@ static VALUE EnumDescriptor_options(VALUE _self) {
   EnumDescriptor* self = ruby_to_EnumDescriptor(_self);
   const google_protobuf_EnumOptions* opts = upb_EnumDef_Options(self->enumdef);
   upb_Arena* arena = upb_Arena_New();
+  if (!arena) Arena_raise_oom();
   size_t size;
   char* serialized = google_protobuf_EnumOptions_serialize(opts, arena, &size);
+  if (!serialized) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
   VALUE enum_options = decode_options(_self, "EnumOptions", size, serialized,
                                       self->descriptor_pool);
   upb_Arena_Free(arena);
@@ -1548,12 +1610,21 @@ static VALUE EnumDescriptor_options(VALUE _self) {
 static VALUE EnumDescriptor_to_proto(VALUE _self) {
   EnumDescriptor* self = ruby_to_EnumDescriptor(_self);
   upb_Arena* arena = upb_Arena_New();
+  if (!arena) Arena_raise_oom();
   google_protobuf_EnumDescriptorProto* proto =
       upb_EnumDef_ToProto(self->enumdef, arena);
+  if (!proto) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
 
   size_t size;
   const char* serialized =
       google_protobuf_EnumDescriptorProto_serialize(proto, arena, &size);
+  if (!serialized) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
 
   VALUE proto_class = rb_path2class("Google::Protobuf::EnumDescriptorProto");
   VALUE proto_rb =
@@ -1707,9 +1778,14 @@ static VALUE ServiceDescriptor_options(VALUE _self) {
   const google_protobuf_ServiceOptions* opts =
       upb_ServiceDef_Options(self->servicedef);
   upb_Arena* arena = upb_Arena_New();
+  if (!arena) Arena_raise_oom();
   size_t size;
   char* serialized =
       google_protobuf_ServiceOptions_serialize(opts, arena, &size);
+  if (!serialized) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
   VALUE service_options = decode_options(_self, "ServiceOptions", size,
                                          serialized, self->descriptor_pool);
   upb_Arena_Free(arena);
@@ -1728,11 +1804,20 @@ static VALUE ServiceDescriptor_options(VALUE _self) {
 static VALUE ServiceDescriptor_to_proto(VALUE _self) {
   ServiceDescriptor* self = ruby_to_ServiceDescriptor(_self);
   upb_Arena* arena = upb_Arena_New();
+  if (!arena) Arena_raise_oom();
   google_protobuf_ServiceDescriptorProto* proto =
       upb_ServiceDef_ToProto(self->servicedef, arena);
+  if (!proto) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
   size_t size;
   const char* serialized =
       google_protobuf_ServiceDescriptorProto_serialize(proto, arena, &size);
+  if (!serialized) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
   VALUE proto_class = rb_path2class("Google::Protobuf::ServiceDescriptorProto");
   VALUE proto_rb =
       Message_decode_bytes(size, serialized, 0, proto_class, false);
@@ -1850,9 +1935,14 @@ static VALUE MethodDescriptor_options(VALUE _self) {
   const google_protobuf_MethodOptions* opts =
       upb_MethodDef_Options(self->methoddef);
   upb_Arena* arena = upb_Arena_New();
+  if (!arena) Arena_raise_oom();
   size_t size;
   char* serialized =
       google_protobuf_MethodOptions_serialize(opts, arena, &size);
+  if (!serialized) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
   VALUE method_options = decode_options(_self, "MethodOptions", size,
                                         serialized, self->descriptor_pool);
   upb_Arena_Free(arena);
@@ -1909,11 +1999,20 @@ static VALUE MethodDescriptor_client_streaming(VALUE _self) {
 static VALUE MethodDescriptor_to_proto(VALUE _self) {
   MethodDescriptor* self = ruby_to_MethodDescriptor(_self);
   upb_Arena* arena = upb_Arena_New();
+  if (!arena) Arena_raise_oom();
   google_protobuf_MethodDescriptorProto* proto =
       upb_MethodDef_ToProto(self->methoddef, arena);
+  if (!proto) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
   size_t size;
   const char* serialized =
       google_protobuf_MethodDescriptorProto_serialize(proto, arena, &size);
+  if (!serialized) {
+    upb_Arena_Free(arena);
+    Arena_raise_oom();
+  }
   VALUE proto_class = rb_path2class("Google::Protobuf::MethodDescriptorProto");
   VALUE proto_rb =
       Message_decode_bytes(size, serialized, 0, proto_class, false);
