@@ -25,6 +25,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_align.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_allocation_policy.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/importer.cc
@@ -224,6 +225,7 @@ set(libprotobuf_lite_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_align.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_allocation_policy.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/extension_set.cc
