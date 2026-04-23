@@ -1336,6 +1336,28 @@ TEST(RepeatedFieldTest, SortCordTest) {
   }
 }
 
+TEST(RepeatdFieldTest, ContainerAnnotationsAreProperlyCleanedInArena) {
+#if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  GTEST_SKIP() << "Asan is not on.";
+#endif
+  alignas(8) char block[128];
+  ArenaOptions options;
+  options.initial_block = block;
+  options.initial_block_size = sizeof(block);
+
+  Arena arena(options);
+  // Make a container and reserve memory
+  arena.Make<RepeatedField<bool>>()->Reserve(64);
+
+  // Accessing it should cause a problem.
+  EXPECT_TRUE(internal::IsMemoryPoisoned(block + 64));
+  // Now reset the arena and let's make sure the memory is accessible.
+  // If `allow_user_poisoning=0`, we need to reset the memory even though
+  // unpoisoning doesn't work.
+  arena.Reset();
+  EXPECT_FALSE(internal::IsMemoryPoisoned(block + 64));
+}
+
 #if defined(GTEST_HAS_DEATH_TEST) && (defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
                                       defined(ABSL_HAVE_MEMORY_SANITIZER))
 
