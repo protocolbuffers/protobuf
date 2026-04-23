@@ -1,3 +1,7 @@
+#ifndef GOOGLE_PROTOBUF_GENERATED_ENUM_REFLECTION_H__
+#define GOOGLE_PROTOBUF_GENERATED_ENUM_REFLECTION_H__
+
+#endif  // GOOGLE_PROTOBUF_GENERATED_ENUM_REFLECTION_H__
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 //
