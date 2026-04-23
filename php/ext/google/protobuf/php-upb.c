@@ -3711,7 +3711,7 @@ static uint32_t upb_inthash(uintptr_t key) {
   }
 }
 
-static const upb_tabent* upb_getentry(const upb_table* t, uint32_t hash) {
+static upb_tabent* upb_getentry(const upb_table* t, uint32_t hash) {
   return t->entries + (hash & t->mask);
 }
 
@@ -3756,25 +3756,26 @@ static upb_tabent* emptyent(upb_table* t, upb_tabent* e) {
 }
 
 static upb_tabent* getentry_mutable(upb_table* t, uint32_t hash) {
-  return (upb_tabent*)upb_getentry(t, hash);
+  return upb_getentry(t, hash);
 }
 
-static const upb_tabent* findentry(const upb_table* t, lookupkey_t key,
-                                   uint32_t hash, eqlfunc_t* eql) {
-  const upb_tabent* e;
+static upb_tabent* findentry(const upb_table* t, lookupkey_t key, uint32_t hash,
+                             eqlfunc_t* eql) {
+  upb_tabent* e;
 
   if (t->count == 0) return NULL;
   e = upb_getentry(t, hash);
   if (upb_tabent_isempty(e)) return NULL;
   while (1) {
     if (eql(e->key, e->val, key)) return e;
-    if ((e = e->next) == NULL) return NULL;
+    if (!upb_tabent_hasnext(e)) return NULL;
+    e = upb_tabent_next(e);
   }
 }
 
 static upb_tabent* findentry_mutable(upb_table* t, lookupkey_t key,
                                      uint32_t hash, eqlfunc_t* eql) {
-  return (upb_tabent*)findentry(t, key, hash, eql);
+  return findentry(t, key, hash, eql);
 }
 
 static bool lookup(const upb_table* t, lookupkey_t key, upb_value* v,
@@ -3802,7 +3803,7 @@ static void insert(upb_table* t, lookupkey_t key, upb_key tabkey, upb_value val,
 
   if (upb_tabent_isempty(mainpos_e)) {
     /* Our main position is empty; use it. */
-    our_e->next = NULL;
+    upb_tabent_clearnext(our_e);
   } else {
     /* Collision. */
     upb_tabent* new_e = emptyent(t, mainpos_e);
@@ -3813,21 +3814,32 @@ static void insert(upb_table* t, lookupkey_t key, upb_key tabkey, upb_value val,
       /* Existing ent is in its main position (it has the same hash as us, and
        * is the head of our chain).  Insert to new ent and append to this chain.
        */
-      new_e->next = mainpos_e->next;
-      mainpos_e->next = new_e;
+      if (upb_tabent_hasnext(mainpos_e)) {
+        upb_tabent_setnext(new_e, upb_tabent_next(mainpos_e));
+      } else {
+        upb_tabent_clearnext(new_e);
+      }
+      upb_tabent_setnext(mainpos_e, new_e);
       our_e = new_e;
     } else {
       /* Existing ent is not in its main position (it is a node in some other
        * chain).  This implies that no existing ent in the table has our hash.
        * Evict it (updating its chain) and use its ent for head of our chain. */
-      *new_e = *mainpos_e; /* copies next. */
-      while (chain->next != mainpos_e) {
-        chain = (upb_tabent*)chain->next;
+      new_e->key = mainpos_e->key;
+      new_e->val = mainpos_e->val;
+      if (upb_tabent_hasnext(mainpos_e)) {
+        upb_tabent_setnext(new_e, upb_tabent_next(mainpos_e));
+      } else {
+        upb_tabent_clearnext(new_e);
+      }
+
+      while (upb_tabent_hasnext(chain) && upb_tabent_next(chain) != mainpos_e) {
+        chain = upb_tabent_next(chain);
         UPB_ASSERT(chain);
       }
-      chain->next = new_e;
+      upb_tabent_setnext(chain, new_e);
       our_e = mainpos_e;
-      our_e->next = NULL;
+      upb_tabent_clearnext(our_e);
     }
   }
   our_e->key = tabkey;
@@ -3843,27 +3855,40 @@ static bool rm(upb_table* t, lookupkey_t key, upb_value* val, uint32_t hash,
     /* Element to remove is at the head of its chain. */
     t->count--;
     if (val) *val = chain->val;
-    if (chain->next) {
-      upb_tabent* move = (upb_tabent*)chain->next;
-      *chain = *move;
-      move->key = upb_key_empty();
+    if (upb_tabent_hasnext(chain)) {
+      upb_tabent* move = upb_tabent_next(chain);
+      chain->key = move->key;
+      chain->val = move->val;
+      if (upb_tabent_hasnext(move)) {
+        upb_tabent_setnext(chain, upb_tabent_next(move));
+      } else {
+        upb_tabent_clearnext(chain);
+      }
+
+      upb_tabent_clear(move);
     } else {
-      chain->key = upb_key_empty();
+      upb_tabent_clear(chain);
     }
     return true;
   } else {
     /* Element to remove is either in a non-head position or not in the
      * table. */
-    while (chain->next && !eql(chain->next->key, chain->next->val, key)) {
-      chain = (upb_tabent*)chain->next;
+    while (
+        upb_tabent_hasnext(chain) &&
+        !eql(upb_tabent_next(chain)->key, upb_tabent_next(chain)->val, key)) {
+      chain = upb_tabent_next(chain);
     }
-    if (chain->next) {
+    if (upb_tabent_hasnext(chain)) {
       /* Found element to remove. */
-      upb_tabent* rm = (upb_tabent*)chain->next;
+      upb_tabent* rm = upb_tabent_next(chain);
       t->count--;
-      if (val) *val = chain->next->val;
-      rm->key = upb_key_empty();
-      chain->next = rm->next;
+      if (val) *val = rm->val;
+      if (upb_tabent_hasnext(rm)) {
+        upb_tabent_setnext(chain, upb_tabent_next(rm));
+      } else {
+        upb_tabent_clearnext(chain);
+      }
+      upb_tabent_clear(rm);
       return true;
     } else {
       /* Element to remove is not in the table. */
@@ -4204,19 +4229,23 @@ void upb_strtable_removeiter(upb_strtable* t, intptr_t* iter) {
   // Linear search, not great.
   upb_tabent* end = &t->t.entries[upb_table_size(&t->t)];
   for (upb_tabent* e = t->t.entries; e != end; e++) {
-    if (e->next == ent) {
+    if (!upb_tabent_isempty(e) && upb_tabent_hasnext(e) &&
+        upb_tabent_next(e) == ent) {
       prev = e;
       break;
     }
   }
 
   if (prev) {
-    prev->next = ent->next;
+    if (upb_tabent_hasnext(ent)) {
+      upb_tabent_setnext(prev, upb_tabent_next(ent));
+    } else {
+      upb_tabent_clearnext(prev);
+    }
   }
 
   t->t.count--;
-  ent->key = upb_key_empty();
-  ent->next = NULL;
+  upb_tabent_clear(ent);
 }
 
 void upb_strtable_setentryvalue(upb_strtable* t, intptr_t iter, upb_value v) {
@@ -4378,6 +4407,7 @@ static void check(upb_inttable* t) {
     upb_value val;
     while (upb_inttable_next(t, &key, &val, &iter)) {
       UPB_ASSERT(upb_inttable_lookup(t, key, NULL));
+      count++;
     }
     UPB_ASSERT(count == upb_inttable_count(t));
   }
@@ -4618,19 +4648,23 @@ void upb_inttable_removeiter(upb_inttable* t, intptr_t* iter) {
     // Linear search, not great.
     upb_tabent* end = &t->t.entries[upb_table_size(&t->t)];
     for (upb_tabent* e = t->t.entries; e != end; e++) {
-      if (e->next == ent) {
+      if (!upb_tabent_isempty(e) && upb_tabent_hasnext(e) &&
+          upb_tabent_next(e) == ent) {
         prev = e;
         break;
       }
     }
 
     if (prev) {
-      prev->next = ent->next;
+      if (upb_tabent_hasnext(ent)) {
+        upb_tabent_setnext(prev, upb_tabent_next(ent));
+      } else {
+        upb_tabent_clearnext(prev);
+      }
     }
 
     t->t.count--;
-    ent->key = upb_key_empty();
-    ent->next = NULL;
+    upb_tabent_clear(ent);
   }
 }
 

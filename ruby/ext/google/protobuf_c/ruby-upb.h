@@ -3041,11 +3041,8 @@ typedef struct _upb_tabent {
   upb_value val;
   upb_key key;
 
-  /* Internal chaining.  This is const so we can create static initializers for
-   * tables.  We cast away const sometimes, but *only* when the containing
-   * upb_table is known to be non-const.  This requires a bit of care, but
-   * the subtlety is confined to table.c. */
-  const struct _upb_tabent* next;
+  /* Internal chaining */
+  struct _upb_tabent* next;
 } upb_tabent;
 
 typedef struct {
@@ -3077,6 +3074,30 @@ UPB_INLINE bool upb_tabent_isempty(const upb_tabent* e) {
   // compact table and never as a upb_tabent* so we can always use the 0
   // key value to identify an empty tabent.
   return val == 0;
+}
+
+UPB_INLINE bool upb_tabent_hasnext(const upb_tabent* e) {
+  return e->next != NULL;
+}
+
+UPB_INLINE void upb_tabent_clearnext(upb_tabent* e) { e->next = NULL; }
+
+UPB_INLINE void upb_tabent_clear(upb_tabent* e) {
+  memset(&e->key, 0, sizeof(e->key));
+  e->next = NULL;
+  UPB_ASSERT(upb_tabent_isempty(e));
+}
+
+UPB_INLINE upb_tabent* upb_tabent_next(const upb_tabent* e) {
+  UPB_ASSERT(upb_tabent_hasnext(e));
+  return e->next;
+}
+
+UPB_INLINE void upb_tabent_setnext(upb_tabent* e, upb_tabent* next) {
+  UPB_ASSERT(next != NULL);
+  UPB_ASSERT(next != e);
+  e->next = next;
+  UPB_ASSERT(upb_tabent_hasnext(e));
 }
 
 uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed);
