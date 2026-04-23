@@ -22,6 +22,7 @@
 #ifndef GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 #define GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 
+#include <atomic>
 #include <climits>
 #include <cstddef>
 #include <cstdint>
@@ -168,15 +169,6 @@ class PROTOBUF_EXPORT CachedSize {
 
  public:
   constexpr CachedSize() noexcept : atom_(Scalar{}) {}
-  // NOLINTNEXTLINE(google-explicit-constructor)
-  constexpr CachedSize(Scalar desired) noexcept : atom_(desired) {}
-
-#ifdef PROTOBUF_BUILTIN_ATOMIC
-  constexpr CachedSize(const CachedSize& other) = default;
-
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD Scalar Get() const noexcept {
-    return __atomic_load_n(&atom_, __ATOMIC_RELAXED);
-  }
 
   void Set(Scalar desired) const noexcept {
     // Avoid writing the value when it is zero. This prevents writing to global
@@ -184,17 +176,28 @@ class PROTOBUF_EXPORT CachedSize {
     if (ABSL_PREDICT_FALSE(desired == 0)) {
       if (Get() == 0) return;
     }
-    __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
+    SetImpl(desired);
   }
 
   void SetNonZero(Scalar desired) const noexcept {
     ABSL_DCHECK_NE(desired, 0);
+    SetImpl(desired);
+  }
+
+#ifdef PROTOBUF_BUILTIN_ATOMIC
+  constexpr CachedSize(const CachedSize& other) = default;
+  CachedSize& operator=(const CachedSize& other) = default;
+
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD Scalar Get() const noexcept {
+    return __atomic_load_n(&atom_, __ATOMIC_RELAXED);
+  }
+
+ private:
+  void SetImpl(Scalar desired) const noexcept {
     __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
   }
 
-  void SetNoDefaultInstance(Scalar desired) const noexcept {
-    __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
-  }
+  mutable Scalar atom_;
 #else
   CachedSize(const CachedSize& other) noexcept : atom_(other.Get()) {}
   CachedSize& operator=(const CachedSize& other) noexcept {
@@ -206,29 +209,10 @@ class PROTOBUF_EXPORT CachedSize {
     return atom_.load(std::memory_order_relaxed);
   }
 
-  void Set(Scalar desired) const noexcept {
-    // Avoid writing the value when it is zero. This prevents writing to global
-    // default instances, which might be in readonly memory.
-    if (ABSL_PREDICT_FALSE(desired == 0)) {
-      if (Get() == 0) return;
-    }
-    atom_.store(desired, std::memory_order_relaxed);
-  }
-
-  void SetNonZero(Scalar desired) const noexcept {
-    ABSL_DCHECK_NE(desired, 0);
-    atom_.store(desired, std::memory_order_relaxed);
-  }
-
-  void SetNoDefaultInstance(Scalar desired) const noexcept {
-    atom_.store(desired, std::memory_order_relaxed);
-  }
-#endif
-
  private:
-#ifdef PROTOBUF_BUILTIN_ATOMIC
-  mutable Scalar atom_;
-#else
+  void SetImpl(Scalar desired) const noexcept {
+    atom_.store(desired, std::memory_order_relaxed);
+  }
   mutable std::atomic<Scalar> atom_;
 #endif
 };

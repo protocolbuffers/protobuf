@@ -36,6 +36,7 @@ cc_library(
         "cardinality.c",
         "cardinality.h",
         "field_fixed.c",
+        "field_generic.c",
         "field_message.c",
         "field_string.c",
         "field_varint.c",
@@ -47,11 +48,16 @@ cc_library(
         "//conditions:default": [],
     }),
     features = UPB_DEFAULT_FEATURES,
-    visibility = ["//upb:__pkg__"],
+    visibility = [
+        "//upb:__pkg__",
+        "//upb/mini_descriptor:__pkg__",
+    ],
     deps = [
         ":combinations",
         ":data",
         ":dispatch",
+        ":select",
+        "//third_party/utf8_range",
         "//upb/base",
         "//upb/base:internal",
         "//upb/mem",
@@ -80,6 +86,7 @@ cc_library(
         "//upb/port",
         "//upb/wire:decoder",
         "//upb/wire:eps_copy_input_stream",
+        "//upb/wire:eps_copy_input_stream_internal",
     ],
 )
 
@@ -103,7 +110,6 @@ cc_library(
         "//upb/mini_table:internal",
         "//upb/port",
         "//upb/wire:reader",
-        "@abseil-cpp//absl/strings",
     ],
 )
 

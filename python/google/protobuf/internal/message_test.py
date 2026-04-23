@@ -1303,6 +1303,7 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(0, m.repeated_int32.pop(0))
     self.assertEqual(2, m.repeated_int32.pop(1))
     self.assertEqual([1, 3], m.repeated_int32)
+    self.assertEqual(3, m.repeated_int32.pop(-1))
 
   def testRepeatedCompositeFieldPop(self, message_module):
     m = message_module.TestAllTypes()
@@ -1317,6 +1318,35 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(0, m.repeated_nested_message.pop(0).bb)
     self.assertEqual(2, m.repeated_nested_message.pop(1).bb)
     self.assertEqual([1, 3], [n.bb for n in m.repeated_nested_message])
+    self.assertEqual(3, m.repeated_nested_message.pop(-1).bb)
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      "Currently broken in upb, will be fixed in the next breaking release"
+  )
+  def testRepeatedPopOutOfBounds(self, message_module):
+    m = message_module.TestAllTypes()
+    m.repeated_int32.extend(range(5))
+    m.repeated_int32.pop()
+    m.repeated_int32.pop(0)
+    m.repeated_int32.pop(1)
+    
+    with self.assertRaises(IndexError):
+      m.repeated_int32.pop(-5)
+    with self.assertRaises(IndexError):
+      m.repeated_int32.pop(999999)
+
+    m2 = message_module.TestAllTypes()
+    for i in range(5):
+      m2.repeated_nested_message.add().bb = i
+    m2.repeated_nested_message.pop()
+    m2.repeated_nested_message.pop(0)
+    m2.repeated_nested_message.pop(1)
+    
+    with self.assertRaises(IndexError):
+      m2.repeated_nested_message.pop(-5)
+    with self.assertRaises(IndexError):
+      m2.repeated_nested_message.pop(999999)
 
   def testRepeatedCompareWithSelf(self, message_module):
     m = message_module.TestAllTypes()

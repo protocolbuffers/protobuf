@@ -69,15 +69,15 @@ UPB_INLINE int upb_Encode_LimitDepth(uint32_t encode_options, uint32_t limit) {
                (encode_options & 0xffff));
 }
 
-UPB_API upb_EncodeStatus upb_Encode(const upb_Message* msg,
-                                    const upb_MiniTable* l, int options,
-                                    upb_Arena* arena, char** buf, size_t* size);
-
-// Encodes the message prepended by a varint of the serialized length.
-UPB_API upb_EncodeStatus upb_EncodeLengthPrefixed(const upb_Message* msg,
+UPB_NODISCARD UPB_API upb_EncodeStatus upb_Encode(const upb_Message* msg,
                                                   const upb_MiniTable* l,
                                                   int options, upb_Arena* arena,
                                                   char** buf, size_t* size);
+
+// Encodes the message prepended by a varint of the serialized length.
+UPB_NODISCARD UPB_API upb_EncodeStatus upb_EncodeLengthPrefixed(
+    const upb_Message* msg, const upb_MiniTable* l, int options,
+    upb_Arena* arena, char** buf, size_t* size);
 // Utility function for wrapper languages to get an error string from a
 // upb_EncodeStatus.
 UPB_API const char* upb_EncodeStatus_String(upb_EncodeStatus status);

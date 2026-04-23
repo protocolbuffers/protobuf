@@ -593,7 +593,7 @@ bool MaybeEmitHaswordsCheck(ChunkIterator it, ChunkIterator end,
 using Sub = ::google::protobuf::io::Printer::Sub;
 std::vector<Sub> ClassVars(const Descriptor* desc, Options opts) {
   std::vector<Sub> vars = {
-      {"pkg", Namespace(desc, opts)},
+      {"pkg", Namespace(desc)},
       {"Msg", ClassName(desc, false)},
       {"pkg::Msg", QualifiedClassName(desc, opts)},
       {"pkg.Msg", desc->full_name()},
@@ -1352,23 +1352,22 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
   }
 
   int has_bit_index = has_bit_indices_[field->index()];
-  p->Emit(
-      {{"condition", GenerateConditionMaybeWithProbabilityForField(
-                         has_bit_index, field, options_)},
-       {"check_nondefault_and_emit_body",
-        [&] {
-          // Note that it's possible that the field has explicit presence.
-          // In that case, nondefault check will not be emitted but
-          // emit_body will still be emitted.
-          MayEmitIfNonDefaultCheck(p, "this_.", field, options_,
-                                   std::move(emit_body),
-                                   /*with_enclosing_braces_always=*/false);
-        }}},
-      R"cc(
-        if ($condition$) {
-          $check_nondefault_and_emit_body$;
-        }
-      )cc");
+  p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
+                             has_bit_index, field, options_)},
+           {"check_nondefault_and_emit_body",
+            [&] {
+              // Note that it's possible that the field has explicit presence.
+              // In that case, nondefault check will not be emitted but
+              // emit_body will still be emitted.
+              MayEmitIfNonDefaultCheck(p, "this_.", field, options_,
+                                       std::move(emit_body),
+                                       /*with_enclosing_braces_always=*/false);
+            }}},
+          R"cc(
+            if ($condition$) {
+              $check_nondefault_and_emit_body$;
+            }
+          )cc");
 }
 
 void MessageGenerator::MaybeEmitUpdateCachedHasbits(
@@ -2747,8 +2746,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
         separator();
         p->Emit("_has_bits_{from._has_bits_}");
       }
-      separator();
-      p->Emit("_cached_size_{0}");
     }
   };
 
@@ -2793,13 +2790,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
     }
   };
 
-  auto init_cached_size_if_no_hasbits = [&] {
-    if (has_bit_indices_.empty()) {
-      separator();
-      p->Emit("_cached_size_{0}");
-    }
-  };
-
   auto init_oneof_cases = [&] {
     if (int count = descriptor_->real_oneof_decl_count()) {
       separator();
@@ -2834,7 +2824,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
   init_fields();
   init_split();
   init_oneofs();
-  init_cached_size_if_no_hasbits();
   init_oneof_cases();
   init_weak_field_map();
 }

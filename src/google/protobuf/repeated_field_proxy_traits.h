@@ -51,11 +51,23 @@ static constexpr bool RepeatedElementTypeIsMessage =
 template <typename ElementType, typename Enable = void>
 struct RepeatedFieldTraits {
   static_assert(!std::is_const_v<ElementType>);
-  // The default specialization is only for primitive types. Messages and
-  // strings are specialized below.
-  static_assert(RepeatedElementTypeIsPrimitive<ElementType>);
+  // The default specialization is only for primitive types. Messages, strings,
+  // and enums are specialized below.
+  static_assert(std::is_integral_v<ElementType> ||
+                std::is_floating_point_v<ElementType>);
 
   using type = ::google::protobuf::RepeatedField<ElementType>;
+  using const_reference = ElementType;
+  using reference = ElementType;
+};
+
+// Specialization for enum types.
+template <typename ElementType>
+struct RepeatedFieldTraits<ElementType,
+                           std::enable_if_t<std::is_enum_v<ElementType>>> {
+  static_assert(!std::is_const_v<ElementType>);
+
+  using type = ::google::protobuf::RepeatedField<int>;
   using const_reference = ElementType;
   using reference = ElementType;
 };

@@ -378,40 +378,40 @@ TEST(GeneratedMessageTest, TestMessageSize) {
 TEST(GeneratedMessageTest, PackedTypesSize) {
   // TODO: remove once synthetic_pdproto lands.
 #ifndef PROTOBUF_FORCE_SPLIT
-  struct MockGenerated : public MockMessageBase {             // 16 bytes
-    int has_bits[1];                                          // 4 bytes
-    int cached_size;                                          // 4 bytes
-    MockRepeatedField packed_int32;                           // 16 bytes
-    int packed_int32_cached_byte_size;   // 4 bytes + 4 bytes padding
-    MockRepeatedField packed_int64;      // 16 bytes
-    int packed_int64_cached_byte_size;   // 4 bytes + 4 bytes padding
-    MockRepeatedField packed_uint32;     // 16 bytes
-    int packed_uint32_cached_byte_size;  // 4 bytes + 4 bytes padding
-    MockRepeatedField packed_uint64;     // 16 bytes
-    int packed_uint64_cached_byte_size;  // 4 bytes + 4 bytes padding
-    MockRepeatedField packed_sint32;     // 16 bytes
-    int packed_sint32_cached_byte_size;  // 4 bytes + 4 bytes padding
-    MockRepeatedField packed_sint64;     // 16 bytes
-    int packed_sint64_cached_byte_size;  // 4 bytes + 4 bytes padding
-    MockRepeatedField packed_fixed32;    // 16 bytes
-    MockRepeatedField packed_fixed64;    // 16 bytes
-    MockRepeatedField packed_sfixed32;   // 16 bytes
-    MockRepeatedField packed_sfixed64;   // 16 bytes
-    MockRepeatedField packed_float;      // 16 bytes
-    MockRepeatedField packed_double;     // 16 bytes
-    MockRepeatedField packed_bool;       // 16 bytes
-    MockRepeatedField packed_enum;       // 16 bytes
-    int packed_enum_cached_byte_size;    // 4 bytes
-    PROTOBUF_TSAN_DECLARE_MEMBER;        // 0-4 bytes
+  struct MockGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[1];                               // 4 bytes
+    int cached_size;                               // 4 bytes
+    MockRepeatedField packed_int32;                // 16 bytes
+    int packed_int32_cached_byte_size;             // 4 bytes + 4 bytes padding
+    MockRepeatedField packed_int64;                // 16 bytes
+    int packed_int64_cached_byte_size;             // 4 bytes + 4 bytes padding
+    MockRepeatedField packed_uint32;               // 16 bytes
+    int packed_uint32_cached_byte_size;            // 4 bytes + 4 bytes padding
+    MockRepeatedField packed_uint64;               // 16 bytes
+    int packed_uint64_cached_byte_size;            // 4 bytes + 4 bytes padding
+    MockRepeatedField packed_sint32;               // 16 bytes
+    int packed_sint32_cached_byte_size;            // 4 bytes + 4 bytes padding
+    MockRepeatedField packed_sint64;               // 16 bytes
+    int packed_sint64_cached_byte_size;            // 4 bytes + 4 bytes padding
+    MockRepeatedField packed_fixed32;              // 16 bytes
+    MockRepeatedField packed_fixed64;              // 16 bytes
+    MockRepeatedField packed_sfixed32;             // 16 bytes
+    MockRepeatedField packed_sfixed64;             // 16 bytes
+    MockRepeatedField packed_float;                // 16 bytes
+    MockRepeatedField packed_double;               // 16 bytes
+    MockRepeatedField packed_bool;                 // 16 bytes
+    MockRepeatedField packed_enum;                 // 16 bytes
+    int packed_enum_cached_byte_size;              // 4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
     // + 4-0 bytes padding
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 8 + 16 * 15 + 8 * 6 + 8);
 #else   // !PROTOBUF_FORCE_SPLIT
-  struct MockGenerated : public MockMessageBase {             // 16 bytes
-    int has_bits[1];                                          // 4 bytes
-    int cached_size;               // 4 bytes + 4 bytes padding
-    void* split;                   // 8 bytes
-    PROTOBUF_TSAN_DECLARE_MEMBER;  // 0-4 bytes
+  struct MockGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[1];                               // 4 bytes
+    int cached_size;                               // 4 bytes + 4 bytes padding
+    void* split;                                   // 8 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
     // + 0-4 bytes padding
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);

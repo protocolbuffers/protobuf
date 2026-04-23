@@ -280,7 +280,6 @@ void SingularPrimitive::GenerateByteSize(io::Printer* p) const {
   )cc");
 }
 
-
 class RepeatedPrimitive final : public FieldGeneratorBase {
  public:
   RepeatedPrimitive(const FieldDescriptor* field, const Options& opts)
@@ -347,7 +346,6 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
     p->Emit(R"cc(
       /*decltype($field_$)*/ {},
     )cc");
-    GenerateCacheSizeInitializer(p);
   }
 
   void GenerateAggregateInitializer(io::Printer* p) const override {
@@ -356,7 +354,6 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
             R"cc(
               decltype($field_$){$internal_metadata_offset$},
             )cc");
-    GenerateCacheSizeInitializer(p);
   }
 
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
@@ -364,7 +361,6 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
     p->Emit(R"cc(
       decltype($field_$){from.$field_$},
     )cc");
-    GenerateCacheSizeInitializer(p);
   }
 
   void GenerateMemberConstexprConstructor(io::Printer* p) const override {
@@ -372,9 +368,6 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
             R"cc(
               $name$_ { visibility, $internal_metadata_offset$ }
             )cc");
-    if (HasCachedSize()) {
-      p->Emit(",\n_$name$_cached_byte_size_{0}");
-    }
   }
 
   void GenerateMemberConstructor(io::Printer* p) const override {
@@ -382,9 +375,6 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
             R"cc(
               $name$_ { visibility, $internal_metadata_offset$ }
             )cc");
-    if (HasCachedSize()) {
-      p->Emit(",\n_$name$_cached_byte_size_{0}");
-    }
   }
 
   void GenerateMemberCopyConstructor(io::Printer* p) const override {
@@ -394,9 +384,6 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
                 visibility, $internal_metadata_offset$, from.$name$_
               }
             )cc");
-    if (HasCachedSize()) {
-      p->Emit(",\n_$name$_cached_byte_size_{0}");
-    }
   }
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
@@ -415,15 +402,6 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
         field_->is_packed() && !FixedSize(field_->type()).has_value();
     return is_packed_varint && HasGeneratedMethods(field_->file(), *opts_) &&
            !should_split();
-  }
-
-  void GenerateCacheSizeInitializer(io::Printer* p) const {
-    if (!HasCachedSize()) return;
-    // std::atomic has no move constructor, which prevents explicit aggregate
-    // initialization pre-C++17.
-    p->Emit(R"cc(
-      /* $_field_cached_byte_size_$ = */ {0},
-    )cc");
   }
 
   const Options* opts_;

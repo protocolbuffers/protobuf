@@ -223,12 +223,15 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   [[nodiscard]] const char* VerifyUTF8(const char* ptr, size_t size);
 
   [[nodiscard]] const char* ReadMicroString(const char* ptr, MicroString& str,
+                                            size_t inline_capacity,
                                             Arena* arena);
   [[nodiscard]] const char* ReadMicroStringWithSize(const char* ptr, int size,
                                                     MicroString& str,
+                                                    size_t inline_capacity,
                                                     Arena* arena);
   [[nodiscard]] const char* ReadMicroStringFallback(const char* ptr, int size,
                                                     MicroString& str,
+                                                    size_t inline_capacity,
                                                     Arena* arena);
 
   // Implemented in arenastring.cc
@@ -1471,22 +1474,22 @@ ParseContext::ParseWithLengthInlined(const char* ptr, uint32_t length,
 
 inline const char* EpsCopyInputStream::ReadMicroString(const char* ptr,
                                                        MicroString& str,
+                                                       size_t inline_capacity,
                                                        Arena* arena) {
   int size = ReadSize(&ptr);
   if (!ptr) return nullptr;
 
-  return ReadMicroStringWithSize(ptr, size, str, arena);
+  return ReadMicroStringWithSize(ptr, size, str, inline_capacity, arena);
 }
 
-inline const char* EpsCopyInputStream::ReadMicroStringWithSize(const char* ptr,
-                                                               int size,
-                                                               MicroString& str,
-                                                               Arena* arena) {
+inline const char* EpsCopyInputStream::ReadMicroStringWithSize(
+    const char* ptr, int size, MicroString& str, size_t inline_capacity,
+    Arena* arena) {
   if (size <= BytesAvailable(ptr)) {
-    str.Set(absl::string_view(ptr, size), arena);
+    str.Set(absl::string_view(ptr, size), arena, inline_capacity);
     return ptr + size;
   }
-  return ReadMicroStringFallback(ptr, size, str, arena);
+  return ReadMicroStringFallback(ptr, size, str, inline_capacity, arena);
 }
 
 template <typename Tag, typename T>

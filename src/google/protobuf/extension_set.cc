@@ -1434,7 +1434,6 @@ size_t ExtensionSet::Extension::ByteSize(int number) const {
   return result;
 }
 
-
 int ExtensionSet::Extension::GetSize() const {
   ABSL_DCHECK(is_repeated);
   switch (cpp_type(type)) {
@@ -1908,8 +1907,7 @@ LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
   return nullptr;
 }
 
-
-std::atomic<ExtensionSet::LazyMessageExtension* (*)(Arena * arena)>
+std::atomic<ExtensionSet::LazyMessageExtension* (*)(Arena* arena)>
     ExtensionSet::maybe_create_lazy_extension_;
 
 #if defined(PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET)

@@ -28,11 +28,16 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
- * Provide text parsing and formatting support for proto2 instances. The implementation largely
- * follows text_format.cc.
+ * This class implements the Protobuf Text Format.
  *
- * @author wenboz@google.com Wenbo Zhu
- * @author kenton@google.com Kenton Varda
+ * <p>Printing and parsing protocol messages in text format is useful for debugging and human
+ * editing of messages.
+ *
+ * <p>Unlike the Binary and ProtoJSON formats, Text Format is not designed to be used as a wire
+ * format; instead it is intended for human-in-the-loop configuration use-cases.
+ *
+ * <p>Systems processing untrusted inputs should strongly prefer to use Binary format instead. If a
+ * textual format of untrusted inputs is required, consider using ProtoJSON format instead.
  */
 public final class TextFormat {
   private TextFormat() {}
@@ -1859,8 +1864,8 @@ public final class TextFormat {
   }
 
   /**
-   * Parser for text-format proto2 instances. This class is thread-safe. The implementation largely
-   * follows google/protobuf/text_format.cc.
+   * Parser for text-format instances. This class is thread-safe. The implementation largely follows
+   * google/protobuf/text_format.cc.
    *
    * <p>Use {@link TextFormat#getParser()} to obtain the default parser, or {@link Builder} to
    * control the parser behavior.

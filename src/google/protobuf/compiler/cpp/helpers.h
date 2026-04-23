@@ -101,10 +101,10 @@ bool IsBootstrapProto(const Options& options, const FileDescriptor* file);
 // "<namespace>::some_name" is the correct fully qualified namespace.
 // This means if the package is empty the namespace is "", and otherwise
 // the namespace is "::foo::bar::...::baz" without trailing semi-colons.
-std::string Namespace(const FileDescriptor* d, const Options& options);
-std::string Namespace(const Descriptor* d, const Options& options);
-std::string Namespace(const FieldDescriptor* d, const Options& options);
-std::string Namespace(const EnumDescriptor* d, const Options& options);
+std::string Namespace(const FileDescriptor* d);
+std::string Namespace(const Descriptor* d);
+std::string Namespace(const FieldDescriptor* d);
+std::string Namespace(const EnumDescriptor* d);
 PROTOC_EXPORT std::string Namespace(const FileDescriptor* d);
 PROTOC_EXPORT std::string Namespace(const Descriptor* d);
 PROTOC_EXPORT std::string Namespace(const FieldDescriptor* d);
@@ -377,6 +377,12 @@ inline bool IsString(const FieldDescriptor* field) {
 
 bool IsArenaStringPtr(const FieldDescriptor* field, const Options& opts);
 bool IsMicroString(const FieldDescriptor* field, const Options& opts);
+
+// If the field is MicroString and has a non-default SSO size, return it.
+// Otherwise, return nullopt.
+// The SSO size can come from pdproto profile, or from test overrides.
+absl::optional<uint8_t> MicroStringSSOSize(const FieldDescriptor* field,
+                                           const Options& opts);
 
 bool IsProfileDriven(const Options& options);
 

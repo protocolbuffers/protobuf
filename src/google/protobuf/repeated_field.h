@@ -68,11 +68,11 @@ class UnknownField;  // For the allowlist
 class UnknownFieldSet;
 class DynamicMessage;
 class Reflection;
-template <typename ElementType>
-class RepeatedFieldProxy;
 
 namespace internal {
 
+template <typename ElementType, bool kOrProxy>
+class MutableRepeatedFieldProxyImpl;
 class EpsCopyInputStream;
 class TcParser;
 class WireFormat;
@@ -523,7 +523,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   friend class internal::TcParser;
   friend class internal::WireFormat;
 
-  friend class RepeatedFieldProxy<Element>;
+  template <typename ElementType, bool kOrProxy>
+  friend class internal::MutableRepeatedFieldProxyImpl;
 
   // For access to private arena constructor.
   friend class UnknownFieldSet;

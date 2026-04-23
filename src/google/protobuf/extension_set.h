@@ -143,9 +143,7 @@ struct ExtensionInfo {
         is_utf8(false),
         is_lazy(islazy),
         enum_validity_check(),
-        lazy_eager_verify_func(verify_func)
-  {
-  }
+        lazy_eager_verify_func(verify_func) {}
 
   const MessageLite* message = nullptr;
   int number = 0;
@@ -706,7 +704,7 @@ class PROTOBUF_EXPORT ExtensionSet {
     return f != nullptr ? f(arena) : nullptr;
   }
 #endif  // !PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET
-  static std::atomic<LazyMessageExtension* (*)(Arena * arena)>
+  static std::atomic<LazyMessageExtension* (*)(Arena* arena)>
       maybe_create_lazy_extension_;
 
   // We can't directly use std::atomic for Extension::cached_size because

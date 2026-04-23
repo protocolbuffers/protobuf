@@ -553,3 +553,13 @@ about your project (name and website) so we can add an entry for you.
 
     *   Website: https://livekit.io
     *   Extensions: 1285-1294
+
+1.  grpc-gateway protoc-gen-openapiv3
+
+    *   Website: https://github.com/grpc-ecosystem/grpc-gateway
+    *   Extensions: 1295
+
+1.  Protosource
+
+    *   Website: https://github.com/funinthecloud/protosource
+    *   Extensions: 1296-1305

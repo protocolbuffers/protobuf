@@ -4780,7 +4780,7 @@ TEST(CustomOptions, AggregateOptions) {
             file_options.file().GetExtension(proto2_unittest::fileopt).s());
   EXPECT_EQ("EmbeddedMessageSetElement",
             file_options.mset()
-                .GetExtension(proto2_unittest::AggregateMessageSetElement ::
+                .GetExtension(proto2_unittest::AggregateMessageSetElement::
                                   message_set_extension)
                 .s());
 
@@ -7948,6 +7948,263 @@ TEST_F(ValidationErrorTest, MapEntryNestedType) {
   BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
 
+// Test for the scenario:
+// package pkg;
+// message B {
+//   AEntry x = 1;
+//   map<int32, int32> a = 2; // Synthesizes B.AEntry
+// }
+// Expect: error on synthetic MapEntry, no suggestion
+TEST_F(ValidationErrorTest, MapEntrySyntheticTypeUsedAsField) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"B\""
+      "  field { name: \"x\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_OPTIONAL }"
+      "  field { name: \"a\" number: 2 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "  }"
+      "}",
+      "foo.proto: pkg.B.x: TYPE: pkg.B.AEntry is a synthetic MapEntry message "
+      "type, which is not allowed to be used as a field type.\n");
+}
+
+// Test for the scenario:
+// package pkg;
+// message B {
+//   map<int32, int32> a = 1; // Synthesizes B.AEntry
+// }
+// message C {
+//   B.AEntry a = 1; // Field name matches AEntry, but scope is different.
+// }
+// Expect: error on synthetic MapEntry, no suggestion
+TEST_F(ValidationErrorTest, MapEntrySyntheticTypeCrossMessage) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"B\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "  }"
+      "}"
+      "message_type {"
+      "  name: \"C\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\".pkg.B.AEntry\" label: LABEL_OPTIONAL }"
+      "}",
+      "foo.proto: pkg.C.a: TYPE: pkg.B.AEntry is a synthetic MapEntry "
+      "message type, which is not allowed to be used as a field type.\n");
+}
+
+// Test for the scenario:
+// package pkg;
+// message Container {
+//   map<uint32, AEntry> a = 1;
+// }
+// Expect: error on synthetic MapEntry, no suggestion
+TEST_F(ValidationErrorTest, MapEntrySyntheticType) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"Container\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_UINT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" label: LABEL_OPTIONAL }"
+      "  }"
+      "}",
+      "foo.proto: pkg.Container.AEntry.value: TYPE: "
+      "pkg.Container.AEntry is a synthetic MapEntry message type, which "
+      "is not allowed to be used as a field type.\n");
+}
+
+// Test for the scenario:
+// package pkg;
+// message B {
+//   map<int32, int32> a = 1; // Synthesizes B.AEntry
+//   message C {
+//     message D {
+//       AEntry x = 1;
+//     }
+//   }
+// }
+// Expect: error on synthetic MapEntry, no suggestion
+TEST_F(ValidationErrorTest, MapEntrySyntheticTypeInDeepScope) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"B\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "  }"
+      "  nested_type {"
+      "    name: \"C\""
+      "    nested_type {"
+      "      name: \"D\""
+      "      field { name: \"x\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" label: LABEL_OPTIONAL }"
+      "    }"
+      "  }"
+      "}",
+      "foo.proto: pkg.B.C.D.x: TYPE: pkg.B.AEntry is a synthetic MapEntry "
+      "message type, which is not allowed to be used as a field type.\n");
+}
+
+// Test for the scenario:
+// package pkg;
+// message AEntry {}
+// message B {
+//   map<int32, int32> a = 1; // Synthesizes B.AEntry
+//   message C {
+//     message D {
+//       AEntry x = 1;
+//     }
+//   }
+// }
+// Expect: error on synthetic MapEntry, has suggestion
+TEST_F(ValidationErrorTest, MapEntrySyntheticTypeInDeepScopeWithAlternative) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"AEntry\""
+      "}"
+      "message_type {"
+      "  name: \"B\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "  }"
+      "  nested_type {"
+      "    name: \"C\""
+      "    nested_type {"
+      "      name: \"D\""
+      "      field { name: \"x\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" label: LABEL_OPTIONAL }"
+      "    }"
+      "  }"
+      "}",
+      "foo.proto: pkg.B.C.D.x: TYPE: pkg.B.AEntry is a synthetic MapEntry "
+      "message type, which is not allowed to be used as a field type. Maybe "
+      "you meant \".pkg.AEntry\"?\n");
+}
+
+// Test for the scenario:
+// package pkg;
+// message AEntry {}
+// message Container {
+//   map<uint32, AEntry> a = 1;
+// }
+// Expect: error on synthetic MapEntry, has suggestion
+TEST_F(ValidationErrorTest, MapValueSyntheticNameCollision) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"AEntry\""
+      "}"
+      "message_type {"
+      "  name: \"Container\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_UINT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" label: LABEL_OPTIONAL }"
+      "  }"
+      "}",
+      "foo.proto: pkg.Container.AEntry.value: TYPE: "
+      "pkg.Container.AEntry is a synthetic MapEntry message type, which "
+      "is not allowed to be used as a field type. Maybe you meant "
+      "\".pkg.AEntry\"?\n");
+}
+
+// Test for the scenario where the alternative suggestion is an enum.
+// package pkg;
+// enum MyEntry { VALUE = 0; }
+// message Foo {
+//   map<int32, int32> my = 1; // Synthesizes Foo.MyEntry
+//   MyEntry bar = 2; // User wants to use pkg.MyEntry (enum) but resolves to
+//   Foo.MyEntry
+// }
+// Expect: error on synthetic MapEntry, suggesting the enum alternative.
+TEST_F(ValidationErrorTest, MapEntrySyntheticTypeAlternativeIsEnum) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "enum_type {"
+      "  name: \"MyEntry\""
+      "  value { name: \"VALUE\" number: 0 }"
+      "}"
+      "message_type {"
+      "  name: \"Foo\""
+      "  field { name: \"my\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"MyEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  field { name: \"bar\" number: 2 type: TYPE_MESSAGE type_name: "
+      "\"MyEntry\" "
+      "          label: LABEL_OPTIONAL }"
+      "  nested_type {"
+      "    name: \"MyEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "  }"
+      "}",
+      "foo.proto: pkg.Foo.bar: TYPE: pkg.Foo.MyEntry is a synthetic MapEntry "
+      "message type, which is not allowed to be used as a field type. Maybe "
+      "you meant \".pkg.MyEntry\"?\n");
+}
+
 TEST_F(ValidationErrorTest, MapEntryEnumTypes) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
@@ -7974,6 +8231,17 @@ TEST_F(ValidationErrorTest, MapEntryExtraField) {
   BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
 
+// Test for the scenario:
+// message Foo {
+//   OtherMapEntry foo_map = 1; // name doesn't match expected FooMapEntry
+//   message OtherMapEntry {
+//     options { map_entry = true; }
+//     int32 key = 1;
+//     int32 value = 2;
+//   }
+// }
+// The test manually renames the synthesized message "FooMapEntry" to
+// "OtherMapEntry". Expect: error on synthetic MapEntry used as field type.
 TEST_F(ValidationErrorTest, MapEntryMessageName) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
@@ -7981,17 +8249,48 @@ TEST_F(ValidationErrorTest, MapEntryMessageName) {
       "OtherMapEntry");
   file_proto.mutable_message_type(0)->mutable_field(0)->set_type_name(
       "OtherMapEntry");
-  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
+  BuildFileWithErrors(
+      file_proto,
+      "foo.proto: Foo.foo_map: TYPE: Foo.OtherMapEntry is a synthetic "
+      "MapEntry message type, which is not allowed to be used as a field "
+      "type.\n");
 }
 
+// Test for the scenario:
+// message Foo {
+//   FooMapEntry foo_map = 1; // should be repeated
+//   message FooMapEntry {
+//     options { map_entry = true; }
+//     int32 key = 1;
+//     int32 value = 2;
+//   }
+// }
+// The test manually changes the field 'foo_map' to be optional (non-repeated).
+// Expect: error on synthetic MapEntry used as field type.
 TEST_F(ValidationErrorTest, MapEntryNoneRepeatedMapEntry) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
   file_proto.mutable_message_type(0)->mutable_field(0)->set_label(
       FieldDescriptorProto::LABEL_OPTIONAL);
-  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
+  BuildFileWithErrors(
+      file_proto,
+      "foo.proto: Foo.foo_map: TYPE: Foo.FooMapEntry is a synthetic "
+      "MapEntry message type, which is not allowed to be used as a field "
+      "type.\n");
 }
 
+// Test for the scenario:
+// message Foo {
+//   FooMapEntry foo_map = 1; // points to top-level message
+// }
+// message FooMapEntry {
+//   options { map_entry = true; }
+//   int32 key = 1;
+//   int32 value = 2;
+// }
+// The test manually moves the synthesized message "FooMapEntry" to the top
+// level.
+// Expect: error on synthetic MapEntry used as field type.
 TEST_F(ValidationErrorTest, MapEntryDifferentContainingType) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
@@ -7999,7 +8298,10 @@ TEST_F(ValidationErrorTest, MapEntryDifferentContainingType) {
   // the validation.
   file_proto.mutable_message_type()->AddAllocated(
       file_proto.mutable_message_type(0)->mutable_nested_type()->ReleaseLast());
-  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
+  BuildFileWithErrors(
+      file_proto,
+      "foo.proto: Foo.foo_map: TYPE: FooMapEntry is a synthetic MapEntry "
+      "message type, which is not allowed to be used as a field type.\n");
 }
 
 TEST_F(ValidationErrorTest, MapEntryKeyName) {
@@ -8105,16 +8407,18 @@ TEST_F(ValidationErrorTest, MapEntryKeyTypeEnum) {
   EnumValueDescriptorProto* enum_value_proto = enum_proto->add_value();
   enum_value_proto->set_name("BAR_VALUE0");
   enum_value_proto->set_number(0);
-  BuildFileWithErrors(file_proto,
-                      "foo.proto: Foo.foo_map: TYPE: Key in map fields cannot "
-                      "be enum types.\n");
+  BuildFileWithErrors(
+      file_proto,
+      "foo.proto: Foo.foo_map: TYPE: Key in map fields cannot be enum "
+      "types.\n");
   // Enum keys are not allowed in proto3 as well.
   // Get rid of extensions for proto3 to make it proto3 compatible.
   file_proto.mutable_message_type()->RemoveLast();
   file_proto.set_syntax("proto3");
-  BuildFileWithErrors(file_proto,
-                      "foo.proto: Foo.foo_map: TYPE: Key in map fields cannot "
-                      "be enum types.\n");
+  BuildFileWithErrors(
+      file_proto,
+      "foo.proto: Foo.foo_map: TYPE: Key in map fields cannot be enum "
+      "types.\n");
 }
 
 TEST_F(ValidationErrorTest, MapEntryKeyTypeMessage) {
@@ -8393,8 +8697,8 @@ TEST_F(ValidationErrorTest, MapEntryUsesNoneZeroEnumDefaultValue) {
       "    } "
       "  } "
       "}",
-      "foo.proto: Foo.foo_map: "
-      "TYPE: Enum value in map must define 0 as the first value.\n");
+      "foo.proto: Foo.foo_map: TYPE: Enum value in map must define 0 as the "
+      "first value.\n");
 }
 
 TEST_F(ValidationErrorTest, Proto3RequiredFields) {
@@ -9389,6 +9693,37 @@ TEST_F(FeaturesTest, Edition2023InferredFeatures) {
       GetCoreFeatures(message->field(3)).GetExtension(pb::cpp).string_type(),
       pb::CppFeatures::VIEW);
 }
+
+TEST_F(FeaturesTest, CppFeaturesUnknownStringType) {
+  // STRING_TYPE_UNKNOWN set explicitly at the file level propagates to the
+  // field, and the field's cpp_string_type() defaults to String.
+  FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
+    name: "unknown_string_field_type.proto"
+    syntax: "editions"
+    edition: EDITION_2023
+    options {
+      features {
+        [pb.cpp] { string_type: STRING_TYPE_UNKNOWN }
+      }
+    }
+    message_type {
+      name: "UnknownStringFieldType"
+      field { name: "v" number: 1 label: LABEL_OPTIONAL type: TYPE_BYTES }
+    }
+  )pb");
+
+  google::protobuf::DescriptorPool pool;
+  const FileDescriptor* file = pool.BuildFile(file_proto);
+  ASSERT_NE(file, nullptr);
+
+  const Descriptor* message = file->message_type(0);
+  EXPECT_EQ(GetFeatures(message->field(0)).GetExtension(pb::cpp).string_type(),
+            pb::CppFeatures::STRING_TYPE_UNKNOWN);
+
+  EXPECT_EQ(message->field(0)->cpp_string_type(),
+            FieldDescriptor::CppStringType::kString);
+}
+
 
 TEST_F(FeaturesTest, Edition2024Defaults) {
   FileDescriptorProto file_proto = ParseTextOrDie(R"pb(

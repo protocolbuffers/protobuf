@@ -775,9 +775,9 @@ class _Parser(object):
   def _ConvertValueMessage(self, value, message, path):
     """Convert a JSON representation into Value message."""
     if isinstance(value, dict):
-      self._ConvertStructMessage(value, message.struct_value, path)
+      self.ConvertMessage(value, message.struct_value, path)
     elif isinstance(value, _LIST_LIKE):
-      self._ConvertListOrTupleValueMessage(value, message.list_value, path)
+      self.ConvertMessage(value, message.list_value, path)
     elif value is None:
       message.null_value = 0
     elif isinstance(value, bool):
@@ -801,7 +801,7 @@ class _Parser(object):
       )
     message.ClearField('values')
     for index, item in enumerate(value):
-      self._ConvertValueMessage(
+      self.ConvertMessage(
           item, message.values.add(), '{0}[{1}]'.format(path, index)
       )
 
@@ -815,7 +815,7 @@ class _Parser(object):
     # there are no values.
     message.Clear()
     for key in value:
-      self._ConvertValueMessage(
+      self.ConvertMessage(
           value[key], message.fields[key], '{0}.{1}'.format(path, key)
       )
     return
