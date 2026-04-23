@@ -26,6 +26,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "third_party/gloop/util/status/status_macros.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -37,7 +38,6 @@
 #include "google/protobuf/json/internal/writer.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/util/type_resolver.h"
-#include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

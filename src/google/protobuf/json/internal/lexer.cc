@@ -28,9 +28,9 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "third_party/gloop/util/status/status_macros.h"
 #include "google/protobuf/json/internal/zero_copy_buffered_stream.h"
 #include "utf8_validity.h"
-#include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
