@@ -1977,7 +1977,7 @@ TEST_F(CommandLineInterfaceTest, Plugin_VersionSkewFuture) {
 
   ExpectErrorSubstring(
       "foo.proto:2:5: Edition 99997_TEST_ONLY is later than the maximum "
-      "supported edition 2024");
+      "supported edition 2026");
 }
 
 TEST_F(CommandLineInterfaceTest, Plugin_VersionSkewPast) {
@@ -2318,7 +2318,7 @@ TEST_F(CommandLineInterfaceTest,
   ExpectErrorSubstring(
       absl::StrCat("Edition 99997_TEST_ONLY is later than the maximum "
                    "supported edition ",
-                   ProtocMaximumEdition()));
+                   MaximumKnownEdition()));
 }
 
 TEST_F(CommandLineInterfaceTest, UnstableEditionWithFlag) {
