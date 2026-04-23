@@ -170,9 +170,9 @@ void CordFieldGenerator::GenerateAccessorDeclarations(io::Printer* p) const {
       p->WithVars(AnnotatedAccessors(field_, {"mutable_"}, Semantic::kAlias));
 
   p->Emit(R"cc(
-    [[nodiscard]] $deprecated_attr$const ::absl::Cord& $name$() const;
-    $deprecated_attr$void $set_name$(const ::absl::Cord& value);
-    $deprecated_attr$void $set_name$(::absl::string_view value);
+    [[nodiscard]] $DEPRECATED$ const ::absl::Cord& $name$() const;
+    $DEPRECATED$void $set_name$(const ::absl::Cord& value);
+    $DEPRECATED$void $set_name$(::absl::string_view value);
 
     private:
     const ::absl::Cord& $_internal_name$() const;

@@ -307,8 +307,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
     kPatchFieldNumber = 3,
   };
   // optional string suffix = 4;
-  [[nodiscard]] bool has_suffix()
-      const;
+  [[nodiscard]] bool has_suffix() const;
   void clear_suffix() ;
   [[nodiscard]] const ::std::string& suffix() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -324,8 +323,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
 
   public:
   // optional int32 major = 1;
-  [[nodiscard]] bool has_major()
-      const;
+  [[nodiscard]] bool has_major() const;
   void clear_major() ;
   [[nodiscard]] ::int32_t major() const;
   void set_major(::int32_t value);
@@ -336,8 +334,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
 
   public:
   // optional int32 minor = 2;
-  [[nodiscard]] bool has_minor()
-      const;
+  [[nodiscard]] bool has_minor() const;
   void clear_minor() ;
   [[nodiscard]] ::int32_t minor() const;
   void set_minor(::int32_t value);
@@ -348,8 +345,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
 
   public:
   // optional int32 patch = 3;
-  [[nodiscard]] bool has_patch()
-      const;
+  [[nodiscard]] bool has_patch() const;
   void clear_patch() ;
   [[nodiscard]] ::int32_t patch() const;
   void set_patch(::int32_t value);
@@ -557,8 +553,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
     kGeneratedCodeInfoFieldNumber = 16,
   };
   // optional string name = 1;
-  [[nodiscard]] bool has_name()
-      const;
+  [[nodiscard]] bool has_name() const;
   void clear_name() ;
   [[nodiscard]] const ::std::string& name() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -574,8 +569,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   public:
   // optional string insertion_point = 2;
-  [[nodiscard]] bool has_insertion_point()
-      const;
+  [[nodiscard]] bool has_insertion_point() const;
   void clear_insertion_point() ;
   [[nodiscard]] const ::std::string& insertion_point() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -591,8 +585,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   public:
   // optional string content = 15;
-  [[nodiscard]] bool has_content()
-      const;
+  [[nodiscard]] bool has_content() const;
   void clear_content() ;
   [[nodiscard]] const ::std::string& content() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -608,8 +601,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   public:
   // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
-  [[nodiscard]] bool has_generated_code_info()
-      const;
+  [[nodiscard]] bool has_generated_code_info() const;
   void clear_generated_code_info() ;
   [[nodiscard]] const ::google::protobuf::GeneratedCodeInfo& generated_code_info() const;
   [[nodiscard]] ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE release_generated_code_info();
@@ -844,8 +836,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
     kMaximumEditionFieldNumber = 4,
   };
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-  [[nodiscard]] int file_size()
-      const;
+  [[nodiscard]] int file_size() const;
   private:
   int _internal_file_size() const;
 
@@ -865,8 +856,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   public:
   // optional string error = 1;
-  [[nodiscard]] bool has_error()
-      const;
+  [[nodiscard]] bool has_error() const;
   void clear_error() ;
   [[nodiscard]] const ::std::string& error() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -882,8 +872,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   public:
   // optional uint64 supported_features = 2;
-  [[nodiscard]] bool has_supported_features()
-      const;
+  [[nodiscard]] bool has_supported_features() const;
   void clear_supported_features() ;
   [[nodiscard]] ::uint64_t supported_features() const;
   void set_supported_features(::uint64_t value);
@@ -894,8 +883,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   public:
   // optional int32 minimum_edition = 3;
-  [[nodiscard]] bool has_minimum_edition()
-      const;
+  [[nodiscard]] bool has_minimum_edition() const;
   void clear_minimum_edition() ;
   [[nodiscard]] ::int32_t minimum_edition() const;
   void set_minimum_edition(::int32_t value);
@@ -906,8 +894,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   public:
   // optional int32 maximum_edition = 4;
-  [[nodiscard]] bool has_maximum_edition()
-      const;
+  [[nodiscard]] bool has_maximum_edition() const;
   void clear_maximum_edition() ;
   [[nodiscard]] ::int32_t maximum_edition() const;
   void set_maximum_edition(::int32_t value);
@@ -1122,8 +1109,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
     kSourceFileDescriptorsFieldNumber = 17,
   };
   // repeated string file_to_generate = 1;
-  [[nodiscard]] int file_to_generate_size()
-      const;
+  [[nodiscard]] int file_to_generate_size() const;
   private:
   int _internal_file_to_generate_size() const;
 
@@ -1149,8 +1135,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
 
   public:
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-  [[nodiscard]] int proto_file_size()
-      const;
+  [[nodiscard]] int proto_file_size() const;
   private:
   int _internal_proto_file_size() const;
 
@@ -1170,8 +1155,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
 
   public:
   // optional string parameter = 2;
-  [[nodiscard]] bool has_parameter()
-      const;
+  [[nodiscard]] bool has_parameter() const;
   void clear_parameter() ;
   [[nodiscard]] const ::std::string& parameter() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -1187,8 +1171,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
 
   public:
   // optional .google.protobuf.compiler.Version compiler_version = 3;
-  [[nodiscard]] bool has_compiler_version()
-      const;
+  [[nodiscard]] bool has_compiler_version() const;
   void clear_compiler_version() ;
   [[nodiscard]] const ::google::protobuf::compiler::Version& compiler_version() const;
   [[nodiscard]] ::google::protobuf::compiler::Version* PROTOBUF_NULLABLE release_compiler_version();
@@ -1203,8 +1186,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
 
   public:
   // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
-  [[nodiscard]] int source_file_descriptors_size()
-      const;
+  [[nodiscard]] int source_file_descriptors_size() const;
   private:
   int _internal_source_file_descriptors_size() const;
 
