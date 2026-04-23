@@ -822,9 +822,9 @@ Api::Api(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.source_context_ = (CheckHasBit(cached_has_bits, 0x00000040U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.source_context_)
-                : nullptr;
+  _impl_.source_context_ = (CheckHasBit(cached_has_bits, 0x00000040U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.source_context_)
+                         : nullptr;
   _impl_.syntax_ = from._impl_.syntax_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Api)
