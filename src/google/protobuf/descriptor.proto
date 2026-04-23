@@ -524,7 +524,13 @@ message FileOptions {
 
   // Enables the use of arenas for the proto messages in this file. This applies
   // only to generated classes for C++.
-  optional bool cc_enable_arenas = 31 [default = true];
+  optional bool cc_enable_arenas = 31 [
+    default = true,
+    feature_support = {
+      edition_removed: EDITION_2026
+      removal_error: "This behavior is enabled by default in editions 2026 and above."
+    }
+  ];
 
   // Sets the objective c class prefix which is prepended to all objective c
   // generated classes from this .proto. There is no default.

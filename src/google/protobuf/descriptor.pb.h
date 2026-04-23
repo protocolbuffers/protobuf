@@ -7540,7 +7540,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   void _internal_set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value);
 
   public:
-  // optional bool cc_enable_arenas = 31 [default = true];
+  // optional bool cc_enable_arenas = 31 [default = true, feature_support = {
   [[nodiscard]] bool has_cc_enable_arenas()
       const;
   void clear_cc_enable_arenas() ;
@@ -18301,7 +18301,7 @@ inline void FileOptions::_internal_set_deprecated(bool value) {
   _impl_.deprecated_ = value;
 }
 
-// optional bool cc_enable_arenas = 31 [default = true];
+// optional bool cc_enable_arenas = 31 [default = true, feature_support = {
 inline bool FileOptions::has_cc_enable_arenas() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00080000U);
   return value;
