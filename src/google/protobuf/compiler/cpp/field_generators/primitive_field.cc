@@ -241,7 +241,7 @@ void SingularPrimitive::GenerateSerializeWithCachedSizesToArray(
     // of the tag+value to the array
     p->Emit(R"cc(
       target =
-          $pbi$::WireFormatLite::Write$declared_type$ToArrayWithField<$number$>(
+          $pbi$::WireFormatLite::Write$DeclaredType$ToArrayWithField<$number$>(
               stream, this_._internal_$name$(), target);
     )cc");
   } else {
