@@ -83,7 +83,6 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
                     "::internal::TSanRead(&_impl_)")},
 
       // Old-style names.
-      {"declared_type", DeclaredTypeMethodName(field->type())},
       {"classname", ClassName(FieldScope(field), false)},
       {"ns", Namespace(field)},
       {"tag_size", WireFormat::TagSize(field->number(), field->type())},

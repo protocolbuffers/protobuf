@@ -1376,10 +1376,9 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
                              this_._internal_proto_file_size());
          i < n; i++) {
       const auto& repfield = this_._internal_proto_file().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              15, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          15, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -1389,10 +1388,9 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
                              this_._internal_source_file_descriptors_size());
          i < n; i++) {
       const auto& repfield = this_._internal_source_file_descriptors().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              17, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          17, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -1445,8 +1443,8 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
     }
     // optional .google.protobuf.compiler.Version compiler_version = 3;
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.compiler_version_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.compiler_version_);
     }
     // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
@@ -1755,8 +1753,8 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
     }
     // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      total_size += 2 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.generated_code_info_);
+      total_size +=
+          2 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.generated_code_info_);
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -2010,10 +2008,9 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
                              this_._internal_file_size());
          i < n; i++) {
       const auto& repfield = this_._internal_file().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              15, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          15, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 

@@ -279,15 +279,15 @@ void CordFieldGenerator::GenerateSerializeWithCachedSizesToArray(
         absl::Substitute("this_._internal_$0(), ", p->LookupVar("name")));
   }
   p->Emit(R"cc(
-    target = stream->Write$declared_type$($number$, this_._internal_$name$(),
-                                          target);
+    target =
+        stream->Write$DeclaredType$($number$, this_._internal_$name$(), target);
   )cc");
 }
 
 void CordFieldGenerator::GenerateByteSize(io::Printer* p) const {
   auto v = p->WithVars(variables_);
   p->Emit(R"cc(
-    total_size += $tag_size$ + $pbi$::WireFormatLite::$declared_type$Size(
+    total_size += $tag_size$ + $pbi$::WireFormatLite::$DeclaredType$Size(
                                    this_._internal_$name$());
   )cc");
 }
