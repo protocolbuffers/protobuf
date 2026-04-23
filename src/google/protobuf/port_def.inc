@@ -155,7 +155,13 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #endif
 
 #define PROTOBUF_FUTURE_ADD_EARLY_NODISCARD [[nodiscard]]
+#if !defined(__clang__) && defined(__GNUC__) && __GNUC__ < 13
+// GCC < 13 doesn't support mixing [[]] attributes with __attribute__, and this
+// is used with PROTOBUF_EXPORT for shared library visibility.
+#define PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED __attribute__((warn_unused))
+#else
 #define PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ABSL_ATTRIBUTE_WARN_UNUSED
+#endif
 
 #ifdef PROTOBUF_ALWAYS_INLINE
 #error PROTOBUF_ALWAYS_INLINE was previously defined
