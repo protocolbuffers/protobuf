@@ -52,11 +52,36 @@ namespace Google.Protobuf
         }
 
         /// <summary>
+        /// Creates a tokenizer that reads tokens from <paramref name="tokens"/> in the half-open range
+        /// [<paramref name="startIndex"/>, <paramref name="endIndex"/>), then continues reading from
+        /// <paramref name="continuation"/>. Used by <see cref="JsonParser.MergeAny"/> to build a bounded
+        /// slice view of an already-buffered token list without copying.
+        /// </summary>
+        internal static JsonTokenizer FromReplayedSlice(IList<JsonToken> tokens, int startIndex, int endIndex, JsonTokenizer continuation)
+        {
+            return new JsonReplayTokenizer(tokens, startIndex, endIndex, continuation);
+        }
+
+        /// <summary>
         /// The depth of recursion within JsonParser. This is not directly computable within the tokenizer itself,
         /// as arrays contribute to the recursion depth for ListValue parsing, but not for "normal" message types.
         /// This is maintained (and checked) by <see cref="JsonParser.Merge(IMessage, JsonTokenizer)"/>.
         /// </summary>
         internal int RecursionDepth { get; set; }
+
+        /// <summary>
+        /// If this tokenizer is backed by an existing token list (i.e. it is a replay tokenizer),
+        /// sets <paramref name="underlyingTokens"/> to that list, sets <paramref name="currentIndex"/>
+        /// to the next index to be read, and returns <c>true</c>. Returns <c>false</c> for live text
+        /// tokenizers. Used by <see cref="JsonParser.MergeAny"/> to build sub-slice views over an
+        /// already-buffered token list, eliminating O(N²) re-allocation during nested Any parsing.
+        /// </summary>
+        internal virtual bool TryGetReplayState(out IList<JsonToken> underlyingTokens, out int currentIndex)
+        {
+            underlyingTokens = null;
+            currentIndex = 0;
+            return false;
+        }
 
         /// <summary>
         /// Returns the depth of the stack, purely in objects (not collections).
@@ -151,24 +176,53 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Tokenizer which first exhausts a list of tokens, then consults another tokenizer.
+        /// Tokenizer which first exhausts a bounded range of a token list, then consults another tokenizer.
         /// </summary>
         private class JsonReplayTokenizer : JsonTokenizer
         {
             private readonly IList<JsonToken> tokens;
             private readonly JsonTokenizer nextTokenizer;
             private int nextTokenIndex;
+            // Exclusive upper bound of the range served from `tokens`. -1 means use tokens.Count.
+            private readonly int endIndex;
 
             internal JsonReplayTokenizer(IList<JsonToken> tokens, JsonTokenizer nextTokenizer)
             {
                 this.tokens = tokens;
                 this.nextTokenizer = nextTokenizer;
+                this.endIndex = -1;
             }
 
-            // FIXME: Object depth not maintained...
+            /// <summary>Slice constructor: serves tokens[startIndex, endIndex) then continuation.</summary>
+            internal JsonReplayTokenizer(IList<JsonToken> tokens, int startIndex, int endIndex, JsonTokenizer nextTokenizer)
+            {
+                this.tokens = tokens;
+                this.nextTokenIndex = startIndex;
+                this.endIndex = endIndex;
+                this.nextTokenizer = nextTokenizer;
+            }
+
+            internal override bool TryGetReplayState(out IList<JsonToken> underlyingTokens, out int currentIndex)
+            {
+                underlyingTokens = tokens;
+                // When a token has been pushed back it lives at nextTokenIndex-1 and will be returned
+                // by the next Next() call before any list element is consumed. Adjust so currentIndex
+                // always equals the list index of the token that Next() will *actually* return next,
+                // giving callers a stable "position" regardless of push-back state.
+                currentIndex = bufferedToken != null ? nextTokenIndex - 1 : nextTokenIndex;
+                // Only offer the shared buffer when the next token will come from our list, not from
+                // the continuation. When exhausted (currentIndex >= limit), the caller must create its
+                // own buffer; otherwise replayStart would point beyond tokens.Count/endIndex and cause
+                // an ArgumentOutOfRangeException when the slice is accessed.
+                int limit = endIndex < 0 ? tokens.Count : endIndex;
+                return currentIndex < limit;
+            }
+
+            // ObjectDepth is maintained correctly by the base-class Next() method, not here.
             protected override JsonToken NextImpl()
             {
-                if (nextTokenIndex >= tokens.Count)
+                int limit = endIndex < 0 ? tokens.Count : endIndex;
+                if (nextTokenIndex >= limit)
                 {
                     return nextTokenizer.Next();
                 }

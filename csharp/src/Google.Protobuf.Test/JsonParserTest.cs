@@ -883,6 +883,83 @@ namespace Google.Protobuf
             Assert.AreEqual(message, parser.Parse(json, TestWellKnownTypes.Descriptor));
         }
 
+        // -----------------------------------------------------------------------------------------
+        // Regression tests for O(N²) memory growth when @type appears last in nested Any values
+        // (https://github.com/protocolbuffers/protobuf/pull/26851).
+        // The root cause was that each recursive MergeAny re-buffered tokens already buffered by
+        // its parent, giving O(N²) total allocation. The fix shares the parent's token list via a
+        // bounded slice view instead of copying.
+        // -----------------------------------------------------------------------------------------
+
+        /// <summary>
+        /// Builds a JSON string that nests an Any inside an Any, @type-last at every level, to depth
+        /// <paramref name="depth"/>.  Example at depth=2:
+        ///   {"value":{"value":{},"@type":"…/Any"},"@type":"…/Any"}
+        /// </summary>
+        private static string BuildNestedAnyTypeLastJson(int depth)
+        {
+            var sb = new System.Text.StringBuilder("{}");
+            for (int i = 0; i < depth; i++)
+            {
+                string inner = sb.ToString();
+                sb.Clear();
+                sb.Append("{\"value\":");
+                sb.Append(inner);
+                sb.Append(",\"@type\":\"type.googleapis.com/google.protobuf.Any\"}");
+            }
+            return sb.ToString();
+        }
+
+        [Test]
+        public void Any_TypeUrlLast_DeepNesting()
+        {
+            // Regression test: deeply-nested @type-last Any values must parse successfully.
+            // Before the fix, MergeAny re-buffered the entire parent token list on every recursive
+            // call, causing O(N²) peak memory and slow parsing. The fix shares the parent's token
+            // list via a bounded slice view, reducing token-buffering overhead to O(N).
+            //
+            // Note on total allocation: nested google.protobuf.Any values have *inherently* O(N²)
+            // bytes of binary data — each level's serialized Value field contains the full inner
+            // tree, so binary(k) ≈ 43·k bytes and Σbinary = O(N²). This means the GC-measured
+            // allocation ratio when doubling depth converges to ~4× regardless of the token fix.
+            // We therefore test correctness only, not allocation magnitude.
+            var registry = TypeRegistry.FromMessages(Any.Descriptor);
+            var parser = new JsonParser(new JsonParser.Settings(1000, registry));
+
+            // Verify parse completes at non-trivial depth without exception.
+            var result200 = parser.Parse<Any>(BuildNestedAnyTypeLastJson(200));
+            Assert.AreEqual("type.googleapis.com/google.protobuf.Any", result200.TypeUrl);
+
+            // Verify deeper nesting also completes correctly.
+            var result400 = parser.Parse<Any>(BuildNestedAnyTypeLastJson(400));
+            Assert.AreEqual("type.googleapis.com/google.protobuf.Any", result400.TypeUrl);
+        }
+
+        [Test]
+        public void Any_TypeUrlLast_ManyFields()
+        {
+            // Verify there is no per-field cap: an Any whose body contains many fields before @type
+            // must parse successfully.  We use 10 000 array entries in repeatedInt32 (one JSON field
+            // with a large value) to ensure the pre-@type token buffer grows well beyond any
+            // previously-proposed limit of ~100 tokens.
+            var registry = TypeRegistry.FromMessages(TestAllTypes.Descriptor);
+            var parser = new JsonParser(new JsonParser.Settings(10, registry));
+
+            const int fieldCount = 10_000;
+            var sb = new System.Text.StringBuilder();
+            sb.Append("{\"repeatedInt32\":[");
+            for (int i = 0; i < fieldCount; i++)
+            {
+                if (i > 0) sb.Append(',');
+                sb.Append(i);
+            }
+            sb.Append("],\"@type\":\"type.googleapis.com/protobuf_unittest3.TestAllTypes\"}");
+
+            var any = parser.Parse<Any>(sb.ToString());
+            var unpacked = any.Unpack<TestAllTypes>();
+            Assert.AreEqual(fieldCount, unpacked.RepeatedInt32.Count);
+        }
+
         [Test]
         public void DataAfterObject()
         {
