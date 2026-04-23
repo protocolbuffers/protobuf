@@ -83,7 +83,6 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
                     "::internal::TSanRead(&_impl_)")},
 
       // Old-style names.
-      {"field", FieldMemberName(field, split)},
       {"declared_type", DeclaredTypeMethodName(field->type())},
       {"classname", ClassName(FieldScope(field), false)},
       {"ns", Namespace(field)},
@@ -202,7 +201,7 @@ void FieldGeneratorBase::GenerateOneofCopyConstruct(io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension()) << "Not supported";
   ABSL_CHECK(!field_->is_repeated()) << "Not supported";
   ABSL_CHECK(!field_->is_map()) << "Not supported";
-  p->Emit("$field$ = from.$field$;\n");
+  p->Emit("$field_$ = from.$field_$;\n");
 }
 
 void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
@@ -212,7 +211,7 @@ void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
     )cc");
   } else {
     p->Emit(R"cc(
-      decltype($field$){arena},
+      decltype($field_$){arena},
     )cc");
   }
 }
@@ -220,14 +219,14 @@ void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
 void FieldGeneratorBase::GenerateConstexprAggregateInitializer(
     io::Printer* p) const {
   p->Emit(R"cc(
-    /*decltype($field$)*/ {},
+    /*decltype($field_$)*/ {},
   )cc");
 }
 
 void FieldGeneratorBase::GenerateCopyAggregateInitializer(
     io::Printer* p) const {
   p->Emit(R"cc(
-    decltype($field$){from.$field$},
+    decltype($field_$){from.$field_$},
   )cc");
 }
 
@@ -236,7 +235,7 @@ void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
     // There is no copy constructor for the `Split` struct, so we need to copy
     // the value here.
     Formatter format(p, variables_);
-    format("$field$ = from.$field$;\n");
+    format("$field_$ = from.$field_$;\n");
   }
 }
 

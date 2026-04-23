@@ -134,7 +134,7 @@ class SingularMessage : public FieldGeneratorBase {
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
     p->Emit(R"cc(
-      $field$ = $superclass$::CopyConstruct(arena, *from.$field$);
+      $field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
     )cc");
   }
 
