@@ -1864,8 +1864,6 @@ bool GetBootstrapBasename(const Options& options, absl::string_view basename,
            "third_party/protobuf/compiler/plugin"},
           {"third_party/protobuf/internal_options",
            "third_party/protobuf/internal_options_bootstrap"},
-          {"third_party/protobuf/json_enumvalue_options",
-           "third_party/protobuf/json_enumvalue_options_bootstrap"},
           {"net/proto2/compiler/proto/profile",
            "net/proto2/compiler/proto/profile_bootstrap"},
       };
