@@ -16,6 +16,7 @@
 #include <variant>
 #include <vector>
 
+#include "absl/base/attributes.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_format.h"
@@ -24,6 +25,17 @@
 
 // Must be included last
 #include "google/protobuf/port_def.inc"
+
+#if !defined(PROTO2_OPENSOURCE)
+#if defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_ABORT)
+extern "C" {
+#if ABSL_HAVE_ATTRIBUTE(used) && ABSL_HAVE_ATTRIBUTE(retain)
+__attribute__((used, retain))
+#endif  // ABSL_HAVE_ATTRIBUTE(used) && ABSL_HAVE_ATTRIBUTE(retain)
+bool kVersionStampBuildHasHardeningProtobuf = true;
+}
+#endif  // defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_ABORT)
+#endif  // !defined(PROTO2_OPENSOURCE)
 
 namespace google {
 namespace protobuf {
