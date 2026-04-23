@@ -7843,10 +7843,9 @@ PROTOBUF_NOINLINE void FileDescriptorSet::Clear() {
                              this_._internal_file_size());
          i < n; i++) {
       const auto& repfield = this_._internal_file().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              1, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          1, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -8039,12 +8038,12 @@ FileDescriptorProto::FileDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000800U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
-                : nullptr;
-  _impl_.source_code_info_ = (CheckHasBit(cached_has_bits, 0x00001000U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.source_code_info_)
-                : nullptr;
+  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000800U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.options_)
+                         : nullptr;
+  _impl_.source_code_info_ = (CheckHasBit(cached_has_bits, 0x00001000U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.source_code_info_)
+                         : nullptr;
   _impl_.edition_ = from._impl_.edition_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileDescriptorProto)
@@ -8253,10 +8252,9 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
                              this_._internal_message_type_size());
          i < n; i++) {
       const auto& repfield = this_._internal_message_type().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              4, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          4, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -8266,10 +8264,9 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
                              this_._internal_enum_type_size());
          i < n; i++) {
       const auto& repfield = this_._internal_enum_type().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              5, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          5, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -8279,10 +8276,9 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
                              this_._internal_service_size());
          i < n; i++) {
       const auto& repfield = this_._internal_service().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              6, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          6, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -8292,10 +8288,9 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
                              this_._internal_extension_size());
          i < n; i++) {
       const auto& repfield = this_._internal_extension().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              7, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          7, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -8651,9 +8646,9 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000001U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
-                : nullptr;
+  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000001U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.options_)
+                         : nullptr;
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, start_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -9197,9 +9192,9 @@ DescriptorProto::DescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000200U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
-                : nullptr;
+  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000200U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.options_)
+                         : nullptr;
   _impl_.visibility_ = from._impl_.visibility_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto)
@@ -9379,10 +9374,9 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
                              this_._internal_field_size());
          i < n; i++) {
       const auto& repfield = this_._internal_field().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              2, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          2, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -9392,10 +9386,9 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
                              this_._internal_nested_type_size());
          i < n; i++) {
       const auto& repfield = this_._internal_nested_type().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              3, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          3, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -9405,10 +9398,9 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
                              this_._internal_enum_type_size());
          i < n; i++) {
       const auto& repfield = this_._internal_enum_type().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              4, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          4, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -9418,10 +9410,9 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
                              this_._internal_extension_range_size());
          i < n; i++) {
       const auto& repfield = this_._internal_extension_range().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              5, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          5, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -9431,10 +9422,9 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
                              this_._internal_extension_size());
          i < n; i++) {
       const auto& repfield = this_._internal_extension().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              6, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          6, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -9451,10 +9441,9 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
                              this_._internal_oneof_decl_size());
          i < n; i++) {
       const auto& repfield = this_._internal_oneof_decl().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              8, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          8, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -9464,10 +9453,9 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
                              this_._internal_reserved_range_size());
          i < n; i++) {
       const auto& repfield = this_._internal_reserved_range().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              9, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          9, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -10059,9 +10047,9 @@ ExtensionRangeOptions::ExtensionRangeOptions(
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000004U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
-                : nullptr;
+  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000004U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.features_)
+                         : nullptr;
   _impl_.verification_ = from._impl_.verification_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ExtensionRangeOptions)
@@ -10179,10 +10167,9 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
                              this_._internal_declaration_size());
          i < n; i++) {
       const auto& repfield = this_._internal_declaration().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              2, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          2, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -10209,10 +10196,9 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
                              this_._internal_uninterpreted_option_size());
          i < n; i++) {
       const auto& repfield = this_._internal_uninterpreted_option().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              999, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          999, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -10396,9 +10382,9 @@ FieldDescriptorProto::FieldDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000020U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
-                : nullptr;
+  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000020U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.options_)
+                         : nullptr;
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, number_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -10825,9 +10811,9 @@ OneofDescriptorProto::OneofDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000002U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
-                : nullptr;
+  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000002U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.options_)
+                         : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofDescriptorProto)
 }
@@ -11307,9 +11293,9 @@ EnumDescriptorProto::EnumDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000010U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
-                : nullptr;
+  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000010U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.options_)
+                         : nullptr;
   _impl_.visibility_ = from._impl_.visibility_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumDescriptorProto)
@@ -11447,10 +11433,9 @@ PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
                              this_._internal_value_size());
          i < n; i++) {
       const auto& repfield = this_._internal_value().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              2, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          2, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -11467,10 +11452,9 @@ PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
                              this_._internal_reserved_range_size());
          i < n; i++) {
       const auto& repfield = this_._internal_reserved_range().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              4, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          4, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -11680,9 +11664,9 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000002U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
-                : nullptr;
+  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000002U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.options_)
+                         : nullptr;
   _impl_.number_ = from._impl_.number_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValueDescriptorProto)
@@ -11959,9 +11943,9 @@ ServiceDescriptorProto::ServiceDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000004U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
-                : nullptr;
+  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000004U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.options_)
+                         : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceDescriptorProto)
 }
@@ -12076,10 +12060,9 @@ PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
                              this_._internal_method_size());
          i < n; i++) {
       const auto& repfield = this_._internal_method().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              2, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          2, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -12242,9 +12225,9 @@ MethodDescriptorProto::MethodDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000008U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
-                : nullptr;
+  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000008U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.options_)
+                         : nullptr;
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, client_streaming_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -12588,9 +12571,9 @@ FileOptions::FileOptions(
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000400U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
-                : nullptr;
+  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000400U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.features_)
+                         : nullptr;
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, java_multiple_files_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -12908,10 +12891,9 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
                              this_._internal_uninterpreted_option_size());
          i < n; i++) {
       const auto& repfield = this_._internal_uninterpreted_option().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              999, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          999, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -13214,9 +13196,9 @@ MessageOptions::MessageOptions(
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000001U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
-                : nullptr;
+  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000001U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.features_)
+                         : nullptr;
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, message_set_wire_format_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -13383,10 +13365,9 @@ PROTOBUF_NOINLINE void MessageOptions::Clear() {
                              this_._internal_uninterpreted_option_size());
          i < n; i++) {
       const auto& repfield = this_._internal_uninterpreted_option().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              999, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          999, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -14102,12 +14083,12 @@ FieldOptions::FieldOptions(
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000004U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
-                : nullptr;
-  _impl_.feature_support_ = (CheckHasBit(cached_has_bits, 0x00000008U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.feature_support_)
-                : nullptr;
+  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000004U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.features_)
+                         : nullptr;
+  _impl_.feature_support_ = (CheckHasBit(cached_has_bits, 0x00000008U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.feature_support_)
+                         : nullptr;
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, ctype_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -14330,10 +14311,9 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
                              this_._internal_edition_defaults_size());
          i < n; i++) {
       const auto& repfield = this_._internal_edition_defaults().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              20, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          20, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -14360,10 +14340,9 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
                              this_._internal_uninterpreted_option_size());
          i < n; i++) {
       const auto& repfield = this_._internal_uninterpreted_option().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              999, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          999, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -14618,9 +14597,9 @@ OneofOptions::OneofOptions(
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
-                : nullptr;
+  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.features_)
+                         : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofOptions)
 }
@@ -14737,10 +14716,9 @@ PROTOBUF_NOINLINE void OneofOptions::Clear() {
                              this_._internal_uninterpreted_option_size());
          i < n; i++) {
       const auto& repfield = this_._internal_uninterpreted_option().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              999, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          999, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -14904,9 +14882,9 @@ EnumOptions::EnumOptions(
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000001U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
-                : nullptr;
+  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000001U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.features_)
+                         : nullptr;
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, allow_alias_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -15057,10 +15035,9 @@ PROTOBUF_NOINLINE void EnumOptions::Clear() {
                              this_._internal_uninterpreted_option_size());
          i < n; i++) {
       const auto& repfield = this_._internal_uninterpreted_option().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              999, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          999, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -15239,12 +15216,12 @@ EnumValueOptions::EnumValueOptions(
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
-                : nullptr;
-  _impl_.feature_support_ = (CheckHasBit(cached_has_bits, 0x00000004U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.feature_support_)
-                : nullptr;
+  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.features_)
+                         : nullptr;
+  _impl_.feature_support_ = (CheckHasBit(cached_has_bits, 0x00000004U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.feature_support_)
+                         : nullptr;
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, deprecated_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -15402,10 +15379,9 @@ PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
                              this_._internal_uninterpreted_option_size());
          i < n; i++) {
       const auto& repfield = this_._internal_uninterpreted_option().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              999, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          999, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -15594,9 +15570,9 @@ ServiceOptions::ServiceOptions(
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
-                : nullptr;
+  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.features_)
+                         : nullptr;
   _impl_.deprecated_ = from._impl_.deprecated_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceOptions)
@@ -15727,10 +15703,9 @@ PROTOBUF_NOINLINE void ServiceOptions::Clear() {
                              this_._internal_uninterpreted_option_size());
          i < n; i++) {
       const auto& repfield = this_._internal_uninterpreted_option().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              999, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          999, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -15903,9 +15878,9 @@ MethodOptions::MethodOptions(
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
-                : nullptr;
+  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.features_)
+                         : nullptr;
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, deprecated_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -16053,10 +16028,9 @@ PROTOBUF_NOINLINE void MethodOptions::Clear() {
                              this_._internal_uninterpreted_option_size());
          i < n; i++) {
       const auto& repfield = this_._internal_uninterpreted_option().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              999, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          999, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -16591,10 +16565,9 @@ PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
                              this_._internal_name_size());
          i < n; i++) {
       const auto& repfield = this_._internal_name().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              2, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          2, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -17224,12 +17197,12 @@ FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditio
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.overridable_features_ = (CheckHasBit(cached_has_bits, 0x00000001U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.overridable_features_)
-                : nullptr;
-  _impl_.fixed_features_ = (CheckHasBit(cached_has_bits, 0x00000002U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.fixed_features_)
-                : nullptr;
+  _impl_.overridable_features_ = (CheckHasBit(cached_has_bits, 0x00000001U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.overridable_features_)
+                         : nullptr;
+  _impl_.fixed_features_ = (CheckHasBit(cached_has_bits, 0x00000002U)) ? ::google::protobuf::Message::CopyConstruct(
+                               arena, *from._impl_.fixed_features_)
+                         : nullptr;
   _impl_.edition_ = from._impl_.edition_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
@@ -17624,10 +17597,9 @@ PROTOBUF_NOINLINE void FeatureSetDefaults::Clear() {
                              this_._internal_defaults_size());
          i < n; i++) {
       const auto& repfield = this_._internal_defaults().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              1, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          1, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -18235,10 +18207,9 @@ PROTOBUF_NOINLINE void SourceCodeInfo::Clear() {
                              this_._internal_location_size());
          i < n; i++) {
       const auto& repfield = this_._internal_location().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              1, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          1, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
@@ -18782,10 +18753,9 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo::Clear() {
                              this_._internal_annotation_size());
          i < n; i++) {
       const auto& repfield = this_._internal_annotation().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              1, repfield, repfield.GetCachedSize(),
-              target, stream);
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          1, repfield, repfield.GetCachedSize(), target,
+          stream);
     }
   }
 
