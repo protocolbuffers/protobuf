@@ -1721,7 +1721,7 @@ PROTOBUF_ALWAYS_INLINE const char* ReadStringIntoArena(const char* ptr,
                                                        TcFieldData,
                                                        ArenaStringPtr& field,
                                                        Arena* arena) {
-  return ctx->ReadArenaString(ptr, &field, arena);
+  return ctx->ReadArenaString(ptr, &field, arena, AllocationHint::kCold);
 }
 
 PROTOBUF_ALWAYS_INLINE
@@ -2632,17 +2632,51 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
-PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseRepeatedStringOnce(
+const char* TcParser::ParseRepeatedStringOnce(
     const char* ptr, Arena* arena, SerialArena* serial_arena, ParseContext* ctx,
     RepeatedPtrField<std::string>& field) {
   int size = ReadSize(&ptr);
   if (ABSL_PREDICT_FALSE(!ptr)) return {};
-  auto* str = new (serial_arena->AllocateFromStringBlock()) std::string();
-  ptr = ctx->ReadString(ptr, size, str);
+
+#if defined(GOOGLE_PROTOBUF_INTERNAL_STRING_ROBBER)
+  if (robber::LengthFitsSso(size)) {
+    void* mem_obj = serial_arena->AllocateAligned(sizeof(std::string));
+    std::string* str = static_cast<std::string*>(mem_obj);
+    ptr = ctx->ReadArray(ptr,
+                         absl::MakeSpan(robber::GetShortPointer(*str), size));
+    if (ABSL_PREDICT_FALSE(!ptr)) return {};
+    robber::GetShortPointer(*str)[size] = '\0';
+    robber::SetShortSize(*str, size);
+    field.AddAllocatedForParse(str, arena);
+    return ptr;
+  }
+
+  void* mem_obj = serial_arena->AllocateAligned(sizeof(std::string));
+  std::string* str = new (mem_obj) std::string;
+
+  const size_t capacity = (size | 7) + 1;
+  void* mem_buf =
+      serial_arena->AllocateAligned(capacity, AllocationHint::kCold);
+  char* buf = static_cast<char*>(mem_buf);
+
+  ptr = ctx->ReadArray(ptr, absl::MakeSpan(buf, size));
+  if (ABSL_PREDICT_FALSE(!ptr)) return {};
+  buf[size] = '\0';
+
+  robber::SetLongRepr(*str, buf, size, capacity);
+
   field.AddAllocatedForParse(str, arena);
   if (ABSL_PREDICT_FALSE(!ptr)) return {};
   PROTOBUF_ASSUME(ptr != nullptr);
   return ptr;
+#else
+  void* mem_obj = serial_arena->AllocateAligned(sizeof(std::string));
+  std::string* str = new (mem_obj) std::string();
+  arena->OwnDestructor(str);
+  ptr = ctx->ReadString(ptr, size, str);
+  field.AddAllocatedForParse(str, arena);
+  return ptr;
+#endif
 }
 
 template <bool is_split>

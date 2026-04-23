@@ -79,6 +79,15 @@ class PROTOBUF_EXPORT ThreadSafeArena {
     }
   }
 
+  void* AllocateAligned(size_t n, AllocationHint hint) {
+    SerialArena* arena;
+    if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+      return arena->AllocateAligned(n, hint);
+    } else {
+      return AllocateAlignedFallback(n, hint);
+    }
+  }
+
   void ReturnArrayMemory(void* p, size_t size) {
     SerialArena* arena = nullptr;
     if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
@@ -99,13 +108,21 @@ class PROTOBUF_EXPORT ThreadSafeArena {
     return false;
   }
 
+  PROTOBUF_NDEBUG_INLINE bool MaybeAllocateAligned(size_t n, void** out,
+                                                   AllocationHint hint) {
+    SerialArena* arena = nullptr;
+    if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+      return arena->MaybeAllocateAligned(n, out, hint);
+    }
+    return false;
+  }
+
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
                                    void (*destructor)(void*));
 
   // Add object pointer and cleanup function pointer to the list.
   void AddCleanup(void* elem, void (*cleanup)(void*));
 
-  void* AllocateFromStringBlock();
 
   std::vector<void*> PeekCleanupListForTesting();
 
@@ -206,6 +223,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 
   template <AllocationClient alloc_client = AllocationClient::kDefault>
   void* AllocateAlignedFallback(size_t n);
+  void* AllocateAlignedFallback(size_t n, AllocationHint hint);
 
   // Executes callback function over SerialArenaChunk. Passes const
   // SerialArenaChunk*.

@@ -76,6 +76,8 @@ using ::testing::HasSubstr;
 using ::testing::Optional;
 using ::testing::Pointee;
 
+ABSL_DECLARE_FLAG(bool, protobuf_enable_hot_cold_split);
+
 namespace google {
 namespace protobuf {
 
@@ -268,6 +270,44 @@ TEST(ArenaTest, ZeroAllocDoesNotReturnNull) {
   // Try again after allocating some memory.
   (void)arena.AllocateAligned(10000);
   EXPECT_NE(arena.AllocateAligned(0), nullptr);
+}
+TEST(ArenaTest, HotColdSplit) {
+  Arena arena;
+
+  // Enable flag
+  ::absl::SetFlag(&::FLAGS_protobuf_enable_hot_cold_split, true);
+
+  void* hot1 = arena.AllocateAligned(8, internal::AllocationHint::kHot,
+                                     internal::InternalVisibilityForTesting{});
+  void* cold1 = arena.AllocateAligned(8, internal::AllocationHint::kCold,
+                                      internal::InternalVisibilityForTesting{});
+
+  // They should be on different blocks, so distance should be large.
+  ptrdiff_t diff =
+      reinterpret_cast<char*>(hot1) - reinterpret_cast<char*>(cold1);
+  if (diff < 0) diff = -diff;
+  EXPECT_GE(diff, 256);  // Assuming block size is at least 256 bytes.
+
+  // Allocate another hot
+  void* hot2 = arena.AllocateAligned(8, internal::AllocationHint::kHot,
+                                     internal::InternalVisibilityForTesting{});
+  // It should be close to hot1
+  diff = reinterpret_cast<char*>(hot1) - reinterpret_cast<char*>(hot2);
+  if (diff < 0) diff = -diff;
+  EXPECT_LT(diff, 1024);
+
+  // Disable flag
+  ::absl::SetFlag(&::FLAGS_protobuf_enable_hot_cold_split, false);
+
+  void* hot3 = arena.AllocateAligned(8, internal::AllocationHint::kHot,
+                                     internal::InternalVisibilityForTesting{});
+  void* cold3 = arena.AllocateAligned(8, internal::AllocationHint::kCold,
+                                      internal::InternalVisibilityForTesting{});
+
+  // They should be on the same block (default/hot block list)
+  diff = reinterpret_cast<char*>(hot3) - reinterpret_cast<char*>(cold3);
+  if (diff < 0) diff = -diff;
+  EXPECT_LT(diff, 1024);
 }
 
 TEST(ArenaTest, AllConstructibleAndDestructibleCombinationsWorkCorrectly) {

@@ -20,6 +20,10 @@ class ExtensionSet;
 class InternalVisibilityForTesting;
 class InternalMetadata;
 class ParseContext;
+class TcParser;
+struct ArenaStringPtr;
+class TaggedStringPtr;
+class EpsCopyInputStream;
 
 template <typename T, bool sign>
 const char* VarintParser(void* object, Arena* arena, const char* ptr,
@@ -38,6 +42,11 @@ class InternalVisibility {
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::internal::ExtensionSet;
   friend class ::google::protobuf::internal::InternalMetadata;
+  friend class ::google::protobuf::internal::TcParser;
+  friend struct ::google::protobuf::internal::ArenaStringPtr;
+  friend class ::google::protobuf::internal::TaggedStringPtr;
+
+  friend class ::google::protobuf::internal::EpsCopyInputStream;
 
   template <typename T, bool sign>
   friend const char* internal::VarintParser(void* object, Arena* arena,

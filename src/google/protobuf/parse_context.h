@@ -235,8 +235,9 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
                                                     Arena* arena);
 
   // Implemented in arenastring.cc
-  [[nodiscard]] const char* ReadArenaString(const char* ptr, ArenaStringPtr* s,
-                                            Arena* arena);
+  [[nodiscard]] const char* ReadArenaString(
+      const char* ptr, ArenaStringPtr* s, Arena* arena,
+      AllocationHint hint = AllocationHint::kHot);
 
   [[nodiscard]] const char* ReadCord(const char* ptr, int size,
                                      ::absl::Cord* cord) {

@@ -159,6 +159,7 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
                                  : PROTOBUF_PICK_REPEATABLE_FUNCTION(fn))
 
   const FieldDescriptor* field = entry.field;
+
   info.aux_idx = static_cast<uint8_t>(entry.aux_idx);
   TcParseFunction picked = TcParseFunction::kNone;
   switch (field->type()) {

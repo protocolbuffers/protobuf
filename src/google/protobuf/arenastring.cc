@@ -25,6 +25,11 @@
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 
+#include "absl/flags/declare.h"
+#include "absl/flags/flag.h"
+
+ABSL_DECLARE_FLAG(bool, protobuf_enable_hot_cold_split);
+
 // clang-format off
 #include "google/protobuf/port_def.inc"
 // clang-format on
@@ -88,6 +93,12 @@ TaggedStringPtr CreateArenaString(Arena& arena, absl::string_view s) {
   return res;
 }
 
+inline TaggedStringPtr CreateArenaString(Arena& arena, absl::string_view s,
+                                         InternalVisibility visibility) {
+  (void)visibility;
+  return CreateArenaString(arena, s);
+}
+
 #endif  // !GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL
 
 }  // namespace
@@ -98,8 +109,9 @@ class ScopedCheckPtrInvariants {
 };
 
 TaggedStringPtr TaggedStringPtr::ForceCopy(Arena* arena) const {
-  return arena != nullptr ? CreateArenaString(*arena, *Get())
-                          : CreateString(*Get());
+  return arena != nullptr
+             ? CreateArenaString(*arena, *Get(), InternalVisibility())
+             : CreateString(*Get());
 }
 
 void ArenaStringPtr::Set(absl::string_view value, Arena* arena) {
@@ -107,8 +119,9 @@ void ArenaStringPtr::Set(absl::string_view value, Arena* arena) {
   if (IsDefault()) {
     // If we're not on an arena, skip straight to a true string to avoid
     // possible copy cost later.
-    tagged_ptr_ = arena != nullptr ? CreateArenaString(*arena, value)
-                                   : CreateString(value);
+    tagged_ptr_ = arena != nullptr
+                      ? CreateArenaString(*arena, value, InternalVisibility())
+                      : CreateString(value);
   } else {
     if (internal::DebugHardenForceCopyDefaultString()) {
       if (arena == nullptr) {
@@ -117,7 +130,7 @@ void ArenaStringPtr::Set(absl::string_view value, Arena* arena) {
         delete old;
       } else {
         auto* old = UnsafeMutablePointer();
-        tagged_ptr_ = CreateArenaString(*arena, value);
+        tagged_ptr_ = CreateArenaString(*arena, value, InternalVisibility());
         old->assign("garbagedata");
       }
     } else {
@@ -132,8 +145,9 @@ void ArenaStringPtr::Set(const std::string& value, Arena* arena) {
   if (IsDefault()) {
     // If we're not on an arena, skip straight to a true string to avoid
     // possible copy cost later.
-    tagged_ptr_ = arena != nullptr ? CreateArenaString(*arena, value)
-                                   : CreateString(value);
+    tagged_ptr_ = arena != nullptr
+                      ? CreateArenaString(*arena, value, InternalVisibility())
+                      : CreateString(value);
   } else {
     if (internal::DebugHardenForceCopyDefaultString()) {
       if (arena == nullptr) {
@@ -142,7 +156,7 @@ void ArenaStringPtr::Set(const std::string& value, Arena* arena) {
         delete old;
       } else {
         auto* old = UnsafeMutablePointer();
-        tagged_ptr_ = CreateArenaString(*arena, value);
+        tagged_ptr_ = CreateArenaString(*arena, value, InternalVisibility());
         old->assign("garbagedata");
       }
     } else {
@@ -269,8 +283,8 @@ void ArenaStringPtr::ClearToDefault(const LazyString& default_value,
 
 
 const char* EpsCopyInputStream::ReadArenaString(const char* ptr,
-                                                ArenaStringPtr* s,
-                                                Arena* arena) {
+                                                ArenaStringPtr* s, Arena* arena,
+                                                AllocationHint hint) {
   ScopedCheckPtrInvariants check(&s->tagged_ptr_);
   ABSL_DCHECK(arena != nullptr);
 

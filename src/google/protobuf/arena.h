@@ -416,6 +416,16 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     }
   }
 
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD void* PROTOBUF_NONNULL
+  AllocateAligned(size_t size, internal::AllocationHint hint,
+                  internal::InternalVisibility visibility) {
+    return AllocateAligned(size, 8, hint, visibility);
+  }
+
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD void* PROTOBUF_NONNULL
+  AllocateAligned(size_t size, size_t align, internal::AllocationHint hint,
+                  internal::InternalVisibility visibility);
+
   // Create an array of object type T on the arena *without* invoking the
   // constructor of T. If `arena` is null, then the return value should be freed
   // with `delete[] x;` (or `::operator delete[](x);`).
@@ -1184,11 +1194,6 @@ PROTOBUF_NOINLINE void* PROTOBUF_NONNULL Arena::CopyConstruct(
     mem = internal::Allocate(sizeof(T));
   }
   return new (mem) T(arena, *typed_from);
-}
-
-template <>
-inline void* PROTOBUF_NONNULL Arena::AllocateInternal<std::string, false>() {
-  return impl_.AllocateFromStringBlock();
 }
 
 namespace internal {

@@ -130,6 +130,8 @@ class PROTOBUF_EXPORT SerialArena {
     return AllocateAlignedFallback(n);
   }
 
+  void* AllocateAligned(size_t n, AllocationHint hint);
+
  private:
   static PROTOBUF_ALWAYS_INLINE constexpr size_t AlignUpTo(size_t n, size_t a) {
     // We are wasting space by over allocating align - 8 bytes. Compared to a
@@ -213,13 +215,7 @@ class PROTOBUF_EXPORT SerialArena {
     return true;
   }
 
-  // If there is enough space in the current block, allocate space for one
-  // std::string object and register for destruction. The object has not been
-  // constructed and the memory returned is uninitialized.
-  PROTOBUF_ALWAYS_INLINE void* MaybeAllocateStringWithCleanup() {
-    void* p;
-    return MaybeAllocateString(p) ? p : nullptr;
-  }
+  bool MaybeAllocateAligned(size_t n, void** out, AllocationHint hint);
 
   PROTOBUF_ALWAYS_INLINE
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
@@ -245,8 +241,6 @@ class PROTOBUF_EXPORT SerialArena {
     cleanup_list_.Add(elem, destructor, *this);
     MaybePrefetchCleanup();
   }
-
-  ABSL_ATTRIBUTE_RETURNS_NONNULL void* AllocateFromStringBlock();
 
   std::vector<void*> PeekCleanupListForTesting();
 
@@ -319,16 +313,6 @@ class PROTOBUF_EXPORT SerialArena {
   template <typename Deallocator>
   SizedPtr Free(Deallocator deallocator);
 
-  size_t FreeStringBlocks() {
-    // On the active block delete all strings skipping the unused instances.
-    size_t unused_bytes = string_block_unused_.load(std::memory_order_relaxed);
-    if (StringBlock* sb = string_block_.load(std::memory_order_relaxed)) {
-      return FreeStringBlocks(sb, unused_bytes);
-    }
-    return 0;
-  }
-  static size_t FreeStringBlocks(StringBlock* string_block, size_t unused);
-
   // Adds 'used` to space_used_ in relaxed atomic order.
   void AddSpaceUsed(size_t space_used) {
     space_used_.store(space_used_.load(std::memory_order_relaxed) + space_used,
@@ -358,6 +342,13 @@ class PROTOBUF_EXPORT SerialArena {
   }
 
   void* AllocateAlignedFallback(size_t n);
+  void* AllocateAlignedFallback(size_t n, AllocationHint hint);
+
+  void* AllocateAlignedCold(size_t n);
+  bool MaybeAllocateAlignedCold(size_t n, void** out);
+  void* AllocateAlignedFallbackCold(size_t n);
+  void AllocateNewBlockCold(size_t n);
+
   void* AllocateAlignedWithCleanupFallback(size_t n, size_t align,
                                            void (*destructor)(void*));
   void AddCleanupFallback(void* elem, void (*destructor)(void*));
@@ -400,18 +391,17 @@ class PROTOBUF_EXPORT SerialArena {
   // Limiting address up to which memory can be allocated from the head block.
   char* limit_ = ArbitraryInternalPointerForInit();
 
+  std::atomic<ArenaBlock*> cold_head_{nullptr};
+  std::atomic<char*> cold_ptr_{ArbitraryInternalPointerForInit()};
+  char* cold_limit_ = ArbitraryInternalPointerForInit();
+  const char* cold_prefetch_ptr_ = ArbitraryInternalPointerForInit();
+
   std::atomic<size_t> space_allocated_{0};
 
   CachedBlock** cached_blocks_ = nullptr;
 
   // The active string block.
-  std::atomic<StringBlock*> string_block_{nullptr};
-
   ThreadSafeArena& parent_;
-  // The number of unused bytes in string_block_.
-  // We allocate from `effective_size()` down to 0 inside `string_block_`.
-  // `unused  == 0` means that `string_block_` is exhausted. (or null).
-  std::atomic<size_t> string_block_unused_{0};
 
   // Chunked linked list for managing cleanup for arena elements.
   cleanup::ChunkList cleanup_list_;
@@ -419,24 +409,7 @@ class PROTOBUF_EXPORT SerialArena {
   std::atomic<size_t> space_used_{0};  // Necessary for metrics.
 };
 
-PROTOBUF_ALWAYS_INLINE bool SerialArena::MaybeAllocateString(void*& p) {
-  // Check how many unused instances are in the current block.
-  size_t unused_bytes = string_block_unused_.load(std::memory_order_relaxed);
-  if (ABSL_PREDICT_TRUE(unused_bytes != 0)) {
-    unused_bytes -= sizeof(std::string);
-    string_block_unused_.store(unused_bytes, std::memory_order_relaxed);
-    p = string_block_.load(std::memory_order_relaxed)->AtOffset(unused_bytes);
-    return true;
-  }
-  return false;
-}
 
-ABSL_ATTRIBUTE_RETURNS_NONNULL PROTOBUF_ALWAYS_INLINE void*
-SerialArena::AllocateFromStringBlock() {
-  void* p;
-  if (ABSL_PREDICT_TRUE(MaybeAllocateString(p))) return p;
-  return AllocateFromStringBlockFallback();
-}
 
 }  // namespace internal
 }  // namespace protobuf

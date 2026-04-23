@@ -894,6 +894,7 @@ class PROTOBUF_EXPORT TcParser final {
   template <typename TagType, bool group_coding, bool aux_is_table>
   PROTOBUF_CC static inline const char* RepeatedParseMessageAuxImpl(
       PROTOBUF_TC_PARAM_DECL);
+
   template <typename TagType>
   PROTOBUF_CC static inline const char* LazyMessage(PROTOBUF_TC_PARAM_DECL);
 
@@ -1048,6 +1049,7 @@ class PROTOBUF_EXPORT TcParser final {
   PROTOBUF_CC static inline const char* SingularString(PROTOBUF_TC_PARAM_DECL);
   template <typename TagType, typename FieldType, Utf8Type utf8>
   PROTOBUF_CC static inline const char* RepeatedString(PROTOBUF_TC_PARAM_DECL);
+
   template <typename TagType, Utf8Type utf8>
   PROTOBUF_CC static inline const char* RepeatedCord(PROTOBUF_TC_PARAM_DECL);
 
