@@ -434,4 +434,24 @@ public class ParserTest {
       assertThat(e.getClass()).isEqualTo(InterruptedIOException.class);
     }
   }
+
+  @Test
+  public void testMessageWithExtensionsParseFromBytes() throws Exception {
+    TestParsingMerge.Builder builder = TestParsingMerge.newBuilder();
+    ExtensionRegistry registry = ExtensionRegistry.newInstance();
+    UnittestProto.registerAllExtensions(registry);
+    builder
+        .setExtension(
+            TestParsingMerge.optionalExt, TestAllTypes.newBuilder().setOptionalInt32(1).build())
+        .mergeFrom(
+            TestParsingMerge.newBuilder()
+                .setExtension(
+                    TestParsingMerge.optionalExt,
+                    TestAllTypes.newBuilder().setOptionalInt32(2).build())
+                .buildPartial()
+                .toByteString(),
+            registry);
+
+    assertThat(builder.getExtension(TestParsingMerge.optionalExt).getOptionalInt32()).isEqualTo(2);
+  }
 }

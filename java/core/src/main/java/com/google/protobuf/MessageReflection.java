@@ -1030,12 +1030,10 @@ class MessageReflection {
       if (!field.isRepeated()) {
         boolean isLazyField = ExtensionRegistryLite.lazyExtensionEnabled() && field.isExtension();
         if (hasField(field)) {
-          if (isLazyField) {
+          InternalLazyField lazyField = extensions.getLazyField(field);
+          if (isLazyField && lazyField != null) {
             Object unused =
-                setField(
-                    field,
-                    InternalLazyField.mergeFrom(
-                        extensions.getLazyField(field), input, extensionRegistry));
+                setField(field, InternalLazyField.mergeFrom(lazyField, input, extensionRegistry));
             return;
           }
           Object fieldOrBuilder = extensions.getFieldAllowBuilders(field);
