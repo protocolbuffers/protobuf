@@ -35,6 +35,8 @@ upb_Map* PyUpb_MapContainer_Reify(PyObject* self, upb_Map* map,
 // Reifies this map object if it is not already reified.
 upb_Map* PyUpb_MapContainer_EnsureReified(PyObject* self);
 
+void PyUpb_MapContainer_SetReadOnly(PyObject* _self, bool read_only);
+
 // Invalidates any existing iterators for the map `obj`.
 void PyUpb_MapContainer_Invalidate(PyObject* obj);
 

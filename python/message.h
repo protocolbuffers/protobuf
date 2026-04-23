@@ -22,6 +22,9 @@ void PyUpb_Message_CacheDelete(PyObject* _self, const upb_FieldDef* f);
 void PyUpb_Message_SetConcreteSubobj(PyObject* _self, const upb_FieldDef* f,
                                      upb_MessageValue subobj);
 
+void PyUpb_Message_SetReadOnly(PyObject* _self, bool read_only);
+bool PyUpb_Message_IsReadOnly(PyObject* _self);
+
 // Gets a Python wrapper object for message `u_msg` of type `m`, returning a
 // cached wrapper if one was previously created.  If a new object is created,
 // it will reference `arena`, which must own `u_msg`.

@@ -133,6 +133,7 @@ static PyObject* PyUpb_DescriptorBase_GetCached(PyObject** cached,
     }
 
     *cached = PyUpb_Message_Get(opts2, m, py_arena);
+    PyUpb_Message_SetReadOnly(*cached, true);
     Py_DECREF(py_arena);
   }
 

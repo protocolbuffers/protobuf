@@ -32,6 +32,7 @@ typedef struct {
     PyObject* parent;  // stub: owning pointer to parent message.
     upb_Array* arr;    // reified: the data for this array.
   } ptr;
+  bool read_only;
 } PyUpb_RepeatedContainer;
 
 static bool PyUpb_RepeatedContainer_IsStub(PyUpb_RepeatedContainer* self) {
@@ -131,6 +132,11 @@ PyObject* PyUpb_RepeatedContainer_NewStub(PyObject* parent,
   return &repeated->ob_base;
 }
 
+void PyUpb_RepeatedContainer_SetReadOnly(PyObject* _self, bool read_only) {
+  PyUpb_RepeatedContainer* self = (void*)_self;
+  self->read_only = read_only;
+}
+
 PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_Array* arr,
                                                      const upb_FieldDef* f,
                                                      PyObject* arena) {
@@ -173,6 +179,10 @@ PyObject* PyUpb_RepeatedContainer_DeepCopy(PyObject* _self, PyObject* value) {
 
 PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
+  if (self->read_only) {
+    PyErr_SetString(PyExc_AttributeError, "Container is read-only");
+    return NULL;
+  }
   upb_Array* arr = PyUpb_RepeatedContainer_EnsureReified(_self);
   size_t start_size = upb_Array_Size(arr);
   PyObject* it = PyObject_GetIter(value);
@@ -408,6 +418,10 @@ static int PyUpb_RepeatedContainer_AssignSubscript(PyObject* _self,
                                                    PyObject* key,
                                                    PyObject* value) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
+  if (self->read_only) {
+    PyErr_SetString(PyExc_AttributeError, "Container is read-only");
+    return -1;
+  }
   const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
   upb_Array* arr = PyUpb_RepeatedContainer_EnsureReified(_self);
   Py_ssize_t size = arr ? upb_Array_Size(arr) : 0;
@@ -423,6 +437,10 @@ static int PyUpb_RepeatedContainer_AssignSubscript(PyObject* _self,
 
 static PyObject* PyUpb_RepeatedContainer_Pop(PyObject* _self, PyObject* args) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
+  if (self->read_only) {
+    PyErr_SetString(PyExc_AttributeError, "Container is read-only");
+    return NULL;
+  }
   Py_ssize_t index = -1;
   if (!PyArg_ParseTuple(args, "|n", &index)) return NULL;
   upb_Array* arr = PyUpb_RepeatedContainer_EnsureReified(_self);
@@ -440,6 +458,11 @@ static PyObject* PyUpb_RepeatedContainer_Pop(PyObject* _self, PyObject* args) {
 
 static PyObject* PyUpb_RepeatedContainer_Remove(PyObject* _self,
                                                 PyObject* value) {
+  PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
+  if (self->read_only) {
+    PyErr_SetString(PyExc_AttributeError, "Container is read-only");
+    return NULL;
+  }
   upb_Array* arr = PyUpb_RepeatedContainer_EnsureReified(_self);
   Py_ssize_t match_index = -1;
   Py_ssize_t n = PyUpb_RepeatedContainer_Length(_self);
@@ -524,6 +547,11 @@ static PyObject* PyUpb_RepeatedContainer_Sort(PyObject* pself, PyObject* args,
 }
 
 static PyObject* PyUpb_RepeatedContainer_Reverse(PyObject* _self) {
+  PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
+  if (self->read_only) {
+    PyErr_SetString(PyExc_AttributeError, "Container is read-only");
+    return NULL;
+  }
   upb_Array* arr = PyUpb_RepeatedContainer_EnsureReified(_self);
   size_t n = upb_Array_Size(arr);
   size_t half = n / 2;  // Rounds down.
@@ -689,6 +717,10 @@ static PyType_Spec PyUpb_RepeatedCompositeContainer_Spec = {
 static PyObject* PyUpb_RepeatedScalarContainer_Append(PyObject* _self,
                                                       PyObject* value) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
+  if (self->read_only) {
+    PyErr_SetString(PyExc_AttributeError, "Container is read-only");
+    return NULL;
+  }
   upb_Array* arr = PyUpb_RepeatedContainer_EnsureReified(_self);
   upb_Arena* arena = PyUpb_Arena_Get(self->arena);
   const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);

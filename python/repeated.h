@@ -37,6 +37,8 @@ upb_Array* PyUpb_RepeatedContainer_Reify(PyObject* self, upb_Array* arr,
 // Reifies this repeated object if it is not already reified.
 upb_Array* PyUpb_RepeatedContainer_EnsureReified(PyObject* self);
 
+void PyUpb_RepeatedContainer_SetReadOnly(PyObject* _self, bool read_only);
+
 // Implements repeated_field.extend(iterable).  `_self` must be a repeated
 // field (either repeated composite or repeated scalar).
 PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value);

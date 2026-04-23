@@ -32,6 +32,7 @@ typedef struct {
     upb_Map* map;      // reified: the data for this array.
   } ptr;
   int version;
+  bool read_only;
 } PyUpb_MapContainer;
 
 static PyObject* PyUpb_MapIterator_New(PyUpb_MapContainer* map);
@@ -88,6 +89,11 @@ PyObject* PyUpb_MapContainer_NewStub(PyObject* parent, const upb_FieldDef* f,
   Py_INCREF(arena);
   Py_INCREF(parent);
   return &map->ob_base;
+}
+
+void PyUpb_MapContainer_SetReadOnly(PyObject* _self, bool read_only) {
+  PyUpb_MapContainer* self = (void*)_self;
+  self->read_only = read_only;
 }
 
 upb_Map* PyUpb_MapContainer_Reify(PyObject* _self, upb_Map* map,
@@ -151,6 +157,10 @@ static bool PyUpb_MapContainer_Set(PyUpb_MapContainer* self, upb_Map* map,
 static int PyUpb_MapContainer_AssignSubscript(PyObject* _self, PyObject* key,
                                               PyObject* val) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
+  if (self->read_only) {
+    PyErr_SetString(PyExc_AttributeError, "Container is read-only");
+    return -1;
+  }
   upb_Map* map = PyUpb_MapContainer_EnsureReified(_self);
   const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
   const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
@@ -213,6 +223,11 @@ static int PyUpb_MapContainer_Contains(PyObject* _self, PyObject* key) {
 }
 
 static PyObject* PyUpb_MapContainer_Clear(PyObject* _self, PyObject* key) {
+  PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
+  if (self->read_only) {
+    PyErr_SetString(PyExc_AttributeError, "Container is read-only");
+    return NULL;
+  }
   upb_Map* map = PyUpb_MapContainer_EnsureReified(_self);
   upb_Map_Clear(map);
   Py_RETURN_NONE;

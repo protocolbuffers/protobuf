@@ -200,6 +200,7 @@ typedef struct PyUpb_Message {
   // name->obj dict for non-present msg/map/repeated, NULL if none.
   PyUpb_WeakMap* unset_subobj_map;
   int version;
+  bool read_only;
 } PyUpb_Message;
 
 static PyObject* PyUpb_Message_GetAttr(PyObject* _self, PyObject* attr);
@@ -837,6 +838,16 @@ void PyUpb_Message_SetConcreteSubobj(PyObject* _self, const upb_FieldDef* f,
                             PyUpb_Arena_Get(self->arena));
 }
 
+void PyUpb_Message_SetReadOnly(PyObject* _self, bool read_only) {
+  PyUpb_Message* self = (void*)_self;
+  self->read_only = read_only;
+}
+
+bool PyUpb_Message_IsReadOnly(PyObject* _self) {
+  PyUpb_Message* self = (void*)_self;
+  return self->read_only;
+}
+
 static void PyUpb_Message_Dealloc(PyObject* _self) {
   PyUpb_Message* self = (void*)_self;
 
@@ -928,11 +939,15 @@ PyObject* PyUpb_Message_GetPresentWrapper(PyUpb_Message* self,
   upb_MutableMessageValue mutval =
       upb_Message_Mutable(self->ptr.msg, field, PyUpb_Arena_Get(self->arena));
   if (upb_FieldDef_IsMap(field)) {
-    return PyUpb_MapContainer_GetOrCreateWrapper(mutval.map, field,
-                                                 self->arena);
+    PyObject* ret =
+        PyUpb_MapContainer_GetOrCreateWrapper(mutval.map, field, self->arena);
+    if (self->read_only) PyUpb_MapContainer_SetReadOnly(ret, true);
+    return ret;
   } else {
-    return PyUpb_RepeatedContainer_GetOrCreateWrapper(mutval.array, field,
-                                                      self->arena);
+    PyObject* ret = PyUpb_RepeatedContainer_GetOrCreateWrapper(
+        mutval.array, field, self->arena);
+    if (self->read_only) PyUpb_RepeatedContainer_SetReadOnly(ret, true);
+    return ret;
   }
 }
 
@@ -980,6 +995,11 @@ int PyUpb_Message_SetFieldValue(PyObject* _self, const upb_FieldDef* field,
                                 PyObject* value, PyObject* exc) {
   PyUpb_Message* self = (void*)_self;
   assert(value);
+
+  if (self->read_only) {
+    PyErr_SetString(exc, "Message is read-only");
+    return -1;
+  }
 
   if (upb_FieldDef_IsRepeated(field)) {
     PyErr_Format(exc,

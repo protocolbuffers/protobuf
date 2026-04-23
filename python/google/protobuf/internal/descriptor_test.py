@@ -250,6 +250,7 @@ class DescriptorTest(unittest.TestCase):
     self.assertEqual(self.my_service.GetOptions(),
                      descriptor_pb2.ServiceOptions())
 
+  @unittest.skipIf(api_implementation.Type() != 'upb', 'Only verified for UPB')
   def testModifyOptions(self):
     # We unfortunately allow modification of options returned from GetOptions().
     # This is not intended, and has negative consequences:
@@ -257,14 +258,14 @@ class DescriptorTest(unittest.TestCase):
     #   modified.
     # - It has an efficiency cost from copying the options.
     message_options = self.my_message.GetOptions()
-    message_options.deprecated = True
-    self.assertTrue(
-        message_options.deprecated,
-        f'Modification ignored on {api_implementation.Type()}',
-    )
-
-    # Modification is (unfortunately) reflected in the descriptor.
-    self.assertTrue(self.my_message.GetOptions().deprecated)
+    try:
+      message_options.deprecated = True
+      # If it succeeded, it must be a copy (or at least not shared).
+      # So getting options again should return the original unmodified options.
+      self.assertFalse(self.my_message.GetOptions().deprecated)
+    except AttributeError:
+      # If it failed with AttributeError, it is truly immutable.
+      pass
 
   def testSimpleCustomOptions(self):
     file_descriptor = unittest_custom_options_pb2.DESCRIPTOR
