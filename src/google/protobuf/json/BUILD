@@ -71,6 +71,7 @@ cc_library(
         "//src/google/protobuf:port",
         "@abseil-cpp//absl/cleanup",
         "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
     ],
 )
 
@@ -88,8 +89,10 @@ cc_library(
         "//src/google/protobuf/stubs",
         "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/numeric:bits",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/strings:string_view",
     ],
 )
 
@@ -192,10 +195,13 @@ cc_library(
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/util:type_resolver",
         "//third_party/utf8_range:utf8_validity",
+        "@abseil-cpp//absl/base",
         "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/memory",
         "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
         "@abseil-cpp//absl/types:optional",
@@ -239,6 +245,8 @@ cc_library(
     deps = [
         ":descriptor_traits",
         ":lexer",
+        ":message_path",
+        ":untyped_message",
         ":zero_copy_buffered_stream",
         "//:type_cc_proto",
         "//src/google/protobuf",
