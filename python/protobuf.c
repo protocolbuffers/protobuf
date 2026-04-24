@@ -154,12 +154,25 @@ struct PyUpb_WeakMap {
 
 PyUpb_WeakMap* PyUpb_WeakMap_New(void) {
   upb_Arena* arena = PyUpb_NewArena();
+  if (!arena) {
+    PyErr_SetNone(PyExc_MemoryError);
+    return NULL;
+  }
   PyUpb_WeakMap* map = upb_Arena_Malloc(arena, sizeof(*map));
+  if (!map) {
+    upb_Arena_Free(arena);
+    PyErr_SetNone(PyExc_MemoryError);
+    return NULL;
+  }
   map->arena = arena;
 #ifdef ENABLE_MUTEX
   pthread_mutex_init(&map->mutex.mutex, NULL);
 #endif
-  upb_inttable_init(&map->table, map->arena);
+  if (!upb_inttable_init(&map->table, map->arena)) {
+    upb_Arena_Free(arena);
+    PyErr_SetNone(PyExc_MemoryError);
+    return NULL;
+  }
   return map;
 }
 
@@ -185,8 +198,10 @@ void PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject* py_obj) {
   PyUnstable_EnableTryIncRef(py_obj);
 #endif
   FreeThreadingLock(&map->mutex);
-  upb_inttable_insert(&map->table, PyUpb_WeakMap_GetKey(key),
-                      upb_value_ptr(py_obj), map->arena);
+  if (!upb_inttable_insert(&map->table, PyUpb_WeakMap_GetKey(key),
+                           upb_value_ptr(py_obj), map->arena)) {
+    PyErr_SetNone(PyExc_MemoryError);
+  }
   FreeThreadingUnlock(&map->mutex);
 }
 

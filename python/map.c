@@ -7,10 +7,20 @@
 
 #include "python/map.h"
 
+#include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 #include "python/convert.h"
+#include "python/descriptor.h"
 #include "python/message.h"
 #include "python/protobuf.h"
+#include "upb/mem/arena.h"
+#include "upb/message/array.h"
 #include "upb/message/map.h"
+#include "upb/message/message.h"
+#include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
 
 // -----------------------------------------------------------------------------
@@ -158,6 +168,7 @@ static bool PyUpb_MapContainer_Set(PyUpb_MapContainer* self, upb_Map* map,
       self->version--;
       return true;
     case kUpb_MapInsertStatus_OutOfMemory:
+      PyErr_SetNone(PyExc_MemoryError);
       return false;
   }
   return false;  // Unreachable, silence compiler warning.
@@ -206,6 +217,10 @@ static PyObject* PyUpb_MapContainer_Subscript(PyObject* _self, PyObject* key) {
       const upb_MessageDef* m = upb_FieldDef_MessageSubDef(val_f);
       const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
       u_val.msg_val = upb_Message_New(layout, arena);
+      if (!u_val.msg_val) {
+        PyErr_SetNone(PyExc_MemoryError);
+        return NULL;
+      }
     } else {
       memset(&u_val, 0, sizeof(u_val));
     }

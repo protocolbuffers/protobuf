@@ -7,10 +7,19 @@
 
 #include "python/repeated.h"
 
-#include "google/protobuf/breaking_changes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "python/convert.h"
+#include "python/descriptor.h"
 #include "python/message.h"
 #include "python/protobuf.h"
+#include "upb/base/descriptor_constants.h"
+#include "upb/mem/arena.h"
+#include "upb/message/array.h"
+#include "upb/message/message.h"
+#include "upb/mini_table/message.h"
+#include "upb/reflection/def.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -357,7 +366,10 @@ static bool PyUpb_ExtendSizeCb(Py_ssize_t size, void* vctx) {
   ctx->size_hint = size;
   size_t old_size = upb_Array_Size(ctx->arr);
   if (size > 0 && ((size_t)size <= SIZE_MAX - old_size)) {
-    upb_Array_Reserve(ctx->arr, old_size + size, ctx->arena);
+    if (!upb_Array_Reserve(ctx->arr, old_size + size, ctx->arena)) {
+      PyErr_SetNone(PyExc_MemoryError);
+      return false;
+    }
   }
   return true;
 }
@@ -397,12 +409,18 @@ static bool PyUpb_ExtendBulkCb(const void* data, Py_ssize_t count,
   char* dst;
   switch (PyUpb_ArrayOverlaps(ctx->arr, data, count, itemsize)) {
     case kDisjoint:
-      upb_Array_Resize(ctx->arr, old_size + count, ctx->arena);
+      if (!upb_Array_Resize(ctx->arr, old_size + count, ctx->arena)) {
+        PyErr_SetNone(PyExc_MemoryError);
+        return false;
+      }
       dst = upb_Array_MutableDataPtr(ctx->arr);
       break;
     case kSubset: {
       char* old_dst = upb_Array_MutableDataPtr(ctx->arr);
-      upb_Array_Resize(ctx->arr, old_size + count, ctx->arena);
+      if (!upb_Array_Resize(ctx->arr, old_size + count, ctx->arena)) {
+        PyErr_SetNone(PyExc_MemoryError);
+        return false;
+      }
       dst = upb_Array_MutableDataPtr(ctx->arr);
       if (old_dst != dst) {
         data = dst + ((const char*)data - old_dst);
@@ -447,7 +465,7 @@ PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value) {
   PyUpb_ExtendCtx ctx = {arr, arena};
   if (!PyUpb_IterInput(value, f, arena, PyUpb_ExtendSizeCb, PyUpb_ExtendElemCb,
                        PyUpb_ExtendBulkCb, &ctx)) {
-    upb_Array_Resize(arr, old_size, NULL);
+    (void)upb_Array_Resize(arr, old_size, NULL);
     return NULL;
   }
   Py_RETURN_NONE;
@@ -552,7 +570,11 @@ static bool PyUpb_SetSubscriptSizeCb(Py_ssize_t seq_size, void* vctx) {
     if (ctx->step == 1) {
       // We must shift the tail elements (either right or left).
       size_t tail = upb_Array_Size(ctx->arr) - (ctx->index + ctx->count);
-      upb_Array_Resize(ctx->arr, ctx->index + seq_size + tail, ctx->arena);
+      if (!upb_Array_Resize(ctx->arr, ctx->index + seq_size + tail,
+                            ctx->arena)) {
+        PyErr_SetNone(PyExc_MemoryError);
+        return false;
+      }
       upb_Array_Move(ctx->arr, ctx->index + seq_size, ctx->index + ctx->count,
                      tail);
       ctx->count = seq_size;
@@ -620,7 +642,10 @@ static bool PyUpb_SetSubscriptBulkCb(const void* data, Py_ssize_t count,
             count, ctx->count);
         return false;
       }
-      upb_Array_Resize(ctx->arr, ctx->index + count + tail, ctx->arena);
+      if (!upb_Array_Resize(ctx->arr, ctx->index + count + tail, ctx->arena)) {
+        PyErr_SetNone(PyExc_MemoryError);
+        return false;
+      }
       dst = upb_Array_MutableDataPtr(ctx->arr);
       upb_Array_Move(ctx->arr, ctx->index + count, ctx->index + ctx->count,
                      tail);
@@ -654,7 +679,7 @@ static bool PyUpb_SetSubscriptBulkCb(const void* data, Py_ssize_t count,
     if (count < ctx->count) {
       upb_Array_Move(ctx->arr, ctx->index + count, ctx->index + ctx->count,
                      tail);
-      upb_Array_Resize(ctx->arr, ctx->index + count + tail, ctx->arena);
+      (void)upb_Array_Resize(ctx->arr, ctx->index + count + tail, ctx->arena);
     }
     return true;
   }
@@ -664,7 +689,10 @@ static bool PyUpb_SetSubscriptBulkCb(const void* data, Py_ssize_t count,
 
   // Append to the end of the array.
   char* old_dst = upb_Array_MutableDataPtr(ctx->arr);
-  upb_Array_Resize(ctx->arr, old_size + count, ctx->arena);
+  if (!upb_Array_Resize(ctx->arr, old_size + count, ctx->arena)) {
+    PyErr_SetNone(PyExc_MemoryError);
+    return false;
+  }
   dst = upb_Array_MutableDataPtr(ctx->arr);
   if (old_dst != dst) {
     data = dst + ((const char*)data - old_dst);
@@ -692,7 +720,7 @@ static bool PyUpb_SetSubscriptBulkCb(const void* data, Py_ssize_t count,
     }
   }
 
-  upb_Array_Resize(ctx->arr, ctx->index + count + tail, ctx->arena);
+  (void)upb_Array_Resize(ctx->arr, ctx->index + count + tail, ctx->arena);
   return true;
 }
 
@@ -764,7 +792,7 @@ static int PyUpb_RepeatedContainer_DeleteSubscript(upb_Array* arr,
   size_t new_size = dst + tail;
   assert(new_size == upb_Array_Size(arr) - count);
   upb_Array_Move(arr, dst, src, tail);
-  upb_Array_Resize(arr, new_size, NULL);
+  (void)upb_Array_Resize(arr, new_size, NULL);
   return 0;
 }
 
@@ -946,8 +974,15 @@ static PyObject* PyUpb_RepeatedCompositeContainer_AppendNew(PyObject* _self) {
   const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
   const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
   upb_Message* msg = upb_Message_New(layout, arena);
+  if (!msg) {
+    PyErr_SetNone(PyExc_MemoryError);
+    return NULL;
+  }
   upb_MessageValue msgval = {.msg_val = msg};
-  upb_Array_Append(arr, msgval, arena);
+  if (!upb_Array_Append(arr, msgval, arena)) {
+    PyErr_SetNone(PyExc_MemoryError);
+    return NULL;
+  }
   return PyUpb_Message_Get(msg, m, self->arena);
 }
 
@@ -1001,6 +1036,10 @@ static PyObject* PyUpb_RepeatedContainer_Insert(PyObject* _self,
     const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
     const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
     upb_Message* msg = upb_Message_New(layout, arena);
+    if (!msg) {
+      PyErr_SetNone(PyExc_MemoryError);
+      return NULL;
+    }
     PyObject* py_msg = PyUpb_Message_Get(msg, m, self->arena);
     PyObject* ret = PyUpb_Message_MergeFrom(py_msg, value);
     Py_DECREF(py_msg);
@@ -1011,7 +1050,10 @@ static PyObject* PyUpb_RepeatedContainer_Insert(PyObject* _self,
     if (!PyUpb_PyToUpb(value, f, &msgval, arena)) return NULL;
   }
 
-  upb_Array_Insert(arr, index, 1, arena);
+  if (!upb_Array_Insert(arr, index, 1, arena)) {
+    PyErr_SetNone(PyExc_MemoryError);
+    return NULL;
+  }
   upb_Array_Set(arr, index, msgval);
 
   Py_RETURN_NONE;
@@ -1079,7 +1121,10 @@ static PyObject* PyUpb_RepeatedScalarContainer_Append(PyObject* _self,
   if (!PyUpb_PyToUpb(value, f, &msgval, arena)) {
     return NULL;
   }
-  upb_Array_Append(arr, msgval, arena);
+  if (!upb_Array_Append(arr, msgval, arena)) {
+    PyErr_SetNone(PyExc_MemoryError);
+    return NULL;
+  }
   Py_RETURN_NONE;
 }
 
