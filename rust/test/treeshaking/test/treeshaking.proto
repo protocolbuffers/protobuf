@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package rust_protobuf.treeshaking;
+
+option optimize_for = LITE_RUNTIME;
+
+message UsedMessage {
+  int32 id = 1;
+}
+
+message UnusedMessage {
+  string secret_data = 1;
+}
+
+message UnusedMessage2 {
+  string more_secret_data = 1;
+}
