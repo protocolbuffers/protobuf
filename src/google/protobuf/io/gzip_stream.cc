@@ -210,7 +210,9 @@ void GzipOutputStream::Init(ZeroCopyOutputStream* sub_stream,
   sub_data_ = nullptr;
   sub_data_size_ = 0;
 
-  input_buffer_length_ = options.buffer_size;
+  input_buffer_length_ = (options.buffer_size == -1)
+                             ? kDefaultBufferSize
+                             : static_cast<size_t>(options.buffer_size);
   input_buffer_ = operator new(input_buffer_length_);
   ABSL_CHECK(input_buffer_ != nullptr);
 
