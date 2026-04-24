@@ -9,6 +9,7 @@
 
 #include <string.h>
 
+#include "upb/mem/internal/alloc.h"
 #include "upb/port/sanitizers.h"
 
 #ifdef UPB_TRACING_ENABLED
@@ -25,6 +26,28 @@
 
 // Must be last.
 #include "upb/port/def.inc"
+
+#if defined(__cplusplus)
+#define UPB_THREAD_LOCAL thread_local
+#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) && \
+    !defined(__STDC_NO_THREADS__)
+#define UPB_THREAD_LOCAL _Thread_local
+#elif defined(_MSC_VER)
+#define UPB_THREAD_LOCAL __declspec(thread)
+#elif defined(__GNUC__) || defined(__clang__)
+#define UPB_THREAD_LOCAL __thread
+#else
+#define UPB_THREAD_LOCAL
+#endif
+
+#if !defined(NDEBUG)
+#define UPB_ARENA_ALLOCATION_COUNT
+#endif
+
+#ifdef UPB_ARENA_ALLOCATION_COUNT
+UPB_THREAD_LOCAL size_t upb_arena_alloc_count = 0;
+UPB_THREAD_LOCAL size_t upb_arena_alloc_fail_on = SIZE_MAX;
+#endif
 
 static UPB_ATOMIC(size_t) g_max_block_size = UPB_DEFAULT_MAX_BLOCK_SIZE;
 
@@ -503,11 +526,14 @@ void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t span) {
   } else {
     UPB_PRIVATE(_upb_Arena_UseBlock)(a, block, block_size);
     UPB_ASSERT(UPB_PRIVATE(_upb_ArenaHas)(a) >= span);
-    return upb_Arena_Malloc(a, size);
+    return _upb_Arena_Malloc_Unchecked(a, size);
   }
 }
 
 static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc, size_t first_size) {
+  if (!upb_AllocationCount_IncrementAndCheck()) {
+    return NULL;
+  }
   if (!alloc) return NULL;
 
   // We need to malloc the initial block.

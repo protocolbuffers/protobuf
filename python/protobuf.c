@@ -81,9 +81,47 @@ PyObject* PyUpb_SetAllowOversizeProtos(PyObject* m, PyObject* arg) {
   return arg;
 }
 
+PyObject* PyUpb_AllocationCount_IsAvailable(PyObject* self, PyObject* args) {
+  if (upb_AllocationCount_IsAvailable()) {
+    Py_RETURN_TRUE;
+  } else {
+    Py_RETURN_FALSE;
+  }
+}
+
+PyObject* PyUpb_AllocationCount_Get(PyObject* self, PyObject* args) {
+  return PyLong_FromSize_t(upb_AllocationCount_Get());
+}
+
+PyObject* PyUpb_AllocationCount_Reset(PyObject* self, PyObject* args) {
+  upb_AllocationCount_Reset();
+  Py_RETURN_NONE;
+}
+
+PyObject* PyUpb_AllocationCount_FailOn(PyObject* self, PyObject* arg) {
+  Py_ssize_t n = PyNumber_AsSsize_t(arg, PyExc_OverflowError);
+  if (n == -1 && PyErr_Occurred()) {
+    return NULL;
+  }
+  if (n < 0) {
+    PyErr_SetString(PyExc_ValueError, "FailOn must be non-negative");
+    return NULL;
+  }
+  upb_AllocationCount_FailOn((size_t)n);
+  Py_RETURN_NONE;
+}
+
 static PyMethodDef PyUpb_ModuleMethods[] = {
     {"SetAllowOversizeProtos", PyUpb_SetAllowOversizeProtos, METH_O,
      "Enable/disable oversize proto parsing."},
+    {"_AllocationCount_IsAvailable", PyUpb_AllocationCount_IsAvailable,
+     METH_NOARGS, "Returns whether allocation count debugging is available."},
+    {"_AllocationCount_Get", PyUpb_AllocationCount_Get, METH_NOARGS,
+     "Returns the current allocation.count."},
+    {"_AllocationCount_Reset", PyUpb_AllocationCount_Reset, METH_NOARGS,
+     "Resets the current allocation count and failure settings."},
+    {"_AllocationCount_FailOn", PyUpb_AllocationCount_FailOn, METH_O,
+     "Configures allocation failure at the N-th allocation."},
     {NULL, NULL}};
 
 static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
@@ -155,12 +193,25 @@ struct PyUpb_WeakMap {
 
 PyUpb_WeakMap* PyUpb_WeakMap_New(void) {
   upb_Arena* arena = PyUpb_NewArena();
+  if (!arena) {
+    PyErr_SetNone(PyExc_MemoryError);
+    return NULL;
+  }
   PyUpb_WeakMap* map = upb_Arena_Malloc(arena, sizeof(*map));
+  if (!map) {
+    upb_Arena_Free(arena);
+    PyErr_SetNone(PyExc_MemoryError);
+    return NULL;
+  }
   map->arena = arena;
 #ifdef ENABLE_MUTEX
   pthread_mutex_init(&map->mutex.mutex, NULL);
 #endif
-  upb_inttable_init(&map->table, map->arena);
+  if (!upb_inttable_init(&map->table, map->arena)) {
+    upb_Arena_Free(arena);
+    PyErr_SetNone(PyExc_MemoryError);
+    return NULL;
+  }
   return map;
 }
 
@@ -186,8 +237,10 @@ void PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject* py_obj) {
   PyUnstable_EnableTryIncRef(py_obj);
 #endif
   FreeThreadingLock(&map->mutex);
-  upb_inttable_insert(&map->table, PyUpb_WeakMap_GetKey(key),
-                      upb_value_ptr(py_obj), map->arena);
+  if (!upb_inttable_insert(&map->table, PyUpb_WeakMap_GetKey(key),
+                           upb_value_ptr(py_obj), map->arena)) {
+    PyErr_SetNone(PyExc_MemoryError);
+  }
   FreeThreadingUnlock(&map->mutex);
 }
 
@@ -388,12 +441,20 @@ PyObject* PyUpb_Arena_New(void) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
   PyUpb_Arena* arena = (void*)PyType_GenericAlloc(state->arena_type, 0);
   arena->arena = PyUpb_NewArena();
+  if (!arena->arena) {
+    Py_DECREF(arena);
+    PyErr_SetNone(PyExc_MemoryError);
+    return NULL;
+  }
   arena->frozen = false;
   return &arena->ob_base;
 }
 
 static void PyUpb_Arena_Dealloc(PyObject* self) {
-  upb_Arena_Free(PyUpb_Arena_Get(self));
+  upb_Arena* arena = PyUpb_Arena_Get(self);
+  if (arena) {
+    upb_Arena_Free(arena);
+  }
   PyUpb_Dealloc(self);
 }
 

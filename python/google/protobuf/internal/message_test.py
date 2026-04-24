@@ -31,7 +31,8 @@ import warnings
 cmp = lambda x, y: (x > y) - (x < y)
 
 from google.protobuf.internal import message_set_extensions_pb2
-from google.protobuf.internal import api_implementation  # pylint: disable=g-import-not-at-top
+from google.protobuf.internal import allocation_count  # pylint: disable=g-import-not-at-top
+from google.protobuf.internal import api_implementation
 from google.protobuf.internal import decoder
 from google.protobuf.internal import encoder
 from google.protobuf.internal import enum_type_wrapper
@@ -62,6 +63,34 @@ warnings.simplefilter('error', DeprecationWarning)
 )
 @testing_refleaks.TestCase
 class MessageTest(unittest.TestCase):
+
+  @unittest.skipIf(
+      not allocation_count.is_available(),
+      'Requires Debug-only allocation_count API',
+  )
+  def testOom(self, message_module):
+    def ManyAllocsScenario():
+      msg = message_module.TestAllTypes()
+      test_util.SetAllFields(msg)
+      msg.repeated_int32.extend(range(100))
+      msg.repeated_nested_message.add().bb = 123
+      serialized = msg.SerializeToString()
+      msg2 = message_module.TestAllTypes()
+      msg2.ParseFromString(serialized)
+      msg3 = message_module.TestAllTypes()
+      msg3.MergeFrom(msg2)
+      _ = msg3.optional_string
+      _ = msg3.optional_bytes
+
+    allocation_count.reset()
+    ManyAllocsScenario()
+    total = allocation_count.get()
+    self.assertGreater(total, 0)
+    for i in range(total):
+      allocation_count.fail_on(i)
+      with self.assertRaises(MemoryError):
+        ManyAllocsScenario()
+    allocation_count.reset()
 
   def testBadUtf8String(self, message_module):
     if api_implementation.Type() != 'python':

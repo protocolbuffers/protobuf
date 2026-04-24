@@ -25,4 +25,33 @@ static void* upb_global_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
   }
 }
 
+UPB_NODISCARD bool upb_AllocationCount_IsAvailable(void) {
+#ifdef UPB_ARENA_ALLOCATION_COUNT
+  return true;
+#else
+  return false;
+#endif
+}
+
+UPB_NODISCARD size_t upb_AllocationCount_Get(void) {
+#ifdef UPB_ARENA_ALLOCATION_COUNT
+  return upb_arena_alloc_count;
+#else
+  return 0;
+#endif
+}
+
+void upb_AllocationCount_Reset(void) {
+#ifdef UPB_ARENA_ALLOCATION_COUNT
+  upb_arena_alloc_count = 0;
+  upb_arena_alloc_fail_on = SIZE_MAX;
+#endif
+}
+
+void upb_AllocationCount_FailOn(size_t n) {
+#ifdef UPB_ARENA_ALLOCATION_COUNT
+  upb_arena_alloc_fail_on = n;
+#endif
+}
+
 upb_alloc upb_alloc_global = {&upb_global_allocfunc};

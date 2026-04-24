@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "upb/base/internal/log2.h"
+#include "upb/mem/internal/alloc.h"
 #include "upb/mem/internal/arena.h"
 
 // Must be last.
@@ -92,6 +93,9 @@ static char* upb_BackAlloc_Realloc(upb_BackAlloc* a, char* ptr, size_t n) {
 }
 
 char* upb_BackAlloc_Grow(upb_BackAlloc* a, char* ptr, size_t n) {
+  if (!upb_AllocationCount_IncrementAndCheck()) {
+    return NULL;
+  }
   if (a->limit == a->buf) {
     // First allocation: try to steal a block.
     size_t size = n;
