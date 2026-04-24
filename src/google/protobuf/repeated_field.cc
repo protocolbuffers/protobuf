@@ -11,13 +11,11 @@
 
 #include "google/protobuf/repeated_field.h"
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <string>
 
 #include "absl/base/optimization.h"
-#include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/repeated_ptr_field.h"
