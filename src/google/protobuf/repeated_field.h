@@ -191,11 +191,7 @@ class SooRep {
   Arena* arena() const {
     return ResolveTaggedArena<&SooRep::resolver_, kResolverTaggedBits>(this);
   }
-  int size() const {
-    int res = size_;
-    PROTOBUF_ASSUME(res >= 0);
-    return res;
-  }
+  int size() const { return size_; }
   void set_size(int size) {
     ABSL_DCHECK(!is_soo() || size <= kSooCapacityBytes);
     size_ = size;
@@ -564,9 +560,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
     soo_rep_.set_size(size);
   }
   int Capacity(bool is_soo) const {
-    int res = is_soo ? kSooCapacityElements : soo_rep_.capacity();
-    PROTOBUF_ASSUME(res >= 0);
-    return res;
+    return is_soo ? kSooCapacityElements : soo_rep_.capacity();
   }
 
   template <typename ArenaProvider>

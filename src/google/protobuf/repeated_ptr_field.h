@@ -224,22 +224,14 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   bool empty() const { return current_size_ == 0; }
-  int size() const {
-    int res = current_size_;
-    PROTOBUF_ASSUME(res >= 0);
-    return res;
-  }
+  int size() const { return current_size_; }
   // Returns the size of the buffer with pointers to elements.
   //
   // Note:
   //
   //   * prefer `SizeAtCapacity()` to `size() == Capacity()`;
   //   * prefer `AllocatedSizeAtCapacity()` to `allocated_size() == Capacity()`.
-  int Capacity() const {
-    int res = using_sso() ? kSSOCapacity : rep()->capacity;
-    PROTOBUF_ASSUME(res >= 0);
-    return res;
-  }
+  int Capacity() const { return using_sso() ? kSSOCapacity : rep()->capacity; }
 
   template <typename TypeHandler>
   const Value<TypeHandler>& at(int index) const {
@@ -257,7 +249,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   Value<TypeHandler>* Mutable(int index) {
-    RuntimeAssertInBounds(index, size());
+    RuntimeAssertInBounds(index, current_size_);
     return cast<TypeHandler>(element_at(index));
   }
 
@@ -348,7 +340,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   PROTOBUF_FUTURE_ADD_NODISCARD const Value<TypeHandler>& Get(int index) const {
     if constexpr (GetBoundsCheckMode() == BoundsCheckMode::kReturnDefault) {
-      if (ABSL_PREDICT_FALSE(index < 0 || index >= size())) {
+      if (ABSL_PREDICT_FALSE(index < 0 || index >= current_size_)) {
         // `default_instance()` is not supported for MessageLite and Message.
         if constexpr (TypeHandler::has_default_instance()) {
           LogIndexOutOfBounds(index, current_size_);
@@ -358,7 +350,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     }
     // We refactor this to a separate function instead of inlining it so we
     // can measure the performance impact more easily.
-    RuntimeAssertInBounds(index, size());
+    RuntimeAssertInBounds(index, current_size_);
     return *cast<TypeHandler>(element_at(index));
   }
 
@@ -526,8 +518,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   void SwapElements(int index1, int index2) {
-    internal::RuntimeAssertInBounds(index1, size());
-    internal::RuntimeAssertInBounds(index2, size());
+    internal::RuntimeAssertInBounds(index1, current_size_);
+    internal::RuntimeAssertInBounds(index2, current_size_);
     using std::swap;  // enable ADL with fallback
     swap(element_at(index1), element_at(index2));
   }
@@ -633,7 +625,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // arena.
   template <typename TypeHandler>
   Value<TypeHandler>* UnsafeArenaReleaseLast() {
-    internal::RuntimeAssertInBounds(0, size());
+    internal::RuntimeAssertInBounds(0, current_size_);
     ExchangeCurrentSize(current_size_ - 1);
     auto* result = cast<TypeHandler>(element_at(current_size_));
     if (using_sso()) {

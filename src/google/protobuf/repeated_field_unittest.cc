@@ -1642,13 +1642,4 @@ TEST(RepeatedFieldIsFullTest, DISABLED_MergeFromPacked) {
 }  // namespace protobuf
 }  // namespace google
 
-// Code thunks to be dumped by the debugger to inspect the generated assemtbly.
-static const int& CodegenRepeatedFieldGet(const google::protobuf::RepeatedField<int>& a,
-                                          int idx) {
-  return a[idx];
-}
-
-static int odr_use =
-    (google::protobuf::internal::StrongPointer(&CodegenRepeatedFieldGet), 0);
-
 #include "google/protobuf/port_undef.inc"
