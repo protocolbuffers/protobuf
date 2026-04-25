@@ -645,7 +645,8 @@ absl::Status ParseMapKey(const Desc<Traits>& type, Msg<Traits>& entry,
       break;
     }
     case FieldDescriptor::TYPE_STRING: {
-      RETURN_IF_ERROR(Traits::SetString(key_field, entry, std::move(key.value.ToString())));
+      RETURN_IF_ERROR(
+          Traits::SetString(key_field, entry, std::move(key.value.ToString())));
       break;
     }
     default:
@@ -1076,7 +1077,8 @@ absl::Status ParseAny(JsonLexer& lex, const Desc<Traits>& desc,
 
   if (type_url.has_value()) {
     RETURN_IF_ERROR(
-        Traits::SetString(Traits::MustHaveField(desc, 1), msg, type_url->AsView()));
+        Traits::SetString(Traits::MustHaveField(desc, 1), msg,
+                          type_url->AsView()));
     return Traits::NewDynamic(
         Traits::MustHaveField(desc, 2), type_url->ToString(), msg,
         [&](const Desc<Traits>& desc, Msg<Traits>& msg) {
@@ -1143,7 +1145,8 @@ absl::Status ParseValue(JsonLexer& lex, const Desc<Traits>& desc,
 
       auto str = lex.ParseUtf8();
       RETURN_IF_ERROR(str.status());
-      RETURN_IF_ERROR(Traits::SetString(field, msg, std::move(str->value.ToString())));
+      RETURN_IF_ERROR(
+          Traits::SetString(field, msg, std::move(str->value.ToString())));
       break;
     }
     case JsonLexer::kFalse:

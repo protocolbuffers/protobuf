@@ -8,8 +8,8 @@
 #include "google/protobuf/json/json.h"
 
 #include <cstdint>
-#include <memory>
 #include <limits>
+#include <memory>
 #include <string>
 
 #include "google/protobuf/duration.pb.h"
@@ -1586,7 +1586,6 @@ TEST(JsonErrorTest, FieldNameAndSyntaxErrorInSeparateChunks) {
       ContainsRegex("invalid *JSON *in *type.googleapis.com/proto3.TestMessage "
                     "*@ *bool_value"));
 }
-
 
 TEST(JsonInternalTest, OversizedRawWritesAreRejected) {
   EXPECT_THAT(

@@ -39,7 +39,7 @@ namespace protobuf {
 namespace json_internal {
 using ::google::protobuf::internal::WireFormatLite;
 
-absl::Status CheckSupportedJsonStringSize(size_t size) {
+inline absl::Status CheckSupportedJsonStringSize(size_t size) {
   if (size > static_cast<size_t>(std::numeric_limits<int>::max())) {
     return absl::InvalidArgumentError(
         "protobuf does not support serializing JSON string/bytes values "
