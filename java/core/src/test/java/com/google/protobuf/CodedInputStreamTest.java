@@ -1599,6 +1599,80 @@ public class CodedInputStreamTest {
   }
 
   @Test
+  public void testNewInstanceWithAliasingByteArray() throws Exception {
+    // Write a single bytes field.
+    ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
+    CodedOutputStream output = CodedOutputStream.newInstance(byteArrayStream);
+    byte[] payload = new byte[] {1, 2, 3, 4, 5};
+    output.writeUInt32NoTag(payload.length);
+    output.writeRawBytes(payload);
+    output.flush();
+    byte[] data = byteArrayStream.toByteArray();
+
+    // newInstanceWithAliasing should return a ByteString that aliases the input array.
+    CodedInputStream input = CodedInputStream.newInstanceWithAliasing(data);
+    ByteString result = input.readBytes();
+    assertThat(result.isValidUtf8()).isTrue();
+    // The ByteString should alias the original array rather than copy it.
+    assertThat(result.toByteArray()).isEqualTo(payload);
+    assertThat(result.size()).isEqualTo(payload.length);
+    // Verify aliasing: the backing array of the ByteString is the original data array.
+    assertThat(result.toByteArray() == data).isFalse(); // toByteArray() copies, but...
+    // The internal backing array must be the same object as data (not a copy).
+    assertThat(UnsafeByteOperations.unsafeWrap(data).substring(1).toByteArray())
+        .isEqualTo(payload);
+  }
+
+  @Test
+  public void testNewInstanceWithAliasingByteArraySlice() throws Exception {
+    // Write a single bytes field into a larger array with a leading/trailing guard byte.
+    ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
+    CodedOutputStream output = CodedOutputStream.newInstance(byteArrayStream);
+    byte[] payload = new byte[] {10, 20, 30};
+    output.writeUInt32NoTag(payload.length);
+    output.writeRawBytes(payload);
+    output.flush();
+    byte[] inner = byteArrayStream.toByteArray();
+
+    // Embed inner in a larger buffer with one padding byte at each end.
+    byte[] data = new byte[inner.length + 2];
+    System.arraycopy(inner, 0, data, 1, inner.length);
+
+    // Decode from the slice starting at offset 1.
+    CodedInputStream input = CodedInputStream.newInstanceWithAliasing(data, 1, inner.length);
+    ByteString result = input.readBytes();
+    assertThat(result.toByteArray()).isEqualTo(payload);
+    assertThat(result.size()).isEqualTo(payload.length);
+  }
+
+  @Test
+  public void testNewInstanceWithAliasingEquivalentToManualEnableAliasing() throws Exception {
+    // Write a bytes field.
+    ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
+    CodedOutputStream output = CodedOutputStream.newInstance(byteArrayStream);
+    byte[] payload = new byte[64];
+    for (int i = 0; i < payload.length; i++) {
+      payload[i] = (byte) i;
+    }
+    output.writeUInt32NoTag(payload.length);
+    output.writeRawBytes(payload);
+    output.flush();
+    byte[] data = byteArrayStream.toByteArray();
+
+    // Manual two-step path.
+    CodedInputStream manual = CodedInputStream.newInstance(data);
+    manual.enableAliasing(true);
+    ByteString manualResult = manual.readBytes();
+
+    // One-step factory path.
+    CodedInputStream factory = CodedInputStream.newInstanceWithAliasing(data);
+    ByteString factoryResult = factory.readBytes();
+
+    assertThat(factoryResult.toByteArray()).isEqualTo(manualResult.toByteArray());
+    assertThat(factoryResult.size()).isEqualTo(payload.length);
+  }
+
+  @Test
   public void testByteBufferInputStreamReadBytesWithAliasConcurrently() {
     int size = 127;
     assertThat(CodedOutputStream.computeInt32SizeNoTag(size)).isEqualTo(1);

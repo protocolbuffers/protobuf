@@ -97,6 +97,41 @@ public abstract class CodedInputStream {
   }
 
   /**
+   * Create a new CodedInputStream wrapping the given byte array, with aliasing enabled.
+   *
+   * <p>When aliasing is enabled, {@link #readBytes()} and {@link #readByteBuffer()} may return
+   * views into {@code buf} instead of copying bytes, reducing allocations for workloads that parse
+   * many length-delimited {@code bytes} fields.
+   *
+   * <p>The caller must ensure {@code buf} is not mutated while any returned {@link ByteString} or
+   * {@link java.nio.ByteBuffer} is still in use.
+   *
+   * @see #enableAliasing(boolean)
+   */
+  public static CodedInputStream newInstanceWithAliasing(final byte[] buf) {
+    return newInstanceWithAliasing(buf, 0, buf.length);
+  }
+
+  /**
+   * Create a new CodedInputStream wrapping the given byte array slice, with aliasing enabled.
+   *
+   * <p>When aliasing is enabled, {@link #readBytes()} and {@link #readByteBuffer()} may return
+   * views into {@code buf} instead of copying bytes, reducing allocations for workloads that parse
+   * many length-delimited {@code bytes} fields.
+   *
+   * <p>The caller must ensure {@code buf} is not mutated while any returned {@link ByteString} or
+   * {@link java.nio.ByteBuffer} is still in use.
+   *
+   * @see #enableAliasing(boolean)
+   */
+  public static CodedInputStream newInstanceWithAliasing(
+      final byte[] buf, final int off, final int len) {
+    CodedInputStream result = newInstance(buf, off, len);
+    result.enableAliasing(true);
+    return result;
+  }
+
+  /**
    * Experiment to enable new varint reading. Only for internal use for performance evaluation. Will
    * be removed once evaluation is complete.
    */
