@@ -41,14 +41,15 @@
 #include "google/protobuf/unittest_import.pb.h"
 #include "google/protobuf/unittest_lite.pb.h"
 
-#define MESSAGE_TEST_NAME MessageTest
-#define MESSAGE_FACTORY_TEST_NAME MessageFactoryTest
-#define UNITTEST_PACKAGE_NAME "proto2_unittest"
-#define UNITTEST ::proto2_unittest
-#define UNITTEST_IMPORT ::proto2_unittest_import
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
+#define UNITTEST_PACKAGE_NAME TOSTRING(UNITTEST_PACKAGE_NAME_RAW)
 
 // Must include after the above macros.
 // clang-format off
 #include "google/protobuf/message_unittest.inc"
+#ifndef SKIP_LEGACY_APIS
 #include "google/protobuf/message_unittest_legacy_apis.inc"
+#endif
 // clang-format on
