@@ -116,6 +116,34 @@ rust_test(
 )
 
 rust_test(
+    name = "full_name_cpp_test",
+    srcs = ["full_name_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp_export": "protobuf",
+    },
+    rustc_flags = ["--cfg=bzl"],
+    deps = [
+        "//rust:protobuf_cpp_export",
+        "//rust/test:unittest_cpp_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "full_name_upb_test",
+    srcs = ["full_name_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb_export": "protobuf",
+    },
+    rustc_flags = ["--cfg=bzl"],
+    deps = [
+        "//rust:protobuf_upb_export",
+        "//rust/test:unittest_upb_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
     name = "enum_cpp_test",
     srcs = ["enum_test.rs"],
     aliases = {
