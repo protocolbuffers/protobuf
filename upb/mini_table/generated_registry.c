@@ -42,18 +42,17 @@ static bool _upb_GeneratedRegistry_AddAllLinkedExtensions(
   const UPB_PRIVATE(upb_GeneratedExtensionListEntry)* entry =
       UPB_PRIVATE(upb_generated_extension_list);
   while (entry != NULL) {
-    const char* current = (const char*)entry->start;
-    const char* end = (const char*)entry->stop;
-    while ((size_t)(end - current) >= sizeof(upb_MiniTableExtension)) {
-      const upb_MiniTableExtension* ext =
-          (const upb_MiniTableExtension*)current;
+    const upb_MiniTableExtension** current = entry->start;
+    for (current = entry->start; current != entry->stop; ++current) {
+      const upb_MiniTableExtension* ext = *current;
       // Sentinels and padding introduced by the linker can result in zeroed
       // entries, so simply skip them.
-      if (upb_MiniTableExtension_Number(ext) == 0) {
+      if (*current == NULL) {
         // MSVC introduces padding that might not be sized exactly the same as
-        // upb_MiniTableExtension, so we can't iterate by sizeof.  This is a
-        // valid thing for any linker to do, so it's safer to just always do it.
-        current += UPB_ALIGN_OF(upb_MiniTableExtension);
+        // the linker array element, but it should be properly aligned, so just
+        // skipping empty elements should be safe.  (If the size and align of
+        // the array elements was different, we'd have to do something more
+        // complicated).
         continue;
       }
 
@@ -61,7 +60,6 @@ static bool _upb_GeneratedRegistry_AddAllLinkedExtensions(
           kUpb_ExtensionRegistryStatus_Ok) {
         return false;
       }
-      current += sizeof(upb_MiniTableExtension);
     }
     entry = entry->next;
   }

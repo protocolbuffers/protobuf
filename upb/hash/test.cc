@@ -209,10 +209,10 @@ TEST(TableTest, ExtTable) {
   const upb_MiniTable* mt2 = &upb_0test__TestMessageSet_msg_init;
 
   const upb_MiniTableExtension* ext1_10 =
-      &upb_test_TestExtensions_optional_int32_ext_ext;
-  const upb_MiniTableExtension* ext1_20 = &upb_test_optional_msg_ext_ext;
+      upb_test_TestExtensions_optional_int32_ext_ext;
+  const upb_MiniTableExtension* ext1_20 = upb_test_optional_msg_ext_ext;
   const upb_MiniTableExtension* ext2_10 =
-      &upb_test_MessageSetMember_message_set_extension_ext;
+      upb_test_MessageSetMember_message_set_extension_ext;
 
   ASSERT_TRUE(upb_exttable_insert(&table, mt1, (const uint32_t*)ext1_10, a));
   ASSERT_TRUE(upb_exttable_insert(&table, mt1, (const uint32_t*)ext1_20, a));
