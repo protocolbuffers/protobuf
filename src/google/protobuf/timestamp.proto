@@ -32,6 +32,8 @@ syntax = "proto3";
 
 package google.protobuf;
 
+import "third_party/java_src/j2objc/protobuf/compiler/internal/j2objc-descriptor.proto";
+
 option cc_enable_arenas = true;
 option go_package = "google.golang.org/protobuf/types/known/timestamppb";
 option java_package = "com.google.protobuf";
@@ -39,6 +41,7 @@ option java_outer_classname = "TimestampProto";
 option java_multiple_files = true;
 option objc_class_prefix = "GPB";
 option csharp_namespace = "Google.Protobuf.WellKnownTypes";
+option (google.protobuf.j2objc_generate_properties) = true;
 
 // A Timestamp represents a point in time independent of any time zone or local
 // calendar, encoded as a count of seconds and fractions of seconds at
