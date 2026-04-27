@@ -143,9 +143,7 @@ struct ExtensionInfo {
         is_utf8(false),
         is_lazy(islazy),
         enum_validity_check(),
-        lazy_eager_verify_func(verify_func)
-  {
-  }
+        lazy_eager_verify_func(verify_func) {}
 
   const MessageLite* message = nullptr;
   int number = 0;
@@ -169,18 +167,36 @@ struct ExtensionInfo {
   };
 
   struct MessageInfo {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+    const internal::MessageGlobalsBase* globals = nullptr;
+#else
     const MessageLite* prototype = nullptr;
-    // The TcParse table used for this object.
-    // Never null. (except in platforms that don't constant initialize default
-    // instances)
+#endif
+    // The TcParse table used for this object. Never null. (except in platforms
+    // that don't constant initialize default instances)
     const internal::TcParseTableBase* tc_table = nullptr;
 
+    // Create from prototype
+    const MessageLite* GetPrototype() const {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+      return internal::MessageGlobalsBase::ToDefaultInstance(globals);
+#else
+      return prototype;
+#endif
+    }
+
+    const internal::TcParseTableBase* GetTcTable() const { return tc_table; }
+
     const ClassData* GetClassData() const {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+      return internal::MessageGlobalsBase::GetClassData(globals);
+#else  // !PROTOBUF_MESSAGE_GLOBALS
 #ifdef PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
       return tc_table->class_data;
 #else
       return google::protobuf::internal::GetClassData(*prototype);
 #endif
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
     }
   };
 
@@ -706,7 +722,7 @@ class PROTOBUF_EXPORT ExtensionSet {
     return f != nullptr ? f(arena) : nullptr;
   }
 #endif  // !PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET
-  static std::atomic<LazyMessageExtension* (*)(Arena * arena)>
+  static std::atomic<LazyMessageExtension* (*)(Arena* arena)>
       maybe_create_lazy_extension_;
 
   // We can't directly use std::atomic for Extension::cached_size because

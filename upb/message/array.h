@@ -27,7 +27,7 @@ extern "C" {
 #endif
 
 // Creates a new array on the given arena that holds elements of this type.
-UPB_API upb_Array* upb_Array_New(upb_Arena* a, upb_CType type);
+UPB_NODISCARD UPB_API upb_Array* upb_Array_New(upb_Arena* a, upb_CType type);
 
 // Returns the number of elements in the array.
 UPB_API_INLINE size_t upb_Array_Size(const upb_Array* arr);
@@ -46,18 +46,20 @@ UPB_API struct upb_Message* upb_Array_GetMutable(upb_Array* arr, size_t i);
 UPB_API void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val);
 
 // Appends an element to the array. Returns false on allocation failure.
-UPB_API bool upb_Array_Append(upb_Array* array, upb_MessageValue val,
-                              upb_Arena* arena);
+UPB_NODISCARD UPB_API bool upb_Array_Append(upb_Array* array,
+                                            upb_MessageValue val,
+                                            upb_Arena* arena);
 
 // Copies elements from |src| to |dst|, resizing |dst| to match |src| size.
 // Returns false on allocation failure.
-UPB_API bool upb_Array_Copy(upb_Array* dst, const upb_Array* src,
-                            upb_Arena* arena);
+UPB_NODISCARD UPB_API bool upb_Array_Copy(upb_Array* dst, const upb_Array* src,
+                                          upb_Arena* arena);
 
 // Appends all elements from |src| to the end of |dst|.
 // Returns false on allocation failure.
-UPB_API bool upb_Array_AppendAll(upb_Array* dst, const upb_Array* src,
-                                 upb_Arena* arena);
+UPB_NODISCARD UPB_API bool upb_Array_AppendAll(upb_Array* dst,
+                                               const upb_Array* src,
+                                               upb_Arena* arena);
 
 // Moves elements within the array using memmove().
 // Like memmove(), the source and destination elements may be overlapping.
@@ -68,8 +70,8 @@ UPB_API void upb_Array_Move(upb_Array* array, size_t dst_idx, size_t src_idx,
 // Existing elements are shifted right.
 // The new elements have undefined state and must be set with `upb_Array_Set()`.
 // REQUIRES: `i <= upb_Array_Size(arr)`
-UPB_API bool upb_Array_Insert(upb_Array* array, size_t i, size_t count,
-                              upb_Arena* arena);
+UPB_NODISCARD UPB_API bool upb_Array_Insert(upb_Array* array, size_t i,
+                                            size_t count, upb_Arena* arena);
 
 // Deletes one or more elements from the array.
 // Existing elements are shifted left.
@@ -77,12 +79,14 @@ UPB_API bool upb_Array_Insert(upb_Array* array, size_t i, size_t count,
 UPB_API void upb_Array_Delete(upb_Array* array, size_t i, size_t count);
 
 // Reserves |size| elements of storage for the array.
-UPB_API_INLINE bool upb_Array_Reserve(struct upb_Array* array, size_t size,
-                                      upb_Arena* arena);
+UPB_NODISCARD UPB_API_INLINE bool upb_Array_Reserve(struct upb_Array* array,
+                                                    size_t size,
+                                                    upb_Arena* arena);
 
 // Changes the size of a vector. New elements are initialized to NULL/0.
 // Returns false on allocation failure.
-UPB_API bool upb_Array_Resize(upb_Array* array, size_t size, upb_Arena* arena);
+UPB_NODISCARD UPB_API bool upb_Array_Resize(upb_Array* array, size_t size,
+                                            upb_Arena* arena);
 
 // Returns pointer to array data.
 UPB_API_INLINE const void* upb_Array_DataPtr(const upb_Array* arr);

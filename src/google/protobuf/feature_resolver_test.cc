@@ -2291,6 +2291,23 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
       }
     }
     defaults {
+      edition: EDITION_2026
+      overridable_features {
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        enforce_naming_style: STYLE2026
+        default_symbol_visibility: EXPORT_TOP_LEVEL
+        [pb.test] { file_feature: VALUE2 }
+      }
+      fixed_features {
+        [pb.test] {}
+      }
+    }
+    defaults {
       edition: EDITION_99998_TEST_ONLY
       overridable_features {
         field_presence: EXPLICIT

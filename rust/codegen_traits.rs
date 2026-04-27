@@ -174,6 +174,7 @@ pub(crate) mod read {
 
     pub trait Serialize: SealedInternal {
         fn serialize(&self) -> Result<Vec<u8>, crate::SerializeError>;
+        fn serialized_len(&self) -> usize;
     }
 }
 

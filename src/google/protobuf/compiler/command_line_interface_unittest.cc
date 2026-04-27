@@ -1977,7 +1977,7 @@ TEST_F(CommandLineInterfaceTest, Plugin_VersionSkewFuture) {
 
   ExpectErrorSubstring(
       "foo.proto:2:5: Edition 99997_TEST_ONLY is later than the maximum "
-      "supported edition 2024");
+      "supported edition 2026");
 }
 
 TEST_F(CommandLineInterfaceTest, Plugin_VersionSkewPast) {
@@ -2318,7 +2318,7 @@ TEST_F(CommandLineInterfaceTest,
   ExpectErrorSubstring(
       absl::StrCat("Edition 99997_TEST_ONLY is later than the maximum "
                    "supported edition ",
-                   ProtocMaximumEdition()));
+                   MaximumKnownEdition()));
 }
 
 TEST_F(CommandLineInterfaceTest, UnstableEditionWithFlag) {
@@ -2491,6 +2491,20 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                   }
                   fixed_features {}
                 }
+                defaults {
+                  edition: EDITION_2026
+                  overridable_features {
+                    field_presence: EXPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                    enforce_naming_style: STYLE2026
+                    default_symbol_visibility: EXPORT_TOP_LEVEL
+                  }
+                  fixed_features {}
+                }
                 minimum_edition: EDITION_PROTO2
                 maximum_edition: EDITION_99997_TEST_ONLY
               )pb"));
@@ -2586,6 +2600,20 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                     enforce_naming_style: STYLE2024
+                    default_symbol_visibility: EXPORT_TOP_LEVEL
+                  }
+                  fixed_features {}
+                }
+                defaults {
+                  edition: EDITION_2026
+                  overridable_features {
+                    field_presence: EXPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                    enforce_naming_style: STYLE2026
                     default_symbol_visibility: EXPORT_TOP_LEVEL
                   }
                   fixed_features {}

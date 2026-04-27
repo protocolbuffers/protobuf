@@ -9,16 +9,21 @@
 
 namespace google {
 namespace protobuf {
-
-template <typename ElementType>
-class RepeatedFieldProxy;
-
 namespace internal {
+
+template <typename ElementType, bool kOrProxy>
+class MutableRepeatedFieldProxyImpl;
 
 template <typename ElementType>
 class RepeatedFieldProxyIteratorInternalPrivateAccessHelper;
 
-template <typename ElementType, bool kReverse>
+// kOrProxy is a phony parameter just to force `RepeatedFieldProxy` and
+// `RepeatedFieldOrProxy` to have different iterator types. When the backing
+// representation of `RepeatedFieldProxy` changes, we will need these iterators
+// to have different types. By making the type different now, it makes writing
+// code that mixes iterators from `RepeatedFieldProxy` and
+// `RepeatedFieldOrProxy` impossible.
+template <typename ElementType, bool kReverse, bool kOrProxy>
 class RepeatedFieldProxyIteratorImpl {
   // An alias for self.
   using iterator = RepeatedFieldProxyIteratorImpl;
@@ -71,23 +76,25 @@ class RepeatedFieldProxyIteratorImpl {
             typename = std::enable_if_t<std::is_const_v<E>>>
   // NOLINTNEXTLINE(google-explicit-constructor)
   RepeatedFieldProxyIteratorImpl(
-      const RepeatedFieldProxyIteratorImpl<std::remove_const_t<E>, kReverse>&
-          other)
+      const RepeatedFieldProxyIteratorImpl<std::remove_const_t<E>, kReverse,
+                                           kOrProxy>& other)
       : it_(other.it_) {}
 
   // Allow explicit conversion from forward to reverse iterators.
   template <bool R = kReverse, typename = std::enable_if_t<R>>
   explicit RepeatedFieldProxyIteratorImpl(
-      RepeatedFieldProxyIteratorImpl<ElementType, !R> other)
+      RepeatedFieldProxyIteratorImpl<ElementType, !R, kOrProxy> other)
       : it_(std::make_reverse_iterator(other.it_)) {}
 
-  [[nodiscard]] reference operator*() const { return *it_; }
+  [[nodiscard]] reference operator*() const {
+    return static_cast<reference>(*it_);
+  }
   [[nodiscard]] auto operator->() const {
     if constexpr (kReturnByValue) {
       // Since operator-> needs to return a pointer-like object, we return a
       // struct that holds a copy of the element value, with an overloaded
       // operator-> returning a pointer to this object.
-      return ArrowProxy{*it_};
+      return ArrowProxy{static_cast<value_type>(*it_)};
     } else {
       return &(operator*());
     }
@@ -145,17 +152,20 @@ class RepeatedFieldProxyIteratorImpl {
     return it;
   }
 
-  [[nodiscard]] reference operator[](difference_type d) const { return it_[d]; }
+  [[nodiscard]] reference operator[](difference_type d) const {
+    return static_cast<reference>(it_[d]);
+  }
 
   friend difference_type operator-(iterator it1, iterator it2) {
     return it1.it_ - it2.it_;
   }
 
  private:
-  template <typename, bool>
+  template <typename, bool, bool>
   friend class RepeatedFieldProxyIteratorImpl;
   friend RepeatedFieldProxyIteratorInternalPrivateAccessHelper<ElementType>;
-  friend RepeatedFieldProxy<std::remove_const_t<ElementType>>;
+  friend MutableRepeatedFieldProxyImpl<std::remove_const_t<ElementType>,
+                                       kOrProxy>;
 
   // Allow explicit conversion to the internal iterator.
   explicit operator InternalIterator() const { return it_; }
@@ -168,26 +178,21 @@ class RepeatedFieldProxyIteratorInternalPrivateAccessHelper {
   using Traits = RepeatedFieldTraits<std::remove_const_t<ElementType>>;
 
  public:
-  template <bool kReverse>
-  static typename Traits::type::iterator iterator(
-      const RepeatedFieldProxyIteratorImpl<ElementType, kReverse>& it) {
+  template <bool kReverse, bool kOrProxy>
+  static auto iterator(
+      const RepeatedFieldProxyIteratorImpl<ElementType, kReverse, kOrProxy>&
+          it) {
     return it.it_;
   }
 };
 
-template <typename ElementType>
-using RepeatedFieldProxyIterator =
-    RepeatedFieldProxyIteratorImpl<ElementType, /*kReverse=*/false>;
-template <typename ElementType>
-using RepeatedFieldProxyReverseIterator =
-    RepeatedFieldProxyIteratorImpl<ElementType, /*kReverse=*/true>;
-
 }  // namespace internal
 
 // Like C++20's std::sort, for RepeatedFieldProxy.
-template <int&..., typename T, typename Compare>
-void sort(internal::RepeatedFieldProxyIterator<T> begin,
-          internal::RepeatedFieldProxyIterator<T> end, Compare cmp) {
+template <int&..., typename T, bool kReverse, bool kOrProxy, typename Compare>
+void sort(internal::RepeatedFieldProxyIteratorImpl<T, kReverse, kOrProxy> begin,
+          internal::RepeatedFieldProxyIteratorImpl<T, kReverse, kOrProxy> end,
+          Compare cmp) {
   auto begin_it =
       internal::RepeatedFieldProxyIteratorInternalPrivateAccessHelper<
           T>::iterator(begin);
@@ -196,9 +201,9 @@ void sort(internal::RepeatedFieldProxyIterator<T> begin,
   google::protobuf::sort(begin_it, end_it, cmp);
 }
 // Like C++20's std::sort, for RepeatedFieldProxy, with default comparison.
-template <int&..., typename T>
-void sort(internal::RepeatedFieldProxyIterator<T> begin,
-          internal::RepeatedFieldProxyIterator<T> end) {
+template <int&..., typename T, bool kReverse, bool kOrProxy>
+void sort(internal::RepeatedFieldProxyIteratorImpl<T, kReverse, kOrProxy> begin,
+          internal::RepeatedFieldProxyIteratorImpl<T, kReverse, kOrProxy> end) {
   auto begin_it =
       internal::RepeatedFieldProxyIteratorInternalPrivateAccessHelper<
           T>::iterator(begin);
@@ -207,9 +212,11 @@ void sort(internal::RepeatedFieldProxyIterator<T> begin,
   google::protobuf::sort(begin_it, end_it);
 }
 // Like C++20's std::stable_sort, for RepeatedFieldProxy.
-template <int&..., typename T, typename Compare>
-void stable_sort(internal::RepeatedFieldProxyIterator<T> begin,
-                 internal::RepeatedFieldProxyIterator<T> end, Compare cmp) {
+template <int&..., typename T, bool kReverse, bool kOrProxy, typename Compare>
+void stable_sort(
+    internal::RepeatedFieldProxyIteratorImpl<T, kReverse, kOrProxy> begin,
+    internal::RepeatedFieldProxyIteratorImpl<T, kReverse, kOrProxy> end,
+    Compare cmp) {
   auto begin_it =
       internal::RepeatedFieldProxyIteratorInternalPrivateAccessHelper<
           T>::iterator(begin);
@@ -219,9 +226,10 @@ void stable_sort(internal::RepeatedFieldProxyIterator<T> begin,
 }
 // Like C++20's std::stable_sort, for RepeatedFieldProxy, with default
 // comparison.
-template <int&..., typename T>
-void stable_sort(internal::RepeatedFieldProxyIterator<T> begin,
-                 internal::RepeatedFieldProxyIterator<T> end) {
+template <int&..., typename T, bool kReverse, bool kOrProxy>
+void stable_sort(
+    internal::RepeatedFieldProxyIteratorImpl<T, kReverse, kOrProxy> begin,
+    internal::RepeatedFieldProxyIteratorImpl<T, kReverse, kOrProxy> end) {
   auto begin_it =
       internal::RepeatedFieldProxyIteratorInternalPrivateAccessHelper<
           T>::iterator(begin);

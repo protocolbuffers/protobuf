@@ -5,7 +5,18 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-"""Contains routines for printing protocol messages in text format.
+"""Contains routines for printing messages in Protobuf Text Format.
+
+Printing and parsing messages in Text Format is useful for debugging
+and human editing of messages.
+
+Unlike the Binary and ProtoJSON formats, Text Format is not designed to be
+used as a wire format; instead it is intended for human-in-the-loop
+configuration use-cases.
+
+Systems processing untrusted inputs should strongly prefer to use Binary format
+instead. If a textual format of untrusted inputs is required, consider using
+ProtoJSON format instead.
 
 Simple usage example::
 
@@ -672,9 +683,16 @@ def Parse(text,
     allow_unknown_field: if True, skip over unknown field and keep
       parsing. Avoid to use this option if possible. It may hide some
       errors (e.g. spelling error on field name)
-    max_recursion_depth: Optional maximum recursion depth of a text proto
-      message to be deserialized. Text proto messages over this depth will
-      fail to parse. ``None`` keeps the historical unbounded behavior.
+    max_recursion_depth: Optional maximum recursion depth of the
+      message to be parsed: Text Format inputs over this depth will
+      fail to parse. ``None`` means no additional limit (the Python runtime
+      will enforce some limit due to call stack limits). As Text Format is
+      primarily intended to be used on trusted configuration inputs, and to
+      maintain backwards compatibility, the default of ``None`` (unbounded) is
+      intentional. For better consistency with what messages will successfully
+      round trip through binary wire format, or for the discouraged case of
+      processing untrusted Text Format inputs, setting a limit of 100 is
+      recommended.
 
   Returns:
     Message: The same message passed as argument.
@@ -714,10 +732,16 @@ def Merge(text,
     allow_unknown_field: if True, skip over unknown field and keep
       parsing. Avoid to use this option if possible. It may hide some
       errors (e.g. spelling error on field name)
-    max_recursion_depth: Optional maximum recursion depth of a text proto
-      message to be deserialized. Text proto messages over this depth will
-      fail to parse. ``None`` keeps the historical unbounded behavior.
-
+    max_recursion_depth: Optional maximum recursion depth of the
+      message to be parsed: Text Format inputs over this depth will
+      fail to parse. ``None`` means no additional limit (the Python runtime
+      will enforce some limit due to call stack limits). As Text Format is
+      primarily intended to be used on trusted configuration inputs, and to
+      maintain backwards compatibility, the default of ``None`` (unbounded) is
+      intentional. For better consistency with what messages will successfully
+      round trip through binary wire format, or for the discouraged case of
+      processing untrusted Text Format inputs, setting a limit of 100 is
+      recommended.
   Returns:
     Message: The same message passed as argument.
 
@@ -755,9 +779,16 @@ def ParseLines(lines,
     allow_unknown_field: if True, skip over unknown field and keep
       parsing. Avoid to use this option if possible. It may hide some
       errors (e.g. spelling error on field name)
-    max_recursion_depth: Optional maximum recursion depth of a text proto
-      message to be deserialized. Text proto messages over this depth will
-      fail to parse. ``None`` keeps the historical unbounded behavior.
+    max_recursion_depth: Optional maximum recursion depth of the
+      message to be parsed: Text Format inputs over this depth will
+      fail to parse. ``None`` means no additional limit (the Python runtime
+      will enforce some limit due to call stack limits). As Text Format is
+      primarily intended to be used on trusted configuration inputs, and to
+      maintain backwards compatibility, the default of ``None`` (unbounded) is
+      intentional. For better consistency with what messages will successfully
+      round trip through binary wire format, or for the discouraged case of
+      processing untrusted Text Format inputs, setting a limit of 100 is
+      recommended.
 
   Returns:
     The same message passed as argument.
@@ -794,9 +825,16 @@ def MergeLines(lines,
     allow_unknown_field: if True, skip over unknown field and keep
       parsing. Avoid to use this option if possible. It may hide some
       errors (e.g. spelling error on field name)
-    max_recursion_depth: Optional maximum recursion depth of a text proto
-      message to be deserialized. Text proto messages over this depth will
-      fail to parse. ``None`` keeps the historical unbounded behavior.
+    max_recursion_depth: Optional maximum recursion depth of the
+      message to be parsed: Text Format inputs over this depth will
+      fail to parse. ``None`` means no additional limit (the Python runtime
+      will enforce some limit due to call stack limits). As Text Format is
+      primarily intended to be used on trusted configuration inputs, and to
+      maintain backwards compatibility, the default of ``None`` (unbounded) is
+      intentional. For better consistency with what messages will successfully
+      round trip through binary wire format, or for the discouraged case of
+      processing untrusted Text Format inputs, setting a limit of 100 is
+      recommended.
 
   Returns:
     The same message passed as argument.

@@ -28,7 +28,7 @@ class Domain(Enum):
 # These OSS versions are not stripped to avoid merging conflicts.
 OSS_DOMAIN = Domain.PUBLIC
 OSS_MAJOR = 7
-OSS_MINOR = 35
+OSS_MINOR = 36
 OSS_PATCH = 0
 OSS_SUFFIX = '-dev'
 

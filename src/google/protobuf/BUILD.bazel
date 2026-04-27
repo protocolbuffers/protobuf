@@ -413,6 +413,7 @@ cc_library(
         ":os_macros",
         "@abseil-cpp//absl/base:config",
         "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/base:dynamic_annotations",
         "@abseil-cpp//absl/base:prefetch",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/strings",
@@ -526,6 +527,7 @@ cc_library(
 
 cc_library(
     name = "arena_allocation_policy",
+    srcs = ["arena_allocation_policy.cc"],
     hdrs = ["arena_allocation_policy.h"],
     strip_include_prefix = "/src",
     visibility = [

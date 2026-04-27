@@ -13,11 +13,20 @@ on proto classes.  For usage, see:
 """
 
 import sys
+from typing import TYPE_CHECKING
 
 __author__ = 'rabsatt@google.com (Kevin Rabsatt)'
 
 
-class EnumTypeWrapper(object):
+if TYPE_CHECKING:
+  # EnumTypeWrapper is used as a metaclass during type checking, specifically
+  # in the generated stub files.
+  base = type
+else:
+  base = object
+
+
+class EnumTypeWrapper(base):
   """A utility for finding the names of enum values."""
 
   DESCRIPTOR = None

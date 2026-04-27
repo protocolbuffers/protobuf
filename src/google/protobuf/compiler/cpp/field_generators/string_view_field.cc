@@ -183,10 +183,10 @@ class SingularStringView : public FieldGeneratorBase {
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
     if (is_inlined() || EmptyDefault() || use_micro_string()) {
-      p->Emit("new (&$field$) decltype($field$){arena, from.$field$};\n");
+      p->Emit("new (&$field_$) decltype($field_$){arena, from.$field_$};\n");
     } else {
       p->Emit(
-          "new (&$field$) decltype($field$){arena, from.$field$,"
+          "new (&$field_$) decltype($field_$){arena, from.$field_$,"
           " $default_variable_field$};\n");
     }
   }

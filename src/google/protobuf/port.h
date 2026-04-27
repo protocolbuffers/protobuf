@@ -31,6 +31,7 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/config.h"
+#include "absl/base/dynamic_annotations.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 
@@ -644,7 +645,24 @@ inline void PoisonMemoryRegion([[maybe_unused]] const void* p,
 inline void UnpoisonMemoryRegion([[maybe_unused]] const void* p,
                                  [[maybe_unused]] size_t n) {
 #if defined(ABSL_HAVE_ADDRESS_SANITIZER)
-  ASAN_UNPOISON_MEMORY_REGION(p, n);
+  static const bool kReallyHasMemoryPoisoning = [] {
+    // Test if poisoning is on. `allow_user_poisoning=0` would disable it.
+    // There is no official API for this, so we just probe.
+    alignas(8) char buf[8];
+    ASAN_POISON_MEMORY_REGION(buf, sizeof(buf));
+    bool res = __asan_address_is_poisoned(buf);
+    ASAN_UNPOISON_MEMORY_REGION(buf, sizeof(buf));
+    return res;
+  }();
+  if (kReallyHasMemoryPoisoning) {
+    ASAN_UNPOISON_MEMORY_REGION(p, n);
+  } else {
+    // When in ASan but with memory poisoning off, we still want to clear
+    // container annotations from such memory.
+    // We annotate the whole block as usable.
+    ABSL_ANNOTATE_CONTIGUOUS_CONTAINER(p, static_cast<const char*>(p) + n, p,
+                                       static_cast<const char*>(p) + n);
+  }
 #else
   // Nothing
 #endif

@@ -42,7 +42,7 @@ public final class InternalLazyFieldTest {
     return Arrays.asList(
         new Object[][] {
           {ExtensionRegistryLite.LazyExtensionMode.EAGER},
-          {ExtensionRegistryLite.LazyExtensionMode.UNVERIFIED_LAZY}
+          {ExtensionRegistryLite.LazyExtensionMode.LAZY_VERIFY_ON_ACCESS}
         });
   }
 
@@ -91,7 +91,7 @@ public final class InternalLazyFieldTest {
             EXTENSION_REGISTRY,
             ByteString.copyFromUtf8("invalid"));
 
-    if (mode == ExtensionRegistryLite.LazyExtensionMode.UNVERIFIED_LAZY) {
+    if (mode == ExtensionRegistryLite.LazyExtensionMode.LAZY_VERIFY_ON_ACCESS) {
       assertThrows(InvalidProtobufRuntimeException.class, () -> lazyField.getValue());
     } else {
       assertThat(lazyField.getValue()).isEqualTo(TestAllTypes.getDefaultInstance());
@@ -106,8 +106,10 @@ public final class InternalLazyFieldTest {
             .buildPartial();
     InternalLazyField lazyField = createLazyFieldWithBytesFromMessage(message);
 
-    if (mode == ExtensionRegistryLite.LazyExtensionMode.UNVERIFIED_LAZY) {
-      assertThrows(InvalidProtobufRuntimeException.class, () -> lazyField.getValue());
+    if (mode == ExtensionRegistryLite.LazyExtensionMode.LAZY_VERIFY_ON_ACCESS) {
+      TestAllExtensions parent = (TestAllExtensions) lazyField.getValue();
+      assertThrows(
+          InvalidProtobufRuntimeException.class, () -> parent.getExtension(TestRequired.single));
     } else {
       assertThat(lazyField.getValue()).isEqualTo(TestAllExtensions.getDefaultInstance());
     }
@@ -121,7 +123,7 @@ public final class InternalLazyFieldTest {
             EXTENSION_REGISTRY,
             ByteString.copyFromUtf8("invalid"));
 
-    if (mode == ExtensionRegistryLite.LazyExtensionMode.UNVERIFIED_LAZY) {
+    if (mode == ExtensionRegistryLite.LazyExtensionMode.LAZY_VERIFY_ON_ACCESS) {
       assertThrows(InvalidProtobufRuntimeException.class, () -> lazyField.getValue());
       Throwable exception =
           assertThrows(InvalidProtobufRuntimeException.class, () -> lazyField.getValue());
@@ -371,7 +373,7 @@ public final class InternalLazyFieldTest {
     InternalLazyField mergedLazyField =
         InternalLazyField.mergeFrom(lazyField, input, EXTENSION_REGISTRY);
 
-    if (mode == ExtensionRegistryLite.LazyExtensionMode.UNVERIFIED_LAZY) {
+    if (mode == ExtensionRegistryLite.LazyExtensionMode.LAZY_VERIFY_ON_ACCESS) {
       assertThrows(InvalidProtobufRuntimeException.class, () -> mergedLazyField.getValue());
     } else {
       assertThat(mergedLazyField.getValue()).isEqualTo(TestAllTypes.getDefaultInstance());

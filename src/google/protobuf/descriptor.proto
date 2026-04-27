@@ -929,7 +929,11 @@ message EnumValueOptions {
 
   // Range reserved for first-class extension options defined by the Protobuf
   // team. Custom options must use the 1000+ range instead.
-  extensions 990 to 998;
+  extensions 990 to 998 [declaration = {
+    number: 998,
+    full_name: ".pb.enumvalue.json",
+    type: ".pb.enumvalue.JsonEnumValueOptions"
+  }];
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -1168,7 +1172,7 @@ message FeatureSet {
     },
     edition_defaults = { edition: EDITION_LEGACY, value: "STYLE_LEGACY" },
     edition_defaults = { edition: EDITION_2024, value: "STYLE2024" },
-    edition_defaults = { edition: EDITION_UNSTABLE, value: "STYLE2026" }
+    edition_defaults = { edition: EDITION_2026, value: "STYLE2026" }
   ];
 
   message VisibilityFeature {

@@ -28,6 +28,12 @@ err:
   assert(PyUpb_ModuleState_MaybeGet() == NULL || /* During shutdown. */ \
          Py_TYPE(obj) == PyUpb_ModuleState_Get()->state_member)
 
+typedef enum {
+  kPyUpb_CompareEqual,
+  kPyUpb_CompareNotEqual,
+  kPyUpb_CompareError,
+} PyUpb_CompareResult;
+
 // -----------------------------------------------------------------------------
 // ByNameIterator
 // -----------------------------------------------------------------------------
@@ -210,23 +216,26 @@ static PyObject* PyUpb_GenericSequence_GetItem(PyObject* _self,
 
 // A sequence container can only be equal to another sequence container, or (for
 // backward compatibility) to a list containing the same items.
-// Returns 1 if equal, 0 if unequal, -1 on error.
-static int PyUpb_GenericSequence_IsEqual(PyUpb_GenericSequence* self,
-                                         PyObject* other) {
+static PyUpb_CompareResult PyUpb_GenericSequence_IsEqual(
+    PyUpb_GenericSequence* self, PyObject* other) {
   // Check the identity of C++ pointers.
   if (PyObject_TypeCheck(other, Py_TYPE(self))) {
     PyUpb_GenericSequence* other_seq = (void*)other;
-    return self->parent == other_seq->parent && self->funcs == other_seq->funcs;
+    if (self->parent == other_seq->parent && self->funcs == other_seq->funcs) {
+      return kPyUpb_CompareEqual;
+    } else {
+      return kPyUpb_CompareNotEqual;
+    }
   }
 
-  if (!PyList_Check(other)) return 0;
+  if (!PyList_Check(other)) return kPyUpb_CompareNotEqual;
 
   // return list(self) == other
   // We can clamp `i` to int because GenericSequence uses int for size (this
   // is useful when we do int iteration below).
   int n = PyUpb_GenericSequence_Length((PyObject*)self);
   if ((Py_ssize_t)n != PyList_Size(other)) {
-    return false;
+    return kPyUpb_CompareNotEqual;
   }
 
   PyObject* item1;
@@ -236,14 +245,15 @@ static int PyUpb_GenericSequence_IsEqual(PyUpb_GenericSequence* self,
     if (!item1 || !item2) goto error;
     int cmp = PyObject_RichCompareBool(item1, item2, Py_EQ);
     Py_DECREF(item1);
-    if (cmp != 1) return cmp;
+    if (cmp < 0) return kPyUpb_CompareError;
+    if (cmp == 0) return kPyUpb_CompareNotEqual;
   }
   // All items were found and equal
-  return 1;
+  return kPyUpb_CompareEqual;
 
 error:
   Py_XDECREF(item1);
-  return -1;
+  return kPyUpb_CompareError;
 }
 
 static PyObject* PyUpb_GenericSequence_RichCompare(PyObject* _self,
@@ -252,9 +262,16 @@ static PyObject* PyUpb_GenericSequence_RichCompare(PyObject* _self,
   if (opid != Py_EQ && opid != Py_NE) {
     Py_RETURN_NOTIMPLEMENTED;
   }
-  bool ret = PyUpb_GenericSequence_IsEqual(self, other);
-  if (opid == Py_NE) ret = !ret;
-  return PyBool_FromLong(ret);
+  PyUpb_CompareResult eq = PyUpb_GenericSequence_IsEqual(self, other);
+  switch (eq) {
+    case kPyUpb_CompareError:
+      return NULL;
+    case kPyUpb_CompareEqual:
+      return PyBool_FromLong(opid == Py_EQ);
+    case kPyUpb_CompareNotEqual:
+      return PyBool_FromLong(opid == Py_NE);
+  }
+  return NULL;
 }
 
 static PyObject* PyUpb_GenericSequence_Subscript(PyObject* _self,
@@ -507,21 +524,30 @@ error:
 
 // A mapping container can only be equal to another mapping container, or (for
 // backward compatibility) to a dict containing the same items.
-// Returns 1 if equal, 0 if unequal, -1 on error.
-static int PyUpb_ByNameMap_IsEqual(PyUpb_ByNameMap* self, PyObject* other) {
+static PyUpb_CompareResult PyUpb_ByNameMap_IsEqual(PyUpb_ByNameMap* self,
+                                                   PyObject* other) {
   // Check the identity of C++ pointers.
   if (PyObject_TypeCheck(other, Py_TYPE(self))) {
     PyUpb_ByNameMap* other_map = (void*)other;
-    return self->parent == other_map->parent && self->funcs == other_map->funcs;
+    if (self->parent == other_map->parent && self->funcs == other_map->funcs) {
+      return kPyUpb_CompareEqual;
+    } else {
+      return kPyUpb_CompareNotEqual;
+    }
   }
 
-  if (!PyDict_Check(other)) return 0;
+  if (!PyDict_Check(other)) return kPyUpb_CompareNotEqual;
 
   PyObject* self_dict = PyDict_New();
-  PyDict_Merge(self_dict, (PyObject*)self, 0);
+  if (PyDict_Merge(self_dict, (PyObject*)self, 0) < 0) {
+    Py_DECREF(self_dict);
+    return kPyUpb_CompareError;
+  }
   int eq = PyObject_RichCompareBool(self_dict, other, Py_EQ);
   Py_DECREF(self_dict);
-  return eq;
+  if (eq < 0) return kPyUpb_CompareError;
+  if (eq == 0) return kPyUpb_CompareNotEqual;
+  return kPyUpb_CompareEqual;
 }
 
 static PyObject* PyUpb_ByNameMap_RichCompare(PyObject* _self, PyObject* other,
@@ -530,9 +556,16 @@ static PyObject* PyUpb_ByNameMap_RichCompare(PyObject* _self, PyObject* other,
   if (opid != Py_EQ && opid != Py_NE) {
     Py_RETURN_NOTIMPLEMENTED;
   }
-  bool ret = PyUpb_ByNameMap_IsEqual(self, other);
-  if (opid == Py_NE) ret = !ret;
-  return PyBool_FromLong(ret);
+  PyUpb_CompareResult eq = PyUpb_ByNameMap_IsEqual(self, other);
+  switch (eq) {
+    case kPyUpb_CompareError:
+      return NULL;
+    case kPyUpb_CompareEqual:
+      return PyBool_FromLong(opid == Py_EQ);
+    case kPyUpb_CompareNotEqual:
+      return PyBool_FromLong(opid == Py_NE);
+  }
+  return NULL;
 }
 
 static PyMethodDef PyUpb_ByNameMap_Methods[] = {
@@ -732,21 +765,30 @@ static int PyUpb_ByNumberMap_Contains(PyObject* _self, PyObject* key) {
 
 // A mapping container can only be equal to another mapping container, or (for
 // backward compatibility) to a dict containing the same items.
-// Returns 1 if equal, 0 if unequal, -1 on error.
-static int PyUpb_ByNumberMap_IsEqual(PyUpb_ByNumberMap* self, PyObject* other) {
+static PyUpb_CompareResult PyUpb_ByNumberMap_IsEqual(PyUpb_ByNumberMap* self,
+                                                     PyObject* other) {
   // Check the identity of C++ pointers.
   if (PyObject_TypeCheck(other, Py_TYPE(self))) {
     PyUpb_ByNumberMap* other_map = (void*)other;
-    return self->parent == other_map->parent && self->funcs == other_map->funcs;
+    if (self->parent == other_map->parent && self->funcs == other_map->funcs) {
+      return kPyUpb_CompareEqual;
+    } else {
+      return kPyUpb_CompareNotEqual;
+    }
   }
 
-  if (!PyDict_Check(other)) return 0;
+  if (!PyDict_Check(other)) return kPyUpb_CompareNotEqual;
 
   PyObject* self_dict = PyDict_New();
-  PyDict_Merge(self_dict, (PyObject*)self, 0);
+  if (PyDict_Merge(self_dict, (PyObject*)self, 0) < 0) {
+    Py_DECREF(self_dict);
+    return kPyUpb_CompareError;
+  }
   int eq = PyObject_RichCompareBool(self_dict, other, Py_EQ);
   Py_DECREF(self_dict);
-  return eq;
+  if (eq < 0) return kPyUpb_CompareError;
+  if (eq == 0) return kPyUpb_CompareNotEqual;
+  return kPyUpb_CompareEqual;
 }
 
 static PyObject* PyUpb_ByNumberMap_RichCompare(PyObject* _self, PyObject* other,
@@ -755,9 +797,16 @@ static PyObject* PyUpb_ByNumberMap_RichCompare(PyObject* _self, PyObject* other,
   if (opid != Py_EQ && opid != Py_NE) {
     Py_RETURN_NOTIMPLEMENTED;
   }
-  bool ret = PyUpb_ByNumberMap_IsEqual(self, other);
-  if (opid == Py_NE) ret = !ret;
-  return PyBool_FromLong(ret);
+  PyUpb_CompareResult eq = PyUpb_ByNumberMap_IsEqual(self, other);
+  switch (eq) {
+    case kPyUpb_CompareError:
+      return NULL;
+    case kPyUpb_CompareEqual:
+      return PyBool_FromLong(opid == Py_EQ);
+    case kPyUpb_CompareNotEqual:
+      return PyBool_FromLong(opid == Py_NE);
+  }
+  return NULL;
 }
 
 static PyMethodDef PyUpb_ByNumberMap_Methods[] = {

@@ -511,6 +511,60 @@ impl<'borrow, T: Singular> iter::IntoIterator for &'borrow RepeatedMut<'_, T> {
     }
 }
 
+/// An iterator over the mutable values inside of a [`RepeatedMut`].
+pub struct RepeatedMutIter<'msg, T> {
+    inner: InnerRepeatedMut<'msg>,
+    current_index: usize,
+    len: usize,
+    _phantom: PhantomData<&'msg mut T>,
+}
+
+impl<'msg, T: Message> iter::Iterator for RepeatedMutIter<'msg, T> {
+    type Item = Mut<'msg, T>;
+
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.current_index >= self.len {
+            return None;
+        }
+        let index = self.current_index;
+        self.current_index += 1;
+
+        // SAFETY: index is valid.
+        let val = unsafe {
+            let temp_repeated = RepeatedMut::from_inner(Private, self.inner);
+            T::repeated_get_mut_unchecked(Private, temp_repeated, index)
+        };
+
+        Some(val)
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let len = self.len();
+        (len, Some(len))
+    }
+}
+
+impl<'msg, T: Message> ExactSizeIterator for RepeatedMutIter<'msg, T> {
+    fn len(&self) -> usize {
+        self.len - self.current_index
+    }
+}
+
+impl<'msg, T: Message> FusedIterator for RepeatedMutIter<'msg, T> {}
+
+impl<'msg, T: Message> RepeatedMut<'msg, T> {
+    /// Returns an iterator that allows modifying each value.
+    pub fn iter_mut(self) -> RepeatedMutIter<'msg, T> {
+        RepeatedMutIter {
+            len: self.len(),
+            inner: self.inner,
+            current_index: 0,
+            _phantom: PhantomData,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

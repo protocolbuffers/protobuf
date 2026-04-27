@@ -51,6 +51,12 @@
 #define UPB_HAS_ATTRIBUTE(x) 0
 #endif
 
+#ifdef __has_c_attribute
+#define UPB_HAS_C_ATTRIBUTE(x) __has_c_attribute(x)
+#else
+#define UPB_HAS_C_ATTRIBUTE(x) 0
+#endif
+
 #if defined(__cplusplus) && defined(__has_cpp_attribute)
 // NOTE: requiring __cplusplus above should not be necessary, but
 // works around https://bugs.llvm.org/show_bug.cgi?id=23435.
@@ -289,10 +295,21 @@ Error, UINTPTR_MAX is undefined
 #define UPB_PRINTF(str, first_vararg)
 #endif
 
-#if defined(__clang__)
+#if UPB_HAS_ATTRIBUTE(noderef)
 #define UPB_NODEREF __attribute__((noderef))
 #else
 #define UPB_NODEREF
+#endif
+
+// Will be defined properly once call sites are updated
+#if false && UPB_HAS_C_ATTRIBUTE(nodiscard)
+#define UPB_NODISCARD [[nodiscard]]
+#elif false && UPB_HAS_ATTRIBUTE(warn_unused_result)
+#define UPB_NODISCARD __attribute__((warn_unused_result))
+#elif false && UPB_HAS_CPP_ATTRIBUTE(nodiscard)
+#define UPB_NODISCARD [[nodiscard]]
+#else
+#define UPB_NODISCARD
 #endif
 
 #define UPB_MAX(x, y) ((x) > (y) ? (x) : (y))
@@ -729,5 +746,13 @@ Error, UINTPTR_MAX is undefined
 // This macro can be set to enable these API changes ahead of time, so that
 // user code can be updated before upgrading versions of protobuf.
 #ifdef UPB_FUTURE_BREAKING_CHANGES
+
+// Removes non-standard clamping behavior in RepeatedContainer.pop()
+// Owner: runze@
+#define UPB_FUTURE_REMOVE_POP_CLAMP 1
+
+#else
+
+#define UPB_FUTURE_REMOVE_POP_CLAMP 0
 
 #endif

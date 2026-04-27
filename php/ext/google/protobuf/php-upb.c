@@ -47,6 +47,12 @@
 #define UPB_HAS_ATTRIBUTE(x) 0
 #endif
 
+#ifdef __has_c_attribute
+#define UPB_HAS_C_ATTRIBUTE(x) __has_c_attribute(x)
+#else
+#define UPB_HAS_C_ATTRIBUTE(x) 0
+#endif
+
 #if defined(__cplusplus) && defined(__has_cpp_attribute)
 // NOTE: requiring __cplusplus above should not be necessary, but
 // works around https://bugs.llvm.org/show_bug.cgi?id=23435.
@@ -285,10 +291,21 @@ Error, UINTPTR_MAX is undefined
 #define UPB_PRINTF(str, first_vararg)
 #endif
 
-#if defined(__clang__)
+#if UPB_HAS_ATTRIBUTE(noderef)
 #define UPB_NODEREF __attribute__((noderef))
 #else
 #define UPB_NODEREF
+#endif
+
+// Will be defined properly once call sites are updated
+#if false && UPB_HAS_C_ATTRIBUTE(nodiscard)
+#define UPB_NODISCARD [[nodiscard]]
+#elif false && UPB_HAS_ATTRIBUTE(warn_unused_result)
+#define UPB_NODISCARD __attribute__((warn_unused_result))
+#elif false && UPB_HAS_CPP_ATTRIBUTE(nodiscard)
+#define UPB_NODISCARD [[nodiscard]]
+#else
+#define UPB_NODISCARD
 #endif
 
 #define UPB_MAX(x, y) ((x) > (y) ? (x) : (y))
@@ -725,6 +742,14 @@ Error, UINTPTR_MAX is undefined
 // This macro can be set to enable these API changes ahead of time, so that
 // user code can be updated before upgrading versions of protobuf.
 #ifdef UPB_FUTURE_BREAKING_CHANGES
+
+// Removes non-standard clamping behavior in RepeatedContainer.pop()
+// Owner: runze@
+#define UPB_FUTURE_REMOVE_POP_CLAMP 1
+
+#else
+
+#define UPB_FUTURE_REMOVE_POP_CLAMP 0
 
 #endif
 
@@ -3291,7 +3316,7 @@ static const char descriptor[13575] = {
     'T', 'Y', 'L', 'E', '_', 'L', 'E', 'G', 'A', 'C', 'Y', '\030',
     '\204', '\007', '\242', '\001', '\016', '\022', '\t', 'S', 'T', 'Y', 'L', 'E',
     '2', '0', '2', '4', '\030', '\351', '\007', '\242', '\001', '\016', '\022', '\t',
-    'S', 'T', 'Y', 'L', 'E', '2', '0', '2', '6', '\030', '\217', 'N',
+    'S', 'T', 'Y', 'L', 'E', '2', '0', '2', '6', '\030', '\352', '\007',
     '\262', '\001', '\003', '\010', '\351', '\007', 'R', '\022', 'e', 'n', 'f', 'o',
     'r', 'c', 'e', 'N', 'a', 'm', 'i', 'n', 'g', 'S', 't', 'y',
     'l', 'e', '\022', '\271', '\001', '\n', '\031', 'd', 'e', 'f', 'a', 'u',
@@ -3686,7 +3711,7 @@ static uint32_t upb_inthash(uintptr_t key) {
   }
 }
 
-static const upb_tabent* upb_getentry(const upb_table* t, uint32_t hash) {
+static upb_tabent* upb_getentry(const upb_table* t, uint32_t hash) {
   return t->entries + (hash & t->mask);
 }
 
@@ -3731,25 +3756,26 @@ static upb_tabent* emptyent(upb_table* t, upb_tabent* e) {
 }
 
 static upb_tabent* getentry_mutable(upb_table* t, uint32_t hash) {
-  return (upb_tabent*)upb_getentry(t, hash);
+  return upb_getentry(t, hash);
 }
 
-static const upb_tabent* findentry(const upb_table* t, lookupkey_t key,
-                                   uint32_t hash, eqlfunc_t* eql) {
-  const upb_tabent* e;
+static upb_tabent* findentry(const upb_table* t, lookupkey_t key, uint32_t hash,
+                             eqlfunc_t* eql) {
+  upb_tabent* e;
 
   if (t->count == 0) return NULL;
   e = upb_getentry(t, hash);
   if (upb_tabent_isempty(e)) return NULL;
   while (1) {
     if (eql(e->key, e->val, key)) return e;
-    if ((e = e->next) == NULL) return NULL;
+    if (!upb_tabent_hasnext(e)) return NULL;
+    e = upb_tabent_next(e);
   }
 }
 
 static upb_tabent* findentry_mutable(upb_table* t, lookupkey_t key,
                                      uint32_t hash, eqlfunc_t* eql) {
-  return (upb_tabent*)findentry(t, key, hash, eql);
+  return findentry(t, key, hash, eql);
 }
 
 static bool lookup(const upb_table* t, lookupkey_t key, upb_value* v,
@@ -3777,7 +3803,7 @@ static void insert(upb_table* t, lookupkey_t key, upb_key tabkey, upb_value val,
 
   if (upb_tabent_isempty(mainpos_e)) {
     /* Our main position is empty; use it. */
-    our_e->next = NULL;
+    upb_tabent_clearnext(our_e);
   } else {
     /* Collision. */
     upb_tabent* new_e = emptyent(t, mainpos_e);
@@ -3788,21 +3814,32 @@ static void insert(upb_table* t, lookupkey_t key, upb_key tabkey, upb_value val,
       /* Existing ent is in its main position (it has the same hash as us, and
        * is the head of our chain).  Insert to new ent and append to this chain.
        */
-      new_e->next = mainpos_e->next;
-      mainpos_e->next = new_e;
+      if (upb_tabent_hasnext(mainpos_e)) {
+        upb_tabent_setnext(new_e, upb_tabent_next(mainpos_e));
+      } else {
+        upb_tabent_clearnext(new_e);
+      }
+      upb_tabent_setnext(mainpos_e, new_e);
       our_e = new_e;
     } else {
       /* Existing ent is not in its main position (it is a node in some other
        * chain).  This implies that no existing ent in the table has our hash.
        * Evict it (updating its chain) and use its ent for head of our chain. */
-      *new_e = *mainpos_e; /* copies next. */
-      while (chain->next != mainpos_e) {
-        chain = (upb_tabent*)chain->next;
+      new_e->key = mainpos_e->key;
+      new_e->val = mainpos_e->val;
+      if (upb_tabent_hasnext(mainpos_e)) {
+        upb_tabent_setnext(new_e, upb_tabent_next(mainpos_e));
+      } else {
+        upb_tabent_clearnext(new_e);
+      }
+
+      while (upb_tabent_hasnext(chain) && upb_tabent_next(chain) != mainpos_e) {
+        chain = upb_tabent_next(chain);
         UPB_ASSERT(chain);
       }
-      chain->next = new_e;
+      upb_tabent_setnext(chain, new_e);
       our_e = mainpos_e;
-      our_e->next = NULL;
+      upb_tabent_clearnext(our_e);
     }
   }
   our_e->key = tabkey;
@@ -3818,27 +3855,40 @@ static bool rm(upb_table* t, lookupkey_t key, upb_value* val, uint32_t hash,
     /* Element to remove is at the head of its chain. */
     t->count--;
     if (val) *val = chain->val;
-    if (chain->next) {
-      upb_tabent* move = (upb_tabent*)chain->next;
-      *chain = *move;
-      move->key = upb_key_empty();
+    if (upb_tabent_hasnext(chain)) {
+      upb_tabent* move = upb_tabent_next(chain);
+      chain->key = move->key;
+      chain->val = move->val;
+      if (upb_tabent_hasnext(move)) {
+        upb_tabent_setnext(chain, upb_tabent_next(move));
+      } else {
+        upb_tabent_clearnext(chain);
+      }
+
+      upb_tabent_clear(move);
     } else {
-      chain->key = upb_key_empty();
+      upb_tabent_clear(chain);
     }
     return true;
   } else {
     /* Element to remove is either in a non-head position or not in the
      * table. */
-    while (chain->next && !eql(chain->next->key, chain->next->val, key)) {
-      chain = (upb_tabent*)chain->next;
+    while (
+        upb_tabent_hasnext(chain) &&
+        !eql(upb_tabent_next(chain)->key, upb_tabent_next(chain)->val, key)) {
+      chain = upb_tabent_next(chain);
     }
-    if (chain->next) {
+    if (upb_tabent_hasnext(chain)) {
       /* Found element to remove. */
-      upb_tabent* rm = (upb_tabent*)chain->next;
+      upb_tabent* rm = upb_tabent_next(chain);
       t->count--;
-      if (val) *val = chain->next->val;
-      rm->key = upb_key_empty();
-      chain->next = rm->next;
+      if (val) *val = rm->val;
+      if (upb_tabent_hasnext(rm)) {
+        upb_tabent_setnext(chain, upb_tabent_next(rm));
+      } else {
+        upb_tabent_clearnext(chain);
+      }
+      upb_tabent_clear(rm);
       return true;
     } else {
       /* Element to remove is not in the table. */
@@ -4179,19 +4229,23 @@ void upb_strtable_removeiter(upb_strtable* t, intptr_t* iter) {
   // Linear search, not great.
   upb_tabent* end = &t->t.entries[upb_table_size(&t->t)];
   for (upb_tabent* e = t->t.entries; e != end; e++) {
-    if (e->next == ent) {
+    if (!upb_tabent_isempty(e) && upb_tabent_hasnext(e) &&
+        upb_tabent_next(e) == ent) {
       prev = e;
       break;
     }
   }
 
   if (prev) {
-    prev->next = ent->next;
+    if (upb_tabent_hasnext(ent)) {
+      upb_tabent_setnext(prev, upb_tabent_next(ent));
+    } else {
+      upb_tabent_clearnext(prev);
+    }
   }
 
   t->t.count--;
-  ent->key = upb_key_empty();
-  ent->next = NULL;
+  upb_tabent_clear(ent);
 }
 
 void upb_strtable_setentryvalue(upb_strtable* t, intptr_t iter, upb_value v) {
@@ -4353,6 +4407,7 @@ static void check(upb_inttable* t) {
     upb_value val;
     while (upb_inttable_next(t, &key, &val, &iter)) {
       UPB_ASSERT(upb_inttable_lookup(t, key, NULL));
+      count++;
     }
     UPB_ASSERT(count == upb_inttable_count(t));
   }
@@ -4593,19 +4648,23 @@ void upb_inttable_removeiter(upb_inttable* t, intptr_t* iter) {
     // Linear search, not great.
     upb_tabent* end = &t->t.entries[upb_table_size(&t->t)];
     for (upb_tabent* e = t->t.entries; e != end; e++) {
-      if (e->next == ent) {
+      if (!upb_tabent_isempty(e) && upb_tabent_hasnext(e) &&
+          upb_tabent_next(e) == ent) {
         prev = e;
         break;
       }
     }
 
     if (prev) {
-      prev->next = ent->next;
+      if (upb_tabent_hasnext(ent)) {
+        upb_tabent_setnext(prev, upb_tabent_next(ent));
+      } else {
+        upb_tabent_clearnext(prev);
+      }
     }
 
     t->t.count--;
-    ent->key = upb_key_empty();
-    ent->next = NULL;
+    upb_tabent_clear(ent);
   }
 }
 
@@ -11738,6 +11797,7 @@ const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
 }
 
 
+#include <stddef.h>
 #include <stdint.h>
 
 
@@ -11765,12 +11825,9 @@ static bool _upb_GeneratedRegistry_AddAllLinkedExtensions(
   const UPB_PRIVATE(upb_GeneratedExtensionListEntry)* entry =
       UPB_PRIVATE(upb_generated_extension_list);
   while (entry != NULL) {
-    // Comparing pointers to different objects is undefined behavior, so we
-    // convert them to uintptr_t and compare their values.
-    uintptr_t begin = (uintptr_t)entry->start;
-    uintptr_t end = (uintptr_t)entry->stop;
-    uintptr_t current = begin;
-    while (current < end) {
+    const char* current = (const char*)entry->start;
+    const char* end = (const char*)entry->stop;
+    while ((size_t)(end - current) >= sizeof(upb_MiniTableExtension)) {
       const upb_MiniTableExtension* ext =
           (const upb_MiniTableExtension*)current;
       // Sentinels and padding introduced by the linker can result in zeroed
@@ -16520,7 +16577,7 @@ static bool _upb_Decoder_Reserve(upb_Decoder* d, upb_Array* arr, size_t elem) {
       arr->UPB_PRIVATE(capacity) - arr->UPB_PRIVATE(size) < elem;
   if (need_realloc && !UPB_PRIVATE(_upb_Array_Realloc)(
                           arr, arr->UPB_PRIVATE(size) + elem, &d->arena)) {
-    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_OutOfMemory);
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   }
   return need_realloc;
 }
@@ -16578,7 +16635,7 @@ static upb_Message* _upb_Decoder_NewSubMessage2(upb_Decoder* d,
                                                 upb_Message** target) {
   UPB_ASSERT(subl);
   upb_Message* msg = _upb_Message_New(subl, &d->arena);
-  if (!msg) upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_OutOfMemory);
+  if (!msg) upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
 
   *target = msg;
   return msg;
@@ -16595,7 +16652,7 @@ static const char* _upb_Decoder_ReadString2(upb_Decoder* d, const char* ptr,
                                             int size, upb_StringView* str,
                                             bool validate_utf8) {
   if (!_upb_Decoder_ReadString(d, &ptr, size, str, validate_utf8)) {
-    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_OutOfMemory);
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   }
   return ptr;
 }
@@ -16606,12 +16663,12 @@ const char* _upb_Decoder_RecurseSubMessage(upb_Decoder* d, const char* ptr,
                                            const upb_MiniTable* subl,
                                            uint32_t expected_end_group) {
   if (--d->depth < 0) {
-    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_MaxDepthExceeded);
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_MaxDepthExceeded);
   }
   ptr = _upb_Decoder_DecodeMessage(d, ptr, submsg, subl);
   d->depth++;
   if (d->end_group != expected_end_group) {
-    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_Malformed);
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_Malformed);
   }
   return ptr;
 }
@@ -16635,7 +16692,7 @@ const char* _upb_Decoder_DecodeGroup(upb_Decoder* d, const char* ptr,
                                      const upb_MiniTable* subl,
                                      uint32_t number) {
   if (upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
-    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_Malformed);
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_Malformed);
   }
   ptr = _upb_Decoder_RecurseSubMessage(d, ptr, submsg, subl, number);
   d->end_group = DECODE_NOGROUP;
@@ -16682,7 +16739,7 @@ void _upb_Decoder_AddEnumValueToUnknown(upb_Decoder* d, upb_Message* msg,
 
   if (!UPB_PRIVATE(_upb_Message_AddUnknown)(unknown_msg, buf, end - buf,
                                             &d->arena, kUpb_AddUnknown_Copy)) {
-    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_OutOfMemory);
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   }
 }
 
@@ -16694,10 +16751,10 @@ const char* _upb_Decoder_DecodeFixedPacked(upb_Decoder* d, const char* ptr,
   upb_StringView sv;
   ptr = upb_EpsCopyInputStream_ReadStringEphemeral(&d->input, ptr, val->size,
                                                    &sv);
-  if (!ptr) upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_Malformed);
+  if (!ptr) upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_Malformed);
   int mask = (1 << lg2) - 1;
   if (UPB_UNLIKELY((val->size & mask) != 0 || ptr == NULL)) {
-    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_Malformed);
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_Malformed);
   }
   size_t count = val->size >> lg2;
   if (count == 0) return ptr;
@@ -16789,7 +16846,7 @@ static upb_Array* _upb_Decoder_CreateArray(upb_Decoder* d,
   const upb_FieldType field_type = field->UPB_PRIVATE(descriptortype);
   const size_t lg2 = UPB_PRIVATE(_upb_FieldType_SizeLg2)(field_type);
   upb_Array* ret = UPB_PRIVATE(_upb_Array_New)(&d->arena, 4, lg2);
-  if (!ret) upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_OutOfMemory);
+  if (!ret) upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   return ret;
 }
 
@@ -16898,7 +16955,7 @@ static upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d,
   UPB_ASSERT(key_field->UPB_PRIVATE(offset) == offsetof(upb_MapEntry, k));
   UPB_ASSERT(val_field->UPB_PRIVATE(offset) == offsetof(upb_MapEntry, v));
   upb_Map* ret = _upb_Map_New(&d->arena, key_size, val_size);
-  if (!ret) upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_OutOfMemory);
+  if (!ret) upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   return ret;
 }
 
@@ -16910,7 +16967,7 @@ UPB_NOINLINE static void _upb_Decoder_AddMapEntryUnknown(
   upb_EncodeStatus status =
       upb_Encode(ent_msg, entry, 0, &d->arena, &buf, &size);
   if (status != kUpb_EncodeStatus_Ok) {
-    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_OutOfMemory);
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   }
   char delim_buf[2 * kUpb_Decoder_EncodeVarint32MaxSize];
   char* delim_end = delim_buf;
@@ -16924,7 +16981,7 @@ UPB_NOINLINE static void _upb_Decoder_AddMapEntryUnknown(
   };
 
   if (!UPB_PRIVATE(_upb_Message_AddUnknownV)(msg, &d->arena, unknown, 2)) {
-    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_OutOfMemory);
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   }
 }
 
@@ -16982,7 +17039,7 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
   } else {
     if (_upb_Map_Insert(map, &ent.k, map->key_size, &ent.v, map->val_size,
                         &d->arena) == kUpb_MapInsertStatus_OutOfMemory) {
-      upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_OutOfMemory);
+      upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
     }
   }
   return ptr;
@@ -17055,7 +17112,7 @@ static void upb_Decoder_AddKnownMessageSetItem(
   upb_Extension* ext =
       UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(msg, item_mt, &d->arena);
   if (UPB_UNLIKELY(!ext)) {
-    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_OutOfMemory);
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   }
   upb_Message** submsgp = (upb_Message**)&ext->data.msg_val;
   upb_Message* submsg = _upb_Decoder_NewSubMessage2(
@@ -17063,13 +17120,13 @@ static void upb_Decoder_AddKnownMessageSetItem(
       &ext->ext->UPB_PRIVATE(field), submsgp);
   // upb_Decode_LimitDepth() takes uint32_t, d->depth - 1 can not be negative.
   if (d->depth <= 1) {
-    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_MaxDepthExceeded);
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_MaxDepthExceeded);
   }
   upb_DecodeStatus status = upb_Decode(
       data, size, submsg, upb_MiniTableExtension_GetSubMessage(item_mt),
       d->extreg, upb_Decode_LimitDepth(d->options, d->depth - 1), &d->arena);
   if (status != kUpb_DecodeStatus_Ok) {
-    upb_ErrorHandler_ThrowError(&d->err, status);
+    upb_ErrorHandler_ThrowError(d->err, status);
   }
 }
 
@@ -17095,7 +17152,7 @@ static void upb_Decoder_AddUnknownMessageSetItem(upb_Decoder* d,
       {split, end - split},
   };
   if (!UPB_PRIVATE(_upb_Message_AddUnknownV)(msg, &d->arena, unknown, 3)) {
-    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_OutOfMemory);
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   }
 }
 
@@ -17147,7 +17204,7 @@ static const char* upb_Decoder_DecodeMessageSetItem(
         ptr = upb_EpsCopyInputStream_ReadStringAlwaysAlias(&d->input, ptr, size,
                                                            &sv);
         if (!ptr) {
-          upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_Malformed);
+          upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_Malformed);
         }
         if (state_mask & kUpb_HavePayload) break;  // Ignore dup.
         state_mask |= kUpb_HavePayload;
@@ -17166,7 +17223,7 @@ static const char* upb_Decoder_DecodeMessageSetItem(
         break;
     }
   }
-  upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_Malformed);
+  upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_Malformed);
 }
 
 static upb_MiniTableField upb_Decoder_FieldNotFoundField = {
@@ -17392,7 +17449,7 @@ const char* _upb_Decoder_DecodeWireValue(upb_Decoder* d, const char* ptr,
     default:
       break;
   }
-  upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_Malformed);
+  upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_Malformed);
 }
 
 UPB_FORCEINLINE
@@ -17408,7 +17465,7 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
     upb_Extension* ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
         msg, ext_layout, &d->arena);
     if (UPB_UNLIKELY(!ext)) {
-      upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_OutOfMemory);
+      upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
     }
     d->original_msg = msg;
     msg = &ext->data.UPB_PRIVATE(ext_msg_val);
@@ -17430,7 +17487,7 @@ static const char* _upb_Decoder_DecodeUnknownField(
     upb_Decoder* d, const char* ptr, upb_Message* msg, uint32_t field_number,
     uint32_t wire_type, wireval val, const char* start) {
   if (field_number == 0) {
-    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_Malformed);
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_Malformed);
   }
 
   upb_EpsCopyInputStream_StartCapture(&d->input, start);
@@ -17439,7 +17496,7 @@ static const char* _upb_Decoder_DecodeUnknownField(
     upb_StringView sv;
     ptr = upb_EpsCopyInputStream_ReadStringEphemeral(&d->input, ptr, val.size,
                                                      &sv);
-    if (!ptr) upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_Malformed);
+    if (!ptr) upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_Malformed);
   } else if (wire_type == kUpb_WireType_StartGroup) {
     ptr = UPB_PRIVATE(_upb_WireReader_SkipGroup)(ptr, field_number << 3,
                                                  d->depth, &d->input);
@@ -17461,7 +17518,7 @@ static const char* _upb_Decoder_DecodeUnknownField(
 
   if (!UPB_PRIVATE(_upb_Message_AddUnknown)(msg, sv.data, sv.size, &d->arena,
                                             mode)) {
-    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_OutOfMemory);
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   }
 
   return ptr;
@@ -17619,10 +17676,10 @@ static upb_DecodeStatus upb_Decoder_Decode(upb_Decoder* const decoder,
                                            upb_Message* const msg,
                                            const upb_MiniTable* const m,
                                            upb_Arena* const arena) {
-  if (UPB_SETJMP(decoder->err.buf) == 0) {
-    decoder->err.code = _upb_Decoder_DecodeTop(decoder, buf, msg, m);
+  if (UPB_SETJMP(decoder->err->buf) == 0) {
+    decoder->err->code = _upb_Decoder_DecodeTop(decoder, buf, msg, m);
   } else {
-    UPB_ASSERT(decoder->err.code != kUpb_DecodeStatus_Ok);
+    UPB_ASSERT(decoder->err->code != kUpb_DecodeStatus_Ok);
   }
 
   return upb_Decoder_Destroy(decoder, arena);
@@ -17643,7 +17700,10 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, upb_Message* msg,
                             upb_Arena* arena) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Decoder decoder;
-  buf = upb_Decoder_Init(&decoder, buf, size, extreg, options, arena, NULL, 0);
+  upb_ErrorHandler err;
+  upb_ErrorHandler_Init(&err);
+  buf = upb_Decoder_Init(&decoder, buf, size, extreg, options, arena, &err,
+                         NULL, 0);
 
   return upb_Decoder_Decode(&decoder, buf, msg, mt, arena);
 }
@@ -17655,8 +17715,10 @@ upb_DecodeStatus upb_DecodeWithTrace(const char* buf, size_t size,
                                      char* trace_buf, size_t trace_size) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Decoder decoder;
-  buf = upb_Decoder_Init(&decoder, buf, size, extreg, options, arena, trace_buf,
-                         trace_size);
+  upb_ErrorHandler err;
+  upb_ErrorHandler_Init(&err);
+  buf = upb_Decoder_Init(&decoder, buf, size, extreg, options, arena, &err,
+                         trace_buf, trace_size);
 
   return upb_Decoder_Decode(&decoder, buf, msg, mt, arena);
 }
@@ -17737,22 +17799,10 @@ static uint64_t encode_zz64(int64_t n) {
   return ((uint64_t)n << 1) ^ (n >> 63);
 }
 
-typedef struct {
-  upb_EncodeStatus status;
-  jmp_buf err;
-  upb_Arena* arena;
-  // These should only be used for arithmetic and reallocation to allow full
-  // aliasing analysis on the ptr argument.
-  const char UPB_NODEREF *buf, *limit;
-  int options;
-  int depth;
-  _upb_mapsorter sorter;
-} upb_encstate;
-
 UPB_NORETURN static void encode_err(upb_encstate* e, upb_EncodeStatus s) {
   UPB_ASSERT(s != kUpb_EncodeStatus_Ok);
   e->status = s;
-  UPB_LONGJMP(e->err, 1);
+  UPB_LONGJMP(*e->err, 1);
 }
 
 // Subtraction is used for bounds checks, and the C standard says that pointer
@@ -18527,7 +18577,7 @@ static upb_EncodeStatus upb_Encoder_Encode(char* ptr,
   // code paths which blindly copy the returned pointer without bothering to
   // check for errors until much later (b/235839510). So we still set *buf to
   // NULL on error and we still set it to non-NULL on a successful empty result.
-  if (UPB_SETJMP(encoder->err) == 0) {
+  if (UPB_SETJMP(*encoder->err) == 0) {
     size_t encoded_msg_size;
     ptr = encode_message(ptr, encoder, msg, l, &encoded_msg_size);
     if (prepend_len) {
@@ -18565,8 +18615,10 @@ static upb_EncodeStatus _upb_Encode(const upb_Message* msg,
                                     upb_Arena* arena, char** buf, size_t* size,
                                     bool prepend_len) {
   upb_encstate e;
+  jmp_buf err;
 
   e.status = kUpb_EncodeStatus_Ok;
+  e.err = &err;
   e.arena = arena;
   e.buf = &initial_buf_sentinel;
   e.limit = &initial_buf_sentinel;
@@ -18582,6 +18634,53 @@ upb_EncodeStatus upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
                             int options, upb_Arena* arena, char** buf,
                             size_t* size) {
   return _upb_Encode(msg, l, options, arena, buf, size, false);
+}
+
+upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Field)(upb_encstate* e,
+                                                const upb_Message* msg,
+                                                const upb_MiniTableField* field,
+                                                char** buf, size_t* size,
+                                                int options) {
+  e->buf = &initial_buf_sentinel;
+  e->limit = &initial_buf_sentinel;
+  e->options = options;
+  e->depth = upb_EncodeOptions_GetEffectiveMaxDepth(options);
+
+  char* ptr = &initial_buf_sentinel;
+  if (encode_shouldencode(msg, field)) {
+    ptr = encode_field(ptr, e, msg, field);
+  }
+  *size = e->limit - ptr;
+  if (*size == 0) {
+    static char ch;
+    *buf = &ch;
+  } else {
+    UPB_ASSERT(ptr);
+    *buf = ptr;
+  }
+  return e->status;
+}
+
+upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Extension)(
+    upb_encstate* e, const upb_MiniTableExtension* ext,
+    upb_MessageValue ext_val, bool is_message_set, char** buf, size_t* size,
+    int options) {
+  e->buf = &initial_buf_sentinel;
+  e->limit = &initial_buf_sentinel;
+  e->options = options;
+  e->depth = upb_EncodeOptions_GetEffectiveMaxDepth(options);
+
+  char* ptr = &initial_buf_sentinel;
+  ptr = encode_ext(ptr, e, ext, ext_val, is_message_set);
+  *size = e->limit - ptr;
+  if (*size == 0) {
+    static char ch;
+    *buf = &ch;
+  } else {
+    UPB_ASSERT(ptr);
+    *buf = ptr;
+  }
+  return e->status;
 }
 
 upb_EncodeStatus upb_EncodeLengthPrefixed(const upb_Message* msg,
@@ -18760,6 +18859,7 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
 #undef UPB_NORETURN
 #undef UPB_PRINTF
 #undef UPB_NODEREF
+#undef UPB_NODISCARD
 #undef UPB_MAX
 #undef UPB_MIN
 #undef UPB_UNUSED
@@ -18800,6 +18900,7 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
 #undef UPB_LINKARR_START
 #undef UPB_LINKARR_STOP
 #undef UPB_FUTURE_BREAKING_CHANGES
+#undef UPB_FUTURE_REMOVE_POP_CLAMP
 #undef UPB_HAS_ATTRIBUTE
 #undef UPB_HAS_CPP_ATTRIBUTE
 #undef UPB_HAS_BUILTIN
