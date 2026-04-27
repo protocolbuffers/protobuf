@@ -161,6 +161,19 @@ TEST_P(MiniTableTest, AllScalarTypesOneof) {
   EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
 }
 
+TEST_P(MiniTableTest, FieldCountOverflow) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  for (uint32_t i = 1; i <= UINT16_MAX + 1; i++) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, i, 0));
+  }
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  EXPECT_EQ(nullptr, table);
+}
+
 TEST_P(MiniTableTest, SizeOverflow) {
   upb::Arena arena;
   upb::MtDataEncoder e;

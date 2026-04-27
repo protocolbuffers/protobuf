@@ -481,6 +481,11 @@ static const char* upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr,
         return --ptr;
       }
       upb_MiniTableField* field = fields;
+      if (*field_count == UINT16_MAX) {
+        upb_MdDecoder_ErrorJmp(&d->base,
+                               "Fields in message exceed the limit of %u",
+                               UINT16_MAX);
+      }
       *field_count += 1;
       fields = (char*)fields + field_size;
       uint32_t number = ++last_field_number;
