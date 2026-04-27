@@ -32,6 +32,7 @@
 #include "absl/base/attributes.h"
 #include "absl/base/config.h"
 #include "absl/base/dynamic_annotations.h"
+#include "absl/numeric/bits.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 
@@ -778,16 +779,33 @@ constexpr bool EnableCustomNewFor() {
 //   PROTOBUF_DEBUG_COUNTER("Foo.Slow").Inc();
 //   ...
 // }
+//
+// It also supports bucket based distributions. It has two methods:
+//
+// PROTOBUF_DEBUG_COUNTER("Foo.Slow").IncLog(x);
+//
+// where `x` is a uint64_t value and it will add the value to the log-based
+// bucket for it.
+//
+// PROTOBUF_DEBUG_COUNTER("Foo.Slow").IncBucket(x);
+//
+// where `x` is in the range [0,64] and increases the bucket directly.
 class PROTOBUF_EXPORT RealDebugCounter {
  public:
+  static constexpr size_t kNumBuckets = 64;
   explicit RealDebugCounter(absl::string_view name) { Register(name); }
-  // Lossy increment.
-  void Inc() { counter_.store(value() + 1, std::memory_order_relaxed); }
-  size_t value() const { return counter_.load(std::memory_order_relaxed); }
+  void Inc() { IncBucket(0); }
+  void IncLog(uint64_t value) { IncBucket(absl::bit_width(value)); }
+  void IncBucket(size_t b) {
+    // clamp to prevent UB if IncBucket is called out of range.
+    b %= kNumBuckets;
+    // Lossy increment.
+    counters_[b].store(counters_[b].load(std::memory_order_relaxed) + 1);
+  }
 
  private:
   void Register(absl::string_view name);
-  std::atomic<size_t> counter_{};
+  std::atomic<size_t>* counters_;
 };
 
 // When the feature is not enabled, the type is a noop.
@@ -795,6 +813,8 @@ class NoopDebugCounter {
  public:
   explicit constexpr NoopDebugCounter() = default;
   constexpr void Inc() {}
+  constexpr void IncLog(uint64_t) {}
+  constexpr void IncBucket(size_t) {}
 };
 
 // Pretty random large number that seems like a safe allocation on most systems.
