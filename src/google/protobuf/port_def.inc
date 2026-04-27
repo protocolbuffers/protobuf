@@ -765,6 +765,24 @@ namespace internal {
 #define PROTOBUF_REFACTOR_INLINE()
 #endif
 
+// PROTOBUF_NULL_AFTER_MOVE tells clang-tidy that a user-defined
+// smart-pointer-like type makes guarantees on the state of a moved-from object,
+// leaving it in a null state, where it can be used as long as it is not
+// dereferenced. In other words, these are the same semantics that smart
+// pointers from the standard library provide.
+//
+// The clang-tidy check bugprone-use-after-move allows member functions of types
+// marked with this attribute to be called on objects that have been moved from;
+// without the attribute, this would result in a use-after-move warning.
+#ifdef PROTOBUF_NULL_AFTER_MOVE
+#error PROTOBUF_NULL_AFTER_MOVE was previously defined
+#endif  // PROTOBUF_NULL_AFTER_MOVE
+#if defined(ABSL_ATTRIBUTE_NULL_AFTER_MOVE)
+#define PROTOBUF_NULL_AFTER_MOVE ABSL_ATTRIBUTE_NULL_AFTER_MOVE
+#else
+#define PROTOBUF_NULL_AFTER_MOVE
+#endif  // defined(ABSL_ATTRIBUTE_NULL_AFTER_MOVE)
+
 #ifdef PROTOBUF_NONNULL
 #error PROTOBUF_NONNULL was previously defined
 #endif

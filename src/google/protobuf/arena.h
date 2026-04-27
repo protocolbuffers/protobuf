@@ -269,7 +269,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   template <typename T>
   class
       ABSL_MUST_USE_RESULT
-          ABSL_ATTRIBUTE_TRIVIAL_ABI ABSL_NULLABILITY_COMPATIBLE UniquePtr;
+          ABSL_ATTRIBUTE_TRIVIAL_ABI ABSL_NULLABILITY_COMPATIBLE
+          PROTOBUF_NULL_AFTER_MOVE UniquePtr;
 
   // A smart pointer type for holding objects that are statically known to be
   // owned by an `Arena`. Even though it is a smart pointer, `Ptr` does not
@@ -919,6 +920,7 @@ template <typename T>
 class
     ABSL_MUST_USE_RESULT
         ABSL_ATTRIBUTE_TRIVIAL_ABI ABSL_NULLABILITY_COMPATIBLE
+        PROTOBUF_NULL_AFTER_MOVE
             Arena::UniquePtr final : internal::ArenaPtrCmpBase {
  public:
   using pointer = T*;
