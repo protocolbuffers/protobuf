@@ -1912,14 +1912,6 @@ LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
   return nullptr;
 }
 
-std::atomic<ExtensionSet::LazyMessageExtension* (*)(Arena* arena)>
-    ExtensionSet::maybe_create_lazy_extension_;
-
-#if defined(PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET)
-LazyField* ExtensionSet::MaybeCreateLazyExtension(Arena* arena) {
-  return nullptr;
-}
-#endif  // defined(PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET)
 
 }  // namespace internal
 }  // namespace protobuf
