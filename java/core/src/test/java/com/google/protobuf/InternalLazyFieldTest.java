@@ -99,12 +99,13 @@ public final class InternalLazyFieldTest {
   }
 
   @Test
-  public void testGetValueDataWtihInvalidExtension() {
+  public void testGetValueDataWtihPartialExtensionRequiredFullBuild() {
     TestAllExtensions message =
         TestAllExtensions.newBuilder()
             .setExtension(TestRequired.single, TestRequired.getDefaultInstance())
             .buildPartial();
     InternalLazyField lazyField = createLazyFieldWithBytesFromMessage(message);
+    lazyField.setPartialInitialization(/* partial= */ false);
 
     if (mode == ExtensionRegistryLite.LazyExtensionMode.LAZY_VERIFY_ON_ACCESS) {
       TestAllExtensions parent = (TestAllExtensions) lazyField.getValue();

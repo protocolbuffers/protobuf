@@ -395,6 +395,44 @@ public class ParserTest {
   }
 
   @Test
+  public void testNoExceptionWhenPartiallyMergingExtendedMessagesMissingRequiredFields()
+      throws Exception {
+    TestAllExtensions partialMessage =
+        TestAllExtensions.newBuilder()
+            .setExtension(TestRequired.single, TestRequired.newBuilder().setA(123).buildPartial())
+            .buildPartial();
+    ExtensionRegistry registry = ExtensionRegistry.newInstance();
+    UnittestProto.registerAllExtensions(registry);
+    byte[] bytes = partialMessage.toByteArray();
+
+    TestAllExtensions result1 =
+        TestAllExtensions.newBuilder()
+            .mergeFrom(partialMessage.toByteString(), registry)
+            .buildPartial();
+    assertThat(result1.getExtension(TestRequired.single).getA()).isEqualTo(123);
+    assertThat(result1.getExtension(TestRequired.single).hasB()).isFalse();
+
+    TestAllExtensions result2 =
+        TestAllExtensions.newBuilder().mergeFrom(bytes, registry).buildPartial();
+    assertThat(result2.getExtension(TestRequired.single).getA()).isEqualTo(123);
+    assertThat(result2.getExtension(TestRequired.single).hasB()).isFalse();
+
+    TestAllExtensions result3 =
+        TestAllExtensions.newBuilder()
+            .mergeFrom(new ByteArrayInputStream(bytes), registry)
+            .buildPartial();
+    assertThat(result3.getExtension(TestRequired.single).getA()).isEqualTo(123);
+    assertThat(result3.getExtension(TestRequired.single).hasB()).isFalse();
+
+    TestAllExtensions result4 =
+        TestAllExtensions.newBuilder()
+            .mergeFrom(CodedInputStream.newInstance(bytes), registry)
+            .buildPartial();
+    assertThat(result4.getExtension(TestRequired.single).getA()).isEqualTo(123);
+    assertThat(result4.getExtension(TestRequired.single).hasB()).isFalse();
+  }
+
+  @Test
   public void testParseDelimitedFrom_firstByteInterrupted_preservesCause() {
     try {
       TestAllTypes.parseDelimitedFrom(

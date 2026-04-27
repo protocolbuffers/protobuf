@@ -487,6 +487,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
       // this method is used by FieldSet.Builder.isInitialized.
       return ((MessageLiteOrBuilder) value).isInitialized();
     } else if (value instanceof InternalLazyField) {
+      ((InternalLazyField) value).setPartialInitialization(/* partial= */ false);
       return true;
     } else {
       throw new IllegalArgumentException(
