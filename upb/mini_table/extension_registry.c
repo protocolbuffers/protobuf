@@ -84,3 +84,7 @@ const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
   const uint32_t* v = upb_exttable_lookup(&r->exts, t, num);
   return (const upb_MiniTableExtension*)v;
 }
+
+size_t upb_ExtensionRegistry_Size(const upb_ExtensionRegistry* r) {
+  return upb_exttable_size(&r->exts);
+}

@@ -131,7 +131,7 @@ TEST(EncodeTest, EncodeExtensionSuccess) {
   jmp_buf err;
   UPB_PRIVATE(_upb_encstate_init)(&e, &err, arena);
 
-  const upb_MiniTableExtension* ext = &upb_wire_test_ext_i32_ext;
+  const upb_MiniTableExtension* ext = upb_wire_test_ext_i32_ext;
   upb_MessageValue ext_val;
   ext_val.int32_val = 42;
 
@@ -146,7 +146,7 @@ TEST(EncodeTest, EncodeExtensionSuccess) {
   // Verify that the encoded extension can be decoded back to the original
   // extension value.
   upb_ExtensionRegistry* ext_reg = upb_ExtensionRegistry_New(arena);
-  const upb_MiniTableExtension* ext_array[1] = {&upb_wire_test_ext_i32_ext};
+  const upb_MiniTableExtension* ext_array[1] = {upb_wire_test_ext_i32_ext};
   upb_ExtensionRegistry_AddArray(ext_reg, ext_array, 1);
 
   upb_wire_test_TestExtensions* decoded_msg =
@@ -166,7 +166,7 @@ TEST(EncodeTest, EncodeExtensionSuccessEmptyMessage) {
   jmp_buf err;
   UPB_PRIVATE(_upb_encstate_init)(&e, &err, arena);
 
-  const upb_MiniTableExtension* ext = &upb_wire_test_ext_i32_ext;
+  const upb_MiniTableExtension* ext = upb_wire_test_ext_i32_ext;
   // Zero int32 won't be serialized.
   upb_MessageValue ext_val;
   ext_val.int32_val = 0;
@@ -190,7 +190,7 @@ TEST(EncodeTest, EncodeExtensionMaxDepthExceeded) {
   jmp_buf err;
   UPB_PRIVATE(_upb_encstate_init)(&e, &err, arena);
 
-  const upb_MiniTableExtension* ext = &upb_wire_test_ext_recursive_ext;
+  const upb_MiniTableExtension* ext = upb_wire_test_ext_recursive_ext;
   upb_MessageValue ext_val;
   ext_val.msg_val = (upb_Message*)upb_wire_test_TestRecursive_new(arena);
 

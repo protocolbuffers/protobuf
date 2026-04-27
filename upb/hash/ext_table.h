@@ -55,6 +55,8 @@ const uint32_t* upb_exttable_lookup(const upb_exttable* t, const void* k,
 const uint32_t* upb_exttable_remove(upb_exttable* t, const void* k,
                                     uint32_t ext_number);
 
+size_t upb_exttable_size(const upb_exttable* t);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

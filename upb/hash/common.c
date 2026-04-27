@@ -747,6 +747,8 @@ const uint32_t* upb_exttable_remove(upb_exttable* t, const void* k,
   return NULL;
 }
 
+size_t upb_exttable_size(const upb_exttable* t) { return t->t.count; }
+
 /* upb_inttable ***************************************************************/
 
 /* For inttables we use a hybrid structure where small keys are kept in an
