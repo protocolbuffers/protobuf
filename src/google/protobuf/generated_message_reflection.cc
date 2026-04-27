@@ -79,7 +79,6 @@ using google::protobuf::internal::InlinedStringField;
 using google::protobuf::internal::InternalMetadata;
 using google::protobuf::internal::kNoHasbit;
 using google::protobuf::internal::LazyField;
-using google::protobuf::internal::LazyFieldForUnion;
 using google::protobuf::internal::MapFieldBase;
 using google::protobuf::internal::MessageGlobalsBase;
 using google::protobuf::internal::MicroString;
