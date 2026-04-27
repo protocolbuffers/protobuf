@@ -562,7 +562,15 @@ Error, UINTPTR_MAX is undefined
 //     }
 //   }
 
+#if defined(__GNUC__) && !defined(__clang__)
+// GCC can't handle mismatched retain attributes in the same section:
+//   https://github.com/protocolbuffers/protobuf/issues/26385
+// To work around this, we retain all linker array elements, even though this
+// effectively disables tree-shaking of unused extensions when using GCC.
+#define UPB_LINKARR_ATTR UPB_RETAIN
+#else
 #define UPB_LINKARR_ATTR
+#endif
 
 #define UPB_LINKARR_SENTINEL UPB_RETAIN __attribute__((weak, used))
 
@@ -3186,6 +3194,8 @@ const uint32_t* upb_exttable_remove(upb_exttable* t, const void* k,
   }
   return NULL;
 }
+
+size_t upb_exttable_size(const upb_exttable* t) { return t->t.count; }
 
 /* upb_inttable ***************************************************************/
 
@@ -10641,6 +10651,10 @@ const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
   return (const upb_MiniTableExtension*)v;
 }
 
+size_t upb_ExtensionRegistry_Size(const upb_ExtensionRegistry* r) {
+  return upb_exttable_size(&r->exts);
+}
+
 
 #include <stddef.h>
 #include <stdint.h>
@@ -10670,18 +10684,17 @@ static bool _upb_GeneratedRegistry_AddAllLinkedExtensions(
   const UPB_PRIVATE(upb_GeneratedExtensionListEntry)* entry =
       UPB_PRIVATE(upb_generated_extension_list);
   while (entry != NULL) {
-    const char* current = (const char*)entry->start;
-    const char* end = (const char*)entry->stop;
-    while ((size_t)(end - current) >= sizeof(upb_MiniTableExtension)) {
-      const upb_MiniTableExtension* ext =
-          (const upb_MiniTableExtension*)current;
+    const upb_MiniTableExtension** current = entry->start;
+    for (current = entry->start; current != entry->stop; ++current) {
+      const upb_MiniTableExtension* ext = *current;
       // Sentinels and padding introduced by the linker can result in zeroed
       // entries, so simply skip them.
-      if (upb_MiniTableExtension_Number(ext) == 0) {
+      if (*current == NULL) {
         // MSVC introduces padding that might not be sized exactly the same as
-        // upb_MiniTableExtension, so we can't iterate by sizeof.  This is a
-        // valid thing for any linker to do, so it's safer to just always do it.
-        current += UPB_ALIGN_OF(upb_MiniTableExtension);
+        // the linker array element, but it should be properly aligned, so just
+        // skipping empty elements should be safe.  (If the size and align of
+        // the array elements was different, we'd have to do something more
+        // complicated).
         continue;
       }
 
@@ -10689,7 +10702,6 @@ static bool _upb_GeneratedRegistry_AddAllLinkedExtensions(
           kUpb_ExtensionRegistryStatus_Ok) {
         return false;
       }
-      current += sizeof(upb_MiniTableExtension);
     }
     entry = entry->next;
   }
