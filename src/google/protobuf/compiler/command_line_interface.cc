@@ -2462,10 +2462,6 @@ CommandLineInterface::InterpretArgument(const std::string& name,
       std::cerr << name << " may only be passed once." << std::endl;
       return PARSE_ARGUMENT_FAIL;
     }
-    if (value.empty()) {
-      std::cerr << name << " requires a non-empty value." << std::endl;
-      return PARSE_ARGUMENT_FAIL;
-    }
     plugin_command_prefix_ =
         absl::StrSplit(value, absl::ByAnyChar(" \t"), absl::SkipWhitespace());
     if (plugin_command_prefix_.empty()) {
