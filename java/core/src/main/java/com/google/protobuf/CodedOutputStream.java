@@ -45,6 +45,8 @@ public abstract class CodedOutputStream extends ByteOutput {
   /** The buffer size used in {@link #newInstance(OutputStream)}. */
   public static final int DEFAULT_BUFFER_SIZE = 4096;
 
+  static volatile boolean defaultSerializationDeterministic = false;
+
   /**
    * Returns the buffer size to efficiently write dataLength bytes to this CodedOutputStream. Used
    * by AbstractMessageLite.
@@ -156,7 +158,7 @@ public abstract class CodedOutputStream extends ByteOutput {
     return serializationDeterministic;
   }
 
-  private boolean serializationDeterministic;
+  private boolean serializationDeterministic = defaultSerializationDeterministic;
 
   /**
    * Create a new {@code CodedOutputStream} that writes to the given {@link ByteBuffer}.
