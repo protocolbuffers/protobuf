@@ -132,9 +132,15 @@
 // Owner: ckennelly@, mkruskal@
 #define PROTOBUF_FUTURE_ADD_NODISCARD [[nodiscard]]
 
+// Fix PyProto C++ and upb implementations to return NotImplemented in descriptor container equality checks for unrecognized types.
+// Owner: runze@
+#define PROTOBUF_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 1
+
 #else
 
 #define PROTOBUF_FUTURE_ADD_NODISCARD
+
+#define PROTOBUF_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 0
 
 #endif
 

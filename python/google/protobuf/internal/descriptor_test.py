@@ -121,6 +121,27 @@ class DescriptorTest(unittest.TestCase):
     file_descriptor = pool.AddSerializedFile(serialized)
     self.assertEqual('', file_descriptor.package)
 
+  @unittest.skipIf(
+      api_implementation.Type() in ('upb', 'cpp'),
+      "Currently broken in OSS, will be fixed in the next breaking release"
+  )
+  def testBadEqOnFieldsByName(self):
+    fields = unittest_pb2.TestAllTypes.DESCRIPTOR.fields_by_name
+
+    class BadEq:
+
+      def __eq__(self, other):
+        raise RuntimeError('comparison error')
+
+      def __iter__(self):
+        return iter([])
+
+      def __len__(self):
+        return 0
+
+    with self.assertRaises(RuntimeError):
+      fields == BadEq()
+
   def testReservedName(self):
     text = """
       name: "foo.proto"

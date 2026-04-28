@@ -36,11 +36,12 @@
 #include "google/protobuf/pyext/descriptor_containers.h"
 // clang-format on
 
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/port_def.inc"
 #include "google/protobuf/pyext/descriptor.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
-#include "absl/strings/string_view.h"
 
 #define PyString_AsStringAndSize(ob, charpp, sizep)              \
   (PyUnicode_Check(ob)                                           \
@@ -302,6 +303,7 @@ enum class CompareResult {
   kEqual,
   kNotEqual,
   kError,
+  kNotImplemented,
 };
 
 // A sequence container can only be equal to another sequence container, or (for
@@ -344,8 +346,13 @@ static CompareResult DescriptorSequence_Equal(PyContainer* self,
     return CompareResult::kEqual;
   }
 
+#if PROTOBUF_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
+  // Any other object is not implemented.
+  return CompareResult::kNotImplemented;
+#else
   // Any other object is different.
   return CompareResult::kNotEqual;
+#endif
 }
 
 // A mapping container can only be equal to another mapping container, or (for
@@ -393,8 +400,13 @@ static CompareResult DescriptorMapping_Equal(PyContainer* self,
     return CompareResult::kEqual;
   }
 
+#if PROTOBUF_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
+  // Any other object is not implemented.
+  return CompareResult::kNotImplemented;
+#else
   // Any other object is different.
   return CompareResult::kNotEqual;
+#endif
 }
 
 static PyObject* RichCompare(PyContainer* self, PyObject* other, int opid) {
@@ -411,6 +423,12 @@ static PyObject* RichCompare(PyContainer* self, PyObject* other, int opid) {
     result = DescriptorMapping_Equal(self, other);
   }
   switch (result) {
+    case CompareResult::kNotImplemented:
+#if PROTOBUF_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
+      Py_RETURN_NOTIMPLEMENTED;
+#else
+      return nullptr;  // Unreachable when this breaking change is disabled.
+#endif
     case CompareResult::kError:
       return nullptr;
     case CompareResult::kEqual:
@@ -1677,3 +1695,5 @@ bool InitDescriptorMappingTypes() {
 }  // namespace python
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
