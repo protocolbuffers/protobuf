@@ -14,6 +14,7 @@
 #include "upb/hash/ext_table.h"
 #include "upb/mem/arena.h"
 #include "upb/mini_table/extension.h"
+#include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -46,6 +47,8 @@ UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
       (fieldnum > kMaxFieldNumber && !upb_MiniTable_IsMessageSet(extendee))) {
     return kUpb_ExtensionRegistryStatus_InvalidExtension;
   }
+
+  UPB_ASSERT(upb_MiniTable_FindFieldByNumber(extendee, fieldnum) == NULL);
 
   if (upb_exttable_lookup(&r->exts, extendee, fieldnum) != NULL) {
     return kUpb_ExtensionRegistryStatus_DuplicateEntry;
