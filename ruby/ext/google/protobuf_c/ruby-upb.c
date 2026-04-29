@@ -10620,6 +10620,8 @@ UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
     return kUpb_ExtensionRegistryStatus_InvalidExtension;
   }
 
+  UPB_ASSERT(upb_MiniTable_FindFieldByNumber(extendee, fieldnum) == NULL);
+
   if (upb_exttable_lookup(&r->exts, extendee, fieldnum) != NULL) {
     return kUpb_ExtensionRegistryStatus_DuplicateEntry;
   }
