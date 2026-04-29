@@ -100,12 +100,12 @@ bool Builder::LinkExtension(upb_MiniTableExtension* ext) {
   upb_MiniTableField* field = &ext->UPB_PRIVATE(field);
   if (upb_MiniTableField_CType(field) == kUpb_CType_Message) {
     auto mt = NextMiniTable();
-    if (!mt) field->UPB_PRIVATE(descriptortype) = kUpb_FieldType_Int32;
+    if (!mt) return false;
     ext->UPB_PRIVATE(sub) = upb_MiniTableSub_FromMessage(mt);
   }
   if (upb_MiniTableField_IsClosedEnum(field)) {
     auto et = NextEnumTable();
-    if (!et) field->UPB_PRIVATE(descriptortype) = kUpb_FieldType_Int32;
+    if (!et) return false;
     ext->UPB_PRIVATE(sub) = upb_MiniTableSub_FromEnum(et);
   }
   return true;
@@ -130,7 +130,9 @@ void Builder::BuildExtensions(upb_ExtensionRegistry** exts) {
                                         status.ptr());
       if (!ptr) break;
       if (!LinkExtension(ext)) continue;
-      if (upb_ExtensionRegistry_Lookup(*exts, ext->UPB_PRIVATE(extendee),
+      if (upb_MiniTable_FindFieldByNumber(ext->UPB_PRIVATE(extendee),
+                                          upb_MiniTableExtension_Number(ext)) ||
+          upb_ExtensionRegistry_Lookup(*exts, ext->UPB_PRIVATE(extendee),
                                        upb_MiniTableExtension_Number(ext)))
         continue;
       upb_ExtensionRegistry_AddArray(
@@ -156,10 +158,7 @@ bool Builder::LinkMessages() {
         if (et) {
           if (!upb_MiniTable_SetSubEnum(table, field, et)) return false;
         } else {
-          // We don't have any sub-enums.  Override the field type so that it is
-          // not needed.
-          field->UPB_PRIVATE(descriptortype) = kUpb_FieldType_Int32;
-          field->UPB_PRIVATE(submsg_ofs) = kUpb_NoSub;
+          return false;
         }
       }
     }

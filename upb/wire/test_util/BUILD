@@ -24,6 +24,7 @@ cc_library(
         "//upb/mini_descriptor",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table",
+        "//upb/mini_table:internal",
         "//upb/port",
         "//upb/wire:reader",
         "//upb/wire/decode_fast:combinations",
