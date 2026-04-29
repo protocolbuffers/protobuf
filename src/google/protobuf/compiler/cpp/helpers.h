@@ -872,7 +872,18 @@ std::string WeakDescriptorDataSection(absl::string_view prefix,
 inline std::string WeakDefaultInstanceSection(const Descriptor* descriptor,
                                               int index_in_file_messages,
                                               const Options& options) {
-  return WeakDescriptorDataSection("def", descriptor, index_in_file_messages,
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  std::string prefix = !IsProfileDriven(options)               ? "def"
+                       : IsPresentMessage(descriptor, options) ? "gh"
+                                                               : "gl";
+#else
+  std::string prefix = "def";
+#endif
+  // TODO: b/474609573 - Remove WeakDescriptorDataSection() once
+  // PROTOBUF_MESSAGE_GLOBALS becomes the default. Note that section assignment
+  // is nuanced to maximize the spatial locality and to support weak descriptor
+  // GC. The status quo is vulnerable to suboptimal prefix.
+  return WeakDescriptorDataSection(prefix, descriptor, index_in_file_messages,
                                    options);
 }
 
