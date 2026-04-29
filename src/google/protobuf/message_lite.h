@@ -128,13 +128,17 @@ class MessageCreator {
 
   // Template for testing.
   template <typename MessageLite>
-  MessageLite* New(const MessageLite* prototype_for_func,
-                   const MessageLite* prototype_for_copy, Arena* arena) const;
-
-  template <typename MessageLite>
   MessageLite* PlacementNew(const MessageLite* prototype_for_func,
                             const MessageLite* prototype_for_copy, void* mem,
                             Arena* arena) const;
+
+  void* AllocateMessage(Arena* arena) const {
+    if (arena != nullptr) {
+      return arena->AllocateAligned(allocation_size_);
+    } else {
+      return Allocate(allocation_size_);
+    }
+  }
 
   Tag tag() const { return tag_; }
 
@@ -432,9 +436,12 @@ struct PROTOBUF_EXPORT ClassData {
   const MessageLite* default_instance() const;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
-  MessageLite* New(Arena* arena) const {
+  PROTOBUF_ALWAYS_INLINE MessageLite* New(Arena* arena) const {
+    // Allocate the memory first, to reduce the number of spills.
+    // This way we only spill `this` and `arena`.
+    void* mem = message_creator.AllocateMessage(arena);
     const MessageLite* def = default_instance();
-    return message_creator.New(def, def, arena);
+    return message_creator.PlacementNew(def, def, mem, arena);
   }
 
   MessageLite* PlacementNew(void* mem, Arena* arena) const {
@@ -1587,6 +1594,7 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
   //  - We can "underflow" the buffer because those are the MessageLite bytes
   //    we will set later.
   if (as_tag == kZeroInit) {
+    PROTOBUF_DEBUG_COUNTER("MessageCreator.ZeroInit").IncLog(size);
     // Make sure the input is really all zeros.
     ABSL_DCHECK(std::all_of(src + sizeof(MessageLite), src + size,
                             [](auto c) { return c == 0; }));
@@ -1606,6 +1614,7 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
       memset(dst + size - 64, 0, 64);
     }
   } else {
+    PROTOBUF_DEBUG_COUNTER("MessageCreator.Memcpy").IncLog(size);
     ABSL_DCHECK_EQ(+as_tag, +kMemcpy);
 
     if (sizeof(MessageLite) != 16) {
@@ -1632,19 +1641,6 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
   memcpy(dst + PROTOBUF_FIELD_OFFSET(MessageLite, _internal_metadata_), &arena,
          sizeof(arena));
   return Launder(reinterpret_cast<MessageLite*>(mem));
-}
-
-template <typename MessageLite>
-PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::New(
-    const MessageLite* prototype_for_func,
-    const MessageLite* prototype_for_copy, Arena* arena) const {
-  void* mem;
-  if (arena != nullptr) {
-    mem = arena->AllocateAligned(allocation_size_);
-  } else {
-    mem = Allocate(allocation_size_);
-  }
-  return PlacementNew(prototype_for_func, prototype_for_copy, mem, arena);
 }
 
 }  // namespace internal
