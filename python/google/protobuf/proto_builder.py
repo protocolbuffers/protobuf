@@ -4,15 +4,14 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Dynamic Protobuf class creator."""
 
 from collections import OrderedDict
 import hashlib
 import os
 
-from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor
+from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
 
@@ -23,6 +22,7 @@ def _GetMessageFromFactory(pool, full_name):
   Args:
     pool: a descriptor pool.
     full_name: str, the fully qualified name of the proto type.
+
   Returns:
     A class, for the type identified by full_name.
   Raises:
@@ -40,10 +40,11 @@ def MakeSimpleProtoClass(fields, full_name=None, pool=None):
 
   Args:
     fields: dict of {name: field_type} mappings for each field in the proto. If
-        this is an OrderedDict the order will be maintained, otherwise the
-        fields will be sorted by name.
+      this is an OrderedDict the order will be maintained, otherwise the fields
+      will be sorted by name.
     full_name: optional str, the fully-qualified name of the proto type.
     pool: optional DescriptorPool instance.
+
   Returns:
     a class, the new protobuf class with a FileDescriptor.
   """
@@ -73,8 +74,10 @@ def MakeSimpleProtoClass(fields, full_name=None, pool=None):
 
   # If the proto is anonymous, use the same hash to name it.
   if full_name is None:
-    full_name = ('net.proto2.python.public.proto_builder.AnonymousProto_' +
-                 fields_hash.hexdigest())
+    full_name = (
+        'net.proto2.python.public.proto_builder.AnonymousProto_'
+        + fields_hash.hexdigest()
+    )
     try:
       proto_cls = _GetMessageFromFactory(pool_instance, full_name)
       return proto_cls
@@ -84,7 +87,8 @@ def MakeSimpleProtoClass(fields, full_name=None, pool=None):
 
   # This is the first time we see this proto: add a new descriptor to the pool.
   pool_instance.Add(
-      _MakeFileDescriptorProto(proto_file_name, full_name, field_items))
+      _MakeFileDescriptorProto(proto_file_name, full_name, field_items)
+  )
   return _GetMessageFromFactory(pool_instance, full_name)
 
 
@@ -103,8 +107,10 @@ def _MakeFileDescriptorProto(proto_file_name, full_name, field_items):
     # # number after the range.
     if f_number >= descriptor.FieldDescriptor.FIRST_RESERVED_FIELD_NUMBER:
       f_number += (
-          descriptor.FieldDescriptor.LAST_RESERVED_FIELD_NUMBER -
-          descriptor.FieldDescriptor.FIRST_RESERVED_FIELD_NUMBER + 1)
+          descriptor.FieldDescriptor.LAST_RESERVED_FIELD_NUMBER
+          - descriptor.FieldDescriptor.FIRST_RESERVED_FIELD_NUMBER
+          + 1
+      )
     field_proto.number = f_number
     field_proto.label = descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL
     field_proto.type = f_type

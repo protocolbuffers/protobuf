@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Protobuf Runtime versions and validators.
 
 It should only be accessed by Protobuf gencodes and tests. DO NOT USE it
@@ -14,6 +13,7 @@ elsewhere.
 __author__ = 'shaod@google.com (Dennis Shao)'
 
 from enum import Enum
+
 import os
 import warnings
 
@@ -41,6 +41,7 @@ SUFFIX = OSS_SUFFIX
 # Avoid flooding of warnings.
 _MAX_WARNING_COUNT = 20
 _warning_count = 0
+
 
 class VersionError(Exception):
   """Exception class for version violation."""

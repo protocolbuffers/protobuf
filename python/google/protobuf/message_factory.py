@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Provides a factory class for generating dynamic messages.
 
 The easiest way to use this class is if you have access to the FileDescriptor
@@ -26,7 +25,6 @@ if api_implementation.Type() == 'python':
   from google.protobuf.internal import python_message as message_impl
 else:
   from google.protobuf.pyext import cpp_message as message_impl  # pylint: disable=g-import-not-at-top
-
 
 # The type of all Message classes.
 _GENERATED_PROTOCOL_MESSAGE_TYPE = message_impl.GeneratedProtocolMessageType
