@@ -40,19 +40,7 @@ namespace test {
 
 namespace {
 
-template <typename T>
-struct TestValues {
-  static constexpr T kZero = 0;
-  static constexpr T kMin = std::numeric_limits<T>::min();
-  static constexpr T kMax = std::numeric_limits<T>::max();
-};
-
-template <>
-struct TestValues<std::string> {
-  static constexpr absl::string_view kZero = "";
-  static constexpr absl::string_view kMin = "a very minimum valued string!";
-  static constexpr absl::string_view kMax = "a very maximum valued string!";
-};
+// Removed TestValues template as it's now part of TypeParam.
 
 template <typename T>
 std::optional<T> GetOptionalField(upb_Message* msg,
@@ -110,12 +98,12 @@ TYPED_TEST(FieldTypeTest, DecodeOptionalMaxValue) {
       1, kUpb_DecodeFast_Scalar, arena.ptr());
   upb_Message* msg = upb_Message_New(mt, arena.ptr());
   std::string payload = ToBinaryPayload(wire_types::WireMessage{
-      {1, TypeParam::WireValue(Value(TestValues<Value>::kMax))}});
+      {1, TypeParam::WireValue(Value(TypeParam::kMax))}});
   upb_DecodeStatus result =
       upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
                           arena.ptr(), trace_buf, sizeof(trace_buf));
   ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
-  EXPECT_EQ(GetOptionalField<Value>(msg, field), TestValues<Value>::kMax);
+  EXPECT_EQ(GetOptionalField<Value>(msg, field), TypeParam::kMax);
   EXPECT_EQ(absl::string_view(trace_buf), ExpectedSingleFieldTrace(mt, field));
 }
 
@@ -127,12 +115,12 @@ TYPED_TEST(FieldTypeTest, DecodeOptionalMinValue) {
       1, kUpb_DecodeFast_Scalar, arena.ptr());
   upb_Message* msg = upb_Message_New(mt, arena.ptr());
   std::string payload = ToBinaryPayload(wire_types::WireMessage{
-      {1, TypeParam::WireValue(Value(TestValues<Value>::kMin))}});
+      {1, TypeParam::WireValue(Value(TypeParam::kMin))}});
   upb_DecodeStatus result =
       upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
                           arena.ptr(), trace_buf, sizeof(trace_buf));
   ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
-  EXPECT_EQ(GetOptionalField<Value>(msg, field), TestValues<Value>::kMin);
+  EXPECT_EQ(GetOptionalField<Value>(msg, field), TypeParam::kMin);
   EXPECT_EQ(absl::string_view(trace_buf), ExpectedSingleFieldTrace(mt, field));
 }
 
@@ -144,12 +132,12 @@ TYPED_TEST(FieldTypeTest, DecodeOneofMaxValue) {
       1, kUpb_DecodeFast_Oneof, arena.ptr());
   upb_Message* msg = upb_Message_New(mt, arena.ptr());
   std::string payload = ToBinaryPayload(wire_types::WireMessage{
-      {1, TypeParam::WireValue(Value(TestValues<Value>::kMax))}});
+      {1, TypeParam::WireValue(Value(TypeParam::kMax))}});
   upb_DecodeStatus result =
       upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
                           arena.ptr(), trace_buf, sizeof(trace_buf));
   ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
-  EXPECT_EQ(GetOptionalField<Value>(msg, field), TestValues<Value>::kMax);
+  EXPECT_EQ(GetOptionalField<Value>(msg, field), TypeParam::kMax);
   EXPECT_EQ(absl::string_view(trace_buf), ExpectedSingleFieldTrace(mt, field));
 }
 
@@ -162,7 +150,7 @@ TYPED_TEST(FieldTypeTest, DecodeRepeated) {
       value.append("hello world! ");
     }
   } else {
-    value = std::numeric_limits<Value>::max();
+    value = TypeParam::kMax;
   }
   upb::Arena msg_arena;
   upb::Arena mt_arena;
@@ -170,18 +158,17 @@ TYPED_TEST(FieldTypeTest, DecodeRepeated) {
       1, kUpb_DecodeFast_Repeated, mt_arena.ptr());
   upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
   std::string payload = ToBinaryPayload(wire_types::WireMessage{
-      {1, TypeParam::WireValue(Value(TestValues<Value>::kZero))},
-      {1, TypeParam::WireValue(Value(TestValues<Value>::kMin))},
-      {1, TypeParam::WireValue(Value(TestValues<Value>::kMax))},
+      {1, TypeParam::WireValue(Value(TypeParam::kZero))},
+      {1, TypeParam::WireValue(Value(TypeParam::kMin))},
+      {1, TypeParam::WireValue(Value(TypeParam::kMax))},
   });
   upb_DecodeStatus result =
       upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
                           msg_arena.ptr(), trace_buf, sizeof(trace_buf));
   ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
   EXPECT_EQ(GetRepeatedField<Value>(msg, field),
-            (std::vector<Value>{Value(TestValues<Value>::kZero),
-                                Value(TestValues<Value>::kMin),
-                                Value(TestValues<Value>::kMax)}));
+            (std::vector<Value>{Value(TypeParam::kZero), Value(TypeParam::kMin),
+                                Value(TypeParam::kMax)}));
   EXPECT_EQ(FilteredTrace(absl::string_view(trace_buf)),
             ExpectedRepeatedFieldTrace(mt, field, 3));
 }
@@ -199,9 +186,10 @@ TYPED_TEST(PackedTest, DecodePackedDataForPackedField) {
   auto [mt, field] = MiniTable::MakeSingleFieldTable<TypeParam>(
       1, kUpb_DecodeFast_Packed, mt_arena.ptr());
   upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
-  std::string packed_value = ToBinaryPayload(TypeParam::WireValue(0)) +
-                             ToBinaryPayload(TypeParam::WireValue(1 << 10)) +
-                             ToBinaryPayload(TypeParam::WireValue(1 << 20));
+  std::string packed_value =
+      ToBinaryPayload(TypeParam::WireValue(TypeParam::kZero)) +
+      ToBinaryPayload(TypeParam::WireValue(TypeParam::kMin)) +
+      ToBinaryPayload(TypeParam::WireValue(TypeParam::kMax));
   std::string payload = ToBinaryPayload(
       wire_types::WireMessage{{1, wire_types::Delimited{packed_value}}});
   upb_DecodeStatus result =
@@ -209,8 +197,8 @@ TYPED_TEST(PackedTest, DecodePackedDataForPackedField) {
                           msg_arena.ptr(), trace_buf, sizeof(trace_buf));
   ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
   EXPECT_EQ(GetRepeatedField<Value>(msg, field),
-            (std::vector<Value>{0, static_cast<Value>(1 << 10),
-                                static_cast<Value>(1 << 20)}));
+            (std::vector<Value>{Value(TypeParam::kZero), Value(TypeParam::kMin),
+                                Value(TypeParam::kMax)}));
   EXPECT_EQ(absl::string_view(trace_buf), ExpectedSingleFieldTrace(mt, field));
 }
 
@@ -222,11 +210,12 @@ TYPED_TEST(PackedTest, DecodeTruncatedPackedField) {
       1, kUpb_DecodeFast_Packed, mt_arena.ptr());
   upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
   std::string packed_value =
-      ToBinaryPayload(TypeParam::WireValue(0)) +
-      ToBinaryPayload(TypeParam::WireValue(1 << 10)) +
+      ToBinaryPayload(TypeParam::WireValue(TypeParam::kZero)) +
+      ToBinaryPayload(TypeParam::WireValue(TypeParam::kMin)) +
       // For varint fields, this will be a multi-byte varint, such that
       // truncating the last byte will result in an invalid varint.
-      ToBinaryPayloadWithLongVarints(TypeParam::WireValue(1 << 20), 2, 2);
+      ToBinaryPayloadWithLongVarints(TypeParam::WireValue(TypeParam::kMax), 2,
+                                     2);
   packed_value.resize(packed_value.size() - 1);  // Truncate the last byte.
   std::string payload = ToBinaryPayload(
       wire_types::WireMessage{{1, wire_types::Delimited{packed_value}}});
