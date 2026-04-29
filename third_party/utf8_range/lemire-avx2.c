@@ -214,8 +214,10 @@ int utf8_lemire_avx2(const unsigned char *src, int len) {
   // last part
   if (i < len) {
     char buffer[32];
-    memset(buffer, 0, 32);
-    memcpy(buffer, src + i, len - i);
+    size_t tail = (size_t)(len - i);
+    if (tail > sizeof(buffer)) tail = sizeof(buffer);
+    memset(buffer, 0, sizeof(buffer));
+    memcpy(buffer, src + i, tail);
     __m256i current_bytes = _mm256_loadu_si256((const __m256i *)(buffer));
     previous = avxcheckUTF8Bytes(current_bytes, &previous, &has_error);
   } else {
