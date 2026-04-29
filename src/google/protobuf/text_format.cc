@@ -1938,7 +1938,7 @@ TextFormat::Parser::Parser()
       allow_field_number_(false),
       allow_relaxed_whitespace_(false),
       allow_singular_overwrites_(false),
-      recursion_limit_(std::numeric_limits<int>::max()) {}
+      recursion_limit_(100) {}
 
 namespace {
 
