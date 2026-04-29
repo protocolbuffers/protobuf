@@ -1136,12 +1136,8 @@ class _Parser(object):
     if not tokenizer.TryConsume(','):
       tokenizer.TryConsume(';')
 
-  def _LogSilentMarker(self, immediate_message_type, field_name):
-    pass
-
   def _DetectSilentMarker(self, tokenizer, immediate_message_type, field_name):
-    if tokenizer.contains_silent_marker_before_current_token:
-      self._LogSilentMarker(immediate_message_type, field_name)
+    pass
 
   def _ConsumeAnyTypeUrl(self, tokenizer):
     """Consumes a google.protobuf.Any type URL.
