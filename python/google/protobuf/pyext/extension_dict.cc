@@ -53,12 +53,15 @@ static Py_ssize_t len(ExtensionDict* self) {
       // happened to be linked in from C++ but not imported via Python.  This is
       // for consistency with the pure Python implementation.
       if (fields[i]->file()->pool() == GetDefaultDescriptorPool()->pool &&
-          fields[i]->message_type() != nullptr &&
-          message_factory::GetMessageClass(
-              cmessage::GetFactoryForMessage(self->parent),
-              fields[i]->message_type()) == nullptr) {
-        PyErr_Clear();
-        continue;
+          fields[i]->message_type() != nullptr) {
+        CMessageClass* cls = message_factory::GetMessageClass(
+            cmessage::GetFactoryForMessage(self->parent),
+            fields[i]->message_type());
+        if (cls == nullptr) {
+          PyErr_Clear();
+          continue;
+        }
+        Py_DECREF(cls);
       }
       ++size;
     }
@@ -416,12 +419,15 @@ PyObject* IterNext(PyObject* _self) {
       // for consistency with the pure Python implementation.
       if (self->fields[index]->file()->pool() ==
               GetDefaultDescriptorPool()->pool &&
-          self->fields[index]->message_type() != nullptr &&
-          message_factory::GetMessageClass(
-              cmessage::GetFactoryForMessage(self->extension_dict->parent),
-              self->fields[index]->message_type()) == nullptr) {
-        PyErr_Clear();
-        continue;
+          self->fields[index]->message_type() != nullptr) {
+        CMessageClass* cls = message_factory::GetMessageClass(
+            cmessage::GetFactoryForMessage(self->extension_dict->parent),
+            self->fields[index]->message_type());
+        if (cls == nullptr) {
+          PyErr_Clear();
+          continue;
+        }
+        Py_DECREF(cls);
       }
 
       return PyFieldDescriptor_FromDescriptor(self->fields[index]);

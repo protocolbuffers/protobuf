@@ -13,6 +13,7 @@
 
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/pyext/descriptor.h"
+#include "google/protobuf/pyext/free_threading_mutex.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/message_factory.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
@@ -31,7 +32,8 @@ namespace python {
 
 namespace message_factory {
 
-PyMessageFactory* NewMessageFactory(PyTypeObject* type, PyDescriptorPool* pool) {
+PyMessageFactory* NewMessageFactory(PyTypeObject* type,
+                                    PyDescriptorPool* pool) {
   PyMessageFactory* factory = reinterpret_cast<PyMessageFactory*>(
       PyType_GenericAlloc(type, 0));
   if (factory == nullptr) {
@@ -46,7 +48,15 @@ PyMessageFactory* NewMessageFactory(PyTypeObject* type, PyDescriptorPool* pool) 
   factory->pool = pool;
   Py_INCREF(pool);
 
-  factory->classes_by_descriptor = new PyMessageFactory::ClassesByMessageMap();
+  // Explicitly construct the mutex using placement new because
+  // PyType_GenericAlloc only zero-initializes memory.
+  new (&factory->mutex) FreeThreadingMutex();
+
+  {
+    FreeThreadingLockGuard lock(factory->mutex);
+    factory->classes_by_descriptor =
+        new PyMessageFactory::ClassesByMessageMap();
+  }
 
   return factory;
 }
@@ -81,14 +91,23 @@ PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
 static void Dealloc(PyObject* pself) {
   PyMessageFactory* self = reinterpret_cast<PyMessageFactory*>(pself);
 
-  typedef PyMessageFactory::ClassesByMessageMap::iterator iterator;
-  for (iterator it = self->classes_by_descriptor->begin();
-       it != self->classes_by_descriptor->end(); ++it) {
-    Py_CLEAR(it->second);
+  {
+    FreeThreadingLockGuard lock(self->mutex);
+    typedef PyMessageFactory::ClassesByMessageMap::iterator iterator;
+    for (iterator it = self->classes_by_descriptor->begin();
+         it != self->classes_by_descriptor->end(); ++it) {
+      Py_CLEAR(it->second);
+    }
+    delete self->classes_by_descriptor;
+    self->classes_by_descriptor = nullptr;
   }
-  delete self->classes_by_descriptor;
+
   delete self->message_factory;
   Py_CLEAR(self->pool);
+
+  // Explicitly call the destructor for the placement-new'd mutex.
+  self->mutex.~FreeThreadingMutex();
+
   PyObject_GC_UnTrack(pself);
   Py_TYPE(self)->tp_free(pself);
 }
@@ -96,6 +115,8 @@ static void Dealloc(PyObject* pself) {
 static int GcTraverse(PyObject* pself, visitproc visit, void* arg) {
   PyMessageFactory* self = reinterpret_cast<PyMessageFactory*>(pself);
   Py_VISIT(self->pool);
+
+  FreeThreadingLockGuard lock(self->mutex);
   for (const auto& desc_and_class : *self->classes_by_descriptor) {
     Py_VISIT(desc_and_class.second);
   }
@@ -106,6 +127,8 @@ static int GcClear(PyObject* pself) {
   PyMessageFactory* self = reinterpret_cast<PyMessageFactory*>(pself);
   // Here it's important to not clear self->pool, so that the C++ DescriptorPool
   // is still alive when self->message_factory is destructed.
+
+  FreeThreadingLockGuard lock(self->mutex);
   for (auto& desc_and_class : *self->classes_by_descriptor) {
     Py_CLEAR(desc_and_class.second);
   }
@@ -118,13 +141,20 @@ int RegisterMessageClass(PyMessageFactory* self,
                          const Descriptor* message_descriptor,
                          CMessageClass* message_class) {
   Py_INCREF(message_class);
-  typedef PyMessageFactory::ClassesByMessageMap::iterator iterator;
-  std::pair<iterator, bool> ret = self->classes_by_descriptor->insert(
-      std::make_pair(message_descriptor, message_class));
-  if (!ret.second) {
-    // Update case: DECREF the previous value.
-    Py_DECREF(ret.first->second);
-    ret.first->second = message_class;
+  CMessageClass* old_class = nullptr;
+  {
+    FreeThreadingLockGuard lock(self->mutex);
+    typedef PyMessageFactory::ClassesByMessageMap::iterator iterator;
+    std::pair<iterator, bool> ret = self->classes_by_descriptor->insert(
+        std::make_pair(message_descriptor, message_class));
+    if (!ret.second) {
+      // Update case: save the previous value to DECREF later.
+      old_class = ret.first->second;
+      ret.first->second = message_class;
+    }
+  }
+  if (old_class != nullptr) {
+    Py_DECREF(old_class);
   }
   return 0;
 }
@@ -134,11 +164,14 @@ CMessageClass* GetOrCreateMessageClass(PyMessageFactory* self,
   // This is the same implementation as MessageFactory.GetPrototype().
 
   // Do not create a MessageClass that already exists.
-  std::unordered_map<const Descriptor*, CMessageClass*>::iterator it =
-      self->classes_by_descriptor->find(descriptor);
-  if (it != self->classes_by_descriptor->end()) {
-    Py_INCREF(it->second);
-    return it->second;
+  {
+    FreeThreadingLockGuard lock(self->mutex);
+    std::unordered_map<const Descriptor*, CMessageClass*>::iterator it =
+        self->classes_by_descriptor->find(descriptor);
+    if (it != self->classes_by_descriptor->end()) {
+      Py_INCREF(it->second);
+      return it->second;
+    }
   }
   ScopedPyObjectPtr py_descriptor(
       PyMessageDescriptor_FromDescriptor(descriptor));
@@ -192,6 +225,7 @@ CMessageClass* GetOrCreateMessageClass(PyMessageFactory* self,
 // Retrieve the message class added to our database.
 CMessageClass* GetMessageClass(PyMessageFactory* self,
                                const Descriptor* message_descriptor) {
+  FreeThreadingLockGuard lock(self->mutex);
   typedef PyMessageFactory::ClassesByMessageMap::iterator iterator;
   iterator ret = self->classes_by_descriptor->find(message_descriptor);
   if (ret == self->classes_by_descriptor->end()) {
@@ -199,6 +233,7 @@ CMessageClass* GetMessageClass(PyMessageFactory* self,
                  std::string(message_descriptor->full_name()).c_str());
     return nullptr;
   } else {
+    Py_INCREF(ret->second);
     return ret->second;
   }
 }

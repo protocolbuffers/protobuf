@@ -541,7 +541,6 @@ static PyObject* GetConcreteClass(PyBaseDescriptor* self, void* closure) {
     return nullptr;
   }
 
-  Py_XINCREF(concrete_class);
   return concrete_class->AsPyObject();
 }
 

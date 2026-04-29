@@ -2112,12 +2112,14 @@ static PyObject* ListFields(CMessage* self) {
       // happened to be linked in from C++ but not imported via Python.  This is
       // for consistency with the pure Python implementation.
       if (fields[i]->file()->pool() == GetDefaultDescriptorPool()->pool &&
-          fields[i]->message_type() != nullptr &&
-          message_factory::GetMessageClass(GetFactoryForMessage(self),
-                                           fields[i]->message_type()) ==
-              nullptr) {
-        PyErr_Clear();
-        continue;
+          fields[i]->message_type() != nullptr) {
+        CMessageClass* cls = message_factory::GetMessageClass(
+            GetFactoryForMessage(self), fields[i]->message_type());
+        if (cls == nullptr) {
+          PyErr_Clear();
+          continue;
+        }
+        Py_DECREF(cls);
       }
       ScopedPyObjectPtr extensions(GetExtensionDict(self, nullptr));
       if (extensions == nullptr) {
@@ -2687,6 +2689,7 @@ PyObject* GetFieldValue(CMessage* self,
       }
       py_container =
           NewMessageMapContainer(self, field_descriptor, value_class);
+      Py_DECREF(value_class);
     } else {
       py_container = NewScalarMapContainer(self, field_descriptor);
     }
@@ -2699,6 +2702,7 @@ PyObject* GetFieldValue(CMessage* self,
       }
       py_container = repeated_composite_container::NewContainer(
           self, field_descriptor, message_class);
+      Py_DECREF(message_class);
     } else {
       py_container =
           repeated_scalar_container::NewContainer(self, field_descriptor);
