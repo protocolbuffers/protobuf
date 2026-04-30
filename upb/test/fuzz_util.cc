@@ -130,7 +130,9 @@ void Builder::BuildExtensions(upb_ExtensionRegistry** exts) {
                                         status.ptr());
       if (!ptr) break;
       if (!LinkExtension(ext)) continue;
-      if (upb_ExtensionRegistry_Lookup(*exts, ext->UPB_PRIVATE(extendee),
+      if (upb_MiniTable_FindFieldByNumber(ext->UPB_PRIVATE(extendee),
+                                          upb_MiniTableExtension_Number(ext)) ||
+          upb_ExtensionRegistry_Lookup(*exts, ext->UPB_PRIVATE(extendee),
                                        upb_MiniTableExtension_Number(ext)))
         continue;
       upb_ExtensionRegistry_AddArray(
