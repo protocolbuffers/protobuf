@@ -1587,6 +1587,32 @@ class MessageTest(unittest.TestCase):
       self.assertFalse(w)
     self.assertEqual(m.optional_nested_enum, 2)
 
+  def testEnumStringAssignment(self, message_module):
+    msg = message_module.TestAllTypes()
+
+    if api_implementation.Type() == 'upb':
+      msg.optional_nested_enum = 'FOO'
+      self.assertEqual(msg.optional_nested_enum,
+                       message_module.TestAllTypes.FOO)
+
+      # Label which is not one of the values in the corresponding enum.
+      with self.assertRaises(ValueError):
+        msg.optional_nested_enum = 'INVALID_LABEL'
+
+      # str that is not a valid UTF-8.
+      with self.assertRaises(ValueError):
+        msg.optional_nested_enum = '\ud800'
+
+    else:
+      # Pure Python and cpp implementations do not support string assignment to
+      # enums.
+      with self.assertRaises(TypeError):
+        msg.optional_nested_enum = 'FOO'
+      with self.assertRaises(TypeError):
+        msg.optional_nested_enum = 'INVALID_LABEL'
+      with self.assertRaises(TypeError):
+        msg.optional_nested_enum = '\ud800'
+
   def testBoolToRepeatedEnum(self, message_module):
     m = self.create_bool_to_int(message_module, repeated_nested_enum=[True])
     if m is not None:
