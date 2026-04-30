@@ -71,6 +71,8 @@ enum FeatureSet_JsonFormat : int;
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_JsonFormat_internal_data_[];
 enum FeatureSet_MessageEncoding : int;
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_MessageEncoding_internal_data_[];
+enum FeatureSet_ProtoLimitsFeature_EnforceProtoLimits : int;
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_internal_data_[];
 enum FeatureSet_RepeatedFieldEncoding : int;
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_RepeatedFieldEncoding_internal_data_[];
 enum FeatureSet_Utf8Validation : int;
@@ -200,6 +202,14 @@ PROTOBUF_EXPORT extern FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInt
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSetDefaults_FeatureSetEditionDefault_class_data_;
 #else
 PROTOBUF_EXPORT extern FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal FeatureSetDefaults_FeatureSetEditionDefault_globals_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+class FeatureSet_ProtoLimitsFeature;
+struct FeatureSet_ProtoLimitsFeatureGlobalsTypeInternal;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+PROTOBUF_EXPORT extern FeatureSet_ProtoLimitsFeatureGlobalsTypeInternal FeatureSet_ProtoLimitsFeature_globals_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSet_ProtoLimitsFeature_class_data_;
+#else
+PROTOBUF_EXPORT extern FeatureSet_ProtoLimitsFeatureGlobalsTypeInternal FeatureSet_ProtoLimitsFeature_globals_;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 class FeatureSet_VisibilityFeature;
 struct FeatureSet_VisibilityFeatureGlobalsTypeInternal;
@@ -390,6 +400,9 @@ internal::EnumTraitsT<::google::protobuf::FeatureSet_JsonFormat_internal_data_>
 template <>
 internal::EnumTraitsT<::google::protobuf::FeatureSet_MessageEncoding_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_MessageEncoding>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits>;
 template <>
 internal::EnumTraitsT<::google::protobuf::FeatureSet_RepeatedFieldEncoding_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_RepeatedFieldEncoding>;
@@ -830,6 +843,43 @@ template <>
 [[nodiscard]] inline bool FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Parse(
     ::absl::string_view name, FeatureSet_VisibilityFeature_DefaultSymbolVisibility* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<FeatureSet_VisibilityFeature_DefaultSymbolVisibility>(FeatureSet_VisibilityFeature_DefaultSymbolVisibility_descriptor(), name,
+                                           value);
+}
+enum FeatureSet_ProtoLimitsFeature_EnforceProtoLimits : int {
+  FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_PROTO_LIMITS_UNKNOWN = 0,
+  FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_LEGACY_NO_EXPLICIT_LIMITS = 1,
+  FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_PROTO_LIMITS2026 = 2,
+};
+
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_internal_data_[];
+inline constexpr FeatureSet_ProtoLimitsFeature_EnforceProtoLimits FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_EnforceProtoLimits_MIN =
+    static_cast<FeatureSet_ProtoLimitsFeature_EnforceProtoLimits>(0);
+inline constexpr FeatureSet_ProtoLimitsFeature_EnforceProtoLimits FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_EnforceProtoLimits_MAX =
+    static_cast<FeatureSet_ProtoLimitsFeature_EnforceProtoLimits>(2);
+[[nodiscard]] inline bool FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_IsValid(int value) {
+  return 0 <= value && value <= 2;
+}
+inline constexpr int FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_EnforceProtoLimits_ARRAYSIZE = 2 + 1;
+[[nodiscard]] PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_descriptor();
+[[nodiscard]] inline auto ProtobufInternalGetEnumDescriptor(FeatureSet_ProtoLimitsFeature_EnforceProtoLimits) {
+  return FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_descriptor();
+}
+template <typename T>
+[[nodiscard]] const ::std::string& FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_Name(T value) {
+  static_assert(::std::is_same<T, FeatureSet_ProtoLimitsFeature_EnforceProtoLimits>::value ||
+                    ::std::is_integral<T>::value,
+                "Incorrect type passed to EnforceProtoLimits_Name().");
+  return FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_Name(static_cast<FeatureSet_ProtoLimitsFeature_EnforceProtoLimits>(value));
+}
+template <>
+[[nodiscard]] inline const ::std::string& FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_Name(FeatureSet_ProtoLimitsFeature_EnforceProtoLimits value) {
+  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_descriptor, 0, 2>(
+      static_cast<int>(value));
+}
+[[nodiscard]] inline bool FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_Parse(
+    ::absl::string_view name, FeatureSet_ProtoLimitsFeature_EnforceProtoLimits* PROTOBUF_NONNULL value) {
+  return ::google::protobuf::internal::ParseNamedEnum<FeatureSet_ProtoLimitsFeature_EnforceProtoLimits>(FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_descriptor(), name,
                                            value);
 }
 enum FeatureSet_FieldPresence : int {
@@ -1500,7 +1550,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
   [[nodiscard]] static const SourceCodeInfo_Location& default_instance() {
     return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<SourceCodeInfo_Location>(&SourceCodeInfo_Location_globals_);
   }
-  static constexpr int kIndexInFileMessages = 30;
+  static constexpr int kIndexInFileMessages = 31;
   friend void swap(SourceCodeInfo_Location& a, SourceCodeInfo_Location& b) { a.Swap(&b); }
   inline void Swap(SourceCodeInfo_Location* PROTOBUF_NONNULL other) {
     if (other == this) return;
@@ -1802,7 +1852,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
   [[nodiscard]] static const GeneratedCodeInfo_Annotation& default_instance() {
     return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<GeneratedCodeInfo_Annotation>(&GeneratedCodeInfo_Annotation_globals_);
   }
-  static constexpr int kIndexInFileMessages = 32;
+  static constexpr int kIndexInFileMessages = 33;
   friend void swap(GeneratedCodeInfo_Annotation& a, GeneratedCodeInfo_Annotation& b) { a.Swap(&b); }
   inline void Swap(GeneratedCodeInfo_Annotation* PROTOBUF_NONNULL other) {
     if (other == this) return;
@@ -2692,6 +2742,165 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_Visibili
 };
 // -------------------------------------------------------------------
 
+class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_ProtoLimitsFeature final : public ::google::protobuf::internal::ZeroFieldsBase
+/* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSet.ProtoLimitsFeature) */ {
+ public:
+  inline FeatureSet_ProtoLimitsFeature() : FeatureSet_ProtoLimitsFeature(nullptr) {}
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(FeatureSet_ProtoLimitsFeature* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(FeatureSet_ProtoLimitsFeature));
+  }
+#endif
+
+  template <typename = void>
+  explicit constexpr FeatureSet_ProtoLimitsFeature(::google::protobuf::internal::ConstantInitialized,
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+                               class_data);
+
+  inline FeatureSet_ProtoLimitsFeature(const FeatureSet_ProtoLimitsFeature& from) : FeatureSet_ProtoLimitsFeature(nullptr, from) {}
+  inline FeatureSet_ProtoLimitsFeature(FeatureSet_ProtoLimitsFeature&& from) noexcept : FeatureSet_ProtoLimitsFeature(nullptr, ::std::move(from)) {}
+  inline FeatureSet_ProtoLimitsFeature& operator=(const FeatureSet_ProtoLimitsFeature& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline FeatureSet_ProtoLimitsFeature& operator=(FeatureSet_ProtoLimitsFeature&& from) noexcept {
+    if (this == &from) return *this;
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  [[nodiscard]] inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
+  }
+  [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
+  mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+  }
+
+  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+    return GetDescriptor();
+  }
+  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
+  GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  [[nodiscard]] static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  [[nodiscard]] static const FeatureSet_ProtoLimitsFeature& default_instance() {
+    return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FeatureSet_ProtoLimitsFeature>(&FeatureSet_ProtoLimitsFeature_globals_);
+  }
+  static constexpr int kIndexInFileMessages = 27;
+  friend void swap(FeatureSet_ProtoLimitsFeature& a, FeatureSet_ProtoLimitsFeature& b) { a.Swap(&b); }
+  inline void Swap(FeatureSet_ProtoLimitsFeature* PROTOBUF_NONNULL other) {
+    if (other == this) return;
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+      InternalSwap(other);
+    } else {
+      ::google::protobuf::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(FeatureSet_ProtoLimitsFeature* PROTOBUF_NONNULL other) {
+    if (other == this) return;
+    ABSL_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  [[nodiscard]] FeatureSet_ProtoLimitsFeature* PROTOBUF_NONNULL
+  New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+    return ::google::protobuf::internal::ZeroFieldsBase::DefaultConstruct<FeatureSet_ProtoLimitsFeature>(arena);
+  }
+  using ::google::protobuf::internal::ZeroFieldsBase::CopyFrom;
+  inline void CopyFrom(const FeatureSet_ProtoLimitsFeature& from) { ::google::protobuf::internal::ZeroFieldsBase::CopyImpl(*this, from); }
+  using ::google::protobuf::internal::ZeroFieldsBase::MergeFrom;
+  void MergeFrom(const FeatureSet_ProtoLimitsFeature& from) { ::google::protobuf::internal::ZeroFieldsBase::MergeImpl(*this, from); }
+
+  public:
+  [[nodiscard]] bool IsInitialized() const {
+    return true;
+  }
+ private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
+  static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSet.ProtoLimitsFeature"; }
+
+  explicit FeatureSet_ProtoLimitsFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  FeatureSet_ProtoLimitsFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSet_ProtoLimitsFeature& from);
+  FeatureSet_ProtoLimitsFeature(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSet_ProtoLimitsFeature&& from) noexcept
+      : FeatureSet_ProtoLimitsFeature(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+  static void* PROTOBUF_NONNULL PlacementNew_(
+      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto InternalNewImpl_();
+
+ public:
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype,
+      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
+
+  [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
+  // nested types ----------------------------------------------------
+  using EnforceProtoLimits = FeatureSet_ProtoLimitsFeature_EnforceProtoLimits;
+  static constexpr EnforceProtoLimits PROTO_LIMITS_UNKNOWN = FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_PROTO_LIMITS_UNKNOWN;
+  static constexpr EnforceProtoLimits LEGACY_NO_EXPLICIT_LIMITS = FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_LEGACY_NO_EXPLICIT_LIMITS;
+  static constexpr EnforceProtoLimits PROTO_LIMITS2026 = FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_PROTO_LIMITS2026;
+  [[nodiscard]] static inline bool EnforceProtoLimits_IsValid(int value) {
+    return FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_IsValid(value);
+  }
+  static constexpr EnforceProtoLimits EnforceProtoLimits_MIN = FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_EnforceProtoLimits_MIN;
+  static constexpr EnforceProtoLimits EnforceProtoLimits_MAX = FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_EnforceProtoLimits_MAX;
+  static constexpr int EnforceProtoLimits_ARRAYSIZE = FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_EnforceProtoLimits_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL EnforceProtoLimits_descriptor() {
+    return FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_descriptor();
+  }
+  template <typename T>
+  [[nodiscard]] static inline const ::std::string& EnforceProtoLimits_Name(T value) {
+    return FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_Name(value);
+  }
+  [[nodiscard]] static inline bool EnforceProtoLimits_Parse(
+      ::absl::string_view name, EnforceProtoLimits* PROTOBUF_NONNULL value) {
+    return FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_Parse(name, value);
+  }
+
+  // accessors -------------------------------------------------------
+  // @@protoc_insertion_point(class_scope:google.protobuf.FeatureSet.ProtoLimitsFeature)
+ private:
+  class _Internal;
+  using ParseTableT_ =
+      ::google::protobuf::internal::TcParseTable<0, 0,
+                          0, 0,
+                          2>;
+  static constexpr ParseTableT_ InternalGenerateParseTable_(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  friend class ::google::protobuf::internal::TcParser;
+  #ifndef PROTOBUF_MESSAGE_GLOBALS
+  static const ParseTableT_ _table_;
+  #endif
+
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
+  friend ::google::protobuf::internal::PrivateAccess;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+  friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
+};
+// -------------------------------------------------------------------
+
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSet) */ {
  public:
@@ -2748,7 +2957,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
   [[nodiscard]] static const FeatureSet& default_instance() {
     return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FeatureSet>(&FeatureSet_globals_);
   }
-  static constexpr int kIndexInFileMessages = 27;
+  static constexpr int kIndexInFileMessages = 28;
   friend void swap(FeatureSet& a, FeatureSet& b) { a.Swap(&b); }
   inline void Swap(FeatureSet* PROTOBUF_NONNULL other) {
     if (other == this) return;
@@ -2843,6 +3052,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using VisibilityFeature = FeatureSet_VisibilityFeature;
+  using ProtoLimitsFeature = FeatureSet_ProtoLimitsFeature;
   using FieldPresence = FeatureSet_FieldPresence;
   static constexpr FieldPresence FIELD_PRESENCE_UNKNOWN = FeatureSet_FieldPresence_FIELD_PRESENCE_UNKNOWN;
   static constexpr FieldPresence EXPLICIT = FeatureSet_FieldPresence_EXPLICIT;
@@ -3003,6 +3213,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
     kJsonFormatFieldNumber = 6,
     kEnforceNamingStyleFieldNumber = 7,
     kDefaultSymbolVisibilityFieldNumber = 8,
+    kEnforceProtoLimitsFieldNumber = 9,
   };
   // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_field_presence()
@@ -3098,6 +3309,18 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
   private:
   ::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility _internal_default_symbol_visibility() const;
   void _internal_set_default_symbol_visibility(::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility value);
+
+  public:
+  // optional .google.protobuf.FeatureSet.ProtoLimitsFeature.EnforceProtoLimits enforce_proto_limits = 9 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, edition_defaults = {
+  [[nodiscard]] bool has_enforce_proto_limits()
+      const;
+  void clear_enforce_proto_limits() ;
+  [[nodiscard]] ::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits enforce_proto_limits() const;
+  void set_enforce_proto_limits(::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits value);
+
+  private:
+  ::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits _internal_enforce_proto_limits() const;
+  void _internal_set_enforce_proto_limits(::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits value);
 
   public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -3294,8 +3517,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
  private:
   class _Internal;
   using ParseTableT_ =
-      ::google::protobuf::internal::TcParseTable<3, 8,
-                          8, 0,
+      ::google::protobuf::internal::TcParseTable<4, 9,
+                          9, 0,
                           2>;
   static constexpr ParseTableT_ InternalGenerateParseTable_(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
@@ -3332,6 +3555,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
     int json_format_;
     int enforce_naming_style_;
     int default_symbol_visibility_;
+    int enforce_proto_limits_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -4415,7 +4639,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
   [[nodiscard]] static const SourceCodeInfo& default_instance() {
     return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<SourceCodeInfo>(&SourceCodeInfo_globals_);
   }
-  static constexpr int kIndexInFileMessages = 31;
+  static constexpr int kIndexInFileMessages = 32;
   friend void swap(SourceCodeInfo& a, SourceCodeInfo& b) { a.Swap(&b); }
   inline void Swap(SourceCodeInfo* PROTOBUF_NONNULL other) {
     if (other == this) return;
@@ -4824,7 +5048,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
   [[nodiscard]] static const GeneratedCodeInfo& default_instance() {
     return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<GeneratedCodeInfo>(&GeneratedCodeInfo_globals_);
   }
-  static constexpr int kIndexInFileMessages = 33;
+  static constexpr int kIndexInFileMessages = 34;
   friend void swap(GeneratedCodeInfo& a, GeneratedCodeInfo& b) { a.Swap(&b); }
   inline void Swap(GeneratedCodeInfo* PROTOBUF_NONNULL other) {
     if (other == this) return;
@@ -5037,7 +5261,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
   [[nodiscard]] static const FeatureSetDefaults_FeatureSetEditionDefault& default_instance() {
     return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FeatureSetDefaults_FeatureSetEditionDefault>(&FeatureSetDefaults_FeatureSetEditionDefault_globals_);
   }
-  static constexpr int kIndexInFileMessages = 28;
+  static constexpr int kIndexInFileMessages = 29;
   friend void swap(FeatureSetDefaults_FeatureSetEditionDefault& a, FeatureSetDefaults_FeatureSetEditionDefault& b) { a.Swap(&b); }
   inline void Swap(FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_NONNULL other) {
     if (other == this) return;
@@ -8590,7 +8814,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
   [[nodiscard]] static const FeatureSetDefaults& default_instance() {
     return *::google::protobuf::internal::MessageGlobalsBase::ToDefaultInstance<FeatureSetDefaults>(&FeatureSetDefaults_globals_);
   }
-  static constexpr int kIndexInFileMessages = 29;
+  static constexpr int kIndexInFileMessages = 30;
   friend void swap(FeatureSetDefaults& a, FeatureSetDefaults& b) { a.Swap(&b); }
   inline void Swap(FeatureSetDefaults* PROTOBUF_NONNULL other) {
     if (other == this) return;
@@ -21782,6 +22006,10 @@ inline void UninterpretedOption::set_allocated_aggregate_value(::std::string* PR
 
 // -------------------------------------------------------------------
 
+// FeatureSet_ProtoLimitsFeature
+
+// -------------------------------------------------------------------
+
 // FeatureSet
 
 // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -22030,6 +22258,37 @@ inline void FeatureSet::_internal_set_default_symbol_visibility(::google::protob
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility_internal_data_));
                                           _impl_.default_symbol_visibility_ = value;
+}
+
+// optional .google.protobuf.FeatureSet.ProtoLimitsFeature.EnforceProtoLimits enforce_proto_limits = 9 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, edition_defaults = {
+inline bool FeatureSet::has_enforce_proto_limits() const {
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000100U);
+  return value;
+}
+inline void FeatureSet::clear_enforce_proto_limits() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.enforce_proto_limits_ = 0;
+  ClearHasBit(_impl_._has_bits_[0], 0x00000100U);
+}
+inline ::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits FeatureSet::enforce_proto_limits() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSet.enforce_proto_limits)
+  return _internal_enforce_proto_limits();
+}
+inline void FeatureSet::set_enforce_proto_limits(::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits value) {
+  _internal_set_enforce_proto_limits(value);
+  SetHasBit(_impl_._has_bits_[0], 0x00000100U);
+  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSet.enforce_proto_limits)
+}
+inline ::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits FeatureSet::_internal_enforce_proto_limits() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return static_cast<::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits>(_impl_.enforce_proto_limits_);
+}
+inline void FeatureSet::_internal_set_enforce_proto_limits(::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_internal_data_));
+                                          _impl_.enforce_proto_limits_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -23097,6 +23356,12 @@ struct is_proto_enum<::google::protobuf::FeatureSet_VisibilityFeature_DefaultSym
 template <>
 inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility>() {
   return ::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility_descriptor();
+}
+template <>
+struct is_proto_enum<::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits> : std::true_type {};
+template <>
+inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits>() {
+  return ::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_descriptor();
 }
 template <>
 struct is_proto_enum<::google::protobuf::FeatureSet_FieldPresence> : std::true_type {};
