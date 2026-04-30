@@ -2986,12 +2986,14 @@ const EnumValueDescriptor* Descriptor::FindEnumValueByName(
 const FieldDescriptor* Descriptor::map_key() const {
   if (!options().map_entry()) return nullptr;
   ABSL_DCHECK_EQ(field_count(), 2);
+  if (field_count() != 2) return nullptr;
   return field(0);
 }
 
 const FieldDescriptor* Descriptor::map_value() const {
   if (!options().map_entry()) return nullptr;
   ABSL_DCHECK_EQ(field_count(), 2);
+  if (field_count() != 2) return nullptr;
   return field(1);
 }
 
