@@ -14,7 +14,7 @@ module(
 # https://bazel.build/versions/6.0.0/build/bzlmod#version-resolution
 # Thus the highest version in their module graph is resolved.
 
-bazel_dep(name = "apple_support", version = "1.16.0", repo_name = "build_bazel_apple_support")
+bazel_dep(name = "apple_support", version = "2.3.0", repo_name = "build_bazel_apple_support")
 
 # Unused but must be pinned to avoid old broken versions
 bazel_dep(name = "rules_proto", version = "7.1.0")
@@ -33,14 +33,14 @@ bazel_dep(name = "zlib", version = "1.3.1.bcr.5")
 # other dependencies
 bazel_dep(name = "bazel_features", version = "1.33.0", repo_name = "proto_bazel_features")
 bazel_dep(name = "bazel_skylib", version = "1.9.0")
-bazel_dep(name = "jsoncpp", version = "1.9.6.bcr.1")
+bazel_dep(name = "jsoncpp", version = "1.9.6.bcr.2")
 bazel_dep(name = "rules_java", version = "8.6.1")
 bazel_dep(name = "rules_jvm_external", version = "6.7")
-bazel_dep(name = "rules_kotlin", version = "2.2.2")
+bazel_dep(name = "rules_kotlin", version = "2.3.20")
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.6.0")
-bazel_dep(name = "rules_rust", version = "0.63.0")
+bazel_dep(name = "rules_rust", version = "0.69.0")
 
 bazel_dep(name = "rules_ruby", version = "0.20.1", dev_dependency = True)
 
@@ -307,17 +307,16 @@ archive_override(
     urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz"],
 )
 
-bazel_dep(name = "com_google_protobuf_previous_release", version = "29.0", dev_dependency = True)
+bazel_dep(name = "com_google_protobuf_previous_release", version = "33.0", dev_dependency = True)
 archive_override(
     module_name = "com_google_protobuf_previous_release",
-    integrity = "sha256-EKDVjzmhqQnpXgDougtbHcZNApl/dBFRlTorNln254w=",
+    integrity = "sha256-y8U2BkcGtijc/lB77zhu8+IhTVY2V2EilvF4GqFV7gc=",
     patch_strip = 1,
     patches = [
-        "@com_google_protobuf//:patches/protobuf_v29/0001-Update-module-name.patch",
-        "@com_google_protobuf//:patches/protobuf_v29/0002-bazel9.patch",
+        "@com_google_protobuf//:patches/protobuf_v33/0001-Update-module-name.patch",
     ],
-    strip_prefix = "protobuf-29.0",
-    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz"],
+    strip_prefix = "protobuf-33.0",
+    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v33.0/protobuf-33.0.tar.gz"],
 )
 
 # Register C++ toolchains for cross-compilation. These are used for compiling release binaries of
