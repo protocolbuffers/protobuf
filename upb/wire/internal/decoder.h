@@ -141,10 +141,13 @@ UPB_INLINE char* _upb_Decoder_TracePtr(upb_Decoder* d) {
 //   '<'  Fallback to MiniTable parser.
 //   'M'  Field successfully parsed with MiniTable.
 //   'X'  Truncated -- trace buffer is full, further events were discarded.
+//   'U'  Unknown field parsed fast
 //
 // Lower-case letters indicate events that are more subtle and therefore
 // difficult to assert on, but may be useful information for debugging:
 //   'r'  Refresh buffer.
+//   's'  Fall back to unknown fast path
+//   'm'  Fall back to minitable lookup fast path
 UPB_INLINE void _upb_Decoder_Trace(upb_Decoder* d, char event) {
 #ifndef NDEBUG
 #ifdef UPB_TRACE_FASTDECODER
