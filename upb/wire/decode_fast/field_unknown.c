@@ -57,6 +57,8 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
     // message is marked by an EndGroup tag. Since EndGroup tags are not in
     // the MiniTable, they are routed to the unknown field handler. We must
     // intercept them here to properly terminate the message.
+    _upb_Decoder_Trace(d, '<');
+    *ptr = start;
     return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
   }
 
@@ -110,6 +112,7 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
     return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_OutOfMemory, ret);
   }
 
+  _upb_Decoder_Trace(d, 'F');
   data = 0;
   return true;
 }
