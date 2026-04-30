@@ -2,8 +2,10 @@
 #include <stdint.h>
 
 #include "upb/message/message.h"
+#include "upb/mini_table/internal/message.h"
 #include "upb/wire/decode_fast/cardinality.h"
 #include "upb/wire/decode_fast/dispatch.h"
+#include "upb/wire/decode_fast/field_parsers.h"
 #include "upb/wire/internal/decoder.h"
 
 // Must be last.

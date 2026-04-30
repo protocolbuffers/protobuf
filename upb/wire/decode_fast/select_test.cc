@@ -15,9 +15,13 @@
 #include <gtest/gtest.h>
 #include "absl/base/macros.h"
 #include "upb/mem/arena.hpp"
+#include "upb/mini_table/internal/message.h"
 #include "upb/wire/decode_fast/combinations.h"
 #include "upb/wire/test_util/field_types.h"
 #include "upb/wire/test_util/make_mini_table.h"
+
+// Must be last.
+#include "upb/port/def.inc"
 
 namespace upb {
 namespace test {
@@ -52,6 +56,10 @@ TEST(SelectTest, UnknownSlotsAssignedForNonExtendable) {
   EXPECT_NE(table[1].function_idx, UINT32_MAX);
   EXPECT_NE(table[1].function_idx, kUpb_DecodeFast_Unknown);
   EXPECT_EQ(table[0].function_idx, kUpb_DecodeFast_Unknown);
+
+  // The all_fields_assigned bit should be set in ext since the message
+  // is non-extendable and all fields were placed in the fasttable.
+  EXPECT_NE(mt->UPB_PRIVATE(ext) & kUpb_ExtMode_AllFastFieldsAssigned, 0);
 }
 
 }  // namespace

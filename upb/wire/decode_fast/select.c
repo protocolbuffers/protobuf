@@ -209,9 +209,14 @@ int upb_DecodeFast_BuildTable(const upb_MiniTable* m,
   }
 
   // Fasttable only handles fields with tag size of 1 or 2 bytes. If all known
-  // fields with such tag sizes are covered, and the message is non-extensible,
-  // we can short circuit misses to unknown field handling
-  bool all_supported_tag_size_fields_map_to_assigned_slots = true;
+  // fields with such tag sizes have supported field types, and the message is
+  // non-extensible, we can short circuit slot misses to unknown field handling
+  bool all_supported_tag_size_fields_compatible_with_fast_decode = true;
+
+  // If, in addition, all handled fields are assigned unique slots, then we can
+  // short circuit slot collision to unknown field handling as well.
+  bool all_fields_assigned_unique_slots = true;
+
   int max = 0;
   for (size_t i = 0, n = upb_MiniTable_FieldCount(m); i < n; i++) {
     const upb_MiniTableField* field = upb_MiniTable_GetFieldByIndex(m, i);
@@ -220,7 +225,7 @@ int upb_DecodeFast_BuildTable(const upb_MiniTable* m,
     if (!upb_DecodeFast_TryFillEntry(m, field, &supported_tag_size, &entry)) {
       if (supported_tag_size) {
         // Check if this tag collides
-        all_supported_tag_size_fields_map_to_assigned_slots = false;
+        all_supported_tag_size_fields_compatible_with_fast_decode = false;
       }
       continue;
     }
@@ -228,6 +233,8 @@ int upb_DecodeFast_BuildTable(const upb_MiniTable* m,
     if (table[slot].function_idx == UINT32_MAX) {
       table[slot] = entry;
       max = UPB_MAX(max, slot);
+    } else {
+      all_fields_assigned_unique_slots = false;
     }
   }
 
@@ -238,13 +245,19 @@ int upb_DecodeFast_BuildTable(const upb_MiniTable* m,
   // The fast unknown handler only covers 1/2 byte tags and falls back for >2
   // bytes; thus, we do not need to check for total exhaustiveness in field
   // coverage, only for 1/2 byte tags.
-  if (all_supported_tag_size_fields_map_to_assigned_slots &&
-      m->UPB_PRIVATE(ext) == kUpb_ExtMode_NonExtendable) {
+  if (all_supported_tag_size_fields_compatible_with_fast_decode &&
+      UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
+          kUpb_ExtMode_NonExtendable) {
     for (int i = 0; i < table_size; i++) {
       if (table[i].function_idx == UINT32_MAX) {
         table[i].function_idx = kUpb_DecodeFast_Unknown;
         table[i].function_data = 0;
       }
+    }
+    // Also override generic fallback if all fields are assigned unique slots.
+    if (all_fields_assigned_unique_slots) {
+      ((upb_MiniTable*)m)->UPB_PRIVATE(ext) |=
+          kUpb_ExtMode_AllFastFieldsAssigned;
     }
   }
 
