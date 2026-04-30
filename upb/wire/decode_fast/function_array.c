@@ -27,9 +27,15 @@ static _upb_FieldParser* funcs[] = {UPB_DECODEFAST_FUNCTIONS(ADDR_OF_FUNC)};
 #undef ADDR_OF_FUNC
 
 _upb_FieldParser* upb_DecodeFast_GetFunctionPointer(uint32_t function_idx) {
-  if (function_idx == UINT32_MAX) return &_upb_FastDecoder_DecodeGeneric;
-  UPB_ASSERT(function_idx < UPB_ARRAY_SIZE(funcs));
-  return funcs[function_idx];
+  switch (function_idx) {
+    case UINT32_MAX:
+      return &_upb_FastDecoder_DecodeGeneric;
+    case kUpb_DecodeFast_Unknown:
+      return &_upb_FastDecoder_DecodeUnknown;
+    default:
+      UPB_ASSERT(function_idx < UPB_ARRAY_SIZE(funcs));
+      return funcs[function_idx];
+  }
 }
 
 #include "upb/port/undef.inc"

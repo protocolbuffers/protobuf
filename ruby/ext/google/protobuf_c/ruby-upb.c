@@ -939,7 +939,7 @@ const upb_MiniTable google__protobuf__DescriptorProto__ExtensionRange_msg_init =
   "google.protobuf.DescriptorProto.ExtensionRange",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x000c000000000008, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
     {0x0010000001000010, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
     {0x001800000202001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
@@ -962,10 +962,10 @@ const upb_MiniTable google__protobuf__DescriptorProto__ReservedRange_msg_init = 
   "google.protobuf.DescriptorProto.ReservedRange",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x000c000000000008, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
     {0x0010000001000010, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -1048,14 +1048,14 @@ const upb_MiniTable google__protobuf__ExtensionRangeOptions__Declaration_msg_ini
   "google.protobuf.ExtensionRangeOptions.Declaration",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x000c000000000008, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
     {0x0010000001000012, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x002000000200001a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0009000003000028, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
     {0x000a000004000030, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -1145,10 +1145,10 @@ const upb_MiniTable google__protobuf__OneofDescriptorProto_msg_init = {
   "google.protobuf.OneofDescriptorProto",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x001000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0020000001010012, &upb_DecodeFast_Message_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -1206,10 +1206,10 @@ const upb_MiniTable google__protobuf__EnumDescriptorProto__EnumReservedRange_msg
   "google.protobuf.EnumDescriptorProto.EnumReservedRange",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x000c000000000008, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
     {0x0010000001000010, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -1234,7 +1234,7 @@ const upb_MiniTable google__protobuf__EnumValueDescriptorProto_msg_init = {
   "google.protobuf.EnumValueDescriptorProto",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x001000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x000c000001000010, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
     {0x002000000202001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
@@ -1263,7 +1263,7 @@ const upb_MiniTable google__protobuf__ServiceDescriptorProto_msg_init = {
   "google.protobuf.ServiceDescriptorProto",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x001000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x002000003f010012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
     {0x002800000102001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
@@ -1294,14 +1294,14 @@ const upb_MiniTable google__protobuf__MethodDescriptorProto_msg_init = {
   "google.protobuf.MethodDescriptorProto",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x001000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0020000001000012, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x003000000200001a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0040000003030022, &upb_DecodeFast_Message_Scalar_Tag1Byte},
     {0x0009000004000028, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
     {0x000a000005000030, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -1895,8 +1895,8 @@ const upb_MiniTable google__protobuf__UninterpretedOption_msg_init = {
   "google.protobuf.UninterpretedOption",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x004000003f000012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
     {0x001000000000001a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0048000001000020, &upb_DecodeFast_Varint64_Scalar_Tag1Byte},
@@ -1904,13 +1904,13 @@ const upb_MiniTable google__protobuf__UninterpretedOption_msg_init = {
     {0x0058000003000031, &upb_DecodeFast_Fixed64_Scalar_Tag1Byte},
     {0x002000000400003a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0030000005000042, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -1930,10 +1930,10 @@ const upb_MiniTable google__protobuf__UninterpretedOption__NamePart_msg_init = {
   "google.protobuf.UninterpretedOption.NamePart",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x001000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0009000001000010, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -2084,14 +2084,14 @@ const upb_MiniTable google__protobuf__SourceCodeInfo__Location_msg_init = {
   "google.protobuf.SourceCodeInfo.Location",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x003000003f00000a, &upb_DecodeFast_Varint32_Packed_Tag1Byte},
     {0x003800003f000012, &upb_DecodeFast_Varint32_Packed_Tag1Byte},
     {0x001000000000001a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0020000001000022, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x004000003f000032, &upb_DecodeFast_Bytes_Repeated_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -2114,7 +2114,7 @@ const upb_MiniTable google__protobuf__GeneratedCodeInfo_msg_init = {
   "google.protobuf.GeneratedCodeInfo",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x000800003f00000a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
   })
 };
