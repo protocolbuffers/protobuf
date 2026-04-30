@@ -668,6 +668,13 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToZip(
   ZipWriter zip_writer(&stream);
 
   for (const auto& pair : files_) {
+    if (absl::StrContains(pair.first, "..")) {
+      std::cerr << "Output file names must never have a relative path."
+                << " (" << pair.first << "). "
+                << "Archive output does not support path escape."
+                << std::endl;
+      return false;
+    }
     zip_writer.Write(pair.first, pair.second);
   }
 
