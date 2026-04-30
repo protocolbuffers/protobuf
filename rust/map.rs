@@ -6,10 +6,10 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use crate::{
-    AsMut, AsView, IntoMut, IntoProxied, IntoView, Message, Mut, MutProxied, Proxied, Singular,
-    View,
     __internal::runtime::{InnerMap, InnerMapMut, RawMap, RawMapIter},
     __internal::{Private, SealedInternal},
+    AsMut, AsView, IntoMut, IntoProxied, IntoView, Message, Mut, MutProxied, Proxied, Singular,
+    View,
 };
 use std::marker::PhantomData;
 
@@ -225,6 +225,13 @@ impl<'msg, K: MapKey, V: MapValue> MapView<'msg, K, V> {
         self.len() == 0
     }
 
+    pub fn contains_key<'a>(self, key: impl Into<View<'a, K>>) -> bool
+    where
+        K: 'a,
+    {
+        self.get(key).is_some()
+    }
+
     /// Returns an iterator visiting all key-value pairs in arbitrary order.
     ///
     /// The iterator element type is `(View<K>, View<V>)`.
@@ -360,6 +367,13 @@ impl<'msg, K: MapKey, V: MapValue> MapMut<'msg, K, V> {
 
     pub fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+
+    pub fn contains_key<'a>(&self, key: impl Into<View<'a, K>>) -> bool
+    where
+        K: 'a,
+    {
+        self.as_view().contains_key(key)
     }
 
     /// Adds a key-value pair to the map.
@@ -729,5 +743,16 @@ mod tests {
         let mut map = Map::<i32, f64>::new();
         assert_that!(format!("{:?}", map.as_view()), eq("MapView(\"i32\", \"f64\")"));
         assert_that!(format!("{:?}", map.as_mut()), eq("MapMut(\"i32\", \"f64\")"));
+    }
+    #[gtest]
+    fn test_contains_key() {
+        let mut map = Map::<i32, f64>::new();
+        let mut map_mut = map.as_mut();
+        assert!(!map_mut.contains_key(42));
+        assert!(!map_mut.as_view().contains_key(42));
+
+        map_mut.insert(42, 1.0);
+        assert!(map_mut.contains_key(42));
+        assert!(map_mut.as_view().contains_key(42));
     }
 }

@@ -427,3 +427,13 @@ generate_map_with_msg_values_tests!(
     (bool, true, false),
     (string, "foo", "bar"),
 );
+
+#[gtest]
+fn test_map_contains_key() {
+    let mut msg = TestMap::new();
+    assert_that!(msg.map_int32_int32().contains_key(42), eq(false));
+
+    msg.map_int32_int32_mut().insert(42, 100);
+    assert_that!(msg.map_int32_int32().contains_key(42), eq(true));
+    assert_that!(msg.map_int32_int32_mut().contains_key(42), eq(true));
+}
