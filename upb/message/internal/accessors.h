@@ -615,6 +615,15 @@ UPB_API_INLINE void upb_Message_SetBaseFieldMessage(struct upb_Message* msg,
   upb_Message_SetBaseField(msg, f, &value);
 }
 
+UPB_API_INLINE void upb_Message_SetBaseFieldMap(struct upb_Message* msg,
+                                                const upb_MiniTableField* f,
+                                                struct upb_Map* value) {
+  UPB_ASSERT(upb_MiniTableField_IsMap(f));
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
+             kUpb_FieldRep_NativePointer);
+  upb_Message_SetBaseField(msg, f, &value);
+}
+
 UPB_API_INLINE void upb_Message_SetBaseFieldString(struct upb_Message* msg,
                                                    const upb_MiniTableField* f,
                                                    upb_StringView value) {
