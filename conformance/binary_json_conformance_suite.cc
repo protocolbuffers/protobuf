@@ -3390,6 +3390,14 @@ void BinaryAndJsonConformanceSuiteImpl<
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForStruct() {
+  auto str_repeat = [](absl::string_view s, int count) {
+    std::string result;
+    for (int i = 0; i < count; ++i) {
+      absl::StrAppend(&result, s);
+    }
+    return result;
+  };
+
   RunValidJsonTest("Struct", REQUIRED,
                    R"({
         "optionalStruct": {
@@ -3471,10 +3479,49 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForStruct() {
     }
   }
       )");
+
+  // See https://protobuf.dev/programming-guides/json/#depth-enforcement
+  RunValidJsonTest(
+      "StructDeepNesting25", REQUIRED,
+      absl::StrCat(R"({"optionalStruct": {)", str_repeat(R"("n": {)", 25),
+                   R"("value": 1)", std::string(25, '}'), "}}"),
+      absl::StrCat("optional_struct: {\n",
+                   str_repeat("  fields: {\n"
+                              "    key: \"n\"\n"
+                              "    value: {\n"
+                              "      struct_value: {\n",
+                              25),
+                   "        fields: {\n"
+                   "          key: \"value\"\n"
+                   "          value: { number_value: 1 }\n"
+                   "        }\n",
+                   str_repeat("      }\n"
+                              "    }\n"
+                              "  }\n",
+                              25),
+                   "}\n"));
+
+  ExpectParseFailureForJson(
+      "StructDeepNesting90InJsonButDeeperInBinary", REQUIRED,
+      absl::StrCat(R"({"optionalStruct": {)", str_repeat(R"("n": {)", 90),
+                   R"("value": 1)", std::string(90, '}'), "}}"));
+
+  ExpectParseFailureForJson(
+      "StructDeepNesting200", REQUIRED,
+      absl::StrCat(R"({"optionalStruct": {)", str_repeat(R"("n": {)", 200),
+                   R"("value": 1)", std::string(200, '}'), "}}"));
 }
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForValue() {
+  auto str_repeat = [](absl::string_view s, int count) {
+    std::string result;
+    for (int i = 0; i < count; ++i) {
+      absl::StrAppend(&result, s);
+    }
+    return result;
+  };
+
   RunValidJsonTest("ValueAcceptInteger", REQUIRED, R"({"optionalValue": 1})",
                    "optional_value: { number_value: 1}");
   RunValidJsonTest("ValueAcceptFloat", REQUIRED, R"({"optionalValue": 1.5})",
@@ -3561,6 +3608,57 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForValue() {
                                 "optional_value: { number_value: nan}");
   ExpectSerializeFailureForJson("ValueRejectInfNumberValue", RECOMMENDED,
                                 "optional_value: { number_value: inf}");
+  // See https://protobuf.dev/programming-guides/json/#depth-enforcement
+  RunValidJsonTest("ListValueDeepNesting25", REQUIRED,
+                   absl::StrCat(R"({"optionalValue": )", std::string(25, '['),
+                                "1", std::string(25, ']'), "}"),
+                   absl::StrCat("optional_value: {\n",
+                                str_repeat("  list_value: {\n"
+                                           "    values: {\n",
+                                           25),
+                                "      number_value: 1\n",
+                                str_repeat("    }\n"
+                                           "  }\n",
+                                           25),
+                                "}\n"));
+  ExpectParseFailureForJson(
+      "ListValueDeepNesting90InJsonButDeeperInBinary", REQUIRED,
+      absl::StrCat(R"({"optionalValue": )", std::string(90, '['), "1",
+                   std::string(90, ']'), "}"));
+  ExpectParseFailureForJson(
+      "ListValueDeepNesting200", REQUIRED,
+      absl::StrCat(R"({"optionalValue": )", std::string(200, '['), "1",
+                   std::string(200, ']'), "}"));
+  // See https://protobuf.dev/programming-guides/json/#depth-enforcement
+  RunValidJsonTest(
+      "ValueDeepNesting25", REQUIRED,
+      absl::StrCat(R"({"optionalValue": {)", str_repeat(R"("n": {)", 25),
+                   R"("value": 1)", std::string(25, '}'), "}}"),
+      absl::StrCat("optional_value: {\n", "  struct_value: {\n",
+                   str_repeat("    fields: {\n"
+                              "      key: \"n\"\n"
+                              "      value: {\n"
+                              "        struct_value: {\n",
+                              25),
+                   "          fields: {\n"
+                   "            key: \"value\"\n"
+                   "            value: { number_value: 1 }\n"
+                   "          }\n",
+                   str_repeat("        }\n"
+                              "      }\n"
+                              "    }\n",
+                              25),
+                   "  }\n", "}\n"));
+
+  ExpectParseFailureForJson(
+      "ValueDeepNesting90InJsonButDeeperInBinary", REQUIRED,
+      absl::StrCat(R"({"optionalValue": {)", str_repeat(R"("n": {)", 90),
+                   R"("value": 1)", std::string(90, '}'), "}}"));
+
+  ExpectParseFailureForJson(
+      "ValueDeepNesting200", REQUIRED,
+      absl::StrCat(R"({"optionalValue": {)", str_repeat(R"("n": {)", 200),
+                   R"("value": 1)", std::string(200, '}'), "}}"));
 }
 
 template <typename MessageType>

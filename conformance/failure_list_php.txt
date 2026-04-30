@@ -26,6 +26,12 @@ Required.*.JsonInput.RepeatedListValue.ProtobufOutput
 Required.*.JsonInput.StringFieldNotAString
 Required.*.JsonInput.Uint32FieldNotInteger
 Required.*.JsonInput.Uint64FieldNotInteger
+Required.*.JsonInput.ListValueDeepNesting200                                                                      # Should have failed to parse, but didn't.
+Required.*.JsonInput.ListValueDeepNesting90InJsonButDeeperInBinary                                                # Should have failed to parse, but didn't.
+Required.*.JsonInput.StructDeepNesting200                                                                         # Should have failed to parse, but didn't.
+Required.*.JsonInput.StructDeepNesting90InJsonButDeeperInBinary                                                   # Should have failed to parse, but didn't.
+Required.*.JsonInput.ValueDeepNesting200                                                                          # Should have failed to parse, but didn't.
+Required.*.JsonInput.ValueDeepNesting90InJsonButDeeperInBinary                                                    # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.RepeatedScalarMessageMerge.JsonOutput
 Required.*.ProtobufInput.RepeatedScalarMessageMerge.ProtobufOutput
 Required.*.ProtobufInput.ValidDataOneof.MESSAGE.Merge.JsonOutput
