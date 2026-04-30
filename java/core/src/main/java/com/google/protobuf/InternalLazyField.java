@@ -35,6 +35,10 @@ class InternalLazyField {
   // The parsed message value.
   protected volatile MessageLite value;
 
+  // Whether to parse the bytes partially - i.e. if true, check if there are any missing required
+  // fields in the parsed message.
+  private volatile boolean partialInitialization;
+
   // Whether the lazy field (i.e. {@link bytes}) was corrupted, and if so, {@link value} must be
   // `null`. This is used to avoid repeat parsing attempts on invalid bytes.
   // TODO: b/473034710 - Can we drop this field as it might be unreal for people to re-parse the
@@ -58,6 +62,7 @@ class InternalLazyField {
     this.bytes = bytes;
     this.corrupted = false;
     this.value = null;
+    this.partialInitialization = true;
   }
 
   /**
@@ -72,6 +77,7 @@ class InternalLazyField {
     this.extensionRegistry = ExtensionRegistryLite.getEmptyRegistry();
     this.bytes = null;
     this.corrupted = false;
+    this.partialInitialization = true;
   }
 
   /**
@@ -209,8 +215,11 @@ class InternalLazyField {
         throw new InvalidProtocolBufferException("Repeat access to corrupted lazy field");
       }
       try {
-        // `Bytes` is guaranteed to be non-null since `value` was null.
-        value = defaultInstance.getParserForType().parseFrom(bytes, extensionRegistry);
+        // `bytes` is guaranteed to be non-null since `value` was null.
+        value =
+            partialInitialization && ExtensionRegistryLite.lazyExtensionEnabled()
+                ? defaultInstance.getParserForType().parsePartialFrom(bytes, extensionRegistry)
+                : defaultInstance.getParserForType().parseFrom(bytes, extensionRegistry);
       } catch (InvalidProtocolBufferException e) {
         corrupted = true;
         throw e;
@@ -296,6 +305,10 @@ class InternalLazyField {
   @SuppressWarnings("LiteProtoToString") // Keep the old behavior of toString().
   public String toString() {
     return getValue().toString();
+  }
+
+  protected void setPartialInitialization(boolean partial) {
+    this.partialInitialization = partial;
   }
 
   /**
