@@ -1171,19 +1171,20 @@ const upb_MiniTable google__protobuf__UninterpretedOption__NamePart_msg_init = {
 };
 
 typedef struct {
-  upb_MiniTableField fields[8];
-  upb_MiniTableSubInternal subs[8];
+  upb_MiniTableField fields[9];
+  upb_MiniTableSubInternal subs[9];
 } google__protobuf__FeatureSet_msg_init_Fields;
 
 static const google__protobuf__FeatureSet_msg_init_Fields google_protobuf_FeatureSet__fields = {{
-  {1, 12, 64, 24, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {2, 16, 65, UPB_SIZE(22, 23), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {3, 20, 66, UPB_SIZE(20, 22), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {4, 24, 67, UPB_SIZE(18, 21), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {5, 28, 68, UPB_SIZE(16, 20), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {6, 32, 69, UPB_SIZE(14, 19), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {7, 36, 70, UPB_SIZE(12, 18), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {8, 40, 71, UPB_SIZE(10, 17), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {1, 12, 64, UPB_SIZE(27, 28), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {2, 16, 65, UPB_SIZE(25, 27), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {3, 20, 66, UPB_SIZE(23, 26), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {4, 24, 67, UPB_SIZE(21, 25), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {5, 28, 68, UPB_SIZE(19, 24), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {6, 32, 69, UPB_SIZE(17, 23), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {7, 36, 70, UPB_SIZE(15, 22), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {8, 40, 71, UPB_SIZE(13, 21), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {9, 44, 72, UPB_SIZE(11, 20), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
  },
   {
   {.UPB_PRIVATE(subenum) = &google__protobuf__FeatureSet__FieldPresence_enum_init},
@@ -1194,11 +1195,12 @@ static const google__protobuf__FeatureSet_msg_init_Fields google_protobuf_Featur
   {.UPB_PRIVATE(subenum) = &google__protobuf__FeatureSet__JsonFormat_enum_init},
   {.UPB_PRIVATE(subenum) = &google__protobuf__FeatureSet__EnforceNamingStyle_enum_init},
   {.UPB_PRIVATE(subenum) = &google__protobuf__FeatureSet__VisibilityFeature__DefaultSymbolVisibility_enum_init},
+  {.UPB_PRIVATE(subenum) = &google__protobuf__FeatureSet__ProtoLimitsFeature__EnforceProtoLimits_enum_init},
 }};
 
 const upb_MiniTable google__protobuf__FeatureSet_msg_init = {
   &google_protobuf_FeatureSet__fields.fields[0],
-  48, 8, kUpb_ExtMode_Extendable, 8, UPB_FASTTABLE_MASK(255), 0,
+  48, 9, kUpb_ExtMode_Extendable, 9, UPB_FASTTABLE_MASK(255), 0,
 #ifdef UPB_TRACING_ENABLED
   "google.protobuf.FeatureSet",
 #endif
@@ -1209,6 +1211,14 @@ const upb_MiniTable google__protobuf__FeatureSet__VisibilityFeature_msg_init = {
   8, 0, kUpb_ExtMode_NonExtendable, 0, UPB_FASTTABLE_MASK(255), 0,
 #ifdef UPB_TRACING_ENABLED
   "google.protobuf.FeatureSet.VisibilityFeature",
+#endif
+};
+
+const upb_MiniTable google__protobuf__FeatureSet__ProtoLimitsFeature_msg_init = {
+  NULL,
+  8, 0, kUpb_ExtMode_NonExtendable, 0, UPB_FASTTABLE_MASK(255), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.FeatureSet.ProtoLimitsFeature",
 #endif
 };
 
@@ -1460,6 +1470,15 @@ const upb_MiniTableEnum google__protobuf__FeatureSet__MessageEncoding_enum_init 
     },
 };
 
+const upb_MiniTableEnum google__protobuf__FeatureSet__ProtoLimitsFeature__EnforceProtoLimits_enum_init = {
+    64,
+    0,
+    {
+        0x7,
+        0x0,
+    },
+};
+
 const upb_MiniTableEnum google__protobuf__FeatureSet__RepeatedFieldEncoding_enum_init = {
     64,
     0,
@@ -1577,7 +1596,7 @@ const upb_MiniTableEnum google__protobuf__SymbolVisibility_enum_init = {
     },
 };
 
-static const upb_MiniTable *messages_layout[34] = {
+static const upb_MiniTable *messages_layout[35] = {
   &google__protobuf__FileDescriptorSet_msg_init,
   &google__protobuf__FileDescriptorProto_msg_init,
   &google__protobuf__DescriptorProto_msg_init,
@@ -1606,6 +1625,7 @@ static const upb_MiniTable *messages_layout[34] = {
   &google__protobuf__UninterpretedOption__NamePart_msg_init,
   &google__protobuf__FeatureSet_msg_init,
   &google__protobuf__FeatureSet__VisibilityFeature_msg_init,
+  &google__protobuf__FeatureSet__ProtoLimitsFeature_msg_init,
   &google__protobuf__FeatureSetDefaults_msg_init,
   &google__protobuf__FeatureSetDefaults__FeatureSetEditionDefault_msg_init,
   &google__protobuf__SourceCodeInfo_msg_init,
@@ -1614,7 +1634,7 @@ static const upb_MiniTable *messages_layout[34] = {
   &google__protobuf__GeneratedCodeInfo__Annotation_msg_init,
 };
 
-static const upb_MiniTableEnum *enums_layout[20] = {
+static const upb_MiniTableEnum *enums_layout[21] = {
   &google__protobuf__Edition_enum_init,
   &google__protobuf__ExtensionRangeOptions__VerificationState_enum_init,
   &google__protobuf__FeatureSet__EnforceNamingStyle_enum_init,
@@ -1622,6 +1642,7 @@ static const upb_MiniTableEnum *enums_layout[20] = {
   &google__protobuf__FeatureSet__FieldPresence_enum_init,
   &google__protobuf__FeatureSet__JsonFormat_enum_init,
   &google__protobuf__FeatureSet__MessageEncoding_enum_init,
+  &google__protobuf__FeatureSet__ProtoLimitsFeature__EnforceProtoLimits_enum_init,
   &google__protobuf__FeatureSet__RepeatedFieldEncoding_enum_init,
   &google__protobuf__FeatureSet__Utf8Validation_enum_init,
   &google__protobuf__FeatureSet__VisibilityFeature__DefaultSymbolVisibility_enum_init,
@@ -1641,8 +1662,8 @@ const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout = {
   messages_layout,
   enums_layout,
   NULL,
-  34,
-  20,
+  35,
+  21,
   0,
 };
 

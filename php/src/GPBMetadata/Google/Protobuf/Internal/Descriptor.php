@@ -327,6 +327,7 @@ class Descriptor
             ->optional('json_format', \Google\Protobuf\Internal\GPBType::ENUM, 6, 'google.protobuf.internal.FeatureSet.JsonFormat')
             ->optional('enforce_naming_style', \Google\Protobuf\Internal\GPBType::ENUM, 7, 'google.protobuf.internal.FeatureSet.EnforceNamingStyle')
             ->optional('default_symbol_visibility', \Google\Protobuf\Internal\GPBType::ENUM, 8, 'google.protobuf.internal.FeatureSet.VisibilityFeature.DefaultSymbolVisibility')
+            ->optional('enforce_proto_limits', \Google\Protobuf\Internal\GPBType::ENUM, 9, 'google.protobuf.internal.FeatureSet.ProtoLimitsFeature.EnforceProtoLimits')
             ->finalizeToPool();
 
         $pool->addMessage('google.protobuf.internal.FeatureSet.VisibilityFeature', \Google\Protobuf\Internal\FeatureSet\VisibilityFeature::class)
@@ -338,6 +339,15 @@ class Descriptor
             ->value("EXPORT_TOP_LEVEL", 2)
             ->value("LOCAL_ALL", 3)
             ->value("STRICT", 4)
+            ->finalizeToPool();
+
+        $pool->addMessage('google.protobuf.internal.FeatureSet.ProtoLimitsFeature', \Google\Protobuf\Internal\FeatureSet\ProtoLimitsFeature::class)
+            ->finalizeToPool();
+
+        $pool->addEnum('google.protobuf.internal.FeatureSet.ProtoLimitsFeature.EnforceProtoLimits', \Google\Protobuf\Internal\EnforceProtoLimits::class)
+            ->value("PROTO_LIMITS_UNKNOWN", 0)
+            ->value("LEGACY_NO_EXPLICIT_LIMITS", 1)
+            ->value("PROTO_LIMITS2026", 2)
             ->finalizeToPool();
 
         $pool->addEnum('google.protobuf.internal.FeatureSet.FieldPresence', \Google\Protobuf\Internal\FieldPresence::class)
