@@ -7,17 +7,24 @@
 
 #include "upb/wire/test_util/make_mini_table.h"
 
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
 #include <string>
 #include <utility>
 
 #include "absl/log/absl_check.h"
 #include "absl/log/log.h"
+#include "upb/base/descriptor_constants.h"
 #include "upb/base/status.hpp"
 #include "upb/mem/arena.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_descriptor/internal/encode.hpp"
 #include "upb/mini_descriptor/internal/modifiers.h"
+#include "upb/mini_descriptor/link.h"
+#include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/enum.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode_fast/combinations.h"
 #include "upb/wire/decode_fast/data.h"
@@ -36,6 +43,9 @@ int FieldModifiers(upb_DecodeFast_Type type,
     case kUpb_DecodeFast_String:
       modifiers |= kUpb_FieldModifier_ValidateUtf8;
       break;
+    case kUpb_DecodeFast_ClosedEnum:
+      modifiers |= kUpb_FieldModifier_IsClosedEnum;
+      break;
     default:
       break;
   }
@@ -47,9 +57,21 @@ int FieldModifiers(upb_DecodeFast_Type type,
       modifiers |= kUpb_FieldModifier_IsRepeated | kUpb_FieldModifier_IsPacked;
       break;
     default:
-      return 0;
+      break;
   }
   return modifiers;
+}
+
+static const upb_MiniTableEnum* MakeTestEnum(upb_Arena* arena) {
+  // Accepts all values 0-(2M-1).
+  uint32_t max_val = 1 << 21;
+  size_t data_count = max_val / 32;
+  upb_MiniTableEnum* e = (upb_MiniTableEnum*)upb_Arena_Malloc(
+      arena, sizeof(upb_MiniTableEnum) + data_count * sizeof(uint32_t));
+  e->UPB_PRIVATE(mask_limit) = max_val;
+  e->UPB_PRIVATE(value_count) = 0;
+  memset(e->UPB_PRIVATE(data), 0xff, data_count * sizeof(uint32_t));
+  return e;
 }
 
 std::pair<const upb_MiniTable*, const upb_MiniTableField*>
@@ -66,11 +88,18 @@ MiniTable::MakeSingleFieldTable(int field_number, upb_FieldType type,
   }
   const std::string& data = encoder.data();
   upb::Status status;
-  const upb_MiniTable* table =
-      upb_MiniTable_Build(data.data(), data.size(), arena, status.ptr());
+  upb_MiniTable* table = const_cast<upb_MiniTable*>(
+      upb_MiniTable_Build(data.data(), data.size(), arena, status.ptr()));
   ABSL_CHECK(status.ok()) << status.error_message();
-  const upb_MiniTableField* field = upb_MiniTable_GetFieldByIndex(table, 0);
+  upb_MiniTableField* field =
+      const_cast<upb_MiniTableField*>(upb_MiniTable_GetFieldByIndex(table, 0));
   ABSL_CHECK(field != nullptr);
+
+  if (type == kUpb_FieldType_Enum) {
+    const upb_MiniTableEnum* sub = MakeTestEnum(arena);
+    bool ok = upb_MiniTable_SetSubEnum(table, field, sub);
+    ABSL_CHECK(ok);
+  }
 #if UPB_FASTTABLE
   if (field_number < (1 << 11)) {
     ABSL_CHECK_EQ(HasFastTableEntry(table, field),

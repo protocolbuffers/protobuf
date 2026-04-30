@@ -103,8 +103,13 @@ static bool upb_DecodeFast_GetFieldType(const upb_MiniTable* m,
   //  - kUpb_FieldType_Enum -> kUpb_FieldType_Int32 if the enum is open.
   upb_FieldType type = field->UPB_PRIVATE(descriptortype);
 
-  if (type == kUpb_FieldType_Group || upb_MiniTableField_IsClosedEnum(field)) {
+  if (type == kUpb_FieldType_Group) {
     return false;  // Currently not supported.
+  }
+
+  if (upb_MiniTableField_IsClosedEnum(field)) {
+    *out_type = kUpb_DecodeFast_ClosedEnum;
+    return true;
   }
 
   static const int8_t types[] = {
@@ -169,7 +174,8 @@ static bool upb_DecodeFast_GetFunctionData(const upb_MiniTable* m,
       upb_MiniTableField_IsInOneof(field)
           ? UPB_PRIVATE(_upb_MiniTableField_OneofOffset)(field)
           : 0;
-  uint64_t field_index = upb_MiniTableField_IsSubMessage(field)
+  uint64_t field_index = (upb_MiniTableField_IsSubMessage(field) ||
+                          upb_MiniTableField_IsClosedEnum(field))
                              ? field - m->UPB_PRIVATE(fields)
                              : 0;
 

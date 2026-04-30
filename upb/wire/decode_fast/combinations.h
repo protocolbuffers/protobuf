@@ -40,7 +40,8 @@
   F(__VA_ARGS__, Fixed64)            \
   F(__VA_ARGS__, String)             \
   F(__VA_ARGS__, Bytes)              \
-  F(__VA_ARGS__, Message)
+  F(__VA_ARGS__, Message)            \
+  F(__VA_ARGS__, ClosedEnum)
 
 #define UPB_DECODEFAST_TAGSIZES(F, ...) \
   F(__VA_ARGS__, Tag1Byte)              \
@@ -99,6 +100,8 @@ UPB_INLINE int upb_DecodeFast_ValueBytes(upb_DecodeFast_Type type) {
     case kUpb_DecodeFast_Fixed64:
     case kUpb_DecodeFast_Message:
       return 8;
+    case kUpb_DecodeFast_ClosedEnum:
+      return 4;
     case kUpb_DecodeFast_String:
     case kUpb_DecodeFast_Bytes:
       return 16;
@@ -114,6 +117,7 @@ UPB_INLINE upb_WireType upb_DecodeFast_WireType(upb_DecodeFast_Type type) {
     case kUpb_DecodeFast_Varint64:
     case kUpb_DecodeFast_ZigZag32:
     case kUpb_DecodeFast_ZigZag64:
+    case kUpb_DecodeFast_ClosedEnum:
       return kUpb_WireType_Varint;
     case kUpb_DecodeFast_Fixed32:
       return kUpb_WireType_32Bit;
@@ -204,7 +208,8 @@ UPB_INLINE upb_DecodeFast_Type upb_DecodeFast_GetType(uint32_t function_idx) {
    ((type == kUpb_DecodeFast_Varint32 || type == kUpb_DecodeFast_Varint64 || \
      type == kUpb_DecodeFast_ZigZag32 || type == kUpb_DecodeFast_ZigZag64 || \
      type == kUpb_DecodeFast_Bool || type == kUpb_DecodeFast_Bytes ||        \
-     type == kUpb_DecodeFast_String || type == kUpb_DecodeFast_Message)))
+     type == kUpb_DecodeFast_String || type == kUpb_DecodeFast_Message ||    \
+     type == kUpb_DecodeFast_ClosedEnum)))
 
 #ifdef UPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE
 #define UPB_DECODEFAST_ISENABLED(type, card, size)            \
