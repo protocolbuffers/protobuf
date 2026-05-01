@@ -701,11 +701,14 @@ inline map_index_t Hash(absl::string_view k, void* salt) {
   return absl::HashOf(k, salt);
 }
 inline map_index_t Hash(uint64_t k, void* salt) {
-  if constexpr (!HasCrc32()) return absl::HashOf(k, salt);
-  uintptr_t salt_int = reinterpret_cast<uintptr_t>(salt);
-  // Note: Crc32(salt_int, k) causes the random iteration order test to fail so
-  // we also rotate.
-  return Crc32(salt_int, absl::rotr(k, salt_int & 0x3f));
+  if constexpr (!HasCrc32()) {
+    return absl::HashOf(k, salt);
+  } else {
+    uintptr_t salt_int = reinterpret_cast<uintptr_t>(salt);
+    // Note: Crc32(salt_int, k) causes the random iteration order test to fail so
+    // we also rotate.
+    return Crc32(salt_int, absl::rotr(k, salt_int & 0x3f));
+  }
 }
 
 // KeyMapBase is a chaining hash map.
