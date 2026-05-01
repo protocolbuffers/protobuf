@@ -57,11 +57,9 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
     const FieldDescriptor* field = descriptor_->field(i);
     if (RequiresPresenceBit(field)) {
       presence_bit_count++;
-      if (has_bit_field_count_ == 0 || (presence_bit_count % 32) == 0) {
-        has_bit_field_count_++;
-      }
     }
   }
+  has_bit_field_count_ = (presence_bit_count + 31) / 32;
 }
 
 MessageGenerator::~MessageGenerator() = default;

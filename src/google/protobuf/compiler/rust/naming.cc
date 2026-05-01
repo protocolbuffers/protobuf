@@ -156,7 +156,7 @@ std::string RsTypePath(Context& ctx, const FieldDescriptor& field) {
 }
 
 std::string RsTypePath(Context& ctx, const Descriptor& message) {
-  return absl::StrCat(RustModule(ctx, message), RsSafeName(message.name()));
+  return absl::StrCat(RustModule(ctx, message), MessageRsName(message));
 }
 
 std::string RsTypePath(Context& ctx, const EnumDescriptor& descriptor) {
@@ -329,12 +329,12 @@ bool AnyChildMessageNamed(const Descriptor* scope, absl::string_view name) {
   return false;
 }
 
-bool MustMangleEnumName(const EnumDescriptor& desc) {
-  // If an enum name ends with 'View', we check if there is a message whose name
-  // matches the enum name without the 'View' suffix. If so,
-  // append an extra 'X' character on the end of the gencode enum name. The
-  // reason we special case mangle this is to avoid breakages from the View
-  // type of the message when the .proto file is following this AIP:
+template <typename Desc>
+bool MustMangleName(const Desc& desc) {
+  // If a name ends with 'View', we check if there is a message whose name
+  // matches the name without the 'View' suffix. If so, we will append an extra
+  // '_' character on the end of the type that ended with 'View'. The reason we
+  // special case mangle this is to avoid breakages from the View breaking.
   // https://google.aip.dev/157#view-enumeration
   if (!absl::EndsWith(desc.name(), "View")) {
     return false;
@@ -349,9 +349,17 @@ bool MustMangleEnumName(const EnumDescriptor& desc) {
 
 }  // namespace
 
+std::string MessageRsName(const Descriptor& desc) {
+  std::string name = RsSafeName(desc.name());
+  if (MustMangleName(desc)) {
+    absl::StrAppend(&name, "_");
+  }
+  return name;
+}
+
 std::string EnumRsName(const EnumDescriptor& desc) {
   std::string name = RsSafeName(SnakeToUpperCamelCase(desc.name()));
-  if (MustMangleEnumName(desc)) {
+  if (MustMangleName(desc)) {
     absl::StrAppend(&name, "_");
   }
   return name;

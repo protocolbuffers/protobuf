@@ -6,6 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 """Defines a listener interface for observing certain
+
 state transitions on Message objects.
 
 Also defines a null implementation of this interface.
@@ -15,17 +16,18 @@ __author__ = 'robinson@google.com (Will Robinson)'
 
 
 class MessageListener(object):
+  """Listens for modifications made to a message.
 
-  """Listens for modifications made to a message.  Meant to be registered via
-  Message._SetListener().
+  Meant to be registered via Message._SetListener().
 
   Attributes:
-    dirty:  If True, then calling Modified() would be a no-op.  This can be
-            used to avoid these calls entirely in the common case.
+    dirty:  If True, then calling Modified() would be a no-op.  This can be used
+      to avoid these calls entirely in the common case.
   """
 
   def Modified(self):
     """Called every time the message is modified in such a way that the parent
+
     message may need to be updated.  This currently means either:
     (a) The message was modified for the first time, so the parent message
         should henceforth mark the message as present.
@@ -48,7 +50,6 @@ class MessageListener(object):
 
 
 class NullMessageListener(object):
-
   """No-op MessageListener implementation."""
 
   def Modified(self):

@@ -22,6 +22,16 @@ class Arena {
  public:
   Arena() = default;
   Arena(char* initial_block, size_t size) : arena_(initial_block, size) {}
+#if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
+  explicit Arena(size_t size_hint) : arena_(size_hint) {}
+#else
+  explicit Arena(size_t size_hint)
+      : arena_([size_hint] {
+          google::protobuf::ArenaOptions options;
+          options.start_block_size = size_hint;
+          return options;
+        }()) {}
+#endif
 
 // There are certain operations that are only supported by upb, e.g. fusing.
 #if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB

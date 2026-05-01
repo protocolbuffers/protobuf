@@ -8,6 +8,7 @@
 #include <string>
 
 #include "absl/log/absl_check.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
@@ -18,6 +19,7 @@
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/compiler/rust/upb_helpers.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {
@@ -25,6 +27,8 @@ namespace compiler {
 namespace rust {
 
 namespace {
+
+using Sub = ::google::protobuf::io::Printer::Sub;
 
 // The type name to use for the get/set methods on `MessagePtr`, e.g. `i32`
 // for `MessagePtr::get_i32_at_index()` and
@@ -68,8 +72,6 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
 
   ctx.Emit(
       {
-          {"field", RsSafeName(field_name)},
-          {"raw_field_name", field_name},  // Never r# prefixed
           {"view_self", ViewReceiver(accessor_case)},
           {"Scalar", RsTypePath(ctx, field)},
           {"default_value", DefaultValue(ctx, field)},
@@ -78,15 +80,19 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"getter",
            [&] {
              if (ctx.is_cpp()) {
-               ctx.Emit({{"getter_thunk", ThunkName(ctx, field, "get")}}, R"rs(
-                    pub fn $field$($view_self$) -> $Scalar$ {
+               ctx.Emit({Sub("getter_fn_name", RsSafeName(field_name))
+                             .AnnotatedAs(&field),
+                         {"getter_thunk", ThunkName(ctx, field, "get")}},
+                        R"rs(
+                    pub fn $getter_fn_name$($view_self$) -> $Scalar$ {
                       unsafe { $getter_thunk$(self.raw_msg()) }
                     }
                   )rs");
              } else {
-               ctx.Emit(
-                   R"rs(
-                    pub fn $field$($view_self$) -> $Scalar$ {
+               ctx.Emit({Sub("getter_fn_name", RsSafeName(field_name))
+                             .AnnotatedAs(&field)},
+                        R"rs(
+                    pub fn $getter_fn_name$($view_self$) -> $Scalar$ {
                       unsafe {
                         // TODO: b/361751487: This .into() and .try_into() is only
                         // here for the enum<->i32 case, we should avoid it for
@@ -106,14 +112,28 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
            [&] {
              if (accessor_case == AccessorCase::VIEW) return;
              if (ctx.is_cpp()) {
-               ctx.Emit({{"setter_thunk", ThunkName(ctx, field, "set")}}, R"rs(
-                  pub fn set_$raw_field_name$(&mut self, val: $Scalar$) {
+               ctx.Emit(
+                   {Sub("setter_fn_name", absl::StrCat("set_", field_name))
+                        .AnnotatedAs({&field, io::AnnotationCollector::
+                                                  Semantic::kSet}),  // Never r#
+                                                                     // prefixed
+                    {"setter_thunk", ThunkName(ctx, field, "set")}},
+                   R"rs(
+                  pub fn $setter_fn_name$(&mut self, val: $Scalar$) {
                     unsafe { $setter_thunk$(self.raw_msg(), val) }
                   }
                 )rs");
              } else {
-               ctx.Emit(R"rs(
-                  pub fn set_$raw_field_name$(&mut self, val: $Scalar$) {
+               ctx.Emit(
+                   {
+                       Sub("setter_fn_name", absl::StrCat("set_", field_name))
+                           .AnnotatedAs({&field,
+                                         io::AnnotationCollector::Semantic::
+                                             kSet})  // Never r#
+                                                     // prefixed
+                   },
+                   R"rs(
+                  pub fn $setter_fn_name$(&mut self, val: $Scalar$) {
                     unsafe {
                       // TODO: b/361751487: This .into() is only here
                       // here for the enum<->i32 case, we should avoid it for

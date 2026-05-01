@@ -3474,13 +3474,9 @@ INSTANTIATE_TEST_SUITE_P(
             )pb",
             /*expected_output=*/
             {
-                /*expected_hasbitmode=*/
-                internal::EnableExperimentalHintHasBitsForRepeatedFields()
-                    ? HasbitMode::kHintHasbit
-                    : HasbitMode::kNoHasbit,
+                /*expected_hasbitmode=*/HasbitMode::kHintHasbit,
                 /*expected_has_presence=*/false,
-                /*expected_has_hasbit=*/
-                internal::EnableExperimentalHintHasBitsForRepeatedFields(),
+                /*expected_has_hasbit=*/true,
             }},
         // Test case: proto3 singular fields
         HasHasbitTestParam{R"pb(name: 'foo.proto'
@@ -3541,13 +3537,9 @@ INSTANTIATE_TEST_SUITE_P(
             )pb",
             /*expected_output=*/
             {
-                /*expected_hasbitmode=*/
-                internal::EnableExperimentalHintHasBitsForRepeatedFields()
-                    ? HasbitMode::kHintHasbit
-                    : HasbitMode::kNoHasbit,
+                /*expected_hasbitmode=*/HasbitMode::kHintHasbit,
                 /*expected_has_presence=*/false,
-                /*expected_has_hasbit=*/
-                internal::EnableExperimentalHintHasBitsForRepeatedFields(),
+                /*expected_has_hasbit=*/true,
             }},
         // Test case: proto2 extension fields.
         // Note that extension fields don't have hasbits.
@@ -3696,13 +3688,9 @@ INSTANTIATE_TEST_SUITE_P(
             )pb",
             /*expected_output=*/
             {
-                /*expected_hasbitmode=*/
-                internal::EnableExperimentalHintHasBitsForRepeatedFields()
-                    ? HasbitMode::kHintHasbit
-                    : HasbitMode::kNoHasbit,
+                /*expected_hasbitmode=*/HasbitMode::kHintHasbit,
                 /*expected_has_presence=*/false,
-                /*expected_has_hasbit=*/
-                internal::EnableExperimentalHintHasBitsForRepeatedFields(),
+                /*expected_has_hasbit=*/true,
             }},
         // Test case: extension fields.
         // Note that extension fields don't have hasbits.
@@ -4792,7 +4780,7 @@ TEST(CustomOptions, AggregateOptions) {
             file_options.file().GetExtension(proto2_unittest::fileopt).s());
   EXPECT_EQ("EmbeddedMessageSetElement",
             file_options.mset()
-                .GetExtension(proto2_unittest::AggregateMessageSetElement ::
+                .GetExtension(proto2_unittest::AggregateMessageSetElement::
                                   message_set_extension)
                 .s());
 
@@ -7960,6 +7948,263 @@ TEST_F(ValidationErrorTest, MapEntryNestedType) {
   BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
 
+// Test for the scenario:
+// package pkg;
+// message B {
+//   AEntry x = 1;
+//   map<int32, int32> a = 2; // Synthesizes B.AEntry
+// }
+// Expect: error on synthetic MapEntry, no suggestion
+TEST_F(ValidationErrorTest, MapEntrySyntheticTypeUsedAsField) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"B\""
+      "  field { name: \"x\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_OPTIONAL }"
+      "  field { name: \"a\" number: 2 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "  }"
+      "}",
+      "foo.proto: pkg.B.x: TYPE: pkg.B.AEntry is a synthetic MapEntry message "
+      "type, which is not allowed to be used as a field type.\n");
+}
+
+// Test for the scenario:
+// package pkg;
+// message B {
+//   map<int32, int32> a = 1; // Synthesizes B.AEntry
+// }
+// message C {
+//   B.AEntry a = 1; // Field name matches AEntry, but scope is different.
+// }
+// Expect: error on synthetic MapEntry, no suggestion
+TEST_F(ValidationErrorTest, MapEntrySyntheticTypeCrossMessage) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"B\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "  }"
+      "}"
+      "message_type {"
+      "  name: \"C\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\".pkg.B.AEntry\" label: LABEL_OPTIONAL }"
+      "}",
+      "foo.proto: pkg.C.a: TYPE: pkg.B.AEntry is a synthetic MapEntry "
+      "message type, which is not allowed to be used as a field type.\n");
+}
+
+// Test for the scenario:
+// package pkg;
+// message Container {
+//   map<uint32, AEntry> a = 1;
+// }
+// Expect: error on synthetic MapEntry, no suggestion
+TEST_F(ValidationErrorTest, MapEntrySyntheticType) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"Container\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_UINT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" label: LABEL_OPTIONAL }"
+      "  }"
+      "}",
+      "foo.proto: pkg.Container.AEntry.value: TYPE: "
+      "pkg.Container.AEntry is a synthetic MapEntry message type, which "
+      "is not allowed to be used as a field type.\n");
+}
+
+// Test for the scenario:
+// package pkg;
+// message B {
+//   map<int32, int32> a = 1; // Synthesizes B.AEntry
+//   message C {
+//     message D {
+//       AEntry x = 1;
+//     }
+//   }
+// }
+// Expect: error on synthetic MapEntry, no suggestion
+TEST_F(ValidationErrorTest, MapEntrySyntheticTypeInDeepScope) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"B\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "  }"
+      "  nested_type {"
+      "    name: \"C\""
+      "    nested_type {"
+      "      name: \"D\""
+      "      field { name: \"x\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" label: LABEL_OPTIONAL }"
+      "    }"
+      "  }"
+      "}",
+      "foo.proto: pkg.B.C.D.x: TYPE: pkg.B.AEntry is a synthetic MapEntry "
+      "message type, which is not allowed to be used as a field type.\n");
+}
+
+// Test for the scenario:
+// package pkg;
+// message AEntry {}
+// message B {
+//   map<int32, int32> a = 1; // Synthesizes B.AEntry
+//   message C {
+//     message D {
+//       AEntry x = 1;
+//     }
+//   }
+// }
+// Expect: error on synthetic MapEntry, has suggestion
+TEST_F(ValidationErrorTest, MapEntrySyntheticTypeInDeepScopeWithAlternative) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"AEntry\""
+      "}"
+      "message_type {"
+      "  name: \"B\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "  }"
+      "  nested_type {"
+      "    name: \"C\""
+      "    nested_type {"
+      "      name: \"D\""
+      "      field { name: \"x\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" label: LABEL_OPTIONAL }"
+      "    }"
+      "  }"
+      "}",
+      "foo.proto: pkg.B.C.D.x: TYPE: pkg.B.AEntry is a synthetic MapEntry "
+      "message type, which is not allowed to be used as a field type. Maybe "
+      "you meant \".pkg.AEntry\"?\n");
+}
+
+// Test for the scenario:
+// package pkg;
+// message AEntry {}
+// message Container {
+//   map<uint32, AEntry> a = 1;
+// }
+// Expect: error on synthetic MapEntry, has suggestion
+TEST_F(ValidationErrorTest, MapValueSyntheticNameCollision) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"AEntry\""
+      "}"
+      "message_type {"
+      "  name: \"Container\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_UINT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" label: LABEL_OPTIONAL }"
+      "  }"
+      "}",
+      "foo.proto: pkg.Container.AEntry.value: TYPE: "
+      "pkg.Container.AEntry is a synthetic MapEntry message type, which "
+      "is not allowed to be used as a field type. Maybe you meant "
+      "\".pkg.AEntry\"?\n");
+}
+
+// Test for the scenario where the alternative suggestion is an enum.
+// package pkg;
+// enum MyEntry { VALUE = 0; }
+// message Foo {
+//   map<int32, int32> my = 1; // Synthesizes Foo.MyEntry
+//   MyEntry bar = 2; // User wants to use pkg.MyEntry (enum) but resolves to
+//   Foo.MyEntry
+// }
+// Expect: error on synthetic MapEntry, suggesting the enum alternative.
+TEST_F(ValidationErrorTest, MapEntrySyntheticTypeAlternativeIsEnum) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "enum_type {"
+      "  name: \"MyEntry\""
+      "  value { name: \"VALUE\" number: 0 }"
+      "}"
+      "message_type {"
+      "  name: \"Foo\""
+      "  field { name: \"my\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"MyEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  field { name: \"bar\" number: 2 type: TYPE_MESSAGE type_name: "
+      "\"MyEntry\" "
+      "          label: LABEL_OPTIONAL }"
+      "  nested_type {"
+      "    name: \"MyEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "  }"
+      "}",
+      "foo.proto: pkg.Foo.bar: TYPE: pkg.Foo.MyEntry is a synthetic MapEntry "
+      "message type, which is not allowed to be used as a field type. Maybe "
+      "you meant \".pkg.MyEntry\"?\n");
+}
+
 TEST_F(ValidationErrorTest, MapEntryEnumTypes) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
@@ -7986,6 +8231,17 @@ TEST_F(ValidationErrorTest, MapEntryExtraField) {
   BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
 
+// Test for the scenario:
+// message Foo {
+//   OtherMapEntry foo_map = 1; // name doesn't match expected FooMapEntry
+//   message OtherMapEntry {
+//     options { map_entry = true; }
+//     int32 key = 1;
+//     int32 value = 2;
+//   }
+// }
+// The test manually renames the synthesized message "FooMapEntry" to
+// "OtherMapEntry". Expect: error on synthetic MapEntry used as field type.
 TEST_F(ValidationErrorTest, MapEntryMessageName) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
@@ -7993,17 +8249,48 @@ TEST_F(ValidationErrorTest, MapEntryMessageName) {
       "OtherMapEntry");
   file_proto.mutable_message_type(0)->mutable_field(0)->set_type_name(
       "OtherMapEntry");
-  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
+  BuildFileWithErrors(
+      file_proto,
+      "foo.proto: Foo.foo_map: TYPE: Foo.OtherMapEntry is a synthetic "
+      "MapEntry message type, which is not allowed to be used as a field "
+      "type.\n");
 }
 
+// Test for the scenario:
+// message Foo {
+//   FooMapEntry foo_map = 1; // should be repeated
+//   message FooMapEntry {
+//     options { map_entry = true; }
+//     int32 key = 1;
+//     int32 value = 2;
+//   }
+// }
+// The test manually changes the field 'foo_map' to be optional (non-repeated).
+// Expect: error on synthetic MapEntry used as field type.
 TEST_F(ValidationErrorTest, MapEntryNoneRepeatedMapEntry) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
   file_proto.mutable_message_type(0)->mutable_field(0)->set_label(
       FieldDescriptorProto::LABEL_OPTIONAL);
-  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
+  BuildFileWithErrors(
+      file_proto,
+      "foo.proto: Foo.foo_map: TYPE: Foo.FooMapEntry is a synthetic "
+      "MapEntry message type, which is not allowed to be used as a field "
+      "type.\n");
 }
 
+// Test for the scenario:
+// message Foo {
+//   FooMapEntry foo_map = 1; // points to top-level message
+// }
+// message FooMapEntry {
+//   options { map_entry = true; }
+//   int32 key = 1;
+//   int32 value = 2;
+// }
+// The test manually moves the synthesized message "FooMapEntry" to the top
+// level.
+// Expect: error on synthetic MapEntry used as field type.
 TEST_F(ValidationErrorTest, MapEntryDifferentContainingType) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
@@ -8011,7 +8298,10 @@ TEST_F(ValidationErrorTest, MapEntryDifferentContainingType) {
   // the validation.
   file_proto.mutable_message_type()->AddAllocated(
       file_proto.mutable_message_type(0)->mutable_nested_type()->ReleaseLast());
-  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
+  BuildFileWithErrors(
+      file_proto,
+      "foo.proto: Foo.foo_map: TYPE: FooMapEntry is a synthetic MapEntry "
+      "message type, which is not allowed to be used as a field type.\n");
 }
 
 TEST_F(ValidationErrorTest, MapEntryKeyName) {
@@ -8117,16 +8407,18 @@ TEST_F(ValidationErrorTest, MapEntryKeyTypeEnum) {
   EnumValueDescriptorProto* enum_value_proto = enum_proto->add_value();
   enum_value_proto->set_name("BAR_VALUE0");
   enum_value_proto->set_number(0);
-  BuildFileWithErrors(file_proto,
-                      "foo.proto: Foo.foo_map: TYPE: Key in map fields cannot "
-                      "be enum types.\n");
+  BuildFileWithErrors(
+      file_proto,
+      "foo.proto: Foo.foo_map: TYPE: Key in map fields cannot be enum "
+      "types.\n");
   // Enum keys are not allowed in proto3 as well.
   // Get rid of extensions for proto3 to make it proto3 compatible.
   file_proto.mutable_message_type()->RemoveLast();
   file_proto.set_syntax("proto3");
-  BuildFileWithErrors(file_proto,
-                      "foo.proto: Foo.foo_map: TYPE: Key in map fields cannot "
-                      "be enum types.\n");
+  BuildFileWithErrors(
+      file_proto,
+      "foo.proto: Foo.foo_map: TYPE: Key in map fields cannot be enum "
+      "types.\n");
 }
 
 TEST_F(ValidationErrorTest, MapEntryKeyTypeMessage) {
@@ -8405,8 +8697,8 @@ TEST_F(ValidationErrorTest, MapEntryUsesNoneZeroEnumDefaultValue) {
       "    } "
       "  } "
       "}",
-      "foo.proto: Foo.foo_map: "
-      "TYPE: Enum value in map must define 0 as the first value.\n");
+      "foo.proto: Foo.foo_map: TYPE: Enum value in map must define 0 as the "
+      "first value.\n");
 }
 
 TEST_F(ValidationErrorTest, Proto3RequiredFields) {
@@ -8915,6 +9207,11 @@ class FeaturesTest : public FeaturesBaseTest {
     ASSERT_OK(default_spec);
     ASSERT_OK(pool_.SetFeatureSetDefaults(std::move(default_spec).value()));
   }
+
+  FieldDescriptor::CppRepeatedType GetCppRepeatedType(
+      const FieldDescriptor* field) {
+    return field->CalculateCppRepeatedType();
+  }
 };
 
 template <typename T>
@@ -9019,10 +9316,12 @@ TEST_F(FeaturesTest, Proto2Features) {
                 json_format: LEGACY_BEST_EFFORT
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
   EXPECT_THAT(GetCoreFeatures(field), EqualsProto(R"pb(
                 field_presence: EXPLICIT
@@ -9033,10 +9332,12 @@ TEST_F(FeaturesTest, Proto2Features) {
                 json_format: LEGACY_BEST_EFFORT
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
   EXPECT_THAT(GetCoreFeatures(group), EqualsProto(R"pb(
                 field_presence: EXPLICIT
@@ -9047,10 +9348,12 @@ TEST_F(FeaturesTest, Proto2Features) {
                 json_format: LEGACY_BEST_EFFORT
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
   EXPECT_TRUE(field->has_presence());
   EXPECT_FALSE(field->requires_utf8_validation());
@@ -9077,6 +9380,9 @@ TEST_F(FeaturesTest, Proto2Features) {
             FieldDescriptor::CppStringType::kString);
   EXPECT_EQ(message->FindFieldByName("cord")->cpp_string_type(),
             FieldDescriptor::CppStringType::kCord);
+
+  EXPECT_EQ(GetCppRepeatedType(message->FindFieldByName("rep")),
+            FieldDescriptor::CppRepeatedType::kRepeated);
 
   // Check round-trip consistency.
   FileDescriptorProto proto;
@@ -9126,10 +9432,12 @@ TEST_F(FeaturesTest, Proto3Features) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
   EXPECT_THAT(GetCoreFeatures(field), EqualsProto(R"pb(
                 field_presence: IMPLICIT
@@ -9140,10 +9448,12 @@ TEST_F(FeaturesTest, Proto3Features) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
   EXPECT_FALSE(field->has_presence());
   EXPECT_FALSE(field->requires_utf8_validation());
@@ -9322,10 +9632,12 @@ TEST_F(FeaturesTest, Edition2023Defaults) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 }
               )pb"));
 
@@ -9388,6 +9700,37 @@ TEST_F(FeaturesTest, Edition2023InferredFeatures) {
       pb::CppFeatures::VIEW);
 }
 
+TEST_F(FeaturesTest, CppFeaturesUnknownStringType) {
+  // STRING_TYPE_UNKNOWN set explicitly at the file level propagates to the
+  // field, and the field's cpp_string_type() defaults to String.
+  FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
+    name: "unknown_string_field_type.proto"
+    syntax: "editions"
+    edition: EDITION_2023
+    options {
+      features {
+        [pb.cpp] { string_type: STRING_TYPE_UNKNOWN }
+      }
+    }
+    message_type {
+      name: "UnknownStringFieldType"
+      field { name: "v" number: 1 label: LABEL_OPTIONAL type: TYPE_BYTES }
+    }
+  )pb");
+
+  google::protobuf::DescriptorPool pool;
+  const FileDescriptor* file = pool.BuildFile(file_proto);
+  ASSERT_NE(file, nullptr);
+
+  const Descriptor* message = file->message_type(0);
+  EXPECT_EQ(GetFeatures(message->field(0)).GetExtension(pb::cpp).string_type(),
+            pb::CppFeatures::STRING_TYPE_UNKNOWN);
+
+  EXPECT_EQ(message->field(0)->cpp_string_type(),
+            FieldDescriptor::CppStringType::kString);
+}
+
+
 TEST_F(FeaturesTest, Edition2024Defaults) {
   FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
     name: "foo.proto"
@@ -9407,10 +9750,47 @@ TEST_F(FeaturesTest, Edition2024Defaults) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE2024
                 default_symbol_visibility: EXPORT_TOP_LEVEL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: VIEW
                   enum_name_uses_string_view: true
+                  repeated_type: LEGACY
+                }
+              )pb"));
+
+  // Since pb::test is registered in the pool, it should end up with defaults in
+  // our FeatureSet.
+  EXPECT_TRUE(GetFeatures(file).HasExtension(pb::test));
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).file_feature(),
+            pb::VALUE3);
+}
+
+TEST_F(FeaturesTest, Edition2026Defaults) {
+  FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: EDITION_2026
+  )pb");
+
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
+  EXPECT_THAT(file->options(), EqualsProto(""));
+  EXPECT_THAT(GetCoreFeatures(file), EqualsProto(R"pb(
+                field_presence: EXPLICIT
+                enum_type: OPEN
+                repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW
+                enforce_naming_style: STYLE2026
+                default_symbol_visibility: EXPORT_TOP_LEVEL
+                enforce_proto_limits: PROTO_LIMITS2026
+                [pb.cpp] {
+                  legacy_closed_enum: false
+                  string_type: VIEW
+                  enum_name_uses_string_view: true
+                  repeated_type: LEGACY
                 }
               )pb"));
 
@@ -9442,10 +9822,12 @@ TEST_F(FeaturesBaseTest, DefaultEdition2023Defaults) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 }
               )pb"));
   EXPECT_FALSE(GetFeatures(file).HasExtension(pb::test));
@@ -9472,10 +9854,12 @@ TEST_F(FeaturesTest, ClearsOptions) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -9841,10 +10225,12 @@ TEST_F(FeaturesTest, NoOptions) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -9876,10 +10262,12 @@ TEST_F(FeaturesTest, FileFeatures) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -9959,10 +10347,12 @@ TEST_F(FeaturesTest, MessageFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -10072,10 +10462,12 @@ TEST_F(FeaturesTest, FieldFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -10458,6 +10850,205 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithPoolOptInIfMessagesAreGood) {
               NotNull());
 }
 
+TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsInEdition2024) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+
+  // Check that naming collisions are allowed in edition 2024.
+  ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
+    edition = "2024";
+    package naming;
+    message Foo {
+      string has_bar = 1;
+      string bar = 2;
+    }
+  )schema"),
+              NotNull());
+}
+
+TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsInStyle2024) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+
+  // Check that naming collisions are allowed in STYLE2024.
+  ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
+    edition = "UNSTABLE";
+    option features.enforce_naming_style = STYLE2024;
+    package naming;
+    message Foo {
+      string has_bar = 1;
+      string bar = 2;
+    }
+  )schema"),
+              NotNull());
+}
+
+TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsInStyle2026) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+
+  // These are allowed because they don't collide with any existing field.
+  ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
+    edition = "UNSTABLE";
+    option features.enforce_naming_style = STYLE2026;
+    package naming;
+    message Foo {
+      string has_bar = 1;
+      string baz = 2;
+      string bar_value = 3;
+    }
+  )schema"),
+              NotNull());
+}
+
+TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsOneOfInStyle2026) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+
+  // This is allowed because the oneof doesn't collide with any existing field.
+  ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
+    edition = "UNSTABLE";
+    option features.enforce_naming_style = STYLE2026;
+    package naming;
+    message Foo {
+      oneof has_bar {
+        string test_field = 1;
+      }
+    }
+  )schema"),
+              NotNull());
+}
+
+struct CollisionNameParam {
+  std::string field_name;
+  std::string error_message_part;
+};
+
+class CollisionNameTest
+    : public FeaturesTest,
+      public testing::WithParamInterface<CollisionNameParam> {};
+
+INSTANTIATE_TEST_SUITE_P(
+    CollisionNameTests, CollisionNameTest,
+    testing::Values(
+        CollisionNameParam{"has_test_field", "should not begin with has_"},
+        CollisionNameParam{"get_test_field", "should not begin with get_"},
+        CollisionNameParam{"set_test_field", "should not begin with set_"},
+        CollisionNameParam{"clear_test_field", "should not begin with clear_"},
+        CollisionNameParam{"test_field_value", "should not end with _value"}),
+    [](const testing::TestParamInfo<CollisionNameParam>& info) {
+      return info.param.field_name;
+    });
+
+TEST_P(CollisionNameTest, NamingStyleViolationsWithCollisionsInStyle2026) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+  const CollisionNameParam& param = GetParam();
+  std::string schema = absl::Substitute(R"schema(
+    edition = "UNSTABLE";
+    message Foo {
+      string $0 = 1;
+      string test_field = 2;
+    }
+  )schema",
+                                        param.field_name);
+  ParseAndBuildFileWithErrorSubstr(
+      "foo.proto", schema,
+      absl::StrCat("Field name ", param.field_name, " ",
+                   param.error_message_part,
+                   " if a field named test_field exists. This can cause "
+                   "collisions in generated code."));
+}
+
+TEST_P(CollisionNameTest, NamingStyleViolationsInvalidFieldNameInStyle2026) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+  std::string schema = absl::StrCat(R"schema(
+    edition = "UNSTABLE";
+    message Foo {
+      string descriptor = 1;
+    }
+  )schema");
+  ParseAndBuildFileWithErrorSubstr(
+      "foo.proto", schema,
+      "Field name descriptor should not be named descriptor. This can cause "
+      "collisions in generated code.");
+}
+
+TEST_P(CollisionNameTest,
+       NamingStyleViolationsOneOfFieldNameCollisionInStyle2026) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+  std::string schema = absl::StrCat(R"schema(
+    edition = "UNSTABLE";
+    message Foo {
+      oneof bar {
+        string has_test_field = 1;
+        string test_field = 2;
+      }
+    }
+  )schema");
+  ParseAndBuildFileWithErrorSubstr("foo.proto", schema,
+                                   "Field name has_test_field should not begin "
+                                   "with has_ if a field named test_field "
+                                   "exists. This can cause collisions in "
+                                   "generated code.");
+}
+
+TEST_P(CollisionNameTest,
+       NamingStyleViolationsOneOfNameFieldNameCollisionInStyle2026) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+  std::string schema = absl::StrCat(R"schema(
+    edition = "UNSTABLE";
+    message Foo {
+      oneof has_test_field {
+        string test_field = 1;
+      }
+    }
+  )schema");
+  ParseAndBuildFileWithErrorSubstr("foo.proto", schema,
+                                   "Oneof name has_test_field should not begin "
+                                   "with has_ if a field named test_field "
+                                   "exists. This can cause collisions in "
+                                   "generated code.");
+}
+
+TEST_P(CollisionNameTest,
+       NamingStyleViolationsFieldNameOneOfNameCollisionInStyle2026) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+  std::string schema = absl::StrCat(R"schema(
+    edition = "UNSTABLE";
+    message Foo {
+      oneof test_field {
+        string has_test_field = 1;
+      }
+    }
+  )schema");
+  ParseAndBuildFileWithErrorSubstr(
+      "foo.proto", schema,
+      "Field name has_test_field should not begin with has_ if a field named "
+      "test_field exists. This can cause collisions in generated code.");
+}
+
+TEST_P(CollisionNameTest, NamingStyleViolationsInvalidOneOfNameInStyle2026) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceNamingStyle(true);
+  std::string schema = absl::StrCat(R"schema(
+    edition = "UNSTABLE";
+    message Foo {
+      oneof descriptor {
+        string test_field = 1;
+      }
+    }
+  )schema");
+  ParseAndBuildFileWithErrorSubstr(
+      "foo.proto", schema,
+      "Oneof name descriptor should not be named descriptor. This can cause "
+      "collisions in generated code.");
+}
+
 TEST_F(FeaturesTest, VisibilityFeatureSetStrict) {
   pool_.EnforceSymbolVisibility(true);
   BuildDescriptorMessagesInTestPool();
@@ -10798,10 +11389,12 @@ TEST_F(FeaturesTest, EnumFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -10915,10 +11508,12 @@ TEST_F(FeaturesTest, EnumValueFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -11016,10 +11611,12 @@ TEST_F(FeaturesTest, OneofFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -11126,10 +11723,12 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -11221,10 +11820,12 @@ TEST_F(FeaturesTest, ServiceFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -11293,10 +11894,12 @@ TEST_F(FeaturesTest, MethodFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -11653,6 +12256,70 @@ TEST_F(FeaturesTest, FieldCppStringType) {
   EXPECT_EQ(cord_ext->cpp_string_type(),
             FieldDescriptor::CppStringType::kString);
 
+}
+
+TEST_F(FeaturesTest, FieldCppRepeatedType) {
+  BuildDescriptorMessagesInTestPool();
+  const std::string file_contents = absl::Substitute(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2024
+        message_type {
+          name: "Foo"
+          field {
+            name: "repeated_message"
+            number: 1
+            label: LABEL_REPEATED
+            type: TYPE_MESSAGE
+            type_name: "Foo"
+          }
+          field {
+            name: "repeated_message_proxy"
+            number: 2
+            label: LABEL_REPEATED
+            type: TYPE_MESSAGE
+            type_name: "Foo"
+            options {
+              features {
+                [pb.cpp] { repeated_type: PROXY }
+              }
+            }
+          }
+          field {
+            name: "repeated_int32"
+            number: 3
+            label: LABEL_REPEATED
+            type: TYPE_INT32
+          }
+          field {
+            name: "repeated_int32_proxy"
+            number: 4
+            label: LABEL_REPEATED
+            type: TYPE_INT32
+            options {
+              features {
+                [pb.cpp] { repeated_type: PROXY }
+              }
+            }
+          }
+        }
+      )pb");
+  const FileDescriptor* file = BuildFile(file_contents);
+  const Descriptor* message = file->message_type(0);
+  const FieldDescriptor* repeated_message = message->field(0);
+  const FieldDescriptor* repeated_message_proxy = message->field(1);
+  const FieldDescriptor* repeated_int32 = message->field(2);
+  const FieldDescriptor* repeated_int32_proxy = message->field(3);
+
+  EXPECT_EQ(GetCppRepeatedType(repeated_message),
+            FieldDescriptor::CppRepeatedType::kRepeated);
+  EXPECT_EQ(GetCppRepeatedType(repeated_message_proxy),
+            FieldDescriptor::CppRepeatedType::kProxy);
+  EXPECT_EQ(GetCppRepeatedType(repeated_int32),
+            FieldDescriptor::CppRepeatedType::kRepeated);
+  EXPECT_EQ(GetCppRepeatedType(repeated_int32_proxy),
+            FieldDescriptor::CppRepeatedType::kProxy);
 }
 
 TEST_F(FeaturesTest, MergeFeatureValidationFailed) {
@@ -12438,10 +13105,12 @@ TEST_F(FeaturesTest, UninterpretedOptions) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -13285,6 +13954,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
         json_format: ALLOW
         enforce_naming_style: STYLE_LEGACY
         default_symbol_visibility: EXPORT_ALL
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
       }
     }
     minimum_edition: EDITION_PROTO2
@@ -13309,6 +13979,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
               )pb"));
 }
 
@@ -13325,6 +13996,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideFieldDefaults) {
         json_format: ALLOW
         enforce_naming_style: STYLE_LEGACY
         default_symbol_visibility: EXPORT_ALL
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
       }
     }
     minimum_edition: EDITION_PROTO2
@@ -13354,6 +14026,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideFieldDefaults) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
               )pb"));
 }
 
@@ -13811,6 +14484,54 @@ TEST_F(ValidationErrorTest, VisibilityFromLocalExtender) {
       "defined in \"vis.proto\" target of extend is not visible from "
       "\"bad_importer.proto\". It is explicitly marked 'local' and cannot be "
       "accessed outside its own file\n");
+}
+
+TEST_F(ValidationErrorTest, VisibilityFromService) {
+  pool_.EnforceSymbolVisibility(true);
+  ASSERT_THAT(ParseAndBuildFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+
+        local message LocalMessage {
+        }
+        export message ExportMessage {
+        }
+        )schema"),
+              NotNull());
+
+  ParseAndBuildFileWithErrorSubstr(
+      "service_bad_input.proto",
+      R"schema(
+        edition = "2024";
+        import "vis.proto";
+
+        service MyServiceInput {
+           rpc MyBadMethod(vis.test.LocalMessage)
+             returns (vis.test.ExportMessage) {}
+        }
+      )schema",
+      "service_bad_input.proto: MyServiceInput.MyBadMethod: INPUT_TYPE: Symbol "
+      "\"vis.test.LocalMessage\", "
+      "defined in \"vis.proto\"  is not visible "
+      "from \"service_bad_input.proto\". It is explicitly marked 'local' and "
+      "cannot be accessed outside its own file\n");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "service_bad_return.proto",
+      R"schema(
+        edition = "2024";
+        import "vis.proto";
+
+        service MyServiceReturn {
+           rpc MyBadMethod(vis.test.ExportMessage)
+             returns (vis.test.LocalMessage) {}
+        }
+      )schema",
+      "service_bad_return.proto: MyServiceReturn.MyBadMethod: OUTPUT_TYPE: "
+      "Symbol \"vis.test.LocalMessage\", defined in \"vis.proto\"  is not "
+      "visible from \"service_bad_return.proto\". It is "
+      "explicitly marked 'local' and cannot be accessed outside its own "
+      "file\n");
 }
 
 struct ExtensionDeclarationsTestParams {
@@ -15112,6 +15833,45 @@ const char* const kSourceLocationTestInput =
     "  optional string test_ext_opt = 10101;\n"
     "}\n";
 
+MATCHER_P2(MatchesSubstring, full_string, expected_substring, "") {
+  auto get_offset = [&](int line, int col) -> size_t {
+    if (line == -1) return std::string::npos;
+    size_t offset = 0;
+    absl::string_view input(full_string);
+    for (int i = 0; i < line; ++i) {
+      offset = input.find('\n', offset);
+      if (offset == std::string::npos) return std::string::npos;
+      offset++;
+    }
+    return offset + col;
+  };
+
+  size_t start_offset = get_offset(arg.start_line, arg.start_column);
+  size_t end_offset = get_offset(arg.end_line, arg.end_column);
+
+  if (start_offset == std::string::npos || end_offset == std::string::npos ||
+      start_offset > end_offset ||
+      end_offset > absl::string_view(full_string).size()) {
+    *result_listener << "invalid range. Outside of range for " << full_string;
+    return false;
+  }
+
+  absl::string_view actual_substring =
+      absl::string_view(full_string)
+          .substr(start_offset, end_offset - start_offset);
+  EXPECT_EQ(actual_substring, expected_substring)
+      << " Actual substring matches source location " << arg.start_line << ":"
+      << arg.start_column << "-" << arg.end_line << ":" << arg.end_column
+      << " in the following text:\n\n"
+      << full_string;
+  return true;
+}
+
+// A path through a FileDescriptorProto to a specific location of source code,
+// e.g. a field name. See SourceCodeInfo.Location.path in descriptor.proto for
+// full structure of this vector.
+using SourceCodePath = std::vector<int>;
+
 class SourceLocationTest : public testing::Test {
  public:
   SourceLocationTest()
@@ -15124,12 +15884,6 @@ class SourceLocationTest : public testing::Test {
     // since our test file imports it
     FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto_);
     simple_db_.Add(file_proto_);
-  }
-
-  static std::string PrintSourceLocation(const SourceLocation& loc) {
-    return absl::Substitute("$0:$1-$2:$3", 1 + loc.start_line,
-                            1 + loc.start_column, 1 + loc.end_line,
-                            1 + loc.end_column);
   }
 
  private:
@@ -15160,27 +15914,70 @@ TEST_F(SourceLocationTest, GetSourceLocation) {
 
   const Descriptor* a_desc = file_desc->FindMessageTypeByName("A");
   EXPECT_TRUE(a_desc->GetSourceLocation(&loc));
-  EXPECT_EQ("4:1-16:2", PrintSourceLocation(loc));
+  EXPECT_THAT(loc,
+              MatchesSubstring(
+                  kSourceLocationTestInput,
+                  "message A {\n"
+                  "  option (test_msg_opt) = \"foobar\";\n"
+                  "  optional int32 a = 1 [deprecated = true];\n"
+                  "  message B {\n"
+                  "    required double b = 1 [(test_field_opt) = \"foobar\"];\n"
+                  "  }\n"
+                  "  oneof c {\n"
+                  "    option (test_oneof_opt) = \"foobar\";\n"
+                  "    string d = 2;\n"
+                  "    string e = 3;\n"
+                  "    string f = 4;\n"
+                  "  }\n"
+                  "}"));
 
   const Descriptor* a_b_desc = a_desc->FindNestedTypeByName("B");
   EXPECT_TRUE(a_b_desc->GetSourceLocation(&loc));
-  EXPECT_EQ("7:3-9:4", PrintSourceLocation(loc));
+  EXPECT_THAT(loc,
+              MatchesSubstring(
+                  kSourceLocationTestInput,
+                  "message B {\n"
+                  "    required double b = 1 [(test_field_opt) = \"foobar\"];\n"
+                  "  }"));
 
   const EnumDescriptor* e_desc = file_desc->FindEnumTypeByName("Indecision");
   EXPECT_TRUE(e_desc->GetSourceLocation(&loc));
-  EXPECT_EQ("17:1-24:2", PrintSourceLocation(loc));
+  EXPECT_THAT(loc,
+              MatchesSubstring(kSourceLocationTestInput,
+                               "enum Indecision {\n"
+                               "  option (test_enum_opt) = 21;\n"
+                               "  option (test_enum_opt) = 42;\n"
+                               "  option (test_enum_opt) = 63;\n"
+                               "  YES   = 1 [(test_enumval_opt).a = 100];\n"
+                               "  NO    = 2 [(test_enumval_opt) = {a:200}];\n"
+                               "  MAYBE = 3;\n"
+                               "}"));
 
   const EnumValueDescriptor* yes_desc = e_desc->FindValueByName("YES");
   EXPECT_TRUE(yes_desc->GetSourceLocation(&loc));
-  EXPECT_EQ("21:3-21:42", PrintSourceLocation(loc));
+  EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                    "YES   = 1 [(test_enumval_opt).a = 100];"));
 
   const ServiceDescriptor* s_desc = file_desc->FindServiceByName("S");
   EXPECT_TRUE(s_desc->GetSourceLocation(&loc));
-  EXPECT_EQ("25:1-35:2", PrintSourceLocation(loc));
+  EXPECT_THAT(loc,
+              MatchesSubstring(kSourceLocationTestInput,
+                               "service S {\n"
+                               "  option (test_svc_opt) = {a:100};\n"
+                               "  option (test_svc_opt) = {a:200};\n"
+                               "  option (test_svc_opt) = {a:300};\n"
+                               "  rpc Method(A) returns (A.B);\n"
+                               "\n"
+                               "  rpc OtherMethod(A) returns (A) {\n"
+                               "    option deprecated = true;\n"
+                               "    option (test_method_opt) = \"foobar\";\n"
+                               "  }\n"
+                               "}"));
 
   const MethodDescriptor* m_desc = s_desc->FindMethodByName("Method");
   EXPECT_TRUE(m_desc->GetSourceLocation(&loc));
-  EXPECT_EQ("29:3-29:31", PrintSourceLocation(loc));
+  EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                    "rpc Method(A) returns (A.B);"));
 }
 
 TEST_F(SourceLocationTest, ExtensionSourceLocation) {
@@ -15192,16 +15989,24 @@ TEST_F(SourceLocationTest, ExtensionSourceLocation) {
   const FieldDescriptor* int32_extension_desc =
       file_desc->FindExtensionByName("int32_extension");
   EXPECT_TRUE(int32_extension_desc->GetSourceLocation(&loc));
-  EXPECT_EQ("40:3-40:55", PrintSourceLocation(loc));
+  EXPECT_THAT(loc, MatchesSubstring(
+                       kSourceLocationTestInput,
+                       "repeated int32 int32_extension = 1001 [packed=true];"));
 
   const Descriptor* c_desc = file_desc->FindMessageTypeByName("C");
   EXPECT_TRUE(c_desc->GetSourceLocation(&loc));
-  EXPECT_EQ("42:1-46:2", PrintSourceLocation(loc));
+  EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                    "message C {\n"
+                                    "  extend MessageWithExtensions {\n"
+                                    "    optional C message_extension = 1002;\n"
+                                    "  }\n"
+                                    "}"));
 
   const FieldDescriptor* message_extension_desc =
       c_desc->FindExtensionByName("message_extension");
   EXPECT_TRUE(message_extension_desc->GetSourceLocation(&loc));
-  EXPECT_EQ("44:5-44:41", PrintSourceLocation(loc));
+  EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                    "optional C message_extension = 1002;"));
 }
 
 TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
@@ -15219,357 +16024,341 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
 
   // File options
   {
-    int path[] = {FileDescriptorProto::kOptionsFieldNumber,
-                  FileOptions::kJavaPackageFieldNumber};
-    int unint[] = {FileDescriptorProto::kOptionsFieldNumber,
-                   FileOptions::kUninterpretedOptionFieldNumber, 0};
+    SourceCodePath path = {FileDescriptorProto::kOptionsFieldNumber,
+                           FileOptions::kJavaPackageFieldNumber};
+    SourceCodePath unint = {FileDescriptorProto::kOptionsFieldNumber,
+                            FileOptions::kUninterpretedOptionFieldNumber, 0};
 
-    std::vector<int> vpath(path, path + 2);
-    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("2:1-2:37", PrintSourceLocation(loc));
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput,
+                                 "option java_package = \"com.foo.bar\";"));
 
-    std::vector<int> vunint(unint, unint + 3);
-    EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
+    EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }
   {
-    int path[] = {FileDescriptorProto::kOptionsFieldNumber,
-                  kCustomOptionFieldNumber};
-    int unint[] = {FileDescriptorProto::kOptionsFieldNumber,
-                   FileOptions::kUninterpretedOptionFieldNumber, 1};
-    std::vector<int> vpath(path, path + 2);
-    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("3:1-3:35", PrintSourceLocation(loc));
+    SourceCodePath path = {FileDescriptorProto::kOptionsFieldNumber,
+                           kCustomOptionFieldNumber};
+    SourceCodePath unint = {FileDescriptorProto::kOptionsFieldNumber,
+                            FileOptions::kUninterpretedOptionFieldNumber, 1};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "option (test_file_opt) = \"foobar\";"));
 
-    std::vector<int> vunint(unint, unint + 3);
-    EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
+    EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }
 
   // Message option
   {
-    int path[] = {FileDescriptorProto::kMessageTypeFieldNumber, 0,
-                  DescriptorProto::kOptionsFieldNumber,
-                  kCustomOptionFieldNumber};
-    int unint[] = {FileDescriptorProto::kMessageTypeFieldNumber, 0,
-                   DescriptorProto::kOptionsFieldNumber,
-                   MessageOptions::kUninterpretedOptionFieldNumber, 0};
-    std::vector<int> vpath(path, path + 4);
-    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("5:3-5:36", PrintSourceLocation(loc));
+    SourceCodePath path = {FileDescriptorProto::kMessageTypeFieldNumber, 0,
+                           DescriptorProto::kOptionsFieldNumber,
+                           kCustomOptionFieldNumber};
+    SourceCodePath unint = {FileDescriptorProto::kMessageTypeFieldNumber, 0,
+                            DescriptorProto::kOptionsFieldNumber,
+                            MessageOptions::kUninterpretedOptionFieldNumber, 0};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "option (test_msg_opt) = \"foobar\";"));
 
-    std::vector<int> vunint(unint, unint + 5);
-    EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
+    EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }
 
   // Field option
   {
-    int path[] = {FileDescriptorProto::kMessageTypeFieldNumber,
-                  0,
-                  DescriptorProto::kFieldFieldNumber,
-                  0,
-                  FieldDescriptorProto::kOptionsFieldNumber,
-                  FieldOptions::kDeprecatedFieldNumber};
-    int unint[] = {FileDescriptorProto::kMessageTypeFieldNumber,
-                   0,
-                   DescriptorProto::kFieldFieldNumber,
-                   0,
-                   FieldDescriptorProto::kOptionsFieldNumber,
-                   FieldOptions::kUninterpretedOptionFieldNumber,
-                   0};
-    std::vector<int> vpath(path, path + 6);
-    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("6:25-6:42", PrintSourceLocation(loc));
+    SourceCodePath path = {FileDescriptorProto::kMessageTypeFieldNumber,
+                           0,
+                           DescriptorProto::kFieldFieldNumber,
+                           0,
+                           FieldDescriptorProto::kOptionsFieldNumber,
+                           FieldOptions::kDeprecatedFieldNumber};
+    SourceCodePath unint = {FileDescriptorProto::kMessageTypeFieldNumber,
+                            0,
+                            DescriptorProto::kFieldFieldNumber,
+                            0,
+                            FieldDescriptorProto::kOptionsFieldNumber,
+                            FieldOptions::kUninterpretedOptionFieldNumber,
+                            0};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(
+        loc, MatchesSubstring(kSourceLocationTestInput, "deprecated = true"));
 
-    std::vector<int> vunint(unint, unint + 7);
-    EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
+    EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }
 
   // Nested message option
   {
-    int path[] = {
+    SourceCodePath path = {
         FileDescriptorProto::kMessageTypeFieldNumber, 0,
         DescriptorProto::kNestedTypeFieldNumber,      0,
         DescriptorProto::kFieldFieldNumber,           0,
         FieldDescriptorProto::kOptionsFieldNumber,    kCustomOptionFieldNumber};
-    int unint[] = {FileDescriptorProto::kMessageTypeFieldNumber,
-                   0,
-                   DescriptorProto::kNestedTypeFieldNumber,
-                   0,
-                   DescriptorProto::kFieldFieldNumber,
-                   0,
-                   FieldDescriptorProto::kOptionsFieldNumber,
-                   FieldOptions::kUninterpretedOptionFieldNumber,
-                   0};
-    std::vector<int> vpath(path, path + 8);
-    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("8:28-8:55", PrintSourceLocation(loc));
+    SourceCodePath unint = {FileDescriptorProto::kMessageTypeFieldNumber,
+                            0,
+                            DescriptorProto::kNestedTypeFieldNumber,
+                            0,
+                            DescriptorProto::kFieldFieldNumber,
+                            0,
+                            FieldDescriptorProto::kOptionsFieldNumber,
+                            FieldOptions::kUninterpretedOptionFieldNumber,
+                            0};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "(test_field_opt) = \"foobar\""));
 
-    std::vector<int> vunint(unint, unint + 9);
-    EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
+    EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }
 
   // One-of option
   {
-    int path[] = {
+    SourceCodePath path = {
         FileDescriptorProto::kMessageTypeFieldNumber, 0,
         DescriptorProto::kOneofDeclFieldNumber,       0,
         OneofDescriptorProto::kOptionsFieldNumber,    kCustomOptionFieldNumber};
-    int unint[] = {FileDescriptorProto::kMessageTypeFieldNumber,
-                   0,
-                   DescriptorProto::kOneofDeclFieldNumber,
-                   0,
-                   OneofDescriptorProto::kOptionsFieldNumber,
-                   OneofOptions::kUninterpretedOptionFieldNumber,
-                   0};
-    std::vector<int> vpath(path, path + 6);
-    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("11:5-11:40", PrintSourceLocation(loc));
+    SourceCodePath unint = {FileDescriptorProto::kMessageTypeFieldNumber,
+                            0,
+                            DescriptorProto::kOneofDeclFieldNumber,
+                            0,
+                            OneofDescriptorProto::kOptionsFieldNumber,
+                            OneofOptions::kUninterpretedOptionFieldNumber,
+                            0};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "option (test_oneof_opt) = \"foobar\";"));
 
-    std::vector<int> vunint(unint, unint + 7);
-    EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
+    EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }
 
   // Enum option, repeated options
   {
-    int path[] = {FileDescriptorProto::kEnumTypeFieldNumber, 0,
-                  EnumDescriptorProto::kOptionsFieldNumber,
-                  kCustomOptionFieldNumber, 0};
-    int unint[] = {FileDescriptorProto::kEnumTypeFieldNumber, 0,
-                   EnumDescriptorProto::kOptionsFieldNumber,
-                   EnumOptions::kUninterpretedOptionFieldNumber, 0};
-    std::vector<int> vpath(path, path + 5);
-    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("18:3-18:31", PrintSourceLocation(loc));
+    SourceCodePath path = {FileDescriptorProto::kEnumTypeFieldNumber, 0,
+                           EnumDescriptorProto::kOptionsFieldNumber,
+                           kCustomOptionFieldNumber, 0};
+    SourceCodePath unint = {FileDescriptorProto::kEnumTypeFieldNumber, 0,
+                            EnumDescriptorProto::kOptionsFieldNumber,
+                            EnumOptions::kUninterpretedOptionFieldNumber, 0};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "option (test_enum_opt) = 21;"));
 
-    std::vector<int> vunint(unint, unint + 5);
-    EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
+    EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }
   {
-    int path[] = {FileDescriptorProto::kEnumTypeFieldNumber, 0,
-                  EnumDescriptorProto::kOptionsFieldNumber,
-                  kCustomOptionFieldNumber, 1};
-    int unint[] = {FileDescriptorProto::kEnumTypeFieldNumber, 0,
-                   EnumDescriptorProto::kOptionsFieldNumber,
-                   EnumOptions::kUninterpretedOptionFieldNumber, 1};
-    std::vector<int> vpath(path, path + 5);
-    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("19:3-19:31", PrintSourceLocation(loc));
+    SourceCodePath path = {FileDescriptorProto::kEnumTypeFieldNumber, 0,
+                           EnumDescriptorProto::kOptionsFieldNumber,
+                           kCustomOptionFieldNumber, 1};
+    SourceCodePath unint = {FileDescriptorProto::kEnumTypeFieldNumber, 0,
+                            EnumDescriptorProto::kOptionsFieldNumber,
+                            EnumOptions::kUninterpretedOptionFieldNumber, 1};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "option (test_enum_opt) = 42;"));
 
-    std::vector<int> vunint(unint, unint + 5);
-    EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
+    EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }
   {
-    int path[] = {FileDescriptorProto::kEnumTypeFieldNumber, 0,
-                  EnumDescriptorProto::kOptionsFieldNumber,
-                  kCustomOptionFieldNumber, 2};
-    int unint[] = {FileDescriptorProto::kEnumTypeFieldNumber, 0,
-                   EnumDescriptorProto::kOptionsFieldNumber,
-                   OneofOptions::kUninterpretedOptionFieldNumber, 2};
-    std::vector<int> vpath(path, path + 5);
-    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("20:3-20:31", PrintSourceLocation(loc));
+    SourceCodePath path = {FileDescriptorProto::kEnumTypeFieldNumber, 0,
+                           EnumDescriptorProto::kOptionsFieldNumber,
+                           kCustomOptionFieldNumber, 2};
+    SourceCodePath unint = {FileDescriptorProto::kEnumTypeFieldNumber, 0,
+                            EnumDescriptorProto::kOptionsFieldNumber,
+                            OneofOptions::kUninterpretedOptionFieldNumber, 2};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "option (test_enum_opt) = 63;"));
 
-    std::vector<int> vunint(unint, unint + 5);
-    EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
+    EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }
 
   // Enum value options
   {
     // option w/ message type that directly sets field
-    int path[] = {FileDescriptorProto::kEnumTypeFieldNumber,
-                  0,
-                  EnumDescriptorProto::kValueFieldNumber,
-                  0,
-                  EnumValueDescriptorProto::kOptionsFieldNumber,
-                  kCustomOptionFieldNumber,
-                  kAFieldNumber};
-    int unint[] = {FileDescriptorProto::kEnumTypeFieldNumber,
-                   0,
-                   EnumDescriptorProto::kValueFieldNumber,
-                   0,
-                   EnumValueDescriptorProto::kOptionsFieldNumber,
-                   EnumValueOptions::kUninterpretedOptionFieldNumber,
-                   0};
-    std::vector<int> vpath(path, path + 7);
-    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("21:14-21:40", PrintSourceLocation(loc));
+    SourceCodePath path = {FileDescriptorProto::kEnumTypeFieldNumber,
+                           0,
+                           EnumDescriptorProto::kValueFieldNumber,
+                           0,
+                           EnumValueDescriptorProto::kOptionsFieldNumber,
+                           kCustomOptionFieldNumber,
+                           kAFieldNumber};
+    SourceCodePath unint = {FileDescriptorProto::kEnumTypeFieldNumber,
+                            0,
+                            EnumDescriptorProto::kValueFieldNumber,
+                            0,
+                            EnumValueDescriptorProto::kOptionsFieldNumber,
+                            EnumValueOptions::kUninterpretedOptionFieldNumber,
+                            0};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "(test_enumval_opt).a = 100"));
 
-    std::vector<int> vunint(unint, unint + 7);
-    EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
+    EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }
   {
-    int path[] = {FileDescriptorProto::kEnumTypeFieldNumber,
-                  0,
-                  EnumDescriptorProto::kValueFieldNumber,
-                  1,
-                  EnumValueDescriptorProto::kOptionsFieldNumber,
-                  kCustomOptionFieldNumber};
-    int unint[] = {FileDescriptorProto::kEnumTypeFieldNumber,
-                   0,
-                   EnumDescriptorProto::kValueFieldNumber,
-                   1,
-                   EnumValueDescriptorProto::kOptionsFieldNumber,
-                   EnumValueOptions::kUninterpretedOptionFieldNumber,
-                   0};
-    std::vector<int> vpath(path, path + 6);
-    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("22:14-22:42", PrintSourceLocation(loc));
+    SourceCodePath path = {FileDescriptorProto::kEnumTypeFieldNumber,
+                           0,
+                           EnumDescriptorProto::kValueFieldNumber,
+                           1,
+                           EnumValueDescriptorProto::kOptionsFieldNumber,
+                           kCustomOptionFieldNumber};
+    SourceCodePath unint = {FileDescriptorProto::kEnumTypeFieldNumber,
+                            0,
+                            EnumDescriptorProto::kValueFieldNumber,
+                            1,
+                            EnumValueDescriptorProto::kOptionsFieldNumber,
+                            EnumValueOptions::kUninterpretedOptionFieldNumber,
+                            0};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "(test_enumval_opt) = {a:200}"));
 
-    std::vector<int> vunint(unint, unint + 7);
-    EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
+    EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }
 
   // Service option, repeated options
   {
-    int path[] = {FileDescriptorProto::kServiceFieldNumber, 0,
-                  ServiceDescriptorProto::kOptionsFieldNumber,
-                  kCustomOptionFieldNumber, 0};
-    int unint[] = {FileDescriptorProto::kServiceFieldNumber, 0,
-                   ServiceDescriptorProto::kOptionsFieldNumber,
-                   ServiceOptions::kUninterpretedOptionFieldNumber, 0};
-    std::vector<int> vpath(path, path + 5);
-    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("26:3-26:35", PrintSourceLocation(loc));
+    SourceCodePath path = {FileDescriptorProto::kServiceFieldNumber, 0,
+                           ServiceDescriptorProto::kOptionsFieldNumber,
+                           kCustomOptionFieldNumber, 0};
+    SourceCodePath unint = {FileDescriptorProto::kServiceFieldNumber, 0,
+                            ServiceDescriptorProto::kOptionsFieldNumber,
+                            ServiceOptions::kUninterpretedOptionFieldNumber, 0};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "option (test_svc_opt) = {a:100};"));
 
-    std::vector<int> vunint(unint, unint + 5);
-    EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
+    EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }
   {
-    int path[] = {FileDescriptorProto::kServiceFieldNumber, 0,
-                  ServiceDescriptorProto::kOptionsFieldNumber,
-                  kCustomOptionFieldNumber, 1};
-    int unint[] = {FileDescriptorProto::kServiceFieldNumber, 0,
-                   ServiceDescriptorProto::kOptionsFieldNumber,
-                   ServiceOptions::kUninterpretedOptionFieldNumber, 1};
-    std::vector<int> vpath(path, path + 5);
-    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("27:3-27:35", PrintSourceLocation(loc));
+    SourceCodePath path = {FileDescriptorProto::kServiceFieldNumber, 0,
+                           ServiceDescriptorProto::kOptionsFieldNumber,
+                           kCustomOptionFieldNumber, 1};
+    SourceCodePath unint = {FileDescriptorProto::kServiceFieldNumber, 0,
+                            ServiceDescriptorProto::kOptionsFieldNumber,
+                            ServiceOptions::kUninterpretedOptionFieldNumber, 1};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "option (test_svc_opt) = {a:200};"));
 
-    std::vector<int> vunint(unint, unint + 5);
-    EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
+    EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }
   {
-    int path[] = {FileDescriptorProto::kServiceFieldNumber, 0,
-                  ServiceDescriptorProto::kOptionsFieldNumber,
-                  kCustomOptionFieldNumber, 2};
-    int unint[] = {FileDescriptorProto::kServiceFieldNumber, 0,
-                   ServiceDescriptorProto::kOptionsFieldNumber,
-                   ServiceOptions::kUninterpretedOptionFieldNumber, 2};
-    std::vector<int> vpath(path, path + 5);
-    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("28:3-28:35", PrintSourceLocation(loc));
+    SourceCodePath path = {FileDescriptorProto::kServiceFieldNumber, 0,
+                           ServiceDescriptorProto::kOptionsFieldNumber,
+                           kCustomOptionFieldNumber, 2};
+    SourceCodePath unint = {FileDescriptorProto::kServiceFieldNumber, 0,
+                            ServiceDescriptorProto::kOptionsFieldNumber,
+                            ServiceOptions::kUninterpretedOptionFieldNumber, 2};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "option (test_svc_opt) = {a:300};"));
 
-    std::vector<int> vunint(unint, unint + 5);
-    EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
+    EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }
 
   // Method options
   {
-    int path[] = {FileDescriptorProto::kServiceFieldNumber,
-                  0,
-                  ServiceDescriptorProto::kMethodFieldNumber,
-                  1,
-                  MethodDescriptorProto::kOptionsFieldNumber,
-                  MethodOptions::kDeprecatedFieldNumber};
-    int unint[] = {FileDescriptorProto::kServiceFieldNumber,
-                   0,
-                   ServiceDescriptorProto::kMethodFieldNumber,
-                   1,
-                   MethodDescriptorProto::kOptionsFieldNumber,
-                   MethodOptions::kUninterpretedOptionFieldNumber,
-                   0};
-    std::vector<int> vpath(path, path + 6);
-    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("32:5-32:30", PrintSourceLocation(loc));
+    SourceCodePath path = {FileDescriptorProto::kServiceFieldNumber,
+                           0,
+                           ServiceDescriptorProto::kMethodFieldNumber,
+                           1,
+                           MethodDescriptorProto::kOptionsFieldNumber,
+                           MethodOptions::kDeprecatedFieldNumber};
+    SourceCodePath unint = {FileDescriptorProto::kServiceFieldNumber,
+                            0,
+                            ServiceDescriptorProto::kMethodFieldNumber,
+                            1,
+                            MethodDescriptorProto::kOptionsFieldNumber,
+                            MethodOptions::kUninterpretedOptionFieldNumber,
+                            0};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "option deprecated = true;"));
 
-    std::vector<int> vunint(unint, unint + 7);
-    EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
+    EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }
   {
-    int path[] = {
+    SourceCodePath path = {
         FileDescriptorProto::kServiceFieldNumber,   0,
         ServiceDescriptorProto::kMethodFieldNumber, 1,
         MethodDescriptorProto::kOptionsFieldNumber, kCustomOptionFieldNumber};
-    int unint[] = {FileDescriptorProto::kServiceFieldNumber,
-                   0,
-                   ServiceDescriptorProto::kMethodFieldNumber,
-                   1,
-                   MethodDescriptorProto::kOptionsFieldNumber,
-                   MethodOptions::kUninterpretedOptionFieldNumber,
-                   1};
-    std::vector<int> vpath(path, path + 6);
-    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("33:5-33:41", PrintSourceLocation(loc));
+    SourceCodePath unint = {FileDescriptorProto::kServiceFieldNumber,
+                            0,
+                            ServiceDescriptorProto::kMethodFieldNumber,
+                            1,
+                            MethodDescriptorProto::kOptionsFieldNumber,
+                            MethodOptions::kUninterpretedOptionFieldNumber,
+                            1};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput,
+                                 "option (test_method_opt) = \"foobar\";"));
 
-    std::vector<int> vunint(unint, unint + 7);
-    EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
+    EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }
 
   // Extension range options
   {
-    int path[] = {FileDescriptorProto::kMessageTypeFieldNumber, 1,
-                  DescriptorProto::kExtensionRangeFieldNumber, 0,
-                  DescriptorProto_ExtensionRange::kOptionsFieldNumber};
-    std::vector<int> vpath(path, path + 5);
-    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("37:40-37:67", PrintSourceLocation(loc));
+    SourceCodePath path = {FileDescriptorProto::kMessageTypeFieldNumber, 1,
+                           DescriptorProto::kExtensionRangeFieldNumber, 0,
+                           DescriptorProto_ExtensionRange::kOptionsFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "[(test_ext_opt) = \"foobar\"]"));
   }
   {
-    int path[] = {FileDescriptorProto::kMessageTypeFieldNumber,
-                  1,
-                  DescriptorProto::kExtensionRangeFieldNumber,
-                  0,
-                  DescriptorProto_ExtensionRange::kOptionsFieldNumber,
-                  kCustomOptionFieldNumber};
-    int unint[] = {FileDescriptorProto::kMessageTypeFieldNumber,
-                   1,
-                   DescriptorProto::kExtensionRangeFieldNumber,
-                   0,
-                   DescriptorProto_ExtensionRange::kOptionsFieldNumber,
-                   ExtensionRangeOptions::kUninterpretedOptionFieldNumber,
-                   0};
-    std::vector<int> vpath(path, path + 6);
-    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("37:41-37:66", PrintSourceLocation(loc));
+    SourceCodePath path = {FileDescriptorProto::kMessageTypeFieldNumber,
+                           1,
+                           DescriptorProto::kExtensionRangeFieldNumber,
+                           0,
+                           DescriptorProto_ExtensionRange::kOptionsFieldNumber,
+                           kCustomOptionFieldNumber};
+    SourceCodePath unint = {
+        FileDescriptorProto::kMessageTypeFieldNumber,
+        1,
+        DescriptorProto::kExtensionRangeFieldNumber,
+        0,
+        DescriptorProto_ExtensionRange::kOptionsFieldNumber,
+        ExtensionRangeOptions::kUninterpretedOptionFieldNumber,
+        0};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "(test_ext_opt) = \"foobar\""));
 
-    std::vector<int> vunint(unint, unint + 7);
-    EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
+    EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }
   {
-    int path[] = {FileDescriptorProto::kMessageTypeFieldNumber,
-                  1,
-                  DescriptorProto::kExtensionRangeFieldNumber,
-                  1,
-                  DescriptorProto_ExtensionRange::kOptionsFieldNumber,
-                  kCustomOptionFieldNumber};
-    int unint[] = {FileDescriptorProto::kMessageTypeFieldNumber,
-                   1,
-                   DescriptorProto::kExtensionRangeFieldNumber,
-                   1,
-                   DescriptorProto_ExtensionRange::kOptionsFieldNumber,
-                   ExtensionRangeOptions::kUninterpretedOptionFieldNumber,
-                   0};
-    std::vector<int> vpath(path, path + 6);
-    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("37:41-37:66", PrintSourceLocation(loc));
+    SourceCodePath path = {FileDescriptorProto::kMessageTypeFieldNumber,
+                           1,
+                           DescriptorProto::kExtensionRangeFieldNumber,
+                           1,
+                           DescriptorProto_ExtensionRange::kOptionsFieldNumber,
+                           kCustomOptionFieldNumber};
+    SourceCodePath unint = {
+        FileDescriptorProto::kMessageTypeFieldNumber,
+        1,
+        DescriptorProto::kExtensionRangeFieldNumber,
+        1,
+        DescriptorProto_ExtensionRange::kOptionsFieldNumber,
+        ExtensionRangeOptions::kUninterpretedOptionFieldNumber,
+        0};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "(test_ext_opt) = \"foobar\""));
 
-    std::vector<int> vunint(unint, unint + 7);
-    EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
+    EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }
 
   // Field option on extension
   {
-    int path[] = {FileDescriptorProto::kExtensionFieldNumber, 0,
-                  FieldDescriptorProto::kOptionsFieldNumber,
-                  FieldOptions::kPackedFieldNumber};
-    int unint[] = {FileDescriptorProto::kExtensionFieldNumber, 0,
-                   FieldDescriptorProto::kOptionsFieldNumber,
-                   FieldOptions::kUninterpretedOptionFieldNumber, 0};
-    std::vector<int> vpath(path, path + 4);
-    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
-    EXPECT_EQ("40:42-40:53", PrintSourceLocation(loc));
+    SourceCodePath path = {FileDescriptorProto::kExtensionFieldNumber, 0,
+                           FieldDescriptorProto::kOptionsFieldNumber,
+                           FieldOptions::kPackedFieldNumber};
+    SourceCodePath unint = {FileDescriptorProto::kExtensionFieldNumber, 0,
+                            FieldDescriptorProto::kOptionsFieldNumber,
+                            FieldOptions::kUninterpretedOptionFieldNumber, 0};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "packed=true"));
 
-    std::vector<int> vunint(unint, unint + 5);
-    EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
+    EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }
 }
 

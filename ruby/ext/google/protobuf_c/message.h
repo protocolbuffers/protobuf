@@ -70,7 +70,7 @@ VALUE build_module_from_enumdesc(VALUE _enumdesc);
 VALUE MessageOrEnum_GetDescriptor(VALUE klass);
 
 // Decodes a Message from a byte sequence.
-VALUE Message_decode_bytes(int size, const char* bytes, int options,
+VALUE Message_decode_bytes(size_t size, const char* bytes, int options,
                            VALUE klass, bool freeze);
 
 // Recursively freeze message

@@ -34,6 +34,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/test_protos/repeated_ptr_field_test.pb.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/unittest.pb.h"
@@ -1305,10 +1306,13 @@ TEST_F(RepeatedPtrFieldTest, SortTest) {
 
   // Sort by numeric values - this should reverse the order of creation.
   {
-    auto cmp = std::less<>{};
-    ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end(), cmp));
-    google::protobuf::sort(rep.begin(), rep.end(), cmp);
-    EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end(), cmp));
+    ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end(), std::less<>{}));
+    google::protobuf::sort(rep.begin(), rep.end(), [](auto&& a, auto&& b) {
+      static_assert(std::is_same_v<decltype(a), absl::string_view&&>);
+      static_assert(std::is_same_v<decltype(b), absl::string_view&&>);
+      return std::less<>{}(a, b);
+    });
+    EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end(), std::less<>{}));
   }
 
   // Reverse again.
@@ -1356,7 +1360,11 @@ TEST_F(RepeatedPtrFieldTest, StableSort) {
   };
 
   ASSERT_FALSE(std::is_sorted(rep.begin(), rep.end(), less_10));
-  google::protobuf::stable_sort(rep.begin(), rep.end(), less_10);
+  google::protobuf::stable_sort(rep.begin(), rep.end(), [&less_10](auto&& a, auto&& b) {
+    static_assert(std::is_same_v<decltype(a), absl::string_view&&>);
+    static_assert(std::is_same_v<decltype(b), absl::string_view&&>);
+    return less_10(a, b);
+  });
   EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end(), less_10));
 
   // Make sure that the relative orders where kept.
@@ -1393,7 +1401,12 @@ TEST_F(RepeatedPtrFieldTest, SortWorksOnMessages) {
                                EqualsProto(R"pb(i: 2 s: "str1")pb"),
                                EqualsProto(R"pb(i: 2 s: "str2")pb")));
 
-  const auto sort_by_s = [](const auto& lhs, const auto& rhs) {
+  const auto sort_by_s = [](auto&& lhs, auto&& rhs) {
+    static_assert(std::is_same_v<decltype(lhs),
+                                 const proto2_unittest::RepFieldSortMessage&>);
+    static_assert(std::is_same_v<decltype(rhs),
+                                 const proto2_unittest::RepFieldSortMessage&>);
+
     return lhs.s() < rhs.s();
   };
   google::protobuf::c_stable_sort(rep, sort_by_s);
@@ -1408,7 +1421,12 @@ TEST_F(RepeatedPtrFieldTest, SortWorksOnMessages) {
                                EqualsProto(R"pb(i: 1 s: "str2")pb"),
                                EqualsProto(R"pb(i: 2 s: "str2")pb")));
 
-  const auto sort_by_plus = [](const auto& lhs, const auto& rhs) {
+  const auto sort_by_plus = [](auto&& lhs, auto&& rhs) {
+    static_assert(std::is_same_v<decltype(lhs),
+                                 const proto2_unittest::RepFieldSortMessage&>);
+    static_assert(std::is_same_v<decltype(rhs),
+                                 const proto2_unittest::RepFieldSortMessage&>);
+
     const auto plus = [](const auto& m) { return m.i() + m.s()[3]; };
     return std::pair(plus(lhs), lhs.i()) < std::pair(plus(rhs), rhs.i());
   };
@@ -2011,5 +2029,14 @@ TEST_F(RepeatedPtrFieldInsertionIteratorsTest, MoveProtos) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+// Code thunks to be dumped by the debugger to inspect the generated assemtbly.
+static auto& CodegenRepeatedPtrFieldGet(
+    const google::protobuf::RepeatedPtrField<std::string>& a, int idx) {
+  return a[idx];
+}
+
+static int odr_use =
+    (google::protobuf::internal::StrongPointer(&CodegenRepeatedPtrFieldGet), 0);
 
 #include "google/protobuf/port_undef.inc"

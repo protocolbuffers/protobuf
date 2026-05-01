@@ -294,16 +294,21 @@ void WriteEnum(upb::EnumDefPtr e, Output& output) {
 
 void WriteExtension(const DefPoolPair& pools, upb::FieldDefPtr ext,
                     const MiniTableOptions& options, Output& output) {
-  output("UPB_LINKARR_APPEND(upb_AllExts)\n");
-  output("const upb_MiniTableExtension $0 = {\n  ", ExtensionVarName(ext));
+  if (!options.one_output_per_message) {
+    output("static ");
+  }
+  output("const upb_MiniTableExtension $0_obj = {\n  ", ExtensionVarName(ext));
   output("$0,\n", FieldInitializer(pools, ext));
   output("  $0,\n", GetSub(ext, true, options));
   output("  &$0,\n", MessageVarName(ext.containing_type()));
   output("\n};\n");
+  output("UPB_LINKARR_APPEND(upb_AllExts)\n");
+  output("const upb_MiniTableExtension* $0 = &$0_obj;\n  ",
+         ExtensionVarName(ext));
 }
 
 void RegisterExtensions(Output& output, absl::string_view unique_name) {
-  output("UPB_LINKARR_DECLARE(upb_AllExts, const upb_MiniTableExtension);\n");
+  output("UPB_LINKARR_DECLARE(upb_AllExts, const upb_MiniTableExtension*);\n");
   output("UPB_CONSTRUCTOR(upb_GeneratedRegistry_Constructor, $0) {\n",
          unique_name);
   // TODO Although we define this function as weak and only one
@@ -364,7 +369,7 @@ void WriteMiniTableHeader(const DefPoolPair& pools, upb::FileDefPtr file,
     output("extern const upb_MiniTable $0;\n", MessageVarName(message));
   }
   for (auto ext : this_file_exts) {
-    output("extern const upb_MiniTableExtension $0;\n", ExtensionVarName(ext));
+    output("extern const upb_MiniTableExtension* $0;\n", ExtensionVarName(ext));
   }
 
   output("\n");
@@ -436,7 +441,9 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
       output("extern const upb_MiniTableEnum $0;\n", EnumVarName(e));
     }
     for (const auto ext : extensions) {
-      output("extern const upb_MiniTableExtension $0;\n",
+      output("extern const upb_MiniTableExtension* $0;\n",
+             ExtensionVarName(ext));
+      output("extern const upb_MiniTableExtension $0_obj;\n",
              ExtensionVarName(ext));
     }
   } else {
@@ -481,7 +488,7 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
         kExtensionsInit, extensions.size());
 
     for (auto ext : extensions) {
-      output("  &$0,\n", ExtensionVarName(ext));
+      output("  &$0_obj,\n", ExtensionVarName(ext));
     }
 
     output(

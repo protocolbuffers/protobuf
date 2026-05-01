@@ -183,6 +183,9 @@ static bool PyUpb_PyToUpbEnum(PyObject* obj, const upb_FieldDef* f,
   if (PyUnicode_Check(obj)) {
     Py_ssize_t size;
     const char* name = PyUnicode_AsUTF8AndSize(obj, &size);
+    if (name == NULL) {
+      return false;
+    }
     const upb_EnumValueDef* ev =
         upb_EnumDef_FindValueByNameWithSize(e, name, size);
     if (!ev) {

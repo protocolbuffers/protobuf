@@ -7,20 +7,25 @@
 
 """Unittest for thread safe"""
 
-import sys
 import threading
 import time
+import timeit
 import unittest
 
 from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
 from google.protobuf.internal import api_implementation
+from google.protobuf.internal import testing_refleaks
 
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_pb2
 
+# Enable this to run the benchmarks.
+ALSO_RUN_BENCHMARKS = False
 
+
+@testing_refleaks.TestCase
 class ThreadSafeTest(unittest.TestCase):
 
   def setUp(self):
@@ -113,6 +118,117 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentSubMessageAccess(self):
+    msg = unittest_proto3_pb2.TestAllTypes(
+        optional_nested_message=unittest_proto3_pb2.TestAllTypes.NestedMessage(
+            bb=1000
+        )
+    )
+
+    def AccessSubMessage():
+      for _ in range(100):
+        _ = msg.optional_nested_message.bb
+
+    threads = []
+    for i in range(100):
+      thread = threading.Thread(target=AccessSubMessage)
+      threads.append(thread)
+      thread.start()
+
+    for thread in threads:
+      thread.join()
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentRepeatedMessageAccess(self):
+    variable = unittest_proto3_pb2.TestAllTypes()
+
+    def UseVariable():
+      for _ in range(1000):
+        _ = variable.repeated_nested_message
+
+    threads = []
+    for i in range(100):
+      thread = threading.Thread(target=UseVariable)
+      threads.append(thread)
+      thread.start()
+
+    for thread in threads:
+      thread.join()
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentRepeatedPrimitiveAccess(self):
+    variable = unittest_proto3_pb2.TestAllTypes()
+    variable.repeated_float.append(1.0)
+
+    def UseVariable():
+      for _ in range(1000):
+        _ = variable.repeated_float
+
+    threads = []
+    for i in range(100):
+      thread = threading.Thread(target=UseVariable)
+      threads.append(thread)
+      thread.start()
+
+    for thread in threads:
+      thread.join()
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentSingularFieldAccess(self):
+    variable = unittest_proto3_pb2.TestAllTypes()
+
+    def UseVariable():
+      for _ in range(1000):
+        _ = variable.optional_int32
+        _ = variable.optional_string
+
+    threads = []
+    for i in range(100):
+      thread = threading.Thread(target=UseVariable)
+      threads.append(thread)
+      thread.start()
+
+    for thread in threads:
+      thread.join()
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentRepeatedMessageAccess2(self):
+    msg = unittest_proto3_pb2.TestAllTypes(
+        repeated_nested_message=[
+            unittest_proto3_pb2.TestAllTypes.NestedMessage(bb=1)
+        ]
+    )
+
+    def UseVariable():
+      for _ in range(1000):
+        for nested in msg.repeated_nested_message:
+          pass
+
+    threads = []
+    for _ in range(100):
+      thread = threading.Thread(target=UseVariable)
+      threads.append(thread)
+      thread.start()
+
+    for thread in threads:
+      thread.join()
+
 
 class FreeThreadingTest(unittest.TestCase):
 
@@ -160,6 +276,79 @@ class FreeThreadingTest(unittest.TestCase):
 
     self.RunThreads(thread_size, CreatePool)
     self.assertEqual(thread_size, self.success_count)
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentGetFieldValueRace(self):
+    """Reproduces a data race in GetFieldValue due to lazy initialization."""
+
+    def AccessFields(msg, barrier) -> None:
+      barrier.wait()
+      # This access triggers GetFieldValue and lazy initialization
+      # of the composite_fields map in CMessage.
+      _ = msg.optional_nested_message
+
+    for _ in range(100):
+      threads = []
+      msg = unittest_proto3_pb2.TestAllTypes()
+
+      # Use a barrier to ensure all threads hit the GetFieldValue call
+      # at nearly the same time, maximizing the race window.
+      barrier = threading.Barrier(10)
+
+      for _ in range(10):
+        thread = threading.Thread(target=AccessFields, args=(msg, barrier))
+        threads.append(thread)
+        thread.start()
+
+      for thread in threads:
+        thread.join()
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentGetOptionsRace(self):
+    """Reproduces a data race in GetOptions."""
+
+    def AccessOptions(barrier):
+      barrier.wait()
+      _ = unittest_proto3_pb2.TestAllTypes.DESCRIPTOR.GetOptions()
+
+    for _ in range(100):
+      threads = []
+      barrier = threading.Barrier(20)
+
+      for _ in range(20):
+        thread = threading.Thread(target=AccessOptions, args=(barrier,))
+        threads.append(thread)
+        thread.start()
+
+      for thread in threads:
+        thread.join()
+
+  @unittest.skipIf(not ALSO_RUN_BENCHMARKS, 'Benchmarks are disabled.')
+  def testConcurrentGetOptionsBenchmark(self):
+    """Benchmarks concurrent GetOptions calls."""
+    if ALSO_RUN_BENCHMARKS:
+
+      def AccessOptions():
+        for _ in range(1000000):
+          _ = unittest_proto3_pb2.TestAllTypes.DESCRIPTOR.GetOptions()
+
+      def RunAllThreads():
+        self.RunThreads(20, AccessOptions)
+
+      duration = timeit.timeit(RunAllThreads, number=10)
+      duration_ms = duration * 1000
+      print(
+          'ConcurrentGetOptionsBenchmark (20 threads x 1000000 calls x 10'
+          f' runs): {duration_ms:.2f}ms'
+      )
+    else:
+      print('Skipping benchmark in non-benchmark mode.')
 
 
 if __name__ == '__main__':

@@ -9,6 +9,7 @@ google/protobuf/arena_allocation_policy.h
 google/protobuf/arena_cleanup.h
 google/protobuf/arenastring.h
 google/protobuf/arenaz_sampler.h
+google/protobuf/c_sharp_features.proto
 google/protobuf/compiler/code_generator.h
 google/protobuf/compiler/code_generator_lite.h
 google/protobuf/compiler/command_line_interface.h
@@ -111,6 +112,9 @@ google/protobuf/reflection_ops.h
 google/protobuf/reflection_visit_field_info.h
 google/protobuf/reflection_visit_fields.h
 google/protobuf/repeated_field.h
+google/protobuf/repeated_field_proxy.h
+google/protobuf/repeated_field_proxy_iterator.h
+google/protobuf/repeated_field_proxy_traits.h
 google/protobuf/repeated_ptr_field.h
 google/protobuf/runtime_version.h
 google/protobuf/serial_arena.h
@@ -154,6 +158,7 @@ upb/base/string_view.h
 upb/base/upcast.h
 upb/generated_code_support.h
 upb/hash/common.h
+upb/hash/ext_table.h
 upb/hash/int_table.h
 upb/hash/str_table.h
 upb/json/decode.h

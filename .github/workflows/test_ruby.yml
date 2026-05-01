@@ -35,12 +35,14 @@ jobs:
           - { name: Ruby 3.2, ruby: ruby-3.2.6, continuous-only: true }
           - { name: Ruby 3.3, ruby: ruby-3.3.6, continuous-only: true }
           - { name: Ruby 3.4, ruby: ruby-3.4.1, continuous-only: true }
-          # TODO: Remove the image property in the two entries below and update the configuration
-          # used by all the images the next time there is an update to the Dockerfile
-          - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-ruby-4.0.0-f1c24ed6acfbf6ec709b0de2f702209c9d3ac659' }
-          - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: FFI, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-ruby-4.0.0-f1c24ed6acfbf6ec709b0de2f702209c9d3ac659' }
+          - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: NATIVE }
+          - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: FFI }
+          - { name: Ruby 4.0 bazel 8, ruby: ruby-4.0.0, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.6.0-ruby-4.0.0-856ad422dddd3b8fbd85e36129496b37bba174ef' }
+          - { name: Ruby 4.0 bazel 8, ruby: ruby-4.4.4, ffi: FFI, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.6.0-ruby-4.0.0-856ad422dddd3b8fbd85e36129496b37bba174ef' }
           - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: NATIVE }
           - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: FFI }
+          - { name: JRuby 9.4 bazel 8, ruby: jruby-9.4.9.0, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.6.0-jruby-9.4.9.0-856ad422dddd3b8fbd85e36129496b37bba174ef' }
+          - { name: JRuby 9.4 bazel 8, ruby: jruby-9.4.9.0, ffi: FFI, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.6.0-jruby-9.4.9.0-856ad422dddd3b8fbd85e36129496b37bba174ef' }
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.name }} ${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: ubuntu-latest
@@ -54,7 +56,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-{0}-b77fdae6d4771789dfc66a56bf8d806354e8011a', matrix.ruby) }}
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:9.0.0-{0}-9fc33a0c378b5affd3c85d3f5ae4f330993048f7', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_linux/${{ matrix.ruby }}
           bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
@@ -172,7 +174,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel@v5
         with:
-          version: 8.0.1 # Bazel version
+          version: 9.0.0 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_macos/${{ matrix.version }}
           bazel: test //ruby/... --test_env=KOKORO_RUBY_VERSION=${{ matrix.version }} --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
@@ -187,13 +189,17 @@ jobs:
           # Ruby versions for CRuby and JRuby.
           - { name: Ruby 3.1, ruby: ruby-3.1.6, ffi: NATIVE }
           - { name: Ruby 3.1, ruby: ruby-3.1.6, ffi: FFI }
-          - { name: Ruby 3.2, ruby: ruby-3.2.6, continuous-only: true}
-          - { name: Ruby 3.3, ruby: ruby-3.3.6, continuous-only: true}
+          - { name: Ruby 3.2, ruby: ruby-3.2.6, continuous-only: true }
+          - { name: Ruby 3.3, ruby: ruby-3.3.6, continuous-only: true }
           - { name: Ruby 3.4, ruby: ruby-3.4.1, continuous-only: true }
-          - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-ruby-4.0.0-f1c24ed6acfbf6ec709b0de2f702209c9d3ac659' }
-          - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: FFI, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-ruby-4.0.0-f1c24ed6acfbf6ec709b0de2f702209c9d3ac659' }
+          - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: NATIVE }
+          - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: FFI }
+          - { name: Ruby 4.0 bazel 8, ruby: ruby-4.0.0, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.6.0-ruby-4.0.0-856ad422dddd3b8fbd85e36129496b37bba174ef' }
+          - { name: Ruby 4.0 bazel 8, ruby: ruby-4.4.4, ffi: FFI, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.6.0-ruby-4.0.0-856ad422dddd3b8fbd85e36129496b37bba174ef' }
           - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: NATIVE }
           - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: FFI, continuous-only: true }
+          - { name: JRuby 9.4 bazel 8, ruby: jruby-9.4.9.0, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.6.0-jruby-9.4.9.0-856ad422dddd3b8fbd85e36129496b37bba174ef' }
+          - { name: JRuby 9.4 bazel 8, ruby: jruby-9.4.9.0, ffi: FFI, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.6.0-jruby-9.4.9.0-856ad422dddd3b8fbd85e36129496b37bba174ef' }
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Install ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: ubuntu-latest
     steps:
@@ -206,14 +212,15 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-{0}-b77fdae6d4771789dfc66a56bf8d806354e8011a', matrix.ruby) }}
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:9.0.0-{0}-9fc33a0c378b5affd3c85d3f5ae4f330993048f7', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_install/${{ matrix.ruby }}_${{ matrix.bazel }}
           bash: >
             bazel --version;
             ruby --version;
             ./regenerate_stale_files.sh $BAZEL_FLAGS;
-            bazel build //ruby:release //:protoc ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled' || '' }} $BAZEL_FLAGS;
+            # TODO: Add --action_env=PATH to release builds before upgrade them to Bazel 9
+            bazel build //ruby:release //:protoc ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled' || '' }} --action_env=PATH $BAZEL_FLAGS;
             gem install bazel-bin/ruby/google-protobuf-*;
             bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/test_import_proto2.proto;
             bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/basic_test.proto;

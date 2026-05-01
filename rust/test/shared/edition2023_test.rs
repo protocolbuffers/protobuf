@@ -19,7 +19,7 @@ use googletest::prelude::*;
 #[gtest]
 fn check_edition2023_works() {
     let msg = edition2023_rust_proto::EditionsMessage::new();
-    assert_that!(msg.plain_field_opt().into_inner(), eq(0));
+    assert_that!(msg.plain_field_opt(), eq(None));
     assert_that!(msg.implicit_presence_field(), eq(0));
 }
 

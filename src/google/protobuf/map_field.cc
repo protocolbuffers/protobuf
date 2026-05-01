@@ -19,6 +19,7 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/map.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/raw_ptr.h"
 #include "google/protobuf/repeated_ptr_field.h"
@@ -49,11 +50,11 @@ void MapFieldBase::Swap(Arena* arena, MapFieldBase* other, Arena* other_arena) {
 }
 
 const Message* MapFieldBase::GetPrototype() const {
-  const void* p = prototype_or_payload_.load(std::memory_order_acquire);
+  const void* p = globals_or_payload_.load(std::memory_order_acquire);
   if (IsPayload(p)) {
     return ToPayload(p)->prototype();
   }
-  return reinterpret_cast<const Message*>(p);
+  return MessageGlobalsBase::ToDefaultInstance<Message>(p);
 }
 
 template <typename Map, typename F>
@@ -213,7 +214,7 @@ static void SwapRelaxed(std::atomic<T>& a, std::atomic<T>& b) {
 }
 
 MapFieldBase::ReflectionPayload& MapFieldBase::PayloadSlow() const {
-  const void* p = prototype_or_payload_.load(std::memory_order_acquire);
+  const void* p = globals_or_payload_.load(std::memory_order_acquire);
   if (!IsPayload(p)) {
     // Inject the sync callback.
     sync_map_with_repeated.store(
@@ -224,12 +225,12 @@ MapFieldBase::ReflectionPayload& MapFieldBase::PayloadSlow() const {
         },
         std::memory_order_relaxed);
 
-    const Message* prototype = static_cast<const Message*>(p);
+    const auto* prototype = MessageGlobalsBase::ToDefaultInstance<Message>(p);
     auto* payload =
         Arena::Create<ReflectionPayload>(arena(), arena(), prototype);
 
     auto new_p = ToTaggedPtr(payload);
-    if (prototype_or_payload_.compare_exchange_strong(
+    if (globals_or_payload_.compare_exchange_strong(
             p, new_p, std::memory_order_acq_rel)) {
       // We were able to store it.
       p = new_p;
@@ -244,7 +245,7 @@ MapFieldBase::ReflectionPayload& MapFieldBase::PayloadSlow() const {
 
 void MapFieldBase::SwapPayload(MapFieldBase& lhs, MapFieldBase& rhs) {
   if (lhs.arena() == rhs.arena()) {
-    SwapRelaxed(lhs.prototype_or_payload_, rhs.prototype_or_payload_);
+    SwapRelaxed(lhs.globals_or_payload_, rhs.globals_or_payload_);
     return;
   }
   auto* p1 = lhs.maybe_payload();
