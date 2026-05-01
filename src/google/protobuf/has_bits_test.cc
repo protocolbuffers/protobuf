@@ -7,6 +7,8 @@
 
 #include "google/protobuf/has_bits.h"
 
+#include <cxxabi.h>
+
 #include <cstdint>
 #include <string>
 #include <utility>
