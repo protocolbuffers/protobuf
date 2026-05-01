@@ -36,6 +36,8 @@ class ReflectionClassGenerator : public SourceGeneratorBase {
   std::string namespace_;
   std::string reflectionClassname_;
   std::string extensionClassname_;
+  // Whether or not nullable reference types are enabled for the whole file.
+  bool nrt_enabled_;
 
   void WriteIntroduction(io::Printer* printer);
   void WriteDescriptor(io::Printer* printer);

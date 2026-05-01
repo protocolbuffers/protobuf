@@ -10,6 +10,7 @@
 using NUnit.Framework;
 using System.Diagnostics;
 using System;
+using System.Linq;
 using System.Reflection;
 using System.IO;
 
@@ -43,11 +44,13 @@ namespace Google.Protobuf
             // "XYZ is obsolete: 'Types with embedded references are not supported in this version of your compiler.'"
             // We build the code with GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE to avoid the use of ref struct in the generated code.
             var compatibilityFlag = "-define:GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE";
-            var sources = "*.cs";  // the generated sources from the TestProtos project
+            var sources = Directory.GetFiles(testProtosProjectDir, "*.cs")
+                .Select(Path.GetFileName)
+                .Except(new[] { "Nrt.pb.cs" }); // We don't expect the NRT code to compile with the old compiler.
             // We suppress CS1691, which flags a warning for the generated line of
             // #pragma warning disable 1591, 0612, 3021, 8981
             // because CS8981 is unknown to this version of the compiler.
-            var args = $"-langversion:3 -nologo -nowarn:1691 -target:library {compatibilityFlag} -reference:{testProtosOutputDir}\\Google.Protobuf.dll -out:{testProtosOutputDir}\\TestProtos.RefStructCompatibilityTest.OldCompiler.dll {sources}";
+            var args = $"-langversion:3 -nologo -nowarn:1691 -target:library {compatibilityFlag} -reference:{testProtosOutputDir}\\Google.Protobuf.dll -out:{testProtosOutputDir}\\TestProtos.RefStructCompatibilityTest.OldCompiler.dll {string.Join(" ", sources)}";
             RunOldCsharpCompilerAndCheckSuccess(args, testProtosProjectDir);
         }
 
