@@ -214,7 +214,7 @@ UPB_INLINE size_t _upb_Map_Size(const struct upb_Map* map) {
 extern char _upb_Map_CTypeSizeTable[12];
 
 UPB_INLINE size_t _upb_Map_CTypeSize(upb_CType ctype) {
-  return _upb_Map_CTypeSizeTable[ctype];
+  return (size_t)_upb_Map_CTypeSizeTable[ctype];
 }
 
 // Creates a new map on the given arena with this key/value type.

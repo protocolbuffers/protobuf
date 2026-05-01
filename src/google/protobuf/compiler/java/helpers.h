@@ -18,6 +18,8 @@
 
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/java/java_features.pb.h"
+#include "google/protobuf/compiler/java/generator.h"
 #include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.h"
@@ -348,6 +350,18 @@ bool IsRealOneof(const FieldDescriptor* descriptor);
 
 inline bool HasHasbit(const FieldDescriptor* descriptor) {
   return descriptor->has_presence() && !descriptor->real_containing_oneof();
+}
+
+// Whether unknown enum values are kept (i.e., not stored in UnknownFieldSet
+// but in the message and can be queried using additional getters that return
+// ints.
+inline bool SupportUnknownEnumValue(const FieldDescriptor* field) {
+  if (JavaGenerator::GetResolvedSourceFeatures(*field)
+          .GetExtension(pb::java)
+          .legacy_closed_enum()) {
+    return false;
+  }
+  return field->enum_type() != nullptr && !field->enum_type()->is_closed();
 }
 
 // Check whether a message has repeated fields.

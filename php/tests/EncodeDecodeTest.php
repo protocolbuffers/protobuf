@@ -1394,6 +1394,58 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("\"foo.barBaz,qux\"", $m->serializeToJsonString());
     }
 
+    public function testEncodeFieldMaskWithInvalidPath()
+    {
+        $m = new FieldMask();
+        $m->setPaths(["foo.bar__baz"]);
+
+        // On upb this case raises an exception, on pure PHP we currently only
+        // trigger a warning and don't throw an exception.
+        if (extension_loaded('protobuf')) {
+            $this->expectException(Exception::class);
+            $m->serializeToJsonString();
+        } else {
+            $triggered = false;
+            set_error_handler(function($errno, $errstr) use (&$triggered) {
+                $triggered = true;
+                $this->assertStringContainsString("Underscore in FieldMask path must be followed by a lowercase letter", $errstr);
+                return true;
+            }, E_USER_WARNING);
+
+            $result = $m->serializeToJsonString();
+            restore_error_handler();
+
+            $this->assertTrue($triggered, "Warning was not triggered");
+            $this->assertSame("\"foo.barBaz\"", $result);
+        }
+    }
+
+    public function testEncodeFieldMaskWithUppercasePath()
+    {
+        $m = new FieldMask();
+        $m->setPaths(["foo.BarBaz"]);
+
+        // On upb this case raises an exception, on pure PHP we currently only
+        // trigger a warning and don't throw an exception.
+        if (extension_loaded('protobuf')) {
+            $this->expectException(Exception::class);
+            $m->serializeToJsonString();
+        } else {
+            $triggered = false;
+            set_error_handler(function($errno, $errstr) use (&$triggered) {
+                $triggered = true;
+                $this->assertStringContainsString("Field mask element may not have upper-case letter", $errstr);
+                return true;
+            }, E_USER_WARNING);
+
+            $result = $m->serializeToJsonString();
+            restore_error_handler();
+
+            $this->assertTrue($triggered, "Warning was not triggered");
+            $this->assertSame("\"foo.BarBaz\"", $result);
+        }
+    }
+
     public function testDecodeEmptyFieldMask()
     {
         $m = new FieldMask();

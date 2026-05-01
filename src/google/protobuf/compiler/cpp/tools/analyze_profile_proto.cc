@@ -45,13 +45,13 @@
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
 #include "absl/types/optional.h"
+#include "third_party/gloop/thread/threadpool.h"
+#include "third_party/gloop/util/status/status_macros.h"
 #include "google/protobuf/compiler/cpp/cpp_access_info_parse_helper.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 #include "third_party/re2/re2.h"
-#include "thread/threadpool.h"
-#include "google/protobuf/stubs/status_macros.h"
 
 namespace google {
 namespace protobuf {

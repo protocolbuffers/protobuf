@@ -7,19 +7,24 @@
 
 #include "upb/wire/decode.h"
 
+#include <array>
 #include <limits>
+#include <memory>
 #include <optional>
 #include <string>
 #include <type_traits>
 #include <vector>
 
 #include <gtest/gtest.h>
+#include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
 #include "upb/message/accessors.hpp"
+#include "upb/message/array.h"
 #include "upb/message/message.h"
+#include "upb/mini_descriptor/link.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode_fast/combinations.h"
@@ -87,6 +92,14 @@ std::string ExpectedRepeatedFieldTrace(const upb_MiniTable* mt,
     return std::string(count, 'M');
   }
 #endif
+}
+
+std::string FilteredTrace(absl::string_view trace) {
+  std::string filtered;
+  for (char c : trace) {
+    if (!absl::ascii_islower(c)) filtered.push_back(c);
+  }
+  return filtered;
 }
 
 TYPED_TEST(FieldTypeTest, DecodeOptionalMaxValue) {
@@ -169,7 +182,7 @@ TYPED_TEST(FieldTypeTest, DecodeRepeated) {
             (std::vector<Value>{Value(TestValues<Value>::kZero),
                                 Value(TestValues<Value>::kMin),
                                 Value(TestValues<Value>::kMax)}));
-  EXPECT_EQ(absl::string_view(trace_buf),
+  EXPECT_EQ(FilteredTrace(absl::string_view(trace_buf)),
             ExpectedRepeatedFieldTrace(mt, field, 3));
 }
 
@@ -289,8 +302,44 @@ TYPED_TEST(PackedTest, DecodeUnpackedDataForPackedField) {
             (std::vector<Value>{0, static_cast<Value>(1 << 10),
                                 static_cast<Value>(1 << 20)}));
   // Even though there is a mismatch, we can still parse this fast.
-  EXPECT_EQ(absl::string_view(trace_buf),
+  EXPECT_EQ(FilteredTrace(absl::string_view(trace_buf)),
             ExpectedRepeatedFieldTrace(mt, field, 3));
+}
+
+TEST(RepeatedFieldTest, RepeatedMessageFallback) {
+  Arena mt_arena;
+  Arena msg_arena;
+
+  auto [sub_mt, sub_field] =
+      test::MiniTable::MakeSingleFieldTable<test::field_types::Int32>(
+          1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+
+  auto [mt, field] =
+      test::MiniTable::MakeSingleFieldTable<test::field_types::Message>(
+          1, kUpb_DecodeFast_Repeated, mt_arena.ptr());
+
+  const upb_MiniTable* subs[1] = {sub_mt};
+  bool linked =
+      upb_MiniTable_Link(const_cast<upb_MiniTable*>(mt), subs, 1, nullptr, 0);
+  ASSERT_TRUE(linked);
+
+  upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+
+  // Payload:
+  // Element 1: tag 1, len 2, int32 value 5
+  // Element 2: tag 1, len 2 (parsed as overlong 3-byte varint to trigger
+  // fasttable fallback), int32 value 6
+  std::string payload("\x0a\x02\x08\x05\x0a\x82\x80\x00\x08\x06", 10);
+  upb_DecodeStatus result = upb_Decode(payload.data(), payload.size(), msg, mt,
+                                       nullptr, 0, msg_arena.ptr());
+
+  // Fasttable fallback used to drop the first element for repeated messages
+  // because array size wasn't updated.
+  ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+
+  const upb_Array* arr = upb_Message_GetArray(msg, field);
+  ASSERT_NE(arr, nullptr);
+  EXPECT_EQ(upb_Array_Size(arr), 2);
 }
 
 TEST(RepeatedFieldTest, LongRepeatedField) {

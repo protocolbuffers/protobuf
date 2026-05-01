@@ -70,7 +70,6 @@ class ReflectionTester;  // defined in test_util.h
 
 namespace internal {
 
-
 struct ArenaTestPeer;        // defined in arena_test_util.h
 class InternalMetadata;      // defined in metadata_lite.h
 class LazyField;             // defined in lazy_field.h
@@ -177,7 +176,7 @@ struct ABSL_ATTRIBUTE_WARN_UNUSED ArenaOptions final {
   // individual arena allocation request occurs with a size larger than this
   // maximum). Requested block sizes increase up to this value, then remain
   // here.
-  size_t max_block_size = internal::AllocationPolicy::kDefaultMaxBlockSize;
+  size_t max_block_size = internal::AllocationPolicy::DefaultMaxBlockSize();
 
   // An initial block of memory for the arena to use, or nullptr for none. If
   // provided, the block must live at least as long as the arena itself. The
@@ -270,7 +269,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   template <typename T>
   class
       ABSL_MUST_USE_RESULT
-          ABSL_ATTRIBUTE_TRIVIAL_ABI ABSL_NULLABILITY_COMPATIBLE UniquePtr;
+          ABSL_ATTRIBUTE_TRIVIAL_ABI ABSL_NULLABILITY_COMPATIBLE
+          PROTOBUF_NULL_AFTER_MOVE UniquePtr;
 
   // A smart pointer type for holding objects that are statically known to be
   // owned by an `Arena`. Even though it is a smart pointer, `Ptr` does not
@@ -920,6 +920,7 @@ template <typename T>
 class
     ABSL_MUST_USE_RESULT
         ABSL_ATTRIBUTE_TRIVIAL_ABI ABSL_NULLABILITY_COMPATIBLE
+        PROTOBUF_NULL_AFTER_MOVE
             Arena::UniquePtr final : internal::ArenaPtrCmpBase {
  public:
   using pointer = T*;

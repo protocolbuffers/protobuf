@@ -19,7 +19,7 @@ def cc_toolchain_test_suite(name):
         name = name,
         tests = [
             _test_cc_toolchain_uses_protoc_minimal_when_prefer_prebuilt_flag_unset,
-            _test_cc_toolchain_uses_full_protoc_by_default,
+            _test_cc_toolchain_uses_prebuilt_protoc_when_prefer_prebuilt_flag_set,
         ],
     )
 
@@ -51,7 +51,7 @@ def _test_cc_toolchain_uses_protoc_minimal_when_prefer_prebuilt_flag_unset_impl(
     # so the cc_toolchain should use protoc_minimal.
     action.argv().contains_predicate(matching.str_matches("*protoc_minimal*"))
 
-def _test_cc_toolchain_uses_full_protoc_by_default(name):
+def _test_cc_toolchain_uses_prebuilt_protoc_when_prefer_prebuilt_flag_set(name):
     util.helper_target(
         proto_library,
         name = name + "_proto",
@@ -67,15 +67,14 @@ def _test_cc_toolchain_uses_full_protoc_by_default(name):
     analysis_test(
         name = name,
         target = name + "_compile",
-        impl = _test_cc_toolchain_uses_full_protoc_by_default_impl,
+        impl = _test_cc_toolchain_uses_prebuilt_protoc_when_prefer_prebuilt_flag_set_impl,
+        config_settings = {_PREFER_PREBUILT_PROTOC: True},
     )
 
-def _test_cc_toolchain_uses_full_protoc_by_default_impl(env, target):
+def _test_cc_toolchain_uses_prebuilt_protoc_when_prefer_prebuilt_flag_set_impl(env, target):
     # Find the compile action
     action = env.expect.that_target(target).action_named("GenProto")
 
-    # By default (prefer_prebuilt_protoc is True), protoc_minimal_do_not_use is None,
-    # so the cc_toolchain should use the full protoc (not protoc_minimal).
-    # The protoc path should end with "/protoc" not contain "protoc_minimal"
-    action.argv().contains_predicate(matching.str_matches("*/protoc"))
+    # When prefer_prebuilt_protoc is True, protoc_minimal_do_not_use is not set,
+    # so the cc_toolchain should use prebuilt protoc instead of protoc_minimal.
     action.argv().not_contains_predicate(matching.str_matches("*protoc_minimal*"))

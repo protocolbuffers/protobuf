@@ -1,0 +1,23 @@
+syntax = "proto2";
+
+package upb_wire_test;
+
+option java_multiple_files = true;
+option java_outer_classname = "ConvertTest";
+
+message TestInt32 {
+  optional int32 i32 = 1;
+}
+
+message TestRecursive {
+  optional TestRecursive recursive = 1;
+}
+
+message TestExtensions {
+  extensions 100 to max;
+}
+
+extend TestExtensions {
+  optional int32 ext_i32 = 100;
+  optional TestRecursive ext_recursive = 101;
+}

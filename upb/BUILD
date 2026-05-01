@@ -29,6 +29,7 @@ config_setting(
     name = "windows",
     constraint_values = ["@platforms//os:windows"],
     visibility = [
+        "//benchmarks:__subpackages__",
         "//hpb:__subpackages__",
         "//hpb_generator:__subpackages__",
         "//lua:__pkg__",
@@ -41,13 +42,16 @@ config_setting(
 bool_flag(
     name = "fasttable_enabled",
     build_setting_default = False,
-    visibility = ["//upb/bazel:__pkg__"],
+    visibility = [
+        "//upb/bazel:__pkg__",
+    ],
 )
 
 config_setting(
     name = "fasttable_enabled_setting",
     flag_values = {"//upb:fasttable_enabled": "true"},
     visibility = [
+        "//benchmarks:__subpackages__",
         "//lua:__pkg__",
         "//python:__pkg__",
         "//upb:__subpackages__",
@@ -156,6 +160,7 @@ upb_amalgamation(
         "//upb/text:debug",
         "//upb/text:internal",
         "//upb/wire",
+        "//upb/wire:byte_size",
         "//upb/wire:decoder",
         "//upb/wire:eps_copy_input_stream",
         "//upb/wire:eps_copy_input_stream_internal",
@@ -306,8 +311,10 @@ filegroup(
         "//src/google/protobuf:well_known_type_protos",
         "//upb/json:test_protos",
         "//upb/message:test_protos",
+        "//upb/mini_table:test_protos",
         "//upb/test:test_protos",
         "//upb/util:test_protos",
+        "//upb/wire:test_protos",
     ],
     visibility = ["//pkg:__pkg__"],
 )

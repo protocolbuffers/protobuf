@@ -1,0 +1,14 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// A convenience proto that houses all JSON-related options.
+
+edition = "2024";
+
+package pb;
+
+import public "google/protobuf/json_enumvalue_options.proto";

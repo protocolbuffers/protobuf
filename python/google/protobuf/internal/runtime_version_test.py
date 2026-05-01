@@ -10,6 +10,7 @@
 __author__ = 'shaod@google.com (Dennis Shao)'
 
 import unittest
+
 from google.protobuf import runtime_version
 
 

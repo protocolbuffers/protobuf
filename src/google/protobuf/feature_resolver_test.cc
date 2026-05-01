@@ -26,6 +26,7 @@
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "editions/edition_defaults_test_utils.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/test_textproto.h"
@@ -2218,7 +2219,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
   auto defaults = FeatureResolver::CompileDefaults(
       feature_set_, {ext}, EDITION_99997_TEST_ONLY, EDITION_99999_TEST_ONLY);
   ASSERT_OK(defaults);
-  EXPECT_THAT(*defaults, EqualsProto(R"pb(
+  EXPECT_THAT(*defaults, compiler::PartiallyMatchesEditionDefaults(R"pb(
     minimum_edition: EDITION_99997_TEST_ONLY
     maximum_edition: EDITION_99999_TEST_ONLY
     defaults {
@@ -2235,6 +2236,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         json_format: LEGACY_BEST_EFFORT
         enforce_naming_style: STYLE_LEGACY
         default_symbol_visibility: EXPORT_ALL
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
         [pb.test] { file_feature: VALUE1 }
       }
     }
@@ -2252,6 +2254,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         json_format: ALLOW
         enforce_naming_style: STYLE_LEGACY
         default_symbol_visibility: EXPORT_ALL
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
         [pb.test] { file_feature: VALUE1 }
       }
     }
@@ -2269,6 +2272,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
       fixed_features {
         enforce_naming_style: STYLE_LEGACY
         default_symbol_visibility: EXPORT_ALL
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
         [pb.test] {}
       }
     }
@@ -2286,6 +2290,25 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         [pb.test] { file_feature: VALUE2 }
       }
       fixed_features {
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
+        [pb.test] {}
+      }
+    }
+    defaults {
+      edition: EDITION_2026
+      overridable_features {
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        enforce_naming_style: STYLE2026
+        default_symbol_visibility: EXPORT_TOP_LEVEL
+        enforce_proto_limits: PROTO_LIMITS2026
+        [pb.test] { file_feature: VALUE2 }
+      }
+      fixed_features {
         [pb.test] {}
       }
     }
@@ -2298,8 +2321,9 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         utf8_validation: VERIFY
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
-        enforce_naming_style: STYLE2024
+        enforce_naming_style: STYLE2026
         default_symbol_visibility: EXPORT_TOP_LEVEL
+        enforce_proto_limits: PROTO_LIMITS2026
         [pb.test] { file_feature: VALUE3 }
       }
       fixed_features {

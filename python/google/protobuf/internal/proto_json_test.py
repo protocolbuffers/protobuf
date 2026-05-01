@@ -11,6 +11,7 @@
 import unittest
 
 from google.protobuf import proto_json
+
 from google.protobuf.util import json_format_proto3_pb2
 
 
@@ -25,10 +26,9 @@ class ProtoJsonTest(unittest.TestCase):
   def test_simple_parse(self):
     expected = 12345
     js_dict = {'int32Value': expected}
-    message = proto_json.parse(json_format_proto3_pb2.TestMessage,
-                               js_dict)
+    message = proto_json.parse(json_format_proto3_pb2.TestMessage, js_dict)
     self.assertEqual(expected, message.int32_value)  # pytype: disable=attribute-error
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   unittest.main()

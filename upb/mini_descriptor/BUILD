@@ -35,6 +35,7 @@ cc_library(
         "//upb/port",
     ] + select({
         "//upb:fasttable_enabled_setting": [
+            "//upb/wire/decode_fast:field_parsers",
             "//upb/wire/decode_fast:function_array",
             "//upb/wire/decode_fast:select",
         ],

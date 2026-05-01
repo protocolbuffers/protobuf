@@ -34,7 +34,8 @@ extern "C" {
 #endif
 
 // Creates a new message with the given mini_table on the given arena.
-UPB_API upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* arena);
+UPB_NODISCARD UPB_API upb_Message* upb_Message_New(const upb_MiniTable* m,
+                                                   upb_Arena* arena);
 
 //
 // Unknown data may be stored non-contiguously. Each segment stores a block of
@@ -86,10 +87,8 @@ typedef enum upb_Message_DeleteUnknownStatus {
   kUpb_DeleteUnknown_IterUpdated,
   kUpb_DeleteUnknown_AllocFail,
 } upb_Message_DeleteUnknownStatus;
-upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(upb_Message* msg,
-                                                          upb_StringView* data,
-                                                          uintptr_t* iter,
-                                                          upb_Arena* arena);
+UPB_NODISCARD upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(
+    upb_Message* msg, upb_StringView* data, uintptr_t* iter, upb_Arena* arena);
 
 // Returns the number of extensions present in this message.
 size_t upb_Message_ExtensionCount(const upb_Message* msg);

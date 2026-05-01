@@ -248,6 +248,32 @@ fn test_repeated_message() {
 }
 
 #[gtest]
+fn test_repeated_message_iter_mut_empty() {
+    let mut msg = TestAllTypes::new();
+    let mut iter = msg.repeated_nested_message_mut().iter_mut();
+    assert_that!(iter.next(), none());
+}
+
+#[gtest]
+fn test_repeated_message_iter_mut() {
+    let mut msg = TestAllTypes::new();
+    for i in 0..3 {
+        let mut nested = NestedMessage::new();
+        nested.set_bb(i);
+        msg.repeated_nested_message_mut().push(nested);
+    }
+
+    for mut nested in msg.repeated_nested_message_mut().iter_mut() {
+        let bb = nested.bb();
+        nested.set_bb(bb + 1);
+    }
+
+    assert_that!(msg.repeated_nested_message().get(0).unwrap().bb(), eq(1));
+    assert_that!(msg.repeated_nested_message().get(1).unwrap().bb(), eq(2));
+    assert_that!(msg.repeated_nested_message().get(2).unwrap().bb(), eq(3));
+}
+
+#[gtest]
 fn test_repeated_message_setter() {
     let mut msg = TestAllTypes::new();
     let mut nested = NestedMessage::new();

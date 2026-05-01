@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Contains FieldMask class."""
 
 from google.protobuf.descriptor import FieldDescriptor
@@ -76,21 +75,26 @@ class FieldMask(object):
     intersection.ToFieldMask(self)
 
   def MergeMessage(
-      self, source, destination,
-      replace_message_field=False, replace_repeated_field=False):
+      self,
+      source,
+      destination,
+      replace_message_field=False,
+      replace_repeated_field=False,
+  ):
     """Merges fields specified in FieldMask from source to destination.
 
     Args:
       source: Source message.
       destination: The destination message to be merged into.
-      replace_message_field: Replace message field if True. Merge message
-          field if False.
-      replace_repeated_field: Replace repeated field if True. Append
-          elements of repeated field if False.
+      replace_message_field: Replace message field if True. Merge message field
+        if False.
+      replace_repeated_field: Replace repeated field if True. Append elements of
+        repeated field if False.
     """
     tree = _FieldMaskTree(self)
     tree.MergeMessage(
-        source, destination, replace_message_field, replace_repeated_field)
+        source, destination, replace_message_field, replace_repeated_field
+    )
 
 
 def _IsValidPath(message_descriptor, path):
@@ -99,9 +103,11 @@ def _IsValidPath(message_descriptor, path):
   last = parts.pop()
   for name in parts:
     field = message_descriptor.fields_by_name.get(name)
-    if (field is None or
-        field.is_repeated or
-        field.type != FieldDescriptor.TYPE_MESSAGE):
+    if (
+        field is None
+        or field.is_repeated
+        or field.type != FieldDescriptor.TYPE_MESSAGE
+    ):
       return False
     message_descriptor = field.message_type
   return last in message_descriptor.fields_by_name
@@ -110,10 +116,13 @@ def _IsValidPath(message_descriptor, path):
 def _CheckFieldMaskMessage(message):
   """Raises ValueError if message is not a FieldMask."""
   message_descriptor = message.DESCRIPTOR
-  if (message_descriptor.name != 'FieldMask' or
-      message_descriptor.file.name != 'google/protobuf/field_mask.proto'):
-    raise ValueError('Message {0} is not a FieldMask.'.format(
-        message_descriptor.full_name))
+  if (
+      message_descriptor.name != 'FieldMask'
+      or message_descriptor.file.name != 'google/protobuf/field_mask.proto'
+  ):
+    raise ValueError(
+        'Message {0} is not a FieldMask.'.format(message_descriptor.full_name)
+    )
 
 
 def _SnakeCaseToCamelCase(path_name):
@@ -124,7 +133,8 @@ def _SnakeCaseToCamelCase(path_name):
     if c.isupper():
       raise ValueError(
           'Fail to print FieldMask to Json string: Path name '
-          '{0} must not contain uppercase letters.'.format(path_name))
+          '{0} must not contain uppercase letters.'.format(path_name)
+      )
     if after_underscore:
       if c.islower():
         result.append(c.upper())
@@ -133,15 +143,18 @@ def _SnakeCaseToCamelCase(path_name):
         raise ValueError(
             'Fail to print FieldMask to Json string: The '
             'character after a "_" must be a lowercase letter '
-            'in path name {0}.'.format(path_name))
+            'in path name {0}.'.format(path_name)
+        )
     elif c == '_':
       after_underscore = True
     else:
       result += c
 
   if after_underscore:
-    raise ValueError('Fail to print FieldMask to Json string: Trailing "_" '
-                     'in path name {0}.'.format(path_name))
+    raise ValueError(
+        'Fail to print FieldMask to Json string: Trailing "_" '
+        'in path name {0}.'.format(path_name)
+    )
   return ''.join(result)
 
 
@@ -150,8 +163,10 @@ def _CamelCaseToSnakeCase(path_name):
   result = []
   for c in path_name:
     if c == '_':
-      raise ValueError('Fail to parse FieldMask: Path name '
-                       '{0} must not contain "_"s.'.format(path_name))
+      raise ValueError(
+          'Fail to parse FieldMask: Path name '
+          '{0} must not contain "_"s.'.format(path_name)
+      )
     if c.isupper():
       result += '_'
       result += c.lower()
@@ -249,11 +264,12 @@ class _FieldMaskTree(object):
         stack.append((child_path, current_node[name]))
 
   def MergeMessage(
-      self, source, destination,
-      replace_message, replace_repeated):
+      self, source, destination, replace_message, replace_repeated
+  ):
     """Merge all fields specified by this tree from source to destination."""
     _MergeMessage(
-        self._root, source, destination, replace_message, replace_repeated)
+        self._root, source, destination, replace_message, replace_repeated
+    )
 
 
 def _StrConvert(value):
@@ -266,8 +282,7 @@ def _StrConvert(value):
   return value
 
 
-def _MergeMessage(
-    node, source, destination, replace_message, replace_repeated):
+def _MergeMessage(node, source, destination, replace_message, replace_repeated):
   """Merge all fields specified by a sub-tree from source to destination."""
   stack = [(node, source, destination)]
   while stack:
@@ -277,19 +292,29 @@ def _MergeMessage(
       child = current_node[name]
       field = source_descriptor.fields_by_name[name]
       if field is None:
-        raise ValueError('Error: Can\'t find field {0} in message {1}.'.format(
-            name, source_descriptor.full_name))
+        raise ValueError(
+            "Error: Can't find field {0} in message {1}.".format(
+                name, source_descriptor.full_name
+            )
+        )
       if child:
         # Sub-paths are only allowed for singular message fields.
-        if (field.is_repeated or
-            field.cpp_type != FieldDescriptor.CPPTYPE_MESSAGE):
-          raise ValueError('Error: Field {0} in message {1} is not a singular '
-                           'message field and cannot have sub-fields.'.format(
-                               name, source_descriptor.full_name))
+        if (
+            field.is_repeated
+            or field.cpp_type != FieldDescriptor.CPPTYPE_MESSAGE
+        ):
+          raise ValueError(
+              'Error: Field {0} in message {1} is not a singular '
+              'message field and cannot have sub-fields.'.format(
+                  name, source_descriptor.full_name
+              )
+          )
         if current_source.HasField(name):
-          stack.append(
-              (child, getattr(current_source, name),
-               getattr(current_destination, name)))
+          stack.append((
+              child,
+              getattr(current_source, name),
+              getattr(current_destination, name),
+          ))
         continue
       if field.is_repeated:
         if replace_repeated:
@@ -303,7 +328,8 @@ def _MergeMessage(
             current_destination.ClearField(_StrConvert(name))
           if current_source.HasField(name):
             getattr(current_destination, name).MergeFrom(
-                getattr(current_source, name))
+                getattr(current_source, name)
+            )
         elif not field.has_presence or current_source.HasField(name):
           setattr(current_destination, name, getattr(current_source, name))
         else:

@@ -68,6 +68,8 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
 
   void RunMessageSetTests();
 
+  void RunRecursionLimitTests();
+
   template <typename MessageType>
   friend class BinaryAndJsonConformanceSuiteImpl;
 

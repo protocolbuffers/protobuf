@@ -379,9 +379,19 @@ class PhpImplementationTest extends TestBase
         $input = new CodedInputStream(hex2bin(''));
         $this->assertFalse($input->readVarint64($var));
 
-        // The largest varint is 10 bytes long.
+        // varints which are >10 bytes long aren't allowed
         $input = new CodedInputStream(hex2bin('8080808080808080808001'));
         $this->assertFalse($input->readVarint64($var));
+
+        // 10-byte varint with high bits set in the 10th byte.
+        // Bits above bit 0 in the 10th byte are discarded.
+        $input = new CodedInputStream(hex2bin('87808080808080808002'));
+        $this->assertTrue($input->readVarint64($var));
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame('7', $var);
+        } else {
+            $this->assertSame(7, $var);
+        }
 
         // Corrupted varint.
         $input = new CodedInputStream(hex2bin('808080'));

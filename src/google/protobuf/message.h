@@ -165,6 +165,7 @@ template <typename MessageT, typename FieldT>
 struct RepeatedEntityDynamicFieldInfoBase;
 template <typename MessageT, typename FieldT>
 struct RepeatedPtrEntityDynamicFieldInfoBase;
+class LazyFieldForUnion;
 
 namespace field_layout {
 enum TransformValidation : uint16_t;
@@ -1382,18 +1383,6 @@ class PROTOBUF_EXPORT Reflection final {
                            const FieldDescriptor* field) const;
   void SetHasBit(Message* message, const FieldDescriptor* field) const;
   void ClearHasBit(Message* message, const FieldDescriptor* field) const;
-  // Simple wrapper around SetHasBit that is used for repeated fields.
-  // Note: in some places this is called in an if (field->is_extension()) {},
-  // which is not a no-op. However, with the experiment disabled, this method
-  // will be empty, and the compiler should be able to omit the unnecessary
-  // call to is_extension().
-  // TODO: Remove this method once measurement is complete.
-  PROTOBUF_ALWAYS_INLINE void SetHasBitForRepeated(
-      Message* message, const FieldDescriptor* field) const {
-    if constexpr (internal::EnableExperimentalHintHasBitsForRepeatedFields()) {
-      SetHasBit(message, field);
-    }
-  }
   // Naively swaps the hasbit without checking for field existence.
   // For explicit presence fields, the hasbit is swapped normally.
   // For implicit presence fields, the hasbit is swapped without checking for
@@ -1667,7 +1656,7 @@ Reflection::MutableRepeatedPtrFieldInternal<std::string>(
     Message* message, const FieldDescriptor* field,
     GetRepeatedFieldIntent intent) const {
   if (!field->is_extension()) {
-    SetHasBitForRepeated(message, field);
+    SetHasBit(message, field);
   }
   return static_cast<RepeatedPtrField<std::string>*>(
       MutableRawRepeatedString(message, field, true, intent));
@@ -1689,7 +1678,7 @@ inline RepeatedPtrField<Message>* Reflection::MutableRepeatedPtrFieldInternal(
     Message* message, const FieldDescriptor* field,
     GetRepeatedFieldIntent intent) const {
   if (!field->is_extension()) {
-    SetHasBitForRepeated(message, field);
+    SetHasBit(message, field);
   }
   return static_cast<RepeatedPtrField<Message>*>(MutableRawRepeatedField(
       message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1, nullptr, intent));
@@ -1709,7 +1698,7 @@ inline RepeatedPtrField<PB>* Reflection::MutableRepeatedPtrFieldInternal(
     Message* message, const FieldDescriptor* field,
     GetRepeatedFieldIntent intent) const {
   if (!field->is_extension()) {
-    SetHasBitForRepeated(message, field);
+    SetHasBit(message, field);
   }
   return static_cast<RepeatedPtrField<PB>*>(MutableRawRepeatedField(
       message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1,
@@ -1793,6 +1782,7 @@ GetCppType() {
     if (std::is_same_v<T, double>) return FieldDescriptor::CPPTYPE_DOUBLE;
     if (std::is_same_v<T, bool>) return FieldDescriptor::CPPTYPE_BOOL;
 
+    using CV = std::remove_cv_t<T>;
     using PCV = std::remove_cv_t<std::remove_pointer_t<T>>;
 
     // strings
@@ -1806,7 +1796,8 @@ GetCppType() {
     // messages
     if (std::is_same_v<PCV, Message> ||      //
         std::is_same_v<PCV, MessageLite> ||  //
-        std::is_same_v<PCV, internal::LazyField>) {
+        std::is_same_v<CV, internal::LazyField> ||
+        std::is_same_v<CV, internal::LazyFieldForUnion>) {
       return FieldDescriptor::CPPTYPE_MESSAGE;
     }
   }
@@ -1854,9 +1845,10 @@ void Reflection::VerifyFieldType(const FieldDescriptor* field) const {
     // Check subfield types for message.
     if constexpr (internal::GetCppType<T>() ==
                   FieldDescriptor::CPPTYPE_MESSAGE) {
-      // Singular/oneof messages are by pointer, except non-oneof Lazy.
-      if (!field->is_repeated() &&
-          (!IsLazyField(field) || field->real_containing_oneof() != nullptr)) {
+      // Singular/oneof messages are by pointer, except Lazy.
+      // Lazy uses LazyField by-value for normal fields and LazyFieldForUnion
+      // by-value for oneof fields.
+      if (!field->is_repeated() && !IsLazyField(field)) {
         ABSL_DCHECK(std::is_pointer_v<T>) << error();
       }
     }
@@ -1921,7 +1913,7 @@ MutableRepeatedFieldRef<T> Reflection::GetMutableRepeatedFieldRef(
     Message* message, const FieldDescriptor* field) const {
   ABSL_DCHECK_EQ(message->GetReflection(), this);
   if (!field->is_extension()) {
-    SetHasBitForRepeated(message, field);
+    SetHasBit(message, field);
   }
   return MutableRepeatedFieldRef<T>(message, field);
 }
