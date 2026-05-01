@@ -105,6 +105,7 @@ static PyDescriptorPool* _CreateDescriptorPool() {
   cpool->descriptor_options = new absl::flat_hash_map<const void*, PyObject*>();
   cpool->descriptor_features =
       new absl::flat_hash_map<const void*, PyObject*>();
+  cpool->cache_mutex = new FreeThreadingMutex();
 
   cpool->py_message_factory = message_factory::NewMessageFactory(
       &PyMessageFactory_Type, cpool);
@@ -213,6 +214,7 @@ static void Dealloc(PyObject* pself) {
     Py_DECREF(it->second);
   }
   delete self->descriptor_features;
+  delete self->cache_mutex;
   delete self->database;
   if (self->is_owned) {
     delete self->pool;

@@ -368,9 +368,8 @@ using internal::MessageGlobalsBase;
 
 struct DynamicMessageGlobalsInternalType : MessageGlobalsBase {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
-  explicit constexpr DynamicMessageGlobalsInternalType(
-      internal::ClassDataFull class_data)
-      : MessageGlobalsBase(class_data) {}
+  explicit DynamicMessageGlobalsInternalType(internal::ClassDataFull data)
+      : MessageGlobalsBase(data) {}
 #endif  // PROTOBUF_MESSAGE_GLOBALS
   union {
     alignas(internal::kMaxMessageAlignment) DynamicMessage _default;  // NOLINT
@@ -482,16 +481,13 @@ struct DynamicMessageFactory::TypeInfo {
 DynamicMessage::DynamicMessage(const DynamicMessageFactory::TypeInfo* type_info,
                                Arena* arena)
     : Message(arena, type_info->GetClassDataFull().base()),
-      type_info_(type_info),
-      cached_byte_size_(0) {
+      type_info_(type_info) {
   SharedCtor(true);
 }
 
 DynamicMessage::DynamicMessage(DynamicMessageFactory::TypeInfo* type_info,
                                bool lock_factory)
-    : Message(type_info->GetClassDataFull().base()),
-      type_info_(type_info),
-      cached_byte_size_(0) {
+    : Message(type_info->GetClassDataFull().base()), type_info_(type_info) {
   // The prototype in type_info has to be set before creating the prototype
   // instance on memory. e.g., message Foo { map<int32_t, Foo> a = 1; }. When
   // creating prototype for Foo, prototype of the map entry will also be

@@ -306,6 +306,57 @@ static void CheckExtension(GPBMessage *self, GPBExtensionDescriptor *extension) 
   }
 }
 
+#if defined(DEBUG) && DEBUG
+static void CheckExtensionValue(GPBExtensionDescriptor *extension, id value) {
+  // If asserts are stripped, value is unused.
+  (void)value;
+  switch (extension.dataType) {
+    case GPBDataTypeBool:
+    case GPBDataTypeFixed32:
+    case GPBDataTypeSFixed32:
+    case GPBDataTypeFloat:
+    case GPBDataTypeFixed64:
+    case GPBDataTypeSFixed64:
+    case GPBDataTypeDouble:
+    case GPBDataTypeInt32:
+    case GPBDataTypeInt64:
+    case GPBDataTypeSInt32:
+    case GPBDataTypeSInt64:
+    case GPBDataTypeUInt32:
+    case GPBDataTypeUInt64:
+      NSCAssert([value isKindOfClass:[NSNumber class]],
+                @"Extension %@ value must be an NSNumber (was %@)", extension.singletonName,
+                [value class]);
+      break;
+    case GPBDataTypeEnum:
+      NSCAssert([value isKindOfClass:[NSNumber class]],
+                @"Extension %@ value must be an NSNumber (was %@)", extension.singletonName,
+                [value class]);
+      NSCAssert(!extension.enumDescriptor.isClosed ||
+                    extension.enumDescriptor.enumVerifier([value intValue]),
+                @"Extension %@ has value %d which is not a valid %@", extension.singletonName,
+                [value intValue], extension.enumDescriptor.name);
+      break;
+    case GPBDataTypeBytes:
+      NSCAssert([value isKindOfClass:[NSData class]],
+                @"Extension %@ value must be of type NSData (was %@)", extension.singletonName,
+                [value class]);
+      break;
+    case GPBDataTypeString:
+      NSCAssert([value isKindOfClass:[NSString class]],
+                @"Extension %@ value must be of type NSString (was %@)", extension.singletonName,
+                [value class]);
+      break;
+    case GPBDataTypeMessage:
+    case GPBDataTypeGroup:
+      NSCAssert([value isKindOfClass:extension.msgClass],
+                @"Extension %@ value must be of type %@ (was %@)", extension.singletonName,
+                extension.msgClass, [value class]);
+      break;
+  }
+}
+#endif
+
 static NSMutableDictionary *CloneExtensionMap(NSDictionary *extensionMap, NSZone *zone) {
   if (extensionMap.count == 0) {
     return nil;
@@ -2151,6 +2202,9 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
   }
 
   CheckExtension(self, extension);
+#if defined(DEBUG) && DEBUG
+  CheckExtensionValue(extension, value);
+#endif
 
   if (extension.repeated) {
     [NSException raise:NSInvalidArgumentException
@@ -2184,6 +2238,9 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
 
 - (void)addExtension:(GPBExtensionDescriptor *)extension value:(id)value {
   CheckExtension(self, extension);
+#if defined(DEBUG) && DEBUG
+  CheckExtensionValue(extension, value);
+#endif
 
   if (!extension.repeated) {
     [NSException raise:NSInvalidArgumentException
@@ -2205,6 +2262,9 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
 
 - (void)setExtension:(GPBExtensionDescriptor *)extension index:(NSUInteger)idx value:(id)value {
   CheckExtension(self, extension);
+#if defined(DEBUG) && DEBUG
+  CheckExtensionValue(extension, value);
+#endif
 
   if (!extension.repeated) {
     [NSException raise:NSInvalidArgumentException

@@ -5,4 +5,6 @@ def _test_lite_proto_library_builds_compiled_jar(env, target):
         "{package}/libfoo_proto-lite.jar",
     )
 
-TESTS = [(_test_lite_proto_library_builds_compiled_jar, ":foo_java_proto_lite")]
+TESTS = {
+    ":foo_java_proto_lite": [_test_lite_proto_library_builds_compiled_jar],
+}

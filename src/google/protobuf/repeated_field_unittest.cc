@@ -1336,6 +1336,28 @@ TEST(RepeatedFieldTest, SortCordTest) {
   }
 }
 
+TEST(RepeatdFieldTest, ContainerAnnotationsAreProperlyCleanedInArena) {
+#if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  GTEST_SKIP() << "Asan is not on.";
+#endif
+  alignas(8) char block[128];
+  ArenaOptions options;
+  options.initial_block = block;
+  options.initial_block_size = sizeof(block);
+
+  Arena arena(options);
+  // Make a container and reserve memory
+  arena.Make<RepeatedField<bool>>()->Reserve(64);
+
+  // Accessing it should cause a problem.
+  EXPECT_TRUE(internal::IsMemoryPoisoned(block + 64));
+  // Now reset the arena and let's make sure the memory is accessible.
+  // If `allow_user_poisoning=0`, we need to reset the memory even though
+  // unpoisoning doesn't work.
+  arena.Reset();
+  EXPECT_FALSE(internal::IsMemoryPoisoned(block + 64));
+}
+
 #if defined(GTEST_HAS_DEATH_TEST) && (defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
                                       defined(ABSL_HAVE_MEMORY_SANITIZER))
 
@@ -1547,6 +1569,24 @@ TEST(RepeatedField, CheckedGetOrAbortTest) {
   RepeatedField<int> field;
 
   // Empty container tests.
+  EXPECT_DEATH(internal::CheckedGetOrAbort(field, -1),
+               "Index \\(-1\\) out of bounds of container with size \\(0\\)");
+  EXPECT_DEATH(internal::CheckedGetOrAbort(field, field.size()),
+               "Index \\(0\\) out of bounds of container with size \\(0\\)");
+
+  // Non-empty container tests
+  field.Add(5);
+  field.Add(4);
+  EXPECT_DEATH(internal::CheckedGetOrAbort(field, 2),
+               "Index \\(2\\) out of bounds of container with size \\(2\\)");
+  EXPECT_DEATH(internal::CheckedGetOrAbort(field, -1),
+               "Index \\(-1\\) out of bounds of container with size \\(2\\)");
+}
+
+TEST(RepeatedField, CheckedMutableOrAbortTest) {
+  RepeatedField<int> field;
+
+  // Empty container tests.
   EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, -1),
                "Index \\(-1\\) out of bounds of container with size \\(0\\)");
   EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, field.size()),
@@ -1570,7 +1610,7 @@ TEST(RepeatedFieldIsFullTest, DISABLED_MergeFrom) {
   }
 
   TestAllTypes msg;
-  msg.mutable_repeated_bool()->Resize(std::numeric_limits<int>::max(), false);
+  msg.mutable_repeated_bool()->resize(std::numeric_limits<int>::max(), false);
 
   TestAllTypes payload;
   payload.add_repeated_bool(true);
@@ -1587,7 +1627,7 @@ TEST(RepeatedFieldIsFullTest, DISABLED_MergeFromPacked) {
   }
 
   ::proto2_unittest::TestPackedTypes msg;
-  msg.mutable_packed_bool()->Resize(std::numeric_limits<int>::max(), false);
+  msg.mutable_packed_bool()->resize(std::numeric_limits<int>::max(), false);
 
   ::proto2_unittest::TestPackedTypes payload;
   payload.add_packed_bool(true);
@@ -1601,5 +1641,14 @@ TEST(RepeatedFieldIsFullTest, DISABLED_MergeFromPacked) {
 
 }  // namespace protobuf
 }  // namespace google
+
+// Code thunks to be dumped by the debugger to inspect the generated assemtbly.
+static const int& CodegenRepeatedFieldGet(const google::protobuf::RepeatedField<int>& a,
+                                          int idx) {
+  return a[idx];
+}
+
+static int odr_use =
+    (google::protobuf::internal::StrongPointer(&CodegenRepeatedFieldGet), 0);
 
 #include "google/protobuf/port_undef.inc"

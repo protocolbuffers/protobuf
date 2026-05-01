@@ -184,7 +184,7 @@ constexpr auto ProtocMaximumEdition() { return Edition::EDITION_2024; }
 // The maximum edition known to protoc, which may or may not be officially
 // supported yet.  During development of a new edition, this will typically be
 // set to that.
-constexpr auto MaximumKnownEdition() { return Edition::EDITION_2024; }
+constexpr auto MaximumKnownEdition() { return Edition::EDITION_2026; }
 
 // CodeGenerators generate one or more files in a given directory.  This
 // abstract interface represents the directory to which the CodeGenerator is

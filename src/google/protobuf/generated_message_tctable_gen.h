@@ -61,17 +61,29 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     float presence_probability;
     // kTvEager, kTvLazy, or 0
     field_layout::TransformValidation lazy_opt;
-    // Whether to use the InlinedStringField representation.
-    // This choice comes from the profile data.
-    // Incompatible with `use_micro_string`.
-    bool is_string_inlined;
     bool is_implicitly_weak;
     bool use_direct_tcparser_table;
     bool should_split;
+
+    // Whether to use the InlinedStringField representation.
+    struct StringInlined {};
     // Whether to use the MicroString representation.
-    // This choice comes from the temporary opt-in data.
-    // Incompatible with `is_string_inlined`.
-    bool use_micro_string;
+    struct MicroString {
+      uint8_t sso_size;
+    };
+
+    bool is_string_inlined() const {
+      return std::holds_alternative<StringInlined>(str_options);
+    }
+    bool is_micro_string() const {
+      return std::holds_alternative<MicroString>(str_options);
+    }
+    uint8_t micro_string_sso() const {
+      return std::get<MicroString>(str_options).sso_size;
+    }
+
+    using StrOptions = std::variant<std::monostate, StringInlined, MicroString>;
+    StrOptions str_options;
   };
 
   struct FieldEntryInfo;

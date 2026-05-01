@@ -1,0 +1,68 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2024";
+
+package third_party_protobuf_rust_test;
+
+message TestExtensions {
+  extensions 1 to max;
+
+  extend TestExtensions {
+    int32 nested_extension = 500;
+  }
+}
+
+message SimpleSubmessage {
+  int32 i32_field = 1 [default = 123];
+}
+
+extend TestExtensions {
+  int32 i32_extension = 1;
+  string str_extension = 2;
+
+  SimpleSubmessage submessage_extension = 20;
+
+  int32 i32_extension_with_default = 100 [default = 100];
+
+  repeated int32 repeated_i32_extension = 801;
+  repeated string repeated_str_extension = 802;
+  repeated SimpleSubmessage repeated_submessage_extension = 803;
+
+  int64 i64_extension = 11;
+  uint32 u32_extension = 12;
+  uint64 u64_extension = 13;
+  float f32_extension = 14;
+  double f64_extension = 15;
+  bool bool_extension = 16;
+
+  repeated int64 repeated_i64_extension = 811;
+  repeated uint32 repeated_u32_extension = 812;
+  repeated uint64 repeated_u64_extension = 813;
+  repeated float repeated_f32_extension = 814;
+  repeated double repeated_f64_extension = 815;
+  repeated bool repeated_bool_extension = 816;
+
+  TestEnum enum_extension = 30;
+  repeated TestEnum repeated_enum_extension = 830;
+}
+
+enum TestEnum {
+  FOO = 0;
+  BAR = 1;
+}
+
+enum ClosedEnum {
+  option features.enum_type = CLOSED;
+
+  CLOSED_ZERO = 0;
+  CLOSED_ONE = 1;
+}
+
+extend TestExtensions {
+  ClosedEnum closed_enum_extension = 31;
+}

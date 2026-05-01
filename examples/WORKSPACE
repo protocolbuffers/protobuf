@@ -1,6 +1,6 @@
 workspace(name = "com_google_protobuf_examples")
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+# load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # This protobuf repository is required for proto_library rule.
 # It provides the protocol compiler binary (i.e., protoc).
@@ -56,6 +56,11 @@ rules_jvm_external_deps()
 load("@rules_jvm_external//:setup.bzl", "rules_jvm_external_setup")
 
 rules_jvm_external_setup()
+
+# For bazel 8.6.0 WORKSPACE on windows
+load("@rules_shell//shell:repositories.bzl", "rules_shell_toolchains")
+
+rules_shell_toolchains()
 
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 

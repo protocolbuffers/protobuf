@@ -83,11 +83,8 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
                     "::internal::TSanRead(&_impl_)")},
 
       // Old-style names.
-      {"field", FieldMemberName(field, split)},
-      {"declared_type", DeclaredTypeMethodName(field->type())},
       {"classname", ClassName(FieldScope(field), false)},
-      {"ns", Namespace(field, opts)},
-      {"tag_size", WireFormat::TagSize(field->number(), field->type())},
+      {"ns", Namespace(field)},
       {"deprecated_attr", DeprecatedAttribute(opts, field)},
       Sub("WeakDescriptorSelfPin",
           UsingImplicitWeakDescriptor(field->file(), opts)
@@ -202,7 +199,7 @@ void FieldGeneratorBase::GenerateOneofCopyConstruct(io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension()) << "Not supported";
   ABSL_CHECK(!field_->is_repeated()) << "Not supported";
   ABSL_CHECK(!field_->is_map()) << "Not supported";
-  p->Emit("$field$ = from.$field$;\n");
+  p->Emit("$field_$ = from.$field_$;\n");
 }
 
 void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
@@ -212,7 +209,7 @@ void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
     )cc");
   } else {
     p->Emit(R"cc(
-      decltype($field$){arena},
+      decltype($field_$){arena},
     )cc");
   }
 }
@@ -220,14 +217,14 @@ void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
 void FieldGeneratorBase::GenerateConstexprAggregateInitializer(
     io::Printer* p) const {
   p->Emit(R"cc(
-    /*decltype($field$)*/ {},
+    /*decltype($field_$)*/ {},
   )cc");
 }
 
 void FieldGeneratorBase::GenerateCopyAggregateInitializer(
     io::Printer* p) const {
   p->Emit(R"cc(
-    decltype($field$){from.$field$},
+    decltype($field_$){from.$field_$},
   )cc");
 }
 
@@ -236,7 +233,7 @@ void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
     // There is no copy constructor for the `Split` struct, so we need to copy
     // the value here.
     Formatter format(p, variables_);
-    format("$field$ = from.$field$;\n");
+    format("$field_$ = from.$field_$;\n");
   }
 }
 
@@ -338,13 +335,9 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
                                    : "_impl_._has_bits_";
 
   auto has_bits_array = absl::StrFormat("%s[%d]", has_bits, index);
-  auto for_repeated = field->is_repeated() ? "ForRepeated" : "";
-  auto has = absl::StrFormat("CheckHasBit%s(%s, %s)", for_repeated,
-                             has_bits_array, mask);
-  auto set = absl::StrFormat("SetHasBit%s(%s, %s);", for_repeated,
-                             has_bits_array, mask);
-  auto clr = absl::StrFormat("ClearHasBit%s(%s, %s);", for_repeated,
-                             has_bits_array, mask);
+  auto has = absl::StrFormat("CheckHasBit(%s, %s)", has_bits_array, mask);
+  auto set = absl::StrFormat("SetHasBit(%s, %s);", has_bits_array, mask);
+  auto clr = absl::StrFormat("ClearHasBit(%s, %s);", has_bits_array, mask);
 
   vars.emplace_back("has_bits_array", has_bits_array);
   vars.emplace_back("has_mask", mask);

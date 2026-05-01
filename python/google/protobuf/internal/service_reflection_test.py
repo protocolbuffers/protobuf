@@ -13,6 +13,7 @@ __author__ = 'petar@google.com (Petar Petrov)'
 import unittest
 
 from google.protobuf import service_reflection
+
 from google.protobuf import unittest_pb2
 
 
@@ -21,6 +22,7 @@ class FooUnitTest(unittest.TestCase):
   def testService(self):
 
     class MockRpcChannel:
+
       def CallMethod(self, method, controller, request, response, callback):
         self.method = method
         self.controller = controller
@@ -28,6 +30,7 @@ class FooUnitTest(unittest.TestCase):
         callback(response)
 
     class MockRpcController:
+
       def SetFailed(self, msg):
         self.failure_message = msg
 
@@ -45,26 +48,38 @@ class FooUnitTest(unittest.TestCase):
     channel = MockRpcChannel()
     srvc = MyService()
     srvc.Foo(rpc_controller, unittest_pb2.FooRequest(), MyCallback)
-    self.assertEqual('Method Foo not implemented.',
-                     rpc_controller.failure_message)
+    self.assertEqual(
+        'Method Foo not implemented.', rpc_controller.failure_message
+    )
     self.assertEqual(None, self.callback_response)
 
     rpc_controller.failure_message = None
 
     service_descriptor = unittest_pb2.TestService.GetDescriptor()
-    srvc.CallMethod(service_descriptor.methods[1], rpc_controller,
-                    unittest_pb2.BarRequest(), MyCallback)
-    self.assertTrue(srvc.GetRequestClass(service_descriptor.methods[1]) is
-                    unittest_pb2.BarRequest)
-    self.assertTrue(srvc.GetResponseClass(service_descriptor.methods[1]) is
-                    unittest_pb2.BarResponse)
-    self.assertEqual('Method Bar not implemented.',
-                     rpc_controller.failure_message)
+    srvc.CallMethod(
+        service_descriptor.methods[1],
+        rpc_controller,
+        unittest_pb2.BarRequest(),
+        MyCallback,
+    )
+    self.assertTrue(
+        srvc.GetRequestClass(service_descriptor.methods[1])
+        is unittest_pb2.BarRequest
+    )
+    self.assertTrue(
+        srvc.GetResponseClass(service_descriptor.methods[1])
+        is unittest_pb2.BarResponse
+    )
+    self.assertEqual(
+        'Method Bar not implemented.', rpc_controller.failure_message
+    )
     self.assertEqual(None, self.callback_response)
 
     class MyServiceImpl(unittest_pb2.TestService):
+
       def Foo(self, rpc_controller, request, done):
         self.foo_called = True
+
       def Bar(self, rpc_controller, request, done):
         self.bar_called = True
 
@@ -75,16 +90,22 @@ class FooUnitTest(unittest.TestCase):
     self.assertEqual(True, srvc.foo_called)
 
     rpc_controller.failure_message = None
-    srvc.CallMethod(service_descriptor.methods[1], rpc_controller,
-                    unittest_pb2.BarRequest(), MyCallback)
+    srvc.CallMethod(
+        service_descriptor.methods[1],
+        rpc_controller,
+        unittest_pb2.BarRequest(),
+        MyCallback,
+    )
     self.assertEqual(None, rpc_controller.failure_message)
     self.assertEqual(True, srvc.bar_called)
 
   def testServiceStub(self):
 
     class MockRpcChannel:
-      def CallMethod(self, method, controller, request,
-                     response_class, callback):
+
+      def CallMethod(
+          self, method, controller, request, response_class, callback
+      ):
         self.method = method
         self.controller = controller
         self.request = request
@@ -101,8 +122,9 @@ class FooUnitTest(unittest.TestCase):
     request = 'request'
 
     # GetDescriptor now static, still works as instance method for compatibility
-    self.assertEqual(unittest_pb2.TestService_Stub.GetDescriptor(),
-                     stub.GetDescriptor())
+    self.assertEqual(
+        unittest_pb2.TestService_Stub.GetDescriptor(), stub.GetDescriptor()
+    )
 
     # Invoke method.
     stub.Foo(rpc_controller, request, MyCallback)

@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2008 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
@@ -548,25 +548,15 @@ std::string Namespace(absl::string_view package) {
   return absl::StrCat("::", absl::StrJoin(scope, "::"));
 }
 
-std::string Namespace(const FileDescriptor* d) { return Namespace(d, {}); }
-std::string Namespace(const FileDescriptor* d, const Options& options) {
+std::string Namespace(const FileDescriptor* d) {
   return Namespace(d->package());
 }
 
-std::string Namespace(const Descriptor* d) { return Namespace(d, {}); }
-std::string Namespace(const Descriptor* d, const Options& options) {
-  return Namespace(d->file(), options);
-}
+std::string Namespace(const Descriptor* d) { return Namespace(d->file()); }
 
-std::string Namespace(const FieldDescriptor* d) { return Namespace(d, {}); }
-std::string Namespace(const FieldDescriptor* d, const Options& options) {
-  return Namespace(d->file(), options);
-}
+std::string Namespace(const FieldDescriptor* d) { return Namespace(d->file()); }
 
-std::string Namespace(const EnumDescriptor* d) { return Namespace(d, {}); }
-std::string Namespace(const EnumDescriptor* d, const Options& options) {
-  return Namespace(d->file(), options);
-}
+std::string Namespace(const EnumDescriptor* d) { return Namespace(d->file()); }
 
 std::string SplitDefaultInstanceType(const Descriptor* descriptor,
                                      const Options& /*options*/) {
@@ -1007,7 +997,7 @@ std::string QualifiedFileLevelSymbol(const FileDescriptor* file,
   if (file->package().empty()) {
     return absl::StrCat("::", name);
   }
-  return absl::StrCat(Namespace(file, options), "::", name);
+  return absl::StrCat(Namespace(file), "::", name);
 }
 
 // Escape C++ trigraphs by escaping question marks to \?
@@ -1148,12 +1138,25 @@ bool HasLazyFields(const FileDescriptor* file, const Options& options) {
 }
 
 bool IsMicroString(const FieldDescriptor* field, const Options& opts) {
-  return !field->is_repeated() && !field->is_extension() &&
-         field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         field->cpp_string_type() == FieldDescriptor::CppStringType::kView &&
-         opts.experimental_use_micro_string &&
-         // map entry fields don't use MicroString right now
-         !field->containing_type()->options().map_entry();
+  if (field->is_repeated()) return false;
+  if (field->is_extension()) return false;
+  if (field->cpp_type() != FieldDescriptor::CPPTYPE_STRING) return false;
+  if (field->cpp_string_type() != FieldDescriptor::CppStringType::kView)
+    return false;
+
+  // map entry fields don't use MicroString right now
+  if (field->containing_type()->options().map_entry()) return false;
+
+
+  return opts.experimental_use_micro_string;
+}
+
+absl::optional<uint8_t> MicroStringSSOSize(const FieldDescriptor* field,
+                                           const Options& opts) {
+  if (!IsMicroString(field, opts)) return absl::nullopt;
+
+
+  return absl::nullopt;
 }
 
 bool IsArenaStringPtr(const FieldDescriptor* field, const Options& opts) {
@@ -1855,10 +1858,14 @@ bool GetBootstrapBasename(const Options& options, absl::string_view basename,
            "third_party/protobuf/descriptor"},
           {"third_party/protobuf/cpp_features",
            "third_party/protobuf/cpp_features"},
+          {"third_party/protobuf/cpp_file_options",
+           "third_party/protobuf/cpp_file_options_bootstrap"},
           {"third_party/protobuf/compiler/plugin",
            "third_party/protobuf/compiler/plugin"},
           {"third_party/protobuf/internal_options",
            "third_party/protobuf/internal_options_bootstrap"},
+          {"third_party/protobuf/json_enumvalue_options",
+           "third_party/protobuf/json_enumvalue_options_bootstrap"},
           {"net/proto2/compiler/proto/profile",
            "net/proto2/compiler/proto/profile_bootstrap"},
       };
@@ -2110,8 +2117,7 @@ std::vector<io::Printer::Sub> AnnotatedAccessors(
 }
 
 bool IsFileDescriptorProto(const FileDescriptor* file, const Options& options) {
-  if (Namespace(file, options) !=
-      absl::StrCat("::", ProtobufNamespace(options))) {
+  if (Namespace(file) != absl::StrCat("::", ProtobufNamespace(options))) {
     return false;
   }
   for (int i = 0; i < file->message_type_count(); ++i) {

@@ -23,7 +23,8 @@
 
 static bool upb_DecodeFast_SingleFixed(upb_Decoder* d, const char** ptr,
                                        void* dst, upb_DecodeFast_Type type,
-                                       upb_DecodeFastNext* next) {
+                                       upb_DecodeFastNext* next, void* ctx) {
+  UPB_UNUSED(ctx);
   int valbytes = upb_DecodeFast_ValueBytes(type);
   memcpy(dst, *ptr, valbytes);
   *ptr += valbytes;
@@ -47,26 +48,25 @@ static const char* upb_DecodeFast_PackedFixed(upb_EpsCopyInputStream* st,
 
   int valbytes = upb_DecodeFast_ValueBytes(c->type);
 
-  if (size != 0) {
-    if (size % valbytes != 0) {
-      UPB_DECODEFAST_ERROR(c->d, kUpb_DecodeStatus_Malformed, c->ret);
-      return NULL;
-    }
+  if (size == 0) return ptr;  // 0-element packed fields are valid.
 
-    upb_DecodeFastArray arr;
-
-    if (!upb_DecodeFast_GetArrayForAppend(c->d, ptr, c->msg, *c->data,
-                                          c->hasbits, &arr, c->type,
-                                          size / valbytes, c->ret)) {
-      return NULL;
-    }
-
-    upb_DecodeFast_InlineMemcpy(arr.dst, ptr, size);
-    arr.dst = UPB_PTR_AT(arr.dst, size, char);
-    upb_DecodeFastField_SetArraySize(&arr, c->type);
+  if (size % valbytes != 0) {
+    UPB_DECODEFAST_ERROR(c->d, kUpb_DecodeStatus_Malformed, c->ret);
+    return NULL;
   }
 
-  _upb_Decoder_Trace(c->d, 'F');
+  upb_DecodeFastArray arr;
+
+  if (!upb_DecodeFast_GetArrayForAppend(c->d, ptr, c->msg, *c->data, c->hasbits,
+                                        &arr, c->type, size / valbytes,
+                                        c->ret)) {
+    return NULL;
+  }
+
+  upb_DecodeFast_InlineMemcpy(arr.dst, ptr, size);
+  arr.dst = UPB_PTR_AT(arr.dst, size, char);
+  upb_DecodeFastField_SetArraySize(&arr, c->type);
+
   return ptr + size;
 }
 
@@ -85,11 +85,11 @@ void upb_DecodeFast_Fixed(upb_Decoder* d, const char** ptr, upb_Message* msg,
         .hasbits = hasbits,
         .ret = ret,
     };
-    upb_DecodeFast_Delimited(d, ptr, type, card, tagsize, data,
-                             &upb_DecodeFast_PackedFixed, ret, &ctx);
+    upb_DecodeFast_Packed(d, ptr, type, card, tagsize, data,
+                          &upb_DecodeFast_PackedFixed, ret, &ctx);
   } else {
     upb_DecodeFast_Unpacked(d, ptr, msg, data, hasbits, ret, type, card,
-                            tagsize, &upb_DecodeFast_SingleFixed);
+                            tagsize, &upb_DecodeFast_SingleFixed, NULL);
   }
 }
 

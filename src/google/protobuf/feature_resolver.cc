@@ -308,6 +308,9 @@ absl::Status ValidateMergedFeatures(const FeatureSet& features) {
   CHECK_ENUM_FEATURE(default_symbol_visibility,
                      VisibilityFeature::DefaultSymbolVisibility,
                      VisibilityFeature::DEFAULT_SYMBOL_VISIBILITY)
+  CHECK_ENUM_FEATURE(enforce_proto_limits,
+                     ProtoLimitsFeature::EnforceProtoLimits,
+                     ProtoLimitsFeature::PROTO_LIMITS)
 
 #undef CHECK_ENUM_FEATURE
 

@@ -37,16 +37,15 @@ extern "C" {
 // as unknown. However there is no synchronization for this operation, which
 // means parallel mutation requires external synchronization.
 // Returns success/failure.
-UPB_API bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
-                                         upb_MiniTableField* field,
-                                         const upb_MiniTable* sub);
+UPB_NODISCARD UPB_API bool upb_MiniTable_SetSubMessage(
+    upb_MiniTable* table, upb_MiniTableField* field, const upb_MiniTable* sub);
 
 // Links an enum field to a MiniTable for that enum.
 // All enum fields must be linked prior to parsing.
 // Returns success/failure.
-UPB_API bool upb_MiniTable_SetSubEnum(upb_MiniTable* table,
-                                      upb_MiniTableField* field,
-                                      const upb_MiniTableEnum* sub);
+UPB_NODISCARD UPB_API bool upb_MiniTable_SetSubEnum(
+    upb_MiniTable* table, upb_MiniTableField* field,
+    const upb_MiniTableEnum* sub);
 
 // Returns a list of fields that require linking at runtime, to connect the
 // MiniTable to its sub-messages and sub-enums.  The list of fields will be
@@ -69,11 +68,9 @@ UPB_API uint32_t upb_MiniTable_GetSubList(const upb_MiniTable* mt,
 //
 // Returns false if either array is too short, or if any of the tables fails
 // to link.
-UPB_API bool upb_MiniTable_Link(upb_MiniTable* mt,
-                                const upb_MiniTable** sub_tables,
-                                size_t sub_table_count,
-                                const upb_MiniTableEnum** sub_enums,
-                                size_t sub_enum_count);
+UPB_NODISCARD UPB_API bool upb_MiniTable_Link(
+    upb_MiniTable* mt, const upb_MiniTable** sub_tables, size_t sub_table_count,
+    const upb_MiniTableEnum** sub_enums, size_t sub_enum_count);
 
 #ifdef __cplusplus
 } /* extern "C" */

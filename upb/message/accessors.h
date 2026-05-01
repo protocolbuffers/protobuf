@@ -14,6 +14,7 @@
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
 #include "upb/message/internal/accessors.h"
+#include "upb/message/internal/types.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/value.h"
@@ -94,14 +95,14 @@ UPB_API_INLINE upb_Map* upb_Message_GetMutableMap(upb_Message* msg,
 UPB_API_INLINE upb_Message* upb_Message_GetMutableMessage(
     upb_Message* msg, const upb_MiniTableField* f);
 
-UPB_API_INLINE upb_Array* upb_Message_GetOrCreateMutableArray(
+UPB_NODISCARD UPB_API_INLINE upb_Array* upb_Message_GetOrCreateMutableArray(
     upb_Message* msg, const upb_MiniTableField* f, upb_Arena* arena);
 
-UPB_API_INLINE upb_Map* upb_Message_GetOrCreateMutableMap(
+UPB_NODISCARD UPB_API_INLINE upb_Map* upb_Message_GetOrCreateMutableMap(
     upb_Message* msg, const upb_MiniTable* map_entry_mini_table,
     const upb_MiniTableField* f, upb_Arena* arena);
 
-UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(
+UPB_NODISCARD UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(
     upb_Message* msg, const upb_MiniTableField* f, upb_Arena* arena);
 
 UPB_API_INLINE upb_StringView
@@ -205,67 +206,62 @@ UPB_API_INLINE upb_Array* upb_Message_GetExtensionMutableArray(
 
 // Extension Setters ///////////////////////////////////////////////////////////
 
-UPB_API_INLINE bool upb_Message_SetExtension(upb_Message* msg,
-                                             const upb_MiniTableExtension* e,
-                                             const void* value, upb_Arena* a);
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtension(
+    upb_Message* msg, const upb_MiniTableExtension* e, const void* value,
+    upb_Arena* a);
 
-UPB_API_INLINE bool upb_Message_SetExtensionMessage(
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtensionMessage(
     struct upb_Message* msg, const upb_MiniTableExtension* e,
     struct upb_Message* value, upb_Arena* a);
 
-UPB_API_INLINE bool upb_Message_SetExtensionBool(
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtensionBool(
     struct upb_Message* msg, const upb_MiniTableExtension* e, bool value,
     upb_Arena* a);
 
-UPB_API_INLINE bool upb_Message_SetExtensionDouble(
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtensionDouble(
     struct upb_Message* msg, const upb_MiniTableExtension* e, double value,
     upb_Arena* a);
 
-UPB_API_INLINE bool upb_Message_SetExtensionFloat(
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtensionFloat(
     struct upb_Message* msg, const upb_MiniTableExtension* e, float value,
     upb_Arena* a);
 
-UPB_API_INLINE bool upb_Message_SetExtensionInt32(
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtensionInt32(
     struct upb_Message* msg, const upb_MiniTableExtension* e, int32_t value,
     upb_Arena* a);
 
-UPB_API_INLINE bool upb_Message_SetExtensionInt64(
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtensionInt64(
     struct upb_Message* msg, const upb_MiniTableExtension* e, int64_t value,
     upb_Arena* a);
 
-UPB_API_INLINE bool upb_Message_SetExtensionString(
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtensionString(
     struct upb_Message* msg, const upb_MiniTableExtension* e,
     upb_StringView value, upb_Arena* a);
 
-UPB_API_INLINE bool upb_Message_SetExtensionUInt32(
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtensionUInt32(
     struct upb_Message* msg, const upb_MiniTableExtension* e, uint32_t value,
     upb_Arena* a);
 
-UPB_API_INLINE bool upb_Message_SetExtensionUInt64(
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtensionUInt64(
     struct upb_Message* msg, const upb_MiniTableExtension* e, uint64_t value,
     upb_Arena* a);
 
 // Universal Setters ///////////////////////////////////////////////////////////
 
-UPB_API_INLINE bool upb_Message_SetBool(upb_Message* msg,
-                                        const upb_MiniTableField* f, bool value,
-                                        upb_Arena* a);
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetBool(
+    upb_Message* msg, const upb_MiniTableField* f, bool value, upb_Arena* a);
 
-UPB_API_INLINE bool upb_Message_SetDouble(upb_Message* msg,
-                                          const upb_MiniTableField* f,
-                                          double value, upb_Arena* a);
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetDouble(
+    upb_Message* msg, const upb_MiniTableField* f, double value, upb_Arena* a);
 
-UPB_API_INLINE bool upb_Message_SetFloat(upb_Message* msg,
-                                         const upb_MiniTableField* f,
-                                         float value, upb_Arena* a);
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetFloat(
+    upb_Message* msg, const upb_MiniTableField* f, float value, upb_Arena* a);
 
-UPB_API_INLINE bool upb_Message_SetInt32(upb_Message* msg,
-                                         const upb_MiniTableField* f,
-                                         int32_t value, upb_Arena* a);
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetInt32(
+    upb_Message* msg, const upb_MiniTableField* f, int32_t value, upb_Arena* a);
 
-UPB_API_INLINE bool upb_Message_SetInt64(upb_Message* msg,
-                                         const upb_MiniTableField* f,
-                                         int64_t value, upb_Arena* a);
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetInt64(
+    upb_Message* msg, const upb_MiniTableField* f, int64_t value, upb_Arena* a);
 
 // Unlike the other similarly-named setters, this function can only be
 // called on base fields. Prefer upb_Message_SetBaseFieldMessage().
@@ -273,21 +269,21 @@ UPB_API_INLINE void upb_Message_SetMessage(upb_Message* msg,
                                            const upb_MiniTableField* f,
                                            upb_Message* value);
 
-UPB_API_INLINE bool upb_Message_SetString(upb_Message* msg,
-                                          const upb_MiniTableField* f,
-                                          upb_StringView value, upb_Arena* a);
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetString(
+    upb_Message* msg, const upb_MiniTableField* f, upb_StringView value,
+    upb_Arena* a);
 
-UPB_API_INLINE bool upb_Message_SetUInt32(upb_Message* msg,
-                                          const upb_MiniTableField* f,
-                                          uint32_t value, upb_Arena* a);
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetUInt32(
+    upb_Message* msg, const upb_MiniTableField* f, uint32_t value,
+    upb_Arena* a);
 
-UPB_API_INLINE bool upb_Message_SetUInt64(upb_Message* msg,
-                                          const upb_MiniTableField* f,
-                                          uint64_t value, upb_Arena* a);
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetUInt64(
+    upb_Message* msg, const upb_MiniTableField* f, uint64_t value,
+    upb_Arena* a);
 
 ////////////////////////////////////////////////////////////////////////////////
 
-UPB_API_INLINE void* upb_Message_ResizeArrayUninitialized(
+UPB_NODISCARD UPB_API_INLINE void* upb_Message_ResizeArrayUninitialized(
     upb_Message* msg, const upb_MiniTableField* f, size_t size,
     upb_Arena* arena);
 
@@ -301,8 +297,10 @@ UPB_API_INLINE const upb_MiniTableField* upb_Message_WhichOneof(
     const upb_MiniTableField* f);
 
 // Updates a map entry given an entry message.
-bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTableField* field,
-                             upb_Message* map_entry_message, upb_Arena* arena);
+UPB_NODISCARD bool upb_Message_SetMapEntry(upb_Map* map,
+                                           const upb_MiniTableField* field,
+                                           upb_Message* map_entry_message,
+                                           upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -311,7 +309,7 @@ bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTableField* field,
 #if defined(__cplusplus)
 // Temporary overloads for functions whose signature has recently changed.
 UPB_DEPRECATE_AND_INLINE()
-inline upb_Message* upb_Message_GetOrCreateMutableMessage(
+UPB_NODISCARD inline upb_Message* upb_Message_GetOrCreateMutableMessage(
     upb_Message* msg, const upb_MiniTable* mini_table,
     const upb_MiniTableField* f, upb_Arena* arena) {
   return upb_Message_GetOrCreateMutableMessage(msg, f, arena);
@@ -326,6 +324,7 @@ inline void upb_Message_SetClosedEnum(upb_Message* msg,
 }
 
 UPB_DEPRECATE_AND_INLINE()
+UPB_NODISCARD
 inline bool upb_Message_SetMapEntry(upb_Map* map,
                                     const upb_MiniTable* mini_table,
                                     const upb_MiniTableField* field,

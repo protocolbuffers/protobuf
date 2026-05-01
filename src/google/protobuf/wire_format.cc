@@ -263,7 +263,6 @@ size_t WireFormat::ComputeUnknownFieldsSize(
   return size;
 }
 
-
 size_t WireFormat::ComputeUnknownMessageSetItemsSize(
     const UnknownFieldSet& unknown_fields) {
   size_t size = 0;

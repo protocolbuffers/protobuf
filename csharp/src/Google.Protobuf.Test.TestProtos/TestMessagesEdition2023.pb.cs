@@ -26,7 +26,7 @@ namespace ProtobufTestMessages.Editions {
           string.Concat(
             "Cjdjb25mb3JtYW5jZS90ZXN0X3Byb3Rvcy90ZXN0X21lc3NhZ2VzX2VkaXRp",
             "b24yMDIzLnByb3RvEh9wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLmVkaXRpb25z",
-            "IhsKDkNvbXBsZXhNZXNzYWdlEgkKAWQYASABKAUi/zYKF1Rlc3RBbGxUeXBl",
+            "IhsKDkNvbXBsZXhNZXNzYWdlEgkKAWQYASABKAUi0jgKF1Rlc3RBbGxUeXBl",
             "c0VkaXRpb24yMDIzEhYKDm9wdGlvbmFsX2ludDMyGAEgASgFEhYKDm9wdGlv",
             "bmFsX2ludDY0GAIgASgDEhcKD29wdGlvbmFsX3VpbnQzMhgDIAEoDRIXCg9v",
             "cHRpb25hbF91aW50NjQYBCABKAQSFwoPb3B0aW9uYWxfc2ludDMyGAUgASgR",
@@ -147,65 +147,71 @@ namespace ProtobufTestMessages.Editions {
             "ZXN0X21lc3NhZ2VzLmVkaXRpb25zLlRlc3RBbGxUeXBlc0VkaXRpb24yMDIz",
             "Lkdyb3VwTGlrZVR5cGUSYAoPZGVsaW1pdGVkX2ZpZWxkGMoBIAEoCzJGLnBy",
             "b3RvYnVmX3Rlc3RfbWVzc2FnZXMuZWRpdGlvbnMuVGVzdEFsbFR5cGVzRWRp",
-            "dGlvbjIwMjMuR3JvdXBMaWtlVHlwZRpwCg1OZXN0ZWRNZXNzYWdlEgkKAWEY",
-            "ASABKAUSVAoLY29yZWN1cnNpdmUYAiABKAsyOC5wcm90b2J1Zl90ZXN0X21l",
-            "c3NhZ2VzLmVkaXRpb25zLlRlc3RBbGxUeXBlc0VkaXRpb24yMDIzQgWqAQIo",
-            "ARo0ChJNYXBJbnQzMkludDMyRW50cnkSCwoDa2V5GAEgASgFEg0KBXZhbHVl",
-            "GAIgASgFOgI4ARo0ChJNYXBJbnQ2NEludDY0RW50cnkSCwoDa2V5GAEgASgD",
-            "Eg0KBXZhbHVlGAIgASgDOgI4ARo2ChRNYXBVaW50MzJVaW50MzJFbnRyeRIL",
-            "CgNrZXkYASABKA0SDQoFdmFsdWUYAiABKA06AjgBGjYKFE1hcFVpbnQ2NFVp",
-            "bnQ2NEVudHJ5EgsKA2tleRgBIAEoBBINCgV2YWx1ZRgCIAEoBDoCOAEaNgoU",
-            "TWFwU2ludDMyU2ludDMyRW50cnkSCwoDa2V5GAEgASgREg0KBXZhbHVlGAIg",
-            "ASgROgI4ARo2ChRNYXBTaW50NjRTaW50NjRFbnRyeRILCgNrZXkYASABKBIS",
-            "DQoFdmFsdWUYAiABKBI6AjgBGjgKFk1hcEZpeGVkMzJGaXhlZDMyRW50cnkS",
-            "CwoDa2V5GAEgASgHEg0KBXZhbHVlGAIgASgHOgI4ARo4ChZNYXBGaXhlZDY0",
-            "Rml4ZWQ2NEVudHJ5EgsKA2tleRgBIAEoBhINCgV2YWx1ZRgCIAEoBjoCOAEa",
-            "OgoYTWFwU2ZpeGVkMzJTZml4ZWQzMkVudHJ5EgsKA2tleRgBIAEoDxINCgV2",
-            "YWx1ZRgCIAEoDzoCOAEaOgoYTWFwU2ZpeGVkNjRTZml4ZWQ2NEVudHJ5EgsK",
-            "A2tleRgBIAEoEBINCgV2YWx1ZRgCIAEoEDoCOAEaNAoSTWFwSW50MzJGbG9h",
-            "dEVudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoAjoCOAEaNQoTTWFw",
-            "SW50MzJEb3VibGVFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAE6",
-            "AjgBGjIKEE1hcEJvb2xCb29sRW50cnkSCwoDa2V5GAEgASgIEg0KBXZhbHVl",
-            "GAIgASgIOgI4ARo2ChRNYXBTdHJpbmdTdHJpbmdFbnRyeRILCgNrZXkYASAB",
-            "KAkSDQoFdmFsdWUYAiABKAk6AjgBGjUKE01hcFN0cmluZ0J5dGVzRW50cnkS",
-            "CwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgMOgI4ARqFAQobTWFwU3RyaW5n",
-            "TmVzdGVkTWVzc2FnZUVudHJ5EgsKA2tleRgBIAEoCRJVCgV2YWx1ZRgCIAEo",
-            "CzJGLnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMuZWRpdGlvbnMuVGVzdEFsbFR5",
-            "cGVzRWRpdGlvbjIwMjMuTmVzdGVkTWVzc2FnZToCOAEaegocTWFwU3RyaW5n",
-            "Rm9yZWlnbk1lc3NhZ2VFbnRyeRILCgNrZXkYASABKAkSSQoFdmFsdWUYAiAB",
-            "KAsyOi5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLmVkaXRpb25zLkZvcmVpZ25N",
-            "ZXNzYWdlRWRpdGlvbjIwMjM6AjgBGn8KGE1hcFN0cmluZ05lc3RlZEVudW1F",
-            "bnRyeRILCgNrZXkYASABKAkSUgoFdmFsdWUYAiABKA4yQy5wcm90b2J1Zl90",
-            "ZXN0X21lc3NhZ2VzLmVkaXRpb25zLlRlc3RBbGxUeXBlc0VkaXRpb24yMDIz",
-            "Lk5lc3RlZEVudW06AjgBGnQKGU1hcFN0cmluZ0ZvcmVpZ25FbnVtRW50cnkS",
-            "CwoDa2V5GAEgASgJEkYKBXZhbHVlGAIgASgOMjcucHJvdG9idWZfdGVzdF9t",
-            "ZXNzYWdlcy5lZGl0aW9ucy5Gb3JlaWduRW51bUVkaXRpb24yMDIzOgI4ARo8",
-            "Cg1Hcm91cExpa2VUeXBlEhQKC2dyb3VwX2ludDMyGMoBIAEoBRIVCgxncm91",
-            "cF91aW50MzIYywEgASgNIjkKCk5lc3RlZEVudW0SBwoDRk9PEAASBwoDQkFS",
-            "EAESBwoDQkFaEAISEAoDTkVHEP///////////wEqBQh4EMkBQg0KC29uZW9m",
-            "X2ZpZWxkIiYKGUZvcmVpZ25NZXNzYWdlRWRpdGlvbjIwMjMSCQoBYxgBIAEo",
-            "BSIaCg1Hcm91cExpa2VUeXBlEgkKAWMYASABKAUqSwoWRm9yZWlnbkVudW1F",
-            "ZGl0aW9uMjAyMxIPCgtGT1JFSUdOX0ZPTxAAEg8KC0ZPUkVJR05fQkFSEAES",
-            "DwoLRk9SRUlHTl9CQVoQAjpRCg9leHRlbnNpb25faW50MzISOC5wcm90b2J1",
-            "Zl90ZXN0X21lc3NhZ2VzLmVkaXRpb25zLlRlc3RBbGxUeXBlc0VkaXRpb24y",
-            "MDIzGHggASgFOlMKEGV4dGVuc2lvbl9zdHJpbmcSOC5wcm90b2J1Zl90ZXN0",
-            "X21lc3NhZ2VzLmVkaXRpb25zLlRlc3RBbGxUeXBlc0VkaXRpb24yMDIzGIUB",
-            "IAEoCTpSCg9leHRlbnNpb25fYnl0ZXMSOC5wcm90b2J1Zl90ZXN0X21lc3Nh",
-            "Z2VzLmVkaXRpb25zLlRlc3RBbGxUeXBlc0VkaXRpb24yMDIzGIYBIAEoDDp/",
-            "Cg1ncm91cGxpa2V0eXBlEjgucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0",
-            "aW9ucy5UZXN0QWxsVHlwZXNFZGl0aW9uMjAyMxh5IAEoCzIuLnByb3RvYnVm",
-            "X3Rlc3RfbWVzc2FnZXMuZWRpdGlvbnMuR3JvdXBMaWtlVHlwZTp/Cg1kZWxp",
-            "bWl0ZWRfZXh0EjgucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0aW9ucy5U",
-            "ZXN0QWxsVHlwZXNFZGl0aW9uMjAyMxh6IAEoCzIuLnByb3RvYnVmX3Rlc3Rf",
-            "bWVzc2FnZXMuZWRpdGlvbnMuR3JvdXBMaWtlVHlwZUJBCi1jb20uZ29vZ2xl",
-            "LnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMuZWRpdGlvbjIwMjNQAaICCEVkaXRp",
-            "b25zkgMCKAJiCGVkaXRpb25zcOgH"));
+            "dGlvbjIwMjMuR3JvdXBMaWtlVHlwZRJiCg1tYXBfcmVjdXJzaXZlGK0CIAMo",
+            "CzJKLnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMuZWRpdGlvbnMuVGVzdEFsbFR5",
+            "cGVzRWRpdGlvbjIwMjMuTWFwUmVjdXJzaXZlRW50cnkacAoNTmVzdGVkTWVz",
+            "c2FnZRIJCgFhGAEgASgFElQKC2NvcmVjdXJzaXZlGAIgASgLMjgucHJvdG9i",
+            "dWZfdGVzdF9tZXNzYWdlcy5lZGl0aW9ucy5UZXN0QWxsVHlwZXNFZGl0aW9u",
+            "MjAyM0IFqgECKAEaNAoSTWFwSW50MzJJbnQzMkVudHJ5EgsKA2tleRgBIAEo",
+            "BRINCgV2YWx1ZRgCIAEoBToCOAEaNAoSTWFwSW50NjRJbnQ2NEVudHJ5EgsK",
+            "A2tleRgBIAEoAxINCgV2YWx1ZRgCIAEoAzoCOAEaNgoUTWFwVWludDMyVWlu",
+            "dDMyRW50cnkSCwoDa2V5GAEgASgNEg0KBXZhbHVlGAIgASgNOgI4ARo2ChRN",
+            "YXBVaW50NjRVaW50NjRFbnRyeRILCgNrZXkYASABKAQSDQoFdmFsdWUYAiAB",
+            "KAQ6AjgBGjYKFE1hcFNpbnQzMlNpbnQzMkVudHJ5EgsKA2tleRgBIAEoERIN",
+            "CgV2YWx1ZRgCIAEoEToCOAEaNgoUTWFwU2ludDY0U2ludDY0RW50cnkSCwoD",
+            "a2V5GAEgASgSEg0KBXZhbHVlGAIgASgSOgI4ARo4ChZNYXBGaXhlZDMyRml4",
+            "ZWQzMkVudHJ5EgsKA2tleRgBIAEoBxINCgV2YWx1ZRgCIAEoBzoCOAEaOAoW",
+            "TWFwRml4ZWQ2NEZpeGVkNjRFbnRyeRILCgNrZXkYASABKAYSDQoFdmFsdWUY",
+            "AiABKAY6AjgBGjoKGE1hcFNmaXhlZDMyU2ZpeGVkMzJFbnRyeRILCgNrZXkY",
+            "ASABKA8SDQoFdmFsdWUYAiABKA86AjgBGjoKGE1hcFNmaXhlZDY0U2ZpeGVk",
+            "NjRFbnRyeRILCgNrZXkYASABKBASDQoFdmFsdWUYAiABKBA6AjgBGjQKEk1h",
+            "cEludDMyRmxvYXRFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAI6",
+            "AjgBGjUKE01hcEludDMyRG91YmxlRW50cnkSCwoDa2V5GAEgASgFEg0KBXZh",
+            "bHVlGAIgASgBOgI4ARoyChBNYXBCb29sQm9vbEVudHJ5EgsKA2tleRgBIAEo",
+            "CBINCgV2YWx1ZRgCIAEoCDoCOAEaNgoUTWFwU3RyaW5nU3RyaW5nRW50cnkS",
+            "CwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ARo1ChNNYXBTdHJpbmdC",
+            "eXRlc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoDDoCOAEahQEK",
+            "G01hcFN0cmluZ05lc3RlZE1lc3NhZ2VFbnRyeRILCgNrZXkYASABKAkSVQoF",
+            "dmFsdWUYAiABKAsyRi5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLmVkaXRpb25z",
+            "LlRlc3RBbGxUeXBlc0VkaXRpb24yMDIzLk5lc3RlZE1lc3NhZ2U6AjgBGnoK",
+            "HE1hcFN0cmluZ0ZvcmVpZ25NZXNzYWdlRW50cnkSCwoDa2V5GAEgASgJEkkK",
+            "BXZhbHVlGAIgASgLMjoucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0aW9u",
+            "cy5Gb3JlaWduTWVzc2FnZUVkaXRpb24yMDIzOgI4ARp/ChhNYXBTdHJpbmdO",
+            "ZXN0ZWRFbnVtRW50cnkSCwoDa2V5GAEgASgJElIKBXZhbHVlGAIgASgOMkMu",
+            "cHJvdG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0aW9ucy5UZXN0QWxsVHlwZXNF",
+            "ZGl0aW9uMjAyMy5OZXN0ZWRFbnVtOgI4ARp0ChlNYXBTdHJpbmdGb3JlaWdu",
+            "RW51bUVudHJ5EgsKA2tleRgBIAEoCRJGCgV2YWx1ZRgCIAEoDjI3LnByb3Rv",
+            "YnVmX3Rlc3RfbWVzc2FnZXMuZWRpdGlvbnMuRm9yZWlnbkVudW1FZGl0aW9u",
+            "MjAyMzoCOAEaPAoNR3JvdXBMaWtlVHlwZRIUCgtncm91cF9pbnQzMhjKASAB",
+            "KAUSFQoMZ3JvdXBfdWludDMyGMsBIAEoDRptChFNYXBSZWN1cnNpdmVFbnRy",
+            "eRILCgNrZXkYASABKAUSRwoFdmFsdWUYAiABKAsyOC5wcm90b2J1Zl90ZXN0",
+            "X21lc3NhZ2VzLmVkaXRpb25zLlRlc3RBbGxUeXBlc0VkaXRpb24yMDIzOgI4",
+            "ASI5CgpOZXN0ZWRFbnVtEgcKA0ZPTxAAEgcKA0JBUhABEgcKA0JBWhACEhAK",
+            "A05FRxD///////////8BKgUIeBDJAUINCgtvbmVvZl9maWVsZCImChlGb3Jl",
+            "aWduTWVzc2FnZUVkaXRpb24yMDIzEgkKAWMYASABKAUiGgoNR3JvdXBMaWtl",
+            "VHlwZRIJCgFjGAEgASgFKksKFkZvcmVpZ25FbnVtRWRpdGlvbjIwMjMSDwoL",
+            "Rk9SRUlHTl9GT08QABIPCgtGT1JFSUdOX0JBUhABEg8KC0ZPUkVJR05fQkFa",
+            "EAI6UQoPZXh0ZW5zaW9uX2ludDMyEjgucHJvdG9idWZfdGVzdF9tZXNzYWdl",
+            "cy5lZGl0aW9ucy5UZXN0QWxsVHlwZXNFZGl0aW9uMjAyMxh4IAEoBTpTChBl",
+            "eHRlbnNpb25fc3RyaW5nEjgucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0",
+            "aW9ucy5UZXN0QWxsVHlwZXNFZGl0aW9uMjAyMxiFASABKAk6UgoPZXh0ZW5z",
+            "aW9uX2J5dGVzEjgucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0aW9ucy5U",
+            "ZXN0QWxsVHlwZXNFZGl0aW9uMjAyMxiGASABKAw6fwoNZ3JvdXBsaWtldHlw",
+            "ZRI4LnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMuZWRpdGlvbnMuVGVzdEFsbFR5",
+            "cGVzRWRpdGlvbjIwMjMYeSABKAsyLi5wcm90b2J1Zl90ZXN0X21lc3NhZ2Vz",
+            "LmVkaXRpb25zLkdyb3VwTGlrZVR5cGU6fwoNZGVsaW1pdGVkX2V4dBI4LnBy",
+            "b3RvYnVmX3Rlc3RfbWVzc2FnZXMuZWRpdGlvbnMuVGVzdEFsbFR5cGVzRWRp",
+            "dGlvbjIwMjMYeiABKAsyLi5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLmVkaXRp",
+            "b25zLkdyb3VwTGlrZVR5cGVCQQotY29tLmdvb2dsZS5wcm90b2J1Zl90ZXN0",
+            "X21lc3NhZ2VzLmVkaXRpb24yMDIzUAGiAghFZGl0aW9uc5IDAigCYghlZGl0",
+            "aW9uc3DoBw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Editions.ForeignEnumEdition2023), }, new pb::Extension[] { TestMessagesEdition2023Extensions.ExtensionInt32, TestMessagesEdition2023Extensions.ExtensionString, TestMessagesEdition2023Extensions.ExtensionBytes, TestMessagesEdition2023Extensions.GroupLikeType, TestMessagesEdition2023Extensions.DelimitedExt }, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Editions.ComplexMessage), global::ProtobufTestMessages.Editions.ComplexMessage.Parser, new[]{ "D" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Editions.TestAllTypesEdition2023), global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Parser, new[]{ "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalNestedMessage", "OptionalForeignMessage", "OptionalNestedEnum", "OptionalForeignEnum", "OptionalStringPiece", "OptionalCord", "RecursiveMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedStringPiece", "RepeatedCord", "PackedInt32", "PackedInt64", "PackedUint32", "PackedUint64", "PackedSint32", "PackedSint64", "PackedFixed32", "PackedFixed64", "PackedSfixed32", "PackedSfixed64", "PackedFloat", "PackedDouble", "PackedBool", "PackedNestedEnum", "UnpackedInt32", "UnpackedInt64", "UnpackedUint32", "UnpackedUint64", "UnpackedSint32", "UnpackedSint64", "UnpackedFixed32", "UnpackedFixed64", "UnpackedSfixed32", "UnpackedSfixed64", "UnpackedFloat", "UnpackedDouble", "UnpackedBool", "UnpackedNestedEnum", "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapStringString", "MapStringBytes", "MapStringNestedMessage", "MapStringForeignMessage", "MapStringNestedEnum", "MapStringForeignEnum", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes", "OneofBool", "OneofUint64", "OneofFloat", "OneofDouble", "OneofEnum", "GroupLikeType", "DelimitedField" }, new[]{ "OneofField" }, new[]{ typeof(global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Types.NestedEnum) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Types.NestedMessage), global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Types.NestedMessage.Parser, new[]{ "A", "Corecursive" }, null, null, null, null),
-            null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Types.GroupLikeType), global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Types.GroupLikeType.Parser, new[]{ "GroupInt32", "GroupUint32" }, null, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Editions.TestAllTypesEdition2023), global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Parser, new[]{ "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalNestedMessage", "OptionalForeignMessage", "OptionalNestedEnum", "OptionalForeignEnum", "OptionalStringPiece", "OptionalCord", "RecursiveMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedStringPiece", "RepeatedCord", "PackedInt32", "PackedInt64", "PackedUint32", "PackedUint64", "PackedSint32", "PackedSint64", "PackedFixed32", "PackedFixed64", "PackedSfixed32", "PackedSfixed64", "PackedFloat", "PackedDouble", "PackedBool", "PackedNestedEnum", "UnpackedInt32", "UnpackedInt64", "UnpackedUint32", "UnpackedUint64", "UnpackedSint32", "UnpackedSint64", "UnpackedFixed32", "UnpackedFixed64", "UnpackedSfixed32", "UnpackedSfixed64", "UnpackedFloat", "UnpackedDouble", "UnpackedBool", "UnpackedNestedEnum", "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapStringString", "MapStringBytes", "MapStringNestedMessage", "MapStringForeignMessage", "MapStringNestedEnum", "MapStringForeignEnum", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes", "OneofBool", "OneofUint64", "OneofFloat", "OneofDouble", "OneofEnum", "GroupLikeType", "DelimitedField", "MapRecursive" }, new[]{ "OneofField" }, new[]{ typeof(global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Types.NestedEnum) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Types.NestedMessage), global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Types.NestedMessage.Parser, new[]{ "A", "Corecursive" }, null, null, null, null),
+            null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Types.GroupLikeType), global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Types.GroupLikeType.Parser, new[]{ "GroupInt32", "GroupUint32" }, null, null, null, null),
+            null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Editions.ForeignMessageEdition2023), global::ProtobufTestMessages.Editions.ForeignMessageEdition2023.Parser, new[]{ "C" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Editions.GroupLikeType), global::ProtobufTestMessages.Editions.GroupLikeType.Parser, new[]{ "C" }, null, null, null, null)
           }));
@@ -583,6 +589,7 @@ namespace ProtobufTestMessages.Editions {
       mapStringForeignEnum_ = other.mapStringForeignEnum_.Clone();
       groupLikeType_ = other.HasGroupLikeType ? other.groupLikeType_.Clone() : null;
       delimitedField_ = other.HasDelimitedField ? other.delimitedField_.Clone() : null;
+      mapRecursive_ = other.mapRecursive_.Clone();
       switch (other.OneofFieldCase) {
         case OneofFieldOneofCase.OneofUint32:
           OneofUint32 = other.OneofUint32;
@@ -2199,6 +2206,20 @@ namespace ProtobufTestMessages.Editions {
       delimitedField_ = null;
     }
 
+    /// <summary>Field number for the "map_recursive" field.</summary>
+    public const int MapRecursiveFieldNumber = 301;
+    private static readonly pbc::MapField<int, global::ProtobufTestMessages.Editions.TestAllTypesEdition2023>.Codec _map_mapRecursive_codec
+        = new pbc::MapField<int, global::ProtobufTestMessages.Editions.TestAllTypesEdition2023>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForMessage(18, global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Parser), 2410);
+    private readonly pbc::MapField<int, global::ProtobufTestMessages.Editions.TestAllTypesEdition2023> mapRecursive_ = new pbc::MapField<int, global::ProtobufTestMessages.Editions.TestAllTypesEdition2023>();
+    /// <summary>
+    /// recursive
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public pbc::MapField<int, global::ProtobufTestMessages.Editions.TestAllTypesEdition2023> MapRecursive {
+      get { return mapRecursive_; }
+    }
+
     private object oneofField_;
     /// <summary>Enum of possible cases for the "oneof_field" oneof.</summary>
     public enum OneofFieldOneofCase {
@@ -2343,6 +2364,7 @@ namespace ProtobufTestMessages.Editions {
       if (OneofEnum != other.OneofEnum) return false;
       if (!object.Equals(GroupLikeType, other.GroupLikeType)) return false;
       if (!object.Equals(DelimitedField, other.DelimitedField)) return false;
+      if (!MapRecursive.Equals(other.MapRecursive)) return false;
       if (OneofFieldCase != other.OneofFieldCase) return false;
       if (!Equals(_extensions, other._extensions)) {
         return false;
@@ -2455,6 +2477,7 @@ namespace ProtobufTestMessages.Editions {
       if (HasOneofEnum) hash ^= OneofEnum.GetHashCode();
       if (HasGroupLikeType) hash ^= GroupLikeType.GetHashCode();
       if (HasDelimitedField) hash ^= DelimitedField.GetHashCode();
+      hash ^= MapRecursive.GetHashCode();
       hash ^= (int) oneofFieldCase_;
       if (_extensions != null) {
         hash ^= _extensions.GetHashCode();
@@ -2679,6 +2702,7 @@ namespace ProtobufTestMessages.Editions {
         output.WriteGroup(DelimitedField);
         output.WriteRawTag(212, 12);
       }
+      mapRecursive_.WriteTo(output, _map_mapRecursive_codec);
       if (_extensions != null) {
         _extensions.WriteTo(output);
       }
@@ -2894,6 +2918,7 @@ namespace ProtobufTestMessages.Editions {
         output.WriteGroup(DelimitedField);
         output.WriteRawTag(212, 12);
       }
+      mapRecursive_.WriteTo(ref output, _map_mapRecursive_codec);
       if (_extensions != null) {
         _extensions.WriteTo(ref output);
       }
@@ -3074,6 +3099,7 @@ namespace ProtobufTestMessages.Editions {
       if (HasDelimitedField) {
         size += 4 + pb::CodedOutputStream.ComputeGroupSize(DelimitedField);
       }
+      size += mapRecursive_.CalculateSize(_map_mapRecursive_codec);
       if (_extensions != null) {
         size += _extensions.CalculateSize();
       }
@@ -3244,6 +3270,7 @@ namespace ProtobufTestMessages.Editions {
         }
         DelimitedField.MergeFrom(other.DelimitedField);
       }
+      mapRecursive_.MergeFrom(other.mapRecursive_);
       switch (other.OneofFieldCase) {
         case OneofFieldOneofCase.OneofUint32:
           OneofUint32 = other.OneofUint32;
@@ -3767,6 +3794,10 @@ namespace ProtobufTestMessages.Editions {
             input.ReadGroup(DelimitedField);
             break;
           }
+          case 2410: {
+            mapRecursive_.AddEntriesFrom(input, _map_mapRecursive_codec);
+            break;
+          }
         }
       }
     #endif
@@ -4254,6 +4285,10 @@ namespace ProtobufTestMessages.Editions {
               DelimitedField = new global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Types.GroupLikeType();
             }
             input.ReadGroup(DelimitedField);
+            break;
+          }
+          case 2410: {
+            mapRecursive_.AddEntriesFrom(ref input, _map_mapRecursive_codec);
             break;
           }
         }

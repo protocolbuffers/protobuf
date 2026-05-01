@@ -8,6 +8,7 @@
 """Common copts for building upb."""
 
 visibility([
+    "//benchmarks/...",
     "//lua/...",
     "//python/...",
     "//upb/...",

@@ -421,8 +421,11 @@ public final class UnknownFieldSetLite {
         storeField(tag, input.readBytes());
         return true;
       case WireFormat.WIRETYPE_START_GROUP:
+        input.checkRecursionLimit();
+        input.groupDepth++;
         final UnknownFieldSetLite subFieldSet = new UnknownFieldSetLite();
         subFieldSet.mergeFrom(input);
+        input.groupDepth--;
         input.checkLastTagWas(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
         storeField(tag, subFieldSet);
         return true;

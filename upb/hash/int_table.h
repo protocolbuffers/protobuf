@@ -38,7 +38,7 @@ extern "C" {
 
 // Initialize a table. If memory allocation failed, false is returned and
 // the table is uninitialized.
-bool upb_inttable_init(upb_inttable* table, upb_Arena* a);
+UPB_NODISCARD bool upb_inttable_init(upb_inttable* table, upb_Arena* a);
 
 // Returns the number of values in the table.
 size_t upb_inttable_count(const upb_inttable* t);
@@ -49,8 +49,8 @@ size_t upb_inttable_count(const upb_inttable* t);
 //
 // If a table resize was required but memory allocation failed, false is
 // returned and the table is unchanged.
-bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
-                         upb_Arena* a);
+UPB_NODISCARD bool upb_inttable_insert(upb_inttable* t, uintptr_t key,
+                                       upb_value val, upb_Arena* a);
 
 // Looks up key in this table, returning "true" if the key was found.
 // If v is non-NULL, copies the value for this key into *v.
@@ -69,7 +69,7 @@ bool upb_inttable_replace(upb_inttable* t, uintptr_t key, upb_value val);
 // lookup time. Client should call this after all entries have been inserted;
 // inserting more entries is legal, but will likely require a table resize.
 // Returns false if reallocation fails.
-bool upb_inttable_compact(upb_inttable* t, upb_Arena* a);
+UPB_NODISCARD bool upb_inttable_compact(upb_inttable* t, upb_Arena* a);
 
 // Clears the table.
 void upb_inttable_clear(upb_inttable* t);

@@ -16,4 +16,3 @@
 #endif
 
 #include "google/protobuf/test_util.h"
-

@@ -748,10 +748,18 @@ class PROTOBUF_EXPORT TcParser final {
     return *target;
   }
 
-  static const TcParseTableBase* GetTableFromAux(
+  struct TableAndClassData {
+    const TcParseTableBase* table;
+    const ClassData* class_data;
+  };
+
+  template <bool kIsTable>
+  static TableAndClassData GetTableAndClassDataFromAux(
+      TcParseTableBase::FieldAux aux);
+  static TableAndClassData GetTableAndClassDataFromAux(
       uint16_t type_card, TcParseTableBase::FieldAux aux);
-  static MessageLite* NewMessage(const TcParseTableBase* table, Arena* arena);
-  static MessageLite* AddMessage(const TcParseTableBase* table,
+  static MessageLite* NewMessage(const ClassData* class_data, Arena* arena);
+  static MessageLite* AddMessage(const ClassData* class_data,
                                  RepeatedPtrFieldBase& field, Arena* arena);
 
   template <typename T>
@@ -1073,11 +1081,11 @@ class PROTOBUF_EXPORT TcParser final {
   static int FieldNumber(const TcParseTableBase* table,
                          const TcParseTableBase::FieldEntry*);
   static void InitOneof(const TcParseTableBase* table,
-                        const TcParseTableBase* inner_table,
+                        const ClassData* class_data,
                         const TcParseTableBase::FieldEntry& entry,
                         MessageLite* msg);
   static void ChangeOneof(const TcParseTableBase* table,
-                          const TcParseTableBase* inner_table,
+                          const ClassData* class_data,
                           const TcParseTableBase::FieldEntry& entry,
                           uint32_t field_num, ParseContext* ctx,
                           MessageLite* msg);

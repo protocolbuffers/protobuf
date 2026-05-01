@@ -4,41 +4,44 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
+"""Contains _ExtensionDict class to represent extensions."""
 
-"""Contains _ExtensionDict class to represent extensions.
-"""
-
-from google.protobuf.internal import type_checkers
 from google.protobuf.descriptor import FieldDescriptor
+from google.protobuf.internal import type_checkers
 
 
 def _VerifyExtensionHandle(message, extension_handle):
   """Verify that the given extension handle is valid."""
 
   if not isinstance(extension_handle, FieldDescriptor):
-    raise KeyError('HasExtension() expects an extension handle, got: %s' %
-                   extension_handle)
+    raise KeyError(
+        'HasExtension() expects an extension handle, got: %s' % extension_handle
+    )
 
   if not extension_handle.is_extension:
     raise KeyError('"%s" is not an extension.' % extension_handle.full_name)
 
   if not extension_handle.containing_type:
-    raise KeyError('"%s" is missing a containing_type.'
-                   % extension_handle.full_name)
+    raise KeyError(
+        '"%s" is missing a containing_type.' % extension_handle.full_name
+    )
 
   if extension_handle.containing_type is not message.DESCRIPTOR:
-    raise KeyError('Extension "%s" extends message type "%s", but this '
-                   'message is of type "%s".' %
-                   (extension_handle.full_name,
-                    extension_handle.containing_type.full_name,
-                    message.DESCRIPTOR.full_name))
+    raise KeyError(
+        'Extension "%s" extends message type "%s", but this '
+        'message is of type "%s".'
+        % (
+            extension_handle.full_name,
+            extension_handle.containing_type.full_name,
+            message.DESCRIPTOR.full_name,
+        )
+    )
 
 
 # TODO: Unify error handling of "unknown extension" crap.
 # TODO: Support iteritems()-style iteration over all
 # extensions with the "has" bits turned on?
 class _ExtensionDict(object):
-
   """Dict-like container for Extension fields on proto instances.
 
   Note that in all cases we expect extension handles to be
@@ -46,9 +49,9 @@ class _ExtensionDict(object):
   """
 
   def __init__(self, extended_message):
-    """
-    Args:
-      extended_message: Message instance for which we are the Extensions dict.
+    """Args:
+
+    extended_message: Message instance for which we are the Extensions dict.
     """
     self._extended_message = extended_message
 
@@ -68,9 +71,11 @@ class _ExtensionDict(object):
       if not hasattr(message_type, '_concrete_class'):
         # pylint: disable=g-import-not-at-top
         from google.protobuf import message_factory
+
         message_factory.GetMessageClass(message_type)
       if not hasattr(extension_handle.message_type, '_concrete_class'):
         from google.protobuf import message_factory
+
         message_factory.GetMessageClass(extension_handle.message_type)
       result = extension_handle.message_type._concrete_class()
       try:
@@ -88,8 +93,7 @@ class _ExtensionDict(object):
     # WARNING:  We are relying on setdefault() being atomic.  This is true
     #   in CPython but we haven't investigated others.  This warning appears
     #   in several other locations in this file.
-    result = self._extended_message._fields.setdefault(
-        extension_handle, result)
+    result = self._extended_message._fields.setdefault(extension_handle, result)
 
     return result
 
@@ -124,23 +128,29 @@ class _ExtensionDict(object):
   # ancestors of the extended message.
   def __setitem__(self, extension_handle, value):
     """If extension_handle specifies a non-repeated, scalar extension
+
     field, sets the value of that field.
     """
 
     _VerifyExtensionHandle(self._extended_message, extension_handle)
 
-    if (extension_handle.is_repeated or
-        extension_handle.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE):
+    if (
+        extension_handle.is_repeated
+        or extension_handle.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE
+    ):
       raise TypeError(
           'Cannot assign to extension "%s" because it is a repeated or '
-          'composite type.' % extension_handle.full_name)
+          'composite type.'
+          % extension_handle.full_name
+      )
 
     # It's slightly wasteful to lookup the type checker each time,
     # but we expect this to be a vanishingly uncommon case anyway.
     type_checker = type_checkers.GetTypeChecker(extension_handle)
     # pylint: disable=protected-access
-    self._extended_message._fields[extension_handle] = (
-        type_checker.CheckValue(value))
+    self._extended_message._fields[extension_handle] = type_checker.CheckValue(
+        value
+    )
     self._extended_message._Modified()
 
   def __delitem__(self, extension_handle):
@@ -174,8 +184,9 @@ class _ExtensionDict(object):
 
   def __iter__(self):
     # Return a generator over the populated extension fields
-    return (f[0] for f in self._extended_message.ListFields()
-            if f[0].is_extension)
+    return (
+        f[0] for f in self._extended_message.ListFields() if f[0].is_extension
+    )
 
   def __contains__(self, extension_handle):
     _VerifyExtensionHandle(self._extended_message, extension_handle)

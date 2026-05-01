@@ -583,6 +583,22 @@ class GPBUtil
             $fields = explode('.', $path);
             $converted_path = [];
             foreach ($fields as $field) {
+                if (preg_match('/[A-Z]/', $field)) {
+                    trigger_error(
+                        "Field mask element may not have upper-case letter. " .
+                        "This will fail in a future version of Protobuf.",
+                        E_USER_WARNING
+                    );
+                }
+                if (preg_match('/_([^a-z]|$)/', $field)) {
+                    trigger_error(
+                        "Underscore in FieldMask path must be followed by a " .
+                        "lowercase letter to successfully round trip through JSON format. " .
+                        "See https://github.com/protocolbuffers/protobuf/issues/25786. " .
+                        "This will fail in a future version of Protobuf.",
+                        E_USER_WARNING
+                    );
+                }
                 $segments = explode('_', $field);
                 $start = true;
                 $converted_segments = "";

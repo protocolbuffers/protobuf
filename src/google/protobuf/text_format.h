@@ -97,9 +97,19 @@ class UnsetFieldsMetadataTextFormatTestUtil;
 class UnsetFieldsMetadataMessageDifferencerTestUtil;
 }  // namespace internal
 
-// This class implements protocol buffer text format, colloquially known as text
-// proto.  Printing and parsing protocol messages in text format is useful for
-// debugging and human editing of messages.
+// This class implements the Protobuf Text Format.
+//
+// Printing and parsing messages in Text Format is useful for debugging and
+// human editing of messages.
+//
+// Unlike the Binary and ProtoJSON formats, Text Format is not designed to be
+// used as a wire format; instead it is intended for human-in-the-loop
+// configuration use-cases. It does not enforce a depth limit on parse time by
+// default.
+//
+// Systems processing untrusted inputs should strongly prefer to use
+// Binary format instead. If a textual format of untrusted inputs is required,
+// consider using ProtoJSON format instead.
 //
 // This class is really a namespace that contains only static methods.
 class PROTOBUF_EXPORT TextFormat {
@@ -800,8 +810,14 @@ class PROTOBUF_EXPORT TextFormat {
 
     void AllowFieldNumber(bool allow) { allow_field_number_ = allow; }
 
-    // Sets maximum recursion depth which parser can use. This is effectively
-    // the maximum allowed nesting of proto messages.
+    // Sets maximum recursion depth which parser can use.
+    //
+    // Note: The default recursion limit is unlimited. Because
+    // Text Format is typically used on trusted inputs, and to maintain
+    // backwards compatibility, no depth limit is enforced by default.
+    // For better consistency with what messages will successfully round trip
+    // through binary wire format, or for the discouraged case of processing
+    // untrusted Text Format inputs, setting a limit of 100 is recommended.
     void SetRecursionLimit(int limit) { recursion_limit_ = limit; }
 
     // Metadata representing all the fields that were explicitly unset in

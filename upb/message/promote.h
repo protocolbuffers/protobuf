@@ -43,7 +43,7 @@ typedef enum {
 //
 // TODO: Only supports extension fields that are messages,
 // expand support to include non-message types.
-upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
+UPB_NODISCARD upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext_table,
     int decode_options, upb_Arena* arena, upb_MessageValue* value);
 
@@ -90,7 +90,7 @@ const char* upb_FindUnknownStatus_String(upb_FindUnknown_Status status);
 // using upb_Message_SetMessage.
 //
 // WARNING!: See b/267655898
-upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
+UPB_NODISCARD upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
     upb_Message* msg, const upb_MiniTable* mini_table,
     const upb_MiniTableField* field, const upb_MiniTable* sub_mini_table,
     int decode_options, upb_Arena* arena);
@@ -101,16 +101,19 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
 // The unknown data is removed from message after upb_Array is populated.
 // Since repeated messages can't be packed we remove each unknown that
 // contains the target tag id.
-upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
-    upb_Message* msg, const upb_MiniTableField* field,
-    const upb_MiniTable* mini_table, int decode_options, upb_Arena* arena);
+UPB_NODISCARD upb_UnknownToMessage_Status
+upb_MiniTable_PromoteUnknownToMessageArray(upb_Message* msg,
+                                           const upb_MiniTableField* field,
+                                           const upb_MiniTable* mini_table,
+                                           int decode_options,
+                                           upb_Arena* arena);
 
 // Promotes all unknown data that matches field tag id to upb_Map.
 //
 // The unknown data is removed from message after upb_Map is populated.
 // Since repeated messages can't be packed we remove each unknown that
 // contains the target tag id.
-upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
+UPB_NODISCARD upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
     upb_Message* msg, const upb_MiniTable* mini_table,
     const upb_MiniTableField* field, int decode_options, upb_Arena* arena);
 

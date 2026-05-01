@@ -21,4 +21,5 @@
 #include "upb/mini_descriptor/decode.h"  // IWYU pragma: keep
 #include "upb/mini_table/message.h"      // IWYU pragma: keep
 #include "upb/text/debug_string.h"       // IWYU pragma: keep
+#include "upb/wire/byte_size.h"          // IWYU pragma: keep
 // go/keep-sorted end
