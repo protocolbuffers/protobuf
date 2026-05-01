@@ -1,3 +1,6 @@
+load("@build_bazel_apple_support//xcode:xcode_config.bzl", "xcode_config")
+load("@build_bazel_apple_support//xcode:xcode_version.bzl", "xcode_version")
+
 # This information is extracted from the MacOS runner specs located at:
 # https://github.com/actions/runner-images/blob/main/images/macos/macos-14-arm64-Readme.md
 #

@@ -224,7 +224,19 @@ struct Bytes {
   }
 };
 
-// TODO: Message, Group, ClosedEnum
+struct Message {
+  using Value = std::string;
+  inline static constexpr upb_FieldType kFieldType = kUpb_FieldType_Message;
+  inline static constexpr absl::string_view kName = "Message";
+  inline static constexpr upb_DecodeFast_Type kFastType =
+      kUpb_DecodeFast_Message;
+
+  static wire_types::WireValue WireValue(std::string value) {
+    return wire_types::Delimited(value);
+  }
+};
+
+// TODO: Group, ClosedEnum
 
 }  // namespace field_types
 

@@ -141,6 +141,7 @@ def _run_osgi_wrapper(ctx, input_jar, output_jar):
     ctx.actions.run(
         inputs = [input_jar],
         executable = ctx.executable._osgi_wrapper_exe,
+        mnemonic = "ProtobufOsgiKotlinGen",
         arguments = [args],
         outputs = [output_jar],
         progress_message = "Generating OSGi bundle Manifest for %s" % input_jar.path,

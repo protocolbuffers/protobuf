@@ -35,7 +35,7 @@ class GeneratedPhpdocTest extends TestBase
         );
     }
 
-    public function providePhpDocForEnum()
+    public static function providePhpDocForEnum()
     {
         return [
             ['getOptionalEnum', '\Foo\TestEnum'],
@@ -69,7 +69,7 @@ class GeneratedPhpdocTest extends TestBase
         }
     }
 
-    public function providePhpDocForGettersAndSetters()
+    public static function providePhpDocForGettersAndSetters()
     {
         return [
             [

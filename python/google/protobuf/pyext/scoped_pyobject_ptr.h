@@ -28,6 +28,19 @@ class ScopedPythonPtr {
   ScopedPythonPtr(const ScopedPythonPtr&) = delete;
   ScopedPythonPtr& operator=(const ScopedPythonPtr&) = delete;
 
+  ScopedPythonPtr(ScopedPythonPtr&& other) noexcept : ptr_(other.ptr_) {
+    other.ptr_ = nullptr;
+  }
+
+  ScopedPythonPtr& operator=(ScopedPythonPtr&& other) noexcept {
+    if (this != &other) {
+      Py_XDECREF(ptr_);
+      ptr_ = other.ptr_;
+      other.ptr_ = nullptr;
+    }
+    return *this;
+  }
+
   // If a PyObject is owned, decrement its reference count.
   ~ScopedPythonPtr() { Py_XDECREF(ptr_); }
 

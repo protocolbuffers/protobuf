@@ -139,6 +139,36 @@ class EnumeratedEnumView {
   const Desc* PROTOBUF_NONNULL desc_ = GetEnumDescriptor<Enum>();
 };
 
+// Runtime implementation for Abseil flag support for enums.
+[[nodiscard]] PROTOBUF_EXPORT bool AbslParseFlagImpl(absl::string_view text,
+                                                     int& e,
+                                                     const EnumDescriptor& desc,
+                                                     std::string& error);
+[[nodiscard]] PROTOBUF_EXPORT std::string AbslUnparseFlagImpl(
+    int e, const EnumDescriptor& desc);
+
+namespace generated_enum {
+// We inject these functions in the user namespace to allow for ADL on the
+// enums.
+// These overloads handle reflection based enums.
+template <typename Enum, typename = EnableIfProtoEnum<Enum, false>>
+bool AbslParseFlag(absl::string_view text, Enum* PROTOBUF_NONNULL e,
+                   std::string* PROTOBUF_NONNULL error) {
+  int value;
+  if (internal::AbslParseFlagImpl(text, value, *GetEnumDescriptor<Enum>(),
+                                  *error)) {
+    *e = static_cast<Enum>(value);
+    return true;
+  }
+  return false;
+}
+
+template <typename Enum, typename = EnableIfProtoEnum<Enum, false>>
+std::string AbslUnparseFlag(Enum e) {
+  return internal::AbslUnparseFlagImpl(e, *GetEnumDescriptor<Enum>());
+}
+}  // namespace generated_enum
+
 }  // namespace internal
 
 // Returns an iterable object that will yield all the enum labels for `Enum` in

@@ -58,6 +58,7 @@ cc_library(
         "//upb/mini_descriptor",
         "//upb/mini_table",
         "//upb/text:debug",
+        "//upb/wire:byte_size",
     ],
 )
 

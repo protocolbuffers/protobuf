@@ -19,6 +19,7 @@
 #include "absl/strings/string_view.h"
 #include "hpb_generator/context.h"
 #include "hpb_generator/gen_utils.h"
+#include "hpb_generator/keywords.h"
 #include "hpb_generator/names.h"
 #include "google/protobuf/descriptor.h"
 
@@ -66,7 +67,7 @@ std::string EnumTypeName(const google::protobuf::EnumDescriptor* enum_descriptor
       return absl::StrCat(kNoPackageNamePrefix,
                           ToCIdent(enum_descriptor->name()));
     }
-    return ToCIdent(enum_descriptor->name());
+    return ResolveKeywordConflict(ToCIdent(enum_descriptor->name()));
   } else {
     // Since the enum is in global name space (no package), it will have the
     // same classified name as the C header include, to prevent collision
@@ -94,7 +95,7 @@ std::string EnumValueSymbolInNameSpace(
     if (desc->file()->package().empty()) {
       return absl::StrCat(kNoPackageNamePrefix, ToCIdent(value->name()));
     }
-    return ToCIdent(value->name());
+    return ResolveKeywordConflict(ToCIdent(value->name()));
   }
 }
 

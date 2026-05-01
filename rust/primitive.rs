@@ -16,8 +16,6 @@ macro_rules! impl_singular_primitives {
             type View<'msg> = $t;
         }
 
-        impl MapKey for $t {}
-
         impl AsView for $t {
             type Proxied = $t;
 
@@ -34,9 +32,16 @@ macro_rules! impl_singular_primitives {
           }
         }
 
-        // ProxiedInRepeated is implemented in {cpp,upb}.rs
+        // Singular is implemented in {cpp,upb}.rs
       )*
   }
 }
 
 impl_singular_primitives!(bool, f32, f64, i32, i64, u32, u64);
+
+// All numerics except `float` and `double` are allowed as map keys.
+impl MapKey for bool {}
+impl MapKey for i32 {}
+impl MapKey for i64 {}
+impl MapKey for u32 {}
+impl MapKey for u64 {}

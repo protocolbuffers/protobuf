@@ -15,8 +15,6 @@ update this page.
 These are projects we know about implementing Protocol Buffers for other
 programming languages:
 
-*   Action Script: https://code.google.com/p/protobuf-actionscript3/
-*   Action Script: https://code.google.com/p/protoc-gen-as3/
 *   Action Script: https://github.com/matrix3d/JProtoc
 *   Action Script: https://github.com/zhongfq/protobuf-as3/
 *   Ada: https://github.com/reznikmm/protobuf
@@ -32,9 +30,7 @@ programming languages:
 *   C++: https://EmbeddedProto.com
 *   C++: https://github.com/yksten/struct2x
 *   C/C++: http://spbc.sf.net/
-*   C#: https://code.google.com/p/protobuf-csharp-port
 *   C#: https://silentorbit.com/protobuf/
-*   C#/.NET/WCF/VB: https://code.google.com/p/protobuf-net/
 *   Clojure: http://github.com/ninjudd/clojure-protobuf
 *   Clojure: https://github.com/clojusc/protobuf
 *   Clojure: https://protojure.readthedocs.io
@@ -74,13 +70,9 @@ programming languages:
     implementation)
 *   Java/Android: https://github.com/square/wire
 *   Java: https://github.com/HebiRobotics/QuickBuffers/
-*   Java ME: https://code.google.com/p/protobuf-javame/
 *   Java ME: http://swingme.sourceforge.net/encode.shtml
-*   Javascript: https://code.google.com/p/protobuf-js/
 *   Javascript: http://github.com/sirikata/protojs
 *   Javascript: https://github.com/dcodeIO/ProtoBuf.js
-*   Javascript: https://code.google.com/p/protobuf-for-node/
-*   Javascript: https://code.google.com/p/protostuff/
 *   Javascript: https://github.com/seishun/node-protoc-plugin (Node.js port of
     plugin.h)
 *   Javascript: https://github.com/seishun/node-protoc-gen-javascript (Node.js
@@ -92,19 +84,13 @@ programming languages:
 *   Kotlin: https://github.com/ButterCam/sisyphus
 *   Kotlin: https://github.com/open-toast/protokt
 *   Kotlin Multiplatform: https://github.com/streem/pbandk
-*   Lua: https://code.google.com/p/protoc-gen-lua/
 *   Lua: http://github.com/indygreg/lua-protobuf
 *   Lua: https://github.com/Neopallium/lua-pb
-*   Matlab: https://code.google.com/p/protobuf-matlab/
-*   Mercury: https://code.google.com/p/protobuf-mercury/
-*   Objective C: https://code.google.com/p/protobuf-objc/
 *   Objective C: https://github.com/alexeyxo/protobuf-objc
 *   OCaml: http://piqi.org/
 *   Perl: http://groups.google.com/group/protobuf-perl
 *   Perl: https://metacpan.org/pod/Google::ProtocolBuffers
 *   Perl: https://metacpan.org/pod/Google::ProtocolBuffers::Dynamic
-*   Perl/XS: https://code.google.com/p/protobuf-perlxs/
-*   PHP: https://code.google.com/p/pb4php/
 *   PHP: https://github.com/allegro/php-protobuf/
 *   PHP: https://github.com/chobie/php-protocolbuffers
 *   Protobuf: https://github.com/mycroftjr/protoc-gen-proto
@@ -115,7 +101,6 @@ programming languages:
 *   Python: https://github.com/eigenein/protobuf
 *   Python: https://github.com/danielgtaylor/python-betterproto
 *   R: http://cran.r-project.org/package=RProtoBuf
-*   Ruby: https://code.google.com/p/ruby-protobuf/
 *   Ruby: http://github.com/mozy/ruby-protocol-buffers
 *   Ruby: https://github.com/bmizerany/beefcake/tree/master/lib/beefcake
 *   Ruby: https://github.com/localshred/protobuf
@@ -123,7 +108,6 @@ programming languages:
 *   Rust: https://github.com/stepancheg/rust-protobuf/
 *   Rust: https://github.com/tafia/quick-protobuf
 *   Scala: http://github.com/jeffplaisance/scala-protobuf
-*   Scala: https://code.google.com/p/protobuf-scala
 *   Scala: https://github.com/SandroGrzicic/ScalaBuff
 *   Scala: https://scalapb.github.io
 *   Solidity: https://github.com/celer-network/pb3-gen-sol
@@ -133,7 +117,6 @@ programming languages:
 *   Typescript: https://github.com/thesayyn/protoc-gen-ts
 *   Typescript: https://github.com/pbkit/pbkit
 *   Vala: https://launchpad.net/protobuf-vala
-*   Visual Basic: https://code.google.com/p/protobuf-net/
 *   Zig: https://github.com/Arwalk/zig-protobuf
 
 ## RPC Implementations
@@ -150,7 +133,6 @@ objects.
 *   https://github.com/protobuf-net/protobuf-net (C#/.NET/WCF/VB)
 *   http://www.deltavsoft.com/doc/_external_serialization.html#Protobufs (C++)
 *   https://protojure.github.io (Clojure)
-*   https://code.google.com/p/protobuf-rpc-pro/ (Java)
 *   https://github.com/baidu/sofa-pbrpc (C++)
 *   https://github.com/madhon/protobuf-csharp-rpc (C#)
 *   https://github.com/madwyn/libpbrpc (C++)
@@ -169,6 +151,12 @@ objects.
 
 Inactive:
 
+*   https://code.google.com/p/protobuf-actionscript3/ (Action Script)
+*   https://code.google.com/p/protoc-gen-as3/ (Action Script)
+*   https://code.google.com/p/protobuf-csharp-port (C#)
+*   https://code.google.com/p/protobuf-net/ (C#/.NET/WCF/VB)
+*   https://code.google.com/p/protobuf-javame/ (Java ME)
+*   https://code.google.com/p/protobuf-rpc-pro/ (Java)
 *   https://launchpad.net/txprotobuf/ (Python)
 *   https://github.com/modeswitch/protobuf-rpc (Python)
 *   https://github.com/sdeo/protobuf-socket-rpc (Java, Python)
@@ -184,6 +172,19 @@ Inactive:
 *   https://code.google.com/p/protobuf-csharp-rpc/ (C#)
 *   https://github.com/thesamet/rpcz (C++/Python, based on ZeroMQ)
 *   https://github.com/w359405949/libmaid (C++, Python)
+*   https://code.google.com/p/protobuf-js/ (Javascript)
+*   https://code.google.com/p/protobuf-for-node/ (Javascript)
+*   https://code.google.com/p/protostuff/ (Javascript)
+*   https://code.google.com/p/protoc-gen-lua/ (Lua)
+*   https://code.google.com/p/protobuf-matlab/ (Matlab)
+*   https://code.google.com/p/protobuf-mercury/ (Mercury)
+*   https://code.google.com/p/protobuf-objc/ (ObjC)
+*   https://code.google.com/p/protobuf-perlxs/ (Perl/XS)
+*   https://code.google.com/p/pb4php/ (PHP)
+*   https://code.google.com/p/ruby-protobuf/ (Ruby)
+*   https://code.google.com/p/protobuf-scala (Scala)
+*   https://code.google.com/p/protobuf-net/ (Visual Basic)
+*   https://code.google.com/p/protoc-gen-docbook/ (DocBook generator)
 
 ## Build
 
@@ -219,7 +220,6 @@ Inactive:
 ## Documentation
 
 *   [Documentation generator plugin (Markdown/HTML/DocBook/...)](https://github.com/pseudomuto/protoc-gen-doc)
-*   [DocBook generator for .proto files](https://code.google.com/p/protoc-gen-docbook/)
 
 ## Other Utilities
 

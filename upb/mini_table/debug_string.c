@@ -251,6 +251,9 @@ static void upb_MiniTablePrinter_PrintMessage(upb_MiniTablePrinter* p,
   if (mini_table->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry) {
     upb_MiniTablePrinter_Printf(p, " | MapEntry");
   }
+  if (mini_table->UPB_PRIVATE(ext) & kUpb_ExtMode_AllFastFieldsAssigned) {
+    upb_MiniTablePrinter_Printf(p, " | AllFieldsAssigned");
+  }
   upb_MiniTablePrinter_Printf(p, ")\n");
   upb_MiniTablePrinter_Printf(p, "  .fields[%d] = {\n",
                               mini_table->UPB_PRIVATE(field_count));

@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Provides type checking routines.
 
 This module defines type checking utilities in the forms of dictionaries:
@@ -32,6 +31,7 @@ from google.protobuf.internal import encoder
 from google.protobuf.internal import wire_format
 
 _FieldDescriptor = descriptor.FieldDescriptor
+
 
 def TruncateToFourByteFloat(original):
   return struct.unpack('<f', struct.pack('<f', original))[0]
@@ -62,8 +62,10 @@ def GetTypeChecker(field):
     An instance of TypeChecker which can be used to verify the types
     of values assigned to a field of the specified type.
   """
-  if (field.cpp_type == _FieldDescriptor.CPPTYPE_STRING and
-      field.type == _FieldDescriptor.TYPE_STRING):
+  if (
+      field.cpp_type == _FieldDescriptor.CPPTYPE_STRING
+      and field.type == _FieldDescriptor.TYPE_STRING
+  ):
     return UnicodeValueChecker()
   if field.cpp_type == _FieldDescriptor.CPPTYPE_ENUM:
     if field.enum_type.is_closed:
@@ -79,8 +81,8 @@ def GetTypeChecker(field):
 # protect against malicious clients here, just people accidentally shooting
 # themselves in the foot in obvious ways.
 class TypeChecker(object):
-
   """Type checker used to catch type errors as early as possible
+
   when the client is setting scalar fields in protocol messages.
   """
 
@@ -93,8 +95,11 @@ class TypeChecker(object):
     The returned value might have been normalized to another type.
     """
     if not isinstance(proposed_value, self._acceptable_types):
-      message = ('%.1024r has type %s, but expected one of: %s' %
-                 (proposed_value, type(proposed_value), self._acceptable_types))
+      message = '%.1024r has type %s, but expected one of: %s' % (
+          proposed_value,
+          type(proposed_value),
+          self._acceptable_types,
+      )
       raise TypeError(message)
     return proposed_value
 
@@ -115,17 +120,27 @@ class BoolValueChecker(object):
   def CheckValue(self, proposed_value):
     if not hasattr(proposed_value, '__index__'):
       # Under NumPy 2.3, numpy.bool does not have an __index__ method.
-      if (type(proposed_value).__module__ == 'numpy' and
-          type(proposed_value).__name__ == 'bool'):
+      if (
+          type(proposed_value).__module__ == 'numpy'
+          and type(proposed_value).__name__ == 'bool'
+      ):
         return bool(proposed_value)
-      message = ('%.1024r has type %s, but expected one of: %s' %
-                 (proposed_value, type(proposed_value), (bool, int)))
+      message = '%.1024r has type %s, but expected one of: %s' % (
+          proposed_value,
+          type(proposed_value),
+          (bool, int),
+      )
       raise TypeError(message)
 
-    if (type(proposed_value).__module__ == 'numpy' and
-        type(proposed_value).__name__ == 'ndarray'):
-      message = ('%.1024r has type %s, but expected one of: %s' %
-                 (proposed_value, type(proposed_value), (bool, int)))
+    if (
+        type(proposed_value).__module__ == 'numpy'
+        and type(proposed_value).__name__ == 'ndarray'
+    ):
+      message = '%.1024r has type %s, but expected one of: %s' % (
+          proposed_value,
+          type(proposed_value),
+          (bool, int),
+      )
       raise TypeError(message)
 
     return bool(proposed_value)
@@ -137,7 +152,6 @@ class BoolValueChecker(object):
 # IntValueChecker and its subclasses perform integer type-checks
 # and bounds-checks.
 class IntValueChecker(object):
-
   """Checker used for integer fields.  Performs type-check and range check."""
 
   def CheckValue(self, proposed_value):
@@ -152,10 +166,14 @@ class IntValueChecker(object):
       raise TypeError(message)
 
     if not hasattr(proposed_value, '__index__') or (
-        type(proposed_value).__module__ == 'numpy' and
-        type(proposed_value).__name__ == 'ndarray'):
-      message = ('%.1024r has type %s, but expected one of: %s' %
-                 (proposed_value, type(proposed_value), (int,)))
+        type(proposed_value).__module__ == 'numpy'
+        and type(proposed_value).__name__ == 'ndarray'
+    ):
+      message = '%.1024r has type %s, but expected one of: %s' % (
+          proposed_value,
+          type(proposed_value),
+          (int,),
+      )
       raise TypeError(message)
 
     if not self._MIN <= int(proposed_value) <= self._MAX:
@@ -170,7 +188,6 @@ class IntValueChecker(object):
 
 
 class EnumValueChecker(object):
-
   """Checker used for enum fields.  Performs type-check and range check."""
 
   def __init__(self, enum_type):
@@ -188,8 +205,11 @@ class EnumValueChecker(object):
       raise TypeError(message)
 
     if not isinstance(proposed_value, numbers.Integral):
-      message = ('%.1024r has type %s, but expected one of: %s' %
-                 (proposed_value, type(proposed_value), (int,)))
+      message = '%.1024r has type %s, but expected one of: %s' % (
+          proposed_value,
+          type(proposed_value),
+          (int,),
+      )
       raise TypeError(message)
     if int(proposed_value) not in self._enum_type.values_by_number:
       raise ValueError('Unknown enum value: %d' % proposed_value)
@@ -200,7 +220,6 @@ class EnumValueChecker(object):
 
 
 class UnicodeValueChecker(object):
-
   """Checker used for string fields.
 
   Always returns a unicode value, even if the input is of type str.
@@ -208,8 +227,11 @@ class UnicodeValueChecker(object):
 
   def CheckValue(self, proposed_value):
     if not isinstance(proposed_value, (bytes, str)):
-      message = ('%.1024r has type %s, but expected one of: %s' %
-                 (proposed_value, type(proposed_value), (bytes, str)))
+      message = '%.1024r has type %s, but expected one of: %s' % (
+          proposed_value,
+          type(proposed_value),
+          (bytes, str),
+      )
       raise TypeError(message)
 
     # If the value is of type 'bytes' make sure that it is valid UTF-8 data.
@@ -217,22 +239,24 @@ class UnicodeValueChecker(object):
       try:
         proposed_value = proposed_value.decode('utf-8')
       except UnicodeDecodeError:
-        raise ValueError('%.1024r has type bytes, but isn\'t valid UTF-8 '
-                         'encoding. Non-UTF-8 strings must be converted to '
-                         'unicode objects before being added.' %
-                         (proposed_value))
+        raise ValueError(
+            "%.1024r has type bytes, but isn't valid UTF-8 "
+            'encoding. Non-UTF-8 strings must be converted to '
+            'unicode objects before being added.' % (proposed_value)
+        )
     else:
       try:
         proposed_value.encode('utf8')
       except UnicodeEncodeError:
-        raise ValueError('%.1024r isn\'t a valid unicode string and '
-                         'can\'t be encoded in UTF-8.'%
-                         (proposed_value))
+        raise ValueError(
+            "%.1024r isn't a valid unicode string and "
+            "can't be encoded in UTF-8." % (proposed_value)
+        )
 
     return proposed_value
 
   def DefaultValue(self):
-    return u""
+    return ''
 
 
 class Int32ValueChecker(IntValueChecker):
@@ -273,12 +297,17 @@ class DoubleValueChecker(object):
 
   def CheckValue(self, proposed_value):
     """Check and convert proposed_value to float."""
-    if (not hasattr(proposed_value, '__float__') and
-        not hasattr(proposed_value, '__index__')) or (
-            type(proposed_value).__module__ == 'numpy' and
-            type(proposed_value).__name__ == 'ndarray'):
-      message = ('%.1024r has type %s, but expected one of: int, float' %
-                 (proposed_value, type(proposed_value)))
+    if (
+        not hasattr(proposed_value, '__float__')
+        and not hasattr(proposed_value, '__index__')
+    ) or (
+        type(proposed_value).__module__ == 'numpy'
+        and type(proposed_value).__name__ == 'ndarray'
+    ):
+      message = '%.1024r has type %s, but expected one of: int, float' % (
+          proposed_value,
+          type(proposed_value),
+      )
       raise TypeError(message)
     return float(proposed_value)
 
@@ -309,6 +338,7 @@ class FloatValueChecker(DoubleValueChecker):
 
     return TruncateToFourByteFloat(converted_value)
 
+
 # Type-checkers for all scalar CPPTYPEs.
 _VALUE_CHECKERS = {
     _FieldDescriptor.CPPTYPE_INT32: Int32ValueChecker(),
@@ -320,7 +350,6 @@ _VALUE_CHECKERS = {
     _FieldDescriptor.CPPTYPE_BOOL: BoolValueChecker(),
     _FieldDescriptor.CPPTYPE_STRING: TypeCheckerWithDefault(b'', bytes),
 }
-
 
 # Map from field type to a function F, such that F(field_num, value)
 # gives the total byte size for a value of the given type.  This
@@ -344,9 +373,8 @@ TYPE_TO_BYTE_SIZE_FN = {
     _FieldDescriptor.TYPE_SFIXED32: wire_format.SFixed32ByteSize,
     _FieldDescriptor.TYPE_SFIXED64: wire_format.SFixed64ByteSize,
     _FieldDescriptor.TYPE_SINT32: wire_format.SInt32ByteSize,
-    _FieldDescriptor.TYPE_SINT64: wire_format.SInt64ByteSize
-    }
-
+    _FieldDescriptor.TYPE_SINT64: wire_format.SInt64ByteSize,
+}
 
 # Maps from field types to encoder constructors.
 TYPE_TO_ENCODER = {
@@ -368,8 +396,7 @@ TYPE_TO_ENCODER = {
     _FieldDescriptor.TYPE_SFIXED64: encoder.SFixed64Encoder,
     _FieldDescriptor.TYPE_SINT32: encoder.SInt32Encoder,
     _FieldDescriptor.TYPE_SINT64: encoder.SInt64Encoder,
-    }
-
+}
 
 # Maps from field types to sizer constructors.
 TYPE_TO_SIZER = {
@@ -391,8 +418,7 @@ TYPE_TO_SIZER = {
     _FieldDescriptor.TYPE_SFIXED64: encoder.SFixed64Sizer,
     _FieldDescriptor.TYPE_SINT32: encoder.SInt32Sizer,
     _FieldDescriptor.TYPE_SINT64: encoder.SInt64Sizer,
-    }
-
+}
 
 # Maps from field type to a decoder constructor.
 TYPE_TO_DECODER = {
@@ -414,7 +440,7 @@ TYPE_TO_DECODER = {
     _FieldDescriptor.TYPE_SFIXED64: decoder.SFixed64Decoder,
     _FieldDescriptor.TYPE_SINT32: decoder.SInt32Decoder,
     _FieldDescriptor.TYPE_SINT64: decoder.SInt64Decoder,
-    }
+}
 
 # Maps from field type to expected wiretype.
 FIELD_TYPE_TO_WIRE_TYPE = {
@@ -426,17 +452,14 @@ FIELD_TYPE_TO_WIRE_TYPE = {
     _FieldDescriptor.TYPE_FIXED64: wire_format.WIRETYPE_FIXED64,
     _FieldDescriptor.TYPE_FIXED32: wire_format.WIRETYPE_FIXED32,
     _FieldDescriptor.TYPE_BOOL: wire_format.WIRETYPE_VARINT,
-    _FieldDescriptor.TYPE_STRING:
-      wire_format.WIRETYPE_LENGTH_DELIMITED,
+    _FieldDescriptor.TYPE_STRING: wire_format.WIRETYPE_LENGTH_DELIMITED,
     _FieldDescriptor.TYPE_GROUP: wire_format.WIRETYPE_START_GROUP,
-    _FieldDescriptor.TYPE_MESSAGE:
-      wire_format.WIRETYPE_LENGTH_DELIMITED,
-    _FieldDescriptor.TYPE_BYTES:
-      wire_format.WIRETYPE_LENGTH_DELIMITED,
+    _FieldDescriptor.TYPE_MESSAGE: wire_format.WIRETYPE_LENGTH_DELIMITED,
+    _FieldDescriptor.TYPE_BYTES: wire_format.WIRETYPE_LENGTH_DELIMITED,
     _FieldDescriptor.TYPE_UINT32: wire_format.WIRETYPE_VARINT,
     _FieldDescriptor.TYPE_ENUM: wire_format.WIRETYPE_VARINT,
     _FieldDescriptor.TYPE_SFIXED32: wire_format.WIRETYPE_FIXED32,
     _FieldDescriptor.TYPE_SFIXED64: wire_format.WIRETYPE_FIXED64,
     _FieldDescriptor.TYPE_SINT32: wire_format.WIRETYPE_VARINT,
     _FieldDescriptor.TYPE_SINT64: wire_format.WIRETYPE_VARINT,
-    }
+}
