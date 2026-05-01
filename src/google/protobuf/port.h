@@ -751,7 +751,10 @@ template <typename T>
 constexpr bool EnableCustomNewFor() {
   return true;
 }
-#elif ABSL_HAVE_BUILTIN(__is_bitwise_cloneable)
+// Don't use __is_bitwise_cloneable() when pointer authentication is
+// enabled, as it may incorrectly report objects with vtables as being
+// cloneable. https://github.com/llvm/llvm-project/pull/154490
+#elif ABSL_HAVE_BUILTIN(__is_bitwise_cloneable) && !defined(__PTRAUTH__)
 template <typename T>
 constexpr bool EnableCustomNewFor() {
   return __is_bitwise_cloneable(T);
