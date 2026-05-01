@@ -1112,8 +1112,8 @@ PROTOBUF_NOINLINE void Api::Clear() {
     }
     // .google.protobuf.SourceContext source_context = 5;
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
-      total_size +=
-          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.source_context_);
+      total_size += 1 +
+                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.source_context_);
     }
     // .google.protobuf.Syntax syntax = 7;
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {

@@ -1315,14 +1315,14 @@ PROTOBUF_NOINLINE void Value::Clear() {
     }
     // .google.protobuf.Struct struct_value = 5;
     case kStructValue: {
-      total_size +=
-          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.kind_.struct_value_);
+      total_size += 1 +
+                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.kind_.struct_value_);
       break;
     }
     // .google.protobuf.ListValue list_value = 6;
     case kListValue: {
-      total_size +=
-          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.kind_.list_value_);
+      total_size += 1 +
+                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.kind_.list_value_);
       break;
     }
     case KIND_NOT_SET: {
