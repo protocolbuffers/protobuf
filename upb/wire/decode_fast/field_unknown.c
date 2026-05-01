@@ -20,27 +20,56 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+// Helper defines for managing fallback tail-call to slow path.
+#define kUpb_DecodeFastNext_DecodeUnknownSlowPath \
+  kUpb_DecodeFastNext_TailCallUnpacked
+#define UPB_DECODEFAST_NEXTMAYBECOPY(next)                                     \
+  UPB_DECODEFAST_NEXTMAYBEPACKED(next, _upb_FastDecoder_DecodeUnknownSlowPath, \
+                                 upb_DecodeFast_Unreachable);
+
+// Tail-call target for handling unknown field slow path.
+// Fast-path filters out unsupported cases, so we don't need to re-check here.
+// To avoid additional computations, `data` is overloaded to the size of the
+// unknown region.
+UPB_PRESERVE_NONE UPB_NOINLINE const char*
+_upb_FastDecoder_DecodeUnknownSlowPath(struct upb_Decoder* d, const char* ptr,
+                                       upb_Message* msg, intptr_t table,
+                                       uint64_t hasbits, uint64_t data) {
+  bool alias = (d->options & kUpb_DecodeOption_AliasString) != 0;
+  const char* end =
+      UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(&d->input, ptr);
+  if (UPB_UNLIKELY(!UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(
+          msg, end - data, data, &d->arena, alias))) {
+    return _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
+  }
+
+  data = 0;
+  upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;
+  UPB_DECODEFAST_NEXT(next);
+}
+
 UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
     struct upb_Decoder* d, const char** ptr, upb_Message* msg, intptr_t table,
-    uint64_t hasbits, uint64_t data, upb_DecodeFastNext* ret) {
+    uint64_t hasbits, uint64_t* data, upb_DecodeFastNext* ret) {
   const char* start = *ptr;
+  uint64_t d_val = *data;
 
   // Important: if the branch is correctly predicted, the ptr incremen is
   // treated as constant and subsequent loads will not have a data dependency on
   // the branch.
-  if (UPB_LIKELY((data & 0x80) == 0)) {
+  if (UPB_LIKELY((d_val & 0x80) == 0)) {
     *ptr += 1;
     // Ensure the field number is not 0.
     // Use bitwise op to only examine first byte minus additional tag data.
-    if (UPB_UNLIKELY((data & 0xF8) == 0)) {
+    if (UPB_UNLIKELY((d_val & 0xF8) == 0)) {
       return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
     }
-  } else if ((data & 0x8000) == 0) {
+  } else if ((d_val & 0x8000) == 0) {
     *ptr += 2;
     // Ensure the field number is not 0.
     // Use bitwise op to limit to first two bytes, and ignore continuation bit &
     // additional tag data.
-    if (UPB_UNLIKELY((data & 0x7f78) == 0)) {
+    if (UPB_UNLIKELY((d_val & 0x7f78) == 0)) {
       return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
     }
   } else {
@@ -48,7 +77,7 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
     return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
   }
 
-  uint32_t wire_type = data & 0x07;
+  uint32_t wire_type = d_val & 0x07;
 
   if (UPB_UNLIKELY(wire_type == kUpb_WireType_EndGroup ||
                    wire_type == kUpb_WireType_StartGroup)) {
@@ -65,7 +94,7 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
   switch (wire_type) {
     case kUpb_WireType_Varint:
       *ptr = upb_WireReader_SkipVarint(*ptr, &d->input);
-      if (UPB_UNLIKELY(!ptr)) {
+      if (UPB_UNLIKELY(!*ptr)) {
         return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
       }
       break;
@@ -79,12 +108,12 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
       break;
     case kUpb_WireType_Delimited: {
       int size;
-      *ptr = upb_WireReader_ReadSize(*ptr, &size, &d->input);
-      if (UPB_UNLIKELY(!ptr || !upb_EpsCopyInputStream_CheckSize(&d->input,
-                                                                 *ptr, size))) {
+      const char* p = upb_WireReader_ReadSize(*ptr, &size, &d->input);
+      if (UPB_UNLIKELY(!p ||
+                       !upb_EpsCopyInputStream_CheckSize(&d->input, p, size))) {
         return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
       }
-      *ptr += size;
+      *ptr = p + size;
       break;
     }
     default:
@@ -96,28 +125,28 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
     return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
   }
 
-  upb_AddUnknownMode mode = kUpb_AddUnknown_Copy;
-  if (d->options & kUpb_DecodeOption_AliasString) {
-    if (sv.data != d->input.buffer_start) {
-      mode = kUpb_AddUnknown_AliasAllowMerge;
-    } else {
-      mode = kUpb_AddUnknown_Alias;
-    }
+  bool handled_fast =
+      // Check AddUnknown mode is AliasAllowMerge.
+      d->options & kUpb_DecodeOption_AliasString &&
+      sv.data != d->input.buffer_start &&
+      // Attempt to merge.
+      UPB_PRIVATE(_upb_Message_TryAddUnknownAliasAllowMerge)(
+          msg, sv.data, sv.size, &d->arena, kUpb_AddUnknown_AliasAllowMerge);
+  if (!handled_fast) {
+    // Overload `data` for the slow path to avoid repeat computation.
+    *data = sv.size;
+    *ret = kUpb_DecodeFastNext_DecodeUnknownSlowPath;
+    return false;
   }
 
-  if (!UPB_PRIVATE(_upb_Message_AddUnknown)(msg, sv.data, sv.size, &d->arena,
-                                            mode)) {
-    return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_OutOfMemory, ret);
-  }
-
-  data = 0;
+  *data = 0;
   return true;
 }
 
 UPB_PRESERVE_NONE const char* _upb_FastDecoder_DecodeUnknown(
     struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
     uint64_t hasbits, uint64_t data) {
-  upb_DecodeFastNext ret = kUpb_DecodeFastNext_Dispatch;
-  _upb_FastDecoder_DoDecodeUnknown(d, &ptr, msg, table, hasbits, data, &ret);
-  UPB_DECODEFAST_NEXT(ret);
+  upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;
+  _upb_FastDecoder_DoDecodeUnknown(d, &ptr, msg, table, hasbits, &data, &next);
+  UPB_DECODEFAST_NEXTMAYBECOPY(next);
 }
