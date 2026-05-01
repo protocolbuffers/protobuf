@@ -849,7 +849,6 @@ class alignas(8) GlobalEmptyStringConstexpr {
     return {};
   }
 
- private:
   std::string value_;
 };
 
