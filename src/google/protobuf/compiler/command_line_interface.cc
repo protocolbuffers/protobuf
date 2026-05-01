@@ -300,10 +300,12 @@ void AddDefaultProtoPaths(
 
 std::string PluginName(absl::string_view plugin_prefix,
                        absl::string_view directive) {
-  // Assuming the directive starts with "--" and ends with "_out" or "_opt",
-  // strip the "--" and "_out/_opt" and add the plugin prefix.
+  // Assuming the directive starts with "--" and ends with one of "_out",
+  // "_opt", or "_prefix", strip the "--" and the trailing "_..." segment and
+  // add the plugin prefix.
+  size_t suffix_start = directive.find_last_of('_');
   return absl::StrCat(plugin_prefix, "gen-",
-                      directive.substr(2, directive.size() - 6));
+                      directive.substr(2, suffix_start - 2));
 }
 
 bool GetBootstrapParam(const std::string& parameter) {
@@ -2453,21 +2455,6 @@ CommandLineInterface::InterpretArgument(const std::string& name,
       return PARSE_ARGUMENT_FAIL;
     }
     fatal_warnings_ = true;
-  } else if (name == "--plugin-command-prefix") {
-    if (plugin_prefix_.empty()) {
-      std::cerr << "This compiler does not support plugins." << std::endl;
-      return PARSE_ARGUMENT_FAIL;
-    }
-    if (!plugin_command_prefix_.empty()) {
-      std::cerr << name << " may only be passed once." << std::endl;
-      return PARSE_ARGUMENT_FAIL;
-    }
-    plugin_command_prefix_ =
-        absl::StrSplit(value, absl::ByAnyChar(" \t"), absl::SkipWhitespace());
-    if (plugin_command_prefix_.empty()) {
-      std::cerr << name << " requires a non-empty value." << std::endl;
-      return PARSE_ARGUMENT_FAIL;
-    }
   } else if (name == "--plugin") {
     if (plugin_prefix_.empty()) {
       std::cerr << "This compiler does not support plugins." << std::endl;
@@ -2593,6 +2580,20 @@ CommandLineInterface::InterpretArgument(const std::string& name,
           parameters->append(",");
         }
         parameters->append(value);
+      } else if (absl::StartsWith(name, "--") && absl::EndsWith(name, "_prefix")) {
+        std::string plugin_name = PluginName(plugin_prefix_, name);
+        if (plugin_command_prefixes_.find(plugin_name) !=
+            plugin_command_prefixes_.end()) {
+          std::cerr << name << " may only be passed once." << std::endl;
+          return PARSE_ARGUMENT_FAIL;
+        }
+        std::vector<std::string> tokens = absl::StrSplit(
+            value, absl::ByAnyChar(" \t"), absl::SkipWhitespace());
+        if (tokens.empty()) {
+          std::cerr << name << " requires a non-empty value." << std::endl;
+          return PARSE_ARGUMENT_FAIL;
+        }
+        plugin_command_prefixes_[plugin_name] = std::move(tokens);
       } else {
         std::cerr << "Unknown flag: " << name << std::endl;
         return PARSE_ARGUMENT_FAIL;
@@ -2725,14 +2726,13 @@ Parse PROTO_FILES and generate output based on the options given:
                               NAME=PATH, in which case the given plugin name
                               is mapped to the given executable even if
                               the executable's own name differs.
-  --plugin-command-prefix=COMMAND
-                              Runs plugins via COMMAND. protoc executes
-                              "COMMAND <plugin>" instead of invoking the
-                              plugin binary directly. The value is split
-                              into argv tokens on whitespace; tokens
-                              containing spaces or quotes are not
-                              supported. Use a wrapper script for more
-                              complex invocations.)";
+  --<lang>_prefix=COMMAND     Runs the plugin used by --<lang>_out via
+                              COMMAND. protoc executes "COMMAND <plugin>"
+                              instead of invoking the plugin binary directly.
+                              The value is split into argv tokens on
+                              whitespace; tokens containing spaces or quotes
+                              are not supported. Use a wrapper script for
+                              more complex invocations.)";
   }
 
   for (const auto& kv : generators_by_flag_name_) {
@@ -3093,7 +3093,8 @@ bool CommandLineInterface::GeneratePluginOutput(
   const std::string executable =
       has_registered_path ? plugin_it->second : plugin_name;
 
-  if (plugin_command_prefix_.empty()) {
+  const auto prefix_it = plugin_command_prefixes_.find(plugin_name);
+  if (prefix_it == plugin_command_prefixes_.end()) {
     subprocess.Start(executable,
                      has_registered_path ? Subprocess::EXACT_NAME
                                          : Subprocess::SEARCH_PATH);
@@ -3101,11 +3102,11 @@ bool CommandLineInterface::GeneratePluginOutput(
     // When a prefix is provided, we always execute the prefix first and pass the
     // plugin executable as an argument. If a custom path was registered, we pass
     // that path so the prefix does not need to search for the binary.
-    std::vector<std::string> args(plugin_command_prefix_.begin() + 1,
-                                  plugin_command_prefix_.end());
+    const std::vector<std::string>& prefix_tokens = prefix_it->second;
+    std::vector<std::string> args(prefix_tokens.begin() + 1,
+                                  prefix_tokens.end());
     args.push_back(executable);
-    subprocess.Start(plugin_command_prefix_.front(), Subprocess::SEARCH_PATH,
-                     args);
+    subprocess.Start(prefix_tokens.front(), Subprocess::SEARCH_PATH, args);
   }
 
   std::string communicate_error;
