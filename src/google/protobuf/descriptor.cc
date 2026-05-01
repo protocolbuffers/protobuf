@@ -84,6 +84,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/naming_style.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
@@ -9273,85 +9274,6 @@ void DescriptorBuilder::ValidateJSType(const FieldDescriptor* field,
 }
 
 namespace {
-
-// Whether the name contains underscores that violate the naming style guide (
-// a leading or trailing underscore, or an underscore which is not followed by
-// a letter)
-bool ContainsBadUnderscores(absl::string_view name) {
-  if (name.empty()) {
-    return false;
-  }
-  if (name[0] == '_' || name[name.size() - 1] == '_') {
-    return true;
-  }
-  for (size_t i = 1; i < name.size(); ++i) {
-    if (name[i - 1] == '_' && !absl::ascii_isalpha(name[i])) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool IsValidTitleCaseName(absl::string_view name, std::string* error) {
-  ABSL_CHECK(!name.empty());
-  for (char c : name) {
-    if (!absl::ascii_isalnum(c)) {
-      *error = "should be TitleCase";
-      return false;
-    }
-  }
-  if (!absl::ascii_isupper(name[0])) {
-    *error = "should begin with a capital letter";
-    return false;
-  }
-  return true;
-}
-
-bool IsValidLowerSnakeCaseName(absl::string_view name, std::string* error) {
-  ABSL_CHECK(!name.empty());
-
-  constexpr absl::CharSet kLowerSnakeCaseChars =
-      absl::CharSet::Range('a', 'z') | absl::CharSet::Range('0', '9') |
-      absl::CharSet::Char('_') | absl::CharSet::Char('.');
-  for (char c : name) {
-    if (!kLowerSnakeCaseChars.contains(c)) {
-      *error = "should be lower_snake_case";
-      return false;
-    }
-  }
-  if (!absl::ascii_islower(name[0])) {
-    *error = "should begin with a lower case letter";
-    return false;
-  }
-  if (ContainsBadUnderscores(name)) {
-    *error = "contains style violating underscores";
-    return false;
-  }
-  return true;
-}
-
-bool IsValidUpperSnakeCaseName(absl::string_view name, std::string* error) {
-  ABSL_CHECK(!name.empty());
-
-  constexpr absl::CharSet kUpperSnakeCaseChars =
-      absl::CharSet::Range('A', 'Z') | absl::CharSet::Range('0', '9') |
-      absl::CharSet::Char('_');
-  for (char c : name) {
-    if (!kUpperSnakeCaseChars.contains(c)) {
-      *error = "should be UPPER_SNAKE_CASE";
-      return false;
-    }
-  }
-  if (!absl::ascii_isupper(name[0])) {
-    *error = "should begin with an upper case letter";
-    return false;
-  }
-  if (ContainsBadUnderscores(name)) {
-    *error = "contains style violating underscores";
-    return false;
-  }
-  return true;
-}
 
 template <typename DescriptorType>
 bool IsValidFieldNonCollisionName(const DescriptorType* descriptor,
