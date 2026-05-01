@@ -2728,7 +2728,11 @@ Parse PROTO_FILES and generate output based on the options given:
   --plugin-command-prefix=COMMAND
                               Runs plugins via COMMAND. protoc executes
                               "COMMAND <plugin>" instead of invoking the
-                              plugin binary directly.)";
+                              plugin binary directly. The value is split
+                              into argv tokens on whitespace; tokens
+                              containing spaces or quotes are not
+                              supported. Use a wrapper script for more
+                              complex invocations.)";
   }
 
   for (const auto& kv : generators_by_flag_name_) {

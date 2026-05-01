@@ -25,7 +25,6 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/io/io_win32.h"
@@ -99,55 +98,26 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode,
     ABSL_LOG(FATAL) << "GetStdHandle: " << Win32ErrorMessage(GetLastError());
   }
 
-  // CreateProcessW takes a single command-line string, so we need to quote any
-  // argument that contains spaces, tabs, quotes, or backslashes before quotes.
-  // This is a minimal implementation that mirrors the basic CommandLineToArgvW
-  // expectations for our usage: protoc plugin names and optional wrappers.
-  auto quote_for_windows = [](absl::string_view arg) {
-    bool needs_quotes = arg.empty();
-    for (char ch : arg) {
-      if (ch == ' ' || ch == '\t' || ch == '"') {
-        needs_quotes = true;
-        break;
-      }
-    }
-    if (!needs_quotes) {
-      return std::string(arg);
-    }
-    std::string quoted;
-    quoted.reserve(arg.size() + 2);
-    quoted.push_back('"');
-    for (char ch : arg) {
-      if (ch == '"' || ch == '\\') {
-        quoted.push_back('\\');
-      }
-      quoted.push_back(ch);
-    }
-    quoted.push_back('"');
-    return quoted;
-  };
-
-  std::vector<std::string> argv;
-  argv.reserve(args.size() + 1);
-  argv.push_back(program);
-  argv.insert(argv.end(), args.begin(), args.end());
-
-  std::string joined = absl::StrJoin(
-      argv, " ", [&quote_for_windows](std::string* out, const std::string& arg) {
-        out->append(quote_for_windows(arg));
-      });
-
-  std::string command_line = joined;
-  if (search_mode == SEARCH_PATH) {
-    // SEARCH_PATH needs cmd.exe so .bat/.cmd files on PATH are picked up.
-    command_line = absl::StrCat("cmd.exe /c ", quote_for_windows(joined));
-  }
-
   // get wide string version of program as the path may contain non-ascii characters
   std::wstring wprogram;
   if (!io::win32::strings::utf8_to_wcs(program.c_str(), &wprogram)) {
     ABSL_LOG(FATAL) << "utf8_to_wcs: " << Win32ErrorMessage(GetLastError());
   }
+
+  // Join program and args into a single command-line string, as CreateProcessW expects it.
+  // We do not perform any quoting — callers are responsible for any
+  // escaping their tokens require to round-trip through the child's parser.
+  std::vector<std::string> argv;
+  argv.reserve(args.size() + 1);
+  argv.push_back(program);
+  argv.insert(argv.end(), args.begin(), args.end());
+  std::string joined = absl::StrJoin(argv, " ");
+
+  // Invoking cmd.exe allows for '.bat' files from the path as well as '.exe'.
+  std::string command_line =
+      search_mode == SEARCH_PATH
+          ? absl::StrCat("cmd.exe /c \"", joined, "\"")
+          : joined;
 
   // get wide string version of command line as the path may contain non-ascii characters
   std::wstring wcommand_line;
@@ -159,12 +129,15 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode,
   // parameter.
   wchar_t *wcommand_line_copy = _wcsdup(wcommand_line.c_str());
 
-  // Create the process.
+  // Create the process. With EXACT_NAME and no args we pass lpCommandLine=NULL
+  // so behavior is driven solely by lpApplicationName, matching the original
+  // `--plugin` semantics on Windows.
   PROCESS_INFORMATION process_info;
 
   if (CreateProcessW(
           (search_mode == SEARCH_PATH) ? nullptr : wprogram.c_str(),
-          wcommand_line_copy,
+          (search_mode == SEARCH_PATH || !args.empty()) ? wcommand_line_copy
+                                                        : nullptr,
           nullptr,  // process security attributes
           nullptr,  // thread security attributes
           TRUE,     // inherit handles?
