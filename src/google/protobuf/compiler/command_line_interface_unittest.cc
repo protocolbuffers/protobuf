@@ -601,7 +601,7 @@ TEST_F(CommandLineInterfaceTest, PluginPrefixInvokesWrapper) {
   ASSERT_EQ(0, chmod(wrapper_path.c_str(), 0777));
 #endif
 
-  Run(absl::StrCat("protocol_compiler --plugin-command-prefix=", wrapper_path,
+  Run(absl::StrCat("protocol_compiler --plug_prefix=", wrapper_path,
                    " --plug_out=$tmpdir --proto_path=$tmpdir foo.proto"));
 
   ExpectNoErrors();
