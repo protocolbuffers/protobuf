@@ -7,7 +7,7 @@
 
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_FEATURES")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -18,10 +18,12 @@ cc_library(
     ],
     hdrs = [
         "common.h",
+        "ext_table.h",
         "int_table.h",
         "str_table.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         "//upb/base",
@@ -36,7 +38,10 @@ cc_test(
     srcs = ["test.cc"],
     deps = [
         ":hash",
+        "//upb/base",
         "//upb/mem",
+        "//upb/message:message_test_upb_minitable_proto",
+        "//upb/mini_table",
         "//upb/port",
         "@abseil-cpp//absl/container:flat_hash_map",
         "@googletest//:gtest",

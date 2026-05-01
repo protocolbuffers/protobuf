@@ -13,6 +13,7 @@
 #include <cstring>
 #include <ctime>
 #include <functional>
+#include <memory>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -26,6 +27,7 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arenastring.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 
 
@@ -1176,6 +1178,7 @@ TEST(MicroStringTest, MemoryUsageComparison) {
   }
   print_range(input.size());
 }
+
 
 
 }  // namespace

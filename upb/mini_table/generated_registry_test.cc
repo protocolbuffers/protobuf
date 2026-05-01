@@ -43,7 +43,7 @@ TEST_F(GeneratedRegistryTest, LocalExtensionExists) {
   // to be linked in.
 
   // Force linkage and sanity check extension numbers.
-  ASSERT_EQ(upb_MiniTableExtension_Number(&upb_test_2023_ext_ext), 100);
+  ASSERT_EQ(upb_MiniTableExtension_Number(upb_test_2023_ext_ext), 100);
 
   EXPECT_NE(upb_ExtensionRegistry_Lookup(
                 reg_, &upb__test_02023__EditionsMessage_msg_init, 100),
@@ -55,7 +55,7 @@ TEST_F(GeneratedRegistryTest, ForeignExtensionExists) {
   // linked in.
 
   // Force linkage and sanity check extension numbers.
-  ASSERT_EQ(upb_MiniTableExtension_Number(&upb_message_opt_ext), 7739036);
+  ASSERT_EQ(upb_MiniTableExtension_Number(upb_message_opt_ext), 7739036);
 
   EXPECT_NE(upb_ExtensionRegistry_Lookup(reg_, &google__protobuf__MessageOptions_msg_init,
                                          7739036),
@@ -77,8 +77,8 @@ TEST_F(GeneratedRegistryTest, MultipleFilesExtensionExists) {
   // in and registered.
 
   // Force linkage and sanity check extension numbers.
-  ASSERT_EQ(upb_MiniTableExtension_Number(&upb_multiple_files_ext1_ext), 100);
-  ASSERT_EQ(upb_MiniTableExtension_Number(&upb_multiple_files_ext2_ext), 100);
+  ASSERT_EQ(upb_MiniTableExtension_Number(upb_multiple_files_ext1_ext), 100);
+  ASSERT_EQ(upb_MiniTableExtension_Number(upb_multiple_files_ext2_ext), 100);
 
   EXPECT_NE(upb_ExtensionRegistry_Lookup(
                 reg_, &upb__MultipleFilesMessage1_msg_init, 100),

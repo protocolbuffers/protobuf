@@ -92,7 +92,7 @@ namespace Google.Protobuf.WellKnownTypes
         {
             if (!IsNormalized(Seconds, Nanos))
             {
-                throw new InvalidOperationException(@"Timestamp contains invalid values: Seconds={Seconds}; Nanos={Nanos}");
+                throw new InvalidOperationException($"Timestamp contains invalid values: Seconds={Seconds}; Nanos={Nanos}");
             }
             return UnixEpoch.AddSeconds(Seconds).AddTicks(Nanos / Duration.NanosecondsPerTick);
         }

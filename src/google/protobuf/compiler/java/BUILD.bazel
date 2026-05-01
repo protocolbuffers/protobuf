@@ -34,18 +34,6 @@ cc_library(
 )
 
 cc_library(
-    name = "generator_headers",
-    hdrs = ["generator.h"],
-    copts = COPTS,
-    strip_include_prefix = "/src",
-    visibility = ["//pkg:__pkg__"],
-    deps = [
-        "//src/google/protobuf",
-        "//src/google/protobuf/compiler:code_generator",
-    ],
-)
-
-cc_library(
     name = "context",
     hdrs = [
         "context.h",

@@ -394,6 +394,57 @@ std::string PhpSetterTypeName(const FieldDescriptor* field,
   if (field->is_map()) {
     return "array|\\Google\\Protobuf\\Internal\\MapField";
   }
+  if (field->is_repeated()) {
+    return "array|RepeatedField";
+  }
+  std::string type;
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_FIXED32:
+    case FieldDescriptor::TYPE_SFIXED32:
+    case FieldDescriptor::TYPE_ENUM:
+      type = "int";
+      break;
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_FIXED64:
+    case FieldDescriptor::TYPE_SFIXED64:
+      type = "int|string";
+      break;
+    case FieldDescriptor::TYPE_DOUBLE:
+    case FieldDescriptor::TYPE_FLOAT:
+      type = "float";
+      break;
+    case FieldDescriptor::TYPE_BOOL:
+      type = "bool";
+      break;
+    case FieldDescriptor::TYPE_STRING:
+    case FieldDescriptor::TYPE_BYTES:
+      type = "string";
+      break;
+    case FieldDescriptor::TYPE_MESSAGE:
+      type = absl::StrCat("\\", FullClassName(field->message_type(), options));
+      break;
+    case FieldDescriptor::TYPE_GROUP:
+      return "null";
+    default:
+      assert(false);
+      return "";
+  }
+  if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+    return absl::StrCat(type, "|null");
+  }
+  return type;
+}
+
+std::string PhpDocSetterTypeName(const FieldDescriptor* field,
+                                 const Options& options) {
+  if (field->is_map()) {
+    return "array|\\Google\\Protobuf\\Internal\\MapField";
+  }
   std::string type;
   switch (field->type()) {
     case FieldDescriptor::TYPE_INT32:
@@ -442,15 +493,15 @@ std::string PhpSetterTypeName(const FieldDescriptor* field,
   return type;
 }
 
-std::string PhpSetterTypeName(const FieldDescriptor* field,
-                              bool is_descriptor) {
+std::string PhpDocSetterTypeName(const FieldDescriptor* field,
+                                 bool is_descriptor) {
   Options options;
   options.is_descriptor = is_descriptor;
-  return PhpSetterTypeName(field, options);
+  return PhpDocSetterTypeName(field, options);
 }
 
-std::string PhpGetterTypeName(const FieldDescriptor* field,
-                              const Options& options) {
+std::string PhpDocGetterTypeName(const FieldDescriptor* field,
+                                 const Options& options) {
   if (field->is_map()) {
     return "\\Google\\Protobuf\\Internal\\MapField";
   }
@@ -504,11 +555,11 @@ std::string PhpGetterTypeName(const FieldDescriptor* field,
   return type;
 }
 
-std::string PhpGetterTypeName(const FieldDescriptor* field,
-                              bool is_descriptor) {
+std::string PhpDocGetterTypeName(const FieldDescriptor* field,
+                                 bool is_descriptor) {
   Options options;
   options.is_descriptor = is_descriptor;
-  return PhpGetterTypeName(field, options);
+  return PhpDocGetterTypeName(field, options);
 }
 
 std::string EnumOrMessageSuffix(const FieldDescriptor* field,
@@ -743,9 +794,10 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
   // Generate setter.
   GenerateFieldDocComment(printer, field, options, kFieldSetter);
   printer->Print(
-      "public function set^camel_name^($var)\n"
+      "public function set^camel_name^(^php_type^ $var)\n"
       "{\n",
-      "camel_name", UnderscoresToCamelCase(field->name(), true));
+      "camel_name", UnderscoresToCamelCase(field->name(), true), "php_type",
+      PhpSetterTypeName(field, options));
 
   Indent(printer);
 
@@ -793,17 +845,17 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
     } else {
       printer->Print(");\n");
     }
-  } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-    printer->Print("GPBUtil::checkMessage($var, \\^class_name^::class);\n",
-                   "class_name", FullClassName(field->message_type(), options));
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
     printer->Print("GPBUtil::checkEnum($var, \\^class_name^::class);\n",
                    "class_name", FullClassName(field->enum_type(), options));
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
     printer->Print(
         "GPBUtil::checkString($var, ^utf8^);\n", "utf8",
-        field->type() == FieldDescriptor::TYPE_STRING ? "True" : "False");
-  } else {
+        field->type() == FieldDescriptor::TYPE_STRING ? "true" : "false");
+  } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_INT32 ||
+             field->cpp_type() == FieldDescriptor::CPPTYPE_UINT32 ||
+             field->cpp_type() == FieldDescriptor::CPPTYPE_INT64 ||
+             field->cpp_type() == FieldDescriptor::CPPTYPE_UINT64) {
     printer->Print("GPBUtil::check^type^($var);\n", "type",
                    UnderscoresToCamelCase(field->cpp_type_name(), true));
   }
@@ -1615,8 +1667,8 @@ void GenerateMessageConstructorDocComment(io::Printer* printer,
   printer->Print(" *\n");
   for (int i = 0; i < message->field_count(); i++) {
     const FieldDescriptor* field = message->field(i);
-    printer->Print(" *     @type ^php_type^ $^var^\n", "php_type",
-                   PhpSetterTypeName(field, options), "var", field->name());
+    printer->Print(" *     @type ^phpdoc_type^ $^var^\n", "phpdoc_type",
+                   PhpDocSetterTypeName(field, options), "var", field->name());
     SourceLocation location;
     if (field->GetSourceLocation(&location)) {
       GenerateDocCommentBodyForLocation(printer, location, false, 10);
@@ -1643,13 +1695,13 @@ void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
   if (function_type == kFieldSetter) {
     if (field->type() == FieldDescriptor::TYPE_ENUM) {
       printer->Print(
-          " * @param ^php_type^ $var one of the values in {@see "
+          " * @param ^phpdoc_type^ $var one of the values in {@see "
           "^enum_class^}\n",
-          "php_type", PhpSetterTypeName(field, options), "enum_class",
+          "phpdoc_type", PhpDocSetterTypeName(field, options), "enum_class",
           absl::StrCat("\\", FullClassName(field->enum_type(), options)));
     } else {
-      printer->Print(" * @param ^php_type^ $var\n", "php_type",
-                     PhpSetterTypeName(field, options));
+      printer->Print(" * @param ^phpdoc_type^ $var\n", "phpdoc_type",
+                     PhpDocSetterTypeName(field, options));
     }
     printer->Print(" * @return $this\n");
   } else if (function_type == kFieldGetter) {
@@ -1658,14 +1710,14 @@ void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
         field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE;
     if (field->type() == FieldDescriptor::TYPE_ENUM) {
       printer->Print(
-          " * @return ^php_type^^maybe_null^ one of the values in {@see "
+          " * @return ^phpdoc_type^^maybe_null^ one of the values in {@see "
           "^enum_class^}\n",
-          "php_type", PhpGetterTypeName(field, options), "maybe_null",
+          "phpdoc_type", PhpDocGetterTypeName(field, options), "maybe_null",
           can_return_null ? "|null" : "", "enum_class",
           absl::StrCat("\\", FullClassName(field->enum_type(), options)));
     } else {
-      printer->Print(" * @return ^php_type^^maybe_null^\n", "php_type",
-                     PhpGetterTypeName(field, options), "maybe_null",
+      printer->Print(" * @return ^phpdoc_type^^maybe_null^\n", "phpdoc_type",
+                     PhpDocGetterTypeName(field, options), "maybe_null",
                      can_return_null ? "|null" : "");
     }
   }
@@ -1688,8 +1740,8 @@ void GenerateWrapperFieldGetterDocComment(io::Printer* printer,
   GenerateDocCommentBody(printer, field);
   printer->Print(" * Generated from protobuf field <code>^def^</code>\n", "def",
                  EscapePhpdoc(FirstLineOf(field->DebugString())));
-  printer->Print(" * @return ^php_type^|null\n", "php_type",
-                 PhpGetterTypeName(primitiveField, false));
+  printer->Print(" * @return ^phpdoc_type^|null\n", "phpdoc_type",
+                 PhpDocGetterTypeName(primitiveField, false));
   printer->Print(" */\n");
 }
 
@@ -1707,8 +1759,8 @@ void GenerateWrapperFieldSetterDocComment(io::Printer* printer,
   GenerateDocCommentBody(printer, field);
   printer->Print(" * Generated from protobuf field <code>^def^</code>\n", "def",
                  EscapePhpdoc(FirstLineOf(field->DebugString())));
-  printer->Print(" * @param ^php_type^|null $var\n", "php_type",
-                 PhpSetterTypeName(primitiveField, false));
+  printer->Print(" * @param ^phpdoc_type^|null $var\n", "phpdoc_type",
+                 PhpDocSetterTypeName(primitiveField, false));
   printer->Print(" * @return $this\n");
   printer->Print(" */\n");
 }

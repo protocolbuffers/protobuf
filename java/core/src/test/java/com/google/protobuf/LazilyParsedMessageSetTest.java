@@ -8,21 +8,41 @@
 package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
+import com.google.protobuf.ExtensionRegistryLite.LazyExtensionMode;
 import proto2_unittest.UnittestMset.RawMessageSet;
 import proto2_unittest.UnittestMset.TestMessageSetExtension1;
 import proto2_unittest.UnittestMset.TestMessageSetExtension2;
 import proto2_unittest.UnittestMset.TestMessageSetExtension3;
 import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
 import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSetWireFormatContainer;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /** Tests related to handling of MessageSets with lazily parsed extensions. */
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class LazilyParsedMessageSetTest {
+
+  @Parameters(name = "mode={0}")
+  public static List<Object[]> data() {
+    return Arrays.asList(
+        new Object[][] {{LazyExtensionMode.EAGER}, {LazyExtensionMode.LAZY_VERIFY_ON_ACCESS}});
+  }
+
+  private final LazyExtensionMode mode;
+  private LazyExtensionMode originalMode;
+
+  public LazilyParsedMessageSetTest(LazyExtensionMode mode) {
+    this.mode = mode;
+  }
+
   private static final int TYPE_ID_1 =
       TestMessageSetExtension1.getDescriptor().getExtensions().get(0).getNumber();
   private static final int TYPE_ID_2 =
@@ -35,6 +55,13 @@ public class LazilyParsedMessageSetTest {
   @Before
   public void setUp() {
     ExtensionRegistryLite.setEagerlyParseMessageSets(false);
+    originalMode = ExtensionRegistryLite.getLazyExtensionMode();
+    ExtensionRegistryLite.setLazyExtensionMode(mode);
+  }
+
+  @After
+  public void tearDown() {
+    ExtensionRegistryLite.setLazyExtensionMode(originalMode);
   }
 
   @Test
@@ -142,6 +169,13 @@ public class LazilyParsedMessageSetTest {
     // Re-parse as a TestMessageSet, so that all extensions are lazy
     TestMessageSet messageSet = TestMessageSet.parseFrom(inputData, extensionRegistry);
 
+    if (mode == LazyExtensionMode.LAZY_VERIFY_ON_ACCESS) {
+      assertThrows(
+          InvalidProtobufRuntimeException.class,
+          () -> messageSet.getExtension(TestMessageSetExtension1.messageSetExtension));
+      return;
+    }
+
     assertThat(messageSet.getExtension(TestMessageSetExtension1.messageSetExtension))
         .isEqualTo(TestMessageSetExtension1.getDefaultInstance());
 
@@ -173,6 +207,14 @@ public class LazilyParsedMessageSetTest {
 
     // Effectively cache the serialized size of the message set.
     assertThat(container.getSerializedSize()).isEqualTo(11);
+
+    if (mode == LazyExtensionMode.LAZY_VERIFY_ON_ACCESS) {
+      assertThrows(
+          InvalidProtobufRuntimeException.class,
+          () ->
+              container.getMessageSet().getExtension(TestMessageSetExtension1.messageSetExtension));
+      return;
+    }
 
     // getExtension will notice that the extension is corrupted and replace it with the default
     // empty message.

@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <limits>
 #include <string>
+#include <type_traits>
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -61,6 +62,7 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::Not;
 
@@ -96,6 +98,17 @@ UNITTEST::NestedTestAllTypes InitNestedProto(int depth) {
   return p;
 }
 }  // namespace
+
+TEST(MESSAGE_TEST_NAME, DieWhenDefaultInstanceIsMutated) {
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+  GTEST_SKIP() << "Skipping test as the failure is expected only with "
+                  "PROTOBUF_MESSAGE_GLOBALS";
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
+
+  auto* message = const_cast<UNITTEST::TestAllTypes*>(
+      &UNITTEST::TestAllTypes::default_instance());
+  EXPECT_DEATH(message->set_optional_int32(2), "SIGSEGV|Check failed");
+}
 
 TEST(MESSAGE_TEST_NAME, SerializeHelpers) {
   // TODO:  Test more helpers?  They're all two-liners so it seems
@@ -282,9 +295,11 @@ TEST(MESSAGE_TEST_NAME, ParseFailsIfNotInitialized) {
 
   {
     absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
-    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, absl::StrCat(
-            "Can't parse message of type \"", UNITTEST_PACKAGE_NAME,
-            ".TestRequired\" because it is missing required fields: a, b, c")));
+    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_,
+                         absl::StrCat("Can't parse message of type \"",
+                                      UNITTEST_PACKAGE_NAME,
+                                      ".TestRequired\" because it is missing "
+                                      "required fields: a, b, c")));
     log.StartCapturingLogs();
     EXPECT_FALSE(message.ParseFromString(""));
   }
@@ -300,10 +315,13 @@ TEST(MESSAGE_TEST_NAME, ParseFailsIfSubmessageNotInitialized) {
 
   {
     absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
-    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, absl::StrCat(
-          "Can't parse message of type \"", UNITTEST_PACKAGE_NAME,
-          ".TestRequiredForeign\" because it is missing required fields: "
-          "optional_message.a, optional_message.b, optional_message.c")));
+    EXPECT_CALL(
+        log,
+        Log(absl::LogSeverity::kError, testing::_,
+            absl::StrCat(
+                "Can't parse message of type \"", UNITTEST_PACKAGE_NAME,
+                ".TestRequiredForeign\" because it is missing required fields: "
+                "optional_message.a, optional_message.b, optional_message.c")));
     log.StartCapturingLogs();
     EXPECT_FALSE(message.ParseFromString(source.SerializePartialAsString()));
   }
@@ -319,15 +337,17 @@ TEST(MESSAGE_TEST_NAME, ParseFailsIfExtensionNotInitialized) {
   EXPECT_TRUE(message.ParsePartialFromString(serialized));
   EXPECT_FALSE(message.IsInitialized());
 
-{
+  {
     absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
-    EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, absl::Substitute(
-                  "Can't parse message of type \"$0.TestChildExtension\" "
-                  "because it is missing required fields: "
-                  "optional_extension.($0.TestRequired.single).a, "
-                  "optional_extension.($0.TestRequired.single).b, "
-                  "optional_extension.($0.TestRequired.single).c",
-                  UNITTEST_PACKAGE_NAME)));
+    EXPECT_CALL(log,
+                Log(absl::LogSeverity::kError, testing::_,
+                    absl::Substitute(
+                        "Can't parse message of type \"$0.TestChildExtension\" "
+                        "because it is missing required fields: "
+                        "optional_extension.($0.TestRequired.single).a, "
+                        "optional_extension.($0.TestRequired.single).b, "
+                        "optional_extension.($0.TestRequired.single).c",
+                        UNITTEST_PACKAGE_NAME)));
     log.StartCapturingLogs();
     EXPECT_FALSE(message.ParseFromString(source.SerializePartialAsString()));
   }
@@ -1428,9 +1448,8 @@ TEST(MESSAGE_TEST_NAME, MessageTraitsWork) {
   EXPECT_EQ(
       &UNITTEST::TestAllTypes::default_instance(),
       internal::MessageTraits<UNITTEST::TestAllTypes>::default_instance());
-  EXPECT_EQ(
-      internal::GetClassData(UNITTEST::TestAllTypes::default_instance()),
-      internal::MessageTraits<UNITTEST::TestAllTypes>::class_data());
+  EXPECT_EQ(internal::GetClassData(UNITTEST::TestAllTypes::default_instance()),
+            internal::MessageTraits<UNITTEST::TestAllTypes>::class_data());
 }
 
 
@@ -1883,7 +1902,7 @@ TEST(MESSAGE_TEST_NAME, TestInt32Parsers) {
           if (field->name() == "other_field") continue;
           SCOPED_TRACE(field->full_name());
           for (int32_t value : {1, 0, -1, (std::numeric_limits<int32_t>::min)(),
-                              (std::numeric_limits<int32_t>::max)()}) {
+                                (std::numeric_limits<int32_t>::max)()}) {
             SCOPED_TRACE(value);
             auto encoded =
                 EncodeInt32Value(field->number(), value, non_canonical_bytes);
@@ -2225,6 +2244,48 @@ TEST(MESSAGE_TEST_NAME, AllAddMethodsOnRepeatedStringField) {
   msg.add_repeated_string({'a', 'b', 'c'});
   EXPECT_EQ(msg.repeated_string(0), "abc");
   msg.clear_repeated_string();
+}
+
+TEST(MESSAGE_TEST_NAME, EnumerateEnumValuesTest) {
+  using M = UNITTEST::TestAllTypes;
+  using E = M::NestedEnum;
+  auto view = google::protobuf::EnumerateEnumValues<E>();
+
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(4, view.size());
+
+  std::vector<E> values;
+  for (auto e : view) values.push_back(e);
+  EXPECT_THAT(values, ElementsAre(M::FOO, M::BAR, M::BAZ, M::NEG));
+
+  // Again, but let std::vector do the iteration to make sure they really follow
+  // the contract.
+  values = std::vector<E>(view.begin(), view.end());
+  EXPECT_THAT(values, ElementsAre(M::FOO, M::BAR, M::BAZ, M::NEG));
+}
+
+TEST(MESSAGE_TEST_NAME, EnumerateEnumValuesIteratorTest) {
+  using M = UNITTEST::TestAllTypes;
+  using E = M::NestedEnum;
+  auto view = google::protobuf::EnumerateEnumValues<E>();
+  // Pre Increment
+  auto it = view.begin();
+  EXPECT_EQ(M::FOO, *it);
+  EXPECT_EQ(M::BAR, *++it);
+
+  // operator==
+  auto it2 = view.begin();
+  EXPECT_FALSE(it == it2);
+  EXPECT_TRUE(it != it2);
+  ++it2;
+  EXPECT_FALSE(it != it2);
+  EXPECT_TRUE(it == it2);
+
+  // Post increment
+  it = view.begin();
+  EXPECT_EQ(M::FOO, *it);
+  EXPECT_EQ(M::FOO, *it++);
+  EXPECT_EQ(M::BAR, *it);
 }
 
 

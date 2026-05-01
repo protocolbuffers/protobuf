@@ -8,7 +8,9 @@
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_CPPOPTS")
+load("//bazel:proto_library.bzl", "proto_library")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_CPPOPTS", "UPB_DEFAULT_FEATURES")
+load("//upb/bazel:upb_proto_library.bzl", "upb_proto_library")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -22,6 +24,7 @@ cc_library(
         "internal/decoder.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = [
         "//upb:__pkg__",
         "//upb/wire/decode_fast:__subpackages__",
@@ -50,8 +53,10 @@ cc_library(
     hdrs = [
         "decode.h",
         "encode.h",
+        "internal/encoder.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":decoder",
@@ -83,11 +88,13 @@ cc_test(
     name = "decode_test",
     srcs = ["decode_test.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
     deps = [
         ":wire",
         "//upb/mem",
         "//upb/message",
         "//upb/message:message_cc",
+        "//upb/mini_descriptor",
         "//upb/mini_table",
         "//upb/port",
         "//upb/wire/decode_fast:combinations",
@@ -101,11 +108,42 @@ cc_test(
     ],
 )
 
+proto_library(
+    name = "encode_test_proto",
+    srcs = ["encode_test.proto"],
+)
+
+upb_proto_library(
+    name = "encode_test_upb_proto",
+    deps = [":encode_test_proto"],
+)
+
+cc_test(
+    name = "encode_test",
+    srcs = ["encode_test.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
+    deps = [
+        ":encode_test_upb_proto",
+        ":wire",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/message:internal",
+        "//upb/mini_table",
+        "//upb/mini_table:internal",
+        "//upb/port",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_binary(
     name = "decode_benchmark",
     testonly = True,
     srcs = ["decode_benchmark.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
     deps = [
         ":wire",
         "//upb/mem",
@@ -127,6 +165,7 @@ cc_library(
     name = "reader_internal",
     hdrs = ["internal/reader.h"],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//upb:__pkg__"],
     deps = [
         ":eps_copy_input_stream",
@@ -142,6 +181,7 @@ cc_library(
         "types.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":eps_copy_input_stream",
@@ -157,6 +197,7 @@ cc_library(
         "writer.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = [
         "//upb:__pkg__",
         "//upb/message:__pkg__",
@@ -198,7 +239,10 @@ cc_test(
 cc_library(
     name = "eps_copy_input_stream_internal",
     hdrs = ["internal/eps_copy_input_stream.h"],
-    visibility = ["//upb:__pkg__"],
+    visibility = [
+        "//upb:__pkg__",
+        "//upb/wire/decode_fast:__subpackages__",
+    ],
     deps = [
         "//upb/base",
         "//upb/mem",
@@ -211,6 +255,7 @@ cc_library(
     srcs = ["eps_copy_input_stream.c"],
     hdrs = ["eps_copy_input_stream.h"],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":eps_copy_input_stream_internal",
@@ -251,6 +296,16 @@ filegroup(
     srcs = glob(
         [
             "**/*test.cc",
+        ],
+    ),
+    visibility = ["//upb:__pkg__"],
+)
+
+filegroup(
+    name = "test_protos",
+    srcs = glob(
+        [
+            "**/*.proto",
         ],
     ),
     visibility = ["//upb:__pkg__"],

@@ -290,15 +290,23 @@ void EnumGenerator::GenerateGetEnumDescriptorSpecializations(io::Printer* p) {
     template <>
     struct is_proto_enum<$::Msg_Enum$> : std::true_type {};
   )cc");
-  if (!has_reflection_) {
-    return;
+  if (has_reflection_) {
+    p->Emit(R"cc(
+      template <>
+      inline const EnumDescriptor* $nonnull$ GetEnumDescriptor<$::Msg_Enum$>() {
+        return $::Msg_Enum$_descriptor();
+      }
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      template <>
+      struct internal::LiteEnumFuncs<$::Msg_Enum$> {
+        static constexpr bool kIsDefined = true;
+        static constexpr auto kParseFunc = $::Msg_Enum$_Parse;
+        static constexpr auto kNameFunc = $::Msg_Enum$_Name<int>;
+      };
+    )cc");
   }
-  p->Emit(R"cc(
-    template <>
-    inline const EnumDescriptor* $nonnull$ GetEnumDescriptor<$::Msg_Enum$>() {
-      return $::Msg_Enum$_descriptor();
-    }
-  )cc");
 }
 
 
@@ -493,9 +501,12 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
             [](const auto& a, const auto& b) { return a.number == b.number; }),
         offsets_by_number.end());
 
+    auto v = p->WithVars({
+        {"num_unique", number_to_canonical_name.size()},
+    });
+
     p->Emit(
         {
-            {"num_unique", number_to_canonical_name.size()},
             {"num_declared", enum_->value_count()},
             {"names",
              // We concatenate all the names for a given enum into one big
@@ -534,9 +545,6 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
              }},
         },
         R"cc(
-          static $pbi$::ExplicitlyConstructed<::std::string>
-              $Msg_Enum$_strings[$num_unique$] = {};
-
           static const char $Msg_Enum$_names[] = {
               $names$,
           };
@@ -549,18 +557,6 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
               $entries_by_number$,
           };
 
-          $nodiscard $$return_type$ $Msg_Enum$_Name($Msg_Enum$ value) {
-            static const bool kDummy = $pbi$::InitializeEnumStrings(
-                $Msg_Enum$_entries, $Msg_Enum$_entries_by_number, $num_unique$,
-                $Msg_Enum$_strings);
-            (void)kDummy;
-
-            int idx = $pbi$::LookUpEnumName($Msg_Enum$_entries,
-                                            $Msg_Enum$_entries_by_number,
-                                            $num_unique$, value);
-            return idx == -1 ? $pbi$::GetEmptyString() : $Msg_Enum$_strings[idx].get();
-          }
-
           $nodiscard $bool $Msg_Enum$_Parse(::absl::string_view name,
                                             $Msg_Enum$* $nonnull$ value) {
             int int_value;
@@ -572,6 +568,38 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
             return success;
           }
         )cc");
+    if (CppGenerator::GetResolvedSourceFeatures(*enum_)
+            .GetExtension(::pb::cpp)
+            .enum_name_uses_string_view()) {
+      p->Emit({}, R"cc(
+        $nodiscard $::absl::string_view $Msg_Enum$_Name($Msg_Enum$ value) {
+          int idx = $pbi$::LookUpEnumName($Msg_Enum$_entries,
+                                          $Msg_Enum$_entries_by_number,
+                                          $num_unique$, value);
+          return idx == -1
+                     ? ""
+                     : $Msg_Enum$_entries[$Msg_Enum$_entries_by_number[idx]]
+                           .name;
+        }
+      )cc");
+    } else {
+      p->Emit({}, R"cc(
+        static $pbi$::ExplicitlyConstructed<::std::string>
+            $Msg_Enum$_strings[$num_unique$] = {};
+
+        $nodiscard $const ::std::string& $Msg_Enum$_Name($Msg_Enum$ value) {
+          static const bool kDummy = $pbi$::InitializeEnumStrings(
+              $Msg_Enum$_entries, $Msg_Enum$_entries_by_number, $num_unique$,
+              $Msg_Enum$_strings);
+          (void)kDummy;
+
+          int idx = $pbi$::LookUpEnumName($Msg_Enum$_entries,
+                                          $Msg_Enum$_entries_by_number,
+                                          $num_unique$, value);
+          return idx == -1 ? $pbi$::GetEmptyString() : $Msg_Enum$_strings[idx].get();
+        }
+      )cc");
+    }
   }
 }
 }  // namespace cpp

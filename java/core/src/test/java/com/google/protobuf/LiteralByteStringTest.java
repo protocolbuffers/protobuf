@@ -20,6 +20,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -445,7 +446,7 @@ public class LiteralByteStringTest {
   @Test
   public void testToString() throws UnsupportedEncodingException {
     String testString = "I love unicode \u1234\u5678 characters";
-    ByteString unicode = ByteString.wrap(testString.getBytes(Internal.UTF_8));
+    ByteString unicode = ByteString.wrap(testString.getBytes(StandardCharsets.UTF_8));
     String roundTripString = unicode.toString(UTF_8);
     assertWithMessage("%s unicode must match", classUnderTest)
         .that(testString)
@@ -455,8 +456,8 @@ public class LiteralByteStringTest {
   @Test
   public void testCharsetToString() {
     String testString = "I love unicode \u1234\u5678 characters";
-    ByteString unicode = ByteString.wrap(testString.getBytes(Internal.UTF_8));
-    String roundTripString = unicode.toString(Internal.UTF_8);
+    ByteString unicode = ByteString.wrap(testString.getBytes(StandardCharsets.UTF_8));
+    String roundTripString = unicode.toString(StandardCharsets.UTF_8);
     assertWithMessage("%s unicode must match", classUnderTest)
         .that(testString)
         .isEqualTo(roundTripString);
@@ -465,8 +466,8 @@ public class LiteralByteStringTest {
   @Test
   public void testToString_returnsCanonicalEmptyString() {
     assertWithMessage("%s must be the same string references", classUnderTest)
-        .that(ByteString.EMPTY.toString(Internal.UTF_8))
-        .isSameInstanceAs(ByteString.wrap(new byte[] {}).toString(Internal.UTF_8));
+        .that(ByteString.EMPTY.toString(StandardCharsets.UTF_8))
+        .isSameInstanceAs(ByteString.wrap(new byte[] {}).toString(StandardCharsets.UTF_8));
   }
 
   @Test

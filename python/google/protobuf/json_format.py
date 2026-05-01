@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Contains routines for printing protocol messages in JSON format.
 
 Simple usage example:
@@ -19,7 +18,6 @@ Simple usage example:
 
 __author__ = 'jieluo@google.com (Jie Luo)'
 
-
 import base64
 from collections import OrderedDict
 import json
@@ -31,7 +29,6 @@ from google.protobuf import descriptor
 from google.protobuf import message_factory
 from google.protobuf import symbol_database
 from google.protobuf.internal import type_checkers
-
 
 _INT_TYPES = frozenset([
     descriptor.FieldDescriptor.CPPTYPE_INT32,
@@ -86,6 +83,8 @@ def MessageToJson(
     descriptor_pool=None,
     ensure_ascii=True,
     always_print_fields_with_no_presence=False,
+    *,
+    unquote_int64_if_possible=False,
 ):
   """Converts protobuf message to JSON format.
 
@@ -107,6 +106,9 @@ def MessageToJson(
       default.
     ensure_ascii: If True, strings with non-ASCII characters are escaped. If
       False, Unicode strings are returned unchanged.
+    unquote_int64_if_possible: If True, unquote int64 fields for values that are
+      safe to emit as numbers (all values smaller than 2^53 and a sparse set of
+      values that are larger).
 
   Returns:
     A string containing the JSON formatted protocol buffer message.
@@ -116,6 +118,7 @@ def MessageToJson(
       use_integers_for_enums,
       descriptor_pool,
       always_print_fields_with_no_presence,
+      unquote_int64_if_possible=unquote_int64_if_possible,
   )
   return printer.ToJsonString(message, indent, sort_keys, ensure_ascii)
 
@@ -126,6 +129,8 @@ def MessageToDict(
     preserving_proto_field_name=False,
     use_integers_for_enums=False,
     descriptor_pool=None,
+    *,
+    unquote_int64_if_possible=False,
 ):
   """Converts protobuf message to a dictionary.
 
@@ -143,6 +148,9 @@ def MessageToDict(
     use_integers_for_enums: If true, print integers instead of enum names.
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
       default.
+    unquote_int64_if_possible: If True, unquote int64 fields for values that are
+      safe to emit as numbers (all values smaller than 2^53 and a sparse set of
+      values that are larger).
 
   Returns:
     A dict representation of the protocol buffer message.
@@ -152,6 +160,7 @@ def MessageToDict(
       use_integers_for_enums,
       descriptor_pool,
       always_print_fields_with_no_presence,
+      unquote_int64_if_possible=unquote_int64_if_possible,
   )
   # pylint: disable=protected-access
   return printer._MessageToJsonObject(message)
@@ -174,6 +183,8 @@ class _Printer(object):
       use_integers_for_enums=False,
       descriptor_pool=None,
       always_print_fields_with_no_presence=False,
+      *,
+      unquote_int64_if_possible=False,
   ):
     self.always_print_fields_with_no_presence = (
         always_print_fields_with_no_presence
@@ -181,6 +192,7 @@ class _Printer(object):
     self.preserving_proto_field_name = preserving_proto_field_name
     self.use_integers_for_enums = use_integers_for_enums
     self.descriptor_pool = descriptor_pool
+    self.unquote_int64_if_possible = unquote_int64_if_possible
 
   def ToJsonString(self, message, indent, sort_keys, ensure_ascii):
     js = self._MessageToJsonObject(message)
@@ -294,7 +306,10 @@ class _Printer(object):
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_BOOL:
       return bool(value)
     elif field.cpp_type in _INT64_TYPES:
-      return str(value)
+      if self.unquote_int64_if_possible and float(value) == value:
+        return value
+      else:
+        return str(value)
     elif field.cpp_type in _FLOAT_TYPES:
       if math.isinf(value):
         if value < 0.0:
@@ -506,6 +521,10 @@ class _Parser(object):
     Raises:
       ParseError: In case of convert problems.
     """
+    # Increment recursion depth at message entry. The max_recursion_depth limit
+    # is exclusive: a depth value equal to max_recursion_depth will trigger an
+    # error. For example, with max_recursion_depth=5, nesting up to depth 4 is
+    # allowed, but attempting depth 5 raises ParseError.
     self.recursion_depth += 1
     if self.recursion_depth > self.max_recursion_depth:
       raise ParseError(
@@ -726,12 +745,9 @@ class _Parser(object):
           value['value'], sub_message, '{0}.value'.format(path)
       )
     elif full_name in _WKTJSONMETHODS:
-      methodcaller(
-          _WKTJSONMETHODS[full_name][1],
-          value['value'],
-          sub_message,
-          '{0}.value'.format(path),
-      )(self)
+      # For well-known types (including nested Any), use ConvertMessage
+      # to ensure recursion depth is properly tracked
+      self.ConvertMessage(value['value'], sub_message, '{0}.value'.format(path))
     else:
       del value['@type']
       try:
@@ -754,9 +770,9 @@ class _Parser(object):
   def _ConvertValueMessage(self, value, message, path):
     """Convert a JSON representation into Value message."""
     if isinstance(value, dict):
-      self._ConvertStructMessage(value, message.struct_value, path)
+      self.ConvertMessage(value, message.struct_value, path)
     elif isinstance(value, _LIST_LIKE):
-      self._ConvertListOrTupleValueMessage(value, message.list_value, path)
+      self.ConvertMessage(value, message.list_value, path)
     elif value is None:
       message.null_value = 0
     elif isinstance(value, bool):
@@ -780,7 +796,7 @@ class _Parser(object):
       )
     message.ClearField('values')
     for index, item in enumerate(value):
-      self._ConvertValueMessage(
+      self.ConvertMessage(
           item, message.values.add(), '{0}[{1}]'.format(path, index)
       )
 
@@ -794,7 +810,7 @@ class _Parser(object):
     # there are no values.
     message.Clear()
     for key in value:
-      self._ConvertValueMessage(
+      self.ConvertMessage(
           value[key], message.fields[key], '{0}.{1}'.format(path, key)
       )
     return

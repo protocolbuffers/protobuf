@@ -12,7 +12,7 @@ load(
     "compile_edition_defaults",
     "embed_edition_defaults",
 )
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_FEATURES")
 load(
     "//upb/cmake:build_defs.bzl",
     "staleness_test",
@@ -47,6 +47,7 @@ bootstrap_cc_library(
         ":descriptor_upb_proto",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         "//upb/base",
@@ -118,6 +119,7 @@ bootstrap_cc_library(
     ],
     bootstrap_deps = [":descriptor_upb_proto"],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         "//upb/base",
@@ -143,6 +145,7 @@ cc_library(
         "internal/def_pool.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     textual_hdrs = [
         "//upb/port:inc",
     ],
@@ -184,9 +187,11 @@ cc_test(
         "reflection_test.cc",
     ],
     deps = [
+        ":internal",
         ":reflection",
         "//src/google/protobuf",
         "//src/google/protobuf:descriptor_upb_c_proto",
+        "//src/google/protobuf:unittest_upb_reflection_proto",
         "//upb/base",
         "//upb/mem",
         "//upb/test:parse_text_proto",

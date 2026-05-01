@@ -912,7 +912,7 @@ bool EncodedDescriptorDatabase::FindAllFileNames(
 }
 
 bool EncodedDescriptorDatabase::MaybeParse(
-    std::pair<const void * PROTOBUF_NULLABLE, int> encoded_file,
+    std::pair<const void* PROTOBUF_NULLABLE, int> encoded_file,
     FileDescriptorProto* PROTOBUF_NONNULL output) {
   if (encoded_file.first == nullptr) return false;
   absl::string_view source(static_cast<const char*>(encoded_file.first),

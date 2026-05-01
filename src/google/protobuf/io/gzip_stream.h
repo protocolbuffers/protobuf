@@ -20,16 +20,18 @@
 #ifndef GOOGLE_PROTOBUF_IO_GZIP_STREAM_H__
 #define GOOGLE_PROTOBUF_IO_GZIP_STREAM_H__
 
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/port.h"
-#include <zlib.h>
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
+namespace internal {
+struct StreamContext;
+}  // namespace internal
+
 namespace io {
 
 // A ZeroCopyInputStream that reads compressed data through zlib
@@ -56,10 +58,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
   ~GzipInputStream() override;
 
   // Return last error message or NULL if no error.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline const char* ZlibErrorMessage()
-      const {
-    return zcontext_.msg;
-  }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const char* ZlibErrorMessage() const;
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline int ZlibErrorCode() const {
     return zerror_;
   }
@@ -76,7 +75,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
 
   ZeroCopyInputStream* sub_stream_;
 
-  z_stream zcontext_;
+  internal::StreamContext* zcontext_;
   int zerror_;
 
   void* output_buffer_;
@@ -130,10 +129,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
   ~GzipOutputStream() override;
 
   // Return last error message or NULL if no error.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline const char* ZlibErrorMessage()
-      const {
-    return zcontext_.msg;
-  }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const char* ZlibErrorMessage() const;
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline int ZlibErrorCode() const {
     return zerror_;
   }
@@ -170,7 +166,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
   void* sub_data_;
   int sub_data_size_;
 
-  z_stream zcontext_;
+  internal::StreamContext* zcontext_;
   int zerror_;
   void* input_buffer_;
   size_t input_buffer_length_;

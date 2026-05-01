@@ -242,6 +242,7 @@ message TestAllTypesProto2 {
       optional MessageSetCorrectExtension2 message_set_extension = 4135312;
     }
     optional int32 i = 9;
+    optional MessageSetCorrect sub_msg = 10;
   }
 
   message ExtensionWithOneof {
@@ -270,6 +271,8 @@ enum ForeignEnumProto2 {
 
 extend TestAllTypesProto2 {
   optional int32 extension_int32 = 120;
+  optional string extension_string = 133;
+  optional bytes extension_bytes = 134;
 }
 
 extend TestAllTypesProto2 {

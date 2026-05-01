@@ -55,11 +55,20 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
                             const std::string& input_protobuf,
                             const std::string& equivalent_text_format);
 
+  template <typename MessageType>
+  void ExpectParseFailureForProto(const std::string& proto,
+                                  const std::string& test_name,
+                                  ConformanceLevel level);
+
   void RunDelimitedFieldTests();
 
   void RunUnstableTests();
 
+  void RunUtf8ValidationTests();
+
   void RunMessageSetTests();
+
+  void RunRecursionLimitTests();
 
   template <typename MessageType>
   friend class BinaryAndJsonConformanceSuiteImpl;
@@ -154,6 +163,7 @@ class BinaryAndJsonConformanceSuiteImpl {
   void TestIllegalTags();
   void TestUnmatchedGroup();
   void TestUnknownWireType();
+  void TestInvalidUtf8String();
   void TestOneofMessage();
   void TestUnknownMessage();
   void TestUnknownOrdering();

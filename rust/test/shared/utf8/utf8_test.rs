@@ -19,7 +19,7 @@ use protobuf::prelude::*;
 use feature_verify_rust_proto::Verify;
 use no_features_proto2_rust_proto::NoFeaturesProto2;
 use no_features_proto3_rust_proto::NoFeaturesProto3;
-use protobuf::{ParseError, ProtoStr};
+use protobuf::{Parse, ParseError, ProtoStr, Serialize};
 
 // We use 0b1000_0000, since 0b1XXX_XXXX in UTF-8 denotes a byte 2-4, but never
 // the first byte.
@@ -27,13 +27,7 @@ const NON_UTF8_BYTES: &[u8] = b"\x80";
 
 // Returns ProtoStr with non-UTF-8 content.
 fn make_non_utf8_proto_str() -> &'static ProtoStr {
-    unsafe {
-        // SAFETY: This is safe under current implementation of C++ and UPB kernels.
-        // In the hypothethical pure Rust runtime this would be library-level UB - but
-        // this test is specifically present to demonstrate UTF-8 behavior under
-        // C++ and UPB kernels.
-        ProtoStr::from_utf8_unchecked(NON_UTF8_BYTES)
-    }
+    ProtoStr::from_utf8_unchecked(NON_UTF8_BYTES)
 }
 
 #[gtest]

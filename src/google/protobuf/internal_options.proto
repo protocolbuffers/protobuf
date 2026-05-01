@@ -24,7 +24,14 @@ message InternalOptionsForce {
   }
 }
 
-message InternalFieldOptionsCpp {}
+message InternalFieldOptionsCpp {
+  message MicroString {
+    InternalOptionsForce.Enum force = 1;
+    // If set, we force the SSO size of the field.
+    int32 sso_size = 2;
+  }
+  MicroString micro_string = 1;
+}
 
 message InternalFieldOptions {
   InternalFieldOptionsCpp cpp = 1;

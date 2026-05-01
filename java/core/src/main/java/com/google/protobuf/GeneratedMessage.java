@@ -684,7 +684,14 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
 
     @Override
     public BuilderT setField(final FieldDescriptor field, final Object value) {
-      internalGetFieldAccessorTable().getField(field).set(this, value);
+      // This transformation should be kept as long as LazyField is still around. We will use
+      // InternalLazyField as the internal details so we should not allow the legacy LazyField to be
+      // passed in.
+      Object valueToSet = value;
+      if (valueToSet instanceof LazyField) {
+        valueToSet = ((LazyField) value).getValue();
+      }
+      internalGetFieldAccessorTable().getField(field).set(this, valueToSet);
       return (BuilderT) this;
     }
 
@@ -1169,24 +1176,27 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       public void writeUntil(final int end, final CodedOutputStream output) throws IOException {
         while (next != null && next.getKey().getNumber() < end) {
           FieldDescriptor descriptor = next.getKey();
-          if (messageSetWireFormat
-              && descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE
-              && !descriptor.isRepeated()) {
-            if (next instanceof LazyField.LazyEntry<?>) {
-              output.writeRawMessageSetExtension(
-                  descriptor.getNumber(),
-                  ((LazyField.LazyEntry<?>) next).getField().toByteString());
-            } else {
-              output.writeMessageSetExtension(descriptor.getNumber(), (Message) next.getValue());
-            }
+
+          boolean isSingularMessage =
+              descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE
+                  && !descriptor.isRepeated();
+          boolean lazy = next instanceof InternalLazyField.LazyEntry<?>;
+
+          if (lazy && !isSingularMessage) {
+            throw new IllegalStateException("Lazy fields must be singular messages.");
+          }
+
+          if (messageSetWireFormat && lazy) {
+            output.writeRawMessageSetExtension(
+                descriptor.getNumber(),
+                ((InternalLazyField.LazyEntry<?>) next).getField().toByteString());
+          } else if (messageSetWireFormat && isSingularMessage) {
+            output.writeMessageSetExtension(descriptor.getNumber(), (Message) next.getValue());
+          } else if (lazy) {
+            output.writeBytes(
+                descriptor.getNumber(),
+                ((InternalLazyField.LazyEntry<?>) next).getField().toByteString());
           } else {
-            // TODO: Taken care of following code, it may cause
-            // problem when we use LazyField for normal fields/extensions.
-            // Due to the optional field can be duplicated at the end of
-            // serialized bytes, which will make the serialized size change
-            // after lazy field parsed. So when we use LazyField globally,
-            // we need to change the following write method to write cached
-            // bytes directly rather than write the parsed message.
             FieldSet.writeField(descriptor, next.getValue(), output);
           }
           if (iter.hasNext()) {
@@ -1724,7 +1734,14 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       if (field.isExtension()) {
         verifyContainingType(field);
         ensureExtensionsIsMutable();
-        extensions.setField(field, value);
+        // This transformation should be kept as long as LazyField is still around. We will use
+        // InternalLazyField as the internal details so we should not allow the legacy LazyField to
+        // be passed in.
+        if (value instanceof LazyField) {
+          extensions.setField(field, ((LazyField) value).getValue());
+        } else {
+          extensions.setField(field, value);
+        }
         onChanged();
         return (BuilderT) this;
       } else {

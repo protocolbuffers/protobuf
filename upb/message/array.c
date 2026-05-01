@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/internal/log2.h"
 #include "upb/mem/arena.h"
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/types.h"
@@ -61,6 +62,46 @@ bool upb_Array_Append(upb_Array* arr, upb_MessageValue val, upb_Arena* arena) {
     return false;
   }
   upb_Array_Set(arr, arr->UPB_PRIVATE(size) - 1, val);
+  return true;
+}
+
+bool upb_Array_Copy(upb_Array* dst, const upb_Array* src, upb_Arena* arena) {
+  UPB_ASSERT(dst);
+  UPB_ASSERT(src);
+  UPB_ASSERT(!upb_Array_IsFrozen(dst));
+  if (dst == src) return true;
+  size_t len = upb_Array_Size(src);
+  if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(dst, len, arena)) {
+    return false;
+  }
+  if (len == 0) return true;
+  const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(dst);
+  const int src_lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(src);
+  UPB_ASSERT(lg2 == src_lg2);
+  char* dst_data = upb_Array_MutableDataPtr(dst);
+  const char* src_data = upb_Array_DataPtr(src);
+  memcpy(dst_data, src_data, len << lg2);
+  return true;
+}
+
+bool upb_Array_AppendAll(upb_Array* dst, const upb_Array* src,
+                         upb_Arena* arena) {
+  UPB_ASSERT(!upb_Array_IsFrozen(dst));
+  UPB_ASSERT(src);
+  size_t src_len = upb_Array_Size(src);
+  if (src_len == 0) return true;
+  size_t dst_len = upb_Array_Size(dst);
+  size_t len = dst_len + src_len;
+  if (UPB_UNLIKELY(len < dst_len)) return false;
+  if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(dst, len, arena)) {
+    return false;
+  }
+  const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(dst);
+  const int src_lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(src);
+  UPB_ASSERT(lg2 == src_lg2);
+  char* dst_data = upb_Array_MutableDataPtr(dst);
+  const char* src_data = upb_Array_DataPtr(src);
+  memcpy(dst_data + (dst_len << lg2), src_data, src_len << lg2);
   return true;
 }
 
@@ -124,9 +165,17 @@ bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
   void* ptr = upb_Array_MutableDataPtr(array);
 
   // Log2 ceiling of size.
-  while (new_capacity < min_capacity) new_capacity *= 2;
+  while (new_capacity < min_capacity) {
+    if (upb_ShlOverflow(&new_capacity, 1)) {
+      new_capacity = SIZE_MAX;
+      break;
+    }
+  }
 
-  const size_t new_bytes = new_capacity << lg2;
+  size_t new_bytes = new_capacity;
+  if (upb_ShlOverflow(&new_bytes, lg2)) {
+    return false;
+  }
   ptr = upb_Arena_Realloc(arena, ptr, old_bytes, new_bytes);
   if (!ptr) return false;
 
