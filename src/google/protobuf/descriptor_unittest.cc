@@ -243,6 +243,24 @@ void AddEmptyEnum(FileDescriptorProto* file, absl::string_view name) {
   AddEnumValue(AddEnum(file, name), absl::StrCat(name, "_DUMMY"), 1);
 }
 
+std::string BuildSerializedFileDescriptorProtoWithEmptyMessages(
+    size_t message_count) {
+  constexpr char kName[] = "x.proto";
+
+  std::string out;
+  out.reserve(2 + sizeof(kName) - 1 + message_count * 2);
+  out.push_back('\x0a');
+  out.push_back(static_cast<char>(sizeof(kName) - 1));
+  out.append(kName, sizeof(kName) - 1);
+
+  for (size_t i = 0; i < message_count; ++i) {
+    out.push_back('\x22');
+    out.push_back('\x00');
+  }
+
+  return out;
+}
+
 // ===================================================================
 
 // Test simple files.
@@ -581,6 +599,26 @@ TEST_F(FileDescriptorTest, CopyHeadingTo) {
     EXPECT_TRUE(other.message_type().empty());
     EXPECT_EQ(&other.options().features(), &FeatureSet::default_instance());
   }
+}
+
+TEST(DescriptorPoolTest, RejectsDescriptorAllocationPlanningOverflow) {
+  const size_t kOverflowingMessageCount =
+      static_cast<size_t>(std::numeric_limits<int>::max()) /
+          sizeof(Descriptor) +
+      1;
+
+  FileDescriptorProto proto;
+  ASSERT_TRUE(proto.ParseFromString(
+      BuildSerializedFileDescriptorProtoWithEmptyMessages(
+          kOverflowingMessageCount)));
+  ASSERT_EQ(proto.message_type_size(), kOverflowingMessageCount);
+
+  DescriptorPool pool;
+  MockErrorCollector error_collector;
+  EXPECT_EQ(pool.BuildFileCollectingErrors(proto, &error_collector), nullptr);
+  EXPECT_THAT(error_collector.text_,
+              HasSubstr("Descriptor allocation planning exceeded "
+                        "implementation limits."));
 }
 
 void ExtractDebugString(
