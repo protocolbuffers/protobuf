@@ -2737,10 +2737,11 @@ Parse PROTO_FILES and generate output based on the options given:
   --<lang>_prefix=COMMAND     Runs the plugin used by --<lang>_out via
                               COMMAND. protoc executes "COMMAND <plugin>"
                               instead of invoking the plugin binary directly.
-                              The value is split into argv tokens on
-                              whitespace; tokens containing spaces or quotes
-                              are not supported. Use a wrapper script for
-                              more complex invocations.)";
+                              COMMAND's first token is resolved via the
+                              search path (PATH). The value is split into
+                              argv tokens on whitespace; quotes are not
+                              supported. Use a wrapper script for more
+                              complex invocations.)";
   }
 
   for (const auto& kv : generators_by_flag_name_) {
