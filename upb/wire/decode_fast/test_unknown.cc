@@ -9,10 +9,11 @@
 // Run with `--//third_party/upb:fasttable_enabled=true`.
 
 #include <cstdint>
-#include <ostream>
 #include <string>
+#include <tuple>
 
 #include <gtest/gtest.h>
+#include "absl/strings/match.h"  // IWYU pragma: keep
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/message.h"
@@ -44,18 +45,25 @@ struct UnknownFieldTestCase {
   }
 };
 
-class UnknownFieldTest : public testing::TestWithParam<UnknownFieldTestCase> {};
+class UnknownFieldTest
+    : public testing::TestWithParam<std::tuple<UnknownFieldTestCase, bool>> {};
 
 TEST_P(UnknownFieldTest, UnknownFieldFastPath) {
-  const auto& test_case = GetParam();
+  const auto& param = GetParam();
+  const auto& test_case = std::get<0>(param);
+  const bool extensible = std::get<1>(param);
   uint32_t unknown_field_num = test_case.field_number;
   char trace_buf[64];
   upb::Arena msg_arena;
   upb::Arena mt_arena;
 
   // Create a MiniTable with field 1. Any other field number will be unknown.
-  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::Int32>(
-      1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+  auto [mt, field] =
+      extensible
+          ? MiniTable::MakeExtensibleSingleFieldTable<field_types::Int32>(
+                1, kUpb_DecodeFast_Scalar, mt_arena.ptr())
+          : MiniTable::MakeSingleFieldTable<field_types::Int32>(
+                1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
   upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
 
   std::string payload = ToBinaryPayload(
@@ -79,7 +87,7 @@ TEST_P(UnknownFieldTest, UnknownFieldFastPath) {
   EXPECT_EQ(captured_unknown, payload);
 
 #if !defined(NDEBUG) && defined(UPB_ENABLE_FASTTABLE)
-  // Because it was parsed on the fast path, we should not see fallback ('<')
+  // Because it was parsed on the fast path, we should not see fallback ('<' )
   // or mini table ('M') in the trace output for tags that fit in 1 or 2 bytes.
   if (unknown_field_num < 2048) {
     EXPECT_FALSE(absl::StrContains(trace_buf, "<"));
@@ -94,15 +102,24 @@ TEST_P(UnknownFieldTest, UnknownFieldFastPath) {
 
 INSTANTIATE_TEST_SUITE_P(
     AllWireTypes, UnknownFieldTest,
-    testing::Values(
-        UnknownFieldTestCase{2, wire_types::Varint{123}, "Varint"},
-        UnknownFieldTestCase{2, wire_types::Delimited{"Hello World"},
-                             "Delimited"},
-        UnknownFieldTestCase{3, wire_types::Varint{123}, "VarintWithCollision"},
-        UnknownFieldTestCase{100, wire_types::Fixed64{0x1234567890ABCDEF},
-                             "Fixed64"},
-        UnknownFieldTestCase{16, wire_types::Fixed32{0x12345678}, "Fixed32"},
-        UnknownFieldTestCase{2048, wire_types::Varint{123}, "LargeTag"}));
+    testing::Combine(
+        testing::Values(
+            UnknownFieldTestCase{2, wire_types::Varint{123}, "Varint"},
+            UnknownFieldTestCase{2, wire_types::Delimited{"Hello World"},
+                                 "Delimited"},
+            UnknownFieldTestCase{3, wire_types::Varint{123},
+                                 "VarintWithCollision"},
+            UnknownFieldTestCase{100, wire_types::Fixed64{0x1234567890ABCDEF},
+                                 "Fixed64"},
+            UnknownFieldTestCase{16, wire_types::Fixed32{0x12345678},
+                                 "Fixed32"},
+            UnknownFieldTestCase{2048, wire_types::Varint{123}, "LargeTag"}),
+        testing::Bool()),
+    [](const testing::TestParamInfo<UnknownFieldTest::ParamType>& info) {
+      const auto& test_case = std::get<0>(info.param);
+      const bool extensible = std::get<1>(info.param);
+      return test_case.name + (extensible ? "Extensible" : "Normal");
+    });
 
 }  // namespace
 }  // namespace test

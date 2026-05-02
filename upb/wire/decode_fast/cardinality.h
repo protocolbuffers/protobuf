@@ -63,6 +63,9 @@ typedef enum {
 
   // Tail call for potential fast handling of an unknown field.
   kUpb_DecodeFastNext_DecodeUnknown = 7,
+
+  // Tail call for potential fast handling of an extension field.
+  kUpb_DecodeFastNext_DecodeExtensionOrUnknown = 8,
 } upb_DecodeFastNext;
 
 UPB_INLINE bool upb_DecodeFast_SetExit(upb_DecodeFastNext* next,
@@ -117,6 +120,9 @@ UPB_INLINE bool upb_DecodeFast_SetError(upb_Decoder* d,
           UPB_PARSE_ARGS);                                                \
     case kUpb_DecodeFastNext_DecodeUnknown:                               \
       UPB_MUSTTAIL return _upb_FastDecoder_DecodeUnknown(UPB_PARSE_ARGS); \
+    case kUpb_DecodeFastNext_DecodeExtensionOrUnknown:                    \
+      UPB_MUSTTAIL return _upb_FastDecoder_DecodeExtensionOrUnknown(      \
+          UPB_PARSE_ARGS);                                                \
     default:                                                              \
       UPB_UNREACHABLE();                                                  \
   }

@@ -10,8 +10,12 @@
 #include "upb/base/string_view.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/message.h"
+#include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/cardinality.h"
+#include "upb/wire/decode_fast/field_helpers.h"
 #include "upb/wire/decode_fast/field_parsers.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/decoder.h"
@@ -78,6 +82,22 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
   }
 
   uint32_t wire_type = d_val & 0x07;
+
+  // Assert that the field is either truly unknown or has a mismatched wire
+  // type.
+#ifndef NDEBUG
+  uint32_t field_num;
+  if ((d_val & 0x80) == 0) {
+    field_num = (uint8_t)d_val >> 3;
+  } else {
+    field_num = _upb_DecodeFast_Tag2FieldNumber(d_val);
+  }
+  const upb_MiniTable* mt = decode_totablep(table);
+  const upb_MiniTableField* field =
+      upb_MiniTable_FindFieldByNumber(mt, field_num);
+  UPB_ASSERT(field == NULL ||
+             _upb_MiniTableField_GetWireType(field) != wire_type);
+#endif
 
   if (UPB_UNLIKELY(wire_type == kUpb_WireType_EndGroup ||
                    wire_type == kUpb_WireType_StartGroup)) {

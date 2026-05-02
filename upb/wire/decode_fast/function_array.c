@@ -32,6 +32,8 @@ _upb_FieldParser* upb_DecodeFast_GetFunctionPointer(uint32_t function_idx) {
       return &_upb_FastDecoder_DecodeGeneric;
     case kUpb_DecodeFast_Unknown:
       return &_upb_FastDecoder_DecodeUnknown;
+    case kUpb_DecodeFast_ExtensionOrUnknown:
+      return &_upb_FastDecoder_DecodeExtensionOrUnknown;
     default:
       UPB_ASSERT(function_idx < UPB_ARRAY_SIZE(funcs));
       return funcs[function_idx];
