@@ -310,6 +310,7 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   ABSL_CHECK(pipe(stdout_pipe) != -1);
 
   char* argv[2] = {portable_strdup(program.c_str()), nullptr};
+  ABSL_CHECK(search_mode == EXACT_NAME);
 
   child_pid_ = fork();
   if (child_pid_ == -1) {

@@ -3068,6 +3068,7 @@ bool CommandLineInterface::GeneratePluginOutput(
   if (plugins_.count(plugin_name) > 0) {
     subprocess.Start(plugins_[plugin_name], Subprocess::EXACT_NAME);
   } else {
+    ABSL_CHECK(false);
     subprocess.Start(plugin_name, Subprocess::SEARCH_PATH);
   }
 
