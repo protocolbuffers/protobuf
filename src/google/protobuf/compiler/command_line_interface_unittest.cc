@@ -644,37 +644,57 @@ TEST_F(CommandLineInterfaceTest, PluginPrefixForwardsArguments) {
   ExpectFileContentContainsSubstring("wrapper_argv.txt", "--foo");
   ExpectFileContentContainsSubstring("wrapper_argv.txt", "--bar=baz");
 }
+#endif  // !_WIN32
 
 TEST_F(CommandLineInterfaceTest, PluginPrefixFromSearchPath) {
   CreateTempFile("foo.proto",
                  "syntax = \"proto2\";\n"
                  "message Foo {}\n");
 
+#ifdef _WIN32
+  const std::string wrapper_basename = "plugin_wrapper_searchpath.bat";
+  CreateTempFile(wrapper_basename,
+                 "@echo off\r\n"
+                 "echo wrapped > \"%~dp0wrapper_invoked.txt\"\r\n"
+                 "\"%~1\"\r\n"
+                 "exit /b %errorlevel%\r\n");
+  const char path_separator = ';';
+#else
   const std::string wrapper_basename = "plugin_wrapper_searchpath.sh";
   CreateTempFile(wrapper_basename,
                  "#!/bin/sh\n"
                  "echo wrapped > \"$tmpdir/wrapper_invoked.txt\"\n"
                  "exec \"$@\"\n");
-  const std::string wrapper_path =
-      absl::StrCat(temp_directory(), "/", wrapper_basename);
-  ASSERT_EQ(0, chmod(wrapper_path.c_str(), 0777));
+  ASSERT_EQ(0, chmod(absl::StrCat(temp_directory(), "/", wrapper_basename).c_str(),
+                     0777));
+  const char path_separator = ':';
+#endif
 
   // Prepend the temp directory to PATH so the wrapper can be located by
   // basename only (Subprocess uses execvp / SEARCH_PATH for the prefix).
   const char* old_path_cstr = getenv("PATH");
   const std::string old_path = old_path_cstr ? old_path_cstr : "";
-  setenv("PATH", absl::StrCat(temp_directory(), ":", old_path).c_str(), 1);
+  const std::string new_path =
+      absl::StrCat(temp_directory(), std::string(1, path_separator), old_path);
+#ifdef _WIN32
+  _putenv_s("PATH", new_path.c_str());
+#else
+  setenv("PATH", new_path.c_str(), 1);
+#endif
 
   Run(absl::StrCat("protocol_compiler --plug_prefix=", wrapper_basename,
                    " --plug_out=$tmpdir --proto_path=$tmpdir foo.proto"));
 
+#ifdef _WIN32
+  _putenv_s("PATH", old_path.c_str());
+#else
   setenv("PATH", old_path.c_str(), 1);
+#endif
 
   ExpectNoErrors();
   ExpectGenerated("test_plugin", "", "foo.proto", "Foo");
   ExpectFileContentContainsSubstring("wrapper_invoked.txt", "wrapped");
 }
-#endif  // !_WIN32
 
 TEST_F(CommandLineInterfaceTest, PluginPrefixRejectsEmptyValue) {
   CreateTempFile("foo.proto",
