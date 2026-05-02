@@ -151,7 +151,7 @@ TEST(ThreadSafeArenaStatsTest, MinMaxBlockSizeForBin) {
 TEST(ThreadSafeArenaStatsTest, RecordAllocateSlow) {
   ThreadSafeArenaStats info;
   constexpr int64_t kTestStride = 458;
-  absl::MutexLock l(&info.init_mu);
+  absl::MutexLock l(info.init_mu);
   info.PrepareForSampling(kTestStride);
   RecordAllocateSlow(&info, /*requested=*/0, /*allocated=*/128, /*wasted=*/0);
   EXPECT_EQ(
