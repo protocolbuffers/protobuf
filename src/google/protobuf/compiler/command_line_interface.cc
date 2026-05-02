@@ -176,6 +176,44 @@ void AddTrailingSlash(std::string* path) {
   }
 }
 
+std::string EscapeMakeDependencyPath(absl::string_view path) {
+  std::string escaped;
+  escaped.reserve(path.size() * 2);
+
+  unsigned slashes = 0;
+  for (char c : path) {
+    switch (c) {
+      case '\\':
+        ++slashes;
+        break;
+      case '$':
+        escaped.push_back('$');
+        slashes = 0;
+        break;
+      case ' ':
+      case '\t':
+        while (slashes > 0) {
+          escaped.push_back('\\');
+          --slashes;
+        }
+        escaped.push_back('\\');
+        slashes = 0;
+        break;
+      case '#':
+      case ':':
+        escaped.push_back('\\');
+        slashes = 0;
+        break;
+      default:
+        slashes = 0;
+        break;
+    }
+    escaped.push_back(c);
+  }
+
+  return escaped;
+}
+
 bool VerifyDirectoryExists(const std::string& path) {
   if (path.empty()) return true;
 
@@ -2921,14 +2959,16 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
   // Otherwise, the depfile will be malformed.
   if (!output_filenames.empty()) {
     io::FileOutputStream out(fd);
-    io::Printer printer(&out, '$');
+    io::Printer printer(&out);
 
     for (size_t i = 0; i < output_filenames.size(); ++i) {
-      printer.Print(output_filenames[i]);
+      // Depfiles are consumed by Make, so paths must be emitted as raw text
+      // with Make escaping instead of going through io::Printer substitution.
+      printer.PrintRaw(EscapeMakeDependencyPath(output_filenames[i]));
       if (i == output_filenames.size() - 1) {
-        printer.Print(":");
+        printer.PrintRaw(":");
       } else {
-        printer.Print(" \\\n");
+        printer.PrintRaw(" \\\n");
       }
     }
 
@@ -2938,8 +2978,9 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
       std::string disk_file;
       if (source_tree &&
           source_tree->VirtualFileToDiskFile(virtual_file, &disk_file)) {
-        printer.Print(" $disk_file$", "disk_file", disk_file);
-        if (i < file_set.file_size() - 1) printer.Print("\\\n");
+        printer.PrintRaw(" ");
+        printer.PrintRaw(EscapeMakeDependencyPath(disk_file));
+        if (i < file_set.file_size() - 1) printer.PrintRaw("\\\n");
       } else {
         std::cerr << "Unable to identify path for file " << virtual_file
                   << std::endl;
