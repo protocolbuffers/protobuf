@@ -18,7 +18,6 @@
 #import "GPBMessage.h"
 #import "GPBMessage_PackagePrivate.h"
 #import "GPBUnknownField.h"
-#import "GPBUnknownField_PackagePrivate.h"
 #import "GPBUnknownFields.h"
 #import "GPBUtilities.h"
 #import "GPBUtilities_PackagePrivate.h"
@@ -1941,8 +1940,8 @@ static void AppendTextFormatForUnknownFields(GPBUnknownFields *ufs, NSMutableStr
   [sortedFields
       sortWithOptions:NSSortStable
       usingComparator:^NSComparisonResult(GPBUnknownField *field1, GPBUnknownField *field2) {
-        int32_t fieldNumber1 = field1->number_;
-        int32_t fieldNumber2 = field2->number_;
+        int32_t fieldNumber1 = field1.number;
+        int32_t fieldNumber2 = field2.number;
         if (fieldNumber1 < fieldNumber2) {
           return NSOrderedAscending;
         } else if (fieldNumber1 > fieldNumber2) {
@@ -1955,25 +1954,24 @@ static void AppendTextFormatForUnknownFields(GPBUnknownFields *ufs, NSMutableStr
   NSString *subIndent = nil;
 
   for (GPBUnknownField *field in sortedFields) {
-    int32_t fieldNumber = field->number_;
-    switch (field->type_) {
+    int32_t fieldNumber = field.number;
+    switch (field.type) {
       case GPBUnknownFieldTypeVarint:
-        [toStr appendFormat:@"%@%d: %llu\n", lineIndent, fieldNumber, field->storage_.intValue];
+        [toStr appendFormat:@"%@%d: %llu\n", lineIndent, fieldNumber, field.varint];
         break;
       case GPBUnknownFieldTypeFixed32:
-        [toStr appendFormat:@"%@%d: 0x%X\n", lineIndent, fieldNumber,
-                            (uint32_t)field->storage_.intValue];
+        [toStr appendFormat:@"%@%d: 0x%X\n", lineIndent, fieldNumber, field.fixed32];
         break;
       case GPBUnknownFieldTypeFixed64:
-        [toStr appendFormat:@"%@%d: 0x%llX\n", lineIndent, fieldNumber, field->storage_.intValue];
+        [toStr appendFormat:@"%@%d: 0x%llX\n", lineIndent, fieldNumber, field.fixed64];
         break;
       case GPBUnknownFieldTypeLengthDelimited:
         [toStr appendFormat:@"%@%d: ", lineIndent, fieldNumber];
-        AppendBufferAsString(field->storage_.lengthDelimited, toStr);
+        AppendBufferAsString(field.lengthDelimited, toStr);
         [toStr appendString:@"\n"];
         break;
       case GPBUnknownFieldTypeGroup: {
-        GPBUnknownFields *group = field->storage_.group;
+        GPBUnknownFields *group = field.group;
         if (group.empty) {
           [toStr appendFormat:@"%@%d: {}\n", lineIndent, fieldNumber];
         } else {

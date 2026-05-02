@@ -24,9 +24,13 @@ UPB_PRESERVE_NONE const char* _upb_FastDecoder_DecodeMismatchedSlot(
   upb_DecodeFastNext ret = kUpb_DecodeFastNext_FallbackToMiniTable;
   const upb_MiniTable* mt = decode_totablep(table);
   if ((mt->UPB_PRIVATE(ext) & kUpb_ExtMode_AllFastFieldsAssigned)) {
+    _upb_Decoder_Trace(d, 's');
     // Restore the tag to clear masking.
     data = _upb_FastDecoder_LoadTag(ptr);
-    ret = kUpb_DecodeFastNext_DecodeUnknown;
+    ret = UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(mt) ==
+                  kUpb_ExtMode_NonExtendable
+              ? kUpb_DecodeFastNext_DecodeUnknown
+              : kUpb_DecodeFastNext_DecodeExtensionOrUnknown;
   }
   UPB_DECODEFAST_NEXT(ret);
 }

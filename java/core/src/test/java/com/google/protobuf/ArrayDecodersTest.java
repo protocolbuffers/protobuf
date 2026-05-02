@@ -7,6 +7,7 @@
 
 package com.google.protobuf;
 
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
 import com.google.protobuf.ArrayDecoders.Registers;
@@ -152,11 +153,24 @@ public class ArrayDecodersTest {
 
   @Test
   public void testDecodePackedFixed32List_negativeSize() {
-    assertThrows(
-        InvalidProtocolBufferException.class,
-        () ->
-            ArrayDecoders.decodePackedFixed32List(
-                packedSizeBytesNoTag(-1), 0, new IntArrayList(), registers));
+    InvalidProtocolBufferException e =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () ->
+                ArrayDecoders.decodePackedFixed32List(
+                    packedSizeBytesNoTag(-1), 0, new IntArrayList(), registers));
+    assertThat(e).hasMessageThat().contains("negative size");
+  }
+
+  @Test
+  public void testDecodePackedFixed32List_overflowsArrayEnd() {
+    InvalidProtocolBufferException e =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () ->
+                ArrayDecoders.decodePackedFixed32List(
+                    packedSizeBytesNoTag(Integer.MAX_VALUE - 5), 0, new IntArrayList(), registers));
+    assertThat(e).hasMessageThat().contains("truncated");
   }
 
   @Test
@@ -197,56 +211,68 @@ public class ArrayDecodersTest {
 
   @Test
   public void testDecodePackedFixed64List_negativeSize() {
-    assertThrows(
-        InvalidProtocolBufferException.class,
-        () ->
-            ArrayDecoders.decodePackedFixed64List(
-                packedSizeBytesNoTag(-1), 0, new LongArrayList(), registers));
+    InvalidProtocolBufferException e =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () ->
+                ArrayDecoders.decodePackedFixed64List(
+                    packedSizeBytesNoTag(-1), 0, new LongArrayList(), registers));
+    assertThat(e).hasMessageThat().contains("negative size");
   }
 
   @Test
   public void testDecodePackedFloatList_negativeSize() {
-    assertThrows(
-        InvalidProtocolBufferException.class,
-        () ->
-            ArrayDecoders.decodePackedFloatList(
-                packedSizeBytesNoTag(-1), 0, new FloatArrayList(), registers));
+    InvalidProtocolBufferException e =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () ->
+                ArrayDecoders.decodePackedFloatList(
+                    packedSizeBytesNoTag(-1), 0, new FloatArrayList(), registers));
+    assertThat(e).hasMessageThat().contains("negative size");
   }
 
   @Test
   public void testDecodePackedDoubleList_negativeSize() {
-    assertThrows(
-        InvalidProtocolBufferException.class,
-        () ->
-            ArrayDecoders.decodePackedDoubleList(
-                packedSizeBytesNoTag(-1), 0, new DoubleArrayList(), registers));
+    InvalidProtocolBufferException e =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () ->
+                ArrayDecoders.decodePackedDoubleList(
+                    packedSizeBytesNoTag(-1), 0, new DoubleArrayList(), registers));
+    assertThat(e).hasMessageThat().contains("negative size");
   }
 
   @Test
   public void testDecodePackedBoolList_negativeSize() {
-    assertThrows(
-        InvalidProtocolBufferException.class,
-        () ->
-            ArrayDecoders.decodePackedBoolList(
-                packedSizeBytesNoTag(-1), 0, new BooleanArrayList(), registers));
+    InvalidProtocolBufferException e =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () ->
+                ArrayDecoders.decodePackedBoolList(
+                    packedSizeBytesNoTag(-1), 0, new BooleanArrayList(), registers));
+    assertThat(e).hasMessageThat().contains("negative size");
   }
 
   @Test
   public void testDecodePackedSInt32List_negativeSize() {
-    assertThrows(
-        InvalidProtocolBufferException.class,
-        () ->
-            ArrayDecoders.decodePackedSInt32List(
-                packedSizeBytesNoTag(-1), 0, new IntArrayList(), registers));
+    InvalidProtocolBufferException e =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () ->
+                ArrayDecoders.decodePackedSInt32List(
+                    packedSizeBytesNoTag(-1), 0, new IntArrayList(), registers));
+    assertThat(e).hasMessageThat().contains("negative size");
   }
 
   @Test
   public void testDecodePackedSInt64List_negativeSize() {
-    assertThrows(
-        InvalidProtocolBufferException.class,
-        () ->
-            ArrayDecoders.decodePackedSInt64List(
-                packedSizeBytesNoTag(-1), 0, new LongArrayList(), registers));
+    InvalidProtocolBufferException e =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () ->
+                ArrayDecoders.decodePackedSInt64List(
+                    packedSizeBytesNoTag(-1), 0, new LongArrayList(), registers));
+    assertThat(e).hasMessageThat().contains("negative size");
   }
 
   @Test
