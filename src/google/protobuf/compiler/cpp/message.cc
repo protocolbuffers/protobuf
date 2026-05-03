@@ -169,7 +169,9 @@ std::string GenerateConditionMaybeWithProbabilityForGroup(
 void PrintPresenceCheck(const FieldDescriptor* field,
                         const std::vector<int>& has_bit_indices, io::Printer* p,
                         int* cached_has_word_index, const Options& options) {
+  PROTOBUF_IGNORE_DEPRECATION_START
   if (!field->options().weak()) {
+    PROTOBUF_IGNORE_DEPRECATION_STOP
     int has_bit_index = has_bit_indices[field->index()];
     if (*cached_has_word_index != (has_bit_index / 32)) {
       *cached_has_word_index = (has_bit_index / 32);
@@ -754,7 +756,10 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                         optimized_order_.end());
 
   for (auto field : internal::FieldRange(descriptor_)) {
-    if (!field->real_containing_oneof() && !field->options().weak()) {
+    PROTOBUF_IGNORE_DEPRECATION_START
+    const bool field_is_weak = field->options().weak();
+    PROTOBUF_IGNORE_DEPRECATION_STOP
+    if (!field->real_containing_oneof() && !field_is_weak) {
       continue;
     }
     ordered_fields.push_back(field);
@@ -1126,7 +1131,9 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
 void MessageGenerator::GenerateSingularFieldHasBits(
     const FieldDescriptor* field, io::Printer* p) {
   auto t = p->WithVars(MakeTrackerCalls(field, options_));
+  PROTOBUF_IGNORE_DEPRECATION_START
   if (field->options().weak()) {
+    PROTOBUF_IGNORE_DEPRECATION_STOP
     p->Emit(
         R"cc(
           inline bool $Msg$::has_$name$() const {
@@ -1341,7 +1348,9 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
                              /*with_enclosing_braces_always=*/true);
     return;
   }
+  PROTOBUF_IGNORE_DEPRECATION_START
   if (field->options().weak()) {
+    PROTOBUF_IGNORE_DEPRECATION_STOP
     p->Emit({{"emit_body", [&] { emit_body(); }}},
             R"cc(
               if (has_$name$()) {
@@ -1373,11 +1382,18 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
 void MessageGenerator::MaybeEmitUpdateCachedHasbits(
     const FieldDescriptor* field, io::Printer* p,
     int& cached_has_word_index) const {
-  if (!HasHasbit(field, options_) || field->options().weak()) return;
+  PROTOBUF_IGNORE_DEPRECATION_START
+  const bool field_is_weak = field->options().weak();
+  PROTOBUF_IGNORE_DEPRECATION_STOP
+  if (!HasHasbit(field, options_) || field_is_weak) {
+    return;
+  }
 
   int has_bit_index = has_bit_indices_[field->index()];
 
-  if (cached_has_word_index == (has_bit_index / 32)) return;
+  if (cached_has_word_index == (has_bit_index / 32)) {
+    return;
+  }
 
   cached_has_word_index = (has_bit_index / 32);
   p->Emit({{"index", cached_has_word_index}},
@@ -2103,14 +2119,15 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             extension_generators_[i]->GenerateDeclaration(p);
           }
         }},
-       {"proto2_message_sets",
-        [&] {
-        }},
+       {"proto2_message_sets", [&] {}},
        {"decl_set_has",
         [&] {
           for (auto field : internal::FieldRange(descriptor_)) {
             // set_has_***() generated in all oneofs.
-            if (!field->is_repeated() && !field->options().weak() &&
+            PROTOBUF_IGNORE_DEPRECATION_START
+            const bool field_is_weak = field->options().weak();
+            PROTOBUF_IGNORE_DEPRECATION_STOP
+            if (!field->is_repeated() && !field_is_weak &&
                 field->real_containing_oneof()) {
               p->Emit({{"field_name", FieldName(field)}}, R"cc(
                 void set_has_$field_name$();
@@ -2589,7 +2606,9 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
   for (auto field : internal::FieldRange(descriptor_)) {
     // TODO: We should not have an entry in the offset table for fields
     // that do not use them.
+    PROTOBUF_IGNORE_DEPRECATION_START
     if (field->options().weak()) {
+      PROTOBUF_IGNORE_DEPRECATION_STOP
       // Mark the field to prevent unintentional access through reflection.
       // Don't use the top bit because that is for unused fields.
       format("::_pbi::kInvalidFieldOffsetTag");
@@ -4171,8 +4190,10 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
             p, "from.", field, ShouldSplit(field, options_), options_,
             /*emit_body=*/[&]() { generator.GenerateMergingCode(p); },
             /*with_enclosing_braces_always=*/true);
+        PROTOBUF_IGNORE_DEPRECATION_START
       } else if (field->options().weak() ||
                  cached_has_word_index != HasWordIndex(field)) {
+        PROTOBUF_IGNORE_DEPRECATION_STOP
         // Check hasbit, not using cached bits.
         auto v = p->WithVars(HasBitVars(field));
         p->Emit(
@@ -4511,7 +4532,9 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
     field_generators_.get(field).GenerateSerializeWithCachedSizesToArray(p);
   };
 
+  PROTOBUF_IGNORE_DEPRECATION_START
   if (field->options().weak()) {
+    PROTOBUF_IGNORE_DEPRECATION_STOP
     emit_body();
     p->Emit("\n");
     return;
@@ -4817,7 +4840,9 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
                         sorted_extensions[j]->start_number())) {
                  const FieldDescriptor* field = ordered_fields[i++];
                  re.Flush(no_more_extensions);
+                 PROTOBUF_IGNORE_DEPRECATION_START
                  if (field->options().weak()) {
+                   PROTOBUF_IGNORE_DEPRECATION_STOP
                    largest_weak_field.ReplaceIfLarger(field);
                    PrintFieldComment(Formatter{p}, field, options_);
                  } else {
