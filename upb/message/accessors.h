@@ -151,6 +151,10 @@ UPB_API_INLINE void upb_Message_SetBaseFieldMessage(struct upb_Message* msg,
                                                     const upb_MiniTableField* f,
                                                     upb_Message* value);
 
+UPB_API_INLINE void upb_Message_SetBaseFieldArray(struct upb_Message* msg,
+                                                  const upb_MiniTableField* f,
+                                                  upb_Array* value);
+
 UPB_API_INLINE void upb_Message_SetBaseFieldString(struct upb_Message* msg,
                                                    const upb_MiniTableField* f,
                                                    upb_StringView value);
