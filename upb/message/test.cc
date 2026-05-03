@@ -34,6 +34,7 @@
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
 #include "upb/message/compare.h"
+#include "upb/message/internal/convert.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/test.upb.h"
@@ -70,7 +71,7 @@ void VerifyMessage(const upb_test_TestExtensions* ext_msg) {
   EXPECT_EQ(123, upb_test_TestExtensions_optional_int32_ext(ext_msg));
   const protobuf_test_messages_proto3_TestAllTypesProto3* ext_submsg =
       upb_test_optional_msg_ext(ext_msg);
-  EXPECT_TRUE(ext_submsg != nullptr);
+  EXPECT_NE(ext_submsg, nullptr);
   EXPECT_EQ(456,
             protobuf_test_messages_proto3_TestAllTypesProto3_optional_int32(
                 ext_submsg));
@@ -86,7 +87,7 @@ TEST(MessageTest, Extensions) {
 
   upb::DefPool defpool;
   upb::MessageDefPtr m(upb_test_TestExtensions_getmsgdef(defpool.ptr()));
-  EXPECT_TRUE(m.ptr() != nullptr);
+  EXPECT_NE(m.ptr(), nullptr);
 
   std::string json = R"json(
   {
@@ -107,13 +108,40 @@ TEST(MessageTest, Extensions) {
   size_t size;
   char* serialized =
       upb_test_TestExtensions_serialize(ext_msg, arena.ptr(), &size);
-  ASSERT_TRUE(serialized != nullptr);
+  ASSERT_NE(serialized, nullptr);
   ASSERT_GE(size, 0);
 
   upb_test_TestExtensions* ext_msg2 = upb_test_TestExtensions_parse_ex(
       serialized, size, upb_DefPool_ExtensionRegistry(defpool.ptr()), 0,
       arena.ptr());
   VerifyMessage(ext_msg2);
+
+  // Convert with real populated expansion ranges dynamic DefPool entries logic
+  upb_MiniTable* mt_ext_conv =
+      const_cast<upb_MiniTable*>(upb_MessageDef_MiniTable(m.ptr()));
+
+  // Parse WITHOUT registry so extensions are unknown fields.
+  upb_test_TestExtensions* ext_msg_unkn =
+      upb_test_TestExtensions_parse(serialized, size, arena.ptr());
+
+  // Convert WITH registry to promote unknown fields to extensions.
+  upb_Message* converted_msg = upb_Message_New(mt_ext_conv, arena.ptr());
+  ASSERT_NE(converted_msg, nullptr);
+  const upb_Message* converted_msg_ptr = UPB_PRIVATE(_upb_Message_Convert)(
+      converted_msg, mt_ext_conv, UPB_UPCAST(ext_msg_unkn), mt_ext_conv,
+      const_cast<upb_ExtensionRegistry*>(
+          upb_DefPool_ExtensionRegistry(defpool.ptr())),
+      kUpb_ConvertOption_Alias, arena.ptr());
+  ASSERT_NE(converted_msg_ptr, nullptr);
+
+  // Validate logic bit layout conversions format promotion
+  const upb_test_TestExtensions* converted_ext_msg =
+      (const upb_test_TestExtensions*)converted_msg;
+  EXPECT_TRUE(
+      upb_test_TestExtensions_has_optional_int32_ext(converted_ext_msg));
+  int32_t converted_val_promoted =
+      upb_test_TestExtensions_optional_int32_ext(converted_ext_msg);
+  EXPECT_EQ(123, converted_val_promoted);
 
   // Test round-trip through JSON format.
   size_t json_size = upb_JsonEncode(UPB_UPCAST(ext_msg), m.ptr(), defpool.ptr(),
@@ -122,11 +150,13 @@ TEST(MessageTest, Extensions) {
       static_cast<char*>(upb_Arena_Malloc(arena.ptr(), json_size + 1));
   upb_JsonEncode(UPB_UPCAST(ext_msg), m.ptr(), defpool.ptr(), 0, json_buf,
                  json_size + 1, status.ptr());
-  upb_test_TestExtensions* ext_msg3 = upb_test_TestExtensions_new(arena.ptr());
-  EXPECT_TRUE(upb_JsonDecode(json_buf, json_size, UPB_UPCAST(ext_msg3), m.ptr(),
-                             defpool.ptr(), 0, arena.ptr(), status.ptr()))
+  upb_test_TestExtensions* ext_msg_json =
+      upb_test_TestExtensions_new(arena.ptr());
+  EXPECT_TRUE(upb_JsonDecode(json_buf, json_size, UPB_UPCAST(ext_msg_json),
+                             m.ptr(), defpool.ptr(), 0, arena.ptr(),
+                             status.ptr()))
       << status.error_message();
-  VerifyMessage(ext_msg3);
+  VerifyMessage(ext_msg_json);
 
   // Test setters and mutable accessors
   upb_test_TestExtensions* ext_msg4 = upb_test_TestExtensions_new(arena.ptr());
@@ -146,7 +176,7 @@ TEST(MessageTest, ExtensionsDeterministic) {
 
   upb::DefPool defpool;
   upb::MessageDefPtr m(upb_test_TestExtensions_getmsgdef(defpool.ptr()));
-  EXPECT_TRUE(m.ptr() != nullptr);
+  EXPECT_NE(m.ptr(), nullptr);
 
   std::string json = R"json(
   {
@@ -166,14 +196,14 @@ TEST(MessageTest, ExtensionsDeterministic) {
   size_t size;
   char* serialized =
       upb_test_TestExtensions_serialize(ext_msg, arena.ptr(), &size);
-  ASSERT_TRUE(serialized != nullptr);
+  ASSERT_NE(serialized, nullptr);
   ASSERT_GE(size, 0);
 
   size_t deterministic_size;
   char* deterministic_serialized = upb_test_TestExtensions_serialize_ex(
       ext_msg, kUpb_EncodeOption_Deterministic, arena.ptr(),
       &deterministic_size);
-  ASSERT_TRUE(deterministic_serialized != nullptr);
+  ASSERT_NE(deterministic_serialized, nullptr);
   ASSERT_EQ(deterministic_size, size);
 }
 
@@ -182,7 +212,7 @@ TEST(MessageTest, ExtensionsEmpty) {
 
   upb::DefPool defpool;
   upb::MessageDefPtr m(upb_test_TestExtensions_getmsgdef(defpool.ptr()));
-  EXPECT_TRUE(m.ptr() != nullptr);
+  EXPECT_NE(m.ptr(), nullptr);
 
   for (int options : {0, int{kUpb_EncodeOption_Deterministic}}) {
     std::string json_with_empty = R"json(
@@ -215,13 +245,13 @@ TEST(MessageTest, ExtensionsEmpty) {
     size_t size_with_empty;
     char* serialized = upb_test_TestExtensions_serialize_ex(
         ext_msg_with_empty, options, arena.ptr(), &size_with_empty);
-    ASSERT_TRUE(serialized != nullptr);
+    ASSERT_NE(serialized, nullptr);
     ASSERT_GE(size_with_empty, 0);
 
     size_t size;
     serialized = upb_test_TestExtensions_serialize_ex(ext_msg, options,
                                                       arena.ptr(), &size);
-    ASSERT_TRUE(serialized != nullptr);
+    ASSERT_NE(serialized, nullptr);
     // Presence or absence of an empty extension should not affect the
     // serialized output.
     ASSERT_EQ(size_with_empty, size);
@@ -229,13 +259,13 @@ TEST(MessageTest, ExtensionsEmpty) {
 }
 
 void VerifyMessageSet(const upb_test_TestMessageSet* mset_msg) {
-  ASSERT_TRUE(mset_msg != nullptr);
+  ASSERT_NE(mset_msg, nullptr);
   bool has = upb_test_MessageSetMember_has_message_set_extension(mset_msg);
   EXPECT_TRUE(has);
   if (!has) return;
   const upb_test_MessageSetMember* member =
       upb_test_MessageSetMember_message_set_extension(mset_msg);
-  EXPECT_TRUE(member != nullptr);
+  EXPECT_NE(member, nullptr);
   EXPECT_TRUE(upb_test_MessageSetMember_has_optional_int32(member));
   EXPECT_EQ(234, upb_test_MessageSetMember_optional_int32(member));
 }
@@ -243,7 +273,7 @@ void VerifyMessageSet(const upb_test_TestMessageSet* mset_msg) {
 TEST(MessageTest, LargeMessageSetExtension) {
   upb::Arena arena;
   upb_ExtensionRegistry* reg = upb_ExtensionRegistry_New(arena.ptr());
-  ASSERT_TRUE(reg != nullptr);
+  ASSERT_NE(reg, nullptr);
 
   upb_MiniTableExtension ext;
   memset(&ext, 0, sizeof(ext));
@@ -262,7 +292,7 @@ TEST(MessageTest, MessageSet) {
 
   upb::DefPool defpool;
   upb::MessageDefPtr m(upb_test_TestMessageSet_getmsgdef(defpool.ptr()));
-  EXPECT_TRUE(m.ptr() != nullptr);
+  EXPECT_NE(m.ptr(), nullptr);
 
   std::string json = R"json(
   {
@@ -281,7 +311,7 @@ TEST(MessageTest, MessageSet) {
   size_t size;
   char* serialized =
       upb_test_TestMessageSet_serialize(ext_msg, arena.ptr(), &size);
-  ASSERT_TRUE(serialized != nullptr);
+  ASSERT_NE(serialized, nullptr);
   ASSERT_GE(size, 0);
 
   upb_test_TestMessageSet* ext_msg2 = upb_test_TestMessageSet_parse_ex(
@@ -327,27 +357,27 @@ TEST(MessageTest, UnknownMessageSet) {
   size_t size;
   char* serialized =
       upb_test_FakeMessageSet_serialize(fake, arena.ptr(), &size);
-  ASSERT_TRUE(serialized != nullptr);
+  ASSERT_NE(serialized, nullptr);
   ASSERT_GE(size, 0);
 
   upb::DefPool defpool;
   upb::MessageDefPtr m(upb_test_TestMessageSet_getmsgdef(defpool.ptr()));
-  EXPECT_TRUE(m.ptr() != nullptr);
+  EXPECT_NE(m.ptr(), nullptr);
   upb_test_TestMessageSet* message_set = upb_test_TestMessageSet_parse_ex(
       serialized, size, upb_DefPool_ExtensionRegistry(defpool.ptr()), 0,
       arena.ptr());
-  ASSERT_TRUE(message_set != nullptr);
+  ASSERT_NE(message_set, nullptr);
 
   char* serialized2 =
       upb_test_TestMessageSet_serialize(message_set, arena.ptr(), &size);
-  ASSERT_TRUE(serialized2 != nullptr);
+  ASSERT_NE(serialized2, nullptr);
   ASSERT_GE(size, 0);
 
   // Parse back into a fake MessageSet and verify that the unknown MessageSet
   // item was preserved in full (both type_id and message).
   upb_test_FakeMessageSet* fake2 =
       upb_test_FakeMessageSet_parse(serialized2, size, arena.ptr());
-  ASSERT_TRUE(fake2 != nullptr);
+  ASSERT_NE(fake2, nullptr);
 
   const upb_test_FakeMessageSet_Item* const* items =
       upb_test_FakeMessageSet_item(fake2, &size);
@@ -381,17 +411,17 @@ TEST(MessageTest, MessageSetSubmessageEncoding) {
   size_t size;
   char* serialized =
       upb_test_TestExtensions_serialize(ext_msg, arena.ptr(), &size);
-  ASSERT_TRUE(serialized != nullptr);
+  ASSERT_NE(serialized, nullptr);
   ASSERT_GE(size, 0);
 
   upb::DefPool defpool;
   upb::MessageDefPtr m(upb_test_TestMessageSet_getmsgdef(defpool.ptr()));
-  EXPECT_TRUE(m.ptr() != nullptr);
+  EXPECT_NE(m.ptr(), nullptr);
 
   upb_test_TestMessageSet* message_set = upb_test_TestMessageSet_parse_ex(
       serialized, size, upb_DefPool_ExtensionRegistry(defpool.ptr()), 0,
       arena.ptr());
-  ASSERT_TRUE(message_set != nullptr);
+  ASSERT_NE(message_set, nullptr);
 
   VerifyMessageSet(message_set);
 }
@@ -428,7 +458,7 @@ TEST(MessageTest, Proto2Enum) {
   // Parsing as enums puts unknown values into unknown fields.
   upb_test_Proto2EnumMessage* enum_msg =
       upb_test_Proto2EnumMessage_parse(pb, size, arena.ptr());
-  ASSERT_TRUE(enum_msg != nullptr);
+  ASSERT_NE(enum_msg, nullptr);
 
   EXPECT_EQ(false, upb_test_Proto2EnumMessage_has_optional_enum(enum_msg));
   const int32_t* vals_const =
@@ -440,7 +470,7 @@ TEST(MessageTest, Proto2Enum) {
   pb = upb_test_Proto2EnumMessage_serialize(enum_msg, arena.ptr(), &size);
   upb_test_Proto2FakeEnumMessage* fake_msg2 =
       upb_test_Proto2FakeEnumMessage_parse(pb, size, arena.ptr());
-  ASSERT_TRUE(fake_msg2 != nullptr);
+  ASSERT_NE(fake_msg2, nullptr);
 
   EXPECT_EQ(true, upb_test_Proto2FakeEnumMessage_has_optional_enum(fake_msg2));
   EXPECT_EQ(999, upb_test_Proto2FakeEnumMessage_optional_enum(fake_msg2));
@@ -522,7 +552,7 @@ TEST(MessageTest, DecodeRequiredFieldsTopLevelMessage) {
   size_t size;
   char* serialized =
       upb_test_TestRequiredFields_serialize(test_msg, arena.ptr(), &size);
-  ASSERT_TRUE(serialized != nullptr);
+  ASSERT_NE(serialized, nullptr);
   EXPECT_NE(0, size);
 
   // Fails, but the code path is slightly different because the serialized
@@ -546,7 +576,7 @@ TEST(MessageTest, DecodeRequiredFieldsTopLevelMessage) {
   // Serialize a complete payload.
   serialized =
       upb_test_TestRequiredFields_serialize(test_msg, arena.ptr(), &size);
-  ASSERT_TRUE(serialized != nullptr);
+  ASSERT_NE(serialized, nullptr);
   EXPECT_NE(0, size);
 
   upb_test_TestRequiredFields* test_msg2 = upb_test_TestRequiredFields_parse_ex(
@@ -609,7 +639,7 @@ TEST(MessageTest, EncodeRequiredFields) {
   size_t size;
   char* serialized =
       upb_test_TestRequiredFields_serialize_ex(test_msg, 0, arena.ptr(), &size);
-  ASSERT_TRUE(serialized != nullptr);
+  ASSERT_NE(serialized, nullptr);
   EXPECT_EQ(size, 0);
 
   // Fails, we asked for required field checking but the required field is
@@ -630,7 +660,7 @@ TEST(MessageTest, EncodeRequiredFields) {
   upb_test_TestRequiredFields_set_required_message(test_msg, empty_msg);
   serialized = upb_test_TestRequiredFields_serialize_ex(
       test_msg, kUpb_EncodeOption_CheckRequired, arena.ptr(), &size);
-  ASSERT_TRUE(serialized != nullptr);
+  ASSERT_NE(serialized, nullptr);
 }
 
 TEST(MessageTest, MaxRequiredFields) {
@@ -666,7 +696,7 @@ TEST(MessageTest, MaxRequiredFields) {
   upb_Message_SetFieldByDef(UPB_UPCAST(test_msg), f.ptr(), val, arena.ptr());
   serialized = upb_test_TestMaxRequiredFields_serialize_ex(
       test_msg, kUpb_EncodeOption_CheckRequired, arena.ptr(), &size);
-  ASSERT_TRUE(serialized != nullptr);
+  ASSERT_NE(serialized, nullptr);
 }
 
 TEST(MessageTest, MapField) {

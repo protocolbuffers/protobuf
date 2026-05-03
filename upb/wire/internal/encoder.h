@@ -50,6 +50,10 @@ UPB_INLINE void UPB_PRIVATE(_upb_encstate_init)(upb_encstate* e, jmp_buf* err,
   _upb_mapsorter_init(&e->sorter);
 }
 
+UPB_INLINE void UPB_PRIVATE(_upb_encstate_destroy)(upb_encstate* e) {
+  _upb_mapsorter_destroy(&e->sorter);
+}
+
 // Internal version of upb_Encode that encodes a single field.
 //
 // The caller must clean up the `upb_encstate` by calling
