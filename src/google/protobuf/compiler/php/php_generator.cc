@@ -55,6 +55,7 @@ struct Options {
   bool is_descriptor = false;
   bool aggregate_metadata = false;
   bool gen_c_wkt = false;
+  bool assume_64_bit_php = false;
   absl::flat_hash_set<std::string> aggregate_metadata_prefixes;
 };
 
@@ -80,9 +81,11 @@ void GenerateMessageConstructorDocComment(io::Printer* printer,
 void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
                              const Options& options, int function_type);
 void GenerateWrapperFieldGetterDocComment(io::Printer* printer,
-                                          const FieldDescriptor* field);
+                                          const FieldDescriptor* field,
+                                          const Options& options);
 void GenerateWrapperFieldSetterDocComment(io::Printer* printer,
-                                          const FieldDescriptor* field);
+                                          const FieldDescriptor* field,
+                                          const Options& options);
 void GenerateEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_,
                             const Options& options);
 void GenerateEnumValueDocComment(io::Printer* printer,
@@ -412,7 +415,7 @@ std::string PhpSetterTypeName(const FieldDescriptor* field,
     case FieldDescriptor::TYPE_SINT64:
     case FieldDescriptor::TYPE_FIXED64:
     case FieldDescriptor::TYPE_SFIXED64:
-      type = "int|string";
+      type = options.assume_64_bit_php ? "int" : "int|string";
       break;
     case FieldDescriptor::TYPE_DOUBLE:
     case FieldDescriptor::TYPE_FLOAT:
@@ -460,7 +463,7 @@ std::string PhpDocSetterTypeName(const FieldDescriptor* field,
     case FieldDescriptor::TYPE_SINT64:
     case FieldDescriptor::TYPE_FIXED64:
     case FieldDescriptor::TYPE_SFIXED64:
-      type = "int|string";
+      type = options.assume_64_bit_php ? "int" : "int|string";
       break;
     case FieldDescriptor::TYPE_DOUBLE:
     case FieldDescriptor::TYPE_FLOAT:
@@ -493,13 +496,6 @@ std::string PhpDocSetterTypeName(const FieldDescriptor* field,
   return type;
 }
 
-std::string PhpDocSetterTypeName(const FieldDescriptor* field,
-                                 bool is_descriptor) {
-  Options options;
-  options.is_descriptor = is_descriptor;
-  return PhpDocSetterTypeName(field, options);
-}
-
 std::string PhpDocGetterTypeName(const FieldDescriptor* field,
                                  const Options& options) {
   if (field->is_map()) {
@@ -520,7 +516,7 @@ std::string PhpDocGetterTypeName(const FieldDescriptor* field,
     case FieldDescriptor::TYPE_SINT64:
     case FieldDescriptor::TYPE_FIXED64:
     case FieldDescriptor::TYPE_SFIXED64:
-      type = "int|string";
+      type = options.assume_64_bit_php ? "int" : "int|string";
       break;
     case FieldDescriptor::TYPE_DOUBLE:
     case FieldDescriptor::TYPE_FLOAT:
@@ -553,13 +549,6 @@ std::string PhpDocGetterTypeName(const FieldDescriptor* field,
     type = absl::StrCat("RepeatedField<", type, ">");
   }
   return type;
-}
-
-std::string PhpDocGetterTypeName(const FieldDescriptor* field,
-                                 bool is_descriptor) {
-  Options options;
-  options.is_descriptor = is_descriptor;
-  return PhpDocGetterTypeName(field, options);
 }
 
 std::string EnumOrMessageSuffix(const FieldDescriptor* field,
@@ -779,7 +768,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
   if (!field->is_map() && !field->is_repeated() &&
       field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
       IsWrapperType(field)) {
-    GenerateWrapperFieldGetterDocComment(printer, field);
+    GenerateWrapperFieldGetterDocComment(printer, field, options);
     printer->Print(
         "public function get^camel_name^Unwrapped()\n"
         "{\n"
@@ -885,7 +874,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
   if (!field->is_map() && !field->is_repeated() &&
       field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
       IsWrapperType(field)) {
-    GenerateWrapperFieldSetterDocComment(printer, field);
+    GenerateWrapperFieldSetterDocComment(printer, field, options);
     printer->Print(
         "public function set^camel_name^Unwrapped($var)\n"
         "{\n"
@@ -1728,7 +1717,8 @@ void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
 }
 
 void GenerateWrapperFieldGetterDocComment(io::Printer* printer,
-                                          const FieldDescriptor* field) {
+                                          const FieldDescriptor* field,
+                                          const Options& options) {
   // Generate a doc comment for the special getXXXValue methods that are
   // generated for wrapper types.
   const FieldDescriptor* primitiveField =
@@ -1741,12 +1731,13 @@ void GenerateWrapperFieldGetterDocComment(io::Printer* printer,
   printer->Print(" * Generated from protobuf field <code>^def^</code>\n", "def",
                  EscapePhpdoc(FirstLineOf(field->DebugString())));
   printer->Print(" * @return ^phpdoc_type^|null\n", "phpdoc_type",
-                 PhpDocGetterTypeName(primitiveField, false));
+                 PhpDocGetterTypeName(primitiveField, options));
   printer->Print(" */\n");
 }
 
 void GenerateWrapperFieldSetterDocComment(io::Printer* printer,
-                                          const FieldDescriptor* field) {
+                                          const FieldDescriptor* field,
+                                          const Options& options) {
   // Generate a doc comment for the special setXXXValue methods that are
   // generated for wrapper types.
   const FieldDescriptor* primitiveField =
@@ -1760,7 +1751,7 @@ void GenerateWrapperFieldSetterDocComment(io::Printer* printer,
   printer->Print(" * Generated from protobuf field <code>^def^</code>\n", "def",
                  EscapePhpdoc(FirstLineOf(field->DebugString())));
   printer->Print(" * @param ^phpdoc_type^|null $var\n", "phpdoc_type",
-                 PhpDocSetterTypeName(primitiveField, false));
+                 PhpDocSetterTypeName(primitiveField, options));
   printer->Print(" * @return $this\n");
   printer->Print(" */\n");
 }
@@ -2224,6 +2215,8 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
       options.is_descriptor = true;
     } else if (option_pair[0] == "internal_generate_c_wkt") {
       GenerateCWellKnownTypes(files, generator_context);
+    } else if (option_pair[0] == "assume_64_bit_php") {
+      options.assume_64_bit_php = true;
     } else {
       ABSL_LOG(FATAL) << "Unknown codegen option: " << option_pair[0];
     }
