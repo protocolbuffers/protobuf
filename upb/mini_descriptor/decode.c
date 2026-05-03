@@ -680,8 +680,14 @@ static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
   // to align to UPB_MALLOC_ALIGN because it can change with sanitizers, and if
   // we're generating code we don't want to calculate size differently depending
   // on the proto compiler's host or build configuration.
-  d->table.UPB_PRIVATE(size) =
-      UPB_ALIGN_UP(d->table.UPB_PRIVATE(size), kUpb_Message_Align);
+  size_t aligned_size =
+      UPB_ALIGN_UP((size_t)d->table.UPB_PRIVATE(size), kUpb_Message_Align);
+  if (aligned_size > UINT16_MAX) {
+    upb_MdDecoder_ErrorJmp(
+        &d->base, "Message size exceeded maximum size of %zu bytes",
+        (size_t)UINT16_MAX);
+  }
+  d->table.UPB_PRIVATE(size) = (uint16_t)aligned_size;
 }
 
 static void upb_MtDecoder_ValidateEntryField(upb_MtDecoder* d,
