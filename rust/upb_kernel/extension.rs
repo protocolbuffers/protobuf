@@ -55,6 +55,18 @@ pub fn generated_extension_registry() -> RawExtensionRegistry {
     EXTENSIONS_REGISTRY.0
 }
 
+fn raw_msg_and_arena_from_mut<'msg, M>(msg: &mut M) -> (RawMessage, &'msg Arena)
+where
+    M: crate::MessageMut<'msg> + UpbGetMessagePtrMut + UpbGetArena,
+{
+    let msg_raw = msg.get_ptr_mut(Private).raw();
+    // SAFETY: `Mut<'msg, T>` carries the guarantee that the backing arena lives for `'msg`.
+    // `UpbGetArena::get_arena` ties the borrow to `&mut self`; we project it back to `'msg`
+    // here using the `Mut<'msg, _>` contract.
+    let arena_ref = unsafe { &*(msg.get_arena(Private) as *const Arena) };
+    (msg_raw, arena_ref)
+}
+
 impl<Msg: Message, T: Singular> ExtHas<Msg> for ExtensionId<Msg, T> {
     fn has(&self, _private: Private, msg: impl AsView<Proxied = Msg>) -> bool {
         // SAFETY:
@@ -127,17 +139,16 @@ impl<Extendee: Message, V: Message> ExtGetMut<Extendee, V, MessageTag>
         msg: impl IntoMut<'msg, MutProxied = Extendee>,
     ) -> Mut<'msg, V> {
         let mut msg = msg.into_mut();
-        let msg_inner = msg.as_message_mut_inner(Private);
-        let (msg_ptr, arena_ref): (MessagePtr<Extendee>, &'msg Arena) = msg_inner.ptr_and_arena();
+        let (msg_raw, arena_ref) = raw_msg_and_arena_from_mut(&mut msg);
         unsafe {
             // TODO: upb should have a GetOrCreateExtension operation instead of this dance.
             let raw_msg = match upb_Message_HasExtension(
-                msg_ptr.raw(),
+                msg_raw,
                 self.inner.mini_table().as_ptr(),
             ) {
                 true => {
                     upb_Message_GetExtensionMessage(
-                        msg_ptr.raw(),
+                        msg_raw,
                         self.inner.mini_table().as_ptr(),
                         NonNull::dangling(), // Not used.
                     )
@@ -146,7 +157,7 @@ impl<Extendee: Message, V: Message> ExtGetMut<Extendee, V, MessageTag>
                     let raw_msg =
                         MessagePtr::<V>::new(arena_ref).expect("alloc should never fail").raw();
                     upb_Message_SetExtensionMessage(
-                        msg_ptr.raw(),
+                        msg_raw,
                         self.inner.mini_table().as_ptr(),
                         raw_msg,
                         arena_ref.raw(),
@@ -207,11 +218,10 @@ where
         msg: impl IntoMut<'msg, MutProxied = Extendee>,
     ) -> Mut<'msg, Repeated<V>> {
         let mut msg = msg.into_mut();
-        let msg_inner = msg.as_message_mut_inner(Private);
-        let (msg_ptr, arena_ref): (MessagePtr<Extendee>, &'msg Arena) = msg_inner.ptr_and_arena();
+        let (msg_raw, arena_ref) = raw_msg_and_arena_from_mut(&mut msg);
         let raw_array = unsafe {
             upb_Message_GetExtensionMutableArray(
-                msg_ptr.raw(),
+                msg_raw,
                 self.inner.mini_table().as_ptr(),
             )
         };
@@ -219,7 +229,7 @@ where
             let new_arr = upb_Array_New(arena_ref.raw(), V::upb_type());
             let mut ptr = new_arr.as_ptr();
             upb_Message_SetExtension(
-                msg_ptr.raw(),
+                msg_raw,
                 self.inner.mini_table().as_ptr(),
                 &mut ptr as *mut _ as *const core::ffi::c_void,
                 arena_ref.raw(),
