@@ -228,14 +228,9 @@ pub fn debug_string(raw: RawMessage, f: &mut fmt::Formatter<'_>) -> fmt::Result 
     write!(f, "{dbg_str}")
 }
 
-pub fn str_to_ptrlen<'msg>(val: impl Into<&'msg ProtoStr>) -> PtrAndLen {
-    val.into().as_bytes().into()
-}
-
-// Warning: this function is unsound on its own! `val.as_ref()` must be safe to
-// call.
-pub fn ptrlen_to_str<'msg>(val: PtrAndLen) -> &'msg ProtoStr {
-    ProtoStr::from_utf8_unchecked(unsafe { val.as_ref() })
+// FIX: Remove from_utf8_unchecked to prevent Undefined Behavior when C++ bypasses validation (utf8_validation = NONE).
+pub fn ptrlen_to_str<'msg>(val: PtrAndLen) -> Result<&'msg ProtoStr, std::str::Utf8Error> {
+    ProtoStr::from_utf8(unsafe { val.as_ref() })
 }
 
 pub fn protostr_into_cppstdstring(val: ProtoString) -> CppStdString {
