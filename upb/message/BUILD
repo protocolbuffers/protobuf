@@ -228,6 +228,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":message",
+        "//upb/mem",
+        "//upb/mini_table",
         "//upb/port",
     ],
 )

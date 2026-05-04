@@ -163,9 +163,13 @@ namespace Google.Protobuf
             {
                 this.tokens = tokens;
                 this.nextTokenizer = nextTokenizer;
+                // Inherit recursion depth from the parent tokenizer so that the
+                // JsonParser.RecursionLimit check applies across replayed Any
+                // bodies. Without this, deeply-nested google.protobuf.Any
+                // payloads can bypass the limit and cause a StackOverflowException.
+                this.RecursionDepth = nextTokenizer.RecursionDepth;
             }
 
-            // FIXME: Object depth not maintained...
             protected override JsonToken NextImpl()
             {
                 if (nextTokenIndex >= tokens.Count)

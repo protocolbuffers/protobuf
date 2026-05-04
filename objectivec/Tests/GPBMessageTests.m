@@ -2754,4 +2754,94 @@
                                GPBCodedOutputStreamException_WriteFailed);
 }
 
+- (void)testExtensionValueValidation {
+#if defined(DEBUG) && DEBUG
+  TestAllExtensions *message = [TestAllExtensions message];
+
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  GPBExtensionDescriptor *msgExt = Objc_Protobuf_Tests_extension_OptionalNestedMessageExtension();
+  GPBExtensionDescriptor *enumExt = Objc_Protobuf_Tests_extension_OptionalNestedEnumExtension();
+  GPBExtensionDescriptor *repeatedEnumExt =
+      Objc_Protobuf_Tests_extension_RepeatedNestedEnumExtension();
+#else
+  GPBExtensionDescriptor *msgExt = [UnittestRoot optionalNestedMessageExtension];
+  GPBExtensionDescriptor *enumExt = [UnittestRoot optionalNestedEnumExtension];
+  GPBExtensionDescriptor *repeatedEnumExt = [UnittestRoot repeatedNestedEnumExtension];
+#endif
+
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  GPBExtensionDescriptor *int32Ext = Objc_Protobuf_Tests_extension_OptionalInt32Extension();
+  GPBExtensionDescriptor *stringExt = Objc_Protobuf_Tests_extension_OptionalStringExtension();
+  GPBExtensionDescriptor *bytesExt = Objc_Protobuf_Tests_extension_OptionalBytesExtension();
+#else
+  GPBExtensionDescriptor *int32Ext = [UnittestRoot optionalInt32Extension];
+  GPBExtensionDescriptor *stringExt = [UnittestRoot optionalStringExtension];
+  GPBExtensionDescriptor *bytesExt = [UnittestRoot optionalBytesExtension];
+#endif
+
+  // Message extension with wrong type
+  XCTAssertThrowsSpecificNamed(
+      ^{
+        [message setExtension:msgExt value:@5];
+      }(),
+      NSException, NSInternalInconsistencyException);
+
+  // Enum extension with wrong type
+  XCTAssertThrowsSpecificNamed(
+      ^{
+        [message setExtension:enumExt value:@"Not a number"];
+      }(),
+      NSException, NSInternalInconsistencyException);
+
+  // Enum extension with invalid enum value (999 is not a valid enum value for the closed
+  // TestAllTypes_NestedEnum)
+  XCTAssertThrowsSpecificNamed(
+      ^{
+        [message setExtension:enumExt value:@999];
+      }(),
+      NSException, NSInternalInconsistencyException);
+
+  // Repeated enum extension with invalid value
+  XCTAssertThrowsSpecificNamed(
+      ^{
+        [message addExtension:repeatedEnumExt value:@999];
+      }(),
+      NSException, NSInternalInconsistencyException);
+
+  // Setting invalid value by index in repeated enum extension
+  [message addExtension:repeatedEnumExt value:@(TestAllTypes_NestedEnum_Foo)];
+  XCTAssertThrowsSpecificNamed(
+      ^{
+        [message setExtension:repeatedEnumExt index:0 value:@999];
+      }(),
+      NSException, NSInternalInconsistencyException);
+
+  // Primitive extension with wrong type
+  XCTAssertThrowsSpecificNamed(
+      ^{
+        [message setExtension:int32Ext value:@"Not a number"];
+      }(),
+      NSException, NSInternalInconsistencyException);
+
+  XCTAssertThrowsSpecificNamed(
+      ^{
+        [message setExtension:stringExt value:@5];
+      }(),
+      NSException, NSInternalInconsistencyException);
+
+  XCTAssertThrowsSpecificNamed(
+      ^{
+        [message setExtension:bytesExt value:@"Not NSData"];
+      }(),
+      NSException, NSInternalInconsistencyException);
+
+  // Valid values should not throw
+  XCTAssertNoThrow([message setExtension:msgExt value:[TestAllTypes_NestedMessage message]]);
+  XCTAssertNoThrow([message setExtension:enumExt value:@(TestAllTypes_NestedEnum_Foo)]);
+  XCTAssertNoThrow([message setExtension:int32Ext value:@5]);
+  XCTAssertNoThrow([message setExtension:stringExt value:@"foo"]);
+  XCTAssertNoThrow([message setExtension:bytesExt value:[NSData data]]);
+#endif
+}
+
 @end

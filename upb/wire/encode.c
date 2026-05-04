@@ -40,6 +40,7 @@
 #include "upb/mini_table/internal/sub.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/internal/constants.h"
+#include "upb/wire/internal/encoder.h"
 #include "upb/wire/types.h"
 #include "upb/wire/writer.h"
 
@@ -53,22 +54,10 @@ static uint64_t encode_zz64(int64_t n) {
   return ((uint64_t)n << 1) ^ (n >> 63);
 }
 
-typedef struct {
-  upb_EncodeStatus status;
-  jmp_buf err;
-  upb_Arena* arena;
-  // These should only be used for arithmetic and reallocation to allow full
-  // aliasing analysis on the ptr argument.
-  const char UPB_NODEREF *buf, *limit;
-  int options;
-  int depth;
-  _upb_mapsorter sorter;
-} upb_encstate;
-
 UPB_NORETURN static void encode_err(upb_encstate* e, upb_EncodeStatus s) {
   UPB_ASSERT(s != kUpb_EncodeStatus_Ok);
   e->status = s;
-  UPB_LONGJMP(e->err, 1);
+  UPB_LONGJMP(*e->err, 1);
 }
 
 // Subtraction is used for bounds checks, and the C standard says that pointer
@@ -745,7 +734,8 @@ static char* encode_ext(char* ptr, upb_encstate* e,
 
 static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
                          const upb_Message* msg) {
-  if (m->UPB_PRIVATE(ext) == kUpb_ExtMode_NonExtendable) return ptr;
+  if (UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) == kUpb_ExtMode_NonExtendable)
+    return ptr;
 
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return ptr;
@@ -770,7 +760,8 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
     const upb_Extension* ext;
     while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
       ptr = encode_ext(ptr, e, ext->ext, ext->data,
-                       m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
+                       UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
+                           kUpb_ExtMode_IsMessageSet);
     }
     _upb_mapsorter_popmap(&e->sorter, &sorted);
   } else {
@@ -843,7 +834,7 @@ static upb_EncodeStatus upb_Encoder_Encode(char* ptr,
   // code paths which blindly copy the returned pointer without bothering to
   // check for errors until much later (b/235839510). So we still set *buf to
   // NULL on error and we still set it to non-NULL on a successful empty result.
-  if (UPB_SETJMP(encoder->err) == 0) {
+  if (UPB_SETJMP(*encoder->err) == 0) {
     size_t encoded_msg_size;
     ptr = encode_message(ptr, encoder, msg, l, &encoded_msg_size);
     if (prepend_len) {
@@ -881,8 +872,10 @@ static upb_EncodeStatus _upb_Encode(const upb_Message* msg,
                                     upb_Arena* arena, char** buf, size_t* size,
                                     bool prepend_len) {
   upb_encstate e;
+  jmp_buf err;
 
   e.status = kUpb_EncodeStatus_Ok;
+  e.err = &err;
   e.arena = arena;
   e.buf = &initial_buf_sentinel;
   e.limit = &initial_buf_sentinel;
@@ -898,6 +891,53 @@ upb_EncodeStatus upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
                             int options, upb_Arena* arena, char** buf,
                             size_t* size) {
   return _upb_Encode(msg, l, options, arena, buf, size, false);
+}
+
+upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Field)(upb_encstate* e,
+                                                const upb_Message* msg,
+                                                const upb_MiniTableField* field,
+                                                char** buf, size_t* size,
+                                                int options) {
+  e->buf = &initial_buf_sentinel;
+  e->limit = &initial_buf_sentinel;
+  e->options = options;
+  e->depth = upb_EncodeOptions_GetEffectiveMaxDepth(options);
+
+  char* ptr = &initial_buf_sentinel;
+  if (encode_shouldencode(msg, field)) {
+    ptr = encode_field(ptr, e, msg, field);
+  }
+  *size = e->limit - ptr;
+  if (*size == 0) {
+    static char ch;
+    *buf = &ch;
+  } else {
+    UPB_ASSERT(ptr);
+    *buf = ptr;
+  }
+  return e->status;
+}
+
+upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Extension)(
+    upb_encstate* e, const upb_MiniTableExtension* ext,
+    upb_MessageValue ext_val, bool is_message_set, char** buf, size_t* size,
+    int options) {
+  e->buf = &initial_buf_sentinel;
+  e->limit = &initial_buf_sentinel;
+  e->options = options;
+  e->depth = upb_EncodeOptions_GetEffectiveMaxDepth(options);
+
+  char* ptr = &initial_buf_sentinel;
+  ptr = encode_ext(ptr, e, ext, ext_val, is_message_set);
+  *size = e->limit - ptr;
+  if (*size == 0) {
+    static char ch;
+    *buf = &ch;
+  } else {
+    UPB_ASSERT(ptr);
+    *buf = ptr;
+  }
+  return e->status;
 }
 
 upb_EncodeStatus upb_EncodeLengthPrefixed(const upb_Message* msg,

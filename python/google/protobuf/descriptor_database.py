@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Provides a container for DescriptorProtos."""
 
 __author__ = 'matthewtoia@google.com (Matt Toia)'
@@ -37,6 +36,7 @@ class DescriptorDatabase(object):
 
     Args:
       file_desc_proto: The FileDescriptorProto to add.
+
     Raises:
       DescriptorDatabaseConflictingDefinitionError: if an attempt is made to
         add a proto with the same name but different definition than an
@@ -47,7 +47,8 @@ class DescriptorDatabase(object):
       self._file_desc_protos_by_file[proto_name] = file_desc_proto
     elif self._file_desc_protos_by_file[proto_name] != file_desc_proto:
       raise DescriptorDatabaseConflictingDefinitionError(
-          '%s already added, but with different descriptor.' % proto_name)
+          '%s already added, but with different descriptor.' % proto_name
+      )
     else:
       return
 
@@ -143,7 +144,9 @@ class DescriptorDatabase(object):
         raise KeyError(symbol)
 
   def FindFileContainingExtension(
-      self, extendee_name: str, extension_number: int  # pylint: disable=unused-argument
+      self,
+      extendee_name: str,
+      extension_number: int,  # pylint: disable=unused-argument
   ) -> Optional['descriptor_pb2.FileDescriptorProto']:
     # TODO: implement this API.
     return None
@@ -156,10 +159,15 @@ class DescriptorDatabase(object):
       self, name: str, file_desc_proto: 'descriptor_pb2.FileDescriptorProto'
   ) -> None:
     if name in self._file_desc_protos_by_symbol:
-      warn_msg = ('Conflict register for file "' + file_desc_proto.name +
-                  '": ' + name +
-                  ' is already defined in file "' +
-                  self._file_desc_protos_by_symbol[name].name + '"')
+      warn_msg = (
+          'Conflict register for file "'
+          + file_desc_proto.name
+          + '": '
+          + name
+          + ' is already defined in file "'
+          + self._file_desc_protos_by_symbol[name].name
+          + '"'
+      )
       warnings.warn(warn_msg, RuntimeWarning)
     self._file_desc_protos_by_symbol[name] = file_desc_proto
 

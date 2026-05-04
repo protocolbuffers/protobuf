@@ -46,7 +46,8 @@ extern "C" {
 // no initial block, |n| is a hint of the size that should be allocated for the
 // first block of the arena, such that `upb_Arena_Malloc(hint)` will not require
 // another call to |alloc|.
-UPB_API upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc);
+UPB_NODISCARD UPB_API upb_Arena* upb_Arena_Init(void* mem, size_t n,
+                                                upb_alloc* alloc);
 
 UPB_API void upb_Arena_Free(upb_Arena* a);
 // Sets the cleanup function for the upb_alloc used by the arena. Only one
@@ -59,7 +60,8 @@ UPB_API void upb_Arena_SetAllocCleanup(upb_Arena* a,
 // transitively fused together will be freed until all of them have reached a
 // zero refcount. This operation is safe to use concurrently from multiple
 // threads.
-UPB_API bool upb_Arena_Fuse(const upb_Arena* a, const upb_Arena* b);
+UPB_NODISCARD UPB_API bool upb_Arena_Fuse(const upb_Arena* a,
+                                          const upb_Arena* b);
 
 // This operation is safe to use concurrently from multiple threads.
 UPB_API bool upb_Arena_IsFused(const upb_Arena* a, const upb_Arena* b);
@@ -104,7 +106,7 @@ void upb_Arena_DecRefFor(const upb_Arena* a, const void* owner);
 // with any other function on `from`.
 //
 // Returns whether the reference was created successfully.
-bool upb_Arena_RefArena(upb_Arena* from, const upb_Arena* to);
+UPB_NODISCARD bool upb_Arena_RefArena(upb_Arena* from, const upb_Arena* to);
 
 #ifndef NDEBUG
 // Returns true if upb_Arena_RefArena(from, to) was previously called.
@@ -133,18 +135,20 @@ uint32_t upb_Arena_DebugRefCount(const upb_Arena* a);
 bool upb_Arena_HasRefChain(const upb_Arena* from, const upb_Arena* to);
 #endif
 
-UPB_API_INLINE upb_Arena* upb_Arena_New(void) {
+UPB_NODISCARD UPB_API_INLINE upb_Arena* upb_Arena_New(void) {
   return upb_Arena_Init(NULL, 0, &upb_alloc_global);
 }
 
-UPB_API_INLINE upb_Arena* upb_Arena_NewSized(size_t size_hint) {
+UPB_NODISCARD UPB_API_INLINE upb_Arena* upb_Arena_NewSized(size_t size_hint) {
   return upb_Arena_Init(NULL, size_hint, &upb_alloc_global);
 }
 
-UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size);
+UPB_NODISCARD UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a,
+                                                    size_t size);
 
-UPB_API_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
-                                       size_t size);
+UPB_NODISCARD UPB_API_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr,
+                                                     size_t oldsize,
+                                                     size_t size);
 
 static const size_t UPB_PRIVATE(kUpbDefaultMaxBlockSize) =
     UPB_DEFAULT_MAX_BLOCK_SIZE;
@@ -173,8 +177,9 @@ UPB_API_INLINE void upb_Arena_ShrinkLast(upb_Arena* a, void* ptr,
 // allocation is unmodified. See also upb_Arena_Realloc.
 // REQUIRES: `size > oldsize`; to shrink, use `upb_Arena_Realloc` or
 // `upb_Arena_ShrinkLast`.
-UPB_API_INLINE bool upb_Arena_TryExtend(upb_Arena* a, void* ptr, size_t oldsize,
-                                        size_t size);
+UPB_NODISCARD UPB_API_INLINE bool upb_Arena_TryExtend(upb_Arena* a, void* ptr,
+                                                      size_t oldsize,
+                                                      size_t size);
 
 #ifdef UPB_TRACING_ENABLED
 void upb_Arena_SetTraceHandler(void (*initArenaTraceHandler)(const upb_Arena*,

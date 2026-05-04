@@ -132,14 +132,26 @@
 // Owner: ckennelly@, mkruskal@
 #define PROTOBUF_FUTURE_ADD_NODISCARD [[nodiscard]]
 
+// Fix PyProto C++ and upb implementations to return NotImplemented in descriptor container equality checks for unrecognized types.
+// Owner: runze@
+#define PROTOBUF_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 1
+
 #else
 
 #define PROTOBUF_FUTURE_ADD_NODISCARD
 
+#define PROTOBUF_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 0
+
 #endif
 
 #define PROTOBUF_FUTURE_ADD_EARLY_NODISCARD [[nodiscard]]
+#if !defined(__clang__) && defined(__GNUC__) && __GNUC__ < 13
+// GCC < 13 doesn't support mixing [[]] attributes with __attribute__, and this
+// is used with PROTOBUF_EXPORT for shared library visibility.
+#define PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED __attribute__((warn_unused))
+#else
 #define PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ABSL_ATTRIBUTE_WARN_UNUSED
+#endif
 
 #ifdef PROTOBUF_ALWAYS_INLINE
 #error PROTOBUF_ALWAYS_INLINE was previously defined
@@ -749,6 +761,33 @@ namespace internal {
 #else
 #define PROTOBUF_DEPRECATE_AND_INLINE() [[deprecated]]
 #endif
+
+#ifdef PROTOBUF_REFACTOR_INLINE
+#error PROTOBUF_REFACTOR_INLINE was previously defined
+#endif
+#if defined(ABSL_REFACTOR_INLINE)
+#define PROTOBUF_REFACTOR_INLINE() ABSL_REFACTOR_INLINE
+#else
+#define PROTOBUF_REFACTOR_INLINE()
+#endif
+
+// PROTOBUF_NULL_AFTER_MOVE tells clang-tidy that a user-defined
+// smart-pointer-like type makes guarantees on the state of a moved-from object,
+// leaving it in a null state, where it can be used as long as it is not
+// dereferenced. In other words, these are the same semantics that smart
+// pointers from the standard library provide.
+//
+// The clang-tidy check bugprone-use-after-move allows member functions of types
+// marked with this attribute to be called on objects that have been moved from;
+// without the attribute, this would result in a use-after-move warning.
+#ifdef PROTOBUF_NULL_AFTER_MOVE
+#error PROTOBUF_NULL_AFTER_MOVE was previously defined
+#endif  // PROTOBUF_NULL_AFTER_MOVE
+#if defined(ABSL_ATTRIBUTE_NULL_AFTER_MOVE)
+#define PROTOBUF_NULL_AFTER_MOVE ABSL_ATTRIBUTE_NULL_AFTER_MOVE
+#else
+#define PROTOBUF_NULL_AFTER_MOVE
+#endif  // defined(ABSL_ATTRIBUTE_NULL_AFTER_MOVE)
 
 #ifdef PROTOBUF_NONNULL
 #error PROTOBUF_NONNULL was previously defined

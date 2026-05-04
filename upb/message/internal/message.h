@@ -23,6 +23,7 @@
 #include "upb/mem/arena.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/types.h"
+#include "upb/message/value.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
@@ -162,8 +163,8 @@ UPB_API void upb_Message_SetNewMessageTraceHandler(
 #endif  // UPB_TRACING_ENABLED
 
 // Inline version upb_Message_New(), for internal use.
-UPB_INLINE struct upb_Message* _upb_Message_New(const upb_MiniTable* m,
-                                                upb_Arena* a) {
+UPB_NODISCARD UPB_INLINE struct upb_Message* _upb_Message_New(
+    const upb_MiniTable* m, upb_Arena* a) {
   UPB_PRIVATE(upb_MiniTable_CheckInvariants)(m);
 #ifdef UPB_TRACING_ENABLED
   upb_Message_LogNewMessage(m, a);
@@ -182,7 +183,7 @@ UPB_INLINE struct upb_Message* _upb_Message_New(const upb_MiniTable* m,
 // Discards the unknown fields for this message only.
 void _upb_Message_DiscardUnknown_shallow(struct upb_Message* msg);
 
-UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(
+UPB_NODISCARD UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(
     struct upb_Message* msg, const char* data, size_t len, upb_Arena* arena,
     bool alias);
 
@@ -198,6 +199,36 @@ typedef enum {
   kUpb_AddUnknown_AliasAllowMerge = 2,
 } upb_AddUnknownMode;
 
+UPB_NODISCARD UPB_INLINE bool UPB_PRIVATE(
+    _upb_Message_TryAddUnknownAliasAllowMerge)(struct upb_Message* msg,
+                                               const char* data, size_t len,
+                                               upb_Arena* arena,
+                                               upb_AddUnknownMode mode) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  UPB_ASSERT(mode == kUpb_AddUnknown_AliasAllowMerge);
+  // Aliasing parse of a message with sequential unknown fields is a simple
+  // pointer bump, so inline it.
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  if (in && in->size) {
+    upb_TaggedAuxPtr ptr = in->aux_data[in->size - 1];
+    if (upb_TaggedAuxPtr_IsUnknown(ptr)) {
+      upb_StringView* existing = upb_TaggedAuxPtr_UnknownData(ptr);
+      // Fast path if the field we're adding is immediately after the last
+      // added unknown field.
+      //
+      // The caller has guaranteed to us, by passing
+      // kUpb_AddUnknown_AliasAllowMerge, that there is no risk that these two
+      // regions of memory are from different objects that are contiguous in
+      // memory by coincidence.
+      if (existing->data + existing->size == data) {
+        existing->size += len;
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 // Adds unknown data (serialized protobuf data) to the given message. The data
 // must represent one or more complete and well formed proto fields.
 //
@@ -208,33 +239,14 @@ typedef enum {
 // to mark the boundary of the buffer, so that we do not inappropriately
 // coalesce two buffers that are separate objects but happen to be contiguous
 // in memory.
-UPB_INLINE bool UPB_PRIVATE(_upb_Message_AddUnknown)(struct upb_Message* msg,
-                                                     const char* data,
-                                                     size_t len,
-                                                     upb_Arena* arena,
-                                                     upb_AddUnknownMode mode) {
+UPB_NODISCARD UPB_INLINE bool UPB_PRIVATE(_upb_Message_AddUnknown)(
+    struct upb_Message* msg, const char* data, size_t len, upb_Arena* arena,
+    upb_AddUnknownMode mode) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
-  if (mode == kUpb_AddUnknown_AliasAllowMerge) {
-    // Aliasing parse of a message with sequential unknown fields is a simple
-    // pointer bump, so inline it.
-    upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-    if (in && in->size) {
-      upb_TaggedAuxPtr ptr = in->aux_data[in->size - 1];
-      if (upb_TaggedAuxPtr_IsUnknown(ptr)) {
-        upb_StringView* existing = upb_TaggedAuxPtr_UnknownData(ptr);
-        // Fast path if the field we're adding is immediately after the last
-        // added unknown field.
-        //
-        // The caller has guaranteed to us, by passing
-        // kUpb_AddUnknown_AliasAllowMerge, that there is no risk that these two
-        // regions of memory are from different objects that are contiguous in
-        // memory by coincidence.
-        if (existing->data + existing->size == data) {
-          existing->size += len;
-          return true;
-        }
-      }
-    }
+  if (mode == kUpb_AddUnknown_AliasAllowMerge &&
+      UPB_PRIVATE(_upb_Message_TryAddUnknownAliasAllowMerge)(msg, data, len,
+                                                             arena, mode)) {
+    return true;
   }
   return UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(
       msg, data, len, arena, mode != kUpb_AddUnknown_Copy);
@@ -244,14 +256,14 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_AddUnknown)(struct upb_Message* msg,
 // The data is copied into the message instance. Data when concatenated together
 // must represent one or more complete and well formed proto fields, but the
 // individual spans may point only to partial fields.
-bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
-                                           upb_Arena* arena,
-                                           upb_StringView data[], size_t count);
+UPB_NODISCARD bool UPB_PRIVATE(_upb_Message_AddUnknownV)(
+    struct upb_Message* msg, upb_Arena* arena, upb_StringView data[],
+    size_t count);
 
 // Ensures at least one slot is available in the aux_data of this message.
 // Returns false if a reallocation is needed to satisfy the request, and fails.
-bool UPB_PRIVATE(_upb_Message_ReserveSlot)(struct upb_Message* msg,
-                                           upb_Arena* arena);
+UPB_NODISCARD bool UPB_PRIVATE(_upb_Message_ReserveSlot)(
+    struct upb_Message* msg, upb_Arena* arena);
 
 #define kUpb_Message_UnknownBegin 0
 #define kUpb_Message_ExtensionBegin 0

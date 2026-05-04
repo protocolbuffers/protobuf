@@ -125,6 +125,53 @@ TEST(DebugCounterTest, DuplicateNamesWorkTogether) {
             HasSubstr("  Total     :          5")));
 }
 
+TEST(DebugCounterTest, Histograms) {
+  EXPECT_EXIT(
+      {
+        static google::protobuf::internal::RealDebugCounter normal_counter(
+            "Normal.Counter");
+        static google::protobuf::internal::RealDebugCounter log_counter("Log.Counter");
+        static google::protobuf::internal::RealDebugCounter linear_counter(
+            "Linear.Counter");
+
+        normal_counter.Inc();
+        normal_counter.Inc();
+        normal_counter.Inc();
+        for (int i = 0; i < 100; ++i) {
+          log_counter.IncLog(i);
+        }
+
+        linear_counter.IncBucket(3);
+        linear_counter.IncBucket(3);
+        linear_counter.IncBucket(4);
+        linear_counter.IncBucket(7);
+        linear_counter.IncBucket(7);
+        linear_counter.IncBucket(7);
+        exit(0);
+      },
+      ExitedWithCode(0),
+      HasSubstr(
+          R"(
+---Histograms---
+Linear.Counter:
+[ 3]:▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▎
+[ 4]:▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▋
+[ 5]:
+[ 6]:
+[ 7]:▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉
+
+Log.Counter:
+[ 0]:▉
+[ 1]:▉
+[ 2]:▉▉
+[ 3]:▉▉▉▉
+[ 4]:▉▉▉▉▉▉▉▉
+[ 5]:▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉
+[ 6]:▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉
+[ 7]:▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉
+)"));
+}
+
 }  // namespace
 
 #include "google/protobuf/port_undef.inc"

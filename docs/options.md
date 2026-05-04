@@ -558,3 +558,13 @@ about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/grpc-ecosystem/grpc-gateway
     *   Extensions: 1295
+
+1.  Protosource
+
+    *   Website: https://github.com/funinthecloud/protosource
+    *   Extensions: 1296-1305
+
+1.  protosearch
+
+    *   Website: https://github.com/benwebber/protosearch
+    *   Extensions: 1306

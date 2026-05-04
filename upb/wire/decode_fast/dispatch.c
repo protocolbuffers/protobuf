@@ -11,8 +11,8 @@
 
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"
-#include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/decoder.h"
+#include "upb/wire/internal/eps_copy_input_stream.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -50,6 +50,6 @@ UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
 }
 
 const char* _upb_FastDecoder_ErrorJmp2(upb_Decoder* d) {
-  UPB_LONGJMP(d->err.buf, 1);
+  UPB_LONGJMP(d->err->buf, 1);
   return NULL;
 }

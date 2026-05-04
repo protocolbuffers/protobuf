@@ -114,8 +114,9 @@ bool upb_MessageDef_IsMapEntry(const upb_MessageDef* m);
 bool upb_MessageDef_IsMessageSet(const upb_MessageDef* m);
 
 // Creates a mini descriptor string for a message, returns true on success.
-bool upb_MessageDef_MiniDescriptorEncode(const upb_MessageDef* m, upb_Arena* a,
-                                         upb_StringView* out);
+UPB_NODISCARD bool upb_MessageDef_MiniDescriptorEncode(const upb_MessageDef* m,
+                                                       upb_Arena* a,
+                                                       upb_StringView* out);
 
 UPB_API const upb_MiniTable* upb_MessageDef_MiniTable(const upb_MessageDef* m);
 const char* upb_MessageDef_Name(const upb_MessageDef* m);

@@ -56,9 +56,9 @@ std::pair<const upb_MiniTable*, const upb_MiniTableField*>
 MiniTable::MakeSingleFieldTable(int field_number, upb_FieldType type,
                                 upb_DecodeFast_Type fast_type,
                                 upb_DecodeFast_Cardinality cardinality,
-                                upb_Arena* arena) {
+                                upb_Arena* arena, bool extensible) {
   MtDataEncoder encoder;
-  encoder.StartMessage(0);
+  encoder.StartMessage(extensible ? kUpb_MessageModifier_IsExtendable : 0);
   encoder.PutField(type, 1, FieldModifiers(fast_type, cardinality));
   if (cardinality == kUpb_DecodeFast_Oneof) {
     encoder.StartOneof();

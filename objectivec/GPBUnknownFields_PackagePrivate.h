@@ -12,5 +12,8 @@
 @interface GPBUnknownFields ()
 
 - (nonnull NSData *)serializeAsData;
+- (size_t)computeSerializedSize __attribute__((objc_direct));
+- (void)writeToCodedOutputStream:(nonnull GPBCodedOutputStream *)output
+    __attribute__((objc_direct));
 
 @end

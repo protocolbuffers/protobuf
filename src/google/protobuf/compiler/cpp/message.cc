@@ -314,7 +314,7 @@ void EmitNonDefaultCheckForString(io::Printer* p, absl::string_view prefix,
                  {
                      {"prefix", prefix},
                      {"name", FieldName(field)},
-                     {"field", FieldMemberName(field, split)},
+                     {"field_", FieldMemberName(field, split)},
                  },
                  // The merge semantic is "overwrite if present". This statement
                  // is emitted when hasbit is set and src proto field is
@@ -326,7 +326,7 @@ void EmitNonDefaultCheckForString(io::Printer* p, absl::string_view prefix,
                  //   do nothing.
                  // This will allow destructors and Clear() to be simpler.
                  R"cc(
-                   if (_this->$field$.IsDefault()) {
+                   if (_this->$field_$.IsDefault()) {
                      _this->_internal_set_$name$("");
                    }
                  )cc");
@@ -1149,7 +1149,7 @@ void MessageGenerator::GenerateSingularFieldHasBits(
                  // information to the compiler, we allow it to eliminate
                  // unnecessary null checks later on.
                  p->Emit(
-                     R"cc(PROTOBUF_ASSUME(!value || $field$ != nullptr);)cc");
+                     R"cc(PROTOBUF_ASSUME(!value || $field_$ != nullptr);)cc");
                }
              }}
              .WithSuffix(";")},
@@ -1352,23 +1352,22 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
   }
 
   int has_bit_index = has_bit_indices_[field->index()];
-  p->Emit(
-      {{"condition", GenerateConditionMaybeWithProbabilityForField(
-                         has_bit_index, field, options_)},
-       {"check_nondefault_and_emit_body",
-        [&] {
-          // Note that it's possible that the field has explicit presence.
-          // In that case, nondefault check will not be emitted but
-          // emit_body will still be emitted.
-          MayEmitIfNonDefaultCheck(p, "this_.", field, options_,
-                                   std::move(emit_body),
-                                   /*with_enclosing_braces_always=*/false);
-        }}},
-      R"cc(
-        if ($condition$) {
-          $check_nondefault_and_emit_body$;
-        }
-      )cc");
+  p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
+                             has_bit_index, field, options_)},
+           {"check_nondefault_and_emit_body",
+            [&] {
+              // Note that it's possible that the field has explicit presence.
+              // In that case, nondefault check will not be emitted but
+              // emit_body will still be emitted.
+              MayEmitIfNonDefaultCheck(p, "this_.", field, options_,
+                                       std::move(emit_body),
+                                       /*with_enclosing_braces_always=*/false);
+            }}},
+          R"cc(
+            if ($condition$) {
+              $check_nondefault_and_emit_body$;
+            }
+          )cc");
 }
 
 void MessageGenerator::MaybeEmitUpdateCachedHasbits(
@@ -2287,8 +2286,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           // @@protoc_insertion_point(class_scope:$full_name$)
           //~ Generate private members.
          private:
-          //~ TODO: Remove hack to track field access and remove
-          //~ this class.
           class _Internal;
           $decl_set_has$;
           $decl_oneof_has$;
@@ -2674,9 +2671,9 @@ void MessageGenerator::GenerateZeroInitFields(io::Printer* p) const {
                                sizeof($Impl$::$last$_));
                 )cc");
       } else {
-        p->Emit({{"field", FieldMemberName(first, false)}},
+        p->Emit({{"field_", FieldMemberName(first, false)}},
                 R"cc(
-                  $field$ = {};
+                  $field_$ = {};
                 )cc");
       }
       first = nullptr;
@@ -3102,9 +3099,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
                                sizeof($Impl$::$last$_));
                 )cc");
       } else {
-        p->Emit({{"field", FieldMemberName(first, split)}},
+        p->Emit({{"field_", FieldMemberName(first, split)}},
                 R"cc(
-                  $field$ = from.$field$;
+                  $field_$ = from.$field_$;
                 )cc");
       }
       first = nullptr;
@@ -3125,7 +3122,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
 
   auto has_message = [&](const FieldDescriptor* field) {
     if (has_bit_indices_.empty()) {
-      p->Emit("from.$field$ != nullptr");
+      p->Emit("from.$field_$ != nullptr");
     } else {
       int has_bit_index = has_bit_indices_[field->index()];
       p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
@@ -3139,9 +3136,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
     p->Emit({{"has_msg", [&] { has_message(field); }},
              {"submsg", FieldMessageTypeName(field, options_)}},
             R"cc(
-              $field$ = ($has_msg$)
-                            ? $superclass$::CopyConstruct(arena, *from.$field$)
-                            : nullptr;
+              $field_$ = ($has_msg$) ? $superclass$::CopyConstruct(
+                                           arena, *from.$field_$)
+                                     : nullptr;
             )cc");
   };
 
@@ -3197,7 +3194,6 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
               for (const auto* field : internal::FieldRange(oneof)) {
                 p->Emit(
                     {{"Name", UnderscoresToCamelCase(field->name(), true)},
-                     {"field", FieldMemberName(field, /*split=*/false)},
                      {"body",
                       [&] {
                         field_generators_.get(field).GenerateOneofCopyConstruct(
@@ -5637,8 +5633,12 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                  // File descriptor proto is mutable.
                  if (is_file_descriptor_proto) return;
 
-                 p->Emit(
-                     R"cc(PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro))cc");
+                 p->Emit({{"section_name",
+                           !IsProfileDriven(options_) ||
+                                   IsPresentMessage(descriptor_, options_)
+                               ? ".data.rel.ro"
+                               : ".data.rel.ro.unlikely"}},
+                         "PROTOBUF_MESSAGE_GLOBALS_SECTION($section_name$)");
                }})
               .WithSuffix(""),
           {

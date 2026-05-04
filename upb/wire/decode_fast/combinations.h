@@ -216,6 +216,13 @@ UPB_INLINE upb_DecodeFast_Type upb_DecodeFast_GetType(uint32_t function_idx) {
   UPB_DECODEFAST_COMBINATION_IS_ENABLED(type, card, size)
 #endif
 
+// A special value for function_idx to indicate that the field is unknown.
+#define kUpb_DecodeFast_Unknown (UINT32_MAX - 1)
+
+// A special value for function_idx to indicate that the field is an extension
+// or an unknown.
+#define kUpb_DecodeFast_ExtensionOrUnknown (UINT32_MAX - 2)
+
 #include "upb/port/undef.inc"
 
 #endif  // UPB_WIRE_INTERNAL_DECODE_FAST_COMBINATIONS_H_

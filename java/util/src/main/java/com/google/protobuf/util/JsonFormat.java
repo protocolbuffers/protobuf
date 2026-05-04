@@ -1886,7 +1886,7 @@ public class JsonFormat {
       // "1.000" are treated as equal in JSON. For this reason we accept floating point values for
       // integer fields as well as long as it actually is an integer (i.e., round(value) == value).
       try {
-        BigDecimal value = new BigDecimal(json.getAsString());
+        BigDecimal value = parseBigDecimal(json.getAsString());
         return value.intValueExact();
       } catch (RuntimeException e) {
         InvalidProtocolBufferException ex =
@@ -1906,7 +1906,7 @@ public class JsonFormat {
       // "1.000" are treated as equal in JSON. For this reason we accept floating point values for
       // integer fields as well as long as it actually is an integer (i.e., round(value) == value).
       try {
-        BigDecimal value = new BigDecimal(json.getAsString());
+        BigDecimal value = parseBigDecimal(json.getAsString());
         return value.longValueExact();
       } catch (RuntimeException e) {
         InvalidProtocolBufferException ex =
@@ -1930,7 +1930,7 @@ public class JsonFormat {
       // "1.000" are treated as equal in JSON. For this reason we accept floating point values for
       // integer fields as well as long as it actually is an integer (i.e., round(value) == value).
       try {
-        BigDecimal value = new BigDecimal(json.getAsString());
+        BigDecimal value = parseBigDecimal(json.getAsString());
         if (value.signum() < 0 || value.compareTo(MAX_UINT32) > 0) {
           throw new InvalidProtocolBufferException("Out of range uint32 value: " + json);
         }
@@ -1950,9 +1950,24 @@ public class JsonFormat {
     private static final BigDecimal MAX_UINT64 =
         new BigDecimal(new BigInteger("FFFFFFFFFFFFFFFF", 16));
 
+    // Maximum length for numeric strings passed to BigDecimal constructor.
+    // BigDecimal(String) has O(N^2) time complexity for N-digit strings on JDK < 18,
+    // allowing a DoS with a single long numeric JSON value. Valid protobuf numeric
+    // values never exceed ~350 characters, so 1000 is a generous upper bound.
+    private static final int MAX_NUMERIC_STRING_LENGTH = 1000;
+
+    private static BigDecimal parseBigDecimal(String value)
+        throws InvalidProtocolBufferException {
+      if (value.length() > MAX_NUMERIC_STRING_LENGTH) {
+        throw new InvalidProtocolBufferException(
+            "Numeric value is too long: " + value.length() + " characters");
+      }
+      return new BigDecimal(value);
+    }
+
     private long parseUint64(JsonElement json) throws InvalidProtocolBufferException {
       try {
-        BigDecimal value = new BigDecimal(json.getAsString());
+        BigDecimal value = parseBigDecimal(json.getAsString());
         if (value.signum() < 0 || value.compareTo(MAX_UINT64) > 0) {
           throw new InvalidProtocolBufferException("Out of range uint64 value: " + json);
         }
@@ -2030,7 +2045,7 @@ public class JsonFormat {
         // We don't use Double.parseDouble() here because that function simply
         // accepts all values. Here we parse the value into a BigDecimal and do
         // explicit range check on it.
-        BigDecimal value = new BigDecimal(json.getAsString());
+        BigDecimal value = parseBigDecimal(json.getAsString());
         if (value.compareTo(MAX_DOUBLE) > 0 || value.compareTo(MIN_DOUBLE) < 0) {
           throw new InvalidProtocolBufferException("Out of range double value: " + json);
         }

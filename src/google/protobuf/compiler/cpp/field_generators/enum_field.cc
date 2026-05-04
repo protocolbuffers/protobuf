@@ -373,9 +373,9 @@ void RepeatedEnum::GenerateAccessorDeclarations(io::Printer* p) const {
         break;
       case FieldDescriptor::CppRepeatedType::kProxy:
         p->Emit(R"cc(
-          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<const int>
+          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<const $Enum$>
           $name$() const;
-          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<int> $mutable_name$();
+          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<$Enum$> $mutable_name$();
         )cc");
         break;
     }
@@ -455,17 +455,17 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       break;
     case FieldDescriptor::CppRepeatedType::kProxy:
       p->Emit(R"cc(
-        inline $pb$::RepeatedFieldProxy<const int> $Msg$::$name$() const
+        inline $pb$::RepeatedFieldProxy<const $Enum$> $Msg$::$name$() const
             ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $WeakDescriptorSelfPin$;
           $annotate_list$;
           // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
           return $pbi$::RepeatedFieldProxyInternalPrivateAccessHelper<
-              const int>::Construct(_internal_$name_internal$());
+              const $Enum$>::Construct(_internal_$name_internal$());
         }
       )cc");
       p->Emit(R"cc(
-        inline $pb$::RepeatedFieldProxy<int> $Msg$::mutable_$name$()
+        inline $pb$::RepeatedFieldProxy<$Enum$> $Msg$::mutable_$name$()
             ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $WeakDescriptorSelfPin$;
           $set_hasbit$;
@@ -473,7 +473,8 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
           $TsanDetectConcurrentMutation$;
           return $pbi$::RepeatedFieldProxyInternalPrivateAccessHelper<
-              int>::Construct(*_internal_mutable_$name_internal$(), GetArena());
+              $Enum$>::Construct(*_internal_mutable_$name_internal$(),
+                                 GetArena());
         }
       )cc");
       break;

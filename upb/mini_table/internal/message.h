@@ -30,6 +30,11 @@ typedef struct {
   _upb_FieldParser* field_parser;
 } _upb_FastTable_Entry;
 
+// Ext Mode consists of 4 bits:
+// * Extensibility
+// * MessageSet
+// * Map
+// * FastTable field coverage
 typedef enum {
   kUpb_ExtMode_NonExtendable = 0,  // Non-extendable message.
   kUpb_ExtMode_Extendable = 1,     // Normal extendable message.
@@ -40,7 +45,16 @@ typedef enum {
   // During table building we steal a bit to indicate that the message is a map
   // entry.  *Only* used during table building!
   kUpb_ExtMode_IsMapEntry = 4,
+
+  // Indicates that all eligible fields (with 1- or 2-byte) tags were
+  // successfully assigned to the fasttable.
+  kUpb_ExtMode_AllFastFieldsAssigned = 8,
 } upb_ExtMode;
+
+// Check ExtMode base message info, excluding fasttable state info.
+UPB_FORCEINLINE uint8_t UPB_PRIVATE(_upb_ExtMode_Base)(uint8_t ext_mode) {
+  return ext_mode & 7;
+}
 
 enum {
   kUpb_Message_Align = 8,
@@ -103,8 +117,14 @@ UPB_API_INLINE int upb_MiniTable_FieldCount(const struct upb_MiniTable* m) {
   return m->UPB_ONLYBITS(field_count);
 }
 
+UPB_FORCEINLINE uint8_t
+UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(const struct upb_MiniTable* m) {
+  return UPB_PRIVATE(_upb_ExtMode_Base)(m->UPB_PRIVATE(ext));
+}
+
 UPB_API_INLINE bool upb_MiniTable_IsMessageSet(const struct upb_MiniTable* m) {
-  return m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet;
+  return UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
+         kUpb_ExtMode_IsMessageSet;
 }
 
 UPB_FORCEINLINE

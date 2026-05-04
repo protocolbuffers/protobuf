@@ -12,21 +12,27 @@ import unittest
 from google.protobuf import text_encoding
 
 TEST_VALUES = [
-    ("foo\\rbar\\nbaz\\t",
-     "foo\\rbar\\nbaz\\t",
-     b"foo\rbar\nbaz\t"),
-    ("\\'full of \\\"sound\\\" and \\\"fury\\\"\\'",
-     "\\'full of \\\"sound\\\" and \\\"fury\\\"\\'",
-     b"'full of \"sound\" and \"fury\"'"),
-    ("signi\\\\fying\\\\ nothing\\\\",
-     "signi\\\\fying\\\\ nothing\\\\",
-     b"signi\\fying\\ nothing\\"),
-    ("\\010\\t\\n\\013\\014\\r",
-     "\\010\\t\\n\\013\\014\\r",
-     b"\010\011\012\013\014\015")]
+    ("foo\\rbar\\nbaz\\t", "foo\\rbar\\nbaz\\t", b"foo\rbar\nbaz\t"),
+    (
+        '\\\'full of \\"sound\\" and \\"fury\\"\\\'',
+        '\\\'full of \\"sound\\" and \\"fury\\"\\\'',
+        b'\'full of "sound" and "fury"\'',
+    ),
+    (
+        "signi\\\\fying\\\\ nothing\\\\",
+        "signi\\\\fying\\\\ nothing\\\\",
+        b"signi\\fying\\ nothing\\",
+    ),
+    (
+        "\\010\\t\\n\\013\\014\\r",
+        "\\010\\t\\n\\013\\014\\r",
+        b"\010\011\012\013\014\015",
+    ),
+]
 
 
 class TextEncodingTestCase(unittest.TestCase):
+
   def testCEscape(self):
     for escaped, escaped_utf8, unescaped in TEST_VALUES:
       self.assertEqual(escaped, text_encoding.CEscape(unescaped, as_utf8=False))
