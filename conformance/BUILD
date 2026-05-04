@@ -23,6 +23,7 @@ load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
+load("//tools/build_defs/apple:apple_universal_binary.bzl", "apple_universal_binary")
 
 exports_files([
     "bazel_conformance_test_runner.sh",
