@@ -93,13 +93,15 @@ namespace Google.Protobuf
             {
                 throw InvalidProtocolBufferException.NegativeSize();
             }
-            byteLimit += state.totalBytesRetired + state.bufferPos;
+            // Compute in long to avoid int overflow when byteLimit is near int.MaxValue;
+            // the oldLimit guard below ensures the result fits back into int.
+            long absoluteLimit = (long)byteLimit + state.totalBytesRetired + state.bufferPos;
             int oldLimit = state.currentLimit;
-            if (byteLimit > oldLimit)
+            if (absoluteLimit > oldLimit)
             {
                 throw InvalidProtocolBufferException.TruncatedMessage();
             }
-            state.currentLimit = byteLimit;
+            state.currentLimit = (int)absoluteLimit;
 
             RecomputeBufferSizeAfterLimit(ref state);
 
