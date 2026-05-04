@@ -3471,6 +3471,68 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForStruct() {
     }
   }
       )");
+
+  std::string deep_json = R"({"optionalStruct": {)";
+  std::string deep_proto = "optional_struct: {\n";
+  int depth = 25;
+  for (int i = 0; i < depth; ++i) {
+    deep_json += R"("n": {)";
+    deep_proto += R"(  fields: {
+    key: "n"
+    value: {
+      struct_value: {
+)";
+  }
+  deep_json += R"("value": 1)";
+  deep_proto += R"(        fields: {
+          key: "value"
+          value: {
+            number_value: 1
+          }
+        }
+)";
+
+  for (int i = 0; i < depth; ++i) {
+    deep_json += '}';
+    deep_proto += R"(      }
+    }
+  }
+)";
+  }
+  deep_json += "}}";
+  deep_proto += "}\n";
+
+  RunValidJsonTest("StructDeepNesting25", REQUIRED, deep_json, deep_proto);
+
+  {
+    std::string deep_json = R"({"optionalStruct": {)";
+    int depth = 90;
+    for (int i = 0; i < depth; ++i) {
+      deep_json += R"("n": {)";
+    }
+    deep_json += R"("value": 1)";
+    for (int i = 0; i < depth; ++i) {
+      deep_json += '}';
+    }
+    deep_json += "}}";
+
+    ExpectParseFailureForJson("StructDeepNesting90", REQUIRED, deep_json);
+  }
+
+  {
+    std::string deep_json = R"({"optionalStruct": {)";
+    int depth = 200;
+    for (int i = 0; i < depth; ++i) {
+      deep_json += R"("n": {)";
+    }
+    deep_json += R"("value": 1)";
+    for (int i = 0; i < depth; ++i) {
+      deep_json += '}';
+    }
+    deep_json += "}}";
+
+    ExpectParseFailureForJson("StructDeepNesting200", REQUIRED, deep_json);
+  }
 }
 
 template <typename MessageType>
@@ -3561,6 +3623,54 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForValue() {
                                 "optional_value: { number_value: nan}");
   ExpectSerializeFailureForJson("ValueRejectInfNumberValue", RECOMMENDED,
                                 "optional_value: { number_value: inf}");
+
+  {
+    std::string deep_json = R"({"optionalValue": )";
+    std::string deep_proto = "optional_value: {\n";
+    int depth = 25;
+    for (int i = 0; i < depth; ++i) {
+      deep_json += '[';
+      deep_proto += "  list_value: {\n    values: {\n";
+    }
+    deep_json += '1';
+    deep_proto += "      number_value: 1\n";
+    for (int i = 0; i < depth; ++i) {
+      deep_json += ']';
+      deep_proto += "    }\n  }\n";
+    }
+    deep_json += '}';
+    deep_proto += "}\n";
+
+    RunValidJsonTest("ValueDeepNesting", REQUIRED, deep_json, deep_proto);
+  }
+  {
+    std::string deep_json = R"({"optionalValue": )";
+    int depth = 90;
+    for (int i = 0; i < depth; ++i) {
+      deep_json += '[';
+    }
+    deep_json += '1';
+    for (int i = 0; i < depth; ++i) {
+      deep_json += ']';
+    }
+    deep_json += '}';
+
+    ExpectParseFailureForJson("ValueDeepNesting90", REQUIRED, deep_json);
+  }
+  {
+    std::string deep_json = R"({"optionalValue": )";
+    int depth = 200;
+    for (int i = 0; i < depth; ++i) {
+      deep_json += '[';
+    }
+    deep_json += '1';
+    for (int i = 0; i < depth; ++i) {
+      deep_json += ']';
+    }
+    deep_json += '}';
+
+    ExpectParseFailureForJson("ValueDeepNesting200", REQUIRED, deep_json);
+  }
 }
 
 template <typename MessageType>
