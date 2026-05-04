@@ -1679,7 +1679,7 @@ class TextFormat::Printer::TextGenerator
   // True if any write to the underlying stream failed.  (We don't just
   // crash in this case because this is an I/O failure, not a programming
   // error.)
-  bool failed() const { return failed_; }
+  bool failed() const override { return failed_; }
 
   void PrintMaybeWithMarker(MarkerToken, absl::string_view text) override {
     Print(text.data(), text.size());
@@ -2593,9 +2593,10 @@ void TextFormat::Printer::PrintMessage(const Message& message,
     std::sort(fields.begin(), fields.end(), FieldIndexSorter());
   }
   for (const FieldDescriptor* field : fields) {
+    if (generator->failed()) return;
     PrintField(message, reflection, field, generator);
   }
-  if (!hide_unknown_fields_) {
+  if (!hide_unknown_fields_ && !generator->failed()) {
     PrintUnknownFields(reflection->GetUnknownFields(message), generator,
                        kUnknownFieldRecursionLimit);
   }
@@ -2819,6 +2820,7 @@ void TextFormat::Printer::PrintField(const Message& message,
     count = 1;
   }
 
+  if (generator->failed()) return;
   bool is_map = field->is_map();
   const internal::MapEntries map_entries =
       is_map
@@ -2826,6 +2828,7 @@ void TextFormat::Printer::PrintField(const Message& message,
           : internal::MapEntries();
 
   for (int j = 0; j < count; ++j) {
+    if (generator->failed()) return;
     const int field_index = field->is_repeated() ? j : -1;
 
     PrintFieldName(message, field_index, count, reflection, field, generator);
@@ -2873,6 +2876,7 @@ void TextFormat::Printer::PrintShortRepeatedField(
                  field, generator);
   generator->PrintMaybeWithMarker(MarkerToken(), ": ", "[");
   for (int i = 0; i < size; i++) {
+    if (generator->failed()) return;
     if (i > 0) generator->PrintLiteral(", ");
     PrintFieldValue(message, reflection, field, i, generator);
   }
