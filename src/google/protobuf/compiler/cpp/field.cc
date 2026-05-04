@@ -85,7 +85,6 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       // Old-style names.
       {"classname", ClassName(FieldScope(field), false)},
       {"ns", Namespace(field)},
-      {"deprecated_attr", DeprecatedAttribute(opts, field)},
       Sub("WeakDescriptorSelfPin",
           UsingImplicitWeakDescriptor(field->file(), opts)
               ? absl::StrCat(
