@@ -23,6 +23,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor_database.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/test_zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -1552,6 +1553,53 @@ TEST_P(JsonTest, MalformedLengthDelimitedField) {
                                       "\xC2\x3E\x80\x80\x80\x80\x08", &out);
   ASSERT_THAT(s, StatusIs(absl::StatusCode::kInvalidArgument));
 }
+
+TEST_P(JsonTest, DeeplyNestedGroupsRejected) {
+  // Verify that deeply nested TYPE_GROUP fields are rejected with an error
+  // rather than causing unbounded stack recursion.
+  FileDescriptorProto file_proto;
+  file_proto.set_name("group_depth_test.proto");
+  file_proto.set_syntax("proto2");
+
+  auto* msg = file_proto.add_message_type();
+  msg->set_name("RecursiveGroup");
+
+  auto* nested = msg->add_nested_type();
+  nested->set_name("Nested");
+
+  auto* inner = nested->add_field();
+  inner->set_name("nested");
+  inner->set_number(1);
+  inner->set_type(FieldDescriptorProto::TYPE_GROUP);
+  inner->set_type_name("Nested");
+  inner->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+
+  auto* outer = msg->add_field();
+  outer->set_name("nested");
+  outer->set_number(1);
+  outer->set_type(FieldDescriptorProto::TYPE_GROUP);
+  outer->set_type_name("Nested");
+  outer->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+
+  DescriptorPool pool;
+  const FileDescriptor* fd = pool.BuildFile(file_proto);
+  ASSERT_NE(fd, nullptr);
+
+  std::unique_ptr<TypeResolver> resolver(
+      google::protobuf::util::NewTypeResolverForDescriptorPool(
+          "type.googleapis.com", &pool));
+
+  // 200 nested groups: 200x START_GROUP(field=1) + 200x END_GROUP(field=1)
+  // Field 1, wire type 3 = 0x0B; Field 1, wire type 4 = 0x0C
+  std::string payload(200, 0x0B);
+  payload.append(200, 0x0C);
+
+  std::string out;
+  absl::Status s = BinaryToJsonString(
+      resolver.get(), "type.googleapis.com/RecursiveGroup", payload, &out);
+  EXPECT_THAT(s, StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
 
 // JSON values get special treatment when it comes to pre-existing values in
 // their repeated fields, when parsing through their dedicated syntax.
