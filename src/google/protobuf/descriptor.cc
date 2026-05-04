@@ -2857,13 +2857,13 @@ const EnumValueDescriptor* Descriptor::FindEnumValueByName(
 
 const FieldDescriptor* Descriptor::map_key() const {
   if (!options().map_entry()) return nullptr;
-  ABSL_DCHECK_EQ(field_count(), 2);
+  ABSL_CHECK_EQ(field_count(), 2);
   return field(0);
 }
 
 const FieldDescriptor* Descriptor::map_value() const {
   if (!options().map_entry()) return nullptr;
-  ABSL_DCHECK_EQ(field_count(), 2);
+  ABSL_CHECK_EQ(field_count(), 2);
   return field(1);
 }
 
@@ -6838,6 +6838,14 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   // Copy options.
   AllocateOptions(proto, result, DescriptorProto::kOptionsFieldNumber,
                   "google.protobuf.MessageOptions", alloc);
+
+  // Validate that map_entry messages have exactly 2 fields (key and value).
+  // Without this check, map_key()/map_value() can return wild pointers
+  // when called on a malformed map_entry descriptor with 0 fields.
+  if (result->options().map_entry() && result->field_count() != 2) {
+    AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::OTHER,
+             "Map entry message must have exactly 2 fields (key and value).");
+  }
 
   // Before building submessages, check recursion limit.
   --recursion_depth_;
