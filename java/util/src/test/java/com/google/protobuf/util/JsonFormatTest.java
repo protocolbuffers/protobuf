@@ -174,11 +174,41 @@ public class JsonFormatTest {
   private String toJsonString(Message message) throws IOException {
     return JsonFormat.printer().print(message);
   }
+
   private String toCompactJsonString(Message message) throws IOException {
     return JsonFormat.printer().omittingInsignificantWhitespace().print(message);
   }
+
   private String toSortedJsonString(Message message) throws IOException {
     return JsonFormat.printer().sortingMapKeys().print(message);
+  }
+
+  private void assertToStructEquals(Message message) throws Exception {
+    assertToStructEquals(message, JsonFormat.TypeRegistry.getEmptyTypeRegistry());
+  }
+
+  private void assertToStructEquals(Message message, JsonFormat.TypeRegistry registry)
+      throws Exception {
+    Struct struct = JsonFormat.printer().usingTypeRegistry(registry).toStruct(message);
+
+    // Create an expected struct by parsing the JSON string output of the printer
+    String json = JsonFormat.printer().usingTypeRegistry(registry).print(message);
+    Struct.Builder expectedBuilder = Struct.newBuilder();
+    JsonFormat.parser().usingTypeRegistry(registry).merge(json, expectedBuilder);
+
+    assertThat(struct).isEqualTo(expectedBuilder.build());
+  }
+
+  private void assertToStructEquals(Message message, com.google.protobuf.TypeRegistry registry)
+      throws Exception {
+    Struct struct = JsonFormat.printer().usingTypeRegistry(registry).toStruct(message);
+
+    // Create an expected struct by parsing the JSON string output of the printer
+    String json = JsonFormat.printer().usingTypeRegistry(registry).print(message);
+    Struct.Builder expectedBuilder = Struct.newBuilder();
+    JsonFormat.parser().usingTypeRegistry(registry).merge(json, expectedBuilder);
+
+    assertThat(struct).isEqualTo(expectedBuilder.build());
   }
 
   private void mergeFromJson(String json, Message.Builder builder) throws IOException {
@@ -1091,6 +1121,23 @@ public class JsonFormatTest {
                 + "  \"int32ToInt32Map\": {\n"
                 + "    \"1\": 2,\n"
                 + "    \"3\": 4\n"
+                + "  }\n"
+                + "}");
+    assertRoundTripEquals(message);
+  }
+
+  @Test
+  public void testMapWithUnsigned64Keys() throws Exception {
+    TestMap message =
+        TestMap.newBuilder().putUint64ToInt32Map(-1L, 1).putFixed64ToInt32Map(-2L, 2).build();
+    assertThat(toJsonString(message))
+        .isEqualTo(
+            "{\n"
+                + "  \"uint64ToInt32Map\": {\n"
+                + "    \"18446744073709551615\": 1\n"
+                + "  },\n"
+                + "  \"fixed64ToInt32Map\": {\n"
+                + "    \"18446744073709551614\": 2\n"
                 + "  }\n"
                 + "}");
     assertRoundTripEquals(message);
@@ -2306,5 +2353,258 @@ public class JsonFormatTest {
         TestAllTypes.newBuilder().setOptionalFloat(-0.0f).setOptionalDouble(-0.0).build();
     assertThat(JsonFormat.printer().print(message))
         .isEqualTo("{\n  \"optionalFloat\": -0.0,\n  \"optionalDouble\": -0.0\n}");
+  }
+
+  // --- Message to Struct Tests ---
+
+  @Test
+  public void testAllFields_ToStruct() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    setAllFields(builder);
+    TestAllTypes message = builder.build();
+    assertToStructEquals(message);
+  }
+
+  @Test
+  public void testAllFields_withFullyQualifiedExtensionNamesFlag_ToStruct() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    setAllFields(builder);
+    TestAllTypes message = builder.build();
+    com.google.protobuf.TypeRegistry registry =
+        com.google.protobuf.TypeRegistry.getGeneratedTypeRegistry();
+    assertToStructEquals(message, registry);
+  }
+
+  @Test
+  public void testUnknownEnumValues_ToStruct() throws Exception {
+    TestAllTypes message =
+        TestAllTypes.newBuilder()
+            .setOptionalNestedEnumValue(12345)
+            .addRepeatedNestedEnumValue(12345)
+            .addRepeatedNestedEnumValue(0)
+            .build();
+    assertToStructEquals(message);
+  }
+
+  @Test
+  public void testSpecialFloatValues_ToStruct() throws Exception {
+    TestAllTypes message =
+        TestAllTypes.newBuilder()
+            .addRepeatedFloat(Float.NaN)
+            .addRepeatedFloat(Float.POSITIVE_INFINITY)
+            .addRepeatedFloat(Float.NEGATIVE_INFINITY)
+            .addRepeatedDouble(Double.NaN)
+            .addRepeatedDouble(Double.POSITIVE_INFINITY)
+            .addRepeatedDouble(Double.NEGATIVE_INFINITY)
+            .build();
+    assertToStructEquals(message);
+  }
+
+  @Test
+  public void testMapFields_ToStruct() throws Exception {
+    TestMap.Builder builder = TestMap.newBuilder();
+    builder.putInt32ToInt32Map(1, 10);
+    builder.putInt64ToInt32Map(1234567890123456789L, 10);
+    builder.putUint32ToInt32Map(2, 20);
+    builder.putUint64ToInt32Map(2234567890123456789L, 20);
+    builder.putBoolToInt32Map(false, 6);
+    builder.putStringToInt32Map("Hello", 10);
+    builder.putInt32ToMessageMap(8, NestedMessage.newBuilder().setValue(1234).build());
+    builder.putInt32ToEnumMap(9, NestedEnum.BAR);
+    assertToStructEquals(builder.build());
+  }
+
+  @Test
+  public void testWrappers_ToStruct() throws Exception {
+    TestWrappers.Builder builder = TestWrappers.newBuilder();
+    builder.getBoolValueBuilder().setValue(true);
+    builder.getInt32ValueBuilder().setValue(1);
+    builder.getInt64ValueBuilder().setValue(2);
+    builder.getUint32ValueBuilder().setValue(3);
+    builder.getUint64ValueBuilder().setValue(4);
+    builder.getFloatValueBuilder().setValue(5.0f);
+    builder.getDoubleValueBuilder().setValue(6.0);
+    builder.getStringValueBuilder().setValue("7");
+    builder.getBytesValueBuilder().setValue(ByteString.copyFrom(new byte[] {8}));
+    assertToStructEquals(builder.build());
+  }
+
+  @Test
+  public void testTimestamp_ToStruct() throws Exception {
+    TestTimestamp message =
+        TestTimestamp.newBuilder()
+            .setTimestampValue(Timestamps.parse("1970-01-01T00:00:00Z"))
+            .build();
+    assertToStructEquals(message);
+  }
+
+  @Test
+  public void testDuration_ToStruct() throws Exception {
+    TestDuration message =
+        TestDuration.newBuilder().setDurationValue(Durations.parse("12345s")).build();
+    assertToStructEquals(message);
+  }
+
+  @Test
+  public void testFieldMask_ToStruct() throws Exception {
+    TestFieldMask message =
+        TestFieldMask.newBuilder()
+            .setFieldMaskValue(FieldMaskUtil.fromString("foo.bar,baz,foo_bar.baz"))
+            .build();
+    assertToStructEquals(message);
+  }
+
+  @Test
+  public void testStruct_ToStruct() throws Exception {
+    TestStruct.Builder builder = TestStruct.newBuilder();
+    Struct.Builder structBuilder = builder.getStructValueBuilder();
+    structBuilder.putFields("null_value", Value.newBuilder().setNullValueValue(0).build());
+    structBuilder.putFields("number_value", Value.newBuilder().setNumberValue(1.25).build());
+    structBuilder.putFields("string_value", Value.newBuilder().setStringValue("hello").build());
+    TestStruct message = builder.build();
+    assertToStructEquals(message);
+  }
+
+  @Test
+  public void testValue_ToStruct() throws Exception {
+    TestStruct.Builder builder = TestStruct.newBuilder();
+    builder.setValue(Value.newBuilder().setNumberValue(1.25).build());
+    assertToStructEquals(builder.build());
+
+    builder.setValue(Value.newBuilder().setBoolValue(true).build());
+    assertToStructEquals(builder.build());
+
+    builder.setValue(Value.newBuilder().setStringValue("test").build());
+    assertToStructEquals(builder.build());
+
+    builder.setValue(Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build());
+    assertToStructEquals(builder.build());
+  }
+
+  @Test
+  public void testListValue_ToStruct() throws Exception {
+    TestStruct.Builder builder = TestStruct.newBuilder();
+    builder.getListValueBuilder().addValues(Value.newBuilder().setNumberValue(1).build());
+    builder.getListValueBuilder().addValues(Value.newBuilder().setStringValue("2").build());
+    assertToStructEquals(builder.build());
+  }
+
+  @Test
+  public void testAnyFields_ToStruct() throws Exception {
+    TestAllTypes content = TestAllTypes.newBuilder().setOptionalInt32(1234).build();
+    TestAny message = TestAny.newBuilder().setAnyValue(Any.pack(content)).build();
+    JsonFormat.TypeRegistry registry =
+        JsonFormat.TypeRegistry.newBuilder().add(TestAllTypes.getDescriptor()).build();
+    assertToStructEquals(message, registry);
+  }
+
+  @Test
+  public void testAnyFieldsWithCustomAddedTypeRegistry_ToStruct() throws Exception {
+    TestAllTypes content = TestAllTypes.newBuilder().setOptionalInt32(1234).build();
+    TestAny message = TestAny.newBuilder().setAnyValue(Any.pack(content)).build();
+    com.google.protobuf.TypeRegistry registry =
+        com.google.protobuf.TypeRegistry.newBuilder().add(content.getDescriptorForType()).build();
+    assertToStructEquals(message, registry);
+  }
+
+  @Test
+  public void testCustomJsonName_ToStruct() throws Exception {
+    TestCustomJsonName message = TestCustomJsonName.newBuilder().setValue(1234).build();
+    assertToStructEquals(message);
+  }
+
+  @Test
+  public void testRecursive_ToStruct() throws Exception {
+    TestRecursive message =
+        TestRecursive.newBuilder()
+            .setValue(1)
+            .setNested(TestRecursive.newBuilder().setValue(2).build())
+            .build();
+    assertToStructEquals(message);
+  }
+
+  @Test
+  public void testOneof_ToStruct() throws Exception {
+    TestOneof.Builder builder = TestOneof.newBuilder();
+    builder.setOneofInt32(1);
+    assertToStructEquals(builder.build());
+
+    builder.clear();
+    builder.getOneofNestedMessageBuilder().setValue(1);
+    assertToStructEquals(builder.build());
+
+    builder.clear();
+    builder.setOneofNestedMessage(NestedMessage.newBuilder().setValue(1).build());
+    assertToStructEquals(builder.build());
+  }
+
+  @Test
+  public void testPreservingProtoFieldNames_ToStruct() throws Exception {
+    TestAllTypes message = TestAllTypes.newBuilder().setOptionalInt32(1234).build();
+    JsonFormat.Printer printer = JsonFormat.printer().preservingProtoFieldNames();
+    Struct struct = printer.toStruct(message);
+
+    String json = printer.print(message);
+    Struct.Builder expectedBuilder = Struct.newBuilder();
+    JsonFormat.parser().merge(json, expectedBuilder);
+
+    assertThat(struct).isEqualTo(expectedBuilder.build());
+    assertThat(struct.getFieldsOrThrow("optional_int32").getNumberValue()).isEqualTo(1234.0);
+  }
+
+  @Test
+  public void testPrintingEnumsAsInts_ToStruct() throws Exception {
+    TestAllTypes message = TestAllTypes.newBuilder().setOptionalNestedEnum(NestedEnum.BAR).build();
+    JsonFormat.Printer printer = JsonFormat.printer().printingEnumsAsInts();
+    Struct struct = printer.toStruct(message);
+
+    String json = printer.print(message);
+    Struct.Builder expectedBuilder = Struct.newBuilder();
+    JsonFormat.parser().merge(json, expectedBuilder);
+
+    assertThat(struct).isEqualTo(expectedBuilder.build());
+    // BAR has value 1
+    assertThat(struct.getFieldsOrThrow("optionalNestedEnum").getNumberValue()).isEqualTo(1.0);
+  }
+
+  @Test
+  public void testIncludingDefaultValueFields_ToStruct() throws Exception {
+    TestAllTypes message = TestAllTypes.getDefaultInstance();
+    JsonFormat.Printer printer = JsonFormat.printer().alwaysPrintFieldsWithNoPresence();
+    Struct struct = printer.toStruct(message);
+
+    String json = printer.print(message);
+    Struct.Builder expectedBuilder = Struct.newBuilder();
+    // Default parser won't work well for all defaults if they aren't in the JSON,
+    // but the printer alwaysPrintFieldsWithNoPresence ensures they ARE in the JSON.
+    JsonFormat.parser().merge(json, expectedBuilder);
+
+    assertThat(struct).isEqualTo(expectedBuilder.build());
+  }
+
+  @Test
+  public void testPreservesFloatingPointNegative0_ToStruct() throws Exception {
+    TestAllTypes message =
+        TestAllTypes.newBuilder().setOptionalFloat(-0.0f).setOptionalDouble(-0.0).build();
+    assertToStructEquals(message);
+  }
+
+  @Test
+  public void testToStruct_EmptyAny_ReturnsEmptyStruct() throws Exception {
+    TestAny message = TestAny.newBuilder().setAnyValue(Any.getDefaultInstance()).build();
+    Struct struct = JsonFormat.printer().toStruct(message);
+    assertThat(struct.getFieldsCount()).isEqualTo(1);
+    assertThat(struct.getFieldsOrThrow("anyValue").getStructValue())
+        .isEqualTo(Struct.getDefaultInstance());
+  }
+
+  @Test
+  public void testToStruct_ThrowsOnUnresolvedAny() throws Exception {
+    TestAllTypes content = TestAllTypes.newBuilder().setOptionalInt32(1234).build();
+    TestAny message = TestAny.newBuilder().setAnyValue(Any.pack(content)).build();
+
+    // No TypeRegistry provided
+    assertThrows(
+        InvalidProtocolBufferException.class, () -> JsonFormat.printer().toStruct(message));
   }
 }

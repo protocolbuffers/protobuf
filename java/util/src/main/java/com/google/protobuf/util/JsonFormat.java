@@ -52,10 +52,12 @@ import java.io.StringReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.ParseException;
+import java.util.ArrayDeque;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -456,12 +458,41 @@ public class JsonFormat {
               shouldPrintDefaults,
               includingDefaultValueFields,
               preservingProtoFieldNames,
-              output,
-              omittingInsignificantWhitespace,
+              new AppendableJsonGenerator(output, omittingInsignificantWhitespace),
               printingEnumsAsInts,
               sortingMapKeys,
               printingFullyQualifiedExtensionNames)
           .print(message);
+    }
+
+    /**
+     * Converts a protobuf message to a {@link com.google.protobuf.Struct} message.
+     *
+     * @throws InvalidProtocolBufferException if the message contains Any types that can't be
+     *     resolved or other serialization errors.
+     */
+    public Struct toStruct(MessageOrBuilder message) throws InvalidProtocolBufferException {
+      try {
+        StructJsonGenerator generator = new StructJsonGenerator();
+        new PrinterImpl(
+                registry,
+                oldRegistry,
+                extensionRegistry,
+                shouldPrintDefaults,
+                includingDefaultValueFields,
+                preservingProtoFieldNames,
+                generator,
+                printingEnumsAsInts,
+                sortingMapKeys,
+                printingFullyQualifiedExtensionNames)
+            .print(message);
+        return generator.getStruct();
+      } catch (InvalidProtocolBufferException e) {
+        throw e;
+      } catch (IOException e) {
+        // Unexpected IOException for StructJsonGenerator.
+        throw new IllegalStateException(e);
+      }
     }
 
     /**
@@ -809,6 +840,358 @@ public class JsonFormat {
     }
   }
 
+  /** Internal interface for producing JSON structural elements and values. */
+  private interface JsonGenerator {
+    void beginObject() throws IOException;
+
+    void endObject() throws IOException;
+
+    void emptyObject() throws IOException;
+
+    void beginArray() throws IOException;
+
+    void endArray() throws IOException;
+
+    void name(String name) throws IOException;
+
+    void value(String value) throws IOException;
+
+    void value(int value) throws IOException;
+
+    void value(long value) throws IOException;
+
+    void value(double value) throws IOException;
+
+    void value(float value) throws IOException;
+
+    void value(boolean value) throws IOException;
+
+    void valueUnsigned(int value) throws IOException;
+
+    void valueUnsigned(long value) throws IOException;
+
+    void valueBase64(String value) throws IOException;
+
+    void valueNull() throws IOException;
+  }
+
+  /** An implementation of JsonGenerator that produces a JSON string. */
+  private static final class AppendableJsonGenerator implements JsonGenerator {
+    private static class GsonHolder {
+      private static final Gson DEFAULT_GSON = new GsonBuilder().create();
+    }
+
+    private final TextGenerator generator;
+    private final Gson gson = GsonHolder.DEFAULT_GSON;
+    private final String blankOrSpace;
+    private final String blankOrNewLine;
+    // Whether this is the first element in the current object/array.
+    private final Deque<Boolean> firstElementStack = new ArrayDeque<>();
+    // Whether the current object/array is an array.
+    private final Deque<Boolean> isArrayStack = new ArrayDeque<>();
+
+    AppendableJsonGenerator(Appendable output, boolean omittingInsignificantWhitespace) {
+      // json format related properties, determined by printerType
+      if (omittingInsignificantWhitespace) {
+        this.generator = new CompactTextGenerator(output);
+        this.blankOrSpace = "";
+        this.blankOrNewLine = "";
+      } else {
+        this.generator = new PrettyTextGenerator(output);
+        this.blankOrSpace = " ";
+        this.blankOrNewLine = "\n";
+      }
+      firstElementStack.push(true);
+    }
+
+    @Override
+    public void beginObject() throws IOException {
+      if (!firstElementStack.peek()) {
+        generator.print(
+            ","
+                + (isArrayStack.peekFirst() != null && isArrayStack.peekFirst()
+                    ? blankOrSpace
+                    : blankOrNewLine));
+      }
+      generator.print("{" + blankOrNewLine);
+      generator.indent();
+      firstElementStack.push(true);
+      isArrayStack.push(false);
+    }
+
+    @Override
+    public void endObject() throws IOException {
+      if (!firstElementStack.peek()) {
+        generator.print(blankOrNewLine);
+      }
+      generator.outdent();
+      generator.print("}");
+      firstElementStack.pop();
+      isArrayStack.pop();
+      if (!firstElementStack.isEmpty()) {
+        firstElementStack.pop();
+        firstElementStack.push(false);
+      }
+    }
+
+    @Override
+    public void emptyObject() throws IOException {
+      generator.print("{}");
+      generator.print(blankOrNewLine);
+    }
+
+    @Override
+    public void beginArray() throws IOException {
+      if (!firstElementStack.peek()) {
+        generator.print(
+            ","
+                + (isArrayStack.peekFirst() != null && isArrayStack.peekFirst()
+                    ? blankOrSpace
+                    : blankOrNewLine));
+      }
+      generator.print("[");
+      firstElementStack.push(true);
+      isArrayStack.push(true);
+    }
+
+    @Override
+    public void endArray() throws IOException {
+      generator.print("]");
+      firstElementStack.pop();
+      isArrayStack.pop();
+      if (!firstElementStack.isEmpty()) {
+        firstElementStack.pop();
+        firstElementStack.push(false);
+      }
+    }
+
+    @Override
+    public void name(String name) throws IOException {
+      if (!firstElementStack.peek()) {
+        generator.print("," + blankOrNewLine);
+      }
+      generator.print(gson.toJson(name) + ":" + blankOrSpace);
+      firstElementStack.pop();
+      firstElementStack.push(true);
+    }
+
+    @Override
+    public void value(String value) throws IOException {
+      beforeValue();
+      generator.print(gson.toJson(value));
+    }
+
+    @Override
+    public void value(int value) throws IOException {
+      beforeValue();
+      generator.print(Integer.toString(value));
+    }
+
+    @Override
+    public void value(long value) throws IOException {
+      beforeValue();
+      generator.print("\"" + Long.toString(value) + "\"");
+    }
+
+    @Override
+    public void value(double value) throws IOException {
+      beforeValue();
+      if (Double.isNaN(value)) {
+        generator.print("\"NaN\"");
+      } else if (Double.isInfinite(value)) {
+        if (value < 0) {
+          generator.print("\"-Infinity\"");
+        } else {
+          generator.print("\"Infinity\"");
+        }
+      } else {
+        generator.print(Double.toString(value));
+      }
+    }
+
+    @Override
+    public void value(float value) throws IOException {
+      beforeValue();
+      if (Float.isNaN(value)) {
+        generator.print("\"NaN\"");
+      } else if (Float.isInfinite(value)) {
+        if (value < 0) {
+          generator.print("\"-Infinity\"");
+        } else {
+          generator.print("\"Infinity\"");
+        }
+      } else {
+        generator.print(Float.toString(value));
+      }
+    }
+
+    @Override
+    public void value(boolean value) throws IOException {
+      beforeValue();
+      generator.print(value ? "true" : "false");
+    }
+
+    @Override
+    public void valueUnsigned(int value) throws IOException {
+      beforeValue();
+      generator.print(Integer.toUnsignedString(value));
+    }
+
+    @Override
+    public void valueUnsigned(long value) throws IOException {
+      beforeValue();
+      generator.print("\"" + Long.toUnsignedString(value) + "\"");
+    }
+
+    @Override
+    public void valueBase64(String value) throws IOException {
+      beforeValue();
+      generator.print("\"" + value + "\"");
+    }
+
+    @Override
+    public void valueNull() throws IOException {
+      beforeValue();
+      generator.print("null");
+    }
+
+    private void beforeValue() throws IOException {
+      if (isArrayStack.peekFirst() != null && isArrayStack.peekFirst()) {
+        if (!firstElementStack.peek()) {
+          generator.print("," + blankOrSpace);
+        }
+      }
+      firstElementStack.pop();
+      firstElementStack.push(false);
+    }
+  }
+
+  /** An implementation of JsonGenerator that produces a com.google.protobuf.Struct. */
+  private static final class StructJsonGenerator implements JsonGenerator {
+    private final Deque<Message.Builder> stack = new ArrayDeque<>();
+    private final Deque<String> nameStack = new ArrayDeque<>();
+    private String pendingName;
+    private Value result;
+
+    @Override
+    public void beginObject() {
+      stack.push(Struct.newBuilder());
+      nameStack.push(pendingName != null ? pendingName : "");
+      pendingName = null;
+    }
+
+    @Override
+    public void endObject() {
+      Struct struct = (Struct) stack.pop().build();
+      String name = nameStack.pop();
+      handleValue(Value.newBuilder().setStructValue(struct).build(), name);
+    }
+
+    @Override
+    public void emptyObject() {
+      handleValue(Value.newBuilder().setStructValue(Struct.getDefaultInstance()).build());
+    }
+
+    @Override
+    public void beginArray() {
+      stack.push(ListValue.newBuilder());
+      nameStack.push(pendingName != null ? pendingName : "");
+      pendingName = null;
+    }
+
+    @Override
+    public void endArray() {
+      ListValue list = (ListValue) stack.pop().build();
+      String name = nameStack.pop();
+      handleValue(Value.newBuilder().setListValue(list).build(), name);
+    }
+
+    @Override
+    public void name(String name) {
+      this.pendingName = name;
+    }
+
+    private void handleValue(Value value) {
+      handleValue(value, pendingName);
+      pendingName = null;
+    }
+
+    private void handleValue(Value value, String name) {
+      if (stack.isEmpty()) {
+        result = value;
+      } else {
+        Message.Builder top = stack.peek();
+        if (top instanceof Struct.Builder builder) {
+          builder.putFields(name, value);
+        } else if (top instanceof ListValue.Builder builder) {
+          builder.addValues(value);
+        }
+      }
+    }
+
+    @Override
+    public void value(String value) {
+      handleValue(Value.newBuilder().setStringValue(value).build());
+    }
+
+    @Override
+    public void value(int value) {
+      handleValue(Value.newBuilder().setNumberValue(value).build());
+    }
+
+    @Override
+    public void value(long value) {
+      handleValue(Value.newBuilder().setStringValue(Long.toString(value)).build());
+    }
+
+    @Override
+    public void value(double value) {
+      if (Double.isNaN(value) || Double.isInfinite(value)) {
+        handleValue(Value.newBuilder().setStringValue(Double.toString(value)).build());
+      } else {
+        handleValue(Value.newBuilder().setNumberValue(value).build());
+      }
+    }
+
+    @Override
+    public void value(float value) {
+      if (Float.isNaN(value) || Float.isInfinite(value)) {
+        handleValue(Value.newBuilder().setStringValue(Float.toString(value)).build());
+      } else {
+        handleValue(Value.newBuilder().setNumberValue(value).build());
+      }
+    }
+
+    @Override
+    public void value(boolean value) {
+      handleValue(Value.newBuilder().setBoolValue(value).build());
+    }
+
+    @Override
+    public void valueUnsigned(int value) {
+      handleValue(Value.newBuilder().setNumberValue(Integer.toUnsignedLong(value)).build());
+    }
+
+    @Override
+    public void valueUnsigned(long value) {
+      handleValue(Value.newBuilder().setStringValue(Long.toUnsignedString(value)).build());
+    }
+
+    @Override
+    public void valueBase64(String value) {
+      handleValue(Value.newBuilder().setStringValue(value).build());
+    }
+
+    @Override
+    public void valueNull() {
+      handleValue(Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build());
+    }
+
+    Struct getStruct() {
+      return result.getStructValue();
+    }
+  }
+
   /** A Printer converts protobuf messages to the ProtoJSON format. */
   private static final class PrinterImpl {
     private final com.google.protobuf.TypeRegistry registry;
@@ -820,15 +1203,7 @@ public class JsonFormat {
     private final boolean printingEnumsAsInts;
     private final boolean sortingMapKeys;
     private final boolean printingFullyQualifiedExtensionNames;
-    private final TextGenerator generator;
-    // We use Gson to help handle string escapes.
-    private final Gson gson;
-    private final CharSequence blankOrSpace;
-    private final CharSequence blankOrNewLine;
-
-    private static class GsonHolder {
-      private static final Gson DEFAULT_GSON = new GsonBuilder().create();
-    }
+    private final JsonGenerator writer;
 
     PrinterImpl(
         com.google.protobuf.TypeRegistry registry,
@@ -837,8 +1212,7 @@ public class JsonFormat {
         ShouldPrintDefaults shouldPrintDefaults,
         Set<FieldDescriptor> includingDefaultValueFields,
         boolean preservingProtoFieldNames,
-        Appendable jsonOutput,
-        boolean omittingInsignificantWhitespace,
+        JsonGenerator writer,
         boolean printingEnumsAsInts,
         boolean sortingMapKeys,
         boolean printingFullyQualifiedExtensionNames) {
@@ -851,17 +1225,7 @@ public class JsonFormat {
       this.printingEnumsAsInts = printingEnumsAsInts;
       this.sortingMapKeys = sortingMapKeys;
       this.printingFullyQualifiedExtensionNames = printingFullyQualifiedExtensionNames;
-      this.gson = GsonHolder.DEFAULT_GSON;
-      // json format related properties, determined by printerType
-      if (omittingInsignificantWhitespace) {
-        this.generator = new CompactTextGenerator(jsonOutput);
-        this.blankOrSpace = "";
-        this.blankOrNewLine = "";
-      } else {
-        this.generator = new PrettyTextGenerator(jsonOutput);
-        this.blankOrSpace = " ";
-        this.blankOrNewLine = "\n";
-      }
+      this.writer = writer;
     }
 
     void print(MessageOrBuilder message) throws IOException {
@@ -969,7 +1333,7 @@ public class JsonFormat {
     /** Prints google.protobuf.Any */
     private void printAny(MessageOrBuilder message) throws IOException {
       if (message.getDefaultInstanceForType().equals(message)) {
-        generator.print("{}");
+        writer.emptyObject();
         return;
       }
       Descriptor descriptor = message.getDescriptorForType();
@@ -1000,14 +1364,12 @@ public class JsonFormat {
       if (printer != null) {
         // If the type is one of the well-known types, we use a special
         // formatting.
-        generator.print("{" + blankOrNewLine);
-        generator.indent();
-        generator.print("\"@type\":" + blankOrSpace + gson.toJson(typeUrl) + "," + blankOrNewLine);
-        generator.print("\"value\":" + blankOrSpace);
+        writer.beginObject();
+        writer.name("@type");
+        writer.value(typeUrl);
+        writer.name("value");
         printer.print(this, contentMessage);
-        generator.print(blankOrNewLine);
-        generator.outdent();
-        generator.print("}");
+        writer.endObject();
       } else {
         // Print the content message instead (with a "@type" field added).
         print(contentMessage, typeUrl);
@@ -1037,19 +1399,19 @@ public class JsonFormat {
     /** Prints google.protobuf.Timestamp */
     private void printTimestamp(MessageOrBuilder message) throws IOException {
       Timestamp value = Timestamp.parseFrom(toByteString(message));
-      generator.print("\"" + Timestamps.toString(value) + "\"");
+      writer.value(Timestamps.toString(value));
     }
 
     /** Prints google.protobuf.Duration */
     private void printDuration(MessageOrBuilder message) throws IOException {
       Duration value = Duration.parseFrom(toByteString(message));
-      generator.print("\"" + Durations.toString(value) + "\"");
+      writer.value(Durations.toString(value));
     }
 
     /** Prints google.protobuf.FieldMask */
     private void printFieldMask(MessageOrBuilder message) throws IOException {
       FieldMask value = FieldMask.parseFrom(toByteString(message));
-      generator.print(gson.toJson(FieldMaskUtil.toJsonString(value)));
+      writer.value(FieldMaskUtil.toJsonString(value));
     }
 
     /** Prints google.protobuf.Struct */
@@ -1069,7 +1431,7 @@ public class JsonFormat {
       Map<FieldDescriptor, Object> fields = message.getAllFields();
       if (fields.isEmpty()) {
         // No value set.
-        generator.print("null");
+        writer.valueNull();
         return;
       }
       // A Value message can only have at most one field set (it only contains
@@ -1125,13 +1487,11 @@ public class JsonFormat {
 
     /** Prints a regular message with an optional type URL. */
     private void print(MessageOrBuilder message, @Nullable String typeUrl) throws IOException {
-      generator.print("{" + blankOrNewLine);
-      generator.indent();
+      writer.beginObject();
 
-      boolean printedField = false;
       if (typeUrl != null) {
-        generator.print("\"@type\":" + blankOrSpace + gson.toJson(typeUrl));
-        printedField = true;
+        writer.name("@type");
+        writer.value(typeUrl);
       }
 
       // message.getAllFields() will already contain all of the fields that would be
@@ -1151,30 +1511,19 @@ public class JsonFormat {
       }
 
       for (Map.Entry<FieldDescriptor, Object> field : fieldsToPrint.entrySet()) {
-        if (printedField) {
-          // Add line-endings for the previous field.
-          generator.print("," + blankOrNewLine);
-        } else {
-          printedField = true;
-        }
         printField(field.getKey(), field.getValue());
       }
 
-      // Add line-endings for the last field.
-      if (printedField) {
-        generator.print(blankOrNewLine);
-      }
-      generator.outdent();
-      generator.print("}");
+      writer.endObject();
     }
 
     private void printField(FieldDescriptor field, Object value) throws IOException {
       if (field.isExtension() && printingFullyQualifiedExtensionNames) {
-        generator.print("\"[" + field.getFullName() + "]\":" + blankOrSpace);
+        writer.name("[" + field.getFullName() + "]");
       } else if (preservingProtoFieldNames) {
-        generator.print("\"" + field.getName() + "\":" + blankOrSpace);
+        writer.name(field.getName());
       } else {
-        generator.print("\"" + field.getJsonName() + "\":" + blankOrSpace);
+        writer.name(field.getJsonName());
       }
       if (field.isMapField()) {
         printMapFieldValue(field, value);
@@ -1187,17 +1536,11 @@ public class JsonFormat {
 
     @SuppressWarnings("rawtypes")
     private void printRepeatedFieldValue(FieldDescriptor field, Object value) throws IOException {
-      generator.print("[");
-      boolean printedElement = false;
+      writer.beginArray();
       for (Object element : (List) value) {
-        if (printedElement) {
-          generator.print("," + blankOrSpace);
-        } else {
-          printedElement = true;
-        }
         printSingleFieldValue(field, element);
       }
-      generator.print("]");
+      writer.endArray();
     }
 
     private void printMapFieldValue(FieldDescriptor field, Object value) throws IOException {
@@ -1207,8 +1550,7 @@ public class JsonFormat {
       if (keyField == null || valueField == null) {
         throw new InvalidProtocolBufferException("Invalid map field.");
       }
-      generator.print("{" + blankOrNewLine);
-      generator.indent();
+      writer.beginObject();
 
       @SuppressWarnings("unchecked") // Object guaranteed to be a List for a map field.
       Collection<Object> elements = (List<Object>) value;
@@ -1234,157 +1576,81 @@ public class JsonFormat {
         elements = tm.values();
       }
 
-      boolean printedElement = false;
       for (Object element : elements) {
         Message entry = (Message) element;
         Object entryKey = entry.getField(keyField);
         Object entryValue = entry.getField(valueField);
-        if (printedElement) {
-          generator.print("," + blankOrNewLine);
+
+        // Key fields are always double-quoted by writer.name().
+        String keyString;
+        if (keyField.getType() == FieldDescriptor.Type.UINT64
+            || keyField.getType() == FieldDescriptor.Type.FIXED64) {
+          keyString = Long.toUnsignedString((long) entryKey);
         } else {
-          printedElement = true;
+          keyString = entryKey.toString();
         }
-        // Key fields are always double-quoted.
-        printSingleFieldValue(keyField, entryKey, true);
-        generator.print(":" + blankOrSpace);
+        writer.name(keyString);
         printSingleFieldValue(valueField, entryValue);
       }
-      if (printedElement) {
-        generator.print(blankOrNewLine);
-      }
-      generator.outdent();
-      generator.print("}");
+      writer.endObject();
     }
 
-    private void printSingleFieldValue(FieldDescriptor field, Object value) throws IOException {
-      printSingleFieldValue(field, value, false);
-    }
-
-    /**
-     * Prints a field's value in the ProtoJSON format.
-     *
-     * @param alwaysWithQuotes whether to always add double-quotes to primitive types
-     */
-    private void printSingleFieldValue(
-        final FieldDescriptor field, final Object value, boolean alwaysWithQuotes)
+    /** Prints a field's value in the ProtoJSON format. */
+    private void printSingleFieldValue(final FieldDescriptor field, final Object value)
         throws IOException {
       switch (field.getType()) {
         case INT32:
         case SINT32:
         case SFIXED32:
-          if (alwaysWithQuotes) {
-            generator.print("\"");
-          }
-          generator.print(((Integer) value).toString());
-          if (alwaysWithQuotes) {
-            generator.print("\"");
-          }
+          writer.value(((Integer) value).intValue());
           break;
 
         case INT64:
         case SINT64:
         case SFIXED64:
-          generator.print("\"" + ((Long) value).toString() + "\"");
+          writer.value((long) value);
           break;
 
         case BOOL:
-          if (alwaysWithQuotes) {
-            generator.print("\"");
-          }
-          if (((Boolean) value).booleanValue()) {
-            generator.print("true");
-          } else {
-            generator.print("false");
-          }
-          if (alwaysWithQuotes) {
-            generator.print("\"");
-          }
+          writer.value(((Boolean) value).booleanValue());
           break;
 
         case FLOAT:
-          Float floatValue = (Float) value;
-          if (floatValue.isNaN()) {
-            generator.print("\"NaN\"");
-          } else if (floatValue.isInfinite()) {
-            if (floatValue < 0) {
-              generator.print("\"-Infinity\"");
-            } else {
-              generator.print("\"Infinity\"");
-            }
-          } else {
-            if (alwaysWithQuotes) {
-              generator.print("\"");
-            }
-            generator.print(floatValue.toString());
-            if (alwaysWithQuotes) {
-              generator.print("\"");
-            }
-          }
+          writer.value(((Float) value).floatValue());
           break;
 
         case DOUBLE:
-          Double doubleValue = (Double) value;
-          if (doubleValue.isNaN()) {
-            generator.print("\"NaN\"");
-          } else if (doubleValue.isInfinite()) {
-            if (doubleValue < 0) {
-              generator.print("\"-Infinity\"");
-            } else {
-              generator.print("\"Infinity\"");
-            }
-          } else {
-            if (alwaysWithQuotes) {
-              generator.print("\"");
-            }
-            generator.print(doubleValue.toString());
-            if (alwaysWithQuotes) {
-              generator.print("\"");
-            }
-          }
+          writer.value(((Double) value).doubleValue());
           break;
 
         case UINT32:
         case FIXED32:
-          if (alwaysWithQuotes) {
-            generator.print("\"");
-          }
-          generator.print(Integer.toUnsignedString((int) value));
-          if (alwaysWithQuotes) {
-            generator.print("\"");
-          }
+          writer.valueUnsigned((int) value);
           break;
 
         case UINT64:
         case FIXED64:
-          generator.print("\"" + Long.toUnsignedString((long) value) + "\"");
+          writer.valueUnsigned((long) value);
           break;
 
         case STRING:
-          generator.print(gson.toJson(value));
+          writer.value((String) value);
           break;
 
         case BYTES:
-          generator.print("\"");
-          generator.print(Base64.getEncoder().encodeToString(((ByteString) value).toByteArray()));
-          generator.print("\"");
+          writer.valueBase64(
+              Base64.getEncoder().encodeToString(((ByteString) value).toByteArray()));
           break;
 
         case ENUM:
           // Special-case google.protobuf.NullValue (it's an Enum).
           if (field.getEnumType().getFullName().equals("google.protobuf.NullValue")) {
-            // No matter what value it contains, we always print it as "null".
-            if (alwaysWithQuotes) {
-              generator.print("\"");
-            }
-            generator.print("null");
-            if (alwaysWithQuotes) {
-              generator.print("\"");
-            }
+            writer.valueNull();
           } else {
             if (printingEnumsAsInts || ((EnumValueDescriptor) value).getIndex() == -1) {
-              generator.print(String.valueOf(((EnumValueDescriptor) value).getNumber()));
+              writer.value(((EnumValueDescriptor) value).getNumber());
             } else {
-              generator.print("\"" + ((EnumValueDescriptor) value).getName() + "\"");
+              writer.value(((EnumValueDescriptor) value).getName());
             }
           }
           break;
