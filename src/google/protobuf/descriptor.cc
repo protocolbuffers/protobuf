@@ -8439,6 +8439,38 @@ void DescriptorBuilder::ValidateOptions(const FileDescriptor* file,
       }
     }
   }
+  // Reject control characters in code-generation string options to prevent
+  // code injection into generated source files. These option values are
+  // interpolated directly into generated Ruby, PHP, and C# source code;
+  // newlines and other control characters can break out of string literals
+  // or declarations and inject arbitrary code.
+  auto validate_codegen_option = [&](const std::string& value,
+                                     const char* option_name) {
+    for (char c : value) {
+      if (c < 0x20 || c == 0x7f || c == '"' || c == '\'' || c == '\\') {
+        AddError(file->name(), proto, DescriptorPool::ErrorCollector::OTHER,
+                 [&] {
+                   return absl::StrCat(
+                       "\"", option_name,
+                       "\" contains characters that are not safe for code "
+                       "generation. Only printable characters (excluding "
+                       "quotes and backslashes) are allowed.");
+                 });
+        return;
+      }
+    }
+  };
+  if (file->options().has_ruby_package()) {
+    validate_codegen_option(file->options().ruby_package(), "ruby_package");
+  }
+  if (file->options().has_php_namespace()) {
+    validate_codegen_option(file->options().php_namespace(), "php_namespace");
+  }
+  if (file->options().has_csharp_namespace()) {
+    validate_codegen_option(file->options().csharp_namespace(),
+                            "csharp_namespace");
+  }
+
   if (file->edition() == Edition::EDITION_PROTO3) {
     ValidateProto3(file, proto);
   }
