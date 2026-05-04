@@ -15,13 +15,13 @@
 VALUE cParseError;
 VALUE cTypeError;
 
-const upb_FieldDef *map_field_key(const upb_FieldDef *field) {
-  const upb_MessageDef *entry = upb_FieldDef_MessageSubDef(field);
+const upb_FieldDef* map_field_key(const upb_FieldDef* field) {
+  const upb_MessageDef* entry = upb_FieldDef_MessageSubDef(field);
   return upb_MessageDef_FindFieldByNumber(entry, 1);
 }
 
-const upb_FieldDef *map_field_value(const upb_FieldDef *field) {
-  const upb_MessageDef *entry = upb_FieldDef_MessageSubDef(field);
+const upb_FieldDef* map_field_value(const upb_FieldDef* field) {
+  const upb_MessageDef* entry = upb_FieldDef_MessageSubDef(field);
   return upb_MessageDef_FindFieldByNumber(entry, 2);
 }
 
@@ -32,7 +32,7 @@ const upb_FieldDef *map_field_value(const upb_FieldDef *field) {
 struct StringBuilder {
   size_t size;
   size_t cap;
-  char *data;
+  char* data;
 };
 
 typedef struct StringBuilder StringBuilder;
@@ -41,21 +41,21 @@ static size_t StringBuilder_SizeOf(size_t cap) {
   return sizeof(StringBuilder) + cap;
 }
 
-StringBuilder *StringBuilder_New() {
+StringBuilder* StringBuilder_New() {
   const size_t cap = 128;
-  StringBuilder *builder = malloc(sizeof(*builder));
+  StringBuilder* builder = malloc(sizeof(*builder));
   builder->size = 0;
   builder->cap = cap;
   builder->data = malloc(builder->cap);
   return builder;
 }
 
-void StringBuilder_Free(StringBuilder *b) {
+void StringBuilder_Free(StringBuilder* b) {
   free(b->data);
   free(b);
 }
 
-void StringBuilder_Printf(StringBuilder *b, const char *fmt, ...) {
+void StringBuilder_Printf(StringBuilder* b, const char* fmt, ...) {
   size_t have = b->cap - b->size;
   size_t n;
   va_list args;
@@ -79,15 +79,15 @@ void StringBuilder_Printf(StringBuilder *b, const char *fmt, ...) {
   b->size += n;
 }
 
-VALUE StringBuilder_ToRubyString(StringBuilder *b) {
+VALUE StringBuilder_ToRubyString(StringBuilder* b) {
   VALUE ret = rb_str_new(b->data, b->size);
   rb_enc_associate(ret, rb_utf8_encoding());
   return ret;
 }
 
-static void StringBuilder_PrintEnum(StringBuilder *b, int32_t val,
-                                    const upb_EnumDef *e) {
-  const upb_EnumValueDef *ev = upb_EnumDef_FindValueByNumber(e, val);
+static void StringBuilder_PrintEnum(StringBuilder* b, int32_t val,
+                                    const upb_EnumDef* e) {
+  const upb_EnumValueDef* ev = upb_EnumDef_FindValueByNumber(e, val);
   if (ev) {
     StringBuilder_Printf(b, ":%s", upb_EnumValueDef_Name(ev));
   } else {
@@ -95,7 +95,7 @@ static void StringBuilder_PrintEnum(StringBuilder *b, int32_t val,
   }
 }
 
-void StringBuilder_PrintMsgval(StringBuilder *b, upb_MessageValue val,
+void StringBuilder_PrintMsgval(StringBuilder* b, upb_MessageValue val,
                                TypeInfo info) {
   switch (info.type) {
     case kUpb_CType_Bool:
@@ -145,25 +145,25 @@ void StringBuilder_PrintMsgval(StringBuilder *b, upb_MessageValue val,
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  upb_Arena *arena;
+  upb_Arena* arena;
   // IMPORTANT: WB_PROTECTED objects must only use the RB_OBJ_WRITE()
   // macro to update VALUE references, as to trigger write barriers.
   VALUE pinned_objs;
 } Arena;
 
-static void Arena_mark(void *data) {
-  Arena *arena = data;
+static void Arena_mark(void* data) {
+  Arena* arena = data;
   rb_gc_mark(arena->pinned_objs);
 }
 
-static void Arena_free(void *data) {
-  Arena *arena = data;
+static void Arena_free(void* data) {
+  Arena* arena = data;
   upb_Arena_Free(arena->arena);
   xfree(arena);
 }
 
-static size_t Arena_memsize(const void *data) {
-  const Arena *arena = data;
+static size_t Arena_memsize(const void* data) {
+  const Arena* arena = data;
   size_t fused_count;
   size_t memsize = upb_Arena_SpaceAllocated(arena->arena, &fused_count);
   if (fused_count > 1) {
@@ -182,33 +182,66 @@ const rb_data_type_t Arena_type = {
     .flags = RUBY_TYPED_FREE_IMMEDIATELY | RUBY_TYPED_WB_PROTECTED,
 };
 
-static void *ruby_upb_allocfunc(upb_alloc *alloc, void *ptr, size_t oldsize,
-                                size_t size, size_t *actual_size) {
+struct ruby_upb_xrealloc_args {
+  void* ptr;
+  size_t size;
+};
+
+static VALUE safe_xrealloc_wrapper(VALUE arg) {
+  struct ruby_upb_xrealloc_args* args = (struct ruby_upb_xrealloc_args*)arg;
+
+  // If xrealloc fails, it will longjmp out of this function immediately.
+  // If it succeeds, we return the pointer cast as a VALUE.
+  void* new_ptr = xrealloc(args->ptr, args->size);
+  return (VALUE)new_ptr;
+}
+
+static void* ruby_upb_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
+                                size_t size, size_t* actual_size) {
   if (size == 0) {
     xfree(ptr);
     return NULL;
   } else {
-    return xrealloc(ptr, size);
+    struct ruby_upb_xrealloc_args args = {ptr, size};
+    int state = 0;
+
+    void* new_ptr = rb_protect(safe_xrealloc_wrapper, &args, &state);
+
+    // Exception caught, but rb_errinfo still has the original error for
+    // consumption by the caller
+    return state ? NULL : new_ptr;
   }
 }
 
 upb_alloc ruby_upb_alloc = {&ruby_upb_allocfunc};
 
-static VALUE Arena_alloc(VALUE klass) {
-  Arena *arena = ALLOC(Arena);
-  arena->arena = upb_Arena_Init(NULL, 0, &ruby_upb_alloc);
-  arena->pinned_objs = Qnil;
-  return TypedData_Wrap_Struct(klass, &Arena_type, arena);
+void Arena_raise_oom() {
+  VALUE pending_err = rb_errinfo();
+  if (!NIL_P(pending_err)) {
+    rb_set_errinfo(Qnil);
+    rb_exc_raise(pending_err);
+  }
+  rb_raise(rb_eNoMemError, "Failed to allocate arena.");
 }
 
-upb_Arena *Arena_get(VALUE _arena) {
-  Arena *arena;
+static VALUE Arena_alloc(VALUE klass) {
+  upb_Arena* arena = upb_Arena_Init(NULL, 0, &ruby_upb_alloc);
+  if (!arena) {
+    Arena_raise_oom();
+  }
+  Arena* rb_arena = ALLOC(Arena);
+  rb_arena->pinned_objs = Qnil;
+  return TypedData_Wrap_Struct(klass, &Arena_type, rb_arena);
+}
+
+upb_Arena* Arena_get(VALUE _arena) {
+  Arena* arena;
   TypedData_Get_Struct(_arena, Arena, &Arena_type, arena);
   return arena->arena;
 }
 
-void Arena_fuse(VALUE _arena, upb_Arena *other) {
-  Arena *arena;
+void Arena_fuse(VALUE _arena, upb_Arena* other) {
+  Arena* arena;
   TypedData_Get_Struct(_arena, Arena, &Arena_type, arena);
   if (!upb_Arena_Fuse(arena->arena, other)) {
     rb_raise(rb_eRuntimeError,
@@ -255,7 +288,7 @@ static void ObjectCache_Init(VALUE protobuf) {
   rb_const_set(internal, rb_intern("SIZEOF_VALUE"), INT2NUM(SIZEOF_VALUE));
 }
 
-static VALUE ObjectCache_GetKey(const void *key) {
+static VALUE ObjectCache_GetKey(const void* key) {
   VALUE key_val = (VALUE)key;
   PBRUBY_ASSERT((key_val & 3) == 0);
   // Ensure the key can be stored as a Fixnum since 1 bit is needed for
@@ -265,13 +298,13 @@ static VALUE ObjectCache_GetKey(const void *key) {
   return new_key;
 }
 
-VALUE ObjectCache_TryAdd(const void *key, VALUE val) {
+VALUE ObjectCache_TryAdd(const void* key, VALUE val) {
   VALUE key_val = ObjectCache_GetKey(key);
   return rb_funcall(weak_obj_cache, item_try_add, 2, key_val, val);
 }
 
 // Returns the cached object for this key, if any. Otherwise returns Qnil.
-VALUE ObjectCache_Get(const void *key) {
+VALUE ObjectCache_Get(const void* key) {
   VALUE key_val = ObjectCache_GetKey(key);
   return rb_funcall(weak_obj_cache, item_get, 1, key_val);
 }
@@ -284,8 +317,8 @@ VALUE ObjectCache_Get(const void *key) {
  * unknown fields in submessages.
  */
 static VALUE Google_Protobuf_discard_unknown(VALUE self, VALUE msg_rb) {
-  const upb_MessageDef *m;
-  upb_Message *msg = Message_GetMutable(msg_rb, &m);
+  const upb_MessageDef* m;
+  upb_Message* msg = Message_GetMutable(msg_rb, &m);
   const upb_DefPool* ext_pool = upb_FileDef_Pool(upb_MessageDef_File(m));
   if (!upb_Message_DiscardUnknown(msg, m, ext_pool, 128)) {
     rb_raise(rb_eRuntimeError, "Messages nested too deeply.");
@@ -309,10 +342,10 @@ VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj) {
     return Map_deep_copy(obj);
   } else {
     VALUE new_arena_rb = Arena_new();
-    upb_Arena *new_arena = Arena_get(new_arena_rb);
-    const upb_MessageDef *m;
-    const upb_Message *msg = Message_Get(obj, &m);
-    upb_Message *new_msg = Message_deep_copy(msg, m, new_arena);
+    upb_Arena* new_arena = Arena_get(new_arena_rb);
+    const upb_MessageDef* m;
+    const upb_Message* msg = Message_Get(obj, &m);
+    upb_Message* new_msg = Message_deep_copy(msg, m, new_arena);
     return Message_GetRubyWrapper(new_msg, m, new_arena_rb);
   }
 }
@@ -351,7 +384,7 @@ __attribute__((visibility("default"))) void Init_protobuf_c() {
 
 // Raises a Ruby error if val is frozen in Ruby or UPB.
 void Protobuf_CheckNotFrozen(VALUE val, bool upb_frozen) {
-  if (RB_UNLIKELY(rb_obj_frozen_p(val)||upb_frozen)) {
+  if (RB_UNLIKELY(rb_obj_frozen_p(val) || upb_frozen)) {
     rb_error_frozen_object(val);
   }
 }

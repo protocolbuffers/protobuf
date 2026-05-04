@@ -618,7 +618,7 @@ TEST(ArenaTest, FuzzFuseFreeAllocatorRace) {
     arr[0] = upb_Arena_New();
     for (size_t j = 1; j < thread_count + 1; ++j) {
       arr[j] = upb_Arena_New();
-      upb_Arena_Fuse(arr[j - 1], arr[j]);
+      EXPECT_TRUE(upb_Arena_Fuse(arr[j - 1], arr[j]));
     }
     arenas.push_back(arr);
   }
@@ -676,7 +676,7 @@ TEST(ArenaTest, FuzzFuseSpaceAllocatedRace) {
         upb_Arena* read = arenas[arenaCtr++];
         for (size_t j = 0; j < fuses_per_thread; ++j) {
           upb_Arena* fuse = upb_Arena_New();
-          upb_Arena_Fuse(read, fuse);
+          EXPECT_TRUE(upb_Arena_Fuse(read, fuse));
           upb_Arena_Free(read);
           read = fuse;
         }
@@ -785,7 +785,7 @@ TEST(ArenaTest, FuzzFuseIsFusedRace) {
   // Create two arenas and fuse them.
   std::shared_ptr<const upb::Arena> a = env.IndexedNonNullArena(0);
   std::shared_ptr<const upb::Arena> b = env.IndexedNonNullArena(1);
-  upb_Arena_Fuse(a->ptr(), b->ptr());
+  EXPECT_TRUE(upb_Arena_Fuse(a->ptr(), b->ptr()));
   EXPECT_TRUE(upb_Arena_IsFused(a->ptr(), b->ptr()));
 
   absl::Notification done;
@@ -870,7 +870,7 @@ TEST(ArenaTest, ArenaRef) {
   upb_Arena* arena1 = upb_Arena_New();
   upb_Arena* arena2 = upb_Arena_New();
 
-  upb_Arena_RefArena(arena1, arena2);
+  EXPECT_TRUE(upb_Arena_RefArena(arena1, arena2));
   EXPECT_TRUE(upb_Arena_HasRef(arena1, arena2));
   EXPECT_FALSE(upb_Arena_HasRef(arena2, arena1));
 
@@ -887,7 +887,7 @@ TEST(ArenaTest, ArenaRefPreventsFree) {
   EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 1);
 
   // arena1 now owns a ref to arena2. arena2 has refcount 2.
-  upb_Arena_RefArena(arena1, arena2);
+  EXPECT_TRUE(upb_Arena_RefArena(arena1, arena2));
   EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 2);
 
   // User of arena2 frees it. Refcount goes to 1. Arena is not freed.
@@ -909,7 +909,7 @@ TEST(ArenaTest, ArenaOwnerFreedFirst) {
   EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 1);
 
   // arena1 now owns a ref to arena2. arena2 has refcount 2.
-  upb_Arena_RefArena(arena1, arena2);
+  EXPECT_TRUE(upb_Arena_RefArena(arena1, arena2));
   EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 2);
 
   // Freeing the owner releases its ref on arena2. Refcount goes to 1.

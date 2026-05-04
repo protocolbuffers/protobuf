@@ -48,12 +48,12 @@ upb_UnknownCompareResult CompareUnknownWithMaxDepth(
                                                     min_val_varint_length);
   std::string buf2 = ToBinaryPayloadWithLongVarints(uf2, min_tag_length,
                                                     min_val_varint_length);
-  UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg1), buf1.data(),
-                                       buf1.size(), arena1.ptr(),
-                                       kUpb_AddUnknown_Copy);
-  UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg2), buf2.data(),
-                                       buf2.size(), arena2.ptr(),
-                                       kUpb_AddUnknown_Copy);
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(msg1), buf1.data(), buf1.size(), arena1.ptr(),
+      kUpb_AddUnknown_Copy));
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(msg2), buf2.data(), buf2.size(), arena2.ptr(),
+      kUpb_AddUnknown_Copy));
   return UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
       UPB_UPCAST(msg1), UPB_UPCAST(msg2), max_depth);
 }
