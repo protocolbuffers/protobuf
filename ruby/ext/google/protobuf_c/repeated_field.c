@@ -180,11 +180,18 @@ static int index_position(VALUE _index, RepeatedField* repeated_field) {
 }
 
 static VALUE RepeatedField_subarray(RepeatedField* self, long beg, long len) {
-  size_t size = upb_Array_Size(self->array);
-  VALUE ary = rb_ary_new2(size);
-  long i;
+  long size = (long)upb_Array_Size(self->array);
 
-  for (i = beg; i < beg + len; i++) {
+  // Match Ruby Array#[beg, len] semantics and avoid an out-of-bounds read
+  // through upb_Array_Get (which only has a debug-only UPB_ASSERT for
+  // bounds): clamp len to what is actually available, and reject negative
+  // len up front.
+  if (len < 0) return rb_ary_new();
+  if (beg < 0 || beg > size) return rb_ary_new();
+  if (len > size - beg) len = size - beg;
+
+  VALUE ary = rb_ary_new2(len);
+  for (long i = beg; i < beg + len; i++) {
     upb_MessageValue msgval = upb_Array_Get(self->array, i);
     VALUE elem = Convert_UpbToRuby(msgval, self->type_info, self->arena);
     rb_ary_push(ary, elem);
