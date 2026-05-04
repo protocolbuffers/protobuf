@@ -40,6 +40,8 @@
         pb, size, _upb_DefPool_GeneratedExtensionRegistry(ctx->symtab), 0, \
         _upb_DefBuilder_Arena(ctx));                                       \
     if (!target) _upb_DefBuilder_OomErr(ctx);                              \
+    upb_Message_Freeze((upb_Message*)target,                               \
+                       UPB_DESC_MINITABLE(options_type));                  \
   } else {                                                                 \
     target = (const google_protobuf_##options_type*)kUpbDefOptDefault;              \
   }

@@ -280,21 +280,81 @@ class DescriptorTest(unittest.TestCase):
         self.my_service.GetOptions(), descriptor_pb2.ServiceOptions()
     )
 
-  def testModifyOptions(self):
-    # We unfortunately allow modification of options returned from GetOptions().
-    # This is not intended, and has negative consequences:
-    # - It makes the results of GetOptions() invalid if the options are
-    #   modified.
-    # - It has an efficiency cost from copying the options.
+  @unittest.skipIf(
+      api_implementation.Type() == 'python', 'Not fixed yet in pure Python'
+  )
+  @unittest.skipIf(api_implementation.Type() == 'cpp', 'Not fixed yet in C++')
+  def testModifyFrozenMessage(self):
+    # At least upb raises TypeError Other 2 implementations will likely be 
+    # fixed to be consistent with upb.
+    immutability_error = TypeError if api_implementation.Type() == 'upb' else (AttributeError, TypeError)
     message_options = self.my_message.GetOptions()
-    message_options.deprecated = True
-    self.assertTrue(
-        message_options.deprecated,
-        f'Modification ignored on {api_implementation.Type()}',
-    )
+    other_options = descriptor_pb2.MessageOptions()
+    other_options.deprecated = True
 
-    # Modification is (unfortunately) reflected in the descriptor.
-    self.assertTrue(self.my_message.GetOptions().deprecated)
+    # Singular field mutation
+    with self.assertRaises(immutability_error):
+      message_options.deprecated = True
+
+    # Clear methods
+    with self.assertRaises(immutability_error):
+      message_options.Clear()
+    with self.assertRaises(immutability_error):
+      message_options.ClearField('deprecated')
+
+    # Merge/Copy
+    with self.assertRaises(immutability_error):
+      message_options.MergeFrom(other_options)
+    with self.assertRaises(immutability_error):
+      message_options.CopyFrom(other_options)
+
+    # Repeated field mutations
+    repeated_field = message_options.uninterpreted_option
+    with self.assertRaises(immutability_error):
+      repeated_field.add()
+    with self.assertRaises(immutability_error):
+      repeated_field.append(descriptor_pb2.UninterpretedOption())
+    with self.assertRaises(immutability_error):
+      repeated_field.extend([descriptor_pb2.UninterpretedOption()])
+    with self.assertRaises(immutability_error):
+      repeated_field.insert(0, descriptor_pb2.UninterpretedOption())
+    with self.assertRaises(immutability_error):
+      repeated_field.remove(descriptor_pb2.UninterpretedOption())
+    with self.assertRaises(immutability_error):
+      repeated_field.pop()
+    with self.assertRaises(immutability_error):
+      repeated_field.sort()
+    with self.assertRaises(immutability_error):
+      repeated_field.reverse()
+    with self.assertRaises(immutability_error):
+      del repeated_field[:]
+
+    # Unset submessage mutation
+    complex_opt1 = unittest_custom_options_pb2.complex_opt1
+    stub_submsg = unittest_pb2.TestAllTypes.DESCRIPTOR.GetOptions().Extensions[complex_opt1]
+    with self.assertRaises(immutability_error):
+      stub_submsg.foo = 5
+
+    # Extension dict mutation
+    with self.assertRaises(immutability_error):
+      message_options.Extensions[complex_opt1] = descriptor_pb2.MessageOptions()
+    with self.assertRaises(immutability_error):
+      del message_options.Extensions[complex_opt1]
+
+    # Map field mutations
+    map_field = stub_submsg.my_map
+    with self.assertRaises(immutability_error):
+      map_field['key'] = 123
+    with self.assertRaises(immutability_error):
+      del map_field['key']
+    with self.assertRaises(immutability_error):
+      map_field.clear()
+    with self.assertRaises(immutability_error):
+      map_field.setdefault('key', 123)
+    with self.assertRaises(immutability_error):
+      map_field.update({'key': 123})
+    with self.assertRaises(immutability_error):
+      map_field.MergeFrom(map_field)
 
   def testSimpleCustomOptions(self):
     file_descriptor = unittest_custom_options_pb2.DESCRIPTOR

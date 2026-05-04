@@ -282,6 +282,7 @@ message ComplexOptionType1 {
   optional int32 foo2 = 2;
   optional int32 foo3 = 3;
   repeated int32 foo4 = 4;
+  map<string, int32> my_map = 5;
 
   extensions 100 to max;
 }
