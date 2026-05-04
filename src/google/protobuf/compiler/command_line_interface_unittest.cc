@@ -576,6 +576,141 @@ TEST_F(CommandLineInterfaceTest, GeneratorAndPlugin) {
   ExpectGenerated("test_plugin", "", "foo.proto", "Foo");
 }
 
+TEST_F(CommandLineInterfaceTest, PluginPrefixInvokesWrapper) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  std::string wrapper_path;
+#ifdef _WIN32
+  const std::string wrapper_name = "plugin_wrapper.bat";
+  CreateTempFile(wrapper_name,
+                 "@echo off\r\n"
+                 "echo wrapped > \"%~dp0wrapper_invoked.txt\"\r\n"
+                 "\"%~1\"\r\n"
+                 "exit /b %errorlevel%\r\n");
+  wrapper_path = absl::StrCat(temp_directory(), "/", wrapper_name);
+#else
+  const std::string wrapper_name = "plugin_wrapper.sh";
+  CreateTempFile(wrapper_name,
+                 "#!/bin/sh\n"
+                 "LOG_DIR=$(cd \"$(dirname \"$0\")\" && pwd)\n"
+                 "echo wrapped > \"${LOG_DIR}/wrapper_invoked.txt\"\n"
+                 "exec \"$@\"\n");
+  wrapper_path = absl::StrCat(temp_directory(), "/", wrapper_name);
+  ASSERT_EQ(0, chmod(wrapper_path.c_str(), 0777));
+#endif
+
+  Run(absl::StrCat("protocol_compiler --plug_prefix=", wrapper_path,
+                   " --plug_out=$tmpdir --proto_path=$tmpdir foo.proto"));
+
+  ExpectNoErrors();
+  ExpectGenerated("test_plugin", "", "foo.proto", "Foo");
+  ExpectFileContentContainsSubstring("wrapper_invoked.txt", "wrapped");
+}
+
+#ifndef _WIN32
+TEST_F(CommandLineInterfaceTest, PluginPrefixForwardsArguments) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  // Wrapper records every argv element on its own line, then shifts past the
+  // two wrapper-specific args (--foo, --bar=baz) and execs the remaining
+  // tail (the plugin path appended by protoc).
+  CreateTempFile("plugin_wrapper.sh",
+                 "#!/bin/sh\n"
+                 "for arg in \"$@\"; do\n"
+                 "  printf '%s\\n' \"$arg\" >> \"$tmpdir/wrapper_argv.txt\"\n"
+                 "done\n"
+                 "shift 2\n"
+                 "exec \"$@\"\n");
+  const std::string wrapper_path =
+      absl::StrCat(temp_directory(), "/plugin_wrapper.sh");
+  ASSERT_EQ(0, chmod(wrapper_path.c_str(), 0777));
+
+  // Pass the prefix value as a single argv element so the embedded spaces
+  // form multiple tokens (Run() splits on whitespace; RunWithArgs does not).
+  RunWithArgs({
+      "protocol_compiler",
+      absl::StrCat("--plug_prefix=", wrapper_path, " --foo --bar=baz"),
+      "--plug_out=$tmpdir",
+      "--proto_path=$tmpdir",
+      "foo.proto",
+  });
+
+  ExpectNoErrors();
+  ExpectGenerated("test_plugin", "", "foo.proto", "Foo");
+  ExpectFileContentContainsSubstring("wrapper_argv.txt", "--foo");
+  ExpectFileContentContainsSubstring("wrapper_argv.txt", "--bar=baz");
+}
+
+TEST_F(CommandLineInterfaceTest, PluginPrefixFromSearchPath) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  const std::string wrapper_basename = "plugin_wrapper_searchpath.sh";
+  CreateTempFile(wrapper_basename,
+                 "#!/bin/sh\n"
+                 "echo wrapped > \"$tmpdir/wrapper_invoked.txt\"\n"
+                 "exec \"$@\"\n");
+  const std::string wrapper_path =
+      absl::StrCat(temp_directory(), "/", wrapper_basename);
+  ASSERT_EQ(0, chmod(wrapper_path.c_str(), 0777));
+
+  // Prepend the temp directory to PATH so the wrapper can be located by
+  // basename only (Subprocess uses execvp / SEARCH_PATH for the prefix).
+  const char* old_path_cstr = getenv("PATH");
+  const std::string old_path = old_path_cstr ? old_path_cstr : "";
+  setenv("PATH", absl::StrCat(temp_directory(), ":", old_path).c_str(), 1);
+
+  Run(absl::StrCat("protocol_compiler --plug_prefix=", wrapper_basename,
+                   " --plug_out=$tmpdir --proto_path=$tmpdir foo.proto"));
+
+  setenv("PATH", old_path.c_str(), 1);
+
+  ExpectNoErrors();
+  ExpectGenerated("test_plugin", "", "foo.proto", "Foo");
+  ExpectFileContentContainsSubstring("wrapper_invoked.txt", "wrapped");
+}
+#endif  // !_WIN32
+
+TEST_F(CommandLineInterfaceTest, PluginPrefixRejectsEmptyValue) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --plug_prefix= "
+      "--plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("--plug_prefix");
+  ExpectErrorSubstring("non-empty value");
+}
+
+TEST_F(CommandLineInterfaceTest, PluginPrefixRejectsDuplicate) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --plug_prefix=foo --plug_prefix=bar "
+      "--plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("--plug_prefix");
+  ExpectErrorSubstring("only be passed once");
+}
+
+TEST_F(CommandLineInterfaceTest, PluginPrefixMissingExecutable) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --plug_prefix=/nonexistent/path/to/wrapper "
+      "--plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("Plugin failed");
+}
+
 TEST_F(CommandLineInterfaceTest, GeneratorAndPlugin_DescriptorSetIn) {
   // Invoke a generator and a plugin at the same time.
 
