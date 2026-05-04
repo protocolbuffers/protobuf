@@ -7915,6 +7915,34 @@ TEST_F(ValidationErrorTest, MapEntryBase) {
   BuildFile(text_proto);
 }
 
+TEST_F(ValidationErrorTest, GroupFieldPointingToMapEntryIsNotMap) {
+  // TYPE_GROUP field referencing a map_entry message should produce a
+  // validation error. Groups cannot be map entries.
+  BuildFileWithErrors(
+      "name: 'group_map.proto' "
+      "message_type { "
+      "  name: 'Foo' "
+      "  field { "
+      "    name: 'foomapentry' number: 1 label: LABEL_REPEATED "
+      "    type: TYPE_GROUP type_name: 'FooMapEntry' "
+      "  } "
+      "  nested_type { "
+      "    name: 'FooMapEntry' "
+      "    options { map_entry: true } "
+      "    field { "
+      "      name: 'key' number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL "
+      "    } "
+      "    field { "
+      "      name: 'value' number: 2 type: TYPE_INT32 label: LABEL_OPTIONAL "
+      "    } "
+      "  } "
+      "} ",
+
+      "group_map.proto: Foo.foomapentry: TYPE: Groups cannot be map entries. "
+      "Use a regular message field with map<KeyType, ValueType> syntax "
+      "instead.\n");
+}
+
 TEST_F(ValidationErrorTest, MapEntryExtensionRange) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
