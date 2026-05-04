@@ -184,6 +184,10 @@ jobs:
           cache-prefix: linux-cmake
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
+      - name: Regenerate stale files
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        run: ./regenerate_stale_files.sh
+
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v5

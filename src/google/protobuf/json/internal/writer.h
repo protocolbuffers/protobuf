@@ -192,6 +192,7 @@ class JsonWriter {
   }
 
   void WriteQuoted(absl::string_view val) { WriteEscapedUtf8(val); }
+  void WriteQuoted(const std::string& val) { WriteEscapedUtf8(val); }
 
   // Tries to write a non-finite double if necessary; returns false if
   // nothing was written.

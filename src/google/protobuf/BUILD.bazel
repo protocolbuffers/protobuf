@@ -372,13 +372,13 @@ proto_library(
     name = "json_enumvalue_options_proto",
     srcs = ["json_enumvalue_options.proto"],
     strip_import_prefix = "/src",
-    visibility = ["//visibility:private"],
+    visibility = ["//:__subpackages__"],
     deps = [":descriptor_proto"],
 )
 
 cc_proto_library(
     name = "json_enumvalue_options_cc_proto",
-    visibility = ["//visibility:private"],
+    visibility = ["//:__subpackages__"],
     deps = [":json_enumvalue_options_proto"],
 )
 
