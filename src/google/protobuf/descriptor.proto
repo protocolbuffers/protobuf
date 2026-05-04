@@ -510,7 +510,13 @@ message FileOptions {
   // that generate code specific to your particular RPC system.  Therefore,
   // these default to false.  Old code which depends on generic services should
   // explicitly set them to true.
-  optional bool cc_generic_services = 16 [default = false];
+  optional bool cc_generic_services = 16 [
+    default = false,
+    feature_support = {
+      edition_deprecated: EDITION_2026
+      deprecation_warning: "Generic services are deprecated and will be removed in a future edition."
+    }
+  ];
   optional bool java_generic_services = 17 [default = false];
   optional bool py_generic_services = 18 [default = false];
   reserved 42;  // removed php_generic_services
@@ -524,7 +530,13 @@ message FileOptions {
 
   // Enables the use of arenas for the proto messages in this file. This applies
   // only to generated classes for C++.
-  optional bool cc_enable_arenas = 31 [default = true];
+  optional bool cc_enable_arenas = 31 [
+    default = true,
+    feature_support = {
+      edition_removed: EDITION_2026
+      removal_error: "This behavior is enabled by default in editions 2026 and above."
+    }
+  ];
 
   // Sets the objective c class prefix which is prepended to all objective c
   // generated classes from this .proto. There is no default.

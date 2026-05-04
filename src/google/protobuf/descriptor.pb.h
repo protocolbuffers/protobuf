@@ -7680,7 +7680,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   void _internal_set_java_multiple_files(bool value);
 
   public:
-  // optional bool cc_generic_services = 16 [default = false];
+  // optional bool cc_generic_services = 16 [default = false, feature_support = {
   [[nodiscard]] bool has_cc_generic_services()
       const;
   void clear_cc_generic_services() ;
@@ -7764,7 +7764,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   void _internal_set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value);
 
   public:
-  // optional bool cc_enable_arenas = 31 [default = true];
+  // optional bool cc_enable_arenas = 31 [default = true, feature_support = {
   [[nodiscard]] bool has_cc_enable_arenas()
       const;
   void clear_cc_enable_arenas() ;
@@ -18413,7 +18413,7 @@ inline void FileOptions::set_allocated_go_package(::std::string* PROTOBUF_NULLAB
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.go_package)
 }
 
-// optional bool cc_generic_services = 16 [default = false];
+// optional bool cc_generic_services = 16 [default = false, feature_support = {
 inline bool FileOptions::has_cc_generic_services() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00001000U);
   return value;
@@ -18525,7 +18525,7 @@ inline void FileOptions::_internal_set_deprecated(bool value) {
   _impl_.deprecated_ = value;
 }
 
-// optional bool cc_enable_arenas = 31 [default = true];
+// optional bool cc_enable_arenas = 31 [default = true, feature_support = {
 inline bool FileOptions::has_cc_enable_arenas() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00080000U);
   return value;
