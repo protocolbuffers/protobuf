@@ -98,6 +98,14 @@ class SingularPrimitive final : public FieldGeneratorBase {
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
 
+  void GenerateSplitMemberTypeName(io::Printer* p) const override {
+    p->Emit(R"cc($Type$)cc");
+  }
+
+  void GenerateDefaultSplitValue(io::Printer* p) const override {
+    p->Emit(R"cc($kDefault$)cc");
+  }
+
   void GeneratePrivateMembers(io::Printer* p) const override {
     p->Emit(R"cc(
       $Type$ $name$_;
@@ -105,21 +113,48 @@ class SingularPrimitive final : public FieldGeneratorBase {
   }
 
   void GenerateMessageClearingCode(io::Printer* p) const override {
-    p->Emit(R"cc(
-      this_.$field_$ = $kDefault$;
-    )cc");
+    if (should_split()) {
+      p->Emit(R"cc(
+        $split_field$ = $kDefault$;
+      )cc");
+    } else {
+      p->Emit(R"cc(
+        this_.$field_$ = $kDefault$;
+      )cc");
+    }
   }
 
   void GenerateClearingCode(io::Printer* p) const override {
-    p->Emit(R"cc(
-      $field_$ = $kDefault$;
-    )cc");
+    if (should_split()) {
+      if (GetFieldHasbitMode(field_, *opts_) ==
+          internal::cpp::HasbitMode::kTrueHasbit) {
+        p->Emit(R"cc(
+          $split$.SetPrimitiveAssumeMutable($split_address$, $kDefault$);
+        )cc");
+      } else {
+        p->Emit(R"cc(
+          $split$.SetPrimitiveIfMutable($split_address$, $kDefault$,
+                                        DefaultSplit_());
+        )cc");
+      }
+    } else {
+      p->Emit(R"cc(
+        $field_$ = $kDefault$;
+      )cc");
+    }
   }
 
   void GenerateMergingCode(io::Printer* p) const override {
-    p->Emit(R"cc(
-      _this->$field_$ = from.$field_$;
-    )cc");
+    if (should_split()) {
+      p->Emit(R"cc(
+        _this->$split$.SetPrimitive($split_address$, _this, $split_field$,
+                                    DefaultSplit_());
+      )cc");
+    } else {
+      p->Emit(R"cc(
+        _this->$field_$ = from.$field_$;
+      )cc");
+    }
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
@@ -135,9 +170,16 @@ class SingularPrimitive final : public FieldGeneratorBase {
   }
 
   void GenerateCopyConstructorCode(io::Printer* p) const override {
-    p->Emit(R"cc(
-      _this->$field_$ = from.$field_$;
-    )cc");
+    if (should_split()) {
+      p->Emit(R"cc(
+        _this->$split$.AssignFrom($split_address$, arena, from.$split$,
+                                  DefaultSplit_());
+      )cc");
+    } else {
+      p->Emit(R"cc(
+        _this->$field_$ = from.$field_$;
+      )cc");
+    }
   }
 
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
@@ -198,7 +240,6 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
     p->Emit(R"cc(
       inline void $Msg$::set_$name$($Type$ value) {
         $WeakDescriptorSelfPin$;
-        $PrepareSplitMessageForWrite$;
         if ($not_has_field$) {
           clear_$oneof_name$();
           set_has_$name_internal$();
@@ -218,9 +259,8 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
     p->Emit(R"cc(
       inline void $Msg$::set_$name$($Type$ value) {
         $WeakDescriptorSelfPin$;
-        $PrepareSplitMessageForWrite$;
-        _internal_set_$name_internal$(value);
         $set_hasbit$;
+        _internal_set_$name_internal$(value);
         $annotate_set$;
         // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
       }
@@ -228,11 +268,22 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
         $TsanDetectConcurrentRead$;
         return $field_$;
       }
-      inline void $Msg$::_internal_set_$name_internal$($Type$ value) {
-        $TsanDetectConcurrentMutation$;
-        $field_$ = value;
-      }
     )cc");
+    if (should_split()) {
+      p->Emit(R"cc(
+        inline void $Msg$::_internal_set_$name_internal$($Type$ value) {
+          $TsanDetectConcurrentMutation$;
+          $split$.SetPrimitive($split_address$, this, value, DefaultSplit_());
+        }
+      )cc");
+    } else {
+      p->Emit(R"cc(
+        inline void $Msg$::_internal_set_$name_internal$($Type$ value) {
+          $TsanDetectConcurrentMutation$;
+          $field_$ = value;
+        }
+      )cc");
+    }
   }
 }
 
@@ -267,22 +318,34 @@ void SingularPrimitive::GenerateByteSize(io::Printer* p) const {
     p->Emit({{"kFixedBytes", tag_size + *fixed_size}}, R"cc(
       total_size += $kFixedBytes$;
     )cc");
+    if (should_split()) {
+      // Silence the unused warning. We don't want to do it on the variable
+      // itself because it is useful normally.
+      p->Emit("(void)node;");
+    }
     return;
   }
+
+  const auto value = [&] {
+    if (should_split()) {
+      p->Emit("$split_field$");
+    } else {
+      p->Emit("this_._internal_$name$()");
+    }
+  };
 
   // Adding one is very common and it turns out it can be done for
   // free inside of WireFormatLite, so we can save an instruction here.
   if (tag_size == 1) {
-    p->Emit(R"cc(
-      total_size += ::_pbi::WireFormatLite::$DeclaredType$SizePlusOne(
-          this_._internal_$name$());
+    p->Emit({{"value", value}}, R"cc(
+      total_size += ::_pbi::WireFormatLite::$DeclaredType$SizePlusOne($value$);
     )cc");
     return;
   }
 
-  p->Emit(R"cc(
-    total_size += $kTagBytes$ + ::_pbi::WireFormatLite::$DeclaredType$Size(
-                                    this_._internal_$name$());
+  p->Emit({{"value", value}}, R"cc(
+    total_size +=
+        $kTagBytes$ + ::_pbi::WireFormatLite::$DeclaredType$Size($value$);
   )cc");
 }
 
@@ -298,7 +361,9 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
 
   void GenerateMessageClearingCode(io::Printer* p) const override {
     if (should_split()) {
-      p->Emit("this_.$field_$.ClearIfNotDefault();\n");
+      p->Emit(R"cc(
+        $split_field$.ClearIfNotDefault();
+      )cc");
     } else {
       p->Emit("$field_$.Clear();\n");
     }
@@ -306,26 +371,23 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
 
   void GenerateClearingCode(io::Printer* p) const override {
     if (should_split()) {
-      p->Emit("$field_$.ClearIfNotDefault();\n");
+      p->Emit(R"cc(
+        $split$.ClearIfNotDefault($split_address$, DefaultSplit_());
+      )cc");
     } else {
       p->Emit("$field_$.Clear();\n");
     }
   }
 
   void GenerateMergingCode(io::Printer* p) const override {
-    // TODO: experiment with simplifying this to be
-    // `if (!from.empty()) { body(); }` for both split and non-split cases.
-    auto body = [&] {
+    if (should_split()) {
       p->Emit(R"cc(
-        _this->_internal_mutable_$name$()->MergeFrom(from._internal_$name$());
+        _this->_internal_mutable_$name$()->MergeFrom(*$split_field$);
       )cc");
-    };
-    if (!should_split()) {
-      body();
     } else {
-      p->Emit({{"body", body}}, R"cc(
-        if (!from.$field_$.IsDefault()) {
-          $body$;
+      p->Emit(R"cc(
+        if (auto& f = from._internal_$name$(); !f.empty()) {
+          _this->_internal_mutable_$name$()->MergeFrom(f);
         }
       )cc");
     }
@@ -341,19 +403,13 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   void GenerateDestructorCode(io::Printer* p) const override {
     if (should_split()) {
       p->Emit(R"cc(
-        this_.$field_$.DeleteIfNotDefault();
+        $split_field$.DeleteIfNotDefault();
       )cc");
     }
   }
 
   void GenerateCopyConstructorCode(io::Printer* p) const override {
-    if (should_split()) {
-      p->Emit(R"cc(
-        if (!from._internal_$name$().empty()) {
-          _internal_mutable_$name$()->MergeFrom(from._internal_$name$());
-        }
-      )cc");
-    }
+    ABSL_LOG(FATAL);
   }
 
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
@@ -402,6 +458,14 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
     ABSL_LOG(FATAL) << "Not supported";
+  }
+
+  void GenerateSplitMemberTypeName(io::Printer* p) const override {
+    p->Emit(R"cc($pbi$::RawPtr<$pb$::RepeatedField<$Type$>>)cc");
+  }
+
+  void GenerateDefaultSplitValue(io::Printer* p) const override {
+    p->Emit(R"cc($pbi$::kZeroBuffer)cc");
   }
 
   void GeneratePrivateMembers(io::Printer* p) const override;
@@ -576,11 +640,9 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
       inline $pb$::RepeatedField<$Type$>* $nonnull$
       $Msg$::_internal_mutable_$name_internal$() {
         $TsanDetectConcurrentRead$;
-        $PrepareSplitMessageForWrite$;
-        if ($field_$.IsDefault()) {
-          $field_$.Set($pb$::Arena::Create<$pb$::RepeatedField<$Type$>>(GetArena()));
-        }
-        return $field_$.Get();
+        return $split$
+            .RawPtrConstructIfNeeded($split_address$, this, DefaultSplit_())
+            .Get();
       }
     )cc");
   } else {
@@ -647,31 +709,36 @@ void RepeatedPrimitive::GenerateSerializeWithCachedSizesToArray(
 }
 
 void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
+  const auto value = [&] {
+    if (should_split()) {
+      p->Emit("(*$split_field$)");
+    } else {
+      p->Emit("this_._internal_$name$()");
+    }
+  };
   if (HasCachedSize()) {
     ABSL_CHECK(field_->is_packed());
-    p->Emit(
-        R"cc(
-          total_size +=
-              ::_pbi::WireFormatLite::$DeclaredType$SizeWithPackedTagSize(
-                  this_._internal_$name$(), $kTagBytes$,
-                  this_.$_field_cached_byte_size_$);
-        )cc");
+    p->Emit({Sub{"value", value}.WithSuffix("")},
+            R"cc(
+              total_size +=
+                  ::_pbi::WireFormatLite::$DeclaredType$SizeWithPackedTagSize(
+                      $value$, $kTagBytes$, this_.$_field_cached_byte_size_$);
+            )cc");
     return;
   }
   p->Emit(
       {
+          Sub{"value", value}.WithSuffix(""),
           {"data_size",
            [&] {
              auto fixed_size = FixedSize(field_->type());
              if (fixed_size.has_value()) {
                p->Emit({{"kFixed", *fixed_size}}, R"cc(
-                 ::size_t{$kFixed$} *
-                     ::_pbi::FromIntSize(this_._internal_$name$_size());
+                 ::size_t{$kFixed$} * ::_pbi::FromIntSize($value$.size());
                )cc");
              } else {
                p->Emit(R"cc(
-                 ::_pbi::WireFormatLite::$DeclaredType$Size(
-                     this_._internal_$name$());
+                 ::_pbi::WireFormatLite::$DeclaredType$Size($value$);
                )cc");
              }
            }},
@@ -686,8 +753,7 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
                )cc");
              } else {
                p->Emit(R"cc(
-                 ::size_t{$kTagBytes$} *
-                     ::_pbi::FromIntSize(this_._internal_$name$_size());
+                 ::size_t{$kTagBytes$} * ::_pbi::FromIntSize($value$.size());
                )cc");
              }
            }},

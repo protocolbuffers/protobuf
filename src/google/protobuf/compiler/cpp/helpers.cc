@@ -397,7 +397,8 @@ bool CanInitializeByZeroing(const FieldDescriptor* field,
   }
 }
 
-bool CanClearByZeroing(const FieldDescriptor* field) {
+bool CanClearByZeroing(const FieldDescriptor* field, const Options& options) {
+  if (ShouldSplit(field, options)) return false;
   if (field->is_repeated() || field->is_extension()) return false;
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_ENUM:
@@ -672,7 +673,13 @@ std::string FieldName(const FieldDescriptor* field) {
 }
 
 std::string FieldMemberName(const FieldDescriptor* field, bool split) {
+  if (split) {
+    return absl::StrFormat("_impl_._split_.Get(Impl_::%s)",
+                           SplitBtreeAddressName(field));
+  }
+
   absl::string_view prefix = "_impl_.";
+  // DO NOT SUBMIT FIX
   absl::string_view split_prefix = split ? "_split_->" : "";
   if (field->real_containing_oneof() == nullptr) {
     return absl::StrCat(prefix, split_prefix, FieldName(field), "_");
@@ -946,7 +953,12 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
       } else if (value != value) {
         return "::std::numeric_limits<double>::quiet_NaN()";
       } else {
-        return io::SimpleDtoa(value);
+        std::string double_value = io::SimpleDtoa(value);
+        // Make sure it is a double literal.
+        if (double_value.find_first_of(".eE") == std::string::npos) {
+          double_value.push_back('.');
+        }
+        return double_value;
       }
     }
     case FieldDescriptor::CPPTYPE_FLOAT: {
@@ -959,12 +971,11 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
         return "::std::numeric_limits<float>::quiet_NaN()";
       } else {
         std::string float_value = io::SimpleFtoa(value);
-        // If floating point value contains a period (.) or an exponent
-        // (either E or e), then append suffix 'f' to make it a float
-        // literal.
-        if (float_value.find_first_of(".eE") != std::string::npos) {
-          float_value.push_back('f');
+        // Make sure it is a float literal.
+        if (float_value.find_first_of(".eE") == std::string::npos) {
+          float_value.push_back('.');
         }
+        float_value.push_back('f');
         return float_value;
       }
     }

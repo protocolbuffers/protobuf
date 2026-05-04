@@ -420,9 +420,6 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
         case TailCallTableInfo::kSplitOffset:
           p->Emit("{_fl::Offset{offsetof($Msg$, _impl_._split_)}},\n");
           break;
-        case TailCallTableInfo::kSplitSizeof:
-          p->Emit("{_fl::Offset{sizeof($Msg$::Impl_::Split)}},\n");
-          break;
         case TailCallTableInfo::kSubMessageGlobals:
           p->Emit({{"name", QualifiedMsgGlobalsInstanceName(
                                 aux_entry.field->message_type(), options_)}},
@@ -721,9 +718,8 @@ void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
                 if (weak) {
                   p->Emit("/* weak */ 0,");
                 } else if (split) {
-                  p->Emit(
-                      "PROTOBUF_FIELD_OFFSET($Msg$::Impl_::Split, "
-                      "$field_name$_),");
+                  p->Emit({{"address", SplitBtreeAddressName(field)}},
+                          "Impl_::$address$.bits(),");
                 } else {
                   p->Emit("PROTOBUF_FIELD_OFFSET($Msg$, $field_member_name$),");
                 }

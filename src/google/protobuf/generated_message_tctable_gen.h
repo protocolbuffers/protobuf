@@ -181,7 +181,6 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
   enum AuxType {
     kNothing = 0,
     kSplitOffset,
-    kSplitSizeof,
     kSubMessageGlobals,
     kSubTable,
     kSubMessageGlobalsWeak,

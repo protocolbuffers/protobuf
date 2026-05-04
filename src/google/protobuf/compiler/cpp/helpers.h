@@ -118,7 +118,7 @@ class MessageSCCAnalyzer;
 bool CanInitializeByZeroing(const FieldDescriptor* field,
                             const Options& options);
 // Returns true if it's safe to reset "field" to zero.
-bool CanClearByZeroing(const FieldDescriptor* field);
+bool CanClearByZeroing(const FieldDescriptor* field, const Options& options);
 // Determines if swap can be implemented via memcpy.
 bool HasTrivialSwap(const FieldDescriptor* field, const Options& options);
 

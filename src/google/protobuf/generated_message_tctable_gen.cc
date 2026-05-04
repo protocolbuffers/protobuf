@@ -910,9 +910,8 @@ TailCallTableInfo::TailCallTableInfo(
   if (std::any_of(ordered_fields.begin(), ordered_fields.end(),
                   [](auto& f) { return f.should_split; })) {
     static_assert(kSplitOffsetAuxIdx + 1 == kSplitSizeAuxIdx, "");
-    aux_entries.resize(kSplitSizeAuxIdx + 1);  // Allocate our 2 slots
+    aux_entries.resize(kSplitSizeAuxIdx);  // Allocate our 1 slots
     aux_entries[kSplitOffsetAuxIdx] = {kSplitOffset};
-    aux_entries[kSplitSizeAuxIdx] = {kSplitSizeof};
   }
 
   field_entries = BuildFieldEntries(descriptor, message_options, ordered_fields,

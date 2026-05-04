@@ -21,6 +21,7 @@
 #include "absl/strings/str_join.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
@@ -193,14 +194,16 @@ TEST(ReflectionOpsTest, Clear) {
 
   // Check that getting embedded messages returns the objects created during
   // SetAllFields() rather than default instances.
-  EXPECT_NE(&unittest::TestAllTypes::OptionalGroup::default_instance(),
-            &message.optionalgroup());
-  EXPECT_NE(&unittest::TestAllTypes::NestedMessage::default_instance(),
-            &message.optional_nested_message());
-  EXPECT_NE(&unittest::ForeignMessage::default_instance(),
-            &message.optional_foreign_message());
-  EXPECT_NE(&unittest_import::ImportMessage::default_instance(),
-            &message.optional_import_message());
+  if constexpr (!internal::ForceSplitFieldsInProtoc()) {
+    EXPECT_NE(&unittest::TestAllTypes::OptionalGroup::default_instance(),
+              &message.optionalgroup());
+    EXPECT_NE(&unittest::TestAllTypes::NestedMessage::default_instance(),
+              &message.optional_nested_message());
+    EXPECT_NE(&unittest::ForeignMessage::default_instance(),
+              &message.optional_foreign_message());
+    EXPECT_NE(&unittest_import::ImportMessage::default_instance(),
+              &message.optional_import_message());
+  }
 }
 
 TEST(ReflectionOpsTest, ClearExtensions) {

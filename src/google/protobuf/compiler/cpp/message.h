@@ -78,6 +78,11 @@ class MessageGenerator {
 
   void GenerateSourceDefaultInstance(io::Printer* p);
 
+  void GenerateSplitFieldIfChain(
+      io::Printer* p, const SplitMap::Node& node, bool mutable_iteration,
+      absl::FunctionRef<void(const SplitMap::Node&)> per_node,
+      absl::FunctionRef<void(const FieldDescriptor* field)> per_field);
+
   void GenerateSchema(io::Printer* p, int offset);
 
   // Generate the field offsets array.  Returns the total number of entries
@@ -133,6 +138,10 @@ class MessageGenerator {
   void GenerateAnyMethodDefinition(io::Printer* p);
   void GenerateImplDefinition(io::Printer* p);
   void GenerateClassSpecificMergeImpl(io::Printer* p);
+  void GenerateMergeImplFields(io::Printer* p, bool split);
+  void GenerateMergeImplForField(io::Printer* p, const FieldDescriptor* field,
+                                 bool is_split, int cached_has_word_index,
+                                 bool check_has_byte);
   void GenerateCopyFrom(io::Printer* p);
   void GenerateSwap(io::Printer* p);
   void GenerateIsInitialized(io::Printer* p);

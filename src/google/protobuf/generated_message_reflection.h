@@ -65,9 +65,9 @@ inline constexpr uint32_t kInvalidFieldOffsetTag = 0x40000000u;
 
 // Mask used on offsets for split fields.
 inline constexpr uint32_t kSplitFieldOffsetMask = 0x80000000u;
-inline constexpr uint32_t kLazyMask = 0x1u;
-inline constexpr uint32_t kInlinedMask = 0x1u;
-inline constexpr uint32_t kMicroStringMask = 0x2u;
+inline constexpr uint32_t kLazyMask = 0x20000000u;
+inline constexpr uint32_t kInlinedMask = 0x20000000u;
+inline constexpr uint32_t kMicroStringMask = 0x10000000u;
 
 // Structs that the code generator emits directly to describe a message.
 // These should never used directly except to build a ReflectionSchema
@@ -252,18 +252,8 @@ class ReflectionSchema {
   // "unused" or "lazy" or "inlined").
   template <typename Type>
   static uint32_t OffsetValue(uint32_t v, FieldDescriptor::Type type) {
-    if constexpr (!std::is_void_v<Type>) {
-      // If the type is passed, statically use the alignment for the mask.
-      // Faster than checking `type`.
-      return v & ~kSplitFieldOffsetMask & ~(alignof(Type) - 1);
-    }
-    if (type == FieldDescriptor::TYPE_MESSAGE ||
-        type == FieldDescriptor::TYPE_STRING ||
-        type == FieldDescriptor::TYPE_BYTES) {
-      return v & ~kSplitFieldOffsetMask & ~kInlinedMask & ~kLazyMask &
-             ~kMicroStringMask;
-    }
-    return v & (~kSplitFieldOffsetMask);
+    return v & ~kSplitFieldOffsetMask & ~kInlinedMask & ~kLazyMask &
+           ~kMicroStringMask;
   }
 
   static bool Inlined(uint32_t v, FieldDescriptor::Type type) {

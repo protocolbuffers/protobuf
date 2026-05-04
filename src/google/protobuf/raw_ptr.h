@@ -28,6 +28,8 @@ PROTOBUF_EXPORT ABSL_CACHELINE_ALIGNED extern const char
 template <typename T>
 class RawPtr {
  public:
+  using value_type = T;
+
   constexpr RawPtr() : RawPtr(kZeroBuffer) {
     static_assert(sizeof(T) <= sizeof(kZeroBuffer), "");
     static_assert(alignof(T) <= ABSL_CACHELINE_SIZE, "");

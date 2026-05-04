@@ -789,27 +789,35 @@ class PROTOBUF_EXPORT TcParser final {
   }
 
   template <typename T, bool is_split>
-  static inline T& MaybeCreateRepeatedRefAt(void* x, size_t offset,
-                                            MessageLite* msg) {
-    if (!is_split) return RefAt<T>(x, offset);
-    void*& ptr = RefAt<void*>(x, offset);
-    if (ptr == DefaultRawPtr()) {
-      ptr = Arena::Create<T>(msg->GetArena());
+  static inline T& MaybeCreateRepeatedRefAt(
+      MessageLite* msg, const TcParseTableBase* table,
+      const TcParseTableBase::FieldEntry& entry) {
+    void* void_ptr = MutableMaybeSplit<is_split>(msg, table, entry);
+    if constexpr (is_split) {
+      RawPtr<T>* raw = static_cast<RawPtr<T>*>(void_ptr);
+      if (raw->IsDefault()) {
+        raw->Set(Arena::Create<T>(msg->GetArena()));
+      }
+      return *raw->Get();
+    } else {
+      return *static_cast<T*>(void_ptr);
     }
-    return *static_cast<T*>(ptr);
   }
 
   template <typename T, bool is_split>
   static inline RepeatedField<T>& MaybeCreateRepeatedFieldRefAt(
-      void* x, size_t offset, MessageLite* msg) {
-    return MaybeCreateRepeatedRefAt<RepeatedField<T>, is_split>(x, offset, msg);
+      MessageLite* msg, const TcParseTableBase* table,
+      const TcParseTableBase::FieldEntry& entry) {
+    return MaybeCreateRepeatedRefAt<RepeatedField<T>, is_split>(msg, table,
+                                                                entry);
   }
 
   template <typename T, bool is_split>
   static inline RepeatedPtrField<T>& MaybeCreateRepeatedPtrFieldRefAt(
-      void* x, size_t offset, MessageLite* msg) {
-    return MaybeCreateRepeatedRefAt<RepeatedPtrField<T>, is_split>(x, offset,
-                                                                   msg);
+      MessageLite* msg, const TcParseTableBase* table,
+      const TcParseTableBase::FieldEntry& entry) {
+    return MaybeCreateRepeatedRefAt<RepeatedPtrField<T>, is_split>(msg, table,
+                                                                   entry);
   }
 
   template <typename T>
@@ -876,9 +884,8 @@ class PROTOBUF_EXPORT TcParser final {
   // Returns true if the repeated field is empty. This method is not
   // well-optimized, so it should only be called in debug builds.
   static bool RepeatedFieldIsEmptySlow(
-      const MessageLite* msg, const TcParseTableBase* table,
-      const TcParseTableBase::FieldEntry& entry, const void* base,
-      bool is_split);
+      const void* ptr, const TcParseTableBase* table,
+      const TcParseTableBase::FieldEntry& entry, bool is_split);
 
   template <typename TagTaype>
   PROTOBUF_ALWAYS_INLINE PROTOBUF_CC static const char* FastMpImpl(
@@ -889,8 +896,11 @@ class PROTOBUF_EXPORT TcParser final {
   PROTOBUF_CC static const char* FastVarintS1(PROTOBUF_TC_PARAM_DECL);
 
   friend class GeneratedTcTableLiteTest;
-  static void* MaybeGetSplitBase(MessageLite* msg, bool is_split,
-                                 const TcParseTableBase* table);
+
+  template <bool is_split>
+  static void* MutableMaybeSplit(MessageLite* msg,
+                                 const TcParseTableBase* table,
+                                 const TcParseTableBase::FieldEntry& entry);
 
   // Test only access to verify that the right function is being called via
   // MiniParse.

@@ -111,6 +111,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/btree_split.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
@@ -1399,12 +1400,10 @@ class PROTOBUF_EXPORT Reflection final {
                               const FieldDescriptor* field) const;
 
   // Returns the `_split_` pointer. Requires: IsSplit() == true.
-  inline const void* GetSplitField(const Message* message) const;
+  inline const internal::BtreeSplit& GetSplitField(
+      const Message* message) const;
   // Returns the address of the `_split_` pointer. Requires: IsSplit() == true.
-  inline void** MutableSplitField(Message* message) const;
-
-  // Allocate the split instance if needed.
-  void PrepareSplitMessageForWrite(Message* message) const;
+  inline internal::BtreeSplit* MutableSplitField(Message* message) const;
 
   // Shallow-swap fields listed in fields vector of two messages. It is the
   // caller's responsibility to make sure shallow swap is safe.
@@ -1786,15 +1785,18 @@ bool Reflection::HasOneofField(const Message& message,
           static_cast<uint32_t>(field->number()));
 }
 
-const void* Reflection::GetSplitField(const Message* message) const {
+const internal::BtreeSplit& Reflection::GetSplitField(
+    const Message* message) const {
   ABSL_DCHECK(schema_.IsSplit());
-  return *internal::GetConstPointerAtOffset<void*>(message,
-                                                   schema_.SplitOffset());
+  return *internal::GetConstPointerAtOffset<const internal::BtreeSplit>(
+      message, schema_.SplitOffset());
 }
 
-void** Reflection::MutableSplitField(Message* message) const {
+internal::BtreeSplit* Reflection::MutableSplitField(Message* message) const {
+  ABSL_DCHECK_NE(message, schema_.default_instance());
   ABSL_DCHECK(schema_.IsSplit());
-  return internal::GetPointerAtOffset<void*>(message, schema_.SplitOffset());
+  return internal::GetPointerAtOffset<internal::BtreeSplit>(
+      message, schema_.SplitOffset());
 }
 
 namespace internal {
@@ -1962,11 +1964,12 @@ const Type& Reflection::GetRaw(const Message& message,
     ABSL_DCHECK(!schema_.InRealOneof(field))
         << "Field = " << field->full_name();
 
-    const void* split = GetSplitField(&message);
+    const auto& split = GetSplitField(&message);
+    const void* ptr = split.Get(internal::BtreeSplitAddress(field_offset));
     if (internal::SplitFieldHasExtraIndirectionStatic<Type>(field)) {
-      return **internal::GetConstPointerAtOffset<Type*>(split, field_offset);
+      return **static_cast<const Type* const*>(ptr);
     }
-    return *internal::GetConstPointerAtOffset<Type>(split, field_offset);
+    return *static_cast<const Type*>(ptr);
   }
   return internal::GetConstRefAtOffset<Type>(message, field_offset);
 }

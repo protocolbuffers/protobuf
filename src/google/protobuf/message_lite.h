@@ -306,6 +306,7 @@ struct TcParseTableBase;
 class WireFormatLite;
 class WeakFieldMap;
 class RustMapHelper;
+class BtreeSplit;
 
 // We compute sizes as size_t but cache them as int.  This function converts a
 // computed size to a cached size.  Since we don't proceed with serialization
@@ -1367,7 +1368,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::WeakFieldMap;
   friend class internal::WireFormatLite;
   friend class internal::RustMapHelper;
-
+  friend internal::BtreeSplit;
 
   template <typename Type>
   friend class Arena::InternalHelper;

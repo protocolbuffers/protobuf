@@ -181,6 +181,11 @@ inline void SizedArrayDelete(void* p, size_t size) {
 #endif
 }
 
+constexpr size_t RoundUpTo(size_t n, size_t r) {
+  assert((r & (r - 1)) == 0 && "Must be power of two");
+  return (n + (r - 1)) & ~(r - 1);
+}
+
 // Tag type used to invoke the constinit constructor overload of classes
 // such as ArenaStringPtr and MapFieldBase. Such constructors are internal
 // implementation details of the library.
@@ -296,6 +301,8 @@ inline constexpr bool ForceEagerlyVerifiedLazyInProtoc() {
 }
 
 inline constexpr bool ForceSplitFieldsInProtoc() {
+  // DO NOT SUBMIT
+  return true;
 #if defined(PROTOBUF_FORCE_SPLIT)
   return true;
 #else

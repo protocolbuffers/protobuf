@@ -256,6 +256,8 @@ void EmitNonDefaultCheck(io::Printer* p, absl::string_view prefix,
   ABSL_CHECK(!field->is_repeated());
   ABSL_CHECK(!field->containing_oneof() || field->real_containing_oneof());
 
+  // DO NOT SUBMIT: Should we complicate this for split fields?
+
   auto v = p->WithVars({{
       {"prefix", prefix},
       {"name", FieldName(field)},
@@ -615,6 +617,23 @@ std::vector<Sub> ClassVars(const Descriptor* desc, Options opts) {
   }
 
   return vars;
+}
+
+size_t SplitMemberSize(const FieldDescriptor* field) {
+  if (field->is_repeated()) return 8;
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return 1;
+
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_ENUM:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return 4;
+
+    default:
+      return 8;
+  }
 }
 
 }  // namespace
@@ -1094,7 +1113,7 @@ void MessageGenerator::GenerateSingularFieldHasBits(
         {Sub{"ASSUME",
              [&] {
                if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-                   !IsLazy(field, options_)) {
+                   !ShouldSplit(field, options_) && !IsLazy(field, options_)) {
                  // We maintain the invariant that for a submessage x, has_x()
                  // returning true implies that x_ is not null. By giving this
                  // information to the compiler, we allow it to eliminate
@@ -1189,7 +1208,15 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
                     )cc");
               } else {
                 // TODO: figure out if early return breaks tracking
-                if (ShouldSplit(field, options_)) {
+                if (GetFieldHasbitMode(field, options_) ==
+                    internal::cpp::HasbitMode::kTrueHasbit) {
+                  auto v = p->WithVars(HasBitVars(field));
+                  p->Emit(R"cc(
+                    if (ABSL_PREDICT_TRUE(!CheckHasBit(
+                            $has_bits$[$has_array_index$], $has_mask$)))
+                      return;
+                  )cc");
+                } else if (ShouldSplit(field, options_)) {
                   p->Emit(R"cc(
                     if (ABSL_PREDICT_TRUE(IsSplitMessageDefault()))
                       return;
@@ -1543,23 +1570,65 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
        {"decl_split",
         [&] {
           if (!ShouldSplit(descriptor_, options_)) return;
-          p->Emit({{"split_field",
+          p->Emit(R"cc(
+            $pbi$::BtreeSplit _split_;
+          )cc");
+          const auto& root_node = options_.split_map->RootFor(descriptor_);
+
+          if (root_node.has_zero_init) {
+            p->Emit(R"cc(
+              static constexpr auto& kSplitNode = $pbi$::kZeroBuffer;
+            )cc");
+          } else {
+            p->Emit(R"cc(
+              static const $pbi$::BtreeSplit::Node kSplitNode[];
+            )cc");
+          }
+
+          const auto debug_print = [&] {
+            std::vector<size_t> indices;
+            std::string str;
+            options_.split_map->RootFor(descriptor_)
+                .ForEachNode(indices, [&](auto& node) {
+                  str += absl::StrJoin(indices, "-") + "NODE->\n";
+                  node.ForEachField([&](auto* f, size_t offset) {
+                    if (f == nullptr) return;
+                    absl::StrAppend(&str, absl::StrJoin(indices, "-"),
+                                    "offset=", offset, " ", f->full_name(),
+                                    "\n");
+                  });
+                });
+            return str;
+          };
+
+          (void)debug_print;
+          std::vector<size_t> indices;
+          root_node.ForEachNode(indices, [&](auto& node) {
+            ABSL_CHECK_LE(indices.size(), internal::BtreeSplit::kMaxDepth)
+                << debug_print();
+            node.ForEachField([&](auto* f, size_t offset) {
+              if (f == nullptr) return;
+
+              p->Emit(
+                  {{"type",
                     [&] {
-                      for (auto field : field_layout_.optimized_order()) {
-                        if (!ShouldSplit(field, options_)) continue;
-                        field_generators_.get(field).GeneratePrivateMembers(p);
-                      }
-                    }}},
+                      field_generators_.get(f).GenerateSplitMemberTypeName(p);
+                    }},
+                   {"address", SplitBtreeAddressName(f)},
+                   {"indices", absl::StrJoin(indices, ",")},
+                   {"offset", offset},
+                   {"bits",
+                    // Print as octal because the address uses 3 bits per
+                    // segment. Easier to read.
+                    absl::StrFormat("0%o",
+                                    internal::BtreeSplitAddress::CalculateBits(
+                                        indices, offset))}},
                   R"cc(
-                    struct Split {
-                      $split_field$;
-                      using InternalArenaConstructable_ = void;
-                      using DestructorSkippable_ = void;
-                    };
-                    static_assert(::std::is_trivially_copy_constructible<Split>::value);
-                    static_assert(::std::is_trivially_destructible<Split>::value);
-                    Split* $nonnull$ _split_;
+                    // idx={$indices$}, offset=$offset$
+                    static constexpr $pbi$::BtreeSplitTypedAddress<$type$> $address${$bits$};
                   )cc");
+            });
+          });
         }},
        {"oneof_members",
         [&] {
@@ -1757,6 +1826,13 @@ void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
             std::string* $nonnull$ full_type_name);
       )cc");
 }
+
+// DO NOT SUBMIT:
+// FIXME:
+// SOMETHING IS BROKEN!!!!!
+// The last 3 things I added were: MergeFrom uses if-chain, ByteSizeLong uses
+// if-chain, Serialize uses if skips. After that searchmark broke. Take these
+// back to find where the bug is.
 
 void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
   if (!ShouldGenerateClass(descriptor_, options_)) return;
@@ -2026,10 +2102,18 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                     SplitDefaultInstanceName(descriptor_, options_)}},
                   R"cc(
                     private:
-                    inline bool IsSplitMessageDefault() const {
-                      return $split$ == reinterpret_cast<const Impl_::Split*>(&$split_default$);
+                    static const auto* PROTOBUF_NONNULL DefaultSplit_() {
+                      return reinterpret_cast<const $pbi$::BtreeSplit::Node*>(
+                          &Impl_::kSplitNode[0]);
                     }
-                    PROTOBUF_NOINLINE void PrepareSplitMessageForWrite();
+                    inline bool IsSplitMessageDefault() const {
+                      return _impl_._split_.head() == DefaultSplit_();
+                    }
+                    template <typename T>
+                    auto& MutableSplitField_(T address) {
+                      ABSL_DCHECK_NE(this, &default_instance());
+                      return _impl_._split_.Mutable(address, this, DefaultSplit_());
+                    }
 
                     public:
                   )cc");
@@ -2119,17 +2203,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         }},
        {"decl_impl", [&] { GenerateImplDefinition(p); }},
        {"classdata_type", ClassDataType(descriptor_, options_)},
-       {"msg_globals", MsgGlobalsInstanceName(descriptor_, options_)},
-       {"split_friend",
-        [&] {
-          if (!ShouldSplit(descriptor_, options_)) return;
-
-          p->Emit({{"split_default",
-                    SplitDefaultInstanceType(descriptor_, options_)}},
-                  R"cc(
-                    friend struct $split_default$;
-                  )cc");
-        }}},
+       {"msg_globals", MsgGlobalsInstanceName(descriptor_, options_)}},
       R"cc(
         class $dllexport_decl $ $unused $$Msg$ final : public $superclass$
         /* @@protoc_insertion_point(class_definition:$full_name$) */ {
@@ -2215,6 +2289,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           $generated_methods$;
           $internal_field_number$;
           $decl_non_simple_base$;
+
          private:
           static ::absl::string_view FullMessageName() { return "$full_name$"; }
           $decl_annotate$;
@@ -2274,7 +2349,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           using InternalArenaConstructable_ = void;
           using DestructorSkippable_ = void;
           $decl_impl$;
-          $split_friend$;
           //~ The TableStruct struct needs access to the private parts, in
           //~ order to construct the offsets of all members.
           friend struct ::$tablename$;
@@ -2425,21 +2499,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
     p->Emit("\n");
   }
 
-  if (ShouldSplit(descriptor_, options_)) {
-    p->Emit({{"split_default", SplitDefaultInstanceName(descriptor_, options_)},
-             {"globals", MsgGlobalsInstanceName(descriptor_, options_)}},
-            R"cc(
-              void $Msg$::PrepareSplitMessageForWrite() {
-                if (ABSL_PREDICT_TRUE(IsSplitMessageDefault())) {
-                  ABSL_DCHECK_NE(this, &default_instance());
-                  $pbi$::CreateSplitMessageGeneric(
-                      GetArena(), reinterpret_cast<void**>(&$split$),
-                      sizeof(Impl_::Split));
-                }
-              }
-            )cc");
-  }
-
   GenerateVerify(p);
 
   GenerateSwap(p);
@@ -2524,13 +2583,14 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
   const bool has_weak_fields = num_weak_fields_ > 0;
   // NOTE: We can cleanup two bits from old donated logic.
   const bool has_inline_strings = false;
-  const bool has_split = ShouldSplit(descriptor_, options_);
+  const bool has_split_offset = ShouldSplit(descriptor_, options_);
+  const bool has_split_size = false;
 
   format("$1$, // bitmap\n",
          // These conditions have to match exactly the order done below
          make_bitmap(has_has_bits, has_extensions, has_oneofs, has_weak_fields,
-                     has_inline_strings, has_split, has_split, has_has_bits,
-                     has_inline_strings));
+                     has_inline_strings, has_split_offset, has_split_size,
+                     has_has_bits, has_inline_strings));
 
   // The order of these offsets has to match the reading of them in
   // MigrationToReflectionSchema.
@@ -2546,10 +2606,8 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
   if (has_weak_fields) {
     format("PROTOBUF_FIELD_OFFSET($classtype$, $weak_field_map$),\n");
   }
-  if (has_split) {
-    format(
-        "PROTOBUF_FIELD_OFFSET($classtype$, $split$),\n"
-        "sizeof($classtype$::Impl_::Split),\n");
+  if (has_split_offset) {
+    format("PROTOBUF_FIELD_OFFSET($classtype$, $split$),\n");
   }
   const size_t offsets = num_generated_indices + descriptor_->field_count() +
                          descriptor_->real_oneof_decl_count();
@@ -2569,12 +2627,11 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
     } else if (field->real_containing_oneof()) {
       format("PROTOBUF_FIELD_OFFSET($classtype$, _impl_.$1$_)",
              field->real_containing_oneof()->name());
+    } else if (ShouldSplit(field, options_)) {
+      format("$classtype$::Impl_::$1$.bits()", SplitBtreeAddressName(field));
     } else {
-      format("PROTOBUF_FIELD_OFFSET($classtype$$1$, $2$)",
-             ShouldSplit(field, options_) ? "::Impl_::Split" : "",
-             ShouldSplit(field, options_)
-                 ? absl::StrCat(FieldName(field), "_")
-                 : FieldMemberName(field, /*split=*/false));
+      format("PROTOBUF_FIELD_OFFSET($classtype$, $1$)",
+             FieldMemberName(field, /*split=*/false));
     }
 
     // Some information about a field is in the pdproto profile. The profile is
@@ -2746,7 +2803,7 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
     if (ShouldSplit(descriptor_, options_)) {
       separator();
       p->Emit({{"name", SplitDefaultInstanceName(descriptor_, options_)}},
-              "_split_{const_cast<Split*>(&$name$._instance)}");
+              R"cc(_split_(&Impl_::kSplitNode[0]))cc");
     }
   };
 
@@ -3366,11 +3423,19 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
   // hasbit to see if a zero-init is necessary.
   const int kMaxUnconditionalPrimitiveBytesClear = 4;
 
+  std::vector<const FieldDescriptor*> non_split_fields;
+  // DO NOT SUBMIT: Move into FieldLayout
+  for (const auto* field : field_layout_.optimized_order()) {
+    if (!ShouldSplit(field, options_)) {
+      non_split_fields.push_back(field);
+    }
+  }
+
   // Collect fields into chunks. Each chunk may have an if() condition that
   // checks all hasbits in the chunk and skips it if none are set.
   int zero_init_bytes = 0;
-  for (const auto& field : field_layout_.optimized_order()) {
-    if (CanClearByZeroing(field)) {
+  for (const auto& field : non_split_fields) {
+    if (CanClearByZeroing(field, options_)) {
       zero_init_bytes += EstimateAlignmentSize(field);
     }
   }
@@ -3378,7 +3443,7 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
   int chunk_count = 0;
 
   std::vector<FieldChunk> chunks = CollectFields(
-      field_layout_.optimized_order(), options_,
+      non_split_fields, options_,
       [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
         chunk_count++;
         // This predicate guarantees that there is only a single zero-init
@@ -3387,8 +3452,9 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
             field_layout_.GetHasByteIndex(a) ==
                 field_layout_.GetHasByteIndex(b) &&
             IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_) &&
-            (CanClearByZeroing(a) == CanClearByZeroing(b) ||
-             (CanClearByZeroing(a) && (chunk_count == 1 || merge_zero_init)));
+            (CanClearByZeroing(a, options_) == CanClearByZeroing(b, options_) ||
+             (CanClearByZeroing(a, options_) &&
+              (chunk_count == 1 || merge_zero_init)));
         if (!same) chunk_count = 0;
         return same;
       },
@@ -3411,7 +3477,7 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
       bool saw_non_zero_init = false;
 
       for (const auto& field : fields) {
-        if (CanClearByZeroing(field)) {
+        if (CanClearByZeroing(field, options_)) {
           ABSL_CHECK(!saw_non_zero_init);
           if (!memset_start) memset_start = field;
           memset_end = field;
@@ -3452,7 +3518,7 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
 
         // Clear all non-zero-initializable fields in the chunk.
         for (const auto& field : fields) {
-          if (CanClearByZeroing(field)) continue;
+          if (CanClearByZeroing(field, options_)) continue;
           // It's faster to just overwrite primitive types, but we should only
           // clear strings and messages if they were set.
           //
@@ -4092,14 +4158,71 @@ bool MessageGenerator::RequiresArena(GeneratorFunction function,
   return false;
 }
 
+void MessageGenerator::GenerateMergeImplForField(io::Printer* p,
+                                                 const FieldDescriptor* field,
+                                                 bool is_split,
+                                                 int cached_has_word_index,
+                                                 bool check_has_byte) {
+  const auto& generator = field_generators_.get(field);
+
+  if (!field->is_required() && !HasHasbit(field, options_)) {
+    // Merge semantics without true field presence: primitive fields are
+    // merged only if non-zero (numeric) or non-empty (string).
+    MayEmitMutableIfNonDefaultCheck(
+        p, "from.", field, is_split, options_,
+        /*emit_body=*/
+        [&]() { generator.GenerateMergingCode(p); },
+        /*with_enclosing_braces_always=*/true);
+    PROTOBUF_IGNORE_DEPRECATION_START
+  } else if (field->options().weak() ||
+             cached_has_word_index !=
+                 field_layout_.GetHasWordIndex(field).value()) {
+    PROTOBUF_IGNORE_DEPRECATION_STOP
+    // Check hasbit, not using cached bits.
+    auto v = p->WithVars(HasBitVars(field));
+    p->Emit({{"merge_field", [&] { generator.GenerateMergingCode(p); }}},
+            R"cc(
+              if (CheckHasBit(from.$has_bits$[$has_array_index$], $has_mask$)) {
+                $merge_field$;
+              }
+            )cc");
+  } else {
+    // Check hasbit, using cached bits.
+    ABSL_CHECK(HasHasbit(field, options_));
+    int has_bit_index = field_layout_.GetHasBitIndex(field).value();
+
+    p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
+                               has_bit_index, field, options_)},
+             {"merge_field",
+              [&] {
+                if (GetFieldHasbitMode(field, options_) ==
+                    HasbitMode::kHintHasbit) {
+                  // Merge semantics without true field presence: primitive
+                  // fields are merged only if non-zero (numeric) or
+                  // non-empty (string).
+                  MayEmitMutableIfNonDefaultCheck(
+                      p, "from.", field, is_split, options_,
+                      /*emit_body=*/[&]() { generator.GenerateMergingCode(p); },
+                      /*with_enclosing_braces_always=*/false);
+                } else {
+                  ABSL_DCHECK(GetFieldHasbitMode(field, options_) ==
+                              HasbitMode::kTrueHasbit);
+                  if (check_has_byte && IsPOD(field)) {
+                    generator.GenerateCopyConstructorCode(p);
+                  } else {
+                    generator.GenerateMergingCode(p);
+                  }
+                }
+              }}},
+            R"cc(
+              if ($condition$) {
+                $merge_field$;
+              }
+            )cc");
+  }
+}
+
 bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
-  const auto prepare_split = [&] {
-    if (is_split) {
-      p->Emit(R"cc(
-        _this->PrepareSplitMessageForWrite();
-      )cc");
-    }
-  };
   // cached_has_word_index maintains that:
   //   cached_has_bits = from._has_bits_[cached_has_word_index]
   // for cached_has_word_index >= 0
@@ -4142,73 +4265,8 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
 
     // Go back and emit merging code for each of the fields we processed.
     for (const auto* field : fields) {
-      const auto& generator = field_generators_.get(field);
-
-      if (!field->is_required() && !HasHasbit(field, options_)) {
-        // Merge semantics without true field presence: primitive fields are
-        // merged only if non-zero (numeric) or non-empty (string).
-        MayEmitMutableIfNonDefaultCheck(
-            p, "from.", field, is_split, options_,
-            /*emit_body=*/
-            [&]() {
-              prepare_split();
-              generator.GenerateMergingCode(p);
-            },
-            /*with_enclosing_braces_always=*/true);
-        PROTOBUF_IGNORE_DEPRECATION_START
-      } else if (field->options().weak() ||
-                 cached_has_word_index !=
-                     field_layout_.GetHasWordIndex(field).value()) {
-        PROTOBUF_IGNORE_DEPRECATION_STOP
-        // Check hasbit, not using cached bits.
-        auto v = p->WithVars(HasBitVars(field));
-        p->Emit(
-            {{"merge_field",
-              [&] {
-                prepare_split();
-                generator.GenerateMergingCode(p);
-              }}},
-            R"cc(
-              if (CheckHasBit(from.$has_bits$[$has_array_index$], $has_mask$)) {
-                $merge_field$;
-              }
-            )cc");
-      } else {
-        // Check hasbit, using cached bits.
-        ABSL_CHECK(HasHasbit(field, options_));
-        int has_bit_index = field_layout_.GetHasBitIndex(field).value();
-
-        p->Emit(
-            {{"condition", GenerateConditionMaybeWithProbabilityForField(
-                               has_bit_index, field, options_)},
-             {"merge_field",
-              [&] {
-                prepare_split();
-                if (GetFieldHasbitMode(field, options_) ==
-                    HasbitMode::kHintHasbit) {
-                  // Merge semantics without true field presence: primitive
-                  // fields are merged only if non-zero (numeric) or
-                  // non-empty (string).
-                  MayEmitMutableIfNonDefaultCheck(
-                      p, "from.", field, is_split, options_,
-                      /*emit_body=*/[&]() { generator.GenerateMergingCode(p); },
-                      /*with_enclosing_braces_always=*/false);
-                } else {
-                  ABSL_DCHECK(GetFieldHasbitMode(field, options_) ==
-                              HasbitMode::kTrueHasbit);
-                  if (check_has_byte && IsPOD(field)) {
-                    generator.GenerateCopyConstructorCode(p);
-                  } else {
-                    generator.GenerateMergingCode(p);
-                  }
-                }
-              }}},
-            R"cc(
-              if ($condition$) {
-                $merge_field$;
-              }
-            )cc");
-      }
+      GenerateMergeImplForField(p, field, is_split, cached_has_word_index,
+                                check_has_byte);
     }
 
     if (check_has_byte) {
@@ -4270,7 +4328,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           if (RequiresArena(GeneratorFunction::kMergeFrom,
                             /* is_split= */ false)) {
             p->Emit(R"cc(
-              $pb$::Arena* arena = _this->GetArena();
+              $pb$::Arena* arena [[maybe_unused]] = _this->GetArena();
             )cc");
           }
         }},
@@ -5531,6 +5589,43 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
 }
 
 
+void MessageGenerator::GenerateSplitFieldIfChain(
+    io::Printer* p, const SplitMap::Node& node, bool mutable_iteration,
+    absl::FunctionRef<void(const SplitMap::Node&)> per_node,
+    absl::FunctionRef<void(const FieldDescriptor* field)> per_field) {
+  for (int i = 0; i < node.subnodes.size(); ++i) {
+    p->Emit({{"i", i},
+             {"sub",
+              [&] {
+                GenerateSplitFieldIfChain(p, node.subnodes[i],
+                                          mutable_iteration, per_node,
+                                          per_field);
+              }}},
+            R"cc(
+              if (auto sub = node.sub($i$), node = sub;
+                  ABSL_PREDICT_FALSE(!sub.is_default())) {
+                $sub$;
+              }
+            )cc");
+  }
+  node.ForEachField([&](auto* f, size_t) {
+    if (f == nullptr) return;
+    p->Emit({Sub{"split_field",
+                 [&] {
+                   if (mutable_iteration) {
+                     p->Emit(R"cc(node.value->Mutable($split_address$))cc");
+                   } else {
+                     p->Emit(R"cc(node.value->Get($split_address$))cc");
+                   }
+                 }}
+                 .WithSuffix(""),
+             {"per_field", [&] { per_field(f); }}},
+            R"cc($per_field$)cc");
+  });
+
+  per_node(node);
+}
+
 void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
   if (!ShouldGenerateClass(descriptor_, options_)) return;
 
@@ -5573,56 +5668,103 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                   }
                 )cc");
           }},
-         {"split",
+         {"splits",
           [&] {
             if (!ShouldSplit(descriptor_, options_)) return;
 
-            p->Emit(
-                {{"destroy_fields",
-                  [&] {
-                    for (const auto* field : field_layout_.optimized_order()) {
-                      if (!ShouldSplit(field, options_)) continue;
-                      field_generators_.get(field).GenerateDestructorCode(p);
-                    }
-                  }},
-                 {"get_arena_merge",
-                  [&] {
-                    if (RequiresArena(GeneratorFunction::kMergeFrom,
-                                      /* is_split= */ true)) {
-                      p->Emit(R"cc(
-                        $pb$::Arena* arena = _this->GetArena();
-                      )cc");
-                    }
-                  }},
-                 {"merge_fields",
-                  [&] { EmitMergeChunks(p, /* is_split= */ true); }},
-                 {"clear_fields",
-                  [&] { EmitClearChunks(p, /* is_split= */ true); }},
-                 {"byte_size_fields",
-                  [&] { EmitByteSizeChunks(p, /* is_split= */ true); }}},
-                R"cc(
-                  PROTOBUF_NOINLINE static void DestroySplit($Msg$& this_) {
-                    auto* const $cached_split_ptr$ = this_._impl_._split_;
-                    $destroy_fields$;
-                    delete $cached_split_ptr$;
-                  }
-                  PROTOBUF_NOINLINE static void MergeSplit($Msg$* _this, const $Msg$& from) {
-                    $get_arena_merge$;
-                    ::uint32_t cached_has_bits [[maybe_unused]] = 0;
-                    $merge_fields$;
-                  }
-                  PROTOBUF_NOINLINE static void ClearSplit($Msg$& this_) {
-                    ::uint32_t cached_has_bits [[maybe_unused]] = 0;
-                    $clear_fields$;
-                  }
+            const auto& root_node = options_.split_map->RootFor(descriptor_);
 
-                  PROTOBUF_NOINLINE static ::size_t ByteSizeSplit(const $Msg$& this_) {
-                    ::size_t total_size = 0;
-                    ::uint32_t cached_has_bits [[maybe_unused]] = 0;
-                    $byte_size_fields$;
-                    return total_size;
+            p->Emit(
+                {{"body",
+                  [&] {
+                    GenerateSplitFieldIfChain(
+                        p, root_node, true,
+                        [&](auto& node) {
+                          p->Emit(R"cc(
+                            delete node.value;
+                          )cc");
+                        },
+                        [&](auto* field) {
+                          field_generators_.get(field).GenerateDestructorCode(
+                              p);
+                        });
+                  }}},
+                R"cc(
+                  PROTOBUF_NOINLINE static void DestroySplit($Msg$& _this) {
+                    $pbi$::BtreeSplit::NodeWithDefault node = {
+                        _this.$split$.head(), DefaultSplit_()};
+                    $body$;
                   }
                 )cc");
+            p->Emit({{"body",
+                      [&] {
+                        GenerateSplitFieldIfChain(
+                            p, root_node, true, [](auto& node) {},
+                            [&](auto* field) {
+                              field_generators_.get(field)
+                                  .GenerateMessageClearingCode(p);
+                            });
+                      }}},
+                    R"cc(
+                      PROTOBUF_NOINLINE static void ClearSplit($Msg$& _this) {
+                        $pbi$::BtreeSplit::NodeWithDefault node = {
+                            _this.$split$.head(), DefaultSplit_()};
+                        $body$;
+                      }
+                    )cc");
+            p->Emit(
+                {{"body",
+                  [&] {
+                    GenerateSplitFieldIfChain(
+                        p, root_node, false, [](auto& node) {},
+                        [&](auto* field) {
+                          const absl::optional<int> has_word_index =
+                              field_layout_.GetHasWordIndex(field);
+                          if (has_word_index.has_value()) {
+                            p->Emit(
+                                {{"cached_has_word_index",
+                                  has_word_index.value()}},
+                                R"cc(
+                                  cached_has_bits =
+                                      from.$has_bits$[$cached_has_word_index$];
+                                )cc");
+                          }
+                          GenerateMergeImplForField(p, field, true,
+                                                    has_word_index.value_or(-1),
+                                                    false);
+                        });
+                  }}},
+                R"cc(
+                  PROTOBUF_NOINLINE static void MergeSplit($Msg$* _this,
+                                                           const $Msg$& from) {
+                    $pbi$::BtreeSplit::ConstNodeWithDefault node = {
+                        from.$split$.head(), DefaultSplit_()};
+                    ::uint32_t cached_has_bits [[maybe_unused]] = 0;
+                    $pb$::Arena* arena [[maybe_unused]] = _this->GetArena();
+                    $body$;
+                  }
+                )cc");
+            p->Emit({{"body",
+                      [&] {
+                        GenerateSplitFieldIfChain(
+                            p, root_node, false, [](auto& node) {},
+                            [&](auto* field) {
+                              int cached_has_work_index = -1;
+                              EmitUpdateByteSizeForField(field, p,
+                                                         cached_has_work_index);
+                            });
+                      }}},
+                    R"cc(
+                      PROTOBUF_NOINLINE static ::size_t ByteSizeSplit(
+                          const $Msg$& this_) {
+                        ::size_t total_size = 0;
+                        $pbi$::BtreeSplit::ConstNodeWithDefault node = {
+                            this_.$split$.head(), DefaultSplit_()};
+                        ::uint32_t cached_has_bits [[maybe_unused]] = 0;
+                        $body$;
+                        return total_size;
+                      }
+                    )cc");
           }}},
         R"cc(
           class $Msg$::_Internal {
@@ -5630,45 +5772,92 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
             $has_bit$;
             $oneof$;
             $required$;
-            $split$;
+            $splits$;
           };
         )cc");
     p->Emit("\n");
+
+    if (ShouldSplit(descriptor_, options_)) {
+      const auto print_one = [&](auto* f) {
+        if (f == nullptr) {
+          p->Emit("0,");
+          return;
+        }
+        p->Emit(
+            {{"name", f->name()},
+             Sub{"value",
+                 [&] { field_generators_.get(f).GenerateDefaultSplitValue(p); }}
+                 .WithSuffix("")},
+            R"cc(
+              /* $name$ */ $value$,
+            )cc");
+      };
+      const auto print_slot = [&](const auto& slot) {
+        if (slot.fields.index() == 0) {
+          print_one(std::get<0>(slot.fields));
+        } else {
+          p->Emit("{");
+          for (auto& sub : std::get<1>(slot.fields)) {
+            if (sub.fields.index() == 0) {
+              print_one(std::get<0>(sub.fields));
+            } else {
+              p->Emit("{");
+              for (auto& sub : std::get<1>(sub.fields)) {
+                print_one(sub.field);
+              }
+              p->Emit("},");
+            }
+          }
+          p->Emit("},");
+        }
+      };
+
+      std::vector<size_t> indices;
+      const auto& root_node = options_.split_map->RootFor(descriptor_);
+      absl::flat_hash_map<std::vector<size_t>, std::string> node_path_to_name;
+      int nodes_to_create = 0;
+
+      root_node.ForEachNode(indices, [&](auto& node) {
+        if (!node.has_zero_init) {
+          node_path_to_name[indices] =
+              absl::StrCat("kSplitNode[", nodes_to_create++, "]");
+        }
+      });
+
+      if (nodes_to_create > 0) {
+        p->Emit({{"count", nodes_to_create},
+                 {"init",
+                  [&] {
+                    root_node.ForEachNode(indices, [&](auto& node) {
+                      if (node.has_zero_init) return;
+                      p->Emit("{");
+                      for (int i = 0; i < node.subnodes.size(); ++i) {
+                        indices.push_back(i);
+                        absl::string_view name = node_path_to_name[indices];
+                        indices.pop_back();
+                        if (name.empty()) {
+                          p->Emit(R"cc(&$pbi$::kZeroBuffer,)cc");
+                        } else {
+                          p->Emit({{"sub", name}}, R"cc(&$sub$,)cc");
+                        }
+                      }
+                      for (auto& slot : node.field_slots) {
+                        print_slot(slot);
+                      }
+                      p->Emit("},\n");
+                    });
+                  }}},
+                R"cc(
+                  PROTOBUF_ALIGNAS(64)
+                  PROTOBUF_CONSTINIT const $pbi$::BtreeSplit::Node
+                      $Msg$::Impl_::kSplitNode[$count$] = {$init$};
+                )cc");
+      }
+    }
   }
 
   parse_function_generator_->GenerateParseTableHelperDefinition(p);
   p->Emit("\n");
-
-  // Generate the split instance first because it's needed in the constexpr
-  // constructor.
-  if (ShouldSplit(descriptor_, options_)) {
-    // Use a union to disable the destructor of the _instance member.
-    // We can constant initialize, but the object will still have a non-trivial
-    // destructor that we need to elide.
-    //
-    // NO_DESTROY is not necessary for correctness. The empty destructor is
-    // enough. However, the empty destructor fails to be elided in some
-    // configurations (like non-opt or with certain sanitizers). NO_DESTROY is
-    // there just to improve performance and binary size in these builds.
-    p->Emit(
-        {
-            {"type", SplitDefaultInstanceType(descriptor_, options_)},
-            {"name", SplitDefaultInstanceName(descriptor_, options_)},
-            {"default", [&] { GenerateInitDefaultSplitInstance(p); }},
-            {"class", absl::StrCat(ClassName(descriptor_), "::Impl_::Split")},
-        },
-        R"cc(
-          struct $type$ {
-            constexpr $type$() : _instance{$default$} {}
-            union {
-              $class$ _instance;
-            };
-          };
-
-          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const $type$ $name$;
-        )cc");
-  }
 
   GenerateConstexprConstructor(p);
 

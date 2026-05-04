@@ -91,7 +91,15 @@ class SingularMessage : public FieldGeneratorBase {
   ~SingularMessage() override = default;
 
   std::vector<Sub> MakeVars() const override {
-    return Vars(field_, *opts_, is_weak(), is_weak());
+    return Vars(field_, *opts_, is_weak(), should_split() || is_weak());
+  }
+
+  void GenerateSplitMemberTypeName(io::Printer* p) const override {
+    p->Emit(R"cc($MemberType$*)cc");
+  }
+
+  void GenerateDefaultSplitValue(io::Printer* p) const override {
+    p->Emit(R"cc(nullptr)cc");
   }
 
   void GeneratePrivateMembers(io::Printer* p) const override {
@@ -192,13 +200,30 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
          )cc");
        }},
   };
+  if (should_split()) {
+    // Split uses the hasbit to avoid loading memory that we don't need if
+    // unset, which is the expected case.
+    p->Emit(R"cc(
+      inline const $Submsg$& $Msg$::_internal_$name_internal$() const {
+        $TsanDetectConcurrentRead$;
+        $StrongRef$;
+        if (CheckHasBit($has_bits_array$, $has_mask$)) {
+          return *$cast_field_$;
+        }
+        return $kDefaultRef$;
+      }
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      inline const $Submsg$& $Msg$::_internal_$name_internal$() const {
+        $TsanDetectConcurrentRead$;
+        $StrongRef$;
+        const $Submsg$* p = $cast_field_$;
+        return p != nullptr ? *p : $kDefaultRef$;
+      }
+    )cc");
+  }
   absl::string_view code = R"cc(
-    inline const $Submsg$& $Msg$::_internal_$name_internal$() const {
-      $TsanDetectConcurrentRead$;
-      $StrongRef$;
-      const $Submsg$* p = $cast_field_$;
-      return p != nullptr ? *p : $kDefaultRef$;
-    }
     inline const $Submsg$& $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
       $annotate_get$;
@@ -209,13 +234,13 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $Submsg$* $nullable$ value) {
       $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
-      $PrepareSplitMessageForWrite$;
+      auto& field = $mutable_field_$;
       //~ If we're not on an arena, free whatever we were holding before.
       //~ (If we are on arena, we can just forget the earlier pointer.)
       if (GetArena() == nullptr) {
-        delete reinterpret_cast<$pb$::MessageLite*>($field_$);
+        delete reinterpret_cast<$pb$::MessageLite*>(field);
       }
-      $field_$ = reinterpret_cast<$MemberType$*>(value);
+      field = reinterpret_cast<$MemberType$*>(value);
       $update_hasbit$;
       $annotate_set$;
       // @@protoc_insertion_point(field_unsafe_arena_set_allocated:$pkg.Msg.field$)
@@ -225,11 +250,9 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $TsanDetectConcurrentMutation$;
       $StrongRef$;
       $annotate_release$;
-      $PrepareSplitMessageForWrite$;
 
       $clear_hasbit$;
-      $Submsg$* released = $cast_field_$;
-      $field_$ = nullptr;
+      auto* released = ::std::exchange($mutable_field_$, nullptr);
       if ($pbi$::DebugHardenForceCopyInRelease()) {
         auto* old = reinterpret_cast<$pb$::MessageLite*>(released);
         released = $pbi$::DuplicateIfNonNull(released);
@@ -241,7 +264,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           released = $pbi$::DuplicateIfNonNull(released);
         }
       }
-      return released;
+      return reinterpret_cast<$Submsg$*>(released);
     }
     inline $Submsg$* $nullable$ $Msg$::unsafe_arena_release_$name$() {
       $WeakDescriptorSelfPin$;
@@ -249,28 +272,26 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $annotate_release$;
       // @@protoc_insertion_point(field_release:$pkg.Msg.field$)
       $StrongRef$;
-      $PrepareSplitMessageForWrite$;
 
       $clear_hasbit$;
-      $Submsg$* temp = $cast_field_$;
-      $field_$ = nullptr;
-      return temp;
+      auto* released = ::std::exchange($mutable_field_$, nullptr);
+      return reinterpret_cast<$Submsg$*>(released);
     }
     inline $Submsg$* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
       $TsanDetectConcurrentMutation$;
       $StrongRef$;
-      if ($field_$ == nullptr) {
-        auto* p = Super_::DefaultConstruct<$Submsg$>(GetArena());
-        $field_$ = reinterpret_cast<$MemberType$*>(p);
+      auto*& p = $mutable_field_$;
+      if (p == nullptr) {
+        p = reinterpret_cast<$MemberType$*>(
+            Super_::DefaultConstruct<$Submsg$>(GetArena()));
       }
-      return $cast_field_$;
+      return reinterpret_cast<$Submsg$*>(p);
     }
     inline $Submsg$* $nonnull$ $Msg$::mutable_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       //~ TODO: add tests to make sure all write accessors are
       //~ able to prepare split message allocation.
       $WeakDescriptorSelfPin$;
-      $PrepareSplitMessageForWrite$;
       $set_hasbit$;
       $Submsg$* _msg = _internal_mutable_$name_internal$();
       $annotate_mutable$;
@@ -283,9 +304,11 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $WeakDescriptorSelfPin$;
       $pb$::Arena* message_arena = GetArena();
       $TsanDetectConcurrentMutation$;
-      $PrepareSplitMessageForWrite$;
+
+      auto& field = $mutable_field_$;
+
       if (message_arena == nullptr) {
-        delete reinterpret_cast<$pb$::MessageLite*>($field_$);
+        delete reinterpret_cast<$pb$::MessageLite*>(field);
       }
 
       if (value != nullptr) {
@@ -298,7 +321,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $clear_hasbit$;
       }
 
-      $field_$ = reinterpret_cast<$MemberType$*>(value);
+      field = reinterpret_cast<$MemberType$*>(value);
       $annotate_set$;
       // @@protoc_insertion_point(field_set_allocated:$pkg.Msg.field$)
     }
@@ -316,11 +339,16 @@ void SingularMessage::GenerateClearingCode(io::Printer* p) const {
 
 void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
   ABSL_CHECK(has_hasbit_);
-  p->Emit(
-      R"cc(
-        $DCHK$(this_.$field_$ != nullptr);
-        this_.$field_$->Clear();
-      )cc");
+  if (should_split()) {
+    p->Emit(R"cc(
+      if (auto* msg = $split_field$) msg->Clear();
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      $DCHK$(this_.$field_$ != nullptr);
+      this_.$field_$->Clear();
+    )cc");
+  }
 }
 
 bool SingularMessage::RequiresArena(GeneratorFunction function) const {
@@ -343,8 +371,8 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
   } else if (should_split()) {
     p->Emit(
         R"cc(
-          _this->_internal_mutable_$name$()->$Submsg$::MergeFrom(
-              from._internal_$name$());
+          _this->_internal_mutable_$name$()->MergeFrom(
+              *reinterpret_cast<const $Submsg$*>($split_field$));
         )cc");
   } else {
     // Important: we set `hasbits` after we copied the field. There are cases
@@ -370,7 +398,7 @@ void SingularMessage::GenerateSwappingCode(io::Printer* p) const {
 void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
   if (should_split()) {
     p->Emit(R"cc(
-      delete $cached_split_ptr$->$name$_;
+      delete $split_field$;
     )cc");
   } else {
     p->Emit(R"cc(
@@ -381,11 +409,19 @@ void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
 
 void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   ABSL_CHECK(has_hasbit_);
-  p->Emit(R"cc(
-    if (CheckHasBit(from.$has_bits_array$, $has_mask$)) {
-      _this->$field_$ = Super_::CopyConstruct(arena, *from.$field_$);
-    }
-  )cc");
+  if (should_split()) {
+    p->Emit(R"cc(
+      if (CheckHasBit(from.$has_bits_array$, $has_mask$)) {
+        _this->$split$.MessageCopyConstruct($split_address$, from.$split$, arena);
+      }
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      if (CheckHasBit(from.$has_bits_array$, $has_mask$)) {
+        _this->$field_$ = Super_::CopyConstruct(arena, *from.$field_$);
+      }
+    )cc");
+  }
 }
 
 void SingularMessage::GenerateSerializeWithCachedSizesToArray(
@@ -406,10 +442,17 @@ void SingularMessage::GenerateSerializeWithCachedSizesToArray(
 }
 
 void SingularMessage::GenerateByteSize(io::Printer* p) const {
-  p->Emit(R"cc(
-    total_size += $kTagBytes$ +
-                  $pbi$::WireFormatLite::$DeclaredType$Size(*this_.$field_$);
-  )cc");
+  if (should_split()) {
+    p->Emit(R"cc(
+      total_size += $kTagBytes$ +
+                    $pbi$::WireFormatLite::$DeclaredType$Size(*$split_field$);
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      total_size += $kTagBytes$ +
+                    $pbi$::WireFormatLite::$DeclaredType$Size(*this_.$field_$);
+    )cc");
+  }
 }
 
 void SingularMessage::GenerateIsInitialized(io::Printer* p) const {
@@ -721,6 +764,14 @@ class RepeatedMessage : public FieldGeneratorBase {
     return Vars(field_, *opts_, is_weak(), is_weak());
   }
 
+  void GenerateSplitMemberTypeName(io::Printer* p) const override {
+    p->Emit(R"cc($pbi$::RawPtr<$pb$::$Weak$RepeatedPtrField<$Submsg$>>)cc");
+  }
+
+  void GenerateDefaultSplitValue(io::Printer* p) const override {
+    p->Emit(R"cc($pbi$::kZeroBuffer)cc");
+  }
+
   void GeneratePrivateMembers(io::Printer* p) const override;
   void GenerateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
@@ -913,13 +964,9 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       inline $pb$::$Weak$RepeatedPtrField<$Submsg$>* $nonnull$
       $Msg$::_internal_mutable$_weak$_$name_internal$() {
         $TsanDetectConcurrentRead$;
-        $PrepareSplitMessageForWrite$;
-        if ($field_$.IsDefault()) {
-          $field_$.Set(
-              Super_::DefaultConstruct<$pb$::$Weak$RepeatedPtrField<$Submsg$>>(
-                  GetArena()));
-        }
-        return $field_$.Get();
+        return $split$
+            .RawPtrConstructIfNeeded($split_address$, this, DefaultSplit_())
+            .Get();
       }
     )cc");
   } else {
@@ -952,7 +999,9 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 
 void RepeatedMessage::GenerateMessageClearingCode(io::Printer* p) const {
   if (should_split()) {
-    p->Emit("this_.$field_$.ClearIfNotDefault();\n");
+    p->Emit(R"cc(
+      $split_field$.ClearIfNotDefault();
+    )cc");
   } else {
     p->Emit("$field_$.Clear();\n");
   }
@@ -960,29 +1009,25 @@ void RepeatedMessage::GenerateMessageClearingCode(io::Printer* p) const {
 
 void RepeatedMessage::GenerateClearingCode(io::Printer* p) const {
   if (should_split()) {
-    p->Emit("$field_$.ClearIfNotDefault();\n");
+    p->Emit(R"cc(
+      $split$.ClearIfNotDefault($split_address$, DefaultSplit_());
+    )cc");
   } else {
     p->Emit("$field_$.Clear();\n");
   }
 }
 
 void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
-  // TODO: experiment with simplifying this to be
-  // `if (!from.empty()) { body(); }` for both split and non-split cases.
-  auto body = [&] {
+  if (!should_split()) {
     p->Emit(R"cc(
       _this->_internal_mutable$_weak$_$name$()->InternalMergeFromWithArena(
           $pb$::MessageLite::internal_visibility(), arena,
           from._internal$_weak$_$name$());
     )cc");
-  };
-  if (!should_split()) {
-    body();
   } else {
-    p->Emit({{"body", body}}, R"cc(
-      if (!from.$field_$.IsDefault()) {
-        $body$;
-      }
+    p->Emit(R"cc(
+      _this->_internal_mutable$_weak$_$name$()->InternalMergeFromWithArena(
+          $pb$::MessageLite::internal_visibility(), arena, *$split_field$);
     )cc");
   }
 }
@@ -1011,7 +1056,7 @@ void RepeatedMessage::GenerateCopyConstructorCode(io::Printer* p) const {
 void RepeatedMessage::GenerateDestructorCode(io::Printer* p) const {
   if (should_split()) {
     p->Emit(R"cc(
-      this_.$field_$.DeleteIfNotDefault();
+      $split_field$.DeleteIfNotDefault();
     )cc");
   }
 }
@@ -1077,13 +1122,23 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
 }
 
 void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
-  p->Emit(
-      R"cc(
-        total_size += $kTagBytes$UL * this_._internal_$name$_size();
-        for (const auto& msg : this_._internal$_weak$_$name$()) {
-          total_size += $pbi$::WireFormatLite::$DeclaredType$Size(msg);
-        }
-      )cc");
+  p->Emit({Sub{"value",
+               [&] {
+                 if (should_split()) {
+                   p->Emit("*$split_field$");
+                 } else {
+                   p->Emit("this_._internal_$name$()");
+                 }
+               }}
+               .WithSuffix("")},
+          R"cc(
+            if (auto& value = $value$; true) {
+              total_size += $kTagBytes$UL * value.size();
+              for (const auto& msg : value) {
+                total_size += $pbi$::WireFormatLite::$DeclaredType$Size(msg);
+              }
+            }
+          )cc");
 }
 
 void RepeatedMessage::GenerateIsInitialized(io::Printer* p) const {

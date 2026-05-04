@@ -499,7 +499,8 @@ inline uint8_t* SerializeToArrayImpl(const MessageLite& msg, uint8_t* target,
         target, size,
         io::CodedOutputStream::IsDefaultSerializationDeterministic());
     uint8_t* res = msg._InternalSerialize(target, &out);
-    ABSL_DCHECK(target + size == res);
+    ABSL_DCHECK(target + size == res)
+        << "res-target=" << (res - target) << " size=" << size;
     return res;
   }
 }

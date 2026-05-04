@@ -118,6 +118,14 @@ class FieldGeneratorBase {
 
   virtual std::vector<io::Printer::Sub> MakeVars() const { return {}; }
 
+  virtual void GenerateSplitMemberTypeName(io::Printer* p) const {
+    ABSL_LOG(FATAL) << typeid(*this).name();
+  }
+
+  virtual void GenerateDefaultSplitValue(io::Printer* p) const {
+    ABSL_LOG(FATAL) << typeid(*this).name();
+  }
+
   virtual void GeneratePrivateMembers(io::Printer* p) const = 0;
 
   virtual void GenerateStaticMembers(io::Printer* p) const {}
@@ -281,6 +289,16 @@ class FieldGenerator {
   // Requirements: see FieldGeneratorBase for documentation
   bool RequiresArena(GeneratorFunction function) const {
     return impl_->RequiresArena(function);
+  }
+
+  void GenerateSplitMemberTypeName(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateSplitMemberTypeName(p);
+  }
+
+  void GenerateDefaultSplitValue(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateDefaultSplitValue(p);
   }
 
   // Prints private members needed to represent this field.
@@ -509,7 +527,8 @@ class FieldGeneratorTable {
   void Build(const Options& options, const FieldLayout& field_layout);
 
   const FieldGenerator& get(const FieldDescriptor* field) const {
-    ABSL_CHECK_EQ(field->containing_type(), descriptor_);
+    ABSL_CHECK_EQ(field->containing_type(), descriptor_)
+        << field->full_name() << " -- " << descriptor_->full_name();
     ABSL_DCHECK_GE(field->index(), 0);
     return fields_[static_cast<size_t>(field->index())];
   }

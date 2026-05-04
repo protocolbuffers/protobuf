@@ -3131,19 +3131,6 @@ const FieldDescriptor* Reflection::FindKnownExtensionByNumber(
 // These simple template accessors obtain pointers (or references) to
 // the given field.
 
-void Reflection::PrepareSplitMessageForWrite(Message* message) const {
-  ABSL_DCHECK_NE(message, schema_.default_instance());
-  void** split = MutableSplitField(message);
-  const void* default_split = GetSplitField(schema_.default_instance());
-  if (*split == default_split) {
-    uint32_t size = schema_.SizeofSplit();
-    Arena* arena = message->GetArena();
-    *split = (arena == nullptr) ? internal::Allocate(size)
-                                : arena->AllocateAligned(size);
-    memcpy(*split, default_split, size);
-  }
-}
-
 template <class Type>
 static Type* AllocIfDefault(const FieldDescriptor* field, Type*& ptr,
                             Arena* arena) {
@@ -3167,14 +3154,15 @@ void* Reflection::MutableRawSplitImpl(Message* message,
   ABSL_DCHECK(!schema_.InRealOneof(field)) << "Field = " << field->full_name();
 
   const uint32_t field_offset = schema_.GetFieldOffset(field);
-  PrepareSplitMessageForWrite(message);
-  void** split = MutableSplitField(message);
+  auto& split = *MutableSplitField(message);
+  const auto& default_split = GetSplitField(schema_.default_instance());
+  void* ptr = split.Mutable(internal::BtreeSplitAddress(field_offset), message,
+                            default_split.head());
   if (internal::SplitFieldHasExtraIndirection(field)) {
-    return AllocIfDefault(field,
-                          *GetPointerAtOffset<void*>(*split, field_offset),
+    return AllocIfDefault(field, *static_cast<void**>(ptr),
                           message->GetArena());
   }
-  return GetPointerAtOffset<void>(*split, field_offset);
+  return ptr;
 }
 
 const uint32_t* Reflection::GetHasBits(const Message& message) const {
@@ -3767,9 +3755,11 @@ void Reflection::PopulateTcParseFieldAux(
       case internal::TailCallTableInfo::kSplitOffset:
         field_aux++->offset = schema_.SplitOffset();
         break;
+        /*
       case internal::TailCallTableInfo::kSplitSizeof:
         field_aux++->offset = schema_.SizeofSplit();
         break;
+        */
       case internal::TailCallTableInfo::kSubTable:
       case internal::TailCallTableInfo::kSubMessageGlobalsWeak:
       case internal::TailCallTableInfo::kMessageVerifyFunc:
