@@ -67,6 +67,8 @@ static unsigned char *load_test_buf(int len)
     const int utf8_len = sizeof(utf8)/sizeof(utf8[0]) - 1;
 
     unsigned char *data = malloc(len);
+    if (data == NULL)
+        return NULL;
     unsigned char *p = data;
 
     while (len >= utf8_len) {
