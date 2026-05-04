@@ -58,18 +58,19 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
   const char* start = *ptr;
   uint64_t d_val = *data;
 
-  // Important: if the branch is correctly predicted, the ptr incremen is
+  uint32_t tag_len;
+  // Important: if the branch is correctly predicted, the tag_len assignment is
   // treated as constant and subsequent loads will not have a data dependency on
   // the branch.
   if (UPB_LIKELY((d_val & 0x80) == 0)) {
-    *ptr += 1;
+    tag_len = 1;
     // Ensure the field number is not 0.
     // Use bitwise op to only examine first byte minus additional tag data.
     if (UPB_UNLIKELY((d_val & 0xF8) == 0)) {
       return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
     }
   } else if ((d_val & 0x8000) == 0) {
-    *ptr += 2;
+    tag_len = 2;
     // Ensure the field number is not 0.
     // Use bitwise op to limit to first two bytes, and ignore continuation bit &
     // additional tag data.
@@ -109,6 +110,7 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
     return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
   }
 
+  *ptr += tag_len;
   upb_EpsCopyInputStream_StartCapture(&d->input, start);
 
   switch (wire_type) {
