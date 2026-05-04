@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "absl/base/macros.h"
+#include "absl/cleanup/cleanup.h"
 #include "absl/container/btree_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
@@ -516,6 +517,8 @@ class TextFormat::Parser::ParserImpl {
       return false;
     }
 
+    auto cleanup = absl::MakeCleanup([this] { ++recursion_limit_; });
+
     while (!LookingAt(">") && !LookingAt("}")) {
       DO(ConsumeField(message));
     }
@@ -523,7 +526,6 @@ class TextFormat::Parser::ParserImpl {
     // Confirm that we have a valid ending delimiter.
     DO(Consume(delimiter));
 
-    ++recursion_limit_;
     return true;
   }
 
@@ -930,6 +932,8 @@ class TextFormat::Parser::ParserImpl {
       return false;
     }
 
+    auto cleanup = absl::MakeCleanup([this] { ++recursion_limit_; });
+
     std::string delimiter;
     DO(ConsumeMessageDelimiter(&delimiter));
     while (!LookingAt(">") && !LookingAt("}")) {
@@ -937,7 +941,6 @@ class TextFormat::Parser::ParserImpl {
     }
     DO(Consume(delimiter));
 
-    ++recursion_limit_;
     return true;
   }
 
@@ -1100,11 +1103,12 @@ class TextFormat::Parser::ParserImpl {
       return false;
     }
 
+    auto cleanup = absl::MakeCleanup([this] { ++recursion_limit_; });
+
     if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
       while (LookingAtType(io::Tokenizer::TYPE_STRING)) {
         tokenizer_.Next();
       }
-      ++recursion_limit_;
       return true;
     }
     if (TryConsume("[")) {
@@ -1121,7 +1125,6 @@ class TextFormat::Parser::ParserImpl {
           DO(Consume(","));
         }
       }
-      ++recursion_limit_;
       return true;
     }
     // Possible field values other than string:
@@ -1152,7 +1155,6 @@ class TextFormat::Parser::ParserImpl {
       std::string text = tokenizer_.current().text;
       ReportError(
           absl::StrCat("Cannot skip field value, unexpected token: ", text));
-      ++recursion_limit_;
       return false;
     }
     // Combination of '-' and TYPE_IDENTIFIER may result in an invalid field
@@ -1167,12 +1169,10 @@ class TextFormat::Parser::ParserImpl {
       if (text != "inf" &&
           text != "infinity" && text != "nan") {
         ReportError(absl::StrCat("Invalid float number: ", text));
-        ++recursion_limit_;
         return false;
       }
     }
     tokenizer_.Next();
-    ++recursion_limit_;
     return true;
   }
 
