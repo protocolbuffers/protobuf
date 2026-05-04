@@ -75,7 +75,6 @@ class PROTOBUF_EXPORT TaggedStringPtr {
   enum Flags {
     kArenaBit = 0x1,    // ptr is arena allocated
     kMutableBit = 0x2,  // ptr contents are fully mutable
-    kMask = 0x3         // Bit mask
   };
 
   // Composed logical types
@@ -104,7 +103,7 @@ class PROTOBUF_EXPORT TaggedStringPtr {
 
   TaggedStringPtr() = default;
   explicit constexpr TaggedStringPtr(const GlobalEmptyString* ptr)
-      : ptr_(const_cast<void*>(static_cast<const void*>(ptr))) {}
+      : str_(const_cast<std::string *>(&ptr->value_)), flags_(0) {}
 
   // Sets the value to `p`, tagging the value as being a 'default' value.
   // See documentation for kDefault for more info.
@@ -134,40 +133,40 @@ class PROTOBUF_EXPORT TaggedStringPtr {
   }
 
   // Returns true if the contents of the current string are fully mutable.
-  inline bool IsMutable() const { return as_int() & kMutableBit; }
+  inline bool IsMutable() const { return flags_ & kMutableBit; }
 
   // Returns true if the current string is an immutable default value.
-  inline bool IsDefault() const { return (as_int() & kMask) == kDefault; }
+  inline bool IsDefault() const { return flags_ == kDefault; }
 
   // If the current string is a heap-allocated mutable value, returns a pointer
   // to it.  Returns nullptr otherwise.
   inline std::string* GetIfAllocated() const {
-    auto allocated = as_int() ^ kAllocated;
-    if (allocated & kMask) return nullptr;
+    auto allocated = flags_ ^ kAllocated;
+    if (allocated) return nullptr;
 
-    auto ptr = reinterpret_cast<std::string*>(allocated);
+    auto ptr = str_;
     PROTOBUF_ASSUME(ptr != nullptr);
     return ptr;
   }
 
   // Returns true if the current string is an arena allocated value.
   // This means it's either a mutable or fixed size arena string.
-  inline bool IsArena() const { return as_int() & kArenaBit; }
+  inline bool IsArena() const { return flags_ & kArenaBit; }
 
   // Returns true if the current string is a fixed size arena allocated value.
   inline bool IsFixedSizeArena() const {
-    return (as_int() & kMask) == kFixedSizeArena;
+    return flags_ == kFixedSizeArena;
   }
 
   // Returns the contained string pointer.
   inline std::string* Get() const {
-    return reinterpret_cast<std::string*>(as_int() & ~kMask);
+    return str_;
   }
 
   // Returns true if the contained pointer is null, indicating some error.
   // The Null value is only used during parsing for temporary values.
   // A persisted ArenaStringPtr value is never null.
-  inline bool IsNull() const { return ptr_ == nullptr; }
+  inline bool IsNull() const { return str_ == nullptr; }
 
   // Returns a copy of this instance. In debug builds, the returned value may be
   // a forced copy regardless if the current instance is a compile time default.
@@ -180,10 +179,6 @@ class PROTOBUF_EXPORT TaggedStringPtr {
 
  private:
   static inline void assert_aligned(const void* p) {
-    static_assert(kMask <= alignof(void*), "Pointer underaligned for bit mask");
-    static_assert(kMask <= alignof(std::string),
-                  "std::string underaligned for bit mask");
-    ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(p) & kMask, 0UL);
   }
 
   // Creates a heap or arena allocated copy of this instance.
@@ -192,12 +187,13 @@ class PROTOBUF_EXPORT TaggedStringPtr {
   inline std::string* TagAs(Type type, std::string* p) {
     ABSL_DCHECK(p != nullptr);
     assert_aligned(p);
-    ptr_ = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(p) | type);
+    str_ = p;
+    flags_ = type;
     return p;
   }
 
-  uintptr_t as_int() const { return reinterpret_cast<uintptr_t>(ptr_); }
-  void* ptr_;
+  std::string *str_;
+  int flags_;
 };
 
 static_assert(std::is_trivially_default_constructible<TaggedStringPtr>::value,
