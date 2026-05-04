@@ -514,6 +514,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
                CppGeneratedMessageTraitImpls(ctx, msg);
              }
            }},
+          {"full_name", msg.full_name()},
           {"type_conversions_impl", [&] { TypeConversions(ctx, msg); }},
           {"unwrap_upb",
            [&] {
@@ -761,6 +762,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           fn clone(&self) -> Self {
             self.as_view().to_owned()
           }
+        }
+
+        impl $pb$::MessageFullName for $Msg$ {
+          const FULL_NAME: &'static str = "$full_name$";
         }
 
         impl $pb$::AsView for $Msg$ {
