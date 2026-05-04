@@ -5,18 +5,16 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef UPB_UTIL_DEF_TO_PROTO_TEST_H_
-#define UPB_UTIL_DEF_TO_PROTO_TEST_H_
+#include "upb/util/def_to_proto_fuzz_impl.h"
 
 #include <string>
 
-#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.upb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/util/field_comparator.h"
+#include "google/protobuf/util/message_differencer.h"
 #include "upb/base/status.hpp"
 #include "upb/mem/arena.hpp"
 #include "upb/reflection/def.hpp"
@@ -24,12 +22,9 @@
 
 namespace upb_test {
 
-// A gtest matcher that verifies that a proto is equal to `proto`.  Both `proto`
-// and `arg` must be messages of type `msgdef_func` (a .upbdefs.h function that
-// loads a known msgdef into the given defpool).
+// A gtest matcher that verifies that a proto is equal to `proto`.
 MATCHER_P(EqualsProtoTreatNansAsEqual, proto,
           negation ? "are not equal" : "are equal") {
-  upb::DefPool defpool;
   std::string differences;
   google::protobuf::util::DefaultFieldComparator comparator;
   comparator.set_treat_nan_as_equal(true);
@@ -108,7 +103,7 @@ static void AddFile(google::protobuf::FileDescriptorProto& file, upb::DefPool* p
   }
 }
 
-inline void RoundTripDescriptor(const google::protobuf::FileDescriptorSet& set) {
+void RoundTripDescriptor(const google::protobuf::FileDescriptorSet& set) {
   upb::DefPool defpool;
   google::protobuf::DescriptorPool desc_pool;
   desc_pool.EnforceWeakDependencies(true);
@@ -119,5 +114,3 @@ inline void RoundTripDescriptor(const google::protobuf::FileDescriptorSet& set) 
 }
 
 }  // namespace upb_test
-
-#endif  // UPB_UTIL_DEF_TO_PROTO_TEST_H_

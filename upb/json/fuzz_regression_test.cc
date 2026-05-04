@@ -1,19 +1,21 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2023 Google LLC.  All rights reserved.
+// Copyright 2024 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "testing/fuzzing/fuzztest.h"
+#include <gtest/gtest.h>
 #include "upb/json/fuzz_impl.h"
 
 namespace {
 
 using ::upb_test::DecodeEncodeArbitraryJson;
-// Test with:
-//   bazel run --config=fuzztest //third_party/upb/upb/json:fuzz_test --
-//   --fuzztest_fuzz=
-FUZZ_TEST(FuzzTest, DecodeEncodeArbitraryJson);
+
+TEST(FuzzTest, UnclosedObjectKey) { DecodeEncodeArbitraryJson("{\" "); }
+
+TEST(FuzzTest, MalformedExponent) {
+  DecodeEncodeArbitraryJson(R"({"val":0XE$})");
+}
 
 }  // namespace

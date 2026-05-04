@@ -5,15 +5,13 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "testing/fuzzing/fuzztest.h"
-#include "upb/json/fuzz_impl.h"
+#include <gtest/gtest.h>
+#include "upb/mini_descriptor/internal/encode_fuzz_impl.h"
 
 namespace {
 
-using ::upb_test::DecodeEncodeArbitraryJson;
-// Test with:
-//   bazel run --config=fuzztest //third_party/upb/upb/json:fuzz_test --
-//   --fuzztest_fuzz=
-FUZZ_TEST(FuzzTest, DecodeEncodeArbitraryJson);
+TEST(FuzzTest, BuildMiniTableRegression) {
+  BuildMiniTable("g}{v~fq{\271", false);
+}
 
 }  // namespace
