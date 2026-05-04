@@ -97,3 +97,16 @@ TEST(JsonTest, AcceptsTrailingWhitespace) {
   upb_test_Box* box = JsonDecode(json_string.c_str(), a.ptr());
   EXPECT_NE(box, nullptr);
 }
+
+// Regression: jsondec_base64_tablelookup() previously indexed a 256-byte
+// signed-char table with table[(unsigned)ch], which let C integer
+// promotion sign-extend bytes >= 0x80 into negative ints, producing
+// OOB reads ~4 GiB past the table. Decoding a bytes-typed field whose
+// JSON string contains high-bit-set bytes (e.g. the UTF-8 encoding of
+// \u0080 = 0xC2 0x80) must fail gracefully without OOB-reading.
+TEST(JsonTest, RejectsBase64WithHighBitBytes) {
+  upb::Arena a;
+  std::string json_string = R"({"data":"\u0080\u0080\u0080\u0080"})";
+  upb_test_Box* box = JsonDecode(json_string.c_str(), a.ptr());
+  EXPECT_EQ(box, nullptr);
+}
