@@ -57,6 +57,7 @@ bootstrap_cc_library(
         "//upb/mini_descriptor",
         "//upb/mini_table",
         "//upb/port",
+        "@abseil-cpp//absl/base:throw_delegate",
     ],
 )
 
@@ -135,6 +136,7 @@ bootstrap_cc_library(
         "//upb/mini_table:internal",
         "//upb/port",
         "//upb/wire",
+        "@abseil-cpp//absl/base:throw_delegate",
     ],
 )
 

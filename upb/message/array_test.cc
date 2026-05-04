@@ -8,6 +8,7 @@
 #include "upb/message/array.h"
 
 #include <gtest/gtest.h>
+#include "upb/base/descriptor_constants.h"
 #include "upb/base/status.hpp"
 #include "upb/mem/arena.hpp"
 
@@ -22,19 +23,19 @@ TEST(ArrayTest, Resize) {
     upb_MessageValue mv;
     mv.int32_val = 3 * i;
 
-    upb_Array_Append(array, mv, arena.ptr());
+    ASSERT_TRUE(upb_Array_Append(array, mv, arena.ptr()));
     EXPECT_EQ(upb_Array_Size(array), i + 1);
     EXPECT_EQ(upb_Array_Get(array, i).int32_val, 3 * i);
   }
 
-  upb_Array_Resize(array, 12, arena.ptr());
+  ASSERT_TRUE(upb_Array_Resize(array, 12, arena.ptr()));
   EXPECT_EQ(upb_Array_Get(array, 10).int32_val, 0);
   EXPECT_EQ(upb_Array_Get(array, 11).int32_val, 0);
 
-  upb_Array_Resize(array, 4, arena.ptr());
+  ASSERT_TRUE(upb_Array_Resize(array, 4, arena.ptr()));
   EXPECT_EQ(upb_Array_Size(array), 4);
 
-  upb_Array_Resize(array, 6, arena.ptr());
+  ASSERT_TRUE(upb_Array_Resize(array, 6, arena.ptr()));
   EXPECT_EQ(upb_Array_Size(array), 6);
 
   EXPECT_EQ(upb_Array_Get(array, 3).int32_val, 9);
@@ -48,7 +49,7 @@ TEST(ArrayTest, Copy) {
   for (int i = 0; i < 5; i++) {
     upb_MessageValue mv;
     mv.int32_val = i;
-    upb_Array_Append(src, mv, arena.ptr());
+    EXPECT_TRUE(upb_Array_Append(src, mv, arena.ptr()));
   }
 
   upb_Array* dst = upb_Array_New(arena.ptr(), kUpb_CType_Int32);
@@ -70,14 +71,14 @@ TEST(ArrayTest, AppendAll) {
   for (int i = 0; i < 3; i++) {
     upb_MessageValue mv;
     mv.int32_val = i;
-    upb_Array_Append(dst, mv, arena.ptr());
+    ASSERT_TRUE(upb_Array_Append(dst, mv, arena.ptr()));
   }
 
   upb_Array* src = upb_Array_New(arena.ptr(), kUpb_CType_Int32);
   for (int i = 0; i < 3; i++) {
     upb_MessageValue mv;
     mv.int32_val = i + 10;
-    upb_Array_Append(src, mv, arena.ptr());
+    ASSERT_TRUE(upb_Array_Append(src, mv, arena.ptr()));
   }
 
   EXPECT_TRUE(upb_Array_AppendAll(dst, src, arena.ptr()));
