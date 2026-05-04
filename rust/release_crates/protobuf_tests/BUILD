@@ -11,7 +11,7 @@ pkg_filegroup(
         "//rust/test/shared:test_srcs",
     ],
     prefix = "protobuf_tests",
-    visibility = ["//rust:__subpackages__"],
+    visibility = ["//visibility:private"],
 )
 
 pkg_files(
@@ -32,5 +32,5 @@ filegroup(
         "build.rs",
         "tests/protos/mod.rs",
     ],
-    visibility = ["//rust:__subpackages__"],
+    visibility = ["//visibility:private"],
 )
