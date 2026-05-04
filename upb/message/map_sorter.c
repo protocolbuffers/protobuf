@@ -124,14 +124,7 @@ static bool _upb_mapsorter_resize(_upb_mapsorter* s, _upb_sortedmap* sorted,
 
 bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
                             const upb_Map* map, _upb_sortedmap* sorted) {
-  int map_size;
-  if (map->UPB_PRIVATE(is_strtable)) {
-    map_size = _upb_Map_Size(map);
-  } else {
-    // For inttable, only sort the table entries, since the array part is
-    // already in a sorted order.
-    map_size = map->t.inttable.t.count;
-  }
+  int map_size = _upb_Map_Size(map);
 
   if (!_upb_mapsorter_resize(s, sorted, map_size)) return false;
 
@@ -143,8 +136,6 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
     src = map->t.strtable.t.entries;
     end = src + upb_table_size(&map->t.strtable.t);
   } else {
-    // For inttable, only sort the table entries, since the array part is
-    // already in a sorted order.
     src = map->t.inttable.t.entries;
     end = src + upb_table_size(&map->t.inttable.t);
   }

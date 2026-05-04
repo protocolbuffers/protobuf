@@ -171,22 +171,6 @@ TEST_P(IntTableTest, TestIntTable) {
   EXPECT_EQ(count, keys_.size());
   EXPECT_EQ(count, upb_inttable_count(&t));
 
-  // Compact and test correctness again.
-  upb_inttable_compact(&t, arena.ptr());
-  count = 0;
-  for (uint32_t i = 0; i <= largest_key; i++) {
-    upb_value val;
-    bool ok = upb_inttable_lookup(&t, i, &val);
-    if (ok) { /* Assume map implementation is correct. */
-      EXPECT_EQ(val.val, i * 3);
-      EXPECT_EQ(m[i], i * 3);
-      EXPECT_EQ(hm[i], i * 3);
-      count++;
-    }
-  }
-  EXPECT_EQ(count, keys_.size());
-  EXPECT_EQ(count, upb_inttable_count(&t));
-
   for (const auto& key : keys_) {
     upb_value val;
     bool ok = upb_inttable_remove(&t, key, &val);
@@ -467,14 +451,6 @@ TEST(Table, MaxValue) {
   EXPECT_TRUE(upb_inttable_lookup(&t, 2, &val));
   EXPECT_EQ(val.val, uint64_max);
 
-  upb_inttable_compact(&t, arena.ptr());
-  EXPECT_TRUE(upb_inttable_lookup(&t, 0, &val));
-  EXPECT_EQ(val.val, uint64_max);
-  EXPECT_TRUE(upb_inttable_lookup(&t, 1, &val));
-  EXPECT_EQ(val.val, uint64_max);
-  EXPECT_TRUE(upb_inttable_lookup(&t, 2, &val));
-  EXPECT_EQ(val.val, uint64_max);
-
   upb_inttable_remove(&t, 0, nullptr);
   upb_inttable_remove(&t, 1, nullptr);
   upb_inttable_remove(&t, 2, nullptr);
@@ -497,18 +473,79 @@ TEST(Table, MaxValueWithLargeArray) {
     EXPECT_EQ(val.val, uint64_max);
   }
 
-  upb_inttable_compact(&t, arena.ptr());
-  for (int i = 1; i < 121; i++) {
-    EXPECT_TRUE(upb_inttable_lookup(&t, i, &val));
-    EXPECT_EQ(val.val, uint64_max);
-  }
-
   for (int i = 1; i < 121; i++) {
     upb_inttable_remove(&t, i, nullptr);
   }
   for (int i = 1; i < 121; i++) {
     EXPECT_FALSE(upb_inttable_lookup(&t, i, &val));
   }
+}
+
+TEST(IntTableTest, RemoveIter) {
+  upb::Arena arena;
+  upb_inttable t;
+  upb_inttable_init(&t, arena.ptr());
+  upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr());
+  upb_inttable_insert(&t, 2, upb_value_bool(true), arena.ptr());
+  upb_inttable_insert(&t, 4, upb_value_bool(true), arena.ptr());
+
+  intptr_t iter = UPB_INTTABLE_BEGIN;
+  uintptr_t key;
+  upb_value val;
+
+  EXPECT_TRUE(upb_inttable_next(&t, &key, &val, &iter));
+  bool saw_0 = false;
+  bool saw_2 = false;
+  bool saw_4 = false;
+  do {
+    switch (key) {
+      case 0:
+        EXPECT_EQ(upb_inttable_iter_key(&t, iter), 0);
+        upb_inttable_removeiter(&t, &iter);
+        EXPECT_FALSE(saw_0);
+        saw_0 = true;
+        break;
+      case 2:
+        EXPECT_EQ(upb_inttable_iter_key(&t, iter), 2);
+        EXPECT_FALSE(saw_2);
+        saw_2 = true;
+        break;
+      case 4:
+        EXPECT_EQ(upb_inttable_iter_key(&t, iter), 4);
+        upb_inttable_removeiter(&t, &iter);
+        EXPECT_FALSE(saw_4);
+        saw_4 = true;
+        break;
+      default:
+        FAIL() << "Unexpected key: " << key;
+    }
+  } while (upb_inttable_next(&t, &key, &val, &iter));
+
+  EXPECT_TRUE(saw_0);
+  EXPECT_TRUE(saw_2);
+  EXPECT_TRUE(saw_4);
+  EXPECT_FALSE(upb_inttable_lookup(&t, 0, &val));
+  EXPECT_TRUE(upb_inttable_lookup(&t, 2, &val));
+  EXPECT_FALSE(upb_inttable_lookup(&t, 4, &val));
+}
+
+TEST(IntTableTest, RemoveIterAll) {
+  upb::Arena arena;
+  upb_inttable t;
+  upb_inttable_init(&t, arena.ptr());
+  upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr());
+  upb_inttable_insert(&t, 2, upb_value_bool(true), arena.ptr());
+  upb_inttable_insert(&t, 4, upb_value_bool(true), arena.ptr());
+
+  intptr_t iter = UPB_INTTABLE_BEGIN;
+  uintptr_t key;
+  upb_value val;
+
+  while (upb_inttable_next(&t, &key, &val, &iter)) {
+    upb_inttable_removeiter(&t, &iter);
+  }
+
+  EXPECT_EQ(upb_inttable_count(&t), 0);
 }
 
 TEST(IntTableTest, Delete) {
@@ -518,7 +555,6 @@ TEST(IntTableTest, Delete) {
   upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr());
   upb_inttable_insert(&t, 2, upb_value_bool(true), arena.ptr());
   upb_inttable_insert(&t, 4, upb_value_bool(true), arena.ptr());
-  upb_inttable_compact(&t, arena.ptr());
   upb_inttable_remove(&t, 0, nullptr);
   upb_inttable_remove(&t, 2, nullptr);
   upb_inttable_remove(&t, 4, nullptr);

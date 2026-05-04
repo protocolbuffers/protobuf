@@ -126,7 +126,12 @@ typedef struct _upb_tabent {
   upb_value val;
   upb_key key;
 
-  /* Internal chaining */
+  /* Internal chaining and presence:
+   * - next == NULL: The entry is empty.
+   * - ent.next == &ent A self-link indicating the entry is occupied but has no
+   *   successor.
+   * - otherwise: The entry is occupied, and next oints to the next entry in the
+   *   collision chain. */
   struct _upb_tabent* next;
 } upb_tabent;
 
@@ -150,22 +155,14 @@ UPB_INLINE upb_key upb_key_empty(void) {
 }
 
 UPB_INLINE bool upb_tabent_isempty(const upb_tabent* e) {
-  upb_key key = e->key;
-  UPB_STATIC_ASSERT(sizeof(key.num) == sizeof(key.str), "Sizes don't match");
-  uintptr_t val;
-  memcpy(&val, &key, sizeof(val));
-  // Note: for upb_inttables a tab_key is a true integer key value, but the
-  // inttable maintains the invariant that 0 value is always stored in the
-  // compact table and never as a upb_tabent* so we can always use the 0
-  // key value to identify an empty tabent.
-  return val == 0;
+  return e->next == NULL;
 }
 
 UPB_INLINE bool upb_tabent_hasnext(const upb_tabent* e) {
-  return e->next != NULL;
+  return e->next != NULL && e->next != e;
 }
 
-UPB_INLINE void upb_tabent_clearnext(upb_tabent* e) { e->next = NULL; }
+UPB_INLINE void upb_tabent_clearnext(upb_tabent* e) { e->next = e; }
 
 UPB_INLINE void upb_tabent_clear(upb_tabent* e) {
   memset(&e->key, 0, sizeof(e->key));
