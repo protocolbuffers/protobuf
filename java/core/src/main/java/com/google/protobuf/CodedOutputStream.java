@@ -794,7 +794,15 @@ public abstract class CodedOutputStream extends ByteOutput {
     return computeLengthDelimitedFieldSize(value.getSerializedSize());
   }
 
-  static int computeLengthDelimitedFieldSize(int fieldLength) {
+  /**
+   * Compute the number of bytes needed to encode the body of a length-delimited field (excluding
+   * tag), given the serialized byte length of the field's content. This is equivalent to {@code
+   * computeUInt32SizeNoTag(fieldLength) + fieldLength}.
+   *
+   * <p>Use this when manually computing sizes for hand-constructed length-delimited fields. To
+   * include the field tag, add {@link #computeTagSize(int)}.
+   */
+  public static int computeLengthDelimitedFieldSize(int fieldLength) {
     return computeUInt32SizeNoTag(fieldLength) + fieldLength;
   }
 
