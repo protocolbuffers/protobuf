@@ -359,6 +359,7 @@ static const char* _upb_Decoder_DecodeEnumPacked(
       _upb_Decoder_AddEnumValueToUnknown(d, msg, field, &elem);
       continue;
     }
+    _upb_Decoder_MungeInt32(&elem);
     if (_upb_Decoder_Reserve(d, arr, 1)) {
       out = UPB_PTR_AT(upb_Array_MutableDataPtr(arr),
                        arr->UPB_PRIVATE(size) * 4, void);
