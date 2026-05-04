@@ -1183,6 +1183,41 @@ const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
   UPB_ASSERT(mt);
   UPB_ASSERT(d->message_is_done == false);
 
+  if (UPB_UNLIKELY(upb_MiniTable_FieldCount(mt) == 0 &&
+                   mt->UPB_PRIVATE(ext) == kUpb_ExtMode_NonExtendable)) {
+    const char* start = ptr;
+    upb_EpsCopyInputStream_StartCapture(&d->input, start);
+    while (!upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
+      uint32_t tag;
+      ptr = upb_WireReader_ReadTag(ptr, &tag, EPS(d));
+      if ((tag & 7) == kUpb_WireType_EndGroup) {
+        d->end_group = tag >> 3;
+        d->message_is_done = true;
+        break;
+      }
+      ptr = _upb_WireReader_SkipValue(ptr, tag, d->depth, &d->input);
+    }
+    upb_StringView sv;
+    upb_EpsCopyInputStream_EndCapture(&d->input, ptr, &sv);
+
+    upb_AddUnknownMode mode = kUpb_AddUnknown_Copy;
+    if (d->options & kUpb_DecodeOption_AliasString) {
+      if (sv.data != d->input.buffer_start) {
+        mode = kUpb_AddUnknown_AliasAllowMerge;
+      } else {
+        mode = kUpb_AddUnknown_Alias;
+      }
+    }
+
+    if (sv.size > 0) {
+      if (!UPB_PRIVATE(_upb_Message_AddUnknown)(msg, sv.data, sv.size,
+                                                &d->arena, mode)) {
+        upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
+      }
+    }
+    return ptr;
+  }
+
   do {
     ptr = _upb_Decoder_DecodeField(d, ptr, msg, mt, 0, 0);
   } while (!d->message_is_done);
