@@ -62,12 +62,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        uses: protocolbuffers/protobuf-ci/bazel-docker@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
           image: ${{ matrix.image }}
@@ -99,11 +99,11 @@ jobs:
     runs-on: ubuntu-22-4core
     steps:
     - name: Checkout pending changes
-      uses: protocolbuffers/protobuf-ci/checkout@v5
+      uses: protocolbuffers/protobuf-ci/checkout@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
       with:
         ref: ${{ inputs.safe-checkout }}
     - name: Generate maven artifacts with bazel and install using maven
-      uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+      uses: protocolbuffers/protobuf-ci/bazel-docker@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
       with:
         image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:9.0.0-11-1c31a2985011c75c33dcdf646fc86898aac1ec5d
         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}

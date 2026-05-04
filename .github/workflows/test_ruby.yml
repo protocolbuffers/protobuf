@@ -49,12 +49,12 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        uses: protocolbuffers/protobuf-ci/bazel-docker@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:9.0.0-{0}-9fc33a0c378b5affd3c85d3f5ae4f330993048f7', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -74,20 +74,20 @@ jobs:
     runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Cross compile protoc for i386
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v5
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-i386
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v5
+        uses: protocolbuffers/protobuf-ci/docker@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           image: i386/ruby:3.1.6-bullseye
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -106,14 +106,14 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Cross compile protoc for aarch64
         if: ${{ inputs.continuous-run }}
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v5
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -121,7 +121,7 @@ jobs:
 
       - name: Run tests
         if: ${{ inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/docker@v5
+        uses: protocolbuffers/protobuf-ci/docker@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           image: arm64v8/ruby:3.1.4-buster
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -156,7 +156,7 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           ref: ${{ inputs.safe-checkout }}
 
@@ -172,7 +172,7 @@ jobs:
 
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel@v5
+        uses: protocolbuffers/protobuf-ci/bazel@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           version: 9.0.0 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -205,12 +205,12 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        uses: protocolbuffers/protobuf-ci/bazel-docker@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:9.0.0-{0}-9fc33a0c378b5affd3c85d3f5ae4f330993048f7', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}

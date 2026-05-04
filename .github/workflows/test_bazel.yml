@@ -44,7 +44,7 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           ref: ${{ inputs.safe-checkout }}
 
@@ -73,7 +73,7 @@ jobs:
 
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel@v5
+        uses: protocolbuffers/protobuf-ci/bazel@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: examples-${{ matrix.bazelversion }}-${{ matrix.bzlmod }}-${{ matrix.toolchain_resolution }}
@@ -97,13 +97,13 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel@v5
+        uses: protocolbuffers/protobuf-ci/bazel@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: examples-prebuilt-${{ matrix.bazelversion }}-${{ matrix.toolchain_resolution }}
@@ -119,11 +119,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        uses: protocolbuffers/protobuf-ci/bazel-docker@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.0.0-7932bf8b25fb76a111e7257d151a6a58d5c3c671
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -139,11 +139,11 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v5
+        uses: protocolbuffers/protobuf-ci/bazel@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "bazel-tests-${{ matrix.runner }}"

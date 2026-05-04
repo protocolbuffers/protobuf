@@ -57,12 +57,12 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        uses: protocolbuffers/protobuf-ci/bazel-docker@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:8.0.1-{0}-5237f14696e60e4b050edfbf7ba9b374f37f83c6', matrix.version) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -91,7 +91,7 @@ jobs:
     runs-on: macos-14
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         with:
           ref: ${{ inputs.safe-checkout }}
 
@@ -111,7 +111,7 @@ jobs:
           source venv/bin/activate
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v5
+        uses: protocolbuffers/protobuf-ci/bazel@b17b0624596898346322b7da9435947d7aa0a1e7 # v5
         env:
           KOKORO_PYTHON_VERSION: ${{ matrix.version }}
         with:
