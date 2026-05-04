@@ -287,8 +287,8 @@ void CordFieldGenerator::GenerateSerializeWithCachedSizesToArray(
 void CordFieldGenerator::GenerateByteSize(io::Printer* p) const {
   auto v = p->WithVars(variables_);
   p->Emit(R"cc(
-    total_size += $tag_size$ + $pbi$::WireFormatLite::$DeclaredType$Size(
-                                   this_._internal_$name$());
+    total_size += $kTagBytes$ + $pbi$::WireFormatLite::$DeclaredType$Size(
+                                    this_._internal_$name$());
   )cc");
 }
 

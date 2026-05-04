@@ -734,7 +734,8 @@ static char* encode_ext(char* ptr, upb_encstate* e,
 
 static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
                          const upb_Message* msg) {
-  if (m->UPB_PRIVATE(ext) == kUpb_ExtMode_NonExtendable) return ptr;
+  if (UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) == kUpb_ExtMode_NonExtendable)
+    return ptr;
 
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return ptr;
@@ -759,7 +760,8 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
     const upb_Extension* ext;
     while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
       ptr = encode_ext(ptr, e, ext->ext, ext->data,
-                       m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
+                       UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
+                           kUpb_ExtMode_IsMessageSet);
     }
     _upb_mapsorter_popmap(&e->sorter, &sorted);
   } else {

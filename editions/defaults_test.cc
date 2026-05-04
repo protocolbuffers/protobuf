@@ -94,6 +94,37 @@ TEST(DefaultsTest, Check2024) {
             FeatureSet::VisibilityFeature::EXPORT_TOP_LEVEL);
 }
 
+TEST(DefaultsTest, Check2026) {
+  auto defaults = ReadDefaults("test_defaults_2026");
+  ASSERT_OK(defaults);
+  ASSERT_EQ(defaults->defaults().size(), 6);
+  ASSERT_EQ(defaults->minimum_edition(), EDITION_2026);
+  ASSERT_EQ(defaults->maximum_edition(), EDITION_2026);
+
+  EXPECT_EQ(defaults->defaults()[0].edition(), EDITION_LEGACY);
+  EXPECT_EQ(defaults->defaults()[1].edition(), EDITION_PROTO3);
+  EXPECT_EQ(defaults->defaults()[2].edition(), EDITION_2023);
+  EXPECT_EQ(defaults->defaults()[2].overridable_features().field_presence(),
+            FeatureSet::EXPLICIT);
+  EXPECT_EQ(defaults->defaults()[2]
+                .overridable_features()
+                .GetExtension(pb::test)
+                .file_feature(),
+            pb::VALUE3);
+  EXPECT_EQ(defaults->defaults()[3].edition(), EDITION_2024);
+  EXPECT_EQ(
+      defaults->defaults()[3].overridable_features().enforce_naming_style(),
+      FeatureSet::STYLE2024);
+  EXPECT_EQ(defaults->defaults()[3]
+                .overridable_features()
+                .default_symbol_visibility(),
+            FeatureSet::VisibilityFeature::EXPORT_TOP_LEVEL);
+  EXPECT_EQ(defaults->defaults()[4].edition(), EDITION_2026);
+  EXPECT_EQ(
+      defaults->defaults()[4].overridable_features().enforce_proto_limits(),
+      FeatureSet::ProtoLimitsFeature::PROTO_LIMITS2026);
+}
+
 TEST(DefaultsTest, CheckFuture) {
   auto defaults = ReadDefaults("test_defaults_future");
   ASSERT_OK(defaults);
@@ -115,6 +146,14 @@ TEST(DefaultsTest, CheckFuture) {
   EXPECT_EQ(defaults->defaults()[3].overridable_features().field_presence(),
             FeatureSet::EXPLICIT);
   EXPECT_EQ(defaults->defaults()[3]
+                .overridable_features()
+                .GetExtension(pb::test)
+                .file_feature(),
+            pb::VALUE3);
+  EXPECT_EQ(defaults->defaults()[4].edition(), EDITION_2026);
+  EXPECT_EQ(defaults->defaults()[4].overridable_features().field_presence(),
+            FeatureSet::EXPLICIT);
+  EXPECT_EQ(defaults->defaults()[4]
                 .overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
@@ -156,6 +195,14 @@ TEST(DefaultsTest, CheckFarFuture) {
   EXPECT_EQ(defaults->defaults()[3].overridable_features().field_presence(),
             FeatureSet::EXPLICIT);
   EXPECT_EQ(defaults->defaults()[3]
+                .overridable_features()
+                .GetExtension(pb::test)
+                .file_feature(),
+            pb::VALUE3);
+  EXPECT_EQ(defaults->defaults()[4].edition(), EDITION_2026);
+  EXPECT_EQ(defaults->defaults()[4].overridable_features().field_presence(),
+            FeatureSet::EXPLICIT);
+  EXPECT_EQ(defaults->defaults()[4]
                 .overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
@@ -314,7 +361,7 @@ TEST_F(OverridableDefaultsTest, Proto3) {
 TEST_F(OverridableDefaultsTest, Edition2023) {
   auto feature_defaults = ReadDefaults("protobuf_defaults");
   ASSERT_OK(feature_defaults);
-  ASSERT_GE(feature_defaults->defaults().size(), 4);
+  ASSERT_GE(feature_defaults->defaults().size(), 5);
   auto defaults = feature_defaults->defaults(2);
   ASSERT_EQ(defaults.edition(), EDITION_2023);
 
@@ -336,7 +383,7 @@ TEST_F(OverridableDefaultsTest, Edition2023) {
 TEST_F(OverridableDefaultsTest, Edition2024) {
   auto feature_defaults = ReadDefaults("protobuf_defaults");
   ASSERT_OK(feature_defaults);
-  ASSERT_GE(feature_defaults->defaults().size(), 4);
+  ASSERT_GE(feature_defaults->defaults().size(), 5);
   auto defaults = feature_defaults->defaults(3);
   ASSERT_EQ(defaults.edition(), EDITION_2024);
 
@@ -350,6 +397,40 @@ TEST_F(OverridableDefaultsTest, Edition2024) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE2024
                 default_symbol_visibility: EXPORT_TOP_LEVEL
+                [pb.cpp] {
+                  legacy_closed_enum: false
+                  string_type: VIEW
+                  enum_name_uses_string_view: true
+                }
+                [pb.java] {
+                  legacy_closed_enum: false
+                  utf8_validation: DEFAULT
+                  large_enum: false
+                  nest_in_file_class: NO
+                }
+              )pb"));
+}
+
+// Lock down that 2026 overridable defaults never change.  Once Edition 2026 has
+// been released this test should never need to be touched.
+TEST_F(OverridableDefaultsTest, Edition2026) {
+  auto feature_defaults = ReadDefaults("protobuf_defaults");
+  ASSERT_OK(feature_defaults);
+  ASSERT_GE(feature_defaults->defaults().size(), 5);
+  auto defaults = feature_defaults->defaults(4);
+  ASSERT_EQ(defaults.edition(), EDITION_2026);
+
+
+  EXPECT_THAT(defaults.overridable_features(), EqualsProto(R"pb(
+                field_presence: EXPLICIT
+                enum_type: OPEN
+                repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW
+                enforce_naming_style: STYLE2026
+                default_symbol_visibility: EXPORT_TOP_LEVEL
+                enforce_proto_limits: PROTO_LIMITS2026
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: VIEW

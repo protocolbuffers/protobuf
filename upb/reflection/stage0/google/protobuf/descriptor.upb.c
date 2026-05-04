@@ -746,7 +746,7 @@ const upb_MiniTable* google__protobuf__UninterpretedOption__NamePart_msg_init() 
 
 const upb_MiniTable* google__protobuf__FeatureSet_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$P44444444";
+  static const char* mini_descriptor = "$P444444444";
   if (mini_table) return mini_table;
   upb_Status status;
   mini_table =
@@ -797,6 +797,11 @@ const upb_MiniTable* google__protobuf__FeatureSet_msg_init() {
       (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table,
                                                            8),
       google__protobuf__FeatureSet__VisibilityFeature__DefaultSymbolVisibility_enum_init());
+  upb_MiniTable_SetSubEnum(
+      mini_table,
+      (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table,
+                                                           9),
+      google__protobuf__FeatureSet__ProtoLimitsFeature__EnforceProtoLimits_enum_init());
    return mini_table;
 }
 
@@ -810,6 +815,22 @@ const upb_MiniTable* google__protobuf__FeatureSet__VisibilityFeature_msg_init() 
                           upb_BootstrapArena(), &status);
   if (!mini_table) {
     fprintf(stderr, "Failed to build mini_table for google__protobuf__FeatureSet__VisibilityFeature_msg_init: %s\n",
+            upb_Status_ErrorMessage(&status));
+    abort();
+  }
+   return mini_table;
+}
+
+const upb_MiniTable* google__protobuf__FeatureSet__ProtoLimitsFeature_msg_init() {
+  static upb_MiniTable* mini_table = NULL;
+  static const char* mini_descriptor = "$";
+  if (mini_table) return mini_table;
+  upb_Status status;
+  mini_table =
+      upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
+                          upb_BootstrapArena(), &status);
+  if (!mini_table) {
+    fprintf(stderr, "Failed to build mini_table for google__protobuf__FeatureSet__ProtoLimitsFeature_msg_init: %s\n",
             upb_Status_ErrorMessage(&status));
     abort();
   }
@@ -1018,6 +1039,16 @@ const upb_MiniTableEnum* google__protobuf__FeatureSet__JsonFormat_enum_init() {
 }
 
 const upb_MiniTableEnum* google__protobuf__FeatureSet__MessageEncoding_enum_init() {
+  static const upb_MiniTableEnum* mini_table = NULL;
+  static const char* mini_descriptor = "!)";
+  if (mini_table) return mini_table;
+  mini_table = upb_MiniTableEnum_Build(mini_descriptor,
+                                       strlen(mini_descriptor),
+                                       upb_BootstrapArena(), NULL);
+  return mini_table;
+}
+
+const upb_MiniTableEnum* google__protobuf__FeatureSet__ProtoLimitsFeature__EnforceProtoLimits_enum_init() {
   static const upb_MiniTableEnum* mini_table = NULL;
   static const char* mini_descriptor = "!)";
   if (mini_table) return mini_table;

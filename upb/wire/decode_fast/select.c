@@ -182,11 +182,14 @@ static bool upb_DecodeFast_GetFunctionData(const upb_MiniTable* m,
 
 static bool upb_DecodeFast_TryFillEntry(const upb_MiniTable* m,
                                         const upb_MiniTableField* field,
+                                        bool* out_supported_tag_size,
                                         upb_DecodeFast_TableEntry* entry) {
   UPB_ASSERT(!upb_MiniTableField_IsExtension(field));
   uint16_t tag;
   upb_DecodeFast_TagSize tag_size;
-  return upb_DecodeFast_GetEncodedTag(field, &tag, &tag_size) &&
+  *out_supported_tag_size =
+      upb_DecodeFast_GetEncodedTag(field, &tag, &tag_size);
+  return *out_supported_tag_size &&
          upb_DecodeFast_GetFunctionIndex(m, field, tag_size,
                                          &entry->function_idx) &&
          UPB_DECODEFAST_ISENABLED(
@@ -205,19 +208,65 @@ int upb_DecodeFast_BuildTable(const upb_MiniTable* m,
     table[i].function_data = 0;
   }
 
+  // Fasttable only handles fields with tag size of 1 or 2 bytes. If all known
+  // fields with such tag sizes have supported field types, we can short circuit
+  // slot misses to unknown field handling
+  bool all_supported_tag_size_fields_compatible_with_fast_decode = true;
+
+  // If, in addition, all handled fields are assigned unique slots, then we can
+  // short circuit slot collision to unknown field handling as well.
+  bool all_fields_assigned_unique_slots = true;
+
   int max = 0;
   for (size_t i = 0, n = upb_MiniTable_FieldCount(m); i < n; i++) {
     const upb_MiniTableField* field = upb_MiniTable_GetFieldByIndex(m, i);
+    bool supported_tag_size;
     upb_DecodeFast_TableEntry entry;
-    if (!upb_DecodeFast_TryFillEntry(m, field, &entry)) continue;
+    if (!upb_DecodeFast_TryFillEntry(m, field, &supported_tag_size, &entry)) {
+      if (supported_tag_size) {
+        // Check if this tag collides
+        all_supported_tag_size_fields_compatible_with_fast_decode = false;
+      }
+      continue;
+    }
     int slot = upb_DecodeFastData_GetTableSlot(entry.function_data);
     if (table[slot].function_idx == UINT32_MAX) {
       table[slot] = entry;
       max = UPB_MAX(max, slot);
+    } else {
+      all_fields_assigned_unique_slots = false;
     }
   }
 
-  return max == 0 ? 0 : upb_RoundUpToPowerOfTwo(max + 1);
+  int table_size = max == 0 ? 0 : upb_RoundUpToPowerOfTwo(max + 1);
+
+  // If the message is not extendable, we can swap the generic handler for a
+  // fast unknown field handler in remaining open slots.
+  // The fast unknown handler only covers 1/2 byte tags and falls back for >2
+  // bytes; thus, we do not need to check for total exhaustiveness in field
+  // coverage, only for 1/2 byte tags.
+  const bool non_extendable =
+      UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) == kUpb_ExtMode_NonExtendable;
+  if (all_supported_tag_size_fields_compatible_with_fast_decode &&
+      (non_extendable ||
+       UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) == kUpb_ExtMode_Extendable)) {
+    uint32_t fast_handler_idx = non_extendable
+                                    ? kUpb_DecodeFast_Unknown
+                                    : kUpb_DecodeFast_ExtensionOrUnknown;
+    for (int i = 0; i < table_size; i++) {
+      if (table[i].function_idx == UINT32_MAX) {
+        table[i].function_idx = fast_handler_idx;
+        table[i].function_data = 0;
+      }
+    }
+    // Also override generic fallback if all fields are assigned unique slots.
+    if (all_fields_assigned_unique_slots) {
+      ((upb_MiniTable*)m)->UPB_PRIVATE(ext) |=
+          kUpb_ExtMode_AllFastFieldsAssigned;
+    }
+  }
+
+  return table_size;
 }
 
 uint8_t upb_DecodeFast_GetTableMask(int table_size) {
@@ -237,6 +286,12 @@ const char* upb_DecodeFast_GetFunctionName(uint32_t function_idx) {
 #undef FUNCSTR
 
   if (function_idx == UINT32_MAX) return "_upb_FastDecoder_DecodeGeneric";
+  if (function_idx == kUpb_DecodeFast_Unknown) {
+    return "_upb_FastDecoder_DecodeUnknown";
+  }
+  if (function_idx == kUpb_DecodeFast_ExtensionOrUnknown) {
+    return "_upb_FastDecoder_DecodeExtensionOrUnknown";
+  }
   UPB_ASSERT(function_idx < UPB_ARRAY_SIZE(names));
   return names[function_idx];
 }
