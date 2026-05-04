@@ -113,8 +113,12 @@ impl<'msg, T: Message> MessageMutInner<'msg, T> {
         self.ptr.raw()
     }
 
-    pub fn arena(&self) -> &Arena {
+    pub fn arena(&self) -> &'msg Arena {
         self.arena
+    }
+
+    pub fn ptr_and_arena(&self) -> (MessagePtr<T>, &'msg Arena) {
+        (self.ptr, self.arena)
     }
 
     pub fn as_view(&self) -> MessageViewInner<'msg, T> {
