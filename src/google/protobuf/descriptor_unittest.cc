@@ -7915,6 +7915,35 @@ TEST_F(ValidationErrorTest, MapEntryBase) {
   BuildFile(text_proto);
 }
 
+TEST_F(ValidationErrorTest, GroupFieldPointingToMapEntryIsNotMap) {
+  // TYPE_GROUP field referencing a map_entry message must not have
+  // is_map() == true. Regression test for CrossLinkField bug.
+  BuildFile(
+      "name: 'group_map.proto' "
+      "message_type { "
+      "  name: 'Foo' "
+      "  field { "
+      "    name: 'foomapentry' number: 1 label: LABEL_REPEATED "
+      "    type: TYPE_GROUP type_name: 'FooMapEntry' "
+      "  } "
+      "  nested_type { "
+      "    name: 'FooMapEntry' "
+      "    options { map_entry: true } "
+      "    field { "
+      "      name: 'key' number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL "
+      "    } "
+      "    field { "
+      "      name: 'value' number: 2 type: TYPE_INT32 label: LABEL_OPTIONAL "
+      "    } "
+      "  } "
+      "} ");
+  const FieldDescriptor* field = pool_.FindFieldByName("Foo.foomapentry");
+  ASSERT_NE(field, nullptr);
+  EXPECT_EQ(field->type(), FieldDescriptor::TYPE_GROUP);
+  EXPECT_TRUE(field->message_type()->options().map_entry());
+  EXPECT_FALSE(field->is_map());
+}
+
 TEST_F(ValidationErrorTest, MapEntryExtensionRange) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
