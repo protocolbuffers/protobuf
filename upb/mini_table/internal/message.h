@@ -20,8 +20,9 @@
 
 struct upb_Decoder;
 struct upb_Message;
+struct upb_FastDecoder_Return;
 
-typedef UPB_PRESERVE_NONE const char* _upb_FieldParser(
+typedef UPB_PRESERVE_NONE struct upb_FastDecoder_Return _upb_FieldParser(
     struct upb_Decoder* d, const char* ptr, struct upb_Message* msg,
     intptr_t table, uint64_t hasbits, uint64_t data);
 

@@ -11,15 +11,15 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-UPB_PRESERVE_NONE const char* _upb_FastDecoder_FallbackToMiniTable(
+UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_FallbackToMiniTable(
     struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
     uint64_t hasbits, uint64_t data) {
   (void)data;
   upb_DecodeFast_SetHasbits(msg, hasbits);
-  return ptr;
+  return (upb_FastDecoder_Return){.ptr = ptr};
 }
 
-UPB_PRESERVE_NONE const char* _upb_FastDecoder_DecodeGeneric(
+UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeGeneric(
     struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
     uint64_t hasbits, uint64_t data) {
   upb_DecodeFastNext ret;
