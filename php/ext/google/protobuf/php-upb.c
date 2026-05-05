@@ -10824,6 +10824,11 @@ static const char* upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr,
         return --ptr;
       }
       upb_MiniTableField* field = fields;
+      if (*field_count == UINT16_MAX) {
+        upb_MdDecoder_ErrorJmp(&d->base,
+                               "Fields in message exceed the limit of %u",
+                               UINT16_MAX);
+      }
       *field_count += 1;
       fields = (char*)fields + field_size;
       uint32_t number = ++last_field_number;
@@ -17684,7 +17689,9 @@ bool _upb_Decoder_TryDecodeMessageFast(upb_Decoder* d, const char** ptr,
       UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(&d->input, *ptr);
   char* trace_next = _upb_Decoder_TraceNext(d);
 
-  *ptr = upb_DecodeFast_Dispatch(d, *ptr, msg, table, 0, 0);
+  upb_FastDecoder_Return ret =
+      upb_DecodeFast_Dispatch(d, *ptr, msg, table, 0, 0);
+  *ptr = ret.ptr;
 
   if (d->message_is_done) {
     // The entire message was successfully parsed fast.

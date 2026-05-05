@@ -993,8 +993,8 @@ void GenerateMessageToPool(absl::string_view name_prefix,
 void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
                            io::Printer* printer) {
   printer->Print(
-      "public static $is_initialized = false;\n\n"
-      "public static function initOnce() {\n");
+      "public static bool $is_initialized = false;\n\n"
+      "public static function initOnce(): void {\n");
   Indent(printer);
 
   if (options.aggregate_metadata) {

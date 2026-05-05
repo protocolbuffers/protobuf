@@ -13,6 +13,7 @@
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode_fast/cardinality.h"
+#include "upb/wire/decode_fast/dispatch.h"
 #include "upb/wire/decode_fast/field_helpers.h"
 #include "upb/wire/decode_fast/field_parsers.h"
 #include "upb/wire/internal/decoder.h"
@@ -54,9 +55,11 @@ UPB_FORCEINLINE void _upb_FastDecoder_PickHandlerForExtensionOrUnknown(
   *next = kUpb_DecodeFastNext_DecodeUnknown;
 }
 
-UPB_PRESERVE_NONE const char* _upb_FastDecoder_DecodeExtensionOrUnknown(
-    struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
-    uint64_t hasbits, uint64_t data) {
+UPB_PRESERVE_NONE upb_FastDecoder_Return
+_upb_FastDecoder_DecodeExtensionOrUnknown(struct upb_Decoder* d,
+                                          const char* ptr, upb_Message* msg,
+                                          intptr_t table, uint64_t hasbits,
+                                          uint64_t data) {
   upb_DecodeFastNext next;
   _upb_FastDecoder_PickHandlerForExtensionOrUnknown(d, table, data, &next);
   UPB_DECODEFAST_NEXT(next);

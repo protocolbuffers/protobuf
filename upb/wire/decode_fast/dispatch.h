@@ -23,6 +23,10 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+typedef struct upb_FastDecoder_Return {
+  const char* ptr;
+} upb_FastDecoder_Return;
+
 // The standard set of arguments passed to each parsing function.
 // Thanks to x86-64 calling conventions, these will stay in registers.
 #define UPB_PARSE_PARAMS                                             \
@@ -40,8 +44,8 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
 // We have to disable HWASAN for this function because we steal the high byte
 // of the `table` pointer for our own purposes (the table mask). This overwrites
 // the tag that HWASAN depends on for its own checks.
-__attribute__((no_sanitize("hwaddress"))) UPB_INLINE
-    UPB_PRESERVE_NONE const char*
+__attribute__((no_sanitize("hwaddress"))) UPB_INLINE UPB_PRESERVE_NONE
+    upb_FastDecoder_Return
     _upb_FastDecoder_TagDispatch(struct upb_Decoder* d, const char* ptr,
                                  upb_Message* msg, intptr_t table,
                                  uint64_t hasbits, uint64_t tag) {
@@ -64,11 +68,11 @@ __attribute__((no_sanitize("hwaddress"))) UPB_INLINE
                                         ent->field_data ^ tag);
 }
 
-UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
-    UPB_PARSE_PARAMS);
+UPB_NOINLINE UPB_PRESERVE_NONE upb_FastDecoder_Return
+    upb_DecodeFast_MessageIsDoneFallback(UPB_PARSE_PARAMS);
 
-UPB_FORCEINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_Dispatch(
-    UPB_PARSE_PARAMS) {
+UPB_FORCEINLINE UPB_PRESERVE_NONE upb_FastDecoder_Return
+upb_DecodeFast_Dispatch(UPB_PARSE_PARAMS) {
   int overrun;
   upb_IsDoneStatus status = UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(
       &d->input, ptr, &overrun);

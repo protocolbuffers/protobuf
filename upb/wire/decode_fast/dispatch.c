@@ -17,8 +17,8 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
-    UPB_PARSE_PARAMS) {
+UPB_NOINLINE UPB_PRESERVE_NONE upb_FastDecoder_Return
+upb_DecodeFast_MessageIsDoneFallback(UPB_PARSE_PARAMS) {
   int overrun;
   switch (UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(&d->input, ptr,
                                                            &overrun)) {
@@ -28,9 +28,10 @@ UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
       d->message_is_done = true;
       upb_DecodeFast_SetHasbits(msg, hasbits);
       const upb_MiniTable* m = decode_totablep(table);
-      return UPB_UNLIKELY(m->UPB_PRIVATE(required_count))
-                 ? _upb_Decoder_CheckRequired(d, ptr, msg, m)
-                 : ptr;
+      return (upb_FastDecoder_Return){
+          .ptr = UPB_UNLIKELY(m->UPB_PRIVATE(required_count))
+                     ? _upb_Decoder_CheckRequired(d, ptr, msg, m)
+                     : ptr};
     }
     case kUpb_IsDoneStatus_NeedFallback:
       // We've reached end-of-buffer.  Refresh the buffer.
@@ -49,7 +50,7 @@ UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
   }
 }
 
-const char* _upb_FastDecoder_ErrorJmp2(upb_Decoder* d) {
+upb_FastDecoder_Return _upb_FastDecoder_ErrorJmp2(upb_Decoder* d) {
   UPB_LONGJMP(d->err->buf, 1);
-  return NULL;
+  return (upb_FastDecoder_Return){.ptr = NULL};
 }

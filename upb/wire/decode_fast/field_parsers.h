@@ -30,26 +30,31 @@ struct upb_Decoder;
   struct upb_Decoder *d, const char *ptr, upb_Message *msg, intptr_t table, \
       uint64_t hasbits, uint64_t data
 
-#define F(type, card, size)                                         \
-  UPB_PRESERVE_NONE const char* UPB_DECODEFAST_FUNCNAME(type, card, \
-                                                        size)(PARSE_PARAMS);
+struct upb_FastDecoder_Return;
+
+#define F(type, card, size)                                                \
+  UPB_PRESERVE_NONE struct upb_FastDecoder_Return UPB_DECODEFAST_FUNCNAME( \
+      type, card, size)(PARSE_PARAMS);
 
 UPB_DECODEFAST_FUNCTIONS(F);
 
 // This just uses the regular (non-fast) parser to parse a single field.
 UPB_PRESERVE_NONE
-const char* _upb_FastDecoder_FallbackToMiniTable(PARSE_PARAMS);
+struct upb_FastDecoder_Return _upb_FastDecoder_FallbackToMiniTable(
+    PARSE_PARAMS);
 
 UPB_PRESERVE_NONE
-const char* _upb_FastDecoder_DecodeGeneric(PARSE_PARAMS);
+struct upb_FastDecoder_Return _upb_FastDecoder_DecodeGeneric(PARSE_PARAMS);
 
 UPB_PRESERVE_NONE
-const char* _upb_FastDecoder_DecodeMismatchedSlot(PARSE_PARAMS);
+struct upb_FastDecoder_Return _upb_FastDecoder_DecodeMismatchedSlot(
+    PARSE_PARAMS);
 
 UPB_PRESERVE_NONE
-const char* _upb_FastDecoder_DecodeUnknown(PARSE_PARAMS);
+struct upb_FastDecoder_Return _upb_FastDecoder_DecodeUnknown(PARSE_PARAMS);
 UPB_PRESERVE_NONE
-const char* _upb_FastDecoder_DecodeExtensionOrUnknown(PARSE_PARAMS);
+struct upb_FastDecoder_Return _upb_FastDecoder_DecodeExtensionOrUnknown(
+    PARSE_PARAMS);
 
 #undef F
 #undef PARSE_PARAMS

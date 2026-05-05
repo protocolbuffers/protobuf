@@ -18,8 +18,10 @@ import static java.lang.Character.MIN_SURROGATE;
 import static java.lang.Character.isSurrogatePair;
 import static java.lang.Character.toCodePoint;
 
+import java.lang.reflect.Method;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -52,10 +54,20 @@ final class Utf8 {
    * depending on what is available on the platform. The processor is the platform-optimized
    * delegate for which all methods are delegated directly to.
    */
-  private static final Processor processor =
-      (!Android.isOnAndroidDevice() && UnsafeProcessor.isAvailable())
-          ? new UnsafeProcessor()
-          : new SafeProcessor();
+  private static final Processor processor = createProcessor();
+
+  private static Processor createProcessor() {
+    if (Android.isOnAndroidDevice()) {
+      return new SafeProcessor();
+    }
+    if (UnsafeProcessorWithEncodedLength.isAvailable()) {
+      return new UnsafeProcessorWithEncodedLength();
+    }
+    if (UnsafeProcessor.isAvailable()) {
+      return new UnsafeProcessor();
+    }
+    return new SafeProcessor();
+  }
 
   /**
    * A mask used when performing unsafe reads to determine if a long value contains any non-ASCII
@@ -139,41 +151,7 @@ final class Utf8 {
    * time and space.
    */
   static int encodedLength(String string) {
-    // Warning to maintainers: this implementation is highly optimized.
-    int utf16Length = string.length();
-    int utf8Length = utf16Length;
-    int i = 0;
-
-    // This loop optimizes for pure ASCII.
-    while (i < utf16Length && string.charAt(i) < 0x80) {
-      i++;
-    }
-
-    // This loop optimizes for chars less than 0x800.
-    for (; i < utf16Length; i++) {
-      char c = string.charAt(i);
-      if (c < 0x800) {
-        utf8Length += ((0x7f - c) >>> 31); // branch free!
-      } else {
-        try {
-          utf8Length += encodedLengthGeneral(string, i);
-        } catch (UnpairedSurrogateException e) {
-          // Our hand rolled loops don't handle unpaired surrogates here. This should be
-          // exceptionally rare, so we fallback to the naive implementation to find out the
-          // length that the Java internal implementation will return for this string after
-          // replacement characters.
-          return string.getBytes(StandardCharsets.UTF_8).length;
-        }
-        break;
-      }
-    }
-
-    if (utf8Length < utf16Length) {
-      // Necessary and sufficient condition for overflow because of maximum 3x expansion
-      throw new IllegalArgumentException(
-          "UTF-8 length does not fit in int: " + (utf8Length + (1L << 32)));
-    }
-    return utf8Length;
+    return processor.encodedLength(string);
   }
 
   private static int encodedLengthGeneral(String string, int start)
@@ -543,6 +521,44 @@ final class Utf8 {
 
     /** Encodes the input character sequence to a direct {@link ByteBuffer} instance. */
     protected abstract void encodeUtf8Internal(String in, ByteBuffer out);
+
+    int encodedLength(String string) {
+      // Warning to maintainers: this implementation is highly optimized.
+      int utf16Length = string.length();
+      int utf8Length = utf16Length;
+      int i = 0;
+
+      // This loop optimizes for pure ASCII.
+      while (i < utf16Length && string.charAt(i) < 0x80) {
+        i++;
+      }
+
+      // This loop optimizes for chars less than 0x800.
+      for (; i < utf16Length; i++) {
+        char c = string.charAt(i);
+        if (c < 0x800) {
+          utf8Length += ((0x7f - c) >>> 31); // branch free!
+        } else {
+          try {
+            utf8Length += encodedLengthGeneral(string, i);
+          } catch (UnpairedSurrogateException e) {
+            // Our hand rolled loops don't handle unpaired surrogates here. This should be
+            // exceptionally rare, so we fallback to the naive implementation to find out the
+            // length that the Java internal implementation will return for this string after
+            // replacement characters.
+            return string.getBytes(StandardCharsets.UTF_8).length;
+          }
+          break;
+        }
+      }
+
+      if (utf8Length < utf16Length) {
+        // Necessary and sufficient condition for overflow because of maximum 3x expansion
+        throw new IllegalArgumentException(
+            "UTF-8 length does not fit in int: " + (utf8Length + (1L << 32)));
+      }
+      return utf8Length;
+    }
   }
 
   /** {@link Processor} implementation that does not use any {@code sun.misc.Unsafe} methods. */
@@ -832,7 +848,7 @@ final class Utf8 {
   }
 
   /** {@link Processor} that uses {@code sun.misc.Unsafe} where possible to improve performance. */
-  static final class UnsafeProcessor extends Processor {
+  static class UnsafeProcessor extends Processor {
     /** Indicates whether or not all required unsafe operations are supported on this platform. */
     static boolean isAvailable() {
       if (!hasUnsafeArrayOperations() || !hasUnsafeByteBufferOperations()) {
@@ -1203,6 +1219,38 @@ final class Utf8 {
           remaining >= 8 && (UnsafeUtil.getLong(address) & ASCII_MASK_LONG) == 0;
           address += 8, remaining -= 8) {}
       return maxChars - remaining;
+    }
+  }
+
+  /**
+   * {@link Processor} that extends {@link UnsafeProcessor} and uses {@code
+   * java.lang.String#encodedLength(Charset)} on JDK versions that support it.
+   */
+  static final class UnsafeProcessorWithEncodedLength extends UnsafeProcessor {
+
+    private static final Method encodedLengthMethod = createEncodedLengthMethod();
+
+    private static Method createEncodedLengthMethod() {
+      try {
+        // This method was added in JDK 27 in https://bugs.openjdk.org/browse/JDK-8372353
+        // Use reflection to allow compiling against JDK and AOSP versions that don't support it
+        return String.class.getMethod("encodedLength", Charset.class);
+      } catch (ReflectiveOperationException e) {
+        return null;
+      }
+    }
+
+    static boolean isAvailable() {
+      return encodedLengthMethod != null && UnsafeProcessor.isAvailable();
+    }
+
+    @Override
+    int encodedLength(String in) {
+      try {
+        return (int) encodedLengthMethod.invoke(in, StandardCharsets.UTF_8);
+      } catch (ReflectiveOperationException e) {
+        throw new IllegalStateException(e);
+      }
     }
   }
 

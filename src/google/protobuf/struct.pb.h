@@ -300,8 +300,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ListValue final : p
     kValuesFieldNumber = 1,
   };
   // repeated .google.protobuf.Value values = 1;
-  [[nodiscard]] int values_size()
-      const;
+  [[nodiscard]] int values_size() const;
   private:
   int _internal_values_size() const;
 
@@ -512,8 +511,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct final : publ
     kFieldsFieldNumber = 1,
   };
   // map<string, .google.protobuf.Value> fields = 1;
-  [[nodiscard]] int fields_size()
-      const;
+  [[nodiscard]] int fields_size() const;
   private:
   int _internal_fields_size() const;
 
@@ -782,8 +780,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
     kListValueFieldNumber = 6,
   };
   // .google.protobuf.NullValue null_value = 1;
-  [[nodiscard]] bool has_null_value()
-      const;
+  [[nodiscard]] bool has_null_value() const;
   void clear_null_value() ;
   [[nodiscard]] ::google::protobuf::NullValue null_value() const;
   void set_null_value(::google::protobuf::NullValue value);
@@ -794,8 +791,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
 
   public:
   // double number_value = 2;
-  [[nodiscard]] bool has_number_value()
-      const;
+  [[nodiscard]] bool has_number_value() const;
   void clear_number_value() ;
   [[nodiscard]] double number_value() const;
   void set_number_value(double value);
@@ -806,8 +802,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
 
   public:
   // string string_value = 3;
-  [[nodiscard]] bool has_string_value()
-      const;
+  [[nodiscard]] bool has_string_value() const;
   void clear_string_value() ;
   [[nodiscard]] const ::std::string& string_value() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -823,8 +818,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
 
   public:
   // bool bool_value = 4;
-  [[nodiscard]] bool has_bool_value()
-      const;
+  [[nodiscard]] bool has_bool_value() const;
   void clear_bool_value() ;
   [[nodiscard]] bool bool_value() const;
   void set_bool_value(bool value);
@@ -835,8 +829,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
 
   public:
   // .google.protobuf.Struct struct_value = 5;
-  [[nodiscard]] bool has_struct_value()
-      const;
+  [[nodiscard]] bool has_struct_value() const;
   private:
   bool _internal_has_struct_value() const;
 
@@ -855,8 +848,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
 
   public:
   // .google.protobuf.ListValue list_value = 6;
-  [[nodiscard]] bool has_list_value()
-      const;
+  [[nodiscard]] bool has_list_value() const;
   private:
   bool _internal_has_list_value() const;
 

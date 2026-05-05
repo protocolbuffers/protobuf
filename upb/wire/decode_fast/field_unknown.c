@@ -15,6 +15,7 @@
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/cardinality.h"
+#include "upb/wire/decode_fast/dispatch.h"
 #include "upb/wire/decode_fast/field_helpers.h"
 #include "upb/wire/decode_fast/field_parsers.h"
 #include "upb/wire/eps_copy_input_stream.h"
@@ -35,7 +36,7 @@
 // Fast-path filters out unsupported cases, so we don't need to re-check here.
 // To avoid additional computations, `data` is overloaded to the size of the
 // unknown region.
-UPB_PRESERVE_NONE UPB_NOINLINE const char*
+UPB_PRESERVE_NONE UPB_NOINLINE upb_FastDecoder_Return
 _upb_FastDecoder_DecodeUnknownSlowPath(struct upb_Decoder* d, const char* ptr,
                                        upb_Message* msg, intptr_t table,
                                        uint64_t hasbits, uint64_t data) {
@@ -165,7 +166,7 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
   return true;
 }
 
-UPB_PRESERVE_NONE const char* _upb_FastDecoder_DecodeUnknown(
+UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeUnknown(
     struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
     uint64_t hasbits, uint64_t data) {
   upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;
