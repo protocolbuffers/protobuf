@@ -100,3 +100,7 @@ const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
     return NULL;
   }
 }
+
+size_t upb_ExtensionRegistry_Size(const upb_ExtensionRegistry* r) {
+  return upb_strtable_count(&r->exts);
+}
