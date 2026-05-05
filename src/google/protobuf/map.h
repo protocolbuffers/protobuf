@@ -698,14 +698,14 @@ struct KeyNode : NodeBase {
 
 inline map_index_t Hash(absl::string_view k, void* salt) {
   // Note: we could potentially also use CRC32-based hashing here.
-  return absl::HashOf(k, salt);
+  return static_cast<map_index_t>(absl::HashOf(k, salt));
 }
 inline map_index_t Hash(uint64_t k, void* salt) {
-  if constexpr (!HasCrc32()) return absl::HashOf(k, salt);
+  if constexpr (!HasCrc32()) return static_cast<map_index_t>(absl::HashOf(k, salt));
   uintptr_t salt_int = reinterpret_cast<uintptr_t>(salt);
   // Note: Crc32(salt_int, k) causes the random iteration order test to fail so
   // we also rotate.
-  return Crc32(salt_int, absl::rotr(k, salt_int & 0x3f));
+  return Crc32(static_cast<uint32_t>(salt_int), absl::rotr(k, salt_int & 0x3f));
 }
 
 // KeyMapBase is a chaining hash map.
@@ -902,21 +902,21 @@ class KeyMapBase : public UntypedMapBase {
 
   // For a particular size, calculate the lowest capacity `cap` where
   // `size <= CalculateHiCutoff(cap)`.
-  static size_type CalculateCapacityForSize(size_type size) {
+  static map_index_t CalculateCapacityForSize(size_type size) {
     ABSL_DCHECK_NE(size, 0u);
 
     if (size > kMaxTableSize / 2) {
       return kMaxTableSize;
     }
 
-    size_t capacity = size_type{1} << (std::numeric_limits<size_type>::digits -
-                                       absl::countl_zero(size - 1));
+    map_index_t capacity = size_type{1} << (std::numeric_limits<size_type>::digits -
+                                            absl::countl_zero(size - 1));
 
     if (size > CalculateHiCutoff(capacity)) {
       capacity *= 2;
     }
 
-    return std::max<size_type>(capacity, kMinTableSize);
+    return std::max(capacity, kMinTableSize);
   }
 
   void AssertLoadFactor() const {
@@ -960,7 +960,7 @@ class KeyMapBase : public UntypedMapBase {
       size_type new_num_buckets = std::max<size_type>(
           kMinTableSize, num_buckets_ >> lg2_of_size_reduction_factor);
       if (new_num_buckets != num_buckets_) {
-        Resize(arena, new_num_buckets);
+        Resize(arena, static_cast<map_index_t>(new_num_buckets));
         return true;
       }
     }
@@ -985,7 +985,7 @@ class KeyMapBase : public UntypedMapBase {
     ABSL_DCHECK_EQ(arena, this->arena());
 
     ResizeIfLoadIsOutOfRangeForMultiInsert(arena, num_nodes);
-    num_elements_ = num_nodes;
+    num_elements_ = static_cast<map_index_t>(num_nodes);
     AssertLoadFactor();
     Inserter inserter(this, table_, num_buckets_);
     for (size_t i = 0; i < num_nodes; ++i) {
