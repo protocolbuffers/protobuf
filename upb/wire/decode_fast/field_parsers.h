@@ -56,6 +56,17 @@ UPB_PRESERVE_NONE
 struct upb_FastDecoder_Return _upb_FastDecoder_DecodeExtensionOrUnknown(
     PARSE_PARAMS);
 
+UPB_PRESERVE_NONE
+struct upb_FastDecoder_Return _upb_FastDecoder_DecodeCheckMiniTable(
+    PARSE_PARAMS);
+
+UPB_PRESERVE_NONE
+struct upb_FastDecoder_Return _upb_FastDecoder_DecodeCheckExtRegMiniTable(
+    PARSE_PARAMS);
+
+UPB_PRESERVE_NONE
+struct upb_FastDecoder_Return _upb_FastDecoder_DecodeGenericField(PARSE_PARAMS);
+
 #undef F
 #undef PARSE_PARAMS
 

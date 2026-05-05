@@ -14,6 +14,7 @@
 #include <string.h>
 
 #include "upb/message/message.h"
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
@@ -22,9 +23,11 @@
 
 // Must be last.
 #include "upb/port/def.inc"
+#include "upb/wire/internal/eps_copy_input_stream.h"
 
 typedef struct upb_FastDecoder_Return {
   const char* ptr;
+  const upb_MiniTableField* field;
 } upb_FastDecoder_Return;
 
 // The standard set of arguments passed to each parsing function.

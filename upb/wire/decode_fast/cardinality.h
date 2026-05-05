@@ -66,6 +66,15 @@ typedef enum {
 
   // Tail call for potential fast handling of an extension field.
   kUpb_DecodeFastNext_DecodeExtensionOrUnknown = 8,
+
+  // Tail call for potential fast handling of a non-extendable message
+  kUpb_DecodeFastNext_CheckMiniTable = 9,
+
+  // Tail call for potential fast handling of an extendable message
+  kUpb_DecodeFastNext_CheckExtRegMiniTable = 10,
+
+  // Tail call for avoiding field search for known field.
+  kUpb_DecodeFastNext_FallbackToKnownField = 11,
 } upb_DecodeFastNext;
 
 UPB_INLINE bool upb_DecodeFast_SetExit(upb_DecodeFastNext* next,
@@ -99,32 +108,40 @@ UPB_INLINE bool upb_DecodeFast_SetError(upb_Decoder* d,
 #define UPB_DECODEFAST_ERROR(d, st, next) \
   upb_DecodeFast_SetError(d, next, st, #st, __FILE__, __LINE__)
 
-#define UPB_DECODEFAST_NEXTMAYBEPACKED(next, func_unpacked, func_packed)  \
-  switch (next) {                                                         \
-    case kUpb_DecodeFastNext_Dispatch:                                    \
-      UPB_MUSTTAIL return upb_DecodeFast_Dispatch(UPB_PARSE_ARGS);        \
-    case kUpb_DecodeFastNext_FallbackToMiniTable:                         \
-      UPB_MUSTTAIL return _upb_FastDecoder_DecodeGeneric(UPB_PARSE_ARGS); \
-    case kUpb_DecodeFastNext_Error:                                       \
-      UPB_ASSERT(d->err->code != kUpb_DecodeStatus_Ok);                   \
-      return _upb_FastDecoder_ErrorJmp2(d);                               \
-    case kUpb_DecodeFastNext_MessageIsDoneFallback:                       \
-      UPB_MUSTTAIL return upb_DecodeFast_MessageIsDoneFallback(           \
-          UPB_PARSE_ARGS);                                                \
-    case kUpb_DecodeFastNext_TailCallPacked:                              \
-      UPB_MUSTTAIL return func_packed(UPB_PARSE_ARGS);                    \
-    case kUpb_DecodeFastNext_TailCallUnpacked:                            \
-      UPB_MUSTTAIL return func_unpacked(UPB_PARSE_ARGS);                  \
-    case kUpb_DecodeFastNext_FallbackMismatchedSlot:                      \
-      UPB_MUSTTAIL return _upb_FastDecoder_DecodeMismatchedSlot(          \
-          UPB_PARSE_ARGS);                                                \
-    case kUpb_DecodeFastNext_DecodeUnknown:                               \
-      UPB_MUSTTAIL return _upb_FastDecoder_DecodeUnknown(UPB_PARSE_ARGS); \
-    case kUpb_DecodeFastNext_DecodeExtensionOrUnknown:                    \
-      UPB_MUSTTAIL return _upb_FastDecoder_DecodeExtensionOrUnknown(      \
-          UPB_PARSE_ARGS);                                                \
-    default:                                                              \
-      UPB_UNREACHABLE();                                                  \
+#define UPB_DECODEFAST_NEXTMAYBEPACKED(next, func_unpacked, func_packed)       \
+  switch (next) {                                                              \
+    case kUpb_DecodeFastNext_Dispatch:                                         \
+      UPB_MUSTTAIL return upb_DecodeFast_Dispatch(UPB_PARSE_ARGS);             \
+    case kUpb_DecodeFastNext_FallbackToMiniTable:                              \
+      UPB_MUSTTAIL return _upb_FastDecoder_DecodeGeneric(UPB_PARSE_ARGS);      \
+    case kUpb_DecodeFastNext_Error:                                            \
+      UPB_ASSERT(d->err->code != kUpb_DecodeStatus_Ok);                        \
+      return _upb_FastDecoder_ErrorJmp2(d);                                    \
+    case kUpb_DecodeFastNext_MessageIsDoneFallback:                            \
+      UPB_MUSTTAIL return upb_DecodeFast_MessageIsDoneFallback(                \
+          UPB_PARSE_ARGS);                                                     \
+    case kUpb_DecodeFastNext_TailCallPacked:                                   \
+      UPB_MUSTTAIL return func_packed(UPB_PARSE_ARGS);                         \
+    case kUpb_DecodeFastNext_TailCallUnpacked:                                 \
+      UPB_MUSTTAIL return func_unpacked(UPB_PARSE_ARGS);                       \
+    case kUpb_DecodeFastNext_FallbackMismatchedSlot:                           \
+      UPB_MUSTTAIL return _upb_FastDecoder_DecodeMismatchedSlot(               \
+          UPB_PARSE_ARGS);                                                     \
+    case kUpb_DecodeFastNext_DecodeUnknown:                                    \
+      UPB_MUSTTAIL return _upb_FastDecoder_DecodeUnknown(UPB_PARSE_ARGS);      \
+    case kUpb_DecodeFastNext_DecodeExtensionOrUnknown:                         \
+      UPB_MUSTTAIL return _upb_FastDecoder_DecodeExtensionOrUnknown(           \
+          UPB_PARSE_ARGS);                                                     \
+    case kUpb_DecodeFastNext_CheckMiniTable:                                   \
+      UPB_MUSTTAIL return _upb_FastDecoder_DecodeCheckMiniTable(               \
+          UPB_PARSE_ARGS);                                                     \
+    case kUpb_DecodeFastNext_CheckExtRegMiniTable:                             \
+      UPB_MUSTTAIL return _upb_FastDecoder_DecodeCheckExtRegMiniTable(         \
+          UPB_PARSE_ARGS);                                                     \
+    case kUpb_DecodeFastNext_FallbackToKnownField:                             \
+      UPB_MUSTTAIL return _upb_FastDecoder_DecodeGenericField(UPB_PARSE_ARGS); \
+    default:                                                                   \
+      UPB_UNREACHABLE();                                                       \
   }
 
 UPB_INLINE upb_FastDecoder_Return UPB_PRESERVE_NONE

@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 #include "upb/message/message.h"
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/wire/decode_fast/cardinality.h"
 #include "upb/wire/decode_fast/dispatch.h"
@@ -14,9 +15,9 @@
 UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_FallbackToMiniTable(
     struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
     uint64_t hasbits, uint64_t data) {
-  (void)data;
   upb_DecodeFast_SetHasbits(msg, hasbits);
-  return (upb_FastDecoder_Return){.ptr = ptr};
+  return (upb_FastDecoder_Return){.ptr = ptr,
+                                  .field = (const upb_MiniTableField*)data};
 }
 
 UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeGeneric(
@@ -24,6 +25,14 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeGeneric(
     uint64_t hasbits, uint64_t data) {
   upb_DecodeFastNext ret;
   UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, &ret);
+  return _upb_FastDecoder_FallbackToMiniTable(d, ptr, msg, table, hasbits, 0);
+}
+
+UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeGenericField(
+    struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
+    uint64_t hasbits, uint64_t data) {
+  upb_DecodeFastNext ret;
+  UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToKnownField, &ret);
   return _upb_FastDecoder_FallbackToMiniTable(d, ptr, msg, table, hasbits,
                                               data);
 }
