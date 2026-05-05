@@ -557,7 +557,15 @@ Error, UINTPTR_MAX is undefined
 //     }
 //   }
 
+#if defined(__GNUC__) && !defined(__clang__)
+// GCC can't handle mismatched retain attributes in the same section:
+//   https://github.com/protocolbuffers/protobuf/issues/26385
+// To work around this, we retain all linker array elements, even though this
+// effectively disables tree-shaking of unused extensions when using GCC.
+#define UPB_LINKARR_ATTR UPB_RETAIN
+#else
 #define UPB_LINKARR_ATTR
+#endif
 
 #define UPB_LINKARR_SENTINEL UPB_RETAIN __attribute__((weak, used))
 
@@ -5790,6 +5798,9 @@ upb_ExtensionRegistryStatus upb_ExtensionRegistry_AddArray(
 UPB_API const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
     const upb_ExtensionRegistry* r, const upb_MiniTable* t, uint32_t num);
 
+// Returns the number of extensions in the registry. For testing/debugging only.
+UPB_API size_t upb_ExtensionRegistry_Size(const upb_ExtensionRegistry* r);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
@@ -5900,8 +5911,8 @@ extern "C" {
 #endif
 
 typedef struct UPB_PRIVATE(upb_GeneratedExtensionListEntry) {
-  const struct upb_MiniTableExtension* start;
-  const struct upb_MiniTableExtension* stop;
+  const struct upb_MiniTableExtension** start;
+  const struct upb_MiniTableExtension** stop;
   const struct UPB_PRIVATE(upb_GeneratedExtensionListEntry) * next;
 } UPB_PRIVATE(upb_GeneratedExtensionListEntry);
 
