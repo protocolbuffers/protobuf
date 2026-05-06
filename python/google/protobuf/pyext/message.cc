@@ -302,6 +302,16 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   newtype->py_message_factory = py_message_factory;
   Py_INCREF(newtype->py_message_factory);
 
+  // Cache the C++ prototype (default instance) of the message to avoid
+  // calling GetPrototype() repeatedly and causing lock contention.
+  newtype->prototype =
+      py_message_factory->message_factory->GetPrototype(descriptor);
+  if (newtype->prototype == nullptr) {
+    PyErr_SetString(PyExc_TypeError,
+                    std::string(descriptor->full_name()).c_str());
+    return nullptr;
+  }
+
   // Register the message in the MessageFactory.
   // TODO: Move this call to MessageFactory.GetPrototype() when the
   // MessageFactory is fully implemented in C++.
@@ -1302,20 +1312,12 @@ static CMessage* NewCMessage(CMessageClass* type) {
                  Py_TYPE(type)->tp_name);
     return nullptr;
   }
-  const Message* prototype =
-      type->py_message_factory->message_factory->GetPrototype(
-          message_descriptor);
-  if (prototype == nullptr) {
-    PyErr_SetString(PyExc_TypeError,
-                    std::string(message_descriptor->full_name()).c_str());
-    return nullptr;
-  }
 
   CMessage* self = NewEmptyMessage(type);
   if (self == nullptr) {
     return nullptr;
   }
-  self->message = prototype->New(nullptr);  // Ensures no arena is used.
+  self->message = type->prototype->New(nullptr);  // Ensures no arena is used.
   self->parent = nullptr;                   // This message owns its data.
   return self;
 }

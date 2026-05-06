@@ -3077,8 +3077,13 @@ typedef struct _upb_tabent {
   upb_value val;
   upb_key key;
 
-  /* Internal chaining */
-  struct _upb_tabent* next;
+  /* Internal chaining and presence:
+   * - next == NULL: The entry is empty.
+   * - ent.next == kUpb_NoNextTabent indicating the entry is occupied but has no
+   *   successor.
+   * - otherwise: The entry is occupied, and next points to the next entry in
+   *   the collision chain. */
+  uintptr_t next;
 } upb_tabent;
 
 typedef struct {
@@ -3094,47 +3099,39 @@ UPB_INLINE size_t upb_table_size(const upb_table* t) { return t->mask + 1; }
 
 // Internal-only functions, in .h file only out of necessity.
 
-UPB_INLINE upb_key upb_key_empty(void) {
-  upb_key ret;
-  memset(&ret, 0, sizeof(upb_key));
-  return ret;
-}
+UPB_INLINE bool upb_tabent_isempty(const upb_tabent* e) { return e->next == 0; }
 
-UPB_INLINE bool upb_tabent_isempty(const upb_tabent* e) {
-  upb_key key = e->key;
-  UPB_STATIC_ASSERT(sizeof(key.num) == sizeof(key.str), "Sizes don't match");
-  uintptr_t val;
-  memcpy(&val, &key, sizeof(val));
-  // Note: for upb_inttables a tab_key is a true integer key value, but the
-  // inttable maintains the invariant that 0 value is always stored in the
-  // compact table and never as a upb_tabent* so we can always use the 0
-  // key value to identify an empty tabent.
-  return val == 0;
-}
+#define kUpb_NoNextTabent ((uintptr_t)1)
 
 UPB_INLINE bool upb_tabent_hasnext(const upb_tabent* e) {
-  return e->next != NULL;
+  UPB_STATIC_ASSERT(UPB_ALIGN_OF(upb_tabent) > 1,
+                    "valid upb_tabent* can't reference address 1");
+  return e->next != kUpb_NoNextTabent;
 }
 
-UPB_INLINE void upb_tabent_clearnext(upb_tabent* e) { e->next = NULL; }
+UPB_INLINE void upb_tabent_clearnext(upb_tabent* e) {
+  e->next = kUpb_NoNextTabent;
+}
 
 UPB_INLINE void upb_tabent_clear(upb_tabent* e) {
-  memset(&e->key, 0, sizeof(e->key));
-  e->next = NULL;
+  e->next = 0;
   UPB_ASSERT(upb_tabent_isempty(e));
 }
 
 UPB_INLINE upb_tabent* upb_tabent_next(const upb_tabent* e) {
   UPB_ASSERT(upb_tabent_hasnext(e));
-  return e->next;
+  return (upb_tabent*)e->next;
 }
 
 UPB_INLINE void upb_tabent_setnext(upb_tabent* e, upb_tabent* next) {
-  UPB_ASSERT(next != NULL);
+  UPB_ASSERT((uintptr_t)next != 0);
   UPB_ASSERT(next != e);
-  e->next = next;
+  UPB_ASSERT((uintptr_t)next != kUpb_NoNextTabent);
+  e->next = (uintptr_t)next;
   UPB_ASSERT(upb_tabent_hasnext(e));
 }
+
+#undef kUpb_NoNextTabent
 
 uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed);
 

@@ -140,6 +140,9 @@ struct CMessageClass {
   // This reference must stay alive until all message pointers are destructed.
   PyMessageFactory* py_message_factory;
 
+  // C++ prototype (default instance) of this message.
+  const Message* prototype;
+
   PyObject* AsPyObject() { return reinterpret_cast<PyObject*>(this); }
 };
 
