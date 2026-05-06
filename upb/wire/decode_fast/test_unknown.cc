@@ -121,6 +121,46 @@ INSTANTIATE_TEST_SUITE_P(
       return test_case.name + (extensible ? "Extensible" : "Normal");
     });
 
+TEST(UnknownFieldTest, ConsecutiveUnknownFields) {
+  char trace_buf[64];
+  upb::Arena msg_arena;
+  upb::Arena mt_arena;
+
+  // Create a MiniTable with field 1.
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::Int32>(
+      1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+  upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+
+  // Many small unknown fields to avoid buffer refresh and verify lookahead.
+  wire_types::WireMessage wm;
+  for (int i = 10; i < 20; ++i) {
+    wm.push_back({(uint32_t)i, wire_types::Varint{(uint64_t)i}});
+  }
+  std::string payload = ToBinaryPayload(wm);
+
+  upb_DecodeStatus result =
+      upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr,
+                          kUpb_DecodeOption_AliasString, msg_arena.ptr(),
+                          trace_buf, sizeof(trace_buf));
+  ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+
+  // Verify they were saved as unknown fields.
+  ASSERT_TRUE(upb_Message_HasUnknown(msg));
+
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_StringView unknown_data;
+  std::string captured_unknown;
+  while (upb_Message_NextUnknown(msg, &unknown_data, &iter)) {
+    captured_unknown.append(unknown_data.data, unknown_data.size);
+  }
+  EXPECT_EQ(captured_unknown, payload);
+
+#if !defined(NDEBUG) && defined(UPB_ENABLE_FASTTABLE)
+  // We expect to see 'U' trace events for consecutive unknown fields.
+  EXPECT_TRUE(absl::StrContains(trace_buf, "U"));
+#endif
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace upb

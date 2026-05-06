@@ -140,6 +140,7 @@ UPB_INLINE char* _upb_Decoder_TracePtr(upb_Decoder* d) {
 //   'F'  Field successfully parsed fast.
 //   '<'  Fallback to MiniTable parser.
 //   'M'  Field successfully parsed with MiniTable.
+//   'U'  Unknown field lookahead hit.
 //   'X'  Truncated -- trace buffer is full, further events were discarded.
 //
 // Lower-case letters indicate events that are more subtle and therefore

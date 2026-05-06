@@ -5,6 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "upb/base/string_view.h"
@@ -20,6 +21,7 @@
 #include "upb/wire/decode_fast/field_parsers.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/decoder.h"
+#include "upb/wire/internal/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
 
 // Must be last.
@@ -57,97 +59,129 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
     struct upb_Decoder* d, const char** ptr, upb_Message* msg, intptr_t table,
     uint64_t hasbits, uint64_t* data, upb_DecodeFastNext* ret) {
   const char* start = *ptr;
-  uint64_t d_val = *data;
+  const upb_MiniTable* table_p = decode_totablep(table);
+  const uint8_t mask = (uint8_t)table;
 
-  uint32_t tag_len;
-  // Important: if the branch is correctly predicted, the tag_len assignment is
-  // treated as constant and subsequent loads will not have a data dependency on
-  // the branch.
-  if (UPB_LIKELY((d_val & 0x80) == 0)) {
-    tag_len = 1;
-    // Ensure the field number is not 0.
-    // Use bitwise op to only examine first byte minus additional tag data.
-    if (UPB_UNLIKELY((d_val & 0xF8) == 0)) {
-      return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
+  while (true) {
+    uint64_t d_val = *data;
+
+    uint32_t tag_len;
+    // Important: if the branch is correctly predicted, the tag_len assignment
+    // is treated as constant and subsequent loads will not have a data
+    // dependency on the branch.
+    if (UPB_LIKELY((d_val & 0x80) == 0)) {
+      tag_len = 1;
+      // Ensure the field number is not 0.
+      // Use bitwise op to only examine first byte minus additional tag data.
+      if (UPB_UNLIKELY((d_val & 0xF8) == 0)) {
+        return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
+      }
+    } else if ((d_val & 0x8000) == 0) {
+      tag_len = 2;
+      if (UPB_UNLIKELY((d_val & 0xFF80) == 0x80)) {
+        // Detect a 0-valued tag or a "2-byte" tag that is an overlong 1-byte
+        // tag. Fasttable isn't set up to deal with overlong varint tags (which
+        // will not match the canonical tag assigned to a slot) so fallback.
+        // (Fallback will also handle erroring on 0-valued fields.)
+        break;
+      }
+    } else {
+      // Tag >=2048
+      break;
     }
-  } else if ((d_val & 0x8000) == 0) {
-    tag_len = 2;
-    if (UPB_UNLIKELY((d_val & 0xFF80) == 0x80)) {
-      // Detect a 0-valued tag or a "2-byte" tag that is an overlong 1-byte tag.
-      // Fasttable isn't set up to deal with overlong varint tags (which will
-      // not match the canonical tag assigned to a slot) so fallback. (Fallback
-      // will also handle erroring on 0-valued fields.)
-      return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
-    }
-  } else {
-    // Tag >=2048
-    return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
-  }
 
-  uint32_t wire_type = d_val & 0x07;
+    uint32_t wire_type = d_val & 0x07;
 
-  // Assert that the field is either truly unknown or has a mismatched wire
-  // type.
+    // Assert that the field is either truly unknown or has a mismatched wire
+    // type.
 #ifndef NDEBUG
-  uint32_t field_num;
-  if ((d_val & 0x80) == 0) {
-    field_num = (uint8_t)d_val >> 3;
-  } else {
-    field_num = _upb_DecodeFast_Tag2FieldNumber(d_val);
-  }
-  const upb_MiniTable* mt = decode_totablep(table);
-  const upb_MiniTableField* field =
-      upb_MiniTable_FindFieldByNumber(mt, field_num);
-  UPB_ASSERT(field == NULL ||
-             _upb_MiniTableField_GetWireType(field) != wire_type);
+    uint32_t field_num;
+    if ((d_val & 0x80) == 0) {
+      field_num = (uint8_t)d_val >> 3;
+    } else {
+      field_num = _upb_DecodeFast_Tag2FieldNumber(d_val);
+    }
+    const upb_MiniTable* mt = decode_totablep(table);
+    const upb_MiniTableField* field =
+        upb_MiniTable_FindFieldByNumber(mt, field_num);
+    UPB_ASSERT(field == NULL ||
+               _upb_MiniTableField_GetWireType(field) != wire_type);
 #endif
 
-  if (UPB_UNLIKELY(wire_type == kUpb_WireType_EndGroup ||
-                   wire_type == kUpb_WireType_StartGroup)) {
-    // FastDecoder doesn't handle group fields, but it can be used to decode a
-    // message that is itself a group. When decoding a group, the end of the
-    // message is marked by an EndGroup tag. Since EndGroup tags are not in
-    // the MiniTable, they are routed to the unknown field handler. We must
-    // intercept them here to properly terminate the message.
-    return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
-  }
-
-  *ptr += tag_len;
-  upb_EpsCopyInputStream_StartCapture(&d->input, start);
-
-  switch (wire_type) {
-    case kUpb_WireType_Varint:
-      *ptr = upb_WireReader_SkipVarint(*ptr, &d->input);
-      if (UPB_UNLIKELY(!*ptr)) {
-        return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
-      }
-      break;
-    case kUpb_WireType_32Bit:
-      UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(&d->input, 4);
-      *ptr += 4;
-      break;
-    case kUpb_WireType_64Bit:
-      UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(&d->input, 8);
-      *ptr += 8;
-      break;
-    case kUpb_WireType_Delimited: {
-      int size;
-      const char* p = upb_WireReader_ReadSize(*ptr, &size, &d->input);
-      if (UPB_UNLIKELY(!p ||
-                       !upb_EpsCopyInputStream_CheckSize(&d->input, p, size))) {
-        return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
-      }
-      *ptr = p + size;
+    if (UPB_UNLIKELY(wire_type == kUpb_WireType_EndGroup ||
+                     wire_type == kUpb_WireType_StartGroup)) {
+      // FastDecoder doesn't handle group fields, but it can be used to decode a
+      // message that is itself a group. When decoding a group, the end of the
+      // message is marked by an EndGroup tag. Since EndGroup tags are not in
+      // the MiniTable, they are routed to the unknown field handler. We must
+      // intercept them here to properly terminate the message.
+      *ret = kUpb_DecodeFastNext_FallbackToMiniTable;
       break;
     }
-    default:
-      return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
+
+    *ptr += tag_len;
+
+    switch (wire_type) {
+      case kUpb_WireType_Varint:
+        *ptr = upb_WireReader_SkipVarint(*ptr, &d->input);
+        if (UPB_UNLIKELY(!*ptr)) {
+          return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
+        }
+        break;
+      case kUpb_WireType_32Bit:
+        UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(&d->input, 4);
+        *ptr += 4;
+        break;
+      case kUpb_WireType_64Bit:
+        UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(&d->input, 8);
+        *ptr += 8;
+        break;
+      case kUpb_WireType_Delimited: {
+        int size;
+        const char* p = upb_WireReader_ReadSize(*ptr, &size, &d->input);
+        if (UPB_UNLIKELY(
+                !p || !upb_EpsCopyInputStream_CheckSize(&d->input, p, size))) {
+          return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
+        }
+        *ptr = p + size;
+        break;
+      }
+      default:
+        return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
+    }
+
+    // Check if there are consecutive fields.
+    int overrun;
+    if (UPB_UNLIKELY(UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(
+                         &d->input, *ptr, &overrun) !=
+                     kUpb_IsDoneStatus_NotDone)) {
+      // End of input, add what we've found.
+      *ret = kUpb_DecodeFastNext_MessageIsDoneFallback;
+      break;
+    }
+
+    const uint16_t next_tag = _upb_FastDecoder_LoadTag(*ptr);
+    const size_t ofs = next_tag & mask;
+    const _upb_FastTable_Entry* entry =
+        &table_p->UPB_PRIVATE(fasttable)[ofs >> 3];
+
+    if (entry->field_parser != _upb_FastDecoder_DecodeUnknown) {
+      break;
+    }
+
+    *data = next_tag;
+    _upb_Decoder_Trace(d, 'U');
+  }
+
+  if (UPB_UNLIKELY(*ptr == start)) {
+    // Indicates our initial message was a group.
+    return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
   }
 
   upb_StringView sv;
-  if (UPB_UNLIKELY(!upb_EpsCopyInputStream_EndCapture(&d->input, *ptr, &sv))) {
-    return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
-  }
+  upb_EpsCopyInputStream_StartCapture(&d->input, start);
+  bool ok = upb_EpsCopyInputStream_EndCapture(&d->input, *ptr, &sv);
+  UPB_ASSERT(ok);
 
   bool handled_fast =
       // Check AddUnknown mode is AliasAllowMerge.
