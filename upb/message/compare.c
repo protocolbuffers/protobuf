@@ -11,9 +11,7 @@
 #include <stdint.h>
 
 #include "upb/base/descriptor_constants.h"
-#include "upb/message/accessors.h"
 #include "upb/message/array.h"
-#include "upb/message/internal/accessors.h"
 #include "upb/message/internal/compare_unknown.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/iterator.h"
@@ -26,7 +24,6 @@
 
 // Must be last.
 #include "upb/port/def.inc"
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -140,13 +137,14 @@ static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
   size_t count1 = 0;
   size_t iter1 = kUpb_Message_ExtensionBegin;
   while (upb_Message_NextExtension(msg1, &e, &val1, &iter1)) {
-    const upb_Extension* ext2 = UPB_PRIVATE(_upb_Message_Getext)(msg2, e);
+    const upb_Extension* ext2 =
+        UPB_PRIVATE(_upb_Message_Getext)(msg2, &e->UPB_PRIVATE(ext));
     if (!ext2) return false;
 
     count1++;
 
     const upb_MessageValue val2 = ext2->data;
-    const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
+    const upb_MiniTableField* f = &e->UPB_PRIVATE(ext).UPB_PRIVATE(field);
     const upb_MiniTable* subm = upb_MiniTableField_IsSubMessage(f)
                                     ? upb_MiniTableExtension_GetSubMessage(e)
                                     : NULL;

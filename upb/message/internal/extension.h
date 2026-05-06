@@ -15,7 +15,7 @@
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/types.h"
 #include "upb/message/value.h"
-#include "upb/mini_table/extension.h"
+#include "upb/mini_table/internal/extension.h"
 #include "upb/mini_table/internal/field.h"
 
 // Must be last.
@@ -30,7 +30,7 @@
 // it wastes 15 bytes). We accept this because we expect messages to be
 // the most common extension type.
 typedef struct {
-  const upb_MiniTableExtension* ext;
+  const struct upb_MiniTableExtension_Internal* ext;
   upb_MessageValue data;
 } upb_Extension;
 
@@ -42,13 +42,14 @@ extern "C" {
 // |ext| is copied into the message instance.
 // This logically replaces any previously-added extension with this number.
 UPB_NODISCARD upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
-    struct upb_Message* msg, const upb_MiniTableExtension* ext,
+    struct upb_Message* msg, const struct upb_MiniTableExtension_Internal* ext,
     upb_Arena* arena);
 
 // Returns an extension for a message with a given mini table,
 // or NULL if no extension exists with this mini table.
 const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
-    const struct upb_Message* msg, const upb_MiniTableExtension* ext);
+    const struct upb_Message* msg,
+    const struct upb_MiniTableExtension_Internal* ext);
 
 UPB_INLINE bool UPB_PRIVATE(_upb_Extension_IsEmpty)(const upb_Extension* ext) {
   switch (

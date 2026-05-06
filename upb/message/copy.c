@@ -25,6 +25,7 @@
 #include "upb/message/message.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/extension.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/size_log2.h"
 #include "upb/mini_table/message.h"
@@ -173,12 +174,12 @@ static bool upb_Message_Array_DeepClone(const upb_Array* array,
 }
 
 static bool upb_Clone_ExtensionValue(
-    const upb_MiniTableExtension* mini_table_ext, const upb_Extension* source,
-    upb_Extension* dest, upb_Arena* arena) {
+    const struct upb_MiniTableExtension_Internal* mini_table_ext,
+    const upb_Extension* source, upb_Extension* dest, upb_Arena* arena) {
   dest->data = source->data;
   return upb_Clone_MessageValue(
-      &dest->data, upb_MiniTableExtension_CType(mini_table_ext),
-      upb_MiniTableExtension_GetSubMessage(mini_table_ext), arena);
+      &dest->data, upb_MiniTableExtension_Internal_CType(mini_table_ext),
+      upb_MiniTableExtension_Internal_GetSubMessage(mini_table_ext), arena);
 }
 
 upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
@@ -261,7 +262,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
         UPB_ASSERT(msg_array);
         upb_Array* cloned_array = upb_Array_DeepClone(
             msg_array, upb_MiniTableField_CType(field),
-            upb_MiniTableExtension_GetSubMessage(msg_ext->ext), arena);
+            upb_MiniTableExtension_Internal_GetSubMessage(msg_ext->ext), arena);
         if (!cloned_array) {
           return NULL;
         }

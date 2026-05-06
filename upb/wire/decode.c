@@ -32,6 +32,7 @@
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/extension.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/internal/sub.h"
@@ -652,8 +653,9 @@ enum {
 };
 
 static void upb_Decoder_AddKnownMessageSetItem(
-    upb_Decoder* d, upb_Message* msg, const upb_MiniTableExtension* item_mt,
-    const char* data, uint32_t size) {
+    upb_Decoder* d, upb_Message* msg,
+    const struct upb_MiniTableExtension_Internal* item_mt, const char* data,
+    uint32_t size) {
   upb_Extension* ext =
       UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(msg, item_mt, &d->arena);
   if (UPB_UNLIKELY(!ext)) {
@@ -668,8 +670,9 @@ static void upb_Decoder_AddKnownMessageSetItem(
     upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_MaxDepthExceeded);
   }
   upb_DecodeStatus status = upb_Decode(
-      data, size, submsg, upb_MiniTableExtension_GetSubMessage(item_mt),
-      d->extreg, upb_Decode_LimitDepth(d->options, d->depth - 1), &d->arena);
+      data, size, submsg,
+      upb_MiniTableExtension_Internal_GetSubMessage(item_mt), d->extreg,
+      upb_Decode_LimitDepth(d->options, d->depth - 1), &d->arena);
   if (status != kUpb_DecodeStatus_Ok) {
     upb_ErrorHandler_ThrowError(d->err, status);
   }
@@ -708,7 +711,8 @@ static void upb_Decoder_AddMessageSetItem(upb_Decoder* d, upb_Message* msg,
   const upb_MiniTableExtension* item_mt =
       upb_ExtensionRegistry_Lookup(d->extreg, t, type_id);
   if (item_mt) {
-    upb_Decoder_AddKnownMessageSetItem(d, msg, item_mt, data, size);
+    upb_Decoder_AddKnownMessageSetItem(d, msg, &item_mt->UPB_PRIVATE(ext), data,
+                                       size);
   } else {
     upb_Decoder_AddUnknownMessageSetItem(d, msg, type_id, data, size);
   }
@@ -785,7 +789,7 @@ UPB_NOINLINE const upb_MiniTableField* _upb_Decoder_FindExtensionField(
        wire_type == kUpb_WireType_Delimited)) {
     const upb_MiniTableExtension* ext =
         upb_ExtensionRegistry_Lookup(d->extreg, t, field_number);
-    if (ext) return &ext->UPB_PRIVATE(field);
+    if (ext) return &ext->UPB_PRIVATE(ext).UPB_PRIVATE(field);
   } else if (ext_mode == kUpb_ExtMode_IsMessageSet) {
     if (field_number == kUpb_MsgSet_Item) {
       static upb_MiniTableField item = {
@@ -1009,7 +1013,7 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
     const upb_MiniTableExtension* ext_layout =
         (const upb_MiniTableExtension*)field;
     upb_Extension* ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
-        msg, ext_layout, &d->arena);
+        msg, &ext_layout->UPB_PRIVATE(ext), &d->arena);
     if (UPB_UNLIKELY(!ext)) {
       upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
     }

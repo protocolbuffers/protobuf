@@ -68,7 +68,7 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSERT(upb_MiniTableExtension_CType(ext_table) == kUpb_CType_Message);
   const upb_Extension* extension =
-      UPB_PRIVATE(_upb_Message_Getext)(msg, ext_table);
+      UPB_PRIVATE(_upb_Message_Getext)(msg, &ext_table->UPB_PRIVATE(ext));
   if (extension) {
     memcpy(value, &extension->data, sizeof(upb_MessageValue));
     return kUpb_GetExtension_Ok;
@@ -125,8 +125,8 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
     return kUpb_GetExtension_NotPresent;
   }
 
-  upb_Extension* ext =
-      UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(msg, ext_table, arena);
+  upb_Extension* ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+      msg, &ext_table->UPB_PRIVATE(ext), arena);
   if (!ext) {
     return kUpb_GetExtension_OutOfMemory;
   }

@@ -23,6 +23,7 @@
 #include "upb/mini_table/extension.h"
 
 // Must be last.
+#include "upb/mini_table/internal/extension.h"
 #include "upb/port/def.inc"
 
 static int _upb_mapsorter_intkeys(const void* _a, const void* _b) {
@@ -157,8 +158,8 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
 static int _upb_mapsorter_cmpext(const void* _a, const void* _b) {
   const upb_Extension* const* a = _a;
   const upb_Extension* const* b = _b;
-  uint32_t a_num = upb_MiniTableExtension_Number((*a)->ext);
-  uint32_t b_num = upb_MiniTableExtension_Number((*b)->ext);
+  uint32_t a_num = upb_MiniTableExtension_Internal_Number((*a)->ext);
+  uint32_t b_num = upb_MiniTableExtension_Internal_Number((*b)->ext);
   UPB_ASSERT(a_num != b_num);
   return a_num < b_num ? -1 : 1;
 }

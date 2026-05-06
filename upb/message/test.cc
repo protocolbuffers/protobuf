@@ -247,7 +247,7 @@ TEST(MessageTest, LargeMessageSetExtension) {
 
   upb_MiniTableExtension ext;
   memset(&ext, 0, sizeof(ext));
-  ext.UPB_PRIVATE(field).UPB_ONLYBITS(number) = (1 << 29) + 5;
+  ext.UPB_PRIVATE(ext).UPB_PRIVATE(field).UPB_ONLYBITS(number) = (1 << 29) + 5;
   ext.UPB_PRIVATE(extendee) = &upb_0test__TestMessageSet_msg_init;
 
   EXPECT_EQ(upb_ExtensionRegistry_Add(reg, &ext),

@@ -308,8 +308,7 @@ UPB_INLINE bool upb_Message_NextExtension(const struct upb_Message* msg,
 
         // Empty repeated fields or maps semantically don't exist.
         if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
-
-        *out_e = ext->ext;
+        *out_e = (const upb_MiniTableExtension*)ext->ext;
         *out_v = ext->data;
         *iter = i;
         return true;
@@ -338,8 +337,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
 
     // Empty repeated fields or maps semantically don't exist.
     if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
-
-    *out_e = ext->ext;
+    *out_e = (const upb_MiniTableExtension*)ext->ext;
     *out_v = ext->data;
     *iter = i;
     return true;

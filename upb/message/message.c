@@ -24,6 +24,7 @@
 #include "upb/message/value.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/extension.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/message.h"
 
@@ -290,9 +291,9 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
       continue;
     }
     const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
-    const upb_MiniTableExtension* e = ext->ext;
+    const struct upb_MiniTableExtension_Internal* e = ext->ext;
     const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
-    const upb_MiniTable* m2 = upb_MiniTableExtension_GetSubMessage(e);
+    const upb_MiniTable* m2 = upb_MiniTableExtension_Internal_GetSubMessage(e);
 
     upb_MessageValue val;
     memcpy(&val, &(ext->data), sizeof(upb_MessageValue));
