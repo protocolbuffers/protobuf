@@ -24,7 +24,9 @@
 #include "upb/mini_descriptor/internal/base92.h"
 #include "upb/mini_descriptor/internal/modifiers.h"
 #include "upb/mini_table/enum.h"
+#include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 
@@ -297,4 +299,31 @@ TEST_P(MiniTableTest, Extendible) {
   ASSERT_NE(nullptr, table);
   EXPECT_EQ(kUpb_ExtMode_Extendable,
             table->UPB_PRIVATE(ext) & kUpb_ExtMode_Extendable);
+}
+
+TEST_P(MiniTableTest, ExtensionFieldCollision) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+
+  // Create extendable message with field number 1.
+  ASSERT_TRUE(e.StartMessage(kUpb_MessageModifier_IsExtendable));
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Int32, 1, 0));
+
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table) << status.error_message();
+
+  // Encode an extension with field number 1.
+  upb::MtDataEncoder e2;
+  ASSERT_TRUE(e2.EncodeExtension(kUpb_FieldType_Int32, 1, 0));
+
+  // Should fail due to collision with the extendee's field.
+  upb_MiniTableExtension ext;
+  upb_MiniTableSub sub;
+  const char* ptr =
+      _upb_MiniTableExtension_Init(e2.data().data(), e2.data().size(), &ext,
+                                   table, sub, GetParam(), status.ptr());
+
+  EXPECT_EQ(nullptr, ptr);
 }
