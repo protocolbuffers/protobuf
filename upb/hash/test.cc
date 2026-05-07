@@ -576,3 +576,56 @@ TEST(Table, Init) {
     upb_strtable_init(&t, i, arena.ptr());
   }
 }
+
+TEST(IntTableTest, RemoveIterHeadOfChain) {
+  upb::Arena arena;
+  upb_inttable t;
+  upb_inttable_init(&t, arena.ptr());
+
+  // Insert two keys that collide on the initial table size of 8 (mask 7).
+  // This will form a chain where 0 is at the head and 8 is its next element.
+  upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr());
+  upb_inttable_insert(&t, 8, upb_value_bool(true), arena.ptr());
+
+  intptr_t iter = UPB_INTTABLE_BEGIN;
+  uintptr_t key;
+  upb_value val;
+
+  // Iterate through the table. When we encounter 0, remove it via removeiter.
+  while (upb_inttable_next(&t, &key, &val, &iter)) {
+    if (key == 0) {
+      upb_inttable_removeiter(&t, &iter);
+    }
+  }
+
+  // The remaining element 8 should still be in the table and reachable.
+  EXPECT_EQ(upb_inttable_count(&t), 1);
+  EXPECT_TRUE(upb_inttable_lookup(&t, 8, &val));
+}
+
+TEST(IntTableTest, RemoveIterHeadOfChainDemonstratesBug) {
+  upb::Arena arena;
+  upb_inttable t;
+  upb_inttable_init(&t, arena.ptr());
+
+  // Insert two keys that collide on the initial table size of 8 (mask 7).
+  // Keys 1 and 9 are used so that they fall into the hash part of the table,
+  // forming a chain where 1 is at the head and 9 is its next element.
+  upb_inttable_insert(&t, 1, upb_value_bool(true), arena.ptr());
+  upb_inttable_insert(&t, 9, upb_value_bool(true), arena.ptr());
+
+  intptr_t iter = UPB_INTTABLE_BEGIN;
+  uintptr_t key;
+  upb_value val;
+
+  // Iterate through the table. When we encounter 1, remove it via removeiter.
+  while (upb_inttable_next(&t, &key, &val, &iter)) {
+    if (key == 1) {
+      upb_inttable_removeiter(&t, &iter);
+    }
+  }
+
+  // The remaining element 9 should still be in the table and reachable.
+  EXPECT_EQ(upb_inttable_count(&t), 1);
+  EXPECT_TRUE(upb_inttable_lookup(&t, 9, &val));
+}
