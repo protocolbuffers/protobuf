@@ -128,20 +128,6 @@ const char* upb_Decoder_DecodeSize(upb_Decoder* d, const char* ptr,
   return ptr;
 }
 
-UPB_FORCEINLINE upb_AddUnknownMode
-_upb_Decoder_GetAddUnknownMode(upb_Decoder* d, const char* data) {
-  if (d->options & kUpb_DecodeOption_AliasString) {
-    if (data != d->input.buffer_start) {
-      // If the data is not from the beginning of the input buffer, then we can
-      // safely attempt to coalesce this region with the previous one.
-      return kUpb_AddUnknown_AliasAllowMerge;
-    } else {
-      return kUpb_AddUnknown_Alias;
-    }
-  }
-  return kUpb_AddUnknown_Copy;
-}
-
 static void _upb_Decoder_MungeInt32(wireval* val) {
   if (!upb_IsLittleEndian()) {
     /* The next stage will memcpy(dst, &val, 4) */
@@ -1051,9 +1037,19 @@ static const char* _upb_Decoder_DecodeUnknownField(
   upb_StringView sv;
   upb_EpsCopyInputStream_EndCapture(&d->input, ptr, &sv);
 
-  if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
-          msg, sv.data, sv.size, &d->arena,
-          _upb_Decoder_GetAddUnknownMode(d, sv.data))) {
+  upb_AddUnknownMode mode = kUpb_AddUnknown_Copy;
+  if (d->options & kUpb_DecodeOption_AliasString) {
+    if (sv.data != d->input.buffer_start) {
+      // If the data is not from the beginning of the input buffer, then we can
+      // safely attempt to coalesce this region with the previous one.
+      mode = kUpb_AddUnknown_AliasAllowMerge;
+    } else {
+      mode = kUpb_AddUnknown_Alias;
+    }
+  }
+
+  if (!UPB_PRIVATE(_upb_Message_AddUnknown)(msg, sv.data, sv.size, &d->arena,
+                                            mode)) {
     upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   }
 
@@ -1183,45 +1179,11 @@ const char* _upb_Decoder_DecodeField(upb_Decoder* d, const char* ptr,
 }
 
 UPB_NOINLINE
-static const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d,
-                                                   const char* ptr,
-                                                   upb_Message* msg) {
-  const char* start = ptr;
-  upb_EpsCopyInputStream_StartCapture(&d->input, start);
-  while (!upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
-    uint32_t tag;
-    ptr = upb_WireReader_ReadTag(ptr, &tag, EPS(d));
-    if ((tag & 7) == kUpb_WireType_EndGroup) {
-      d->end_group = tag >> 3;
-      break;
-    }
-    ptr = _upb_WireReader_SkipValue(ptr, tag, d->depth, &d->input);
-  }
-  upb_StringView sv;
-  upb_EpsCopyInputStream_EndCapture(&d->input, ptr, &sv);
-
-  if (sv.size > 0) {
-    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
-            msg, sv.data, sv.size, &d->arena,
-            _upb_Decoder_GetAddUnknownMode(d, sv.data))) {
-      upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
-    }
-  }
-  return ptr;
-}
-
-UPB_NOINLINE
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
                                        const upb_MiniTable* mt) {
   UPB_ASSERT(mt);
   UPB_ASSERT(d->message_is_done == false);
-
-  if (UPB_UNLIKELY(upb_MiniTable_FieldCount(mt) == 0 &&
-                   UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(mt) ==
-                       kUpb_ExtMode_NonExtendable)) {
-    return _upb_Decoder_DecodeEmptyMessage(d, ptr, msg);
-  }
 
   do {
     ptr = _upb_Decoder_DecodeField(d, ptr, msg, mt, 0, 0);

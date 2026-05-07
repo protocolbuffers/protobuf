@@ -91,7 +91,6 @@ cc_test(
     features = UPB_DEFAULT_FEATURES,
     deps = [
         ":wire",
-        "//upb/base",
         "//upb/mem",
         "//upb/message",
         "//upb/message:message_cc",
