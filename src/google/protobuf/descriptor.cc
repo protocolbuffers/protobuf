@@ -5858,9 +5858,14 @@ const typename DescriptorT::OptionsType* DescriptorBuilder::AllocateOptionsImpl(
     return &DescriptorT::OptionsType::default_instance();
   }
 
-  const bool parse_success =
-      internal::ParseNoReflection(orig_options.SerializeAsString(), *options);
-  ABSL_DCHECK(parse_success);
+  {
+    const std::string serialized = orig_options.SerializeAsString();
+    PROTOBUF_DEBUG_COUNTER("Descriptor.AllocateOptionsInputBytes")
+        .IncLog(serialized.size());
+    const bool parse_success =
+        internal::ParseNoReflection(serialized, *options);
+    ABSL_DCHECK(parse_success);
+  }
 
   // Don't add to options_to_interpret_ unless there were uninterpreted
   // options.  This not only avoids unnecessary work, but prevents a

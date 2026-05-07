@@ -469,9 +469,10 @@ class PROTOBUF_EXPORT Parser final {
                           const FileDescriptorProto* containing_file);
 
   // Parse options of a single method or stream.
-  bool ParseMethodOptions(const LocationRecorder& parent_location,
+  bool ParseMethodOptions(MethodDescriptorProto* method,
+                          const LocationRecorder& parent_location,
                           const FileDescriptorProto* containing_file,
-                          int optionsFieldNumber, Message* mutable_options);
+                          int optionsFieldNumber);
 
   // Parse "required", "optional", or "repeated" and fill in "label"
   // with the value. Returns true if such a label is consumed.

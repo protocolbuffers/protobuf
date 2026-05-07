@@ -1853,18 +1853,22 @@ TEST_F(ParseServiceTest, SimpleService) {
 
 TEST_F(ParseServiceTest, MethodsAndStreams) {
   ExpectParsesTo(
-      "service TestService {\n"
-      "  rpc Foo(In1) returns (Out1);\n"
-      "  rpc Bar(In2) returns (Out2);\n"
-      "  rpc Baz(In3) returns (Out3);\n"
-      "}\n",
-
-      "service {"
-      "  name: \"TestService\""
-      "  method { name:\"Foo\" input_type:\"In1\" output_type:\"Out1\" }"
-      "  method { name:\"Bar\" input_type:\"In2\" output_type:\"Out2\" }"
-      "  method { name:\"Baz\" input_type:\"In3\" output_type:\"Out3\" }"
-      "}");
+      R"schema(
+      service TestService {
+        rpc Foo(In1) returns (Out1);
+        rpc Bar(In2) returns (Out2);
+        rpc Baz(In3) returns (Out3);
+        rpc EmptyOptions(In4) returns (Out4) {}
+      })schema",
+      R"pb(
+        service {
+          name: "TestService"
+          method { name: "Foo" input_type: "In1" output_type: "Out1" }
+          method { name: "Bar" input_type: "In2" output_type: "Out2" }
+          method { name: "Baz" input_type: "In3" output_type: "Out3" }
+          method { name: "EmptyOptions" input_type: "In4" output_type: "Out4" }
+        }
+      )pb");
 }
 
 

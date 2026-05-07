@@ -2390,9 +2390,8 @@ bool Parser::ParseServiceMethod(MethodDescriptorProto* method,
 
   if (LookingAt("{")) {
     // Options!
-    DO(ParseMethodOptions(method_location, containing_file,
-                          MethodDescriptorProto::kOptionsFieldNumber,
-                          method->mutable_options()));
+    DO(ParseMethodOptions(method, method_location, containing_file,
+                          MethodDescriptorProto::kOptionsFieldNumber));
   } else {
     DO(ConsumeEndOfDeclaration(";", &method_location));
   }
@@ -2400,10 +2399,10 @@ bool Parser::ParseServiceMethod(MethodDescriptorProto* method,
   return true;
 }
 
-bool Parser::ParseMethodOptions(const LocationRecorder& parent_location,
+bool Parser::ParseMethodOptions(MethodDescriptorProto* method,
+                                const LocationRecorder& parent_location,
                                 const FileDescriptorProto* containing_file,
-                                const int optionsFieldNumber,
-                                Message* mutable_options) {
+                                const int optionsFieldNumber) {
   // Options!
   ConsumeEndOfDeclaration("{", &parent_location);
   while (!TryConsumeEndOfDeclaration("}", nullptr)) {
@@ -2416,7 +2415,7 @@ bool Parser::ParseMethodOptions(const LocationRecorder& parent_location,
       // empty statement; ignore
     } else {
       LocationRecorder location(parent_location, optionsFieldNumber);
-      if (!ParseOption(mutable_options, location, containing_file,
+      if (!ParseOption(method->mutable_options(), location, containing_file,
                        OPTION_STATEMENT)) {
         // This statement failed to parse.  Skip it, but keep looping to
         // parse other statements.
