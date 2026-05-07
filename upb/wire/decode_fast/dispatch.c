@@ -11,14 +11,14 @@
 
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"
-#include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/decoder.h"
+#include "upb/wire/internal/eps_copy_input_stream.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
-UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
-    UPB_PARSE_PARAMS) {
+UPB_NOINLINE UPB_PRESERVE_NONE upb_FastDecoder_Return
+upb_DecodeFast_MessageIsDoneFallback(UPB_PARSE_PARAMS) {
   int overrun;
   switch (UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(&d->input, ptr,
                                                            &overrun)) {
@@ -28,9 +28,10 @@ UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
       d->message_is_done = true;
       upb_DecodeFast_SetHasbits(msg, hasbits);
       const upb_MiniTable* m = decode_totablep(table);
-      return UPB_UNLIKELY(m->UPB_PRIVATE(required_count))
-                 ? _upb_Decoder_CheckRequired(d, ptr, msg, m)
-                 : ptr;
+      return (upb_FastDecoder_Return){
+          .ptr = UPB_UNLIKELY(m->UPB_PRIVATE(required_count))
+                     ? _upb_Decoder_CheckRequired(d, ptr, msg, m)
+                     : ptr};
     }
     case kUpb_IsDoneStatus_NeedFallback:
       // We've reached end-of-buffer.  Refresh the buffer.
@@ -41,6 +42,7 @@ UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
       // would have thrown an error with longjmp()).  So continue with the
       // fast decoder.
       data = _upb_FastDecoder_LoadTag(ptr);
+      _upb_Decoder_Trace(d, 'r');
       UPB_MUSTTAIL return _upb_FastDecoder_TagDispatch(UPB_PARSE_ARGS);
     case kUpb_IsDoneStatus_NotDone:  // Handled by caller.
     default:
@@ -48,15 +50,7 @@ UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
   }
 }
 
-const char* _upb_FastDecoder_ErrorJmp2(upb_Decoder* d) {
-  UPB_LONGJMP(d->err.buf, 1);
-  return NULL;
-}
-
-UPB_PRESERVE_NONE const char* _upb_FastDecoder_DecodeGeneric(
-    struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
-    uint64_t hasbits, uint64_t data) {
-  (void)data;
-  upb_DecodeFast_SetHasbits(msg, hasbits);
-  return ptr;
+upb_FastDecoder_Return _upb_FastDecoder_ErrorJmp2(upb_Decoder* d) {
+  UPB_LONGJMP(d->err->buf, 1);
+  return (upb_FastDecoder_Return){.ptr = NULL};
 }

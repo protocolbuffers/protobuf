@@ -167,11 +167,16 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* extendee,
              type == WireFormatLite::TYPE_GROUP);
   ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
                      verify_func, is_lazy);
-  info.message_info = {prototype,
+  info.message_info = {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+      internal::MessageGlobalsBase::FromDefaultInstance(prototype),
+#else   // PROTOBUF_MESSAGE_GLOBALS
+      prototype,
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-                       prototype->GetTcParseTable()
+      prototype->GetTcParseTable()
 #else
-                       nullptr
+      nullptr
 #endif
   };
   Register(info);
@@ -1434,7 +1439,6 @@ size_t ExtensionSet::Extension::ByteSize(int number) const {
   return result;
 }
 
-
 int ExtensionSet::Extension::GetSize() const {
   ABSL_DCHECK(is_repeated);
   switch (cpp_type(type)) {
@@ -1831,7 +1835,7 @@ const MessageLite* ExtensionSet::GetPrototypeForLazyMessage(
           &extension_info, &was_packed_on_wire)) {
     return nullptr;
   }
-  return extension_info.message_info.prototype;
+  return extension_info.message_info.GetPrototype();
 }
 
 uint8_t*
@@ -1908,15 +1912,6 @@ LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
   return nullptr;
 }
 
-
-std::atomic<ExtensionSet::LazyMessageExtension* (*)(Arena * arena)>
-    ExtensionSet::maybe_create_lazy_extension_;
-
-#if defined(PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET)
-LazyField* ExtensionSet::MaybeCreateLazyExtension(Arena* arena) {
-  return nullptr;
-}
-#endif  // defined(PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET)
 
 }  // namespace internal
 }  // namespace protobuf

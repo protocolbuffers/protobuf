@@ -124,6 +124,7 @@ cc_library(
         ":names",
         ":names_internal",
         "//src/google/protobuf",
+        "//src/google/protobuf:micro_string",
         "//src/google/protobuf:port",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/compiler:code_generator",

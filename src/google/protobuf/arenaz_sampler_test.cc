@@ -183,7 +183,7 @@ TEST(ThreadSafeArenaStatsTest, RecordAllocateSlow) {
 TEST(ThreadSafeArenaStatsTest, RecordAllocateSlowMaxBlockSizeTest) {
   ThreadSafeArenaStats info;
   constexpr int64_t kTestStride = 458;
-  absl::MutexLock l(&info.init_mu);
+  absl::MutexLock l(info.init_mu);
   info.PrepareForSampling(kTestStride);
   RecordAllocateSlow(&info, /*requested=*/100, /*allocated=*/128, /*wasted=*/0);
   EXPECT_EQ(info.max_block_size.load(std::memory_order_relaxed), 128);

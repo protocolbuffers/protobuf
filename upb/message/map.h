@@ -28,8 +28,8 @@ extern "C" {
 #endif
 
 // Creates a new map on the given arena with the given key/value size.
-UPB_API upb_Map* upb_Map_New(upb_Arena* a, upb_CType key_type,
-                             upb_CType value_type);
+UPB_NODISCARD UPB_API upb_Map* upb_Map_New(upb_Arena* a, upb_CType key_type,
+                                           upb_CType value_type);
 
 // Returns the number of entries in the map.
 UPB_API size_t upb_Map_Size(const upb_Map* map);
@@ -52,15 +52,18 @@ UPB_API void upb_Map_Clear(upb_Map* map);
 // Sets the given key to the given value, returning whether the key was inserted
 // or replaced. If the key was inserted, then any existing iterators will be
 // invalidated.
-UPB_API upb_MapInsertStatus upb_Map_Insert(upb_Map* map, upb_MessageValue key,
-                                           upb_MessageValue val,
-                                           upb_Arena* arena);
+UPB_NODISCARD UPB_API upb_MapInsertStatus upb_Map_Insert(upb_Map* map,
+                                                         upb_MessageValue key,
+                                                         upb_MessageValue val,
+                                                         upb_Arena* arena);
 
 // Sets the given key to the given value. Returns false if memory allocation
 // failed. If the key is newly inserted, then any existing iterators will be
 // invalidated.
-UPB_API_INLINE bool upb_Map_Set(upb_Map* map, upb_MessageValue key,
-                                upb_MessageValue val, upb_Arena* arena) {
+UPB_NODISCARD UPB_API_INLINE bool upb_Map_Set(upb_Map* map,
+                                              upb_MessageValue key,
+                                              upb_MessageValue val,
+                                              upb_Arena* arena) {
   return upb_Map_Insert(map, key, val, arena) !=
          kUpb_MapInsertStatus_OutOfMemory;
 }

@@ -466,7 +466,7 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
 
   // Write the contents of this directory to a ZIP-format archive with the
   // given name.
-  bool WriteAllToZip(const std::string& filename);
+  bool WriteAllToZip(const std::string& filename, bool allow_escape = false);
 
   // Add a boilerplate META-INF/MANIFEST.MF file as required by the Java JAR
   // format, unless one has already been written.
@@ -645,7 +645,7 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToDisk(
 }
 
 bool CommandLineInterface::GeneratorContextImpl::WriteAllToZip(
-    const std::string& filename) {
+    const std::string& filename, bool allow_escape) {
   if (had_error_) {
     return false;
   }
@@ -668,6 +668,13 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToZip(
   ZipWriter zip_writer(&stream);
 
   for (const auto& pair : files_) {
+    if (!allow_escape && absl::StrContains(pair.first, "..")) {
+      std::cerr << "WARNING: Output file names must never have a relative "
+                << "path. (" << pair.first << "). "
+                << "This will become an error in a future breaking change "
+                << "release of Protobuf. Use --unsafe_allow_out_dir_escape "
+                << "to suppress this warning if intentional." << std::endl;
+    }
     zip_writer.Write(pair.first, pair.second);
   }
 
@@ -1498,7 +1505,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
         directory->AddJarManifest();
       }
 
-      if (!directory->WriteAllToZip(location)) {
+      if (!directory->WriteAllToZip(location, unsafe_allow_out_dir_escape_)) {
         return 1;
       }
     }

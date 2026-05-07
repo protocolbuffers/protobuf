@@ -160,6 +160,7 @@ upb_amalgamation(
         "//upb/text:debug",
         "//upb/text:internal",
         "//upb/wire",
+        "//upb/wire:byte_size",
         "//upb/wire:decoder",
         "//upb/wire:eps_copy_input_stream",
         "//upb/wire:eps_copy_input_stream_internal",
@@ -310,8 +311,10 @@ filegroup(
         "//src/google/protobuf:well_known_type_protos",
         "//upb/json:test_protos",
         "//upb/message:test_protos",
+        "//upb/mini_table:test_protos",
         "//upb/test:test_protos",
         "//upb/util:test_protos",
+        "//upb/wire:test_protos",
     ],
     visibility = ["//pkg:__pkg__"],
 )

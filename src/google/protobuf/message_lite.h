@@ -22,6 +22,7 @@
 #ifndef GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 #define GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 
+#include <atomic>
 #include <climits>
 #include <cstddef>
 #include <cstdint>
@@ -127,13 +128,17 @@ class MessageCreator {
 
   // Template for testing.
   template <typename MessageLite>
-  MessageLite* New(const MessageLite* prototype_for_func,
-                   const MessageLite* prototype_for_copy, Arena* arena) const;
-
-  template <typename MessageLite>
   MessageLite* PlacementNew(const MessageLite* prototype_for_func,
                             const MessageLite* prototype_for_copy, void* mem,
                             Arena* arena) const;
+
+  void* AllocateMessage(Arena* arena) const {
+    if (arena != nullptr) {
+      return arena->AllocateAligned(allocation_size_);
+    } else {
+      return Allocate(allocation_size_);
+    }
+  }
 
   Tag tag() const { return tag_; }
 
@@ -168,15 +173,6 @@ class PROTOBUF_EXPORT CachedSize {
 
  public:
   constexpr CachedSize() noexcept : atom_(Scalar{}) {}
-  // NOLINTNEXTLINE(google-explicit-constructor)
-  constexpr CachedSize(Scalar desired) noexcept : atom_(desired) {}
-
-#ifdef PROTOBUF_BUILTIN_ATOMIC
-  constexpr CachedSize(const CachedSize& other) = default;
-
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD Scalar Get() const noexcept {
-    return __atomic_load_n(&atom_, __ATOMIC_RELAXED);
-  }
 
   void Set(Scalar desired) const noexcept {
     // Avoid writing the value when it is zero. This prevents writing to global
@@ -184,17 +180,28 @@ class PROTOBUF_EXPORT CachedSize {
     if (ABSL_PREDICT_FALSE(desired == 0)) {
       if (Get() == 0) return;
     }
-    __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
+    SetImpl(desired);
   }
 
   void SetNonZero(Scalar desired) const noexcept {
     ABSL_DCHECK_NE(desired, 0);
+    SetImpl(desired);
+  }
+
+#ifdef PROTOBUF_BUILTIN_ATOMIC
+  constexpr CachedSize(const CachedSize& other) = default;
+  CachedSize& operator=(const CachedSize& other) = default;
+
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD Scalar Get() const noexcept {
+    return __atomic_load_n(&atom_, __ATOMIC_RELAXED);
+  }
+
+ private:
+  void SetImpl(Scalar desired) const noexcept {
     __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
   }
 
-  void SetNoDefaultInstance(Scalar desired) const noexcept {
-    __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
-  }
+  mutable Scalar atom_;
 #else
   CachedSize(const CachedSize& other) noexcept : atom_(other.Get()) {}
   CachedSize& operator=(const CachedSize& other) noexcept {
@@ -206,29 +213,10 @@ class PROTOBUF_EXPORT CachedSize {
     return atom_.load(std::memory_order_relaxed);
   }
 
-  void Set(Scalar desired) const noexcept {
-    // Avoid writing the value when it is zero. This prevents writing to global
-    // default instances, which might be in readonly memory.
-    if (ABSL_PREDICT_FALSE(desired == 0)) {
-      if (Get() == 0) return;
-    }
-    atom_.store(desired, std::memory_order_relaxed);
-  }
-
-  void SetNonZero(Scalar desired) const noexcept {
-    ABSL_DCHECK_NE(desired, 0);
-    atom_.store(desired, std::memory_order_relaxed);
-  }
-
-  void SetNoDefaultInstance(Scalar desired) const noexcept {
-    atom_.store(desired, std::memory_order_relaxed);
-  }
-#endif
-
  private:
-#ifdef PROTOBUF_BUILTIN_ATOMIC
-  mutable Scalar atom_;
-#else
+  void SetImpl(Scalar desired) const noexcept {
+    atom_.store(desired, std::memory_order_relaxed);
+  }
   mutable std::atomic<Scalar> atom_;
 #endif
 };
@@ -448,9 +436,12 @@ struct PROTOBUF_EXPORT ClassData {
   const MessageLite* default_instance() const;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
-  MessageLite* New(Arena* arena) const {
+  PROTOBUF_ALWAYS_INLINE MessageLite* New(Arena* arena) const {
+    // Allocate the memory first, to reduce the number of spills.
+    // This way we only spill `this` and `arena`.
+    void* mem = message_creator.AllocateMessage(arena);
     const MessageLite* def = default_instance();
-    return message_creator.New(def, def, arena);
+    return message_creator.PlacementNew(def, def, mem, arena);
   }
 
   MessageLite* PlacementNew(void* mem, Arena* arena) const {
@@ -1603,6 +1594,7 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
   //  - We can "underflow" the buffer because those are the MessageLite bytes
   //    we will set later.
   if (as_tag == kZeroInit) {
+    PROTOBUF_DEBUG_COUNTER("MessageCreator.ZeroInit").IncLog(size);
     // Make sure the input is really all zeros.
     ABSL_DCHECK(std::all_of(src + sizeof(MessageLite), src + size,
                             [](auto c) { return c == 0; }));
@@ -1622,6 +1614,7 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
       memset(dst + size - 64, 0, 64);
     }
   } else {
+    PROTOBUF_DEBUG_COUNTER("MessageCreator.Memcpy").IncLog(size);
     ABSL_DCHECK_EQ(+as_tag, +kMemcpy);
 
     if (sizeof(MessageLite) != 16) {
@@ -1648,19 +1641,6 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
   memcpy(dst + PROTOBUF_FIELD_OFFSET(MessageLite, _internal_metadata_), &arena,
          sizeof(arena));
   return Launder(reinterpret_cast<MessageLite*>(mem));
-}
-
-template <typename MessageLite>
-PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::New(
-    const MessageLite* prototype_for_func,
-    const MessageLite* prototype_for_copy, Arena* arena) const {
-  void* mem;
-  if (arena != nullptr) {
-    mem = arena->AllocateAligned(allocation_size_);
-  } else {
-    mem = Allocate(allocation_size_);
-  }
-  return PlacementNew(prototype_for_func, prototype_for_copy, mem, arena);
 }
 
 }  // namespace internal

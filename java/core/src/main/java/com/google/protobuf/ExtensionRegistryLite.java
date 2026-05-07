@@ -48,16 +48,14 @@ public class ExtensionRegistryLite {
 
   // Set true to enable lazy parsing feature for MessageSet.
   //
-  // TODO: Now we use a global flag to control whether enable lazy
-  // parsing feature for MessageSet, which may be too crude for some
-  // applications. Need to support this feature on smaller granularity.
+  // TODO: b/491250576 - Remove this and unify with LazyExtensionMode.
   private static volatile boolean eagerlyParseMessageSets = false;
 
   enum LazyExtensionMode {
     EAGER,
     // Caution: This mode is unsafe as it postpone parsing errors such as required fields missing
     // until first access.
-    UNVERIFIED_LAZY;
+    LAZY_VERIFY_ON_ACCESS;
   }
 
   private static volatile LazyExtensionMode lazyExtensionMode = LazyExtensionMode.EAGER;
@@ -71,7 +69,7 @@ public class ExtensionRegistryLite {
   }
 
   static boolean lazyExtensionEnabled() {
-    return lazyExtensionMode == LazyExtensionMode.UNVERIFIED_LAZY;
+    return lazyExtensionMode == LazyExtensionMode.LAZY_VERIFY_ON_ACCESS;
   }
 
   // Visible for testing.

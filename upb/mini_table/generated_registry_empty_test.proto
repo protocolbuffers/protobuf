@@ -1,0 +1,15 @@
+edition = "2024";
+
+package upb_test_empty_registry;
+
+// A message that is in the same file as the unused extension.
+message EmptyRegistryTestMessage {
+  extensions 1 to max;
+}
+
+// An extension that we will *not* reference. The existence of this extension
+// will cause us to emit the code to register all extensions, but since this
+// extension is never referenced, that list of extensions will be empty.
+extend EmptyRegistryTestMessage {
+  int32 unused_extension = 1;
+}

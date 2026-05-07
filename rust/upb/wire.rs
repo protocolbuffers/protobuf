@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use super::sys::mini_table::extension_registry::upb_ExtensionRegistry;
-use super::sys::wire::wire::{upb_Decode, upb_Encode, DecodeStatus, EncodeStatus};
+use super::sys::wire::wire::{upb_ByteSize, upb_Decode, upb_Encode, DecodeStatus, EncodeStatus};
 use super::{Arena, AssociatedMiniTable, MessagePtr};
 
 /// Contains the decode options that can be passed to `decode_with_options`.
@@ -40,6 +40,14 @@ pub fn encode<T: AssociatedMiniTable>(msg: MessagePtr<T>) -> Result<Vec<u8>, Enc
     } else {
         Err(status)
     }
+}
+
+/// Returns the serialized size of the message.
+pub fn byte_size<T: AssociatedMiniTable>(msg: MessagePtr<T>) -> usize {
+    // SAFETY:
+    // - `T::mini_table()` is the one associated with `msg`.
+    // - `msg` is guaranteed live.
+    unsafe { upb_ByteSize(msg.raw(), T::mini_table()) }
 }
 
 /// Decodes into the provided message (merge semantics). If Err, then

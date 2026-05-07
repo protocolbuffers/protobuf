@@ -236,6 +236,20 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options,
 FileGenerator::~FileGenerator() = default;
 
 bool FileGenerator::Validate(std::string* error) {
+  // Check for only a subset of characters which are definitely invalid to
+  // use as a java package or classname to prevent any risk of code injection
+  // via the java_package option.
+  if (java_package_.find_first_of(";\r\n ") != std::string::npos) {
+    absl::StrAppend(error, file_->name(),
+                    ": java_package contains invalid characters (",
+                    java_package_, ")\n");
+  }
+  if (classname_.find_first_of(";\r\n ") != std::string::npos) {
+    absl::StrAppend(error, file_->name(),
+                    ": classname contains invalid characters (", classname_,
+                    ")\n");
+  }
+
   // Check that no class name matches the file's class name.  This is a common
   // problem that leads to Java compile errors that can be hard to understand.
   // It's especially bad when using the java_multiple_files, since we would

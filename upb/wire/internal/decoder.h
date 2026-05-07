@@ -13,7 +13,6 @@
 #ifndef UPB_WIRE_INTERNAL_DECODER_H_
 #define UPB_WIRE_INTERNAL_DECODER_H_
 
-#include <setjmp.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -51,7 +50,7 @@ typedef struct upb_Decoder {
     upb_Arena arena;
     void* foo[UPB_ARENA_SIZE_HACK / sizeof(void*)];
   };
-  upb_ErrorHandler err;
+  upb_ErrorHandler* err;
 
 #ifndef NDEBUG
   char* trace_buf;
@@ -64,9 +63,10 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
                                         size_t size,
                                         const upb_ExtensionRegistry* extreg,
                                         int options, upb_Arena* arena,
-                                        char* trace_buf, size_t trace_size) {
-  upb_ErrorHandler_Init(&d->err);
-  upb_EpsCopyInputStream_InitWithErrorHandler(&d->input, &buf, size, &d->err);
+                                        upb_ErrorHandler* err, char* trace_buf,
+                                        size_t trace_size) {
+  d->err = err;
+  upb_EpsCopyInputStream_InitWithErrorHandler(&d->input, &buf, size, d->err);
 
   UPB_STATIC_ASSERT((int)kUpb_DecodeStatus_Ok == (int)kUpb_ErrorCode_Ok,
                     "mismatched error codes");
@@ -107,22 +107,20 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
 UPB_INLINE upb_DecodeStatus upb_Decoder_Destroy(upb_Decoder* d,
                                                 upb_Arena* arena) {
   UPB_PRIVATE(_upb_Arena_SwapOut)(arena, &d->arena);
-  return (upb_DecodeStatus)d->err.code;
+  return (upb_DecodeStatus)d->err->code;
 }
 
 #ifndef NDEBUG
-UPB_INLINE bool _upb_Decoder_TraceBufferFull(upb_Decoder* d) {
-  return d->trace_ptr == d->trace_end - 1;
-}
-
-UPB_INLINE bool _upb_Decoder_TraceBufferAlmostFull(upb_Decoder* d) {
-  return d->trace_ptr == d->trace_end - 2;
+UPB_INLINE bool _upb_Decoder_TraceBufferHasBytesAvailable(upb_Decoder* d,
+                                                          int n) {
+  return d->trace_ptr && d->trace_end && d->trace_end - d->trace_ptr > n;
 }
 #endif
 
 UPB_INLINE char* _upb_Decoder_TraceNext(upb_Decoder* d) {
 #ifndef NDEBUG
-  return _upb_Decoder_TraceBufferAlmostFull(d) ? NULL : d->trace_ptr + 1;
+  return _upb_Decoder_TraceBufferHasBytesAvailable(d, 2) ? d->trace_ptr + 1
+                                                         : NULL;
 #else
   return NULL;
 #endif
@@ -143,10 +141,17 @@ UPB_INLINE char* _upb_Decoder_TracePtr(upb_Decoder* d) {
 //   '<'  Fallback to MiniTable parser.
 //   'M'  Field successfully parsed with MiniTable.
 //   'X'  Truncated -- trace buffer is full, further events were discarded.
+//
+// Lower-case letters indicate events that are more subtle and therefore
+// difficult to assert on, but may be useful information for debugging:
+//   'r'  Refresh buffer.
 UPB_INLINE void _upb_Decoder_Trace(upb_Decoder* d, char event) {
 #ifndef NDEBUG
+#ifdef UPB_TRACE_FASTDECODER
+  fprintf(stderr, "Fasttable trace event: %c\n", event);
+#endif
   if (d->trace_ptr == NULL) return;
-  if (_upb_Decoder_TraceBufferFull(d)) {
+  if (!_upb_Decoder_TraceBufferHasBytesAvailable(d, 1)) {
     d->trace_ptr[-1] = 'X';  // Truncated.
     return;
   }
@@ -200,7 +205,7 @@ UPB_INLINE bool _upb_Decoder_ReadString(upb_Decoder* d, const char** ptr,
       upb_EpsCopyInputStream_ReadStringAlwaysAlias(&d->input, *ptr, size, &tmp);
   if (*ptr == NULL) return false;
   if (validate_utf8 && !utf8_range_IsValid(tmp.data, tmp.size)) {
-    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_BadUtf8);
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_BadUtf8);
     return false;
   }
   if ((d->options & kUpb_DecodeOption_AliasString) == 0) {

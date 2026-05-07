@@ -18,29 +18,28 @@
 //
 //                  48                32                16                 0
 // |--------|--------|--------|--------|--------|--------|--------|--------|
-// |   offset (16)   |case offset (16) |presence| submsg |  exp. tag (16)  |
+// |   offset (16)   |case offset (16) |presence| index  |  exp. tag (16)  |
 // |--------|--------|--------|--------|--------|--------|--------|--------|
 //
 // - `offset` is the offset of the field in the message struct.
 // - `case_offset` is the offset of the oneof selector for a oneof field
 //   (or 0 if not a oneof field).
 // - `presence` is either hasbit index or field number for oneofs.
-// - `submsg_index` is the index of the submessage in the mini table's
-//   subs array (or 0 if not a submessage field).
+// - `field_index` is the index of the field in the mini table's fields
+//   array (or 0 if we don't need the field index to parse this field type).
 // - `expected_tag` is the expected value of the tag for this field.
 
 UPB_INLINE bool upb_DecodeFast_MakeData(uint64_t offset, uint64_t case_offset,
-                                        uint64_t presence,
-                                        uint64_t submsg_index,
+                                        uint64_t presence, uint64_t field_index,
                                         uint64_t expected_tag,
                                         uint64_t* out_data) {
   if (offset > 0xffff || case_offset > 0xffff || presence > 0xff ||
-      submsg_index > 0xff || expected_tag > 0xffff) {
+      field_index > 0xff || expected_tag > 0xffff) {
     return false;
   }
 
   *out_data = (offset << 48) | (case_offset << 32) | (presence << 24) |
-              (submsg_index << 16) | expected_tag;
+              (field_index << 16) | expected_tag;
   return true;
 }
 
@@ -56,7 +55,7 @@ UPB_INLINE uint8_t upb_DecodeFastData_GetPresence(uint64_t data) {
   return data >> 24;
 }
 
-UPB_INLINE uint8_t upb_DecodeFastData_GetSubmsgIndex(uint64_t data) {
+UPB_INLINE uint8_t upb_DecodeFastData_GetFieldIndex(uint64_t data) {
   return data >> 16;
 }
 
