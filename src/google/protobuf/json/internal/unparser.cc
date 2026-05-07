@@ -16,7 +16,6 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/struct.pb.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
@@ -37,7 +36,6 @@
 #include "google/protobuf/json/internal/unparser_traits.h"
 #include "google/protobuf/json/internal/writer.h"
 #include "google/protobuf/message.h"
-#include "google/protobuf/port.h"
 #include "google/protobuf/util/type_resolver.h"
 #include "google/protobuf/stubs/status_macros.h"
 
@@ -484,99 +482,6 @@ absl::Status WriteFields(JsonWriter& writer, const Msg<Traits>& msg,
   return absl::OkStatus();
 }
 
-// Value .number_value is special: it cannot be NaN or Infinity as those are
-// not allowed as numbers in JSON. We can handle that for normal float/double
-// fields by using strings, but we can't do that for Value since on round trip
-// it would be lossy and come back as a string_value instead of a number_value.
-absl::Status WriteValueNumberIfFinite(JsonWriter& writer, double number) {
-  if (std::isnan(number)) {
-    return absl::InvalidArgumentError(
-        "google.protobuf.Value cannot encode double values for nan, "
-        "because it would be parsed as a string");
-  }
-  if (std::isinf(number)) {
-    return absl::InvalidArgumentError(
-        "google.protobuf.Value cannot encode double values for "
-        "infinity, because it would be parsed as a string");
-  }
-  writer.Write(number);
-  return absl::OkStatus();
-}
-
-absl::Status WriteValueDirect(JsonWriter& writer,
-                              const google::protobuf::Value& value_msg);
-
-absl::Status WriteStructDirect(JsonWriter& writer,
-                               const google::protobuf::Struct& struct_msg) {
-  writer.Write("{");
-  writer.Push();
-  bool first = true;
-  for (const auto& [key, value] : struct_msg.fields()) {
-    if (value.kind_case() == google::protobuf::Value::KIND_NOT_SET) {
-      continue;
-    }
-    writer.WriteComma(first);
-    writer.NewLine();
-    writer.Write(MakeQuoted(key), ":");
-    writer.Whitespace(" ");
-    RETURN_IF_ERROR(WriteValueDirect(writer, value));
-  }
-  writer.Pop();
-  if (!first) {
-    writer.NewLine();
-  }
-  writer.Write("}");
-  return absl::OkStatus();
-}
-
-absl::Status WriteListValueDirect(JsonWriter& writer,
-                                  const google::protobuf::ListValue& list_msg) {
-  writer.Write("[");
-  writer.Push();
-  bool first = true;
-  for (const auto& value : list_msg.values()) {
-    if (value.kind_case() == google::protobuf::Value::KIND_NOT_SET) {
-      continue;
-    }
-    writer.WriteComma(first);
-    writer.NewLine();
-    RETURN_IF_ERROR(WriteValueDirect(writer, value));
-  }
-  writer.Pop();
-  if (!first) {
-    writer.NewLine();
-  }
-  writer.Write("]");
-  return absl::OkStatus();
-}
-
-absl::Status WriteValueDirect(JsonWriter& writer,
-                              const google::protobuf::Value& value_msg) {
-  switch (value_msg.kind_case()) {
-    case google::protobuf::Value::KIND_NOT_SET:
-      ABSL_LOG(FATAL) << "empty, non-top-level Value must be handled one layer "
-                         "up, since it prints an empty string; reaching this "
-                         "statement is always a bug";
-    case google::protobuf::Value::kNullValue:
-      writer.Write("null");
-      return absl::OkStatus();
-    case google::protobuf::Value::kNumberValue:
-      return WriteValueNumberIfFinite(writer, value_msg.number_value());
-    case google::protobuf::Value::kStringValue:
-      writer.Write(MakeQuoted(value_msg.string_value()));
-      return absl::OkStatus();
-    case google::protobuf::Value::kBoolValue:
-      writer.Write(value_msg.bool_value() ? "true" : "false");
-      return absl::OkStatus();
-    case google::protobuf::Value::kStructValue:
-      return WriteStructDirect(writer, value_msg.struct_value());
-    case google::protobuf::Value::kListValue:
-      return WriteListValueDirect(writer, value_msg.list_value());
-  }
-  internal::Unreachable();
-  return absl::InvalidArgumentError("Unexpected value kind");
-}
-
 template <typename Traits>
 absl::Status WriteStructValue(JsonWriter& writer, const Msg<Traits>& msg,
                               const Desc<Traits>& desc);
@@ -599,7 +504,19 @@ absl::Status WriteValue(JsonWriter& writer, const Msg<Traits>& msg,
   if (Traits::GetSize(number_field, msg) > 0) {
     auto x = Traits::GetDouble(number_field, msg);
     RETURN_IF_ERROR(x.status());
-    return WriteValueNumberIfFinite(writer, *x);
+    if (std::isnan(*x)) {
+      return absl::InvalidArgumentError(
+          "google.protobuf.Value cannot encode double values for nan, "
+          "because it would be parsed as a string");
+    }
+    if (*x == std::numeric_limits<double>::infinity() ||
+        *x == -std::numeric_limits<double>::infinity()) {
+      return absl::InvalidArgumentError(
+          "google.protobuf.Value cannot encode double values for "
+          "infinity, because it would be parsed as a string");
+    }
+    writer.Write(*x);
+    return absl::OkStatus();
   }
 
   auto string_field = Traits::MustHaveField(desc, 3);
@@ -893,15 +810,6 @@ absl::Status WriteMessage(JsonWriter& writer, const Msg<Traits>& msg,
     case MessageType::kValue:
       return WriteValue<Traits>(writer, msg, desc, is_top_level);
     case MessageType::kStruct:
-      if constexpr (std::is_same_v<Traits, UnparseProto2Descriptor>) {
-        // If this is a gencode instance of google.protobuf.Struct, print it
-        // using the gencode accessors instead of reflectively as a performance
-        // optimization.
-        if (const auto* struct_msg =
-                DynamicCastMessage<google::protobuf::Struct>(&msg)) {
-          return WriteStructDirect(writer, *struct_msg);
-        }
-      }
       return WriteStructValue<Traits>(writer, msg, desc);
     case MessageType::kList:
       return WriteListValue<Traits>(writer, msg, desc);

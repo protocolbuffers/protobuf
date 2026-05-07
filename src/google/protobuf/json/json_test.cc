@@ -258,24 +258,6 @@ TEST_P(JsonTest, TestDisableLegacyNonconformantBehavior) {
               StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
-TEST_P(JsonTest, TestDynamicMessageWithStructDescriptor) {
-  if (GetParam() != Codec::kReflective) {
-    return;
-  }
-  // Create a DynamicMessage which uses the google.protobuf.Struct
-  // gencode descriptor. This would be a rare case but needs to be handled
-  // safely.
-  DynamicMessageFactory factory;
-  const Descriptor* desc = google::protobuf::Struct::descriptor();
-  std::unique_ptr<Message> msg(factory.GetPrototype(desc)->New());
-
-  std::string output;
-  // Now this is expected to succeed because we use safe downcast!
-  absl::Status status = MessageToJsonString(*msg, &output);
-  EXPECT_THAT(status, StatusIs(absl::StatusCode::kOk));
-  EXPECT_EQ(output, "{}");
-}
-
 TEST_P(JsonTest, TestPreserveProtoFieldNames) {
   TestMessage m;
   m.mutable_message_value();
