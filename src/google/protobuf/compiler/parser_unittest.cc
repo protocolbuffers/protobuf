@@ -253,6 +253,14 @@ TEST_F(ParserTest, RegressionNestedOpenBraceDoNotStackOverflow) {
       "0:8: Unknown edition \"a\".\n");
 }
 
+TEST_F(ParserTest, ReservedNumberOverflow) {
+  ExpectHasEarlyExitErrors(
+      "message M {\n"
+      "  reserved 017777777777;\n"
+      "}\n",
+      HasSubstr("Field number out of bounds"));
+}
+
 // ===================================================================
 
 typedef ParserTest ParseMessageTest;

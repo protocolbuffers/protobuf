@@ -1893,6 +1893,11 @@ bool Parser::ParseReservedNumbers(DescriptorProto* message,
       start_token = input_->current();
       DO(ConsumeInteger(&start, (first ? "Expected field name or number range."
                                        : "Expected field number range.")));
+
+      if (start == std::numeric_limits<int>::max()) {
+        RecordError("Field number out of bounds.");
+        return false;
+      }
     }
 
     if (TryConsume("to")) {
@@ -1905,6 +1910,11 @@ bool Parser::ParseReservedNumbers(DescriptorProto* message,
         end = kMaxRangeSentinel - 1;
       } else {
         DO(ConsumeInteger(&end, "Expected integer."));
+
+        if (end == std::numeric_limits<int>::max()) {
+          RecordError("Field number out of bounds.");
+          return false;
+        }
       }
     } else {
       LocationRecorder end_location(
