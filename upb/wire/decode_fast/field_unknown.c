@@ -72,11 +72,12 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
     }
   } else if ((d_val & 0x8000) == 0) {
     tag_len = 2;
-    // Ensure the field number is not 0.
-    // Use bitwise op to limit to first two bytes, and ignore continuation bit &
-    // additional tag data.
-    if (UPB_UNLIKELY((d_val & 0x7f78) == 0)) {
-      return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
+    if (UPB_UNLIKELY((d_val & 0xFF80) == 0x80)) {
+      // Detect a 0-valued tag or a "2-byte" tag that is an overlong 1-byte tag.
+      // Fasttable isn't set up to deal with overlong varint tags (which will
+      // not match the canonical tag assigned to a slot) so fallback. (Fallback
+      // will also handle erroring on 0-valued fields.)
+      return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
     }
   } else {
     // Tag >=2048
