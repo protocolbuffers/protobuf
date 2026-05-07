@@ -291,6 +291,52 @@ static size_t next(const upb_table* t, size_t i) {
 
 static size_t begin(const upb_table* t) { return next(t, -1); }
 
+UPB_FORCEINLINE
+bool _upb_tablenext(const upb_table* t, upb_tabent** ent, intptr_t* iter) {
+  size_t tab_idx = next(t, *iter);
+  if (tab_idx < upb_table_size(t)) {
+    *ent = &t->entries[tab_idx];
+    *iter = tab_idx;
+    return true;
+  }
+  return false;
+}
+
+UPB_FORCEINLINE
+bool _upb_table_done(const upb_table* t, intptr_t iter) {
+  if (iter == INTPTR_MAX - 1 || (size_t)iter >= upb_table_size(t)) {
+    return true;
+  }
+  return upb_tabent_isempty(&t->entries[iter]);
+}
+
+static void removeiter(upb_table* t, intptr_t* iter) {
+  intptr_t i = *iter;
+  upb_tabent* ent = &t->entries[i];
+  upb_tabent* prev = NULL;
+
+  // Linear search, not great.
+  upb_tabent* end = &t->entries[upb_table_size(t)];
+  for (upb_tabent* e = t->entries; e != end; e++) {
+    if (!upb_tabent_isempty(e) && upb_tabent_hasnext(e) &&
+        upb_tabent_next(e) == ent) {
+      prev = e;
+      break;
+    }
+  }
+
+  if (prev) {
+    if (upb_tabent_hasnext(ent)) {
+      upb_tabent_setnext(prev, upb_tabent_next(ent));
+    } else {
+      upb_tabent_clearnext(prev);
+    }
+  }
+
+  t->count--;
+  upb_tabent_clear(ent);
+}
+
 /* upb_strtable ***************************************************************/
 
 // A simple "subclass" of upb_table that only adds a hash function for strings.
@@ -566,8 +612,7 @@ void upb_strtable_next(upb_strtable_iter* i) {
 
 bool upb_strtable_done(const upb_strtable_iter* i) {
   if (!i->t) return true;
-  return i->index >= upb_table_size(&i->t->t) ||
-         upb_tabent_isempty(str_tabent(i));
+  return _upb_table_done(&i->t->t, i->index);
 }
 
 upb_StringView upb_strtable_iter_key(const upb_strtable_iter* i) {
@@ -593,43 +638,17 @@ bool upb_strtable_iter_isequal(const upb_strtable_iter* i1,
 
 bool upb_strtable_next2(const upb_strtable* t, upb_StringView* key,
                         upb_value* val, intptr_t* iter) {
-  size_t tab_idx = next(&t->t, *iter);
-  if (tab_idx < upb_table_size(&t->t)) {
-    upb_tabent* ent = &t->t.entries[tab_idx];
+  upb_tabent* ent;
+  if (_upb_tablenext(&t->t, &ent, iter)) {
     *key = upb_key_strview(ent->key);
     *val = ent->val;
-    *iter = tab_idx;
     return true;
   }
-
   return false;
 }
 
 void upb_strtable_removeiter(upb_strtable* t, intptr_t* iter) {
-  intptr_t i = *iter;
-  upb_tabent* ent = &t->t.entries[i];
-  upb_tabent* prev = NULL;
-
-  // Linear search, not great.
-  upb_tabent* end = &t->t.entries[upb_table_size(&t->t)];
-  for (upb_tabent* e = t->t.entries; e != end; e++) {
-    if (!upb_tabent_isempty(e) && upb_tabent_hasnext(e) &&
-        upb_tabent_next(e) == ent) {
-      prev = e;
-      break;
-    }
-  }
-
-  if (prev) {
-    if (upb_tabent_hasnext(ent)) {
-      upb_tabent_setnext(prev, upb_tabent_next(ent));
-    } else {
-      upb_tabent_clearnext(prev);
-    }
-  }
-
-  t->t.count--;
-  upb_tabent_clear(ent);
+  removeiter(&t->t, iter);
 }
 
 void upb_strtable_setentryvalue(upb_strtable* t, intptr_t iter, upb_value v) {
@@ -823,12 +842,10 @@ void upb_inttable_clear(upb_inttable* t) {
 
 bool upb_inttable_next(const upb_inttable* t, uintptr_t* key, upb_value* val,
                        intptr_t* iter) {
-  size_t tab_idx = next(&t->t, *iter);
-  if (tab_idx < upb_table_size(&t->t)) {
-    upb_tabent* ent = &t->t.entries[tab_idx];
+  upb_tabent* ent;
+  if (_upb_tablenext(&t->t, &ent, iter)) {
     *key = ent->key.num;
     *val = ent->val;
-    *iter = tab_idx;
     return true;
   }
   *iter = INTPTR_MAX - 1;
@@ -836,30 +853,7 @@ bool upb_inttable_next(const upb_inttable* t, uintptr_t* key, upb_value* val,
 }
 
 void upb_inttable_removeiter(upb_inttable* t, intptr_t* iter) {
-  intptr_t i = *iter;
-  upb_tabent* ent = &t->t.entries[i];
-  upb_tabent* prev = NULL;
-
-  // Linear search, not great.
-  upb_tabent* end = &t->t.entries[upb_table_size(&t->t)];
-  for (upb_tabent* e = t->t.entries; e != end; e++) {
-    if (!upb_tabent_isempty(e) && upb_tabent_hasnext(e) &&
-        upb_tabent_next(e) == ent) {
-      prev = e;
-      break;
-    }
-  }
-
-  if (prev) {
-    if (upb_tabent_hasnext(ent)) {
-      upb_tabent_setnext(prev, upb_tabent_next(ent));
-    } else {
-      upb_tabent_clearnext(prev);
-    }
-  }
-
-  t->t.count--;
-  upb_tabent_clear(ent);
+  removeiter(&t->t, iter);
 }
 
 void upb_inttable_setentryvalue(upb_inttable* t, intptr_t iter, upb_value v) {
@@ -867,10 +861,7 @@ void upb_inttable_setentryvalue(upb_inttable* t, intptr_t iter, upb_value v) {
 }
 
 bool upb_inttable_done(const upb_inttable* t, intptr_t iter) {
-  if (iter == INTPTR_MAX - 1 || (size_t)iter >= upb_table_size(&t->t)) {
-    return true;
-  }
-  return upb_tabent_isempty(&t->t.entries[iter]);
+  return _upb_table_done(&t->t, iter);
 }
 
 uintptr_t upb_inttable_iter_key(const upb_inttable* t, intptr_t iter) {
