@@ -367,21 +367,17 @@ final class Utf8 {
       if (buffer.hasArray()) {
         final int offset = buffer.arrayOffset();
         return decodeUtf8(buffer.array(), offset + index, size);
-      } else if (buffer.isDirect()) {
-        return decodeUtf8Direct(buffer, index, size);
       }
-      return decodeUtf8Default(buffer, index, size);
+      return decodeUtf8NonArrayByteBuffer(buffer, index, size);
     }
 
-    /** Decodes direct {@link ByteBuffer} instances into {@link String}. */
-    abstract String decodeUtf8Direct(ByteBuffer buffer, int index, int size)
-        throws InvalidProtocolBufferException;
+
 
     /**
      * Decodes {@link ByteBuffer} instances using the {@link ByteBuffer} API rather than potentially
      * faster approaches.
      */
-    final String decodeUtf8Default(ByteBuffer buffer, int index, int size)
+    final String decodeUtf8NonArrayByteBuffer(ByteBuffer buffer, int index, int size)
         throws InvalidProtocolBufferException {
       // Bitwise OR combines the sign bits so any negative value fails the check.
       if ((index | size | buffer.limit() - index - size) < 0) {
@@ -666,12 +662,7 @@ final class Utf8 {
       return new String(resultArr, 0, resultPos);
     }
 
-    @Override
-    String decodeUtf8Direct(ByteBuffer buffer, int index, int size)
-        throws InvalidProtocolBufferException {
-      // For safe processing, we have to use the ByteBufferAPI.
-      return decodeUtf8Default(buffer, index, size);
-    }
+
 
     @Override
     int encodeUtf8(String in, byte[] out, int offset, int length) {
@@ -978,81 +969,7 @@ final class Utf8 {
       throw InvalidProtocolBufferException.invalidUtf8();
     }
 
-    @Override
-    String decodeUtf8Direct(ByteBuffer buffer, int index, int size)
-        throws InvalidProtocolBufferException {
-      // Bitwise OR combines the sign bits so any negative value fails the check.
-      if ((index | size | buffer.limit() - index - size) < 0) {
-        throw new ArrayIndexOutOfBoundsException(
-            String.format("buffer limit=%d, index=%d, limit=%d", buffer.limit(), index, size));
-      }
-      long address = UnsafeUtil.addressOffset(buffer) + index;
-      final long addressLimit = address + size;
 
-      // The longest possible resulting String is the same as the number of input bytes, when it is
-      // all ASCII. For other cases, this over-allocates and we will truncate in the end.
-      char[] resultArr = new char[size];
-      int resultPos = 0;
-
-      // Optimize for 100% ASCII (Hotspot loves small simple top-level loops like this).
-      // This simple loop stops when we encounter a byte >= 0x80 (i.e. non-ASCII).
-      while (address < addressLimit) {
-        byte b = UnsafeUtil.getByte(address);
-        if (!DecodeUtil.isOneByte(b)) {
-          break;
-        }
-        address++;
-        DecodeUtil.handleOneByte(b, resultArr, resultPos++);
-      }
-
-      while (address < addressLimit) {
-        byte byte1 = UnsafeUtil.getByte(address++);
-        if (DecodeUtil.isOneByte(byte1)) {
-          DecodeUtil.handleOneByte(byte1, resultArr, resultPos++);
-          // It's common for there to be multiple ASCII characters in a run mixed in, so add an
-          // extra optimized loop to take care of these runs.
-          while (address < addressLimit) {
-            byte b = UnsafeUtil.getByte(address);
-            if (!DecodeUtil.isOneByte(b)) {
-              break;
-            }
-            address++;
-            DecodeUtil.handleOneByte(b, resultArr, resultPos++);
-          }
-        } else if (DecodeUtil.isTwoBytes(byte1)) {
-          if (address >= addressLimit) {
-            throw InvalidProtocolBufferException.invalidUtf8();
-          }
-          DecodeUtil.handleTwoBytes(
-              byte1, /* byte2 */ UnsafeUtil.getByte(address++), resultArr, resultPos++);
-        } else if (DecodeUtil.isThreeBytes(byte1)) {
-          if (address >= addressLimit - 1) {
-            throw InvalidProtocolBufferException.invalidUtf8();
-          }
-          DecodeUtil.handleThreeBytes(
-              byte1,
-              /* byte2 */ UnsafeUtil.getByte(address++),
-              /* byte3 */ UnsafeUtil.getByte(address++),
-              resultArr,
-              resultPos++);
-        } else {
-          if (address >= addressLimit - 2) {
-            throw InvalidProtocolBufferException.invalidUtf8();
-          }
-          DecodeUtil.handleFourBytes(
-              byte1,
-              /* byte2 */ UnsafeUtil.getByte(address++),
-              /* byte3 */ UnsafeUtil.getByte(address++),
-              /* byte4 */ UnsafeUtil.getByte(address++),
-              resultArr,
-              resultPos++);
-          // 4-byte case requires two chars.
-          resultPos++;
-        }
-      }
-
-      return new String(resultArr, 0, resultPos);
-    }
 
     @Override
     int encodeUtf8(String in, byte[] out, int offset, int length) {
