@@ -1047,6 +1047,12 @@ void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
         }
       }
 
+      // Clear public_dependency and weak_dependency since they contain indices
+      // into the dependency array which we just modified above. PHP handles
+      // dependency loading through initOnce() calls instead.
+      file_proto->clear_public_dependency();
+      file_proto->clear_weak_dependency();
+
       // Filter out all extensions, since we do not support extension yet.
       file_proto->clear_extension();
       RepeatedPtrField<DescriptorProto>* message_type =
@@ -1172,6 +1178,12 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
           break;
         }
       }
+
+      // Clear public_dependency and weak_dependency since they contain indices
+      // into the dependency array which we just modified above. PHP handles
+      // dependency loading through initOnce() calls instead.
+      file_proto->clear_public_dependency();
+      file_proto->clear_weak_dependency();
 
       // Filter out all extensions, since we do not support extension yet.
       file_proto->clear_extension();
