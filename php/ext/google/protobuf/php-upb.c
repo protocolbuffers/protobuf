@@ -3988,6 +3988,28 @@ static void removeiter(upb_table* t, intptr_t* iter) {
     } else {
       upb_tabent_clearnext(prev);
     }
+  } else {
+    // ent is the head of the chain, so we need to move its next element into
+    // its slot if there is one.
+    if (upb_tabent_hasnext(ent)) {
+      upb_tabent* move = upb_tabent_next(ent);
+      ent->key = move->key;
+      ent->val = move->val;
+      if (upb_tabent_hasnext(move)) {
+        upb_tabent_setnext(ent, upb_tabent_next(move));
+      } else {
+        upb_tabent_clearnext(ent);
+      }
+
+      // If we moved an element from a higher index to a lower index, then we've
+      // moved an element we haven't visited yet into the slot of the one that
+      // was just removed; decrement iter so that the iterator visits it.
+      if (move > ent) {
+        *iter = i - 1;
+      }
+
+      ent = move;
+    }
   }
 
   t->count--;
