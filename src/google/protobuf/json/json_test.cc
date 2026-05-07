@@ -8,6 +8,7 @@
 #include "google/protobuf/json/json.h"
 
 #include <cstdint>
+#include <cstddef>
 #include <limits>
 #include <memory>
 #include <string>
