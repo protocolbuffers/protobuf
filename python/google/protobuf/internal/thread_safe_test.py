@@ -7,9 +7,9 @@
 
 """Unittest for thread safe"""
 
-import sys
 import threading
 import time
+import timeit
 import unittest
 
 from google.protobuf import descriptor_pb2
@@ -20,6 +20,9 @@ from google.protobuf.internal import testing_refleaks
 
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_pb2
+
+# Enable this to run the benchmarks.
+ALSO_RUN_BENCHMARKS = False
 
 
 @testing_refleaks.TestCase
@@ -302,6 +305,50 @@ class FreeThreadingTest(unittest.TestCase):
 
       for thread in threads:
         thread.join()
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentGetOptionsRace(self):
+    """Reproduces a data race in GetOptions."""
+
+    def AccessOptions(barrier):
+      barrier.wait()
+      _ = unittest_proto3_pb2.TestAllTypes.DESCRIPTOR.GetOptions()
+
+    for _ in range(100):
+      threads = []
+      barrier = threading.Barrier(20)
+
+      for _ in range(20):
+        thread = threading.Thread(target=AccessOptions, args=(barrier,))
+        threads.append(thread)
+        thread.start()
+
+      for thread in threads:
+        thread.join()
+
+  @unittest.skipIf(not ALSO_RUN_BENCHMARKS, 'Benchmarks are disabled.')
+  def testConcurrentGetOptionsBenchmark(self):
+    """Benchmarks concurrent GetOptions calls."""
+    if ALSO_RUN_BENCHMARKS:
+
+      def AccessOptions():
+        for _ in range(1000000):
+          _ = unittest_proto3_pb2.TestAllTypes.DESCRIPTOR.GetOptions()
+
+      def RunAllThreads():
+        self.RunThreads(20, AccessOptions)
+
+      duration = timeit.timeit(RunAllThreads, number=10)
+      duration_ms = duration * 1000
+      print(
+          'ConcurrentGetOptionsBenchmark (20 threads x 1000000 calls x 10'
+          f' runs): {duration_ms:.2f}ms'
+      )
+    else:
+      print('Skipping benchmark in non-benchmark mode.')
 
 
 if __name__ == '__main__':

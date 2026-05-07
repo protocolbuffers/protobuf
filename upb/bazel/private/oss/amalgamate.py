@@ -44,12 +44,12 @@ def parse_include(line):
 
 class Amalgamator:
 
-  def __init__(self, h_out, c_out):
+  def __init__(self, output_h, output_c, h_out_filename):
     self.include_paths = ["."]
     self.included = set()
-    self.output_h = open(h_out, "w")
-    self.output_c = open(c_out, "w")
-    self.h_out = h_out.split("/")[-1]
+    self.output_h = output_h
+    self.output_c = output_c
+    self.h_out = h_out_filename
 
   def amalgamate(self, h_files, c_files):
     self.h_files = set(h_files)
@@ -138,7 +138,7 @@ class Amalgamator:
 
 c_out = sys.argv[1]
 h_out = sys.argv[2]
-amalgamator = Amalgamator(h_out, c_out)
+
 c_files = []
 h_files = []
 
@@ -149,4 +149,6 @@ for arg in sys.argv[3:]:
   else:
     c_files.append(arg)
 
-amalgamator.amalgamate(h_files, c_files)
+with open(h_out, "w") as output_h, open(c_out, "w") as output_c:
+  amalgamator = Amalgamator(output_h, output_c, h_out.split("/")[-1])
+  amalgamator.amalgamate(h_files, c_files)

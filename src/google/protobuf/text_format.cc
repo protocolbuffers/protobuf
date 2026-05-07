@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "absl/base/macros.h"
+#include "absl/cleanup/cleanup.h"
 #include "absl/container/btree_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
@@ -508,12 +509,23 @@ class TextFormat::Parser::ParserImpl {
   // This method checks to see that the end delimiter at the conclusion of
   // the consumption matches the starting delimiter passed in here.
   bool ConsumeMessage(Message* message, const std::string& delimiter) {
+    if (--recursion_limit_ < 0) {
+      ReportError(
+          absl::StrCat("Message is too deep, the parser exceeded the "
+                       "configured recursion limit of ",
+                       initial_recursion_limit_, "."));
+      return false;
+    }
+
+    auto cleanup = absl::MakeCleanup([this] { ++recursion_limit_; });
+
     while (!LookingAt(">") && !LookingAt("}")) {
       DO(ConsumeField(message));
     }
 
     // Confirm that we have a valid ending delimiter.
     DO(Consume(delimiter));
+
     return true;
   }
 
@@ -885,13 +897,6 @@ class TextFormat::Parser::ParserImpl {
 
   bool ConsumeFieldMessage(Message* message, const Reflection* reflection,
                            const FieldDescriptor* field) {
-    if (--recursion_limit_ < 0) {
-      ReportError(
-          absl::StrCat("Message is too deep, the parser exceeded the "
-                       "configured recursion limit of ",
-                       initial_recursion_limit_, "."));
-      return false;
-    }
     // If the parse information tree is not nullptr, create a nested one
     // for the nested message.
     ParseInfoTree* parent = parse_info_tree_;
@@ -911,8 +916,6 @@ class TextFormat::Parser::ParserImpl {
                         delimiter));
     }
 
-    ++recursion_limit_;
-
     // Reset the parse information tree.
     parse_info_tree_ = parent;
     return true;
@@ -929,6 +932,8 @@ class TextFormat::Parser::ParserImpl {
       return false;
     }
 
+    auto cleanup = absl::MakeCleanup([this] { ++recursion_limit_; });
+
     std::string delimiter;
     DO(ConsumeMessageDelimiter(&delimiter));
     while (!LookingAt(">") && !LookingAt("}")) {
@@ -936,7 +941,6 @@ class TextFormat::Parser::ParserImpl {
     }
     DO(Consume(delimiter));
 
-    ++recursion_limit_;
     return true;
   }
 
@@ -1099,11 +1103,12 @@ class TextFormat::Parser::ParserImpl {
       return false;
     }
 
+    auto cleanup = absl::MakeCleanup([this] { ++recursion_limit_; });
+
     if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
       while (LookingAtType(io::Tokenizer::TYPE_STRING)) {
         tokenizer_.Next();
       }
-      ++recursion_limit_;
       return true;
     }
     if (TryConsume("[")) {
@@ -1120,7 +1125,6 @@ class TextFormat::Parser::ParserImpl {
           DO(Consume(","));
         }
       }
-      ++recursion_limit_;
       return true;
     }
     // Possible field values other than string:
@@ -1151,7 +1155,6 @@ class TextFormat::Parser::ParserImpl {
       std::string text = tokenizer_.current().text;
       ReportError(
           absl::StrCat("Cannot skip field value, unexpected token: ", text));
-      ++recursion_limit_;
       return false;
     }
     // Combination of '-' and TYPE_IDENTIFIER may result in an invalid field
@@ -1166,12 +1169,10 @@ class TextFormat::Parser::ParserImpl {
       if (text != "inf" &&
           text != "infinity" && text != "nan") {
         ReportError(absl::StrCat("Invalid float number: ", text));
-        ++recursion_limit_;
         return false;
       }
     }
     tokenizer_.Next();
-    ++recursion_limit_;
     return true;
   }
 
@@ -1925,6 +1926,20 @@ MessageFactory* TextFormat::Finder::FindExtensionFactory(
 
 // ===========================================================================
 
+// Note: this value is intentionally unbounded by default. This is due to the
+// use-cases of TextProto primarily being to parse trusted inputs, alongside a
+// strong need to avoid breaking long-standing and working as intended usages
+// parsing messages which exceed depth 100. Use-cases which need to limit this
+// (e.g. anything parsing of untrusted TextProto inputs) must explicitly opt
+// into a limit.
+//
+// At a future date we may consider reducing this default, but we have
+// no concrete plans to do so. PRs proposing to reduce this value to 100
+// unfortunately will not be accepted at this time.
+//
+// See comment on TextFormat class in text_format.h for more info.
+static constexpr int kDefaultRecursionLimit = std::numeric_limits<int>::max();
+
 TextFormat::Parser::Parser()
     : error_collector_(nullptr),
       finder_(nullptr),
@@ -1937,7 +1952,7 @@ TextFormat::Parser::Parser()
       allow_field_number_(false),
       allow_relaxed_whitespace_(false),
       allow_singular_overwrites_(false),
-      recursion_limit_(std::numeric_limits<int>::max()) {}
+      recursion_limit_(kDefaultRecursionLimit) {}
 
 namespace {
 

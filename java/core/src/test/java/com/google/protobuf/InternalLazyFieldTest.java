@@ -37,7 +37,7 @@ public final class InternalLazyFieldTest {
     this.mode = mode;
   }
 
-  @Parameters
+  @Parameters(name = "mode={0}")
   public static List<Object[]> data() {
     return Arrays.asList(
         new Object[][] {
@@ -102,14 +102,15 @@ public final class InternalLazyFieldTest {
   public void testGetValueDataWtihInvalidExtension() {
     TestAllExtensions message =
         TestAllExtensions.newBuilder()
-            .setExtension(TestRequired.single, TestRequired.getDefaultInstance())
+            .setExtension(
+                TestRequired.single,
+                TestRequired.newBuilder().setA(1).buildPartial()) // missing b and c
             .buildPartial();
     InternalLazyField lazyField = createLazyFieldWithBytesFromMessage(message);
 
     if (mode == ExtensionRegistryLite.LazyExtensionMode.LAZY_VERIFY_ON_ACCESS) {
       TestAllExtensions parent = (TestAllExtensions) lazyField.getValue();
-      assertThrows(
-          InvalidProtobufRuntimeException.class, () -> parent.getExtension(TestRequired.single));
+      assertThat(parent.getExtension(TestRequired.single).getA()).isEqualTo(1);
     } else {
       assertThat(lazyField.getValue()).isEqualTo(TestAllExtensions.getDefaultInstance());
     }

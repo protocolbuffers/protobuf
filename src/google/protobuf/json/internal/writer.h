@@ -20,7 +20,6 @@
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/zero_copy_sink.h"
 #include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -78,6 +77,10 @@ struct Quoted {
 template <typename... T>
 static Quoted<T...> MakeQuoted(T... t) {
   return Quoted<T...>{std::make_tuple(t...)};
+}
+
+inline Quoted<absl::string_view> MakeQuoted(const std::string& str) {
+  return Quoted<absl::string_view>{std::make_tuple(absl::string_view(str))};
 }
 
 class JsonWriter {

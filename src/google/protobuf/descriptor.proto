@@ -1206,6 +1206,37 @@ message FeatureSet {
         edition_defaults = { edition: EDITION_2024, value: "EXPORT_TOP_LEVEL" }
       ];
 
+  message ProtoLimitsFeature {
+    enum EnforceProtoLimits {
+      PROTO_LIMITS_UNKNOWN = 0;
+
+      // Default pre-EDITION_2026: there are no limit enforcement at the protoc
+      // level. Practical limits still exist, but they will tend to fail while
+      // compiling protoc-generated code, and these limits tend to be language
+      // or toolchain specific.
+      LEGACY_NO_EXPLICIT_LIMITS = 1;
+
+      // A set of limits enforced by Edition 2026 by default. For a detailed
+      // list of all the limits please consult the Edition 2026 documentation.
+      PROTO_LIMITS2026 = 2;
+    }
+  }
+  optional ProtoLimitsFeature.EnforceProtoLimits enforce_proto_limits = 9 [
+    retention = RETENTION_SOURCE,
+    targets = TARGET_TYPE_ENUM,
+    targets = TARGET_TYPE_MESSAGE,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_ONEOF,
+    feature_support = {
+      edition_introduced: EDITION_2026,
+    },
+    edition_defaults = {
+      edition: EDITION_LEGACY,
+      value: "LEGACY_NO_EXPLICIT_LIMITS"
+    },
+    edition_defaults = { edition: EDITION_2026, value: "PROTO_LIMITS2026" }
+  ];
+
   reserved 999;
 
   extensions 1000 to 9994 [

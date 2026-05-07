@@ -311,6 +311,7 @@ filegroup(
         "//src/google/protobuf:well_known_type_protos",
         "//upb/json:test_protos",
         "//upb/message:test_protos",
+        "//upb/mini_table:test_protos",
         "//upb/test:test_protos",
         "//upb/util:test_protos",
         "//upb/wire:test_protos",

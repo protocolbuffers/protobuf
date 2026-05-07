@@ -89,6 +89,7 @@ cc_library(
         "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:charset",
         "@abseil-cpp//absl/strings:str_format",
     ],
 )
@@ -278,6 +279,7 @@ cc_library(
         ":descriptor_traits",
         ":untyped_message",
         ":writer",
+        "//:struct_cc_proto",
         "//:type_cc_proto",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
@@ -285,7 +287,6 @@ cc_library(
         "//src/google/protobuf/io:zero_copy_sink",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/util:type_resolver",
-        "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/status",

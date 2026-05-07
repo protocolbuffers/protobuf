@@ -407,8 +407,8 @@ void SingularMessage::GenerateSerializeWithCachedSizesToArray(
 
 void SingularMessage::GenerateByteSize(io::Printer* p) const {
   p->Emit(R"cc(
-    total_size +=
-        $tag_size$ + $pbi$::WireFormatLite::$DeclaredType$Size(*this_.$field_$);
+    total_size += $kTagBytes$ +
+                  $pbi$::WireFormatLite::$DeclaredType$Size(*this_.$field_$);
   )cc");
 }
 
@@ -1070,7 +1070,7 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
 void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
   p->Emit(
       R"cc(
-        total_size += $tag_size$UL * this_._internal_$name$_size();
+        total_size += $kTagBytes$UL * this_._internal_$name$_size();
         for (const auto& msg : this_._internal$_weak$_$name$()) {
           total_size += $pbi$::WireFormatLite::$DeclaredType$Size(msg);
         }

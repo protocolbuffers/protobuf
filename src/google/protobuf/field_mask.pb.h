@@ -225,8 +225,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
     kPathsFieldNumber = 1,
   };
   // repeated string paths = 1;
-  [[nodiscard]] int paths_size()
-      const;
+  [[nodiscard]] int paths_size() const;
   private:
   int _internal_paths_size() const;
 

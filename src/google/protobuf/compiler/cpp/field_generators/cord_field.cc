@@ -170,9 +170,9 @@ void CordFieldGenerator::GenerateAccessorDeclarations(io::Printer* p) const {
       p->WithVars(AnnotatedAccessors(field_, {"mutable_"}, Semantic::kAlias));
 
   p->Emit(R"cc(
-    [[nodiscard]] $deprecated_attr$const ::absl::Cord& $name$() const;
-    $deprecated_attr$void $set_name$(const ::absl::Cord& value);
-    $deprecated_attr$void $set_name$(::absl::string_view value);
+    [[nodiscard]] $DEPRECATED$ const ::absl::Cord& $name$() const;
+    $DEPRECATED$void $set_name$(const ::absl::Cord& value);
+    $DEPRECATED$void $set_name$(::absl::string_view value);
 
     private:
     const ::absl::Cord& $_internal_name$() const;
@@ -287,8 +287,8 @@ void CordFieldGenerator::GenerateSerializeWithCachedSizesToArray(
 void CordFieldGenerator::GenerateByteSize(io::Printer* p) const {
   auto v = p->WithVars(variables_);
   p->Emit(R"cc(
-    total_size += $tag_size$ + $pbi$::WireFormatLite::$DeclaredType$Size(
-                                   this_._internal_$name$());
+    total_size += $kTagBytes$ + $pbi$::WireFormatLite::$DeclaredType$Size(
+                                    this_._internal_$name$());
   )cc");
 }
 

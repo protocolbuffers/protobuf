@@ -8060,13 +8060,6 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
       }
     }
 
-    // Map entries must be in the same file, so we can populate it directly if
-    // the descriptor is already known. If it is not known, then it must not be
-    // a map entry.
-    if (auto* sub_message = type.descriptor()) {
-      field->is_map_ = sub_message->options().map_entry();
-    }
-
     if (!type.IsVisibleFrom(file_) && pool_->enforce_symbol_visibility_) {
       AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
                [&] { return type.GetVisibilityError(file_); });
@@ -8099,6 +8092,12 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
                  });
         return;
       }
+
+      // Only TYPE_MESSAGE fields can be map fields. TYPE_GROUP fields
+      // referencing a map_entry message must not set is_map_.
+      field->is_map_ =
+          field->type_ == FieldDescriptor::TYPE_MESSAGE &&
+          field->type_descriptor_.message_type->options().map_entry();
 
       if (field->has_default_value()) {
         AddError(field->full_name(), proto,
@@ -8615,6 +8614,16 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
              "Extensions to non-lite types can only be declared in non-lite "
              "files.  Note that you cannot extend a non-lite type to contain "
              "a lite type, but the reverse is allowed.");
+  }
+
+  // TYPE_GROUP fields must not reference map_entry messages. Only
+  // TYPE_MESSAGE fields are valid map fields.
+  if (field->type() == FieldDescriptor::TYPE_GROUP &&
+      field->message_type() != nullptr &&
+      field->message_type()->options().map_entry()) {
+    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
+             "Groups cannot be map entries. Use a regular message field with "
+             "map<KeyType, ValueType> syntax instead.");
   }
 
   // Validate map types.

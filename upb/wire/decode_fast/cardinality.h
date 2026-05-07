@@ -56,6 +56,16 @@ typedef enum {
   // Tail call to the function to parse the current field, except parse it as
   // unpacked instead of packed.
   kUpb_DecodeFastNext_TailCallUnpacked = 5,
+
+  // Tail call for potential fast handling of fields hitting a slot they are not
+  // a match for.
+  kUpb_DecodeFastNext_FallbackMismatchedSlot = 6,
+
+  // Tail call for potential fast handling of an unknown field.
+  kUpb_DecodeFastNext_DecodeUnknown = 7,
+
+  // Tail call for potential fast handling of an extension field.
+  kUpb_DecodeFastNext_DecodeExtensionOrUnknown = 8,
 } upb_DecodeFastNext;
 
 UPB_INLINE bool upb_DecodeFast_SetExit(upb_DecodeFastNext* next,
@@ -105,11 +115,19 @@ UPB_INLINE bool upb_DecodeFast_SetError(upb_Decoder* d,
       UPB_MUSTTAIL return func_packed(UPB_PARSE_ARGS);                    \
     case kUpb_DecodeFastNext_TailCallUnpacked:                            \
       UPB_MUSTTAIL return func_unpacked(UPB_PARSE_ARGS);                  \
+    case kUpb_DecodeFastNext_FallbackMismatchedSlot:                      \
+      UPB_MUSTTAIL return _upb_FastDecoder_DecodeMismatchedSlot(          \
+          UPB_PARSE_ARGS);                                                \
+    case kUpb_DecodeFastNext_DecodeUnknown:                               \
+      UPB_MUSTTAIL return _upb_FastDecoder_DecodeUnknown(UPB_PARSE_ARGS); \
+    case kUpb_DecodeFastNext_DecodeExtensionOrUnknown:                    \
+      UPB_MUSTTAIL return _upb_FastDecoder_DecodeExtensionOrUnknown(      \
+          UPB_PARSE_ARGS);                                                \
     default:                                                              \
       UPB_UNREACHABLE();                                                  \
   }
 
-UPB_INLINE const char* UPB_PRESERVE_NONE
+UPB_INLINE upb_FastDecoder_Return UPB_PRESERVE_NONE
 upb_DecodeFast_Unreachable(UPB_PARSE_PARAMS) {
   UPB_UNREACHABLE();
 }
@@ -130,10 +148,10 @@ uint64_t upb_DecodeFast_LoadHasbits(upb_Message* msg) {
  * of our optimizations. That is also why we must declare it in a separate file,
  * otherwise the compiler will see that it calls longjmp() and deduce that it is
  * noreturn. */
-const char* _upb_FastDecoder_ErrorJmp2(upb_Decoder* d);
+upb_FastDecoder_Return _upb_FastDecoder_ErrorJmp2(upb_Decoder* d);
 
-UPB_INLINE
-const char* _upb_FastDecoder_ErrorJmp(upb_Decoder* d, upb_DecodeStatus status) {
+UPB_INLINE upb_FastDecoder_Return
+_upb_FastDecoder_ErrorJmp(upb_Decoder* d, upb_DecodeStatus status) {
   d->err->code = status;
   return _upb_FastDecoder_ErrorJmp2(d);
 }
@@ -300,7 +318,8 @@ bool upb_DecodeFast_CheckTag(const char** ptr, upb_DecodeFast_Type type,
       // We can jump directly to the decoder for the flipped tag.
       return UPB_DECODEFAST_EXIT(flipped, next);
     }
-    return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, next);
+    return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackMismatchedSlot,
+                               next);
   }
   *ptr += upb_DecodeFast_TagSizeBytes(tagsize);
   return true;

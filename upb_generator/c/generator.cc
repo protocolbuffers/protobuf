@@ -322,11 +322,11 @@ void GenerateExtensionInHeader(Context& c, upb::FieldDefPtr ext) {
       },
       R"cc(
         UPB_INLINE bool $ident_base$_has_$name$(const struct $ctype$* msg) {
-          return upb_Message_HasExtension((upb_Message*)msg, &$ext_var$);
+          return upb_Message_HasExtension((upb_Message*)msg, $ext_var$);
         }
 
         UPB_INLINE void $ident_base$_clear_$name$(struct $ctype$* msg) {
-          upb_Message_ClearExtension((upb_Message*)msg, &$ext_var$);
+          upb_Message_ClearExtension((upb_Message*)msg, $ext_var$);
         }
       )cc");
 
@@ -346,7 +346,7 @@ void GenerateExtensionInHeader(Context& c, upb::FieldDefPtr ext) {
         R"cc(
           UPB_INLINE $ctype_const$
           $ident_base$_$name$(const struct $ctype$* msg) {
-            const upb_MiniTableExtension* ext = &$ext_var$;
+            const upb_MiniTableExtension* ext = $ext_var$;
             UPB_ASSUME(upb_MiniTableField_IsScalar(&ext->UPB_PRIVATE(field)));
             UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(
                            &ext->UPB_PRIVATE(field)) == $rep$);
@@ -359,7 +359,7 @@ void GenerateExtensionInHeader(Context& c, upb::FieldDefPtr ext) {
           UPB_INLINE void $ident_base$_set_$name$(struct $ctype$* msg,
                                                   $ctype_const$ val,
                                                   upb_Arena* arena) {
-            const upb_MiniTableExtension* ext = &$ext_var$;
+            const upb_MiniTableExtension* ext = $ext_var$;
             UPB_ASSUME(upb_MiniTableField_IsScalar(&ext->UPB_PRIVATE(field)));
             UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(
                            &ext->UPB_PRIVATE(field)) == $rep$);

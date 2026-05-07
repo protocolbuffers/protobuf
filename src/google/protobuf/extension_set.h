@@ -711,19 +711,6 @@ class PROTOBUF_EXPORT ExtensionSet {
                                        int end_field_number, uint8_t* target,
                                        io::EpsCopyOutputStream* stream) const;
   // Interface of a lazily parsed singular message extension.
-  class PROTOBUF_EXPORT LazyMessageExtension;
-  // Give access to function defined below to see LazyMessageExtension.
-  static LazyMessageExtension* MaybeCreateLazyExtensionImpl(Arena* arena);
-#if defined(PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET)
-  static LazyField* MaybeCreateLazyExtension(Arena* arena);
-#else   // !PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET
-  static LazyMessageExtension* MaybeCreateLazyExtension(Arena* arena) {
-    auto* f = maybe_create_lazy_extension_.load(std::memory_order_relaxed);
-    return f != nullptr ? f(arena) : nullptr;
-  }
-#endif  // !PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET
-  static std::atomic<LazyMessageExtension* (*)(Arena* arena)>
-      maybe_create_lazy_extension_;
 
   // We can't directly use std::atomic for Extension::cached_size because
   // Extension needs to be trivially copyable.
@@ -774,11 +761,6 @@ class PROTOBUF_EXPORT ExtensionSet {
     union Pointer {
       std::string* string_value;
       MessageLite* message_value;
-#if defined(PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET)
-      LazyField* lazymessage_value;
-#else   // !PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET
-      LazyMessageExtension* lazymessage_value;
-#endif  // !PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET
 
       RepeatedField<int32_t>* repeated_int32_t_value;
       RepeatedField<int64_t>* repeated_int64_t_value;

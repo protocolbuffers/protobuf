@@ -27,7 +27,7 @@ jobs:
       fail-fast: false
       matrix:
         runner: [ ubuntu, windows, macos ]
-        bazelversion: [ '8.0.0' ]
+        bazelversion: [ '8.6.0', '9.0.0' ]
         bzlmod: [ true, false ]
         toolchain_resolution:
           # Default flags, uses from prebuilt protoc
@@ -36,6 +36,9 @@ jobs:
           - "--incompatible_enable_proto_toolchain_resolution=false"
           # Uses protoc from source.
           - "--@com_google_protobuf//bazel/flags:prefer_prebuilt_protoc=false"
+        exclude:
+          - bazelversion: '9.0.0'
+            bzlmod: false
     runs-on: ${{ matrix.runner }}-latest
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Examples ${{ matrix.runner }} ${{ matrix.bazelversion }}${{ matrix.bzlmod && ' (bzlmod)' || '' }} ${{ matrix.toolchain_resolution && ' (toolchain resolution)' || '' }}
     steps:
@@ -84,7 +87,7 @@ jobs:
       fail-fast: false
       matrix:
         runner: [ ubuntu, windows, macos ]
-        bazelversion: [ '8.0.0' ]
+        bazelversion: [ '8.6.0', '9.0.0' ]
         bzlmod: [ true ]
         toolchain_resolution:
           # Default flags, uses from prebuilt protoc
@@ -122,7 +125,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-d415763a389bb62a6f126b08c992e83f9f7dc1b4
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.0.0-7932bf8b25fb76a111e7257d151a6a58d5c3c671
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "bazel-tests"
           bazel: test //bazel/...
@@ -145,4 +148,4 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "bazel-tests-${{ matrix.runner }}"
           bazel: test //bazel/...
-          version: 8.0.1
+          version: 8.6.0

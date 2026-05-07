@@ -1220,6 +1220,8 @@ set(upb_test_protos_files
   ${protobuf_SOURCE_DIR}/upb/message/test.proto
   ${protobuf_SOURCE_DIR}/upb/message/utf8_test.proto
   ${protobuf_SOURCE_DIR}/upb/message/utf8_test_proto2.proto
+  ${protobuf_SOURCE_DIR}/upb/mini_table/debug_string_test.proto
+  ${protobuf_SOURCE_DIR}/upb/mini_table/generated_registry_empty_test.proto
   ${protobuf_SOURCE_DIR}/upb/test/custom_options.proto
   ${protobuf_SOURCE_DIR}/upb/test/editions_test.proto
   ${protobuf_SOURCE_DIR}/upb/test/empty.proto
@@ -1258,6 +1260,7 @@ set(upb_test_files
   ${protobuf_SOURCE_DIR}/upb/message/utf8_test.cc
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/encode_test.cc
   ${protobuf_SOURCE_DIR}/upb/mini_table/compat_test.cc
+  ${protobuf_SOURCE_DIR}/upb/mini_table/generated_registry_empty_test.cc
   ${protobuf_SOURCE_DIR}/upb/mini_table/generated_registry_test.cc
   ${protobuf_SOURCE_DIR}/upb/test/editions_test.cc
   ${protobuf_SOURCE_DIR}/upb/test/length_prefixed_test.cc

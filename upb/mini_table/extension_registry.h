@@ -87,6 +87,9 @@ UPB_NODISCARD upb_ExtensionRegistryStatus upb_ExtensionRegistry_AddArray(
 UPB_API const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
     const upb_ExtensionRegistry* r, const upb_MiniTable* t, uint32_t num);
 
+// Returns the number of extensions in the registry. For testing/debugging only.
+UPB_API size_t upb_ExtensionRegistry_Size(const upb_ExtensionRegistry* r);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
