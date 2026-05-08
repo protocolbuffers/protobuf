@@ -45,6 +45,12 @@ class TextEncodingTestCase(unittest.TestCase):
       self.assertEqual(unescaped, text_encoding.CUnescape(escaped))
       self.assertEqual(unescaped, text_encoding.CUnescape(escaped_utf8))
 
+  def testCUnescapeTrigraph(self):
+    self.assertEqual(b"?", text_encoding.CUnescape("?"))
+    self.assertEqual(b"?", text_encoding.CUnescape("\\?"))
+    self.assertEqual(b"\\?", text_encoding.CUnescape("\\\\?"))
+    self.assertEqual(b"\\?", text_encoding.CUnescape("\\\\\\?"))
+
 
 if __name__ == "__main__":
   unittest.main()
