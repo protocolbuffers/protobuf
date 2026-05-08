@@ -727,6 +727,23 @@ TEST_F(CommandLineInterfaceTest, PluginPrefixRejectsDuplicate) {
   ExpectErrorSubstring("only be passed once");
 }
 
+TEST_F(CommandLineInterfaceTest, PluginPrefixRejectsQuotes) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  RunWithArgs({
+      "protocol_compiler",
+      "--plug_prefix=\"my cmd\"",
+      "--plug_out=$tmpdir",
+      "--proto_path=$tmpdir",
+      "foo.proto",
+  });
+
+  ExpectErrorSubstring("--plug_prefix");
+  ExpectErrorSubstring("quotes are not supported");
+}
+
 TEST_F(CommandLineInterfaceTest, PluginPrefixMissingExecutable) {
   CreateTempFile("foo.proto",
                  "syntax = \"proto2\";\n"

@@ -2595,6 +2595,13 @@ CommandLineInterface::InterpretArgument(const std::string& name,
           std::cerr << name << " may only be passed once." << std::endl;
           return PARSE_ARGUMENT_FAIL;
         }
+        if (value.find_first_of("\"'") != std::string::npos) {
+          std::cerr << name
+                    << ": quotes are not supported in the value. Use a "
+                       "wrapper script for more complex invocations."
+                    << std::endl;
+          return PARSE_ARGUMENT_FAIL;
+        }
         std::vector<std::string> tokens = absl::StrSplit(
             value, absl::ByAnyChar(" \t"), absl::SkipWhitespace());
         if (tokens.empty()) {
