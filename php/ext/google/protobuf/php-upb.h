@@ -1272,9 +1272,9 @@ UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
     // We can't reclaim any memory, but we need to verify that `ptr` really
     // does represent the most recent allocation.
 #ifndef NDEBUG
-    bool _upb_Arena_WasLastAlloc(struct upb_Arena * a, void* ptr,
-                                 size_t oldsize);
-    UPB_ASSERT(_upb_Arena_WasLastAlloc(a, ptr, oldsize));
+    bool _upb_Arena_WasLastAllocFromPreviousBlock(struct upb_Arena * a,
+                                                  void* ptr, size_t oldsize);
+    UPB_ASSERT(_upb_Arena_WasLastAllocFromPreviousBlock(a, ptr, oldsize));
 #endif
   }
 }
@@ -1327,6 +1327,58 @@ UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a, void* ptr,
   }
   return ret;
 }
+
+// Returns the next block size to allocate for the arena based on exponential
+// growth and size hint.
+size_t UPB_PRIVATE(_upb_Arena_NextBlockSize)(struct upb_Arena* a, size_t span,
+                                             bool* one_off);
+
+// Updates the arena's growth state based on the block size actually allocated.
+void UPB_PRIVATE(_upb_Arena_UpdateGrowthState)(struct upb_Arena* a, size_t span,
+                                               size_t block_size, bool one_off);
+
+// Allocates a block for the arena of at least the given size, but does not add
+// it to the arena. The block must either be added to the arena or manually
+// freed, otherwise memory will be leaked.
+//
+// Returns the allocated block (or NULL on failure), and writes the actual size
+// of the block to size.
+void* UPB_PRIVATE(_upb_Arena_AllocBlock)(struct upb_Arena* a, size_t* size);
+
+// Adds a block previously allocated with _upb_Arena_AllocBlock() to the arena.
+// This will cause it to be owned by the arena and freed when the arena is
+// freed.
+//
+// Note that this call does *not* cause the block to be used for arena
+// allocations. Call _upb_Arena_UseBlock() to do that.
+//
+// This operation cannot be undone, so the caller should not call it until they
+// are sure that the block will be useful to the arena.
+void UPB_PRIVATE(_upb_Arena_AddBlock)(struct upb_Arena* a, void* block);
+
+// Frees a block previously allocated with _upb_Arena_AllocBlock. This is only
+// necessary if the block ends up not being useful to the arena.
+void UPB_PRIVATE(_upb_Arena_FreeBlock)(struct upb_Arena* a, void* block);
+
+// Sets the arena's current block to the given block. Subsequent allocations
+// may be made from this block.
+//
+// The given memory must be either:
+// - The arena block most recently returned by _upb_Arena_AllocBlock, or
+// - A block that was just stolen from the arena using _upb_Arena_Steal.
+//
+// After this call, the memory may only be used by the arena -- it is poisoned
+// against further use by the caller.
+//
+// Note: if the arena determines that this block is smaller than the block it
+// currently has, it may decide to not use the block.
+void UPB_PRIVATE(_upb_Arena_UseBlock)(struct upb_Arena* a, void* ptr,
+                                      size_t size);
+
+// Steals all available memory from the current arena block, but only if at
+// least `size` bytes are available. The number of bytes stolen is written to
+// size. The memory will be unpoisoned and ready for use.
+void* UPB_PRIVATE(_upb_Arena_Steal)(struct upb_Arena* a, size_t* size);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -18349,6 +18401,82 @@ UPB_INLINE bool _upb_Decoder_ReadString(upb_Decoder* d, const char** ptr,
 
 #endif /* UPB_WIRE_INTERNAL_DECODER_H_ */
 
+#ifndef GOOGLE_UPB_UPB_WIRE_INTERNAL_BACK_ALLOC_H__
+#define GOOGLE_UPB_UPB_WIRE_INTERNAL_BACK_ALLOC_H__
+
+#include <stddef.h>
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Allocates memory from the back of the arena.
+typedef struct {
+  upb_Arena* arena;
+  char *buf, *limit;
+  bool standalone;
+} upb_BackAlloc;
+
+// Needed because C doesn't allow NULL - NULL.
+extern char upb_BackAlloc_sentinel;
+
+char* upb_BackAlloc_Grow(upb_BackAlloc* a, char* ptr, size_t need);
+
+UPB_INLINE char* upb_BackAlloc_Init(upb_BackAlloc* a, upb_Arena* arena) {
+  a->arena = arena;
+  // This could eagerly steal whatever's in the arena, since stealing with a
+  // minimum of 0 can't fail.
+  a->buf = &upb_BackAlloc_sentinel;
+  a->limit = &upb_BackAlloc_sentinel;
+  a->standalone = false;
+  return a->limit;
+}
+
+UPB_INLINE void upb_BackAlloc_Abort(upb_BackAlloc* a) {
+  if (a->standalone) {
+    UPB_PRIVATE(_upb_Arena_FreeBlock)(a->arena, a->buf);
+  } else if (a->limit != a->buf) {
+    UPB_PRIVATE(_upb_Arena_UseBlock)(a->arena, a->buf, a->limit - a->buf);
+  }
+}
+
+UPB_INLINE size_t upb_BackAlloc_Finish(upb_BackAlloc* a, const char* ptr) {
+  if (a->standalone) {
+    UPB_PRIVATE(_upb_Arena_AddBlock)(a->arena, a->buf);
+  }
+  if (ptr != a->buf) {
+    UPB_PRIVATE(_upb_Arena_UseBlock)(a->arena, a->buf, ptr - a->buf);
+  }
+  return a->limit - ptr;
+}
+
+UPB_FORCEINLINE bool upb_BackAlloc_HasBytes(const upb_BackAlloc* a,
+                                            const char* ptr, size_t need) {
+  size_t have = ptr - a->buf;
+  return have >= need;
+}
+
+UPB_FORCEINLINE char* upb_BackAlloc_Reserve(upb_BackAlloc* a, char* ptr,
+                                            size_t need) {
+  return upb_BackAlloc_HasBytes(a, ptr, need)
+             ? ptr - need
+             : upb_BackAlloc_Grow(a, ptr, need);
+}
+
+UPB_INLINE size_t upb_BackAlloc_Size(const upb_BackAlloc* a, const char* ptr) {
+  return a->limit - ptr;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif  // GOOGLE_UPB_UPB_WIRE_INTERNAL_BACK_ALLOC_H__
+
 #ifndef UPB_WIRE_INTERNAL_ENCODE_H_
 #define UPB_WIRE_INTERNAL_ENCODE_H_
 
@@ -18363,27 +18491,23 @@ extern "C" {
 #endif
 
 typedef struct {
-  upb_EncodeStatus status;
-  upb_Arena* arena;
-  // These should only be used for arithmetic and reallocation to allow full
-  // aliasing analysis on the ptr argument.
-  const char UPB_NODEREF *buf, *limit;
+  upb_BackAlloc alloc;
   int options;
   int depth;
+  upb_EncodeStatus status;
   _upb_mapsorter sorter;
   jmp_buf* err;
 } upb_encstate;
 
-UPB_INLINE void UPB_PRIVATE(_upb_encstate_init)(upb_encstate* e, jmp_buf* err,
-                                                upb_Arena* arena) {
+UPB_INLINE char* UPB_PRIVATE(_upb_encstate_init)(upb_encstate* e, jmp_buf* err,
+                                                 upb_Arena* arena) {
   e->status = kUpb_EncodeStatus_Ok;
-  e->arena = arena;
-  e->buf = NULL;
-  e->limit = NULL;
+  char* ptr = upb_BackAlloc_Init(&e->alloc, arena);
   e->options = 0;
   e->depth = 0;
   e->err = err;
   _upb_mapsorter_init(&e->sorter);
+  return ptr;
 }
 
 // Internal version of upb_Encode that encodes a single field.
