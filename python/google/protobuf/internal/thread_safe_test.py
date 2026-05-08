@@ -329,6 +329,53 @@ class FreeThreadingTest(unittest.TestCase):
       for thread in threads:
         thread.join()
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentGetAndRegisterMessageClassDataRace(self):
+    """Reproduces the data race in GetMessageClass/RegisterMessageClass."""
+    pool = descriptor_pool.DescriptorPool()
+
+    # Create and register a base Message class to look up
+    file_proto = descriptor_pb2.FileDescriptorProto(name='base.proto')
+    file_proto.message_type.add(name='BaseMessage')
+    pool.Add(file_proto)
+    base_desc = pool.FindMessageTypeByName('BaseMessage')
+    message_factory.GetMessageClass(base_desc)
+
+    # Pre-create descriptors for modification
+    num_descriptors = 500
+    descriptors = []
+    for i in range(num_descriptors):
+      name = f'DynamicMessage_{i}'
+      f_proto = descriptor_pb2.FileDescriptorProto(name=f'{name}.proto')
+      f_proto.message_type.add(name=name)
+      pool.Add(f_proto)
+      descriptors.append(pool.FindMessageTypeByName(name))
+
+    barrier = threading.Barrier(10)
+
+    def Task(thread_id: int):
+      barrier.wait()
+      if thread_id % 2 == 0:
+        # Reader thread: repeatedly looks up the existing message class
+        for _ in range(200):
+          message_factory.GetMessageClass(base_desc)
+      else:
+        # Writer thread: registers new message classes concurrently
+        start_idx = (thread_id // 2) * 100
+        for i in range(start_idx, start_idx + 100):
+          message_factory.GetMessageClass(descriptors[i])
+
+    threads = []
+    for i in range(10):
+      threads.append(threading.Thread(target=Task, args=(i,)))
+    for thread in threads:
+      thread.start()
+    for thread in threads:
+      thread.join()
+
   @unittest.skipIf(not ALSO_RUN_BENCHMARKS, 'Benchmarks are disabled.')
   def testConcurrentGetOptionsBenchmark(self):
     """Benchmarks concurrent GetOptions calls."""
