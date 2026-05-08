@@ -609,25 +609,33 @@ TEST_F(CommandLineInterfaceTest, PluginPrefixInvokesWrapper) {
   ExpectFileContentContainsSubstring("wrapper_invoked.txt", "wrapped");
 }
 
-#ifndef _WIN32
 TEST_F(CommandLineInterfaceTest, PluginPrefixForwardsArguments) {
   CreateTempFile("foo.proto",
                  "syntax = \"proto2\";\n"
                  "message Foo {}\n");
 
-  // Wrapper records every argv element on its own line, then shifts past the
-  // two wrapper-specific args (--foo, --bar=baz) and execs the remaining
-  // tail (the plugin path appended by protoc).
-  CreateTempFile("plugin_wrapper.sh",
+  // Wrapper records the two prefix-supplied args, then invokes the plugin
+  // (the third and final argv element appended by protoc).
+  std::string wrapper_path;
+#ifdef _WIN32
+  CreateTempFile("plugin_wrapper_args.bat",
+                 "@echo off\r\n"
+                 "echo %~1>>\"%~dp0wrapper_argv.txt\"\r\n"
+                 "echo %~2>>\"%~dp0wrapper_argv.txt\"\r\n"
+                 "\"%~3\"\r\n"
+                 "exit /b %errorlevel%\r\n");
+  wrapper_path = absl::StrCat(temp_directory(), "/plugin_wrapper_args.bat");
+#else
+  CreateTempFile("plugin_wrapper_args.sh",
                  "#!/bin/sh\n"
                  "for arg in \"$@\"; do\n"
                  "  printf '%s\\n' \"$arg\" >> \"$tmpdir/wrapper_argv.txt\"\n"
                  "done\n"
                  "shift 2\n"
                  "exec \"$@\"\n");
-  const std::string wrapper_path =
-      absl::StrCat(temp_directory(), "/plugin_wrapper.sh");
+  wrapper_path = absl::StrCat(temp_directory(), "/plugin_wrapper_args.sh");
   ASSERT_EQ(0, chmod(wrapper_path.c_str(), 0777));
+#endif
 
   // Pass the prefix value as a single argv element so the embedded spaces
   // form multiple tokens (Run() splits on whitespace; RunWithArgs does not).
@@ -644,7 +652,6 @@ TEST_F(CommandLineInterfaceTest, PluginPrefixForwardsArguments) {
   ExpectFileContentContainsSubstring("wrapper_argv.txt", "--foo");
   ExpectFileContentContainsSubstring("wrapper_argv.txt", "--bar=baz");
 }
-#endif  // !_WIN32
 
 TEST_F(CommandLineInterfaceTest, PluginPrefixFromSearchPath) {
   CreateTempFile("foo.proto",
