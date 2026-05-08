@@ -53,14 +53,15 @@ static const upb_FieldDef* PyUpb_MapContainer_GetField(
 
 static void PyUpb_MapContainer_Dealloc(void* _self) {
   PyUpb_MapContainer* self = _self;
-  Py_DECREF(self->arena);
   if (PyUpb_MapContainer_IsStub(self)) {
     PyUpb_Message_CacheDelete(self->ptr.parent,
-                              PyUpb_MapContainer_GetField(self));
+                              PyUpb_MapContainer_GetField(self), _self);
     Py_DECREF(self->ptr.parent);
   } else {
-    PyUpb_ObjCache_Delete(self->ptr.map);
+    PyUpb_WeakMap* cache = PyUpb_Arena_GetCache(self->arena);
+    PyUpb_WeakMap_TryDelete(cache, self->ptr.map, _self);
   }
+  Py_DECREF(self->arena);
   PyUpb_Dealloc(_self);
 }
 
@@ -109,11 +110,13 @@ upb_Map* PyUpb_MapContainer_Reify(PyObject* _self, upb_Map* map,
   } else {
     const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
     upb_MessageValue msgval = {.map_val = map};
-    if (!PyUpb_Message_SetConcreteSubobj(self->ptr.parent, f, msgval)) {
+    if (!PyUpb_Message_SetConcreteSubobj(self->ptr.parent, f, msgval,
+                                         (PyObject*)self)) {
       return NULL;
     }
   }
-  PyUpb_ObjCache_Add(map, &self->ob_base);
+  PyObject* tmp_ret = &self->ob_base;
+  PyUpb_WeakMap_Add(PyUpb_Arena_GetCache(self->arena), map, &tmp_ret);
   Py_DECREF(self->ptr.parent);
   self->ptr.map = map;  // Overwrites self->ptr.parent.
   self->field &= ~(uintptr_t)1;
@@ -378,7 +381,8 @@ static PyObject* PyUpb_MapContainer_Repr(PyObject* _self) {
 PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_Map* map,
                                                 const upb_FieldDef* f,
                                                 PyObject* arena) {
-  PyUpb_MapContainer* ret = (void*)PyUpb_ObjCache_Get(map);
+  PyUpb_MapContainer* ret =
+      (void*)PyUpb_WeakMap_Get(PyUpb_Arena_GetCache(arena), map);
   if (ret) return &ret->ob_base;
 
   PyTypeObject* cls = PyUpb_MapContainer_GetClass(f);
@@ -392,7 +396,9 @@ PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_Map* map,
   ret->ptr.map = map;
   ret->version = 0;
   Py_INCREF(arena);
-  PyUpb_ObjCache_Add(map, &ret->ob_base);
+  PyObject* tmp_ret = &ret->ob_base;
+  PyUpb_WeakMap_Add(PyUpb_Arena_GetCache(arena), map, &tmp_ret);
+  ret = (PyUpb_MapContainer*)tmp_ret;
   return &ret->ob_base;
 }
 

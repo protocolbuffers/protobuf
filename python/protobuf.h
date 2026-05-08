@@ -124,11 +124,12 @@ PyUpb_WeakMap* PyUpb_WeakMap_New(void);
 void PyUpb_WeakMap_Free(PyUpb_WeakMap* map);
 
 // Adds the given object to the map, indexed by the given key.
-void PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject* py_obj);
+void PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject** py_obj);
 
 // Removes the given key from the cache. It must exist in the cache currently.
-void PyUpb_WeakMap_Delete(PyUpb_WeakMap* map, const void* key);
-void PyUpb_WeakMap_TryDelete(PyUpb_WeakMap* map, const void* key);
+void PyUpb_WeakMap_Delete(PyUpb_WeakMap* map, const void* key, PyObject* obj);
+bool PyUpb_WeakMap_TryDelete(PyUpb_WeakMap* map, const void* key,
+                             PyObject* obj);
 
 // Returns a new reference to an object if it exists, otherwise returns NULL.
 PyObject* PyUpb_WeakMap_Get(PyUpb_WeakMap* map, const void* key);
@@ -160,9 +161,8 @@ void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap* map, intptr_t* iter);
 // The object cache is a global WeakMap for mapping upb objects to the
 // corresponding wrapper.
 void PyUpb_ObjCache_Add(const void* key, PyObject* py_obj);
-void PyUpb_KnownObjCache_Add(PyUpb_WeakMap* cache, const void* key,
-                             PyObject* py_obj);
-void PyUpb_ObjCache_Delete(const void* key);
+
+void PyUpb_ObjCache_Delete(const void* key, PyObject* obj);
 PyObject* PyUpb_ObjCache_Get(const void* key);  // returns NULL if not present.
 PyUpb_WeakMap* PyUpb_ObjCache_Instance(void);
 
@@ -172,6 +172,7 @@ PyUpb_WeakMap* PyUpb_ObjCache_Instance(void);
 
 PyObject* PyUpb_Arena_New(void);
 upb_Arena* PyUpb_Arena_Get(PyObject* arena);
+PyUpb_WeakMap* PyUpb_Arena_GetCache(PyObject* arena);
 
 // -----------------------------------------------------------------------------
 // Utilities

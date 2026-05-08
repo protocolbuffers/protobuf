@@ -47,11 +47,21 @@ class PyWeakValueMap {
   // Returns a new reference to the cached value, or nullptr if not found.
   PyObject* Get(const void* key, const PyTypeObject* type);
 
-  // Removes the entry from the map. Returns true if the entry was found.
-  bool Erase(const void* key);
-
   // Removes the entry from the cache, but only if it matches the given value.
-  void EraseIfEqual(const void* key, PyObject* value);
+  // Returns true if the entry was found and removed.
+  //
+  // This is useful in Dealloc() functions, since Dealloc() can always race with
+  // other threads that insert a new value into the map.
+  bool TryErase(const void* key, PyObject* value);
+
+  // Removes the entry from the cache. Checks that the entry was present and
+  // matched the given value.
+  //
+  // This is useful in cases where the caller holds a strong reference to the
+  // value, and can guarantee that the value is still present in the map.
+  void Erase(const void* key, PyObject* value) {
+    ABSL_CHECK(TryErase(key, value));
+  }
 
   // Returns true if the map is empty.
   bool IsEmpty() const;

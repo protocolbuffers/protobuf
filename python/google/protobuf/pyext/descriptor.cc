@@ -452,7 +452,7 @@ PyObject* NewInternedDescriptor(PyTypeObject* type,
 static void Dealloc(PyObject* pself) {
   PyBaseDescriptor* self = reinterpret_cast<PyBaseDescriptor*>(pself);
   PyObject_GC_UnTrack(pself);
-  GetInternedDescriptorsCache()->EraseIfEqual(self->descriptor, pself);
+  GetInternedDescriptorsCache()->TryErase(self->descriptor, pself);
   Py_CLEAR(self->pool);
   Py_TYPE(self)->tp_free(pself);
 }

@@ -62,11 +62,6 @@ class ThreadSafeTest(unittest.TestCase):
 
     self.assertEqual(count * 2, self.success)
 
-  # This caused a Dealloc()/Dealloc() race.
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testGetType(self):
 
     def GetType():
@@ -90,11 +85,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  # This caused a race between constructing and using the type.
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testInitType(self):
 
     def InitType():
@@ -118,10 +108,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentSubMessageAccess(self):
     msg = unittest_proto3_pb2.TestAllTypes(
         optional_nested_message=unittest_proto3_pb2.TestAllTypes.NestedMessage(
@@ -142,10 +128,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentRepeatedMessageAccess(self):
     variable = unittest_proto3_pb2.TestAllTypes()
 
@@ -162,10 +144,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentRepeatedPrimitiveAccess(self):
     variable = unittest_proto3_pb2.TestAllTypes()
     variable.repeated_float.append(1.0)
@@ -183,10 +161,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentSingularFieldAccess(self):
     variable = unittest_proto3_pb2.TestAllTypes()
 
@@ -204,10 +178,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentRepeatedMessageAccess2(self):
     msg = unittest_proto3_pb2.TestAllTypes(
         repeated_nested_message=[
@@ -277,10 +247,6 @@ class FreeThreadingTest(unittest.TestCase):
     self.RunThreads(thread_size, CreatePool)
     self.assertEqual(thread_size, self.success_count)
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentGetFieldValueRace(self):
     """Reproduces a data race in GetFieldValue due to lazy initialization."""
 
@@ -306,10 +272,6 @@ class FreeThreadingTest(unittest.TestCase):
       for thread in threads:
         thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentGetOptionsRace(self):
     """Reproduces a data race in GetOptions."""
 
@@ -329,10 +291,6 @@ class FreeThreadingTest(unittest.TestCase):
       for thread in threads:
         thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentGetAndRegisterMessageClassDataRace(self):
     """Reproduces the data race in GetMessageClass/RegisterMessageClass."""
     pool = descriptor_pool.DescriptorPool()
@@ -375,6 +333,131 @@ class FreeThreadingTest(unittest.TestCase):
       thread.start()
     for thread in threads:
       thread.join()
+
+  def testConcurrentDescriptorDeallocRace(self):
+    """Tests descriptor cache interning under concurrent deallocation."""
+    pool = descriptor_pool.DescriptorPool()
+    file_proto = descriptor_pb2.FileDescriptorProto(name='race.proto')
+    file_proto.message_type.add(name='RaceMessage')
+    pool.Add(file_proto)
+
+    barrier = threading.Barrier(10)
+    errors = []
+
+    def Worker():
+      barrier.wait()
+      for _ in range(500):
+        try:
+          d1 = pool.FindMessageTypeByName('RaceMessage')
+          d2 = pool.FindMessageTypeByName('RaceMessage')
+          if d1 is not d2:
+            errors.append('Descriptor interning broken')
+            break
+          # Explicitly delete local references to trigger concurrent tp_dealloc
+          del d1
+          del d2
+        except Exception as e:
+          errors.append(str(e))
+          break
+
+    threads = [threading.Thread(target=Worker) for _ in range(10)]
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+    self.assertEqual([], errors)
+
+  def testConcurrentSubmessageDeallocRace(self):
+    """Tests child submessage wrapper interning under concurrent deallocation."""
+    msg = unittest_proto3_pb2.TestAllTypes()
+    msg.repeated_nested_message.add(bb=123)
+
+    barrier = threading.Barrier(10)
+    errors = []
+
+    def Worker():
+      barrier.wait()
+      for _ in range(500):
+        try:
+          m1 = msg.repeated_nested_message[0]
+          m2 = msg.repeated_nested_message[0]
+          if m1 is not m2:
+            errors.append('Child submessage interning broken')
+            break
+          del m1
+          del m2
+        except Exception as e:
+          errors.append(str(e))
+          break
+
+    threads = [threading.Thread(target=Worker) for _ in range(10)]
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+    self.assertEqual([], errors)
+
+  def testConcurrentCompositeFieldDeallocRace(self):
+    """Tests composite field wrapper interning under concurrent deallocation."""
+    msg = unittest_proto3_pb2.TestAllTypes()
+
+    barrier = threading.Barrier(10)
+    errors = []
+
+    def Worker():
+      barrier.wait()
+      for _ in range(500):
+        try:
+          # Test singular composite field wrapper
+          sub1 = msg.optional_nested_message
+          sub2 = msg.optional_nested_message
+          if sub1 is not sub2:
+            errors.append('Singular composite field interning broken')
+            break
+          del sub1
+          del sub2
+
+          # Test repeated container wrapper
+          rep1 = msg.repeated_int32
+          rep2 = msg.repeated_int32
+          if rep1 is not rep2:
+            errors.append('Repeated container interning broken')
+            break
+          del rep1
+          del rep2
+        except Exception as e:
+          errors.append(str(e))
+          break
+
+    threads = [threading.Thread(target=Worker) for _ in range(10)]
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+    self.assertEqual([], errors)
+
+  def testConcurrentClearAndSubObjectDeletionRace(self):
+    """Reproduces a dangling pointer dereference race between Clear() and sub-object deallocation."""
+
+    def ClearMsg(msg, barrier):
+      barrier.wait()
+      msg.Clear()
+
+    def DeleteSub(container, barrier):
+      barrier.wait()
+      container.clear()
+
+    for _ in range(500):
+      msg = unittest_proto3_pb2.TestAllTypes()
+      container = [msg.optional_nested_message]
+      barrier = threading.Barrier(2)
+
+      thread1 = threading.Thread(target=ClearMsg, args=(msg, barrier))
+      thread2 = threading.Thread(target=DeleteSub, args=(container, barrier))
+      thread1.start()
+      thread2.start()
+      thread1.join()
+      thread2.join()
 
   @unittest.skipIf(not ALSO_RUN_BENCHMARKS, 'Benchmarks are disabled.')
   def testConcurrentGetOptionsBenchmark(self):

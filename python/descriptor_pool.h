@@ -13,7 +13,7 @@
 // clang-format on
 #include <stdbool.h>
 
-#include "protobuf.h"
+#include "python/protobuf.h"
 
 // Returns a Python wrapper object for the given symtab. The symtab must have
 // been created from a Python DescriptorPool originally.
@@ -21,6 +21,7 @@ PyObject* PyUpb_DescriptorPool_Get(const upb_DefPool* symtab);
 
 // Given a Python DescriptorPool, returns the underlying symtab.
 upb_DefPool* PyUpb_DescriptorPool_GetSymtab(PyObject* pool);
+PyUpb_WeakMap* PyUpb_DescriptorPool_GetCache(PyObject* pool);
 
 // Returns the default DescriptorPool (a global singleton).
 PyObject* PyUpb_DescriptorPool_GetDefaultPool(void);

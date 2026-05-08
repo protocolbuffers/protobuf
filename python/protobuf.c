@@ -180,32 +180,69 @@ uintptr_t PyUpb_WeakMap_GetKey(const void* key) {
   return n >> PyUpb_PtrShift;
 }
 
-void PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject* py_obj) {
+void PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject** py_obj) {
+  PyObject* obj = *py_obj;
 #ifdef Py_GIL_DISABLED
-  PyUnstable_EnableTryIncRef(py_obj);
+  PyUnstable_EnableTryIncRef(obj);
 #endif
-  FreeThreadingLock(&map->mutex);
-  upb_inttable_insert(&map->table, PyUpb_WeakMap_GetKey(key),
-                      upb_value_ptr(py_obj), map->arena);
-  FreeThreadingUnlock(&map->mutex);
-}
-
-void PyUpb_WeakMap_Delete(PyUpb_WeakMap* map, const void* key) {
   FreeThreadingLock(&map->mutex);
   upb_value val;
-  bool removed =
-      upb_inttable_remove(&map->table, PyUpb_WeakMap_GetKey(key), &val);
-  (void)removed;
-#ifndef Py_GIL_DISABLED
-  assert(removed);
+  if (upb_inttable_lookup(&map->table, PyUpb_WeakMap_GetKey(key), &val)) {
+    PyObject* existing = upb_value_getptr(val);
+#ifdef Py_GIL_DISABLED
+    if (PyUnstable_TryIncRef(existing)) {
+      FreeThreadingUnlock(&map->mutex);
+      Py_DECREF(obj);
+      *py_obj = existing;
+      return;
+    }
+    // Existing object is dying, replace it in the map.
+    upb_inttable_replace(&map->table, PyUpb_WeakMap_GetKey(key),
+                         upb_value_ptr(obj));
+    FreeThreadingUnlock(&map->mutex);
+    return;
+#else
+    Py_INCREF(existing);
+    FreeThreadingUnlock(&map->mutex);
+    Py_DECREF(obj);
+    *py_obj = existing;
+    return;
 #endif
+  }
+  upb_inttable_insert(&map->table, PyUpb_WeakMap_GetKey(key),
+                      upb_value_ptr(obj), map->arena);
   FreeThreadingUnlock(&map->mutex);
 }
 
-void PyUpb_WeakMap_TryDelete(PyUpb_WeakMap* map, const void* key) {
+void PyUpb_WeakMap_Delete(PyUpb_WeakMap* map, const void* key, PyObject* obj) {
+  bool removed = PyUpb_WeakMap_TryDelete(map, key, obj);
+  assert(removed);
+}
+
+bool PyUpb_WeakMap_TryDelete(PyUpb_WeakMap* map, const void* key,
+                             PyObject* obj) {
   FreeThreadingLock(&map->mutex);
-  upb_inttable_remove(&map->table, PyUpb_WeakMap_GetKey(key), NULL);
+  const uintptr_t k = PyUpb_WeakMap_GetKey(key);
+  upb_value val;
+  bool removed = upb_inttable_remove(&map->table, k, &val);
+#ifdef Py_GIL_DISABLED
+  if (removed) {
+    if (upb_value_getptr(val) == obj) {
+      FreeThreadingUnlock(&map->mutex);
+      return true;
+    }
+    // Race condition: the object in the map is not the one we expected.
+    // Undo our removal.
+    upb_inttable_insert(&map->table, k, val, map->arena);
+  }
   FreeThreadingUnlock(&map->mutex);
+  return false;
+#else
+  assert(removed);
+  assert(upb_value_getptr(val) == obj);
+  FreeThreadingUnlock(&map->mutex);
+  return true;
+#endif
 }
 
 PyObject* PyUpb_WeakMap_Get(PyUpb_WeakMap* map, const void* key) {
@@ -291,20 +328,15 @@ void PyUpb_ObjCache_Add(const void* key, PyObject* py_obj) {
   if (!cache) {
     return;
   }
-  PyUpb_WeakMap_Add(cache, key, py_obj);
+  PyUpb_WeakMap_Add(cache, key, &py_obj);
 }
 
-void PyUpb_KnownObjCache_Add(PyUpb_WeakMap* cache, const void* key,
-                             PyObject* py_obj) {
-  PyUpb_WeakMap_Add(cache, key, py_obj);
-}
-
-void PyUpb_ObjCache_Delete(const void* key) {
+void PyUpb_ObjCache_Delete(const void* key, PyObject* obj) {
   PyUpb_WeakMap* cache = PyUpb_ObjCache_MaybeInstance();
   if (!cache) {
     return;
   }
-  PyUpb_WeakMap_Delete(cache, key);
+  PyUpb_WeakMap_TryDelete(cache, key, obj);
 }
 
 PyObject* PyUpb_ObjCache_Get(const void* key) {
@@ -342,6 +374,7 @@ typedef struct {
   PyObject_HEAD
   upb_Arena* arena;
   // clang-format on
+  PyUpb_WeakMap* obj_cache;
 } PyUpb_Arena;
 
 #ifdef __GLIBC__
@@ -386,16 +419,25 @@ PyObject* PyUpb_Arena_New(void) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
   PyUpb_Arena* arena = (void*)PyType_GenericAlloc(state->arena_type, 0);
   arena->arena = PyUpb_NewArena();
+  arena->obj_cache = PyUpb_WeakMap_New();
   return &arena->ob_base;
 }
 
 static void PyUpb_Arena_Dealloc(PyObject* self) {
-  upb_Arena_Free(PyUpb_Arena_Get(self));
+  PyUpb_Arena* arena = (PyUpb_Arena*)self;
+  if (arena->obj_cache) {
+    PyUpb_WeakMap_Free(arena->obj_cache);
+  }
+  upb_Arena_Free(arena->arena);
   PyUpb_Dealloc(self);
 }
 
 upb_Arena* PyUpb_Arena_Get(PyObject* arena) {
   return ((PyUpb_Arena*)arena)->arena;
+}
+
+PyUpb_WeakMap* PyUpb_Arena_GetCache(PyObject* arena) {
+  return ((PyUpb_Arena*)arena)->obj_cache;
 }
 
 static PyType_Slot PyUpb_Arena_Slots[] = {

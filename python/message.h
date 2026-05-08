@@ -17,13 +17,15 @@
 #include "upb/reflection/message.h"
 
 // Removes the wrapper object for this field from the unset subobject cache.
-void PyUpb_Message_CacheDelete(PyObject* _self, const upb_FieldDef* f);
+void PyUpb_Message_CacheDelete(PyObject* _self, const upb_FieldDef* f,
+                               PyObject* obj);
 
 // Sets the field value for `f` to `subobj`, evicting the wrapper object from
 // the "unset subobject" cache now that real data exists for it.  The caller
 // must also update the wrapper associated with `f` to point to `subobj` also.
 bool PyUpb_Message_SetConcreteSubobj(PyObject* _self, const upb_FieldDef* f,
-                                     upb_MessageValue subobj);
+                                     upb_MessageValue subobj,
+                                     PyObject* wrapper);
 
 // Gets a Python wrapper object for message `u_msg` of type `m`, returning a
 // cached wrapper if one was previously created.  If a new object is created,
