@@ -19,6 +19,8 @@ _DEFAULT_CPPOPTS = []
 _DEFAULT_COPTS = [
     # this is a compile error in C++ clang and GNU C, but not clang C by default
     "-Werror=incompatible-pointer-types",
+    # Configured as a compile error in msvc and some linux gcc setups
+    "-Werror=gnu-pointer-arith",
     # GCC does not seem to support the no_sanitize attribute in some places
     # where we use it.
     "-Wno-error=attributes",
