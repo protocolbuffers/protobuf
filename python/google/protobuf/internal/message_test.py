@@ -78,6 +78,8 @@ class MessageTest(unittest.TestCase):
       msg2 = message_module.TestAllTypes()
       msg2.ParseFromString(serialized)
       msg3 = message_module.TestAllTypes()
+      _ = msg3.optional_nested_message
+      _ = msg3.optional_import_message
       msg3.MergeFrom(msg2)
       _ = msg3.optional_string
       _ = msg3.optional_bytes
