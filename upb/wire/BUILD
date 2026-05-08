@@ -168,7 +168,7 @@ cc_library(
     hdrs = ["internal/back_alloc.h"],
     copts = UPB_DEFAULT_COPTS,
     features = UPB_DEFAULT_FEATURES,
-    visibility = ["//upb:__pkg__"],
+    visibility = ["//upb:__subpackages__"],
     deps = [
         "//upb/base",
         "//upb/base:internal",
