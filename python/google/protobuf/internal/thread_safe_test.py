@@ -62,11 +62,6 @@ class ThreadSafeTest(unittest.TestCase):
 
     self.assertEqual(count * 2, self.success)
 
-  # This caused a Dealloc()/Dealloc() race.
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testGetType(self):
 
     def GetType():
@@ -90,11 +85,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  # This caused a race between constructing and using the type.
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testInitType(self):
 
     def InitType():
@@ -118,10 +108,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentSubMessageAccess(self):
     msg = unittest_proto3_pb2.TestAllTypes(
         optional_nested_message=unittest_proto3_pb2.TestAllTypes.NestedMessage(
@@ -142,10 +128,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentRepeatedMessageAccess(self):
     variable = unittest_proto3_pb2.TestAllTypes()
 
@@ -162,10 +144,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentRepeatedPrimitiveAccess(self):
     variable = unittest_proto3_pb2.TestAllTypes()
     variable.repeated_float.append(1.0)
@@ -183,10 +161,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentSingularFieldAccess(self):
     variable = unittest_proto3_pb2.TestAllTypes()
 
@@ -204,10 +178,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentRepeatedMessageAccess2(self):
     msg = unittest_proto3_pb2.TestAllTypes(
         repeated_nested_message=[
@@ -277,10 +247,6 @@ class FreeThreadingTest(unittest.TestCase):
     self.RunThreads(thread_size, CreatePool)
     self.assertEqual(thread_size, self.success_count)
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentGetFieldValueRace(self):
     """Reproduces a data race in GetFieldValue due to lazy initialization."""
 
@@ -306,10 +272,6 @@ class FreeThreadingTest(unittest.TestCase):
       for thread in threads:
         thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentGetOptionsRace(self):
     """Reproduces a data race in GetOptions."""
 
