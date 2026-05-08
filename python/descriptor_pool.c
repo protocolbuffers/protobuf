@@ -54,8 +54,11 @@ static PyObject* PyUpb_DescriptorPool_DoCreateWithCache(
   }
   pool->db = db;
   Py_XINCREF(pool->db);
-  if (!PyUpb_KnownObjCache_Add(obj_cache, pool->symtab, &pool->ob_base)) {
-    goto err;
+  if (obj_cache) {
+    PyObject* self_obj = &pool->ob_base;
+    if (!PyUpb_WeakMap_Add(obj_cache, pool->symtab, &self_obj)) {
+      goto err;
+    }
   }
   return &pool->ob_base;
 err:
@@ -65,8 +68,8 @@ err:
 
 static PyObject* PyUpb_DescriptorPool_DoCreate(PyTypeObject* type,
                                                PyObject* db) {
-  return PyUpb_DescriptorPool_DoCreateWithCache(type, db,
-                                                PyUpb_ObjCache_Instance());
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  return PyUpb_DescriptorPool_DoCreateWithCache(type, db, state->obj_cache);
 }
 
 upb_DefPool* PyUpb_DescriptorPool_GetSymtab(PyObject* pool) {
@@ -85,13 +88,12 @@ static int PyUpb_DescriptorPool_Clear(PyUpb_DescriptorPool* self) {
 }
 
 PyObject* PyUpb_DescriptorPool_Get(const upb_DefPool* symtab) {
-  PyObject* pool = PyUpb_ObjCache_Get(symtab);
-  assert(pool
-#if PY_VERSION_HEX >= 0x030D0000  // >= 3.13
-         || Py_IsFinalizing()
-#endif
-  );
-  return pool;
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  if (state->obj_cache) {
+    PyObject* pool = PyUpb_WeakMap_Get(state->obj_cache, symtab);
+    if (pool) return pool;
+  }
+  return state->default_pool;
 }
 
 static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
@@ -100,9 +102,32 @@ static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
 #endif
   PyObject_GC_UnTrack(self);
   PyUpb_DescriptorPool_Clear(self);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  if (state && state->obj_cache) {
+    PyUpb_WeakMap_EraseIfEqual(state->obj_cache, self->symtab, &self->ob_base);
+  }
   upb_DefPool_Free(self->symtab);
-  PyUpb_ObjCache_Delete(self->symtab);
   PyUpb_Dealloc(self);
+}
+
+bool PyUpb_DescriptorPool_CacheAdd(PyObject* pool, const void* key,
+                                   PyObject** py_obj) {
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  if (!state || !state->obj_cache) return false;
+  return PyUpb_WeakMap_Add(state->obj_cache, key, py_obj);
+}
+
+PyObject* PyUpb_DescriptorPool_CacheGet(PyObject* pool, const void* key) {
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  if (!state || !state->obj_cache) return NULL;
+  return PyUpb_WeakMap_Get(state->obj_cache, key);
+}
+
+bool PyUpb_DescriptorPool_CacheEraseIfEqual(PyObject* pool, const void* key,
+                                            PyObject* obj) {
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  if (!state || !state->obj_cache) return false;
+  return PyUpb_WeakMap_EraseIfEqual(state->obj_cache, key, obj);
 }
 
 /*
@@ -771,13 +796,15 @@ static PyType_Spec PyUpb_DescriptorPool_Spec = {
 
 bool PyUpb_InitDescriptorPool(PyObject* m) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
-  PyTypeObject* descriptor_pool_type =
-      PyUpb_AddClass(m, &PyUpb_DescriptorPool_Spec);
+  state->obj_cache = PyUpb_WeakMap_New();
+  if (!state->obj_cache) return false;
 
-  if (!descriptor_pool_type) return false;
+  state->descriptor_pool_type = PyUpb_AddClass(m, &PyUpb_DescriptorPool_Spec);
+
+  if (!state->descriptor_pool_type) return false;
 
   state->default_pool = PyUpb_DescriptorPool_DoCreateWithCache(
-      descriptor_pool_type, NULL, state->obj_cache);
+      state->descriptor_pool_type, NULL, state->obj_cache);
   return state->default_pool &&
          PyModule_AddObject(m, "default_pool", state->default_pool) == 0;
 }

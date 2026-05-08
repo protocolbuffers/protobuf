@@ -210,7 +210,7 @@ PyObject* PyUpb_GenericSequence_New(const PyUpb_GenericSequence_Funcs* funcs,
   seq->funcs = funcs;
   seq->parent = parent;
   seq->parent_obj = parent_obj;
-  Py_INCREF(parent_obj);
+  Py_XINCREF(parent_obj);
   return &seq->ob_base;
 }
 
@@ -412,7 +412,7 @@ PyUpb_ByNameMap* PyUpb_ByNameMap_Self(PyObject* obj) {
 
 static void PyUpb_ByNameMap_Dealloc(PyObject* _self) {
   PyUpb_ByNameMap* self = PyUpb_ByNameMap_Self(_self);
-  Py_DECREF(self->parent_obj);
+  Py_CLEAR(self->parent_obj);
   PyUpb_Dealloc(self);
 }
 
@@ -423,7 +423,7 @@ PyObject* PyUpb_ByNameMap_New(const PyUpb_ByNameMap_Funcs* funcs,
   map->funcs = funcs;
   map->parent = parent;
   map->parent_obj = parent_obj;
-  Py_INCREF(parent_obj);
+  Py_XINCREF(parent_obj);
   return &map->ob_base;
 }
 

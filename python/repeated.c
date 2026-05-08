@@ -94,11 +94,12 @@ upb_Array* PyUpb_RepeatedContainer_Reify(PyObject* _self, upb_Array* arr,
     PyUpb_WeakMap_DeleteIter(subobj_map, &iter);
   } else {
     if (!PyUpb_Message_SetConcreteSubobj(
-            self->ptr.parent, f, (upb_MessageValue){.array_val = arr})) {
+            self->ptr.parent, f, (upb_MessageValue){.array_val = arr}, _self)) {
       return NULL;
     }
   }
-  if (!PyUpb_ObjCache_Add(arr, &self->ob_base)) {
+  PyObject* py_self = &self->ob_base;
+  if (!PyUpb_Arena_CacheAdd(self->arena, arr, &py_self)) {
     return NULL;
   }
   Py_DECREF(self->ptr.parent);
@@ -133,14 +134,14 @@ upb_Array* PyUpb_RepeatedContainer_AssureWritable(PyObject* _self) {
 
 static void PyUpb_RepeatedContainer_Dealloc(PyObject* _self) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
-  Py_DECREF(self->arena);
   if (PyUpb_RepeatedContainer_IsStub(self)) {
     PyUpb_Message_CacheDelete(self->ptr.parent,
-                              PyUpb_RepeatedContainer_GetField(self));
+                              PyUpb_RepeatedContainer_GetField(self), _self);
     Py_DECREF(self->ptr.parent);
   } else {
-    PyUpb_ObjCache_Delete(self->ptr.arr);
+    PyUpb_Arena_CacheEraseIfEqual(self->arena, self->ptr.arr, _self);
   }
+  Py_DECREF(self->arena);
   Py_DECREF(PyUpb_RepeatedContainer_GetFieldDescriptor(self));
   PyUpb_Dealloc(self);
 }
@@ -180,7 +181,7 @@ PyObject* PyUpb_RepeatedContainer_NewStub(PyObject* parent,
 PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_Array* arr,
                                                      const upb_FieldDef* f,
                                                      PyObject* arena) {
-  PyObject* ret = PyUpb_ObjCache_Get(arr);
+  PyObject* ret = PyUpb_Arena_CacheGet(arena, arr);
   if (ret) return ret;
 
   PyTypeObject* cls = PyUpb_RepeatedContainer_GetClass(f);
@@ -195,7 +196,7 @@ PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_Array* arr,
   repeated->ptr.arr = arr;
   ret = &repeated->ob_base;
   Py_INCREF(arena);
-  if (!PyUpb_ObjCache_Add(arr, ret)) {
+  if (!PyUpb_Arena_CacheAdd(arena, arr, &ret)) {
     Py_DECREF(ret);
     return NULL;
   }
@@ -220,9 +221,11 @@ PyObject* PyUpb_RepeatedContainer_DeepCopy(PyObject* _self, PyObject* value) {
     PyErr_SetNone(PyExc_MemoryError);
     goto err;
   }
-  if (!PyUpb_ObjCache_Add(clone->ptr.arr, (PyObject*)clone)) {
+  PyObject* tmp_clone = (PyObject*)clone;
+  if (!PyUpb_Arena_CacheAdd(clone->arena, clone->ptr.arr, &tmp_clone)) {
     goto err;
   }
+  clone = (PyUpb_RepeatedContainer*)tmp_clone;
   PyObject* result = PyUpb_RepeatedContainer_MergeFrom((PyObject*)clone, _self);
   if (!result) {
     goto err;
