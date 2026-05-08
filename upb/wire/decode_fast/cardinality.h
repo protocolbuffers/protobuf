@@ -127,7 +127,7 @@ UPB_INLINE bool upb_DecodeFast_SetError(upb_Decoder* d,
       UPB_UNREACHABLE();                                                  \
   }
 
-UPB_INLINE const char* UPB_PRESERVE_NONE
+UPB_INLINE upb_FastDecoder_Return UPB_PRESERVE_NONE
 upb_DecodeFast_Unreachable(UPB_PARSE_PARAMS) {
   UPB_UNREACHABLE();
 }
@@ -148,10 +148,10 @@ uint64_t upb_DecodeFast_LoadHasbits(upb_Message* msg) {
  * of our optimizations. That is also why we must declare it in a separate file,
  * otherwise the compiler will see that it calls longjmp() and deduce that it is
  * noreturn. */
-const char* _upb_FastDecoder_ErrorJmp2(upb_Decoder* d);
+upb_FastDecoder_Return _upb_FastDecoder_ErrorJmp2(upb_Decoder* d);
 
-UPB_INLINE
-const char* _upb_FastDecoder_ErrorJmp(upb_Decoder* d, upb_DecodeStatus status) {
+UPB_INLINE upb_FastDecoder_Return
+_upb_FastDecoder_ErrorJmp(upb_Decoder* d, upb_DecodeStatus status) {
   d->err->code = status;
   return _upb_FastDecoder_ErrorJmp2(d);
 }

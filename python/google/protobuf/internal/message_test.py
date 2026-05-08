@@ -2549,6 +2549,14 @@ class Proto3Test(unittest.TestCase):
     msg.map_int32_foreign_message[19].c = 128
     self.assertEqual(msg.ByteSize(), size + 1)
 
+  def testRecursiveMapSerialization(self):
+    # Test that the serialization of a very deeply recursive map finishes.
+    s = map_unittest_pb2.TestRecursiveMapMessage()
+    current = s
+    for _ in range(95):
+      current = current.a['x']
+    self.assertGreater(len(s.SerializeToString()), 0)
+
   def testMergeFrom(self):
     msg = map_unittest_pb2.TestMap()
     msg.map_int32_int32[12] = 34

@@ -876,9 +876,11 @@ TEST(GENERATED_MESSAGE_TEST_NAME, TestSpaceUsed) {
   message1->mutable_optional_nested_message();
   ASSERT_EQ(sizeof(UNITTEST::TestAllTypes::NestedMessage),
             message1->optional_nested_message().SpaceUsedLong());
-  EXPECT_EQ(previous_size +
-            sizeof(UNITTEST::TestAllTypes::NestedMessage),
-            message1->SpaceUsedLong());
+  if constexpr (internal::ForceEagerlyVerifiedLazyInProtoc()) {
+  } else {
+    EXPECT_EQ(previous_size + sizeof(UNITTEST::TestAllTypes::NestedMessage),
+              message1->SpaceUsedLong());
+  }
 }
 
 TEST(GENERATED_MESSAGE_TEST_NAME, TestOneofSpaceUsed) {

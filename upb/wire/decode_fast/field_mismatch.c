@@ -18,7 +18,7 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-UPB_PRESERVE_NONE const char* _upb_FastDecoder_DecodeMismatchedSlot(
+UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeMismatchedSlot(
     struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
     uint64_t hasbits, uint64_t data) {
   upb_DecodeFastNext ret = kUpb_DecodeFastNext_FallbackToMiniTable;

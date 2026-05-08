@@ -18,6 +18,7 @@
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
 #include "upb/wire/encode.h"
+#include "upb/wire/internal/back_alloc.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -27,27 +28,23 @@ extern "C" {
 #endif
 
 typedef struct {
-  upb_EncodeStatus status;
-  upb_Arena* arena;
-  // These should only be used for arithmetic and reallocation to allow full
-  // aliasing analysis on the ptr argument.
-  const char UPB_NODEREF *buf, *limit;
+  upb_BackAlloc alloc;
   int options;
   int depth;
+  upb_EncodeStatus status;
   _upb_mapsorter sorter;
   jmp_buf* err;
 } upb_encstate;
 
-UPB_INLINE void UPB_PRIVATE(_upb_encstate_init)(upb_encstate* e, jmp_buf* err,
-                                                upb_Arena* arena) {
+UPB_INLINE char* UPB_PRIVATE(_upb_encstate_init)(upb_encstate* e, jmp_buf* err,
+                                                 upb_Arena* arena) {
   e->status = kUpb_EncodeStatus_Ok;
-  e->arena = arena;
-  e->buf = NULL;
-  e->limit = NULL;
+  char* ptr = upb_BackAlloc_Init(&e->alloc, arena);
   e->options = 0;
   e->depth = 0;
   e->err = err;
   _upb_mapsorter_init(&e->sorter);
+  return ptr;
 }
 
 // Internal version of upb_Encode that encodes a single field.

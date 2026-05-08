@@ -89,6 +89,7 @@ cc_library(
         "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:charset",
         "@abseil-cpp//absl/strings:str_format",
     ],
 )

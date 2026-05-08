@@ -1272,9 +1272,9 @@ UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
     // We can't reclaim any memory, but we need to verify that `ptr` really
     // does represent the most recent allocation.
 #ifndef NDEBUG
-    bool _upb_Arena_WasLastAlloc(struct upb_Arena * a, void* ptr,
-                                 size_t oldsize);
-    UPB_ASSERT(_upb_Arena_WasLastAlloc(a, ptr, oldsize));
+    bool _upb_Arena_WasLastAllocFromPreviousBlock(struct upb_Arena * a,
+                                                  void* ptr, size_t oldsize);
+    UPB_ASSERT(_upb_Arena_WasLastAllocFromPreviousBlock(a, ptr, oldsize));
 #endif
   }
 }
@@ -1327,6 +1327,58 @@ UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a, void* ptr,
   }
   return ret;
 }
+
+// Returns the next block size to allocate for the arena based on exponential
+// growth and size hint.
+size_t UPB_PRIVATE(_upb_Arena_NextBlockSize)(struct upb_Arena* a, size_t span,
+                                             bool* one_off);
+
+// Updates the arena's growth state based on the block size actually allocated.
+void UPB_PRIVATE(_upb_Arena_UpdateGrowthState)(struct upb_Arena* a, size_t span,
+                                               size_t block_size, bool one_off);
+
+// Allocates a block for the arena of at least the given size, but does not add
+// it to the arena. The block must either be added to the arena or manually
+// freed, otherwise memory will be leaked.
+//
+// Returns the allocated block (or NULL on failure), and writes the actual size
+// of the block to size.
+void* UPB_PRIVATE(_upb_Arena_AllocBlock)(struct upb_Arena* a, size_t* size);
+
+// Adds a block previously allocated with _upb_Arena_AllocBlock() to the arena.
+// This will cause it to be owned by the arena and freed when the arena is
+// freed.
+//
+// Note that this call does *not* cause the block to be used for arena
+// allocations. Call _upb_Arena_UseBlock() to do that.
+//
+// This operation cannot be undone, so the caller should not call it until they
+// are sure that the block will be useful to the arena.
+void UPB_PRIVATE(_upb_Arena_AddBlock)(struct upb_Arena* a, void* block);
+
+// Frees a block previously allocated with _upb_Arena_AllocBlock. This is only
+// necessary if the block ends up not being useful to the arena.
+void UPB_PRIVATE(_upb_Arena_FreeBlock)(struct upb_Arena* a, void* block);
+
+// Sets the arena's current block to the given block. Subsequent allocations
+// may be made from this block.
+//
+// The given memory must be either:
+// - The arena block most recently returned by _upb_Arena_AllocBlock, or
+// - A block that was just stolen from the arena using _upb_Arena_Steal.
+//
+// After this call, the memory may only be used by the arena -- it is poisoned
+// against further use by the caller.
+//
+// Note: if the arena determines that this block is smaller than the block it
+// currently has, it may decide to not use the block.
+void UPB_PRIVATE(_upb_Arena_UseBlock)(struct upb_Arena* a, void* ptr,
+                                      size_t size);
+
+// Steals all available memory from the current arena block, but only if at
+// least `size` bytes are available. The number of bytes stolen is written to
+// size. The memory will be unpoisoned and ready for use.
+void* UPB_PRIVATE(_upb_Arena_Steal)(struct upb_Arena* a, size_t* size);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -2361,8 +2413,9 @@ UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableSub_Message(
 
 struct upb_Decoder;
 struct upb_Message;
+struct upb_FastDecoder_Return;
 
-typedef UPB_PRESERVE_NONE const char* _upb_FieldParser(
+typedef UPB_PRESERVE_NONE struct upb_FastDecoder_Return _upb_FieldParser(
     struct upb_Decoder* d, const char* ptr, struct upb_Message* msg,
     intptr_t table, uint64_t hasbits, uint64_t data);
 
@@ -3076,8 +3129,13 @@ typedef struct _upb_tabent {
   upb_value val;
   upb_key key;
 
-  /* Internal chaining */
-  struct _upb_tabent* next;
+  /* Internal chaining and presence:
+   * - next == NULL: The entry is empty.
+   * - ent.next == kUpb_NoNextTabent indicating the entry is occupied but has no
+   *   successor.
+   * - otherwise: The entry is occupied, and next points to the next entry in
+   *   the collision chain. */
+  uintptr_t next;
 } upb_tabent;
 
 typedef struct {
@@ -3093,47 +3151,39 @@ UPB_INLINE size_t upb_table_size(const upb_table* t) { return t->mask + 1; }
 
 // Internal-only functions, in .h file only out of necessity.
 
-UPB_INLINE upb_key upb_key_empty(void) {
-  upb_key ret;
-  memset(&ret, 0, sizeof(upb_key));
-  return ret;
-}
+UPB_INLINE bool upb_tabent_isempty(const upb_tabent* e) { return e->next == 0; }
 
-UPB_INLINE bool upb_tabent_isempty(const upb_tabent* e) {
-  upb_key key = e->key;
-  UPB_STATIC_ASSERT(sizeof(key.num) == sizeof(key.str), "Sizes don't match");
-  uintptr_t val;
-  memcpy(&val, &key, sizeof(val));
-  // Note: for upb_inttables a tab_key is a true integer key value, but the
-  // inttable maintains the invariant that 0 value is always stored in the
-  // compact table and never as a upb_tabent* so we can always use the 0
-  // key value to identify an empty tabent.
-  return val == 0;
-}
+#define kUpb_NoNextTabent ((uintptr_t)1)
 
 UPB_INLINE bool upb_tabent_hasnext(const upb_tabent* e) {
-  return e->next != NULL;
+  UPB_STATIC_ASSERT(UPB_ALIGN_OF(upb_tabent) > 1,
+                    "valid upb_tabent* can't reference address 1");
+  return e->next != kUpb_NoNextTabent;
 }
 
-UPB_INLINE void upb_tabent_clearnext(upb_tabent* e) { e->next = NULL; }
+UPB_INLINE void upb_tabent_clearnext(upb_tabent* e) {
+  e->next = kUpb_NoNextTabent;
+}
 
 UPB_INLINE void upb_tabent_clear(upb_tabent* e) {
-  memset(&e->key, 0, sizeof(e->key));
-  e->next = NULL;
+  e->next = 0;
   UPB_ASSERT(upb_tabent_isempty(e));
 }
 
 UPB_INLINE upb_tabent* upb_tabent_next(const upb_tabent* e) {
   UPB_ASSERT(upb_tabent_hasnext(e));
-  return e->next;
+  return (upb_tabent*)e->next;
 }
 
 UPB_INLINE void upb_tabent_setnext(upb_tabent* e, upb_tabent* next) {
-  UPB_ASSERT(next != NULL);
+  UPB_ASSERT((uintptr_t)next != 0);
   UPB_ASSERT(next != e);
-  e->next = next;
+  UPB_ASSERT((uintptr_t)next != kUpb_NoNextTabent);
+  e->next = (uintptr_t)next;
   UPB_ASSERT(upb_tabent_hasnext(e));
 }
+
+#undef kUpb_NoNextTabent
 
 uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed);
 
@@ -3154,18 +3204,7 @@ uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed);
 // Must be last.
 
 typedef struct {
-  upb_table t;  // For entries that don't fit in the array part.
-  // Array part of the table.
-  // Pointers on this table are const so we can create static initializers for
-  // tables.  We cast away const sometimes, but *only* when the containing
-  // upb_table is known to be non-const.  This requires a bit of care, but
-  // the subtlety is confined to table.c.
-  const upb_value* array;
-  // Track presence in the array part. Each bit at index (key % 8) at the
-  // presence_mask[key/8] indicates if the element is present in the array part.
-  const uint8_t* presence_mask;
-  uint32_t array_size;   // Array part size.
-  uint32_t array_count;  // Array part number of elements.
+  upb_table t;
 } upb_inttable;
 
 #ifdef __cplusplus
@@ -3181,7 +3220,6 @@ size_t upb_inttable_count(const upb_inttable* t);
 
 // Inserts the given key into the hashtable with the given value.
 // The key must not already exist in the hash table.
-// The value must not be UINTPTR_MAX.
 //
 // If a table resize was required but memory allocation failed, false is
 // returned and the table is unchanged.
@@ -3200,12 +3238,6 @@ bool upb_inttable_remove(upb_inttable* t, uintptr_t key, upb_value* val);
 // If the entry does not exist, returns false and does nothing.
 // Unlike insert/remove, this does not invalidate iterators.
 bool upb_inttable_replace(upb_inttable* t, uintptr_t key, upb_value val);
-
-// Optimizes the table for the current set of entries, for both memory use and
-// lookup time. Client should call this after all entries have been inserted;
-// inserting more entries is legal, but will likely require a table resize.
-// Returns false if reallocation fails.
-UPB_NODISCARD bool upb_inttable_compact(upb_inttable* t, upb_Arena* a);
 
 // Clears the table.
 void upb_inttable_clear(upb_inttable* t);
@@ -3228,10 +3260,6 @@ void upb_inttable_setentryvalue(upb_inttable* t, intptr_t iter, upb_value v);
 bool upb_inttable_done(const upb_inttable* t, intptr_t i);
 uintptr_t upb_inttable_iter_key(const upb_inttable* t, intptr_t iter);
 upb_value upb_inttable_iter_value(const upb_inttable* t, intptr_t iter);
-
-UPB_INLINE bool upb_inttable_arrhas(const upb_inttable* t, uintptr_t key) {
-  return (t->presence_mask[key / 8] & (1 << (key % 8))) != 0;
-}
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -4700,6 +4728,27 @@ UPB_API_INLINE void upb_Message_SetBaseFieldMessage(struct upb_Message* msg,
   upb_Message_SetBaseField(msg, f, &value);
 }
 
+UPB_API_INLINE void upb_Message_SetBaseFieldArray(struct upb_Message* msg,
+                                                  const upb_MiniTableField* f,
+                                                  upb_Array* arr,
+                                                  const upb_MiniTable* arr_mt) {
+  UPB_ASSERT(upb_MiniTableField_IsArray(f));
+  UPB_ASSERT(arr_mt == upb_MiniTable_SubMessage(f));
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
+             kUpb_FieldRep_NativePointer);
+  upb_Message_SetBaseField(msg, f, &arr);
+}
+
+UPB_API_INLINE void upb_Message_SetBaseFieldMap(
+    struct upb_Message* msg, const upb_MiniTableField* f, struct upb_Map* map,
+    const upb_MiniTable* map_entry_mt) {
+  UPB_ASSERT(upb_MiniTableField_IsMap(f));
+  UPB_ASSERT(map_entry_mt == upb_MiniTable_MapEntrySubMessage(f));
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
+             kUpb_FieldRep_NativePointer);
+  upb_Message_SetBaseField(msg, f, &map);
+}
+
 UPB_API_INLINE void upb_Message_SetBaseFieldString(struct upb_Message* msg,
                                                    const upb_MiniTableField* f,
                                                    upb_StringView value) {
@@ -5475,6 +5524,15 @@ UPB_API_INLINE void upb_Message_SetBaseFieldInt64(struct upb_Message* msg,
 UPB_API_INLINE void upb_Message_SetBaseFieldMessage(struct upb_Message* msg,
                                                     const upb_MiniTableField* f,
                                                     upb_Message* value);
+
+UPB_API_INLINE void upb_Message_SetBaseFieldArray(struct upb_Message* msg,
+                                                  const upb_MiniTableField* f,
+                                                  upb_Array* arr,
+                                                  const upb_MiniTable* arr_mt);
+
+UPB_API_INLINE void upb_Message_SetBaseFieldMap(
+    struct upb_Message* msg, const upb_MiniTableField* f, struct upb_Map* map,
+    const upb_MiniTable* map_entry_mt);
 
 UPB_API_INLINE void upb_Message_SetBaseFieldString(struct upb_Message* msg,
                                                    const upb_MiniTableField* f,
@@ -18343,6 +18401,82 @@ UPB_INLINE bool _upb_Decoder_ReadString(upb_Decoder* d, const char** ptr,
 
 #endif /* UPB_WIRE_INTERNAL_DECODER_H_ */
 
+#ifndef GOOGLE_UPB_UPB_WIRE_INTERNAL_BACK_ALLOC_H__
+#define GOOGLE_UPB_UPB_WIRE_INTERNAL_BACK_ALLOC_H__
+
+#include <stddef.h>
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Allocates memory from the back of the arena.
+typedef struct {
+  upb_Arena* arena;
+  char *buf, *limit;
+  bool standalone;
+} upb_BackAlloc;
+
+// Needed because C doesn't allow NULL - NULL.
+extern char upb_BackAlloc_sentinel;
+
+char* upb_BackAlloc_Grow(upb_BackAlloc* a, char* ptr, size_t need);
+
+UPB_INLINE char* upb_BackAlloc_Init(upb_BackAlloc* a, upb_Arena* arena) {
+  a->arena = arena;
+  // This could eagerly steal whatever's in the arena, since stealing with a
+  // minimum of 0 can't fail.
+  a->buf = &upb_BackAlloc_sentinel;
+  a->limit = &upb_BackAlloc_sentinel;
+  a->standalone = false;
+  return a->limit;
+}
+
+UPB_INLINE void upb_BackAlloc_Abort(upb_BackAlloc* a) {
+  if (a->standalone) {
+    UPB_PRIVATE(_upb_Arena_FreeBlock)(a->arena, a->buf);
+  } else if (a->limit != a->buf) {
+    UPB_PRIVATE(_upb_Arena_UseBlock)(a->arena, a->buf, a->limit - a->buf);
+  }
+}
+
+UPB_INLINE size_t upb_BackAlloc_Finish(upb_BackAlloc* a, const char* ptr) {
+  if (a->standalone) {
+    UPB_PRIVATE(_upb_Arena_AddBlock)(a->arena, a->buf);
+  }
+  if (ptr != a->buf) {
+    UPB_PRIVATE(_upb_Arena_UseBlock)(a->arena, a->buf, ptr - a->buf);
+  }
+  return a->limit - ptr;
+}
+
+UPB_FORCEINLINE bool upb_BackAlloc_HasBytes(const upb_BackAlloc* a,
+                                            const char* ptr, size_t need) {
+  size_t have = ptr - a->buf;
+  return have >= need;
+}
+
+UPB_FORCEINLINE char* upb_BackAlloc_Reserve(upb_BackAlloc* a, char* ptr,
+                                            size_t need) {
+  return upb_BackAlloc_HasBytes(a, ptr, need)
+             ? ptr - need
+             : upb_BackAlloc_Grow(a, ptr, need);
+}
+
+UPB_INLINE size_t upb_BackAlloc_Size(const upb_BackAlloc* a, const char* ptr) {
+  return a->limit - ptr;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif  // GOOGLE_UPB_UPB_WIRE_INTERNAL_BACK_ALLOC_H__
+
 #ifndef UPB_WIRE_INTERNAL_ENCODE_H_
 #define UPB_WIRE_INTERNAL_ENCODE_H_
 
@@ -18357,27 +18491,23 @@ extern "C" {
 #endif
 
 typedef struct {
-  upb_EncodeStatus status;
-  upb_Arena* arena;
-  // These should only be used for arithmetic and reallocation to allow full
-  // aliasing analysis on the ptr argument.
-  const char UPB_NODEREF *buf, *limit;
+  upb_BackAlloc alloc;
   int options;
   int depth;
+  upb_EncodeStatus status;
   _upb_mapsorter sorter;
   jmp_buf* err;
 } upb_encstate;
 
-UPB_INLINE void UPB_PRIVATE(_upb_encstate_init)(upb_encstate* e, jmp_buf* err,
-                                                upb_Arena* arena) {
+UPB_INLINE char* UPB_PRIVATE(_upb_encstate_init)(upb_encstate* e, jmp_buf* err,
+                                                 upb_Arena* arena) {
   e->status = kUpb_EncodeStatus_Ok;
-  e->arena = arena;
-  e->buf = NULL;
-  e->limit = NULL;
+  char* ptr = upb_BackAlloc_Init(&e->alloc, arena);
   e->options = 0;
   e->depth = 0;
   e->err = err;
   _upb_mapsorter_init(&e->sorter);
+  return ptr;
 }
 
 // Internal version of upb_Encode that encodes a single field.

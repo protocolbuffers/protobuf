@@ -7915,6 +7915,34 @@ TEST_F(ValidationErrorTest, MapEntryBase) {
   BuildFile(text_proto);
 }
 
+TEST_F(ValidationErrorTest, GroupFieldPointingToMapEntryIsNotMap) {
+  // TYPE_GROUP field referencing a map_entry message should produce a
+  // validation error. Groups cannot be map entries.
+  BuildFileWithErrors(
+      "name: 'group_map.proto' "
+      "message_type { "
+      "  name: 'Foo' "
+      "  field { "
+      "    name: 'foomapentry' number: 1 label: LABEL_REPEATED "
+      "    type: TYPE_GROUP type_name: 'FooMapEntry' "
+      "  } "
+      "  nested_type { "
+      "    name: 'FooMapEntry' "
+      "    options { map_entry: true } "
+      "    field { "
+      "      name: 'key' number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL "
+      "    } "
+      "    field { "
+      "      name: 'value' number: 2 type: TYPE_INT32 label: LABEL_OPTIONAL "
+      "    } "
+      "  } "
+      "} ",
+
+      "group_map.proto: Foo.foomapentry: TYPE: Groups cannot be map entries. "
+      "Use a regular message field with map<KeyType, ValueType> syntax "
+      "instead.\n");
+}
+
 TEST_F(ValidationErrorTest, MapEntryExtensionRange) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
@@ -10872,7 +10900,7 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsInStyle2024) {
 
   // Check that naming collisions are allowed in STYLE2024.
   ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     option features.enforce_naming_style = STYLE2024;
     package naming;
     message Foo {
@@ -10889,7 +10917,7 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsInStyle2026) {
 
   // These are allowed because they don't collide with any existing field.
   ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     option features.enforce_naming_style = STYLE2026;
     package naming;
     message Foo {
@@ -10907,7 +10935,7 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsOneOfInStyle2026) {
 
   // This is allowed because the oneof doesn't collide with any existing field.
   ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     option features.enforce_naming_style = STYLE2026;
     package naming;
     message Foo {
@@ -10945,7 +10973,7 @@ TEST_P(CollisionNameTest, NamingStyleViolationsWithCollisionsInStyle2026) {
   pool_.EnforceNamingStyle(true);
   const CollisionNameParam& param = GetParam();
   std::string schema = absl::Substitute(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       string $0 = 1;
       string test_field = 2;
@@ -10964,7 +10992,7 @@ TEST_P(CollisionNameTest, NamingStyleViolationsInvalidFieldNameInStyle2026) {
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       string descriptor = 1;
     }
@@ -10980,7 +11008,7 @@ TEST_P(CollisionNameTest,
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       oneof bar {
         string has_test_field = 1;
@@ -11000,7 +11028,7 @@ TEST_P(CollisionNameTest,
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       oneof has_test_field {
         string test_field = 1;
@@ -11019,7 +11047,7 @@ TEST_P(CollisionNameTest,
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       oneof test_field {
         string has_test_field = 1;
@@ -11036,7 +11064,7 @@ TEST_P(CollisionNameTest, NamingStyleViolationsInvalidOneOfNameInStyle2026) {
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       oneof descriptor {
         string test_field = 1;

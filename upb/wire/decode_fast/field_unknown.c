@@ -15,6 +15,7 @@
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/cardinality.h"
+#include "upb/wire/decode_fast/dispatch.h"
 #include "upb/wire/decode_fast/field_helpers.h"
 #include "upb/wire/decode_fast/field_parsers.h"
 #include "upb/wire/eps_copy_input_stream.h"
@@ -35,7 +36,7 @@
 // Fast-path filters out unsupported cases, so we don't need to re-check here.
 // To avoid additional computations, `data` is overloaded to the size of the
 // unknown region.
-UPB_PRESERVE_NONE UPB_NOINLINE const char*
+UPB_PRESERVE_NONE UPB_NOINLINE upb_FastDecoder_Return
 _upb_FastDecoder_DecodeUnknownSlowPath(struct upb_Decoder* d, const char* ptr,
                                        upb_Message* msg, intptr_t table,
                                        uint64_t hasbits, uint64_t data) {
@@ -71,11 +72,12 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
     }
   } else if ((d_val & 0x8000) == 0) {
     tag_len = 2;
-    // Ensure the field number is not 0.
-    // Use bitwise op to limit to first two bytes, and ignore continuation bit &
-    // additional tag data.
-    if (UPB_UNLIKELY((d_val & 0x7f78) == 0)) {
-      return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
+    if (UPB_UNLIKELY((d_val & 0xFF80) == 0x80)) {
+      // Detect a 0-valued tag or a "2-byte" tag that is an overlong 1-byte tag.
+      // Fasttable isn't set up to deal with overlong varint tags (which will
+      // not match the canonical tag assigned to a slot) so fallback. (Fallback
+      // will also handle erroring on 0-valued fields.)
+      return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
     }
   } else {
     // Tag >=2048
@@ -165,7 +167,7 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
   return true;
 }
 
-UPB_PRESERVE_NONE const char* _upb_FastDecoder_DecodeUnknown(
+UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeUnknown(
     struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
     uint64_t hasbits, uint64_t data) {
   upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;

@@ -1833,7 +1833,7 @@ TEST_F(CommandLineInterfaceTest, NamingStyleEnforced) {
 TEST_F(CommandLineInterfaceTest, NamingStyleStartsWithHasCollisionExists) {
   CreateTempFile("foo.proto",
                  R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       string has_bar = 1;
       string bar = 2;
@@ -1851,7 +1851,7 @@ TEST_F(CommandLineInterfaceTest, NamingStyleStartsWithHasCollisionExists) {
 TEST_F(CommandLineInterfaceTest, NamingStyleStartsWithHasNoCollision) {
   CreateTempFile("foo.proto",
                  R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       string has_bar = 1;
       string baz = 2;
