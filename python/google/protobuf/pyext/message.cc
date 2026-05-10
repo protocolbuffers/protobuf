@@ -13,6 +13,7 @@
 #include <Python.h>
 #include <structmember.h>  // A Python header file.
 
+#include <atomic>
 #include <climits>
 #include <cstddef>
 #include <cstdint>
@@ -24,6 +25,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/base/call_once.h"
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
@@ -244,14 +246,15 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   // We change the __bases__ classes.
   ScopedPyObjectPtr new_args;
 
-  if (WKT_classes == nullptr) {
+  static absl::once_flag wkt_classes_once;
+  absl::call_once(wkt_classes_once, []() {
     ScopedPyObjectPtr well_known_types(
         PyImport_ImportModule(PROTOBUF_PYTHON_INTERNAL ".well_known_types"));
     ABSL_DCHECK(well_known_types != nullptr);
 
     WKT_classes = PyObject_GetAttrString(well_known_types.get(), "WKTBASES");
     ABSL_DCHECK(WKT_classes != nullptr);
-  }
+  });
 
   PyObject* well_known_class = PyDict_GetItemString(
       WKT_classes, std::string(message_descriptor->full_name()).c_str());
@@ -392,9 +395,9 @@ static PyObject* GetAttr(CMessageClass* self, PyObject* name) {
 // protobufs in chunks.  If you have protos this big you should break them up if
 // it is at all convenient to do so.
 #ifdef PROTOBUF_PYTHON_ALLOW_OVERSIZE_PROTOS
-static bool allow_oversize_protos = true;
+static std::atomic<bool> allow_oversize_protos{true};
 #else
-static bool allow_oversize_protos = false;
+static std::atomic<bool> allow_oversize_protos{false};
 #endif
 
 static PyTypeObject _CMessageClass_Type = {
