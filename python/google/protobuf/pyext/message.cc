@@ -13,6 +13,7 @@
 #include <Python.h>
 #include <structmember.h>  // A Python header file.
 
+#include <atomic>
 #include <climits>
 #include <cstddef>
 #include <cstdint>
@@ -392,9 +393,9 @@ static PyObject* GetAttr(CMessageClass* self, PyObject* name) {
 // protobufs in chunks.  If you have protos this big you should break them up if
 // it is at all convenient to do so.
 #ifdef PROTOBUF_PYTHON_ALLOW_OVERSIZE_PROTOS
-static bool allow_oversize_protos = true;
+static std::atomic<bool> allow_oversize_protos{true};
 #else
-static bool allow_oversize_protos = false;
+static std::atomic<bool> allow_oversize_protos{false};
 #endif
 
 static PyTypeObject _CMessageClass_Type = {
