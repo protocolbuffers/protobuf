@@ -24,6 +24,8 @@
 #include "upb/message/accessors.hpp"
 #include "upb/message/array.h"
 #include "upb/message/message.h"
+#include "upb/base/status.hpp"
+#include "upb/mini_descriptor/internal/encode.hpp"
 #include "upb/mini_descriptor/link.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
@@ -304,6 +306,54 @@ TYPED_TEST(PackedTest, DecodeUnpackedDataForPackedField) {
   // Even though there is a mismatch, we can still parse this fast.
   EXPECT_EQ(FilteredTrace(absl::string_view(trace_buf)),
             ExpectedRepeatedFieldTrace(mt, field, 3));
+}
+
+TEST(OneofMessageTest, DecodeClearsStaleOneofValueBeforeMessageReuse) {
+  Arena mt_arena;
+  Arena msg_arena;
+
+  auto [sub_mt, sub_field] =
+      MiniTable::MakeSingleFieldTable<field_types::UInt64>(
+          1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+
+  MtDataEncoder encoder;
+  ASSERT_TRUE(encoder.StartMessage(0));
+  ASSERT_TRUE(encoder.PutField(kUpb_FieldType_UInt64, 1, 0));
+  ASSERT_TRUE(encoder.PutField(kUpb_FieldType_Message, 2, 0));
+  ASSERT_TRUE(encoder.StartOneof());
+  ASSERT_TRUE(encoder.PutOneofField(1));
+  ASSERT_TRUE(encoder.PutOneofField(2));
+  Status status;
+  upb_MiniTable* mt =
+      upb_MiniTable_Build(encoder.data().data(), encoder.data().size(),
+                          mt_arena.ptr(), status.ptr());
+  ASSERT_NE(mt, nullptr) << status.error_message();
+
+  const upb_MiniTable* subs[1] = {sub_mt};
+  ASSERT_TRUE(upb_MiniTable_Link(mt, subs, 1, nullptr, 0));
+  const upb_MiniTableField* message_field =
+      upb_MiniTable_GetFieldByIndex(mt, 1);
+
+  upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+  std::string submessage = ToBinaryPayload(
+      wire_types::WireMessage{{1, field_types::UInt64::WireValue(1)}});
+  std::string payload = ToBinaryPayload(wire_types::WireMessage{
+      {1, field_types::UInt64::WireValue(1)},
+      {2, wire_types::Delimited{submessage}},
+  });
+
+  char trace_buf[64];
+  upb_DecodeStatus result =
+      upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                          msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+  ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+
+  const upb_Message* decoded_submsg =
+      upb_Message_GetMessage(msg, message_field);
+  ASSERT_NE(decoded_submsg, nullptr);
+  EXPECT_EQ(GetOptionalField<uint64_t>(const_cast<upb_Message*>(decoded_submsg),
+                                       sub_field),
+            1);
 }
 
 TEST(RepeatedFieldTest, RepeatedMessageFallback) {
