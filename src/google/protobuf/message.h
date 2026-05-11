@@ -1049,6 +1049,37 @@ class PROTOBUF_EXPORT Reflection final {
     kHiddenOrInternal,
   };
 
+  // Helper bit set implementation, tuned for small size.
+  class BitSet {
+   public:
+    // Make an empty set that can hold elements in the range [0,n-1].
+    explicit BitSet(size_t n);
+    ~BitSet();
+
+    // Add i to the set.
+    // REQUIRES: 0 <= i < n
+    void Insert(size_t i);
+
+    // Call fn(i) for each i in the set.
+    // REQUIRES: n is same as the argument passed to the constructor.
+    template <class Fn>
+    void ForEach(size_t n, Fn fn) const;
+
+    // Not copyable or movable
+    BitSet(const BitSet&) = delete;
+    BitSet(BitSet&&) = delete;
+    BitSet& operator=(const BitSet&) = delete;
+    BitSet& operator=(BitSet&&) = delete;
+
+   private:
+    bool inlined() const { return rep_ & 0x1; }
+
+    // For small vectors, low bit of rep_ is 1 and we hold the bit vector in
+    // (rep_>>1). For large vectors, rep_ is a pointer to a heap-allocated
+    // uintptr_t array.
+    uintptr_t rep_;
+  };
+
   const internal::ReflectionSchema& Schema() const { return schema_; }
 
   bool IsRepeatedOrMapFieldEmpty(const Message& message,
@@ -1169,6 +1200,12 @@ class PROTOBUF_EXPORT Reflection final {
   // are at the end of the containing message. If a message proto doesn't
   // contain weak fields, then this field equals descriptor_->field_count().
   int last_non_weak_field_index_;
+
+  // Bit vector indexed by field index that contains 1 for fields that are not
+  // part of a oneof, not weak, and are not scalars. Such fields are treated
+  // differently in SpaceUsedLong.
+  BitSet dynamic_regular_fields_;
+
   // The table-driven parser table.
   // This table is generated on demand for Message types that did not override
   // _InternalParse. It uses the reflection information to do so.
@@ -1476,6 +1513,11 @@ class PROTOBUF_EXPORT Reflection final {
                                     int value) const;
   void AddEnumValueInternal(Message* message, const FieldDescriptor* field,
                             int value) const;
+
+  // Return the external space used by field in message.
+  // REQUIRES: If field is in a oneof, the oneof currently holds field.
+  size_t ExternalSpaceForField(const Message& message,
+                               const FieldDescriptor* field) const;
 
   friend inline const char* ParseLenDelim(int field_number,
                                           const FieldDescriptor* field,
