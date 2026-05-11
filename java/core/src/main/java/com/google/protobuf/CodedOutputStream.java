@@ -1198,8 +1198,24 @@ public abstract class CodedOutputStream extends ByteOutput {
       if (value >= 0) {
         writeUInt32NoTag(value);
       } else {
-        // Must sign-extend.
-        writeUInt64NoTag(value);
+        // Negative values sign extend to int64, and then always take exactly 10 bytes.
+        long v = value;
+        int position = this.position;
+        try {
+          buffer[position++] = (byte) ((int) v | 0x80);
+          buffer[position++] = (byte) ((int) (v >>> 7) | 0x80);
+          buffer[position++] = (byte) ((int) (v >>> 14) | 0x80);
+          buffer[position++] = (byte) ((int) (v >>> 21) | 0x80);
+          buffer[position++] = (byte) ((int) (v >>> 28) | 0x80);
+          buffer[position++] = (byte) 0xFF;
+          buffer[position++] = (byte) 0xFF;
+          buffer[position++] = (byte) 0xFF;
+          buffer[position++] = (byte) 0xFF;
+          buffer[position++] = (byte) 0x01;
+        } catch (IndexOutOfBoundsException e) {
+          throw new OutOfSpaceException(position, limit, 10, e);
+        }
+        this.position = position;
       }
     }
 
