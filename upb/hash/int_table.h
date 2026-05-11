@@ -40,9 +40,19 @@ size_t upb_inttable_count(const upb_inttable* t);
 UPB_NODISCARD bool upb_inttable_insert(upb_inttable* t, uintptr_t key,
                                        upb_value val, upb_Arena* a);
 
+UPB_INLINE bool inteql(upb_key k1, upb_value v1, upb_lookupkey k2) {
+  UPB_UNUSED(v1);
+  return k1.num == k2.num;
+}
+
 // Looks up key in this table, returning "true" if the key was found.
 // If v is non-NULL, copies the value for this key into *v.
-bool upb_inttable_lookup(const upb_inttable* t, uintptr_t key, upb_value* v);
+UPB_INLINE bool upb_inttable_lookup(const upb_inttable* t, uintptr_t key,
+                                    upb_value* v) {
+  upb_lookupkey k;
+  k.num = key;
+  return upb_lookup(&t->t, k, v, upb_inthash(key), &inteql);
+}
 
 // Removes an item from the table. Returns true if the remove was successful,
 // and stores the removed item in *val if non-NULL.

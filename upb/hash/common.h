@@ -182,6 +182,54 @@ UPB_INLINE void upb_tabent_setnext(upb_tabent* e, upb_tabent* next) {
 
 #undef kUpb_NoNextTabent
 
+typedef union {
+  uintptr_t num;
+  upb_StringView str;
+  struct {
+    const void* ptr;
+    uint32_t ext_num;
+  } ext;
+} upb_lookupkey;
+
+typedef bool upb_eqlfunc(upb_key k1, upb_value v1, upb_lookupkey k2);
+
+UPB_INLINE uint32_t upb_inthash(uintptr_t key) {
+  UPB_STATIC_ASSERT(sizeof(uintptr_t) == 4 || sizeof(uintptr_t) == 8,
+                    "Pointers don't fit");
+  if (sizeof(uintptr_t) == 8) {
+    return (uint32_t)key ^ (uint32_t)(key >> 32);
+  } else {
+    return (uint32_t)key;
+  }
+}
+
+UPB_INLINE const upb_tabent* upb_getentry(const upb_table* t, uint32_t hash) {
+  return t->entries + (hash & t->mask);
+}
+
+UPB_INLINE const upb_tabent* upb_findentry(const upb_table* t,
+                                           upb_lookupkey key, uint32_t hash,
+                                           upb_eqlfunc* eql) {
+  if (t->count == 0) return NULL;
+  const upb_tabent* e = upb_getentry(t, hash);
+  if (upb_tabent_isempty(e)) return NULL;
+  while (1) {
+    if (eql(e->key, e->val, key)) return e;
+    if (!upb_tabent_hasnext(e)) return NULL;
+    e = upb_tabent_next(e);
+  }
+}
+
+UPB_INLINE bool upb_lookup(const upb_table* t, upb_lookupkey key, upb_value* v,
+                           uint32_t hash, upb_eqlfunc* eql) {
+  const upb_tabent* e = upb_findentry(t, key, hash, eql);
+  if (e) {
+    if (v) *v = e->val;
+    return true;
+  }
+  return false;
+}
+
 uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed);
 
 #ifdef __cplusplus

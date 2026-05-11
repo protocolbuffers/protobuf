@@ -58,14 +58,9 @@ UPB_INLINE uint8_t _upb_log2_table_size(upb_table* t) {
 
 /* A type to represent the lookup key of either a strtable, inttable or
  * exttable. */
-typedef union {
-  uintptr_t num;
-  upb_StringView str;
-  struct {
-    const void* ptr;
-    uint32_t ext_num;
-  } ext;
-} lookupkey_t;
+typedef upb_lookupkey lookupkey_t;
+typedef upb_eqlfunc eqlfunc_t;
+typedef uint32_t hashfunc_t(upb_key key, upb_value val);
 
 static lookupkey_t strkey2(const char* str, size_t len) {
   return (lookupkey_t){.str = upb_StringView_FromDataAndSize(str, len)};
@@ -75,28 +70,6 @@ static lookupkey_t intkey(uintptr_t key) { return (lookupkey_t){.num = key}; }
 
 static lookupkey_t extkey(const void* ptr, uint32_t ext_num) {
   return (lookupkey_t){.ext = {ptr, ext_num}};
-}
-
-// Conceptually the hash and equal functions should only take the key, not the
-// value, but the extension table stores part of its logical key in the value
-// slot. This is a sign that we have outgrown the original architecture.
-typedef uint32_t hashfunc_t(upb_key key, upb_value val);
-typedef bool eqlfunc_t(upb_key k1, upb_value v1, lookupkey_t k2);
-
-/* Base table (shared code) ***************************************************/
-
-static uint32_t upb_inthash(uintptr_t key) {
-  UPB_STATIC_ASSERT(sizeof(uintptr_t) == 4 || sizeof(uintptr_t) == 8,
-                    "Pointers don't fit");
-  if (sizeof(uintptr_t) == 8) {
-    return (uint32_t)key ^ (uint32_t)(key >> 32);
-  } else {
-    return (uint32_t)key;
-  }
-}
-
-static upb_tabent* upb_getentry(const upb_table* t, uint32_t hash) {
-  return t->entries + (hash & t->mask);
 }
 
 static bool isfull(upb_table* t) {
@@ -140,37 +113,12 @@ static upb_tabent* emptyent(upb_table* t, upb_tabent* e) {
 }
 
 static upb_tabent* getentry_mutable(upb_table* t, uint32_t hash) {
-  return upb_getentry(t, hash);
-}
-
-static upb_tabent* findentry(const upb_table* t, lookupkey_t key, uint32_t hash,
-                             eqlfunc_t* eql) {
-  upb_tabent* e;
-
-  if (t->count == 0) return NULL;
-  e = upb_getentry(t, hash);
-  if (upb_tabent_isempty(e)) return NULL;
-  while (1) {
-    if (eql(e->key, e->val, key)) return e;
-    if (!upb_tabent_hasnext(e)) return NULL;
-    e = upb_tabent_next(e);
-  }
+  return (upb_tabent*)upb_getentry(t, hash);
 }
 
 static upb_tabent* findentry_mutable(upb_table* t, lookupkey_t key,
                                      uint32_t hash, eqlfunc_t* eql) {
-  return findentry(t, key, hash, eql);
-}
-
-static bool lookup(const upb_table* t, lookupkey_t key, upb_value* v,
-                   uint32_t hash, eqlfunc_t* eql) {
-  const upb_tabent* e = findentry(t, key, hash, eql);
-  if (e) {
-    if (v) *v = e->val;
-    return true;
-  } else {
-    return false;
-  }
+  return (upb_tabent*)upb_findentry(t, key, hash, eql);
 }
 
 /* The given key must not already exist in the table. */
@@ -179,7 +127,7 @@ static void insert(upb_table* t, lookupkey_t key, upb_key tabkey, upb_value val,
   upb_tabent* mainpos_e;
   upb_tabent* our_e;
 
-  UPB_ASSERT(findentry(t, key, hash, eql) == NULL);
+  UPB_ASSERT(upb_findentry(t, key, hash, eql) == NULL);
 
   t->count++;
   mainpos_e = getentry_mutable(t, hash);
@@ -228,7 +176,7 @@ static void insert(upb_table* t, lookupkey_t key, upb_key tabkey, upb_value val,
   }
   our_e->key = tabkey;
   our_e->val = val;
-  UPB_ASSERT(findentry(t, key, hash, eql) == our_e);
+  UPB_ASSERT(upb_findentry(t, key, hash, eql) == our_e);
 }
 
 static bool rm(upb_table* t, lookupkey_t key, upb_value* val, uint32_t hash,
@@ -612,7 +560,7 @@ bool upb_strtable_insert(upb_strtable* t, const char* k, size_t len,
 bool upb_strtable_lookup2(const upb_strtable* t, const char* key, size_t len,
                           upb_value* v) {
   uint32_t hash = _upb_Hash_NoSeed(key, len);
-  return lookup(&t->t, strkey2(key, len), v, hash, &streql);
+  return upb_lookup(&t->t, strkey2(key, len), v, hash, &streql);
 }
 
 bool upb_strtable_remove2(upb_strtable* t, const char* key, size_t len,
@@ -679,24 +627,10 @@ void upb_strtable_setentryvalue(upb_strtable* t, intptr_t iter, upb_value v) {
 
 /* upb_exttable ***************************************************************/
 
-static uint32_t _upb_exttable_hash(const void* ptr, uint32_t ext_num) {
-  uint64_t a = (uintptr_t)ptr;
-  uint64_t b = ext_num;
-  return (uint32_t)WyhashMix(a ^ kWyhashSalt[1], b ^ _upb_Seed());
-}
-
 static uint32_t exthash(upb_key key, upb_value val) {
   const void* ptr = (const void*)key.num;
   uint32_t ext_num = *(const uint32_t*)upb_value_getconstptr(val);
   return _upb_exttable_hash(ptr, ext_num);
-}
-
-static bool exteql(upb_key k1, upb_value v1, lookupkey_t k2) {
-  if ((const void*)k1.num == k2.ext.ptr) {
-    uint32_t ext_num1 = *(const uint32_t*)upb_value_getconstptr(v1);
-    return ext_num1 == k2.ext.ext_num;
-  }
-  return false;
 }
 
 bool upb_exttable_init(upb_exttable* t, size_t expected_size, upb_Arena* a) {
@@ -747,16 +681,6 @@ bool upb_exttable_insert(upb_exttable* t, const void* k, const uint32_t* v,
   return true;
 }
 
-const uint32_t* upb_exttable_lookup(const upb_exttable* t, const void* k,
-                                    uint32_t ext_number) {
-  uint32_t hash = _upb_exttable_hash(k, ext_number);
-  upb_value val;
-  if (lookup(&t->t, extkey(k, ext_number), &val, hash, &exteql)) {
-    return (const uint32_t*)upb_value_getconstptr(val);
-  }
-  return NULL;
-}
-
 const uint32_t* upb_exttable_remove(upb_exttable* t, const void* k,
                                     uint32_t ext_number) {
   uint32_t hash = _upb_exttable_hash(k, ext_number);
@@ -774,11 +698,6 @@ size_t upb_exttable_size(const upb_exttable* t) { return t->t.count; }
 static uint32_t inthash(upb_key key, upb_value val) {
   UPB_UNUSED(val);
   return upb_inthash(key.num);
-}
-
-static bool inteql(upb_key k1, upb_value v1, lookupkey_t k2) {
-  UPB_UNUSED(v1);
-  return k1.num == k2.num;
 }
 
 size_t upb_inttable_count(const upb_inttable* t) { return t->t.count; }
@@ -836,10 +755,6 @@ bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
   insert(&t->t, intkey(key), tabkey, val, upb_inthash(key), &inthash, &inteql);
   check(t);
   return true;
-}
-
-bool upb_inttable_lookup(const upb_inttable* t, uintptr_t key, upb_value* v) {
-  return lookup(&t->t, intkey(key), v, upb_inthash(key), &inteql);
 }
 
 bool upb_inttable_replace(upb_inttable* t, uintptr_t key, upb_value val) {
