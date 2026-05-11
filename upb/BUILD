@@ -5,6 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_python//python:defs.bzl", "py_binary")
@@ -41,15 +42,24 @@ config_setting(
 
 bool_flag(
     name = "fasttable_enabled",
-    build_setting_default = False,
+    build_setting_default = True,
     visibility = [
         "//upb/bazel:__pkg__",
     ],
 )
 
 config_setting(
-    name = "fasttable_enabled_setting",
+    name = "fasttable_enabled_setting_flag",
     flag_values = {"//upb:fasttable_enabled": "true"},
+    visibility = ["//visibility:private"],
+)
+
+selects.config_setting_group(
+    name = "fasttable_enabled_setting",
+    match_all = [
+        ":fasttable_enabled_setting_flag",
+        "//buildenv/platforms/settings:any_64bit",
+    ],
     visibility = [
         "//benchmarks:__subpackages__",
         "//lua:__pkg__",
