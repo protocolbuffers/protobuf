@@ -131,6 +131,28 @@ def _enable_implicit_weak(ctx, generator, feature_configuration):
 
 def _generate_upb_protos(ctx, generator, proto_info, feature_configuration):
     srcs = _generate_srcs_list(ctx, generator, proto_info)
+
+    if generator == "upbdefs":
+        additional_args = ctx.actions.args()
+        inputs = [proto_info.direct_descriptor_set]
+        additional_args.add("--direct_descriptor_set=" + proto_info.direct_descriptor_set.path)
+
+        args_transitive = ctx.actions.args()
+        args_transitive.add_all(proto_info.transitive_descriptor_sets, format_each = "--descriptor_set=%s")
+
+        args_out = ctx.actions.args()
+        args_out.add("--upbdefs_out=" + output_dir(ctx, proto_info))
+
+        ctx.actions.run(
+            mnemonic = "GenProtoUpbdefs",
+            executable = ctx.executable._upbdefs_generator,
+            arguments = [additional_args, args_transitive, args_out],
+            inputs = depset(direct = inputs, transitive = [proto_info.transitive_descriptor_sets]),
+            outputs = srcs.srcs + srcs.hdrs,
+            use_default_shell_env = False,
+        )
+        return srcs
+
     additional_args = ctx.actions.args()
 
     if _enable_implicit_weak(ctx, generator, feature_configuration):
@@ -252,11 +274,12 @@ def upb_proto_aspect_impl(
             proto_info,
             feature_configuration,
         )
+        runtime_cc_info = ctx.attr._upbdefs_runtime[CcInfo] if generator == "upbdefs" else _get_lang_toolchain(ctx, generator).runtime[CcInfo]
         wrapped_cc_info = _compile_upb_protos(
             ctx,
             files,
             generator,
-            dep_ccinfos + [_get_lang_toolchain(ctx, generator).runtime[CcInfo]],
+            dep_ccinfos + [runtime_cc_info],
             cc_provider,
             proto_info,
         )

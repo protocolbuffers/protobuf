@@ -39,6 +39,7 @@ cc_binary(
     features = UPB_DEFAULT_FEATURES,
     visibility = [
         "//pkg:__pkg__",
+        "//upb/bazel:__pkg__",
     ],
     deps = [
         ":names",

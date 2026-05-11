@@ -1,7 +1,6 @@
 """upb_c_proto_reflection_library() exposes upb reflection for protobuf (foo.upbdefs.h)"""
 
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
-load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//upb/bazel:upb_minitable_proto_library.bzl", "UpbMinitableCcInfo", "upb_minitable_proto_library_aspect")
 load("//upb/bazel:visibility.bzl", "upb_clients")
@@ -32,12 +31,13 @@ _upb_proto_reflection_library_aspect = aspect(
         "_copts": attr.label(
             default = "//upb:upb_proto_library_copts",
         ),
-        "_upbdefs_toolchain": attr.label(
-            default = Label("//upb_generator/reflection:toolchain"),
-            cfg = getattr(proto_common, "proto_lang_toolchain_cfg", "target"),
+        "_upbdefs_generator": attr.label(
+            default = Label("//upb_generator/reflection:protoc-gen-upbdefs"),
+            executable = True,
+            cfg = "exec",
         ),
-        "_cc_toolchain": attr.label(
-            default = "@bazel_tools//tools/cpp:current_cc_toolchain",
+        "_upbdefs_runtime": attr.label(
+            default = Label("//upb/reflection:generated_reflection_support"),
         ),
     },
     implementation = _upb_proto_reflection_library_aspect_impl,
