@@ -94,7 +94,7 @@ namespace Google.Protobuf.Conformance
                 {
                     case ConformanceRequest.PayloadOneofCase.JsonPayload:
                         bool ignoreUnknownFields = request.TestCategory == global::Conformance.TestCategory.JsonIgnoreUnknownParsingTest;
-                        JsonParser parser = new JsonParser(new JsonParser.Settings(20, typeRegistry).WithIgnoreUnknownFields(ignoreUnknownFields));
+                        JsonParser parser = new JsonParser(JsonParser.Settings.Default.WithTypeRegistry(typeRegistry).WithIgnoreUnknownFields(ignoreUnknownFields));
                         message = request.MessageType switch
                         {
                           "protobuf_test_messages.proto2.TestAllTypesProto2" =>

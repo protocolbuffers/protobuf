@@ -42,9 +42,10 @@ static const char* upb_DecodeFast_MessageData(upb_EpsCopyInputStream* st,
   return ptr;
 }
 
-static bool upb_DecodeFast_SingleMessage(upb_Decoder* d, const char** ptr,
-                                         void* dst, upb_DecodeFast_Type type,
-                                         upb_DecodeFastNext* next, void* ctx) {
+UPB_FORCEINLINE
+bool upb_DecodeFast_SingleMessage(upb_Decoder* d, const char** ptr, void* dst,
+                                  upb_DecodeFast_Type type,
+                                  upb_DecodeFastNext* next, void* ctx) {
   upb_DecodeFast_MessageContext* c = ctx;
   void** submsg_dst = dst;
 
@@ -102,7 +103,7 @@ void upb_DecodeFast_Message(upb_Decoder* d, const char** ptr, upb_Message* msg,
 }
 
 #define F(type, card, tagsize)                                             \
-  const char* UPB_PRESERVE_NONE UPB_DECODEFAST_FUNCNAME(                   \
+  upb_FastDecoder_Return UPB_PRESERVE_NONE UPB_DECODEFAST_FUNCNAME(        \
       type, card, tagsize)(UPB_PARSE_PARAMS) {                             \
     upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;                \
     upb_DecodeFast_Message(d, &ptr, msg, table, &hasbits, &data, &next,    \

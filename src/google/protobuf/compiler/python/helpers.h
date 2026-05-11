@@ -29,6 +29,7 @@ std::string GetFileName(const FileDescriptor* file_des,
                         absl::string_view suffix);
 bool HasGenericServices(const FileDescriptor* file);
 std::string GeneratedCodeToBase64(const GeneratedCodeInfo& annotations);
+std::string PrintImport(const FileDescriptor* file, bool* has_importlib);
 
 template <typename DescriptorT>
 std::string NamePrefixedWithNestedTypes(const DescriptorT& descriptor,

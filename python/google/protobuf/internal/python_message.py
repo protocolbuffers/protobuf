@@ -309,10 +309,27 @@ def _MaybeAddEncoder(cls, field_descriptor):
   is_packed = field_descriptor.is_packed
 
   if is_map_entry:
-    field_encoder = encoder.MapEncoder(field_descriptor)
-    sizer = encoder.MapSizer(
-        field_descriptor, _IsMessageMapField(field_descriptor)
+    key_descriptor = field_descriptor.message_type.fields_by_name['key']
+    value_descriptor = field_descriptor.message_type.fields_by_name['value']
+
+    key_sizer = type_checkers.TYPE_TO_SIZER[key_descriptor.type](
+        key_descriptor.number, False, False
     )
+    value_sizer = type_checkers.TYPE_TO_SIZER[value_descriptor.type](
+        value_descriptor.number, False, False
+    )
+
+    key_encoder = type_checkers.TYPE_TO_ENCODER[key_descriptor.type](
+        key_descriptor.number, False, False
+    )
+    value_encoder = type_checkers.TYPE_TO_ENCODER[value_descriptor.type](
+        value_descriptor.number, False, False
+    )
+
+    field_encoder = encoder.MapEncoder(
+        field_descriptor, key_encoder, value_encoder, key_sizer, value_sizer
+    )
+    sizer = encoder.MapSizer(field_descriptor, key_sizer, value_sizer)
   elif _IsMessageSetExtension(field_descriptor):
     field_encoder = encoder.MessageSetItemEncoder(field_descriptor.number)
     sizer = encoder.MessageSetItemSizer(field_descriptor.number)

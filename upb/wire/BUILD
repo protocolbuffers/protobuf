@@ -59,6 +59,7 @@ cc_library(
     features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
+        ":back_alloc",
         ":decoder",
         ":eps_copy_input_stream",
         ":reader",
@@ -158,6 +159,22 @@ cc_binary(
         "@google_benchmark//:benchmark_main",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "back_alloc",
+    srcs = ["internal/back_alloc.c"],
+    hdrs = ["internal/back_alloc.h"],
+    copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
+    visibility = ["//upb:__pkg__"],
+    deps = [
+        "//upb/base",
+        "//upb/base:internal",
+        "//upb/mem",
+        "//upb/mem:internal",
+        "//upb/port",
     ],
 )
 
