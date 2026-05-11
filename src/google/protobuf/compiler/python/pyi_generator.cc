@@ -515,9 +515,23 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
     if (field_des.is_repeated()) {
       absl::StrAppend(&field_type, "]");
     }
-    printer_->Print("$name$: $type$\n",
-                    "name", field_des.name(), "type", field_type);
-    Annotate("name", &field_des);
+    if (field_des.cpp_type() == FieldDescriptor::CPPTYPE_ENUM &&
+        !field_des.is_repeated()) {
+      // Reading an enum field returns an enum type according to the type
+      // hint. But assigning to it accepts either the enum type or an int.
+      printer_->Print("@property\n");
+      printer_->Print("def $name$(self) -> $type$: ...\n", "name",
+                      field_des.name(), "type", field_type);
+      Annotate("name", &field_des);
+      printer_->Print("@$name$.setter\n", "name", field_des.name());
+      printer_->Print(
+          "def $name$(self, value: _Union[$type$, int]) -> None: ...\n", "name",
+          field_des.name(), "type", field_type);
+    } else {
+      printer_->Print("$name$: $type$\n", "name", field_des.name(), "type",
+                      field_type);
+      Annotate("name", &field_des);
+    }
   }
 
   // Prints __init__
@@ -562,7 +576,7 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
                         GetFieldType(*field_des, message_descriptor));
       } else {
         if (field_des->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
-          printer_->Print("_Union[$type_name$, str]", "type_name",
+          printer_->Print("_Union[$type_name$, int, str]", "type_name",
                           ModuleLevelName(*field_des->enum_type()));
         } else {
           printer_->Print(
