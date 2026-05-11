@@ -1,5 +1,7 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("@rules_cc//cc/toolchains:cc_toolchain.bzl", "cc_toolchain")
+load("@rules_cc//tests/cc/testutil/toolchains:cc_toolchain_config.bzl", "cc_toolchain_config")
 load("//bazel:proto_descriptor_set.bzl", "proto_descriptor_set")
 load("//bazel:proto_library.bzl", "proto_library")
 load(":bazel_proto_library_tests.bzl", "bazel_proto_library_test_suite")
@@ -31,6 +33,17 @@ java_proto_library_test_suite(name = "java_proto_library_test_suite")
 cc_proto_library_test_suite(name = "cc_proto_library_tests")
 
 proto_bzl_test_suite_tests(name = "proto_bzl_test_suite")
+
+bzl_library(
+    name = "proto_bzl_test_suite_bzl",
+    srcs = ["proto_bzl_test_suite.bzl"],
+    parse_tests = False,
+    visibility = ["//visibility:private"],
+    deps = [
+        "@rules_testing//lib:analysis_test_bzl",
+        "@rules_testing//lib:util_bzl",
+    ],
+)
 
 proto_library(
     name = "empty_proto_library",
@@ -76,4 +89,46 @@ cc_test(
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
+)
+
+filegroup(name = "empty")
+
+cc_toolchain_config(
+    name = "portable_k8_compiler_config",
+    abi_libc_version = "local",
+    abi_version = "local",
+    action_configs = [],
+    artifact_name_patterns = {},
+    builtin_sysroot = "/usr/grte/v1",
+    cc_target_os = "",
+    compiler = "compiler",
+    cpu = "k8",
+    cxx_builtin_include_directories = [],
+    feature_names = ["portable_overrides_configuration"],
+    host_system_name = "local",
+    make_variables = {},
+    target_libc = "local",
+    target_system_name = "local",
+    tool_paths = {},
+    toolchain_identifier = "mock-toolchain-k8-portable",
+)
+
+cc_toolchain(
+    name = "cc-compiler-k8-portable",
+    all_files = ":empty",
+    ar_files = ":empty",
+    as_files = ":empty",
+    compiler_files = ":empty",
+    dwp_files = ":empty",
+    linker_files = ":empty",
+    objcopy_files = ":empty",
+    strip_files = ":empty",
+    toolchain_config = ":portable_k8_compiler_config",
+    toolchain_identifier = "mock-toolchain-k8-portable",
+)
+
+toolchain(
+    name = "cc-toolchain-k8-portable-toolchain",
+    toolchain = ":cc-compiler-k8-portable",
+    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
