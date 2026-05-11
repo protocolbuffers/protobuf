@@ -7603,7 +7603,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   void _internal_set_java_multiple_files(bool value);
 
   public:
-  // optional bool cc_generic_services = 16 [default = false];
+  // optional bool cc_generic_services = 16 [default = false, feature_support = {
   [[nodiscard]] bool has_cc_generic_services() const;
   void clear_cc_generic_services() ;
   [[nodiscard]] bool cc_generic_services() const;
@@ -7614,7 +7614,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   void _internal_set_cc_generic_services(bool value);
 
   public:
-  // optional bool java_generic_services = 17 [default = false];
+  // optional bool java_generic_services = 17 [default = false, feature_support = {
   [[nodiscard]] bool has_java_generic_services() const;
   void clear_java_generic_services() ;
   [[nodiscard]] bool java_generic_services() const;
@@ -7625,7 +7625,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   void _internal_set_java_generic_services(bool value);
 
   public:
-  // optional bool py_generic_services = 18 [default = false];
+  // optional bool py_generic_services = 18 [default = false, feature_support = {
   [[nodiscard]] bool has_py_generic_services() const;
   void clear_py_generic_services() ;
   [[nodiscard]] bool py_generic_services() const;
@@ -18236,7 +18236,7 @@ inline void FileOptions::set_allocated_go_package(::std::string* PROTOBUF_NULLAB
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.go_package)
 }
 
-// optional bool cc_generic_services = 16 [default = false];
+// optional bool cc_generic_services = 16 [default = false, feature_support = {
 inline bool FileOptions::has_cc_generic_services() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00001000U);
   return value;
@@ -18264,7 +18264,7 @@ inline void FileOptions::_internal_set_cc_generic_services(bool value) {
   _impl_.cc_generic_services_ = value;
 }
 
-// optional bool java_generic_services = 17 [default = false];
+// optional bool java_generic_services = 17 [default = false, feature_support = {
 inline bool FileOptions::has_java_generic_services() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00002000U);
   return value;
@@ -18292,7 +18292,7 @@ inline void FileOptions::_internal_set_java_generic_services(bool value) {
   _impl_.java_generic_services_ = value;
 }
 
-// optional bool py_generic_services = 18 [default = false];
+// optional bool py_generic_services = 18 [default = false, feature_support = {
 inline bool FileOptions::has_py_generic_services() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00004000U);
   return value;
