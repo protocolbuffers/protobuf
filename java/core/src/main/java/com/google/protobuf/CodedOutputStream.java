@@ -1207,19 +1207,43 @@ public abstract class CodedOutputStream extends ByteOutput {
     public final void writeUInt32NoTag(int value) throws IOException {
       int position = this.position; // Perf: hoist field to register to avoid load/stores.
       try {
-        while (true) {
-          if ((value & ~0x7F) == 0) {
-            buffer[position++] = (byte) value;
-            break;
-          } else {
-            buffer[position++] = (byte) (value | 0x80);
-            value >>>= 7;
-          }
+        if ((value & ~0x7F) == 0) {
+          buffer[position++] = (byte) value;
+          this.position = position;
+          return;
         }
+        buffer[position++] = (byte) (value | 0x80);
+        value >>>= 7;
+
+        if ((value & ~0x7F) == 0) {
+          buffer[position++] = (byte) value;
+          this.position = position;
+          return;
+        }
+        buffer[position++] = (byte) (value | 0x80);
+        value >>>= 7;
+
+        if ((value & ~0x7F) == 0) {
+          buffer[position++] = (byte) value;
+          this.position = position;
+          return;
+        }
+        buffer[position++] = (byte) (value | 0x80);
+        value >>>= 7;
+
+        if ((value & ~0x7F) == 0) {
+          buffer[position++] = (byte) value;
+          this.position = position;
+          return;
+        }
+        buffer[position++] = (byte) (value | 0x80);
+        value >>>= 7;
+
+        buffer[position++] = (byte) value;
+        this.position = position;
       } catch (IndexOutOfBoundsException e) {
         throw new OutOfSpaceException(position, limit, 1, e);
       }
-      this.position = position; // Only update position if we stayed within the array bounds.
     }
 
     @Override
@@ -2042,53 +2066,53 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public void writeStringNoTag(String value) throws IOException {
-        // UTF-8 byte length of the string is at least its UTF-16 code unit length (value.length()),
-        // and at most 3 times of it. We take advantage of this in both branches below.
-        final int maxLength = value.length() * Utf8.MAX_BYTES_PER_CHAR;
-        final int maxLengthVarIntSize = computeUInt32SizeNoTag(maxLength);
+      // UTF-8 byte length of the string is at least its UTF-16 code unit length (value.length()),
+      // and at most 3 times of it. We take advantage of this in both branches below.
+      final int maxLength = value.length() * Utf8.MAX_BYTES_PER_CHAR;
+      final int maxLengthVarIntSize = computeUInt32SizeNoTag(maxLength);
 
-        // If we are streaming and the potential length is too big to fit in our buffer, we take the
-        // slower path.
-        if (maxLengthVarIntSize + maxLength > limit) {
-          // Allocate a byte[] that we know can fit the string and encode into it. String.getBytes()
-          // does the same internally and then does *another copy* to return a byte[] of exactly the
-          // right size. We can skip that copy and just writeRawBytes up to the actualLength of the
-          // UTF-8 encoded bytes.
-          final byte[] encodedBytes = new byte[maxLength];
-          int actualLength = Utf8.encode(value, encodedBytes, 0, maxLength);
-          writeUInt32NoTag(actualLength);
-          writeLazy(encodedBytes, 0, actualLength);
-          return;
+      // If we are streaming and the potential length is too big to fit in our buffer, we take the
+      // slower path.
+      if (maxLengthVarIntSize + maxLength > limit) {
+        // Allocate a byte[] that we know can fit the string and encode into it. String.getBytes()
+        // does the same internally and then does *another copy* to return a byte[] of exactly the
+        // right size. We can skip that copy and just writeRawBytes up to the actualLength of the
+        // UTF-8 encoded bytes.
+        final byte[] encodedBytes = new byte[maxLength];
+        int actualLength = Utf8.encode(value, encodedBytes, 0, maxLength);
+        writeUInt32NoTag(actualLength);
+        writeLazy(encodedBytes, 0, actualLength);
+        return;
+      }
+
+      // Fast path: we have enough space available in our buffer for the string...
+      if (maxLengthVarIntSize + maxLength > limit - position) {
+        // Flush to free up space.
+        doFlush();
+      }
+
+      // Optimize for the case where we know this length results in a constant varint length as
+      // this saves a pass for measuring the length of the string.
+      final int minLengthVarIntSize = computeUInt32SizeNoTag(value.length());
+      int oldPosition = position;
+      final int length;
+      try {
+        if (minLengthVarIntSize == maxLengthVarIntSize) {
+          position = oldPosition + minLengthVarIntSize;
+          int newPosition = Utf8.encode(value, buffer, position, limit - position);
+          // Since this class is stateful and tracks the position, we rewind and store the
+          // state, prepend the length, then reset it back to the end of the string.
+          position = oldPosition;
+          length = newPosition - oldPosition - minLengthVarIntSize;
+          bufferUInt32NoTag(length);
+          position = newPosition;
+        } else {
+          length = Utf8.encodedLength(value);
+          bufferUInt32NoTag(length);
+          position = Utf8.encode(value, buffer, position, length);
         }
-
-        // Fast path: we have enough space available in our buffer for the string...
-        if (maxLengthVarIntSize + maxLength > limit - position) {
-          // Flush to free up space.
-          doFlush();
-        }
-
-        // Optimize for the case where we know this length results in a constant varint length as
-        // this saves a pass for measuring the length of the string.
-        final int minLengthVarIntSize = computeUInt32SizeNoTag(value.length());
-        int oldPosition = position;
-        final int length;
-        try {
-          if (minLengthVarIntSize == maxLengthVarIntSize) {
-            position = oldPosition + minLengthVarIntSize;
-            int newPosition = Utf8.encode(value, buffer, position, limit - position);
-            // Since this class is stateful and tracks the position, we rewind and store the
-            // state, prepend the length, then reset it back to the end of the string.
-            position = oldPosition;
-            length = newPosition - oldPosition - minLengthVarIntSize;
-            bufferUInt32NoTag(length);
-            position = newPosition;
-          } else {
-            length = Utf8.encodedLength(value);
-            bufferUInt32NoTag(length);
-            position = Utf8.encode(value, buffer, position, length);
-          }
         totalBytesWritten += length;
-        } catch (ArrayIndexOutOfBoundsException e) {
+      } catch (ArrayIndexOutOfBoundsException e) {
         throw new OutOfSpaceException(e);
       }
     }
