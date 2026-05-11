@@ -9,10 +9,11 @@
 
 #include <memory>
 
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/compiler/command_line_interface_tester.h"
-#include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/cpp_features.proto.h"
+#include "google/protobuf/cpp_file_options_bootstrap.proto.h"
 
 
 namespace google {
@@ -33,6 +34,9 @@ class CppGeneratorTest : public CommandLineInterfaceTester {
         google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
     CreateTempFile("google/protobuf/cpp_features.proto",
                    pb::CppFeatures::descriptor()->file()->DebugString());
+    CreateTempFile(
+        "google/protobuf/cpp_file_options.proto",
+        pb::file::CppFileOptions::descriptor()->file()->DebugString());
   }
 };
 
@@ -338,6 +342,37 @@ TEST_F(CppGeneratorTest, CtypeOnNonStringFieldTest) {
       "Field Foo.bar specifies string_type, but is not a string nor bytes "
       "field.");
 }
+
+TEST_F(CppGeneratorTest, InvalidNumberInNamespace) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "UNSTABLE";
+    import option "google/protobuf/cpp_file_options.proto";
+    option (pb.file.cpp).namespace = "cpp::1test";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir  "
+      "--experimental_editions foo.proto");
+  ExpectErrorSubstring("Namespace segment can not start with a number: 1test");
+}
+
+TEST_F(CppGeneratorTest, InvalidCharacterInNamespace) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "UNSTABLE";
+    import option "google/protobuf/cpp_file_options.proto";
+    option (pb.file.cpp).namespace = "cpp.test";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir  "
+      "--experimental_editions foo.proto");
+  ExpectErrorSubstring("Namespace contains invalid characters: cpp.test");
+}
+
 
 TEST_F(CppGeneratorTest, CtypeOnExtensionTest) {
   CreateTempFile("foo.proto",
