@@ -855,8 +855,7 @@ upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Field)(upb_encstate* e,
                                                 int options) {
   e->options = options;
   e->depth = upb_EncodeOptions_GetEffectiveMaxDepth(options);
-
-  char* ptr = e->alloc.limit;
+  char* ptr = *buf;
   if (encode_shouldencode(msg, field)) {
     ptr = encode_field(ptr, e, msg, field);
   }
@@ -871,8 +870,7 @@ upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Extension)(
     int options) {
   e->options = options;
   e->depth = upb_EncodeOptions_GetEffectiveMaxDepth(options);
-
-  char* ptr = e->alloc.limit;
+  char* ptr = *buf;
   ptr = encode_ext(ptr, e, ext, ext_val, is_message_set);
   *size = upb_BackAlloc_Finish(&e->alloc, ptr);
   *buf = ptr;
