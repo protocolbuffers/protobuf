@@ -110,6 +110,12 @@
       "github": "karenwuz",
       "name": "Karen Wu",
       "do_not_notify": true
+    },
+    {
+      "email": "runze@google.com",
+      "github": "runzw",
+      "name": "Runze Wang",
+      "do_not_notify": true
     }
   ],
   "repository": ["github:protocolbuffers/protobuf"],
