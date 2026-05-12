@@ -1198,8 +1198,24 @@ public abstract class CodedOutputStream extends ByteOutput {
       if (value >= 0) {
         writeUInt32NoTag(value);
       } else {
-        // Must sign-extend.
-        writeUInt64NoTag(value);
+        // Negative values sign extend to int64, and then always take exactly 10 bytes.
+        long v = value;
+        int position = this.position;
+        try {
+          buffer[position++] = (byte) ((int) v | 0x80);
+          buffer[position++] = (byte) ((int) (v >>> 7) | 0x80);
+          buffer[position++] = (byte) ((int) (v >>> 14) | 0x80);
+          buffer[position++] = (byte) ((int) (v >>> 21) | 0x80);
+          buffer[position++] = (byte) ((int) (v >>> 28) | 0x80);
+          buffer[position++] = (byte) 0xFF;
+          buffer[position++] = (byte) 0xFF;
+          buffer[position++] = (byte) 0xFF;
+          buffer[position++] = (byte) 0xFF;
+          buffer[position++] = (byte) 0x01;
+        } catch (IndexOutOfBoundsException e) {
+          throw new OutOfSpaceException(position, limit, 10, e);
+        }
+        this.position = position;
       }
     }
 
@@ -1207,19 +1223,43 @@ public abstract class CodedOutputStream extends ByteOutput {
     public final void writeUInt32NoTag(int value) throws IOException {
       int position = this.position; // Perf: hoist field to register to avoid load/stores.
       try {
-        while (true) {
-          if ((value & ~0x7F) == 0) {
-            buffer[position++] = (byte) value;
-            break;
-          } else {
-            buffer[position++] = (byte) (value | 0x80);
-            value >>>= 7;
-          }
+        if ((value & ~0x7F) == 0) {
+          buffer[position++] = (byte) value;
+          this.position = position;
+          return;
         }
+        buffer[position++] = (byte) (value | 0x80);
+        value >>>= 7;
+
+        if ((value & ~0x7F) == 0) {
+          buffer[position++] = (byte) value;
+          this.position = position;
+          return;
+        }
+        buffer[position++] = (byte) (value | 0x80);
+        value >>>= 7;
+
+        if ((value & ~0x7F) == 0) {
+          buffer[position++] = (byte) value;
+          this.position = position;
+          return;
+        }
+        buffer[position++] = (byte) (value | 0x80);
+        value >>>= 7;
+
+        if ((value & ~0x7F) == 0) {
+          buffer[position++] = (byte) value;
+          this.position = position;
+          return;
+        }
+        buffer[position++] = (byte) (value | 0x80);
+        value >>>= 7;
+
+        buffer[position++] = (byte) value;
+        this.position = position;
       } catch (IndexOutOfBoundsException e) {
         throw new OutOfSpaceException(position, limit, 1, e);
       }
-      this.position = position; // Only update position if we stayed within the array bounds.
     }
 
     @Override
@@ -1252,15 +1292,71 @@ public abstract class CodedOutputStream extends ByteOutput {
         }
       } else {
         try {
-          while (true) {
-            if ((value & ~0x7FL) == 0) {
-              buffer[position++] = (byte) value;
-              break;
-            } else {
-              buffer[position++] = (byte) ((int) value | 0x80);
-              value >>>= 7;
-            }
+          if ((value & ~0x7FL) == 0) {
+            buffer[position] = (byte) value;
+            this.position = position + 1;
+            return;
           }
+          buffer[position] = (byte) ((int) value | 0x80);
+          value >>>= 7;
+          if ((value & ~0x7FL) == 0) {
+            buffer[position + 1] = (byte) value;
+            this.position = position + 2;
+            return;
+          }
+          buffer[position + 1] = (byte) ((int) value | 0x80);
+          value >>>= 7;
+          if ((value & ~0x7FL) == 0) {
+            buffer[position + 2] = (byte) value;
+            this.position = position + 3;
+            return;
+          }
+          buffer[position + 2] = (byte) ((int) value | 0x80);
+          value >>>= 7;
+          if ((value & ~0x7FL) == 0) {
+            buffer[position + 3] = (byte) value;
+            this.position = position + 4;
+            return;
+          }
+          buffer[position + 3] = (byte) ((int) value | 0x80);
+          value >>>= 7;
+          if ((value & ~0x7FL) == 0) {
+            buffer[position + 4] = (byte) value;
+            this.position = position + 5;
+            return;
+          }
+          buffer[position + 4] = (byte) ((int) value | 0x80);
+          value >>>= 7;
+          if ((value & ~0x7FL) == 0) {
+            buffer[position + 5] = (byte) value;
+            this.position = position + 6;
+            return;
+          }
+          buffer[position + 5] = (byte) ((int) value | 0x80);
+          value >>>= 7;
+          if ((value & ~0x7FL) == 0) {
+            buffer[position + 6] = (byte) value;
+            this.position = position + 7;
+            return;
+          }
+          buffer[position + 6] = (byte) ((int) value | 0x80);
+          value >>>= 7;
+          if ((value & ~0x7FL) == 0) {
+            buffer[position + 7] = (byte) value;
+            this.position = position + 8;
+            return;
+          }
+          buffer[position + 7] = (byte) ((int) value | 0x80);
+          value >>>= 7;
+          if ((value & ~0x7FL) == 0) {
+            buffer[position + 8] = (byte) value;
+            this.position = position + 9;
+            return;
+          }
+          buffer[position + 8] = (byte) ((int) value | 0x80);
+          buffer[position + 9] = (byte) (value >>> 7);
+          this.position = position + 10;
+          return;
         } catch (IndexOutOfBoundsException e) {
           throw new OutOfSpaceException(position, limit, 1, e);
         }
@@ -1786,17 +1882,43 @@ public abstract class CodedOutputStream extends ByteOutput {
         int delta = (int) (position - originalPos);
         totalBytesWritten += delta;
       } else {
-        while (true) {
-          if ((value & ~0x7F) == 0) {
-            buffer[position++] = (byte) value;
-            totalBytesWritten++;
-            return;
-          } else {
-            buffer[position++] = (byte) (value | 0x80);
-            totalBytesWritten++;
-            value >>>= 7;
-          }
+        int position = this.position;
+        int totalBytesWritten = this.totalBytesWritten;
+        if ((value & ~0x7F) == 0) {
+          buffer[position] = (byte) value;
+          this.position = position + 1;
+          this.totalBytesWritten = totalBytesWritten + 1;
+          return;
         }
+        buffer[position] = (byte) (value | 0x80);
+        value >>>= 7;
+        if ((value & ~0x7F) == 0) {
+          buffer[position + 1] = (byte) value;
+          this.position = position + 2;
+          this.totalBytesWritten = totalBytesWritten + 2;
+          return;
+        }
+        buffer[position + 1] = (byte) (value | 0x80);
+        value >>>= 7;
+        if ((value & ~0x7F) == 0) {
+          buffer[position + 2] = (byte) value;
+          this.position = position + 3;
+          this.totalBytesWritten = totalBytesWritten + 3;
+          return;
+        }
+        buffer[position + 2] = (byte) (value | 0x80);
+        value >>>= 7;
+        if ((value & ~0x7F) == 0) {
+          buffer[position + 3] = (byte) value;
+          this.position = position + 4;
+          this.totalBytesWritten = totalBytesWritten + 4;
+          return;
+        }
+        buffer[position + 3] = (byte) (value | 0x80);
+        buffer[position + 4] = (byte) (value >>> 7);
+        this.position = position + 5;
+        this.totalBytesWritten = totalBytesWritten + 5;
+        return;
       }
     }
 
@@ -1819,17 +1941,83 @@ public abstract class CodedOutputStream extends ByteOutput {
         int delta = (int) (position - originalPos);
         totalBytesWritten += delta;
       } else {
-        while (true) {
-          if ((value & ~0x7FL) == 0) {
-            buffer[position++] = (byte) value;
-            totalBytesWritten++;
-            return;
-          } else {
-            buffer[position++] = (byte) ((int) value | 0x80);
-            totalBytesWritten++;
-            value >>>= 7;
-          }
+        int position = this.position;
+        int totalBytesWritten = this.totalBytesWritten;
+        if ((value & ~0x7FL) == 0) {
+          buffer[position] = (byte) value;
+          this.position = position + 1;
+          this.totalBytesWritten = totalBytesWritten + 1;
+          return;
         }
+        buffer[position] = (byte) ((int) value | 0x80);
+        value >>>= 7;
+        if ((value & ~0x7FL) == 0) {
+          buffer[position + 1] = (byte) value;
+          this.position = position + 2;
+          this.totalBytesWritten = totalBytesWritten + 2;
+          return;
+        }
+        buffer[position + 1] = (byte) ((int) value | 0x80);
+        value >>>= 7;
+        if ((value & ~0x7FL) == 0) {
+          buffer[position + 2] = (byte) value;
+          this.position = position + 3;
+          this.totalBytesWritten = totalBytesWritten + 3;
+          return;
+        }
+        buffer[position + 2] = (byte) ((int) value | 0x80);
+        value >>>= 7;
+        if ((value & ~0x7FL) == 0) {
+          buffer[position + 3] = (byte) value;
+          this.position = position + 4;
+          this.totalBytesWritten = totalBytesWritten + 4;
+          return;
+        }
+        buffer[position + 3] = (byte) ((int) value | 0x80);
+        value >>>= 7;
+        if ((value & ~0x7FL) == 0) {
+          buffer[position + 4] = (byte) value;
+          this.position = position + 5;
+          this.totalBytesWritten = totalBytesWritten + 5;
+          return;
+        }
+        buffer[position + 4] = (byte) ((int) value | 0x80);
+        value >>>= 7;
+        if ((value & ~0x7FL) == 0) {
+          buffer[position + 5] = (byte) value;
+          this.position = position + 6;
+          this.totalBytesWritten = totalBytesWritten + 6;
+          return;
+        }
+        buffer[position + 5] = (byte) ((int) value | 0x80);
+        value >>>= 7;
+        if ((value & ~0x7FL) == 0) {
+          buffer[position + 6] = (byte) value;
+          this.position = position + 7;
+          this.totalBytesWritten = totalBytesWritten + 7;
+          return;
+        }
+        buffer[position + 6] = (byte) ((int) value | 0x80);
+        value >>>= 7;
+        if ((value & ~0x7FL) == 0) {
+          buffer[position + 7] = (byte) value;
+          this.position = position + 8;
+          this.totalBytesWritten = totalBytesWritten + 8;
+          return;
+        }
+        buffer[position + 7] = (byte) ((int) value | 0x80);
+        value >>>= 7;
+        if ((value & ~0x7FL) == 0) {
+          buffer[position + 8] = (byte) value;
+          this.position = position + 9;
+          this.totalBytesWritten = totalBytesWritten + 9;
+          return;
+        }
+        buffer[position + 8] = (byte) ((int) value | 0x80);
+        buffer[position + 9] = (byte) (value >>> 7);
+        this.position = position + 10;
+        this.totalBytesWritten = totalBytesWritten + 10;
+        return;
       }
     }
 
@@ -2042,53 +2230,53 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public void writeStringNoTag(String value) throws IOException {
-        // UTF-8 byte length of the string is at least its UTF-16 code unit length (value.length()),
-        // and at most 3 times of it. We take advantage of this in both branches below.
-        final int maxLength = value.length() * Utf8.MAX_BYTES_PER_CHAR;
-        final int maxLengthVarIntSize = computeUInt32SizeNoTag(maxLength);
+      // UTF-8 byte length of the string is at least its UTF-16 code unit length (value.length()),
+      // and at most 3 times of it. We take advantage of this in both branches below.
+      final int maxLength = value.length() * Utf8.MAX_BYTES_PER_CHAR;
+      final int maxLengthVarIntSize = computeUInt32SizeNoTag(maxLength);
 
-        // If we are streaming and the potential length is too big to fit in our buffer, we take the
-        // slower path.
-        if (maxLengthVarIntSize + maxLength > limit) {
-          // Allocate a byte[] that we know can fit the string and encode into it. String.getBytes()
-          // does the same internally and then does *another copy* to return a byte[] of exactly the
-          // right size. We can skip that copy and just writeRawBytes up to the actualLength of the
-          // UTF-8 encoded bytes.
-          final byte[] encodedBytes = new byte[maxLength];
-          int actualLength = Utf8.encode(value, encodedBytes, 0, maxLength);
-          writeUInt32NoTag(actualLength);
-          writeLazy(encodedBytes, 0, actualLength);
-          return;
+      // If we are streaming and the potential length is too big to fit in our buffer, we take the
+      // slower path.
+      if (maxLengthVarIntSize + maxLength > limit) {
+        // Allocate a byte[] that we know can fit the string and encode into it. String.getBytes()
+        // does the same internally and then does *another copy* to return a byte[] of exactly the
+        // right size. We can skip that copy and just writeRawBytes up to the actualLength of the
+        // UTF-8 encoded bytes.
+        final byte[] encodedBytes = new byte[maxLength];
+        int actualLength = Utf8.encode(value, encodedBytes, 0, maxLength);
+        writeUInt32NoTag(actualLength);
+        writeLazy(encodedBytes, 0, actualLength);
+        return;
+      }
+
+      // Fast path: we have enough space available in our buffer for the string...
+      if (maxLengthVarIntSize + maxLength > limit - position) {
+        // Flush to free up space.
+        doFlush();
+      }
+
+      // Optimize for the case where we know this length results in a constant varint length as
+      // this saves a pass for measuring the length of the string.
+      final int minLengthVarIntSize = computeUInt32SizeNoTag(value.length());
+      int oldPosition = position;
+      final int length;
+      try {
+        if (minLengthVarIntSize == maxLengthVarIntSize) {
+          position = oldPosition + minLengthVarIntSize;
+          int newPosition = Utf8.encode(value, buffer, position, limit - position);
+          // Since this class is stateful and tracks the position, we rewind and store the
+          // state, prepend the length, then reset it back to the end of the string.
+          position = oldPosition;
+          length = newPosition - oldPosition - minLengthVarIntSize;
+          bufferUInt32NoTag(length);
+          position = newPosition;
+        } else {
+          length = Utf8.encodedLength(value);
+          bufferUInt32NoTag(length);
+          position = Utf8.encode(value, buffer, position, length);
         }
-
-        // Fast path: we have enough space available in our buffer for the string...
-        if (maxLengthVarIntSize + maxLength > limit - position) {
-          // Flush to free up space.
-          doFlush();
-        }
-
-        // Optimize for the case where we know this length results in a constant varint length as
-        // this saves a pass for measuring the length of the string.
-        final int minLengthVarIntSize = computeUInt32SizeNoTag(value.length());
-        int oldPosition = position;
-        final int length;
-        try {
-          if (minLengthVarIntSize == maxLengthVarIntSize) {
-            position = oldPosition + minLengthVarIntSize;
-            int newPosition = Utf8.encode(value, buffer, position, limit - position);
-            // Since this class is stateful and tracks the position, we rewind and store the
-            // state, prepend the length, then reset it back to the end of the string.
-            position = oldPosition;
-            length = newPosition - oldPosition - minLengthVarIntSize;
-            bufferUInt32NoTag(length);
-            position = newPosition;
-          } else {
-            length = Utf8.encodedLength(value);
-            bufferUInt32NoTag(length);
-            position = Utf8.encode(value, buffer, position, length);
-          }
         totalBytesWritten += length;
-        } catch (ArrayIndexOutOfBoundsException e) {
+      } catch (ArrayIndexOutOfBoundsException e) {
         throw new OutOfSpaceException(e);
       }
     }
