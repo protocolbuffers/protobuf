@@ -62,6 +62,11 @@ std::string RsViewType(Context& ctx, const FieldDescriptor& field,
 
 std::string MessageRsName(const Descriptor& desc);
 std::string EnumRsName(const EnumDescriptor& desc);
+std::string ExtensionRsName(const FieldDescriptor& desc);
+
+std::vector<std::string> GetGeneratedRsNames(const Descriptor& desc);
+std::vector<std::string> GetGeneratedRsNames(const EnumDescriptor& desc);
+
 std::string EnumValueRsName(const EnumValueDescriptor& value);
 
 std::string OneofViewEnumRsName(const OneofDescriptor& oneof);

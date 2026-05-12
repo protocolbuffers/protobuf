@@ -365,6 +365,27 @@ std::string EnumRsName(const EnumDescriptor& desc) {
   return name;
 }
 
+std::string ExtensionRsName(const FieldDescriptor& desc) {
+  return absl::AsciiStrToUpper(desc.name());
+}
+
+std::vector<std::string> GetGeneratedRsNames(const Descriptor& desc) {
+  std::vector<std::string> names;
+  std::string msg_name = MessageRsName(desc);
+  names.push_back(msg_name);
+  names.push_back(absl::StrCat(msg_name, "View"));
+  names.push_back(absl::StrCat(msg_name, "Mut"));
+  if (desc.nested_type_count() > 0 || desc.enum_type_count() > 0 ||
+      desc.extension_count() > 0 || desc.real_oneof_decl_count() > 0) {
+    names.push_back(RsSafeName(CamelToSnakeCase(desc.name())));
+  }
+  return names;
+}
+
+std::vector<std::string> GetGeneratedRsNames(const EnumDescriptor& desc) {
+  return {EnumRsName(desc)};
+}
+
 std::string EnumValueRsName(const EnumValueDescriptor& value) {
   MultiCasePrefixStripper stripper(value.type()->name());
   return EnumValueRsName(stripper, value.name());

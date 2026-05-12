@@ -15,7 +15,12 @@
 # by introducing a build macro that registers 2 rust_test targets).
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
-load("@rules_rust//rust:defs.bzl", "rust_test")
+load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+load(
+    "//tools/build_defs/build_test:build_failure_test.bzl",
+    "BUILD_FAILURE_TAGS",
+    "build_failure_test",
+)
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -663,4 +668,32 @@ rust_test(
         "//rust/test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
+)
+
+rust_library(
+    name = "diagnostics_nc_test_helper",
+    testonly = True,
+    srcs = ["diagnostics_nc_test_helper.rs"],
+    deps = [
+        "//rust/test:unittest_cpp_rust_proto",
+    ],
+)
+
+rust_library(
+    name = "diagnostics_nc_test_lib",
+    testonly = True,
+    srcs = ["diagnostics_nc_test.rs"],
+    tags = BUILD_FAILURE_TAGS,
+    deps = [
+        ":diagnostics_nc_test_helper",
+        "//rust/test:unittest_cpp_rust_proto",
+    ],
+)
+
+build_failure_test(
+    name = "diagnostics_nc_test",
+    size = "small",
+    mnemonic = "Rustc",
+    output_pattern = "type `TestAllTypesView<'_>` is missing",
+    target = ":diagnostics_nc_test_lib",
 )

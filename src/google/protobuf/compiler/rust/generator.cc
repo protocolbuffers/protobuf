@@ -12,7 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "absl/algorithm/container.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/memory/memory.h"
@@ -23,7 +22,6 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
-#include "absl/strings/strip.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/names.h"
@@ -142,11 +140,36 @@ void EmitEntryPointRsFile(GeneratorContext* generator_context,
               #[allow(nonstandard_style, unused, unreachable_pub)]
               #[doc(hidden)]
               mod internal_do_not_use_$mod_name$;
-
-              #[allow(nonstandard_style, unused)]
-              #[doc(inline)]
-              pub use internal_do_not_use_$mod_name$::*;
             )rs");
+
+    std::vector<std::string> explicit_imports;
+    for (int i = 0; i < file->message_type_count(); ++i) {
+      for (const std::string& name :
+           GetGeneratedRsNames(*file->message_type(i))) {
+        explicit_imports.push_back(name);
+      }
+    }
+    for (int i = 0; i < file->enum_type_count(); ++i) {
+      for (const std::string& name : GetGeneratedRsNames(*file->enum_type(i))) {
+        explicit_imports.push_back(name);
+      }
+    }
+    for (int i = 0; i < file->extension_count(); ++i) {
+      explicit_imports.push_back(ExtensionRsName(*file->extension(i)));
+    }
+
+    if (!explicit_imports.empty()) {
+      ctx.Emit({{"mod_name", RustInternalModuleName(*file)},
+                {"explicit_imports",
+                 absl::StrJoin(explicit_imports, ",\n                  ")}},
+               R"rs(
+                #[allow(nonstandard_style, unused)]
+                #[doc(inline)]
+                pub use internal_do_not_use_$mod_name$::{
+                  $explicit_imports$
+                };
+              )rs");
+    }
   }
 
   auto v = ctx.printer().WithVars({
