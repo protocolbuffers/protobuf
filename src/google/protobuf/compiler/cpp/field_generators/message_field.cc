@@ -354,7 +354,11 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
     // TODO enforces this as undefined behavior in debug builds.
     p->Emit(R"cc(
       $DCHK$(from.$field_$ != nullptr);
-      if (_this->$field_$ == nullptr) {
+      if (from.$field_$->ByteSizeLong() == 0) {
+        if (_this->$field_$ != nullptr) {
+          _this->$field_$->Clear();
+        }
+      } else if (_this->$field_$ == nullptr) {
         _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
       } else {
         _this->$field_$->MergeFrom(*from.$field_$);
@@ -693,6 +697,8 @@ void OneofMessage::GenerateMergingCode(io::Printer* p) const {
           R"cc(
             if (oneof_needs_init) {
               _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
+            } else if (from.$field_$->ByteSizeLong() == 0) {
+              _this->$field_$->Clear();
             } else {
               _this->$field_$->$merge$(*from.$field_$);
             }
