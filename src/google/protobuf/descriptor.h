@@ -2785,12 +2785,12 @@ class PROTOBUF_EXPORT DescriptorPool {
 
   // If fallback_database_ is nullptr, this is nullptr.  Otherwise, this is a
   // mutex which must be locked while accessing tables_.
-  absl::Mutex* mutex_;
+  absl::Mutex* mutex_ = nullptr;
 
   // See constructor.
-  DescriptorDatabase* fallback_database_;
-  ErrorCollector* default_error_collector_;
-  const DescriptorPool* underlay_;
+  DescriptorDatabase* fallback_database_ = nullptr;
+  ErrorCollector* default_error_collector_ = nullptr;
+  const DescriptorPool* underlay_ = nullptr;
 
 #ifndef SWIG
   // Dispatcher for recursive calls during builds.
@@ -2803,17 +2803,20 @@ class PROTOBUF_EXPORT DescriptorPool {
   class Tables;
   std::unique_ptr<Tables> tables_;
 
-  bool enforce_dependencies_;
-  bool lazily_build_dependencies_;
-  bool allow_unknown_;
-  bool enforce_weak_;
-  ExtDeclEnforcementLevel enforce_extension_declarations_;
-  bool disallow_enforce_utf8_;
-  bool deprecated_legacy_json_field_conflicts_;
-  bool enforce_naming_style_;
-  bool enforce_feature_support_validation_ = false;
-  bool enforce_symbol_visibility_ = false;
   mutable bool build_started_ = false;
+  ExtDeclEnforcementLevel enforce_extension_declarations_ =
+      ExtDeclEnforcementLevel::kNoEnforcement;
+#ifndef SWIG
+  bool enforce_dependencies_ : 1 = true;
+  bool lazily_build_dependencies_ : 1 = false;
+  bool allow_unknown_ : 1 = false;
+  bool enforce_weak_ : 1 = false;
+  bool disallow_enforce_utf8_ : 1 = false;
+  bool deprecated_legacy_json_field_conflicts_ : 1 = false;
+  bool enforce_naming_style_ : 1 = false;
+  bool enforce_feature_support_validation_ : 1 = false;
+  bool enforce_symbol_visibility_ : 1 = false;
+#endif  // SWIG
 
   // Set of files to track for additional validation. The bool value when true
   // means unused imports are treated as errors (and as warnings when false).
