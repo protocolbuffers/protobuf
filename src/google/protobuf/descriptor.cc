@@ -392,12 +392,28 @@ class FlatAllocation {
   TypeMap<IntT, T...> ends_;
 };
 
+template <typename U, typename... T>
+bool AddTypeSizeToEnds(size_t& total, const TypeMap<IntT, T...>& sizes,
+                       TypeMap<IntT, T...>& out) {
+  const size_t count = static_cast<size_t>(sizes.template Get<U>());
+  if (count > std::numeric_limits<size_t>::max() / sizeof(U)) return false;
+  const size_t bytes = count * sizeof(U);
+  if (bytes > static_cast<size_t>(std::numeric_limits<IntT<U>>::max()) - total) {
+    return false;
+  }
+  total += bytes;
+  out.template Get<U>() = static_cast<IntT<U>>(total);
+  return true;
+}
+
 template <typename... T>
-TypeMap<IntT, T...> CalculateEnds(const TypeMap<IntT, T...>& sizes) {
-  int total = 0;
+absl::optional<TypeMap<IntT, T...>> CalculateEnds(
+    const TypeMap<IntT, T...>& sizes) {
+  size_t total = 0;
   TypeMap<IntT, T...> out;
-  Fold({(out.template Get<T>() = total +=
-         sizeof(T) * sizes.template Get<T>())...});
+  bool ok = true;
+  Fold({(ok = ok && AddTypeSizeToEnds<T>(total, sizes, out))...});
+  if (!ok) return absl::nullopt;
   return out;
 }
 
@@ -410,20 +426,26 @@ class FlatAllocatorImpl {
   using Allocation = FlatAllocation<T...>;
 
   template <typename U>
-  void PlanArray(int array_size) {
+  void PlanArray(size_t array_size) {
     // We can't call PlanArray after FinalizePlanning has been called.
     ABSL_CHECK(!has_allocated());
+    if (planning_failed_) return;
     if (std::is_trivially_destructible<U>::value) {
       // Trivial types are aligned to 8 bytes.
       static_assert(alignof(U) <= 8, "");
-      total_.template Get<char>() += RoundUpTo<8>(array_size * sizeof(U));
+      if (array_size > std::numeric_limits<size_t>::max() / sizeof(U)) {
+        planning_failed_ = true;
+        return;
+      }
+      const size_t bytes = RoundUpTo<8>(array_size * sizeof(U));
+      planning_failed_ = !TryAddToTotal<char>(bytes);
     } else {
       // Since we can't use `if constexpr`, just make the expression compile
       // when this path is not taken.
       using TypeToUse =
           typename std::conditional<std::is_trivially_destructible<U>::value,
                                     char, U>::type;
-      total_.template Get<TypeToUse>() += array_size;
+      planning_failed_ = !TryAddToTotal<TypeToUse>(array_size);
     }
   }
 
@@ -438,7 +460,11 @@ class FlatAllocatorImpl {
     TypeToUse*& data = pointers_.template Get<TypeToUse>();
     int& used = used_.template Get<TypeToUse>();
     U* res = reinterpret_cast<U*>(data + used);
-    used += trivial ? RoundUpTo<8>(array_size * sizeof(U)) : array_size;
+    const size_t delta =
+        trivial ? RoundUpTo<8>(static_cast<size_t>(array_size) * sizeof(U))
+                : static_cast<size_t>(array_size);
+    ABSL_CHECK_LE(delta, static_cast<size_t>(std::numeric_limits<IntT<U>>::max()));
+    used += static_cast<IntT<TypeToUse>>(delta);
     ABSL_CHECK_LE(used, total_.template Get<TypeToUse>());
     return res;
   }
@@ -616,12 +642,14 @@ class FlatAllocatorImpl {
   }
 
   template <typename Alloc>
-  void FinalizePlanning(Alloc& alloc) {
+  bool FinalizePlanning(Alloc& alloc) {
     ABSL_CHECK(!has_allocated());
+    if (planning_failed_) return false;
 
-    pointers_ = alloc->CreateFlatAlloc(total_)->Pointers();
-
-    ABSL_CHECK(has_allocated());
+    Allocation* allocation = alloc->CreateFlatAlloc(total_);
+    if (allocation == nullptr) return false;
+    pointers_ = allocation->Pointers();
+    return has_allocated();
   }
 
   void ExpectConsumed() const {
@@ -631,6 +659,20 @@ class FlatAllocatorImpl {
   }
 
  private:
+  template <typename U>
+  bool TryAddToTotal(size_t amount) {
+    if (amount > static_cast<size_t>(std::numeric_limits<IntT<U>>::max())) {
+      return false;
+    }
+    IntT<U>& total = total_.template Get<U>();
+    if (amount >
+        static_cast<size_t>(std::numeric_limits<IntT<U>>::max() - total)) {
+      return false;
+    }
+    total += static_cast<IntT<U>>(amount);
+    return true;
+  }
+
   bool has_allocated() const {
     return pointers_.template Get<char>() != nullptr;
   }
@@ -660,6 +702,7 @@ class FlatAllocatorImpl {
   TypeMap<PointerT, T...> pointers_;
   TypeMap<IntT, T...> total_;
   TypeMap<IntT, T...> used_;
+  bool planning_failed_ = false;
 };
 
 static auto DisableTracking() {
@@ -2303,14 +2346,15 @@ template <typename... T>
 internal::FlatAllocator::Allocation* DescriptorPool::Tables::CreateFlatAlloc(
     const TypeMap<IntT, T...>& sizes) {
   auto ends = CalculateEnds(sizes);
+  if (!ends.has_value()) return nullptr;
   using FlatAlloc = internal::FlatAllocator::Allocation;
 
-  int last_end = ends.template Get<
+  int last_end = ends->template Get<
       typename std::tuple_element<sizeof...(T) - 1, std::tuple<T...>>::type>();
   size_t total_size =
       last_end + RoundUpTo<FlatAlloc::kMaxAlign>(sizeof(FlatAlloc));
   char* data = static_cast<char*>(internal::Allocate(total_size));
-  auto* res = ::new (data) FlatAlloc(ends);
+  auto* res = ::new (data) FlatAlloc(*ends);
   flat_allocs_.emplace_back(res);
 
   return res;
@@ -6336,7 +6380,13 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
 
   auto alloc = absl::make_unique<internal::FlatAllocator>();
   PlanAllocationSize(proto, *alloc);
-  alloc->FinalizePlanning(tables_);
+  if (!alloc->FinalizePlanning(tables_)) {
+    AddError(proto.name(), proto, DescriptorPool::ErrorCollector::OTHER,
+             "Descriptor allocation planning exceeded implementation limits.");
+    file_tables_->FinalizeTables();
+    tables_->RollbackToLastCheckpoint(deferred_validation_);
+    return nullptr;
+  }
   FileDescriptor* result = BuildFileImpl(proto, *alloc);
 
   file_tables_->FinalizeTables();
