@@ -141,6 +141,7 @@ bzl_library(
     name = "cc_proto_aspect_bzl",
     srcs = ["cc_proto_aspect.bzl"],
     visibility = [
+        "//net/proto2/compiler/stubby/cc:__subpackages__",
         "//rust/bazel:__pkg__",
     ],
     deps = [
