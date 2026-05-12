@@ -68,6 +68,57 @@ UPB_INLINE int upb_DecodeFastData_GetTableSlot(uint64_t data) {
   return (tag & 0xf8) >> 3;
 }
 
+UPB_INLINE uint8_t upb_DecodeFastData2_GetMask(uint64_t data2) {
+  return data2 >> 56;
+}
+
+UPB_INLINE uint64_t upb_DecodeFastData2_PackMask(uint64_t data2, uint8_t mask) {
+  return ((uint64_t)mask << 56) | (data2 & 0x00ffffffffffffff);
+}
+
+UPB_INLINE uint16_t upb_DecodeFastData2_GetOriginalTag(uint64_t data2) {
+  return data2 & 0xffff;
+}
+
+UPB_INLINE uint64_t upb_DecodeFastData2_PackOriginalTag(uint64_t data2,
+                                                        uint16_t tag) {
+  return (data2 & 0xffffffffffff0000) | tag;
+}
+
+UPB_INLINE uint8_t upb_DecodeFastData2_GetWireType(uint64_t data2) {
+  return data2 & 0x07;
+}
+
+UPB_INLINE uint8_t upb_DecodeFastData2_GetTagLen(uint64_t data2) {
+  return (data2 >> 3) & 0x07;
+}
+
+UPB_INLINE uint64_t upb_DecodeFastData2_PackWireTypeAndTagLen(uint64_t data2,
+                                                              uint8_t wire_type,
+                                                              uint8_t tag_len) {
+  return (data2 & ~((uint64_t)0x3F)) | ((uint64_t)tag_len << 3) |
+         (wire_type & 0x07);
+}
+
+UPB_INLINE uint64_t upb_DecodeFast_PackPassBack(uint16_t field_index,
+                                                uint8_t tag_len,
+                                                uint8_t wire_type) {
+  return ((uint64_t)field_index << 6) | ((uint64_t)tag_len << 3) |
+         (wire_type & 0x07);
+}
+
+UPB_INLINE uint8_t upb_DecodeFast_GetPassBackWireType(uint64_t pass_back) {
+  return pass_back & 0x07;
+}
+
+UPB_INLINE uint8_t upb_DecodeFast_GetPassBackTagLen(uint64_t pass_back) {
+  return (pass_back >> 3) & 0x07;
+}
+
+UPB_INLINE uint16_t upb_DecodeFast_GetPassBackFieldIndex(uint64_t pass_back) {
+  return (pass_back >> 6) & 0xFFFF;
+}
+
 #include "upb/port/undef.inc"
 
 #endif  // GOOGLE_UPB_UPB_WIRE_INTERNAL_DECODE_FAST_DATALAYOUT_H__

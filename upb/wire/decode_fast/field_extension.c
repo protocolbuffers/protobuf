@@ -12,7 +12,9 @@
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/cardinality.h"
+#include "upb/wire/decode_fast/data.h"
 #include "upb/wire/decode_fast/dispatch.h"
 #include "upb/wire/decode_fast/field_helpers.h"
 #include "upb/wire/decode_fast/field_parsers.h"
@@ -22,31 +24,25 @@
 #include "upb/port/def.inc"
 
 UPB_FORCEINLINE void _upb_FastDecoder_PickHandlerForExtensionOrUnknown(
-    struct upb_Decoder* d, intptr_t table, uint64_t data,
-    upb_DecodeFastNext* next) {
+    struct upb_Decoder* d, const char* ptr, const upb_MiniTable* table,
+    uint16_t tag, upb_DecodeFastNext* next) {
   uint32_t field_num;
-  if (UPB_LIKELY((data & 0x80) == 0)) {
-    field_num = (uint8_t)data >> 3;
-  } else if ((data & 0x8000) == 0) {
-    field_num = _upb_DecodeFast_Tag2FieldNumber(data);
-  } else {
-    // Tag >=2048.
-    UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, next);
+  uint32_t tag_len;
+  if (UPB_UNLIKELY(!_upb_DecodeFast_ParseTag(ptr, tag, &field_num, &tag_len))) {
+    UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, next);
     return;
   }
-
-  const upb_MiniTable* mt = decode_totablep(table);
 
   // Assert that the field is either truly unknown or has a mismatched wire
   // type.
 #ifndef NDEBUG
   const upb_MiniTableField* field =
-      upb_MiniTable_FindFieldByNumber(mt, field_num);
+      upb_MiniTable_FindFieldByNumber(table, field_num);
   UPB_ASSERT(field == NULL ||
-             _upb_MiniTableField_GetWireType(field) != (data & 0x07));
+             _upb_MiniTableField_GetWireType(field) != (tag & 0x07));
 #endif
 
-  if (d->extreg && upb_ExtensionRegistry_Lookup(d->extreg, mt, field_num)) {
+  if (d->extreg && upb_ExtensionRegistry_Lookup(d->extreg, table, field_num)) {
     _upb_Decoder_Trace(d, 'e');
     UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, next);
     return;
@@ -58,9 +54,11 @@ UPB_FORCEINLINE void _upb_FastDecoder_PickHandlerForExtensionOrUnknown(
 UPB_PRESERVE_NONE upb_FastDecoder_Return
 _upb_FastDecoder_DecodeExtensionOrUnknown(struct upb_Decoder* d,
                                           const char* ptr, upb_Message* msg,
-                                          intptr_t table, uint64_t hasbits,
-                                          uint64_t data) {
+                                          const upb_MiniTable* table,
+                                          uint64_t hasbits, uint64_t data,
+                                          uint64_t data2) {
   upb_DecodeFastNext next;
-  _upb_FastDecoder_PickHandlerForExtensionOrUnknown(d, table, data, &next);
+  uint16_t tag = upb_DecodeFastData2_GetOriginalTag(data2);
+  _upb_FastDecoder_PickHandlerForExtensionOrUnknown(d, ptr, table, tag, &next);
   UPB_DECODEFAST_NEXT(next);
 }
