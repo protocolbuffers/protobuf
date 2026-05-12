@@ -456,16 +456,10 @@ def Parse(
   except Exception as e:
     raise ParseError('Failed to load JSON: {0}.'.format(str(e))) from e
 
-  try:
-    return ParseDict(
-        js, message, ignore_unknown_fields, descriptor_pool, max_recursion_depth
-    )
-  except ParseError as e:
-    raise e
-  except Exception as e:
-    raise ParseError(
-        'Failed to parse JSON: {0}: {1}.'.format(type(e).__name__, str(e))
-    ) from e
+  return ParseDict(
+      js, message, ignore_unknown_fields, descriptor_pool, max_recursion_depth
+  )
+
 
 
 def ParseDict(
@@ -490,9 +484,20 @@ def ParseDict(
   Returns:
     The same message passed as argument.
   """
-  parser = _Parser(ignore_unknown_fields, descriptor_pool, max_recursion_depth)
-  parser.ConvertMessage(js_dict, message, '')
-  return message
+  try:
+    parser = _Parser(
+        ignore_unknown_fields, descriptor_pool, max_recursion_depth
+    )
+    parser.ConvertMessage(js_dict, message, '')
+    return message
+  except ParseError as e:
+    raise e
+  except Exception as e:
+    raise ParseError(
+        'Failed to parse JSON: {0}: {1}.'.format(type(e).__name__, str(e))
+    ) from e
+
+
 
 
 _INT_OR_FLOAT = (int, float)

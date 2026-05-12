@@ -1926,6 +1926,19 @@ class JsonFormatTest(JsonFormatBase):
     with self.assertRaises(json_format.ParseError):
       json_format.Parse(text, json_format_proto3_pb2.TestMessage())
 
+  def testParseDictRecursionLimit(self):
+    nested = {"a": "data"}
+    for _ in range(600):
+      nested = {"a": nested}
+
+    message = struct_pb2.Struct()
+    with self.assertRaisesRegex(
+        json_format.ParseError,
+        r"Failed to parse JSON: RecursionError"
+    ):
+      json_format.ParseDict(nested, message, max_recursion_depth=1000)
+
+
 
 if __name__ == '__main__':
   unittest.main()
