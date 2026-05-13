@@ -62,11 +62,12 @@ static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
   return ret;
 }
 
-upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
-    upb_Message* msg, const upb_MiniTableExtension* ext_table,
+upb_GetExtension_Status upb_Message_GetOrPromoteExtension_Internal(
+    upb_Message* msg, const struct upb_MiniTableExtension_Internal* ext_table,
     int decode_options, upb_Arena* arena, upb_MessageValue* value) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
-  UPB_ASSERT(upb_MiniTableExtension_CType(ext_table) == kUpb_CType_Message);
+  UPB_ASSERT(upb_MiniTableExtension_Internal_CType(ext_table) ==
+             kUpb_CType_Message);
   const upb_Extension* extension =
       UPB_PRIVATE(_upb_Message_Getext)(msg, ext_table);
   if (extension) {
@@ -76,9 +77,9 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
 
   // Check unknown fields, if available promote.
   int found_count = 0;
-  uint32_t field_number = upb_MiniTableExtension_Number(ext_table);
+  uint32_t field_number = upb_MiniTableExtension_Internal_Number(ext_table);
   const upb_MiniTable* extension_table =
-      upb_MiniTableExtension_GetSubMessage(ext_table);
+      upb_MiniTableExtension_Internal_GetSubMessage(ext_table);
   // Will be populated on first parse and then reused
   upb_Message* extension_msg = NULL;
   int depth_limit = 100;
@@ -144,6 +145,13 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
   }
   value->msg_val = extension_msg;
   return kUpb_GetExtension_Ok;
+}
+
+upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
+    upb_Message* msg, const upb_MiniTableExtension* ext_table,
+    int decode_options, upb_Arena* arena, upb_MessageValue* value) {
+  return upb_Message_GetOrPromoteExtension_Internal(
+      msg, &ext_table->UPB_PRIVATE(ext), decode_options, arena, value);
 }
 
 static upb_FindUnknownRet upb_FindUnknownRet_ParseError(void) {

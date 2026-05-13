@@ -14,13 +14,14 @@
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/internal/types.h"
-#include "upb/mini_table/extension.h"
+#include "upb/mini_table/internal/extension.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
 const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
-    const struct upb_Message* msg, const upb_MiniTableExtension* e) {
+    const struct upb_Message* msg,
+    const struct upb_MiniTableExtension_Internal* e) {
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return NULL;
 
@@ -38,7 +39,8 @@ const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
 }
 
 upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
-    struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
+    struct upb_Message* msg, const struct upb_MiniTableExtension_Internal* e,
+    upb_Arena* a) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Extension* ext = (upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
   if (ext) return ext;

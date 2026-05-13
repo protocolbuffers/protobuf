@@ -297,11 +297,12 @@ void WriteExtension(const DefPoolPair& pools, upb::FieldDefPtr ext,
   if (!options.one_output_per_message) {
     output("static ");
   }
-  output("const upb_MiniTableExtension $0_obj = {\n  ", ExtensionVarName(ext));
+  output("const upb_MiniTableExtension $0_obj = {\n  {\n  ",
+         ExtensionVarName(ext));
   output("$0,\n", FieldInitializer(pools, ext));
-  output("  $0,\n", GetSub(ext, true, options));
+  output("  $0,\n  },\n", GetSub(ext, true, options));
   output("  &$0,\n", MessageVarName(ext.containing_type()));
-  output("\n};\n");
+  output("};\n");
   output("UPB_LINKARR_APPEND(upb_AllExts)\n");
   output("const upb_MiniTableExtension* $0 = &$0_obj;\n  ",
          ExtensionVarName(ext));

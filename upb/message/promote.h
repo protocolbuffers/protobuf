@@ -47,6 +47,11 @@ UPB_NODISCARD upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext_table,
     int decode_options, upb_Arena* arena, upb_MessageValue* value);
 
+UPB_NODISCARD upb_GetExtension_Status
+upb_Message_GetOrPromoteExtension_Internal(
+    upb_Message* msg, const struct upb_MiniTableExtension_Internal* ext_table,
+    int decode_options, upb_Arena* arena, upb_MessageValue* value);
+
 typedef enum {
   kUpb_FindUnknown_Ok,
   kUpb_FindUnknown_NotPresent,

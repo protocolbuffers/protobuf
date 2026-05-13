@@ -888,7 +888,7 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
       upb_MtDecoder_Parse(decoder, data, len, ext, sizeof(*ext), &count);
   if (!ret || count != 1) return NULL;
 
-  upb_MiniTableField* f = &ext->UPB_PRIVATE(field);
+  upb_MiniTableField* f = &ext->UPB_PRIVATE(ext).UPB_PRIVATE(field);
 
   f->UPB_PRIVATE(mode) |= kUpb_LabelFlags_IsExtension;
   f->UPB_PRIVATE(offset) = 0;
@@ -909,7 +909,7 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
   }
 
   ext->UPB_PRIVATE(extendee) = extendee;
-  ext->UPB_PRIVATE(sub) = sub;
+  ext->UPB_PRIVATE(ext).UPB_PRIVATE(sub) = sub;
 
   return ret;
 }

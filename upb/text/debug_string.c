@@ -35,10 +35,10 @@
 static void _upb_MessageDebugString(txtenc* e, const upb_Message* msg,
                                     const upb_MiniTable* mt);
 
-static void _upb_FieldDebugString(txtenc* e, upb_MessageValue val,
-                                  const upb_MiniTableField* f,
-                                  const upb_MiniTable* mt, const char* label,
-                                  const upb_MiniTableExtension* ext) {
+static void _upb_FieldDebugString(
+    txtenc* e, upb_MessageValue val, const upb_MiniTableField* f,
+    const upb_MiniTable* mt, const char* label,
+    const struct upb_MiniTableExtension_Internal* ext) {
   UPB_PRIVATE(_upb_TextEncode_Indent)(e);
   const upb_CType ctype = upb_MiniTableField_CType(f);
   const bool is_ext = upb_MiniTableField_IsExtension(f);
@@ -58,8 +58,9 @@ static void _upb_FieldDebugString(txtenc* e, upb_MessageValue val,
     UPB_PRIVATE(_upb_TextEncode_Printf)(e, " {");
     UPB_PRIVATE(_upb_TextEncode_EndField)(e);
     e->indent_depth++;
-    const upb_MiniTable* subm = ext ? upb_MiniTableExtension_GetSubMessage(ext)
-                                    : upb_MiniTable_SubMessage(f);
+    const upb_MiniTable* subm =
+        ext ? upb_MiniTableExtension_Internal_GetSubMessage(ext)
+            : upb_MiniTable_SubMessage(f);
     _upb_MessageDebugString(e, val.msg_val, subm);
     e->indent_depth--;
     UPB_PRIVATE(_upb_TextEncode_Indent)(e);
@@ -88,10 +89,10 @@ static void _upb_FieldDebugString(txtenc* e, upb_MessageValue val,
  *    5: 2
  *    5: 3
  */
-static void _upb_ArrayDebugString(txtenc* e, const upb_Array* arr,
-                                  const upb_MiniTableField* f,
-                                  const upb_MiniTable* mt,
-                                  const upb_MiniTableExtension* ext) {
+static void _upb_ArrayDebugString(
+    txtenc* e, const upb_Array* arr, const upb_MiniTableField* f,
+    const upb_MiniTable* mt,
+    const struct upb_MiniTableExtension_Internal* ext) {
   for (size_t i = 0, n = upb_Array_Size(arr); i < n; i++) {
     _upb_FieldDebugString(e, upb_Array_Get(arr, i), f, mt, NULL, ext);
   }
@@ -182,7 +183,7 @@ static void _upb_MessageDebugString(txtenc* e, const upb_Message* msg,
     }
   }
 
-  const upb_MiniTableExtension* ext;
+  const struct upb_MiniTableExtension_Internal* ext;
   upb_MessageValue val_ext;
   iter = kUpb_Message_ExtensionBegin;
   while (upb_Message_NextExtension(msg, &ext, &val_ext, &iter)) {
