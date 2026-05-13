@@ -234,8 +234,8 @@ UPB_FORCEINLINE
 bool upb_DecodeFast_GetScalarField(upb_Decoder* d, const char* ptr,
                                    upb_Message* msg, uint64_t data,
                                    uint64_t* hasbits, upb_DecodeFastNext* ret,
-                                   void** dst,
-                                   upb_DecodeFast_Cardinality card) {
+                                   void** dst, upb_DecodeFast_Cardinality card,
+                                   upb_DecodeFast_Type type) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   switch (card) {
     case kUpb_DecodeFast_Scalar: {
@@ -250,6 +250,9 @@ bool upb_DecodeFast_GetScalarField(upb_Decoder* d, const char* ptr,
       uint16_t case_ofs = upb_DecodeFastData_GetCaseOffset(data);
       uint32_t* oneof_case = UPB_PTR_AT(msg, case_ofs, uint32_t);
       uint8_t field_number = upb_DecodeFastData_GetPresence(data);
+      if (type == kUpb_DecodeFast_Message && *oneof_case != field_number) {
+        memset(*dst, 0, sizeof(void*));
+      }
       *oneof_case = field_number;
       return true;
     }
@@ -393,8 +396,8 @@ bool upb_DecodeFast_Unpacked(upb_Decoder* d, const char** ptr, upb_Message* msg,
 
   void* dst;
 
-  if (upb_DecodeFast_GetScalarField(d, p, msg, *data, hasbits, ret, &dst,
-                                    card)) {
+  if (upb_DecodeFast_GetScalarField(d, p, msg, *data, hasbits, ret, &dst, card,
+                                    type)) {
     if (!single(d, &p, dst, type, ret, ctx)) return false;
     *ptr = p;
     _upb_Decoder_Trace(d, 'F');
