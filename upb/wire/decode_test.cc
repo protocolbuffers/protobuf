@@ -8,6 +8,8 @@
 #include "upb/wire/decode.h"
 
 #include <array>
+#include <cstdint>
+#include <cstring>
 #include <limits>
 #include <memory>
 #include <optional>
@@ -19,6 +21,8 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "upb/base/string_view.h"
+#include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
 #include "upb/message/accessors.hpp"
@@ -400,6 +404,35 @@ TYPED_TEST(PackedTest, DecodeTruncatedPackedFieldShortLength) {
                           msg_arena.ptr(), trace_buf, sizeof(trace_buf));
   ASSERT_EQ(result, kUpb_DecodeStatus_Malformed)
       << upb_DecodeStatus_String(result);
+}
+TEST(DecodeTest, EmptyMiniTableDecodedAsUnknown) {
+  Arena mt_arena;
+  Arena msg_arena;
+
+  upb_MiniTable* empty_mt =
+      (upb_MiniTable*)upb_Arena_Malloc(mt_arena.ptr(), sizeof(upb_MiniTable));
+  memset(empty_mt, 0, sizeof(upb_MiniTable));
+  empty_mt->UPB_PRIVATE(size) = sizeof(upb_Message);
+  empty_mt->UPB_ONLYBITS(field_count) = 0;
+
+  upb_Message* msg = upb_Message_New(empty_mt, msg_arena.ptr());
+
+  // An arbitrary payload that should be parsed as unknown:
+  // field 1, length-delimited, length 2, data="\x08\x05"
+  std::string payload("\x0a\x02\x08\x05");
+
+  upb_DecodeStatus result = upb_Decode(payload.data(), payload.size(), msg,
+                                       empty_mt, nullptr, 0, msg_arena.ptr());
+
+  ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+
+  EXPECT_TRUE(upb_Message_HasUnknown(msg));
+
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_StringView data;
+  ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
+  EXPECT_EQ(absl::string_view(data.data, data.size), payload);
+  EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
 }
 
 }  // namespace

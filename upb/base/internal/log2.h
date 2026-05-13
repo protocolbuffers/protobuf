@@ -31,7 +31,7 @@ UPB_INLINE int upb_Log2Ceiling(size_t x) {
 #else
   if (x > SIZE_MAX / 2) return sizeof(size_t) * CHAR_BIT;
   int lg2 = 0;
-  while ((1 << lg2) < x) lg2++;
+  while (((size_t)1 << lg2) < x) lg2++;
   return lg2;
 #endif
 }
