@@ -87,16 +87,11 @@ TEST_P(UnknownFieldTest, UnknownFieldFastPath) {
   EXPECT_EQ(captured_unknown, payload);
 
 #if !defined(NDEBUG) && defined(UPB_ENABLE_FASTTABLE)
-  // Because it was parsed on the fast path, we should not see fallback ('<' )
-  // or mini table ('M') in the trace output for tags that fit in 1 or 2 bytes.
-  if (unknown_field_num < 2048) {
-    EXPECT_FALSE(absl::StrContains(trace_buf, "<"));
-    EXPECT_FALSE(absl::StrContains(trace_buf, "M"));
-  } else {
-    // Large tags are expected to fall back to the MiniTable decoder.
-    EXPECT_TRUE(absl::StrContains(trace_buf, "<"));
-    EXPECT_TRUE(absl::StrContains(trace_buf, "M"));
-  }
+  // Because it was parsed on the fast path and we natively support
+  // >2 byte tags inline, we should not see fallback ('<')
+  // or mini table ('M') in the trace output regardless of tag size.
+  EXPECT_FALSE(absl::StrContains(trace_buf, "<"));
+  EXPECT_FALSE(absl::StrContains(trace_buf, "M"));
 #endif
 }
 
@@ -105,6 +100,8 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Combine(
         testing::Values(
             UnknownFieldTestCase{2, wire_types::Varint{123}, "Varint"},
+            UnknownFieldTestCase{2, wire_types::Varint{255},
+                                 "VarintHighBitValue"},
             UnknownFieldTestCase{2, wire_types::Delimited{"Hello World"},
                                  "Delimited"},
             UnknownFieldTestCase{3, wire_types::Varint{123},
