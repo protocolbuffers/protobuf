@@ -239,7 +239,7 @@ struct is_supported_integral_type
                        std::is_same<T, unsigned long>,       // NOLINT
                        std::is_same<T, long long>,           // NOLINT
                        std::is_same<T, unsigned long long>,  // NOLINT
-                       std::is_same<T, bool>> {};
+                       std::is_same<T, uint16_t>, std::is_same<T, bool>> {};
 
 template <typename T>
 struct is_supported_floating_point_type
