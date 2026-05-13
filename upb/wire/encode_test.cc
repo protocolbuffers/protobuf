@@ -60,7 +60,7 @@ TEST(EncodeTest, EncodeFieldSuccess) {
   // Encode field.
   const upb_MiniTable* mt = &upb_0wire_0test__TestInt32_msg_init;
   const upb_MiniTableField* field = upb_MiniTable_FindFieldByNumber(mt, 1);
-  char* buf;
+  char* buf = e.alloc.limit;
   size_t size;
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Field)(
       &e, (upb_Message*)msg, field, &buf, &size, e.options);
@@ -91,7 +91,7 @@ TEST(EncodeTest, EncodeFieldSuccessEmptyMessage) {
   // Encode empty message field.
   const upb_MiniTable* mt = &upb_0wire_0test__TestInt32_msg_init;
   const upb_MiniTableField* field = upb_MiniTable_FindFieldByNumber(mt, 1);
-  char* buf;
+  char* buf = e.alloc.limit;
   size_t size;
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Field)(
       &e, (upb_Message*)msg, field, &buf, &size, e.options);
@@ -115,7 +115,7 @@ TEST(EncodeTest, EncodeFieldMaxDepthExceeded) {
 
   const upb_MiniTable* mt = &upb_0wire_0test__TestRecursive_msg_init;
   const upb_MiniTableField* field = upb_MiniTable_FindFieldByNumber(mt, 1);
-  char* buf;
+  char* buf = e.alloc.limit;
   size_t size;
   e.options = upb_EncodeOptions_MaxDepth(1);
   DoEncodeFieldMaxDepthExceeded(err, e, (upb_Message*)msg, field, buf, size);
@@ -136,7 +136,7 @@ TEST(EncodeTest, EncodeExtensionSuccess) {
   ext_val.int32_val = 42;
 
   // Encode extension.
-  char* buf;
+  char* buf = e.alloc.limit;
   size_t size;
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Extension)(
       &e, ext, ext_val, false, &buf, &size, e.options);
@@ -172,7 +172,7 @@ TEST(EncodeTest, EncodeExtensionSuccessEmptyMessage) {
   ext_val.int32_val = 0;
 
   // Encode empty extension.
-  char* buf;
+  char* buf = e.alloc.limit;
   size_t size;
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Extension)(
       &e, ext, ext_val, false, &buf, &size, e.options);
@@ -194,7 +194,7 @@ TEST(EncodeTest, EncodeExtensionMaxDepthExceeded) {
   upb_MessageValue ext_val;
   ext_val.msg_val = (upb_Message*)upb_wire_test_TestRecursive_new(arena);
 
-  char* buf;
+  char* buf = e.alloc.limit;
   size_t size;
   e.options = upb_EncodeOptions_MaxDepth(1);
   DoEncodeExtensionMaxDepthExceeded(err, e, ext, ext_val, buf, size);
