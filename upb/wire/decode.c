@@ -1025,12 +1025,14 @@ const char* _upb_Decoder_DecodeFieldTag(upb_Decoder* d, const char* ptr,
 UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeFieldData(
     upb_Decoder* d, const char* ptr, upb_Message* msg, const upb_MiniTable* mt,
-    uint32_t field_number, uint32_t wire_type, const char* start) {
+    const upb_MiniTableField* field, uint32_t field_number, uint32_t wire_type,
+    const char* start) {
   int op;
   wireval val;
 
-  const upb_MiniTableField* field =
-      _upb_Decoder_FindField(d, mt, field_number, wire_type);
+  if (!field) {
+    field = _upb_Decoder_FindField(d, mt, field_number, wire_type);
+  }
   ptr = _upb_Decoder_DecodeWireValue(d, ptr, mt, field, wire_type, &val, &op);
 
   if (op >= 0) {
@@ -1054,22 +1056,35 @@ static const char* _upb_Decoder_EndMessage(upb_Decoder* d, const char* ptr) {
 }
 
 UPB_FORCEINLINE
-const char* _upb_Decoder_DecodeFieldNoFast(upb_Decoder* d, const char* ptr,
-                                           upb_Message* msg,
-                                           const upb_MiniTable* mt) {
-  uint32_t field_number;
-  uint32_t wire_type;
+const char* _upb_Decoder_DecodeFieldNoFast(
+    upb_Decoder* d, const char* ptr, upb_Message* msg, const upb_MiniTable* mt,
+    const upb_MiniTableField* field, uint32_t wire_type, uint32_t tag_length) {
+  if (tag_length != 0) {
+    // Resuming from fast decoder with a matched field; we don't return the
+    // matched field for groups
+    UPB_ASSUME(field != NULL);
+    UPB_ASSUME(wire_type != kUpb_WireType_StartGroup);
+    UPB_ASSUME(wire_type != kUpb_WireType_EndGroup);
 
-  const char* start = ptr;
-  ptr = _upb_Decoder_DecodeFieldTag(d, ptr, &field_number, &wire_type);
+    // This field number is not actually used, as it's not needed for lookups or
+    // to skip a group.
+    uint32_t field_number = upb_MiniTableField_Number(field);
+    const char* start = ptr - tag_length;
+    ptr = _upb_Decoder_DecodeFieldData(d, ptr, msg, mt, field, field_number,
+                                       wire_type, start);
+  } else {
+    uint32_t field_number;
+    const char* start = ptr;
+    ptr = _upb_Decoder_DecodeFieldTag(d, ptr, &field_number, &wire_type);
 
-  if (wire_type == kUpb_WireType_EndGroup) {
-    d->end_group = field_number;
-    return _upb_Decoder_EndMessage(d, ptr);
+    if (wire_type == kUpb_WireType_EndGroup) {
+      d->end_group = field_number;
+      return _upb_Decoder_EndMessage(d, ptr);
+    }
+
+    ptr = _upb_Decoder_DecodeFieldData(d, ptr, msg, mt, field, field_number,
+                                       wire_type, start);
   }
-
-  ptr = _upb_Decoder_DecodeFieldData(d, ptr, msg, mt, field_number, wire_type,
-                                     start);
   _upb_Decoder_Trace(d, 'M');
   return ptr;
 }
@@ -1078,8 +1093,9 @@ UPB_FORCEINLINE
 bool _upb_Decoder_TryDecodeMessageFast(upb_Decoder* d, const char** ptr,
                                        upb_Message* msg,
                                        const upb_MiniTable* mt,
-                                       uint64_t last_field_index,
-                                       uint64_t data) {
+                                       const upb_MiniTableField** field,
+                                       uint32_t* wire_type,
+                                       uint32_t* tag_length, uint64_t data) {
 #ifdef UPB_ENABLE_FASTTABLE
   if (mt->UPB_PRIVATE(table_mask) == (unsigned char)-1 ||
       (d->options & kUpb_DecodeOption_DisableFastTable)) {
@@ -1087,24 +1103,37 @@ bool _upb_Decoder_TryDecodeMessageFast(upb_Decoder* d, const char** ptr,
     return false;
   }
 
-  intptr_t table = decode_totable(mt);
+  uint64_t data2 =
+      upb_DecodeFastData2_PackMask(0ULL, mt->UPB_PRIVATE(table_mask));
   const char* start =
       UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(&d->input, *ptr);
   char* trace_next = _upb_Decoder_TraceNext(d);
 
   upb_FastDecoder_Return ret =
-      upb_DecodeFast_Dispatch(d, *ptr, msg, table, 0, 0);
+      upb_DecodeFast_Dispatch(d, *ptr, msg, mt, 0, 0, data2);
   *ptr = ret.ptr;
+  // - Bits 0-2 are the wire type from the parsed tag
+  // - Bits 3-5 are the encoded length on the wire of the tag (how many bytes
+  //   back from ptr to find the start of the tag)
+  // - Bits 6-21 are the 16-bit index of the matched field in the minitable
+
+  *tag_length = upb_DecodeFast_GetPassBackTagLen(ret.pass_back);
+  if (*tag_length) {
+    uint32_t field_index = upb_DecodeFast_GetPassBackFieldIndex(ret.pass_back);
+    *field = upb_MiniTable_GetFieldByIndex(mt, field_index);
+    *wire_type = upb_DecodeFast_GetPassBackWireType(ret.pass_back);
+  }
 
   if (d->message_is_done) {
     // The entire message was successfully parsed fast.
     return true;
   }
 
-  // *ptr now points to the beginning of a field that could not be parsed fast.
-  // It's possible that some fields were parsed fast, in which case *ptr will
-  // have been updated. However, it's also possible that the very first field
-  // encountered could not be parsed fast, in which case *ptr will be unchanged.
+  // *ptr now points to the beginning of a field that could not be parsed fast,
+  // or immediately after its tag. It's possible that some fields were parsed
+  // fast, in which case *ptr will have been updated. However, it's also
+  // possible that the very first field encountered could not be parsed fast, in
+  // which case *ptr will be unchanged.
   //
   // If the fast decoder consumed any data, it must have emitted at least
   // one 'F' event into the trace buffer (in addition to the 'D' event
@@ -1112,7 +1141,8 @@ bool _upb_Decoder_TryDecodeMessageFast(upb_Decoder* d, const char** ptr,
   const char* end =
       UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(&d->input, *ptr);
   char* trace_end = _upb_Decoder_TracePtr(d);
-  UPB_ASSERT(trace_end == NULL || trace_end != trace_next || end == start);
+  UPB_ASSERT(trace_end == NULL || trace_end != trace_next ||
+             end - *tag_length == start);
   _upb_Decoder_Trace(d, '<');
 #endif
   return false;
@@ -1122,14 +1152,23 @@ UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeField(upb_Decoder* d, const char* ptr,
                                      upb_Message* msg, const upb_MiniTable* mt,
                                      uint64_t last_field_index, uint64_t data) {
-  if (_upb_Decoder_TryDecodeMessageFast(d, &ptr, msg, mt, last_field_index,
-                                        data)) {
+  const upb_MiniTableField* field = NULL;
+  uint32_t tag_length = 0;
+  uint32_t wire_format = 0;
+  if (_upb_Decoder_TryDecodeMessageFast(d, &ptr, msg, mt, &field, &wire_format,
+                                        &tag_length, data)) {
     return ptr;
   } else if (upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
+    if (tag_length != 0) {
+      // Nonzero tag length indicates that the current ptr is at the end of the
+      // tag, before the field's value; ending here indicates an error
+      upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_Malformed);
+    }
     return _upb_Decoder_EndMessage(d, ptr);
   }
 
-  return _upb_Decoder_DecodeFieldNoFast(d, ptr, msg, mt);
+  return _upb_Decoder_DecodeFieldNoFast(d, ptr, msg, mt, field, wire_format,
+                                        tag_length);
 }
 
 UPB_NOINLINE
