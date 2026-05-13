@@ -5,6 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_python//python:defs.bzl", "py_binary")
@@ -42,14 +43,24 @@ config_setting(
 bool_flag(
     name = "fasttable_enabled",
     build_setting_default = False,
+    scope = "universal",
     visibility = [
         "//upb/bazel:__pkg__",
     ],
 )
 
 config_setting(
-    name = "fasttable_enabled_setting",
+    name = "fasttable_enabled_setting_flag",
     flag_values = {"//upb:fasttable_enabled": "true"},
+    visibility = ["//visibility:private"],
+)
+
+selects.config_setting_group(
+    name = "fasttable_enabled_setting",
+    match_all = [
+        ":fasttable_enabled_setting_flag",
+        "//buildenv/platforms/settings:any_64bit",
+    ],
     visibility = [
         "//benchmarks:__subpackages__",
         "//lua:__pkg__",
@@ -105,12 +116,17 @@ cc_library(
         "//upb/mini_descriptor",
         "//upb/mini_table",
         "//upb/mini_table:internal",
-        "//upb/wire",
     ] + select({
+        # We must list field_parsers before wire, because field_parsers depends
+        # on wire. listing them in this order avoids a "backward reference"
+        # linker error in lld.
         ":fasttable_enabled_setting": [
+            "//upb/wire",
             "//upb/wire/decode_fast:field_parsers",
         ],
-        "//conditions:default": [],
+        "//conditions:default": [
+            "//upb/wire",
+        ],
     }),
 )
 

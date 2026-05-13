@@ -18,6 +18,10 @@ cc_library(
         "vsnprintf_compat.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    defines = select({
+        "//upb:fasttable_enabled_setting": ["UPB_ENABLE_FASTTABLE"],
+        "//conditions:default": [],
+    }),
     features = UPB_DEFAULT_FEATURES,
     textual_hdrs = [
         # We must list the headers explicitly here instead of relying on the
