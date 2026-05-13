@@ -10900,7 +10900,7 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsInStyle2024) {
 
   // Check that naming collisions are allowed in STYLE2024.
   ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     option features.enforce_naming_style = STYLE2024;
     package naming;
     message Foo {
@@ -10917,7 +10917,7 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsInStyle2026) {
 
   // These are allowed because they don't collide with any existing field.
   ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     option features.enforce_naming_style = STYLE2026;
     package naming;
     message Foo {
@@ -10935,7 +10935,7 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsOneOfInStyle2026) {
 
   // This is allowed because the oneof doesn't collide with any existing field.
   ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     option features.enforce_naming_style = STYLE2026;
     package naming;
     message Foo {
@@ -10973,7 +10973,7 @@ TEST_P(CollisionNameTest, NamingStyleViolationsWithCollisionsInStyle2026) {
   pool_.EnforceNamingStyle(true);
   const CollisionNameParam& param = GetParam();
   std::string schema = absl::Substitute(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       string $0 = 1;
       string test_field = 2;
@@ -10992,7 +10992,7 @@ TEST_P(CollisionNameTest, NamingStyleViolationsInvalidFieldNameInStyle2026) {
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       string descriptor = 1;
     }
@@ -11008,7 +11008,7 @@ TEST_P(CollisionNameTest,
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       oneof bar {
         string has_test_field = 1;
@@ -11028,7 +11028,7 @@ TEST_P(CollisionNameTest,
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       oneof has_test_field {
         string test_field = 1;
@@ -11047,7 +11047,7 @@ TEST_P(CollisionNameTest,
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       oneof test_field {
         string has_test_field = 1;
@@ -11064,7 +11064,7 @@ TEST_P(CollisionNameTest, NamingStyleViolationsInvalidOneOfNameInStyle2026) {
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       oneof descriptor {
         string test_field = 1;

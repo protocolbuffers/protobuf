@@ -58,6 +58,7 @@ bool upb_DecodeFast_SingleMessage(upb_Decoder* d, const char** ptr, void* dst,
   return upb_DecodeFast_Delimited(d, ptr, &upb_DecodeFast_MessageData, next, c);
 }
 
+UPB_FORCEINLINE
 void upb_DecodeFast_Message(upb_Decoder* d, const char** ptr, upb_Message* msg,
                             intptr_t table, uint64_t* hasbits, uint64_t* data,
                             upb_DecodeFastNext* ret, upb_DecodeFast_Type type,
