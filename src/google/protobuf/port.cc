@@ -7,6 +7,8 @@
 //
 #include "google/protobuf/port.h"
 
+#include <array>
+#include <atomic>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -14,11 +16,11 @@
 #include <string>
 #include <utility>
 #include <variant>
-#include <vector>
 
 #include "absl/base/attributes.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/numbers.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
@@ -63,19 +65,57 @@ void protobuf_assumption_failed(const char* pred, const char* file, int line) {
 
 static void PrintAllCounters();
 static auto& CounterMap() {
-  using Map = std::map<absl::string_view,
-                       std::map<std::variant<int64_t, absl::string_view>,
-                                std::vector<const RealDebugCounter*>>>;
+  using Map = std::map<
+      absl::string_view,
+      std::map<std::variant<int64_t, absl::string_view>,
+               std::array<std::atomic<size_t>, RealDebugCounter::kNumBuckets>>>;
   static auto* counter_map = new Map{};
   static bool dummy = std::atexit(PrintAllCounters);
   (void)dummy;
   return *counter_map;
 }
 
+static std::string CreateHistogram(
+    absl::string_view category_name, absl::string_view subname, size_t subtotal,
+    absl::Span<const std::atomic<size_t>> buckets) {
+  std::string result;
+  absl::StrAppendFormat(&result, "%s.%s:\n", category_name, subname);
+  size_t sub = 0;
+  for (size_t i = 0; i < buckets.size(); ++i) {
+    if (sub == subtotal) {
+      // No more buckets to print.
+      break;
+    }
+    size_t v = buckets[i].load(std::memory_order_relaxed);
+    if (sub == 0 && v == 0) {
+      // Skip until the first non-zero bucket.
+      continue;
+    }
+
+    sub += v;
+    double num_chars = v * 100.0 / subtotal;
+    static constexpr std::array kBlocks = {"▏", "▎", "▍", "▋", "▊", "▉"};
+    std::string chars;
+    while (num_chars > 1) {
+      chars += kBlocks.back();
+      --num_chars;
+    }
+    int last_char = std::round(num_chars * kBlocks.size());
+    if (last_char > 0) {
+      chars += kBlocks[last_char - 1];
+    }
+
+    absl::StrAppendFormat(&result, "[%2d]:%s\n", i, chars);
+  }
+  return result;
+}
+
 static void PrintAllCounters() {
   auto& counters = CounterMap();
   if (counters.empty()) return;
   absl::FPrintF(stderr, "Protobuf debug counters:\n");
+
+  std::vector<std::string> histograms;
   for (auto& [category_name, category_map] : counters) {
     // Example output:
     //
@@ -86,14 +126,25 @@ static void PrintAllCounters() {
     absl::FPrintF(stderr, "  %-12s:\n", category_name);
     size_t total = 0;
     for (auto& entry : category_map) {
-      for (auto* counter : entry.second) {
-        total += counter->value();
+      size_t subtotal = 0;
+      for (auto& counter : entry.second) {
+        subtotal += counter.load(std::memory_order_relaxed);
       }
+      if (subtotal != entry.second[0].load(std::memory_order_relaxed)) {
+        histograms.push_back(
+            CreateHistogram(category_name,
+                            std::holds_alternative<int64_t>(entry.first)
+                                ? absl::StrCat(std::get<int64_t>(entry.first))
+                                : std::get<absl::string_view>(entry.first),
+                            subtotal, entry.second));
+      }
+      total += subtotal;
     }
-    for (auto& [subname, counter_vector] : category_map) {
+
+    for (auto& [subname, counter_array] : category_map) {
       size_t value = 0;
-      for (auto* counter : counter_vector) {
-        value += counter->value();
+      for (auto& counter : counter_array) {
+        value += counter.load(std::memory_order_relaxed);
       }
       if (std::holds_alternative<int64_t>(subname)) {
         // For integers, right align
@@ -115,6 +166,13 @@ static void PrintAllCounters() {
       absl::FPrintF(stderr, "    %-10s: %10zu\n", "Total", total);
     }
   }
+
+  if (!histograms.empty()) {
+    absl::FPrintF(stderr, "---Histograms---\n");
+    for (const auto& h : histograms) {
+      absl::FPrintF(stderr, "%s\n", h);
+    }
+  }
 }
 
 void RealDebugCounter::Register(absl::string_view name) {
@@ -122,9 +180,9 @@ void RealDebugCounter::Register(absl::string_view name) {
       absl::StrSplit(name, '.');
   int64_t as_int;
   if (absl::SimpleAtoi(parts.second, &as_int)) {
-    CounterMap()[parts.first][as_int].push_back(this);
+    counters_ = CounterMap()[parts.first][as_int].data();
   } else {
-    CounterMap()[parts.first][parts.second].push_back(this);
+    counters_ = CounterMap()[parts.first][parts.second].data();
   }
 }
 

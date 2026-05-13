@@ -393,7 +393,27 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
   if (!is_single_quote) {
     while (true) {
       RETURN_IF_ERROR(stream_.BufferAtLeastOne());
-      uint8_t c = static_cast<uint8_t>(stream_.PeekChar());
+      absl::string_view unread = stream_.Unread();
+
+      // Fast scan the available unread chars looking for the closing quote,
+      // or if there are any escapes.
+      size_t i = 0;
+      for (; i < unread.size(); ++i) {
+        uint8_t c = static_cast<uint8_t>(unread[i]);
+        if (c < 0x20 || c == '\\' || c == '"') {
+          break;
+        }
+      }
+
+      if (i > 0) {
+        RETURN_IF_ERROR(Advance(i));
+      }
+
+      if (i == unread.size()) {
+        continue;
+      }
+
+      uint8_t c = static_cast<uint8_t>(unread[i]);
       // Bail out to the slow path on control characters and escape characters
       // without advancing the cursor.
       if (c < 0x20 || c == '\\') {

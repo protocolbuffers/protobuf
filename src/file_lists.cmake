@@ -712,7 +712,9 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/select.c
   ${protobuf_SOURCE_DIR}/upb/wire/encode.c
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.c
+  ${protobuf_SOURCE_DIR}/upb/wire/internal/back_alloc.c
   ${protobuf_SOURCE_DIR}/upb/wire/internal/decoder.c
+  ${protobuf_SOURCE_DIR}/upb/wire/internal/encoder.c
   ${protobuf_SOURCE_DIR}/upb/wire/reader.c
 )
 
@@ -839,6 +841,8 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/select.h
   ${protobuf_SOURCE_DIR}/upb/wire/encode.h
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.h
+  ${protobuf_SOURCE_DIR}/upb/wire/internal/back_alloc.h
+  ${protobuf_SOURCE_DIR}/upb/wire/internal/constants.h
   ${protobuf_SOURCE_DIR}/upb/wire/internal/decoder.h
   ${protobuf_SOURCE_DIR}/upb/wire/internal/encoder.h
   ${protobuf_SOURCE_DIR}/upb/wire/internal/eps_copy_input_stream.h
@@ -1220,6 +1224,8 @@ set(upb_test_protos_files
   ${protobuf_SOURCE_DIR}/upb/message/test.proto
   ${protobuf_SOURCE_DIR}/upb/message/utf8_test.proto
   ${protobuf_SOURCE_DIR}/upb/message/utf8_test_proto2.proto
+  ${protobuf_SOURCE_DIR}/upb/mini_table/debug_string_test.proto
+  ${protobuf_SOURCE_DIR}/upb/mini_table/generated_registry_empty_test.proto
   ${protobuf_SOURCE_DIR}/upb/test/custom_options.proto
   ${protobuf_SOURCE_DIR}/upb/test/editions_test.proto
   ${protobuf_SOURCE_DIR}/upb/test/empty.proto
@@ -1258,6 +1264,7 @@ set(upb_test_files
   ${protobuf_SOURCE_DIR}/upb/message/utf8_test.cc
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/encode_test.cc
   ${protobuf_SOURCE_DIR}/upb/mini_table/compat_test.cc
+  ${protobuf_SOURCE_DIR}/upb/mini_table/generated_registry_empty_test.cc
   ${protobuf_SOURCE_DIR}/upb/mini_table/generated_registry_test.cc
   ${protobuf_SOURCE_DIR}/upb/test/editions_test.cc
   ${protobuf_SOURCE_DIR}/upb/test/length_prefixed_test.cc
