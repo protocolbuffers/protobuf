@@ -1074,34 +1074,35 @@ public abstract class CodedInputStream {
     public void readMessage(
         final MessageLite.Builder builder, final ExtensionRegistryLite extensionRegistry)
         throws IOException {
-      final int length = readRawVarint32Expected5BytesMax();
-      checkRecursionLimit();
-      final int oldLimit = pushLimit(length);
-      ++messageDepth;
+      final int oldLimit = pushLimitBeforeMessage();
       builder.mergeFrom(this, extensionRegistry);
-      checkLastTagWas(0);
-      --messageDepth;
-      if (getBytesUntilLimit() != 0) {
-        throw InvalidProtocolBufferException.truncatedMessage();
-      }
-      popLimit(oldLimit);
+      popLimitAfterMessage(oldLimit);
     }
 
     @Override
     public <T extends MessageLite> T readMessage(
         final Parser<T> parser, final ExtensionRegistryLite extensionRegistry) throws IOException {
-      int length = readRawVarint32Expected5BytesMax();
+      final int oldLimit = pushLimitBeforeMessage();
+      T result = parser.parsePartialFrom(this, extensionRegistry);
+      popLimitAfterMessage(oldLimit);
+      return result;
+    }
+
+    private int pushLimitBeforeMessage() throws IOException {
+      final int length = readRawVarint32Expected5BytesMax();
       checkRecursionLimit();
       final int oldLimit = pushLimit(length);
       ++messageDepth;
-      T result = parser.parsePartialFrom(this, extensionRegistry);
+      return oldLimit;
+    }
+
+    private void popLimitAfterMessage(int oldLimit) throws IOException {
       checkLastTagWas(0);
       --messageDepth;
       if (getBytesUntilLimit() != 0) {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
       popLimit(oldLimit);
-      return result;
     }
 
     private ByteString readBytesInternal(boolean requireUtf8) throws IOException {
@@ -1939,34 +1940,35 @@ public abstract class CodedInputStream {
     public void readMessage(
         final MessageLite.Builder builder, final ExtensionRegistryLite extensionRegistry)
         throws IOException {
-      final int length = readRawVarint32();
-      checkRecursionLimit();
-      final int oldLimit = pushLimit(length);
-      ++messageDepth;
+      final int oldLimit = pushLimitBeforeMessage();
       builder.mergeFrom(this, extensionRegistry);
-      checkLastTagWas(0);
-      --messageDepth;
-      if (getBytesUntilLimit() != 0) {
-        throw InvalidProtocolBufferException.truncatedMessage();
-      }
-      popLimit(oldLimit);
+      popLimitAfterMessage(oldLimit);
     }
 
     @Override
     public <T extends MessageLite> T readMessage(
         final Parser<T> parser, final ExtensionRegistryLite extensionRegistry) throws IOException {
-      int length = readRawVarint32();
+      final int oldLimit = pushLimitBeforeMessage();
+      T result = parser.parsePartialFrom(this, extensionRegistry);
+      popLimitAfterMessage(oldLimit);
+      return result;
+    }
+
+    private int pushLimitBeforeMessage() throws IOException {
+      final int length = readRawVarint32();
       checkRecursionLimit();
       final int oldLimit = pushLimit(length);
       ++messageDepth;
-      T result = parser.parsePartialFrom(this, extensionRegistry);
+      return oldLimit;
+    }
+
+    private void popLimitAfterMessage(int oldLimit) throws IOException {
       checkLastTagWas(0);
       --messageDepth;
       if (getBytesUntilLimit() != 0) {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
       popLimit(oldLimit);
-      return result;
     }
 
     private ByteString readBytesInternal(boolean requireUtf8) throws IOException {
