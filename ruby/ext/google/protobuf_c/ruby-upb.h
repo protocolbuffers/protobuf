@@ -2417,7 +2417,8 @@ struct upb_FastDecoder_Return;
 
 typedef UPB_PRESERVE_NONE struct upb_FastDecoder_Return _upb_FieldParser(
     struct upb_Decoder* d, const char* ptr, struct upb_Message* msg,
-    intptr_t table, uint64_t hasbits, uint64_t data, uint64_t data2);
+    const struct upb_MiniTable* table, uint64_t hasbits, uint64_t data,
+    uint64_t data2);
 
 typedef struct {
   uint64_t field_data;
@@ -18230,14 +18231,12 @@ const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
                                        const upb_Message* msg,
                                        const upb_MiniTable* m);
 
-/* x86-64 pointers always have the high 16 bits matching. So we can shift
- * left 8 and right 8 without loss of information. */
-UPB_INLINE intptr_t decode_totable(const upb_MiniTable* tablep) {
-  return ((intptr_t)tablep << 8) | tablep->UPB_PRIVATE(table_mask);
+UPB_INLINE uint8_t upb_DecodeFastData2_GetMask(uint64_t data2) {
+  return data2 >> 56;
 }
 
-UPB_INLINE const upb_MiniTable* decode_totablep(intptr_t table) {
-  return (const upb_MiniTable*)(table >> 8);
+UPB_INLINE uint64_t upb_DecodeFastData2_PackMask(uint8_t mask) {
+  return (uint64_t)mask << 56;
 }
 
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,

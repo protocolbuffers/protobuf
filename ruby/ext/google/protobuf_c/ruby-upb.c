@@ -16978,13 +16978,13 @@ bool _upb_Decoder_TryDecodeMessageFast(upb_Decoder* d, const char** ptr,
     return false;
   }
 
-  intptr_t table = decode_totable(mt);
+  uint64_t data2 = upb_DecodeFastData2_PackMask(mt->UPB_PRIVATE(table_mask));
   const char* start =
       UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(&d->input, *ptr);
   char* trace_next = _upb_Decoder_TraceNext(d);
 
   upb_FastDecoder_Return ret =
-      upb_DecodeFast_Dispatch(d, *ptr, msg, table, 0, 0, 0);
+      upb_DecodeFast_Dispatch(d, *ptr, msg, mt, 0, 0, data2);
   *ptr = ret.ptr;
 
   if (d->message_is_done) {
