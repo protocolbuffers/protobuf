@@ -16427,15 +16427,18 @@ extern "C" {
 // efficient fixed size copies.
 #define kUpb_EpsCopyInputStream_SlopBytes 16
 
+struct upb_EpsCopyCapture {
+  const char* start;  // Pointer to the beginning of the captured region.
+};
+
 struct upb_EpsCopyInputStream {
   const char* end;        // Can read up to SlopBytes bytes beyond this.
   const char* limit_ptr;  // For bounds checks, = end + UPB_MIN(limit, 0)
   uintptr_t input_delta;  // Diff between the original input pointer and patch
-  const char* buffer_start;   // Pointer to the original input buffer
-  const char* capture_start;  // If non-NULL, the start of the captured region.
-  ptrdiff_t limit;            // Submessage limit relative to end
-  upb_ErrorHandler* err;      // Error handler to use when things go wrong.
-  bool error;                 // To distinguish between EOF and error.
+  const char* buffer_start;  // Pointer to the original input buffer
+  ptrdiff_t limit;           // Submessage limit relative to end
+  upb_ErrorHandler* err;     // Error handler to use when things go wrong.
+  bool error;                // To distinguish between EOF and error.
 #ifndef NDEBUG
   int guaranteed_bytes;
 #endif
@@ -16457,7 +16460,6 @@ UPB_INLINE void upb_EpsCopyInputStream_InitWithErrorHandler(
     struct upb_EpsCopyInputStream* e, const char** ptr, size_t size,
     upb_ErrorHandler* err) {
   e->buffer_start = *ptr;
-  e->capture_start = NULL;
   e->err = err;
   if (size <= kUpb_EpsCopyInputStream_SlopBytes) {
     memset(&e->patch, 0, 32);
@@ -16611,22 +16613,21 @@ UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(
   return e->buffer_start + position;
 }
 
-UPB_INLINE void upb_EpsCopyInputStream_StartCapture(
-    struct upb_EpsCopyInputStream* e, const char* ptr) {
-  UPB_ASSERT(e->capture_start == NULL);
-  e->capture_start = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, ptr);
+UPB_INLINE void upb_EpsCopyCapture_Start(struct upb_EpsCopyCapture* c,
+                                         struct upb_EpsCopyInputStream* e,
+                                         const char* ptr) {
+  c->start = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, ptr);
 }
 
-UPB_INLINE bool upb_EpsCopyInputStream_EndCapture(
-    struct upb_EpsCopyInputStream* e, const char* ptr, upb_StringView* sv) {
-  UPB_ASSERT(e->capture_start != NULL);
+UPB_INLINE bool upb_EpsCopyCapture_End(struct upb_EpsCopyCapture* c,
+                                       struct upb_EpsCopyInputStream* e,
+                                       const char* ptr, upb_StringView* sv) {
   if (ptr - e->end > e->limit) {
     return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(e);
   }
   const char* end = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, ptr);
-  sv->data = e->capture_start;
+  sv->data = c->start;
   sv->size = end - sv->data;
-  e->capture_start = NULL;
   return true;
 }
 
@@ -16738,6 +16739,7 @@ UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
 extern "C" {
 #endif
 
+typedef struct upb_EpsCopyCapture upb_EpsCopyCapture;
 typedef struct upb_EpsCopyInputStream upb_EpsCopyInputStream;
 
 // Initializes a upb_EpsCopyInputStream using the contents of the buffer
@@ -16791,19 +16793,19 @@ UPB_INLINE bool upb_EpsCopyInputStream_IsDone(upb_EpsCopyInputStream* e,
 UPB_INLINE bool upb_EpsCopyInputStream_CheckSize(
     const upb_EpsCopyInputStream* e, const char* ptr, int size);
 
-// Marks the start of a capture operation.  Only one capture operation may be
-// active at a time.  The capture operation will be finalized by a call to
-// upb_EpsCopyInputStream_EndCapture().  The captured string will be returned in
-// sv, and will point to the original input buffer if possible.
-UPB_INLINE void upb_EpsCopyInputStream_StartCapture(upb_EpsCopyInputStream* e,
-                                                    const char* ptr);
+// Marks the start of a capture operation.  The capture operation will be
+// finalized by a call to upb_EpsCopyCapture_End().  The captured string will
+// be returned in sv, and will point to the original input buffer if possible.
+UPB_INLINE void upb_EpsCopyCapture_Start(upb_EpsCopyCapture* c,
+                                         upb_EpsCopyInputStream* e,
+                                         const char* ptr);
 
-// Ends a capture operation and returns the captured string.  This may only be
-// called once per capture operation.  Returns false if the capture operation
-// was invalid (the parsing pointer extends beyond the end of the stream).
-UPB_INLINE bool upb_EpsCopyInputStream_EndCapture(upb_EpsCopyInputStream* e,
-                                                  const char* ptr,
-                                                  upb_StringView* sv);
+// Ends a capture operation and returns the captured string.  Returns false if
+// the capture operation was invalid (the parsing pointer extends beyond the
+// end of the stream).
+UPB_INLINE bool upb_EpsCopyCapture_End(upb_EpsCopyCapture* c,
+                                       upb_EpsCopyInputStream* e,
+                                       const char* ptr, upb_StringView* sv);
 
 // Reads a string from the stream and advances the pointer accordingly.  The
 // returned string view will always alias the input buffer.
