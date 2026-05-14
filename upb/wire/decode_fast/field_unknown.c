@@ -115,7 +115,8 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
   }
 
   *ptr += tag_len;
-  upb_EpsCopyInputStream_StartCapture(&d->input, start);
+  upb_EpsCopyCapture capture;
+  upb_EpsCopyCapture_Start(&capture, &d->input, start);
 
   switch (wire_type) {
     case kUpb_WireType_Varint:
@@ -147,7 +148,7 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
   }
 
   upb_StringView sv;
-  if (UPB_UNLIKELY(!upb_EpsCopyInputStream_EndCapture(&d->input, *ptr, &sv))) {
+  if (UPB_UNLIKELY(!upb_EpsCopyCapture_End(&capture, &d->input, *ptr, &sv))) {
     return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
   }
 
