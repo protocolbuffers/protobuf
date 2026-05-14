@@ -9,7 +9,6 @@
 
 #include <stdint.h>
 
-#include "upb/message/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/internal/decoder.h"
 #include "upb/wire/internal/eps_copy_input_stream.h"
@@ -27,10 +26,9 @@ upb_DecodeFast_MessageIsDoneFallback(UPB_PARSE_PARAMS) {
       // fields.
       d->message_is_done = true;
       upb_DecodeFast_SetHasbits(msg, hasbits);
-      const upb_MiniTable* m = decode_totablep(table);
       return (upb_FastDecoder_Return){
-          .ptr = UPB_UNLIKELY(m->UPB_PRIVATE(required_count))
-                     ? _upb_Decoder_CheckRequired(d, ptr, msg, m)
+          .ptr = UPB_UNLIKELY(table->UPB_PRIVATE(required_count))
+                     ? _upb_Decoder_CheckRequired(d, ptr, msg, table)
                      : ptr};
     }
     case kUpb_IsDoneStatus_NeedFallback:

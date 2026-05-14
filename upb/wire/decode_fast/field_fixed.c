@@ -8,8 +8,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "upb/message/array.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/cardinality.h"
 #include "upb/wire/decode_fast/combinations.h"
@@ -72,8 +72,9 @@ static const char* upb_DecodeFast_PackedFixed(upb_EpsCopyInputStream* st,
 
 UPB_FORCEINLINE
 void upb_DecodeFast_Fixed(upb_Decoder* d, const char** ptr, upb_Message* msg,
-                          intptr_t table, uint64_t* hasbits, uint64_t* data,
-                          upb_DecodeFastNext* ret, upb_DecodeFast_Type type,
+                          const upb_MiniTable* table, uint64_t* hasbits,
+                          uint64_t* data, upb_DecodeFastNext* ret,
+                          upb_DecodeFast_Type type,
                           upb_DecodeFast_Cardinality card,
                           upb_DecodeFast_TagSize tagsize) {
   if (card == kUpb_DecodeFast_Packed) {

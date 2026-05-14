@@ -29,9 +29,10 @@ typedef struct upb_FastDecoder_Return {
 
 // The standard set of arguments passed to each parsing function.
 // Thanks to x86-64 calling conventions, these will stay in registers.
-#define UPB_PARSE_PARAMS                                             \
-  upb_Decoder *d, const char *ptr, upb_Message *msg, intptr_t table, \
-      uint64_t hasbits, uint64_t data, uint64_t data2
+#define UPB_PARSE_PARAMS                                           \
+  upb_Decoder *d, const char *ptr, upb_Message *msg,               \
+      const upb_MiniTable *table, uint64_t hasbits, uint64_t data, \
+      uint64_t data2
 
 #define UPB_PARSE_ARGS d, ptr, msg, table, hasbits, data, data2
 
@@ -41,17 +42,11 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
   return tag;
 }
 
-// We have to disable HWASAN for this function because we steal the high byte
-// of the `table` pointer for our own purposes (the table mask). This overwrites
-// the tag that HWASAN depends on for its own checks.
-__attribute__((no_sanitize("hwaddress"))) UPB_INLINE UPB_PRESERVE_NONE
-    upb_FastDecoder_Return
-    _upb_FastDecoder_TagDispatch(struct upb_Decoder* d, const char* ptr,
-                                 upb_Message* msg, intptr_t table,
-                                 uint64_t hasbits, uint64_t tag,
-                                 uint64_t data2) {
-  const upb_MiniTable* table_p = decode_totablep(table);
-  uint8_t mask = table;
+UPB_INLINE UPB_PRESERVE_NONE upb_FastDecoder_Return
+_upb_FastDecoder_TagDispatch(struct upb_Decoder* d, const char* ptr,
+                             upb_Message* msg, const upb_MiniTable* table,
+                             uint64_t hasbits, uint64_t tag, uint64_t data2) {
+  uint8_t mask = upb_DecodeFastData2_GetMask(data2);
   size_t ofs = tag & mask;
   UPB_ASSUME((ofs & 0xf8) == ofs);
 
@@ -59,10 +54,9 @@ __attribute__((no_sanitize("hwaddress"))) UPB_INLINE UPB_PRESERVE_NONE
   // Unreachable, since this header is only used from C, but when the header
   // module is compiled for C++ we need to avoid a compilation error.
   UPB_UNREACHABLE();
-  UPB_UNUSED(table_p);
   _upb_FastTable_Entry* ent = NULL;
 #else
-  const _upb_FastTable_Entry* ent = &table_p->UPB_PRIVATE(fasttable)[ofs >> 3];
+  const _upb_FastTable_Entry* ent = &table->UPB_PRIVATE(fasttable)[ofs >> 3];
 #endif
 
   UPB_MUSTTAIL return ent->field_parser(d, ptr, msg, table, hasbits,

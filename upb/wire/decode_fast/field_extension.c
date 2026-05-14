@@ -22,7 +22,7 @@
 #include "upb/port/def.inc"
 
 UPB_FORCEINLINE void _upb_FastDecoder_PickHandlerForExtensionOrUnknown(
-    struct upb_Decoder* d, intptr_t table, uint64_t data,
+    struct upb_Decoder* d, const upb_MiniTable* table, uint64_t data,
     upb_DecodeFastNext* next) {
   uint32_t field_num;
   if (UPB_LIKELY((data & 0x80) == 0)) {
@@ -35,18 +35,16 @@ UPB_FORCEINLINE void _upb_FastDecoder_PickHandlerForExtensionOrUnknown(
     return;
   }
 
-  const upb_MiniTable* mt = decode_totablep(table);
-
   // Assert that the field is either truly unknown or has a mismatched wire
   // type.
 #ifndef NDEBUG
   const upb_MiniTableField* field =
-      upb_MiniTable_FindFieldByNumber(mt, field_num);
+      upb_MiniTable_FindFieldByNumber(table, field_num);
   UPB_ASSERT(field == NULL ||
              _upb_MiniTableField_GetWireType(field) != (data & 0x07));
 #endif
 
-  if (d->extreg && upb_ExtensionRegistry_Lookup(d->extreg, mt, field_num)) {
+  if (d->extreg && upb_ExtensionRegistry_Lookup(d->extreg, table, field_num)) {
     _upb_Decoder_Trace(d, 'e');
     UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, next);
     return;
@@ -58,8 +56,9 @@ UPB_FORCEINLINE void _upb_FastDecoder_PickHandlerForExtensionOrUnknown(
 UPB_PRESERVE_NONE upb_FastDecoder_Return
 _upb_FastDecoder_DecodeExtensionOrUnknown(struct upb_Decoder* d,
                                           const char* ptr, upb_Message* msg,
-                                          intptr_t table, uint64_t hasbits,
-                                          uint64_t data, uint64_t data2) {
+                                          const upb_MiniTable* table,
+                                          uint64_t hasbits, uint64_t data,
+                                          uint64_t data2) {
   upb_DecodeFastNext next;
   _upb_FastDecoder_PickHandlerForExtensionOrUnknown(d, table, data, &next);
   UPB_DECODEFAST_NEXT(next);

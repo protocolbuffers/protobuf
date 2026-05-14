@@ -12,6 +12,7 @@
 #include <stdint.h>
 
 #include "upb/message/message.h"
+#include "upb/mini_table/message.h"
 #include "upb/wire/decode_fast/combinations.h"
 
 // Must be last.
@@ -26,9 +27,10 @@ struct upb_Decoder;
 // Declare all fast decoder functions. These are referenced by name from either
 // the generated code or the array in decode_fast_function_array.c.
 
-#define PARSE_PARAMS                                                        \
-  struct upb_Decoder *d, const char *ptr, upb_Message *msg, intptr_t table, \
-      uint64_t hasbits, uint64_t data, uint64_t data2
+#define PARSE_PARAMS                                               \
+  struct upb_Decoder *d, const char *ptr, upb_Message *msg,        \
+      const upb_MiniTable *table, uint64_t hasbits, uint64_t data, \
+      uint64_t data2
 
 struct upb_FastDecoder_Return;
 

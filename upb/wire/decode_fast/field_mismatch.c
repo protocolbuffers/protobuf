@@ -19,15 +19,15 @@
 #include "upb/port/def.inc"
 
 UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeMismatchedSlot(
-    struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
-    uint64_t hasbits, uint64_t data, uint64_t data2) {
+    struct upb_Decoder* d, const char* ptr, upb_Message* msg,
+    const upb_MiniTable* table, uint64_t hasbits, uint64_t data,
+    uint64_t data2) {
   upb_DecodeFastNext ret = kUpb_DecodeFastNext_FallbackToMiniTable;
-  const upb_MiniTable* mt = decode_totablep(table);
-  if ((mt->UPB_PRIVATE(ext) & kUpb_ExtMode_AllFastFieldsAssigned)) {
+  if ((table->UPB_PRIVATE(ext) & kUpb_ExtMode_AllFastFieldsAssigned)) {
     _upb_Decoder_Trace(d, 's');
     // Restore the tag to clear masking.
     data = _upb_FastDecoder_LoadTag(ptr);
-    ret = UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(mt) ==
+    ret = UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(table) ==
                   kUpb_ExtMode_NonExtendable
               ? kUpb_DecodeFastNext_DecodeUnknown
               : kUpb_DecodeFastNext_DecodeExtensionOrUnknown;

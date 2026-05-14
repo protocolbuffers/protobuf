@@ -60,18 +60,18 @@ bool upb_DecodeFast_SingleMessage(upb_Decoder* d, const char** ptr, void* dst,
 
 UPB_FORCEINLINE
 void upb_DecodeFast_Message(upb_Decoder* d, const char** ptr, upb_Message* msg,
-                            intptr_t table, uint64_t* hasbits, uint64_t* data,
-                            upb_DecodeFastNext* ret, upb_DecodeFast_Type type,
+                            const upb_MiniTable* table, uint64_t* hasbits,
+                            uint64_t* data, upb_DecodeFastNext* ret,
+                            upb_DecodeFast_Type type,
                             upb_DecodeFast_Cardinality card,
                             upb_DecodeFast_TagSize tagsize) {
   uint16_t submsg_idx = upb_DecodeFastData_GetFieldIndex(*data);
-  const upb_MiniTable* tablep = decode_totablep(table);
 
   // OPT: we could remove an indirection by precomputing the offset directly
   // to the submessage table pointer, instead of doing an extra hop through the
   // field.
   const upb_MiniTableField* field =
-      upb_MiniTable_GetFieldByIndex(tablep, submsg_idx);
+      upb_MiniTable_GetFieldByIndex(table, submsg_idx);
   const upb_MiniTable* subtablep = upb_MiniTable_GetSubMessageTable(field);
 
   upb_DecodeFast_MessageContext ctx = {subtablep,
