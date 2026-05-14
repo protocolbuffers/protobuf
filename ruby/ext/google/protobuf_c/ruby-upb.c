@@ -16984,7 +16984,7 @@ bool _upb_Decoder_TryDecodeMessageFast(upb_Decoder* d, const char** ptr,
   char* trace_next = _upb_Decoder_TraceNext(d);
 
   upb_FastDecoder_Return ret =
-      upb_DecodeFast_Dispatch(d, *ptr, msg, table, 0, 0);
+      upb_DecodeFast_Dispatch(d, *ptr, msg, table, 0, 0, 0);
   *ptr = ret.ptr;
 
   if (d->message_is_done) {
