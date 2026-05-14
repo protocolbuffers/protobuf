@@ -18231,14 +18231,6 @@ const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
                                        const upb_Message* msg,
                                        const upb_MiniTable* m);
 
-UPB_INLINE uint8_t upb_DecodeFastData2_GetMask(uint64_t data2) {
-  return data2 >> 56;
-}
-
-UPB_INLINE uint64_t upb_DecodeFastData2_PackMask(uint8_t mask) {
-  return (uint64_t)mask << 56;
-}
-
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
                                        const upb_MiniTable* layout);
