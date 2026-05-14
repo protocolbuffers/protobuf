@@ -13,6 +13,7 @@
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode_fast/cardinality.h"
+#include "upb/wire/decode_fast/data.h"
 #include "upb/wire/decode_fast/dispatch.h"
 #include "upb/wire/decode_fast/field_helpers.h"
 #include "upb/wire/decode_fast/field_parsers.h"
@@ -22,13 +23,13 @@
 #include "upb/port/def.inc"
 
 UPB_FORCEINLINE void _upb_FastDecoder_PickHandlerForExtensionOrUnknown(
-    struct upb_Decoder* d, const upb_MiniTable* table, uint64_t data,
+    struct upb_Decoder* d, const upb_MiniTable* table, uint16_t tag,
     upb_DecodeFastNext* next) {
   uint32_t field_num;
-  if (UPB_LIKELY((data & 0x80) == 0)) {
-    field_num = (uint8_t)data >> 3;
-  } else if ((data & 0x8000) == 0) {
-    field_num = _upb_DecodeFast_Tag2FieldNumber(data);
+  if (UPB_LIKELY((tag & 0x80) == 0)) {
+    field_num = (uint8_t)tag >> 3;
+  } else if ((tag & 0x8000) == 0) {
+    field_num = _upb_DecodeFast_Tag2FieldNumber(tag);
   } else {
     // Tag >=2048.
     UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, next);
@@ -41,7 +42,7 @@ UPB_FORCEINLINE void _upb_FastDecoder_PickHandlerForExtensionOrUnknown(
   const upb_MiniTableField* field =
       upb_MiniTable_FindFieldByNumber(table, field_num);
   UPB_ASSERT(field == NULL ||
-             _upb_MiniTableField_GetWireType(field) != (data & 0x07));
+             _upb_MiniTableField_GetWireType(field) != (tag & 0x07));
 #endif
 
   if (d->extreg && upb_ExtensionRegistry_Lookup(d->extreg, table, field_num)) {
@@ -60,6 +61,7 @@ _upb_FastDecoder_DecodeExtensionOrUnknown(struct upb_Decoder* d,
                                           uint64_t hasbits, uint64_t data,
                                           uint64_t data2) {
   upb_DecodeFastNext next;
-  _upb_FastDecoder_PickHandlerForExtensionOrUnknown(d, table, data, &next);
+  uint16_t tag = upb_DecodeFastData2_GetOriginalTag(data2);
+  _upb_FastDecoder_PickHandlerForExtensionOrUnknown(d, table, tag, &next);
   UPB_DECODEFAST_NEXT(next);
 }

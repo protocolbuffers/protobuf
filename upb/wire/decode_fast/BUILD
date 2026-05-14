@@ -86,6 +86,7 @@ cc_library(
     features = UPB_DEFAULT_FEATURES,
     visibility = ["//upb/wire:__pkg__"],
     deps = [
+        ":data",
         "//upb/message",
         "//upb/mini_table",
         "//upb/mini_table:internal",

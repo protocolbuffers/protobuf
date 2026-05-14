@@ -127,7 +127,7 @@ void upb_DecodeFast_Varint(upb_Decoder* d, const char** ptr, upb_Message* msg,
                            uint64_t* data, upb_DecodeFastNext* ret,
                            upb_DecodeFast_Type type,
                            upb_DecodeFast_Cardinality card,
-                           upb_DecodeFast_TagSize tagsize) {
+                           upb_DecodeFast_TagSize tagsize, uint64_t data2) {
   if (card == kUpb_DecodeFast_Packed) {
     upb_DecodeFast_PackedVarintContext ctx = {
         .decoder = d,
@@ -138,10 +138,10 @@ void upb_DecodeFast_Varint(upb_Decoder* d, const char** ptr, upb_Message* msg,
         .ret = ret,
     };
     upb_DecodeFast_Packed(d, ptr, type, card, tagsize, data,
-                          &upb_DecodeFast_PackedVarint, ret, &ctx);
+                          &upb_DecodeFast_PackedVarint, ret, &ctx, data2);
   } else {
     upb_DecodeFast_Unpacked(d, ptr, msg, data, hasbits, ret, type, card,
-                            tagsize, &upb_DecodeFast_SingleVarint, NULL);
+                            tagsize, &upb_DecodeFast_SingleVarint, NULL, data2);
   }
 }
 
@@ -154,7 +154,7 @@ void upb_DecodeFast_Varint(upb_Decoder* d, const char** ptr, upb_Message* msg,
     upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;               \
     upb_DecodeFast_Varint(d, &ptr, msg, table, &hasbits, &data, &next,    \
                           kUpb_DecodeFast_##type, kUpb_DecodeFast_##card, \
-                          kUpb_DecodeFast_##tagsize);                     \
+                          kUpb_DecodeFast_##tagsize, data2);              \
     UPB_DECODEFAST_NEXTMAYBEPACKED(                                       \
         next, UPB_DECODEFAST_FUNCNAME(type, Repeated, tagsize),           \
         UPB_DECODEFAST_FUNCNAME(type, Packed, tagsize));                  \

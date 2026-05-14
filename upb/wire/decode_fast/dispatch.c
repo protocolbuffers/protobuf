@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include "upb/mini_table/message.h"
+#include "upb/wire/decode_fast/data.h"
 #include "upb/wire/internal/decoder.h"
 #include "upb/wire/internal/eps_copy_input_stream.h"
 
@@ -39,8 +40,9 @@ upb_DecodeFast_MessageIsDoneFallback(UPB_PARSE_PARAMS) {
       // We successfully refreshed the buffer (otherwise the function above
       // would have thrown an error with longjmp()).  So continue with the
       // fast decoder.
-      data = _upb_FastDecoder_LoadTag(ptr);
+      uint16_t tag = _upb_FastDecoder_LoadTag(ptr);
       _upb_Decoder_Trace(d, 'r');
+      data2 = upb_DecodeFastData2_PackOriginalTag(data2, tag);
       UPB_MUSTTAIL return _upb_FastDecoder_TagDispatch(UPB_PARSE_ARGS);
     case kUpb_IsDoneStatus_NotDone:  // Handled by caller.
     default:

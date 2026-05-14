@@ -25,8 +25,6 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeMismatchedSlot(
   upb_DecodeFastNext ret = kUpb_DecodeFastNext_FallbackToMiniTable;
   if ((table->UPB_PRIVATE(ext) & kUpb_ExtMode_AllFastFieldsAssigned)) {
     _upb_Decoder_Trace(d, 's');
-    // Restore the tag to clear masking.
-    data = _upb_FastDecoder_LoadTag(ptr);
     ret = UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(table) ==
                   kUpb_ExtMode_NonExtendable
               ? kUpb_DecodeFastNext_DecodeUnknown
