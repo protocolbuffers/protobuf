@@ -15,6 +15,7 @@
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/cardinality.h"
+#include "upb/wire/decode_fast/data.h"
 #include "upb/wire/decode_fast/dispatch.h"
 #include "upb/wire/decode_fast/field_helpers.h"
 #include "upb/wire/decode_fast/field_parsers.h"
@@ -38,8 +39,10 @@
 // unknown region.
 UPB_PRESERVE_NONE UPB_NOINLINE upb_FastDecoder_Return
 _upb_FastDecoder_DecodeUnknownSlowPath(struct upb_Decoder* d, const char* ptr,
-                                       upb_Message* msg, intptr_t table,
-                                       uint64_t hasbits, uint64_t data) {
+                                       upb_Message* msg,
+                                       const upb_MiniTable* table,
+                                       uint64_t hasbits, uint64_t data,
+                                       uint64_t data2) {
   bool alias = (d->options & kUpb_DecodeOption_AliasString) != 0;
   const char* end =
       UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(&d->input, ptr);
@@ -54,25 +57,25 @@ _upb_FastDecoder_DecodeUnknownSlowPath(struct upb_Decoder* d, const char* ptr,
 }
 
 UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
-    struct upb_Decoder* d, const char** ptr, upb_Message* msg, intptr_t table,
-    uint64_t hasbits, uint64_t* data, upb_DecodeFastNext* ret) {
+    struct upb_Decoder* d, const char** ptr, upb_Message* msg,
+    const upb_MiniTable* table, uint64_t hasbits, uint16_t tag, uint64_t* data,
+    upb_DecodeFastNext* ret) {
   const char* start = *ptr;
-  uint64_t d_val = *data;
 
   uint32_t tag_len;
   // Important: if the branch is correctly predicted, the tag_len assignment is
   // treated as constant and subsequent loads will not have a data dependency on
   // the branch.
-  if (UPB_LIKELY((d_val & 0x80) == 0)) {
+  if (UPB_LIKELY((tag & 0x80) == 0)) {
     tag_len = 1;
     // Ensure the field number is not 0.
     // Use bitwise op to only examine first byte minus additional tag data.
-    if (UPB_UNLIKELY((d_val & 0xF8) == 0)) {
+    if (UPB_UNLIKELY((tag & 0xF8) == 0)) {
       return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
     }
-  } else if ((d_val & 0x8000) == 0) {
+  } else if ((tag & 0x8000) == 0) {
     tag_len = 2;
-    if (UPB_UNLIKELY((d_val & 0xFF80) == 0x80)) {
+    if (UPB_UNLIKELY((tag & 0xFF80) == 0x80)) {
       // Detect a 0-valued tag or a "2-byte" tag that is an overlong 1-byte tag.
       // Fasttable isn't set up to deal with overlong varint tags (which will
       // not match the canonical tag assigned to a slot) so fallback. (Fallback
@@ -84,20 +87,19 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
     return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
   }
 
-  uint32_t wire_type = d_val & 0x07;
+  uint32_t wire_type = tag & 0x07;
 
   // Assert that the field is either truly unknown or has a mismatched wire
   // type.
 #ifndef NDEBUG
   uint32_t field_num;
-  if ((d_val & 0x80) == 0) {
-    field_num = (uint8_t)d_val >> 3;
+  if ((tag & 0x80) == 0) {
+    field_num = (uint8_t)tag >> 3;
   } else {
-    field_num = _upb_DecodeFast_Tag2FieldNumber(d_val);
+    field_num = _upb_DecodeFast_Tag2FieldNumber(tag);
   }
-  const upb_MiniTable* mt = decode_totablep(table);
   const upb_MiniTableField* field =
-      upb_MiniTable_FindFieldByNumber(mt, field_num);
+      upb_MiniTable_FindFieldByNumber(table, field_num);
   UPB_ASSERT(field == NULL ||
              _upb_MiniTableField_GetWireType(field) != wire_type);
 #endif
@@ -168,9 +170,12 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
 }
 
 UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeUnknown(
-    struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
-    uint64_t hasbits, uint64_t data) {
+    struct upb_Decoder* d, const char* ptr, upb_Message* msg,
+    const upb_MiniTable* table, uint64_t hasbits, uint64_t data,
+    uint64_t data2) {
   upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;
-  _upb_FastDecoder_DoDecodeUnknown(d, &ptr, msg, table, hasbits, &data, &next);
+  uint16_t tag = upb_DecodeFastData2_GetOriginalTag(data2);
+  _upb_FastDecoder_DoDecodeUnknown(d, &ptr, msg, table, hasbits, tag, &data,
+                                   &next);
   UPB_DECODEFAST_NEXTMAYBECOPY(next);
 }

@@ -5112,7 +5112,7 @@ static unsigned int jsondec_base64_tablelookup(const char ch) {
       -1,       -1,       -1,       -1};
 
   /* Sign-extend return value so high bit will be set on any unexpected char. */
-  return table[(unsigned)ch];
+  return table[(unsigned char)ch];
 }
 
 static char* jsondec_partialbase64(jsondec* d, const char* ptr, const char* end,
@@ -16510,6 +16510,20 @@ const char* upb_Decoder_DecodeSize(upb_Decoder* d, const char* ptr,
   return ptr;
 }
 
+UPB_FORCEINLINE upb_AddUnknownMode
+_upb_Decoder_GetAddUnknownMode(upb_Decoder* d, const char* data) {
+  if (d->options & kUpb_DecodeOption_AliasString) {
+    if (data != d->input.buffer_start) {
+      // If the data is not from the beginning of the input buffer, then we can
+      // safely attempt to coalesce this region with the previous one.
+      return kUpb_AddUnknown_AliasAllowMerge;
+    } else {
+      return kUpb_AddUnknown_Alias;
+    }
+  }
+  return kUpb_AddUnknown_Copy;
+}
+
 static void _upb_Decoder_MungeInt32(wireval* val) {
   if (!upb_IsLittleEndian()) {
     /* The next stage will memcpy(dst, &val, 4) */
@@ -16621,40 +16635,6 @@ const char* _upb_Decoder_DecodeKnownGroup(upb_Decoder* d, const char* ptr,
                                   field->UPB_PRIVATE(number));
 }
 
-#define kUpb_Decoder_EncodeVarint32MaxSize 5
-static char* upb_Decoder_EncodeVarint32(uint32_t val, char* ptr) {
-  do {
-    uint8_t byte = val & 0x7fU;
-    val >>= 7;
-    if (val) byte |= 0x80U;
-    *(ptr++) = byte;
-  } while (val);
-  return ptr;
-}
-
-UPB_FORCEINLINE
-void _upb_Decoder_AddEnumValueToUnknown(upb_Decoder* d, upb_Message* msg,
-                                        const upb_MiniTableField* field,
-                                        wireval* val) {
-  // Unrecognized enum goes into unknown fields.
-  // For packed fields the tag could be arbitrarily far in the past,
-  // so we just re-encode the tag and value here.
-  const uint32_t tag =
-      ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Varint;
-  upb_Message* unknown_msg =
-      field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension ? d->original_msg
-                                                             : msg;
-  char buf[2 * kUpb_Decoder_EncodeVarint32MaxSize];
-  char* end = buf;
-  end = upb_Decoder_EncodeVarint32(tag, end);
-  end = upb_Decoder_EncodeVarint32(val->uint64_val, end);
-
-  if (!UPB_PRIVATE(_upb_Message_AddUnknown)(unknown_msg, buf, end - buf,
-                                            &d->arena, kUpb_AddUnknown_Copy)) {
-    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
-  }
-}
-
 UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeFixedPacked(upb_Decoder* d, const char* ptr,
                                            upb_Array* arr, wireval* val,
@@ -16738,7 +16718,14 @@ static const char* _upb_Decoder_DecodeEnumPacked(
     wireval elem;
     ptr = upb_WireReader_ReadVarint(ptr, &elem.uint64_val, EPS(d));
     if (!upb_MiniTableEnum_CheckValue(e, elem.uint64_val)) {
-      _upb_Decoder_AddEnumValueToUnknown(d, msg, field, &elem);
+      upb_Message* unknown_msg =
+          field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension
+              ? d->original_msg
+              : msg;
+      if (!_upb_Encoder_AddEnumValueToUnknown(unknown_msg, field,
+                                              elem.uint64_val, &d->arena)) {
+        upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
+      }
       continue;
     }
     _upb_Decoder_MungeInt32(&elem);
@@ -16872,32 +16859,6 @@ static upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d,
   return ret;
 }
 
-UPB_NOINLINE static void _upb_Decoder_AddMapEntryUnknown(
-    upb_Decoder* d, upb_Message* msg, const upb_MiniTableField* field,
-    upb_Message* ent_msg, const upb_MiniTable* entry) {
-  char* buf;
-  size_t size;
-  upb_EncodeStatus status =
-      upb_Encode(ent_msg, entry, 0, &d->arena, &buf, &size);
-  if (status != kUpb_EncodeStatus_Ok) {
-    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
-  }
-  char delim_buf[2 * kUpb_Decoder_EncodeVarint32MaxSize];
-  char* delim_end = delim_buf;
-  uint32_t tag =
-      ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Delimited;
-  delim_end = upb_Decoder_EncodeVarint32(tag, delim_end);
-  delim_end = upb_Decoder_EncodeVarint32(size, delim_end);
-  upb_StringView unknown[] = {
-      {delim_buf, delim_end - delim_buf},
-      {buf, size},
-  };
-
-  if (!UPB_PRIVATE(_upb_Message_AddUnknownV)(msg, &d->arena, unknown, 2)) {
-    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
-  }
-}
-
 static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
                                             upb_Message* msg,
                                             const upb_MiniTableField* field,
@@ -16948,7 +16909,10 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
   }
 
   if (upb_Message_HasUnknown(&ent.message)) {
-    _upb_Decoder_AddMapEntryUnknown(d, msg, field, &ent.message, entry);
+    if (!_upb_Encoder_AddMapEntryUnknown(msg, field, &ent.message, entry,
+                                         &d->arena)) {
+      upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
+    }
   } else {
     if (_upb_Map_Insert(map, &ent.k, map->key_size, &ent.v, map->val_size,
                         &d->arena) == kUpb_MapInsertStatus_OutOfMemory) {
@@ -17048,16 +17012,16 @@ static void upb_Decoder_AddUnknownMessageSetItem(upb_Decoder* d,
                                                  uint32_t type_id,
                                                  const char* message_data,
                                                  uint32_t message_size) {
-  char buf[6 * kUpb_Decoder_EncodeVarint32MaxSize];
+  char buf[6 * kUpb_Encoder_EncodeVarint32MaxSize];
   char* ptr = buf;
-  ptr = upb_Decoder_EncodeVarint32(kStartItemTag, ptr);
-  ptr = upb_Decoder_EncodeVarint32(kTypeIdTag, ptr);
-  ptr = upb_Decoder_EncodeVarint32(type_id, ptr);
-  ptr = upb_Decoder_EncodeVarint32(kMessageTag, ptr);
-  ptr = upb_Decoder_EncodeVarint32(message_size, ptr);
+  ptr = upb_Encoder_EncodeVarint32(kStartItemTag, ptr);
+  ptr = upb_Encoder_EncodeVarint32(kTypeIdTag, ptr);
+  ptr = upb_Encoder_EncodeVarint32(type_id, ptr);
+  ptr = upb_Encoder_EncodeVarint32(kMessageTag, ptr);
+  ptr = upb_Encoder_EncodeVarint32(message_size, ptr);
   char* split = ptr;
 
-  ptr = upb_Decoder_EncodeVarint32(kEndItemTag, ptr);
+  ptr = upb_Encoder_EncodeVarint32(kEndItemTag, ptr);
   char* end = ptr;
   upb_StringView unknown[] = {
       {buf, split - buf},
@@ -17419,19 +17383,9 @@ static const char* _upb_Decoder_DecodeUnknownField(
   upb_StringView sv;
   upb_EpsCopyInputStream_EndCapture(&d->input, ptr, &sv);
 
-  upb_AddUnknownMode mode = kUpb_AddUnknown_Copy;
-  if (d->options & kUpb_DecodeOption_AliasString) {
-    if (sv.data != d->input.buffer_start) {
-      // If the data is not from the beginning of the input buffer, then we can
-      // safely attempt to coalesce this region with the previous one.
-      mode = kUpb_AddUnknown_AliasAllowMerge;
-    } else {
-      mode = kUpb_AddUnknown_Alias;
-    }
-  }
-
-  if (!UPB_PRIVATE(_upb_Message_AddUnknown)(msg, sv.data, sv.size, &d->arena,
-                                            mode)) {
+  if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
+          msg, sv.data, sv.size, &d->arena,
+          _upb_Decoder_GetAddUnknownMode(d, sv.data))) {
     upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   }
 
@@ -17515,13 +17469,13 @@ bool _upb_Decoder_TryDecodeMessageFast(upb_Decoder* d, const char** ptr,
     return false;
   }
 
-  intptr_t table = decode_totable(mt);
+  uint64_t data2 = upb_DecodeFastData2_PackMask(mt->UPB_PRIVATE(table_mask));
   const char* start =
       UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(&d->input, *ptr);
   char* trace_next = _upb_Decoder_TraceNext(d);
 
   upb_FastDecoder_Return ret =
-      upb_DecodeFast_Dispatch(d, *ptr, msg, table, 0, 0);
+      upb_DecodeFast_Dispatch(d, *ptr, msg, mt, 0, 0, data2);
   *ptr = ret.ptr;
 
   if (d->message_is_done) {
@@ -17561,11 +17515,49 @@ const char* _upb_Decoder_DecodeField(upb_Decoder* d, const char* ptr,
 }
 
 UPB_NOINLINE
+static const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d,
+                                                   const char* ptr,
+                                                   upb_Message* msg) {
+  if (upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
+    return ptr;
+  }
+
+  const char* start = ptr;
+  upb_EpsCopyInputStream_StartCapture(&d->input, start);
+  while (!upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
+    uint32_t tag;
+    ptr = upb_WireReader_ReadTag(ptr, &tag, EPS(d));
+    if ((tag & 7) == kUpb_WireType_EndGroup) {
+      d->end_group = tag >> 3;
+      break;
+    }
+    ptr = _upb_WireReader_SkipValue(ptr, tag, d->depth, &d->input);
+  }
+  upb_StringView sv;
+  upb_EpsCopyInputStream_EndCapture(&d->input, ptr, &sv);
+
+  if (sv.size > 0) {
+    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
+            msg, sv.data, sv.size, &d->arena,
+            _upb_Decoder_GetAddUnknownMode(d, sv.data))) {
+      upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
+    }
+  }
+  return ptr;
+}
+
+UPB_NOINLINE
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
                                        const upb_MiniTable* mt) {
   UPB_ASSERT(mt);
   UPB_ASSERT(d->message_is_done == false);
+
+  if (UPB_UNLIKELY(upb_MiniTable_FieldCount(mt) == 0 &&
+                   UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(mt) ==
+                       kUpb_ExtMode_NonExtendable)) {
+    return _upb_Decoder_DecodeEmptyMessage(d, ptr, msg);
+  }
 
   do {
     ptr = _upb_Decoder_DecodeField(d, ptr, msg, mt, 0, 0);
@@ -17699,7 +17691,6 @@ const char* upb_DecodeStatus_String(upb_DecodeStatus status) {
 // We encode backwards, to avoid pre-computing lengths (one-pass encode).
 
 
-#include <setjmp.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -17707,6 +17698,186 @@ const char* upb_DecodeStatus_String(upb_DecodeStatus status) {
 
 
 // Must be last.
+
+upb_EncodeStatus upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
+                            int options, upb_Arena* arena, char** buf,
+                            size_t* size) {
+  return _upb_Encode(msg, l, options, arena, buf, size, false);
+}
+
+upb_EncodeStatus upb_EncodeLengthPrefixed(const upb_Message* msg,
+                                          const upb_MiniTable* l, int options,
+                                          upb_Arena* arena, char** buf,
+                                          size_t* size) {
+  return _upb_Encode(msg, l, options, arena, buf, size, true);
+}
+
+const char* upb_EncodeStatus_String(upb_EncodeStatus status) {
+  switch (status) {
+    case kUpb_EncodeStatus_Ok:
+      return "Ok";
+    case kUpb_EncodeStatus_MissingRequired:
+      return "Missing required field";
+    case kUpb_EncodeStatus_MaxDepthExceeded:
+      return "Max depth exceeded";
+    case kUpb_EncodeStatus_OutOfMemory:
+      return "Arena alloc failed";
+    default:
+      return "Unknown encode status";
+  }
+}
+
+
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+
+// Must be last.
+
+char upb_BackAlloc_sentinel;
+
+static size_t upb_BackAlloc_CalcBlockSize(upb_BackAlloc* a, size_t required,
+                                          bool* one_off) {
+#if UPB_HWASAN
+  required = UPB_ALIGN_UP(required, UPB_MALLOC_ALIGN);
+#endif
+  size_t organic_block_size =
+      UPB_PRIVATE(_upb_Arena_NextBlockSize)(a->arena, required, one_off);
+
+  // We want to offer amortized linear time, which means we must grow block
+  // sizes exponentially. However, merely allocating a power of 2 is
+  // pathological for allocators that use a header with mmap for large
+  // contiguous allocations. Instead, we want to allocate based on a power of
+  // 2, but request slightly less to leave room for backing allocator
+  // metadata. If we had universal size feedback this would not be necessary.
+  size_t scaled_block_size = upb_RoundUpToPowerOfTwo(required);
+
+  // Estimated value such that 128 bytes of possible overhead is not
+  // significant. 128 bytes should be enough for whatever metadata is needed.
+  if (scaled_block_size >= 4096 * 4) {
+    scaled_block_size = upb_RoundUpToPowerOfTwo(required + 128) - 128;
+  }
+
+  // Scaled block size calculations could overflow, but that's OK as it's
+  // unsigned and won't be used if it's less than the organic block size
+  if (scaled_block_size > organic_block_size) {
+    return UPB_PRIVATE(_upb_Arena_NextBlockSize)(a->arena, scaled_block_size,
+                                                 one_off);
+  }
+
+  return organic_block_size;
+}
+
+static char* upb_BackAlloc_Realloc(upb_BackAlloc* a, char* ptr, size_t n) {
+  size_t copy = a->limit - ptr;
+  if (SIZE_MAX - copy < n) {
+    return NULL;
+  }
+
+  bool one_off = false;
+  size_t required_block_size = copy + n;
+  size_t size = upb_BackAlloc_CalcBlockSize(a, required_block_size, &one_off);
+
+  char* block = UPB_PRIVATE(_upb_Arena_AllocBlock)(a->arena, &size);
+
+  if (!block) {
+    return NULL;
+  }
+
+  UPB_PRIVATE(_upb_Arena_UpdateGrowthState)(a->arena, required_block_size, size,
+                                            one_off);
+
+  char* dst = block + size - copy;
+  memcpy(dst, ptr, copy);
+
+  if (a->limit != a->buf) {
+    // Dispose of the old block.
+    if (a->standalone) {
+      // Note: while it would technically be possible to give this block to the
+      // arena to use for allocations, this could lead to a lot of garbage
+      // blocks that never get used.
+      UPB_PRIVATE(_upb_Arena_FreeBlock)(a->arena, a->buf);
+    } else {
+      UPB_PRIVATE(_upb_Arena_UseBlock)(a->arena, a->buf, a->limit - a->buf);
+    }
+  }
+
+  a->buf = block;
+  a->limit = block + size;
+  a->standalone = true;
+  return dst - n;
+}
+
+char* upb_BackAlloc_Grow(upb_BackAlloc* a, char* ptr, size_t n) {
+  if (a->limit == a->buf) {
+    // First allocation: try to steal a block.
+    size_t size = n;
+    char* block = UPB_PRIVATE(_upb_Arena_Steal)(a->arena, &size);
+    if (block) {
+      UPB_ASSERT(size >= n);
+      UPB_ASSERT(a->standalone == false);
+      a->buf = block;
+      a->limit = block + size;
+      return a->limit - n;
+    }
+  }
+
+  return upb_BackAlloc_Realloc(a, ptr, n);
+}
+
+
+
+
+// Must be last.
+
+UPB_NOINLINE
+const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
+                                       const upb_Message* msg,
+                                       const upb_MiniTable* m) {
+  UPB_ASSERT(m->UPB_PRIVATE(required_count));
+  if (UPB_UNLIKELY(d->options & kUpb_DecodeOption_CheckRequired)) {
+    d->missing_required =
+        d->missing_required ||
+        !UPB_PRIVATE(_upb_Message_IsInitializedShallow)(msg, m);
+  }
+  return ptr;
+}
+
+// We encode backwards, to avoid pre-computing lengths (one-pass encode).
+
+
+#include <setjmp.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+
+// Must be last.
+
+UPB_NOINLINE bool _upb_Encoder_AddMapEntryUnknown(
+    upb_Message* msg, const upb_MiniTableField* field, upb_Message* ent_msg,
+    const upb_MiniTable* entry, upb_Arena* arena) {
+  char* buf;
+  size_t size;
+  upb_EncodeStatus status =
+      _upb_Encode(ent_msg, entry, 0, arena, &buf, &size, false);
+  if (status != kUpb_EncodeStatus_Ok) {
+    return false;
+  }
+  char delim_buf[2 * kUpb_Encoder_EncodeVarint32MaxSize];
+  char* delim_end = delim_buf;
+  uint32_t tag =
+      ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Delimited;
+  delim_end = upb_Encoder_EncodeVarint32(tag, delim_end);
+  delim_end = upb_Encoder_EncodeVarint32(size, delim_end);
+  upb_StringView unknown[] = {
+      {delim_buf, delim_end - delim_buf},
+      {buf, size},
+  };
+
+  return UPB_PRIVATE(_upb_Message_AddUnknownV)(msg, arena, unknown, 2);
+}
 
 static uint32_t encode_zz32(int32_t n) {
   return ((uint32_t)n << 1) ^ (n >> 31);
@@ -18004,9 +18175,6 @@ static char* encode_fixedarray(char* ptr, upb_encstate* e, const upb_Array* arr,
     return encode_bytes(ptr, e, data, bytes);
   }
 }
-
-static char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
-                            const upb_MiniTable* m, size_t* size);
 
 static char* encode_scalar(char* ptr, upb_encstate* e, const void* field_mem,
                            const upb_MiniTableField* f) {
@@ -18400,8 +18568,8 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
   return ptr;
 }
 
-static char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
-                            const upb_MiniTable* m, size_t* size) {
+char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
+                     const upb_MiniTable* m, size_t* size) {
   size_t pre_len = upb_BackAlloc_Size(&e->alloc, ptr);
 
   if (e->options & kUpb_EncodeOption_CheckRequired) {
@@ -18474,23 +18642,13 @@ static upb_EncodeStatus upb_Encoder_Encode(char* ptr,
     *buf = NULL;
     *size = 0;
   }
-  _upb_mapsorter_destroy(&encoder->sorter);
+  UPB_PRIVATE(_upb_encstate_destroy)(encoder);
   return encoder->status;
 }
 
-static uint16_t upb_EncodeOptions_GetMaxDepth(uint32_t options) {
-  return options >> 16;
-}
-
-uint16_t upb_EncodeOptions_GetEffectiveMaxDepth(uint32_t options) {
-  uint16_t max_depth = upb_EncodeOptions_GetMaxDepth(options);
-  return max_depth ? max_depth : kUpb_WireFormat_DefaultDepthLimit;
-}
-
-static upb_EncodeStatus _upb_Encode(const upb_Message* msg,
-                                    const upb_MiniTable* l, int options,
-                                    upb_Arena* arena, char** buf, size_t* size,
-                                    bool prepend_len) {
+upb_EncodeStatus _upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
+                             int options, upb_Arena* arena, char** buf,
+                             size_t* size, bool prepend_len) {
   upb_encstate e;
   jmp_buf err;
 
@@ -18504,12 +18662,6 @@ static upb_EncodeStatus _upb_Encode(const upb_Message* msg,
   return upb_Encoder_Encode(ptr, &e, msg, l, buf, size, prepend_len);
 }
 
-upb_EncodeStatus upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
-                            int options, upb_Arena* arena, char** buf,
-                            size_t* size) {
-  return _upb_Encode(msg, l, options, arena, buf, size, false);
-}
-
 upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Field)(upb_encstate* e,
                                                 const upb_Message* msg,
                                                 const upb_MiniTableField* field,
@@ -18517,8 +18669,7 @@ upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Field)(upb_encstate* e,
                                                 int options) {
   e->options = options;
   e->depth = upb_EncodeOptions_GetEffectiveMaxDepth(options);
-
-  char* ptr = e->alloc.limit;
+  char* ptr = *buf;
   if (encode_shouldencode(msg, field)) {
     ptr = encode_field(ptr, e, msg, field);
   }
@@ -18533,151 +18684,11 @@ upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Extension)(
     int options) {
   e->options = options;
   e->depth = upb_EncodeOptions_GetEffectiveMaxDepth(options);
-
-  char* ptr = e->alloc.limit;
+  char* ptr = *buf;
   ptr = encode_ext(ptr, e, ext, ext_val, is_message_set);
   *size = upb_BackAlloc_Finish(&e->alloc, ptr);
   *buf = ptr;
   return e->status;
-}
-
-upb_EncodeStatus upb_EncodeLengthPrefixed(const upb_Message* msg,
-                                          const upb_MiniTable* l, int options,
-                                          upb_Arena* arena, char** buf,
-                                          size_t* size) {
-  return _upb_Encode(msg, l, options, arena, buf, size, true);
-}
-
-const char* upb_EncodeStatus_String(upb_EncodeStatus status) {
-  switch (status) {
-    case kUpb_EncodeStatus_Ok:
-      return "Ok";
-    case kUpb_EncodeStatus_MissingRequired:
-      return "Missing required field";
-    case kUpb_EncodeStatus_MaxDepthExceeded:
-      return "Max depth exceeded";
-    case kUpb_EncodeStatus_OutOfMemory:
-      return "Arena alloc failed";
-    default:
-      return "Unknown encode status";
-  }
-}
-
-
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
-
-
-// Must be last.
-
-char upb_BackAlloc_sentinel;
-
-static size_t upb_BackAlloc_CalcBlockSize(upb_BackAlloc* a, size_t required,
-                                          bool* one_off) {
-#if UPB_HWASAN
-  required = UPB_ALIGN_UP(required, UPB_MALLOC_ALIGN);
-#endif
-  size_t organic_block_size =
-      UPB_PRIVATE(_upb_Arena_NextBlockSize)(a->arena, required, one_off);
-
-  // We want to offer amortized linear time, which means we must grow block
-  // sizes exponentially. However, merely allocating a power of 2 is
-  // pathological for allocators that use a header with mmap for large
-  // contiguous allocations. Instead, we want to allocate based on a power of
-  // 2, but request slightly less to leave room for backing allocator
-  // metadata. If we had universal size feedback this would not be necessary.
-  size_t scaled_block_size = upb_RoundUpToPowerOfTwo(required);
-
-  // Estimated value such that 128 bytes of possible overhead is not
-  // significant. 128 bytes should be enough for whatever metadata is needed.
-  if (scaled_block_size >= 4096 * 4) {
-    scaled_block_size = upb_RoundUpToPowerOfTwo(required + 128) - 128;
-  }
-
-  // Scaled block size calculations could overflow, but that's OK as it's
-  // unsigned and won't be used if it's less than the organic block size
-  if (scaled_block_size > organic_block_size) {
-    return UPB_PRIVATE(_upb_Arena_NextBlockSize)(a->arena, scaled_block_size,
-                                                 one_off);
-  }
-
-  return organic_block_size;
-}
-
-static char* upb_BackAlloc_Realloc(upb_BackAlloc* a, char* ptr, size_t n) {
-  size_t copy = a->limit - ptr;
-  if (SIZE_MAX - copy < n) {
-    return NULL;
-  }
-
-  bool one_off = false;
-  size_t required_block_size = copy + n;
-  size_t size = upb_BackAlloc_CalcBlockSize(a, required_block_size, &one_off);
-
-  char* block = UPB_PRIVATE(_upb_Arena_AllocBlock)(a->arena, &size);
-
-  if (!block) {
-    return NULL;
-  }
-
-  UPB_PRIVATE(_upb_Arena_UpdateGrowthState)(a->arena, required_block_size, size,
-                                            one_off);
-
-  char* dst = block + size - copy;
-  memcpy(dst, ptr, copy);
-
-  if (a->limit != a->buf) {
-    // Dispose of the old block.
-    if (a->standalone) {
-      // Note: while it would technically be possible to give this block to the
-      // arena to use for allocations, this could lead to a lot of garbage
-      // blocks that never get used.
-      UPB_PRIVATE(_upb_Arena_FreeBlock)(a->arena, a->buf);
-    } else {
-      UPB_PRIVATE(_upb_Arena_UseBlock)(a->arena, a->buf, a->limit - a->buf);
-    }
-  }
-
-  a->buf = block;
-  a->limit = block + size;
-  a->standalone = true;
-  return dst - n;
-}
-
-char* upb_BackAlloc_Grow(upb_BackAlloc* a, char* ptr, size_t n) {
-  if (a->limit == a->buf) {
-    // First allocation: try to steal a block.
-    size_t size = n;
-    char* block = UPB_PRIVATE(_upb_Arena_Steal)(a->arena, &size);
-    if (block) {
-      UPB_ASSERT(size >= n);
-      UPB_ASSERT(a->standalone == false);
-      a->buf = block;
-      a->limit = block + size;
-      return a->limit - n;
-    }
-  }
-
-  return upb_BackAlloc_Realloc(a, ptr, n);
-}
-
-
-
-
-// Must be last.
-
-UPB_NOINLINE
-const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
-                                       const upb_Message* msg,
-                                       const upb_MiniTable* m) {
-  UPB_ASSERT(m->UPB_PRIVATE(required_count));
-  if (UPB_UNLIKELY(d->options & kUpb_DecodeOption_CheckRequired)) {
-    d->missing_required =
-        d->missing_required ||
-        !UPB_PRIVATE(_upb_Message_IsInitializedShallow)(msg, m);
-  }
-  return ptr;
 }
 
 

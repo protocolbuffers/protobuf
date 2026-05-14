@@ -7,8 +7,6 @@
 
 package com.google.protobuf;
 
-import static com.google.protobuf.UnsafeUtil.hasUnsafeArrayOperations;
-import static com.google.protobuf.UnsafeUtil.hasUnsafeByteBufferOperations;
 import static java.lang.Character.MAX_SURROGATE;
 import static java.lang.Character.MIN_HIGH_SURROGATE;
 import static java.lang.Character.MIN_LOW_SURROGATE;
@@ -758,9 +756,6 @@ final class Utf8 {
   static class UnsafeProcessor extends Processor {
     /** Indicates whether or not all required unsafe operations are supported on this platform. */
     static boolean isAvailable() {
-      if (!hasUnsafeArrayOperations() || !hasUnsafeByteBufferOperations()) {
-        return false;
-      }
       return true;
     }
 

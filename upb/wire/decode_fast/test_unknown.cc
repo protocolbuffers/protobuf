@@ -105,6 +105,8 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Combine(
         testing::Values(
             UnknownFieldTestCase{2, wire_types::Varint{123}, "Varint"},
+            UnknownFieldTestCase{2, wire_types::Varint{255},
+                                 "VarintHighBitValue"},
             UnknownFieldTestCase{2, wire_types::Delimited{"Hello World"},
                                  "Delimited"},
             UnknownFieldTestCase{3, wire_types::Varint{123},

@@ -9,8 +9,8 @@
 
 #include <stdint.h>
 
-#include "upb/message/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/wire/decode_fast/data.h"
 #include "upb/wire/internal/decoder.h"
 #include "upb/wire/internal/eps_copy_input_stream.h"
 
@@ -27,10 +27,9 @@ upb_DecodeFast_MessageIsDoneFallback(UPB_PARSE_PARAMS) {
       // fields.
       d->message_is_done = true;
       upb_DecodeFast_SetHasbits(msg, hasbits);
-      const upb_MiniTable* m = decode_totablep(table);
       return (upb_FastDecoder_Return){
-          .ptr = UPB_UNLIKELY(m->UPB_PRIVATE(required_count))
-                     ? _upb_Decoder_CheckRequired(d, ptr, msg, m)
+          .ptr = UPB_UNLIKELY(table->UPB_PRIVATE(required_count))
+                     ? _upb_Decoder_CheckRequired(d, ptr, msg, table)
                      : ptr};
     }
     case kUpb_IsDoneStatus_NeedFallback:
@@ -41,8 +40,9 @@ upb_DecodeFast_MessageIsDoneFallback(UPB_PARSE_PARAMS) {
       // We successfully refreshed the buffer (otherwise the function above
       // would have thrown an error with longjmp()).  So continue with the
       // fast decoder.
-      data = _upb_FastDecoder_LoadTag(ptr);
+      uint16_t tag = _upb_FastDecoder_LoadTag(ptr);
       _upb_Decoder_Trace(d, 'r');
+      data2 = upb_DecodeFastData2_PackOriginalTag(data2, tag);
       UPB_MUSTTAIL return _upb_FastDecoder_TagDispatch(UPB_PARSE_ARGS);
     case kUpb_IsDoneStatus_NotDone:  // Handled by caller.
     default:

@@ -2417,7 +2417,8 @@ struct upb_FastDecoder_Return;
 
 typedef UPB_PRESERVE_NONE struct upb_FastDecoder_Return _upb_FieldParser(
     struct upb_Decoder* d, const char* ptr, struct upb_Message* msg,
-    intptr_t table, uint64_t hasbits, uint64_t data);
+    const struct upb_MiniTable* table, uint64_t hasbits, uint64_t data,
+    uint64_t data2);
 
 typedef struct {
   uint64_t field_data;
@@ -6328,6 +6329,27 @@ UPB_API const char* upb_DecodeStatus_String(upb_DecodeStatus status);
 #include <stdint.h>
 
 
+#ifndef UPB_WIRE_INTERNAL_CONSTANTS_H_
+#define UPB_WIRE_INTERNAL_CONSTANTS_H_
+
+#define kUpb_WireFormat_DefaultDepthLimit 100
+
+// MessageSet wire format is:
+//   message MessageSet {
+//     repeated group Item = 1 {
+//       required int32 type_id = 2;
+//       required bytes message = 3;
+//     }
+//   }
+
+enum {
+  kUpb_MsgSet_Item = 1,
+  kUpb_MsgSet_TypeId = 2,
+  kUpb_MsgSet_Message = 3,
+};
+
+#endif /* UPB_WIRE_INTERNAL_CONSTANTS_H_ */
+
 // Must be last.
 
 #ifdef __cplusplus
@@ -6369,7 +6391,14 @@ UPB_INLINE uint32_t upb_EncodeOptions_MaxDepth(uint16_t depth) {
   return (uint32_t)depth << 16;
 }
 
-uint16_t upb_EncodeOptions_GetEffectiveMaxDepth(uint32_t options);
+UPB_INLINE uint16_t upb_EncodeOptions_GetMaxDepth(uint32_t options) {
+  return options >> 16;
+}
+
+UPB_INLINE uint16_t upb_EncodeOptions_GetEffectiveMaxDepth(uint32_t options) {
+  uint16_t max_depth = upb_EncodeOptions_GetMaxDepth(options);
+  return max_depth ? max_depth : kUpb_WireFormat_DefaultDepthLimit;
+}
 
 // Enforce an upper bound on recursion depth.
 UPB_INLINE int upb_Encode_LimitDepth(uint32_t encode_options, uint32_t limit) {
@@ -6513,7 +6542,7 @@ UPB_INLINE int upb_Log2Ceiling(size_t x) {
 #else
   if (x > SIZE_MAX / 2) return sizeof(size_t) * CHAR_BIT;
   int lg2 = 0;
-  while ((1 << lg2) < x) lg2++;
+  while (((size_t)1 << lg2) < x) lg2++;
   return lg2;
 #endif
 }
@@ -18035,27 +18064,6 @@ int32_t upb_EnumReservedRange_End(const upb_EnumReservedRange* r);
 
 #endif /* UPB_REFLECTION_ENUM_RESERVED_RANGE_H_ */
 
-#ifndef UPB_WIRE_INTERNAL_CONSTANTS_H_
-#define UPB_WIRE_INTERNAL_CONSTANTS_H_
-
-#define kUpb_WireFormat_DefaultDepthLimit 100
-
-// MessageSet wire format is:
-//   message MessageSet {
-//     repeated group Item = 1 {
-//       required int32 type_id = 2;
-//       required bytes message = 3;
-//     }
-//   }
-
-enum {
-  kUpb_MsgSet_Item = 1,
-  kUpb_MsgSet_TypeId = 2,
-  kUpb_MsgSet_Message = 3,
-};
-
-#endif /* UPB_WIRE_INTERNAL_CONSTANTS_H_ */
-
 /*
  * Internal implementation details of the decoder that are shared between
  * decode.c and decode_fast.c.
@@ -18147,6 +18155,22 @@ UPB_INLINE upb_DecodeStatus upb_Decoder_Destroy(upb_Decoder* d,
   return (upb_DecodeStatus)d->err->code;
 }
 
+// Resets decoder fields in preparation for decoding a new message.
+//
+// Some decoder fields (arena, extreg, err) are preserved so they can be
+// reused across messages.
+// NOTE: The input stream is NOT reset. If a new input buffer is being used,
+// upb_EpsCopyInputStream_InitWithErrorHandler() must be called separately.
+UPB_INLINE void upb_Decoder_Reset(upb_Decoder* d, int options,
+                                  upb_Message* msg) {
+  d->depth = upb_DecodeOptions_GetEffectiveMaxDepth(options);
+  d->options = options;
+  d->end_group = DECODE_NOGROUP;
+  d->missing_required = false;
+  d->message_is_done = false;
+  d->original_msg = msg;
+}
+
 #ifndef NDEBUG
 UPB_INLINE bool _upb_Decoder_TraceBufferHasBytesAvailable(upb_Decoder* d,
                                                           int n) {
@@ -18178,10 +18202,13 @@ UPB_INLINE char* _upb_Decoder_TracePtr(upb_Decoder* d) {
 //   '<'  Fallback to MiniTable parser.
 //   'M'  Field successfully parsed with MiniTable.
 //   'X'  Truncated -- trace buffer is full, further events were discarded.
+//   'U'  Unknown field parsed fast
 //
 // Lower-case letters indicate events that are more subtle and therefore
 // difficult to assert on, but may be useful information for debugging:
 //   'r'  Refresh buffer.
+//   's'  Fall back to unknown fast path
+//   'm'  Fall back to minitable lookup fast path
 UPB_INLINE void _upb_Decoder_Trace(upb_Decoder* d, char event) {
 #ifndef NDEBUG
 #ifdef UPB_TRACE_FASTDECODER
@@ -18206,16 +18233,6 @@ bool _upb_Decoder_VerifyUtf8Inline(const char* ptr, int len) {
 const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
                                        const upb_Message* msg,
                                        const upb_MiniTable* m);
-
-/* x86-64 pointers always have the high 16 bits matching. So we can shift
- * left 8 and right 8 without loss of information. */
-UPB_INLINE intptr_t decode_totable(const upb_MiniTable* tablep) {
-  return ((intptr_t)tablep << 8) | tablep->UPB_PRIVATE(table_mask);
-}
-
-UPB_INLINE const upb_MiniTable* decode_totablep(intptr_t table) {
-  return (const upb_MiniTable*)(table >> 8);
-}
 
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
@@ -18257,6 +18274,14 @@ UPB_INLINE bool _upb_Decoder_ReadString(upb_Decoder* d, const char** ptr,
 
 
 #endif /* UPB_WIRE_INTERNAL_DECODER_H_ */
+
+#ifndef UPB_WIRE_INTERNAL_ENCODE_H_
+#define UPB_WIRE_INTERNAL_ENCODE_H_
+
+#include <setjmp.h>
+#include <stddef.h>
+#include <stdint.h>
+
 
 #ifndef GOOGLE_UPB_UPB_WIRE_INTERNAL_BACK_ALLOC_H__
 #define GOOGLE_UPB_UPB_WIRE_INTERNAL_BACK_ALLOC_H__
@@ -18334,13 +18359,6 @@ UPB_INLINE size_t upb_BackAlloc_Size(const upb_BackAlloc* a, const char* ptr) {
 
 #endif  // GOOGLE_UPB_UPB_WIRE_INTERNAL_BACK_ALLOC_H__
 
-#ifndef UPB_WIRE_INTERNAL_ENCODE_H_
-#define UPB_WIRE_INTERNAL_ENCODE_H_
-
-#include <setjmp.h>
-#include <stddef.h>
-
-
 // Must be last.
 
 #ifdef __cplusplus
@@ -18367,10 +18385,14 @@ UPB_INLINE char* UPB_PRIVATE(_upb_encstate_init)(upb_encstate* e, jmp_buf* err,
   return ptr;
 }
 
+UPB_INLINE void UPB_PRIVATE(_upb_encstate_destroy)(upb_encstate* e) {
+  _upb_mapsorter_destroy(&e->sorter);
+}
+
 // Internal version of upb_Encode that encodes a single field.
 //
 // The caller must clean up the `upb_encstate` by calling
-// `_upb_mapsorter_destroy(&e->sorter)` when done.
+// `_upb_encstate_destroy(e)` when done.
 upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Field)(upb_encstate* e,
                                                 const upb_Message* msg,
                                                 const upb_MiniTableField* field,
@@ -18380,11 +18402,53 @@ upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Field)(upb_encstate* e,
 // Internal version of upb_Encode that encodes a single extension.
 //
 // The caller must clean up the `upb_encstate` by calling
-// `_upb_mapsorter_destroy(&e->sorter)` when done.
+// `_upb_encstate_destroy(e)` when done.
 upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Extension)(
     upb_encstate* e, const upb_MiniTableExtension* ext,
     upb_MessageValue ext_val, bool is_message_set, char** buf, size_t* size,
     int options);
+
+char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
+                     const upb_MiniTable* m, size_t* size);
+
+#define kUpb_Encoder_EncodeVarint32MaxSize 5
+static char* upb_Encoder_EncodeVarint32(uint32_t val, char* ptr) {
+  do {
+    uint8_t byte = val & 0x7fU;
+    val >>= 7;
+    if (val) byte |= 0x80U;
+    *(ptr++) = byte;
+  } while (val);
+  return ptr;
+}
+
+UPB_INLINE
+bool _upb_Encoder_AddEnumValueToUnknown(upb_Message* msg,
+                                        const upb_MiniTableField* field,
+                                        uint64_t val, upb_Arena* arena) {
+  // Unrecognized enum goes into unknown fields.
+  // For packed fields the tag could be arbitrarily far in the past,
+  // so we just re-encode the tag and value here.
+  const uint32_t tag =
+      ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Varint;
+  char buf[2 * kUpb_Encoder_EncodeVarint32MaxSize];
+  char* end = buf;
+  end = upb_Encoder_EncodeVarint32(tag, end);
+  end = upb_Encoder_EncodeVarint32(val, end);
+
+  return UPB_PRIVATE(_upb_Message_AddUnknown)(msg, buf, end - buf, arena,
+                                              kUpb_AddUnknown_Copy);
+}
+
+bool _upb_Encoder_AddMapEntryUnknown(upb_Message* msg,
+                                     const upb_MiniTableField* field,
+                                     upb_Message* ent_msg,
+                                     const upb_MiniTable* entry,
+                                     upb_Arena* arena);
+
+upb_EncodeStatus _upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
+                             int options, upb_Arena* arena, char** buf,
+                             size_t* size, bool prepend_len);
 
 #ifdef __cplusplus
 } /* extern "C" */
