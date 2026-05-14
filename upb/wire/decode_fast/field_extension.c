@@ -59,7 +59,7 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return
 _upb_FastDecoder_DecodeExtensionOrUnknown(struct upb_Decoder* d,
                                           const char* ptr, upb_Message* msg,
                                           intptr_t table, uint64_t hasbits,
-                                          uint64_t data) {
+                                          uint64_t data, uint64_t data2) {
   upb_DecodeFastNext next;
   _upb_FastDecoder_PickHandlerForExtensionOrUnknown(d, table, data, &next);
   UPB_DECODEFAST_NEXT(next);

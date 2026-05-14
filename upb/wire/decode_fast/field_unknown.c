@@ -39,7 +39,8 @@
 UPB_PRESERVE_NONE UPB_NOINLINE upb_FastDecoder_Return
 _upb_FastDecoder_DecodeUnknownSlowPath(struct upb_Decoder* d, const char* ptr,
                                        upb_Message* msg, intptr_t table,
-                                       uint64_t hasbits, uint64_t data) {
+                                       uint64_t hasbits, uint64_t data,
+                                       uint64_t data2) {
   bool alias = (d->options & kUpb_DecodeOption_AliasString) != 0;
   const char* end =
       UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(&d->input, ptr);
@@ -169,7 +170,7 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
 
 UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeUnknown(
     struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
-    uint64_t hasbits, uint64_t data) {
+    uint64_t hasbits, uint64_t data, uint64_t data2) {
   upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;
   _upb_FastDecoder_DoDecodeUnknown(d, &ptr, msg, table, hasbits, &data, &next);
   UPB_DECODEFAST_NEXTMAYBECOPY(next);

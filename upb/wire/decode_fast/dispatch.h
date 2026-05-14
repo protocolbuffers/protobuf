@@ -31,9 +31,9 @@ typedef struct upb_FastDecoder_Return {
 // Thanks to x86-64 calling conventions, these will stay in registers.
 #define UPB_PARSE_PARAMS                                             \
   upb_Decoder *d, const char *ptr, upb_Message *msg, intptr_t table, \
-      uint64_t hasbits, uint64_t data
+      uint64_t hasbits, uint64_t data, uint64_t data2
 
-#define UPB_PARSE_ARGS d, ptr, msg, table, hasbits, data
+#define UPB_PARSE_ARGS d, ptr, msg, table, hasbits, data, data2
 
 UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
   uint16_t tag;
@@ -48,7 +48,8 @@ __attribute__((no_sanitize("hwaddress"))) UPB_INLINE UPB_PRESERVE_NONE
     upb_FastDecoder_Return
     _upb_FastDecoder_TagDispatch(struct upb_Decoder* d, const char* ptr,
                                  upb_Message* msg, intptr_t table,
-                                 uint64_t hasbits, uint64_t tag) {
+                                 uint64_t hasbits, uint64_t tag,
+                                 uint64_t data2) {
   const upb_MiniTable* table_p = decode_totablep(table);
   uint8_t mask = table;
   size_t ofs = tag & mask;
@@ -65,7 +66,7 @@ __attribute__((no_sanitize("hwaddress"))) UPB_INLINE UPB_PRESERVE_NONE
 #endif
 
   UPB_MUSTTAIL return ent->field_parser(d, ptr, msg, table, hasbits,
-                                        ent->field_data ^ tag);
+                                        ent->field_data ^ tag, data2);
 }
 
 UPB_NOINLINE UPB_PRESERVE_NONE upb_FastDecoder_Return

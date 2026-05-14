@@ -28,7 +28,7 @@ struct upb_Decoder;
 
 #define PARSE_PARAMS                                                        \
   struct upb_Decoder *d, const char *ptr, upb_Message *msg, intptr_t table, \
-      uint64_t hasbits, uint64_t data
+      uint64_t hasbits, uint64_t data, uint64_t data2
 
 struct upb_FastDecoder_Return;
 
