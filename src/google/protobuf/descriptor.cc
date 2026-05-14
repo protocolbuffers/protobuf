@@ -10936,6 +10936,10 @@ bool IsLazilyInitializedFile(absl::string_view filename) {
       filename == "google/protobuf/internal_options.proto") {
     return true;
   }
+  if (filename == "third_party/protobuf/json_enumvalue_options.proto" ||
+      filename == "google/protobuf/json_enumvalue_options.proto") {
+    return true;
+  }
   return filename == "net/proto2/proto/descriptor.proto" ||
          filename == "google/protobuf/descriptor.proto";
 }
