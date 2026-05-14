@@ -17,11 +17,13 @@
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/types.h"
 #include "upb/message/message.h"
+#include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/combinations.h"
 #include "upb/wire/decode_fast/data.h"
 #include "upb/wire/decode_fast/dispatch.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/decoder.h"
+#include "upb/wire/internal/eps_copy_input_stream.h"
 #include "upb/wire/types.h"
 
 #if UPB_TRACE_FASTDECODER
@@ -66,6 +68,12 @@ typedef enum {
 
   // Tail call for potential fast handling of an extension field.
   kUpb_DecodeFastNext_DecodeExtensionOrUnknown = 8,
+
+  // Tail call for potential fast handling of a non-extendable message
+  kUpb_DecodeFastNext_CheckMiniTable = 9,
+
+  // Tail call for potential fast handling of an extendable message
+  kUpb_DecodeFastNext_CheckExtRegMiniTable = 10,
 } upb_DecodeFastNext;
 
 UPB_INLINE bool upb_DecodeFast_SetExit(upb_DecodeFastNext* next,
@@ -122,6 +130,12 @@ UPB_INLINE bool upb_DecodeFast_SetError(upb_Decoder* d,
       UPB_MUSTTAIL return _upb_FastDecoder_DecodeUnknown(UPB_PARSE_ARGS); \
     case kUpb_DecodeFastNext_DecodeExtensionOrUnknown:                    \
       UPB_MUSTTAIL return _upb_FastDecoder_DecodeExtensionOrUnknown(      \
+          UPB_PARSE_ARGS);                                                \
+    case kUpb_DecodeFastNext_CheckMiniTable:                              \
+      UPB_MUSTTAIL return _upb_FastDecoder_DecodeCheckMiniTable(          \
+          UPB_PARSE_ARGS);                                                \
+    case kUpb_DecodeFastNext_CheckExtRegMiniTable:                        \
+      UPB_MUSTTAIL return _upb_FastDecoder_DecodeCheckExtRegMiniTable(    \
           UPB_PARSE_ARGS);                                                \
     default:                                                              \
       UPB_UNREACHABLE();                                                  \
