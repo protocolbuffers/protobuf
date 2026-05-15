@@ -263,17 +263,11 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
           // Options say to verify.
           ShouldVerify(descriptor_->message_type(), options_) &&
           ShouldVerify(descriptor_->containing_type(), options_);
-      const bool should_verify_v2 =
-          should_verify &&
-          ShouldVerifyV2(descriptor_->message_type(), options_);
       const auto message_type = FieldMessageTypeName(descriptor_, options_);
       auto v = p->WithVars(
           {{"verify", should_verify
                           ? absl::StrCat("&", message_type, "::InternalVerify")
                           : "nullptr"},
-           {"verify_v2", should_verify_v2 ? absl::StrCat("&", message_type,
-                                                         "::InternalVerifyV2")
-                                          : "nullptr"},
            {"message_type", message_type},
            {"lazy", "kUndefined"}});
       if (using_implicit_weak_descriptors) {
@@ -297,7 +291,6 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
                        : (void)0),
                 )cc");
       } else if (priority == kInitPriority102) {
-        ABSL_DCHECK(!should_verify_v2);
         p->Emit({{"verify_funcs", [&] { EmitVerifyFuncArgs(p, options_); }}},
                 R"cc(
                   ::_pbi::ExtensionSet::RegisterMessageExtension(

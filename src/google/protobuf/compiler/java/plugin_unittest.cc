@@ -7,6 +7,7 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -14,6 +15,7 @@
 #include "google/protobuf/testing/file.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/compiler/java/generator.h"
@@ -116,6 +118,62 @@ TEST(JavaPluginTest, PluginTest) {
   }
   EXPECT_TRUE(found_do_not_edit);
   (void)found_generated_annotation;
+}
+
+TEST(JavaPluginTest, InvalidJavaPackageTest) {
+  ABSL_CHECK_OK(File::SetContents(
+      absl::StrCat(::testing::TempDir(), "/invalid_package.proto"),
+      R"pb(
+        edition = "2023"
+        ;
+        package foo;
+        option java_package = "foo;bar";
+        option java_outer_classname = "Test";
+        message Bar {}
+      )pb",
+      true));
+
+  CommandLineInterface cli;
+  cli.SetInputsAreProtoPathRelative(true);
+
+  JavaGenerator java_generator;
+  cli.RegisterGenerator("--java_out", &java_generator, "");
+
+  std::string proto_path = absl::StrCat("-I", ::testing::TempDir());
+  std::string java_out = absl::StrCat("--java_out=", ::testing::TempDir());
+
+  const char* argv[] = {"protoc", proto_path.c_str(), java_out.c_str(),
+                        "invalid_package.proto"};
+
+  EXPECT_NE(0, cli.Run(4, argv));
+}
+
+TEST(JavaPluginTest, InvalidClassNameTest) {
+  ABSL_CHECK_OK(File::SetContents(
+      absl::StrCat(::testing::TempDir(), "/invalid_classname.proto"),
+      R"pb(
+        edition = "2023"
+        ;
+        package foo;
+        option java_package = "foo.bar";
+        option java_outer_classname = "Test;Class";
+        message Bar {}
+      )pb",
+      true));
+
+  CommandLineInterface cli;
+  cli.SetInputsAreProtoPathRelative(true);
+
+  JavaGenerator java_generator;
+  cli.RegisterGenerator("--java_out", &java_generator, "");
+
+  std::string proto_path = absl::StrCat("-I", ::testing::TempDir());
+  std::string java_out = absl::StrCat("--java_out=", ::testing::TempDir());
+
+  const char* argv[] = {"protoc", proto_path.c_str(), java_out.c_str(),
+                        "invalid_classname.proto"};
+
+  EXPECT_NE(0, cli.Run(4, argv));
 }
 
 }  // namespace

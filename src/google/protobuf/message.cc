@@ -126,9 +126,12 @@ std::string DebugStringImpl(const MessageLite& msg) {
 
 PROTOBUF_CONSTINIT PROTOBUF_EXPORT const DescriptorMethods
     kDescriptorMethods = {
-        GetTypeNameImpl,     InitializationErrorStringImpl,
-        GetTcParseTableImpl, SpaceUsedLongImpl,
+        GetTypeNameImpl,
+        InitializationErrorStringImpl,
+        GetTcParseTableImpl,
+        SpaceUsedLongImpl,
         DebugStringImpl,
+        nullptr,
 };
 
 }  // namespace internal
@@ -461,7 +464,6 @@ size_t Message::MaybeComputeUnknownFieldsSize(
   cached_size->Set(internal::ToCachedSize(total_size));
   return total_size;
 }
-
 
 size_t Message::SpaceUsedLong() const {
   return GetClassData()->full().descriptor_methods()->space_used_long(*this);

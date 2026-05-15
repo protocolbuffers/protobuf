@@ -53,6 +53,19 @@ public final class Internal {
   }
 
   /**
+   * Throws an {@link IllegalArgumentException} for unrecognized enum values.
+   *
+   * <p>Used from Enum.getNumber().
+   *
+   * @return nothing, but typed as int, so we can "return" the result of this method directly from
+   * Enum.getNumber(), generating smaller dex code for every enum.
+   */
+  @DoNotInline
+  public static int throwCannotGetNumberOfUnrecognized() {
+    throw new IllegalArgumentException("Can't get the number of an unknown enum value.");
+  }
+
+  /**
    * Helper called by generated code to construct default values for string fields.
    *
    * <p>The protocol compiler does not actually contain a UTF-8 decoder -- it just pushes

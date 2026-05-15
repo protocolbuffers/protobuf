@@ -854,28 +854,6 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount(uint8_t* ptr) const;
 
 
-#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
-  template <typename ValT, typename CallbackT>
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD uint8_t* WriteNumericArray(
-      uint8_t* ptr, uint32_t count, CallbackT&& callback) {
-    static_assert(sizeof(ValT) > 1, "Use WriteRaw");
-    static_assert(sizeof(ValT) < kSlopBytes, "");
-
-    int64_t size = count * sizeof(ValT);
-    while (size > 0) {
-      ptr = EnsureSpace(ptr);
-      int64_t chunk_size = std::min<int64_t>(GetSize(ptr), size);
-      int64_t round_down_size = (chunk_size / sizeof(ValT)) * sizeof(ValT);
-      ABSL_DCHECK_GT(round_down_size, 0u);
-
-      callback(ptr, round_down_size);
-
-      size -= round_down_size;
-      ptr += round_down_size;
-    }
-    return ptr;
-  }
-#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
  private:
   uint8_t* end_;

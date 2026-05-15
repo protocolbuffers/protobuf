@@ -28,6 +28,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/pyext/descriptor_containers.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
+#include "google/protobuf/pyext/free_threading_mutex.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/message_factory.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
@@ -243,13 +244,16 @@ bool Reparse(PyMessageFactory* message_factory, const Message& from,
 //
 // Always returns a new reference.
 static PyObject* GetOrBuildMessageInDefaultPool(
-    absl::flat_hash_map<const void*, PyObject*>& cache, const void* key,
-    const Message& message) {
+    absl::flat_hash_map<const void*, PyObject*>& cache,
+    FreeThreadingMutex* cache_mutex, const void* key, const Message& message) {
   // First search in the cache.
-  if (cache.find(key) != cache.end()) {
-    PyObject* value = cache[key];
-    Py_INCREF(value);
-    return value;
+  {
+    FreeThreadingLockGuard lock(*cache_mutex);
+    if (cache.find(key) != cache.end()) {
+      PyObject* value = cache[key];
+      Py_INCREF(value);
+      return value;
+    }
   }
 
   // Similar to the C++ implementation, we return a message object from the
@@ -301,8 +305,16 @@ static PyObject* GetOrBuildMessageInDefaultPool(
   }
 
   // Cache the result.
-  Py_INCREF(value.get());
-  cache[key] = value.get();
+  {
+    FreeThreadingLockGuard lock(*cache_mutex);
+    if (cache.find(key) != cache.end()) {
+      PyObject* existing_value = cache[key];
+      Py_INCREF(existing_value);
+      return existing_value;
+    }
+    Py_INCREF(value.get());
+    cache[key] = value.get();
+  }
 
   return value.release();
 }
@@ -313,7 +325,8 @@ static PyObject* GetOrBuildOptions(const DescriptorClass* descriptor) {
   PyDescriptorPool* caching_pool =
       GetDescriptorPool_FromPool(GetFileDescriptor(descriptor)->pool());
   return GetOrBuildMessageInDefaultPool(*caching_pool->descriptor_options,
-                                        descriptor, descriptor->options());
+                                        caching_pool->cache_mutex, descriptor,
+                                        descriptor->options());
 }
 
 template <class DescriptorClass>
@@ -328,7 +341,8 @@ static PyObject* GetFeaturesImpl(const DescriptorClass* descriptor) {
   PyDescriptorPool* caching_pool =
       GetDescriptorPool_FromPool(GetFileDescriptor(descriptor)->pool());
   return GetOrBuildMessageInDefaultPool(*caching_pool->descriptor_features,
-                                        descriptor, features);
+                                        caching_pool->cache_mutex, descriptor,
+                                        features);
 }
 
 // Copy the C++ descriptor to a Python message.

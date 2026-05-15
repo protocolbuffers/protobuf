@@ -1,0 +1,29 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2024";
+
+package pb.enumvalue;
+
+import "google/protobuf/descriptor.proto";
+
+local message JsonEnumValueOptions {
+  // Allows user to specify a custom string to use when serializing an enum
+  // value to JSON.
+  //
+  // Sample usage:
+  // enum Foo {
+  //   ...
+  //   FOO_BAR = 42 [(pb.enumvalue.json).string = "my_custom_name"];
+  // }
+  string string = 1;
+}
+
+extend google.protobuf.EnumValueOptions {
+  JsonEnumValueOptions json = 998
+      [feature_support = { edition_introduced: EDITION_UNSTABLE }];
+}

@@ -295,6 +295,11 @@ void WriteFieldAccessorDocComment(io::Printer* printer,
     case SETTER:
       printer->Print(" * @param value The $name$ to set.\n", "name",
                      field->camelcase_name());
+      if (field->enum_type() != nullptr && !field->enum_type()->is_closed()) {
+        printer->Print(
+            " * @throws IllegalArgumentException if UNRECOGNIZED is "
+            "provided.\n");
+      }
       break;
     case CLEARER:
       // Print nothing
@@ -317,6 +322,11 @@ void WriteFieldAccessorDocComment(io::Printer* printer,
       printer->Print(" * @param index The index to set the value at.\n");
       printer->Print(" * @param value The $name$ to set.\n", "name",
                      field->camelcase_name());
+      if (field->enum_type() != nullptr && !field->enum_type()->is_closed()) {
+        printer->Print(
+            " * @throws IllegalArgumentException if UNRECOGNIZED is "
+            "provided.\n");
+      }
       break;
     case LIST_ADDER:
       printer->Print(" * @param value The $name$ to add.\n", "name",
@@ -325,6 +335,11 @@ void WriteFieldAccessorDocComment(io::Printer* printer,
     case LIST_MULTI_ADDER:
       printer->Print(" * @param values The $name$ to add.\n", "name",
                      field->camelcase_name());
+      if (field->enum_type() != nullptr && !field->enum_type()->is_closed()) {
+        printer->Print(
+            " * @throws IllegalArgumentException if UNRECOGNIZED is "
+            "provided.\n");
+      }
       break;
   }
   if (builder) {
@@ -359,12 +374,6 @@ void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
           " * @param value The enum numeric value on the wire for $name$ to "
           "set.\n",
           "name", field->camelcase_name());
-
-      if (field->enum_type() != nullptr && !field->enum_type()->is_closed()) {
-        printer->Print(
-            " * @throws IllegalArgumentException if UNRECOGNIZED is "
-            "provided.\n");
-      }
       break;
     case CLEARER:
       // Print nothing
@@ -398,23 +407,12 @@ void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
           " * @param value The enum numeric value on the wire for $name$ to "
           "add.\n",
           "name", field->camelcase_name());
-
-      if (field->enum_type() != nullptr && !field->enum_type()->is_closed()) {
-        printer->Print(
-            " * @throws IllegalArgumentException if UNRECOGNIZED is "
-            "provided.\n");
-      }
       break;
     case LIST_MULTI_ADDER:
       printer->Print(
           " * @param values The enum numeric values on the wire for $name$ to "
           "add.\n",
           "name", field->camelcase_name());
-      if (field->enum_type() != nullptr && !field->enum_type()->is_closed()) {
-        printer->Print(
-            " * @throws IllegalArgumentException if UNRECOGNIZED is "
-            "provided.\n");
-      }
       break;
   }
   if (builder) {

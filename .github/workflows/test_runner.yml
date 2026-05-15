@@ -52,7 +52,7 @@ concurrency:
 
 jobs:
   set-vars:
-    name: Set Variables
+    name: Apply Safe for Tests Label
 
     # Avoid running tests twice on PR updates.  If the PR is coming from our
     # repository, it's safe and we can use `pull_request`.  Otherwise, we should

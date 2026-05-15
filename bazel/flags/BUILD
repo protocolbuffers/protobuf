@@ -47,6 +47,8 @@ string_list_flag(
 bool_flag(
     name = "prefer_prebuilt_protoc",
     build_setting_default = True,
+    # See https://github.com/protocolbuffers/protobuf/issues/25561
+    scope = "universal",  # propagate from host to exec configuration
     visibility = ["//bazel/toolchains:__pkg__"],
 )
 
