@@ -23,7 +23,6 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/BinaryReader.java",
     "src/main/java/com/google/protobuf/BooleanArrayList.java",
     "src/main/java/com/google/protobuf/BufferAllocator.java",
-    "src/main/java/com/google/protobuf/ByteBufferWriter.java",
     "src/main/java/com/google/protobuf/ByteOutput.java",
     "src/main/java/com/google/protobuf/ByteString.java",
     "src/main/java/com/google/protobuf/CanIgnoreReturnValue.java",

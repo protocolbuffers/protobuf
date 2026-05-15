@@ -55,7 +55,7 @@ import java.util.TreeMap;
 // This class is final for all intents and purposes because the constructor is
 // private. However, the FieldDescriptor-specific logic is encapsulated in
 // a subclass to aid testability of the core logic.
-class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
+class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends AbstractMap<K, V> {
 
   static final int DEFAULT_FIELD_MAP_ARRAY_SIZE = 16;
 
@@ -90,7 +90,7 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
   }
 
   /** Creates a new instance for testing. */
-  static <K extends Comparable<K>, V> SmallSortedMap<K, V> newInstanceForTest() {
+  static <K extends FieldSet.FieldDescriptorLite<K>, V> SmallSortedMap<K, V> newInstanceForTest() {
     return new SmallSortedMap<>();
   }
 
@@ -133,17 +133,23 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
     }
   }
 
-  /** @return Whether {@link #makeImmutable()} has been called. */
+  /**
+   * @return Whether {@link #makeImmutable()} has been called.
+   */
   public boolean isImmutable() {
     return isImmutable;
   }
 
-  /** @return The number of entries in the entry array. */
+  /**
+   * @return The number of entries in the entry array.
+   */
   public int getNumArrayEntries() {
     return entriesSize;
   }
 
-  /** @return The array entry at the given {@code index}. */
+  /**
+   * @return The array entry at the given {@code index}.
+   */
   public Map.Entry<K, V> getArrayEntryAt(int index) {
     if (index >= entriesSize) {
       throw new ArrayIndexOutOfBoundsException(index);
@@ -153,16 +159,18 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
     return e;
   }
 
-  /** @return There number of overflow entries. */
+  /**
+   * @return There number of overflow entries.
+   */
   public int getNumOverflowEntries() {
     return overflowEntries.size();
   }
 
-  /** @return An iterable over the overflow entries. */
+  /**
+   * @return An iterable over the overflow entries.
+   */
   public Iterable<Map.Entry<K, V>> getOverflowEntries() {
-    return overflowEntries.isEmpty()
-        ? Collections.emptySet()
-        : overflowEntries.entrySet();
+    return overflowEntries.isEmpty() ? Collections.emptySet() : overflowEntries.entrySet();
   }
 
   @Override
@@ -348,7 +356,9 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
     return new DescendingEntrySet();
   }
 
-  /** @throws UnsupportedOperationException if {@link #makeImmutable()} has has been called. */
+  /**
+   * @throws UnsupportedOperationException if {@link #makeImmutable()} has has been called.
+   */
   private void checkMutable() {
     if (isImmutable) {
       throw new UnsupportedOperationException();

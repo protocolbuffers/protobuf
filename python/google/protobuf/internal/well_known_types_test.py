@@ -839,6 +839,14 @@ class StructTest(unittest.TestCase):
         [6, True, False, None, inner_struct], list(struct['key5'].items())
     )
 
+  def testSerializeDeeplyNestedStruct(self):
+    s = struct_pb2.Struct()
+    current = s
+    for _ in range(45):
+      current = current.fields['x'].struct_value
+    current.fields['v'].number_value = 1
+    self.assertGreater(len(s.SerializeToString()), 0)
+
   def testInOperator(self):
     # in operator for Struct
     struct = struct_pb2.Struct()

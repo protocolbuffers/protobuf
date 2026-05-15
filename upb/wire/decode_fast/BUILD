@@ -73,6 +73,7 @@ cc_library(
         "//upb/port",
         "//upb/wire:decoder",
         "//upb/wire:eps_copy_input_stream",
+        "//upb/wire:eps_copy_input_stream_internal",
         "//upb/wire:reader",
     ],
 )
@@ -85,6 +86,7 @@ cc_library(
     features = UPB_DEFAULT_FEATURES,
     visibility = ["//upb/wire:__pkg__"],
     deps = [
+        ":data",
         "//upb/message",
         "//upb/mini_table",
         "//upb/mini_table:internal",

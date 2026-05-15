@@ -375,27 +375,19 @@ def MessageSetItemSizer(field_number):
 # Map is special: it needs custom logic to compute its size properly.
 
 
-def MapSizer(field_descriptor, is_message_map):
+def MapSizer(field_descriptor, key_sizer, value_sizer):
   """Returns a sizer for a map field."""
 
-  # Can't look at field_descriptor.message_type._concrete_class because it may
-  # not have been initialized yet.
-  message_type = field_descriptor.message_type
-  message_sizer = MessageSizer(field_descriptor.number, False, False)
-
   def FieldSize(map_value):
+    tag_size = _TagSize(field_descriptor.number)
+    local_VarintSize = _VarintSize
+
     total = 0
     for key in map_value:
-      value = map_value[key]
-      # It's wasteful to create the messages and throw them away one second
-      # later since we'll do the same for the actual encode.  But there's not an
-      # obvious way to avoid this within the current design without tons of code
-      # duplication. For message map, value.ByteSize() should be called to
-      # update the status.
-      entry_msg = message_type._concrete_class(key=key, value=value)
-      total += message_sizer(entry_msg)
-      if is_message_map:
-        value.ByteSize()
+      val = map_value[key]
+      entry_size = key_sizer(key) + value_sizer(val)
+      total += tag_size + local_VarintSize(entry_size) + entry_size
+
     return total
 
   return FieldSize
@@ -907,25 +899,33 @@ def MessageSetItemEncoder(field_number):
 # As before, Map is special.
 
 
-def MapEncoder(field_descriptor):
-  """Encoder for extensions of MessageSet.
+def MapEncoder(
+    field_descriptor, key_encoder, value_encoder, key_sizer, value_sizer
+):
+  """Encoder for map fields.
 
   Maps always have a wire format like this:
-    message MapEntry {
-      key_type key = 1;
-      value_type value = 2;
-    }
-    repeated MapEntry map = N;
+      message MapEntry {
+        key_type key = 1;
+        value_type value = 2;
+      }
+      repeated MapEntry map = N;
   """
-  # Can't look at field_descriptor.message_type._concrete_class because it may
-  # not have been initialized yet.
-  message_type = field_descriptor.message_type
-  encode_message = MessageEncoder(field_descriptor.number, False, False)
+
+  tag_bytes = TagBytes(
+      field_descriptor.number, wire_format.WIRETYPE_LENGTH_DELIMITED
+  )
+  local_EncodeVarint = _EncodeVarint
 
   def EncodeField(write, value, deterministic):
     value_keys = sorted(value.keys()) if deterministic else value
     for key in value_keys:
-      entry_msg = message_type._concrete_class(key=key, value=value[key])
-      encode_message(write, entry_msg, deterministic)
+      val = value[key]
+      entry_size = key_sizer(key) + value_sizer(val)
+
+      write(tag_bytes)
+      local_EncodeVarint(write, entry_size, deterministic)
+      key_encoder(write, key, deterministic)
+      value_encoder(write, val, deterministic)
 
   return EncodeField

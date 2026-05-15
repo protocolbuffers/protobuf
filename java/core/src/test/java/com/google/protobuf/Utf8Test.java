@@ -87,27 +87,20 @@ public class Utf8Test {
 
   private static void assertIsValid(byte[] data, boolean valid) {
     assertWithMessage("isValidUtf8[ARRAY]")
-        .that(safeProcessor.isValidUtf8(data, 0, data.length))
-        .isEqualTo(valid);
-    assertWithMessage("isValidUtf8[ARRAY_UNSAFE]")
-        .that(unsafeProcessor.isValidUtf8(data, 0, data.length))
+        .that(Utf8.isValidUtf8(data, 0, data.length))
         .isEqualTo(valid);
 
     ByteBuffer buffer = ByteBuffer.wrap(data);
     assertWithMessage("isValidUtf8[NIO_HEAP]")
-        .that(safeProcessor.isValidUtf8BufferDefault(buffer, buffer.position(), buffer.remaining()))
+        .that(Utf8.isValidUtf8(buffer))
         .isEqualTo(valid);
 
     // Direct buffers.
     buffer = ByteBuffer.allocateDirect(data.length);
     buffer.put(data);
     buffer.flip();
-    assertWithMessage("isValidUtf8[NIO_DEFAULT]")
-        .that(safeProcessor.isValidUtf8BufferDefault(buffer, buffer.position(), buffer.remaining()))
-        .isEqualTo(valid);
-    assertWithMessage("isValidUtf8[NIO_UNSAFE]")
-        .that(
-            unsafeProcessor.isValidUtf8BufferDirect(buffer, buffer.position(), buffer.remaining()))
+    assertWithMessage("isValidUtf8[NIO_DIRECT]")
+        .that(Utf8.isValidUtf8(buffer))
         .isEqualTo(valid);
   }
 

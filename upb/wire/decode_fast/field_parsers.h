@@ -12,6 +12,7 @@
 #include <stdint.h>
 
 #include "upb/message/message.h"
+#include "upb/mini_table/message.h"
 #include "upb/wire/decode_fast/combinations.h"
 
 // Must be last.
@@ -26,30 +27,44 @@ struct upb_Decoder;
 // Declare all fast decoder functions. These are referenced by name from either
 // the generated code or the array in decode_fast_function_array.c.
 
-#define PARSE_PARAMS                                                        \
-  struct upb_Decoder *d, const char *ptr, upb_Message *msg, intptr_t table, \
-      uint64_t hasbits, uint64_t data
+#define PARSE_PARAMS                                               \
+  struct upb_Decoder *d, const char *ptr, upb_Message *msg,        \
+      const upb_MiniTable *table, uint64_t hasbits, uint64_t data, \
+      uint64_t data2
 
-#define F(type, card, size)                                         \
-  UPB_PRESERVE_NONE const char* UPB_DECODEFAST_FUNCNAME(type, card, \
-                                                        size)(PARSE_PARAMS);
+struct upb_FastDecoder_Return;
+
+#define F(type, card, size)                                                \
+  UPB_PRESERVE_NONE struct upb_FastDecoder_Return UPB_DECODEFAST_FUNCNAME( \
+      type, card, size)(PARSE_PARAMS);
 
 UPB_DECODEFAST_FUNCTIONS(F);
 
 // This just uses the regular (non-fast) parser to parse a single field.
 UPB_PRESERVE_NONE
-const char* _upb_FastDecoder_FallbackToMiniTable(PARSE_PARAMS);
+struct upb_FastDecoder_Return _upb_FastDecoder_FallbackToMiniTable(
+    PARSE_PARAMS);
 
 UPB_PRESERVE_NONE
-const char* _upb_FastDecoder_DecodeGeneric(PARSE_PARAMS);
+struct upb_FastDecoder_Return _upb_FastDecoder_DecodeGeneric(PARSE_PARAMS);
 
 UPB_PRESERVE_NONE
-const char* _upb_FastDecoder_DecodeMismatchedSlot(PARSE_PARAMS);
+struct upb_FastDecoder_Return _upb_FastDecoder_DecodeMismatchedSlot(
+    PARSE_PARAMS);
 
 UPB_PRESERVE_NONE
-const char* _upb_FastDecoder_DecodeUnknown(PARSE_PARAMS);
+struct upb_FastDecoder_Return _upb_FastDecoder_DecodeUnknown(PARSE_PARAMS);
 UPB_PRESERVE_NONE
-const char* _upb_FastDecoder_DecodeExtensionOrUnknown(PARSE_PARAMS);
+struct upb_FastDecoder_Return _upb_FastDecoder_DecodeExtensionOrUnknown(
+    PARSE_PARAMS);
+
+UPB_PRESERVE_NONE
+struct upb_FastDecoder_Return _upb_FastDecoder_DecodeCheckMiniTable(
+    PARSE_PARAMS);
+
+UPB_PRESERVE_NONE
+struct upb_FastDecoder_Return _upb_FastDecoder_DecodeCheckExtRegMiniTable(
+    PARSE_PARAMS);
 
 #undef F
 #undef PARSE_PARAMS

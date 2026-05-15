@@ -300,6 +300,9 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps, aliases, runtime):
         srcs = depset([src] + extra_srcs)
 
     # TODO: Use higher level rules_rust API once available.
+    rustc_compile_action_extra_args = {}
+    if _rust_version_ge("0.70"):
+        rustc_compile_action_extra_args["allowed_unstable_rust_features"] = ["register_tool"]
     providers = rustc_compile_action(
         ctx = ctx,
         attr = attr,
@@ -326,6 +329,7 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps, aliases, runtime):
             owner = ctx.label,
         ),
         output_hash = output_hash,
+        **rustc_compile_action_extra_args
     )
 
     return DepVariantInfo(
