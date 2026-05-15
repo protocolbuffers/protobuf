@@ -219,3 +219,11 @@ message TestRepeatedMessageBig {
   repeated TestRepeatedMessageBig repeated_message = 1;
   repeated bytes repeated_bytes = 2;
 }
+
+message TestDuplicateFunctionNames {
+  optional bool random = 6;
+  oneof value {
+    bytes body = 1;
+    bool clear_body = 2;
+  }
+}

@@ -19,6 +19,7 @@ conformance_test(
 # below can use it.
 genrule(
     name = "copy_cmake_lists",
+    testonly = True,
     srcs = ["//pkg:gen_src_file_lists"],
     outs = ["cmake_copy/file_lists.cmake"],
     cmd = "cp $< $@",

@@ -306,7 +306,7 @@ See documentation in <code>proto_info.bzl</code>.
 """ + _extra_doc,
     attrs = {
         "_protocopt": attr.label(
-            default = "//bazel/flags/cc:protocopt",
+            default = "//bazel/flags:protocopt",
         ),
         "srcs": attr.label_list(
             allow_files = [".proto", ".protodevel"],

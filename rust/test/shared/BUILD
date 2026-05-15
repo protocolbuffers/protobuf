@@ -510,6 +510,34 @@ rust_test(
 )
 
 rust_test(
+    name = "message_generics_cpp_test",
+    srcs = ["message_generics_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp": "protobuf",
+    },
+    rustc_flags = ["--cfg=bzl"],
+    deps = [
+        "//rust:protobuf_cpp",
+        "//rust/test:unittest_cpp_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "message_generics_upb_test",
+    srcs = ["message_generics_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb": "protobuf",
+    },
+    rustc_flags = ["--cfg=bzl"],
+    deps = [
+        "//rust:protobuf_upb",
+        "//rust/test:unittest_upb_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
     name = "proto_macro_cpp_test",
     srcs = ["proto_macro_test.rs"],
     aliases = {

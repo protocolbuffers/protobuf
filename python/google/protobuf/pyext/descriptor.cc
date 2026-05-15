@@ -19,11 +19,8 @@
 #include <string>
 
 #include "google/protobuf/descriptor.pb.h"
-#include "absl/base/attributes.h"
-#include "absl/base/const_init.h"
-#include "absl/base/thread_annotations.h"
+#include "absl/base/no_destructor.h"
 #include "absl/container/flat_hash_map.h"
-#include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
@@ -35,6 +32,7 @@
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/message_factory.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
+#include "google/protobuf/pyext/weak_value_map.h"
 
 #define PyString_AsStringAndSize(ob, charpp, sizep)              \
   (PyUnicode_Check(ob)                                           \
@@ -75,19 +73,16 @@ namespace google {
 namespace protobuf {
 namespace python {
 
-// Mutex to protect interned_descriptors from concurrent access in
-// free-threading Python builds. Zero-cost in GIL-enabled builds.
-// NOTE: Free-threading support is still experimental.
-FreeThreadingMutex interned_descriptors_mutex(absl::kConstInit);
-
 // Store interned descriptors, so that the same C++ descriptor yields the same
 // Python object. Objects are not immortal: this map does not own the
 // references, and items are deleted when the last reference to the object is
 // released.
 // This is enough to support the "is" operator on live objects.
 // All descriptors are stored here.
-absl::flat_hash_map<const void*, PyObject*>* interned_descriptors
-    ABSL_PT_GUARDED_BY(interned_descriptors_mutex);
+static PyWeakValueMap* GetInternedDescriptorsCache() {
+  static absl::NoDestructor<PyWeakValueMap> cache;
+  return cache.get();
+}
 
 PyObject* PyString_FromCppString(absl::string_view str) {
   return PyUnicode_FromStringAndSize(str.data(),
@@ -249,13 +244,16 @@ bool Reparse(PyMessageFactory* message_factory, const Message& from,
 //
 // Always returns a new reference.
 static PyObject* GetOrBuildMessageInDefaultPool(
-    absl::flat_hash_map<const void*, PyObject*>& cache, const void* key,
-    const Message& message) {
+    absl::flat_hash_map<const void*, PyObject*>& cache,
+    FreeThreadingMutex* cache_mutex, const void* key, const Message& message) {
   // First search in the cache.
-  if (cache.find(key) != cache.end()) {
-    PyObject* value = cache[key];
-    Py_INCREF(value);
-    return value;
+  {
+    FreeThreadingLockGuard lock(*cache_mutex);
+    if (cache.find(key) != cache.end()) {
+      PyObject* value = cache[key];
+      Py_INCREF(value);
+      return value;
+    }
   }
 
   // Similar to the C++ implementation, we return a message object from the
@@ -307,8 +305,16 @@ static PyObject* GetOrBuildMessageInDefaultPool(
   }
 
   // Cache the result.
-  Py_INCREF(value.get());
-  cache[key] = value.get();
+  {
+    FreeThreadingLockGuard lock(*cache_mutex);
+    if (cache.find(key) != cache.end()) {
+      PyObject* existing_value = cache[key];
+      Py_INCREF(existing_value);
+      return existing_value;
+    }
+    Py_INCREF(value.get());
+    cache[key] = value.get();
+  }
 
   return value.release();
 }
@@ -319,7 +325,8 @@ static PyObject* GetOrBuildOptions(const DescriptorClass* descriptor) {
   PyDescriptorPool* caching_pool =
       GetDescriptorPool_FromPool(GetFileDescriptor(descriptor)->pool());
   return GetOrBuildMessageInDefaultPool(*caching_pool->descriptor_options,
-                                        descriptor, descriptor->options());
+                                        caching_pool->cache_mutex, descriptor,
+                                        descriptor->options());
 }
 
 template <class DescriptorClass>
@@ -334,7 +341,8 @@ static PyObject* GetFeaturesImpl(const DescriptorClass* descriptor) {
   PyDescriptorPool* caching_pool =
       GetDescriptorPool_FromPool(GetFileDescriptor(descriptor)->pool());
   return GetOrBuildMessageInDefaultPool(*caching_pool->descriptor_features,
-                                        descriptor, features);
+                                        caching_pool->cache_mutex, descriptor,
+                                        features);
 }
 
 // Copy the C++ descriptor to a Python message.
@@ -410,77 +418,42 @@ PyObject* NewInternedDescriptor(PyTypeObject* type,
     return nullptr;
   }
 
-  // See if the object is in the map of interned descriptors
-  PyObject* existing = nullptr;
-  {
-    FreeThreadingLockGuard lock(interned_descriptors_mutex);
-    auto it = interned_descriptors->find(descriptor);
-    if (it != interned_descriptors->end()) {
-      ABSL_DCHECK(Py_TYPE(it->second) == type);
-      existing = it->second;
-    }
-  }
-  // Py_INCREF must be called outside the lock to avoid deadlock
-  if (existing != nullptr) {
-    Py_INCREF(existing);
-    return existing;
-  }
+  return GetInternedDescriptorsCache()->GetOrInsert(
+      descriptor, type, [&]() -> PyObject* {
+        // Create a new descriptor object
+        PyBaseDescriptor* py_descriptor =
+            PyObject_GC_New(PyBaseDescriptor, type);
+        if (py_descriptor == nullptr) {
+          return nullptr;
+        }
+        py_descriptor->descriptor = descriptor;
 
-  // Create a new descriptor object
-  PyBaseDescriptor* py_descriptor = PyObject_GC_New(PyBaseDescriptor, type);
-  if (py_descriptor == nullptr) {
-    return nullptr;
-  }
-  py_descriptor->descriptor = descriptor;
+        // Ensures that the DescriptorPool stays alive.
+        PyDescriptorPool* pool =
+            GetDescriptorPool_FromPool(GetFileDescriptor(descriptor)->pool());
+        if (pool == nullptr) {
+          // Don't DECREF, the object is not fully initialized.
+          PyObject_Del(py_descriptor);
+          return nullptr;
+        }
+        Py_INCREF(pool);
+        py_descriptor->pool = pool;
 
-  // Ensures that the DescriptorPool stays alive.
-  PyDescriptorPool* pool =
-      GetDescriptorPool_FromPool(GetFileDescriptor(descriptor)->pool());
-  if (pool == nullptr) {
-    // Don't DECREF, the object is not fully initialized.
-    PyObject_Del(py_descriptor);
-    return nullptr;
-  }
-  Py_INCREF(pool);
-  py_descriptor->pool = pool;
+        PyObject_GC_Track(py_descriptor);
 
-  PyObject_GC_Track(py_descriptor);
+        if (was_created) {
+          *was_created = true;
+        }
 
-  // Cache the fully initialized descriptor.
-  // Check again if another thread cached it while we were initializing.
-  {
-    FreeThreadingLockGuard lock(interned_descriptors_mutex);
-    auto [it, inserted] = interned_descriptors->insert(
-        std::make_pair(descriptor, reinterpret_cast<PyObject*>(py_descriptor)));
-    if (!inserted) {
-      // Another thread beat us to it. Use the existing descriptor.
-      ABSL_DCHECK(Py_TYPE(it->second) == type);
-      existing = it->second;
-    }
-  }
-
-  // If another thread cached first, clean up our descriptor and use theirs
-  if (existing != nullptr) {
-    Py_DECREF(py_descriptor);
-    Py_INCREF(existing);
-    return existing;
-  }
-
-  if (was_created) {
-    *was_created = true;
-  }
-  return reinterpret_cast<PyObject*>(py_descriptor);
+        return reinterpret_cast<PyObject*>(py_descriptor);
+      });
 }
 
 static void Dealloc(PyObject* pself) {
   PyBaseDescriptor* self = reinterpret_cast<PyBaseDescriptor*>(pself);
-  // Remove from interned dictionary
-  {
-    FreeThreadingLockGuard lock(interned_descriptors_mutex);
-    interned_descriptors->erase(self->descriptor);
-  }
-  Py_CLEAR(self->pool);
   PyObject_GC_UnTrack(pself);
+  GetInternedDescriptorsCache()->EraseIfEqual(self->descriptor, pself);
+  Py_CLEAR(self->pool);
   Py_TYPE(self)->tp_free(pself);
 }
 
@@ -2150,9 +2123,6 @@ bool InitDescriptor() {
   if (PyType_Ready(&PyMethodDescriptor_Type) < 0) return false;
 
   if (!InitDescriptorMappingTypes()) return false;
-
-  // Initialize globals defined in this file.
-  interned_descriptors = new absl::flat_hash_map<const void*, PyObject*>;
 
   return true;
 }

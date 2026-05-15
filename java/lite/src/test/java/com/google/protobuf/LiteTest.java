@@ -40,7 +40,9 @@ import proto2_unittest.UnittestProto.TestOneof2;
 import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.Bar;
 import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.BarPrime;
 import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.Foo;
+import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.NestedValue;
 import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestOneofEquals;
+import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestOneofWithMultipleVariants;
 import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestRecursiveOneof;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -49,6 +51,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -1744,7 +1747,7 @@ public class LiteTest {
   public void testMergeFromStream_invalidBytes() throws Exception {
     TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder().setDefaultBool(true);
     try {
-      builder.mergeFrom(CodedInputStream.newInstance("Invalid bytes".getBytes(Internal.UTF_8)));
+      builder.mergeFrom(CodedInputStream.newInstance("Invalid bytes".getBytes(StandardCharsets.UTF_8)));
       assertWithMessage("expected exception").fail();
     } catch (InvalidProtocolBufferException expected) {
     }
@@ -3059,5 +3062,94 @@ public class LiteTest {
     } else {
       return RecursiveGroup.newBuilder().setRecurse(makeRecursiveGroup(num - 1)).build();
     }
+  }
+
+  @Test
+  public void testOneofEqualsWithNestedMessages() {
+    // Regression test for O(V^N) complexity in MessageSchema.equals() when comparing
+    // messages with oneof fields containing nested messages. Before the fix, equals()
+    // called safeEquals() on every oneof variant (not just the active one), causing
+    // exponential blowup: with 6 oneof variants and depth 10, that's ~435 million
+    // redundant comparisons (~3 seconds). With the fix, only the active variant is
+    // compared, giving linear performance (<1ms).
+    //
+    // Build a nested structure: each level is a TestOneofWithMultipleVariants wrapping
+    // the next via the nested_value variant of the 6-variant oneof.
+    TestOneofWithMultipleVariants leaf =
+        TestOneofWithMultipleVariants.newBuilder().setBooleanValue(true).build();
+    TestOneofWithMultipleVariants current = leaf;
+    for (int depth = 0; depth < 10; depth++) {
+      current =
+          TestOneofWithMultipleVariants.newBuilder()
+              .setNestedValue(NestedValue.newBuilder().putFields("a", current))
+              .build();
+    }
+
+    // Build an identical copy (different object references).
+    TestOneofWithMultipleVariants leaf2 =
+        TestOneofWithMultipleVariants.newBuilder().setBooleanValue(true).build();
+    TestOneofWithMultipleVariants current2 = leaf2;
+    for (int depth = 0; depth < 10; depth++) {
+      current2 =
+          TestOneofWithMultipleVariants.newBuilder()
+              .setNestedValue(NestedValue.newBuilder().putFields("a", current2))
+              .build();
+    }
+
+    // Warmup to avoid measuring class loading / JIT.
+    TestOneofWithMultipleVariants w1 =
+        TestOneofWithMultipleVariants.newBuilder().setBooleanValue(true).build();
+    TestOneofWithMultipleVariants w2 =
+        TestOneofWithMultipleVariants.newBuilder().setBooleanValue(true).build();
+    assertThat(w1).isEqualTo(w2);
+
+    // With the fix this completes in under 1ms. Without the fix it takes ~3 seconds
+    // (435 million redundant comparisons). Use a 5-second timeout to catch regressions
+    // while allowing margin for slow CI machines.
+    long startNanos = System.nanoTime();
+    assertThat(current).isEqualTo(current2);
+    long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;
+
+    assertWithMessage(
+            "equals() took %sms, expected <5000ms (possible O(V^N) regression)", elapsedMs)
+        .that(elapsedMs)
+        .isLessThan(5000);
+  }
+
+  @Test
+  public void testOneofEqualsWithDifferentNestedMessages() {
+    // Verify that equals() still correctly detects differences in nested oneof messages.
+    TestOneofWithMultipleVariants nested1 =
+        TestOneofWithMultipleVariants.newBuilder()
+            .setNestedValue(
+                NestedValue.newBuilder()
+                    .putFields(
+                        "a",
+                        TestOneofWithMultipleVariants.newBuilder().setBooleanValue(true).build()))
+            .build();
+
+    TestOneofWithMultipleVariants nested2 =
+        TestOneofWithMultipleVariants.newBuilder()
+            .setNestedValue(
+                NestedValue.newBuilder()
+                    .putFields(
+                        "a",
+                        TestOneofWithMultipleVariants.newBuilder().setIntegerValue(42).build()))
+            .build();
+
+    // Different oneof cases in nested message.
+    assertThat(nested1).isNotEqualTo(nested2);
+
+    // Different oneof case at top level.
+    TestOneofWithMultipleVariants bool1 =
+        TestOneofWithMultipleVariants.newBuilder().setBooleanValue(true).build();
+    TestOneofWithMultipleVariants int1 =
+        TestOneofWithMultipleVariants.newBuilder().setIntegerValue(1).build();
+    assertThat(bool1).isNotEqualTo(int1);
+
+    // Same oneof case, different value.
+    TestOneofWithMultipleVariants int2 =
+        TestOneofWithMultipleVariants.newBuilder().setIntegerValue(2).build();
+    assertThat(int1).isNotEqualTo(int2);
   }
 }

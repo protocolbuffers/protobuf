@@ -72,7 +72,7 @@ auto ReprDynamicMessage(int value) {
   //   throw std::runtime_error("Failed to build file descriptor");
   // }
   const Descriptor* descriptor =
-      pool.FindMessageTypeByName("google_protobuf_unittest.TestAllTypes");
+      pool.FindMessageTypeByName("proto2_unittest.TestAllTypes");
   if (!descriptor) {
     throw std::runtime_error("Failed to find file descriptor");
   }

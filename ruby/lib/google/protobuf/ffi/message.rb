@@ -26,6 +26,7 @@ module Google
       attach_function :message_next,            :upb_Message_Next,            [:Message, Descriptor, :DefPool, :FieldDefPointer, MessageValue.by_ref, :pointer], :bool
       attach_function :message_freeze,          :upb_Message_Freeze,          [:Message, MiniTable.by_ref], :void
       attach_function :message_frozen?,         :upb_Message_IsFrozen,        [:Message], :bool
+      attach_function :message_shallow_copy,    :upb_Message_ShallowCopy,     [:Message, :Message, MiniTable.by_ref, Internal::Arena], :bool
 
       # MessageValue
       attach_function :message_value_equal,     :shared_Msgval_IsEqual,       [MessageValue.by_value, MessageValue.by_value, CType, Descriptor], :bool
@@ -92,11 +93,12 @@ module Google
          end
 
           def dup
-            duplicate = self.class.private_constructor(@arena)
             mini_table = Google::Protobuf::FFI.get_mini_table(self.class.descriptor)
-            size = mini_table[:size]
-            duplicate.instance_variable_get(:@msg).write_string_length(@msg.read_string_length(size), size)
-            duplicate
+            new_msg = Google::Protobuf::FFI.new_message_from_def(mini_table, @arena)
+            unless Google::Protobuf::FFI.message_shallow_copy(new_msg, @msg, mini_table, @arena)
+              raise RuntimeError.new "Failed to shallow copy message."
+            end
+            self.class.private_constructor(@arena, msg: new_msg)
           end
           alias clone dup
 

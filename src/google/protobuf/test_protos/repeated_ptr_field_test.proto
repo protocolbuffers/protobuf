@@ -1,0 +1,8 @@
+edition = "2024";
+
+package proto2_unittest;
+
+message RepFieldSortMessage {
+  int32 i = 1;
+  string s = 2;
+}

@@ -77,11 +77,6 @@ config_setting(
         "@platforms//os:linux",
         "@platforms//cpu:aarch64",
     ],
-    # TODO: Remove this once the arch tests can successfully run on the "emulation"
-    # docker images.
-    flag_values = {
-        "//toolchain:release": "True",
-    },
 )
 
 config_setting(
@@ -90,21 +85,6 @@ config_setting(
         "@platforms//os:linux",
         "@platforms//cpu:x86_64",
     ],
-    # TODO: Remove this once the arch tests can successfully run on the "emulation"
-    # docker images.
-    flag_values = {
-        "//toolchain:release": "True",
-    },
-)
-
-config_setting(
-    name = "aarch64",
-    values = {"cpu": "linux-aarch_64"},
-)
-
-config_setting(
-    name = "x86_64",
-    values = {"cpu": "linux-x86_64"},
 )
 
 # Android NDK builds can specify different crosstool_top flags to choose which
@@ -158,43 +138,13 @@ config_setting(
 )
 
 config_setting(
-    name = "config_win32",
-    values = {
-        "cpu": "win32",
-    },
-)
-
-config_setting(
-    name = "config_win64",
-    values = {
-        "cpu": "win64",
-    },
-)
-
-selects.config_setting_group(
     name = "config_win",
-    match_any = [
-        ":config_win32",
-        ":config_win64",
-    ],
+    constraint_values = ["@platforms//os:windows"],
 )
 
 config_setting(
-    name = "config_osx_aarch64",
-    values = {"cpu": "osx-aarch_64"},
-)
-
-config_setting(
-    name = "config_osx_x86_64",
-    values = {"cpu": "osx-x86_64"},
-)
-
-selects.config_setting_group(
     name = "config_osx",
-    match_any = [
-        ":config_osx_aarch64",
-        ":config_osx_x86_64",
-    ],
+    constraint_values = ["@platforms//os:osx"],
 )
 
 # Internal testing:

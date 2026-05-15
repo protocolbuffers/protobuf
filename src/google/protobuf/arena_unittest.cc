@@ -20,16 +20,24 @@
 #include <new>  // IWYU pragma: keep for operator new
 #include <string>
 #include <thread>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/base/attributes.h"
+#include "absl/base/config.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/hash/hash_testing.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/barrier.h"
+#include "absl/types/optional.h"
 #include "absl/utility/utility.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_test_util.h"
@@ -62,8 +70,11 @@ using proto2_unittest::TestEmptyMessage;
 using proto2_unittest::TestOneof2;
 using proto2_unittest::TestRepeatedString;
 using ::testing::AnyOf;
+using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::HasSubstr;
+using ::testing::Optional;
+using ::testing::Pointee;
 
 namespace google {
 namespace protobuf {
@@ -555,6 +566,7 @@ class DispatcherTestProto : public Message {
   }
   const internal::ClassData* GetClassData() const PROTOBUF_FINAL {
     ABSL_LOG(FATAL);
+    return nullptr;
   }
 };
 DispatcherTestProto dispatcher_test_proto_instance(absl::in_place);
@@ -1940,6 +1952,566 @@ TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
   for (char& c : buf) {
     ASSERT_FALSE(internal::IsMemoryPoisoned(&c));
   }
+}
+
+class ArenaUniquePtrTest : public testing::TestWithParam<bool> {
+ protected:
+  Arena* GetArena() {
+    if (GetParam()) {
+      return &arena_;
+    } else {
+      return nullptr;
+    }
+  }
+
+ private:
+  Arena arena_;
+};
+
+INSTANTIATE_TEST_SUITE_P(ArenaUniquePtrHeap, ArenaUniquePtrTest,
+                         testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(ArenaUniquePtrArena, ArenaUniquePtrTest,
+                         testing::Values(true));
+
+TEST_P(ArenaUniquePtrTest, Typedefs) {
+  EXPECT_TRUE((std::is_same_v<Arena::UniquePtr<int>::pointer, int*>));
+  EXPECT_TRUE((std::is_same_v<Arena::UniquePtr<const TestAllTypes>::pointer,
+                              const TestAllTypes*>));
+  EXPECT_TRUE(
+      (std::is_same_v<Arena::UniquePtr<const int>::element_type, const int>));
+  EXPECT_TRUE((std::is_same_v<Arena::UniquePtr<TestAllTypes>::element_type,
+                              TestAllTypes>));
+}
+
+TEST_P(ArenaUniquePtrTest, DefaultConstructor) {
+  using Ptr = Arena::UniquePtr<int>;
+
+  Ptr ptr;
+  EXPECT_FALSE(ptr);
+  EXPECT_EQ(nullptr, ptr.get());
+  EXPECT_EQ(nullptr, ptr.GetOwningArena());
+
+  Ptr ptr2 = nullptr;
+  EXPECT_FALSE(ptr2);
+  EXPECT_EQ(nullptr, ptr2.get());
+  EXPECT_EQ(nullptr, ptr2.GetOwningArena());
+}
+
+TEST_P(ArenaUniquePtrTest, StdUniquePtrConstructor) {
+  using Ptr = Arena::UniquePtr<int>;
+
+  auto std_ptr = std::make_unique<int>(7);
+  int* raw = std_ptr.get();
+
+  Ptr ptr = std::move(std_ptr);
+  EXPECT_TRUE(ptr);
+  EXPECT_THAT(ptr, Pointee(7));
+  EXPECT_EQ(raw, ptr.get());
+  EXPECT_EQ(nullptr, ptr.GetOwningArena());
+}
+
+TEST_P(ArenaUniquePtrTest, UnsafeWrapUniquePtr) {
+  auto* raw = Arena::Create<int>(GetArena(), 7);
+  Arena::UniquePtr<int> ptr = Arena::UnsafeWrapUniquePtr(GetArena(), raw);
+  EXPECT_EQ(raw, ptr.get());
+
+  // It should be properly cleaned up in the heap case. Otherwise, the leak
+  // checker would see the memory leak.
+}
+
+TEST_P(ArenaUniquePtrTest, MoveConstruct) {
+  Arena::UniquePtr<TestAllTypes> msg =
+      Arena::MakeUnique<TestAllTypes>(GetArena());
+
+  auto* raw = msg.get();
+  auto other = std::move(msg);
+  EXPECT_EQ(raw, other.get());
+  EXPECT_EQ(GetArena(), other.GetOwningArena());
+
+  EXPECT_TRUE(msg == nullptr);
+
+  // Here we test the status quo. UniquePtr does not specify if the arena is
+  // kept after a move.
+  EXPECT_EQ(GetArena(), msg.GetOwningArena());
+}
+
+TEST_P(ArenaUniquePtrTest, MoveAssign) {
+  Arena::UniquePtr<TestAllTypes> msg =
+      Arena::MakeUnique<TestAllTypes>(GetArena());
+
+  auto* raw = msg.get();
+  Arena::UniquePtr<TestAllTypes> other;
+  other = std::move(msg);
+  EXPECT_EQ(raw, other.get());
+  EXPECT_EQ(GetArena(), other.GetOwningArena());
+
+  EXPECT_TRUE(msg == nullptr);
+  // Here we test the status quo. UniquePtr does not specify if the arena is
+  // kept after a move.
+  EXPECT_EQ(GetArena(), msg.GetOwningArena());
+}
+
+TEST_P(ArenaUniquePtrTest, ConversionConstructor) {
+  Arena::UniquePtr<TestAllTypes> ptr =
+      Arena::MakeUnique<TestAllTypes>(GetArena());
+  TestAllTypes* raw = ptr.get();
+
+  // Conversion to base
+  Arena::UniquePtr<Message> base = std::move(ptr);
+  EXPECT_EQ(raw, base.get());
+
+  // Conversion to const
+  Arena::UniquePtr<const Message> cbase = std::move(base);
+  EXPECT_EQ(raw, cbase.get());
+}
+
+TEST_P(ArenaUniquePtrTest, ConversionAssignment) {
+  Arena::UniquePtr<TestAllTypes> ptr =
+      Arena::MakeUnique<TestAllTypes>(GetArena());
+  Arena::UniquePtr<Message> base;
+  Arena::UniquePtr<const Message> cbase;
+
+  TestAllTypes* raw = ptr.get();
+
+  // Conversion to base
+  base = std::move(ptr);
+  EXPECT_EQ(raw, base.get());
+
+  // Conversion to const
+  cbase = std::move(base);
+  EXPECT_EQ(raw, cbase.get());
+}
+
+TEST_P(ArenaUniquePtrTest, ConstPointerType) {
+  Arena::UniquePtr<const int> ptr = Arena::MakeUnique<int>(GetArena());
+  EXPECT_TRUE((std::is_same_v<decltype(*ptr), const int&>));
+  EXPECT_TRUE((std::is_same_v<decltype(ptr.get()), const int*>));
+  EXPECT_TRUE((std::is_same_v<decltype(ptr.operator->()), const int*>));
+}
+
+TEST_P(ArenaUniquePtrTest, Reset) {
+  using Ptr = Arena::UniquePtr<int>;
+  auto make = [] {
+    Ptr ptr = std::make_unique<int>(3);
+    ABSL_CHECK(ptr);
+    ABSL_CHECK_NE(nullptr, ptr.get());
+    return ptr;
+  };
+
+  Ptr ptr = make();
+  ptr = nullptr;
+  EXPECT_FALSE(ptr);
+  EXPECT_EQ(nullptr, ptr.get());
+
+  ptr = make();
+  ptr.reset();
+  EXPECT_FALSE(ptr);
+  EXPECT_EQ(nullptr, ptr.get());
+
+  ptr = make();
+  ptr.reset(nullptr);
+  EXPECT_FALSE(ptr);
+  EXPECT_EQ(nullptr, ptr.get());
+}
+
+TEST_P(ArenaUniquePtrTest, Swap) {
+  Arena::UniquePtr<int> a = Arena::MakeUnique<int>(GetArena(), 3);
+  Arena::UniquePtr<int> b = std::make_unique<int>(7);
+
+  ASSERT_THAT(a, Pointee(3));
+  ASSERT_THAT(b, Pointee(7));
+  ASSERT_EQ(GetArena(), a.GetOwningArena());
+  ASSERT_EQ(nullptr, b.GetOwningArena());
+
+  a.swap(b);
+  EXPECT_THAT(a, Pointee(7));
+  EXPECT_THAT(b, Pointee(3));
+  EXPECT_EQ(nullptr, a.GetOwningArena());
+  EXPECT_EQ(GetArena(), b.GetOwningArena());
+
+  swap(a, b);
+  EXPECT_THAT(a, Pointee(3));
+  EXPECT_THAT(b, Pointee(7));
+  EXPECT_EQ(GetArena(), a.GetOwningArena());
+  EXPECT_EQ(nullptr, b.GetOwningArena());
+}
+
+TEST_P(ArenaUniquePtrTest, InvalidOperations) {
+  // Not copyable
+  EXPECT_FALSE(std::is_copy_constructible_v<Arena::UniquePtr<int>>);
+  EXPECT_FALSE(std::is_copy_assignable_v<Arena::UniquePtr<int>>);
+
+  // Can't assign directly from raw pointer
+  EXPECT_FALSE((std::is_constructible_v<Arena::UniquePtr<int>, int*>));
+  EXPECT_FALSE((std::is_assignable_v<Arena::UniquePtr<int>, int*>));
+
+  // We can't downcast or drop const
+  EXPECT_FALSE((std::is_constructible_v<Arena::UniquePtr<TestAllTypes>,
+                                        Arena::UniquePtr<const TestAllTypes>>));
+  EXPECT_FALSE((std::is_assignable_v<Arena::UniquePtr<TestAllTypes>,
+                                     Arena::UniquePtr<const TestAllTypes>>));
+  EXPECT_FALSE((std::is_constructible_v<Arena::UniquePtr<TestAllTypes>,
+                                        Arena::UniquePtr<Message>>));
+  EXPECT_FALSE((std::is_assignable_v<Arena::UniquePtr<TestAllTypes>,
+                                     Arena::UniquePtr<Message>>));
+
+  // Not constructible from unique_ptr with non-default deleters.
+  struct MyDeleter {};
+  EXPECT_FALSE((std::is_constructible_v<Arena::UniquePtr<int>,
+                                        std::unique_ptr<int, MyDeleter>>));
+
+  const auto call_reset =
+      [](auto in) -> decltype(std::declval<Arena::UniquePtr<int>>().reset(in)) {
+  };
+  // Verify the callable
+  ASSERT_TRUE((std::is_invocable_v<decltype(call_reset), std::nullptr_t>));
+  // Try it with int*
+  EXPECT_FALSE((std::is_invocable_v<decltype(call_reset), int*>));
+}
+
+TEST_P(ArenaUniquePtrTest, MakeUniqueSimpleType) {
+  Arena::UniquePtr<int> int_p = Arena::MakeUnique<int>(GetArena());
+  EXPECT_THAT(int_p, Pointee(0));
+  EXPECT_EQ(int_p.GetOwningArena(), GetArena());
+
+  int_p = Arena::MakeUnique<int>(GetArena(), 7);
+  EXPECT_THAT(int_p, Pointee(7));
+  EXPECT_EQ(int_p.GetOwningArena(), GetArena());
+}
+
+TEST_P(ArenaUniquePtrTest, MakeUniqueMessage) {
+  Arena::UniquePtr<TestAllTypes> msg =
+      Arena::MakeUnique<TestAllTypes>(GetArena());
+
+  EXPECT_EQ(msg->optional_int32(), 0);
+  msg->set_optional_int32(100);
+  EXPECT_EQ(msg->optional_int32(), 100);
+  EXPECT_EQ(msg.GetOwningArena(), GetArena());
+  EXPECT_EQ(msg->GetArena(), GetArena());
+
+  auto copy = Arena::MakeUnique<TestAllTypes>(GetArena(), *msg);
+  EXPECT_EQ(copy->optional_int32(), 100);
+  EXPECT_EQ(copy.GetOwningArena(), GetArena());
+  EXPECT_EQ(copy->GetArena(), GetArena());
+}
+
+TEST_P(ArenaUniquePtrTest, MakeUniqueRepeated) {
+  auto bools = Arena::MakeUnique<RepeatedField<bool>>(GetArena());
+  bools->Add(true);
+  bools->Add(false);
+  EXPECT_THAT(bools, Pointee(ElementsAre(true, false)));
+  EXPECT_EQ(bools.GetOwningArena(), GetArena());
+  EXPECT_EQ(bools->GetArena(), GetArena());
+
+  auto msgs = Arena::MakeUnique<RepeatedPtrField<TestAllTypes>>(GetArena());
+  EXPECT_EQ(msgs.GetOwningArena(), GetArena());
+  EXPECT_EQ(msgs->Add()->GetArena(), GetArena());
+}
+
+TEST_P(ArenaUniquePtrTest, TryHeapRelease) {
+  Arena::UniquePtr<int> ptr = Arena::MakeUnique<int>(GetArena(), 7);
+
+  auto released = ptr.try_heap_release();
+  if (GetArena() == nullptr) {
+    EXPECT_THAT(released, Optional(Pointee(7)));
+    EXPECT_TRUE(ptr == nullptr);
+    // A second release fails. There is nothing to release.
+    EXPECT_EQ(ptr.try_heap_release(), absl::nullopt);
+  } else {
+    EXPECT_EQ(released, absl::nullopt);
+    EXPECT_THAT(ptr, Pointee(7));
+  }
+}
+
+TEST_P(ArenaUniquePtrTest, TryAsArenaPtr) {
+  Arena::UniquePtr<int> unique = Arena::MakeUnique<int>(GetArena(), 7);
+
+  auto ptr = unique.try_as_arena_ptr();
+
+  // Not modified.
+  EXPECT_THAT(unique, Pointee(7));
+
+  if (GetArena() == nullptr) {
+    EXPECT_EQ(ptr, absl::nullopt);
+  } else {
+    EXPECT_THAT(ptr, Optional(Pointee(7)));
+  }
+
+  // A null instance would fail even if it has an arena.
+  EXPECT_EQ(Arena::UnsafeWrapUniquePtr(GetArena(), static_cast<int*>(nullptr))
+                .try_as_arena_ptr(),
+            absl::nullopt);
+}
+
+
+TEST_P(ArenaUniquePtrTest, AbslStringify) {
+  Arena::UniquePtr<int> ptr = Arena::MakeUnique<int>(GetArena(), 4);
+  EXPECT_EQ(absl::StrCat(ptr), absl::StrFormat("%p", ptr.get()));
+
+  Arena::UniquePtr<TestAllTypes> msg =
+      Arena::MakeUnique<TestAllTypes>(GetArena());
+  msg->set_optional_int32(11);
+  EXPECT_EQ(absl::StrCat(msg),
+            absl::StrFormat("points to (%p) with value <%v>", msg.get(), *msg));
+
+  EXPECT_EQ(absl::StrCat(Arena::UniquePtr<int>()), absl::StrFormat("(nil)"));
+  EXPECT_EQ(absl::StrCat(Arena::UniquePtr<TestAllTypes>()),
+            absl::StrFormat("(nil)"));
+}
+
+TEST_P(ArenaUniquePtrTest, AbslHashValue) {
+  Arena::UniquePtr<int> ptr1 = Arena::MakeUnique<int>(GetArena(), 3);
+
+  Arena always_arena;
+  Arena::Ptr<int> ptr2 = always_arena.Make<int>(8);
+
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly(std::forward_as_tuple(
+      // From UniquePtr<>
+      ptr1, ptr1.get(),
+      // From Ptr<>
+      ptr2, ptr2.get(), Arena::UniquePtr<int>(ptr2),
+      // null
+      Arena::UniquePtr<int>(), static_cast<int*>(nullptr), nullptr)));
+}
+
+TEST_P(ArenaUniquePtrTest, AbslHashTableHeterogeneousSupport) {
+  absl::flat_hash_set<Arena::UniquePtr<int>> set;
+  for (int i = 0; i < 10; ++i) {
+    set.insert(Arena::MakeUnique<int>(GetArena(), i));
+  }
+
+  if (GetArena() != nullptr) {
+    Arena::Ptr<int> ptr = GetArena()->Make<int>();
+    EXPECT_FALSE(set.contains(ptr));
+    set.insert(ptr);
+    EXPECT_TRUE(set.contains(ptr));
+  }
+
+  auto it = set.begin();
+
+  // Query via UniquePtr
+  EXPECT_TRUE(set.contains(*it));
+  ++it;
+  // Query via T*
+  EXPECT_TRUE(set.contains(it->get()));
+
+  // Some negatives just to make sure
+  auto outside = Arena::MakeUnique<int>(GetArena());
+  EXPECT_FALSE(set.contains(outside));
+  EXPECT_FALSE(set.contains(outside.get()));
+
+  EXPECT_FALSE(set.contains(Arena::UniquePtr<int>()));
+  EXPECT_FALSE(set.contains(nullptr));
+  EXPECT_FALSE(set.contains(static_cast<int*>(nullptr)));
+  set.insert(Arena::UniquePtr<int>());
+  EXPECT_TRUE(set.contains(Arena::UniquePtr<int>()));
+  EXPECT_TRUE(set.contains(nullptr));
+  EXPECT_TRUE(set.contains(static_cast<int*>(nullptr)));
+}
+
+TEST(ArenaPtrTest, Typedefs) {
+  EXPECT_TRUE((std::is_same_v<Arena::Ptr<int>::pointer, int*>));
+  EXPECT_TRUE((std::is_same_v<Arena::Ptr<const TestAllTypes>::pointer,
+                              const TestAllTypes*>));
+  EXPECT_TRUE((std::is_same_v<Arena::Ptr<const int>::element_type, const int>));
+  EXPECT_TRUE(
+      (std::is_same_v<Arena::Ptr<TestAllTypes>::element_type, TestAllTypes>));
+}
+
+TEST(ArenaPtrTest, MakeCopyAssign) {
+  Arena arena;
+
+  Arena::Ptr<int> ptr = arena.Make<int>(4);
+  auto* raw = ptr.get();
+  EXPECT_THAT(ptr, Pointee(4));
+  // We can copy it
+  auto copy = ptr;
+  EXPECT_EQ(ptr.get(), copy.get());
+  EXPECT_EQ(raw, copy.get());
+
+  // Move is just copy
+  auto move = std::move(ptr);
+  EXPECT_EQ(ptr.get(), move.get());
+  EXPECT_EQ(raw, move.get());
+
+  Arena::Ptr<int> ptr2 = arena.Make<int>(7);
+  auto* raw2 = ptr2.get();
+
+  // Assign
+  copy = ptr2;
+  move = ptr2;
+  EXPECT_EQ(raw, ptr.get());
+  EXPECT_EQ(raw2, ptr2.get());
+  EXPECT_EQ(raw2, copy.get());
+  EXPECT_EQ(raw2, move.get());
+}
+
+TEST(ArenaPtrTest, ConversionConstructor) {
+  Arena arena;
+  Arena::Ptr<TestAllTypes> ptr = arena.Make<TestAllTypes>();
+  TestAllTypes* raw = ptr.get();
+
+  // Conversion to base
+  Arena::Ptr<Message> base = ptr;
+  EXPECT_EQ(raw, base.get());
+
+  // Conversion to const
+  Arena::Ptr<const Message> cbase = base;
+  EXPECT_EQ(raw, cbase.get());
+}
+
+TEST(ArenaPtrTest, ConversionAssignment) {
+  Arena arena;
+  Arena::Ptr<TestAllTypes> ptr = arena.Arena::Make<TestAllTypes>();
+  Arena::Ptr<Message> base = arena.Arena::Make<TestAllTypes>();
+  Arena::Ptr<const Message> cbase = arena.Arena::Make<TestAllTypes>();
+
+  TestAllTypes* raw = ptr.get();
+
+  EXPECT_NE(raw, base.get());
+  EXPECT_NE(raw, cbase.get());
+
+  // Conversion to base
+  base = ptr;
+  EXPECT_EQ(raw, base.get());
+
+  // Conversion to const
+  cbase = base;
+  EXPECT_EQ(raw, cbase.get());
+}
+
+TEST(ArenaPtrTest, ConstPointerType) {
+  Arena arena;
+  Arena::Ptr<const int> ptr = arena.Make<int>();
+  EXPECT_TRUE((std::is_same_v<decltype(*ptr), const int&>));
+  EXPECT_TRUE((std::is_same_v<decltype(ptr.get()), const int*>));
+  EXPECT_TRUE((std::is_same_v<decltype(ptr.operator->()), const int*>));
+}
+
+TEST(ArenaPtrTest, Swap) {
+  Arena arena;
+  Arena::Ptr<int> a = arena.Make<int>(3);
+  Arena arena2;
+  Arena::Ptr<int> b = arena2.Make<int>(7);
+
+  ASSERT_THAT(a, Pointee(3));
+  ASSERT_THAT(b, Pointee(7));
+  ASSERT_EQ(&arena, a.GetOwningArena());
+  ASSERT_EQ(&arena2, b.GetOwningArena());
+
+  a.swap(b);
+  EXPECT_THAT(a, Pointee(7));
+  EXPECT_THAT(b, Pointee(3));
+  ASSERT_EQ(&arena2, a.GetOwningArena());
+  ASSERT_EQ(&arena, b.GetOwningArena());
+
+  swap(a, b);
+  EXPECT_THAT(a, Pointee(3));
+  EXPECT_THAT(b, Pointee(7));
+  ASSERT_EQ(&arena, a.GetOwningArena());
+  ASSERT_EQ(&arena2, b.GetOwningArena());
+}
+
+template <typename LHS, typename RHS, typename Cmp>
+void CrossProductCmp(const LHS& value1, const RHS& value2, Cmp cmp) {
+  const auto cmp_rhs = [&](const auto& lhs) {
+    std::apply([&](const auto&... all_rhs) { (cmp(lhs, all_rhs), ...); },
+               value2);
+  };
+  std::apply([&](const auto&... all_lhs) { (cmp_rhs(all_lhs), ...); }, value1);
+}
+
+TEST(ArenaPtrTest, Comparison) {
+  Arena arena;
+  Arena::Ptr<int> ptr1 = arena.Make<int>();
+  Arena::Ptr<int> ptr2 = arena.Make<int>();
+
+  auto ptr1_tuple =
+      std::make_tuple(ptr1, Arena::UniquePtr<int>(ptr1), ptr1.get());
+  auto ptr2_tuple =
+      std::make_tuple(ptr2, Arena::UniquePtr<int>(ptr2), ptr2.get());
+
+
+  CrossProductCmp(ptr1_tuple, ptr1_tuple, [](const auto& a, const auto& b) {
+    EXPECT_TRUE(a == b);
+    EXPECT_FALSE(a != b);
+  });
+  CrossProductCmp(ptr1_tuple, ptr2_tuple, [](const auto& a, const auto& b) {
+    EXPECT_FALSE(a == b);
+    EXPECT_FALSE(b == a);
+    EXPECT_TRUE(a != b);
+    EXPECT_TRUE(b != a);
+  });
+
+  CrossProductCmp(ptr1_tuple, std::make_tuple(nullptr),
+                  [](const auto& a, const auto& b) {
+                    EXPECT_FALSE(a == b);
+                    EXPECT_FALSE(b == a);
+                    EXPECT_TRUE(a != b);
+                    EXPECT_TRUE(b != a);
+                  });
+  EXPECT_TRUE(Arena::UniquePtr<int>() == nullptr);
+  EXPECT_FALSE(Arena::UniquePtr<int>() != nullptr);
+}
+
+TEST(ArenaPtrTest, AbslStringify) {
+  Arena arena;
+  Arena::Ptr<int> ptr = arena.Make<int>(4);
+  EXPECT_EQ(absl::StrCat(ptr), absl::StrFormat("%p", ptr.get()));
+
+  Arena::Ptr<TestAllTypes> msg = arena.Make<TestAllTypes>();
+  msg->set_optional_int32(11);
+  EXPECT_EQ(absl::StrCat(msg),
+            absl::StrFormat("points to (%p) with value <%v>", msg.get(), *msg));
+}
+
+TEST(ArenaPtrTest, AbslHashTableHeterogeneousSupport) {
+  Arena arena;
+  absl::flat_hash_set<Arena::Ptr<int>> set;
+  for (int i = 0; i < 10; ++i) {
+    set.insert(arena.Make<int>(i));
+  }
+
+  auto it = set.begin();
+
+  // Query via Ptr
+  EXPECT_TRUE(set.contains(*it));
+  ++it;
+  // Query via T*
+  EXPECT_TRUE(set.contains(it->get()));
+  ++it;
+  // Query via UniquePtr
+  EXPECT_TRUE(set.contains(Arena::UniquePtr<int>(*it)));
+
+  // Some negatives just to make sure
+  auto outside = arena.Make<int>();
+  EXPECT_FALSE(set.contains(outside));
+  EXPECT_FALSE(set.contains(outside.get()));
+  EXPECT_FALSE(set.contains(Arena::UniquePtr<int>(outside)));
+
+  // null is never there.
+  EXPECT_FALSE(set.contains(Arena::UniquePtr<int>()));
+  EXPECT_FALSE(set.contains(nullptr));
+  EXPECT_FALSE(set.contains(static_cast<int*>(nullptr)));
+}
+
+TEST(ArenaPtrTest, ClassIsABIEfficient) {
+  // We verify that the type can be passed in registers in the Itanium ABI when
+  // using clang.
+#if ABSL_HAVE_BUILTIN(__is_trivially_relocatable)
+  struct ABSL_ATTRIBUTE_TRIVIAL_ABI Probe {
+    ~Probe() {}
+    std::unique_ptr<int> p1;
+    void* p2;
+  };
+  // But only check if it is currently enabled.
+  if (__is_trivially_relocatable(Probe)) {
+    EXPECT_TRUE(__is_trivially_relocatable(Arena::UniquePtr<TestAllTypes>));
+    EXPECT_TRUE(__is_trivially_relocatable(Arena::Ptr<TestAllTypes>));
+  }
+#endif
+  EXPECT_LE(sizeof(Arena::UniquePtr<TestAllTypes>), 2 * sizeof(void*));
+  EXPECT_LE(sizeof(Arena::Ptr<TestAllTypes>), 2 * sizeof(void*));
 }
 
 
