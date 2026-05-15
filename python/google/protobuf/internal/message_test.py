@@ -809,6 +809,34 @@ class MessageTest(unittest.TestCase):
     with self.assertRaises(TypeError):
       hash(m.repeated_nested_message)
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'upb has different behavior'
+  )
+  def testRepeatedCompositeNotComparableWithList(self, message_module):
+    msg = message_module.TestAllTypes()
+    msg.repeated_nested_message.add(bb=1)
+    with self.assertRaisesRegex(
+        TypeError,
+        'Can only compare repeated composite fields against other repeated'
+        ' composite fields',
+    ):
+      _ = msg.repeated_nested_message == [
+          message_module.TestAllTypes.NestedMessage(bb=1)
+      ]
+
+  @unittest.skipIf(
+      api_implementation.Type() != 'upb',
+      'upb has different behavior'
+  )
+  def testRepeatedCompositeComparableWithList(self, message_module):
+    msg = message_module.TestAllTypes()
+    msg.repeated_nested_message.add(bb=1)
+    self.assertEqual(
+        msg.repeated_nested_message,
+        [message_module.TestAllTypes.NestedMessage(bb=1)],
+    )
+
   def testRepeatedFieldInsideNestedMessage(self, message_module):
     m = message_module.NestedTestAllTypes()
     m.payload.repeated_int32.extend([])
@@ -2548,6 +2576,14 @@ class Proto3Test(unittest.TestCase):
     size = msg.ByteSize()
     msg.map_int32_foreign_message[19].c = 128
     self.assertEqual(msg.ByteSize(), size + 1)
+
+  def testRecursiveMapSerialization(self):
+    # Test that the serialization of a very deeply recursive map finishes.
+    s = map_unittest_pb2.TestRecursiveMapMessage()
+    current = s
+    for _ in range(95):
+      current = current.a['x']
+    self.assertGreater(len(s.SerializeToString()), 0)
 
   def testMergeFrom(self):
     msg = map_unittest_pb2.TestMap()

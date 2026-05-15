@@ -368,8 +368,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
     kRepeatedTypeFieldNumber = 4,
   };
   // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  [[nodiscard]] bool has_string_type()
-      const;
+  [[nodiscard]] bool has_string_type() const;
   void clear_string_type() ;
   [[nodiscard]] ::pb::CppFeatures_StringType string_type() const;
   void set_string_type(::pb::CppFeatures_StringType value);
@@ -380,8 +379,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
 
   public:
   // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  [[nodiscard]] bool has_legacy_closed_enum()
-      const;
+  [[nodiscard]] bool has_legacy_closed_enum() const;
   void clear_legacy_closed_enum() ;
   [[nodiscard]] bool legacy_closed_enum() const;
   void set_legacy_closed_enum(bool value);
@@ -392,8 +390,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
 
   public:
   // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-  [[nodiscard]] bool has_enum_name_uses_string_view()
-      const;
+  [[nodiscard]] bool has_enum_name_uses_string_view() const;
   void clear_enum_name_uses_string_view() ;
   [[nodiscard]] bool enum_name_uses_string_view() const;
   void set_enum_name_uses_string_view(bool value);
@@ -404,8 +401,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
 
   public:
   // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  [[nodiscard]] bool has_repeated_type()
-      const;
+  [[nodiscard]] bool has_repeated_type() const;
   void clear_repeated_type() ;
   [[nodiscard]] ::pb::CppFeatures_RepeatedType repeated_type() const;
   void set_repeated_type(::pb::CppFeatures_RepeatedType value);

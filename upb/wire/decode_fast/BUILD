@@ -35,8 +35,10 @@ cc_library(
     srcs = [
         "cardinality.c",
         "cardinality.h",
+        "field_extension.c",
         "field_fixed.c",
         "field_generic.c",
+        "field_helpers.h",
         "field_message.c",
         "field_mismatch.c",
         "field_string.c",
@@ -69,9 +71,9 @@ cc_library(
         "//upb/mini_table",
         "//upb/mini_table:internal",
         "//upb/port",
-        "//upb/wire",
         "//upb/wire:decoder",
         "//upb/wire:eps_copy_input_stream",
+        "//upb/wire:eps_copy_input_stream_internal",
         "//upb/wire:reader",
     ],
 )
@@ -84,6 +86,7 @@ cc_library(
     features = UPB_DEFAULT_FEATURES,
     visibility = ["//upb/wire:__pkg__"],
     deps = [
+        ":data",
         "//upb/message",
         "//upb/mini_table",
         "//upb/mini_table:internal",
@@ -126,6 +129,7 @@ cc_test(
         "//upb/mem",
         "//upb/mini_table:internal",
         "//upb/port",
+        "//upb/wire",  # buildcleaner: keep
         "//upb/wire/test_util:field_types",
         "//upb/wire/test_util:make_mini_table",
         "@abseil-cpp//absl/base:core_headers",
@@ -207,6 +211,7 @@ cc_test(
         "//upb/wire/test_util:field_types",
         "//upb/wire/test_util:make_mini_table",
         "//upb/wire/test_util:wire_message",
+        "@abseil-cpp//absl/strings",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
