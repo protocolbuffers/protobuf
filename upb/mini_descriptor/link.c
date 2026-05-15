@@ -20,6 +20,10 @@
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 
+#ifdef UPB_ENABLE_FASTTABLE
+#include "upb/wire/decode_fast/field_parsers.h"
+#endif
+
 // Must be last.
 #include "upb/port/def.inc"
 
@@ -43,6 +47,25 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
         field->UPB_PRIVATE(mode) =
             (field->UPB_PRIVATE(mode) & ~kUpb_FieldMode_Mask) |
             kUpb_FieldMode_Map;
+
+#ifdef UPB_ENABLE_FASTTABLE
+        // The fasttable decoder cannot decode maps. Unfortunately we do not
+        // know until this moment that the field is a map, so we have to
+        // overwrite the fasttable entry (if any) that we built for this field
+        // previously.
+        int size = table->UPB_PRIVATE(table_mask) == 0xff
+                       ? 0
+                       : ((table->UPB_PRIVATE(table_mask) >> 3) + 1);
+        for (int i = 0; i < size; i++) {
+          _upb_FastTable_Entry* entry = &table->UPB_PRIVATE(fasttable)[i];
+          uint32_t field_number = (((int)entry->field_data >> 3) & 0xf) |
+                                  (((int)entry->field_data >> 4) & 0x7f0);
+          if (field_number == upb_MiniTableField_Number(field)) {
+            entry->field_parser = &_upb_FastDecoder_DecodeGeneric;
+            entry->field_data = 0;
+          }
+        }
+#endif
       }
       break;
 

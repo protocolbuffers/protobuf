@@ -199,7 +199,7 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
   Prefetch5LinesFrom1Line(&from);
   ABSL_DCHECK_EQ(arena, GetArena());
   ABSL_DCHECK_NE(&from, this);
-  int new_size = current_size_ + from.current_size_;
+  int new_size = internal::CheckedAdd(current_size_, from.current_size_);
   void** dst = InternalReserve(new_size, arena);
   const void* const* src = from.elements();
   auto end = src + from.current_size_;

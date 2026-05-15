@@ -72,6 +72,14 @@ std::string GetTypeUrl(const Descriptor* message) {
   return absl::StrCat(kTypeUrlPrefix, "/", message->full_name());
 }
 
+std::string str_repeat(absl::string_view s, int count) {
+  std::string result;
+  for (int i = 0; i < count; ++i) {
+    absl::StrAppend(&result, s);
+  }
+  return result;
+}
+
 /* Routines for building arbitrary protos *************************************/
 
 // We would use CodedOutputStream except that we want more freedom to build
@@ -312,6 +320,8 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
       this, /*run_proto3_tests=*/false);
   if (!this->performance_) {
     RunMessageSetTests();
+  } else {
+    RunRecursionLimitTests();
   }
   if (maximum_edition_ >= Edition::EDITION_2023) {
     BinaryAndJsonConformanceSuiteImpl<TestAllTypesProto3Editions>(
@@ -488,6 +498,40 @@ void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
            })pb"
       // clang-format on
   );
+}
+
+void BinaryAndJsonConformanceSuite::RunRecursionLimitTests() {
+  {
+    TestAllTypesEdition2023 message;
+    TestAllTypesEdition2023* sub = &message;
+    // The default recursion limit is 100 for most languages. 10,000 for
+    // golang. We use a larger number here for test.
+    for (int i = 0; i < 20000; i++) {
+      sub = &(*sub->mutable_map_recursive())[0];
+      sub->set_optional_int32(123);
+    }
+    ExpectParseFailureForProto<TestAllTypesEdition2023>(
+        message.SerializeAsString(), "EnforceDepthLimit.Map", RECOMMENDED);
+  }
+
+  {
+    TestAllTypesProto2 proto2_msg;
+    auto sub = proto2_msg.mutable_message_set_correct();
+    // The default recursion limit is 100 for most languages. 10,000 for
+    // golang. We use a larger number here for test.
+    for (int i = 0; i < 20000; i++) {
+      sub = sub->MutableExtension(
+                   TestAllTypesProto2::MessageSetCorrectExtension2::
+                       message_set_extension)
+                ->mutable_sub_msg();
+    }
+    sub->MutableExtension(TestAllTypesProto2::MessageSetCorrectExtension2::
+                              message_set_extension)
+        ->set_i(123);
+    ExpectParseFailureForProto<TestAllTypesProto2>(
+        proto2_msg.SerializeAsString(), "EnforceDepthLimit.MessageSetExtension",
+        RECOMMENDED);
+  }
 }
 
 template <typename MessageType>
@@ -3435,6 +3479,31 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForStruct() {
     }
   }
       )");
+
+  RunValidJsonTest(
+      "StructDeepNesting25", RECOMMENDED,
+      absl::StrCat(R"({"optionalStruct": {)", str_repeat(R"("n": {)", 25),
+                   R"("value": 1)", std::string(25, '}'), "}}"),
+      absl::StrCat("optional_struct: {\n",
+                   str_repeat("  fields: {\n"
+                              "    key: \"n\"\n"
+                              "    value: {\n"
+                              "      struct_value: {\n",
+                              25),
+                   "        fields: {\n"
+                   "          key: \"value\"\n"
+                   "          value: { number_value: 1 }\n"
+                   "        }\n",
+                   str_repeat("      }\n"
+                              "    }\n"
+                              "  }\n",
+                              25),
+                   "}\n"));
+
+  ExpectParseFailureForJson(
+      "StructDeepNesting200", RECOMMENDED,
+      absl::StrCat(R"({"optionalStruct": {)", str_repeat(R"("n": {)", 200),
+                   R"("value": 1)", std::string(200, '}'), "}}"));
 }
 
 template <typename MessageType>
@@ -3525,6 +3594,47 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForValue() {
                                 "optional_value: { number_value: nan}");
   ExpectSerializeFailureForJson("ValueRejectInfNumberValue", RECOMMENDED,
                                 "optional_value: { number_value: inf}");
+  RunValidJsonTest("ListValueDeepNesting25", RECOMMENDED,
+                   absl::StrCat(R"({"optionalValue": )", std::string(25, '['),
+                                "1", std::string(25, ']'), "}"),
+                   absl::StrCat("optional_value: {\n",
+                                str_repeat("  list_value: {\n"
+                                           "    values: {\n",
+                                           25),
+                                "      number_value: 1\n",
+                                str_repeat("    }\n"
+                                           "  }\n",
+                                           25),
+                                "}\n"));
+
+  ExpectParseFailureForJson(
+      "ListValueDeepNesting200", RECOMMENDED,
+      absl::StrCat(R"({"optionalValue": )", std::string(200, '['), "1",
+                   std::string(200, ']'), "}"));
+  RunValidJsonTest(
+      "ValueDeepNesting25", RECOMMENDED,
+      absl::StrCat(R"({"optionalValue": {)", str_repeat(R"("n": {)", 25),
+                   R"("value": 1)", std::string(25, '}'), "}}"),
+      absl::StrCat("optional_value: {\n", "  struct_value: {\n",
+                   str_repeat("    fields: {\n"
+                              "      key: \"n\"\n"
+                              "      value: {\n"
+                              "        struct_value: {\n",
+                              25),
+                   "          fields: {\n"
+                   "            key: \"value\"\n"
+                   "            value: { number_value: 1 }\n"
+                   "          }\n",
+                   str_repeat("        }\n"
+                              "      }\n"
+                              "    }\n",
+                              25),
+                   "  }\n", "}\n"));
+
+  ExpectParseFailureForJson(
+      "ValueDeepNesting200", RECOMMENDED,
+      absl::StrCat(R"({"optionalValue": {)", str_repeat(R"("n": {)", 200),
+                   R"("value": 1)", std::string(200, '}'), "}}"));
 }
 
 template <typename MessageType>

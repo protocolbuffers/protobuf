@@ -87,11 +87,13 @@ void MessageLite::CheckTypeAndMergeFrom(const MessageLite& other) {
 
 MessageLite* MessageLite::New(Arena* arena) const {
   auto* data = GetClassData();
+  void* mem = data->message_creator.AllocateMessage(arena);
   // The `instance->New()` expression requires using the actual instance
   // instead of the prototype for the inner function call.
   // Certain custom instances have special per-instance state that needs to be
   // copied.
-  return data->message_creator.New(this, data->default_instance(), arena);
+  return data->message_creator.PlacementNew(this, data->default_instance(), mem,
+                                            arena);
 }
 
 bool MessageLite::IsInitialized() const {
@@ -115,7 +117,7 @@ absl::string_view TypeId::name() const {
   }
 
   // For LITE messages, the type name is accessed via ClassDataLite.
-  return static_cast<const internal::ClassDataLite*>(data_)->type_name;
+  return static_cast<const internal::ClassDataLite*>(data_)->type_name();
 }
 
 std::string MessageLite::InitializationErrorString() const {

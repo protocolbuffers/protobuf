@@ -1242,7 +1242,7 @@ class JsonFormatTest(JsonFormatBase):
     )
     self.CheckError(
         '{"int32Value": "foo"}',
-        'Failed to parse int32Value field: invalid literal for int\(\) with'
+        'Failed to parse int32Value field: invalid literal for int\\(\\) with'
         " base 10: 'foo'.",
     )
     self.CheckError(
@@ -1759,6 +1759,27 @@ class JsonFormatTest(JsonFormatBase):
     json_format.Parse(
         '{"payload": {}, "child": {"child":{}}}', message, max_recursion_depth=3
     )
+
+  def testStructRecursionDepthEnforcement(self):
+    """Test that nested Struct messages respect max_recursion_depth limit."""
+    message = struct_pb2.Struct()
+    # With max_recursion_depth=5, we can nest up to depth 5.
+    # {"a": {"b": {"c": {}}}} will reach depth 6 when trying to parse "c" value.
+    # This is treated as 6 in our depth enforcement rather than depth 3 because
+    # it is Struct-Value-Struct-Value-Struct-Value.
+    nested_dict = {'a': {'b': {'c': {}}}}
+    self.assertRaisesRegex(
+        json_format.ParseError,
+        'Message too deep. Max recursion depth is 5',
+        json_format.ParseDict,
+        nested_dict,
+        message,
+        max_recursion_depth=5,
+    )
+
+    # This should pass as it reaches depth 5.
+    shallow_dict = {'a': {'b': {}}}
+    json_format.ParseDict(shallow_dict, message, max_recursion_depth=5)
 
   def testAnyRecursionDepthEnforcement(self):
     """Test that nested Any messages respect max_recursion_depth limit."""

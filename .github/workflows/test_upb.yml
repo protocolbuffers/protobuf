@@ -51,7 +51,7 @@ jobs:
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
-          image: ${{ matrix.config.image || 'us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:8.0.1-12e21b8dda91028bc14212a3ab582c7c4d149fac' }}
+          image: ${{ matrix.config.image || 'us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:8.0.1-d415763a389bb62a6f126b08c992e83f9f7dc1b4' }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel
           bazel: test //benchmarks/... //lua/... //python/... //upb/... //upb_generator/... ${{ matrix.config.flags }}

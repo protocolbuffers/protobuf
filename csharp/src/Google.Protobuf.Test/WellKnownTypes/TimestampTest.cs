@@ -49,6 +49,16 @@ namespace Google.Protobuf.WellKnownTypes
             Assert.Throws<InvalidOperationException>(() => value.ToDateTime());
         }
 
+        [Test]
+        [TestCase(1609459200, -1, "Timestamp contains invalid values: Seconds=1609459200; Nanos=-1")]
+        [TestCase(0, 1000000000, "Timestamp contains invalid values: Seconds=0; Nanos=1000000000")]
+        public void ToDateTime_ThrowsCorrectlyFormattedMessage(long seconds, int nanoseconds, string expectedMessage)
+        {
+            var value = new Timestamp { Seconds = seconds, Nanos = nanoseconds };
+            var ex = Assert.Throws<InvalidOperationException>(() => value.ToDateTime());
+            Assert.AreEqual(expectedMessage, ex.Message);
+        }
+
         // 1ns larger or smaller than the above values
         [Test]
         [TestCase(Timestamp.UnixSecondsAtBclMinValue, 0)]

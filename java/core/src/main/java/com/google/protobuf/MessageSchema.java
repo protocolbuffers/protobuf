@@ -4734,7 +4734,7 @@ final class MessageSchema<T> implements Schema<T> {
           } else if (value instanceof ByteString) {
             return !ByteString.EMPTY.equals(value);
           } else {
-            throw new IllegalArgumentException();
+            return throwIllegalArgumentException();
           }
         case 9: // MESSAGE:
           return UnsafeUtil.getObject(message, offset) != null;
@@ -4755,7 +4755,7 @@ final class MessageSchema<T> implements Schema<T> {
         case 17: // GROUP:
           return UnsafeUtil.getObject(message, offset) != null;
         default:
-          throw new IllegalArgumentException();
+          return throwIllegalArgumentException();
       }
     } else {
       final int presenceMask = 1 << (presenceMaskAndOffset >>> OFFSET_BITS);
@@ -4829,5 +4829,10 @@ final class MessageSchema<T> implements Schema<T> {
 
   int getSchemaSize() {
     return buffer.length * 3;
+  }
+
+  @DoNotInline
+  private boolean throwIllegalArgumentException() {
+    throw new IllegalArgumentException();
   }
 }

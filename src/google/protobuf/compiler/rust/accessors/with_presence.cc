@@ -87,8 +87,8 @@ void WithPresenceAccessorsInMsgImpl(Context& ctx, const FieldDescriptor& field,
           }
           ctx.Emit(
               R"rs(
-              pub fn $raw_field_name$_opt($view_self$) -> $pb$::Optional<$view_type$> {
-                    $pb$::Optional::new(self.$field$(), self.has_$raw_field_name$())
+              pub fn $raw_field_name$_opt($view_self$) -> $std$::option::Option<$view_type$> {
+                self.has_$raw_field_name$().then(|| self.$field$())
               }
               )rs");
         }}},

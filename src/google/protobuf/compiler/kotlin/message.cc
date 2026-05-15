@@ -298,7 +298,7 @@ void MessageGenerator::GenerateExtensions(io::Printer* printer) const {
       "$jvm_synthetic$"
       "public operator fun contains(extension: "
       "com.google.protobuf.ExtensionLite<$message$, *>): "
-      "Boolean {\n"
+      "kotlin.Boolean {\n"
       "  return _builder.hasExtension(extension)\n"
       "}\n\n",
       "jvm_synthetic", java::JvmSynthetic(jvm_dsl_), "message", message_name);
@@ -324,7 +324,7 @@ void MessageGenerator::GenerateExtensions(io::Printer* printer) const {
   printer->Print(
       "$jvm_synthetic$"
       "@Suppress(\"NOTHING_TO_INLINE\")\n"
-      "public inline operator fun <T : Comparable<T>> set(\n"
+      "public inline operator fun <T : kotlin.Comparable<T>> set(\n"
       "  extension: com.google.protobuf.ExtensionLite<$message$, T>,\n"
       "  value: T\n"
       ") {\n"
@@ -381,7 +381,7 @@ void MessageGenerator::GenerateExtensions(io::Printer* printer) const {
   printer->Print(
       "$jvm_synthetic$"
       "public fun <E : kotlin.Any> com.google.protobuf.kotlin.ExtensionList<E, "
-      "$message$>.addAll(values: Iterable<E>) {\n"
+      "$message$>.addAll(values: kotlin.collections.Iterable<E>) {\n"
       "  for (value in values) {\n"
       "    add(value)\n"
       "  }\n"
@@ -394,7 +394,7 @@ void MessageGenerator::GenerateExtensions(io::Printer* printer) const {
       "public inline operator fun <E : kotlin.Any> "
       "com.google.protobuf.kotlin.ExtensionList<E, "
       "$message$>.plusAssign(values: "
-      "Iterable<E>) {\n"
+      "kotlin.collections.Iterable<E>) {\n"
       "  addAll(values)\n"
       "}\n\n",
       "jvm_synthetic", java::JvmSynthetic(jvm_dsl_), "message", message_name);

@@ -6,7 +6,7 @@ use protos::*;
 use googletest::prelude::*;
 use protobuf::prelude::*;
 
-use protobuf::{AsMut, AsView, Message};
+use protobuf::{AsMut, AsView, IntoMut, IntoView, Message};
 use unittest_rust_proto::TestAllTypes;
 
 fn f<M: Message, T: AsView<Proxied = M>>(msg_view: T) -> usize {
@@ -72,4 +72,77 @@ fn msg_used_generically_struct_test() {
     let proto_send_msg = ProtoGenericallyStruct::from_view(&msg);
     let empty: &[u8] = &[];
     expect_that!(proto_send_msg.encode(), eq(empty));
+}
+
+#[gtest]
+fn as_view_serialize_test() {
+    fn as_view_serialize<M: Message, T: AsView<Proxied = M>>(msg_view: T) -> usize {
+        msg_view.as_view().serialize().unwrap().len()
+    }
+    let mut msg = TestAllTypes::new();
+    expect_that!(as_view_serialize(msg.as_view()), eq(0));
+    expect_that!(as_view_serialize(&msg), eq(0));
+    expect_that!(as_view_serialize(&mut msg), eq(0));
+    expect_that!(as_view_serialize(msg), eq(0));
+}
+
+#[gtest]
+fn into_view_serialize_test() {
+    fn into_view_serialize<'a, M: Message, T: IntoView<'a, Proxied = M>>(msg_view: T) -> usize {
+        msg_view.into_view().serialize().unwrap().len()
+    }
+    let mut msg = TestAllTypes::new();
+    expect_that!(into_view_serialize(msg.as_view()), eq(0));
+    expect_that!(into_view_serialize(&msg), eq(0));
+    expect_that!(into_view_serialize(&mut msg), eq(0));
+}
+
+#[gtest]
+fn as_mut_clear_test() {
+    fn as_mut_clear<M: Message, T: AsMut<MutProxied = M>>(mut msg_mut: T) {
+        msg_mut.as_mut().clear();
+    }
+
+    {
+        let mut msg = TestAllTypes::new();
+        msg.set_optional_int32(123);
+        expect_that!(msg.has_optional_int32(), eq(true));
+        as_mut_clear(msg.as_mut());
+        expect_that!(msg.has_optional_int32(), eq(false));
+    }
+    {
+        let mut msg = TestAllTypes::new();
+        msg.set_optional_int32(123);
+        expect_that!(msg.has_optional_int32(), eq(true));
+        as_mut_clear(&mut msg);
+        expect_that!(msg.has_optional_int32(), eq(false));
+    }
+    {
+        let mut msg = TestAllTypes::new();
+        msg.set_optional_int32(123);
+        expect_that!(msg.has_optional_int32(), eq(true));
+        as_mut_clear(msg); // msg itself is AsMut but this consumes the msg.
+    }
+}
+
+#[gtest]
+fn into_mut_clear_test() {
+    fn into_mut_clear<'a, M: Message, T: IntoMut<'a, MutProxied = M>>(msg_mut: T) {
+        msg_mut.into_mut().clear();
+    }
+
+    {
+        let mut msg = TestAllTypes::new();
+        msg.set_optional_int32(123);
+        expect_that!(msg.has_optional_int32(), eq(true));
+        into_mut_clear(msg.as_mut());
+        expect_that!(msg.has_optional_int32(), eq(false));
+    }
+    {
+        let mut msg = TestAllTypes::new();
+        msg.set_optional_int32(123);
+        expect_that!(msg.has_optional_int32(), eq(true));
+        into_mut_clear(&mut msg);
+        expect_that!(msg.has_optional_int32(), eq(false));
+    }
 }

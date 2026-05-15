@@ -174,7 +174,6 @@ class Map : public FieldGeneratorBase {
   void GenerateByteSize(io::Printer* p) const override;
 
  private:
-
   const FieldDescriptor* key_;
   const FieldDescriptor* val_;
   const Options* opts_;

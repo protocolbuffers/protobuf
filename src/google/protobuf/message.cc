@@ -126,9 +126,12 @@ std::string DebugStringImpl(const MessageLite& msg) {
 
 PROTOBUF_CONSTINIT PROTOBUF_EXPORT const DescriptorMethods
     kDescriptorMethods = {
-        GetTypeNameImpl,     InitializationErrorStringImpl,
-        GetTcParseTableImpl, SpaceUsedLongImpl,
+        GetTypeNameImpl,
+        InitializationErrorStringImpl,
+        GetTcParseTableImpl,
+        SpaceUsedLongImpl,
         DebugStringImpl,
+        nullptr,
 };
 
 }  // namespace internal
@@ -462,16 +465,13 @@ size_t Message::MaybeComputeUnknownFieldsSize(
   return total_size;
 }
 
-
 size_t Message::SpaceUsedLong() const {
   return GetClassData()->full().descriptor_methods()->space_used_long(*this);
 }
 
 namespace internal {
 void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
-                                size_t size, const void* message,
-                                const void* default_message) {
-  ABSL_DCHECK_NE(message, default_message);
+                                size_t size) {
   void* split =
       (arena == nullptr) ? Allocate(size) : arena->AllocateAligned(size);
   memcpy(split, default_split, size);
