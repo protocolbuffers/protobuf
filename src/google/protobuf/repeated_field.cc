@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <string>
 
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
@@ -34,8 +35,8 @@ void LogIndexOutOfBounds(int index, int size) {
   ABSL_DLOG(FATAL) << "Index " << index << " out of bounds " << size;
 }
 
-void LogIndexOutOfBoundsAndAbort(int64_t index, int64_t size,
-                                 BoundsCheckMessageType type) {
+[[noreturn]] void LogIndexOutOfBoundsAndAbort(int64_t index, int64_t size,
+                                              BoundsCheckMessageType type) {
   switch (type) {
     case BoundsCheckMessageType::kIndex:
       ABSL_LOG(FATAL) << "Index (" << index
@@ -53,6 +54,7 @@ void LogIndexOutOfBoundsAndAbort(int64_t index, int64_t size,
                       << ")";
       break;
   }
+  ABSL_UNREACHABLE();
 }
 }  // namespace internal
 

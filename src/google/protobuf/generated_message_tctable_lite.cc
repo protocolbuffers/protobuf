@@ -1718,13 +1718,14 @@ namespace {
 
 PROTOBUF_ALWAYS_INLINE const char* ReadStringIntoArena(const char* ptr,
                                                        ParseContext* ctx,
+                                                       TcFieldData,
                                                        ArenaStringPtr& field,
                                                        Arena* arena) {
   return ctx->ReadArenaString(ptr, &field, arena);
 }
 
-PROTOBUF_NOINLINE
-const char* ReadStringNoArena(const char* ptr, ParseContext* ctx,
+PROTOBUF_ALWAYS_INLINE
+const char* ReadStringNoArena(const char* ptr, ParseContext* ctx, TcFieldData,
                               ArenaStringPtr& field) {
   int size = ReadSize(&ptr);
   if (!ptr) return nullptr;
@@ -1738,15 +1739,17 @@ PROTOBUF_ALWAYS_INLINE bool IsValidUTF8(ArenaStringPtr& field) {
 
 PROTOBUF_ALWAYS_INLINE const char* ReadStringIntoArena(const char* ptr,
                                                        ParseContext* ctx,
+                                                       TcFieldData data,
                                                        MicroString& field,
                                                        Arena* arena) {
-  return ctx->ReadMicroString(ptr, field, arena);
+  return ctx->ReadMicroString(ptr, field, data.aux_idx(), arena);
 }
 
 PROTOBUF_ALWAYS_INLINE const char* ReadStringNoArena(const char* ptr,
                                                      ParseContext* ctx,
+                                                     TcFieldData data,
                                                      MicroString& field) {
-  return ctx->ReadMicroString(ptr, field, nullptr);
+  return ctx->ReadMicroString(ptr, field, data.aux_idx(), nullptr);
 }
 
 PROTOBUF_ALWAYS_INLINE bool IsValidUTF8(const MicroString& field) {
@@ -1780,9 +1783,9 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularString(
   auto& field = RefAt<FieldType>(msg, data.offset());
   auto arena = msg->GetArena();
   if (arena) {
-    ptr = ReadStringIntoArena(ptr, ctx, field, arena);
+    ptr = ReadStringIntoArena(ptr, ctx, data, field, arena);
   } else {
-    ptr = ReadStringNoArena(ptr, ctx, field);
+    ptr = ReadStringNoArena(ptr, ctx, data, field);
   }
   if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
     EnsureArenaStringIsNotDefault(msg, &field);
@@ -2600,7 +2603,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
 
     case field_layout::kRepMString: {
       auto& field = RefAt<MicroString>(base, entry.offset);
-      ptr = ctx->ReadMicroString(ptr, field, msg->GetArena());
+      ptr = ctx->ReadMicroString(ptr, field, entry.aux_idx, msg->GetArena());
       is_valid = MpVerifyUtf8(field.Get(), table, entry, xform_val);
       break;
     }

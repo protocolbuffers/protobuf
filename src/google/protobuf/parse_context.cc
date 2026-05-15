@@ -793,12 +793,16 @@ const char* UnknownFieldParse(uint32_t tag, std::string* unknown,
 const char* EpsCopyInputStream::ReadMicroStringFallback(const char* ptr,
                                                         int size,
                                                         MicroString& str,
+                                                        size_t inline_capacity,
                                                         Arena* arena) {
-  str.SetInChunks(size, arena, [&](auto append) {
-    ptr = AppendSize(ptr, size, [&](const char* p, int s) {
-      append(absl::string_view(p, s));
-    });
-  });
+  str.SetInChunks(
+      size, arena,
+      [&](auto append) {
+        ptr = AppendSize(ptr, size, [&](const char* p, int s) {
+          append(absl::string_view(p, s));
+        });
+      },
+      inline_capacity);
   return ptr;
 }
 

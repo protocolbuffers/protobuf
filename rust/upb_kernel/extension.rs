@@ -56,7 +56,7 @@ pub fn generated_extension_registry() -> RawExtensionRegistry {
 }
 
 impl<Msg: Message, T: Singular> ExtHas<Msg> for ExtensionId<Msg, T> {
-    fn has(&self, msg: impl AsView<Proxied = Msg>) -> bool {
+    fn has(&self, _private: Private, msg: impl AsView<Proxied = Msg>) -> bool {
         // SAFETY:
         // - `msg` is a valid message.
         // - `mini_table` is the one associated with `self`.
@@ -72,7 +72,11 @@ impl<Msg: Message, T: Singular> ExtHas<Msg> for ExtensionId<Msg, T> {
 impl<Extendee: Message, V: Message> ExtAccess<Extendee, V, MessageTag>
     for ExtensionId<Extendee, V>
 {
-    fn get<'msg>(&self, msg: impl IntoView<'msg, Proxied = Extendee>) -> View<'msg, V> {
+    fn get<'msg>(
+        &self,
+        _private: Private,
+        msg: impl IntoView<'msg, Proxied = Extendee>,
+    ) -> View<'msg, V> {
         let msg = msg.into_view();
         let default_instance = <V as Proxied>::View::default();
         let raw_msg = unsafe {
@@ -89,7 +93,12 @@ impl<Extendee: Message, V: Message> ExtAccess<Extendee, V, MessageTag>
         }
     }
 
-    fn set(&self, mut msg: impl AsMut<MutProxied = Extendee>, value: impl IntoProxied<V>) {
+    fn set(
+        &self,
+        _private: Private,
+        mut msg: impl AsMut<MutProxied = Extendee>,
+        value: impl IntoProxied<V>,
+    ) {
         let mut msg_mut = msg.as_mut();
 
         let mut child = value.into_proxied(Private);
@@ -112,7 +121,11 @@ impl<Extendee: Message, V: Message> ExtAccess<Extendee, V, MessageTag>
 impl<Extendee: Message, V: Message> ExtGetMut<Extendee, V, MessageTag>
     for ExtensionId<Extendee, V>
 {
-    fn get_mut<'msg>(&self, msg: impl IntoMut<'msg, MutProxied = Extendee>) -> Mut<'msg, V> {
+    fn get_mut<'msg>(
+        &self,
+        _private: Private,
+        msg: impl IntoMut<'msg, MutProxied = Extendee>,
+    ) -> Mut<'msg, V> {
         let mut msg = msg.into_mut();
         unsafe {
             // SAFETY: The arena associated with a `Mut<'msg, _>` proxy lives for at least `'msg`.
@@ -154,7 +167,11 @@ impl<Extendee: Message, V: Singular> ExtAccess<Extendee, Repeated<V>, RepeatedTa
 where
     V: EntityType + UpbTypeConversions<V::Tag>,
 {
-    fn get<'msg>(&self, msg: impl IntoView<'msg, Proxied = Extendee>) -> View<'msg, Repeated<V>> {
+    fn get<'msg>(
+        &self,
+        _private: Private,
+        msg: impl IntoView<'msg, Proxied = Extendee>,
+    ) -> View<'msg, Repeated<V>> {
         let msg = msg.into_view();
         let raw_array = unsafe {
             upb_Message_GetExtensionArray(
@@ -171,6 +188,7 @@ where
 
     fn set(
         &self,
+        _private: Private,
         mut msg: impl AsMut<MutProxied = Extendee>,
         value: impl IntoProxied<Repeated<V>>,
     ) {
@@ -188,6 +206,7 @@ where
 {
     fn get_mut<'msg>(
         &self,
+        _private: Private,
         msg: impl IntoMut<'msg, MutProxied = Extendee>,
     ) -> Mut<'msg, Repeated<V>> {
         let mut msg = msg.into_mut();
@@ -220,7 +239,7 @@ macro_rules! impl_upb_scalar_extension {
     ($($t:ty => [$get:ident, $set:ident]),* $(,)?) => {
         $(
             impl<Extendee: Message> ExtAccess<Extendee, $t, PrimitiveTag> for ExtensionId<Extendee, $t> {
-                fn get<'msg>(&self, msg: impl IntoView<'msg, Proxied = Extendee>) -> View<'msg, $t> {
+                fn get<'msg>(&self, _private: Private, msg: impl IntoView<'msg, Proxied = Extendee>) -> View<'msg, $t> {
                     let msg = msg.into_view();
                     unsafe {
                         $get(
@@ -231,7 +250,7 @@ macro_rules! impl_upb_scalar_extension {
                     }
                 }
 
-                fn set(&self, mut msg: impl AsMut<MutProxied = Extendee>, value: impl IntoProxied<$t>) {
+                fn set(&self, _private: Private, mut msg: impl AsMut<MutProxied = Extendee>, value: impl IntoProxied<$t>) {
                     let mut msg_mut = msg.as_mut();
                     unsafe {
                         assert!($set(
@@ -260,7 +279,11 @@ impl_upb_scalar_extension!(
 impl<Extendee: Message> ExtAccess<Extendee, ProtoString, PrimitiveTag>
     for ExtensionId<Extendee, ProtoString>
 {
-    fn get<'msg>(&self, msg: impl IntoView<'msg, Proxied = Extendee>) -> View<'msg, ProtoString> {
+    fn get<'msg>(
+        &self,
+        _private: Private,
+        msg: impl IntoView<'msg, Proxied = Extendee>,
+    ) -> View<'msg, ProtoString> {
         let msg = msg.into_view();
         let upb_str_view = unsafe {
             upb_Message_GetExtensionString(
@@ -274,6 +297,7 @@ impl<Extendee: Message> ExtAccess<Extendee, ProtoString, PrimitiveTag>
 
     fn set(
         &self,
+        _private: Private,
         mut msg: impl AsMut<MutProxied = Extendee>,
         value: impl IntoProxied<ProtoString>,
     ) {
@@ -295,7 +319,11 @@ impl<Extendee: Message> ExtAccess<Extendee, ProtoString, PrimitiveTag>
 impl<Extendee: Message> ExtAccess<Extendee, ProtoBytes, PrimitiveTag>
     for ExtensionId<Extendee, ProtoBytes>
 {
-    fn get<'msg>(&self, msg: impl IntoView<'msg, Proxied = Extendee>) -> View<'msg, ProtoBytes> {
+    fn get<'msg>(
+        &self,
+        _private: Private,
+        msg: impl IntoView<'msg, Proxied = Extendee>,
+    ) -> View<'msg, ProtoBytes> {
         let msg = msg.into_view();
         let upb_str_view = unsafe {
             upb_Message_GetExtensionString(
@@ -307,7 +335,12 @@ impl<Extendee: Message> ExtAccess<Extendee, ProtoBytes, PrimitiveTag>
         unsafe { upb_str_view.as_ref() }
     }
 
-    fn set(&self, mut msg: impl AsMut<MutProxied = Extendee>, value: impl IntoProxied<ProtoBytes>) {
+    fn set(
+        &self,
+        _private: Private,
+        mut msg: impl AsMut<MutProxied = Extendee>,
+        value: impl IntoProxied<ProtoBytes>,
+    ) {
         let s = value.into_proxied(Private);
         let (view, arena) = s.into_inner(Private).into_raw_parts();
         let mut msg_mut = msg.as_mut();
@@ -324,7 +357,7 @@ impl<Extendee: Message> ExtAccess<Extendee, ProtoBytes, PrimitiveTag>
 }
 
 impl<Msg: Message, T: Proxied> ExtClear<Msg> for ExtensionId<Msg, T> {
-    fn clear(&self, mut msg: impl AsMut<MutProxied = Msg>) {
+    fn clear(&self, _private: Private, mut msg: impl AsMut<MutProxied = Msg>) {
         // SAFETY:
         // - `msg` is a valid message.
         // - `mini_table` is the one associated with `self`.
@@ -344,7 +377,11 @@ where
     for<'a> Extendee::MessageView<'a>: UpbGetMessagePtr,
     i32: From<E>,
 {
-    fn get<'msg>(&self, msg: impl IntoView<'msg, Proxied = Extendee>) -> View<'msg, E> {
+    fn get<'msg>(
+        &self,
+        _private: Private,
+        msg: impl IntoView<'msg, Proxied = Extendee>,
+    ) -> View<'msg, E> {
         let msg = msg.into_view();
         let default = self.default.expect("enum extensions must have a default value");
         let val = unsafe {
@@ -357,7 +394,12 @@ where
         E::try_from(val).unwrap_or(default)
     }
 
-    fn set(&self, mut msg: impl AsMut<MutProxied = Extendee>, value: impl IntoProxied<E>) {
+    fn set(
+        &self,
+        _private: Private,
+        mut msg: impl AsMut<MutProxied = Extendee>,
+        value: impl IntoProxied<E>,
+    ) {
         let mut msg_mut = msg.as_mut();
         unsafe {
             assert!(upb_Message_SetExtensionInt32(
