@@ -1391,9 +1391,7 @@ void MessageGenerator::MaybeEmitUpdateCachedHasbits(
 
   int has_bit_index = has_bit_indices_[field->index()];
 
-  if (cached_has_word_index == (has_bit_index / 32)) {
-    return;
-  }
+  if (cached_has_word_index == (has_bit_index / 32)) return;
 
   cached_has_word_index = (has_bit_index / 32);
   p->Emit({{"index", cached_has_word_index}},
@@ -2119,7 +2117,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             extension_generators_[i]->GenerateDeclaration(p);
           }
         }},
-       {"proto2_message_sets", [&] {}},
+       {"proto2_message_sets",
+        [&] {
+        }},
        {"decl_set_has",
         [&] {
           for (auto field : internal::FieldRange(descriptor_)) {
