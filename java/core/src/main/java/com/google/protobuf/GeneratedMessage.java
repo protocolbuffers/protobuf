@@ -1785,7 +1785,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
 
     // TODO: Should be marked final in v5.x.x once GeneratedMessageV3 is removed.
     protected void mergeExtensionFields(final ExtendableMessage<?> other) {
-      if (other.extensions != null) {
+      if (other.extensions != null && !other.extensions.isEmpty()) {
         ensureExtensionsIsMutable();
         extensions.mergeFrom(other.extensions);
         onChanged();
