@@ -614,15 +614,20 @@ TEST_F(CommandLineInterfaceTest, PluginPrefixForwardsArguments) {
                  "syntax = \"proto2\";\n"
                  "message Foo {}\n");
 
-  // Wrapper records the two prefix-supplied args, then invokes the plugin
-  // (the third and final argv element appended by protoc).
+  // Wrapper records the prefix-supplied args, then invokes the plugin
+  // (the final argv element appended by protoc).
   std::string wrapper_path;
 #ifdef _WIN32
+  // Batch %1/%2/... tokenize on '=' (and ',' ';'), which would split
+  // "--bar=baz" into two parameters. Record the raw, un-split argument tail
+  // via %* instead, and take the last token (the plugin path appended by
+  // protoc) to invoke.
   CreateTempFile("plugin_wrapper_args.bat",
                  "@echo off\r\n"
-                 "echo %~1>>\"%~dp0wrapper_argv.txt\"\r\n"
-                 "echo %~2>>\"%~dp0wrapper_argv.txt\"\r\n"
-                 "\"%~3\"\r\n"
+                 "echo %*>>\"%~dp0wrapper_argv.txt\"\r\n"
+                 "set \"plugin=\"\r\n"
+                 "for %%A in (%*) do set \"plugin=%%A\"\r\n"
+                 "\"%plugin%\"\r\n"
                  "exit /b %errorlevel%\r\n");
   wrapper_path = absl::StrCat(temp_directory(), "/plugin_wrapper_args.bat");
 #else
