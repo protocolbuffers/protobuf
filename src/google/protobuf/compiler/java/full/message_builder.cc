@@ -546,6 +546,9 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
 
   printer->Outdent();
   printer->Print(
+      "  if (result.equals(getDefaultInstanceForType())) {\n"
+      "    result = getDefaultInstanceForType();\n"
+      "  }\n"
       "  onBuilt();\n"
       "  return result;\n"
       "}\n"
