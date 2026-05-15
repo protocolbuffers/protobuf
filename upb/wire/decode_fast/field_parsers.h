@@ -34,9 +34,9 @@ struct upb_Decoder;
 
 struct upb_FastDecoder_Return;
 
-#define F(type, card, size)                                                \
-  UPB_PRESERVE_NONE struct upb_FastDecoder_Return UPB_DECODEFAST_FUNCNAME( \
-      type, card, size)(PARSE_PARAMS);
+#define F(type, card, size)                                           \
+  UPB_FASTTABLE_ALIGN UPB_PRESERVE_NONE struct upb_FastDecoder_Return \
+      UPB_DECODEFAST_FUNCNAME(type, card, size)(PARSE_PARAMS);
 
 UPB_DECODEFAST_FUNCTIONS(F);
 
