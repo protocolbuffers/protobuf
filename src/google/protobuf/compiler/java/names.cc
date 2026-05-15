@@ -134,6 +134,21 @@ std::string QualifiedClassName(const FileDescriptor* descriptor) {
   return name_resolver.GetClassName(descriptor, true);
 }
 
+std::string BytecodeClassName(const Descriptor* descriptor) {
+  ClassNameResolver name_resolver;
+  return name_resolver.GetJavaImmutableClassName(descriptor);
+}
+
+std::string BytecodeClassName(const EnumDescriptor* descriptor) {
+  ClassNameResolver name_resolver;
+  return name_resolver.GetJavaImmutableClassName(descriptor);
+}
+
+std::string BytecodeClassName(const ServiceDescriptor* descriptor) {
+  ClassNameResolver name_resolver;
+  return name_resolver.GetJavaImmutableClassName(descriptor);
+}
+
 std::string FileJavaPackage(const FileDescriptor* file, bool immutable,
                             Options options) {
   return ClassNameResolver().GetFileJavaPackage(file, immutable);

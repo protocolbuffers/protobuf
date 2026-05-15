@@ -132,7 +132,7 @@ bool SymbolChecker::IsEnumNamespaceMessage(const Descriptor& container) {
 }
 
 bool SymbolChecker::IsNamespacedEnum(const EnumDescriptor& enm) {
-  // Only allowed for top-level messages
+  // If the enum is top-level, it definitely isn't namespaced.
   if (enm.containing_type() == nullptr) {
     return false;
   }
@@ -147,12 +147,10 @@ bool SymbolChecker::IsNamespacedEnum(const EnumDescriptor& enm) {
   // This check only cares if the enum is explicitly marked export, the
   // containing message can be local or unset with the file default making it
   // local.
-  if (!default_to_local ||
-      enm.visibility_keyword() != SymbolVisibility::VISIBILITY_EXPORT) {
-    return false;
-  }
-
-  return IsEnumNamespaceMessage(*enm.containing_type());
+  bool is_exported =
+      !default_to_local ||
+      enm.visibility_keyword() == SymbolVisibility::VISIBILITY_EXPORT;
+  return is_exported && IsEnumNamespaceMessage(*enm.containing_type());
 }
 
 void SymbolChecker::Initialize() {

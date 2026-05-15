@@ -298,6 +298,39 @@ TEST(MapTest, ErasingEnoughCausesDownwardRehashOnNextInsert) {
   }
 }
 
+TEST(MapTest, EraseIf) {
+  Map<int, std::string> m;
+  m[1] = "foo";
+  m[2] = "bar";
+  m[3] = "baz";
+  m[4] = "foobar";
+  EXPECT_THAT(m, UnorderedElementsAre(Pair(1, "foo"), Pair(2, "bar"),
+                                      Pair(3, "baz"), Pair(4, "foobar")));
+  EXPECT_EQ(4, m.size());
+
+  EXPECT_EQ(
+      2, google::protobuf::erase_if(m, [&](auto& p) {
+        // Verify that we get a const input.
+        EXPECT_TRUE((std::is_same_v<decltype(p),
+                                    const std::pair<const int, std::string>&>));
+        return absl::StrContains(p.second, "bar");
+      }));
+  EXPECT_THAT(m, UnorderedElementsAre(Pair(1, "foo"), Pair(3, "baz")));
+  EXPECT_EQ(2, m.size());
+
+  EXPECT_EQ(1, google::protobuf::erase_if(m, [&](auto& p) { return p.first == 1; }));
+  EXPECT_THAT(m, UnorderedElementsAre(Pair(3, "baz")));
+  EXPECT_EQ(1, m.size());
+
+  EXPECT_EQ(1, google::protobuf::erase_if(m, [&](auto& p) { return true; }));
+  EXPECT_THAT(m, UnorderedElementsAre());
+  EXPECT_EQ(0, m.size());
+
+  EXPECT_EQ(0, google::protobuf::erase_if(m, [&](auto& p) { return true; }));
+  EXPECT_THAT(m, UnorderedElementsAre());
+  EXPECT_EQ(0, m.size());
+}
+
 // We changed the internal implementation to use a smaller size type, but the
 // public API will still use size_t to avoid changing the API. Test that.
 TEST(MapTest, SizeTypeIsSizeT) {

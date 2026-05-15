@@ -47,7 +47,7 @@ proto_toolchain = rule(
                 allow_files = True,  # Used by mocks in tests. Consider fixing tests and removing it.
             ),
             "_protocopt": attr.label(
-                default = Label("//bazel/flags/cc:protocopt"),
+                default = Label("//bazel/flags:protocopt"),
             ),
         },
     provides = [platform_common.ToolchainInfo],

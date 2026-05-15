@@ -36,7 +36,7 @@ jobs:
       issues: write # allow the action to comment on, add labels to, and close issues
       pull-requests: write # allow the action to comment on, add labels to, and close PRs
     steps:
-      - uses: actions/stale@b69b346013879cedbf50c69f572cd85439a41936
+      - uses: actions/stale@997185467fa4f803885201cee163a9f38240193d  # v10.1.1
         with:
           stale-issue-message: >
             We triage inactive PRs and issues in order to make it easier to find
@@ -78,7 +78,7 @@ jobs:
           days-before-stale: 90
           days-before-close: 14
           operations-per-run: 100
-      - uses: actions/stale@b69b346013879cedbf50c69f572cd85439a41936
+      - uses: actions/stale@997185467fa4f803885201cee163a9f38240193d  # v10.1.1
         with:
           # Have any reply on a 'wait for user action' issue or PR to readd 'untriaged' label. This
           # uses the same action as our actual stale issue management, but sets

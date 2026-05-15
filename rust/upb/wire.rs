@@ -5,10 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use super::sys::wire::wire::{upb_Decode, upb_Encode, DecodeStatus, EncodeStatus};
+use super::sys::mini_table::extension_registry::upb_ExtensionRegistry;
+use super::sys::wire::wire::{upb_ByteSize, upb_Decode, upb_Encode, DecodeStatus, EncodeStatus};
 use super::{Arena, AssociatedMiniTable, MessagePtr};
 
 /// Contains the decode options that can be passed to `decode_with_options`.
+#[allow(unused)] // FFI constants.
 pub mod decode_options {
     // LINT.IfChange(decode_option)
     pub const ALIAS_STRING: i32 = 1;
@@ -40,6 +42,14 @@ pub fn encode<T: AssociatedMiniTable>(msg: MessagePtr<T>) -> Result<Vec<u8>, Enc
     }
 }
 
+/// Returns the serialized size of the message.
+pub fn byte_size<T: AssociatedMiniTable>(msg: MessagePtr<T>) -> usize {
+    // SAFETY:
+    // - `T::mini_table()` is the one associated with `msg`.
+    // - `msg` is guaranteed live.
+    unsafe { upb_ByteSize(msg.raw(), T::mini_table()) }
+}
+
 /// Decodes into the provided message (merge semantics). If Err, then
 /// DecodeStatus != Ok.
 ///
@@ -48,15 +58,17 @@ pub fn encode<T: AssociatedMiniTable>(msg: MessagePtr<T>) -> Result<Vec<u8>, Enc
 ///
 /// # Safety
 /// - `msg` must be mutable.
+#[allow(unused)] // Not used yet.
 pub unsafe fn decode<T: AssociatedMiniTable>(
     buf: &[u8],
     msg: MessagePtr<T>,
+    extreg: *const upb_ExtensionRegistry,
     arena: &Arena,
 ) -> Result<(), DecodeStatus> {
     // SAFETY:
     // - `msg` is mutable and is associated with `mini_table`.
     // - `decode_options::CHECK_REQUIRED` is a valid decode option.
-    unsafe { decode_with_options(buf, msg, arena, decode_options::CHECK_REQUIRED) }
+    unsafe { decode_with_options(buf, msg, extreg, arena, decode_options::CHECK_REQUIRED) }
 }
 
 /// Decodes into the provided message (merge semantics). If Err, then
@@ -68,6 +80,7 @@ pub unsafe fn decode<T: AssociatedMiniTable>(
 pub unsafe fn decode_with_options<T: AssociatedMiniTable>(
     buf: &[u8],
     msg: MessagePtr<T>,
+    extreg: *const upb_ExtensionRegistry,
     arena: &Arena,
     decode_options_bitmask: i32,
 ) -> Result<(), DecodeStatus> {
@@ -85,7 +98,7 @@ pub unsafe fn decode_with_options<T: AssociatedMiniTable>(
             len,
             msg.raw(),
             T::mini_table(),
-            core::ptr::null(),
+            extreg,
             decode_options_bitmask,
             arena.raw(),
         )

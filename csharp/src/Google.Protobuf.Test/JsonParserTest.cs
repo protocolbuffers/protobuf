@@ -942,6 +942,36 @@ namespace Google.Protobuf
             Assert.Throws<InvalidProtocolBufferException>(() => insufficientLimitParser.Parse<Value>(json));
         }
 
+        /// <summary>
+        /// Regression test: deeply-nested google.protobuf.Any payloads must
+        /// honor JsonParser.Settings.RecursionLimit. Previously the
+        /// JsonReplayTokenizer constructed for each Any body started at depth
+        /// zero, allowing the limit to be bypassed and producing an
+        /// uncatchable StackOverflowException. See the equivalent fixes in
+        /// Java (mergeAnyMessage) and Python (_ConvertAnyMessage).
+        /// </summary>
+        [Test]
+        public void MaliciousRecursionOfAnyInAny()
+        {
+            int depth = 100;
+            const string anyHeader = "{\"@type\":\"type.googleapis.com/google.protobuf.Any\",\"value\":";
+            string json =
+                string.Concat(Enumerable.Repeat(anyHeader, depth)) +
+                "{}" +
+                new string('}', depth);
+
+            var registry = TypeRegistry.FromMessages(Any.Descriptor);
+
+            // A generous limit must still successfully parse the document.
+            var sufficientLimitParser = new JsonParser(new JsonParser.Settings(depth * 2, registry));
+            Assert.DoesNotThrow(() => sufficientLimitParser.Parse<Any>(json));
+
+            // A limit smaller than the nesting depth must throw a recoverable
+            // protobuf exception rather than overflowing the stack.
+            var insufficientLimitParser = new JsonParser(new JsonParser.Settings(10, registry));
+            Assert.Throws<InvalidProtocolBufferException>(() => insufficientLimitParser.Parse<Any>(json));
+        }
+
         [Test]
         [TestCase("AQI")]
         [TestCase("_-==")]

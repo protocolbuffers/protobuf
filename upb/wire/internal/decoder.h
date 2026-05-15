@@ -13,7 +13,6 @@
 #ifndef UPB_WIRE_INTERNAL_DECODER_H_
 #define UPB_WIRE_INTERNAL_DECODER_H_
 
-#include <setjmp.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -49,13 +48,11 @@ typedef struct upb_Decoder {
   bool message_is_done;
   union {
     upb_Arena arena;
-    void* foo[UPB_ARENA_SIZE_HACK];
+    void* foo[UPB_ARENA_SIZE_HACK / sizeof(void*)];
   };
-  upb_ErrorHandler err;
+  upb_ErrorHandler* err;
 
 #ifndef NDEBUG
-  const char* debug_tagstart;
-  const char* debug_valstart;
   char* trace_buf;
   char* trace_ptr;
   char* trace_end;
@@ -66,9 +63,10 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
                                         size_t size,
                                         const upb_ExtensionRegistry* extreg,
                                         int options, upb_Arena* arena,
-                                        char* trace_buf, size_t trace_size) {
-  upb_ErrorHandler_Init(&d->err);
-  upb_EpsCopyInputStream_InitWithErrorHandler(&d->input, &buf, size, &d->err);
+                                        upb_ErrorHandler* err, char* trace_buf,
+                                        size_t trace_size) {
+  d->err = err;
+  upb_EpsCopyInputStream_InitWithErrorHandler(&d->input, &buf, size, d->err);
 
   UPB_STATIC_ASSERT((int)kUpb_DecodeStatus_Ok == (int)kUpb_ErrorCode_Ok,
                     "mismatched error codes");
@@ -109,22 +107,36 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
 UPB_INLINE upb_DecodeStatus upb_Decoder_Destroy(upb_Decoder* d,
                                                 upb_Arena* arena) {
   UPB_PRIVATE(_upb_Arena_SwapOut)(arena, &d->arena);
-  return (upb_DecodeStatus)d->err.code;
+  return (upb_DecodeStatus)d->err->code;
+}
+
+// Resets decoder fields in preparation for decoding a new message.
+//
+// Some decoder fields (arena, extreg, err) are preserved so they can be
+// reused across messages.
+// NOTE: The input stream is NOT reset. If a new input buffer is being used,
+// upb_EpsCopyInputStream_InitWithErrorHandler() must be called separately.
+UPB_INLINE void upb_Decoder_Reset(upb_Decoder* d, int options,
+                                  upb_Message* msg) {
+  d->depth = upb_DecodeOptions_GetEffectiveMaxDepth(options);
+  d->options = options;
+  d->end_group = DECODE_NOGROUP;
+  d->missing_required = false;
+  d->message_is_done = false;
+  d->original_msg = msg;
 }
 
 #ifndef NDEBUG
-UPB_INLINE bool _upb_Decoder_TraceBufferFull(upb_Decoder* d) {
-  return d->trace_ptr == d->trace_end - 1;
-}
-
-UPB_INLINE bool _upb_Decoder_TraceBufferAlmostFull(upb_Decoder* d) {
-  return d->trace_ptr == d->trace_end - 2;
+UPB_INLINE bool _upb_Decoder_TraceBufferHasBytesAvailable(upb_Decoder* d,
+                                                          int n) {
+  return d->trace_ptr && d->trace_end && d->trace_end - d->trace_ptr > n;
 }
 #endif
 
 UPB_INLINE char* _upb_Decoder_TraceNext(upb_Decoder* d) {
 #ifndef NDEBUG
-  return _upb_Decoder_TraceBufferAlmostFull(d) ? NULL : d->trace_ptr + 1;
+  return _upb_Decoder_TraceBufferHasBytesAvailable(d, 2) ? d->trace_ptr + 1
+                                                         : NULL;
 #else
   return NULL;
 #endif
@@ -145,10 +157,20 @@ UPB_INLINE char* _upb_Decoder_TracePtr(upb_Decoder* d) {
 //   '<'  Fallback to MiniTable parser.
 //   'M'  Field successfully parsed with MiniTable.
 //   'X'  Truncated -- trace buffer is full, further events were discarded.
+//   'U'  Unknown field parsed fast
+//
+// Lower-case letters indicate events that are more subtle and therefore
+// difficult to assert on, but may be useful information for debugging:
+//   'r'  Refresh buffer.
+//   's'  Fall back to unknown fast path
+//   'm'  Fall back to minitable lookup fast path
 UPB_INLINE void _upb_Decoder_Trace(upb_Decoder* d, char event) {
 #ifndef NDEBUG
+#ifdef UPB_TRACE_FASTDECODER
+  fprintf(stderr, "Fasttable trace event: %c\n", event);
+#endif
   if (d->trace_ptr == NULL) return;
-  if (_upb_Decoder_TraceBufferFull(d)) {
+  if (!_upb_Decoder_TraceBufferHasBytesAvailable(d, 1)) {
     d->trace_ptr[-1] = 'X';  // Truncated.
     return;
   }
@@ -166,16 +188,6 @@ bool _upb_Decoder_VerifyUtf8Inline(const char* ptr, int len) {
 const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
                                        const upb_Message* msg,
                                        const upb_MiniTable* m);
-
-/* x86-64 pointers always have the high 16 bits matching. So we can shift
- * left 8 and right 8 without loss of information. */
-UPB_INLINE intptr_t decode_totable(const upb_MiniTable* tablep) {
-  return ((intptr_t)tablep << 8) | tablep->UPB_PRIVATE(table_mask);
-}
-
-UPB_INLINE const upb_MiniTable* decode_totablep(intptr_t table) {
-  return (const upb_MiniTable*)(table >> 8);
-}
 
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
@@ -202,7 +214,7 @@ UPB_INLINE bool _upb_Decoder_ReadString(upb_Decoder* d, const char** ptr,
       upb_EpsCopyInputStream_ReadStringAlwaysAlias(&d->input, *ptr, size, &tmp);
   if (*ptr == NULL) return false;
   if (validate_utf8 && !utf8_range_IsValid(tmp.data, tmp.size)) {
-    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_BadUtf8);
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_BadUtf8);
     return false;
   }
   if ((d->options & kUpb_DecodeOption_AliasString) == 0) {

@@ -152,7 +152,7 @@ public class RopeByteStringTest extends LiteralByteStringTest {
     assertWithMessage("%s from string must have the expected type", classUnderTest)
         .that(classUnderTest)
         .isEqualTo(getActualClassName(unicode));
-    String roundTripString = unicode.toString(Internal.UTF_8);
+    String roundTripString = unicode.toStringUtf8();
     assertWithMessage("%s unicode bytes must match", classUnderTest)
         .that(testString)
         .isEqualTo(roundTripString);
@@ -171,8 +171,8 @@ public class RopeByteStringTest extends LiteralByteStringTest {
     RopeByteString ropeByteString =
         RopeByteString.newInstanceForTest(ByteString.EMPTY, ByteString.EMPTY);
     assertWithMessage("%s must be the same string references", classUnderTest)
-        .that(ByteString.EMPTY.toString(Internal.UTF_8))
-        .isSameInstanceAs(ropeByteString.toString(Internal.UTF_8));
+        .that(ByteString.EMPTY.toStringUtf8())
+        .isSameInstanceAs(ropeByteString.toStringUtf8());
   }
 
   @Override

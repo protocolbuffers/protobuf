@@ -1,0 +1,24 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2024";
+
+package pb.file;
+
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.FileOptions {
+  CppFileOptions cpp = 990
+      [feature_support = { edition_introduced: EDITION_UNSTABLE }];
+}
+
+local message CppFileOptions {
+  // Use this option to change the namespace of cpp generated classes. When this
+  // option is not set, the package name will be used for determining the cpp
+  // namespace.
+  string namespace = 1;
+}

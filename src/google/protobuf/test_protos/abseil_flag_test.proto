@@ -1,0 +1,23 @@
+edition = "2024";
+
+package proto2_unittest;
+
+enum OpenEnumForFlagTest {
+  OPEN_ENUM_FOR_FLAG_TEST_DEFAULT = 0;
+}
+
+message AbseilFlagTestProto {
+  int32 i = 1;
+  OpenEnumForFlagTest e = 100;
+
+  extensions 1000 to 10000;
+  extend AbseilFlagTestProto {
+    int32 ext = 1000;
+  }
+}
+
+message MessageWithConflictingFlagPrefixes {
+  int32 text = 1;
+  int32 base64text = 2;
+  int32 base64serialized = 3;
+}

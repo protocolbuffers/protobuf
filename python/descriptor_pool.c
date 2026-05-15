@@ -403,13 +403,15 @@ static PyObject* PyUpb_DescriptorPool_FindFileByName(PyObject* _self,
   const char* name = PyUpb_VerifyStrData(arg);
   if (!name) return NULL;
 
-  const upb_FileDef* file = upb_DefPool_FindFileByName(self->symtab, name);
+  const upb_FileDef* file = upb_DefPool_FindFileByNameWithSize(
+      self->symtab, name, PyObject_Size(arg));
   if (file == NULL && self->db) {
     if (!PyUpb_DescriptorPool_TryLoadFilename(self, arg)) return NULL;
-    file = upb_DefPool_FindFileByName(self->symtab, name);
+    file = upb_DefPool_FindFileByNameWithSize(self->symtab, name,
+                                              PyObject_Size(arg));
   }
   if (file == NULL) {
-    return PyErr_Format(PyExc_KeyError, "Couldn't find file %.200s", name);
+    return PyErr_Format(PyExc_KeyError, "Couldn't find file %S", arg);
   }
 
   return PyUpb_FileDescriptor_Get(file);
@@ -428,14 +430,15 @@ static PyObject* PyUpb_DescriptorPool_FindExtensionByName(PyObject* _self,
   const char* name = PyUpb_VerifyStrData(arg);
   if (!name) return NULL;
 
-  const upb_FieldDef* field =
-      upb_DefPool_FindExtensionByName(self->symtab, name);
+  const upb_FieldDef* field = upb_DefPool_FindExtensionByNameWithSize(
+      self->symtab, name, PyObject_Size(arg));
   if (field == NULL && self->db) {
     if (!PyUpb_DescriptorPool_TryLoadSymbol(self, arg)) return NULL;
-    field = upb_DefPool_FindExtensionByName(self->symtab, name);
+    field = upb_DefPool_FindExtensionByNameWithSize(self->symtab, name,
+                                                    PyObject_Size(arg));
   }
   if (field == NULL) {
-    return PyErr_Format(PyExc_KeyError, "Couldn't find extension %.200s", name);
+    return PyErr_Format(PyExc_KeyError, "Couldn't find extension %S", arg);
   }
 
   return PyUpb_FieldDescriptor_Get(field);
@@ -453,14 +456,16 @@ static PyObject* PyUpb_DescriptorPool_FindMessageTypeByName(PyObject* _self,
 
   const char* name = PyUpb_VerifyStrData(arg);
   if (!name) return NULL;
+  Py_ssize_t name_size = PyObject_Size(arg);
 
-  const upb_MessageDef* m = upb_DefPool_FindMessageByName(self->symtab, name);
+  const upb_MessageDef* m =
+      upb_DefPool_FindMessageByNameWithSize(self->symtab, name, name_size);
   if (m == NULL && self->db) {
     if (!PyUpb_DescriptorPool_TryLoadSymbol(self, arg)) return NULL;
-    m = upb_DefPool_FindMessageByName(self->symtab, name);
+    m = upb_DefPool_FindMessageByNameWithSize(self->symtab, name, name_size);
   }
   if (m == NULL) {
-    return PyErr_Format(PyExc_KeyError, "Couldn't find message %.200s", name);
+    return PyErr_Format(PyExc_KeyError, "Couldn't find message %S", arg);
   }
 
   return PyUpb_Descriptor_Get(m);
@@ -502,12 +507,13 @@ static PyObject* PyUpb_DescriptorPool_FindFieldByName(PyObject* _self,
                                                      parent_size);
     }
     if (parent) {
-      f = upb_MessageDef_FindFieldByName(parent, child);
+      f = upb_MessageDef_FindFieldByNameWithSize(
+          parent, child, PyObject_Size(arg) - parent_size - 1);
     }
   }
 
   if (!f) {
-    return PyErr_Format(PyExc_KeyError, "Couldn't find message %.200s", name);
+    return PyErr_Format(PyExc_KeyError, "Couldn't find field %S", arg);
   }
 
   return PyUpb_FieldDescriptor_Get(f);
@@ -526,13 +532,15 @@ static PyObject* PyUpb_DescriptorPool_FindEnumTypeByName(PyObject* _self,
   const char* name = PyUpb_VerifyStrData(arg);
   if (!name) return NULL;
 
-  const upb_EnumDef* e = upb_DefPool_FindEnumByName(self->symtab, name);
+  const upb_EnumDef* e = upb_DefPool_FindEnumByNameWithSize(self->symtab, name,
+                                                            PyObject_Size(arg));
   if (e == NULL && self->db) {
     if (!PyUpb_DescriptorPool_TryLoadSymbol(self, arg)) return NULL;
-    e = upb_DefPool_FindEnumByName(self->symtab, name);
+    e = upb_DefPool_FindEnumByNameWithSize(self->symtab, name,
+                                           PyObject_Size(arg));
   }
   if (e == NULL) {
-    return PyErr_Format(PyExc_KeyError, "Couldn't find enum %.200s", name);
+    return PyErr_Format(PyExc_KeyError, "Couldn't find enum %S", arg);
   }
 
   return PyUpb_EnumDescriptor_Get(e);
@@ -563,12 +571,16 @@ static PyObject* PyUpb_DescriptorPool_FindOneofByName(PyObject* _self,
                                                      parent_size);
     }
     if (parent) {
-      const upb_OneofDef* o = upb_MessageDef_FindOneofByName(parent, child);
+      const upb_OneofDef* o = upb_MessageDef_FindOneofByNameWithSize(
+          parent, child, PyObject_Size(arg) - parent_size - 1);
+      if (!o) {
+        return PyErr_Format(PyExc_KeyError, "Couldn't find oneof %S", arg);
+      }
       return PyUpb_OneofDescriptor_Get(o);
     }
   }
 
-  return PyErr_Format(PyExc_KeyError, "Couldn't find oneof %.200s", name);
+  return PyErr_Format(PyExc_KeyError, "Couldn't find oneof %S", arg);
 }
 
 static PyObject* PyUpb_DescriptorPool_FindServiceByName(PyObject* _self,
@@ -578,13 +590,15 @@ static PyObject* PyUpb_DescriptorPool_FindServiceByName(PyObject* _self,
   const char* name = PyUpb_VerifyStrData(arg);
   if (!name) return NULL;
 
-  const upb_ServiceDef* s = upb_DefPool_FindServiceByName(self->symtab, name);
+  const upb_ServiceDef* s = upb_DefPool_FindServiceByNameWithSize(
+      self->symtab, name, PyObject_Size(arg));
   if (s == NULL && self->db) {
     if (!PyUpb_DescriptorPool_TryLoadSymbol(self, arg)) return NULL;
-    s = upb_DefPool_FindServiceByName(self->symtab, name);
+    s = upb_DefPool_FindServiceByNameWithSize(self->symtab, name,
+                                              PyObject_Size(arg));
   }
   if (s == NULL) {
-    return PyErr_Format(PyExc_KeyError, "Couldn't find service %.200s", name);
+    return PyErr_Format(PyExc_KeyError, "Couldn't find service %S", arg);
   }
 
   return PyUpb_ServiceDescriptor_Get(s);
@@ -608,12 +622,13 @@ static PyObject* PyUpb_DescriptorPool_FindMethodByName(PyObject* _self,
         upb_DefPool_FindServiceByNameWithSize(self->symtab, name, parent_size);
   }
   if (!parent) goto err;
-  const upb_MethodDef* m = upb_ServiceDef_FindMethodByName(parent, child);
+  const upb_MethodDef* m = upb_ServiceDef_FindMethodByNameWithSize(
+      parent, child, PyObject_Size(arg) - parent_size - 1);
   if (!m) goto err;
   return PyUpb_MethodDescriptor_Get(m);
 
 err:
-  return PyErr_Format(PyExc_KeyError, "Couldn't find method %.200s", name);
+  return PyErr_Format(PyExc_KeyError, "Couldn't find method %S", arg);
 }
 
 static PyObject* PyUpb_DescriptorPool_FindFileContainingSymbol(PyObject* _self,
@@ -622,6 +637,9 @@ static PyObject* PyUpb_DescriptorPool_FindFileContainingSymbol(PyObject* _self,
 
   const char* name = PyUpb_VerifyStrData(arg);
   if (!name) return NULL;
+  if (PyObject_Size(arg) != strlen(name)) {
+    return PyErr_Format(PyExc_KeyError, "Couldn't find symbol %S", arg);
+  }
 
   const upb_FileDef* f =
       upb_DefPool_FindFileContainingSymbol(self->symtab, name);
@@ -630,7 +648,7 @@ static PyObject* PyUpb_DescriptorPool_FindFileContainingSymbol(PyObject* _self,
     f = upb_DefPool_FindFileContainingSymbol(self->symtab, name);
   }
   if (f == NULL) {
-    return PyErr_Format(PyExc_KeyError, "Couldn't find symbol %.200s", name);
+    return PyErr_Format(PyExc_KeyError, "Couldn't find symbol %S", arg);
   }
 
   return PyUpb_FileDescriptor_Get(f);

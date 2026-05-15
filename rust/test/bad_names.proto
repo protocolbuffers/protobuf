@@ -62,3 +62,6 @@ message SomeMsg {}
 enum SomeMsgView {
   SOME_MSG_VIEW_UNSPECIFIED = 0;
 }
+
+message MangleViewTest {}
+message MangleViewTestView {}

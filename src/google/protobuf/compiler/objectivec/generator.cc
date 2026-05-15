@@ -89,8 +89,8 @@ bool ObjectiveCGenerator::GenerateAll(
   GenerationOptions generation_options;
 
   // Set default value for extension generation mode to class based.
-  generation_options.extension_generation_mode =
-      ExtensionGenerationMode::kClassBased;
+   generation_options.extension_generation_mode =
+     ExtensionGenerationMode::kClassBased;
 
   std::vector<std::pair<std::string, std::string> > options;
   ParseGeneratorParameter(parameter, &options);

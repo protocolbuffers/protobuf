@@ -10,6 +10,7 @@
 #include "python/convert.h"
 #include "python/message.h"
 #include "python/protobuf.h"
+#include "upb/port/def.inc"
 
 static PyObject* PyUpb_RepeatedCompositeContainer_Append(PyObject* _self,
                                                          PyObject* value);
@@ -427,7 +428,10 @@ static PyObject* PyUpb_RepeatedContainer_Pop(PyObject* _self, PyObject* args) {
   upb_Array* arr = PyUpb_RepeatedContainer_EnsureReified(_self);
   size_t size = upb_Array_Size(arr);
   if (index < 0) index += size;
+#if UPB_FUTURE_REMOVE_POP_CLAMP
+#else
   if (index >= size) index = size - 1;
+#endif  // UPB_FUTURE_REMOVE_POP_CLAMP
   PyObject* ret = PyUpb_RepeatedContainer_Item(_self, index);
   if (!ret) return NULL;
   upb_Array_Delete(self->ptr.arr, index, 1);
@@ -1007,3 +1011,5 @@ bool PyUpb_Repeated_Init(PyObject* m) {
          state->repeated_scalar_container_type &&
          PyUpb_Repeated_RegisterAsSequence(state);
 }
+
+#include "upb/port/undef.inc"

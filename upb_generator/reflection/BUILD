@@ -8,7 +8,7 @@
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
-load("//upb/bazel:copts.bzl", "UPB_DEFAULT_CPPOPTS")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_CPPOPTS", "UPB_DEFAULT_FEATURES")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -36,6 +36,7 @@ cc_binary(
         "source.h",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = [
         "//pkg:__pkg__",
     ],

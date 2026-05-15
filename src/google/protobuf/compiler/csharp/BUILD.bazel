@@ -90,8 +90,6 @@ cc_test(
     srcs = ["csharp_bootstrap_unittest.cc"],
     data = [
         "//:well_known_type_protos",
-        "//conformance:all_files",
-        "//conformance:conformance_proto",
         "//csharp:wkt_cs_srcs",
         "//src/google/protobuf:descriptor_proto_srcs",
         "//src/google/protobuf:testdata",

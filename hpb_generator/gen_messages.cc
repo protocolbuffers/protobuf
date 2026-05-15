@@ -188,7 +188,7 @@ std::string FieldConstantName(const google::protobuf::FieldDescriptor* field) {
 
 void WriteConstFieldNumbers(Context& ctx,
                             const google::protobuf::Descriptor* descriptor) {
-  for (auto field : FieldRange(descriptor)) {
+  for (auto field : internal::FieldRange(descriptor)) {
     ctx.Emit({{"name", FieldConstantName(field)}, {"number", field->number()}},
              "static constexpr ::uint32_t $name$ = $number$;\n");
   }
