@@ -12,6 +12,7 @@ load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//upb/bazel:copts.bzl",
     "UPB_DEFAULT_COPTS",
+    "UPB_DEFAULT_CPPOPTS",
     "UPB_DEFAULT_FEATURES",
 )
 load(
@@ -99,7 +100,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb/base",
-        "//upb/mem",
         "//upb/message:types",
         "//upb/port",
     ],
@@ -153,6 +153,28 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "generated_registry_empty_test",
+    srcs = ["generated_registry_empty_test.cc"],
+    linkstatic = 1,
+    deps = [
+        ":generated_registry_empty_test_upb_minitable_proto",
+        ":mini_table",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+proto_library(
+    name = "generated_registry_empty_test_proto",
+    srcs = ["generated_registry_empty_test.proto"],
+)
+
+upb_minitable_proto_library(
+    name = "generated_registry_empty_test_upb_minitable_proto",
+    deps = [":generated_registry_empty_test_proto"],
+)
+
 proto_library(
     name = "message_benchmark_proto",
     testonly = 1,
@@ -169,6 +191,8 @@ cc_binary(
     name = "message_benchmark",
     testonly = 1,
     srcs = ["message_benchmark.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
     deps = [
         ":compat",
         ":message_benchmark_upb_minitable_proto",
@@ -233,6 +257,16 @@ filegroup(
     srcs = glob(
         [
             "**/*test.cc",
+        ],
+    ),
+    visibility = ["//upb:__pkg__"],
+)
+
+filegroup(
+    name = "test_protos",
+    srcs = glob(
+        [
+            "**/*test.proto",
         ],
     ),
     visibility = ["//upb:__pkg__"],

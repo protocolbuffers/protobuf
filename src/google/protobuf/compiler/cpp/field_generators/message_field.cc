@@ -134,7 +134,7 @@ class SingularMessage : public FieldGeneratorBase {
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
     p->Emit(R"cc(
-      $field$ = $superclass$::CopyConstruct(arena, *from.$field$);
+      $field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
     )cc");
   }
 
@@ -392,14 +392,14 @@ void SingularMessage::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
   if (!is_group()) {
     p->Emit(R"cc(
-      target = $pbi$::WireFormatLite::InternalWrite$declared_type$(
+      target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
           $number$, *this_.$field_$, this_.$field_$->GetCachedSize(), target,
           stream);
     )cc");
   } else {
     p->Emit(R"cc(
       target = stream->EnsureSpace(target);
-      target = $pbi$::WireFormatLite::InternalWrite$declared_type$(
+      target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
           $number$, *this_.$field_$, target, stream);
     )cc");
   }
@@ -407,8 +407,8 @@ void SingularMessage::GenerateSerializeWithCachedSizesToArray(
 
 void SingularMessage::GenerateByteSize(io::Printer* p) const {
   p->Emit(R"cc(
-    total_size += $tag_size$ +
-                  $pbi$::WireFormatLite::$declared_type$Size(*this_.$field_$);
+    total_size += $kTagBytes$ +
+                  $pbi$::WireFormatLite::$DeclaredType$Size(*this_.$field_$);
   )cc");
 }
 
@@ -713,7 +713,8 @@ class RepeatedMessage : public FieldGeneratorBase {
       : FieldGeneratorBase(field, opts),
         opts_(&opts),
         has_required_(
-            opts.scc_analyzer->HasRequiredFields(field->message_type())) {}
+            opts.scc_analyzer->HasRequiredFields(field->message_type())),
+        cpp_repeated_type_(CalculateFieldDescriptorRepeatedType(field)) {}
 
   ~RepeatedMessage() override = default;
 
@@ -739,6 +740,7 @@ class RepeatedMessage : public FieldGeneratorBase {
  private:
   const Options* opts_;
   bool has_required_;
+  FieldDescriptor::CppRepeatedType cpp_repeated_type_;
 };
 
 void RepeatedMessage::GeneratePrivateMembers(io::Printer* p) const {
@@ -759,6 +761,25 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
   auto vm = p->WithVars(AnnotatedAccessors(field_, {"mutable_"},
                                            io::AnnotationCollector::kAlias));
 
+  auto decl_field_accessors = [&] {
+    switch (cpp_repeated_type_) {
+      case FieldDescriptor::CppRepeatedType::kRepeated:
+        p->Emit(R"cc(
+          [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedPtrField<$Submsg$>&
+          $name$() const;
+          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedPtrField<$Submsg$>* $nonnull$
+          $mutable_name$();
+        )cc");
+        break;
+      case FieldDescriptor::CppRepeatedType::kProxy:
+        p->Emit(R"cc(
+          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<const $Submsg$>
+          $name$() const;
+          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<$Submsg$> $mutable_name$();
+        )cc");
+        break;
+    }
+  };
   auto maybe_weak_internal_accessors = [&] {
     if (is_weak()) {
       p->Emit(R"cc(
@@ -769,24 +790,21 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
     }
   };
 
-  p->Emit(
-      {{"maybe_weak_internal_accessors", maybe_weak_internal_accessors}},
-      R"cc(
-        [[nodiscard]] $DEPRECATED$ const $Submsg$& $name$(int index) const;
-        [[nodiscard]] $DEPRECATED$ $Submsg$* $nonnull$ $mutable_name$(int index);
-        $DEPRECATED$ $Submsg$* $nonnull$ $add_name$();
-        [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedPtrField<$Submsg$>&
-        $name$() const;
-        [[nodiscard]] $DEPRECATED$ $pb$::RepeatedPtrField<$Submsg$>* $nonnull$
-        $mutable_name$();
+  p->Emit({{"decl_field_accessors", decl_field_accessors},
+           {"maybe_weak_internal_accessors", maybe_weak_internal_accessors}},
+          R"cc(
+            [[nodiscard]] $DEPRECATED$ const $Submsg$& $name$(int index) const;
+            [[nodiscard]] $DEPRECATED$ $Submsg$* $nonnull$ $mutable_name$(int index);
+            $DEPRECATED$ $Submsg$* $nonnull$ $add_name$();
+            $decl_field_accessors$;
 
-        private:
-        const $pb$::RepeatedPtrField<$Submsg$>& $_internal_name$() const;
-        $pb$::RepeatedPtrField<$Submsg$>* $nonnull$ $_internal_mutable_name$();
-        $maybe_weak_internal_accessors$;
+            private:
+            const $pb$::RepeatedPtrField<$Submsg$>& $_internal_name$() const;
+            $pb$::RepeatedPtrField<$Submsg$>* $nonnull$ $_internal_mutable_name$();
+            $maybe_weak_internal_accessors$;
 
-        public:
-      )cc");
+            public:
+          )cc");
 }
 
 void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
@@ -831,28 +849,59 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
   )cc");
 
-  p->Emit(R"cc(
-    inline const $pb$::RepeatedPtrField<$Submsg$>& $Msg$::$name$() const
-        ABSL_ATTRIBUTE_LIFETIME_BOUND {
-      $WeakDescriptorSelfPin$;
-      $annotate_list$;
-      // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
-      $StrongRef$;
-      return _internal_$name_internal$();
-    }
-  )cc");
-  p->Emit(R"cc(
-    inline $pb$::RepeatedPtrField<$Submsg$>* $nonnull$ $Msg$::mutable_$name$()
-        ABSL_ATTRIBUTE_LIFETIME_BOUND {
-      $WeakDescriptorSelfPin$;
-      $set_hasbit$;
-      $annotate_mutable_list$;
-      // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
-      $StrongRef$;
-      $TsanDetectConcurrentMutation$;
-      return _internal_mutable_$name_internal$();
-    }
-  )cc");
+  switch (cpp_repeated_type_) {
+    case FieldDescriptor::CppRepeatedType::kRepeated:
+      p->Emit(R"cc(
+        inline const $pb$::RepeatedPtrField<$Submsg$>& $Msg$::$name$() const
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $annotate_list$;
+          // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
+          $StrongRef$;
+          return _internal_$name_internal$();
+        }
+      )cc");
+      p->Emit(R"cc(
+        inline $pb$::RepeatedPtrField<$Submsg$>* $nonnull$
+        $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $set_hasbit$;
+          $annotate_mutable_list$;
+          // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
+          $StrongRef$;
+          $TsanDetectConcurrentMutation$;
+          return _internal_mutable_$name_internal$();
+        }
+      )cc");
+      break;
+    case FieldDescriptor::CppRepeatedType::kProxy:
+      p->Emit(R"cc(
+        inline $pb$::RepeatedFieldProxy<const $Submsg$> $Msg$::$name$() const
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $annotate_list$;
+          // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
+          $StrongRef$;
+          return $pbi$::RepeatedFieldProxyInternalPrivateAccessHelper<
+              const $Submsg$>::Construct(_internal_$name_internal$());
+        }
+      )cc");
+      p->Emit(R"cc(
+        inline $pb$::RepeatedFieldProxy<$Submsg$> $Msg$::mutable_$name$()
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $set_hasbit$;
+          $annotate_mutable_list$;
+          // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
+          $StrongRef$;
+          $TsanDetectConcurrentMutation$;
+          return $pbi$::RepeatedFieldProxyInternalPrivateAccessHelper<
+              $Submsg$>::Construct(*_internal_mutable_$name_internal$(),
+                                   GetArena());
+        }
+      )cc");
+      break;
+  }
 
   if (should_split()) {
     p->Emit(R"cc(
@@ -961,72 +1010,69 @@ void RepeatedMessage::GenerateDestructorCode(io::Printer* p) const {
 void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
   if (is_weak()) {
-    p->Emit({{"serialize_field",
-              [&] {
-                if (field_->type() == FieldDescriptor::TYPE_MESSAGE) {
-                  p->Emit(
-                      R"cc(
-                        target =
-                            $pbi$::WireFormatLite::InternalWrite$declared_type$(
-                                $number$, **it, (**it).GetCachedSize(), target,
-                                stream);
-                      )cc");
-                } else {
-                  p->Emit(
-                      R"cc(
-                        target = stream->EnsureSpace(target);
-                        target =
-                            $pbi$::WireFormatLite::InternalWrite$declared_type$(
-                                $number$, **it, target, stream);
-                      )cc");
-                }
-              }}},
-            R"cc(
-              for (auto it = this_.$field_$.pointer_begin(),
-                        end = this_.$field_$.pointer_end();
-                   it < end; ++it) {
-                $serialize_field$;
-              }
-            )cc");
+    p->Emit(
+        {{"serialize_field",
+          [&] {
+            if (field_->type() == FieldDescriptor::TYPE_MESSAGE) {
+              p->Emit(
+                  R"cc(
+                    target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
+                        $number$, **it, (**it).GetCachedSize(), target, stream);
+                  )cc");
+            } else {
+              p->Emit(
+                  R"cc(
+                    target = stream->EnsureSpace(target);
+                    target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
+                        $number$, **it, target, stream);
+                  )cc");
+            }
+          }}},
+        R"cc(
+          for (auto it = this_.$field_$.pointer_begin(),
+                    end = this_.$field_$.pointer_end();
+               it < end; ++it) {
+            $serialize_field$;
+          }
+        )cc");
   } else {
-    p->Emit({{"serialize_field",
-              [&] {
-                if (field_->type() == FieldDescriptor::TYPE_MESSAGE) {
-                  p->Emit(
-                      R"cc(
-                        const auto& repfield = this_._internal_$name$().Get(i);
-                        target =
-                            $pbi$::WireFormatLite::InternalWrite$declared_type$(
-                                $number$, repfield, repfield.GetCachedSize(),
-                                target, stream);
-                      )cc");
-                } else {
-                  p->Emit(
-                      R"cc(
-                        target = stream->EnsureSpace(target);
-                        target =
-                            $pbi$::WireFormatLite::InternalWrite$declared_type$(
-                                $number$, this_._internal_$name$().Get(i),
-                                target, stream);
-                      )cc");
-                }
-              }}},
-            R"cc(
-              for (unsigned i = 0, n = static_cast<unsigned>(
-                                       this_._internal_$name$_size());
-                   i < n; i++) {
-                $serialize_field$;
-              }
-            )cc");
+    p->Emit(
+        {{"serialize_field",
+          [&] {
+            if (field_->type() == FieldDescriptor::TYPE_MESSAGE) {
+              p->Emit(
+                  R"cc(
+                    const auto& repfield = this_._internal_$name$().Get(i);
+                    target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
+                        $number$, repfield, repfield.GetCachedSize(), target,
+                        stream);
+                  )cc");
+            } else {
+              p->Emit(
+                  R"cc(
+                    target = stream->EnsureSpace(target);
+                    target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
+                        $number$, this_._internal_$name$().Get(i), target,
+                        stream);
+                  )cc");
+            }
+          }}},
+        R"cc(
+          for (unsigned i = 0, n = static_cast<unsigned>(
+                                   this_._internal_$name$_size());
+               i < n; i++) {
+            $serialize_field$;
+          }
+        )cc");
   }
 }
 
 void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
   p->Emit(
       R"cc(
-        total_size += $tag_size$UL * this_._internal_$name$_size();
+        total_size += $kTagBytes$UL * this_._internal_$name$_size();
         for (const auto& msg : this_._internal$_weak$_$name$()) {
-          total_size += $pbi$::WireFormatLite::$declared_type$Size(msg);
+          total_size += $pbi$::WireFormatLite::$DeclaredType$Size(msg);
         }
       )cc");
 }

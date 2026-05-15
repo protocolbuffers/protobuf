@@ -7,6 +7,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 """Unittest for reflection.py, which also indirectly tests the output of the
+
 pure-Python protocol compiler.
 """
 
@@ -32,11 +33,13 @@ from google.protobuf.internal import more_messages_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
 from google.protobuf.internal import wire_format
-from absl.testing import parameterized
+
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
+
+from absl.testing import parameterized
 
 
 warnings.simplefilter('error', DeprecationWarning)
@@ -74,12 +77,12 @@ class _MiniDecoder(object):
     return wire_format.UnpackTag(self.ReadVarint())
 
   def ReadFloat(self):
-    result = struct.unpack('<f', self._bytes[self._pos:self._pos+4])[0]
+    result = struct.unpack('<f', self._bytes[self._pos : self._pos + 4])[0]
     self._pos += 4
     return result
 
   def ReadDouble(self):
-    result = struct.unpack('<d', self._bytes[self._pos:self._pos+8])[0]
+    result = struct.unpack('<d', self._bytes[self._pos : self._pos + 8])[0]
     self._pos += 8
     return result
 
@@ -88,8 +91,8 @@ class _MiniDecoder(object):
 
 
 @parameterized.named_parameters(
-    ('_proto2', unittest_pb2),
-    ('_proto3', unittest_proto3_arena_pb2))
+    ('_proto2', unittest_pb2), ('_proto3', unittest_proto3_arena_pb2)
+)
 @testing_refleaks.TestCase
 class ReflectionTest(unittest.TestCase):
 
@@ -104,13 +107,14 @@ class ReflectionTest(unittest.TestCase):
         optional_int32=24,
         optional_double=54.321,
         optional_string='optional_string',
-        optional_float=None)
+        optional_float=None,
+    )
 
     self.assertEqual(24, proto.optional_int32)
     self.assertEqual(54.321, proto.optional_double)
     self.assertEqual('optional_string', proto.optional_string)
     if message_module is unittest_pb2:
-      self.assertFalse(proto.HasField("optional_float"))
+      self.assertFalse(proto.HasField('optional_float'))
 
   def testRepeatedScalarConstructor(self, message_module):
     # Constructor with only repeated scalar types should succeed.
@@ -118,13 +122,14 @@ class ReflectionTest(unittest.TestCase):
         repeated_int32=[1, 2, 3, 4],
         repeated_double=[1.23, 54.321],
         repeated_bool=[True, False, False],
-        repeated_string=["optional_string"],
-        repeated_float=None)
+        repeated_string=['optional_string'],
+        repeated_float=None,
+    )
 
     self.assertEqual([1, 2, 3, 4], list(proto.repeated_int32))
     self.assertEqual([1.23, 54.321], list(proto.repeated_double))
     self.assertEqual([True, False, False], list(proto.repeated_bool))
-    self.assertEqual(["optional_string"], list(proto.repeated_string))
+    self.assertEqual(['optional_string'], list(proto.repeated_string))
     self.assertEqual([], list(proto.repeated_float))
 
   def testMixedConstructor(self, message_module):
@@ -136,58 +141,81 @@ class ReflectionTest(unittest.TestCase):
         repeated_bool=[True, False, False],
         repeated_nested_message=[
             message_module.TestAllTypes.NestedMessage(
-                bb=message_module.TestAllTypes.FOO),
+                bb=message_module.TestAllTypes.FOO
+            ),
             message_module.TestAllTypes.NestedMessage(
-                bb=message_module.TestAllTypes.BAR)],
+                bb=message_module.TestAllTypes.BAR
+            ),
+        ],
         repeated_foreign_message=[
             message_module.ForeignMessage(c=-43),
             message_module.ForeignMessage(c=45324),
-            message_module.ForeignMessage(c=12)],
-        optional_nested_message=None)
+            message_module.ForeignMessage(c=12),
+        ],
+        optional_nested_message=None,
+    )
 
     self.assertEqual(24, proto.optional_int32)
     self.assertEqual('optional_string', proto.optional_string)
     self.assertEqual([1.23, 54.321], list(proto.repeated_double))
     self.assertEqual([True, False, False], list(proto.repeated_bool))
     self.assertEqual(
-        [message_module.TestAllTypes.NestedMessage(
-            bb=message_module.TestAllTypes.FOO),
-         message_module.TestAllTypes.NestedMessage(
-             bb=message_module.TestAllTypes.BAR)],
-        list(proto.repeated_nested_message))
+        [
+            message_module.TestAllTypes.NestedMessage(
+                bb=message_module.TestAllTypes.FOO
+            ),
+            message_module.TestAllTypes.NestedMessage(
+                bb=message_module.TestAllTypes.BAR
+            ),
+        ],
+        list(proto.repeated_nested_message),
+    )
     self.assertEqual(
-        [message_module.ForeignMessage(c=-43),
-         message_module.ForeignMessage(c=45324),
-         message_module.ForeignMessage(c=12)],
-        list(proto.repeated_foreign_message))
-    self.assertFalse(proto.HasField("optional_nested_message"))
+        [
+            message_module.ForeignMessage(c=-43),
+            message_module.ForeignMessage(c=45324),
+            message_module.ForeignMessage(c=12),
+        ],
+        list(proto.repeated_foreign_message),
+    )
+    self.assertFalse(proto.HasField('optional_nested_message'))
 
   def testConstructorTypeError(self, message_module):
     self.assertRaises(
-        TypeError, message_module.TestAllTypes, optional_int32='foo')
+        TypeError, message_module.TestAllTypes, optional_int32='foo'
+    )
     self.assertRaises(
-        TypeError, message_module.TestAllTypes, optional_string=1234)
+        TypeError, message_module.TestAllTypes, optional_string=1234
+    )
     self.assertRaises(
-        TypeError, message_module.TestAllTypes, optional_nested_message=1234)
+        TypeError, message_module.TestAllTypes, optional_nested_message=1234
+    )
     self.assertRaises(
-        TypeError, message_module.TestAllTypes, repeated_int32=1234)
+        TypeError, message_module.TestAllTypes, repeated_int32=1234
+    )
     self.assertRaises(
-        TypeError, message_module.TestAllTypes, repeated_int32=['foo'])
+        TypeError, message_module.TestAllTypes, repeated_int32=['foo']
+    )
     self.assertRaises(
-        TypeError, message_module.TestAllTypes, repeated_string=1234)
+        TypeError, message_module.TestAllTypes, repeated_string=1234
+    )
     self.assertRaises(
-        TypeError, message_module.TestAllTypes, repeated_string=[1234])
+        TypeError, message_module.TestAllTypes, repeated_string=[1234]
+    )
     self.assertRaises(
-        TypeError, message_module.TestAllTypes, repeated_nested_message=1234)
+        TypeError, message_module.TestAllTypes, repeated_nested_message=1234
+    )
     self.assertRaises(
-        TypeError, message_module.TestAllTypes, repeated_nested_message=[1234])
+        TypeError, message_module.TestAllTypes, repeated_nested_message=[1234]
+    )
 
   def testConstructorInvalidatesCachedByteSize(self, message_module):
     message = message_module.TestAllTypes(optional_int32=12)
     self.assertEqual(2, message.ByteSize())
 
     message = message_module.TestAllTypes(
-        optional_nested_message=message_module.TestAllTypes.NestedMessage())
+        optional_nested_message=message_module.TestAllTypes.NestedMessage()
+    )
     self.assertEqual(3, message.ByteSize())
 
     message = message_module.TestAllTypes(repeated_int32=[12])
@@ -196,7 +224,8 @@ class ReflectionTest(unittest.TestCase):
       self.assertEqual(3, message.ByteSize())
 
     message = message_module.TestAllTypes(
-        repeated_nested_message=[message_module.TestAllTypes.NestedMessage()])
+        repeated_nested_message=[message_module.TestAllTypes.NestedMessage()]
+    )
     self.assertEqual(3, message.ByteSize())
 
   def testReferencesToNestedMessage(self, message_module):
@@ -220,7 +249,8 @@ class ReflectionTest(unittest.TestCase):
     self.assertFalse(proto.HasField('oneof_nested_message'))
 
   def testGetDefaultMessageAfterDisconnectingDefaultMessage(
-      self, message_module):
+      self, message_module
+  ):
     proto = message_module.TestAllTypes()
     nested = proto.optional_nested_message
     proto.ClearField('optional_nested_message')
@@ -280,19 +310,27 @@ class ReflectionTest(unittest.TestCase):
     # Access sub-message but don't set it yet.
     nested_message = proto.optional_nested_message
     self.assertEqual(
-      [ (proto.DESCRIPTOR.fields_by_name['optional_int32'  ], 5),
-        (proto.DESCRIPTOR.fields_by_name['optional_fixed32'], 1),
-        (proto.DESCRIPTOR.fields_by_name['optional_string' ], 'foo') ],
-      proto.ListFields())
+        [
+            (proto.DESCRIPTOR.fields_by_name['optional_int32'], 5),
+            (proto.DESCRIPTOR.fields_by_name['optional_fixed32'], 1),
+            (proto.DESCRIPTOR.fields_by_name['optional_string'], 'foo'),
+        ],
+        proto.ListFields(),
+    )
 
     proto.optional_nested_message.bb = 123
     self.assertEqual(
-      [ (proto.DESCRIPTOR.fields_by_name['optional_int32'  ], 5),
-        (proto.DESCRIPTOR.fields_by_name['optional_fixed32'], 1),
-        (proto.DESCRIPTOR.fields_by_name['optional_string' ], 'foo'),
-        (proto.DESCRIPTOR.fields_by_name['optional_nested_message' ],
-             nested_message) ],
-      proto.ListFields())
+        [
+            (proto.DESCRIPTOR.fields_by_name['optional_int32'], 5),
+            (proto.DESCRIPTOR.fields_by_name['optional_fixed32'], 1),
+            (proto.DESCRIPTOR.fields_by_name['optional_string'], 'foo'),
+            (
+                proto.DESCRIPTOR.fields_by_name['optional_nested_message'],
+                nested_message,
+            ),
+        ],
+        proto.ListFields(),
+    )
 
   def testRepeatedListFields(self, message_module):
     proto = message_module.TestAllTypes()
@@ -306,12 +344,17 @@ class ReflectionTest(unittest.TestCase):
     proto.optional_int32 = 21
     proto.repeated_bool  # Access but don't set anything; should not be listed.
     self.assertEqual(
-      [ (proto.DESCRIPTOR.fields_by_name['optional_int32'  ], 21),
-        (proto.DESCRIPTOR.fields_by_name['repeated_int32'  ], [5, 11]),
-        (proto.DESCRIPTOR.fields_by_name['repeated_fixed32'], [1]),
-        (proto.DESCRIPTOR.fields_by_name['repeated_string' ],
-          ['foo', 'bar', 'baz', '0', '1']) ],
-      proto.ListFields())
+        [
+            (proto.DESCRIPTOR.fields_by_name['optional_int32'], 21),
+            (proto.DESCRIPTOR.fields_by_name['repeated_int32'], [5, 11]),
+            (proto.DESCRIPTOR.fields_by_name['repeated_fixed32'], [1]),
+            (
+                proto.DESCRIPTOR.fields_by_name['repeated_string'],
+                ['foo', 'bar', 'baz', '0', '1'],
+            ),
+        ],
+        proto.ListFields(),
+    )
 
   def testClearFieldWithUnknownFieldName(self, message_module):
     proto = message_module.TestAllTypes()
@@ -327,15 +370,18 @@ class ReflectionTest(unittest.TestCase):
     # Lists shouldn't work, either.
     self.assertRaises(AttributeError, setattr, proto, 'repeated_int32', [10])
     # Composite fields.
-    self.assertRaises(AttributeError, setattr, proto,
-                      'optional_nested_message', 23)
+    self.assertRaises(
+        AttributeError, setattr, proto, 'optional_nested_message', 23
+    )
     # Assignment to a repeated nested message field without specifying
     # the index in the array of nested messages.
-    self.assertRaises(AttributeError, setattr, proto.repeated_nested_message,
-                      'bb', 34)
+    self.assertRaises(
+        AttributeError, setattr, proto.repeated_nested_message, 'bb', 34
+    )
     # Assignment to an attribute of a repeated field.
-    self.assertRaises(AttributeError, setattr, proto.repeated_float,
-                      'some_attribute', 34)
+    self.assertRaises(
+        AttributeError, setattr, proto.repeated_float, 'some_attribute', 34
+    )
     # proto.nonexistent_field = 23 should fail as well.
     self.assertRaises(AttributeError, setattr, proto, 'nonexistent_field', 23)
 
@@ -349,8 +395,10 @@ class ReflectionTest(unittest.TestCase):
     self.assertRaises(TypeError, setattr, proto, 'optional_float', 'foo')
     self.assertRaises(TypeError, setattr, proto, 'optional_double', 'foo')
     # TODO: Fix type checking difference for python and c extension
-    if (api_implementation.Type() == 'python' or
-        (sys.version_info.major, sys.version_info.minor) >= (3, 10)):
+    if api_implementation.Type() == 'python' or (
+        sys.version_info.major,
+        sys.version_info.minor,
+    ) >= (3, 10):
       self.assertRaises(TypeError, setattr, proto, 'optional_bool', 1.1)
     else:
       proto.optional_bool = 1.1
@@ -362,6 +410,7 @@ class ReflectionTest(unittest.TestCase):
       integer_fn: A function to wrap the integers that will be assigned.
       message_module: unittest_pb2 or unittest_proto3_arena_pb2
     """
+
     def TestGetAndDeserialize(field_name, value, expected_type):
       proto = message_module.TestAllTypes()
       value = integer_fn(value)
@@ -411,6 +460,7 @@ class ReflectionTest(unittest.TestCase):
       integer_fn: A function to wrap the integers that will be assigned.
       message_module: unittest_pb2 or unittest_proto3_arena_pb2
     """
+
     def TestMinAndMaxIntegers(field_name, expected_min, expected_max):
       pb = message_module.TestAllTypes()
       expected_min = integer_fn(expected_min)
@@ -419,15 +469,17 @@ class ReflectionTest(unittest.TestCase):
       self.assertEqual(expected_min, getattr(pb, field_name))
       setattr(pb, field_name, expected_max)
       self.assertEqual(expected_max, getattr(pb, field_name))
-      self.assertRaises((ValueError, TypeError), setattr, pb, field_name,
-                        expected_min - 1)
-      self.assertRaises((ValueError, TypeError), setattr, pb, field_name,
-                        expected_max + 1)
+      self.assertRaises(
+          (ValueError, TypeError), setattr, pb, field_name, expected_min - 1
+      )
+      self.assertRaises(
+          (ValueError, TypeError), setattr, pb, field_name, expected_max + 1
+      )
 
     TestMinAndMaxIntegers('optional_int32', -(1 << 31), (1 << 31) - 1)
-    TestMinAndMaxIntegers('optional_uint32', 0, 0xffffffff)
+    TestMinAndMaxIntegers('optional_uint32', 0, 0xFFFFFFFF)
     TestMinAndMaxIntegers('optional_int64', -(1 << 63), (1 << 63) - 1)
-    TestMinAndMaxIntegers('optional_uint64', 0, 0xffffffffffffffff)
+    TestMinAndMaxIntegers('optional_uint64', 0, 0xFFFFFFFFFFFFFFFF)
     # A bit of white-box testing since -1 is an int and not a long in C++ and
     # so goes down a different path.
     pb = message_module.TestAllTypes()
@@ -443,7 +495,8 @@ class ReflectionTest(unittest.TestCase):
 
   def testNonStandardSingleScalarBoundsChecking(self, message_module):
     self.assetIntegerBoundsChecking(
-        test_util.NonStandardInteger, message_module)
+        test_util.NonStandardInteger, message_module
+    )
 
   def testRepeatedScalarTypeSafety(self, message_module):
     proto = message_module.TestAllTypes()
@@ -457,8 +510,7 @@ class ReflectionTest(unittest.TestCase):
     self.assertRaises(IndexError, proto.repeated_int32.__setitem__, 500, 23)
     self.assertRaises(TypeError, proto.repeated_int32.__setitem__, 0, 'abc')
     self.assertRaises(TypeError, proto.repeated_int32.__setitem__, 0, [])
-    self.assertRaises(TypeError, proto.repeated_int32.__setitem__,
-                      'index', 23)
+    self.assertRaises(TypeError, proto.repeated_int32.__setitem__, 'index', 23)
 
     proto.repeated_string.append('2')
     self.assertRaises(TypeError, proto.repeated_string.__setitem__, 0, 10)
@@ -472,10 +524,10 @@ class ReflectionTest(unittest.TestCase):
     proto.optional_int32 = 1
     self.assertEqual(1, proto.optional_int32)
 
-    proto.optional_uint64 = 0xffffffffffff
-    self.assertEqual(0xffffffffffff, proto.optional_uint64)
-    proto.optional_uint64 = 0xffffffffffffffff
-    self.assertEqual(0xffffffffffffffff, proto.optional_uint64)
+    proto.optional_uint64 = 0xFFFFFFFFFFFF
+    self.assertEqual(0xFFFFFFFFFFFF, proto.optional_uint64)
+    proto.optional_uint64 = 0xFFFFFFFFFFFFFFFF
+    self.assertEqual(0xFFFFFFFFFFFFFFFF, proto.optional_uint64)
     # TODO: Test all other scalar field types.
 
   def testEnums(self, message_module):
@@ -490,100 +542,106 @@ class ReflectionTest(unittest.TestCase):
   def testEnum_Name(self, message_module):
     self.assertEqual(
         'FOREIGN_FOO',
-        message_module.ForeignEnum.Name(message_module.FOREIGN_FOO))
+        message_module.ForeignEnum.Name(message_module.FOREIGN_FOO),
+    )
     self.assertEqual(
         'FOREIGN_BAR',
-        message_module.ForeignEnum.Name(message_module.FOREIGN_BAR))
+        message_module.ForeignEnum.Name(message_module.FOREIGN_BAR),
+    )
     self.assertEqual(
         'FOREIGN_BAZ',
-        message_module.ForeignEnum.Name(message_module.FOREIGN_BAZ))
-    self.assertRaises(ValueError,
-                      message_module.ForeignEnum.Name, 11312)
+        message_module.ForeignEnum.Name(message_module.FOREIGN_BAZ),
+    )
+    self.assertRaises(ValueError, message_module.ForeignEnum.Name, 11312)
 
     proto = message_module.TestAllTypes()
-    self.assertEqual('FOO',
-                     proto.NestedEnum.Name(proto.FOO))
-    self.assertEqual('FOO',
-                     message_module.TestAllTypes.NestedEnum.Name(proto.FOO))
-    self.assertEqual('BAR',
-                     proto.NestedEnum.Name(proto.BAR))
-    self.assertEqual('BAR',
-                     message_module.TestAllTypes.NestedEnum.Name(proto.BAR))
-    self.assertEqual('BAZ',
-                     proto.NestedEnum.Name(proto.BAZ))
-    self.assertEqual('BAZ',
-                     message_module.TestAllTypes.NestedEnum.Name(proto.BAZ))
-    self.assertRaises(ValueError,
-                      proto.NestedEnum.Name, 11312)
-    self.assertRaises(ValueError,
-                      message_module.TestAllTypes.NestedEnum.Name, 11312)
+    self.assertEqual('FOO', proto.NestedEnum.Name(proto.FOO))
+    self.assertEqual(
+        'FOO', message_module.TestAllTypes.NestedEnum.Name(proto.FOO)
+    )
+    self.assertEqual('BAR', proto.NestedEnum.Name(proto.BAR))
+    self.assertEqual(
+        'BAR', message_module.TestAllTypes.NestedEnum.Name(proto.BAR)
+    )
+    self.assertEqual('BAZ', proto.NestedEnum.Name(proto.BAZ))
+    self.assertEqual(
+        'BAZ', message_module.TestAllTypes.NestedEnum.Name(proto.BAZ)
+    )
+    self.assertRaises(ValueError, proto.NestedEnum.Name, 11312)
+    self.assertRaises(
+        ValueError, message_module.TestAllTypes.NestedEnum.Name, 11312
+    )
 
     # Check some coercion cases.
-    self.assertRaises(TypeError, message_module.TestAllTypes.NestedEnum.Name,
-                      11312.0)
-    self.assertRaises(TypeError, message_module.TestAllTypes.NestedEnum.Name,
-                      None)
+    self.assertRaises(
+        TypeError, message_module.TestAllTypes.NestedEnum.Name, 11312.0
+    )
+    self.assertRaises(
+        TypeError, message_module.TestAllTypes.NestedEnum.Name, None
+    )
     self.assertEqual('FOO', message_module.TestAllTypes.NestedEnum.Name(True))
 
   def testEnum_Value(self, message_module):
-    self.assertEqual(message_module.FOREIGN_FOO,
-                     message_module.ForeignEnum.Value('FOREIGN_FOO'))
-    self.assertEqual(message_module.FOREIGN_FOO,
-                     message_module.ForeignEnum.FOREIGN_FOO)
+    self.assertEqual(
+        message_module.FOREIGN_FOO,
+        message_module.ForeignEnum.Value('FOREIGN_FOO'),
+    )
+    self.assertEqual(
+        message_module.FOREIGN_FOO, message_module.ForeignEnum.FOREIGN_FOO
+    )
 
-    self.assertEqual(message_module.FOREIGN_BAR,
-                     message_module.ForeignEnum.Value('FOREIGN_BAR'))
-    self.assertEqual(message_module.FOREIGN_BAR,
-                     message_module.ForeignEnum.FOREIGN_BAR)
+    self.assertEqual(
+        message_module.FOREIGN_BAR,
+        message_module.ForeignEnum.Value('FOREIGN_BAR'),
+    )
+    self.assertEqual(
+        message_module.FOREIGN_BAR, message_module.ForeignEnum.FOREIGN_BAR
+    )
 
-    self.assertEqual(message_module.FOREIGN_BAZ,
-                     message_module.ForeignEnum.Value('FOREIGN_BAZ'))
-    self.assertEqual(message_module.FOREIGN_BAZ,
-                     message_module.ForeignEnum.FOREIGN_BAZ)
+    self.assertEqual(
+        message_module.FOREIGN_BAZ,
+        message_module.ForeignEnum.Value('FOREIGN_BAZ'),
+    )
+    self.assertEqual(
+        message_module.FOREIGN_BAZ, message_module.ForeignEnum.FOREIGN_BAZ
+    )
 
-    self.assertRaises(ValueError,
-                      message_module.ForeignEnum.Value, 'FO')
+    self.assertRaises(ValueError, message_module.ForeignEnum.Value, 'FO')
     with self.assertRaises(AttributeError):
       message_module.ForeignEnum.FO
 
     proto = message_module.TestAllTypes()
-    self.assertEqual(proto.FOO,
-                     proto.NestedEnum.Value('FOO'))
-    self.assertEqual(proto.FOO,
-                     proto.NestedEnum.FOO)
+    self.assertEqual(proto.FOO, proto.NestedEnum.Value('FOO'))
+    self.assertEqual(proto.FOO, proto.NestedEnum.FOO)
 
-    self.assertEqual(proto.FOO,
-                     message_module.TestAllTypes.NestedEnum.Value('FOO'))
-    self.assertEqual(proto.FOO,
-                     message_module.TestAllTypes.NestedEnum.FOO)
+    self.assertEqual(
+        proto.FOO, message_module.TestAllTypes.NestedEnum.Value('FOO')
+    )
+    self.assertEqual(proto.FOO, message_module.TestAllTypes.NestedEnum.FOO)
 
-    self.assertEqual(proto.BAR,
-                     proto.NestedEnum.Value('BAR'))
-    self.assertEqual(proto.BAR,
-                     proto.NestedEnum.BAR)
+    self.assertEqual(proto.BAR, proto.NestedEnum.Value('BAR'))
+    self.assertEqual(proto.BAR, proto.NestedEnum.BAR)
 
-    self.assertEqual(proto.BAR,
-                     message_module.TestAllTypes.NestedEnum.Value('BAR'))
-    self.assertEqual(proto.BAR,
-                     message_module.TestAllTypes.NestedEnum.BAR)
+    self.assertEqual(
+        proto.BAR, message_module.TestAllTypes.NestedEnum.Value('BAR')
+    )
+    self.assertEqual(proto.BAR, message_module.TestAllTypes.NestedEnum.BAR)
 
-    self.assertEqual(proto.BAZ,
-                     proto.NestedEnum.Value('BAZ'))
-    self.assertEqual(proto.BAZ,
-                     proto.NestedEnum.BAZ)
+    self.assertEqual(proto.BAZ, proto.NestedEnum.Value('BAZ'))
+    self.assertEqual(proto.BAZ, proto.NestedEnum.BAZ)
 
-    self.assertEqual(proto.BAZ,
-                     message_module.TestAllTypes.NestedEnum.Value('BAZ'))
-    self.assertEqual(proto.BAZ,
-                     message_module.TestAllTypes.NestedEnum.BAZ)
+    self.assertEqual(
+        proto.BAZ, message_module.TestAllTypes.NestedEnum.Value('BAZ')
+    )
+    self.assertEqual(proto.BAZ, message_module.TestAllTypes.NestedEnum.BAZ)
 
-    self.assertRaises(ValueError,
-                      proto.NestedEnum.Value, 'Foo')
+    self.assertRaises(ValueError, proto.NestedEnum.Value, 'Foo')
     with self.assertRaises(AttributeError):
       proto.NestedEnum.Value.Foo
 
-    self.assertRaises(ValueError,
-                      message_module.TestAllTypes.NestedEnum.Value, 'Foo')
+    self.assertRaises(
+        ValueError, message_module.TestAllTypes.NestedEnum.Value, 'Foo'
+    )
     with self.assertRaises(AttributeError):
       message_module.TestAllTypes.NestedEnum.Value.Foo
 
@@ -620,12 +678,9 @@ class ReflectionTest(unittest.TestCase):
           ('FOREIGN_BAZ', 6),
           ('FOREIGN_LARGE', 123456),
       ]
-    self.assertEqual(keys,
-                     list(message_module.ForeignEnum.keys()))
-    self.assertEqual(values,
-                     list(message_module.ForeignEnum.values()))
-    self.assertEqual(items,
-                     list(message_module.ForeignEnum.items()))
+    self.assertEqual(keys, list(message_module.ForeignEnum.keys()))
+    self.assertEqual(values, list(message_module.ForeignEnum.values()))
+    self.assertEqual(items, list(message_module.ForeignEnum.items()))
 
     proto = message_module.TestAllTypes()
     if message_module == unittest_pb2:
@@ -638,8 +693,7 @@ class ReflectionTest(unittest.TestCase):
       items = [('ZERO', 0), ('FOO', 1), ('BAR', 2), ('BAZ', 3), ('NEG', -1)]
     self.assertEqual(keys, list(proto.NestedEnum.keys()))
     self.assertEqual(values, list(proto.NestedEnum.values()))
-    self.assertEqual(items,
-                     list(proto.NestedEnum.items()))
+    self.assertEqual(items, list(proto.NestedEnum.items()))
 
   def testStaticParseFrom(self, message_module):
     proto1 = message_module.TestAllTypes()
@@ -839,8 +893,9 @@ class ReflectionTest(unittest.TestCase):
     proto = message_module.TestAllTypes()
 
     # Assignment of a unicode object to a field of type 'bytes' is not allowed.
-    self.assertRaises(TypeError,
-                      setattr, proto, 'optional_bytes', u'unicode object')
+    self.assertRaises(
+        TypeError, setattr, proto, 'optional_bytes', 'unicode object'
+    )
 
     # Check that the default value is of python's 'unicode' type.
     self.assertEqual(type(proto.optional_string), str)
@@ -853,29 +908,30 @@ class ReflectionTest(unittest.TestCase):
     self.assertEqual(proto.optional_string, str('Testing'))
 
     # Try to assign a 'bytes' object which contains non-UTF-8.
-    self.assertRaises(ValueError,
-                      setattr, proto, 'optional_string', b'a\x80a')
+    self.assertRaises(ValueError, setattr, proto, 'optional_string', b'a\x80a')
     # No exception: Assign already encoded UTF-8 bytes to a string field.
-    utf8_bytes = u'Тест'.encode('utf-8')
+    utf8_bytes = 'Тест'.encode('utf-8')
     proto.optional_string = utf8_bytes
     # No exception: Assign the a non-ascii unicode object.
-    proto.optional_string = u'Тест'
+    proto.optional_string = 'Тест'
     # No exception thrown (normal str assignment containing ASCII).
     proto.optional_string = 'abc'
 
   def testBytesInTextFormat(self, message_module):
     proto = message_module.TestAllTypes(optional_bytes=b'\x00\x7f\x80\xff')
-    self.assertEqual(u'optional_bytes: "\\000\\177\\200\\377"\n', str(proto))
+    self.assertEqual('optional_bytes: "\\000\\177\\200\\377"\n', str(proto))
 
   def testEmptyNestedMessage(self, message_module):
     proto = message_module.TestAllTypes()
     proto.optional_nested_message.MergeFrom(
-        message_module.TestAllTypes.NestedMessage())
+        message_module.TestAllTypes.NestedMessage()
+    )
     self.assertTrue(proto.HasField('optional_nested_message'))
 
     proto = message_module.TestAllTypes()
     proto.optional_nested_message.CopyFrom(
-        message_module.TestAllTypes.NestedMessage())
+        message_module.TestAllTypes.NestedMessage()
+    )
     self.assertTrue(proto.HasField('optional_nested_message'))
 
     proto = message_module.TestAllTypes()
@@ -889,9 +945,7 @@ class ReflectionTest(unittest.TestCase):
 
     serialized = proto.SerializeToString()
     proto2 = message_module.TestAllTypes()
-    self.assertEqual(
-        len(serialized),
-        proto2.MergeFromString(serialized))
+    self.assertEqual(len(serialized), proto2.MergeFromString(serialized))
     self.assertTrue(proto2.HasField('optional_nested_message'))
 
 
@@ -904,34 +958,51 @@ class Proto2ReflectionTest(unittest.TestCase):
     proto = unittest_pb2.TestAllTypes(
         repeated_nested_message=[
             unittest_pb2.TestAllTypes.NestedMessage(
-                bb=unittest_pb2.TestAllTypes.FOO),
+                bb=unittest_pb2.TestAllTypes.FOO
+            ),
             unittest_pb2.TestAllTypes.NestedMessage(
-                bb=unittest_pb2.TestAllTypes.BAR)],
+                bb=unittest_pb2.TestAllTypes.BAR
+            ),
+        ],
         repeated_foreign_message=[
             unittest_pb2.ForeignMessage(c=-43),
             unittest_pb2.ForeignMessage(c=45324),
-            unittest_pb2.ForeignMessage(c=12)],
+            unittest_pb2.ForeignMessage(c=12),
+        ],
         repeatedgroup=[
             unittest_pb2.TestAllTypes.RepeatedGroup(),
             unittest_pb2.TestAllTypes.RepeatedGroup(a=1),
-            unittest_pb2.TestAllTypes.RepeatedGroup(a=2)])
+            unittest_pb2.TestAllTypes.RepeatedGroup(a=2),
+        ],
+    )
 
     self.assertEqual(
-        [unittest_pb2.TestAllTypes.NestedMessage(
-            bb=unittest_pb2.TestAllTypes.FOO),
-         unittest_pb2.TestAllTypes.NestedMessage(
-             bb=unittest_pb2.TestAllTypes.BAR)],
-        list(proto.repeated_nested_message))
+        [
+            unittest_pb2.TestAllTypes.NestedMessage(
+                bb=unittest_pb2.TestAllTypes.FOO
+            ),
+            unittest_pb2.TestAllTypes.NestedMessage(
+                bb=unittest_pb2.TestAllTypes.BAR
+            ),
+        ],
+        list(proto.repeated_nested_message),
+    )
     self.assertEqual(
-        [unittest_pb2.ForeignMessage(c=-43),
-         unittest_pb2.ForeignMessage(c=45324),
-         unittest_pb2.ForeignMessage(c=12)],
-        list(proto.repeated_foreign_message))
+        [
+            unittest_pb2.ForeignMessage(c=-43),
+            unittest_pb2.ForeignMessage(c=45324),
+            unittest_pb2.ForeignMessage(c=12),
+        ],
+        list(proto.repeated_foreign_message),
+    )
     self.assertEqual(
-        [unittest_pb2.TestAllTypes.RepeatedGroup(),
-         unittest_pb2.TestAllTypes.RepeatedGroup(a=1),
-         unittest_pb2.TestAllTypes.RepeatedGroup(a=2)],
-        list(proto.repeatedgroup))
+        [
+            unittest_pb2.TestAllTypes.RepeatedGroup(),
+            unittest_pb2.TestAllTypes.RepeatedGroup(a=1),
+            unittest_pb2.TestAllTypes.RepeatedGroup(a=2),
+        ],
+        list(proto.repeatedgroup),
+    )
 
   def assertListsEqual(self, values, others):
     self.assertEqual(len(values), len(others))
@@ -1039,7 +1110,8 @@ class Proto2ReflectionTest(unittest.TestCase):
     proto = unittest_pb2.TestNestedMessageHasBits()
     proto.optional_nested_message.nestedmessage_repeated_int32.append(5)
     self.assertEqual(
-        [5], proto.optional_nested_message.nestedmessage_repeated_int32)
+        [5], proto.optional_nested_message.nestedmessage_repeated_int32
+    )
     self.assertTrue(proto.HasField('optional_nested_message'))
 
     # Do the same test, but with a repeated composite field within the
@@ -1068,52 +1140,67 @@ class Proto2ReflectionTest(unittest.TestCase):
   def testSingularListExtensions(self):
     proto = unittest_pb2.TestAllExtensions()
     proto.Extensions[unittest_pb2.optional_fixed32_extension] = 1
-    proto.Extensions[unittest_pb2.optional_int32_extension  ] = 5
-    proto.Extensions[unittest_pb2.optional_string_extension ] = 'foo'
+    proto.Extensions[unittest_pb2.optional_int32_extension] = 5
+    proto.Extensions[unittest_pb2.optional_string_extension] = 'foo'
     self.assertEqual(
-      [ (unittest_pb2.optional_int32_extension  , 5),
-        (unittest_pb2.optional_fixed32_extension, 1),
-        (unittest_pb2.optional_string_extension , 'foo') ],
-      proto.ListFields())
+        [
+            (unittest_pb2.optional_int32_extension, 5),
+            (unittest_pb2.optional_fixed32_extension, 1),
+            (unittest_pb2.optional_string_extension, 'foo'),
+        ],
+        proto.ListFields(),
+    )
     del proto.Extensions[unittest_pb2.optional_fixed32_extension]
     self.assertEqual(
-        [(unittest_pb2.optional_int32_extension, 5),
-         (unittest_pb2.optional_string_extension, 'foo')],
-        proto.ListFields())
+        [
+            (unittest_pb2.optional_int32_extension, 5),
+            (unittest_pb2.optional_string_extension, 'foo'),
+        ],
+        proto.ListFields(),
+    )
 
   def testRepeatedListExtensions(self):
     proto = unittest_pb2.TestAllExtensions()
     proto.Extensions[unittest_pb2.repeated_fixed32_extension].append(1)
-    proto.Extensions[unittest_pb2.repeated_int32_extension  ].append(5)
-    proto.Extensions[unittest_pb2.repeated_int32_extension  ].append(11)
-    proto.Extensions[unittest_pb2.repeated_string_extension ].append('foo')
-    proto.Extensions[unittest_pb2.repeated_string_extension ].append('bar')
-    proto.Extensions[unittest_pb2.repeated_string_extension ].append('baz')
-    proto.Extensions[unittest_pb2.optional_int32_extension  ] = 21
+    proto.Extensions[unittest_pb2.repeated_int32_extension].append(5)
+    proto.Extensions[unittest_pb2.repeated_int32_extension].append(11)
+    proto.Extensions[unittest_pb2.repeated_string_extension].append('foo')
+    proto.Extensions[unittest_pb2.repeated_string_extension].append('bar')
+    proto.Extensions[unittest_pb2.repeated_string_extension].append('baz')
+    proto.Extensions[unittest_pb2.optional_int32_extension] = 21
     self.assertEqual(
-      [ (unittest_pb2.optional_int32_extension  , 21),
-        (unittest_pb2.repeated_int32_extension  , [5, 11]),
-        (unittest_pb2.repeated_fixed32_extension, [1]),
-        (unittest_pb2.repeated_string_extension , ['foo', 'bar', 'baz']) ],
-      proto.ListFields())
+        [
+            (unittest_pb2.optional_int32_extension, 21),
+            (unittest_pb2.repeated_int32_extension, [5, 11]),
+            (unittest_pb2.repeated_fixed32_extension, [1]),
+            (unittest_pb2.repeated_string_extension, ['foo', 'bar', 'baz']),
+        ],
+        proto.ListFields(),
+    )
     del proto.Extensions[unittest_pb2.repeated_int32_extension]
     del proto.Extensions[unittest_pb2.repeated_string_extension]
     self.assertEqual(
-        [(unittest_pb2.optional_int32_extension, 21),
-         (unittest_pb2.repeated_fixed32_extension, [1])],
-        proto.ListFields())
+        [
+            (unittest_pb2.optional_int32_extension, 21),
+            (unittest_pb2.repeated_fixed32_extension, [1]),
+        ],
+        proto.ListFields(),
+    )
 
   def testListFieldsAndExtensions(self):
     proto = unittest_pb2.TestFieldOrderings()
     test_util.SetAllFieldsAndExtensions(proto)
     unittest_pb2.my_extension_int
     self.assertEqual(
-      [ (proto.DESCRIPTOR.fields_by_name['my_int'   ], 1),
-        (unittest_pb2.my_extension_int               , 23),
-        (proto.DESCRIPTOR.fields_by_name['my_string'], 'foo'),
-        (unittest_pb2.my_extension_string            , 'bar'),
-        (proto.DESCRIPTOR.fields_by_name['my_float' ], 1.0) ],
-      proto.ListFields())
+        [
+            (proto.DESCRIPTOR.fields_by_name['my_int'], 1),
+            (unittest_pb2.my_extension_int, 23),
+            (proto.DESCRIPTOR.fields_by_name['my_string'], 'foo'),
+            (unittest_pb2.my_extension_string, 'bar'),
+            (proto.DESCRIPTOR.fields_by_name['my_float'], 1.0),
+        ],
+        proto.ListFields(),
+    )
 
   def testDefaultValues(self):
     proto = unittest_pb2.TestAllTypes()
@@ -1150,11 +1237,10 @@ class Proto2ReflectionTest(unittest.TestCase):
     self.assertEqual(b'world', proto.default_bytes)
     self.assertEqual(unittest_pb2.TestAllTypes.BAR, proto.default_nested_enum)
     self.assertEqual(unittest_pb2.FOREIGN_BAR, proto.default_foreign_enum)
-    self.assertEqual(unittest_import_pb2.IMPORT_BAR,
-                     proto.default_import_enum)
+    self.assertEqual(unittest_import_pb2.IMPORT_BAR, proto.default_import_enum)
 
     proto = unittest_pb2.TestExtremeDefaultValues()
-    self.assertEqual(u'\u1234', proto.utf8_string)
+    self.assertEqual('\u1234', proto.utf8_string)
 
   def testHasFieldWithUnknownFieldName(self):
     proto = unittest_pb2.TestAllTypes()
@@ -1345,33 +1431,33 @@ class Proto2ReflectionTest(unittest.TestCase):
     self.assertIsInstance(m0, unittest_pb2.TestAllTypes.NestedMessage)
 
     # Test out-of-bounds indices.
-    self.assertRaises(IndexError, proto.repeated_nested_message.__getitem__,
-                      1234)
-    self.assertRaises(IndexError, proto.repeated_nested_message.__getitem__,
-                      -1234)
+    self.assertRaises(
+        IndexError, proto.repeated_nested_message.__getitem__, 1234
+    )
+    self.assertRaises(
+        IndexError, proto.repeated_nested_message.__getitem__, -1234
+    )
 
     # Test incorrect types passed to __getitem__.
-    self.assertRaises(TypeError, proto.repeated_nested_message.__getitem__,
-                      'foo')
-    self.assertRaises(TypeError, proto.repeated_nested_message.__getitem__,
-                      None)
+    self.assertRaises(
+        TypeError, proto.repeated_nested_message.__getitem__, 'foo'
+    )
+    self.assertRaises(
+        TypeError, proto.repeated_nested_message.__getitem__, None
+    )
 
     # Test slice retrieval.
     m2 = proto.repeated_nested_message.add()
     m3 = proto.repeated_nested_message.add()
     m4 = proto.repeated_nested_message.add()
+    self.assertListsEqual([m1, m2, m3], proto.repeated_nested_message[1:4])
     self.assertListsEqual(
-        [m1, m2, m3], proto.repeated_nested_message[1:4])
-    self.assertListsEqual(
-        [m0, m1, m2, m3, m4], proto.repeated_nested_message[:])
-    self.assertListsEqual(
-        [m0, m1], proto.repeated_nested_message[:2])
-    self.assertListsEqual(
-        [m2, m3, m4], proto.repeated_nested_message[2:])
-    self.assertEqual(
-        m0, proto.repeated_nested_message[0])
-    self.assertListsEqual(
-        [m0], proto.repeated_nested_message[:1])
+        [m0, m1, m2, m3, m4], proto.repeated_nested_message[:]
+    )
+    self.assertListsEqual([m0, m1], proto.repeated_nested_message[:2])
+    self.assertListsEqual([m2, m3, m4], proto.repeated_nested_message[2:])
+    self.assertEqual(m0, proto.repeated_nested_message[0])
+    self.assertListsEqual([m0], proto.repeated_nested_message[:1])
 
     # Test that we can use the field as an iterator.
     result = []
@@ -1390,18 +1476,16 @@ class Proto2ReflectionTest(unittest.TestCase):
     # Test extending.
     n1 = unittest_pb2.TestAllTypes.NestedMessage(bb=1)
     n2 = unittest_pb2.TestAllTypes.NestedMessage(bb=2)
-    proto.repeated_nested_message.extend([n1,n2])
+    proto.repeated_nested_message.extend([n1, n2])
     self.assertEqual(4, len(proto.repeated_nested_message))
     self.assertEqual(n1, proto.repeated_nested_message[2])
     self.assertEqual(n2, proto.repeated_nested_message[3])
-    self.assertRaises(TypeError,
-                      proto.repeated_nested_message.extend, n1)
-    self.assertRaises(TypeError,
-                      proto.repeated_nested_message.extend, [0])
+    self.assertRaises(TypeError, proto.repeated_nested_message.extend, n1)
+    self.assertRaises(TypeError, proto.repeated_nested_message.extend, [0])
     wrong_message_type = unittest_pb2.TestAllTypes()
-    self.assertRaises(TypeError,
-                      proto.repeated_nested_message.extend,
-                      [wrong_message_type])
+    self.assertRaises(
+        TypeError, proto.repeated_nested_message.extend, [wrong_message_type]
+    )
 
     # Test clearing.
     proto.ClearField('repeated_nested_message')
@@ -1484,27 +1568,44 @@ class Proto2ReflectionTest(unittest.TestCase):
     file = descriptor.FileDescriptor(name='foo.proto', package='')
     FieldDescriptor = descriptor.FieldDescriptor
     foo_field_descriptor = FieldDescriptor(
-        name='foo_field', full_name='MyProto.foo_field',
-        index=0, number=1, type=FieldDescriptor.TYPE_INT64,
+        name='foo_field',
+        full_name='MyProto.foo_field',
+        index=0,
+        number=1,
+        type=FieldDescriptor.TYPE_INT64,
         cpp_type=FieldDescriptor.CPPTYPE_INT64,
-        label=FieldDescriptor.LABEL_OPTIONAL, default_value=0,
-        containing_type=None, message_type=None, enum_type=None,
-        is_extension=False, extension_scope=None,
-        options=descriptor_pb2.FieldOptions(), file=file,
+        label=FieldDescriptor.LABEL_OPTIONAL,
+        default_value=0,
+        containing_type=None,
+        message_type=None,
+        enum_type=None,
+        is_extension=False,
+        extension_scope=None,
+        options=descriptor_pb2.FieldOptions(),
+        file=file,
         # pylint: disable=protected-access
-        create_key=descriptor._internal_create_key)
+        create_key=descriptor._internal_create_key,
+    )
     mydescriptor = descriptor.Descriptor(
-        name='MyProto', full_name='MyProto', filename='ignored',
-        containing_type=None, nested_types=[], enum_types=[],
-        fields=[foo_field_descriptor], extensions=[],
+        name='MyProto',
+        full_name='MyProto',
+        filename='ignored',
+        containing_type=None,
+        nested_types=[],
+        enum_types=[],
+        fields=[foo_field_descriptor],
+        extensions=[],
         options=descriptor_pb2.MessageOptions(),
         file=file,
         # pylint: disable=protected-access
-        create_key=descriptor._internal_create_key)
+        create_key=descriptor._internal_create_key,
+    )
 
     class MyProtoClass(
-        message.Message, metaclass=reflection.GeneratedProtocolMessageType):
+        message.Message, metaclass=reflection.GeneratedProtocolMessageType
+    ):
       DESCRIPTOR = mydescriptor
+
     myproto_instance = MyProtoClass()
     self.assertEqual(0, myproto_instance.foo_field)
     self.assertFalse(myproto_instance.HasField('foo_field'))
@@ -1547,7 +1648,8 @@ class Proto2ReflectionTest(unittest.TestCase):
     self.assertTrue('owners' in desc.fields_by_name)
 
     class CarMessage(
-        message.Message, metaclass=reflection.GeneratedProtocolMessageType):
+        message.Message, metaclass=reflection.GeneratedProtocolMessageType
+    ):
       DESCRIPTOR = desc
 
     prius = CarMessage()
@@ -1631,7 +1733,8 @@ class Proto2ReflectionTest(unittest.TestCase):
     self.assertRaises(KeyError, extendee_proto.Extensions.__contains__, 0)
 
     field = more_extensions_pb2.ExtendedMessage.DESCRIPTOR.fields_by_name[
-        'optional_int32']
+        'optional_int32'
+    ]
     self.assertRaises(KeyError, extendee_proto.Extensions.__contains__, field)
 
   def testTopLevelExtensionsForOptionalScalar(self):
@@ -1669,8 +1772,9 @@ class Proto2ReflectionTest(unittest.TestCase):
     self.assertNotIn(extension, extendee_proto.Extensions)
     self.assertIsNot(string_list, extendee_proto.Extensions[extension])
     # Shouldn't be allowed to do Extensions[extension] = 'a'
-    self.assertRaises(TypeError, operator.setitem, extendee_proto.Extensions,
-                      extension, 'a')
+    self.assertRaises(
+        TypeError, operator.setitem, extendee_proto.Extensions, extension, 'a'
+    )
 
   def testTopLevelExtensionsForOptionalMessage(self):
     extendee_proto = unittest_pb2.TestAllExtensions()
@@ -1698,8 +1802,9 @@ class Proto2ReflectionTest(unittest.TestCase):
     self.assertFalse(extendee_proto.HasExtension(extension))
     self.assertNotIn(extension, extendee_proto.Extensions)
     # Shouldn't be allowed to do Extensions[extension] = 'a'
-    self.assertRaises(TypeError, operator.setitem, extendee_proto.Extensions,
-                      extension, 'a')
+    self.assertRaises(
+        TypeError, operator.setitem, extendee_proto.Extensions, extension, 'a'
+    )
 
   def testTopLevelExtensionsForRepeatedMessage(self):
     extendee_proto = unittest_pb2.TestAllExtensions()
@@ -1715,8 +1820,9 @@ class Proto2ReflectionTest(unittest.TestCase):
     self.assertEqual(0, len(extendee_proto.Extensions[extension]))
     self.assertIsNot(group_list, extendee_proto.Extensions[extension])
     # Shouldn't be allowed to do Extensions[extension] = 'a'
-    self.assertRaises(TypeError, operator.setitem, extendee_proto.Extensions,
-                      extension, 'a')
+    self.assertRaises(
+        TypeError, operator.setitem, extendee_proto.Extensions, extension, 'a'
+    )
 
   def testNestedExtensions(self):
     extendee_proto = unittest_pb2.TestAllExtensions()
@@ -1741,16 +1847,19 @@ class Proto2ReflectionTest(unittest.TestCase):
   def testRegisteredExtensions(self):
     pool = unittest_pb2.DESCRIPTOR.pool
     self.assertTrue(
-        pool.FindExtensionByNumber(
-            unittest_pb2.TestAllExtensions.DESCRIPTOR, 1))
+        pool.FindExtensionByNumber(unittest_pb2.TestAllExtensions.DESCRIPTOR, 1)
+    )
     self.assertIs(
         pool.FindExtensionByName(
-            'proto2_unittest.optional_int32_extension').containing_type,
-        unittest_pb2.TestAllExtensions.DESCRIPTOR)
+            'proto2_unittest.optional_int32_extension'
+        ).containing_type,
+        unittest_pb2.TestAllExtensions.DESCRIPTOR,
+    )
     # Make sure extensions haven't been registered into types that shouldn't
     # have any.
-    self.assertEqual(0, len(
-        pool.FindAllExtensions(unittest_pb2.TestAllTypes.DESCRIPTOR)))
+    self.assertEqual(
+        0, len(pool.FindAllExtensions(unittest_pb2.TestAllTypes.DESCRIPTOR))
+    )
 
   # If message A directly contains message B, and
   # a.HasField('b') is currently False, then mutating any
@@ -1760,49 +1869,87 @@ class Proto2ReflectionTest(unittest.TestCase):
     # Optional scalar extension.
     toplevel = more_extensions_pb2.TopLevelMessage()
     self.assertFalse(toplevel.HasField('submessage'))
-    self.assertEqual(0, toplevel.submessage.Extensions[
-        more_extensions_pb2.optional_int_extension])
+    self.assertEqual(
+        0,
+        toplevel.submessage.Extensions[
+            more_extensions_pb2.optional_int_extension
+        ],
+    )
     self.assertFalse(toplevel.HasField('submessage'))
     toplevel.submessage.Extensions[
-        more_extensions_pb2.optional_int_extension] = 23
-    self.assertEqual(23, toplevel.submessage.Extensions[
-        more_extensions_pb2.optional_int_extension])
+        more_extensions_pb2.optional_int_extension
+    ] = 23
+    self.assertEqual(
+        23,
+        toplevel.submessage.Extensions[
+            more_extensions_pb2.optional_int_extension
+        ],
+    )
     self.assertTrue(toplevel.HasField('submessage'))
 
     # Repeated scalar extension.
     toplevel = more_extensions_pb2.TopLevelMessage()
     self.assertFalse(toplevel.HasField('submessage'))
-    self.assertEqual([], toplevel.submessage.Extensions[
-        more_extensions_pb2.repeated_int_extension])
+    self.assertEqual(
+        [],
+        toplevel.submessage.Extensions[
+            more_extensions_pb2.repeated_int_extension
+        ],
+    )
     self.assertFalse(toplevel.HasField('submessage'))
     toplevel.submessage.Extensions[
-        more_extensions_pb2.repeated_int_extension].append(23)
-    self.assertEqual([23], toplevel.submessage.Extensions[
-        more_extensions_pb2.repeated_int_extension])
+        more_extensions_pb2.repeated_int_extension
+    ].append(23)
+    self.assertEqual(
+        [23],
+        toplevel.submessage.Extensions[
+            more_extensions_pb2.repeated_int_extension
+        ],
+    )
     self.assertTrue(toplevel.HasField('submessage'))
 
     # Optional message extension.
     toplevel = more_extensions_pb2.TopLevelMessage()
     self.assertFalse(toplevel.HasField('submessage'))
-    self.assertEqual(0, toplevel.submessage.Extensions[
-        more_extensions_pb2.optional_message_extension].foreign_message_int)
+    self.assertEqual(
+        0,
+        toplevel.submessage.Extensions[
+            more_extensions_pb2.optional_message_extension
+        ].foreign_message_int,
+    )
     self.assertFalse(toplevel.HasField('submessage'))
     toplevel.submessage.Extensions[
-        more_extensions_pb2.optional_message_extension].foreign_message_int = 23
-    self.assertEqual(23, toplevel.submessage.Extensions[
-        more_extensions_pb2.optional_message_extension].foreign_message_int)
+        more_extensions_pb2.optional_message_extension
+    ].foreign_message_int = 23
+    self.assertEqual(
+        23,
+        toplevel.submessage.Extensions[
+            more_extensions_pb2.optional_message_extension
+        ].foreign_message_int,
+    )
     self.assertTrue(toplevel.HasField('submessage'))
 
     # Repeated message extension.
     toplevel = more_extensions_pb2.TopLevelMessage()
     self.assertFalse(toplevel.HasField('submessage'))
-    self.assertEqual(0, len(toplevel.submessage.Extensions[
-        more_extensions_pb2.repeated_message_extension]))
+    self.assertEqual(
+        0,
+        len(
+            toplevel.submessage.Extensions[
+                more_extensions_pb2.repeated_message_extension
+            ]
+        ),
+    )
     self.assertFalse(toplevel.HasField('submessage'))
     foreign = toplevel.submessage.Extensions[
-        more_extensions_pb2.repeated_message_extension].add()
-    self.assertEqual(foreign, toplevel.submessage.Extensions[
-        more_extensions_pb2.repeated_message_extension][0])
+        more_extensions_pb2.repeated_message_extension
+    ].add()
+    self.assertEqual(
+        foreign,
+        toplevel.submessage.Extensions[
+            more_extensions_pb2.repeated_message_extension
+        ][0],
+    )
     self.assertTrue(toplevel.HasField('submessage'))
 
   def testDisconnectionAfterClearingEmptyMessage(self):
@@ -1827,24 +1974,29 @@ class Proto2ReflectionTest(unittest.TestCase):
 
     # Try something that *is* an extension handle, just not for
     # this message...
-    for unknown_handle in (more_extensions_pb2.optional_int_extension,
-                           more_extensions_pb2.optional_message_extension,
-                           more_extensions_pb2.repeated_int_extension,
-                           more_extensions_pb2.repeated_message_extension):
-      self.assertRaises(KeyError, extendee_proto.HasExtension,
-                        unknown_handle)
-      self.assertRaises(KeyError, extendee_proto.ClearExtension,
-                        unknown_handle)
-      self.assertRaises(KeyError, extendee_proto.Extensions.__getitem__,
-                        unknown_handle)
-      self.assertRaises(KeyError, extendee_proto.Extensions.__setitem__,
-                        unknown_handle, 5)
+    for unknown_handle in (
+        more_extensions_pb2.optional_int_extension,
+        more_extensions_pb2.optional_message_extension,
+        more_extensions_pb2.repeated_int_extension,
+        more_extensions_pb2.repeated_message_extension,
+    ):
+      self.assertRaises(KeyError, extendee_proto.HasExtension, unknown_handle)
+      self.assertRaises(KeyError, extendee_proto.ClearExtension, unknown_handle)
+      self.assertRaises(
+          KeyError, extendee_proto.Extensions.__getitem__, unknown_handle
+      )
+      self.assertRaises(
+          KeyError, extendee_proto.Extensions.__setitem__, unknown_handle, 5
+      )
 
     # Try call HasExtension() with a valid handle, but for a
     # *repeated* field.  (Just as with non-extension repeated
     # fields, Has*() isn't supported for extension repeated fields).
-    self.assertRaises(KeyError, extendee_proto.HasExtension,
-                      unittest_pb2.repeated_string_extension)
+    self.assertRaises(
+        KeyError,
+        extendee_proto.HasExtension,
+        unittest_pb2.repeated_string_extension,
+    )
 
   def testMergeFromOptionalGroup(self):
     # Test merge with an optional group.
@@ -1861,7 +2013,8 @@ class Proto2ReflectionTest(unittest.TestCase):
     proto2 = unittest_pb2.TestAllExtensions()
     proto2.MergeFrom(proto1)
     self.assertEqual(
-        1, proto2.Extensions[unittest_pb2.optional_int32_extension])
+        1, proto2.Extensions[unittest_pb2.optional_int32_extension]
+    )
 
   def testMergeFromExtensionsRepeated(self):
     proto1 = unittest_pb2.TestAllExtensions()
@@ -1872,32 +2025,33 @@ class Proto2ReflectionTest(unittest.TestCase):
     proto2.Extensions[unittest_pb2.repeated_int32_extension].append(0)
     proto2.MergeFrom(proto1)
     self.assertEqual(
-        3, len(proto2.Extensions[unittest_pb2.repeated_int32_extension]))
+        3, len(proto2.Extensions[unittest_pb2.repeated_int32_extension])
+    )
     self.assertEqual(
-        0, proto2.Extensions[unittest_pb2.repeated_int32_extension][0])
+        0, proto2.Extensions[unittest_pb2.repeated_int32_extension][0]
+    )
     self.assertEqual(
-        1, proto2.Extensions[unittest_pb2.repeated_int32_extension][1])
+        1, proto2.Extensions[unittest_pb2.repeated_int32_extension][1]
+    )
     self.assertEqual(
-        2, proto2.Extensions[unittest_pb2.repeated_int32_extension][2])
+        2, proto2.Extensions[unittest_pb2.repeated_int32_extension][2]
+    )
 
   def testMergeFromExtensionsNestedMessage(self):
     proto1 = unittest_pb2.TestAllExtensions()
-    ext1 = proto1.Extensions[
-        unittest_pb2.repeated_nested_message_extension]
+    ext1 = proto1.Extensions[unittest_pb2.repeated_nested_message_extension]
     m = ext1.add()
     m.bb = 222
     m = ext1.add()
     m.bb = 333
 
     proto2 = unittest_pb2.TestAllExtensions()
-    ext2 = proto2.Extensions[
-        unittest_pb2.repeated_nested_message_extension]
+    ext2 = proto2.Extensions[unittest_pb2.repeated_nested_message_extension]
     m = ext2.add()
     m.bb = 111
 
     proto2.MergeFrom(proto1)
-    ext2 = proto2.Extensions[
-        unittest_pb2.repeated_nested_message_extension]
+    ext2 = proto2.Extensions[unittest_pb2.repeated_nested_message_extension]
     self.assertEqual(3, len(ext2))
     self.assertEqual(111, ext2[0].bb)
     self.assertEqual(222, ext2[1].bb)
@@ -2023,7 +2177,8 @@ class Proto2ReflectionTest(unittest.TestCase):
 
   @unittest.skipIf(
       api_implementation.Type() == 'python',
-      'Errors are only available from the most recent C++ implementation.')
+      'Errors are only available from the most recent C++ implementation.',
+  )
   def testFileDescriptorErrors(self):
     file_name = 'test_file_descriptor_errors.proto'
     package_name = 'test_file_descriptor_errors.proto'
@@ -2036,7 +2191,8 @@ class Proto2ReflectionTest(unittest.TestCase):
     descriptor.FileDescriptor(
         file_name,
         package_name,
-        serialized_pb=file_descriptor_proto.SerializeToString())
+        serialized_pb=file_descriptor_proto.SerializeToString(),
+    )
     # Add a FileDescriptorProto that has duplicate symbols
     another_file_name = 'another_test_file_descriptor_errors.proto'
     file_descriptor_proto.name = another_file_name
@@ -2046,9 +2202,12 @@ class Proto2ReflectionTest(unittest.TestCase):
       descriptor.FileDescriptor(
           another_file_name,
           package_name,
-          serialized_pb=file_descriptor_proto.SerializeToString())
-      self.assertTrue(hasattr(cm, 'exception'), '%s not raised' %
-                      getattr(cm.expected, '__name__', cm.expected))
+          serialized_pb=file_descriptor_proto.SerializeToString(),
+      )
+      self.assertTrue(
+          hasattr(cm, 'exception'),
+          '%s not raised' % getattr(cm.expected, '__name__', cm.expected),
+      )
       self.assertIn('test_file_descriptor_errors.proto', str(cm.exception))
       # Error message will say something about this definition being a
       # duplicate, though we don't check the message exactly to avoid a
@@ -2103,7 +2262,7 @@ class Proto2ReflectionTest(unittest.TestCase):
     extension_message = message_set_extensions_pb2.TestMessageSetExtension2
     extension = extension_message.message_set_extension
 
-    test_utf8 = u'Тест'
+    test_utf8 = 'Тест'
     test_utf8_bytes = test_utf8.encode('utf-8')
 
     # 'Test' in another language, using UTF-8 charset.
@@ -2142,7 +2301,8 @@ class Proto2ReflectionTest(unittest.TestCase):
     # The pure Python API always returns objects of type 'unicode' (UTF-8
     # encoded), or 'bytes' (in 7 bit ASCII).
     badbytes = raw.item[0].message.replace(
-        test_utf8_bytes, len(test_utf8_bytes) * b'\xff')
+        test_utf8_bytes, len(test_utf8_bytes) * b'\xff'
+    )
 
     unicode_decode_failed = False
     try:
@@ -2176,6 +2336,7 @@ class Proto2ReflectionTest(unittest.TestCase):
     # Just check the default value.
     self.assertEqual(57, msg.inner.value)
 
+
 #  Since we had so many tests for protocol buffer equality, we broke these out
 #  into separate TestCase classes.
 
@@ -2199,7 +2360,6 @@ class TestAllTypesEqualityTest(unittest.TestCase):
 
 @testing_refleaks.TestCase
 class FullProtosEqualityTest(unittest.TestCase):
-
   """Equality tests using completely-full protos as a starting point."""
 
   def setUp(self):
@@ -2241,7 +2401,8 @@ class FullProtosEqualityTest(unittest.TestCase):
     self.first_proto.optional_nested_message.ClearField('bb')
     self.assertNotEqual(self.first_proto, self.second_proto)
     self.first_proto.optional_nested_message.bb = (
-        self.second_proto.optional_nested_message.bb)
+        self.second_proto.optional_nested_message.bb
+    )
     self.assertEqual(self.first_proto, self.second_proto)
     # Remove the nested message entirely.
     self.first_proto.ClearField('optional_nested_message')
@@ -2314,7 +2475,8 @@ class ExtensionEqualityTest(unittest.TestCase):
     first_proto = unittest_pb2.TestAllExtensions()
     second_proto = unittest_pb2.TestAllExtensions()
     self.assertEqual(
-        0, first_proto.Extensions[unittest_pb2.optional_int32_extension])
+        0, first_proto.Extensions[unittest_pb2.optional_int32_extension]
+    )
     self.assertEqual(first_proto, second_proto)
 
 
@@ -2350,7 +2512,7 @@ class ByteSizeTest(unittest.TestCase):
     # Use a separate message to ensure testing right after creation.
     proto = unittest_pb2.TestAllTypes()
     self.assertEqual(0, proto.ByteSize())
-    proto_kwargs = unittest_pb2.TestAllTypes(optional_int64 = 1)
+    proto_kwargs = unittest_pb2.TestAllTypes(optional_int64=1)
     # One byte for the tag, one to encode varint 1.
     self.assertEqual(2, proto_kwargs.ByteSize())
 
@@ -2361,6 +2523,7 @@ class ByteSizeTest(unittest.TestCase):
       # Add one to the varint size for the tag info
       # for tag 1.
       self.assertEqual(expected_varint_size + 1, self.Size())
+
     Test(0, 1)
     Test(1, 1)
     for i, num_bytes in zip(range(7, 63, 7), range(1, 10000)):
@@ -2410,7 +2573,7 @@ class ByteSizeTest(unittest.TestCase):
 
   def testComposites(self):
     # 3 bytes.
-    self.proto.optional_nested_message.bb = (1 << 14)
+    self.proto.optional_nested_message.bb = 1 << 14
     # Plus one byte for bb tag.
     # Plus 1 byte for optional_nested_message serialized size.
     # Plus two bytes for optional_nested_message tag.
@@ -2418,27 +2581,27 @@ class ByteSizeTest(unittest.TestCase):
 
   def testGroups(self):
     # 4 bytes.
-    self.proto.optionalgroup.a = (1 << 21)
+    self.proto.optionalgroup.a = 1 << 21
     # Plus two bytes for |a| tag.
     # Plus 2 * two bytes for START_GROUP and END_GROUP tags.
-    self.assertEqual(4 + 2 + 2*2, self.Size())
+    self.assertEqual(4 + 2 + 2 * 2, self.Size())
 
   def testRepeatedScalars(self):
     self.proto.repeated_int32.append(10)  # 1 byte.
     self.proto.repeated_int32.append(128)  # 2 bytes.
     # Also need 2 bytes for each entry for tag.
-    self.assertEqual(1 + 2 + 2*2, self.Size())
+    self.assertEqual(1 + 2 + 2 * 2, self.Size())
 
   def testRepeatedScalarsExtend(self):
     self.proto.repeated_int32.extend([10, 128])  # 3 bytes.
     # Also need 2 bytes for each entry for tag.
-    self.assertEqual(1 + 2 + 2*2, self.Size())
+    self.assertEqual(1 + 2 + 2 * 2, self.Size())
 
   def testRepeatedScalarsRemove(self):
     self.proto.repeated_int32.append(10)  # 1 byte.
     self.proto.repeated_int32.append(128)  # 2 bytes.
     # Also need 2 bytes for each entry for tag.
-    self.assertEqual(1 + 2 + 2*2, self.Size())
+    self.assertEqual(1 + 2 + 2 * 2, self.Size())
     self.proto.repeated_int32.remove(128)
     self.assertEqual(1 + 2, self.Size())
 
@@ -2457,8 +2620,7 @@ class ByteSizeTest(unittest.TestCase):
     foreign_message_1 = self.proto.repeated_nested_message.add()
     foreign_message_1.bb = 9
     self.assertEqual(2 + 1 + 2 + 1 + 1 + 1, self.Size())
-    repeated_nested_message = copy.deepcopy(
-        self.proto.repeated_nested_message)
+    repeated_nested_message = copy.deepcopy(self.proto.repeated_nested_message)
 
     # 2 bytes tag plus 1 byte length plus 1 byte bb tag 1 byte int.
     del self.proto.repeated_nested_message[0]
@@ -2491,7 +2653,7 @@ class ByteSizeTest(unittest.TestCase):
     # 2-byte START_GROUP plus 2-byte |a| tag + 1-byte |a|
     # plus 2-byte END_GROUP.
     group_1 = self.proto.repeatedgroup.add()
-    group_1.a =  7
+    group_1.a = 7
     self.assertEqual(2 + 2 + 2 + 2 + 1 + 2, self.Size())
 
   def testExtensions(self):
@@ -2502,7 +2664,8 @@ class ByteSizeTest(unittest.TestCase):
     # 1 byte for tag, 1 byte for value.
     self.assertEqual(2, proto.ByteSize())
     field = unittest_pb2.TestAllTypes.DESCRIPTOR.fields_by_name[
-        'optional_int32']
+        'optional_int32'
+    ]
     with self.assertRaises(KeyError):
       proto.Extensions[field] = 23
 
@@ -2603,18 +2766,18 @@ class ByteSizeTest(unittest.TestCase):
   def testPackedRepeatedScalars(self):
     self.assertEqual(0, self.packed_proto.ByteSize())
 
-    self.packed_proto.packed_int32.append(10)   # 1 byte.
+    self.packed_proto.packed_int32.append(10)  # 1 byte.
     self.packed_proto.packed_int32.append(128)  # 2 bytes.
     # The tag is 2 bytes (the field number is 90), and the varint
     # storing the length is 1 byte.
     int_size = 1 + 2 + 3
     self.assertEqual(int_size, self.packed_proto.ByteSize())
 
-    self.packed_proto.packed_double.append(4.2)   # 8 bytes
+    self.packed_proto.packed_double.append(4.2)  # 8 bytes
     self.packed_proto.packed_double.append(3.25)  # 8 bytes
     # 2 more tag bytes, 1 more length byte.
     double_size = 8 + 8 + 3
-    self.assertEqual(int_size+double_size, self.packed_proto.ByteSize())
+    self.assertEqual(int_size + double_size, self.packed_proto.ByteSize())
 
     self.packed_proto.ClearField('packed_int32')
     self.assertEqual(double_size, self.packed_proto.ByteSize())
@@ -2622,8 +2785,9 @@ class ByteSizeTest(unittest.TestCase):
   def testPackedExtensions(self):
     self.assertEqual(0, self.packed_extended_proto.ByteSize())
     extension = self.packed_extended_proto.Extensions[
-        unittest_pb2.packed_fixed32_extension]
-    extension.extend([1, 2, 3, 4])   # 16 bytes
+        unittest_pb2.packed_fixed32_extension
+    ]
+    extension.extend([1, 2, 3, 4])  # 16 bytes
     # Tag is 3 bytes.
     self.assertEqual(19, self.packed_extended_proto.ByteSize())
 
@@ -2639,6 +2803,7 @@ class ByteSizeTest(unittest.TestCase):
 #   * Handling of empty submessages (with and without "has"
 #     bits set).
 
+
 @testing_refleaks.TestCase
 class SerializationTest(unittest.TestCase):
 
@@ -2647,9 +2812,7 @@ class SerializationTest(unittest.TestCase):
     second_proto = unittest_pb2.TestAllTypes()
     serialized = first_proto.SerializeToString()
     self.assertEqual(first_proto.ByteSize(), len(serialized))
-    self.assertEqual(
-        len(serialized),
-        second_proto.MergeFromString(serialized))
+    self.assertEqual(len(serialized), second_proto.MergeFromString(serialized))
     self.assertEqual(first_proto, second_proto)
 
   def testSerializeAllFields(self):
@@ -2658,9 +2821,7 @@ class SerializationTest(unittest.TestCase):
     test_util.SetAllFields(first_proto)
     serialized = first_proto.SerializeToString()
     self.assertEqual(first_proto.ByteSize(), len(serialized))
-    self.assertEqual(
-        len(serialized),
-        second_proto.MergeFromString(serialized))
+    self.assertEqual(len(serialized), second_proto.MergeFromString(serialized))
     self.assertEqual(first_proto, second_proto)
 
   def testSerializeAllExtensions(self):
@@ -2668,9 +2829,7 @@ class SerializationTest(unittest.TestCase):
     second_proto = unittest_pb2.TestAllExtensions()
     test_util.SetAllExtensions(first_proto)
     serialized = first_proto.SerializeToString()
-    self.assertEqual(
-        len(serialized),
-        second_proto.MergeFromString(serialized))
+    self.assertEqual(len(serialized), second_proto.MergeFromString(serialized))
     self.assertEqual(first_proto, second_proto)
 
   def testSerializeWithOptionalGroup(self):
@@ -2678,9 +2837,7 @@ class SerializationTest(unittest.TestCase):
     second_proto = unittest_pb2.TestAllTypes()
     first_proto.optionalgroup.a = 242
     serialized = first_proto.SerializeToString()
-    self.assertEqual(
-        len(serialized),
-        second_proto.MergeFromString(serialized))
+    self.assertEqual(len(serialized), second_proto.MergeFromString(serialized))
     self.assertEqual(first_proto, second_proto)
 
   def testSerializeNegativeValues(self):
@@ -2694,7 +2851,8 @@ class SerializationTest(unittest.TestCase):
     first_proto.optional_sfixed64 = -(6 << 40)
 
     second_proto = unittest_pb2.TestAllTypes.FromString(
-        first_proto.SerializeToString())
+        first_proto.SerializeToString()
+    )
 
     self.assertEqual(first_proto, second_proto)
 
@@ -2721,12 +2879,18 @@ class SerializationTest(unittest.TestCase):
           pos2 = unknown_fields._InternalParse(serialized, 0, truncation_point)
           self.assertEqual(truncation_point, pos2)
         except message.DecodeError:
-          self.fail('Parsing unknown fields failed when parsing known fields '
-                    'did not.')
+          self.fail(
+              'Parsing unknown fields failed when parsing known fields did not.'
+          )
       except message.DecodeError:
         # Parsing unknown fields should also fail.
-        self.assertRaises(message.DecodeError, unknown_fields._InternalParse,
-                          serialized, 0, truncation_point)
+        self.assertRaises(
+            message.DecodeError,
+            unknown_fields._InternalParse,
+            serialized,
+            0,
+            truncation_point,
+        )
 
   @unittest.skipIf(
       api_implementation.Type() == 'upb',
@@ -2809,36 +2973,31 @@ class SerializationTest(unittest.TestCase):
     serialized = proto.SerializeToString()
 
     raw = unittest_mset_pb2.RawMessageSet()
-    self.assertEqual(False,
-                     raw.DESCRIPTOR.GetOptions().message_set_wire_format)
-    self.assertEqual(
-        len(serialized),
-        raw.MergeFromString(serialized))
+    self.assertEqual(False, raw.DESCRIPTOR.GetOptions().message_set_wire_format)
+    self.assertEqual(len(serialized), raw.MergeFromString(serialized))
     self.assertEqual(3, len(raw.item))
 
     message1 = message_set_extensions_pb2.TestMessageSetExtension1()
     self.assertEqual(
-        len(raw.item[0].message),
-        message1.MergeFromString(raw.item[0].message))
+        len(raw.item[0].message), message1.MergeFromString(raw.item[0].message)
+    )
     self.assertEqual(123, message1.i)
 
     message2 = message_set_extensions_pb2.TestMessageSetExtension2()
     self.assertEqual(
-        len(raw.item[1].message),
-        message2.MergeFromString(raw.item[1].message))
+        len(raw.item[1].message), message2.MergeFromString(raw.item[1].message)
+    )
     self.assertEqual('foo', message2.str)
 
     message3 = message_set_extensions_pb2.TestMessageSetExtension3()
     self.assertEqual(
-        len(raw.item[2].message),
-        message3.MergeFromString(raw.item[2].message))
+        len(raw.item[2].message), message3.MergeFromString(raw.item[2].message)
+    )
     self.assertEqual('bar', message3.text)
 
     # Deserialize using the MessageSet wire format.
     proto2 = message_set_extensions_pb2.TestMessageSet()
-    self.assertEqual(
-        len(serialized),
-        proto2.MergeFromString(serialized))
+    self.assertEqual(len(serialized), proto2.MergeFromString(serialized))
     self.assertEqual(123, proto2.Extensions[extension1].i)
     self.assertEqual('foo', proto2.Extensions[extension2].str)
     self.assertEqual('bar', proto2.Extensions[extension3].text)
@@ -2879,9 +3038,7 @@ class SerializationTest(unittest.TestCase):
 
     # Parse message using the message set wire format.
     proto = message_set_extensions_pb2.TestMessageSet()
-    self.assertEqual(
-        len(serialized),
-        proto.MergeFromString(serialized))
+    self.assertEqual(len(serialized), proto.MergeFromString(serialized))
 
     # Check that the message parsed well.
     extension_message1 = message_set_extensions_pb2.TestMessageSetExtension1
@@ -2899,21 +3056,17 @@ class SerializationTest(unittest.TestCase):
     proto2 = unittest_pb2.TestEmptyMessage()
 
     # Parsing this message should succeed.
-    self.assertEqual(
-        len(serialized),
-        proto2.MergeFromString(serialized))
+    self.assertEqual(len(serialized), proto2.MergeFromString(serialized))
 
     # Now test with a int64 field set.
     proto = unittest_pb2.TestAllTypes()
-    proto.optional_int64 = 0x0fffffffffffffff
+    proto.optional_int64 = 0x0FFFFFFFFFFFFFFF
     serialized = proto.SerializeToString()
     # The empty message should be parsable with all of the fields
     # unknown.
     proto2 = unittest_pb2.TestEmptyMessage()
     # Parsing this message should succeed.
-    self.assertEqual(
-        len(serialized),
-        proto2.MergeFromString(serialized))
+    self.assertEqual(len(serialized), proto2.MergeFromString(serialized))
 
   def _CheckRaises(self, exc_class, callable_obj, exception):
     """This method checks if the exception type and message are as expected."""
@@ -2932,7 +3085,8 @@ class SerializationTest(unittest.TestCase):
         message.EncodeError,
         proto.SerializeToString,
         'Message proto2_unittest.TestRequired is missing required fields: '
-        'a,b,c')
+        'a,b,c',
+    )
     # Shouldn't raise exceptions.
     partial = proto.SerializePartialToString()
 
@@ -2946,7 +3100,8 @@ class SerializationTest(unittest.TestCase):
     self._CheckRaises(
         message.EncodeError,
         proto.SerializeToString,
-        'Message proto2_unittest.TestRequired is missing required fields: b,c')
+        'Message proto2_unittest.TestRequired is missing required fields: b,c',
+    )
     # Shouldn't raise exceptions.
     partial = proto.SerializePartialToString()
 
@@ -2954,7 +3109,8 @@ class SerializationTest(unittest.TestCase):
     self._CheckRaises(
         message.EncodeError,
         proto.SerializeToString,
-        'Message proto2_unittest.TestRequired is missing required fields: c')
+        'Message proto2_unittest.TestRequired is missing required fields: c',
+    )
     # Shouldn't raise exceptions.
     partial = proto.SerializePartialToString()
 
@@ -2964,15 +3120,11 @@ class SerializationTest(unittest.TestCase):
     partial = proto.SerializePartialToString()
 
     proto2 = unittest_pb2.TestRequired()
-    self.assertEqual(
-        len(serialized),
-        proto2.MergeFromString(serialized))
+    self.assertEqual(len(serialized), proto2.MergeFromString(serialized))
     self.assertEqual(1, proto2.a)
     self.assertEqual(2, proto2.b)
     self.assertEqual(3, proto2.c)
-    self.assertEqual(
-        len(partial),
-        proto2.MergeFromString(partial))
+    self.assertEqual(len(partial), proto2.MergeFromString(partial))
     self.assertEqual(1, proto2.a)
     self.assertEqual(2, proto2.b)
     self.assertEqual(3, proto2.c)
@@ -2989,7 +3141,8 @@ class SerializationTest(unittest.TestCase):
         proto.SerializeToString,
         'Message proto2_unittest.TestRequiredForeign '
         'is missing required fields: '
-        'optional_message.b,optional_message.c')
+        'optional_message.b,optional_message.c',
+    )
 
     proto.optional_message.b = 2
     proto.optional_message.c = 3
@@ -3000,9 +3153,11 @@ class SerializationTest(unittest.TestCase):
     self._CheckRaises(
         message.EncodeError,
         proto.SerializeToString,
-        'Message proto2_unittest.TestRequiredForeign is missing required fields: '
+        'Message proto2_unittest.TestRequiredForeign is missing required'
+        ' fields: '
         'repeated_message[0].b,repeated_message[0].c,'
-        'repeated_message[1].a,repeated_message[1].c')
+        'repeated_message[1].a,repeated_message[1].c',
+    )
 
     proto.repeated_message[0].b = 2
     proto.repeated_message[0].c = 3
@@ -3040,9 +3195,7 @@ class SerializationTest(unittest.TestCase):
     second_proto.packed_double.extend([1.0, 2.0])
     second_proto.packed_sint32.append(4)
 
-    self.assertEqual(
-        len(serialized),
-        second_proto.MergeFromString(serialized))
+    self.assertEqual(len(serialized), second_proto.MergeFromString(serialized))
     self.assertEqual([3, 1, 2], second_proto.packed_int32)
     self.assertEqual([1.0, 2.0, 3.0], second_proto.packed_double)
     self.assertEqual([4], second_proto.packed_sint32)
@@ -3051,13 +3204,13 @@ class SerializationTest(unittest.TestCase):
     proto = unittest_pb2.TestPackedTypes()
     proto.packed_int32.extend([1, 2, 150, 3])  # 1 + 1 + 2 + 1 bytes
     proto.packed_double.extend([1.0, 1000.0])  # 8 + 8 bytes
-    proto.packed_float.append(2.0)             # 4 bytes, will be before double
+    proto.packed_float.append(2.0)  # 4 bytes, will be before double
     serialized = proto.SerializeToString()
     self.assertEqual(proto.ByteSize(), len(serialized))
     d = _MiniDecoder(serialized)
     ReadTag = d.ReadFieldNumberAndWireType
     self.assertEqual((90, wire_format.WIRETYPE_LENGTH_DELIMITED), ReadTag())
-    self.assertEqual(1+1+1+2, d.ReadInt32())
+    self.assertEqual(1 + 1 + 1 + 2, d.ReadInt32())
     self.assertEqual(1, d.ReadInt32())
     self.assertEqual(2, d.ReadInt32())
     self.assertEqual(150, d.ReadInt32())
@@ -3066,7 +3219,7 @@ class SerializationTest(unittest.TestCase):
     self.assertEqual(4, d.ReadInt32())
     self.assertEqual(2.0, d.ReadFloat())
     self.assertEqual((101, wire_format.WIRETYPE_LENGTH_DELIMITED), ReadTag())
-    self.assertEqual(8+8, d.ReadInt32())
+    self.assertEqual(8 + 8, d.ReadInt32())
     self.assertEqual(1.0, d.ReadDouble())
     self.assertEqual(1000.0, d.ReadDouble())
     self.assertTrue(d.EndOfStream())
@@ -3076,9 +3229,7 @@ class SerializationTest(unittest.TestCase):
     test_util.SetAllUnpackedFields(unpacked)
     packed = unittest_pb2.TestPackedTypes()
     serialized = unpacked.SerializeToString()
-    self.assertEqual(
-        len(serialized),
-        packed.MergeFromString(serialized))
+    self.assertEqual(len(serialized), packed.MergeFromString(serialized))
     expected = unittest_pb2.TestPackedTypes()
     test_util.SetAllPackedFields(expected)
     self.assertEqual(expected, packed)
@@ -3088,9 +3239,7 @@ class SerializationTest(unittest.TestCase):
     test_util.SetAllPackedFields(packed)
     unpacked = unittest_pb2.TestUnpackedTypes()
     serialized = packed.SerializeToString()
-    self.assertEqual(
-        len(serialized),
-        unpacked.MergeFromString(serialized))
+    self.assertEqual(len(serialized), unpacked.MergeFromString(serialized))
     expected = unittest_pb2.TestUnpackedTypes()
     test_util.SetAllUnpackedFields(expected)
     self.assertEqual(expected, unpacked)
@@ -3101,15 +3250,19 @@ class SerializationTest(unittest.TestCase):
     self.assertEqual(unittest_pb2.TestAllTypes.OPTIONAL_INT32_FIELD_NUMBER, 1)
     self.assertEqual(unittest_pb2.TestAllTypes.OPTIONALGROUP_FIELD_NUMBER, 16)
     self.assertEqual(
-      unittest_pb2.TestAllTypes.OPTIONAL_NESTED_MESSAGE_FIELD_NUMBER, 18)
+        unittest_pb2.TestAllTypes.OPTIONAL_NESTED_MESSAGE_FIELD_NUMBER, 18
+    )
     self.assertEqual(
-      unittest_pb2.TestAllTypes.OPTIONAL_NESTED_ENUM_FIELD_NUMBER, 21)
+        unittest_pb2.TestAllTypes.OPTIONAL_NESTED_ENUM_FIELD_NUMBER, 21
+    )
     self.assertEqual(unittest_pb2.TestAllTypes.REPEATED_INT32_FIELD_NUMBER, 31)
     self.assertEqual(unittest_pb2.TestAllTypes.REPEATEDGROUP_FIELD_NUMBER, 46)
     self.assertEqual(
-      unittest_pb2.TestAllTypes.REPEATED_NESTED_MESSAGE_FIELD_NUMBER, 48)
+        unittest_pb2.TestAllTypes.REPEATED_NESTED_MESSAGE_FIELD_NUMBER, 48
+    )
     self.assertEqual(
-      unittest_pb2.TestAllTypes.REPEATED_NESTED_ENUM_FIELD_NUMBER, 51)
+        unittest_pb2.TestAllTypes.REPEATED_NESTED_ENUM_FIELD_NUMBER, 51
+    )
 
   def testExtensionFieldNumbers(self):
     self.assertEqual(unittest_pb2.TestRequired.single.number, 1000)
@@ -3122,20 +3275,24 @@ class SerializationTest(unittest.TestCase):
     self.assertEqual(unittest_pb2.OPTIONALGROUP_EXTENSION_FIELD_NUMBER, 16)
     self.assertEqual(unittest_pb2.optional_nested_message_extension.number, 18)
     self.assertEqual(
-      unittest_pb2.OPTIONAL_NESTED_MESSAGE_EXTENSION_FIELD_NUMBER, 18)
+        unittest_pb2.OPTIONAL_NESTED_MESSAGE_EXTENSION_FIELD_NUMBER, 18
+    )
     self.assertEqual(unittest_pb2.optional_nested_enum_extension.number, 21)
-    self.assertEqual(unittest_pb2.OPTIONAL_NESTED_ENUM_EXTENSION_FIELD_NUMBER,
-      21)
+    self.assertEqual(
+        unittest_pb2.OPTIONAL_NESTED_ENUM_EXTENSION_FIELD_NUMBER, 21
+    )
     self.assertEqual(unittest_pb2.repeated_int32_extension.number, 31)
     self.assertEqual(unittest_pb2.REPEATED_INT32_EXTENSION_FIELD_NUMBER, 31)
     self.assertEqual(unittest_pb2.repeatedgroup_extension.number, 46)
     self.assertEqual(unittest_pb2.REPEATEDGROUP_EXTENSION_FIELD_NUMBER, 46)
     self.assertEqual(unittest_pb2.repeated_nested_message_extension.number, 48)
     self.assertEqual(
-      unittest_pb2.REPEATED_NESTED_MESSAGE_EXTENSION_FIELD_NUMBER, 48)
+        unittest_pb2.REPEATED_NESTED_MESSAGE_EXTENSION_FIELD_NUMBER, 48
+    )
     self.assertEqual(unittest_pb2.repeated_nested_enum_extension.number, 51)
-    self.assertEqual(unittest_pb2.REPEATED_NESTED_ENUM_EXTENSION_FIELD_NUMBER,
-      51)
+    self.assertEqual(
+        unittest_pb2.REPEATED_NESTED_ENUM_EXTENSION_FIELD_NUMBER, 51
+    )
 
   def testFieldProperties(self):
     cls = unittest_pb2.TestAllTypes
@@ -3200,7 +3357,8 @@ class SerializationTest(unittest.TestCase):
         optional_foreign_message=unittest_pb2.ForeignMessage(c=1),
         optional_nested_enum=unittest_pb2.TestAllTypes.FOO,
         optional_foreign_enum=unittest_pb2.FOREIGN_FOO,
-        repeated_int32=[1, 2, 3])
+        repeated_int32=[1, 2, 3],
+    )
     self.assertTrue(proto.IsInitialized())
     self.assertTrue(proto.HasField('optional_int32'))
     self.assertTrue(proto.HasField('optional_string'))
@@ -3216,18 +3374,19 @@ class SerializationTest(unittest.TestCase):
     self.assertEqual(b'bar', proto.optional_bytes)
     self.assertEqual(1, proto.optional_nested_message.bb)
     self.assertEqual(1, proto.optional_foreign_message.c)
-    self.assertEqual(unittest_pb2.TestAllTypes.FOO,
-                     proto.optional_nested_enum)
+    self.assertEqual(unittest_pb2.TestAllTypes.FOO, proto.optional_nested_enum)
     self.assertEqual(unittest_pb2.FOREIGN_FOO, proto.optional_foreign_enum)
     self.assertEqual([1, 2, 3], proto.repeated_int32)
 
   def testInitArgsUnknownFieldName(self):
     def InitializeEmptyMessageWithExtraKeywordArg():
       unused_proto = unittest_pb2.TestEmptyMessage(unknown='unknown')
+
     self._CheckRaises(
         ValueError,
         InitializeEmptyMessageWithExtraKeywordArg,
-        'Protocol message TestEmptyMessage has no "unknown" field.')
+        'Protocol message TestEmptyMessage has no "unknown" field.',
+    )
 
   def testInitRequiredKwargs(self):
     proto = unittest_pb2.TestRequired(a=1, b=1, c=1)
@@ -3242,7 +3401,8 @@ class SerializationTest(unittest.TestCase):
 
   def testInitRequiredForeignKwargs(self):
     proto = unittest_pb2.TestRequiredForeign(
-        optional_message=unittest_pb2.TestRequired(a=1, b=1, c=1))
+        optional_message=unittest_pb2.TestRequired(a=1, b=1, c=1)
+    )
     self.assertTrue(proto.IsInitialized())
     self.assertTrue(proto.HasField('optional_message'))
     self.assertTrue(proto.optional_message.IsInitialized())
@@ -3250,8 +3410,9 @@ class SerializationTest(unittest.TestCase):
     self.assertTrue(proto.optional_message.HasField('b'))
     self.assertTrue(proto.optional_message.HasField('c'))
     self.assertFalse(proto.optional_message.HasField('dummy2'))
-    self.assertEqual(unittest_pb2.TestRequired(a=1, b=1, c=1),
-                     proto.optional_message)
+    self.assertEqual(
+        unittest_pb2.TestRequired(a=1, b=1, c=1), proto.optional_message
+    )
     self.assertEqual(1, proto.optional_message.a)
     self.assertEqual(1, proto.optional_message.b)
     self.assertEqual(1, proto.optional_message.c)
@@ -3269,11 +3430,13 @@ class OptionsTest(unittest.TestCase):
 
   def testMessageOptions(self):
     proto = message_set_extensions_pb2.TestMessageSet()
-    self.assertEqual(True,
-                     proto.DESCRIPTOR.GetOptions().message_set_wire_format)
+    self.assertEqual(
+        True, proto.DESCRIPTOR.GetOptions().message_set_wire_format
+    )
     proto = unittest_pb2.TestAllTypes()
-    self.assertEqual(False,
-                     proto.DESCRIPTOR.GetOptions().message_set_wire_format)
+    self.assertEqual(
+        False, proto.DESCRIPTOR.GetOptions().message_set_wire_format
+    )
 
   def testPackedOptions(self):
     proto = unittest_pb2.TestAllTypes()
@@ -3300,33 +3463,53 @@ class ClassAPITest(unittest.TestCase):
   @testing_refleaks.SkipReferenceLeakChecker('MakeClass is not repeatable')
   def testMakeClassWithNestedDescriptor(self):
     leaf_desc = descriptor.Descriptor(
-        'leaf', 'package.parent.child.leaf', '',
-        containing_type=None, fields=[],
-        nested_types=[], enum_types=[],
+        'leaf',
+        'package.parent.child.leaf',
+        '',
+        containing_type=None,
+        fields=[],
+        nested_types=[],
+        enum_types=[],
         extensions=[],
         # pylint: disable=protected-access
-        create_key=descriptor._internal_create_key)
+        create_key=descriptor._internal_create_key,
+    )
     child_desc = descriptor.Descriptor(
-        'child', 'package.parent.child', '',
-        containing_type=None, fields=[],
-        nested_types=[leaf_desc], enum_types=[],
+        'child',
+        'package.parent.child',
+        '',
+        containing_type=None,
+        fields=[],
+        nested_types=[leaf_desc],
+        enum_types=[],
         extensions=[],
         # pylint: disable=protected-access
-        create_key=descriptor._internal_create_key)
+        create_key=descriptor._internal_create_key,
+    )
     sibling_desc = descriptor.Descriptor(
-        'sibling', 'package.parent.sibling',
-        '', containing_type=None, fields=[],
-        nested_types=[], enum_types=[],
+        'sibling',
+        'package.parent.sibling',
+        '',
+        containing_type=None,
+        fields=[],
+        nested_types=[],
+        enum_types=[],
         extensions=[],
         # pylint: disable=protected-access
-        create_key=descriptor._internal_create_key)
+        create_key=descriptor._internal_create_key,
+    )
     parent_desc = descriptor.Descriptor(
-        'parent', 'package.parent', '',
-        containing_type=None, fields=[],
+        'parent',
+        'package.parent',
+        '',
+        containing_type=None,
+        fields=[],
         nested_types=[child_desc, sibling_desc],
-        enum_types=[], extensions=[],
+        enum_types=[],
+        extensions=[],
         # pylint: disable=protected-access
-        create_key=descriptor._internal_create_key)
+        create_key=descriptor._internal_create_key,
+    )
     message_factory.GetMessageClass(parent_desc)
 
   def _GetSerializedFileDescriptor(self, name):
@@ -3334,13 +3517,15 @@ class ClassAPITest(unittest.TestCase):
 
     Args:
       name: All calls to this must use a unique message name, to avoid
-          collisions in the cpp descriptor pool.
+        collisions in the cpp descriptor pool.
+
     Returns:
       A string containing the serialized form of a test FileDescriptorProto.
     """
     file_descriptor_str = (
-        'message_type {'
-        '  name: "' + name + '"'
+        'message_type {  name: "'
+        + name
+        + '"'
         '  field {'
         '    name: "flat"'
         '    number: 1'
@@ -3380,7 +3565,8 @@ class ClassAPITest(unittest.TestCase):
         '      }'
         '    }'
         '  }'
-        '}')
+        '}'
+    )
     file_descriptor = descriptor_pb2.FileDescriptorProto()
     text_format.Merge(file_descriptor_str, file_descriptor)
     return file_descriptor.SerializeToString()
@@ -3392,17 +3578,15 @@ class ClassAPITest(unittest.TestCase):
     """Test that the generated class can parse a flat message."""
     file_descriptor = descriptor_pb2.FileDescriptorProto()
     file_descriptor.ParseFromString(self._GetSerializedFileDescriptor('A'))
-    msg_descriptor = descriptor.MakeDescriptor(
-        file_descriptor.message_type[0])
+    msg_descriptor = descriptor.MakeDescriptor(file_descriptor.message_type[0])
 
     class MessageClass(
-        message.Message, metaclass=reflection.GeneratedProtocolMessageType):
+        message.Message, metaclass=reflection.GeneratedProtocolMessageType
+    ):
       DESCRIPTOR = msg_descriptor
+
     msg = MessageClass()
-    msg_str = (
-        'flat: 0 '
-        'flat: 1 '
-        'flat: 2 ')
+    msg_str = 'flat: 0 flat: 1 flat: 2 '
     text_format.Merge(msg_str, msg)
     self.assertEqual(msg.flat, [0, 1, 2])
 
@@ -3411,14 +3595,10 @@ class ClassAPITest(unittest.TestCase):
     """Test that the generated class can parse a flat message."""
     file_descriptor = descriptor_pb2.FileDescriptorProto()
     file_descriptor.ParseFromString(self._GetSerializedFileDescriptor('B'))
-    msg_descriptor = descriptor.MakeDescriptor(
-        file_descriptor.message_type[0])
+    msg_descriptor = descriptor.MakeDescriptor(file_descriptor.message_type[0])
     msg_class = message_factory.GetMessageClass(msg_descriptor)
     msg = msg_class()
-    msg_str = (
-        'flat: 0 '
-        'flat: 1 '
-        'flat: 2 ')
+    msg_str = 'flat: 0 flat: 1 flat: 2 '
     text_format.Merge(msg_str, msg)
     self.assertEqual(msg.flat, [0, 1, 2])
 
@@ -3427,18 +3607,13 @@ class ClassAPITest(unittest.TestCase):
     """Test that the generated class can parse a nested message."""
     file_descriptor = descriptor_pb2.FileDescriptorProto()
     file_descriptor.ParseFromString(self._GetSerializedFileDescriptor('C'))
-    msg_descriptor = descriptor.MakeDescriptor(
-        file_descriptor.message_type[0])
+    msg_descriptor = descriptor.MakeDescriptor(file_descriptor.message_type[0])
     msg_class = message_factory.GetMessageClass(msg_descriptor)
     msg = msg_class()
-    msg_str = (
-        'bar {'
-        '  baz {'
-        '    deep: 4'
-        '  }'
-        '}')
+    msg_str = 'bar {  baz {    deep: 4  }}'
     text_format.Merge(msg_str, msg)
     self.assertEqual(msg.bar.baz.deep, 4)
+
 
 if __name__ == '__main__':
   unittest.main()

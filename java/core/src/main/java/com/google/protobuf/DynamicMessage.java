@@ -212,7 +212,9 @@ public final class DynamicMessage extends AbstractMessage {
 
   static boolean isInitialized(Descriptor type, FieldSet<FieldDescriptor> fields) {
     // Check that all required fields are present.
-    for (final FieldDescriptor field : type.getFields()) {
+    int numFields = type.getFieldCount();
+    for (int i = 0; i < numFields; i++) {
+      FieldDescriptor field = type.getField(i);
       if (field.isRequired()) {
         if (!fields.hasField(field)) {
           return false;
@@ -400,7 +402,9 @@ public final class DynamicMessage extends AbstractMessage {
     public DynamicMessage buildPartial() {
       // Set default values for all fields in a MapEntry.
       if (type.getOptions().getMapEntry()) {
-        for (FieldDescriptor field : type.getFields()) {
+        int numFields = type.getFieldCount();
+        for (int i = 0; i < numFields; i++) {
+          FieldDescriptor field = type.getField(i);
           if (field.isOptional() && !fields.hasField(field)) {
             if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
               fields.setField(field, getDefaultInstance(field.getMessageType()));
@@ -432,7 +436,9 @@ public final class DynamicMessage extends AbstractMessage {
     @Override
     public boolean isInitialized() {
       // Check that all required fields are present.
-      for (FieldDescriptor field : type.getFields()) {
+      int numFields = type.getFieldCount();
+      for (int i = 0; i < numFields; i++) {
+        FieldDescriptor field = type.getField(i);
         if (field.isRequired()) {
           if (!fields.hasField(field)) {
             return false;
@@ -521,6 +527,12 @@ public final class DynamicMessage extends AbstractMessage {
 
     @Override
     public Builder setField(FieldDescriptor field, Object value) {
+      // This should be kept as long as LazyField is still around. We will use InternalLazyField
+      // as the internal details so we should not allow the legacy LazyField to be passed in.
+      // TODO: Consider converting from LazyField to InternalLazyField here.
+      if (value instanceof LazyField) {
+        value = ((LazyField) value).getValue();
+      }
       verifyContainingType(field);
       // TODO: This check should really be put in FieldSet.setField()
       // where all other such checks are done. However, currently
@@ -725,8 +737,8 @@ public final class DynamicMessage extends AbstractMessage {
         return (Message.Builder) o;
       }
 
-      if (o instanceof LazyField) {
-        o = ((LazyField) o).getValue();
+      if (o instanceof InternalLazyField) {
+        o = ((InternalLazyField) o).getValue();
       }
       if (o instanceof Message) {
         return ((Message) o).toBuilder();

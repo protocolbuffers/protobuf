@@ -189,9 +189,9 @@ class NumpyProtoIndexingTest(unittest.TestCase):
     with self.assertRaises(TypeError):
       _ = data.repeated_int64[np.ndarray((1,), buffer=np.array([0]), dtype=int)]
     with self.assertRaises(TypeError):
-      _ = data.repeated_int64[np.ndarray((1, 1),
-                                         buffer=np.array([0]),
-                                         dtype=int)]
+      _ = data.repeated_int64[
+          np.ndarray((1, 1), buffer=np.array([0]), dtype=int)
+      ]
 
 
 @testing_refleaks.TestCase

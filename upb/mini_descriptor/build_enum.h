@@ -21,9 +21,8 @@ extern "C" {
 
 // Builds a upb_MiniTableEnum from an enum mini descriptor.
 // The mini descriptor must be for an enum, not a message.
-UPB_API upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data, size_t len,
-                                                   upb_Arena* arena,
-                                                   upb_Status* status);
+UPB_NODISCARD UPB_API upb_MiniTableEnum* upb_MiniTableEnum_Build(
+    const char* data, size_t len, upb_Arena* arena, upb_Status* status);
 
 #ifdef __cplusplus
 } /* extern "C" */

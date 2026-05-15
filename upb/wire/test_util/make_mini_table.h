@@ -26,7 +26,18 @@ class MiniTable {
   MakeSingleFieldTable(int field_number, upb_DecodeFast_Cardinality cardinality,
                        upb_Arena* arena) {
     return MakeSingleFieldTable(field_number, Field::kFieldType,
-                                Field::kFastType, cardinality, arena);
+                                Field::kFastType, cardinality, arena,
+                                /* extensible= */ false);
+  }
+
+  template <typename Field>
+  static std::pair<const upb_MiniTable*, const upb_MiniTableField*>
+  MakeExtensibleSingleFieldTable(int field_number,
+                                 upb_DecodeFast_Cardinality cardinality,
+                                 upb_Arena* arena) {
+    return MakeSingleFieldTable(field_number, Field::kFieldType,
+                                Field::kFastType, cardinality, arena,
+                                /* extensible= */ true);
   }
 
   static bool HasFastTableEntry(const upb_MiniTable* mt,
@@ -36,8 +47,8 @@ class MiniTable {
   static std::pair<const upb_MiniTable*, const upb_MiniTableField*>
   MakeSingleFieldTable(int field_number, upb_FieldType type,
                        upb_DecodeFast_Type fast_type,
-                       upb_DecodeFast_Cardinality cardinality,
-                       upb_Arena* arena);
+                       upb_DecodeFast_Cardinality cardinality, upb_Arena* arena,
+                       bool extensible);
 };
 
 }  // namespace test

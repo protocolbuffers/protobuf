@@ -34,6 +34,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/test_protos/repeated_ptr_field_test.pb.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/unittest.pb.h"
@@ -2028,5 +2029,14 @@ TEST_F(RepeatedPtrFieldInsertionIteratorsTest, MoveProtos) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+// Code thunks to be dumped by the debugger to inspect the generated assemtbly.
+static auto& CodegenRepeatedPtrFieldGet(
+    const google::protobuf::RepeatedPtrField<std::string>& a, int idx) {
+  return a[idx];
+}
+
+static int odr_use =
+    (google::protobuf::internal::StrongPointer(&CodegenRepeatedPtrFieldGet), 0);
 
 #include "google/protobuf/port_undef.inc"
