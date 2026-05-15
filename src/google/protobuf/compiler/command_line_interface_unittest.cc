@@ -624,19 +624,29 @@ TEST_F(CommandLineInterfaceTest, PluginPrefixForwardsArguments) {
   // protoc) to invoke.
   CreateTempFile("plugin_wrapper_args.bat",
                  "@echo off\r\n"
+                 // %* is the raw, untokenized arg tail; %~dp0 is the script's
+                 // own dir, so the record lands where the test can read it.
                  "echo %*>>\"%~dp0wrapper_argv.txt\"\r\n"
+                 // Start clean before recovering the plugin path.
                  "set \"plugin=\"\r\n"
+                 // Loop leaves %%A holding the last token: the plugin path
+                 // protoc appended (positional %1/%2 are unreliable here).
                  "for %%A in (%*) do set \"plugin=%%A\"\r\n"
+                 // Run the plugin
                  "\"%plugin%\"\r\n"
                  "exit /b %errorlevel%\r\n");
   wrapper_path = absl::StrCat(temp_directory(), "/plugin_wrapper_args.bat");
 #else
   CreateTempFile("plugin_wrapper_args.sh",
                  "#!/bin/sh\n"
+                 // Record every argument (prefix tokens + appended plugin
+                 // path), one per line, where the test can read it.
                  "for arg in \"$@\"; do\n"
                  "  printf '%s\\n' \"$arg\" >> \"$tmpdir/wrapper_argv.txt\"\n"
                  "done\n"
+                 // Drop the two prefix tokens; what remains is the plugin path.
                  "shift 2\n"
+                 // Exec the plugin
                  "exec \"$@\"\n");
   wrapper_path = absl::StrCat(temp_directory(), "/plugin_wrapper_args.sh");
   ASSERT_EQ(0, chmod(wrapper_path.c_str(), 0777));
