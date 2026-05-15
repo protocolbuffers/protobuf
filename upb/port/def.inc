@@ -498,9 +498,15 @@ Error, UINTPTR_MAX is undefined
 #if !UPB_FASTTABLE
 #define UPB_FASTTABLE_INIT(...)
 #define UPB_FASTTABLE_MASK(mask) -1
+#define UPB_FASTTABLE_ALIGN
 #else
 #define UPB_FASTTABLE_INIT(...) __VA_ARGS__
 #define UPB_FASTTABLE_MASK(mask) mask
+#if (defined(__x86_64__) || defined(__aarch64__)) && defined(__GNUC__)
+#define UPB_FASTTABLE_ALIGN __attribute__((aligned(32)))
+#else
+#define UPB_FASTTABLE_ALIGN
+#endif
 #endif
 
 #undef UPB_FASTTABLE_SUPPORTED

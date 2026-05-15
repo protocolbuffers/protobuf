@@ -93,8 +93,8 @@ void upb_DecodeFast_Message(upb_Decoder* d, const char** ptr, upb_Message* msg,
 }
 
 #define F(type, card, tagsize)                                             \
-  upb_FastDecoder_Return UPB_PRESERVE_NONE UPB_DECODEFAST_FUNCNAME(        \
-      type, card, tagsize)(UPB_PARSE_PARAMS) {                             \
+  UPB_FASTTABLE_ALIGN UPB_PRESERVE_NONE upb_FastDecoder_Return             \
+  UPB_DECODEFAST_FUNCNAME(type, card, tagsize)(UPB_PARSE_PARAMS) {         \
     upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;                \
     upb_DecodeFast_Message(d, &ptr, msg, table, &hasbits, &data, &next,    \
                            kUpb_DecodeFast_##type, kUpb_DecodeFast_##card, \
