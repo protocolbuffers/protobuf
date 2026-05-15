@@ -162,12 +162,15 @@ def _generate_rust_gencode(
 
     additional_args = ctx.actions.args()
 
+    annotate_code = False
+
     additional_args.add(
-        "--rust_opt=experimental-codegen=enabled,kernel={},crate_mapping={},generated_entry_point_rs_file_name={},forced_lite_runtime={}".format(
+        "--rust_opt=experimental-codegen=enabled,kernel={},crate_mapping={},generated_entry_point_rs_file_name={},forced_lite_runtime={}{}".format(
             "upb" if is_upb else "cpp",
             crate_mapping.path,
             entry_point_rs_output.basename,
             "true" if forced_lite_runtime else "false",
+            ",annotate_code=true" if annotate_code else "",
         ),
     )
 
@@ -297,6 +300,9 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps, aliases, runtime):
         srcs = depset([src] + extra_srcs)
 
     # TODO: Use higher level rules_rust API once available.
+    rustc_compile_action_extra_args = {}
+    if _rust_version_ge("0.70"):
+        rustc_compile_action_extra_args["allowed_unstable_rust_features"] = ["register_tool"]
     providers = rustc_compile_action(
         ctx = ctx,
         attr = attr,
@@ -323,6 +329,7 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps, aliases, runtime):
             owner = ctx.label,
         ),
         output_hash = output_hash,
+        **rustc_compile_action_extra_args
     )
 
     return DepVariantInfo(
@@ -499,14 +506,9 @@ def _make_proto_library_aspect(is_upb):
         attr_aspects = ["deps", "exports"],
         requires = ([] if is_upb else [cc_proto_aspect]),
         attrs = {
-            "_collect_cc_coverage": attr.label(
-                default = Label("@rules_rust//util:collect_coverage"),
-                executable = True,
-                cfg = "exec",
-            ),
             "_cpp_thunks_deps": attr.label_list(
                 default = [
-                    Label("//rust/cpp_kernel:cpp_api"),
+                    Label("//rust:cpp_api"),
                     Label("//src/google/protobuf"),
                     Label("//src/google/protobuf:protobuf_lite"),
                 ],
@@ -528,7 +530,7 @@ def _make_proto_library_aspect(is_upb):
             ),
             "_extra_deps": attr.label_list(
                 default = [
-                ],
+                ] + ([Label("@crate_index//:linkme")] if is_upb else []),
             ),
             "_process_wrapper": attr.label(
                 doc = "A process wrapper for running rustc on all platforms.",

@@ -33,16 +33,30 @@ reduce .assets[] as $a (
 EOF
 )
 
-mkdir -p ${PREFIX}/bazel/private
-cat >${INTEGRITY_FILE} <<EOF
-"Generated during release by release_prep.sh"
+mkdir -p "$(dirname "$INTEGRITY_FILE")"
+
+# Fetch release payload once
+RELEASE_API_URL="https://api.github.com/repos/protocolbuffers/protobuf/releases/tags/${TAG}"
+RELEASE_JSON=$(curl -sSL "$RELEASE_API_URL")
+
+# Extract the download URL for tool_integrity.bzl if it exists
+INTEGRITY_ASSET_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name=="tool_integrity.bzl") | .browser_download_url')
+
+# Check if the asset was found (jq emits "null" or empty if missing)
+if [[ -n "$INTEGRITY_ASSET_URL" && "$INTEGRITY_ASSET_URL" != "null" ]]; then
+  echo "Found pre-computed tool_integrity.bzl asset! Downloading."
+  curl -sSL -o "${INTEGRITY_FILE}" "$INTEGRITY_ASSET_URL"
+else
+  echo "No pre-computed tool_integrity.bzl found. Falling back to dynamic API dictionary assembly."
+  cat >"${INTEGRITY_FILE}" <<EOF
+"""Generated during release by release_prep.sh"""
 
 RELEASE_VERSION="${TAG}"
 RELEASED_BINARY_INTEGRITY = $(
-curl -s https://api.github.com/repos/protocolbuffers/protobuf/releases/tags/${TAG} \
-  | jq -f <(echo "$filter_releases")
+  echo "$RELEASE_JSON" | jq -f <(echo "$filter_releases")
 )
 EOF
+fi
 
 # Append that generated file back into the archive
 tar --file $ARCHIVE_TMP --append ${INTEGRITY_FILE}

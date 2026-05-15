@@ -833,12 +833,8 @@ void ThreadSafeArena::AddCleanup(void* elem, void (*cleanup)(void*)) {
   GetSerialArena()->AddCleanup(elem, cleanup);
 }
 
-SerialArena* ThreadSafeArena::GetSerialArena() {
-  SerialArena* arena;
-  if (ABSL_PREDICT_FALSE(!GetSerialArenaFast(&arena))) {
-    arena = GetSerialArenaFallback(kMaxCleanupNodeSize);
-  }
-  return arena;
+SerialArena* ThreadSafeArena::GetSerialArenaSlow() {
+  return GetSerialArenaFallback(0);
 }
 
 PROTOBUF_NOINLINE

@@ -462,11 +462,11 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
 
   // Write all files in the directory to disk at the given output location,
   // which must end in a '/'.
-  bool WriteAllToDisk(const std::string& prefix);
+  bool WriteAllToDisk(const std::string& prefix, bool allow_escape = false);
 
   // Write the contents of this directory to a ZIP-format archive with the
   // given name.
-  bool WriteAllToZip(const std::string& filename);
+  bool WriteAllToZip(const std::string& filename, bool allow_escape = false);
 
   // Add a boilerplate META-INF/MANIFEST.MF file as required by the Java JAR
   // format, unless one has already been written.
@@ -562,7 +562,7 @@ CommandLineInterface::GeneratorContextImpl::GeneratorContextImpl(
     : parsed_files_(parsed_files), had_error_(false) {}
 
 bool CommandLineInterface::GeneratorContextImpl::WriteAllToDisk(
-    const std::string& prefix) {
+    const std::string& prefix, bool allow_escape) {
   if (had_error_) {
     return false;
   }
@@ -575,6 +575,15 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToDisk(
     const std::string& relative_filename = pair.first;
     const char* data = pair.second.data();
     int size = pair.second.size();
+
+    if (!allow_escape && absl::StrContains(relative_filename, "..")) {
+      std::cerr << "Output file names must never have a relative path."
+                << " (" << relative_filename << "). "
+                << "Use --unsafe_allow_out_dir_escape to disable this error if "
+                   "intentional."
+                << std::endl;
+      return false;
+    }
 
     if (!TryCreateParentDirectory(prefix, relative_filename)) {
       return false;
@@ -636,7 +645,7 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToDisk(
 }
 
 bool CommandLineInterface::GeneratorContextImpl::WriteAllToZip(
-    const std::string& filename) {
+    const std::string& filename, bool allow_escape) {
   if (had_error_) {
     return false;
   }
@@ -659,6 +668,13 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToZip(
   ZipWriter zip_writer(&stream);
 
   for (const auto& pair : files_) {
+    if (!allow_escape && absl::StrContains(pair.first, "..")) {
+      std::cerr << "WARNING: Output file names must never have a relative "
+                << "path. (" << pair.first << "). "
+                << "This will become an error in a future breaking change "
+                << "release of Protobuf. Use --unsafe_allow_out_dir_escape "
+                << "to suppress this warning if intentional." << std::endl;
+    }
     zip_writer.Write(pair.first, pair.second);
   }
 
@@ -1367,6 +1383,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   descriptor_pool->EnforceWeakDependencies(true);
   descriptor_pool->EnforceSymbolVisibility(true);
   descriptor_pool->EnforceNamingStyle(true);
+  descriptor_pool->EnforceProtoLimits(true);
   descriptor_pool->EnforceFeatureSupportValidation(true);
 
   if (!SetupFeatureResolution(*descriptor_pool)) {
@@ -1481,7 +1498,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     const std::string& location = pair.first;
     GeneratorContextImpl* directory = pair.second.get();
     if (absl::EndsWith(location, "/")) {
-      if (!directory->WriteAllToDisk(location)) {
+      if (!directory->WriteAllToDisk(location, unsafe_allow_out_dir_escape_)) {
         return 1;
       }
     } else {
@@ -1489,7 +1506,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
         directory->AddJarManifest();
       }
 
-      if (!directory->WriteAllToZip(location)) {
+      if (!directory->WriteAllToZip(location, unsafe_allow_out_dir_escape_)) {
         return 1;
       }
     }
@@ -2154,7 +2171,8 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
       *name == "--experimental_editions" ||
       *name == "--print_free_field_numbers" ||
       *name == "--experimental_allow_proto3_optional" ||
-      *name == "--deterministic_output" || *name == "--fatal_warnings") {
+      *name == "--deterministic_output" ||
+      *name == "--unsafe_allow_out_dir_escape" || *name == "--fatal_warnings") {
     // HACK:  These are the only flags that don't take a value.
     //   They probably should not be hard-coded like this but for now it's
     //   not worth doing better.
@@ -2390,6 +2408,8 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 
   } else if (name == "--disallow_services") {
     disallow_services_ = true;
+  } else if (name == "--unsafe_allow_out_dir_escape") {
+    unsafe_allow_out_dir_escape_ = true;
   } else if (name == "--experimental_allow_proto3_optional") {
     // Flag is no longer observed, but we allow it for backward compat.
   } else if (name == "--encode" || name == "--decode" ||
@@ -2627,6 +2647,9 @@ Parse PROTO_FILES and generate output based on the options given:
                               deterministically ordered. Note that this order
                               is not canonical, and changes across builds or
                               releases of protoc.
+  --unsafe_allow_out_dir_escape
+                              Allow output files to use ".." to escape the
+                              output directory. Use with caution.
   --decode=MESSAGE_TYPE       Read a binary message of the given type from
                               standard input and write it in text format
                               to standard output.  The message type must

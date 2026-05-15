@@ -29,17 +29,17 @@ enum {
   kUpb_JsonDecodeResult_Error = 2,
 };
 
-UPB_API int upb_JsonDecodeDetectingNonconformance(const char* buf, size_t size,
-                                                  upb_Message* msg,
-                                                  const upb_MessageDef* m,
-                                                  const upb_DefPool* symtab,
-                                                  int options, upb_Arena* arena,
-                                                  upb_Status* status);
+UPB_NODISCARD UPB_API int upb_JsonDecodeDetectingNonconformance(
+    const char* buf, size_t size, upb_Message* msg, const upb_MessageDef* m,
+    const upb_DefPool* symtab, int options, upb_Arena* arena,
+    upb_Status* status);
 
-UPB_API_INLINE bool upb_JsonDecode(const char* buf, size_t size,
-                                   upb_Message* msg, const upb_MessageDef* m,
-                                   const upb_DefPool* symtab, int options,
-                                   upb_Arena* arena, upb_Status* status) {
+UPB_NODISCARD UPB_API_INLINE bool upb_JsonDecode(const char* buf, size_t size,
+                                                 upb_Message* msg,
+                                                 const upb_MessageDef* m,
+                                                 const upb_DefPool* symtab,
+                                                 int options, upb_Arena* arena,
+                                                 upb_Status* status) {
   return upb_JsonDecodeDetectingNonconformance(buf, size, msg, m, symtab,
                                                options, arena, status) ==
          kUpb_JsonDecodeResult_Ok;

@@ -1,0 +1,3 @@
+edition = "2024";
+
+package proto2_unittest;

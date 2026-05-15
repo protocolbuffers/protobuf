@@ -149,6 +149,50 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumImplicit) {
       "Field Foo.bar has a closed enum type with implicit presence.");
 }
 
+TEST_F(CppGeneratorTest, ValidRepeatedFieldLegacyClosedEnumImplicit) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    import "google/protobuf/cpp_features.proto";
+    option features.(pb.cpp).legacy_closed_enum = true;
+    option features.field_presence = IMPLICIT;
+
+    enum TestEnum {
+      TEST_ENUM_UNKNOWN = 0;
+    }
+    message Foo {
+      repeated TestEnum bar = 1;
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CppGeneratorTest, ValidOneofFieldLegacyClosedEnumImplicit) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    import "google/protobuf/cpp_features.proto";
+    option features.(pb.cpp).legacy_closed_enum = true;
+    option features.field_presence = IMPLICIT;
+
+    enum TestEnum {
+      TEST_ENUM_UNKNOWN = 0;
+    }
+    message Foo {
+      oneof o {
+        TestEnum bar = 1;
+      }
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+}
+
 TEST_F(CppGeneratorTest, AllowStringTypeForEdition2023) {
   CreateTempFile("foo.proto", R"schema(
     edition = "2023";

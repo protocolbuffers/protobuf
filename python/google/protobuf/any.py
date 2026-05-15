@@ -14,7 +14,6 @@ from google.protobuf.message import Message
 
 from google.protobuf.any_pb2 import Any
 
-
 _MessageT = TypeVar('_MessageT', bound=Message)
 
 

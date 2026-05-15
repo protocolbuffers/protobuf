@@ -299,18 +299,6 @@ class PROTOBUF_EXPORT UnknownFieldSet {
     return MergeFromCodedStream(&coded_stream);
   }
 
-  absl::string_view V2Data() const {
-    return v2_data_ ? *v2_data_ : absl::string_view{};
-  }
-
-  std::string* MutableV2Data() {
-    if (!v2_data_) {
-      v2_data_ = Arena::Create<std::string>(arena());
-    }
-    return v2_data_;
-  }
-
-  std::string* v2_data_ = nullptr;
   internal::RepeatedFieldWithArena<UnknownField> fields_;
 };
 
@@ -341,7 +329,6 @@ constexpr UnknownFieldSet::UnknownFieldSet() = default;
 inline UnknownFieldSet::~UnknownFieldSet() {
   Clear();
   ABSL_DCHECK_EQ(arena(), nullptr);
-  delete v2_data_;
 }
 
 inline const UnknownFieldSet& UnknownFieldSet::default_instance() {
@@ -356,7 +343,6 @@ inline void UnknownFieldSet::Clear() {
   if (!fields().empty()) {
     ClearFallback();
   }
-  if (v2_data_ != nullptr) v2_data_->clear();
 }
 
 inline bool UnknownFieldSet::empty() const { return fields().empty(); }

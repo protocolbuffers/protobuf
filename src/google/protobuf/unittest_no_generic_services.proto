@@ -11,7 +11,6 @@ syntax = "proto2";
 
 package proto2_unittest.no_generic_services_test;
 
-
 // *_generic_services are false by default.
 
 message TestMessage {

@@ -105,5 +105,18 @@ namespace Google.Protobuf
             Assert.AreEqual(message, parsed);
             Assert.AreEqual("test", parsed.None);
         }
+
+        // Issue 26856: ReadRawByte throws IndexOutOfRangeException instead of
+        // InvalidProtocolBufferException on truncated messages with a near-int.MaxValue
+        // inner length varint, corrupting bufferSize via integer overflow in PushLimit.
+        [Test]
+        [TestCase(new byte[] { 0x2a, 0xff, 0xff, 0xff, 0xff, 0x67, 0x2a, 0xcc }, "ParseRawVarint32SlowPath")]
+        [TestCase(new byte[] { 0x42, 0xfc, 0xff, 0xff, 0xff, 0x57, 0xd8, 0x01 }, "ParseRawVarint64SlowPath")]
+        [TestCase(new byte[] { 0x3a, 0xff, 0xff, 0xff, 0xff, 0x67, 0xb5, 0x34 }, "ParseRawLittleEndian32SlowPath")]
+        [TestCase(new byte[] { 0x42, 0xff, 0xff, 0xff, 0xff, 0x67, 0x39, 0x34 }, "ParseRawLittleEndian64SlowPath")]
+        public void TruncatedMessageWithLargeInnerLengthThrowsInvalidProtocolBufferException(byte[] data, string _)
+        {
+            Assert.Throws<InvalidProtocolBufferException>(() => FileDescriptorProto.Parser.ParseFrom(data));
+        }
     }
 }

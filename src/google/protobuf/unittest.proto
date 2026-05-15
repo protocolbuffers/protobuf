@@ -515,9 +515,6 @@ extend TestAllExtensions {
   // Don't use field numbers 115 through 117, they are used by
   // TestAllTypes.oneof_field. Use of 117 below for TestRequired (rather than
   // TestAllTypes.NestedMessage) is a bug and should be fixed.
-
-  // Singular message containing required fields; used to test initialization.
-  TestRequired required_message_extension = 117;
 }
 
 message OptionalGroup_extension {

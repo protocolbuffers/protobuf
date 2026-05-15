@@ -25,7 +25,6 @@ bzl_library(
     deps = [
         "//bazel/common:proto_common_bzl",
         "//bazel/private:proto_lang_toolchain_rule_bzl",
-        "@proto_bazel_features//:features",
     ],
 )
 
