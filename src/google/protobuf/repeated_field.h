@@ -68,18 +68,14 @@ class UnknownField;  // For the allowlist
 class UnknownFieldSet;
 class DynamicMessage;
 class Reflection;
-template <typename ElementType>
-class RepeatedFieldProxy;
 
 namespace internal {
 
+template <typename ElementType, bool kOrProxy>
+class MutableRepeatedFieldProxyImpl;
 class EpsCopyInputStream;
 class TcParser;
 class WireFormat;
-
-namespace v2 {
-class TableDrivenParse;
-}  // namespace v2
 
 template <typename T, int kHeapRepHeaderSize>
 constexpr int RepeatedFieldLowerClampLimit() {
@@ -195,7 +191,11 @@ class SooRep {
   Arena* arena() const {
     return ResolveTaggedArena<&SooRep::resolver_, kResolverTaggedBits>(this);
   }
-  int size() const { return size_; }
+  int size() const {
+    int res = size_;
+    PROTOBUF_ASSUME(res >= 0);
+    return res;
+  }
   void set_size(int size) {
     ABSL_DCHECK(!is_soo() || size <= kSooCapacityBytes);
     size_ = size;
@@ -526,9 +526,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   friend class internal::EpsCopyInputStream;
   friend class internal::TcParser;
   friend class internal::WireFormat;
-  friend class internal::v2::TableDrivenParse;
 
-  friend class RepeatedFieldProxy<Element>;
+  template <typename ElementType, bool kOrProxy>
+  friend class internal::MutableRepeatedFieldProxyImpl;
 
   // For access to private arena constructor.
   friend class UnknownFieldSet;
@@ -564,7 +564,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
     soo_rep_.set_size(size);
   }
   int Capacity(bool is_soo) const {
-    return is_soo ? kSooCapacityElements : soo_rep_.capacity();
+    int res = is_soo ? kSooCapacityElements : soo_rep_.capacity();
+    PROTOBUF_ASSUME(res >= 0);
+    return res;
   }
 
   template <typename ArenaProvider>

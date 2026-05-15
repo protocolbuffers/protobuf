@@ -283,7 +283,6 @@ const char* EpsCopyInputStream::ReadArenaString(const char* ptr,
   return ptr;
 }
 
-
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

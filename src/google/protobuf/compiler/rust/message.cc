@@ -23,6 +23,7 @@
 #include "google/protobuf/compiler/rust/accessors/accessors.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/enum.h"
+#include "google/protobuf/compiler/rust/extension.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/compiler/rust/oneof.h"
 #include "google/protobuf/compiler/rust/upb_helpers.h"
@@ -216,7 +217,7 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
                                    const upb::DefPool& pool) {
   ABSL_CHECK(ctx.is_upb());
   ctx.Emit(
-      {{"name", RsSafeName(msg.name())},
+      {{"name", MessageRsName(msg)},
        {"mini_table_impl",
         [&] {
           const SCC& scc = ctx.GetSCC(msg);
@@ -392,7 +393,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
       // visibility. The only reason we generate anything for them at all is
       // that it is useful to have map entries implement the
       // AssociatedMiniTable trait.
-      ctx.Emit({{"Msg", RsSafeName(msg.name())},
+      ctx.Emit({{"Msg", MessageRsName(msg)},
                 {"upb_generated_message_trait_impls",
                  [&] { UpbGeneratedMessageTraitImpls(ctx, msg, pool); }}},
                R"rs(
@@ -410,8 +411,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
       {
           // There's also ${$/$}$-style begin and end tokens, but those might
           // be harder to retrofit here because of the giant-template style.
-          Sub("MsgDefinition", RsSafeName(msg.name())).AnnotatedAs(&msg),
-          {"Msg", RsSafeName(msg.name())},
+          Sub("MsgDefinition", MessageRsName(msg)).AnnotatedAs(&msg),
+          {"Msg", MessageRsName(msg)},
           {"Msg::new", [&] { MessageNew(ctx, msg); }},
           {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
           {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
@@ -444,6 +445,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
              // If we have no nested types, enums, or oneofs, bail out without
              // emitting an empty mod some_msg.
              if (msg.nested_type_count() == 0 && msg.enum_type_count() == 0 &&
+                 msg.extension_count() == 0 &&
                  msg.real_oneof_decl_count() == 0) {
                return;
              }
@@ -462,6 +464,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
                                               upb_msg.enum_type(i));
                      }
                    }},
+                  {"nested_extensions",
+                   [&] {
+                     for (int i = 0; i < msg.extension_count(); ++i) {
+                       GenerateRs(ctx, *msg.extension(i), pool);
+                     }
+                   }},
                   {"oneofs",
                    [&] {
                      for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
@@ -471,6 +479,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
                  R"rs(
                    $nested_msgs$
                    $nested_enums$
+                   $nested_extensions$
 
                    $oneofs$
                 )rs");
@@ -546,12 +555,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
         // SAFETY:
         // - `$Msg$` is `Sync` because it does not implement interior mutability.
         //    Neither does `$Msg$Mut`.
-        unsafe impl Sync for $Msg$ {}
+        unsafe impl $std$::marker::Sync for $Msg$ {}
 
         // SAFETY:
         // - `$Msg$` is `Send` because it uniquely owns its arena and does
         //   not use thread-local data.
-        unsafe impl Send for $Msg$ {}
+        unsafe impl $std$::marker::Send for $Msg$ {}
 
         impl $pb$::Proxied for $Msg$ {
           type View<'msg> = $Msg$View<'msg>;
@@ -606,12 +615,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
 
         // SAFETY:
         // - `$Msg$View` is `Sync` because it does not support mutation.
-        unsafe impl Sync for $Msg$View<'_> {}
+        unsafe impl $std$::marker::Sync for $Msg$View<'_> {}
 
         // SAFETY:
         // - `$Msg$View` is `Send` because while its alive a `$Msg$Mut` cannot.
         // - `$Msg$View` does not use thread-local data.
-        unsafe impl Send for $Msg$View<'_> {}
+        unsafe impl $std$::marker::Send for $Msg$View<'_> {}
 
         impl<'msg> $pb$::AsView for $Msg$View<'msg> {
           type Proxied = $Msg$;
@@ -663,7 +672,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           #[doc(hidden)]
           pub fn as_message_mut_inner(&mut self, _private: $pbi$::Private)
             -> $pbr$::MessageMutInner<'msg, $Msg$> {
-            self.inner
+            self.inner.reborrow()
           }
 
           pub fn to_owned(&self) -> $Msg$ {
@@ -679,18 +688,16 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
         //~ threads can hold a reference to MsgMuts with the same arena.
         // SAFETY:
         // - `$Msg$Mut` does not perform any shared mutation.
-        unsafe impl Send for $Msg$Mut<'_> {}
+        unsafe impl $std$::marker::Send for $Msg$Mut<'_> {}
 
         // SAFETY:
         // - `$Msg$Mut` does not perform any shared mutation.
-        unsafe impl Sync for $Msg$Mut<'_> {}
+        unsafe impl $std$::marker::Sync for $Msg$Mut<'_> {}
 
         impl<'msg> $pb$::AsView for $Msg$Mut<'msg> {
           type Proxied = $Msg$;
           fn as_view(&self) -> $pb$::View<'_, $Msg$> {
-            $Msg$View {
-              inner: $pbr$::MessageViewInner::view_of_mut(self.inner)
-            }
+            self.inner.as_view().into()
           }
         }
 
@@ -698,16 +705,14 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$>
           where
               'msg: 'shorter {
-            $Msg$View {
-              inner: $pbr$::MessageViewInner::view_of_mut(self.inner)
-            }
+            self.inner.as_view().into()
           }
         }
 
         impl<'msg> $pb$::AsMut for $Msg$Mut<'msg> {
           type MutProxied = $Msg$;
           fn as_mut(&mut self) -> $Msg$Mut<'msg> {
-            $Msg$Mut { inner: self.inner }
+            self.inner.reborrow().into()
           }
         }
 
@@ -806,7 +811,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
   ctx.printer().PrintRaw("\n");
   if (ctx.is_cpp()) {
 
-    ctx.Emit({{"Msg", RsSafeName(msg.name())}},
+    ctx.Emit({{"Msg", MessageRsName(msg)}},
              R"rs(
       impl<'a> $Msg$Mut<'a> {
         pub unsafe fn __unstable_wrap_cpp_grant_permission_to_break(
@@ -866,11 +871,11 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
 
     if (!ctx.opts().force_lite_runtime &&
         msg.file()->options().optimize_for() != FileOptions::LITE_RUNTIME) {
-      ctx.Emit({{"Msg", RsSafeName(msg.name())}},
+      ctx.Emit({{"Msg", MessageRsName(msg)}},
                R"rs(
               impl $pb$::MessageDescriptorInterop for $Msg$ {
                 fn __unstable_get_descriptor() -> *const $std$::ffi::c_void {
-                  unsafe { $pbr$::proto2_rust_Message_get_descriptor(<$Msg$View as Default>::default().raw_msg()) }
+                  unsafe { $pbr$::proto2_rust_Message_get_descriptor(<$Msg$View as $std$::default::Default>::default().raw_msg()) }
                 }
               }
             )rs");
@@ -910,6 +915,10 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
 
   for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
     GenerateOneofThunkCc(ctx, *msg.real_oneof_decl(i));
+  }
+
+  for (int i = 0; i < msg.extension_count(); ++i) {
+    GenerateThunksCc(ctx, *msg.extension(i));
   }
 
   ctx.Emit(R"(}  //extern "C"

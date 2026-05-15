@@ -201,3 +201,39 @@ message Issue11987Message {
   int32 b = 2 [json_name = 'a'];
   int32 c = 3 [json_name = 'd'];
 }
+
+// Issue 26391
+message TestPresenceBits {
+  optional int32 field1 = 1;
+  optional int32 field2 = 2;
+  optional int32 field3 = 3;
+  optional int32 field4 = 4;
+  optional int32 field5 = 5;
+  optional int32 field6 = 6;
+  optional int32 field7 = 7;
+  optional int32 field8 = 8;
+  optional int32 field9 = 9;
+  optional int32 field10 = 10;
+  optional int32 field11 = 11;
+  optional int32 field12 = 12;
+  optional int32 field13 = 13;
+  optional int32 field14 = 14;
+  optional int32 field15 = 15;
+  optional int32 field16 = 16;
+  optional int32 field17 = 17;
+  optional int32 field18 = 18;
+  optional int32 field19 = 19;
+  optional int32 field20 = 20;
+  optional int32 field21 = 21;
+  optional int32 field22 = 22;
+  optional int32 field23 = 23;
+  optional int32 field24 = 24;
+  optional int32 field25 = 25;
+  optional int32 field26 = 26;
+  optional int32 field27 = 27;
+  optional int32 field28 = 28;
+  optional int32 field29 = 29;
+  optional int32 field30 = 30;
+  optional int32 field31 = 31;
+  optional int32 field32 = 32;
+}

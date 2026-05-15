@@ -181,7 +181,7 @@ filegroup(
     name = "doc_files",
     srcs = [
         "README.md",
-        "englilsh_paper.md",
+        "english_paper.md",
     ],
 )
 
@@ -216,7 +216,7 @@ endif()
 # //gen_file_lists_example:doc_files
 set(docs_files
   gen_file_lists_example/README.md
-  gen_file_lists_example/englilsh_paper.md
+  gen_file_lists_example/english_paper.md
 )
 
 # //gen_file_lists_example:message

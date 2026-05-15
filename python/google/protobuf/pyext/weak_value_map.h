@@ -8,6 +8,8 @@
 #ifndef THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYEXT_WEAK_VALUE_MAP_H_
 #define THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYEXT_WEAK_VALUE_MAP_H_
 
+#include <atomic>
+#include <memory>
 #include <utility>
 
 #define PY_SSIZE_T_CLEAN
