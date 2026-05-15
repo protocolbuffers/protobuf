@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 #include "upb/message/message.h"
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode_fast/cardinality.h"
