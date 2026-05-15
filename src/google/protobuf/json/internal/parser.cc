@@ -30,6 +30,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
+#include "third_party/gloop/util/status/status_macros.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/zero_copy_sink.h"
@@ -41,7 +42,6 @@
 #include "google/protobuf/json/internal/zero_copy_buffered_stream.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/util/type_resolver.h"
-#include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
