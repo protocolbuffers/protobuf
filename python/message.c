@@ -7,20 +7,32 @@
 
 #include "python/message.h"
 
+#include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "python/convert.h"
 #include "python/descriptor.h"
 #include "python/extension_dict.h"
 #include "python/map.h"
 #include "python/protobuf.h"
 #include "python/repeated.h"
-#include "upb/base/string_view.h"
+#include "upb/mem/arena.h"
+#include "upb/message/array.h"
 #include "upb/message/compare.h"
 #include "upb/message/copy.h"
+#include "upb/message/map.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/extension_registry.h"
+#include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
 #include "upb/text/encode.h"
 #include "upb/util/required_fields.h"
+#include "upb/wire/decode.h"
+#include "upb/wire/encode.h"
 
 static const upb_MessageDef* PyUpb_MessageMeta_GetMsgdef(PyObject* cls);
 static PyObject* PyUpb_MessageMeta_GetAttr(PyObject* self, PyObject* name);
@@ -118,7 +130,7 @@ static bool PyUpb_CPythonBits_Init(PyUpb_CPythonBits* bits) {
   size = PyObject_GetAttrString((PyObject*)&PyType_Type, "__basicsize__");
   if (!size) goto err;
   bits->type_basicsize = PyLong_AsLong(size);
-  if (bits->type_basicsize == -1) goto err;
+  if (bits->type_basicsize == (size_t)-1) goto err;
 
   assert(bits->type_new);
   assert(bits->type_dealloc);
@@ -1363,9 +1375,9 @@ PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
       upb_Decode(buf, size, self->ptr.msg, layout, extreg, options, arena);
   Py_XDECREF(bytes);
   if (status != kUpb_DecodeStatus_Ok) {
-    PyErr_Format(state->decode_error_class,
-                 "Error parsing message with type '%s'",
-                 upb_MessageDef_FullName(msgdef));
+    PyErr_Format(
+        state->decode_error_class, "Error parsing message with type '%s': %s",
+        upb_MessageDef_FullName(msgdef), upb_DecodeStatus_String(status));
     return NULL;
   }
   PyUpb_Message_SyncSubobjs(self);

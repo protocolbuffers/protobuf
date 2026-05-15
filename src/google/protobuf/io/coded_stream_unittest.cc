@@ -184,6 +184,16 @@ TEST_F(CodedStreamTest, EmptyInputBeforeEos) {
   EXPECT_TRUE(input.ConsumedEntireMessage());
 }
 
+TEST_F(CodedStreamTest, ReadRawFailsGracefullyOnBadSize) {
+  char buf[10]{};
+  ArrayInputStream in(buf, sizeof(buf));
+  CodedInputStream input(&in);
+  int c;
+  EXPECT_FALSE(input.ReadRaw(&c, -1));
+  EXPECT_FALSE(input.ReadRaw(&c, -1));
+  EXPECT_FALSE(input.ReadRaw(&c, -1));
+}
+
 class VarintCases : public CodedStreamTest,
                     public testing::WithParamInterface<VarintCase> {};
 
@@ -739,6 +749,27 @@ TEST_P(BlockSizes, ReadRaw) {
   }
 
   EXPECT_EQ(sizeof(kRawBytes), input.ByteCount());
+}
+
+TEST_P(BlockSizes, ReadRawFailsGracefullyAtEndOfStream) {
+  int kBlockSizes_case = GetParam();
+  memcpy(buffer_, kRawBytes, sizeof(kRawBytes));
+  ArrayInputStream input(buffer_, sizeof(buffer_), kBlockSizes_case);
+
+  CodedInputStream coded_input(&input);
+  char c[10];
+  while (coded_input.ReadRaw(c, sizeof(c))) {
+    // nothing. Just consuming it.
+  }
+  // and we can call it a few times without UB
+  EXPECT_FALSE(coded_input.ReadRaw(c, sizeof(c)));
+  EXPECT_FALSE(coded_input.ReadRaw(c, sizeof(c)));
+  EXPECT_FALSE(coded_input.ReadRaw(c, sizeof(c)));
+
+  // Read zero is fine too
+  EXPECT_TRUE(coded_input.ReadRaw(nullptr, 0));
+  EXPECT_TRUE(coded_input.ReadRaw(nullptr, 0));
+  EXPECT_TRUE(coded_input.ReadRaw(nullptr, 0));
 }
 
 TEST_P(BlockSizes, WriteRaw) {

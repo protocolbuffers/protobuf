@@ -22,6 +22,7 @@
 extern "C" {
 #endif
 
+typedef struct upb_EpsCopyCapture upb_EpsCopyCapture;
 typedef struct upb_EpsCopyInputStream upb_EpsCopyInputStream;
 
 // Initializes a upb_EpsCopyInputStream using the contents of the buffer
@@ -75,19 +76,19 @@ UPB_INLINE bool upb_EpsCopyInputStream_IsDone(upb_EpsCopyInputStream* e,
 UPB_INLINE bool upb_EpsCopyInputStream_CheckSize(
     const upb_EpsCopyInputStream* e, const char* ptr, int size);
 
-// Marks the start of a capture operation.  Only one capture operation may be
-// active at a time.  The capture operation will be finalized by a call to
-// upb_EpsCopyInputStream_EndCapture().  The captured string will be returned in
-// sv, and will point to the original input buffer if possible.
-UPB_INLINE void upb_EpsCopyInputStream_StartCapture(upb_EpsCopyInputStream* e,
-                                                    const char* ptr);
+// Marks the start of a capture operation.  The capture operation will be
+// finalized by a call to upb_EpsCopyCapture_End().  The captured string will
+// be returned in sv, and will point to the original input buffer if possible.
+UPB_INLINE void upb_EpsCopyCapture_Start(upb_EpsCopyCapture* c,
+                                         upb_EpsCopyInputStream* e,
+                                         const char* ptr);
 
-// Ends a capture operation and returns the captured string.  This may only be
-// called once per capture operation.  Returns false if the capture operation
-// was invalid (the parsing pointer extends beyond the end of the stream).
-UPB_INLINE bool upb_EpsCopyInputStream_EndCapture(upb_EpsCopyInputStream* e,
-                                                  const char* ptr,
-                                                  upb_StringView* sv);
+// Ends a capture operation and returns the captured string.  Returns false if
+// the capture operation was invalid (the parsing pointer extends beyond the
+// end of the stream).
+UPB_INLINE bool upb_EpsCopyCapture_End(upb_EpsCopyCapture* c,
+                                       upb_EpsCopyInputStream* e,
+                                       const char* ptr, upb_StringView* sv);
 
 // Reads a string from the stream and advances the pointer accordingly.  The
 // returned string view will always alias the input buffer.

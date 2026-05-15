@@ -62,7 +62,7 @@ absl::flat_hash_map<absl::string_view, std::string> FileVars(
     const FileDescriptor* file, const Options& options) {
   return {
       {"filename", std::string(file->name())},
-      {"package_ns", Namespace(file, options)},
+      {"package_ns", Namespace(file)},
       {"tablename", UniqueName("TableStruct", file, options)},
       {"desc_table", DescriptorTableName(file, options)},
       {"dllexport_decl", options.dllexport_decl},
@@ -250,7 +250,7 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
            [&] { GenerateProto2NamespaceEnumSpecializations(p); }},
           {"main_decls",
            [&] {
-             NamespaceOpener ns(Namespace(file_, options_), p);
+             NamespaceOpener ns(Namespace(file_), p);
              p->Emit(
                  {
                      {"enums", [&] { GenerateEnumDefinitions(p); }},
@@ -386,7 +386,7 @@ void FileGenerator::GeneratePBHeader(io::Printer* p,
                }
 
                {
-                 NamespaceOpener ns(Namespace(file_, options_), p);
+                 NamespaceOpener ns(Namespace(file_), p);
                  p->Emit(R"cc(
 
                    // @@protoc_insertion_point(namespace_scope)
@@ -625,18 +625,22 @@ void FileGenerator::GenerateInternalForwardDeclarations(
     NamespaceOpener ns(p);
 
     for (auto instance : refs.weak_default_instances) {
-      ns.ChangeTo(Namespace(instance, options_));
+      ns.ChangeTo(Namespace(instance));
 
       if (options_.lite_implicit_weak_fields) {
         p->Emit({{"ptr", MsgGlobalsInstancePtr(instance, options_)}}, R"cc(
           PROTOBUF_CONSTINIT __attribute__((weak)) const void* $ptr$ =
-              &::_pbi::implicit_weak_message_default_instance;
+              &::_pbi::implicit_weak_message_globals;
         )cc");
       } else {
         p->Emit({{"type", MsgGlobalsInstanceType(instance, options_)},
                  {"name", MsgGlobalsInstanceName(instance, options_)}},
                 R"cc(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
                   extern __attribute__((weak)) $type$ $name$;
+#else
+                  extern __attribute__((weak)) const $type$ $name$;
+#endif
                 )cc");
       }
     }
@@ -668,7 +672,7 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) {
   GenerateInternalForwardDeclarations(refs, p);
 
   {
-    NamespaceOpener ns(Namespace(file_, options_), p);
+    NamespaceOpener ns(Namespace(file_), p);
     p->Emit(
         {
             {"defaults",
@@ -729,7 +733,7 @@ void FileGenerator::GenerateSourceForExtension(int idx, io::Printer* p) {
   GenerateSourceIncludes(p);
   GenerateSourcePrelude(p);
 
-  NamespaceOpener ns(Namespace(file_, options_), p);
+  NamespaceOpener ns(Namespace(file_), p);
   extension_generators_[idx]->GenerateDefinition(p);
   for (auto priority : {kInitPriority101, kInitPriority102}) {
     if (extension_generators_[idx]->WillGenerateRegistration(priority)) {
@@ -754,7 +758,7 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) {
     }
   }
 
-  NamespaceOpener ns(Namespace(file_, options_), p);
+  NamespaceOpener ns(Namespace(file_), p);
   for (size_t i = 0; i < enum_generators_.size(); ++i) {
     enum_generators_[i]->GenerateMethods(i, p);
   }
@@ -823,12 +827,12 @@ void FileGenerator::GenerateSource(io::Printer* p) {
                               options_)},
                      },
                      R"cc(
-                       extern const $class$ __start_$section$
-                           __attribute__((weak));
+                       // $class$
+                       extern const ::_pbi::MessageGlobalsBase __start_$section$ __attribute__((weak));
                      )cc");
                }
              }},
-            {"defaults",
+            {"globals",
              [&] {
                for (auto& gen : message_generators_) {
                  p->Emit({{"section",
@@ -843,8 +847,8 @@ void FileGenerator::GenerateSource(io::Printer* p) {
         },
         R"cc(
           $weak_defaults$;
-          static const ::_pb::Message* file_default_instances[] = {
-              $defaults$,
+          static const ::_pbi::MessageGlobalsBase* file_message_globals[] = {
+              $globals$,
           };
         )cc");
   }
@@ -855,7 +859,7 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   }
 
   {
-    NamespaceOpener ns(Namespace(file_, options_), p);
+    NamespaceOpener ns(Namespace(file_), p);
     for (size_t i = 0; i < message_generators_.size(); ++i) {
       message_generators_[message_generators_topologically_ordered_[i]]
           ->GenerateSourceDefaultInstance(p);
@@ -871,7 +875,7 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   }
 
   {
-    NamespaceOpener ns(Namespace(file_, options_), p);
+    NamespaceOpener ns(Namespace(file_), p);
 
     // Actually implement the protos
 
@@ -1115,21 +1119,22 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
           };
         )cc");
     constexpr absl::string_view file_default_instances_code = R"cc(
-      static const ::_pb::Message* $nonnull$ const file_default_instances[] = {
-          $defaults$,
+      static const ::_pbi::MessageGlobalsBase* $nonnull$ const
+          file_message_globals[] = {
+              $globals$,
       };
     )cc";
     if (!UsingImplicitWeakDescriptor(file_, options_)) {
       std::vector<Sub> subs = {
-          {"defaults", [&] {
+          {"globals", [&] {
              for (auto& gen : message_generators_) {
                p->Emit(
                    {
-                       {"ns", Namespace(gen->descriptor(), options_)},
+                       {"ns", Namespace(gen->descriptor())},
                        {"class", ClassName(gen->descriptor())},
                    },
                    R"cc(
-                     &$ns$::_$class$_globals_._default,
+                     &$ns$::$class$_globals_,
                    )cc");
              }
            }}};
@@ -1142,8 +1147,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
     p->Emit(R"cc(
       const ::uint32_t $tablename$::offsets[1] = {};
       static constexpr ::_pbi::MigrationSchema* $nullable$ schemas = nullptr;
-      static constexpr ::_pb::Message* $nonnull$ const* $nullable$
-          file_default_instances = nullptr;
+      static constexpr ::_pbi::MessageGlobalsBase* $nonnull$ const* $nullable$
+          file_message_globals = nullptr;
     )cc");
   }
 
@@ -1271,7 +1276,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
             $num_deps$,
             $num_msgs$,
             schemas,
-            file_default_instances,
+            file_message_globals,
             $tablename$::offsets,
             $file_level_enum_descriptors$,
             $file_level_service_descriptors$,
@@ -1359,13 +1364,19 @@ class FileGenerator::ForwardDeclarations {
               Sub("class", c.first).AnnotatedAs(desc),
               {"globals_type", MsgGlobalsInstanceType(desc, options)},
               {"globals_name", MsgGlobalsInstanceName(desc, options)},
+              {"const",
+               IsFileDescriptorProto(desc->file(), options) ? "" : "const"},
               {"classdata_type", ClassDataType(desc, options)},
           },
           R"cc(
             class $class$;
             struct $globals_type$;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
             $dllexport_decl $extern $globals_type$ $globals_name$;
             $dllexport_decl $extern const $pbi$::$classdata_type$ $class$_class_data_;
+#else
+            $dllexport_decl $extern $const $$globals_type$ $globals_name$;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
           )cc");
     }
 
@@ -1418,8 +1429,12 @@ class FileGenerator::ForwardDeclarations {
         if (options.dllexport_decl.empty()) {
           p->Emit(R"cc(
             template <>
-            internal::GeneratedMessageTraitsT<&$default_name$,
-                                              &$class$_class_data_>
+            internal::GeneratedMessageTraitsT<&$default_name$
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+                                              ,
+                                              &$class$_class_data_
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+                                              >
                 internal::MessageTraitsImpl::value<$class$>;
           )cc");
         }
@@ -1475,17 +1490,17 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
   for (const auto* d : classes) {
     if (d != nullptr && !public_set.contains(d->file()) &&
         ShouldGenerateClass(d, options_))
-      decls[Namespace(d, options_)].AddMessage(d);
+      decls[Namespace(d)].AddMessage(d);
   }
   for (const auto* e : enums) {
     if (e != nullptr && !public_set.contains(e->file()))
-      decls[Namespace(e, options_)].AddEnum(e);
+      decls[Namespace(e)].AddEnum(e);
   }
   for (const auto& mg : message_generators_) {
     const Descriptor* d = mg->descriptor();
     if (d != nullptr && public_set.count(d->file()) == 0u &&
         ShouldSplit(mg->descriptor(), options_))
-      decls[Namespace(d, options_)].AddSplit(d);
+      decls[Namespace(d)].AddSplit(d);
   }
 
   NamespaceOpener ns(p);
@@ -1587,16 +1602,25 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
     IncludeFile("third_party/protobuf/message_lite.h", p);
   }
   if (options_.opensource_runtime) {
-    // Open-source relies on unconditional includes of these.
+    // Open-source relies on unconditional includes of repeated_field.h because
+    // many years it was unconditionally included. Removing it would technically
+    // be a breaking change.
     IncludeFileAndExport("third_party/protobuf/repeated_field.h", p);
+    if (HasRepeatedFields(file_, FieldDescriptor::CppRepeatedType::kProxy)) {
+      IncludeFileAndExport("third_party/protobuf/repeated_field_proxy.h", p);
+    }
+    // Open-source relies on unconditional includes of extension_set.h.
     IncludeFileAndExport("third_party/protobuf/extension_set.h", p);
   } else {
     // Google3 includes these files only when they are necessary.
     if (HasExtensionsOrExtendableMessage(file_)) {
       IncludeFileAndExport("third_party/protobuf/extension_set.h", p);
     }
-    if (HasRepeatedFields(file_)) {
+    if (HasRepeatedFields(file_, FieldDescriptor::CppRepeatedType::kRepeated)) {
       IncludeFileAndExport("third_party/protobuf/repeated_field.h", p);
+    }
+    if (HasRepeatedFields(file_, FieldDescriptor::CppRepeatedType::kProxy)) {
+      IncludeFileAndExport("third_party/protobuf/repeated_field_proxy.h", p);
     }
     if (HasStringPieceFields(file_, options_)) {
       IncludeFile("third_party/protobuf/string_piece_field_support.h", p);

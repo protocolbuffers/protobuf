@@ -66,8 +66,15 @@ bool UPB_PRIVATE(_upb_Message_ReserveSlot)(struct upb_Message* msg,
     in->capacity = capacity;
     UPB_PRIVATE(_upb_Message_SetInternal)(msg, in);
   } else if (in->capacity == in->size) {
+    if (in->size == UINT32_MAX) return false;
     // Internal data is too small, reallocate.
-    uint32_t new_capacity = upb_RoundUpToPowerOfTwo(in->size + 1);
+    size_t needed_pow2 = upb_RoundUpToPowerOfTwo(in->size + 1);
+    if (needed_pow2 > UINT32_MAX) return false;
+    uint32_t new_capacity = needed_pow2;
+    if (UPB_SIZEOF_FLEX_WOULD_OVERFLOW(upb_Message_Internal, aux_data,
+                                       new_capacity)) {
+      return false;
+    }
     in = upb_Arena_Realloc(a, in, _upb_Message_SizeOfInternal(in->capacity),
                            _upb_Message_SizeOfInternal(new_capacity));
     if (!in) return false;

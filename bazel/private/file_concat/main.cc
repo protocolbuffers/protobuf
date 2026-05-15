@@ -37,7 +37,7 @@ int main(int argc, const char* argv[]) {
     std::string input_path(argv[i]);
     std::ifstream input(input_path, std::ifstream::binary);
     if (!input) {
-      std::cerr << "Could not open input file " << output_path << std::endl;
+      std::cerr << "Could not open input file " << input_path << std::endl;
       return kIOError;
     }
 

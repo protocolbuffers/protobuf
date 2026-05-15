@@ -55,6 +55,10 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.VisibilityFeature.DefaultSymbolVisibility default_symbol_visibility = 8 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, edition_defaults = {</code>
      */
     protected $default_symbol_visibility = null;
+    /**
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.ProtoLimitsFeature.EnforceProtoLimits enforce_proto_limits = 9 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, edition_defaults = {</code>
+     */
+    protected $enforce_proto_limits = null;
 
     /**
      * Constructor.
@@ -70,6 +74,7 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
      *     @type int $json_format
      *     @type int $enforce_naming_style
      *     @type int $default_symbol_visibility
+     *     @type int $enforce_proto_limits
      * }
      */
     public function __construct($data = NULL) {
@@ -329,6 +334,38 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\VisibilityFeature\DefaultSymbolVisibility::class);
         $this->default_symbol_visibility = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.ProtoLimitsFeature.EnforceProtoLimits enforce_proto_limits = 9 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, edition_defaults = {</code>
+     * @return int one of the values in {@see \Google\Protobuf\Internal\FeatureSet\ProtoLimitsFeature\EnforceProtoLimits}
+     */
+    public function getEnforceProtoLimits()
+    {
+        return isset($this->enforce_proto_limits) ? $this->enforce_proto_limits : 0;
+    }
+
+    public function hasEnforceProtoLimits()
+    {
+        return isset($this->enforce_proto_limits);
+    }
+
+    public function clearEnforceProtoLimits()
+    {
+        unset($this->enforce_proto_limits);
+    }
+
+    /**
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.ProtoLimitsFeature.EnforceProtoLimits enforce_proto_limits = 9 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, edition_defaults = {</code>
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\FeatureSet\ProtoLimitsFeature\EnforceProtoLimits}
+     * @return $this
+     */
+    public function setEnforceProtoLimits(int $var)
+    {
+        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\ProtoLimitsFeature\EnforceProtoLimits::class);
+        $this->enforce_proto_limits = $var;
 
         return $this;
     }

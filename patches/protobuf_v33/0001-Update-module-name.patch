@@ -1,0 +1,21 @@
+--- a/MODULE.bazel
++++ b/MODULE.bazel
+@@ -5,3 +5,3 @@
+ module(
+-    name = "protobuf",
++    name = "com_google_protobuf_previous_release",
+     version = "33.0",  # Automatically updated on release
+@@ -293,13 +293,1 @@
+ )
+-
+-bazel_dep(name = "com_google_protobuf_previous_release", version = "29.0", dev_dependency = True)
+-archive_override(
+-    module_name = "com_google_protobuf_previous_release",
+-    integrity = "sha256-EKDVjzmhqQnpXgDougtbHcZNApl/dBFRlTorNln254w=",
+-    patch_strip = 1,
+-    patches = [
+-        "@com_google_protobuf//:patches/protobuf_v29/0001-Update-module-name.patch",
+-    ],
+-    strip_prefix = "protobuf-29.0",
+-    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz"],
+-)

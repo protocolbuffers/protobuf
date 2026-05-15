@@ -72,6 +72,11 @@ public class TypeRegistry {
     /**
      * Adds a message type and all types defined in the same .proto file as well as all transitively
      * imported .proto files to this {@link Builder}.
+     *
+     * <p>Note: In the case of adding duplicate types, the first one added will be used and
+     * subsequent ones will be ignored. Especially if you are dynamically loading FileDesciptors
+     * which may redefine the same fully qualified names, you may want to create a layer on top to
+     * control your intended behavior in the face of duplicates.
      */
     @CanIgnoreReturnValue
     public Builder add(Descriptor messageType) {
@@ -85,6 +90,11 @@ public class TypeRegistry {
     /**
      * Adds message types and all types defined in the same .proto file as well as all transitively
      * imported .proto files to this {@link Builder}.
+     *
+     * <p>Note: In the case of adding duplicate types, the first one added will be used and
+     * subsequent ones will be ignored. Especially if you are dynamically loading FileDesciptors
+     * which may redefine the same fully qualified names, you may want to create a layer on top to
+     * control your intended behavior in the face of duplicates.
      */
     @CanIgnoreReturnValue
     public Builder add(Iterable<Descriptor> messageTypes) {

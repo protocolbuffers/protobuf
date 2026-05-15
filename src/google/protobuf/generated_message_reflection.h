@@ -53,6 +53,7 @@ namespace google {
 namespace protobuf {
 namespace internal {
 class DefaultEmptyOneof;
+struct MessageGlobalsBase;
 // Defined in other files.
 class ExtensionSet;  // extension_set.h
 class WeakFieldMap;  // weak_field_map.h
@@ -291,7 +292,7 @@ struct PROTOBUF_EXPORT DescriptorTable {
   int num_deps;
   int num_messages;
   const MigrationSchema* schemas;
-  const Message* const* default_instances;
+  const MessageGlobalsBase* const* message_globals;
   const uint32_t* offsets;
   // update the following descriptor arrays.
   const EnumDescriptor** file_level_enum_descriptors;

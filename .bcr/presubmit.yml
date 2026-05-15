@@ -2,7 +2,7 @@
 bcr_test_module:
   module_path: examples
   matrix:
-    platform: ["debian10", "macos", "macos_arm64", "ubuntu2004", "windows"]
+    platform: ["debian12", "macos_arm64", "ubuntu2404", "windows"]
     bazel: [8.x, 9.x]
 
   tasks:
