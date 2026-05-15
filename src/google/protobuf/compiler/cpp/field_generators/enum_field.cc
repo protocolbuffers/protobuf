@@ -291,11 +291,6 @@ class RepeatedEnum : public FieldGeneratorBase {
     p->Emit(R"cc(
       /*decltype($field_$)*/ {},
     )cc");
-    if (has_cached_size_) {
-      p->Emit(R"cc(
-        /*decltype($cached_size_$)*/ {0},
-      )cc");
-    }
   }
 
   void GenerateAggregateInitializer(io::Printer* p) const override {
@@ -303,25 +298,12 @@ class RepeatedEnum : public FieldGeneratorBase {
             R"cc(
               decltype($field_$){$internal_metadata_offset$},
             )cc");
-    if (has_cached_size_) {
-      // std::atomic has no copy constructor, which prevents explicit aggregate
-      // initialization pre-C++17.
-      p->Emit(R"cc(
-        /*decltype($cached_size_$)*/ {0},
-      )cc");
-    }
   }
 
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
       decltype($field_$){from._internal_$name$()},
     )cc");
-    if (has_cached_size_) {
-      // std::atomic has no copy constructor.
-      p->Emit(R"cc(
-        /*decltype($cached_size_$)*/ {0},
-      )cc");
-    }
   }
 
   void GenerateMemberConstexprConstructor(io::Printer* p) const override {
@@ -329,9 +311,6 @@ class RepeatedEnum : public FieldGeneratorBase {
             R"cc(
               $name$_ { visibility, $internal_metadata_offset$ }
             )cc");
-    if (has_cached_size_) {
-      p->Emit(",\n_$name$_cached_byte_size_{0}");
-    }
   }
 
   void GenerateMemberConstructor(io::Printer* p) const override {
@@ -339,9 +318,6 @@ class RepeatedEnum : public FieldGeneratorBase {
             R"cc(
               $name$_ { visibility, $internal_metadata_offset$ }
             )cc");
-    if (has_cached_size_) {
-      p->Emit(",\n_$name$_cached_byte_size_{0}");
-    }
   }
 
   void GenerateMemberCopyConstructor(io::Printer* p) const override {
@@ -351,9 +327,6 @@ class RepeatedEnum : public FieldGeneratorBase {
                 visibility, $internal_metadata_offset$, from.$name$_
               }
             )cc");
-    if (has_cached_size_) {
-      p->Emit(",\n_$name$_cached_byte_size_{0}");
-    }
   }
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
@@ -400,9 +373,9 @@ void RepeatedEnum::GenerateAccessorDeclarations(io::Printer* p) const {
         break;
       case FieldDescriptor::CppRepeatedType::kProxy:
         p->Emit(R"cc(
-          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<const int>
+          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<const $Enum$>
           $name$() const;
-          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<int> $mutable_name$();
+          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<$Enum$> $mutable_name$();
         )cc");
         break;
     }
@@ -482,17 +455,17 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       break;
     case FieldDescriptor::CppRepeatedType::kProxy:
       p->Emit(R"cc(
-        inline $pb$::RepeatedFieldProxy<const int> $Msg$::$name$() const
+        inline $pb$::RepeatedFieldProxy<const $Enum$> $Msg$::$name$() const
             ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $WeakDescriptorSelfPin$;
           $annotate_list$;
           // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
           return $pbi$::RepeatedFieldProxyInternalPrivateAccessHelper<
-              const int>::Construct(_internal_$name_internal$());
+              const $Enum$>::Construct(_internal_$name_internal$());
         }
       )cc");
       p->Emit(R"cc(
-        inline $pb$::RepeatedFieldProxy<int> $Msg$::mutable_$name$()
+        inline $pb$::RepeatedFieldProxy<$Enum$> $Msg$::mutable_$name$()
             ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $WeakDescriptorSelfPin$;
           $set_hasbit$;
@@ -500,7 +473,8 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
           $TsanDetectConcurrentMutation$;
           return $pbi$::RepeatedFieldProxyInternalPrivateAccessHelper<
-              int>::Construct(*_internal_mutable_$name_internal$(), GetArena());
+              $Enum$>::Construct(*_internal_mutable_$name_internal$(),
+                                 GetArena());
         }
       )cc");
       break;

@@ -143,7 +143,6 @@ cc_library(
         "//editions:test_messages_proto2_editions_cc_proto",
         "//editions:test_messages_proto3_editions_cc_proto",
         "//src/google/protobuf",
-        "//src/google/protobuf:endian",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/json",
         "//src/google/protobuf/util:type_resolver",

@@ -153,10 +153,10 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
   (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord      \
        ? PROTOBUF_PICK_REPEATABLE_FUNCTION(fn##c)                         \
    : field->cpp_string_type() == FieldDescriptor::CppStringType::kView && \
-           options.use_micro_string                                       \
+           options.is_micro_string()                                      \
        ? PROTOBUF_PICK_FUNCTION(fn##mS)                                   \
-   : options.is_string_inlined ? PROTOBUF_PICK_FUNCTION(fn##iS)           \
-                               : PROTOBUF_PICK_REPEATABLE_FUNCTION(fn))
+   : options.is_string_inlined() ? PROTOBUF_PICK_FUNCTION(fn##iS)         \
+                                 : PROTOBUF_PICK_REPEATABLE_FUNCTION(fn))
 
   const FieldDescriptor* field = entry.field;
   info.aux_idx = static_cast<uint8_t>(entry.aux_idx);
@@ -650,7 +650,7 @@ uint16_t MakeTypeCardForField(const FieldDescriptor* field, bool has_hasbit,
         } else {
           // Otherwise, non-repeated string fields use ArenaStringPtr.
           type_card |=
-              options.use_micro_string ? fl::kRepMString : fl::kRepAString;
+              options.is_micro_string() ? fl::kRepMString : fl::kRepAString;
         }
         break;
     }
@@ -831,6 +831,9 @@ TailCallTableInfo::BuildFieldEntries(
         aux_entry.type = kEnumValidator;
         aux_entry.field = field;
       }
+    } else if (options.is_micro_string()) {
+      // We use the aux idx to pass the MicroString SSO size.
+      entry.aux_idx = options.micro_string_sso();
     }
   }
   ABSL_CHECK_EQ(subtable_aux_idx - subtable_aux_idx_begin,

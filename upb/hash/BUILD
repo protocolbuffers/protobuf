@@ -18,6 +18,7 @@ cc_library(
     ],
     hdrs = [
         "common.h",
+        "ext_table.h",
         "int_table.h",
         "str_table.h",
     ],
@@ -37,7 +38,10 @@ cc_test(
     srcs = ["test.cc"],
     deps = [
         ":hash",
+        "//upb/base",
         "//upb/mem",
+        "//upb/message:message_test_upb_minitable_proto",
+        "//upb/mini_table",
         "//upb/port",
         "@abseil-cpp//absl/container:flat_hash_map",
         "@googletest//:gtest",

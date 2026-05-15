@@ -4,9 +4,9 @@
 #include <ostream>
 #include <string>
 
-#include "base/sysinfo.h"
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
+#include "third_party/gloop/base/sysinfo.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {

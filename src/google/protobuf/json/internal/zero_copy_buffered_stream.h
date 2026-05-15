@@ -15,10 +15,8 @@
 #include <vector>
 
 #include "absl/log/absl_check.h"
-#include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
-#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/stubs/status_macros.h"
@@ -297,10 +295,21 @@ absl::StatusOr<MaybeOwnedString> ZeroCopyBufferedStream::TakeWhile(Pred p) {
       // We treat EOF as ending the take, rather than being an error.
       break;
     }
-    if (!p(cursor_ - start, PeekChar())) {
+    absl::string_view unread = Unread();
+    size_t chunk_taken = 0;
+    size_t offset = cursor_ - start;
+    for (char c : unread) {
+      if (!p(offset + chunk_taken, c)) {
+        break;
+      }
+      chunk_taken++;
+    }
+    if (chunk_taken > 0) {
+      RETURN_IF_ERROR(Advance(chunk_taken));
+    }
+    if (chunk_taken < unread.size()) {
       break;
     }
-    RETURN_IF_ERROR(Advance(1));
   }
 
   return MaybeOwnedString(this, start, cursor_ - start, guard);

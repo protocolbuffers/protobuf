@@ -165,6 +165,7 @@ template <typename MessageT, typename FieldT>
 struct RepeatedEntityDynamicFieldInfoBase;
 template <typename MessageT, typename FieldT>
 struct RepeatedPtrEntityDynamicFieldInfoBase;
+class LazyFieldForUnion;
 
 namespace field_layout {
 enum TransformValidation : uint16_t;
@@ -1781,6 +1782,7 @@ GetCppType() {
     if (std::is_same_v<T, double>) return FieldDescriptor::CPPTYPE_DOUBLE;
     if (std::is_same_v<T, bool>) return FieldDescriptor::CPPTYPE_BOOL;
 
+    using CV = std::remove_cv_t<T>;
     using PCV = std::remove_cv_t<std::remove_pointer_t<T>>;
 
     // strings
@@ -1794,7 +1796,8 @@ GetCppType() {
     // messages
     if (std::is_same_v<PCV, Message> ||      //
         std::is_same_v<PCV, MessageLite> ||  //
-        std::is_same_v<PCV, internal::LazyField>) {
+        std::is_same_v<CV, internal::LazyField> ||
+        std::is_same_v<CV, internal::LazyFieldForUnion>) {
       return FieldDescriptor::CPPTYPE_MESSAGE;
     }
   }
@@ -1842,9 +1845,10 @@ void Reflection::VerifyFieldType(const FieldDescriptor* field) const {
     // Check subfield types for message.
     if constexpr (internal::GetCppType<T>() ==
                   FieldDescriptor::CPPTYPE_MESSAGE) {
-      // Singular/oneof messages are by pointer, except non-oneof Lazy.
-      if (!field->is_repeated() &&
-          (!IsLazyField(field) || field->real_containing_oneof() != nullptr)) {
+      // Singular/oneof messages are by pointer, except Lazy.
+      // Lazy uses LazyField by-value for normal fields and LazyFieldForUnion
+      // by-value for oneof fields.
+      if (!field->is_repeated() && !IsLazyField(field)) {
         ABSL_DCHECK(std::is_pointer_v<T>) << error();
       }
     }

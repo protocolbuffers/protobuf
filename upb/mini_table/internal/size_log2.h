@@ -42,7 +42,8 @@ UPB_INLINE int UPB_PRIVATE(_upb_CType_SizeLg2)(upb_CType c_type) {
 }
 
 // Return the log2 of the storage size in bytes for a upb_FieldType
-UPB_INLINE int UPB_PRIVATE(_upb_FieldType_SizeLg2)(upb_FieldType field_type) {
+UPB_INLINE size_t
+UPB_PRIVATE(_upb_FieldType_SizeLg2)(upb_FieldType field_type) {
   static const int8_t size[] = {
       3,               // kUpb_FieldType_Double
       2,               // kUpb_FieldType_Float
