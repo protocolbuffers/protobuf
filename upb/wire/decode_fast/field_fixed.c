@@ -97,16 +97,16 @@ void upb_DecodeFast_Fixed(upb_Decoder* d, const char** ptr, upb_Message* msg,
 /* Generate all combinations:
  * {s,o,r,p} x {f4,f8} x {1bt,2bt} */
 
-#define F(type, card, tagbytes)                                          \
-  UPB_NOINLINE UPB_PRESERVE_NONE upb_FastDecoder_Return                  \
-  UPB_DECODEFAST_FUNCNAME(type, card, tagbytes)(UPB_PARSE_PARAMS) {      \
-    upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;              \
-    upb_DecodeFast_Fixed(d, &ptr, msg, table, &hasbits, &data, &next,    \
-                         kUpb_DecodeFast_##type, kUpb_DecodeFast_##card, \
-                         kUpb_DecodeFast_##tagbytes, data2);             \
-    UPB_DECODEFAST_NEXTMAYBEPACKED(                                      \
-        next, UPB_DECODEFAST_FUNCNAME(type, Repeated, tagbytes),         \
-        UPB_DECODEFAST_FUNCNAME(type, Packed, tagbytes));                \
+#define F(type, card, tagbytes)                                             \
+  UPB_FASTTABLE_ALIGN UPB_NOINLINE UPB_PRESERVE_NONE upb_FastDecoder_Return \
+  UPB_DECODEFAST_FUNCNAME(type, card, tagbytes)(UPB_PARSE_PARAMS) {         \
+    upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;                 \
+    upb_DecodeFast_Fixed(d, &ptr, msg, table, &hasbits, &data, &next,       \
+                         kUpb_DecodeFast_##type, kUpb_DecodeFast_##card,    \
+                         kUpb_DecodeFast_##tagbytes, data2);                \
+    UPB_DECODEFAST_NEXTMAYBEPACKED(                                         \
+        next, UPB_DECODEFAST_FUNCNAME(type, Repeated, tagbytes),            \
+        UPB_DECODEFAST_FUNCNAME(type, Packed, tagbytes));                   \
   }
 
 UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Fixed32)
