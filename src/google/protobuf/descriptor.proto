@@ -62,6 +62,7 @@ enum Edition {
   // comparison.
   EDITION_2023 = 1000;
   EDITION_2024 = 1001;
+  EDITION_2026 = 1002;
 
   // A placeholder edition for developing and testing unscheduled features.
   EDITION_UNSTABLE = 9999;
@@ -523,7 +524,14 @@ message FileOptions {
 
   // Enables the use of arenas for the proto messages in this file. This applies
   // only to generated classes for C++.
-  optional bool cc_enable_arenas = 31 [default = true];
+  optional bool cc_enable_arenas = 31 [
+    default = true,
+    feature_support = {
+      edition_removed: EDITION_2026
+      removal_error: "cc_enable_arenas is enabled by default in every edition and overrides are ignored."
+                     "This option is removed in editions 2026 and above."
+    }
+  ];
 
   // Sets the objective c class prefix which is prepended to all objective c
   // generated classes from this .proto. There is no default.
@@ -565,7 +573,11 @@ message FileOptions {
 
   // Range reserved for first-class custom options defined by the Protobuf
   // team. User custom options must use the 1000+ range instead.
-  extensions 990 to 998;
+  extensions 990 to 998 [declaration = {
+    number: 990,
+    full_name: ".pb.file.cpp",
+    type: ".pb.file.CppFileOptions"
+  }];
 
   // The parser stores options it doesn't recognize here.
   // See the documentation for the "Options" section above.
@@ -924,7 +936,11 @@ message EnumValueOptions {
 
   // Range reserved for first-class extension options defined by the Protobuf
   // team. Custom options must use the 1000+ range instead.
-  extensions 990 to 998;
+  extensions 990 to 998 [declaration = {
+    number: 998,
+    full_name: ".pb.enumvalue.json",
+    type: ".pb.enumvalue.JsonEnumValueOptions"
+  }];
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -1145,6 +1161,7 @@ message FeatureSet {
     ENFORCE_NAMING_STYLE_UNKNOWN = 0;
     STYLE2024 = 1;
     STYLE_LEGACY = 2;
+    STYLE2026 = 3;
   }
   optional EnforceNamingStyle enforce_naming_style = 7 [
     retention = RETENTION_SOURCE,
@@ -1161,7 +1178,8 @@ message FeatureSet {
       edition_introduced: EDITION_2024,
     },
     edition_defaults = { edition: EDITION_LEGACY, value: "STYLE_LEGACY" },
-    edition_defaults = { edition: EDITION_2024, value: "STYLE2024" }
+    edition_defaults = { edition: EDITION_2024, value: "STYLE2024" },
+    edition_defaults = { edition: EDITION_2026, value: "STYLE2026" }
   ];
 
   message VisibilityFeature {
@@ -1194,6 +1212,37 @@ message FeatureSet {
         edition_defaults = { edition: EDITION_LEGACY, value: "EXPORT_ALL" },
         edition_defaults = { edition: EDITION_2024, value: "EXPORT_TOP_LEVEL" }
       ];
+
+  message ProtoLimitsFeature {
+    enum EnforceProtoLimits {
+      PROTO_LIMITS_UNKNOWN = 0;
+
+      // Default pre-EDITION_2026: there are no limit enforcement at the protoc
+      // level. Practical limits still exist, but they will tend to fail while
+      // compiling protoc-generated code, and these limits tend to be language
+      // or toolchain specific.
+      LEGACY_NO_EXPLICIT_LIMITS = 1;
+
+      // A set of limits enforced by Edition 2026 by default. For a detailed
+      // list of all the limits please consult the Edition 2026 documentation.
+      PROTO_LIMITS2026 = 2;
+    }
+  }
+  optional ProtoLimitsFeature.EnforceProtoLimits enforce_proto_limits = 9 [
+    retention = RETENTION_SOURCE,
+    targets = TARGET_TYPE_ENUM,
+    targets = TARGET_TYPE_MESSAGE,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_ONEOF,
+    feature_support = {
+      edition_introduced: EDITION_2026,
+    },
+    edition_defaults = {
+      edition: EDITION_LEGACY,
+      value: "LEGACY_NO_EXPLICIT_LIMITS"
+    },
+    edition_defaults = { edition: EDITION_2026, value: "PROTO_LIMITS2026" }
+  ];
 
   reserved 999;
 

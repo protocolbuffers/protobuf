@@ -14,12 +14,18 @@ pub use paste::paste;
 
 pub use crate::codegen_traits::entity_tag;
 pub use crate::codegen_traits::EntityType;
+pub use crate::extension::{new_extension_id, new_message_extension_id, new_repeated_extension_id};
 pub use crate::r#enum::Enum;
 use crate::repeated::RepeatedView;
 use crate::singular::Singular;
 pub use crate::ProtoStr;
 use crate::{MapKey, MapValue, MapView};
 pub use std::fmt::Debug;
+
+#[doc(hidden)]
+pub mod ext {
+    pub use crate::extension::{ExtAccess, ExtClear, ExtGetMut, ExtHas};
+}
 
 #[cfg(all(bzl, cpp_kernel))]
 #[path = "cpp_kernel/mod.rs"]

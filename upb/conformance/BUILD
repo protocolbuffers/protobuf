@@ -174,6 +174,13 @@ sh_test(
         ":conformance_upb",
         "//conformance:conformance_test_runner",
     ],
+    # TODO Add upb conformance performance test back
+    # The upb performance test has segvs with recursion limit test
+    # cl/895387206 with --config=asan
+    tags = [
+        "manual",
+        "notap",
+    ],
     target_compatible_with = select({
         "@platforms//os:windows": ["@platforms//:incompatible"],
         "//conditions:default": [],

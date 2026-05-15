@@ -35,13 +35,14 @@ using ::google::protobuf::io::AnnotationCollector;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
 std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
+  const bool is_micro_string = IsMicroString(field, opts);
   auto trivial_default =
-      opts.experimental_use_micro_string
+      is_micro_string
           ? "::absl::string_view()"
           : absl::StrCat("::", ProtobufNamespace(opts),
                          "::internal::GetEmptyStringAlreadyInited()");
   auto lazy_var =
-      opts.experimental_use_micro_string
+      is_micro_string
           ? absl::StrCat("Impl_::", MakeDefaultFieldName(field))
           : absl::StrCat(QualifiedClassName(field->containing_type(), opts),
                          "::", MakeDefaultFieldName(field));
@@ -71,22 +72,30 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
 class SingularStringView : public FieldGeneratorBase {
  public:
   SingularStringView(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts), opts_(&opts) {}
+      : FieldGeneratorBase(field, opts),
+        use_micro_string_(IsMicroString(field, opts)),
+        opts_(&opts) {}
   ~SingularStringView() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
 
   bool IsInlined() const override { return is_inlined(); }
 
+  std::string FieldTypeName() const {
+    if (is_inlined()) return "InlinedStringField";
+    if (!use_micro_string()) return "ArenaStringPtr";
+    if (auto micro_string_sso = MicroStringSSOSize(field_, *opts_)) {
+      return absl::StrCat("MicroStringExtra<", *micro_string_sso, ">");
+    }
+    return "MicroString";
+  }
+
   void GeneratePrivateMembers(io::Printer* p) const override {
     // Skips the automatic destruction if inlined; rather calls it explicitly if
     // allocating arena is null.
-    p->Emit({{"Str", is_inlined()         ? "InlinedStringField"
-                     : use_micro_string() ? "MicroString"
-                                          : "ArenaStringPtr"}},
-            R"cc(
-              $pbi$::$Str$ $name$_;
-            )cc");
+    p->Emit({{"Str", FieldTypeName()}}, R"cc(
+      $pbi$::$Str$ $name$_;
+    )cc");
   }
 
   bool RequiresArena(GeneratorFunction function) const override {
@@ -174,10 +183,10 @@ class SingularStringView : public FieldGeneratorBase {
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
     if (is_inlined() || EmptyDefault() || use_micro_string()) {
-      p->Emit("new (&$field$) decltype($field$){arena, from.$field$};\n");
+      p->Emit("new (&$field_$) decltype($field_$){arena, from.$field_$};\n");
     } else {
       p->Emit(
-          "new (&$field$) decltype($field$){arena, from.$field$,"
+          "new (&$field_$) decltype($field_$){arena, from.$field_$,"
           " $default_variable_field$};\n");
     }
   }
@@ -197,8 +206,9 @@ class SingularStringView : public FieldGeneratorBase {
  private:
   bool EmptyDefault() const { return field_->default_value_string().empty(); }
 
-  bool use_micro_string() const { return opts_->experimental_use_micro_string; }
+  bool use_micro_string() const { return use_micro_string_; }
 
+  bool use_micro_string_;
   const Options* opts_;
 };
 
@@ -416,7 +426,7 @@ void SingularStringView::GenerateSwappingCode(io::Printer* p) const {
 }
 
 void SingularStringView::GenerateCopyConstructorCode(io::Printer* p) const {
-  if (!(is_inlined() && EmptyDefault()) && !is_oneof()) {
+  if (!(is_inlined() && EmptyDefault()) && !is_oneof() && !use_micro_string()) {
     ABSL_DCHECK(!is_inlined());
 
     p->Emit(R"cc(

@@ -7,13 +7,15 @@
 
 #include "google/protobuf/json/internal/writer.h"
 
+#include <cstddef>
 #include <cstdint>
-#include <initializer_list>
 #include <limits>
 #include <utility>
 
 #include "absl/algorithm/container.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/charset.h"
+#include "absl/strings/string_view.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -266,8 +268,33 @@ static bool MustEscape(uint32_t scalar, absl::string_view& custom_escape) {
   }
 }
 
+namespace {
+
+std::pair<absl::string_view, absl::string_view> SplitAtFirst(
+    absl::string_view str, absl::CharSet charset) {
+  size_t i = 0;
+  while (i < str.size() && !charset.contains(str[i])) {
+    i++;
+  }
+  return {str.substr(0, i), str.substr(i)};
+}
+
+}  // namespace
+
 void JsonWriter::WriteEscapedUtf8(absl::string_view str) {
   while (!str.empty()) {
+    static constexpr absl::CharSet kUnsafeChars =
+        ~absl::CharSet::AsciiPrintable() | absl::CharSet("\"\\<>");
+
+    auto [safe_prefix, rest] = SplitAtFirst(str, kUnsafeChars);
+    if (!safe_prefix.empty()) {
+      Write(safe_prefix);
+      str = rest;
+      if (str.empty()) {
+        break;
+      }
+    }
+
     auto scalar = ConsumeUtf8Scalar(str);
     absl::string_view custom_escape;
 

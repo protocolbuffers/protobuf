@@ -105,8 +105,8 @@ class MessageLayoutHelper {
     kCold,
     kWarm,
     kHot,
-    kFastParse,  // Fast-parse eligible fields.
     kRepeated,   // Non-split repeated fields.
+    kFastParse,  // Fast-parse eligible fields.
     kMaxHotness,
   };
 

@@ -7,7 +7,7 @@ use super::*;
 /// [nomicon]: https://doc.rust-lang.org/nomicon/ffi.html#representing-opaque-structs
 /// [`extern type`]: https://github.com/rust-lang/rust/issues/43467
 #[doc(hidden)]
-mod _opaque_pointees {
+pub mod _opaque_pointees {
     /// Opaque pointee for [`RawMessage`]
     ///
     /// This type is not meant to be dereferenced in Rust code.

@@ -23,6 +23,7 @@
 #include "google/protobuf/compiler/rust/accessors/accessors.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/enum.h"
+#include "google/protobuf/compiler/rust/extension.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/compiler/rust/oneof.h"
 #include "google/protobuf/compiler/rust/upb_helpers.h"
@@ -444,6 +445,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
              // If we have no nested types, enums, or oneofs, bail out without
              // emitting an empty mod some_msg.
              if (msg.nested_type_count() == 0 && msg.enum_type_count() == 0 &&
+                 msg.extension_count() == 0 &&
                  msg.real_oneof_decl_count() == 0) {
                return;
              }
@@ -462,6 +464,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
                                               upb_msg.enum_type(i));
                      }
                    }},
+                  {"nested_extensions",
+                   [&] {
+                     for (int i = 0; i < msg.extension_count(); ++i) {
+                       GenerateRs(ctx, *msg.extension(i), pool);
+                     }
+                   }},
                   {"oneofs",
                    [&] {
                      for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
@@ -471,6 +479,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
                  R"rs(
                    $nested_msgs$
                    $nested_enums$
+                   $nested_extensions$
 
                    $oneofs$
                 )rs");
@@ -906,6 +915,10 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
 
   for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
     GenerateOneofThunkCc(ctx, *msg.real_oneof_decl(i));
+  }
+
+  for (int i = 0; i < msg.extension_count(); ++i) {
+    GenerateThunksCc(ctx, *msg.extension(i));
   }
 
   ctx.Emit(R"(}  //extern "C"

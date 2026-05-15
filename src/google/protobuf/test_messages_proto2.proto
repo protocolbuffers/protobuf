@@ -242,6 +242,7 @@ message TestAllTypesProto2 {
       optional MessageSetCorrectExtension2 message_set_extension = 4135312;
     }
     optional int32 i = 9;
+    optional MessageSetCorrect sub_msg = 10;
   }
 
   message ExtensionWithOneof {

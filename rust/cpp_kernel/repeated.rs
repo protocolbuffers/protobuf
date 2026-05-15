@@ -70,7 +70,7 @@ impl<'msg> InnerRepeatedMut<'msg> {
     }
 }
 
-trait CppTypeConversions: Proxied {
+pub trait CppTypeConversions: Proxied {
     type InsertElemType;
     type ElemType;
 

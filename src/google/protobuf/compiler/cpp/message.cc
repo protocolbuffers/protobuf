@@ -125,21 +125,18 @@ void DebugAssertUniformLikelyPresence(
 // to use.
 std::string GenerateConditionMaybeWithProbability(
     uint32_t mask, absl::optional<float> probability, bool use_cached_has_bits,
-    absl::optional<int> has_array_index, bool is_batch, bool is_repeated) {
-  ABSL_DCHECK(!is_batch || !is_repeated);
+    absl::optional<int> has_array_index, bool is_batch) {
   std::string condition;
   if (use_cached_has_bits) {
-    condition = absl::StrFormat("%sCheckHasBit%s(cached_has_bits, 0x%08xU)",
-                                (is_batch ? "Batch" : ""),
-                                (is_repeated ? "ForRepeated" : ""), mask);
+    condition = absl::StrFormat("%sCheckHasBit(cached_has_bits, 0x%08xU)",
+                                (is_batch ? "Batch" : ""), mask);
   } else {
     // We only use has_array_index when use_cached_has_bits is false, make sure
     // we pas a valid index when we need it.
     ABSL_DCHECK(has_array_index.has_value());
-    condition = absl::StrFormat(
-        "%sCheckHasBit%s(this_._impl_._has_bits_[%d], 0x%08xU)",
-        (is_batch ? "Batch" : ""), (is_repeated ? "ForRepeated" : ""),
-        *has_array_index, mask);
+    condition =
+        absl::StrFormat("%sCheckHasBit(this_._impl_._has_bits_[%d], 0x%08xU)",
+                        (is_batch ? "Batch" : ""), *has_array_index, mask);
   }
   if (probability.has_value()) {
     return absl::StrFormat("PROTOBUF_EXPECT_TRUE_WITH_PROBABILITY(%s, %.3f)",
@@ -149,14 +146,13 @@ std::string GenerateConditionMaybeWithProbability(
 }
 
 std::string GenerateConditionMaybeWithProbabilityForField(
-    int has_bit_index, const FieldDescriptor* field, const Options& options,
-    bool is_repeated) {
+    int has_bit_index, const FieldDescriptor* field, const Options& options) {
   auto prob = GetPresenceProbability(field, options);
   return GenerateConditionMaybeWithProbability(
       1u << (has_bit_index % 32), prob,
       /*use_cached_has_bits*/ true,
       /*has_array_index*/ absl::nullopt,
-      /*is_batch=*/false, is_repeated);
+      /*is_batch=*/false);
 }
 
 std::string GenerateConditionMaybeWithProbabilityForGroup(
@@ -167,8 +163,7 @@ std::string GenerateConditionMaybeWithProbabilityForGroup(
       mask, prob,
       /*use_cached_has_bits*/ true,
       /*has_array_index*/ absl::nullopt,
-      /*is_batch*/ true,
-      /*is_repeated*/ false);
+      /*is_batch*/ true);
 }
 
 void PrintPresenceCheck(const FieldDescriptor* field,
@@ -183,9 +178,8 @@ void PrintPresenceCheck(const FieldDescriptor* field,
                 cached_has_bits = $has_bits$[$index$];
               )cc");
     }
-    p->Emit({{"condition",
-              GenerateConditionMaybeWithProbabilityForField(
-                  has_bit_index, field, options, field->is_repeated())}},
+    p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
+                               has_bit_index, field, options)}},
             R"cc(
               if ($condition$) {
             )cc");
@@ -320,7 +314,7 @@ void EmitNonDefaultCheckForString(io::Printer* p, absl::string_view prefix,
                  {
                      {"prefix", prefix},
                      {"name", FieldName(field)},
-                     {"field", FieldMemberName(field, split)},
+                     {"field_", FieldMemberName(field, split)},
                  },
                  // The merge semantic is "overwrite if present". This statement
                  // is emitted when hasbit is set and src proto field is
@@ -332,7 +326,7 @@ void EmitNonDefaultCheckForString(io::Printer* p, absl::string_view prefix,
                  //   do nothing.
                  // This will allow destructors and Clear() to be simpler.
                  R"cc(
-                   if (_this->$field$.IsDefault()) {
+                   if (_this->$field_$.IsDefault()) {
                      _this->_internal_set_$name$("");
                    }
                  )cc");
@@ -599,7 +593,7 @@ bool MaybeEmitHaswordsCheck(ChunkIterator it, ChunkIterator end,
 using Sub = ::google::protobuf::io::Printer::Sub;
 std::vector<Sub> ClassVars(const Descriptor* desc, Options opts) {
   std::vector<Sub> vars = {
-      {"pkg", Namespace(desc, opts)},
+      {"pkg", Namespace(desc)},
       {"Msg", ClassName(desc, false)},
       {"pkg::Msg", QualifiedClassName(desc, opts)},
       {"pkg.Msg", desc->full_name()},
@@ -797,12 +791,12 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
              {"sizer",
               [&] {
                 if (!field->is_repeated()) return;
-                p->Emit({Sub("name_size", absl::StrCat(name, "_size"))
-                             .AnnotatedAs(field)},
-                        R"cc(
-                          [[nodiscard]] $deprecated_attr $int $name_size$()
-                              $const_impl$;
-                        )cc");
+                p->Emit(
+                    {Sub("name_size", absl::StrCat(name, "_size"))
+                         .AnnotatedAs(field)},
+                    R"cc(
+                      [[nodiscard]] $DEPRECATED $int $name_size$() $const_impl$;
+                    )cc");
 
                 p->Emit({Sub("_internal_name_size",
                              absl::StrCat("_internal_", name, "_size"))
@@ -817,12 +811,12 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
              {"hazzer",
               [&] {
                 if (!field->has_presence()) return;
-                p->Emit({Sub("has_name", absl::StrCat("has_", name))
-                             .AnnotatedAs(field)},
-                        R"cc(
-                          [[nodiscard]] $deprecated_attr $bool $has_name$()
-                              $const_impl$;
-                        )cc");
+                p->Emit(
+                    {Sub("has_name", absl::StrCat("has_", name))
+                         .AnnotatedAs(field)},
+                    R"cc(
+                      [[nodiscard]] $DEPRECATED $bool $has_name$() $const_impl$;
+                    )cc");
               }},
              {"internal_hazzer",
               [&] {
@@ -847,7 +841,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                                  Semantic::kSet,
                              })},
                         R"cc(
-                          $deprecated_attr $void $clear_name$() $impl$;
+                          $DEPRECATED $void $clear_name$() $impl$;
                         )cc");
               }},
              {"accessors",
@@ -1155,7 +1149,7 @@ void MessageGenerator::GenerateSingularFieldHasBits(
                  // information to the compiler, we allow it to eliminate
                  // unnecessary null checks later on.
                  p->Emit(
-                     R"cc(PROTOBUF_ASSUME(!value || $field$ != nullptr);)cc");
+                     R"cc(PROTOBUF_ASSUME(!value || $field_$ != nullptr);)cc");
                }
              }}
              .WithSuffix(";")},
@@ -1253,13 +1247,9 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
                 field_generators_.get(field).GenerateClearingCode(p);
                 if (HasHasbit(field, options_)) {
                   auto v = p->WithVars(HasBitVars(field));
-                  p->Emit({{"clear_has_bit", field->is_repeated()
-                                                 ? "ClearHasBitForRepeated"
-                                                 : "ClearHasBit"}},
-                          R"cc(
-                            $clear_has_bit$($has_bits$[$has_array_index$],
-                                            $has_mask$);
-                          )cc");
+                  p->Emit(R"cc(
+                    ClearHasBit($has_bits$[$has_array_index$], $has_mask$);
+                  )cc");
                 }
               }
             }}},
@@ -1362,23 +1352,22 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
   }
 
   int has_bit_index = has_bit_indices_[field->index()];
-  p->Emit(
-      {{"condition", GenerateConditionMaybeWithProbabilityForField(
-                         has_bit_index, field, options_, field->is_repeated())},
-       {"check_nondefault_and_emit_body",
-        [&] {
-          // Note that it's possible that the field has explicit presence.
-          // In that case, nondefault check will not be emitted but
-          // emit_body will still be emitted.
-          MayEmitIfNonDefaultCheck(p, "this_.", field, options_,
-                                   std::move(emit_body),
-                                   /*with_enclosing_braces_always=*/false);
-        }}},
-      R"cc(
-        if ($condition$) {
-          $check_nondefault_and_emit_body$;
-        }
-      )cc");
+  p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
+                             has_bit_index, field, options_)},
+           {"check_nondefault_and_emit_body",
+            [&] {
+              // Note that it's possible that the field has explicit presence.
+              // In that case, nondefault check will not be emitted but
+              // emit_body will still be emitted.
+              MayEmitIfNonDefaultCheck(p, "this_.", field, options_,
+                                       std::move(emit_body),
+                                       /*with_enclosing_braces_always=*/false);
+            }}},
+          R"cc(
+            if ($condition$) {
+              $check_nondefault_and_emit_body$;
+            }
+          )cc");
 }
 
 void MessageGenerator::MaybeEmitUpdateCachedHasbits(
@@ -2297,8 +2286,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           // @@protoc_insertion_point(class_scope:$full_name$)
           //~ Generate private members.
          private:
-          //~ TODO: Remove hack to track field access and remove
-          //~ this class.
           class _Internal;
           $decl_set_has$;
           $decl_oneof_has$;
@@ -2684,9 +2671,9 @@ void MessageGenerator::GenerateZeroInitFields(io::Printer* p) const {
                                sizeof($Impl$::$last$_));
                 )cc");
       } else {
-        p->Emit({{"field", FieldMemberName(first, false)}},
+        p->Emit({{"field_", FieldMemberName(first, false)}},
                 R"cc(
-                  $field$ = {};
+                  $field_$ = {};
                 )cc");
       }
       first = nullptr;
@@ -2757,8 +2744,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
         separator();
         p->Emit("_has_bits_{from._has_bits_}");
       }
-      separator();
-      p->Emit("_cached_size_{0}");
     }
   };
 
@@ -2803,13 +2788,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
     }
   };
 
-  auto init_cached_size_if_no_hasbits = [&] {
-    if (has_bit_indices_.empty()) {
-      separator();
-      p->Emit("_cached_size_{0}");
-    }
-  };
-
   auto init_oneof_cases = [&] {
     if (int count = descriptor_->real_oneof_decl_count()) {
       separator();
@@ -2844,7 +2822,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
   init_fields();
   init_split();
   init_oneofs();
-  init_cached_size_if_no_hasbits();
   init_oneof_cases();
   init_weak_field_map();
 }
@@ -3122,9 +3099,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
                                sizeof($Impl$::$last$_));
                 )cc");
       } else {
-        p->Emit({{"field", FieldMemberName(first, split)}},
+        p->Emit({{"field_", FieldMemberName(first, split)}},
                 R"cc(
-                  $field$ = from.$field$;
+                  $field_$ = from.$field_$;
                 )cc");
       }
       first = nullptr;
@@ -3145,12 +3122,11 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
 
   auto has_message = [&](const FieldDescriptor* field) {
     if (has_bit_indices_.empty()) {
-      p->Emit("from.$field$ != nullptr");
+      p->Emit("from.$field_$ != nullptr");
     } else {
       int has_bit_index = has_bit_indices_[field->index()];
-      p->Emit({{"condition",
-                GenerateConditionMaybeWithProbabilityForField(
-                    has_bit_index, field, options_, /*is_repeated=*/false)}},
+      p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
+                                 has_bit_index, field, options_)}},
               "$condition$");
     }
   };
@@ -3160,9 +3136,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
     p->Emit({{"has_msg", [&] { has_message(field); }},
              {"submsg", FieldMessageTypeName(field, options_)}},
             R"cc(
-              $field$ = ($has_msg$)
-                            ? $superclass$::CopyConstruct(arena, *from.$field$)
-                            : nullptr;
+              $field_$ = ($has_msg$) ? $superclass$::CopyConstruct(
+                                           arena, *from.$field_$)
+                                     : nullptr;
             )cc");
   };
 
@@ -3218,7 +3194,6 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
               for (const auto* field : internal::FieldRange(oneof)) {
                 p->Emit(
                     {{"Name", UnderscoresToCamelCase(field->name(), true)},
-                     {"field", FieldMemberName(field, /*split=*/false)},
                      {"body",
                       [&] {
                         field_generators_.get(field).GenerateOneofCopyConstruct(
@@ -4201,12 +4176,9 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         // Check hasbit, not using cached bits.
         auto v = p->WithVars(HasBitVars(field));
         p->Emit(
-            {{"check_has_bit",
-              field->is_repeated() ? "CheckHasBitForRepeated" : "CheckHasBit"},
-             {"merge_field", [&] { generator.GenerateMergingCode(p); }}},
+            {{"merge_field", [&] { generator.GenerateMergingCode(p); }}},
             R"cc(
-              if ($check_has_bit$(from.$has_bits$[$has_array_index$],
-                                  $has_mask$)) {
+              if (CheckHasBit(from.$has_bits$[$has_array_index$], $has_mask$)) {
                 $merge_field$;
               }
             )cc");
@@ -4216,9 +4188,8 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         int has_bit_index = has_bit_indices_[field->index()];
 
         p->Emit(
-            {{"condition",
-              GenerateConditionMaybeWithProbabilityForField(
-                  has_bit_index, field, options_, field->is_repeated())},
+            {{"condition", GenerateConditionMaybeWithProbabilityForField(
+                               has_bit_index, field, options_)},
              {"merge_field",
               [&] {
                 if (GetFieldHasbitMode(field, options_) ==
@@ -4563,8 +4534,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
              GenerateConditionMaybeWithProbability(
                  1u << (has_bit_index % 32),
                  GetPresenceProbability(field, options_), use_cached_has_bits,
-                 has_word_index, /*is_batch=*/false,
-                 /*is_repeated=*/field->is_repeated())},
+                 has_word_index, /*is_batch=*/false)},
         },
         R"cc(
           if ($cond$) {
@@ -5650,23 +5620,31 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                    file_message_globals + $index$, sizeof($globals_type$)};
              )cc");
            }},
-          {"section_decl",
-           [&] {
-             if (!use_implicit_weak_descriptor) return;
-             p->Emit({{"section",
-                       WeakDefaultInstanceSection(
-                           descriptor_, index_in_file_messages_, options_)}},
-                     R"cc(__attribute__((section("$section$"))))cc");
-           }},
-          {"const",
-           [&] {
-             if (is_file_descriptor_proto) return;
-             p->Emit(R"cc(
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-               const
-#endif
-             )cc");
-           }},
+          Sub({"SECTION",
+               [&] {
+                 if (use_implicit_weak_descriptor) {
+                   p->Emit(
+                       {{"section",
+                         WeakDefaultInstanceSection(
+                             descriptor_, index_in_file_messages_, options_)}},
+                       R"cc(ABSL_ATTRIBUTE_SECTION_VARIABLE($section$))cc");
+                   return;
+                 }
+                 // File descriptor proto is mutable.
+                 if (is_file_descriptor_proto) return;
+
+                 p->Emit({{"section_name",
+                           !IsProfileDriven(options_) ||
+                                   IsPresentMessage(descriptor_, options_)
+                               ? ".data.rel.ro"
+                               : ".data.rel.ro.unlikely"}},
+                         "PROTOBUF_MESSAGE_GLOBALS_SECTION($section_name$)");
+               }})
+              .WithSuffix(""),
+          {
+              "const",
+              is_file_descriptor_proto ? "" : "PROTOBUF_MESSAGE_GLOBALS_CONST",
+          },
       },
       R"cc(
         struct $globals_type$ : ::_pbi::MessageGlobalsBase {
@@ -5677,8 +5655,7 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                          $Msg$_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
                 MessageGlobalsBase($Msg$::InternalGenerateClassData_(
-                                       _default, &$globals$._table.header),
-                                   &$globals$._table.header),
+                    _default, &$globals$._table.header)),
                 _default(::_pbi::ConstantInitialized{}, GetClassData()),
                 _table(::_pbi::PrivateAccess::GenerateParseTable<$Msg$>(
                     GetClassData()))
@@ -5706,8 +5683,8 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
 
         PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-            PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $section_decl$ $const$
-                $globals_type$ $globals$;
+            PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $const $$globals_type$ $globals$
+                $SECTION$;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
         namespace {
         const ::_pbi::ClassData* $Msg$_get_class_data() {

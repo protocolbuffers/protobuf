@@ -94,6 +94,31 @@ inline std::string ClassName(const ServiceDescriptor* descriptor) {
 //   descriptor != NULL
 //
 // Returns:
+//   The fully-qualified Java bytecode class name (using $ separator for nested
+//   classes).
+PROTOC_EXPORT std::string BytecodeClassName(const Descriptor* descriptor);
+
+// Requires:
+//   descriptor != NULL
+//
+// Returns:
+//   The fully-qualified Java bytecode class name (using $ separator for nested
+//   classes).
+PROTOC_EXPORT std::string BytecodeClassName(const EnumDescriptor* descriptor);
+
+// Requires:
+//   descriptor != NULL
+//
+// Returns:
+//   The fully-qualified Java bytecode class name (using $ separator for nested
+//   classes).
+PROTOC_EXPORT std::string BytecodeClassName(
+    const ServiceDescriptor* descriptor);
+
+// Requires:
+//   descriptor != NULL
+//
+// Returns:
 //   Java package name.
 PROTOC_EXPORT std::string FileJavaPackage(const FileDescriptor* file);
 

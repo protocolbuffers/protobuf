@@ -184,19 +184,19 @@ class ExtensionIdentifier {
 
   // Placeholder for extant legacy callers, avoid use if possible
   const upb_MiniTableExtension* mini_table_ext() const {
-    return mini_table_ext_;
+    return *mini_table_ext_;
   }
 
  private:
   constexpr explicit ExtensionIdentifier(
-      const upb_MiniTableExtension* mte,
+      const upb_MiniTableExtension* const* mte,
       typename UpbExtensionTrait<ExtensionType>::DefaultType val,
       uint32_t number)
       : mini_table_ext_(mte), default_val_(val), number_(number) {}
 
   constexpr uint32_t number() const { return number_; }
 
-  const upb_MiniTableExtension* mini_table_ext_;
+  const upb_MiniTableExtension* const* mini_table_ext_;
 
   typename UpbExtensionTrait<ExtensionType>::ReturnType default_value() const {
     if constexpr (IsHpbClass<ExtensionType>) {

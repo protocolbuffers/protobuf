@@ -10,10 +10,13 @@
 #ifndef UPB_REFLECTION_DEF_POOL_H_
 #define UPB_REFLECTION_DEF_POOL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "upb/base/status.h"
-#include "upb/base/string_view.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/extension_registry.h"
 #include "upb/reflection/common.h"
-#include "upb/reflection/def_type.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -24,15 +27,14 @@ extern "C" {
 
 UPB_API void upb_DefPool_Free(upb_DefPool* s);
 
-UPB_API upb_DefPool* upb_DefPool_New(void);
+UPB_NODISCARD UPB_API upb_DefPool* upb_DefPool_New(void);
 
 UPB_API const google_protobuf_FeatureSetDefaults* upb_DefPool_FeatureSetDefaults(
     const upb_DefPool* s);
 
-UPB_API bool upb_DefPool_SetFeatureSetDefaults(upb_DefPool* s,
-                                               const char* serialized_defaults,
-                                               size_t serialized_len,
-                                               upb_Status* status);
+UPB_NODISCARD UPB_API bool upb_DefPool_SetFeatureSetDefaults(
+    upb_DefPool* s, const char* serialized_defaults, size_t serialized_len,
+    upb_Status* status);
 
 UPB_API const upb_MessageDef* upb_DefPool_FindMessageByName(
     const upb_DefPool* s, const char* sym);
@@ -81,7 +83,7 @@ const upb_ServiceDef* upb_DefPool_FindServiceByNameWithSize(
 const upb_FileDef* upb_DefPool_FindFileContainingSymbol(const upb_DefPool* s,
                                                         const char* name);
 
-UPB_API const upb_FileDef* upb_DefPool_AddFile(
+UPB_NODISCARD UPB_API const upb_FileDef* upb_DefPool_AddFile(
     upb_DefPool* s, const google_protobuf_FileDescriptorProto* file_proto,
     upb_Status* status);
 

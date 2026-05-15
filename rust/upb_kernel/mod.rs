@@ -8,6 +8,7 @@
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
 pub mod conversions;
+pub mod extension;
 pub mod interop;
 pub mod map;
 pub mod message;
@@ -16,6 +17,7 @@ pub mod repeated;
 pub mod string;
 
 pub use conversions::*;
+pub use extension::*;
 pub use interop::*;
 pub use map::*;
 pub use message::*;
@@ -49,6 +51,8 @@ pub use upb::AssociatedMiniTableEnum;
 pub use upb::MessagePtr;
 pub type MiniTablePtr = upb::RawMiniTable;
 pub type MiniTableEnumPtr = upb::RawMiniTableEnum;
+pub type MiniTableExtensionPtr = upb::RawMiniTableExtension;
+pub type ExtensionRegistryPtr = upb::RawExtensionRegistry;
 use upb::*;
 
 pub fn debug_string<T: UpbGetMessagePtr>(msg: &T) -> String {

@@ -11,7 +11,6 @@
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
-#include "upb/wire/eps_copy_input_stream.h"
 
 // Must be last.
 #include "upb/port/def.inc"

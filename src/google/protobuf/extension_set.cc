@@ -16,6 +16,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -40,6 +41,7 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/wire_format_lite.h"
+
 
 // must be last.
 #include "google/protobuf/port_def.inc"
@@ -165,11 +167,16 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* extendee,
              type == WireFormatLite::TYPE_GROUP);
   ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
                      verify_func, is_lazy);
-  info.message_info = {prototype,
+  info.message_info = {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+      internal::MessageGlobalsBase::FromDefaultInstance(prototype),
+#else   // PROTOBUF_MESSAGE_GLOBALS
+      prototype,
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-                       prototype->GetTcParseTable()
+      prototype->GetTcParseTable()
 #else
-                       nullptr
+      nullptr
 #endif
   };
   Register(info);
@@ -785,6 +792,25 @@ void ExtensionSet::MergeFrom(Arena* arena, const MessageLite* extendee,
   InternalMergeFromSlow(arena, extendee, other, other_arena);
 }
 
+ABSL_ATTRIBUTE_NOINLINE void ExtensionSet::InternalReduceSmallCapacity(
+    Arena* arena) {
+  ABSL_DCHECK_LE(flat_size_, kMaximumFlatCapacity);
+  ABSL_DCHECK_LE(flat_capacity_, kMaximumFlatCapacity);
+  ABSL_DCHECK_GT(flat_size_, 0);
+  ABSL_DCHECK_GE(flat_capacity_, flat_size_ * 2);
+  const size_t new_flat_capacity = absl::bit_ceil(flat_size_);
+  auto* new_flat = AllocateFlatMap(arena, new_flat_capacity);
+  std::memcpy(new_flat, map_.flat, flat_size_ * sizeof(KeyValue));
+  auto* old_flat = map_.flat;
+  if (arena == nullptr) {
+    DeleteFlatMap(old_flat, flat_capacity_);
+  } else {
+    arena->ReturnArrayMemory(old_flat, sizeof(KeyValue) * flat_capacity_);
+  }
+  map_.flat = new_flat;
+  flat_capacity_ = new_flat_capacity;
+}
+
 void ExtensionSet::InternalMergeFromSmallToEmpty(Arena* arena,
                                                  const MessageLite* extendee,
                                                  const ExtensionSet& other,
@@ -794,19 +820,21 @@ void ExtensionSet::InternalMergeFromSmallToEmpty(Arena* arena,
   ABSL_ASSUME(static_cast<int16_t>(flat_size_) >= 0);
   ABSL_DCHECK(IsCompletelyEmpty());
 
-  size_t count = other.NumExtensions();
-  if (count == 0) {
+  if (other.flat_size_ == 0) {
     return;
   }
 
-  InternalReserveSmallCapacityFromEmpty(arena, count);
-  flat_size_ = static_cast<uint16_t>(count);
-  auto dst_it = map_.flat;
+  flat_size_ = other.flat_size_;
+  KeyValue* dst_it = nullptr;
   other.ForEach(
-      [extendee, this, arena, &dst_it, &other, other_arena](
-          int number, const Extension& ext) {
+      [&](int number, const Extension& ext) {
         if (ext.is_cleared) {
+          --flat_size_;
           return;
+        }
+        if (dst_it == nullptr) {
+          InternalReserveSmallCapacityFromEmpty(arena, flat_size_);
+          dst_it = map_.flat;
         }
         dst_it->first = number;
         this->InternalExtensionMergeFromIntoUninitializedExtension(
@@ -814,6 +842,12 @@ void ExtensionSet::InternalMergeFromSmallToEmpty(Arena* arena,
         ++dst_it;
       },
       Prefetch{});
+  if (flat_capacity_ == 0) {
+    return;
+  }
+  if (ABSL_PREDICT_FALSE(flat_capacity_ >= flat_size_ * 2)) {
+    InternalReduceSmallCapacity(arena);
+  }
 }
 
 void ExtensionSet::InternalMergeFromSlow(Arena* arena,
@@ -1405,7 +1439,6 @@ size_t ExtensionSet::Extension::ByteSize(int number) const {
   return result;
 }
 
-
 int ExtensionSet::Extension::GetSize() const {
   ABSL_DCHECK(is_repeated);
   switch (cpp_type(type)) {
@@ -1802,7 +1835,7 @@ const MessageLite* ExtensionSet::GetPrototypeForLazyMessage(
           &extension_info, &was_packed_on_wire)) {
     return nullptr;
   }
-  return extension_info.message_info.prototype;
+  return extension_info.message_info.GetPrototype();
 }
 
 uint8_t*
@@ -1879,9 +1912,6 @@ LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
   return nullptr;
 }
 
-
-std::atomic<ExtensionSet::LazyMessageExtension* (*)(Arena * arena)>
-    ExtensionSet::maybe_create_lazy_extension_;
 
 }  // namespace internal
 }  // namespace protobuf

@@ -69,6 +69,7 @@ class Reflection;       // message.h
 class UnknownFieldSet;  // unknown_field_set.h
 class FeatureSet;
 namespace internal {
+class LazyField;
 struct DescriptorTable;
 class FieldSkipper;     // wire_format_lite.h
 class ReflectionVisit;  // message_reflection_util.h
@@ -142,9 +143,7 @@ struct ExtensionInfo {
         is_utf8(false),
         is_lazy(islazy),
         enum_validity_check(),
-        lazy_eager_verify_func(verify_func)
-  {
-  }
+        lazy_eager_verify_func(verify_func) {}
 
   const MessageLite* message = nullptr;
   int number = 0;
@@ -168,18 +167,36 @@ struct ExtensionInfo {
   };
 
   struct MessageInfo {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+    const internal::MessageGlobalsBase* globals = nullptr;
+#else
     const MessageLite* prototype = nullptr;
-    // The TcParse table used for this object.
-    // Never null. (except in platforms that don't constant initialize default
-    // instances)
+#endif
+    // The TcParse table used for this object. Never null. (except in platforms
+    // that don't constant initialize default instances)
     const internal::TcParseTableBase* tc_table = nullptr;
 
+    // Create from prototype
+    const MessageLite* GetPrototype() const {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+      return internal::MessageGlobalsBase::ToDefaultInstance(globals);
+#else
+      return prototype;
+#endif
+    }
+
+    const internal::TcParseTableBase* GetTcTable() const { return tc_table; }
+
     const ClassData* GetClassData() const {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+      return internal::MessageGlobalsBase::GetClassData(globals);
+#else  // !PROTOBUF_MESSAGE_GLOBALS
 #ifdef PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
       return tc_table->class_data;
 #else
       return google::protobuf::internal::GetClassData(*prototype);
 #endif
+#endif  // !PROTOBUF_MESSAGE_GLOBALS
     }
   };
 
@@ -238,6 +255,9 @@ class PROTOBUF_EXPORT DescriptorPoolExtensionFinder {
   MessageFactory* factory_;
   const Descriptor* containing_type_;
 };
+
+// Turn on direct LazyField access.
+#define PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET
 
 // This is an internal helper class intended for use within the protocol buffer
 // library and generated classes.  Clients should not use it directly.  Instead,
@@ -691,15 +711,6 @@ class PROTOBUF_EXPORT ExtensionSet {
                                        int end_field_number, uint8_t* target,
                                        io::EpsCopyOutputStream* stream) const;
   // Interface of a lazily parsed singular message extension.
-  class PROTOBUF_EXPORT LazyMessageExtension;
-  // Give access to function defined below to see LazyMessageExtension.
-  static LazyMessageExtension* MaybeCreateLazyExtensionImpl(Arena* arena);
-  static LazyMessageExtension* MaybeCreateLazyExtension(Arena* arena) {
-    auto* f = maybe_create_lazy_extension_.load(std::memory_order_relaxed);
-    return f != nullptr ? f(arena) : nullptr;
-  }
-  static std::atomic<LazyMessageExtension* (*)(Arena * arena)>
-      maybe_create_lazy_extension_;
 
   // We can't directly use std::atomic for Extension::cached_size because
   // Extension needs to be trivially copyable.
@@ -750,7 +761,6 @@ class PROTOBUF_EXPORT ExtensionSet {
     union Pointer {
       std::string* string_value;
       MessageLite* message_value;
-      LazyMessageExtension* lazymessage_value;
 
       RepeatedField<int32_t>* repeated_int32_t_value;
       RepeatedField<int64_t>* repeated_int64_t_value;
@@ -1041,6 +1051,9 @@ class PROTOBUF_EXPORT ExtensionSet {
   bool IsCompletelyEmpty() const {
     return flat_size_ == 0 && flat_capacity_ == 0;
   }
+
+  // Reduces the flat_capacity_ to the smallest power of 2 >= flat_size_.
+  void InternalReduceSmallCapacity(Arena* arena);
 
   // Implementation of MergeFrom into the empty ExtensionSet from a small
   // `other`.

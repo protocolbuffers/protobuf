@@ -23,4 +23,6 @@ def _test_binary_option_deps(env, target):
         "java/core/liblite_runtime_only-hjar.jar",
     ])
 
-TESTS = [(_test_binary_option_deps, ":foo_java_proto_lite")]
+TESTS = {
+    ":foo_java_proto_lite": [_test_binary_option_deps],
+}

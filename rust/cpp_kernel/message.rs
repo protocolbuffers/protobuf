@@ -7,6 +7,7 @@ unsafe extern "C" {
     pub fn proto2_rust_Message_parse_dont_enforce_required(m: RawMessage, input: PtrAndLen)
         -> bool;
     pub fn proto2_rust_Message_serialize(m: RawMessage, output: &mut SerializedData) -> bool;
+    pub fn proto2_rust_Message_serialized_len(m: RawMessage) -> usize;
     pub fn proto2_rust_Message_copy_from(dst: RawMessage, src: RawMessage);
     pub fn proto2_rust_Message_merge_from(dst: RawMessage, src: RawMessage);
     pub fn proto2_rust_Message_get_descriptor(m: RawMessage) -> *const std::ffi::c_void;
@@ -173,11 +174,37 @@ where
 pub trait KernelMessage: CppGetRawMessage + CppGetRawMessageMut + OwnedMessageInterop {}
 impl<T: CppGetRawMessage + CppGetRawMessageMut + OwnedMessageInterop> KernelMessage for T {}
 
-pub trait KernelMessageView<'msg>: CppGetRawMessage + MessageViewInterop<'msg> {}
-impl<'msg, T: CppGetRawMessage + MessageViewInterop<'msg>> KernelMessageView<'msg> for T {}
+pub trait KernelMessageView<'msg>:
+    CppGetRawMessage + MessageViewInterop<'msg> + AsView + From<MessageViewInner<'msg, Self::KMessage>>
+{
+    type KMessage;
+}
 
-pub trait KernelMessageMut<'msg>: CppGetRawMessageMut + MessageMutInterop<'msg> {}
-impl<'msg, T: CppGetRawMessageMut + MessageMutInterop<'msg>> KernelMessageMut<'msg> for T {}
+impl<'msg, T> KernelMessageView<'msg> for T
+where
+    T: CppGetRawMessage
+        + MessageViewInterop<'msg>
+        + AsView
+        + From<MessageViewInner<'msg, T::Proxied>>,
+{
+    type KMessage = T::Proxied;
+}
+
+pub trait KernelMessageMut<'msg>:
+    CppGetRawMessageMut + MessageMutInterop<'msg> + AsMut + From<MessageMutInner<'msg, Self::KMessage>>
+{
+    type KMessage;
+}
+
+impl<'msg, T> KernelMessageMut<'msg> for T
+where
+    T: CppGetRawMessageMut
+        + MessageMutInterop<'msg>
+        + AsMut
+        + From<MessageMutInner<'msg, T::MutProxied>>,
+{
+    type KMessage = T::MutProxied;
+}
 
 /// Message equality definition which may have both false-negatives and false-positives in the face
 /// of unknown fields.
@@ -266,6 +293,10 @@ impl<T: CppGetRawMessage> Serialize for T {
         } else {
             Err(SerializeError)
         }
+    }
+
+    fn serialized_len(&self) -> usize {
+        unsafe { proto2_rust_Message_serialized_len(self.get_raw_message(Private)) }
     }
 }
 

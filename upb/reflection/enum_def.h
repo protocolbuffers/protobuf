@@ -40,8 +40,9 @@ bool upb_EnumDef_HasOptions(const upb_EnumDef* e);
 bool upb_EnumDef_IsClosed(const upb_EnumDef* e);
 
 // Creates a mini descriptor string for an enum, returns true on success.
-bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e, upb_Arena* a,
-                                      upb_StringView* out);
+UPB_NODISCARD bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e,
+                                                    upb_Arena* a,
+                                                    upb_StringView* out);
 
 const char* upb_EnumDef_Name(const upb_EnumDef* e);
 const google_protobuf_EnumOptions* upb_EnumDef_Options(const upb_EnumDef* e);
