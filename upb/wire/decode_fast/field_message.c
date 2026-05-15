@@ -58,19 +58,20 @@ bool upb_DecodeFast_SingleMessage(upb_Decoder* d, const char** ptr, void* dst,
   return upb_DecodeFast_Delimited(d, ptr, &upb_DecodeFast_MessageData, next, c);
 }
 
+UPB_FORCEINLINE
 void upb_DecodeFast_Message(upb_Decoder* d, const char** ptr, upb_Message* msg,
-                            intptr_t table, uint64_t* hasbits, uint64_t* data,
-                            upb_DecodeFastNext* ret, upb_DecodeFast_Type type,
+                            const upb_MiniTable* table, uint64_t* hasbits,
+                            uint64_t* data, upb_DecodeFastNext* ret,
+                            upb_DecodeFast_Type type,
                             upb_DecodeFast_Cardinality card,
-                            upb_DecodeFast_TagSize tagsize) {
+                            upb_DecodeFast_TagSize tagsize, uint64_t data2) {
   uint16_t submsg_idx = upb_DecodeFastData_GetFieldIndex(*data);
-  const upb_MiniTable* tablep = decode_totablep(table);
 
   // OPT: we could remove an indirection by precomputing the offset directly
   // to the submessage table pointer, instead of doing an extra hop through the
   // field.
   const upb_MiniTableField* field =
-      upb_MiniTable_GetFieldByIndex(tablep, submsg_idx);
+      upb_MiniTable_GetFieldByIndex(table, submsg_idx);
   const upb_MiniTable* subtablep = upb_MiniTable_GetSubMessageTable(field);
 
   upb_DecodeFast_MessageContext ctx = {subtablep,
@@ -81,23 +82,12 @@ void upb_DecodeFast_Message(upb_Decoder* d, const char** ptr, upb_Message* msg,
     return;
   }
 
-  // This check is technically redundant because upb_DecodeFast_Unpacked will
-  // check the tag again. But we perform this check early to avoid erroring out
-  // for "bounds exceeded" if this is not actually a sub-message field.
-  //
-  // The compiler should be able to see that the tag was already checked, so
-  // the later check should be optimized away.
-  if (UPB_UNLIKELY(!upb_DecodeFast_MaskedTagIsZero(*data, tagsize))) {
-    UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
-    return;
-  }
-
   if (--d->depth == 0) {
     _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_MaxDepthExceeded);
   }
 
   upb_DecodeFast_Unpacked(d, ptr, msg, data, hasbits, ret, type, card, tagsize,
-                          &upb_DecodeFast_SingleMessage, &ctx);
+                          &upb_DecodeFast_SingleMessage, &ctx, data2);
 
   d->depth++;
 }
@@ -108,7 +98,7 @@ void upb_DecodeFast_Message(upb_Decoder* d, const char** ptr, upb_Message* msg,
     upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;                \
     upb_DecodeFast_Message(d, &ptr, msg, table, &hasbits, &data, &next,    \
                            kUpb_DecodeFast_##type, kUpb_DecodeFast_##card, \
-                           kUpb_DecodeFast_##tagsize);                     \
+                           kUpb_DecodeFast_##tagsize, data2);              \
     UPB_DECODEFAST_NEXT(next);                                             \
   }
 

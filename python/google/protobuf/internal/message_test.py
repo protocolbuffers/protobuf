@@ -809,6 +809,34 @@ class MessageTest(unittest.TestCase):
     with self.assertRaises(TypeError):
       hash(m.repeated_nested_message)
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'upb has different behavior'
+  )
+  def testRepeatedCompositeNotComparableWithList(self, message_module):
+    msg = message_module.TestAllTypes()
+    msg.repeated_nested_message.add(bb=1)
+    with self.assertRaisesRegex(
+        TypeError,
+        'Can only compare repeated composite fields against other repeated'
+        ' composite fields',
+    ):
+      _ = msg.repeated_nested_message == [
+          message_module.TestAllTypes.NestedMessage(bb=1)
+      ]
+
+  @unittest.skipIf(
+      api_implementation.Type() != 'upb',
+      'upb has different behavior'
+  )
+  def testRepeatedCompositeComparableWithList(self, message_module):
+    msg = message_module.TestAllTypes()
+    msg.repeated_nested_message.add(bb=1)
+    self.assertEqual(
+        msg.repeated_nested_message,
+        [message_module.TestAllTypes.NestedMessage(bb=1)],
+    )
+
   def testRepeatedFieldInsideNestedMessage(self, message_module):
     m = message_module.NestedTestAllTypes()
     m.payload.repeated_int32.extend([])
