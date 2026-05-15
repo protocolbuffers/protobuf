@@ -24,7 +24,7 @@ jobs:
 
         include:
           - targets: "//rust/... //src/google/protobuf/compiler/rust/..."
-          - image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-e78301df86b3e4c46ec9ac4d98be00e19305d8f3"
+          - image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.0.0-7932bf8b25fb76a111e7257d151a6a58d5c3c671"
           - bazel_cmd: "test"
 
           # Override cases with custom images
@@ -73,4 +73,4 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: run //rust/release_crates:cargo_test
           bazel-cache: windows-cargo
-          version: 8.0.1
+          version: 9.0.0

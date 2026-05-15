@@ -8,9 +8,9 @@
 #ifndef PYPB_MESSAGE_H__
 #define PYPB_MESSAGE_H__
 
-#include <stdbool.h>
-
 #include "python/protobuf.h"
+
+#include <stdbool.h>
 #include "upb/reflection/message.h"
 
 // Removes the wrapper object for this field from the unset subobject cache.
