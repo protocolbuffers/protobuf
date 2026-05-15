@@ -112,6 +112,16 @@ message TestStringMap {
   map<string, string> string_map = 1;
 }
 
+// An overlay message of TestStringMap intended to make it easier to
+// construct some test cases of the binary wire format.
+message TestStringMapOverlay {
+  message MapEntry {
+    string key = 1;
+    string value = 2;
+  }
+  repeated MapEntry string_map = 1;
+}
+
 message TestWrapper {
   google.protobuf.BoolValue bool_value = 1;
   google.protobuf.Int32Value int32_value = 2;

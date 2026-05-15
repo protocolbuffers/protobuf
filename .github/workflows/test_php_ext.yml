@@ -43,7 +43,7 @@ jobs:
             bazel build //php:release $BAZEL_FLAGS;
             cp bazel-bin/php/protobuf-*.tgz .
 
-      - uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # v6.0.0
         with:
           name: protobuf-php-release
           path: protobuf-*.tgz
@@ -56,11 +56,11 @@ jobs:
         include:
           - version: "8.2"
             continuous-only: true
-          - version: "8.3"
+          - version: "8.5"
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Build ${{ matrix.version }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131  # v7.0.0
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
           name: protobuf-php-release
@@ -69,7 +69,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-extension:${{ matrix.version }}-a48f26c08d9a803dd0177dda63563f6ea6f7b2d4
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-extension:${{ matrix.version }}-f1c24ed6acfbf6ec709b0de2f702209c9d3ac659
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           skip-staleness-check: true
           command: protobuf-*.tgz

@@ -146,10 +146,11 @@ bool ParseAnyTypeUrl(absl::string_view type_url,
 // See if message is of type google.protobuf.Any, if so, return the descriptors
 // for "type_url" and "value" fields.
 PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
-bool GetAnyFieldDescriptors(
-    const Message& message,
-    const FieldDescriptor* PROTOBUF_NULLABLE* PROTOBUF_NONNULL type_url_field,
-    const FieldDescriptor* PROTOBUF_NULLABLE* PROTOBUF_NONNULL value_field);
+bool GetAnyFieldDescriptors(const Message& message,
+                            const FieldDescriptor * PROTOBUF_NULLABLE *
+                                PROTOBUF_NONNULL type_url_field,
+                            const FieldDescriptor * PROTOBUF_NULLABLE *
+                                PROTOBUF_NONNULL value_field);
 
 }  // namespace internal
 }  // namespace protobuf

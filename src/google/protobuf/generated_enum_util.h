@@ -14,6 +14,11 @@
 #include <type_traits>
 #include <vector>
 
+#include "absl/strings/ascii.h"
+#include "absl/strings/numbers.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
+#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "google/protobuf/explicitly_constructed.h"
@@ -110,6 +115,66 @@ PROTOBUF_ALWAYS_INLINE bool ValidateEnumInlined(int value,
   }
   return false;
 }
+
+// Abseil flag implementation for LITE enums.
+template <typename E, bool is_lite>
+using EnableIfProtoEnum = std::enable_if_t<
+    is_proto_enum<E>::value && is_lite == LiteEnumFuncs<E>::kIsDefined, int>;
+
+namespace generated_enum {
+// We inject these functions in the user namespace to allow for ADL on the
+// enums.
+// These overloads handle LITE enums.
+template <typename Enum, EnableIfProtoEnum<Enum, true> = 0>
+bool AbslParseFlag(absl::string_view text, Enum* e, std::string* error) {
+  if (LiteEnumFuncs<Enum>::kParseFunc(text, e)) return true;
+
+  // Try as lower case
+  if (absl::AsciiStrToLower(text) == text &&
+      LiteEnumFuncs<Enum>::kParseFunc(absl::AsciiStrToUpper(text), e)) {
+    return true;
+  }
+
+  // Try as a number
+  int as_number;
+  if (absl::SimpleAtoi(text, &as_number) &&
+      ValidateEnum(as_number, EnumTraits<Enum>::validation_data())) {
+    *e = static_cast<Enum>(as_number);
+    return true;
+  }
+
+  return false;
+}
+
+template <typename Enum, EnableIfProtoEnum<Enum, true> = 0>
+std::string AbslUnparseFlag(Enum e) {
+  absl::string_view name = LiteEnumFuncs<Enum>::kNameFunc(e);
+  return name.empty() ? absl::StrCat(static_cast<int>(e)) : std::string(name);
+}
+
+// Overloads for std::vector<E> for a list of enum values.
+template <typename Enum, std::enable_if_t<is_proto_enum<Enum>::value, int> = 0>
+bool AbslParseFlag(absl::string_view text, std::vector<Enum>* e,
+                   std::string* error) {
+  e->clear();
+  if (text.empty()) return true;
+
+  for (absl::string_view p : absl::StrSplit(text, ',')) {
+    if (!AbslParseFlag(p, &e->emplace_back(), error)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+template <typename Enum, std::enable_if_t<is_proto_enum<Enum>::value, int> = 0>
+std::string AbslUnparseFlag(const std::vector<Enum>& e) {
+  return absl::StrJoin(e, ",", [](std::string* out, Enum e) {
+    return absl::StrAppend(out, AbslUnparseFlag(e));
+  });
+}
+
+}  // namespace generated_enum
 
 }  // namespace internal
 }  // namespace protobuf

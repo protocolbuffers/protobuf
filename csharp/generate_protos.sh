@@ -46,6 +46,12 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
     src/google/protobuf/wrappers.proto \
     src/google/protobuf/compiler/plugin.proto
 
+# C# features
+$PROTOC -Icsharp -Isrc --csharp_out=csharp/src/Google.Protobuf \
+    --csharp_opt=base_namespace=Google.Protobuf \
+    --csharp_opt=file_extension=.pb.cs \
+    csharp/google/protobuf/c_sharp_features.proto
+
 # Test protos
 # Note that this deliberately does *not* include old_extensions1.proto
 # and old_extensions2.proto, which are generated with an older version

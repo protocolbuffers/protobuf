@@ -10,7 +10,10 @@
 using NUnit.Framework;
 using ProtobufUnittest;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using UnitTest.Issues.TestProtos;
 
 namespace Google.Protobuf.Test
@@ -125,6 +128,18 @@ namespace Google.Protobuf.Test
             Assert.AreEqual(1, descriptor.Oneofs.Count);
             Assert.AreEqual(0, descriptor.RealOneofCount);
             Assert.True(descriptor.Oneofs[0].IsSynthetic);
+        }
+
+        [Test]
+        public void HasBitFieldCount()
+        {
+            var type = typeof(TestPresenceBits);
+            var hasBitsFields = type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
+                             .Where(f => f.Name.StartsWith("_hasBits"))
+                             .ToList();
+
+            Assert.AreEqual(1, hasBitsFields.Count);
+            Assert.AreEqual("_hasBits0", hasBitsFields[0].Name);
         }
     }
 }

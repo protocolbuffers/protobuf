@@ -1,0 +1,9 @@
+edition = "2023";
+
+// LINT: LEGACY_NAMES
+
+package protobuf_editions_test.edition2023.BadPackageName;
+
+message BadFileMessage {
+  string foo = 1;
+}

@@ -39,7 +39,6 @@ class MapFieldLite {
  public:
   typedef Map<Key, T> MapType;
 
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
   explicit constexpr MapFieldLite(InternalMetadataOffset offset)
       : map_(offset) {}
   constexpr MapFieldLite(ArenaInitialized, InternalMetadataOffset offset)
@@ -52,17 +51,6 @@ class MapFieldLite {
       : map_(offset) {
     MergeFrom(from);
   }
-#else
-  constexpr MapFieldLite() : map_() {}
-  explicit MapFieldLite(Arena* arena) : map_(arena) {}
-  MapFieldLite(ArenaInitialized, Arena* arena) : MapFieldLite(arena) {}
-
-  MapFieldLite(InternalVisibility, Arena* arena) : map_(arena) {}
-  MapFieldLite(InternalVisibility, Arena* arena, const MapFieldLite& from)
-      : map_(arena) {
-    MergeFrom(from);
-  }
-#endif
 
 #ifdef NDEBUG
   ~MapFieldLite() { map_.~Map(); }
@@ -96,14 +84,6 @@ class MapFieldLite {
   }
   void Swap(MapFieldLite* other) { map_.swap(other->map_); }
   void InternalSwap(MapFieldLite* other) { map_.InternalSwap(&other->map_); }
-
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-  static constexpr size_t InternalGetArenaOffset(
-      internal::InternalVisibility access) {
-    return PROTOBUF_FIELD_OFFSET(MapFieldLite, map_) +
-           decltype(map_)::InternalGetArenaOffset(access);
-  }
-#endif
 
  private:
   typedef void DestructorSkippable_;

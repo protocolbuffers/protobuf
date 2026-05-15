@@ -3,9 +3,9 @@
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 
 visibility([
-    "//third_party/grpc/bazel",
-    "//bazel/private",
     "//bazel/flags",
+    "//bazel/private/...",
+    "//third_party/grpc/bazel",
 ])
 
 # Maps flag names to their native reference
@@ -50,7 +50,7 @@ _FLAGS = {
 }
 
 def get_flag_value(ctx, flag_name):
-    """Returns the value of the given flag in Starlark if it's set, otherwise reads the Java flag value.
+    """Returns the value of the given flag in Starlark if it's set, otherwise reads the Java flag value, if the proto fragment exists.
 
     Args:
         ctx: The rule context.
@@ -64,10 +64,19 @@ def get_flag_value(ctx, flag_name):
     if flag_name not in _FLAGS:
         return getattr(ctx.attr, "_" + flag_name)
 
+    starlark_flag = getattr(ctx.attr, "_" + flag_name)
+
     # Label flags don't have a BuildSettingInfo, just get the value.
-    if "toolchain" in flag_name and getattr(ctx.attr, "_" + flag_name).label != _FLAGS[flag_name].default:
-        return getattr(ctx.attr, "_" + flag_name)
-    elif getattr(ctx.attr, "_" + flag_name)[BuildSettingInfo].value != _FLAGS[flag_name].default:
-        return getattr(ctx.attr, "_" + flag_name)[BuildSettingInfo].value
+    if "toolchain" in flag_name:
+        starlark_flag_is_set = starlark_flag.label != _FLAGS[flag_name].default
+        starlark_value = starlark_flag
+    else:
+        starlark_flag_is_set = starlark_flag[BuildSettingInfo].value != _FLAGS[flag_name].default
+        starlark_value = starlark_flag[BuildSettingInfo].value
+
+    # Starlark flags take precedence over native flags.
+    # Also of course, use the Starlark value if the proto fragment no longer exists.
+    if starlark_flag_is_set or not hasattr(ctx.fragments, "proto"):
+        return starlark_value
     else:
         return _FLAGS[flag_name].native(ctx)

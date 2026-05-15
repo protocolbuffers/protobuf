@@ -15,6 +15,7 @@ import com.google.protobuf.MessageReflection.MergeTarget;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,11 +28,16 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
- * Provide text parsing and formatting support for proto2 instances. The implementation largely
- * follows text_format.cc.
+ * This class implements the Protobuf Text Format.
  *
- * @author wenboz@google.com Wenbo Zhu
- * @author kenton@google.com Kenton Varda
+ * <p>Printing and parsing protocol messages in text format is useful for debugging and human
+ * editing of messages.
+ *
+ * <p>Unlike the Binary and ProtoJSON formats, Text Format is not designed to be used as a wire
+ * format; instead it is intended for human-in-the-loop configuration use-cases.
+ *
+ * <p>Systems processing untrusted inputs should strongly prefer to use Binary format instead. If a
+ * textual format of untrusted inputs is required, consider using ProtoJSON format instead.
  */
 public final class TextFormat {
   private TextFormat() {}
@@ -1858,8 +1864,8 @@ public final class TextFormat {
   }
 
   /**
-   * Parser for text-format proto2 instances. This class is thread-safe. The implementation largely
-   * follows google/protobuf/text_format.cc.
+   * Parser for text-format instances. This class is thread-safe. The implementation largely follows
+   * google/protobuf/text_format.cc.
    *
    * <p>Use {@link TextFormat#getParser()} to obtain the default parser, or {@link Builder} to
    * control the parser behavior.
@@ -2850,7 +2856,7 @@ public final class TextFormat {
                     throw new InvalidEscapeSequenceException(
                         "Invalid escape sequence: '\\u' refers to a surrogate");
                   }
-                  byte[] chUtf8 = Character.toString(ch).getBytes(Internal.UTF_8);
+                  byte[] chUtf8 = Character.toString(ch).getBytes(StandardCharsets.UTF_8);
                   System.arraycopy(chUtf8, 0, result, pos, chUtf8.length);
                   pos += chUtf8.length;
                   i += 3;
@@ -2895,7 +2901,7 @@ public final class TextFormat {
                 }
                 int[] codepoints = new int[1];
                 codepoints[0] = codepoint;
-                byte[] chUtf8 = new String(codepoints, 0, 1).getBytes(Internal.UTF_8);
+                byte[] chUtf8 = new String(codepoints, 0, 1).getBytes(StandardCharsets.UTF_8);
                 System.arraycopy(chUtf8, 0, result, pos, chUtf8.length);
                 pos += chUtf8.length;
                 i += 7;
@@ -2938,7 +2944,7 @@ public final class TextFormat {
    * it's weird.
    */
   static String escapeText(final String input) {
-    return escapeBytes(ByteString.copyFromUtf8(input));
+    return TextFormatEscaper.escapeText(input);
   }
 
   /** Escape double quotes and backslashes in a String for emittingUnicode output of a message. */

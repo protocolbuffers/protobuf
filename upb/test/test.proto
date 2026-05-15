@@ -106,3 +106,13 @@ message ModelWithMaps {
 message ExtremeDefaults {
   optional int64 int64_min = 1 [default = -9223372036854775808];
 }
+
+message TestReserved {
+  optional string new = 1;
+  optional string parse = 2;
+  optional string parse_ex = 3;
+  optional string serialize = 4;
+  optional string serialize_ex = 5;
+  optional TestReserved mutable_foo = 6;
+  optional TestReserved foo = 7;
+}

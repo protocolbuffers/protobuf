@@ -165,7 +165,7 @@ class SimpleErrorCollector : public io::ErrorCollector {
  public:
   SimpleErrorCollector() = default;
   void RecordError(int line, io::ColumnNumber column,
-                   absl::string_view message) override{};
+                   absl::string_view message) override {};
 };
 
 TEST(RetentionTest, StripSourceRetentionOptionsWithSourceCodeInfo) {

@@ -64,11 +64,36 @@ namespace UnitTest.Issues.TestProtos {
             "d3JpdGVfdG8YByABKAUSDQoFY2xvbmUYCCABKAUSFgoOY2FsY3VsYXRlX3Np",
             "emUYCSABKAUSEgoKbWVyZ2VfZnJvbRgKIAEoBRIXCg9vbl9jb25zdHJ1Y3Rp",
             "b24YCyABKAUSDgoGcGFyc2VyGAwgASgFIj0KEUlzc3VlMTE5ODdNZXNzYWdl",
-            "EgwKAWEYASABKAVSAWISDAoBYhgCIAEoBVIBYRIMCgFjGAMgASgFUgFkKlUK",
-            "DE5lZ2F0aXZlRW51bRIWChJORUdBVElWRV9FTlVNX1pFUk8QABIWCglGaXZl",
-            "QmVsb3cQ+///////////ARIVCghNaW51c09uZRD///////////8BKjYKDkRl",
-            "cHJlY2F0ZWRFbnVtEhcKD0RFUFJFQ0FURURfWkVSTxAAGgIIARIHCgNvbmUQ",
-            "ARoCGAFCHaoCGlVuaXRUZXN0Lklzc3Vlcy5UZXN0UHJvdG9zYgZwcm90bzM="));
+            "EgwKAWEYASABKAVSAWISDAoBYhgCIAEoBVIBYRIMCgFjGAMgASgFUgFkIsAI",
+            "ChBUZXN0UHJlc2VuY2VCaXRzEhMKBmZpZWxkMRgBIAEoBUgAiAEBEhMKBmZp",
+            "ZWxkMhgCIAEoBUgBiAEBEhMKBmZpZWxkMxgDIAEoBUgCiAEBEhMKBmZpZWxk",
+            "NBgEIAEoBUgDiAEBEhMKBmZpZWxkNRgFIAEoBUgEiAEBEhMKBmZpZWxkNhgG",
+            "IAEoBUgFiAEBEhMKBmZpZWxkNxgHIAEoBUgGiAEBEhMKBmZpZWxkOBgIIAEo",
+            "BUgHiAEBEhMKBmZpZWxkORgJIAEoBUgIiAEBEhQKB2ZpZWxkMTAYCiABKAVI",
+            "CYgBARIUCgdmaWVsZDExGAsgASgFSAqIAQESFAoHZmllbGQxMhgMIAEoBUgL",
+            "iAEBEhQKB2ZpZWxkMTMYDSABKAVIDIgBARIUCgdmaWVsZDE0GA4gASgFSA2I",
+            "AQESFAoHZmllbGQxNRgPIAEoBUgOiAEBEhQKB2ZpZWxkMTYYECABKAVID4gB",
+            "ARIUCgdmaWVsZDE3GBEgASgFSBCIAQESFAoHZmllbGQxOBgSIAEoBUgRiAEB",
+            "EhQKB2ZpZWxkMTkYEyABKAVIEogBARIUCgdmaWVsZDIwGBQgASgFSBOIAQES",
+            "FAoHZmllbGQyMRgVIAEoBUgUiAEBEhQKB2ZpZWxkMjIYFiABKAVIFYgBARIU",
+            "CgdmaWVsZDIzGBcgASgFSBaIAQESFAoHZmllbGQyNBgYIAEoBUgXiAEBEhQK",
+            "B2ZpZWxkMjUYGSABKAVIGIgBARIUCgdmaWVsZDI2GBogASgFSBmIAQESFAoH",
+            "ZmllbGQyNxgbIAEoBUgaiAEBEhQKB2ZpZWxkMjgYHCABKAVIG4gBARIUCgdm",
+            "aWVsZDI5GB0gASgFSByIAQESFAoHZmllbGQzMBgeIAEoBUgdiAEBEhQKB2Zp",
+            "ZWxkMzEYHyABKAVIHogBARIUCgdmaWVsZDMyGCAgASgFSB+IAQFCCQoHX2Zp",
+            "ZWxkMUIJCgdfZmllbGQyQgkKB19maWVsZDNCCQoHX2ZpZWxkNEIJCgdfZmll",
+            "bGQ1QgkKB19maWVsZDZCCQoHX2ZpZWxkN0IJCgdfZmllbGQ4QgkKB19maWVs",
+            "ZDlCCgoIX2ZpZWxkMTBCCgoIX2ZpZWxkMTFCCgoIX2ZpZWxkMTJCCgoIX2Zp",
+            "ZWxkMTNCCgoIX2ZpZWxkMTRCCgoIX2ZpZWxkMTVCCgoIX2ZpZWxkMTZCCgoI",
+            "X2ZpZWxkMTdCCgoIX2ZpZWxkMThCCgoIX2ZpZWxkMTlCCgoIX2ZpZWxkMjBC",
+            "CgoIX2ZpZWxkMjFCCgoIX2ZpZWxkMjJCCgoIX2ZpZWxkMjNCCgoIX2ZpZWxk",
+            "MjRCCgoIX2ZpZWxkMjVCCgoIX2ZpZWxkMjZCCgoIX2ZpZWxkMjdCCgoIX2Zp",
+            "ZWxkMjhCCgoIX2ZpZWxkMjlCCgoIX2ZpZWxkMzBCCgoIX2ZpZWxkMzFCCgoI",
+            "X2ZpZWxkMzIqVQoMTmVnYXRpdmVFbnVtEhYKEk5FR0FUSVZFX0VOVU1fWkVS",
+            "TxAAEhYKCUZpdmVCZWxvdxD7//////////8BEhUKCE1pbnVzT25lEP//////",
+            "/////wEqNgoORGVwcmVjYXRlZEVudW0SFwoPREVQUkVDQVRFRF9aRVJPEAAa",
+            "AggBEgcKA29uZRABGgIYAUIdqgIaVW5pdFRlc3QuSXNzdWVzLlRlc3RQcm90",
+            "b3NiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::UnitTest.Issues.TestProtos.NegativeEnum), typeof(global::UnitTest.Issues.TestProtos.DeprecatedEnum), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -87,7 +112,8 @@ namespace UnitTest.Issues.TestProtos {
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.OneofWithNoneField), global::UnitTest.Issues.TestProtos.OneofWithNoneField.Parser, new[]{ "X", "None" }, new[]{ "Test" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.OneofWithNoneName), global::UnitTest.Issues.TestProtos.OneofWithNoneName.Parser, new[]{ "X", "Y" }, new[]{ "None" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.DisambiguateCommonMembers), global::UnitTest.Issues.TestProtos.DisambiguateCommonMembers.Parser, new[]{ "DisambiguateCommonMembers_", "Types_", "Descriptor_", "Equals_", "ToString_", "GetHashCode_", "WriteTo_", "Clone_", "CalculateSize_", "MergeFrom_", "OnConstruction_", "Parser_" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue11987Message), global::UnitTest.Issues.TestProtos.Issue11987Message.Parser, new[]{ "A", "B", "C" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue11987Message), global::UnitTest.Issues.TestProtos.Issue11987Message.Parser, new[]{ "A", "B", "C" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.TestPresenceBits), global::UnitTest.Issues.TestProtos.TestPresenceBits.Parser, new[]{ "Field1", "Field2", "Field3", "Field4", "Field5", "Field6", "Field7", "Field8", "Field9", "Field10", "Field11", "Field12", "Field13", "Field14", "Field15", "Field16", "Field17", "Field18", "Field19", "Field20", "Field21", "Field22", "Field23", "Field24", "Field25", "Field26", "Field27", "Field28", "Field29", "Field30", "Field31", "Field32" }, new[]{ "Field1", "Field2", "Field3", "Field4", "Field5", "Field6", "Field7", "Field8", "Field9", "Field10", "Field11", "Field12", "Field13", "Field14", "Field15", "Field16", "Field17", "Field18", "Field19", "Field20", "Field21", "Field22", "Field23", "Field24", "Field25", "Field26", "Field27", "Field28", "Field29", "Field30", "Field31", "Field32" }, null, null, null)
           }));
     }
     #endregion
@@ -5549,6 +5575,1836 @@ namespace UnitTest.Issues.TestProtos {
           }
           case 24: {
             C = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  /// <summary>
+  /// Issue 26391
+  /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class TestPresenceBits : pb::IMessage<TestPresenceBits>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<TestPresenceBits> _parser = new pb::MessageParser<TestPresenceBits>(() => new TestPresenceBits());
+    private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<TestPresenceBits> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[16]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public TestPresenceBits() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public TestPresenceBits(TestPresenceBits other) : this() {
+      _hasBits0 = other._hasBits0;
+      field1_ = other.field1_;
+      field2_ = other.field2_;
+      field3_ = other.field3_;
+      field4_ = other.field4_;
+      field5_ = other.field5_;
+      field6_ = other.field6_;
+      field7_ = other.field7_;
+      field8_ = other.field8_;
+      field9_ = other.field9_;
+      field10_ = other.field10_;
+      field11_ = other.field11_;
+      field12_ = other.field12_;
+      field13_ = other.field13_;
+      field14_ = other.field14_;
+      field15_ = other.field15_;
+      field16_ = other.field16_;
+      field17_ = other.field17_;
+      field18_ = other.field18_;
+      field19_ = other.field19_;
+      field20_ = other.field20_;
+      field21_ = other.field21_;
+      field22_ = other.field22_;
+      field23_ = other.field23_;
+      field24_ = other.field24_;
+      field25_ = other.field25_;
+      field26_ = other.field26_;
+      field27_ = other.field27_;
+      field28_ = other.field28_;
+      field29_ = other.field29_;
+      field30_ = other.field30_;
+      field31_ = other.field31_;
+      field32_ = other.field32_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public TestPresenceBits Clone() {
+      return new TestPresenceBits(this);
+    }
+
+    /// <summary>Field number for the "field1" field.</summary>
+    public const int Field1FieldNumber = 1;
+    private readonly static int Field1DefaultValue = 0;
+
+    private int field1_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field1 {
+      get { if ((_hasBits0 & 1) != 0) { return field1_; } else { return Field1DefaultValue; } }
+      set {
+        _hasBits0 |= 1;
+        field1_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field1" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField1 {
+      get { return (_hasBits0 & 1) != 0; }
+    }
+    /// <summary>Clears the value of the "field1" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField1() {
+      _hasBits0 &= ~1;
+    }
+
+    /// <summary>Field number for the "field2" field.</summary>
+    public const int Field2FieldNumber = 2;
+    private readonly static int Field2DefaultValue = 0;
+
+    private int field2_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field2 {
+      get { if ((_hasBits0 & 2) != 0) { return field2_; } else { return Field2DefaultValue; } }
+      set {
+        _hasBits0 |= 2;
+        field2_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field2" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField2 {
+      get { return (_hasBits0 & 2) != 0; }
+    }
+    /// <summary>Clears the value of the "field2" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField2() {
+      _hasBits0 &= ~2;
+    }
+
+    /// <summary>Field number for the "field3" field.</summary>
+    public const int Field3FieldNumber = 3;
+    private readonly static int Field3DefaultValue = 0;
+
+    private int field3_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field3 {
+      get { if ((_hasBits0 & 4) != 0) { return field3_; } else { return Field3DefaultValue; } }
+      set {
+        _hasBits0 |= 4;
+        field3_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field3" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField3 {
+      get { return (_hasBits0 & 4) != 0; }
+    }
+    /// <summary>Clears the value of the "field3" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField3() {
+      _hasBits0 &= ~4;
+    }
+
+    /// <summary>Field number for the "field4" field.</summary>
+    public const int Field4FieldNumber = 4;
+    private readonly static int Field4DefaultValue = 0;
+
+    private int field4_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field4 {
+      get { if ((_hasBits0 & 8) != 0) { return field4_; } else { return Field4DefaultValue; } }
+      set {
+        _hasBits0 |= 8;
+        field4_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field4" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField4 {
+      get { return (_hasBits0 & 8) != 0; }
+    }
+    /// <summary>Clears the value of the "field4" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField4() {
+      _hasBits0 &= ~8;
+    }
+
+    /// <summary>Field number for the "field5" field.</summary>
+    public const int Field5FieldNumber = 5;
+    private readonly static int Field5DefaultValue = 0;
+
+    private int field5_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field5 {
+      get { if ((_hasBits0 & 16) != 0) { return field5_; } else { return Field5DefaultValue; } }
+      set {
+        _hasBits0 |= 16;
+        field5_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field5" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField5 {
+      get { return (_hasBits0 & 16) != 0; }
+    }
+    /// <summary>Clears the value of the "field5" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField5() {
+      _hasBits0 &= ~16;
+    }
+
+    /// <summary>Field number for the "field6" field.</summary>
+    public const int Field6FieldNumber = 6;
+    private readonly static int Field6DefaultValue = 0;
+
+    private int field6_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field6 {
+      get { if ((_hasBits0 & 32) != 0) { return field6_; } else { return Field6DefaultValue; } }
+      set {
+        _hasBits0 |= 32;
+        field6_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field6" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField6 {
+      get { return (_hasBits0 & 32) != 0; }
+    }
+    /// <summary>Clears the value of the "field6" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField6() {
+      _hasBits0 &= ~32;
+    }
+
+    /// <summary>Field number for the "field7" field.</summary>
+    public const int Field7FieldNumber = 7;
+    private readonly static int Field7DefaultValue = 0;
+
+    private int field7_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field7 {
+      get { if ((_hasBits0 & 64) != 0) { return field7_; } else { return Field7DefaultValue; } }
+      set {
+        _hasBits0 |= 64;
+        field7_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field7" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField7 {
+      get { return (_hasBits0 & 64) != 0; }
+    }
+    /// <summary>Clears the value of the "field7" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField7() {
+      _hasBits0 &= ~64;
+    }
+
+    /// <summary>Field number for the "field8" field.</summary>
+    public const int Field8FieldNumber = 8;
+    private readonly static int Field8DefaultValue = 0;
+
+    private int field8_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field8 {
+      get { if ((_hasBits0 & 128) != 0) { return field8_; } else { return Field8DefaultValue; } }
+      set {
+        _hasBits0 |= 128;
+        field8_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field8" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField8 {
+      get { return (_hasBits0 & 128) != 0; }
+    }
+    /// <summary>Clears the value of the "field8" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField8() {
+      _hasBits0 &= ~128;
+    }
+
+    /// <summary>Field number for the "field9" field.</summary>
+    public const int Field9FieldNumber = 9;
+    private readonly static int Field9DefaultValue = 0;
+
+    private int field9_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field9 {
+      get { if ((_hasBits0 & 256) != 0) { return field9_; } else { return Field9DefaultValue; } }
+      set {
+        _hasBits0 |= 256;
+        field9_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field9" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField9 {
+      get { return (_hasBits0 & 256) != 0; }
+    }
+    /// <summary>Clears the value of the "field9" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField9() {
+      _hasBits0 &= ~256;
+    }
+
+    /// <summary>Field number for the "field10" field.</summary>
+    public const int Field10FieldNumber = 10;
+    private readonly static int Field10DefaultValue = 0;
+
+    private int field10_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field10 {
+      get { if ((_hasBits0 & 512) != 0) { return field10_; } else { return Field10DefaultValue; } }
+      set {
+        _hasBits0 |= 512;
+        field10_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field10" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField10 {
+      get { return (_hasBits0 & 512) != 0; }
+    }
+    /// <summary>Clears the value of the "field10" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField10() {
+      _hasBits0 &= ~512;
+    }
+
+    /// <summary>Field number for the "field11" field.</summary>
+    public const int Field11FieldNumber = 11;
+    private readonly static int Field11DefaultValue = 0;
+
+    private int field11_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field11 {
+      get { if ((_hasBits0 & 1024) != 0) { return field11_; } else { return Field11DefaultValue; } }
+      set {
+        _hasBits0 |= 1024;
+        field11_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field11" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField11 {
+      get { return (_hasBits0 & 1024) != 0; }
+    }
+    /// <summary>Clears the value of the "field11" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField11() {
+      _hasBits0 &= ~1024;
+    }
+
+    /// <summary>Field number for the "field12" field.</summary>
+    public const int Field12FieldNumber = 12;
+    private readonly static int Field12DefaultValue = 0;
+
+    private int field12_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field12 {
+      get { if ((_hasBits0 & 2048) != 0) { return field12_; } else { return Field12DefaultValue; } }
+      set {
+        _hasBits0 |= 2048;
+        field12_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field12" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField12 {
+      get { return (_hasBits0 & 2048) != 0; }
+    }
+    /// <summary>Clears the value of the "field12" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField12() {
+      _hasBits0 &= ~2048;
+    }
+
+    /// <summary>Field number for the "field13" field.</summary>
+    public const int Field13FieldNumber = 13;
+    private readonly static int Field13DefaultValue = 0;
+
+    private int field13_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field13 {
+      get { if ((_hasBits0 & 4096) != 0) { return field13_; } else { return Field13DefaultValue; } }
+      set {
+        _hasBits0 |= 4096;
+        field13_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field13" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField13 {
+      get { return (_hasBits0 & 4096) != 0; }
+    }
+    /// <summary>Clears the value of the "field13" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField13() {
+      _hasBits0 &= ~4096;
+    }
+
+    /// <summary>Field number for the "field14" field.</summary>
+    public const int Field14FieldNumber = 14;
+    private readonly static int Field14DefaultValue = 0;
+
+    private int field14_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field14 {
+      get { if ((_hasBits0 & 8192) != 0) { return field14_; } else { return Field14DefaultValue; } }
+      set {
+        _hasBits0 |= 8192;
+        field14_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field14" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField14 {
+      get { return (_hasBits0 & 8192) != 0; }
+    }
+    /// <summary>Clears the value of the "field14" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField14() {
+      _hasBits0 &= ~8192;
+    }
+
+    /// <summary>Field number for the "field15" field.</summary>
+    public const int Field15FieldNumber = 15;
+    private readonly static int Field15DefaultValue = 0;
+
+    private int field15_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field15 {
+      get { if ((_hasBits0 & 16384) != 0) { return field15_; } else { return Field15DefaultValue; } }
+      set {
+        _hasBits0 |= 16384;
+        field15_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field15" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField15 {
+      get { return (_hasBits0 & 16384) != 0; }
+    }
+    /// <summary>Clears the value of the "field15" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField15() {
+      _hasBits0 &= ~16384;
+    }
+
+    /// <summary>Field number for the "field16" field.</summary>
+    public const int Field16FieldNumber = 16;
+    private readonly static int Field16DefaultValue = 0;
+
+    private int field16_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field16 {
+      get { if ((_hasBits0 & 32768) != 0) { return field16_; } else { return Field16DefaultValue; } }
+      set {
+        _hasBits0 |= 32768;
+        field16_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field16" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField16 {
+      get { return (_hasBits0 & 32768) != 0; }
+    }
+    /// <summary>Clears the value of the "field16" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField16() {
+      _hasBits0 &= ~32768;
+    }
+
+    /// <summary>Field number for the "field17" field.</summary>
+    public const int Field17FieldNumber = 17;
+    private readonly static int Field17DefaultValue = 0;
+
+    private int field17_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field17 {
+      get { if ((_hasBits0 & 65536) != 0) { return field17_; } else { return Field17DefaultValue; } }
+      set {
+        _hasBits0 |= 65536;
+        field17_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field17" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField17 {
+      get { return (_hasBits0 & 65536) != 0; }
+    }
+    /// <summary>Clears the value of the "field17" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField17() {
+      _hasBits0 &= ~65536;
+    }
+
+    /// <summary>Field number for the "field18" field.</summary>
+    public const int Field18FieldNumber = 18;
+    private readonly static int Field18DefaultValue = 0;
+
+    private int field18_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field18 {
+      get { if ((_hasBits0 & 131072) != 0) { return field18_; } else { return Field18DefaultValue; } }
+      set {
+        _hasBits0 |= 131072;
+        field18_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field18" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField18 {
+      get { return (_hasBits0 & 131072) != 0; }
+    }
+    /// <summary>Clears the value of the "field18" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField18() {
+      _hasBits0 &= ~131072;
+    }
+
+    /// <summary>Field number for the "field19" field.</summary>
+    public const int Field19FieldNumber = 19;
+    private readonly static int Field19DefaultValue = 0;
+
+    private int field19_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field19 {
+      get { if ((_hasBits0 & 262144) != 0) { return field19_; } else { return Field19DefaultValue; } }
+      set {
+        _hasBits0 |= 262144;
+        field19_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field19" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField19 {
+      get { return (_hasBits0 & 262144) != 0; }
+    }
+    /// <summary>Clears the value of the "field19" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField19() {
+      _hasBits0 &= ~262144;
+    }
+
+    /// <summary>Field number for the "field20" field.</summary>
+    public const int Field20FieldNumber = 20;
+    private readonly static int Field20DefaultValue = 0;
+
+    private int field20_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field20 {
+      get { if ((_hasBits0 & 524288) != 0) { return field20_; } else { return Field20DefaultValue; } }
+      set {
+        _hasBits0 |= 524288;
+        field20_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field20" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField20 {
+      get { return (_hasBits0 & 524288) != 0; }
+    }
+    /// <summary>Clears the value of the "field20" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField20() {
+      _hasBits0 &= ~524288;
+    }
+
+    /// <summary>Field number for the "field21" field.</summary>
+    public const int Field21FieldNumber = 21;
+    private readonly static int Field21DefaultValue = 0;
+
+    private int field21_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field21 {
+      get { if ((_hasBits0 & 1048576) != 0) { return field21_; } else { return Field21DefaultValue; } }
+      set {
+        _hasBits0 |= 1048576;
+        field21_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field21" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField21 {
+      get { return (_hasBits0 & 1048576) != 0; }
+    }
+    /// <summary>Clears the value of the "field21" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField21() {
+      _hasBits0 &= ~1048576;
+    }
+
+    /// <summary>Field number for the "field22" field.</summary>
+    public const int Field22FieldNumber = 22;
+    private readonly static int Field22DefaultValue = 0;
+
+    private int field22_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field22 {
+      get { if ((_hasBits0 & 2097152) != 0) { return field22_; } else { return Field22DefaultValue; } }
+      set {
+        _hasBits0 |= 2097152;
+        field22_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field22" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField22 {
+      get { return (_hasBits0 & 2097152) != 0; }
+    }
+    /// <summary>Clears the value of the "field22" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField22() {
+      _hasBits0 &= ~2097152;
+    }
+
+    /// <summary>Field number for the "field23" field.</summary>
+    public const int Field23FieldNumber = 23;
+    private readonly static int Field23DefaultValue = 0;
+
+    private int field23_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field23 {
+      get { if ((_hasBits0 & 4194304) != 0) { return field23_; } else { return Field23DefaultValue; } }
+      set {
+        _hasBits0 |= 4194304;
+        field23_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field23" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField23 {
+      get { return (_hasBits0 & 4194304) != 0; }
+    }
+    /// <summary>Clears the value of the "field23" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField23() {
+      _hasBits0 &= ~4194304;
+    }
+
+    /// <summary>Field number for the "field24" field.</summary>
+    public const int Field24FieldNumber = 24;
+    private readonly static int Field24DefaultValue = 0;
+
+    private int field24_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field24 {
+      get { if ((_hasBits0 & 8388608) != 0) { return field24_; } else { return Field24DefaultValue; } }
+      set {
+        _hasBits0 |= 8388608;
+        field24_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field24" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField24 {
+      get { return (_hasBits0 & 8388608) != 0; }
+    }
+    /// <summary>Clears the value of the "field24" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField24() {
+      _hasBits0 &= ~8388608;
+    }
+
+    /// <summary>Field number for the "field25" field.</summary>
+    public const int Field25FieldNumber = 25;
+    private readonly static int Field25DefaultValue = 0;
+
+    private int field25_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field25 {
+      get { if ((_hasBits0 & 16777216) != 0) { return field25_; } else { return Field25DefaultValue; } }
+      set {
+        _hasBits0 |= 16777216;
+        field25_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field25" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField25 {
+      get { return (_hasBits0 & 16777216) != 0; }
+    }
+    /// <summary>Clears the value of the "field25" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField25() {
+      _hasBits0 &= ~16777216;
+    }
+
+    /// <summary>Field number for the "field26" field.</summary>
+    public const int Field26FieldNumber = 26;
+    private readonly static int Field26DefaultValue = 0;
+
+    private int field26_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field26 {
+      get { if ((_hasBits0 & 33554432) != 0) { return field26_; } else { return Field26DefaultValue; } }
+      set {
+        _hasBits0 |= 33554432;
+        field26_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field26" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField26 {
+      get { return (_hasBits0 & 33554432) != 0; }
+    }
+    /// <summary>Clears the value of the "field26" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField26() {
+      _hasBits0 &= ~33554432;
+    }
+
+    /// <summary>Field number for the "field27" field.</summary>
+    public const int Field27FieldNumber = 27;
+    private readonly static int Field27DefaultValue = 0;
+
+    private int field27_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field27 {
+      get { if ((_hasBits0 & 67108864) != 0) { return field27_; } else { return Field27DefaultValue; } }
+      set {
+        _hasBits0 |= 67108864;
+        field27_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field27" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField27 {
+      get { return (_hasBits0 & 67108864) != 0; }
+    }
+    /// <summary>Clears the value of the "field27" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField27() {
+      _hasBits0 &= ~67108864;
+    }
+
+    /// <summary>Field number for the "field28" field.</summary>
+    public const int Field28FieldNumber = 28;
+    private readonly static int Field28DefaultValue = 0;
+
+    private int field28_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field28 {
+      get { if ((_hasBits0 & 134217728) != 0) { return field28_; } else { return Field28DefaultValue; } }
+      set {
+        _hasBits0 |= 134217728;
+        field28_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field28" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField28 {
+      get { return (_hasBits0 & 134217728) != 0; }
+    }
+    /// <summary>Clears the value of the "field28" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField28() {
+      _hasBits0 &= ~134217728;
+    }
+
+    /// <summary>Field number for the "field29" field.</summary>
+    public const int Field29FieldNumber = 29;
+    private readonly static int Field29DefaultValue = 0;
+
+    private int field29_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field29 {
+      get { if ((_hasBits0 & 268435456) != 0) { return field29_; } else { return Field29DefaultValue; } }
+      set {
+        _hasBits0 |= 268435456;
+        field29_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field29" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField29 {
+      get { return (_hasBits0 & 268435456) != 0; }
+    }
+    /// <summary>Clears the value of the "field29" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField29() {
+      _hasBits0 &= ~268435456;
+    }
+
+    /// <summary>Field number for the "field30" field.</summary>
+    public const int Field30FieldNumber = 30;
+    private readonly static int Field30DefaultValue = 0;
+
+    private int field30_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field30 {
+      get { if ((_hasBits0 & 536870912) != 0) { return field30_; } else { return Field30DefaultValue; } }
+      set {
+        _hasBits0 |= 536870912;
+        field30_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field30" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField30 {
+      get { return (_hasBits0 & 536870912) != 0; }
+    }
+    /// <summary>Clears the value of the "field30" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField30() {
+      _hasBits0 &= ~536870912;
+    }
+
+    /// <summary>Field number for the "field31" field.</summary>
+    public const int Field31FieldNumber = 31;
+    private readonly static int Field31DefaultValue = 0;
+
+    private int field31_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field31 {
+      get { if ((_hasBits0 & 1073741824) != 0) { return field31_; } else { return Field31DefaultValue; } }
+      set {
+        _hasBits0 |= 1073741824;
+        field31_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field31" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField31 {
+      get { return (_hasBits0 & 1073741824) != 0; }
+    }
+    /// <summary>Clears the value of the "field31" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField31() {
+      _hasBits0 &= ~1073741824;
+    }
+
+    /// <summary>Field number for the "field32" field.</summary>
+    public const int Field32FieldNumber = 32;
+    private readonly static int Field32DefaultValue = 0;
+
+    private int field32_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Field32 {
+      get { if ((_hasBits0 & -2147483648) != 0) { return field32_; } else { return Field32DefaultValue; } }
+      set {
+        _hasBits0 |= -2147483648;
+        field32_ = value;
+      }
+    }
+    /// <summary>Gets whether the "field32" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasField32 {
+      get { return (_hasBits0 & -2147483648) != 0; }
+    }
+    /// <summary>Clears the value of the "field32" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearField32() {
+      _hasBits0 &= ~-2147483648;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as TestPresenceBits);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(TestPresenceBits other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Field1 != other.Field1) return false;
+      if (Field2 != other.Field2) return false;
+      if (Field3 != other.Field3) return false;
+      if (Field4 != other.Field4) return false;
+      if (Field5 != other.Field5) return false;
+      if (Field6 != other.Field6) return false;
+      if (Field7 != other.Field7) return false;
+      if (Field8 != other.Field8) return false;
+      if (Field9 != other.Field9) return false;
+      if (Field10 != other.Field10) return false;
+      if (Field11 != other.Field11) return false;
+      if (Field12 != other.Field12) return false;
+      if (Field13 != other.Field13) return false;
+      if (Field14 != other.Field14) return false;
+      if (Field15 != other.Field15) return false;
+      if (Field16 != other.Field16) return false;
+      if (Field17 != other.Field17) return false;
+      if (Field18 != other.Field18) return false;
+      if (Field19 != other.Field19) return false;
+      if (Field20 != other.Field20) return false;
+      if (Field21 != other.Field21) return false;
+      if (Field22 != other.Field22) return false;
+      if (Field23 != other.Field23) return false;
+      if (Field24 != other.Field24) return false;
+      if (Field25 != other.Field25) return false;
+      if (Field26 != other.Field26) return false;
+      if (Field27 != other.Field27) return false;
+      if (Field28 != other.Field28) return false;
+      if (Field29 != other.Field29) return false;
+      if (Field30 != other.Field30) return false;
+      if (Field31 != other.Field31) return false;
+      if (Field32 != other.Field32) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (HasField1) hash ^= Field1.GetHashCode();
+      if (HasField2) hash ^= Field2.GetHashCode();
+      if (HasField3) hash ^= Field3.GetHashCode();
+      if (HasField4) hash ^= Field4.GetHashCode();
+      if (HasField5) hash ^= Field5.GetHashCode();
+      if (HasField6) hash ^= Field6.GetHashCode();
+      if (HasField7) hash ^= Field7.GetHashCode();
+      if (HasField8) hash ^= Field8.GetHashCode();
+      if (HasField9) hash ^= Field9.GetHashCode();
+      if (HasField10) hash ^= Field10.GetHashCode();
+      if (HasField11) hash ^= Field11.GetHashCode();
+      if (HasField12) hash ^= Field12.GetHashCode();
+      if (HasField13) hash ^= Field13.GetHashCode();
+      if (HasField14) hash ^= Field14.GetHashCode();
+      if (HasField15) hash ^= Field15.GetHashCode();
+      if (HasField16) hash ^= Field16.GetHashCode();
+      if (HasField17) hash ^= Field17.GetHashCode();
+      if (HasField18) hash ^= Field18.GetHashCode();
+      if (HasField19) hash ^= Field19.GetHashCode();
+      if (HasField20) hash ^= Field20.GetHashCode();
+      if (HasField21) hash ^= Field21.GetHashCode();
+      if (HasField22) hash ^= Field22.GetHashCode();
+      if (HasField23) hash ^= Field23.GetHashCode();
+      if (HasField24) hash ^= Field24.GetHashCode();
+      if (HasField25) hash ^= Field25.GetHashCode();
+      if (HasField26) hash ^= Field26.GetHashCode();
+      if (HasField27) hash ^= Field27.GetHashCode();
+      if (HasField28) hash ^= Field28.GetHashCode();
+      if (HasField29) hash ^= Field29.GetHashCode();
+      if (HasField30) hash ^= Field30.GetHashCode();
+      if (HasField31) hash ^= Field31.GetHashCode();
+      if (HasField32) hash ^= Field32.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (HasField1) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Field1);
+      }
+      if (HasField2) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Field2);
+      }
+      if (HasField3) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Field3);
+      }
+      if (HasField4) {
+        output.WriteRawTag(32);
+        output.WriteInt32(Field4);
+      }
+      if (HasField5) {
+        output.WriteRawTag(40);
+        output.WriteInt32(Field5);
+      }
+      if (HasField6) {
+        output.WriteRawTag(48);
+        output.WriteInt32(Field6);
+      }
+      if (HasField7) {
+        output.WriteRawTag(56);
+        output.WriteInt32(Field7);
+      }
+      if (HasField8) {
+        output.WriteRawTag(64);
+        output.WriteInt32(Field8);
+      }
+      if (HasField9) {
+        output.WriteRawTag(72);
+        output.WriteInt32(Field9);
+      }
+      if (HasField10) {
+        output.WriteRawTag(80);
+        output.WriteInt32(Field10);
+      }
+      if (HasField11) {
+        output.WriteRawTag(88);
+        output.WriteInt32(Field11);
+      }
+      if (HasField12) {
+        output.WriteRawTag(96);
+        output.WriteInt32(Field12);
+      }
+      if (HasField13) {
+        output.WriteRawTag(104);
+        output.WriteInt32(Field13);
+      }
+      if (HasField14) {
+        output.WriteRawTag(112);
+        output.WriteInt32(Field14);
+      }
+      if (HasField15) {
+        output.WriteRawTag(120);
+        output.WriteInt32(Field15);
+      }
+      if (HasField16) {
+        output.WriteRawTag(128, 1);
+        output.WriteInt32(Field16);
+      }
+      if (HasField17) {
+        output.WriteRawTag(136, 1);
+        output.WriteInt32(Field17);
+      }
+      if (HasField18) {
+        output.WriteRawTag(144, 1);
+        output.WriteInt32(Field18);
+      }
+      if (HasField19) {
+        output.WriteRawTag(152, 1);
+        output.WriteInt32(Field19);
+      }
+      if (HasField20) {
+        output.WriteRawTag(160, 1);
+        output.WriteInt32(Field20);
+      }
+      if (HasField21) {
+        output.WriteRawTag(168, 1);
+        output.WriteInt32(Field21);
+      }
+      if (HasField22) {
+        output.WriteRawTag(176, 1);
+        output.WriteInt32(Field22);
+      }
+      if (HasField23) {
+        output.WriteRawTag(184, 1);
+        output.WriteInt32(Field23);
+      }
+      if (HasField24) {
+        output.WriteRawTag(192, 1);
+        output.WriteInt32(Field24);
+      }
+      if (HasField25) {
+        output.WriteRawTag(200, 1);
+        output.WriteInt32(Field25);
+      }
+      if (HasField26) {
+        output.WriteRawTag(208, 1);
+        output.WriteInt32(Field26);
+      }
+      if (HasField27) {
+        output.WriteRawTag(216, 1);
+        output.WriteInt32(Field27);
+      }
+      if (HasField28) {
+        output.WriteRawTag(224, 1);
+        output.WriteInt32(Field28);
+      }
+      if (HasField29) {
+        output.WriteRawTag(232, 1);
+        output.WriteInt32(Field29);
+      }
+      if (HasField30) {
+        output.WriteRawTag(240, 1);
+        output.WriteInt32(Field30);
+      }
+      if (HasField31) {
+        output.WriteRawTag(248, 1);
+        output.WriteInt32(Field31);
+      }
+      if (HasField32) {
+        output.WriteRawTag(128, 2);
+        output.WriteInt32(Field32);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasField1) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Field1);
+      }
+      if (HasField2) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Field2);
+      }
+      if (HasField3) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Field3);
+      }
+      if (HasField4) {
+        output.WriteRawTag(32);
+        output.WriteInt32(Field4);
+      }
+      if (HasField5) {
+        output.WriteRawTag(40);
+        output.WriteInt32(Field5);
+      }
+      if (HasField6) {
+        output.WriteRawTag(48);
+        output.WriteInt32(Field6);
+      }
+      if (HasField7) {
+        output.WriteRawTag(56);
+        output.WriteInt32(Field7);
+      }
+      if (HasField8) {
+        output.WriteRawTag(64);
+        output.WriteInt32(Field8);
+      }
+      if (HasField9) {
+        output.WriteRawTag(72);
+        output.WriteInt32(Field9);
+      }
+      if (HasField10) {
+        output.WriteRawTag(80);
+        output.WriteInt32(Field10);
+      }
+      if (HasField11) {
+        output.WriteRawTag(88);
+        output.WriteInt32(Field11);
+      }
+      if (HasField12) {
+        output.WriteRawTag(96);
+        output.WriteInt32(Field12);
+      }
+      if (HasField13) {
+        output.WriteRawTag(104);
+        output.WriteInt32(Field13);
+      }
+      if (HasField14) {
+        output.WriteRawTag(112);
+        output.WriteInt32(Field14);
+      }
+      if (HasField15) {
+        output.WriteRawTag(120);
+        output.WriteInt32(Field15);
+      }
+      if (HasField16) {
+        output.WriteRawTag(128, 1);
+        output.WriteInt32(Field16);
+      }
+      if (HasField17) {
+        output.WriteRawTag(136, 1);
+        output.WriteInt32(Field17);
+      }
+      if (HasField18) {
+        output.WriteRawTag(144, 1);
+        output.WriteInt32(Field18);
+      }
+      if (HasField19) {
+        output.WriteRawTag(152, 1);
+        output.WriteInt32(Field19);
+      }
+      if (HasField20) {
+        output.WriteRawTag(160, 1);
+        output.WriteInt32(Field20);
+      }
+      if (HasField21) {
+        output.WriteRawTag(168, 1);
+        output.WriteInt32(Field21);
+      }
+      if (HasField22) {
+        output.WriteRawTag(176, 1);
+        output.WriteInt32(Field22);
+      }
+      if (HasField23) {
+        output.WriteRawTag(184, 1);
+        output.WriteInt32(Field23);
+      }
+      if (HasField24) {
+        output.WriteRawTag(192, 1);
+        output.WriteInt32(Field24);
+      }
+      if (HasField25) {
+        output.WriteRawTag(200, 1);
+        output.WriteInt32(Field25);
+      }
+      if (HasField26) {
+        output.WriteRawTag(208, 1);
+        output.WriteInt32(Field26);
+      }
+      if (HasField27) {
+        output.WriteRawTag(216, 1);
+        output.WriteInt32(Field27);
+      }
+      if (HasField28) {
+        output.WriteRawTag(224, 1);
+        output.WriteInt32(Field28);
+      }
+      if (HasField29) {
+        output.WriteRawTag(232, 1);
+        output.WriteInt32(Field29);
+      }
+      if (HasField30) {
+        output.WriteRawTag(240, 1);
+        output.WriteInt32(Field30);
+      }
+      if (HasField31) {
+        output.WriteRawTag(248, 1);
+        output.WriteInt32(Field31);
+      }
+      if (HasField32) {
+        output.WriteRawTag(128, 2);
+        output.WriteInt32(Field32);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (HasField1) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Field1);
+      }
+      if (HasField2) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Field2);
+      }
+      if (HasField3) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Field3);
+      }
+      if (HasField4) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Field4);
+      }
+      if (HasField5) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Field5);
+      }
+      if (HasField6) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Field6);
+      }
+      if (HasField7) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Field7);
+      }
+      if (HasField8) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Field8);
+      }
+      if (HasField9) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Field9);
+      }
+      if (HasField10) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Field10);
+      }
+      if (HasField11) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Field11);
+      }
+      if (HasField12) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Field12);
+      }
+      if (HasField13) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Field13);
+      }
+      if (HasField14) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Field14);
+      }
+      if (HasField15) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Field15);
+      }
+      if (HasField16) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Field16);
+      }
+      if (HasField17) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Field17);
+      }
+      if (HasField18) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Field18);
+      }
+      if (HasField19) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Field19);
+      }
+      if (HasField20) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Field20);
+      }
+      if (HasField21) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Field21);
+      }
+      if (HasField22) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Field22);
+      }
+      if (HasField23) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Field23);
+      }
+      if (HasField24) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Field24);
+      }
+      if (HasField25) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Field25);
+      }
+      if (HasField26) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Field26);
+      }
+      if (HasField27) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Field27);
+      }
+      if (HasField28) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Field28);
+      }
+      if (HasField29) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Field29);
+      }
+      if (HasField30) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Field30);
+      }
+      if (HasField31) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Field31);
+      }
+      if (HasField32) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Field32);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(TestPresenceBits other) {
+      if (other == null) {
+        return;
+      }
+      if (other.HasField1) {
+        Field1 = other.Field1;
+      }
+      if (other.HasField2) {
+        Field2 = other.Field2;
+      }
+      if (other.HasField3) {
+        Field3 = other.Field3;
+      }
+      if (other.HasField4) {
+        Field4 = other.Field4;
+      }
+      if (other.HasField5) {
+        Field5 = other.Field5;
+      }
+      if (other.HasField6) {
+        Field6 = other.Field6;
+      }
+      if (other.HasField7) {
+        Field7 = other.Field7;
+      }
+      if (other.HasField8) {
+        Field8 = other.Field8;
+      }
+      if (other.HasField9) {
+        Field9 = other.Field9;
+      }
+      if (other.HasField10) {
+        Field10 = other.Field10;
+      }
+      if (other.HasField11) {
+        Field11 = other.Field11;
+      }
+      if (other.HasField12) {
+        Field12 = other.Field12;
+      }
+      if (other.HasField13) {
+        Field13 = other.Field13;
+      }
+      if (other.HasField14) {
+        Field14 = other.Field14;
+      }
+      if (other.HasField15) {
+        Field15 = other.Field15;
+      }
+      if (other.HasField16) {
+        Field16 = other.Field16;
+      }
+      if (other.HasField17) {
+        Field17 = other.Field17;
+      }
+      if (other.HasField18) {
+        Field18 = other.Field18;
+      }
+      if (other.HasField19) {
+        Field19 = other.Field19;
+      }
+      if (other.HasField20) {
+        Field20 = other.Field20;
+      }
+      if (other.HasField21) {
+        Field21 = other.Field21;
+      }
+      if (other.HasField22) {
+        Field22 = other.Field22;
+      }
+      if (other.HasField23) {
+        Field23 = other.Field23;
+      }
+      if (other.HasField24) {
+        Field24 = other.Field24;
+      }
+      if (other.HasField25) {
+        Field25 = other.Field25;
+      }
+      if (other.HasField26) {
+        Field26 = other.Field26;
+      }
+      if (other.HasField27) {
+        Field27 = other.Field27;
+      }
+      if (other.HasField28) {
+        Field28 = other.Field28;
+      }
+      if (other.HasField29) {
+        Field29 = other.Field29;
+      }
+      if (other.HasField30) {
+        Field30 = other.Field30;
+      }
+      if (other.HasField31) {
+        Field31 = other.Field31;
+      }
+      if (other.HasField32) {
+        Field32 = other.Field32;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Field1 = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Field2 = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            Field3 = input.ReadInt32();
+            break;
+          }
+          case 32: {
+            Field4 = input.ReadInt32();
+            break;
+          }
+          case 40: {
+            Field5 = input.ReadInt32();
+            break;
+          }
+          case 48: {
+            Field6 = input.ReadInt32();
+            break;
+          }
+          case 56: {
+            Field7 = input.ReadInt32();
+            break;
+          }
+          case 64: {
+            Field8 = input.ReadInt32();
+            break;
+          }
+          case 72: {
+            Field9 = input.ReadInt32();
+            break;
+          }
+          case 80: {
+            Field10 = input.ReadInt32();
+            break;
+          }
+          case 88: {
+            Field11 = input.ReadInt32();
+            break;
+          }
+          case 96: {
+            Field12 = input.ReadInt32();
+            break;
+          }
+          case 104: {
+            Field13 = input.ReadInt32();
+            break;
+          }
+          case 112: {
+            Field14 = input.ReadInt32();
+            break;
+          }
+          case 120: {
+            Field15 = input.ReadInt32();
+            break;
+          }
+          case 128: {
+            Field16 = input.ReadInt32();
+            break;
+          }
+          case 136: {
+            Field17 = input.ReadInt32();
+            break;
+          }
+          case 144: {
+            Field18 = input.ReadInt32();
+            break;
+          }
+          case 152: {
+            Field19 = input.ReadInt32();
+            break;
+          }
+          case 160: {
+            Field20 = input.ReadInt32();
+            break;
+          }
+          case 168: {
+            Field21 = input.ReadInt32();
+            break;
+          }
+          case 176: {
+            Field22 = input.ReadInt32();
+            break;
+          }
+          case 184: {
+            Field23 = input.ReadInt32();
+            break;
+          }
+          case 192: {
+            Field24 = input.ReadInt32();
+            break;
+          }
+          case 200: {
+            Field25 = input.ReadInt32();
+            break;
+          }
+          case 208: {
+            Field26 = input.ReadInt32();
+            break;
+          }
+          case 216: {
+            Field27 = input.ReadInt32();
+            break;
+          }
+          case 224: {
+            Field28 = input.ReadInt32();
+            break;
+          }
+          case 232: {
+            Field29 = input.ReadInt32();
+            break;
+          }
+          case 240: {
+            Field30 = input.ReadInt32();
+            break;
+          }
+          case 248: {
+            Field31 = input.ReadInt32();
+            break;
+          }
+          case 256: {
+            Field32 = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            Field1 = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Field2 = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            Field3 = input.ReadInt32();
+            break;
+          }
+          case 32: {
+            Field4 = input.ReadInt32();
+            break;
+          }
+          case 40: {
+            Field5 = input.ReadInt32();
+            break;
+          }
+          case 48: {
+            Field6 = input.ReadInt32();
+            break;
+          }
+          case 56: {
+            Field7 = input.ReadInt32();
+            break;
+          }
+          case 64: {
+            Field8 = input.ReadInt32();
+            break;
+          }
+          case 72: {
+            Field9 = input.ReadInt32();
+            break;
+          }
+          case 80: {
+            Field10 = input.ReadInt32();
+            break;
+          }
+          case 88: {
+            Field11 = input.ReadInt32();
+            break;
+          }
+          case 96: {
+            Field12 = input.ReadInt32();
+            break;
+          }
+          case 104: {
+            Field13 = input.ReadInt32();
+            break;
+          }
+          case 112: {
+            Field14 = input.ReadInt32();
+            break;
+          }
+          case 120: {
+            Field15 = input.ReadInt32();
+            break;
+          }
+          case 128: {
+            Field16 = input.ReadInt32();
+            break;
+          }
+          case 136: {
+            Field17 = input.ReadInt32();
+            break;
+          }
+          case 144: {
+            Field18 = input.ReadInt32();
+            break;
+          }
+          case 152: {
+            Field19 = input.ReadInt32();
+            break;
+          }
+          case 160: {
+            Field20 = input.ReadInt32();
+            break;
+          }
+          case 168: {
+            Field21 = input.ReadInt32();
+            break;
+          }
+          case 176: {
+            Field22 = input.ReadInt32();
+            break;
+          }
+          case 184: {
+            Field23 = input.ReadInt32();
+            break;
+          }
+          case 192: {
+            Field24 = input.ReadInt32();
+            break;
+          }
+          case 200: {
+            Field25 = input.ReadInt32();
+            break;
+          }
+          case 208: {
+            Field26 = input.ReadInt32();
+            break;
+          }
+          case 216: {
+            Field27 = input.ReadInt32();
+            break;
+          }
+          case 224: {
+            Field28 = input.ReadInt32();
+            break;
+          }
+          case 232: {
+            Field29 = input.ReadInt32();
+            break;
+          }
+          case 240: {
+            Field30 = input.ReadInt32();
+            break;
+          }
+          case 248: {
+            Field31 = input.ReadInt32();
+            break;
+          }
+          case 256: {
+            Field32 = input.ReadInt32();
             break;
           }
         }

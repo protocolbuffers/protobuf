@@ -65,8 +65,9 @@ bool _upb_FieldDef_ValidateUtf8(const upb_FieldDef* f);
 bool _upb_FieldDef_IsGroupLike(const upb_FieldDef* f);
 
 // Creates a mini descriptor string for a field, returns true on success.
-bool upb_FieldDef_MiniDescriptorEncode(const upb_FieldDef* f, upb_Arena* a,
-                                       upb_StringView* out);
+UPB_NODISCARD bool upb_FieldDef_MiniDescriptorEncode(const upb_FieldDef* f,
+                                                     upb_Arena* a,
+                                                     upb_StringView* out);
 
 const upb_MiniTableField* upb_FieldDef_MiniTable(const upb_FieldDef* f);
 const upb_MiniTableExtension* upb_FieldDef_MiniTableExtension(

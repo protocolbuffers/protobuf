@@ -22,12 +22,6 @@
       "name": "Jerry Berg"
     },
     {
-      "email": "acozzette@google.com",
-      "github": "acozzette",
-      "name": "Adam Cozzette",
-      "do_not_notify": true
-    },
-    {
       "email": "deannagarcia@google.com",
       "github": "deannagarcia",
       "name": "Deanna Garcia",
@@ -109,6 +103,12 @@
       "email": "karenwuz@google.com",
       "github": "karenwuz",
       "name": "Karen Wu",
+      "do_not_notify": true
+    },
+    {
+      "email": "runze@google.com",
+      "github": "runzw",
+      "name": "Runze Wang",
       "do_not_notify": true
     }
   ],

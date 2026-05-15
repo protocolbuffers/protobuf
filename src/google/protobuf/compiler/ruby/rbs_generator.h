@@ -7,8 +7,8 @@
 
 // Generates Ruby code for a given .proto file.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_RBS_GENERATOR_H__
-#define GOOGLE_PROTOBUF_COMPILER_RBS_GENERATOR_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_RUBY_RBS_GENERATOR_H__
+#define GOOGLE_PROTOBUF_COMPILER_RUBY_RBS_GENERATOR_H__
 
 #include <cstdint>
 #include <string>
@@ -37,4 +37,4 @@ class PROTOC_EXPORT RBSGenerator : public CodeGenerator {
 
 #include "google/protobuf/port_undef.inc"
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_RUBY_GENERATOR_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_RUBY_RBS_GENERATOR_H__

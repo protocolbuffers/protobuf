@@ -36,6 +36,44 @@ label_flag(
     build_setting_default = "@bazel_tools//tools/proto:protoc",
 )
 
+string_list_flag(
+    name = "protocopt",
+    build_setting_default = [],
+    scope = "universal",
+)
+
+# When set to true, we will use a prebuilt protoc binary from GitHub if it's available.
+# This is now enabled by default.
+bool_flag(
+    name = "prefer_prebuilt_protoc",
+    build_setting_default = True,
+    # See https://github.com/protocolbuffers/protobuf/issues/25561
+    scope = "universal",  # propagate from host to exec configuration
+    visibility = ["//bazel/toolchains:__pkg__"],
+)
+
+config_setting(
+    name = "prefer_prebuilt_protoc.flag_set",
+    flag_values = {":prefer_prebuilt_protoc": "true"},
+    visibility = [
+        "//bazel/private/oss/toolchains/prebuilt:__pkg__",
+        # Needed by cc_toolchain to switch between minimal and full protoc
+        "//:__pkg__",
+    ],
+)
+
+# The public API users set to disable the validation action failing.
+bool_flag(
+    name = "allow_nonstandard_protoc",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "allow_nonstandard_protoc.flag_set",
+    flag_values = {":allow_nonstandard_protoc": "true"},
+    visibility = ["//bazel/private/oss/toolchains/prebuilt:__pkg__"],
+)
+
 # TODO: deprecate this flag.
 string_flag(
     name = "strict_proto_deps",

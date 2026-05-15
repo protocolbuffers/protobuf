@@ -251,6 +251,10 @@ class PROTOBUF_EXPORT MapKey {
         return H::combine(std::move(state), key.GetUInt32Value());
       case FieldDescriptor::CPPTYPE_BOOL:
         return H::combine(std::move(state), key.GetBoolValue());
+      case FieldDescriptor::CPPTYPE_DOUBLE:
+      case FieldDescriptor::CPPTYPE_FLOAT:
+      case FieldDescriptor::CPPTYPE_ENUM:
+      case FieldDescriptor::CPPTYPE_MESSAGE:
       default:
         internal::Unreachable();
     }
@@ -303,8 +307,8 @@ inline const Message& GetMapEntryValuePrototype(const Message& default_entry) {
 // reflection implementation only. Users should never use this directly.
 class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
  public:
-  explicit constexpr MapFieldBase(const void* prototype_as_void)
-      : MapFieldBaseForParse(prototype_as_void) {}
+  explicit constexpr MapFieldBase(const void* globals_as_void)
+      : MapFieldBaseForParse(globals_as_void) {}
   explicit MapFieldBase(const Message* prototype)
       : MapFieldBaseForParse(prototype) {}
   MapFieldBase(const MapFieldBase&) = delete;
@@ -462,7 +466,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
 
   // Returns the reflection payload. Returns null if it does not exist yet.
   ReflectionPayload* maybe_payload() const {
-    auto p = prototype_or_payload_.load(std::memory_order_acquire);
+    auto p = globals_or_payload_.load(std::memory_order_acquire);
     return IsPayload(p) ? ToPayload(p) : nullptr;
   }
   // Returns the reflection payload, and constructs one if does not exist yet.
@@ -539,7 +543,6 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
 template <typename Key, typename T>
 class TypeDefinedMapFieldBase : public MapFieldBase {
  public:
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
   explicit constexpr TypeDefinedMapFieldBase(const void* prototype_as_void,
                                              InternalMetadataOffset offset)
       : MapFieldBase(prototype_as_void),
@@ -550,19 +553,9 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
     static_assert(MapFieldBaseForParse::MapOffset() ==
                   PROTOBUF_FIELD_OFFSET(TypeDefinedMapFieldBase, map_));
   }
-#else
-  explicit constexpr TypeDefinedMapFieldBase(const void* prototype_as_void)
-      : MapFieldBase(prototype_as_void), map_() {
-    // This invariant is required by `GetMapRaw` to easily access the map
-    // member without paying for dynamic dispatch.
-    static_assert(MapFieldBaseForParse::MapOffset() ==
-                  PROTOBUF_FIELD_OFFSET(TypeDefinedMapFieldBase, map_));
-  }
-#endif
   TypeDefinedMapFieldBase(const TypeDefinedMapFieldBase&) = delete;
   TypeDefinedMapFieldBase& operator=(const TypeDefinedMapFieldBase&) = delete;
 
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
   TypeDefinedMapFieldBase(const Message* prototype,
                           InternalMetadataOffset offset)
       : MapFieldBase(prototype),
@@ -576,14 +569,6 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
         map_(offset
                  .TranslateForMember<offsetof(TypeDefinedMapFieldBase, map_)>(),
              from.GetMap()) {}
-#else
-  TypeDefinedMapFieldBase(const Message* prototype, Arena* arena)
-      : MapFieldBase(prototype), map_(arena) {}
-
-  TypeDefinedMapFieldBase(const Message* prototype, Arena* arena,
-                          const TypeDefinedMapFieldBase& from)
-      : MapFieldBase(prototype), map_(arena, from.GetMap()) {}
-#endif
 
  protected:
   ~TypeDefinedMapFieldBase() { map_.~Map(); }
@@ -607,14 +592,6 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
     internal::MapMergeFrom(*MutableMap(), other.GetMap());
   }
 
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-  static constexpr size_t InternalGetArenaOffset(
-      internal::InternalVisibility access) {
-    return PROTOBUF_FIELD_OFFSET(TypeDefinedMapFieldBase, map_) +
-           decltype(map_)::InternalGetArenaOffset(access);
-  }
-#endif
-
  protected:
   friend struct MapFieldTestPeer;
 
@@ -636,18 +613,11 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MapField final
  public:
   typedef Map<Key, T> MapType;
 
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
   constexpr MapField() : MapField(InternalMetadataOffset()) {}
-#else
-  constexpr MapField()
-      : MapField::TypeDefinedMapFieldBase(
-            Derived::internal_default_instance()) {}
-#endif
   MapField(const MapField&) = delete;
   MapField& operator=(const MapField&) = delete;
   ~MapField() = default;
 
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
   constexpr MapField(ArenaInitialized, InternalMetadataOffset offset)
       : MapField(offset) {}
   constexpr MapField(InternalVisibility, InternalMetadataOffset offset)
@@ -655,27 +625,14 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MapField final
   MapField(InternalVisibility, InternalMetadataOffset offset,
            const MapField& from)
       : TypeDefinedMapFieldBase<Key, T>(
-            static_cast<const Message*>(Derived::internal_default_instance()),
+            MessageGlobalsBase::ToDefaultInstance<Message>(
+                Derived::internal_message_globals()),
             offset, from) {}
-#else
-  explicit MapField(Arena* arena)
-      : TypeDefinedMapFieldBase<Key, T>(
-            static_cast<const Message*>(Derived::internal_default_instance()),
-            arena) {}
-  MapField(ArenaInitialized, Arena* arena) : MapField(arena) {}
-  MapField(InternalVisibility, Arena* arena) : MapField(arena) {}
-  MapField(InternalVisibility, Arena* arena, const MapField& from)
-      : TypeDefinedMapFieldBase<Key, T>(
-            static_cast<const Message*>(Derived::internal_default_instance()),
-            arena, from) {}
-#endif
 
  private:
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
   explicit constexpr MapField(InternalMetadataOffset offset)
-      : MapField::TypeDefinedMapFieldBase(Derived::internal_default_instance(),
+      : MapField::TypeDefinedMapFieldBase(Derived::internal_message_globals(),
                                           offset) {}
-#endif
 
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -694,7 +651,6 @@ bool AllAreInitialized(const TypeDefinedMapFieldBase<Key, T>& field) {
   return true;
 }
 
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
 template <typename Derived, typename Key, typename T>
 using MapFieldWithArena = FieldWithArena<MapField<Derived, Key, T>>;
 
@@ -715,7 +671,6 @@ struct FieldArenaRep<const MapField<Derived, Key, T>> {
     return &arena_rep->field();
   }
 };
-#endif  // PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
 
 }  // namespace internal
 

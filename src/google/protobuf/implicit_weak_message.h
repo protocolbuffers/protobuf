@@ -35,6 +35,9 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+struct ImplicitWeakMessageDefaultType;
+extern ImplicitWeakMessageDefaultType implicit_weak_message_globals;
+
 // An implementation of MessageLite that treats all data as unknown. This type
 // acts as a placeholder for an implicit weak field in the case where the true
 // message type does not get linked into the binary.
@@ -51,8 +54,16 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
 
   // TODO: make this constructor private
   explicit ImplicitWeakMessage(Arena* arena)
-      : MessageLite(arena, class_data_.base()),
-        data_(Arena::Create<std::string>(arena)) {}
+      : MessageLite(arena,
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+                    class_data_.base()
+#else
+                    MessageGlobalsBase::GetClassData(
+                        &implicit_weak_message_globals)
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+                        ),
+        data_(Arena::Create<std::string>(arena)) {
+  }
 
   ~ImplicitWeakMessage() PROTOBUF_FINAL { delete data_; }
 
@@ -83,9 +94,18 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
   static PROTOBUF_CC const char* ParseImpl(ImplicitWeakMessage* msg,
                                            const char* ptr, ParseContext* ctx);
 
+  static constexpr auto InternalGenerateClassData_(
+      const MessageLite& prototype, const TcParseTableBase* tc_table = nullptr);
+  static constexpr auto InternalGenerateParseTable_(
+      const ClassData* class_data);
+
  private:
+#ifndef PROTOBUF_MESSAGE_GLOBALS
   static const TcParseTable<0> table_;
-  static const ClassDataLite<1> class_data_;
+  static const ClassDataLite class_data_;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+
+  friend ImplicitWeakMessageDefaultType;
 
   static void MergeImpl(MessageLite&, const MessageLite&);
 
@@ -109,9 +129,6 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
   std::string* data_;
   google::protobuf::internal::CachedSize cached_size_{};
 };
-
-struct ImplicitWeakMessageDefaultType;
-extern ImplicitWeakMessageDefaultType implicit_weak_message_default_instance;
 
 // A type handler for use with implicit weak repeated message fields.
 template <typename ImplicitWeakType>
@@ -154,7 +171,6 @@ struct WeakRepeatedPtrField {
       : WeakRepeatedPtrField(nullptr, rhs) {}
 
   // Arena enabled constructors: for internal use only.
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   constexpr WeakRepeatedPtrField(internal::InternalVisibility,
                                  internal::InternalMetadataOffset offset)
       : WeakRepeatedPtrField(offset) {}
@@ -162,17 +178,6 @@ struct WeakRepeatedPtrField {
                        internal::InternalMetadataOffset offset,
                        const WeakRepeatedPtrField& rhs)
       : WeakRepeatedPtrField(offset, rhs) {}
-
-#else
-  WeakRepeatedPtrField(internal::InternalVisibility, Arena* arena)
-      : WeakRepeatedPtrField(arena) {}
-  WeakRepeatedPtrField(internal::InternalVisibility, Arena* arena,
-                       const WeakRepeatedPtrField& rhs)
-      : WeakRepeatedPtrField(arena, rhs) {}
-
-  // TODO: make this constructor private
-  explicit WeakRepeatedPtrField(Arena* arena) : weak(arena) {}
-#endif
 
   ~WeakRepeatedPtrField() {
     if (weak.NeedsDestroy()) {
@@ -236,7 +241,6 @@ struct WeakRepeatedPtrField {
   }
 
  private:
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   constexpr explicit WeakRepeatedPtrField(
       internal::InternalMetadataOffset offset)
       : weak(offset) {}
@@ -245,22 +249,14 @@ struct WeakRepeatedPtrField {
       : WeakRepeatedPtrField(offset) {
     MergeFrom(rhs);
   }
-#else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-  WeakRepeatedPtrField(Arena* arena, const WeakRepeatedPtrField& rhs)
-      : WeakRepeatedPtrField(arena) {
-    MergeFrom(rhs);
-  }
-#endif
 };
 
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 namespace internal {
 
 template <typename T>
 using WeakRepeatedPtrFieldWithArena = FieldWithArena<WeakRepeatedPtrField<T>>;
 
 }  // namespace internal
-#endif  // PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 
 }  // namespace protobuf
 }  // namespace google

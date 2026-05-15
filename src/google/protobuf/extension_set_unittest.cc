@@ -44,9 +44,12 @@
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/unittest_proto3_extensions.pb.h"
+#include "google/protobuf/unittest_utf8_string_extensions.pb.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
+#include "utf8_validity.h"
 
+#include "google/protobuf/test_textproto.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -517,6 +520,41 @@ TEST(ExtensionSetTest, ArenaMergeFromWithClearedExtensions) {
     message2->MergeFrom(*message1);
     EXPECT_EQ(space_used_before_merge, arena.SpaceUsed());
   }
+}
+
+TEST(ExtensionSetTest, ArenaMergeFromWithClearedExtensionsReduceCapacity) {
+  if (sizeof(void*) != 8) {
+    GTEST_SKIP() << "This test is only correct on 64-bit systems.";
+  }
+  Arena arena;
+  auto* message = Arena::Create<unittest::TestAllExtensions>(&arena);
+
+  message->SetExtension(unittest::optional_int32_extension, 1);
+  message->SetExtension(unittest::optional_int64_extension, 1);
+  message->SetExtension(unittest::optional_uint32_extension, 1);
+  message->SetExtension(unittest::optional_uint64_extension, 1);
+  message->SetExtension(unittest::optional_sint32_extension, 1);
+  message->SetExtension(unittest::optional_sint64_extension, 1);
+  message->ClearExtension(unittest::optional_int32_extension);
+  message->ClearExtension(unittest::optional_sint64_extension);
+
+  uint64_t space_used_before_merge = arena.SpaceUsed();
+  // We allocate many messages to give an opportunity for arena to reuse space
+  // that is returned from overallocating the buffer for the extension.
+  const int kNumMessages = 10000;
+  for (int i = 0; i < kNumMessages; ++i) {
+    auto* message2 = Arena::Create<unittest::TestAllExtensions>(&arena);
+    message2->MergeFrom(*message);
+  }
+  const uint64_t kSizeOfExtensionKeyValue = 32;
+  const uint64_t kRequiredCapacity = 4;
+  const uint64_t kConstantOverhead = 1000;
+  const double kTolerance = 1.1;
+  EXPECT_LT(arena.SpaceUsed() - space_used_before_merge,
+            kTolerance * kNumMessages *
+                    (kSizeOfExtensionKeyValue * kRequiredCapacity +
+                     sizeof(unittest::TestAllExtensions)) +
+                kConstantOverhead);
 }
 
 TEST(ExtensionSetTest, ArenaSetAllocatedMessageAndRelease) {
@@ -1807,7 +1845,6 @@ TEST(ExtensionSetTest, MoveExtensionWithDynamicDescriptor) {
 }
 
 
-
 TEST_P(FindExtensionTest,
        FindExtensionInfoFromFieldNumber_FindExistingExtension) {
   ExtensionInfo extension_info;
@@ -1974,6 +2011,55 @@ INSTANTIATE_TEST_SUITE_P(
       absl::c_replace_if(name, [](char c) { return !std::isalnum(c); }, '_');
       return name;
     });
+
+TEST(ExtensionSet, StringWithInvalidUTF8FailsToParse) {
+  // Sanity check that the extension field is marked as requiring UTF-8
+  // validation. `requires_utf8_validation` can only be true for string fields
+  // where feature.utf8_validation = VERIFY.
+  const google::protobuf::DescriptorPool* pool = google::protobuf::DescriptorPool::generated_pool();
+  ASSERT_NE(pool, nullptr);
+  const google::protobuf::FieldDescriptor* string_ext_fd = pool->FindExtensionByName(
+      "proto2_unittest.optional_utf8_string_extension");
+  ASSERT_NE(string_ext_fd, nullptr);
+  ASSERT_TRUE(string_ext_fd->requires_utf8_validation());
+  std::string invalid_utf8 = "\xFF";
+  ASSERT_FALSE(utf8_range::IsStructurallyValid(invalid_utf8));
+
+  proto2_unittest::TestUtf8ValidationOfExtensions test_message;
+  // It is reasonable to debate that UTF-8 validation should be checked in the
+  // setter, but it is not currently done because the setter doesn't have a way
+  // to report errors.
+  test_message.SetExtension(proto2_unittest::optional_utf8_string_extension,
+                            invalid_utf8);
+  std::string data;
+  ASSERT_TRUE(test_message.SerializeToString(&data));
+  proto2_unittest::TestUtf8ValidationOfExtensions parsed_message;
+  ASSERT_FALSE(parsed_message.ParseFromString(data));
+}
+
+TEST(ExtensionSet, BytesWithInvalidUTF8Succeeds) {
+  // Sanity check that the extension field is not marked as requiring UTF-8
+  // validation. `requires_utf8_validation` can only be true for string fields.
+  const google::protobuf::DescriptorPool* pool = google::protobuf::DescriptorPool::generated_pool();
+  ASSERT_NE(pool, nullptr);
+  const google::protobuf::FieldDescriptor* string_ext_fd =
+      pool->FindExtensionByName("proto2_unittest.optional_bytes_extension");
+  ASSERT_NE(string_ext_fd, nullptr);
+  ASSERT_FALSE(string_ext_fd->requires_utf8_validation());
+  std::string invalid_utf8 = "\xFF";
+  ASSERT_FALSE(utf8_range::IsStructurallyValid(invalid_utf8));
+
+  proto2_unittest::TestAllExtensions test_message;
+  test_message.SetExtension(proto2_unittest::optional_bytes_extension,
+                            invalid_utf8);
+  std::string data;
+  ASSERT_TRUE(test_message.SerializeToString(&data));
+  proto2_unittest::TestAllExtensions parsed_message;
+  EXPECT_TRUE(parsed_message.ParseFromString(data));
+  EXPECT_THAT(parsed_message, google::protobuf::EqualsProto(R"pb(
+                [proto2_unittest.optional_bytes_extension]: "\xFF"
+              )pb"));
+}
 
 }  // namespace
 }  // namespace internal

@@ -306,7 +306,7 @@ See documentation in <code>proto_info.bzl</code>.
 """ + _extra_doc,
     attrs = {
         "_protocopt": attr.label(
-            default = "//bazel/flags/cc:protocopt",
+            default = "//bazel/flags:protocopt",
         ),
         "srcs": attr.label_list(
             allow_files = [".proto", ".protodevel"],
@@ -386,7 +386,7 @@ for use with MessageSet.
 """,
         ),
         "_authenticity_validation": attr.label(
-            default = "//bazel/private/toolchains/prebuilt:authenticity_validation",
+            default = "//bazel/private/oss/toolchains/prebuilt:authenticity_validation",
             doc = "Validate that the binary registered on the toolchain is produced by protobuf team",
         ),
         # buildifier: disable=attr-license (calling attr.license())

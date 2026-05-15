@@ -17,6 +17,8 @@
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@rules_rust//rust:defs.bzl", "rust_test")
 
+package(default_applicable_licenses = ["//:license"])
+
 # Test sources for the purpose of building with Cargo
 pkg_files(
     name = "test_srcs",
@@ -496,6 +498,34 @@ rust_test(
 rust_test(
     name = "message_copy_merge_upb_test",
     srcs = ["message_copy_merge_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb": "protobuf",
+    },
+    rustc_flags = ["--cfg=bzl"],
+    deps = [
+        "//rust:protobuf_upb",
+        "//rust/test:unittest_upb_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "message_generics_cpp_test",
+    srcs = ["message_generics_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp": "protobuf",
+    },
+    rustc_flags = ["--cfg=bzl"],
+    deps = [
+        "//rust:protobuf_cpp",
+        "//rust/test:unittest_cpp_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "message_generics_upb_test",
+    srcs = ["message_generics_test.rs"],
     aliases = {
         "//rust:protobuf_upb": "protobuf",
     },

@@ -198,7 +198,7 @@ static FORCE_INLINE_ATTR size_t utf8_range_Validate(
 #endif
 }
 
-int utf8_range_IsValid(const char* data, size_t len) {
+bool utf8_range_IsValid(const char* data, size_t len) {
   return utf8_range_Validate(data, len, /*return_position=*/0) != 0;
 }
 

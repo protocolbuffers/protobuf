@@ -1,0 +1,12 @@
+edition = "2023";
+
+// LINT: LEGACY_NAMES
+
+package protobuf_editions_test.edition2023;
+
+message BadOneofMessage {
+  oneof BAD_ONEOF_NAME {
+    string foo = 1;
+    string bar = 2;
+  }
+}

@@ -32,16 +32,24 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
 struct RustEnumValue {
   // The canonical CamelCase name in Rust.
   std::string name;
+  const EnumValueDescriptor* desc;
   int32_t number;
-  std::vector<std::string> aliases;
+  std::vector<std::pair<std::string, const EnumValueDescriptor*>> aliases;
+};
+
+// Binds an enumerator with name `name`, value `number, and original descriptor
+// `desc`.
+struct EnumValueInput {
+  absl::string_view name;
+  int32_t number;
+  const EnumValueDescriptor* desc = nullptr;
 };
 
 // Returns the list of rust enum variants to produce, along with their aliases.
 // Performs name normalization, deduplication, and alias determination.
 // The `number` and `name` of every returned `RustEnumValue` is unique.
-std::vector<RustEnumValue> EnumValues(
-    absl::string_view enum_name,
-    absl::Span<const std::pair<absl::string_view, int32_t>> values);
+std::vector<RustEnumValue> EnumValues(absl::string_view enum_name,
+                                      absl::Span<const EnumValueInput> values);
 
 }  // namespace rust
 }  // namespace compiler

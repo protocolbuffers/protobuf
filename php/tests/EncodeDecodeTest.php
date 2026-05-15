@@ -629,6 +629,10 @@ class EncodeDecodeTest extends TestBase
 
         $m = new TestMessage();
         $m->mergeFromString($payload);
+
+        // If execution reaches this line, it means no exception was thrown.
+        // This assertion prevents PHPUnit from marking the test as risky.
+        $this->assertTrue(true);
     }
 
     public function testOverlyRecursiveMessage() {
@@ -1390,6 +1394,58 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("\"foo.barBaz,qux\"", $m->serializeToJsonString());
     }
 
+    public function testEncodeFieldMaskWithInvalidPath()
+    {
+        $m = new FieldMask();
+        $m->setPaths(["foo.bar__baz"]);
+
+        // On upb this case raises an exception, on pure PHP we currently only
+        // trigger a warning and don't throw an exception.
+        if (extension_loaded('protobuf')) {
+            $this->expectException(Exception::class);
+            $m->serializeToJsonString();
+        } else {
+            $triggered = false;
+            set_error_handler(function($errno, $errstr) use (&$triggered) {
+                $triggered = true;
+                $this->assertStringContainsString("Underscore in FieldMask path must be followed by a lowercase letter", $errstr);
+                return true;
+            }, E_USER_WARNING);
+
+            $result = $m->serializeToJsonString();
+            restore_error_handler();
+
+            $this->assertTrue($triggered, "Warning was not triggered");
+            $this->assertSame("\"foo.barBaz\"", $result);
+        }
+    }
+
+    public function testEncodeFieldMaskWithUppercasePath()
+    {
+        $m = new FieldMask();
+        $m->setPaths(["foo.BarBaz"]);
+
+        // On upb this case raises an exception, on pure PHP we currently only
+        // trigger a warning and don't throw an exception.
+        if (extension_loaded('protobuf')) {
+            $this->expectException(Exception::class);
+            $m->serializeToJsonString();
+        } else {
+            $triggered = false;
+            set_error_handler(function($errno, $errstr) use (&$triggered) {
+                $triggered = true;
+                $this->assertStringContainsString("Field mask element may not have upper-case letter", $errstr);
+                return true;
+            }, E_USER_WARNING);
+
+            $result = $m->serializeToJsonString();
+            restore_error_handler();
+
+            $this->assertTrue($triggered, "Warning was not triggered");
+            $this->assertSame("\"foo.BarBaz\"", $result);
+        }
+    }
+
     public function testDecodeEmptyFieldMask()
     {
         $m = new FieldMask();
@@ -1636,7 +1692,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals($defaultValue, $to->getOneofFieldUnwrapped());
     }
 
-    public function wrappersDataProvider()
+    public static function wrappersDataProvider()
     {
         return [
             [TestInt32Value::class, 1, "1", 0, "0"],
@@ -1981,5 +2037,32 @@ class EncodeDecodeTest extends TestBase
         // With EMIT_DEFAULTS
         $json4 = $s->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
         $this->assertSame("{}", $json4);
+    }
+
+    public function testJsonEncodeFloatLocaleIndependent()
+    {
+        $originalLocale = setlocale(LC_NUMERIC, 0);
+        $localeSet = setlocale(LC_NUMERIC, 'de_DE.UTF-8', 'de_DE', 'cs_CZ.UTF-8', 'cs_CZ', 'fr_FR.UTF-8', 'fr_FR');
+        if ($localeSet === false) {
+            $this->markTestSkipped('No locale with comma decimal separator available');
+        }
+
+        try {
+            $m = new FloatValue();
+            $m->setValue(3.14159);
+            $json = $m->serializeToJsonString();
+            $this->assertStringNotContainsString(',', $json);
+            $this->assertStringContainsString('.', $json);
+            $this->assertNotNull(json_decode($json));
+
+            $m2 = new DoubleValue();
+            $m2->setValue(3.141592653589793);
+            $json2 = $m2->serializeToJsonString();
+            $this->assertStringNotContainsString(',', $json2);
+            $this->assertStringContainsString('.', $json2);
+            $this->assertNotNull(json_decode($json2));
+        } finally {
+            setlocale(LC_NUMERIC, $originalLocale);
+        }
     }
 }

@@ -32,6 +32,7 @@ def rust_proto_library(name, deps, **args):
     alias_args = {}
     if "visibility" in args:
         alias_args["visibility"] = args.pop("visibility")
+    alias_args["tags"] = args.get("tags", [])
     native.alias(
         name = name + "_rust_proto",
         actual = select({

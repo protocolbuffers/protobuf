@@ -11,6 +11,7 @@
 
 #include "google/protobuf/compiler/java/full/message.h"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
@@ -564,7 +565,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
 
 void ImmutableMessageGenerator::GenerateMessageSerializationMethods(
     io::Printer* printer) {
-  std::unique_ptr<const FieldDescriptor*[]> sorted_fields(
+  std::vector<const FieldDescriptor*> sorted_fields(
       SortFieldsByNumber(descriptor_));
 
   printer->Print(
@@ -599,7 +600,7 @@ void ImmutableMessageGenerator::GenerateMessageSerializationMethods(
 
   GenerateSerializeFieldsAndExtensions(printer,
                                        field_generators_.field_generators(),
-                                       descriptor_, sorted_fields.get());
+                                       descriptor_, sorted_fields);
 
   if (descriptor_->options().message_set_wire_format()) {
     printer->Print("getUnknownFields().writeAsMessageSetTo(output);\n");
@@ -608,9 +609,33 @@ void ImmutableMessageGenerator::GenerateMessageSerializationMethods(
   }
 
   printer->Outdent();
+  printer->Print("}\n");
+
+  // Chunk up the getSerializedSize() into chunks to be JIT friendly.
+  constexpr int kNumFieldsPerChunk = 32;
+  int num_chunks = (descriptor_->field_count() + kNumFieldsPerChunk - 1) /
+                   kNumFieldsPerChunk;
+  for (int i = 0; i < num_chunks; ++i) {
+    printer->Print(
+        "private int computeSerializedSize_$chunk$() {\n"
+        "  int size = 0;\n",
+        "chunk", absl::StrCat(i));
+    printer->Indent();
+
+    int chunk_field_start = i * kNumFieldsPerChunk;
+    int chunk_field_end = std::min(chunk_field_start + kNumFieldsPerChunk,
+                                   descriptor_->field_count());
+
+    for (int j = chunk_field_start; j < chunk_field_end; ++j) {
+      field_generators_.get(sorted_fields[j])
+          .GenerateSerializedSizeCode(printer);
+    }
+    printer->Outdent();
+    printer->Print("  return size;\n");
+    printer->Print("}\n");
+  }
+
   printer->Print(
-      "}\n"
-      "\n"
       "@java.lang.Override\n"
       "public int getSerializedSize() {\n"
       "  int size = memoizedSize;\n"
@@ -620,8 +645,9 @@ void ImmutableMessageGenerator::GenerateMessageSerializationMethods(
 
   printer->Print("size = 0;\n");
 
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    field_generators_.get(sorted_fields[i]).GenerateSerializedSizeCode(printer);
+  for (int i = 0; i < num_chunks; ++i) {
+    printer->Print("size += computeSerializedSize_$chunk$();\n", "chunk",
+                   absl::StrCat(i));
   }
 
   if (descriptor_->extension_range_count() > 0) {

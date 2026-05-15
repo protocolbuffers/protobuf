@@ -1666,6 +1666,10 @@ bool Parser::ParseOption(Message* options,
           return false;
         }
         break;
+
+      case io::Tokenizer::TYPE_URL_CHARS:
+        ABSL_LOG(FATAL) << "Unexpected token type (URL chars).";
+        return false;
     }
   }
 

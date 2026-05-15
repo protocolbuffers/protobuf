@@ -24,7 +24,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
-#include "google/protobuf/port.h"
+#include "google/protobuf/port.h"  // IWYU pragma: keep
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -153,10 +153,10 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
   (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord      \
        ? PROTOBUF_PICK_REPEATABLE_FUNCTION(fn##c)                         \
    : field->cpp_string_type() == FieldDescriptor::CppStringType::kView && \
-           options.use_micro_string                                       \
+           options.is_micro_string()                                      \
        ? PROTOBUF_PICK_FUNCTION(fn##mS)                                   \
-   : options.is_string_inlined ? PROTOBUF_PICK_FUNCTION(fn##iS)           \
-                               : PROTOBUF_PICK_REPEATABLE_FUNCTION(fn))
+   : options.is_string_inlined() ? PROTOBUF_PICK_FUNCTION(fn##iS)         \
+                                 : PROTOBUF_PICK_REPEATABLE_FUNCTION(fn))
 
   const FieldDescriptor* field = entry.field;
   info.aux_idx = static_cast<uint8_t>(entry.aux_idx);
@@ -485,10 +485,9 @@ TailCallTableInfo::NumToEntryTable MakeNumToEntryTable(
   return num_to_entry_table;
 }
 
-uint16_t MakeTypeCardForField(
-    const FieldDescriptor* field, bool has_hasbit,
-    const TailCallTableInfo::FieldOptions& options,
-    cpp::Utf8CheckMode utf8_check_mode) {
+uint16_t MakeTypeCardForField(const FieldDescriptor* field, bool has_hasbit,
+                              const TailCallTableInfo::FieldOptions& options,
+                              cpp::Utf8CheckMode utf8_check_mode) {
   uint16_t type_card;
   namespace fl = internal::field_layout;
   if (field->is_repeated()) {
@@ -651,7 +650,7 @@ uint16_t MakeTypeCardForField(
         } else {
           // Otherwise, non-repeated string fields use ArenaStringPtr.
           type_card |=
-              options.use_micro_string ? fl::kRepMString : fl::kRepAString;
+              options.is_micro_string() ? fl::kRepMString : fl::kRepAString;
         }
         break;
     }
@@ -786,7 +785,7 @@ TailCallTableInfo::BuildFieldEntries(
       } else if (HasLazyRep(field, options)) {
         if (message_options.uses_codegen) {
           entry.aux_idx = aux_entries.size();
-          aux_entries.push_back({kSubMessage, {field}});
+          aux_entries.push_back({kSubMessageGlobals, {field}});
           if (options.lazy_opt == field_layout::kTvEager) {
             aux_entries.push_back({kMessageVerifyFunc, {field}});
           } else {
@@ -796,9 +795,9 @@ TailCallTableInfo::BuildFieldEntries(
           entry.aux_idx = TcParseTableBase::FieldEntry::kNoAuxIdx;
         }
       } else {
-        AuxType type = options.is_implicitly_weak          ? kSubMessageWeak
+        AuxType type = options.is_implicitly_weak ? kSubMessageGlobalsWeak
                        : options.use_direct_tcparser_table ? kSubTable
-                                                           : kSubMessage;
+                                                           : kSubMessageGlobals;
         if (type == kSubTable && is_non_cold(options)) {
           aux_entries[subtable_aux_idx] = {type, {field}};
           entry.aux_idx = subtable_aux_idx;
@@ -832,6 +831,9 @@ TailCallTableInfo::BuildFieldEntries(
         aux_entry.type = kEnumValidator;
         aux_entry.field = field;
       }
+    } else if (options.is_micro_string()) {
+      // We use the aux idx to pass the MicroString SSO size.
+      entry.aux_idx = options.micro_string_sso();
     }
   }
   ABSL_CHECK_EQ(subtable_aux_idx - subtable_aux_idx_begin,

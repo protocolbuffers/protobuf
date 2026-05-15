@@ -214,6 +214,29 @@
   XCTAssertEqualObjects(expected, result);
 }
 
+- (void)testTextFormatUnknownFieldsCrash {
+  GPBUnknownFields *ufs = [[[GPBUnknownFields alloc] init] autorelease];
+  GPBUnknownFields *current = ufs;
+
+  // Nest single groups deep enough to force a heap-allocated indent string.
+  for (int i = 0; i < 15; ++i) {
+    current = [current addGroupWithFieldNumber:150];
+  }
+
+  // Now add multiple siblings at that deep level to trigger reuse/release.
+  for (int i = 0; i < 10; ++i) {
+    GPBUnknownFields *sibling = [current addGroupWithFieldNumber:151];
+    [sibling addFieldNumber:1 varint:1];
+  }
+
+  TestEmptyMessage *message = [TestEmptyMessage message];
+  XCTAssertTrue([message mergeUnknownFields:ufs extensionRegistry:nil error:NULL]);
+
+  @autoreleasepool {
+    [message description];
+  }
+}
+
 - (void)testSetRepeatedFields {
   TestAllTypes *message = [TestAllTypes message];
 
@@ -264,32 +287,56 @@ static BOOL HasUnknownFields(GPBMessage *message) {
   // Given it extensions that include a message with unknown fields of its own.
   {
     // Int
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+    [message setExtension:Objc_Protobuf_Tests_extension_OptionalInt32Extension() value:@5];
+#else
     [message setExtension:[UnittestRoot optionalInt32Extension] value:@5];
+#endif
 
     // Group
     OptionalGroup_extension *optionalGroup = [OptionalGroup_extension message];
     optionalGroup.a = 123;
     AddUnknownFields(optionalGroup, 1779);
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+    [message setExtension:Objc_Protobuf_Tests_extension_OptionalGroupExtension()
+                    value:optionalGroup];
+#else
     [message setExtension:[UnittestRoot optionalGroupExtension] value:optionalGroup];
+#endif
 
     // Message
     TestAllTypes_NestedMessage *nestedMessage = [TestAllTypes_NestedMessage message];
     nestedMessage.bb = 456;
     AddUnknownFields(nestedMessage, 1778);
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+    [message setExtension:Objc_Protobuf_Tests_extension_OptionalNestedMessageExtension()
+                    value:nestedMessage];
+#else
     [message setExtension:[UnittestRoot optionalNestedMessageExtension] value:nestedMessage];
+#endif
 
     // Repeated Group
     RepeatedGroup_extension *repeatedGroup = [[RepeatedGroup_extension alloc] init];
     repeatedGroup.a = 567;
     AddUnknownFields(repeatedGroup, 1780);
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedGroupExtension()
+                    value:repeatedGroup];
+#else
     [message addExtension:[UnittestRoot repeatedGroupExtension] value:repeatedGroup];
+#endif
     [repeatedGroup release];
 
     // Repeated Message
     nestedMessage = [[TestAllTypes_NestedMessage alloc] init];
     nestedMessage.bb = 678;
     AddUnknownFields(nestedMessage, 1781);
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+    [message addExtension:Objc_Protobuf_Tests_extension_RepeatedNestedMessageExtension()
+                    value:nestedMessage];
+#else
     [message addExtension:[UnittestRoot repeatedNestedMessageExtension] value:nestedMessage];
+#endif
     [nestedMessage release];
   }
 
@@ -297,29 +344,52 @@ static BOOL HasUnknownFields(GPBMessage *message) {
 
   XCTAssertNotNil(message);
   XCTAssertTrue(HasUnknownFields(message));
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalInt32Extension()]);
+#else
   XCTAssertTrue([message hasExtension:[UnittestRoot optionalInt32Extension]]);
+#endif
 
   {
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+    XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalGroupExtension()]);
+    OptionalGroup_extension *optionalGroup =
+        [message getExtension:Objc_Protobuf_Tests_extension_OptionalGroupExtension()];
+#else
     XCTAssertTrue([message hasExtension:[UnittestRoot optionalGroupExtension]]);
     OptionalGroup_extension *optionalGroup =
         [message getExtension:[UnittestRoot optionalGroupExtension]];
+#endif
     XCTAssertNotNil(optionalGroup);
     XCTAssertEqual(optionalGroup.a, 123);
     XCTAssertTrue(HasUnknownFields(optionalGroup));
   }
 
   {
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+    XCTAssertTrue(
+        [message hasExtension:Objc_Protobuf_Tests_extension_OptionalNestedMessageExtension()]);
+    TestAllTypes_NestedMessage *nestedMessage =
+        [message getExtension:Objc_Protobuf_Tests_extension_OptionalNestedMessageExtension()];
+#else
     XCTAssertTrue([message hasExtension:[UnittestRoot optionalNestedMessageExtension]]);
     TestAllTypes_NestedMessage *nestedMessage =
         [message getExtension:[UnittestRoot optionalNestedMessageExtension]];
+#endif
     XCTAssertNotNil(nestedMessage);
     XCTAssertEqual(nestedMessage.bb, 456);
     XCTAssertTrue(HasUnknownFields(nestedMessage));
   }
 
   {
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+    XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_RepeatedGroupExtension()]);
+    NSArray *repeatedGroups =
+        [message getExtension:Objc_Protobuf_Tests_extension_RepeatedGroupExtension()];
+#else
     XCTAssertTrue([message hasExtension:[UnittestRoot repeatedGroupExtension]]);
     NSArray *repeatedGroups = [message getExtension:[UnittestRoot repeatedGroupExtension]];
+#endif
     XCTAssertEqual(repeatedGroups.count, (NSUInteger)1);
     RepeatedGroup_extension *repeatedGroup = repeatedGroups.firstObject;
     XCTAssertNotNil(repeatedGroup);
@@ -328,9 +398,16 @@ static BOOL HasUnknownFields(GPBMessage *message) {
   }
 
   {
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+    XCTAssertTrue(
+        [message hasExtension:Objc_Protobuf_Tests_extension_RepeatedNestedMessageExtension()]);
+    NSArray *repeatedNestedMessages =
+        [message getExtension:Objc_Protobuf_Tests_extension_RepeatedNestedMessageExtension()];
+#else
     XCTAssertTrue([message hasExtension:[UnittestRoot repeatedNestedMessageExtension]]);
     NSArray *repeatedNestedMessages =
         [message getExtension:[UnittestRoot repeatedNestedMessageExtension]];
+#endif
     XCTAssertEqual(repeatedNestedMessages.count, (NSUInteger)1);
     TestAllTypes_NestedMessage *repeatedNestedMessage = repeatedNestedMessages.firstObject;
     XCTAssertNotNil(repeatedNestedMessage);
@@ -345,29 +422,52 @@ static BOOL HasUnknownFields(GPBMessage *message) {
 
   XCTAssertNotNil(message);
   XCTAssertFalse(HasUnknownFields(message));
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalInt32Extension()]);
+#else
   XCTAssertTrue([message hasExtension:[UnittestRoot optionalInt32Extension]]);
+#endif
 
   {
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+    XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_OptionalGroupExtension()]);
+    OptionalGroup_extension *optionalGroup =
+        [message getExtension:Objc_Protobuf_Tests_extension_OptionalGroupExtension()];
+#else
     XCTAssertTrue([message hasExtension:[UnittestRoot optionalGroupExtension]]);
     OptionalGroup_extension *optionalGroup =
         [message getExtension:[UnittestRoot optionalGroupExtension]];
+#endif
     XCTAssertNotNil(optionalGroup);
     XCTAssertEqual(optionalGroup.a, 123);
     XCTAssertFalse(HasUnknownFields(optionalGroup));
   }
 
   {
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+    XCTAssertTrue(
+        [message hasExtension:Objc_Protobuf_Tests_extension_OptionalNestedMessageExtension()]);
+    TestAllTypes_NestedMessage *nestedMessage =
+        [message getExtension:Objc_Protobuf_Tests_extension_OptionalNestedMessageExtension()];
+#else
     XCTAssertTrue([message hasExtension:[UnittestRoot optionalNestedMessageExtension]]);
     TestAllTypes_NestedMessage *nestedMessage =
         [message getExtension:[UnittestRoot optionalNestedMessageExtension]];
+#endif
     XCTAssertNotNil(nestedMessage);
     XCTAssertEqual(nestedMessage.bb, 456);
     XCTAssertFalse(HasUnknownFields(nestedMessage));
   }
 
   {
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+    XCTAssertTrue([message hasExtension:Objc_Protobuf_Tests_extension_RepeatedGroupExtension()]);
+    NSArray *repeatedGroups =
+        [message getExtension:Objc_Protobuf_Tests_extension_RepeatedGroupExtension()];
+#else
     XCTAssertTrue([message hasExtension:[UnittestRoot repeatedGroupExtension]]);
     NSArray *repeatedGroups = [message getExtension:[UnittestRoot repeatedGroupExtension]];
+#endif
     XCTAssertEqual(repeatedGroups.count, (NSUInteger)1);
     RepeatedGroup_extension *repeatedGroup = repeatedGroups.firstObject;
     XCTAssertNotNil(repeatedGroup);
@@ -376,9 +476,16 @@ static BOOL HasUnknownFields(GPBMessage *message) {
   }
 
   {
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+    XCTAssertTrue(
+        [message hasExtension:Objc_Protobuf_Tests_extension_RepeatedNestedMessageExtension()]);
+    NSArray *repeatedNestedMessages =
+        [message getExtension:Objc_Protobuf_Tests_extension_RepeatedNestedMessageExtension()];
+#else
     XCTAssertTrue([message hasExtension:[UnittestRoot repeatedNestedMessageExtension]]);
     NSArray *repeatedNestedMessages =
         [message getExtension:[UnittestRoot repeatedNestedMessageExtension]];
+#endif
     XCTAssertEqual(repeatedNestedMessages.count, (NSUInteger)1);
     TestAllTypes_NestedMessage *repeatedNestedMessage = repeatedNestedMessages.firstObject;
     XCTAssertNotNil(repeatedNestedMessage);
