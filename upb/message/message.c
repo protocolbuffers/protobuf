@@ -24,6 +24,7 @@
 #include "upb/message/value.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/extension.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/message.h"
 
@@ -234,7 +235,7 @@ upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(upb_Message* msg,
 size_t upb_Message_ExtensionCount(const upb_Message* msg) {
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return 0;
-  const upb_MiniTableExtension* ext;
+  const struct upb_MiniTableExtension_Internal* ext;
   upb_MessageValue val;
   uintptr_t iter = kUpb_Message_ExtensionBegin;
   size_t count = 0;
@@ -290,9 +291,9 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
       continue;
     }
     const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
-    const upb_MiniTableExtension* e = ext->ext;
+    const struct upb_MiniTableExtension_Internal* e = ext->ext;
     const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
-    const upb_MiniTable* m2 = upb_MiniTableExtension_GetSubMessage(e);
+    const upb_MiniTable* m2 = upb_MiniTableExtension_Internal_GetSubMessage(e);
 
     upb_MessageValue val;
     memcpy(&val, &(ext->data), sizeof(upb_MessageValue));

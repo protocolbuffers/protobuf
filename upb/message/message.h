@@ -94,14 +94,15 @@ UPB_NODISCARD upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(
 size_t upb_Message_ExtensionCount(const upb_Message* msg);
 
 // Iterates extensions in wire order
-UPB_INLINE bool upb_Message_NextExtension(const upb_Message* msg,
-                                          const upb_MiniTableExtension** out_e,
-                                          upb_MessageValue* out_v,
-                                          uintptr_t* iter);
+UPB_INLINE bool upb_Message_NextExtension(
+    const upb_Message* msg,
+    const struct upb_MiniTableExtension_Internal** out_e,
+    upb_MessageValue* out_v, uintptr_t* iter);
 
 // Iterates extensions in reverse wire order
 UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
-    const struct upb_Message* msg, const upb_MiniTableExtension** out_e,
+    const struct upb_Message* msg,
+    const struct upb_MiniTableExtension_Internal** out_e,
     upb_MessageValue* out_v, uintptr_t* iter);
 
 // Mark a message and all of its descendents as frozen/immutable.

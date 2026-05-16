@@ -32,6 +32,7 @@
 #include "upb/message/message.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/extension.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
@@ -689,23 +690,25 @@ static char* encode_field(char* ptr, upb_encstate* e, const upb_Message* msg,
   }
 }
 
-static char* encode_msgset_item(char* ptr, upb_encstate* e,
-                                const upb_MiniTableExtension* ext,
-                                const upb_MessageValue ext_val) {
+static char* encode_msgset_item(
+    char* ptr, upb_encstate* e,
+    const struct upb_MiniTableExtension_Internal* ext,
+    const upb_MessageValue ext_val) {
   size_t size;
   ptr = encode_tag(ptr, e, kUpb_MsgSet_Item, kUpb_WireType_EndGroup);
-  ptr = encode_message(ptr, e, ext_val.msg_val,
-                       upb_MiniTableExtension_GetSubMessage(ext), &size);
+  ptr =
+      encode_message(ptr, e, ext_val.msg_val,
+                     upb_MiniTableExtension_Internal_GetSubMessage(ext), &size);
   ptr = encode_varint(ptr, e, size);
   ptr = encode_tag(ptr, e, kUpb_MsgSet_Message, kUpb_WireType_Delimited);
-  ptr = encode_varint(ptr, e, upb_MiniTableExtension_Number(ext));
+  ptr = encode_varint(ptr, e, upb_MiniTableExtension_Internal_Number(ext));
   ptr = encode_tag(ptr, e, kUpb_MsgSet_TypeId, kUpb_WireType_Varint);
   ptr = encode_tag(ptr, e, kUpb_MsgSet_Item, kUpb_WireType_StartGroup);
   return ptr;
 }
 
 static char* encode_ext(char* ptr, upb_encstate* e,
-                        const upb_MiniTableExtension* ext,
+                        const struct upb_MiniTableExtension_Internal* ext,
                         upb_MessageValue ext_val, bool is_message_set) {
   if (UPB_UNLIKELY(is_message_set)) {
     ptr = encode_msgset_item(ptr, e, ext, ext_val);
@@ -728,7 +731,7 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
    * these in field number order relative to normal fields or even to each
    * other. */
   uintptr_t iter = kUpb_Message_ExtensionBegin;
-  const upb_MiniTableExtension* ext;
+  const struct upb_MiniTableExtension_Internal* ext;
   upb_MessageValue ext_val;
   if (!UPB_PRIVATE(_upb_Message_NextExtensionReverse)(msg, &ext, &ext_val,
                                                       &iter)) {
@@ -875,7 +878,7 @@ upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Extension)(
   e->options = options;
   e->depth = upb_EncodeOptions_GetEffectiveMaxDepth(options);
   char* ptr = *buf;
-  ptr = encode_ext(ptr, e, ext, ext_val, is_message_set);
+  ptr = encode_ext(ptr, e, &ext->UPB_PRIVATE(ext), ext_val, is_message_set);
   *size = upb_BackAlloc_Finish(&e->alloc, ptr);
   *buf = ptr;
   return e->status;

@@ -294,10 +294,10 @@ UPB_INLINE bool upb_Message_HasUnknown(const struct upb_Message* msg) {
   return upb_Message_NextUnknown(msg, &data, &iter);
 }
 
-UPB_INLINE bool upb_Message_NextExtension(const struct upb_Message* msg,
-                                          const upb_MiniTableExtension** out_e,
-                                          upb_MessageValue* out_v,
-                                          uintptr_t* iter) {
+UPB_INLINE bool upb_Message_NextExtension(
+    const struct upb_Message* msg,
+    const struct upb_MiniTableExtension_Internal** out_e,
+    upb_MessageValue* out_v, uintptr_t* iter) {
   const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   uintptr_t i = *iter;
   if (in) {
@@ -308,7 +308,6 @@ UPB_INLINE bool upb_Message_NextExtension(const struct upb_Message* msg,
 
         // Empty repeated fields or maps semantically don't exist.
         if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
-
         *out_e = ext->ext;
         *out_v = ext->data;
         *iter = i;
@@ -322,7 +321,8 @@ UPB_INLINE bool upb_Message_NextExtension(const struct upb_Message* msg,
 }
 
 UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
-    const struct upb_Message* msg, const upb_MiniTableExtension** out_e,
+    const struct upb_Message* msg,
+    const struct upb_MiniTableExtension_Internal** out_e,
     upb_MessageValue* out_v, uintptr_t* iter) {
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return false;
@@ -338,7 +338,6 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
 
     // Empty repeated fields or maps semantically don't exist.
     if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
-
     *out_e = ext->ext;
     *out_v = ext->data;
     *iter = i;

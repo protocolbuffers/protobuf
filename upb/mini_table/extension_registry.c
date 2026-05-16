@@ -37,7 +37,7 @@ UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
     upb_ExtensionRegistry* r, const upb_MiniTableExtension* e) {
   UPB_STATIC_ASSERT(
       offsetof(upb_MiniTableExtension,
-               UPB_PRIVATE(field).UPB_PRIVATE(number)) == 0,
+               UPB_PRIVATE(ext).UPB_PRIVATE(field).UPB_PRIVATE(number)) == 0,
       "Extension must be first-member-of-struct convertable with uint32_t");
   uint32_t fieldnum = upb_MiniTableExtension_Number(e);
   const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(e);

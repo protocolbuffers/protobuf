@@ -19,6 +19,7 @@
 #include "upb/message/message.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/extension.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
@@ -180,7 +181,8 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
       if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
         const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
         memcpy(out_val, &ext->data, sizeof(*out_val));
-        *out_f = upb_DefPool_FindExtensionByMiniTable(ext_pool, ext->ext);
+        *out_f = upb_DefPool_FindExtensionByNumber(
+            ext_pool, m, upb_MiniTableExtension_Internal_Number(ext->ext));
         *iter = i;
         return true;
       }
