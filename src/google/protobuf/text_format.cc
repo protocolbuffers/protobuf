@@ -2572,7 +2572,7 @@ void TextFormat::Printer::Print(const Message& message,
 
 void TextFormat::Printer::PrintMessage(const Message& message,
                                        BaseTextGenerator* generator) const {
-  if (generator == nullptr) {
+  if (generator == nullptr || generator->failed()) {
     return;
   }
   const Descriptor* descriptor = message.GetDescriptor();
@@ -2593,10 +2593,9 @@ void TextFormat::Printer::PrintMessage(const Message& message,
     std::sort(fields.begin(), fields.end(), FieldIndexSorter());
   }
   for (const FieldDescriptor* field : fields) {
-    if (generator->failed()) return;
     PrintField(message, reflection, field, generator);
   }
-  if (!hide_unknown_fields_ && !generator->failed()) {
+  if (!hide_unknown_fields_) {
     PrintUnknownFields(reflection->GetUnknownFields(message), generator,
                        kUnknownFieldRecursionLimit);
   }
