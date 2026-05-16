@@ -9,14 +9,13 @@
 
 #include "google/protobuf/compiler/subprocess.h"
 
-#include <algorithm>
-#include <cstring>
 #include <string>
 
 #ifndef _WIN32
 #include <errno.h>
+#include <fcntl.h>
+#include <poll.h>
 #include <signal.h>
-#include <sys/select.h>
 #include <sys/wait.h>
 #endif
 
@@ -289,12 +288,16 @@ Subprocess::~Subprocess() {
 }
 
 namespace {
-char* portable_strdup(const char* s) {
-  char* ns = (char*)malloc(strlen(s) + 1);
-  if (ns != nullptr) {
-    strcpy(ns, s);
-  }
-  return ns;
+// Opens a pipe with O_CLOEXEC set atomically on both ends so that neither fd
+// is leaked into plugin child processes that are spawned concurrently.
+void OpenPipe(int fd[2]) {
+#if defined(__linux__) || defined(__APPLE__)
+  ABSL_CHECK(pipe2(fd, O_CLOEXEC) != -1) << strerror(errno);
+#else
+  ABSL_CHECK(pipe(fd) != -1) << strerror(errno);
+  fcntl(fd[0], F_SETFD, FD_CLOEXEC);
+  fcntl(fd[1], F_SETFD, FD_CLOEXEC);
+#endif
 }
 }  // namespace
 
@@ -306,10 +309,12 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   int stdin_pipe[2];
   int stdout_pipe[2];
 
-  ABSL_CHECK(pipe(stdin_pipe) != -1);
-  ABSL_CHECK(pipe(stdout_pipe) != -1);
+  OpenPipe(stdin_pipe);
+  OpenPipe(stdout_pipe);
 
-  char* argv[2] = {portable_strdup(program.c_str()), nullptr};
+  // Use std::string to manage the program name buffer safely.
+  std::string program_copy = program;
+  char* argv[2] = {program_copy.data(), nullptr};
 
   child_pid_ = fork();
   if (child_pid_ == -1) {
@@ -348,8 +353,6 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
     // that will also be flushed by the parent.
     _exit(1);
   } else {
-    free(argv[0]);
-
     close(stdin_pipe[0]);
     close(stdout_pipe[1]);
 
@@ -375,31 +378,35 @@ bool Subprocess::Communicate(const Message& input, Message* output,
   }
   std::string output_data;
 
-  int input_pos = 0;
-  int max_fd = std::max(child_stdin_, child_stdout_);
+  size_t input_pos = 0;
 
   while (child_stdout_ != -1) {
-    fd_set read_fds;
-    fd_set write_fds;
-    FD_ZERO(&read_fds);
-    FD_ZERO(&write_fds);
+    struct pollfd fds[2];
+    int nfds = 0;
+
+    // Index into fds[] for each fd, or -1 if not being polled.
+    int stdin_idx = -1;
+    int stdout_idx = -1;
+
     if (child_stdout_ != -1) {
-      FD_SET(child_stdout_, &read_fds);
+      stdout_idx = nfds;
+      fds[nfds++] = {child_stdout_, POLLIN, 0};
     }
     if (child_stdin_ != -1) {
-      FD_SET(child_stdin_, &write_fds);
+      stdin_idx = nfds;
+      fds[nfds++] = {child_stdin_, POLLOUT, 0};
     }
 
-    if (select(max_fd + 1, &read_fds, &write_fds, nullptr, nullptr) < 0) {
+    if (poll(fds, nfds, -1) < 0) {
       if (errno == EINTR) {
         // Interrupted by signal.  Try again.
         continue;
       } else {
-        ABSL_LOG(FATAL) << "select: " << strerror(errno);
+        ABSL_LOG(FATAL) << "poll: " << strerror(errno);
       }
     }
 
-    if (child_stdin_ != -1 && FD_ISSET(child_stdin_, &write_fds)) {
+    if (stdin_idx != -1 && (fds[stdin_idx].revents & POLLOUT)) {
       int n = write(child_stdin_, input_data.data() + input_pos,
                     input_data.size() - input_pos);
       if (n < 0) {
@@ -417,7 +424,7 @@ bool Subprocess::Communicate(const Message& input, Message* output,
       }
     }
 
-    if (child_stdout_ != -1 && FD_ISSET(child_stdout_, &read_fds)) {
+    if (stdout_idx != -1 && (fds[stdout_idx].revents & (POLLIN | POLLHUP))) {
       char buffer[4096];
       int n = read(child_stdout_, buffer, sizeof(buffer));
 
