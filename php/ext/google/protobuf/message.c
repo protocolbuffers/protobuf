@@ -40,7 +40,7 @@ static zend_object_handlers message_object_handlers;
 
 // Custom handler to prevent crashes on serialization
 static int protobuf_serialize_deny(zval *object, unsigned char **buffer, size_t *buf_len, zend_serialize_data *data) {
-    zend_throw_exception_ex(NULL, 0, "Serialization of 'Google\\Protobuf\\Internal\\Message' is not allowed");
+    zend_throw_exception_ex(NULL, 0, "Native PHP serialization of 'Google\\Protobuf\\Internal\\Message' is not supported. Please use .serializeToString() instead.");
     return FAILURE;
 }
 
