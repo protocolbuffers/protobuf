@@ -28,6 +28,7 @@ typedef struct {
   upb_DefPool* symtab;
   // clang-format on
   PyObject* db;  // The DescriptorDatabase underlying this pool.  May be NULL.
+  PyUpb_WeakMap* obj_cache;
 } PyUpb_DescriptorPool;
 
 PyObject* PyUpb_DescriptorPool_GetDefaultPool(void) {
@@ -49,8 +50,10 @@ static PyObject* PyUpb_DescriptorPool_DoCreateWithCache(
   pool->symtab = upb_DefPool_New();
   pool->db = db;
   Py_XINCREF(pool->db);
-  PyUpb_KnownObjCache_Add(obj_cache, pool->symtab, &pool->ob_base);
-  return &pool->ob_base;
+  pool->obj_cache = PyUpb_WeakMap_New();
+  PyObject* ret = &pool->ob_base;
+  PyUpb_WeakMap_Add(obj_cache, pool->symtab, &ret);
+  return ret;
 }
 
 static PyObject* PyUpb_DescriptorPool_DoCreate(PyTypeObject* type,
@@ -61,6 +64,10 @@ static PyObject* PyUpb_DescriptorPool_DoCreate(PyTypeObject* type,
 
 upb_DefPool* PyUpb_DescriptorPool_GetSymtab(PyObject* pool) {
   return ((PyUpb_DescriptorPool*)pool)->symtab;
+}
+
+PyUpb_WeakMap* PyUpb_DescriptorPool_GetCache(PyObject* pool) {
+  return ((PyUpb_DescriptorPool*)pool)->obj_cache;
 }
 
 static int PyUpb_DescriptorPool_Traverse(PyUpb_DescriptorPool* self,
@@ -90,6 +97,9 @@ static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
 #endif
   PyObject_GC_UnTrack(self);
   PyUpb_DescriptorPool_Clear(self);
+  if (self->obj_cache) {
+    PyUpb_WeakMap_Free(self->obj_cache);
+  }
   upb_DefPool_Free(self->symtab);
   PyUpb_ObjCache_Delete(self->symtab);
   PyUpb_Dealloc(self);
