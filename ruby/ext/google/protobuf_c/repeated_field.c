@@ -186,8 +186,8 @@ static VALUE RepeatedField_subarray(RepeatedField* self, long beg, long len) {
   // through upb_Array_Get (which only has a debug-only UPB_ASSERT for
   // bounds): clamp len to what is actually available, and reject negative
   // len up front.
-  if (len < 0) return rb_ary_new();
-  if (beg < 0 || beg > size) return rb_ary_new();
+  if (len < 0) return Qnil;
+  if (beg < 0 || beg > size) return Qnil;
   if (len > size - beg) len = size - beg;
 
   VALUE ary = rb_ary_new2(len);
@@ -271,7 +271,7 @@ static VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self) {
   if (beg < 0) {
     beg += size;
   }
-  if (beg >= size) {
+  if (beg > size) {
     return Qnil;
   }
   return RepeatedField_subarray(self, beg, len);

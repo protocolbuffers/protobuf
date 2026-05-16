@@ -582,9 +582,9 @@ class RepeatedFieldTest < Test::Unit::TestCase
   assert_equal [], m.repeated_string[3, 1_000_000]
   assert_equal [], m.repeated_int32[3, 1_000_000]
 
-  # Negative len: empty array
-  assert_equal [], m.repeated_string[0, -1]
-  assert_equal [], m.repeated_int32[1, -5]
+  # Negative len: nil (matches Ruby Array#[] semantics)
+  assert_nil m.repeated_string[0, -1]
+  assert_nil m.repeated_int32[1, -5]
 end
   
   def test_slice!
